@@ -1,0 +1,31 @@
+{
+    "name": "uptime-kuma",
+    "version": "0.0.0",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "serve": "vite preview"
+    },
+    "dependencies": {
+        "@popperjs/core": "^2.9.2",
+        "axios": "^0.21.1",
+        "bootstrap": "^5.0.0",
+        "dayjs": "^1.10.4",
+        "express": "^4.17.1",
+        "jsonwebtoken": "^8.5.1",
+        "password-hash": "^1.2.2",
+        "redbean-node": "0.0.20",
+        "socket.io": "^4.0.2",
+        "socket.io-client": "^4.1.2",
+        "vue": "^3.0.5",
+        "vue-confirm-dialog": "^1.0.2",
+        "vue-router": "^4.0.10",
+        "vue-toastification": "^2.0.0-rc.1"
+    },
+    "devDependencies": {
+        "@vitejs/plugin-vue": "^1.2.3",
+        "@vue/compiler-sfc": "^3.0.5",
+        "sass": "^1.35.1",
+        "vite": "^2.3.7"
+    }
+}
