@@ -167,7 +167,7 @@ let monitorList = {};
 
                 callback({
                     ok: true,
-                    msg: "Paused Successfully."
+                    msg: "Resumed Successfully."
                 });
 
             } catch (e) {

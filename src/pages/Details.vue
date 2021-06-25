@@ -11,56 +11,7 @@
 
     <div class="shadow-box">
 
-        <div class="hp-bar-big">
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-        </div>
+        <HeartbeatBar />
 
         <div class="row">
             <div class="col-md-8">
@@ -85,9 +36,11 @@
 import { useToast } from 'vue-toastification'
 const toast = useToast()
 import Confirm from "../components/Confirm.vue";
+import HeartbeatBar from "../components/HeartbeatBar.vue";
 
 export default {
     components: {
+        HeartbeatBar,
         Confirm
     },
     mounted() {

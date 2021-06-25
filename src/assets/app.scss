@@ -31,27 +31,4 @@
     }
 }
 
-.hp-bar-big {
-    white-space: nowrap;
-    margin-top: 4px;
-    text-align: center;
-    direction: rtl;
-    margin-bottom: 10px;
-    transition: all ease-in-out 0.15s;
-    position: relative;
 
-    div {
-        display: inline-block;
-        background-color: $primary;
-        width: 1%;
-        height: 30px;
-        margin: 0.3%;
-        border-radius: 50rem;
-        transition: all ease-in-out 0.15s;
-
-        &:hover {
-            opacity: 0.8;
-            transform: scale(1.5);
-        }
-    }
-}
