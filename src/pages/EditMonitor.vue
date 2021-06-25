@@ -1,0 +1,123 @@
+<template>
+    <h1 class="mb-3">{{ pageName }}</h1>
+    <form @submit.prevent="submit">
+
+    <div class="shadow-box">
+        <div class="row">
+            <div class="col-md-6">
+                <h2>General</h2>
+
+                    <div class="mb-3">
+                        <label for="type" class="form-label">Monitor Type</label>
+                        <select class="form-select" aria-label="Default select example" id="type" v-model="monitor.type">
+                            <option value="http">HTTP(s)</option>
+                            <option value="port">TCP Port</option>
+                            <option value="ping">Ping</option>
+                            <option value="keyword">HTTP(s) - Keyword</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Friendly Name</label>
+                        <input type="text" class="form-control" id="name" v-model="monitor.name" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="url" class="form-label">URL</label>
+                        <input type="url" class="form-control" id="url" v-model="monitor.url" pattern="https?://.+" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="interval" class="form-label">Heartbeat Interval (Every {{ monitor.interval }} seconds)</label>
+                        <input type="number" class="form-control" id="interval" v-model="monitor.interval" required min="20" step="20">
+                    </div>
+
+                    <div>
+                        <button class="btn btn-primary" type="submit" :disabled="processing">Save</button>
+                    </div>
+
+            </div>
+
+            <div class="col-md-6">
+                <h2>Notifications</h2>
+                <p>Not available, please setup in Settings page.</p>
+                <a class="btn btn-primary me-2" href="/settings" target="_blank">Go to Settings</a>
+            </div>
+        </div>
+    </div>
+    </form>
+
+
+</template>
+
+<script>
+import { useToast } from 'vue-toastification'
+const toast = useToast()
+
+export default {
+    components: {
+
+    },
+    mounted() {
+
+        if (this.isAdd) {
+            this.monitor = {
+                type: "http",
+                name: "",
+                url: "https://",
+                interval: 60,
+            }
+        } else {
+            this.$root.getSocket().emit("getMonitor", this.$route.params.id, (res) => {
+                if (res.ok) {
+                    this.monitor = res.monitor;
+                } else {
+                    toast.error(res.msg)
+                }
+            })
+        }
+
+    },
+    data() {
+        return {
+            processing: false,
+            monitor: { }
+        }
+    },
+    computed: {
+        pageName() {
+            return (this.isAdd) ? "Add New Monitor" : "Edit"
+        },
+        isAdd() {
+            return this.$route.path === "/add";
+        }
+    },
+    methods: {
+        submit() {
+            this.processing = true;
+
+            if (this.isAdd) {
+                this.$root.add(this.monitor, (res) => {
+                    this.processing = false;
+
+                    if (res.ok) {
+                        toast.success(res.msg);
+                        this.$router.push("/dashboard/" + res.monitorID)
+                    } else {
+                        toast.error(res.msg);
+                    }
+
+                })
+            } else {
+
+            }
+        }
+    }
+}
+</script>
+
+<style scoped>
+    .shadow-box {
+        padding: 20px;
+    }
+</style>

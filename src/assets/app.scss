@@ -1,0 +1,57 @@
+@import "vars.scss";
+@import "node_modules/bootstrap/scss/bootstrap";
+
+#app {
+    font-family: ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,segoe ui,Roboto,helvetica neue,Arial,noto sans,sans-serif,apple color emoji,segoe ui emoji,segoe ui symbol,noto color emoji;
+}
+
+.shadow-box {
+    overflow: hidden;
+    box-shadow: 0 15px 70px rgba(0, 0, 0, .1);
+    padding: 10px;
+    border-radius: 10px;
+
+    &.big-padding {
+        padding: 20px;
+    }
+}
+
+.btn {
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+.btn-primary {
+    color: white;
+
+    &:hover, &:active, &:focus, &.active {
+        color: white;
+        background-color: $highlight;
+        border-color: $highlight;
+    }
+}
+
+.hp-bar-big {
+    white-space: nowrap;
+    margin-top: 4px;
+    text-align: center;
+    direction: rtl;
+    margin-bottom: 10px;
+    transition: all ease-in-out 0.15s;
+    position: relative;
+
+    div {
+        display: inline-block;
+        background-color: $primary;
+        width: 1%;
+        height: 30px;
+        margin: 0.3%;
+        border-radius: 50rem;
+        transition: all ease-in-out 0.15s;
+
+        &:hover {
+            opacity: 0.8;
+            transform: scale(1.5);
+        }
+    }
+}
