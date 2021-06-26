@@ -7,7 +7,7 @@
                     <router-link to="/add" class="btn btn-primary">Add New Monitor</router-link>
                 </div>
 
-                <div class="shadow-box list">
+                <div class="shadow-box list mb-4">
 
                     <span v-if="$root.monitorList.length === 0">No Monitors, please <router-link to="/add">add one</router-link>.</span>
 
