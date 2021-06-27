@@ -1,7 +1,7 @@
 <template>
     <div class="wrap" :style="wrapStyle" ref="wrap">
         <div class="hp-bar-big" :style="barStyle">
-            <div class="beat"  :style="beatStyle" v-for="(beat, index) in shortBeatList" :key="index">
+            <div class="beat" :class="{ 'empty' : (beat === 0), 'down' : (beat.status === 0) }" :style="beatStyle" v-for="(beat, index) in shortBeatList" :key="index">
             </div>
         </div>
     </div>
@@ -11,12 +11,15 @@
 
 
 export default {
+    props: {
+        size: {
+            type: String,
+            default: "big"
+        },
+        monitorId: Number
+    },
     data() {
         return {
-            i: 1,
-            beatList: [
-
-            ],
             beatWidth: 10,
             beatHeight: 30,
             hoverScale: 1.5,
@@ -25,26 +28,38 @@ export default {
             maxBeat: -1,
         }
     },
-    destroyed() {
+    unmounted() {
         window.removeEventListener("resize", this.resize);
     },
     mounted() {
+        if (this.size === "small") {
+            this.beatWidth = 5.6;
+            this.beatMargin = 2.4;
+            this.beatHeight = 16
+        }
+
         window.addEventListener("resize", this.resize);
         this.resize();
-
-        setInterval(() => {
-            this.beatList.push(this.i++)
-        }, 3000)
-
     },
     methods: {
         resize() {
-            this.maxBeat = Math.floor(this.$refs.wrap.clientWidth / (this.beatWidth + this.beatMargin * 2))
+            if (this.$refs.wrap) {
+                this.maxBeat = Math.floor(this.$refs.wrap.clientWidth / (this.beatWidth + this.beatMargin * 2))
+            }
         }
     },
     computed: {
 
+        beatList() {
+            if (! (this.monitorId in this.$root.heartbeatList)) {
+                this.$root.heartbeatList[this.monitorId] = [];
+            }
+            return this.$root.heartbeatList[this.monitorId]
+        },
+
         shortBeatList() {
+            let placeholders = []
+
             let start = this.beatList.length - this.maxBeat;
 
             if (this.move) {
@@ -52,10 +67,16 @@ export default {
             }
 
             if (start < 0) {
+                // Add empty placeholder
+                for (let i = start; i < 0; i++) {
+                    placeholders.push(0)
+                }
                 start = 0;
             }
 
-            return this.beatList.slice(start)
+
+
+            return placeholders.concat(this.beatList.slice(start))
         },
 
         wrapStyle() {
@@ -104,7 +125,6 @@ export default {
     watch: {
         beatList: {
             handler(val, oldVal) {
-                console.log("add beat2")
                 this.move = true;
 
                 setTimeout(() => {
@@ -131,14 +151,17 @@ export default {
         display: inline-block;
         background-color: $primary;
         border-radius: 50rem;
-        transition: all ease-in-out 0.15s;
 
-        &.new-beat {
+        &.empty {
             background-color: aliceblue;
         }
 
+        &.down {
+            background-color: $danger;
+        }
 
-        &:hover {
+        &:not(.empty):hover {
+            transition: all ease-in-out 0.15s;
             opacity: 0.8;
             transform: scale(var(--hover-scale));
         }

@@ -23,20 +23,7 @@
 
                             </div>
                         	<div class="col-6">
-                                <div class="hp-bar">
-                                    <div></div>
-                                    <div></div>
-                                    <div></div>
-                                    <div></div>
-                                    <div></div>
-                                    <div></div>
-                                    <div></div>
-                                    <div></div>
-                                    <div></div>
-                                    <div></div>
-                                    <div></div>
-                                    <div></div>
-                                </div>
+                                <HeartbeatBar size="small" :monitor-id="item.id" />
                             </div>
                         </div>
 
@@ -54,8 +41,11 @@
 
 <script>
 
+import HeartbeatBar from "../components/HeartbeatBar.vue";
+
 export default {
     components: {
+        HeartbeatBar
     },
     data() {
         return {
@@ -78,6 +68,8 @@ export default {
 
 .list {
     margin-top: 25px;
+    height: auto;
+    min-height: calc(100vh - 200px);
 
     .item {
         display: block;
@@ -92,6 +84,8 @@ export default {
 
         .info {
             white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         &:hover {
@@ -117,6 +111,10 @@ export default {
         margin: 0.15rem;
         border-radius: 50rem;
         transition: all ease-in-out 0.15s;
+
+        &.empty {
+            background-color: aliceblue;
+        }
 
         &:hover {
             opacity: 0.8;

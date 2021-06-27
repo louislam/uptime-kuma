@@ -1,6 +1,6 @@
 <template>
-    <h1>{{ monitor.name }}</h1>
-    <h2>{{ monitor.url }}</h2>
+    <h1> {{ monitor.name }}</h1>
+    <p class="url"><a :href="monitor.url" target="_blank" v-if="monitor.type === 'http'">{{ monitor.url }}</a></p>
 
     <div class="functions">
         <button class="btn btn-light" @click="pauseDialog" v-if="monitor.active">Pause</button>
@@ -11,14 +11,15 @@
 
     <div class="shadow-box">
 
-        <HeartbeatBar />
+
 
         <div class="row">
             <div class="col-md-8">
-
+                <HeartbeatBar :monitor-id="monitor.id" />
+                <span class="word">Check every {{ monitor.interval }} seconds.</span>
             </div>
-            <div class="col-md-4">
-
+            <div class="col-md-4 text-center">
+                <span class="badge rounded-pill" :class=" 'bg-' + status.color " style="font-size: 30px">{{ status.text }}</span>
             </div>
         </div>
     </div>
@@ -53,15 +54,28 @@ export default {
     },
     computed: {
         monitor() {
-            let id = parseInt(this.$route.params.id)
+            let id = this.$route.params.id
+            return this.$root.monitorList[id];
+        },
 
-            for (let monitor of this.$root.monitorList) {
-                if (monitor.id === id) {
-                    return monitor;
+        lastHeartBeat() {
+            if (this.monitor.id in this.$root.lastHeartbeatList && this.$root.lastHeartbeatList[this.monitor.id]) {
+                return this.$root.lastHeartbeatList[this.monitor.id]
+            } else {
+                return { status: -1 }
+            }
+        },
+
+        status() {
+            if (this.$root.statusList[this.monitor.id]) {
+                return this.$root.statusList[this.monitor.id]
+            } else {
+                return {
+
                 }
             }
-            return {};
-        },
+        }
+
     },
     methods: {
         pauseDialog() {
@@ -97,9 +111,14 @@ export default {
 <style lang="scss" scoped>
 @import "../assets/vars.scss";
 
-h2 {
+.url {
     color: $primary;
     margin-bottom: 20px;
+    font-weight: bold;
+
+    a {
+        color: $primary;
+    }
 }
 
 .functions {
@@ -111,5 +130,10 @@ h2 {
 .shadow-box {
     padding: 20px;
     margin-top: 25px;
+}
+
+.word {
+    color: #AAA;
+    font-size: 14px;
 }
 </style>

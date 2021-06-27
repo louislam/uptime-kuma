@@ -3,6 +3,7 @@ import {createRouter, createWebHistory} from 'vue-router'
 
 import App from './App.vue'
 import Layout from './layouts/Layout.vue'
+import EmptyLayout from './layouts/EmptyLayout.vue'
 import Settings from "./pages/Settings.vue";
 import Dashboard from "./pages/Dashboard.vue";
 import DashboardHome from "./pages/DashboardHome.vue";
@@ -30,15 +31,21 @@ const routes = [
                         component: DashboardHome,
                         children: [
                             {
-                                path: ':id',
-                                component: Details,
+                                path: '/dashboard/:id',
+                                component: EmptyLayout,
+                                children: [
+                                    {
+                                        path: '',
+                                        component: Details,
+                                    },
+                                    {
+                                        path: '/edit/:id',
+                                        component: EditMonitor,
+                                    },
+                                ]
                             },
                             {
                                 path: '/add',
-                                component: EditMonitor,
-                            },
-                            {
-                                path: '/edit/:id',
                                 component: EditMonitor,
                             },
                         ]

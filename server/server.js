@@ -4,14 +4,12 @@ const http = require('http');
 const server = http.createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server);
-const axios = require('axios');
 const dayjs = require("dayjs");
 const {R} = require("redbean-node");
 const passwordHash = require('password-hash');
 const jwt = require('jsonwebtoken');
 const Monitor = require("./model/monitor");
 const {sleep} = require("./util");
-
 
 let stop = false;
 let interval = 6000;
@@ -21,12 +19,11 @@ let loadFromDatabase = true;
 let monitorList = {};
 
 (async () => {
-
     R.setup('sqlite', {
-        filename: '../data/kuma.db'
+        filename: './data/kuma.db'
     });
     R.freeze(true)
-    await R.autoloadModels("./model");
+    await R.autoloadModels("./server/model");
 
     await initDatabase();
 
@@ -118,15 +115,54 @@ let monitorList = {};
                 bean.user_id = socket.userID
                 await R.store(bean)
 
+                await startMonitor(socket.userID, bean.id);
+                await sendMonitorList(socket);
+
                 callback({
                     ok: true,
                     msg: "Added Successfully.",
                     monitorID: bean.id
                 });
 
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message
+                });
+            }
+        });
+
+        socket.on("editMonitor", async (monitor, callback) => {
+            try {
+                checkLogin(socket)
+
+                let bean = await R.findOne("monitor", " id = ? ", [ monitor.id ])
+
+                if (bean.user_id !== socket.userID) {
+                    throw new Error("Permission denied.")
+                }
+
+                bean.name = monitor.name
+                bean.type = monitor.type
+                bean.url = monitor.url
+                bean.interval = monitor.interval
+
+                await R.store(bean)
+
+                if (bean.active) {
+                    await restartMonitor(socket.userID, bean.id)
+                }
+
                 await sendMonitorList(socket);
 
+                callback({
+                    ok: true,
+                    msg: "Saved.",
+                    monitorID: bean.id
+                });
+
             } catch (e) {
+                console.log(e)
                 callback({
                     ok: false,
                     msg: e.message
@@ -294,14 +330,14 @@ async function afterLogin(socket, user) {
 }
 
 async function getMonitorJSONList(userID) {
-    let result = [];
+    let result = {};
 
-    let monitorList = await R.find("monitor", " user_id = ? ORDER BY weight DESC ", [
+    let monitorList = await R.find("monitor", " user_id = ? ORDER BY active DESC, name ASC ", [
         userID
     ])
 
     for (let monitor of monitorList) {
-        result.push(monitor.toJSON())
+        result[monitor.id] = monitor.toJSON();
     }
 
     return result;
@@ -346,8 +382,16 @@ async function startMonitor(userID, monitorID) {
         monitorID
     ])
 
+    if (monitor.id in monitorList) {
+        monitorList[monitor.id].stop();
+    }
+
     monitorList[monitor.id] = monitor;
     monitor.start(io)
+}
+
+async function restartMonitor(userID, monitorID) {
+    return await startMonitor(userID, monitorID)
 }
 
 async function pauseMonitor(userID, monitorID) {

@@ -21,7 +21,10 @@ export default {
             ],
             importantHeartbeatList: [
 
-            ]
+            ],
+            heartbeatList: {
+
+            },
         }
     },
 
@@ -33,6 +36,16 @@ export default {
         socket.on('monitorList', (data) => {
             this.monitorList = data;
         });
+
+        socket.on('heartbeat', (data) => {
+
+            if (! (data.monitorID in this.heartbeatList)) {
+                this.heartbeatList[data.monitorID] = [];
+            }
+
+            this.heartbeatList[data.monitorID].push(data)
+        });
+
 
         socket.on('disconnect', () => {
             this.socket.connected = false;
@@ -53,9 +66,11 @@ export default {
     },
 
     methods: {
+
         getSocket() {
           return socket;
         },
+
         toastRes(res) {
             if (res.ok) {
                 toast.success(res.msg);
@@ -63,6 +78,7 @@ export default {
                 toast.error(res.msg);
             }
         },
+
         login(username, password, callback) {
             socket.emit("login", {
                 username,
@@ -81,18 +97,19 @@ export default {
                 callback(res)
             })
         },
+
         loginByToken(token) {
             socket.emit("loginByToken", token, (res) => {
                 this.allowLoginDialog = true;
 
                 if (! res.ok) {
                     this.logout()
-                    console.log(res.msg)
                 } else {
                     this.loggedIn = true;
                 }
             })
         },
+
         logout() {
             storage.removeItem("token");
             this.socket.token = null;
@@ -102,19 +119,59 @@ export default {
                 toast.success("Logout Successfully")
             })
         },
+
         add(monitor, callback) {
             socket.emit("add", monitor, callback)
         },
+
         deleteMonitor(monitorID, callback) {
             socket.emit("deleteMonitor", monitorID, callback)
         },
-        loadMonitor(monitorID) {
 
-        }
     },
 
     computed: {
+        lastHeartbeatList() {
+            let result = {}
 
+            for (let monitorID in this.heartbeatList) {
+                let index = this.heartbeatList[monitorID].length - 1;
+                result[monitorID] = this.heartbeatList[monitorID][index];
+            }
+
+            return result;
+        },
+
+        statusList() {
+            let result = {}
+
+            let unknown = {
+                text: "Unknown",
+                color: "secondary"
+            }
+
+            for (let monitorID in this.lastHeartbeatList) {
+                let lastHeartBeat = this.lastHeartbeatList[monitorID]
+
+                if (! lastHeartBeat) {
+                    result[monitorID] = unknown;
+                } else if (lastHeartBeat.status === 1) {
+                    result[monitorID] = {
+                        text: "Up",
+                        color: "primary"
+                    };
+                } else if (lastHeartBeat.status === 0) {
+                    result[monitorID] = {
+                        text: "Down",
+                        color: "danger"
+                    };
+                } else {
+                    result[monitorID] = unknown;
+                }
+            }
+
+            return result;
+        }
     }
 
 }

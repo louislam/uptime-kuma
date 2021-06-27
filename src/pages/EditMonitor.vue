@@ -29,7 +29,7 @@
 
                     <div class="mb-3">
                         <label for="interval" class="form-label">Heartbeat Interval (Every {{ monitor.interval }} seconds)</label>
-                        <input type="number" class="form-control" id="interval" v-model="monitor.interval" required min="20" step="20">
+                        <input type="number" class="form-control" id="interval" v-model="monitor.interval" required min="20">
                     </div>
 
                     <div>
@@ -59,24 +59,7 @@ export default {
 
     },
     mounted() {
-
-        if (this.isAdd) {
-            this.monitor = {
-                type: "http",
-                name: "",
-                url: "https://",
-                interval: 60,
-            }
-        } else {
-            this.$root.getSocket().emit("getMonitor", this.$route.params.id, (res) => {
-                if (res.ok) {
-                    this.monitor = res.monitor;
-                } else {
-                    toast.error(res.msg)
-                }
-            })
-        }
-
+        this.init();
     },
     data() {
         return {
@@ -90,9 +73,33 @@ export default {
         },
         isAdd() {
             return this.$route.path === "/add";
+        },
+        isEdit() {
+            return this.$route.path.startsWith("/edit");
         }
     },
     methods: {
+        init() {
+            if (this.isAdd) {
+                console.log("??????")
+                this.monitor = {
+                    type: "http",
+                    name: "",
+                    url: "https://",
+                    interval: 60,
+                }
+            } else if (this.isEdit) {
+                this.$root.getSocket().emit("getMonitor", this.$route.params.id, (res) => {
+                    if (res.ok) {
+                        this.monitor = res.monitor;
+                    } else {
+                        toast.error(res.msg)
+                    }
+                })
+            }
+
+        },
+
         submit() {
             this.processing = true;
 
@@ -109,10 +116,18 @@ export default {
 
                 })
             } else {
-
+                this.$root.getSocket().emit("editMonitor", this.monitor, (res) => {
+                    this.processing = false;
+                    this.$root.toastRes(res)
+                })
             }
         }
-    }
+    },
+    watch: {
+        '$route.fullPath' () {
+            this.init();
+        }
+    },
 }
 </script>
 
