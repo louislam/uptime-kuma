@@ -28,8 +28,16 @@ class Monitor extends BeanModel {
     }
 
     start(io) {
+        let previousBeat = null;
+
         const beat = async () => {
             console.log(`Monitor ${this.id}: Heartbeat`)
+
+            if (! previousBeat) {
+                previousBeat = await R.findOne("heartbeat", " monitor_id = ? ORDER BY time DESC", [
+                    this.id
+                ])
+            }
 
             let bean = R.dispense("heartbeat")
             bean.monitor_id = this.id;
@@ -49,15 +57,18 @@ class Monitor extends BeanModel {
                 bean.msg = error.message;
             }
 
-            io.to(this.user_id).emit("heartbeat", {
-                monitorID: this.id,
-                status: bean.status,
-                time: bean.time,
-                msg: bean.msg,
-                ping: bean.ping,
-            });
+            // Mark as important if status changed
+            if (! previousBeat || previousBeat.status !== bean.status) {
+                bean.important = true;
+            } else {
+                bean.important = false;
+            }
+
+            io.to(this.user_id).emit("heartbeat", bean.toJSON());
 
             await R.store(bean)
+
+            previousBeat = bean;
         }
 
         beat();

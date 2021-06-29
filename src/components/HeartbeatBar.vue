@@ -1,7 +1,13 @@
 <template>
     <div class="wrap" :style="wrapStyle" ref="wrap">
         <div class="hp-bar-big" :style="barStyle">
-            <div class="beat" :class="{ 'empty' : (beat === 0), 'down' : (beat.status === 0) }" :style="beatStyle" v-for="(beat, index) in shortBeatList" :key="index">
+            <div
+                class="beat"
+                :class="{ 'empty' : (beat === 0), 'down' : (beat.status === 0) }"
+                :style="beatStyle"
+                v-for="(beat, index) in shortBeatList"
+                :key="index"
+                :title="beat.msg">
             </div>
         </div>
     </div>

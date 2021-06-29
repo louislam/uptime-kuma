@@ -40,23 +40,24 @@
 
             <div class="col-md-6">
                 <h2>Notifications</h2>
-                <p>Not available, please setup in Settings page.</p>
-                <a class="btn btn-primary me-2" href="/settings" target="_blank">Go to Settings</a>
+                <p>Not available, please setup.</p>
+                <button class="btn btn-primary me-2" @click="$refs.notificationDialog.show()" type="button">Setup Notification</button>
             </div>
         </div>
     </div>
     </form>
 
-
+    <NotificationDialog ref="notificationDialog" />
 </template>
 
 <script>
+import NotificationDialog from "../components/NotificationDialog.vue";
 import { useToast } from 'vue-toastification'
 const toast = useToast()
 
 export default {
     components: {
-
+        NotificationDialog
     },
     mounted() {
         this.init();

@@ -134,8 +134,6 @@ export default {
                         result.unknown++;
                     }
                 } else {
-                    console.log(monitorID + " Unknown?")
-                    console.log(beat)
                     result.unknown++;
                 }
             }

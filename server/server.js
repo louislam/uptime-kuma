@@ -9,7 +9,6 @@ const {R} = require("redbean-node");
 const passwordHash = require('password-hash');
 const jwt = require('jsonwebtoken');
 const Monitor = require("./model/monitor");
-const {sleep} = require("./util");
 
 let stop = false;
 let interval = 6000;
@@ -40,6 +39,10 @@ let monitorList = {};
 
         // Public API
 
+        /*
+            firstConnect - true = send monitor list + heartbeat list history
+                                  false = do not send
+         */
         socket.on("loginByToken", async (token, callback) => {
 
             try {
@@ -320,13 +323,20 @@ async function checkOwner(userID, monitorID) {
 }
 
 async function sendMonitorList(socket) {
-    io.to(socket.userID).emit("monitorList", await getMonitorJSONList(socket.userID))
+    let list = await getMonitorJSONList(socket.userID);
+    io.to(socket.userID).emit("monitorList", list)
+    return list;
 }
 
 async function afterLogin(socket, user) {
     socket.userID = user.id;
     socket.join(user.id)
-    socket.emit("monitorList", await getMonitorJSONList(user.id))
+
+    let monitorList = await sendMonitorList(socket)
+
+    for (let monitorID in monitorList) {
+        await sendHeartbeatList(socket, monitorID);
+    }
 }
 
 async function getMonitorJSONList(userID) {
@@ -338,7 +348,10 @@ async function getMonitorJSONList(userID) {
 
     for (let monitor of monitorList) {
         result[monitor.id] = monitor.toJSON();
+
     }
+
+
 
     return result;
 }
@@ -419,5 +432,26 @@ async function startMonitors() {
         monitor.start(io)
         monitorList[monitor.id] = monitor;
     }
+}
+
+/**
+ * Send Heartbeat History list to socket
+ */
+async function sendHeartbeatList(socket, monitorID) {
+    let list = await R.find("heartbeat", `
+        monitor_id = ?
+        ORDER BY time DESC
+        LIMIT 100
+    `, [
+        monitorID
+    ])
+
+    let result = [];
+
+    for (let bean of list) {
+       result.unshift(bean.toJSON())
+    }
+
+    socket.emit("heartbeatList", monitorID, result)
 }
 
