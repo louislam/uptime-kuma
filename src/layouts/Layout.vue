@@ -8,7 +8,7 @@
 
     <header class="d-flex flex-wrap justify-content-center py-3 mb-3 border-bottom">
 
-        <router-link to="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
+        <router-link to="/dashboard" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
             <object class="bi me-2 ms-4" width="40" data="/icon.svg"></object>
             <span class="fs-4 title">Uptime Kuma</span>
         </router-link>
@@ -21,7 +21,8 @@
     </header>
 
     <main>
-        <router-view v-if="$root.loggedIn" />
+        <!-- Add :key to disable vue router re-use the same component -->
+        <router-view v-if="$root.loggedIn" :key="$route.fullPath" />
         <Login v-if="! $root.loggedIn && $root.allowLoginDialog" />
     </main>
 
@@ -65,5 +66,9 @@ export default {
         padding: 5px;
         background-color: crimson;
         color: white;
+    }
+
+    main {
+        margin-bottom: 30px;
     }
 </style>

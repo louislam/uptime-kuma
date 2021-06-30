@@ -20,10 +20,15 @@ export default {
             monitorList: [
 
             ],
-
             heartbeatList: {
 
             },
+            importantHeartbeatList: {
+
+            },
+            avgPingList: {
+
+            }
         }
     },
 
@@ -42,6 +47,30 @@ export default {
             }
 
             this.heartbeatList[data.monitorID].push(data)
+
+            // Add to important list if it is important
+            // Also toast
+            if (data.important) {
+
+                if (data.status === 0) {
+                    toast.error(`[${this.monitorList[data.monitorID].name}] [DOWN] ${data.msg}`, {
+                        timeout: false,
+                    });
+                } else if (data.status === 1) {
+                    toast.success(`[${this.monitorList[data.monitorID].name}] [Up] ${data.msg}`, {
+                        timeout: 20000,
+                    });
+                } else {
+                    toast(`[${this.monitorList[data.monitorID].name}] ${data.msg}`);
+                }
+
+
+                if (! (data.monitorID in this.importantHeartbeatList)) {
+                    this.importantHeartbeatList[data.monitorID] = [];
+                }
+
+                this.importantHeartbeatList[data.monitorID].unshift(data)
+            }
         });
 
         socket.on('heartbeatList', (monitorID, data) => {
@@ -52,6 +81,17 @@ export default {
             }
         });
 
+        socket.on('avgPing', (monitorID, data) => {
+            this.avgPingList[monitorID] = data
+        });
+
+        socket.on('importantHeartbeatList', (monitorID, data) => {
+            if (! (monitorID in this.importantHeartbeatList)) {
+                this.importantHeartbeatList[monitorID] = data;
+            } else {
+                this.importantHeartbeatList[monitorID] = data.concat(this.importantHeartbeatList[monitorID])
+            }
+        });
 
         socket.on('disconnect', () => {
             console.log("disconnect")
@@ -65,8 +105,7 @@ export default {
 
             // Reset Heartbeat list if it is re-connect
             if (this.socket.connectCount >= 2) {
-                console.log("reset heartbeat list")
-                this.heartbeatList = {}
+                this.clearData()
             }
 
             if (storage.token) {
@@ -128,10 +167,9 @@ export default {
         logout() {
             storage.removeItem("token");
             this.socket.token = null;
+            this.loggedIn = false;
 
-            socket.emit("logout", () => {
-                window.location.reload()
-            })
+            this.clearData()
         },
 
         add(monitor, callback) {
@@ -140,6 +178,12 @@ export default {
 
         deleteMonitor(monitorID, callback) {
             socket.emit("deleteMonitor", monitorID, callback)
+        },
+
+        clearData() {
+            console.log("reset heartbeat list")
+            this.heartbeatList = {}
+            this.importantHeartbeatList = {}
         },
 
     },
@@ -151,26 +195,6 @@ export default {
             for (let monitorID in this.heartbeatList) {
                 let index = this.heartbeatList[monitorID].length - 1;
                 result[monitorID] = this.heartbeatList[monitorID][index];
-            }
-
-            return result;
-        },
-
-        // TODO: handle history + real time
-        importantHeartbeatList() {
-            let result = {}
-
-            for (let monitorID in this.heartbeatList) {
-                result[monitorID] = [];
-
-                let index = this.heartbeatList[monitorID].length - 1;
-                let list = this.heartbeatList[monitorID];
-
-                for (let heartbeat of list) {
-                    if (heartbeat.important) {
-                        result[monitorID].push(heartbeat)
-                    }
-                }
             }
 
             return result;

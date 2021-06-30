@@ -5,14 +5,11 @@
     <div class="functions">
         <button class="btn btn-light" @click="pauseDialog" v-if="monitor.active">Pause</button>
         <button class="btn btn-primary" @click="resumeMonitor"  v-if="! monitor.active">Resume</button>
-        <router-link :to=" '/edit/' + monitor.id " class="btn btn-light">Edit</router-link>
+        <router-link :to=" '/edit/' + monitor.id " class="btn btn-secondary">Edit</router-link>
         <button class="btn btn-danger" @click="deleteDialog">Delete</button>
     </div>
 
     <div class="shadow-box">
-
-
-
         <div class="row">
             <div class="col-md-8">
                 <HeartbeatBar :monitor-id="monitor.id" />
@@ -22,6 +19,54 @@
                 <span class="badge rounded-pill" :class=" 'bg-' + status.color " style="font-size: 30px">{{ status.text }}</span>
             </div>
         </div>
+    </div>
+
+    <div class="shadow-box big-padding text-center stats">
+        <div class="row">
+            <div class="col">
+                <h4>{{ pingTitle }}</h4>
+                <p>(Current)</p>
+                <span class="num"><CountUp :value="ping" /></span>
+            </div>
+            <div class="col">
+                <h4>Avg.{{ pingTitle }}</h4>
+                <p>(24-hour)</p>
+                <span class="num"><CountUp :value="avgPing" /></span>
+            </div>
+            <div class="col">
+                <h4>Uptime</h4>
+                <p>(24-hour)</p>
+                <span class="num"></span>
+            </div>
+            <div class="col">
+                <h4>Uptime</h4>
+                <p>(30-day)</p>
+                <span class="num"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="shadow-box">
+        <table class="table table-borderless table-hover">
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th>DateTime</th>
+                    <th>Message</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="beat in importantHeartBeatList">
+                    <td><Status :status="beat.status" /></td>
+                    <td><Datetime :value="beat.time" /></td>
+                    <td>{{ beat.msg }}</td>
+                </tr>
+
+                <tr v-if="importantHeartBeatList.length === 0">
+                    <td colspan="3">No important events</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 
     <Confirm ref="confirmPause" @yes="pauseMonitor">
@@ -38,11 +83,17 @@ import { useToast } from 'vue-toastification'
 const toast = useToast()
 import Confirm from "../components/Confirm.vue";
 import HeartbeatBar from "../components/HeartbeatBar.vue";
+import Status from "../components/Status.vue";
+import Datetime from "../components/Datetime.vue";
+import CountUp from "../components/CountUp.vue";
 
 export default {
     components: {
+        CountUp,
+        Datetime,
         HeartbeatBar,
-        Confirm
+        Confirm,
+        Status,
     },
     mounted() {
 
@@ -53,6 +104,15 @@ export default {
         }
     },
     computed: {
+
+        pingTitle() {
+            if (this.monitor.type === "http") {
+                return "Response"
+            } else {
+                return "Ping"
+            }
+        },
+
         monitor() {
             let id = this.$route.params.id
             return this.$root.monitorList[id];
@@ -66,34 +126,65 @@ export default {
             }
         },
 
+        ping() {
+            if (this.lastHeartBeat.ping) {
+                return this.lastHeartBeat.ping;
+            } else {
+                return "N/A"
+            }
+        },
+
+        avgPing() {
+            if (this.$root.avgPingList[this.monitor.id]) {
+                return this.$root.avgPingList[this.monitor.id];
+            } else {
+                return "N/A"
+            }
+        },
+
+        importantHeartBeatList() {
+            if (this.$root.importantHeartbeatList[this.monitor.id]) {
+                return this.$root.importantHeartbeatList[this.monitor.id]
+            } else {
+                return [];
+            }
+        },
+
         status() {
             if (this.$root.statusList[this.monitor.id]) {
                 return this.$root.statusList[this.monitor.id]
             } else {
-                return {
-
-                }
+                return { }
             }
         }
 
     },
     methods: {
+        testNotification() {
+            this.$root.getSocket().emit("testNotification", this.monitor.id)
+            toast.success("Test notification is requested.")
+        },
+
         pauseDialog() {
             this.$refs.confirmPause.show();
         },
+
         resumeMonitor() {
             this.$root.getSocket().emit("resumeMonitor", this.monitor.id, (res) => {
                 this.$root.toastRes(res)
             })
         },
+
         pauseMonitor() {
             this.$root.getSocket().emit("pauseMonitor", this.monitor.id, (res) => {
                 this.$root.toastRes(res)
             })
         },
+
         deleteDialog() {
             this.$refs.confirmDelete.show();
         },
+
         deleteMonitor() {
             this.$root.deleteMonitor(this.monitor.id, (res) => {
                 if (res.ok) {
@@ -104,6 +195,7 @@ export default {
                 }
             })
         }
+
     }
 }
 </script>
@@ -135,5 +227,19 @@ export default {
 .word {
     color: #AAA;
     font-size: 14px;
+}
+
+table {
+    font-size: 14px;
+
+    tr {
+        --bs-table-accent-bg: white;
+        transition: all ease-in-out 0.2ms;
+    }
+}
+
+.stats p {
+    font-size: 13px;
+    color: #AAA;
 }
 </style>

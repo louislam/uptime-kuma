@@ -66,6 +66,8 @@ class Monitor extends BeanModel {
 
             io.to(this.user_id).emit("heartbeat", bean.toJSON());
 
+            Monitor.sendStats(io, this.id, this.user_id)
+
             await R.store(bean)
 
             previousBeat = bean;
@@ -77,6 +79,29 @@ class Monitor extends BeanModel {
 
     stop() {
         clearInterval(this.heartbeatInterval)
+    }
+
+    static async sendStats(io, monitorID, userID) {
+        Monitor.sendAvgPing(24, io, monitorID, userID);
+        //Monitor.sendUptime(24, io, this.id);
+        //Monitor.sendUptime(24 * 30, io, this.id);
+    }
+
+    static async sendAvgPing(duration, io, monitorID, userID) {
+        let avgPing = parseInt(await R.getCell(`
+            SELECT AVG(ping)
+            FROM heartbeat
+            WHERE time > DATE('now', ? || ' hours')
+            AND monitor_id = ? `, [
+            -duration,
+            monitorID
+        ]));
+
+        io.to(userID).emit("avgPing", monitorID, avgPing);
+    }
+
+    sendUptime(duration) {
+
     }
 }
 

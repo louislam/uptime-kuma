@@ -39,10 +39,6 @@ let monitorList = {};
 
         // Public API
 
-        /*
-            firstConnect - true = send monitor list + heartbeat list history
-                                  false = do not send
-         */
         socket.on("loginByToken", async (token, callback) => {
 
             try {
@@ -336,6 +332,8 @@ async function afterLogin(socket, user) {
 
     for (let monitorID in monitorList) {
         await sendHeartbeatList(socket, monitorID);
+        await sendImportantHeartbeatList(socket, monitorID);
+        await Monitor.sendStats(io, monitorID, user.id)
     }
 }
 
@@ -348,10 +346,7 @@ async function getMonitorJSONList(userID) {
 
     for (let monitor of monitorList) {
         result[monitor.id] = monitor.toJSON();
-
     }
-
-
 
     return result;
 }
@@ -455,3 +450,15 @@ async function sendHeartbeatList(socket, monitorID) {
     socket.emit("heartbeatList", monitorID, result)
 }
 
+async function sendImportantHeartbeatList(socket, monitorID) {
+    let list = await R.find("heartbeat", `
+        monitor_id = ?
+        AND important = 1
+        ORDER BY time DESC
+        LIMIT 500
+    `, [
+        monitorID
+    ])
+
+    socket.emit("importantHeartbeatList", monitorID, list)
+}

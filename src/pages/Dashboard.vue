@@ -2,7 +2,7 @@
 
     <div class="container-fluid">
         <div class="row">
-            <div class="col-12 col-xl-4">
+            <div class="col-12 col-md-5 col-xl-4">
                 <div>
                     <router-link to="/add" class="btn btn-primary">Add New Monitor</router-link>
                 </div>
@@ -31,7 +31,7 @@
 
                 </div>
             </div>
-            <div class="col-12 col-xl-8">
+            <div class="col-12 col-md-7 col-xl-8">
                 <router-view />
             </div>
         </div>
