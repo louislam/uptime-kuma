@@ -10,9 +10,8 @@
                     <div class="mb-3">
                         <label for="timezone" class="form-label">Timezone</label>
                         <select class="form-select" aria-label="Default select example" id="timezone">
-                            <option value="1">One</option>
-                            <option value="2">Two</option>
-                            <option value="3">Three</option>
+                            <option name="auto">Auto: {{ guessTimezone }}</option>
+                            <option v-for="timezone in timezoneList" :value="timezone.value">{{ timezone.name }}</option>
                         </select>
                     </div>
 
@@ -64,7 +63,12 @@
 </template>
 
 <script>
-
+import dayjs from "dayjs";
+import utc  from 'dayjs/plugin/utc'
+import timezone  from 'dayjs/plugin/timezone'
+dayjs.extend(utc)
+dayjs.extend(timezone)
+import {timezoneList} from "../../server/util";
 
 export default {
     components: {
@@ -72,6 +76,8 @@ export default {
     },
     data() {
         return {
+            timezoneList: timezoneList(),
+            guessTimezone: dayjs.tz.guess(),
             invalidPassword: false,
             password: {
                 currentPassword: "",

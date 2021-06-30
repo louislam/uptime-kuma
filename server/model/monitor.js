@@ -44,6 +44,14 @@ class Monitor extends BeanModel {
             bean.time = R.isoDateTime(dayjs.utc());
             bean.status = 0;
 
+            // Duration
+            if (previousBeat) {
+                bean.duration = dayjs(bean.time).diff(dayjs(previousBeat.time), 'second');
+            } else {
+                bean.duration = 0;
+                console.log(previousBeat)
+            }
+
             try {
                 if (this.type === "http") {
                     let startTime = dayjs().valueOf();
