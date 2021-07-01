@@ -1,9 +1,11 @@
+
 const dayjs = require("dayjs");
 const utc = require('dayjs/plugin/utc')
 var timezone = require('dayjs/plugin/timezone')
 dayjs.extend(utc)
 dayjs.extend(timezone)
 const axios = require("axios");
+const {tcping} = require("../util-server");
 const {R} = require("redbean-node");
 const {BeanModel} = require("redbean-node/dist/bean-model");
 
@@ -20,6 +22,8 @@ class Monitor extends BeanModel {
             id: this.id,
             name: this.name,
             url: this.url,
+            hostname: this.hostname,
+            port: this.port,
             weight: this.weight,
             active: this.active,
             type: this.type,
@@ -59,6 +63,10 @@ class Monitor extends BeanModel {
                     bean.msg = `${res.status} - ${res.statusText}`
                     bean.ping = dayjs().valueOf() - startTime;
                     bean.status = 1;
+
+                } else if (this.type === "port") {
+                    bean.ping = await tcping(this.hostname, this.port);
+                    bean.status = 1;
                 }
 
             } catch (error) {
@@ -74,9 +82,8 @@ class Monitor extends BeanModel {
 
             io.to(this.user_id).emit("heartbeat", bean.toJSON());
 
-            Monitor.sendStats(io, this.id, this.user_id)
-
             await R.store(bean)
+            Monitor.sendStats(io, this.id, this.user_id)
 
             previousBeat = bean;
         }

@@ -22,10 +22,23 @@
                         <input type="text" class="form-control" id="name" v-model="monitor.name" required>
                     </div>
 
-                    <div class="mb-3">
+                    <div class="mb-3" v-if="monitor.type === 'http' ">
                         <label for="url" class="form-label">URL</label>
                         <input type="url" class="form-control" id="url" v-model="monitor.url" pattern="https?://.+" required>
                     </div>
+
+                    <template v-if="monitor.type === 'port' ">
+                        <div class="mb-3">
+                            <label for="hostname" class="form-label">Hostname</label>
+                            <input type="text" class="form-control" id="hostname" v-model="monitor.hostname" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="port" class="form-label">Port</label>
+                            <input type="number" class="form-control" id="port" v-model="monitor.port" required min="0" max="65535">
+                        </div>
+                    </template>
+
 
                     <div class="mb-3">
                         <label for="interval" class="form-label">Heartbeat Interval (Every {{ monitor.interval }} seconds)</label>

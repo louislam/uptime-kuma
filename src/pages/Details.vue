@@ -1,6 +1,9 @@
 <template>
     <h1> {{ monitor.name }}</h1>
-    <p class="url"><a :href="monitor.url" target="_blank" v-if="monitor.type === 'http'">{{ monitor.url }}</a></p>
+    <p class="url">
+        <a :href="monitor.url" target="_blank" v-if="monitor.type === 'http'">{{ monitor.url }}</a>
+        <span v-if="monitor.type === 'port'">{{ monitor.hostname }}:{{ monitor.port }}</span>
+    </p>
 
     <div class="functions">
         <button class="btn btn-light" @click="pauseDialog" v-if="monitor.active">Pause</button>

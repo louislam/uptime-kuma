@@ -18,6 +18,7 @@
         "redbean-node": "0.0.20",
         "socket.io": "^4.0.2",
         "socket.io-client": "^4.1.2",
+        "tcp-ping": "^0.1.1",
         "vue": "^3.0.5",
         "vue-confirm-dialog": "^1.0.2",
         "vue-router": "^4.0.10",

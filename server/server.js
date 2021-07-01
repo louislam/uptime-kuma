@@ -145,6 +145,8 @@ let monitorList = {};
                 bean.type = monitor.type
                 bean.url = monitor.url
                 bean.interval = monitor.interval
+                bean.hostname = monitor.hostname;
+                bean.port = monitor.port;
 
                 await R.store(bean)
 
