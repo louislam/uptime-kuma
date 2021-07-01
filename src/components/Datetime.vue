@@ -18,9 +18,6 @@ export default {
 
     computed: {
         displayText() {
-
-            console.log(dayjs.tz.guess())
-
             return this.value
         },
     }

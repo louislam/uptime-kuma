@@ -36,12 +36,12 @@
             <div class="col">
                 <h4>Uptime</h4>
                 <p>(24-hour)</p>
-                <span class="num"></span>
+                <span class="num"><Uptime :monitor="monitor" type="24" /></span>
             </div>
             <div class="col">
                 <h4>Uptime</h4>
                 <p>(30-day)</p>
-                <span class="num"></span>
+                <span class="num"><Uptime :monitor="monitor" type="720" /></span>
             </div>
         </div>
     </div>
@@ -86,9 +86,11 @@ import HeartbeatBar from "../components/HeartbeatBar.vue";
 import Status from "../components/Status.vue";
 import Datetime from "../components/Datetime.vue";
 import CountUp from "../components/CountUp.vue";
+import Uptime from "../components/Uptime.vue";
 
 export default {
     components: {
+        Uptime,
         CountUp,
         Datetime,
         HeartbeatBar,
@@ -233,7 +235,6 @@ table {
     font-size: 14px;
 
     tr {
-        --bs-table-accent-bg: white;
         transition: all ease-in-out 0.2ms;
     }
 }

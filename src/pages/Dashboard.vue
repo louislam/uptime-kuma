@@ -11,18 +11,18 @@
 
                     <span v-if="$root.monitorList.length === 0">No Monitors, please <router-link to="/add">add one</router-link>.</span>
 
-                    <router-link :to="monitorURL(item.id)" class="item" :class="{ 'disabled': ! item.active }" v-for="item in $root.monitorList">
+                    <router-link :to="monitorURL(item.id)" class="item" :class="{ 'disabled': ! item.active }" v-for="item in sortedMonitorList">
 
                         <div class="row">
-                        	<div class="col-6">
+                        	<div class="col-6 col-md-8 small-padding">
 
                                 <div class="info">
-                                    <span class="badge rounded-pill bg-primary">{{ item.upRate }}%</span>
+                                    <Uptime :monitor="item" type="24" :pill="true" />
                                     {{ item.name }}
                                 </div>
 
                             </div>
-                        	<div class="col-6">
+                        	<div class="col-6 col-md-4">
                                 <HeartbeatBar size="small" :monitor-id="item.id" />
                             </div>
                         </div>
@@ -42,14 +42,48 @@
 <script>
 
 import HeartbeatBar from "../components/HeartbeatBar.vue";
+import Uptime from "../components/Uptime.vue";
 
 export default {
     components: {
+        Uptime,
         HeartbeatBar
     },
     data() {
         return {
         }
+    },
+    computed: {
+        sortedMonitorList() {
+            let result = Object.values(this.$root.monitorList);
+
+            result.sort((m1, m2) => {
+
+                if (m1.active !== m2.active) {
+                    if (m1.active === 0) {
+                        return 1;
+                    }
+
+                    if (m2.active === 0) {
+                        return -1;
+                    }
+                }
+
+                if (m1.weight !== m2.weight) {
+                    if (m1.weight > m2.weight) {
+                        return -1;
+                    }
+
+                    if (m1.weight < m2.weight) {
+                        return 1;
+                    }
+                }
+
+                return m1.name.localeCompare(m2.name);
+            })
+
+            return result;
+        },
     },
     methods: {
         monitorURL(id) {
@@ -98,29 +132,13 @@ export default {
     }
 }
 
-.hp-bar {
-    white-space: nowrap;
-    margin-top: 4px;
-    text-align: right;
+.badge {
+    min-width: 58px;
+}
 
-    div {
-        display: inline-block;
-        background-color: $primary;
-        width: 0.35rem;
-        height: 1rem;
-        margin: 0.15rem;
-        border-radius: 50rem;
-        transition: all ease-in-out 0.15s;
-
-        &.empty {
-            background-color: aliceblue;
-        }
-
-        &:hover {
-            opacity: 0.8;
-            transform: scale(1.5);
-        }
-    }
+.small-padding {
+    padding-left: 5px !important;
+    padding-right: 5px !important;
 }
 
 </style>

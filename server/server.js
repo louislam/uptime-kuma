@@ -340,7 +340,7 @@ async function afterLogin(socket, user) {
 async function getMonitorJSONList(userID) {
     let result = {};
 
-    let monitorList = await R.find("monitor", " user_id = ? ORDER BY active DESC, name ASC ", [
+    let monitorList = await R.find("monitor", " user_id = ? ", [
         userID
     ])
 

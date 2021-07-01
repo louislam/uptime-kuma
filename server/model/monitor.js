@@ -20,7 +20,7 @@ class Monitor extends BeanModel {
             id: this.id,
             name: this.name,
             url: this.url,
-            upRate: this.upRate,
+            weight: this.weight,
             active: this.active,
             type: this.type,
             interval: this.interval,
@@ -91,15 +91,20 @@ class Monitor extends BeanModel {
 
     static async sendStats(io, monitorID, userID) {
         Monitor.sendAvgPing(24, io, monitorID, userID);
-        //Monitor.sendUptime(24, io, this.id);
-        //Monitor.sendUptime(24 * 30, io, this.id);
+        Monitor.sendUptime(24, io, monitorID, userID);
+        Monitor.sendUptime(24 * 30, io, monitorID, userID);
     }
 
+    /**
+     *
+     * @param duration : int Hours
+     */
     static async sendAvgPing(duration, io, monitorID, userID) {
         let avgPing = parseInt(await R.getCell(`
             SELECT AVG(ping)
             FROM heartbeat
             WHERE time > DATE('now', ? || ' hours')
+            AND ping IS NOT NULL
             AND monitor_id = ? `, [
             -duration,
             monitorID
@@ -108,8 +113,25 @@ class Monitor extends BeanModel {
         io.to(userID).emit("avgPing", monitorID, avgPing);
     }
 
-    sendUptime(duration) {
+    /**
+     *
+     * @param duration : int Hours
+     */
+    static async sendUptime(duration, io, monitorID, userID) {
+        let downtime = parseInt(await R.getCell(`
+            SELECT SUM(duration)
+            FROM heartbeat
+            WHERE time > DATE('now', ? || ' hours')
+            AND status = 0
+            AND monitor_id = ? `, [
+            -duration,
+            monitorID
+        ]));
 
+        let sec = duration * 3600;
+        let uptime = (sec - downtime) / sec;
+
+        io.to(userID).emit("uptime", monitorID, duration, uptime);
     }
 }
 
