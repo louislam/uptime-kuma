@@ -1,4 +1,5 @@
 const tcpp = require('tcp-ping');
+const Ping = require("./ping-lite");
 
 exports.tcping = function (hostname, port) {
     return new Promise((resolve, reject) => {
@@ -17,6 +18,22 @@ exports.tcping = function (hostname, port) {
             }
 
             resolve(Math.round(data.max));
+        });
+    });
+}
+
+exports.ping = function (hostname) {
+    return new Promise((resolve, reject) => {
+        const ping = new Ping(hostname);
+
+        ping.send(function(err, ms) {
+            if (err) {
+                reject(err)
+            } else if (ms === null) {
+                reject(new Error("timeout"))
+            } else {
+                resolve(Math.round(ms))
+            }
         });
     });
 }

@@ -2,7 +2,8 @@
     <h1> {{ monitor.name }}</h1>
     <p class="url">
         <a :href="monitor.url" target="_blank" v-if="monitor.type === 'http'">{{ monitor.url }}</a>
-        <span v-if="monitor.type === 'port'">{{ monitor.hostname }}:{{ monitor.port }}</span>
+        <span v-if="monitor.type === 'port'">TCP Ping {{ monitor.hostname }}:{{ monitor.port }}</span>
+        <span v-if="monitor.type === 'ping'">Ping: {{ monitor.hostname }}</span>
     </p>
 
     <div class="functions">

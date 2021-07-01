@@ -18,7 +18,7 @@ export default {
 
             let key = this.monitor.id + "_" + this.type;
 
-            if (this.$root.uptimeList[key]) {
+            if (this.$root.uptimeList[key] !== undefined) {
                 return Math.round(this.$root.uptimeList[key] * 10000) / 100 + "%";
             } else {
                 return "N/A"

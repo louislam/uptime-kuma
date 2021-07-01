@@ -5,7 +5,7 @@ var timezone = require('dayjs/plugin/timezone')
 dayjs.extend(utc)
 dayjs.extend(timezone)
 const axios = require("axios");
-const {tcping} = require("../util-server");
+const {tcping, ping} = require("../util-server");
 const {R} = require("redbean-node");
 const {BeanModel} = require("redbean-node/dist/bean-model");
 
@@ -67,6 +67,10 @@ class Monitor extends BeanModel {
                 } else if (this.type === "port") {
                     bean.ping = await tcping(this.hostname, this.port);
                     bean.status = 1;
+
+                } else if (this.type === "ping") {
+                    bean.ping = await ping(this.hostname);
+                    bean.status = 1;
                 }
 
             } catch (error) {
@@ -125,18 +129,48 @@ class Monitor extends BeanModel {
      * @param duration : int Hours
      */
     static async sendUptime(duration, io, monitorID, userID) {
-        let downtime = parseInt(await R.getCell(`
-            SELECT SUM(duration)
+        let sec = duration * 3600;
+
+        let downtimeList = await R.getAll(`
+            SELECT duration, time
             FROM heartbeat
             WHERE time > DATE('now', ? || ' hours')
             AND status = 0
             AND monitor_id = ? `, [
             -duration,
             monitorID
-        ]));
+        ]);
 
-        let sec = duration * 3600;
+        let downtime = 0;
+
+        for (let row of downtimeList) {
+            let value = parseInt(row.duration)
+            let time = row.time
+
+            // Handle if heartbeat duration longer than the target duration
+            // e.g.   Heartbeat duration = 28hrs, but target duration = 24hrs
+            if (value <= sec) {
+                downtime += value;
+            } else {
+                console.log("Now: " + dayjs.utc());
+                console.log("Time: " + dayjs(time))
+
+                let trim = dayjs.utc().diff(dayjs(time), 'second');
+                console.log("trim: " + trim);
+                value = sec - trim;
+
+                if (value < 0) {
+                    value = 0;
+                }
+                downtime += value;
+            }
+        }
+
         let uptime = (sec - downtime) / sec;
+
+        if (uptime < 0) {
+            uptime = 0;
+        }
 
         io.to(userID).emit("uptime", monitorID, duration, uptime);
     }

@@ -48,7 +48,7 @@ export default {
             let frames = 12;
             let step = Math.floor(diff / frames);
 
-            if (! this.isNum || (diff > 0 && step < 1) || (diff < 0 && step > 1) || diff === 0) {
+            if (isNaN(step) || ! this.isNum || (diff > 0 && step < 1) || (diff < 0 && step > 1) || diff === 0) {
                 // Lazy to NOT this condition, hahaha.
             } else {
                 for (let i = 1; i < frames; i++) {
