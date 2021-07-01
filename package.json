@@ -1,11 +1,11 @@
 {
     "name": "uptime-kuma",
-    "version": "0.0.0",
+    "version": "1.0.0",
     "scripts": {
-        "dev": "vite",
+        "dev": "vite --host",
         "dev-server": "node server/server.js",
         "build": "vite build",
-        "serve": "vite preview"
+        "serve": "vite preview --host"
     },
     "dependencies": {
         "@popperjs/core": "^2.9.2",

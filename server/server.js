@@ -10,11 +10,8 @@ const passwordHash = require('password-hash');
 const jwt = require('jsonwebtoken');
 const Monitor = require("./model/monitor");
 
-let stop = false;
-let interval = 6000;
 let totalClient = 0;
 let jwtSecret = null;
-let loadFromDatabase = true;
 let monitorList = {};
 
 (async () => {

@@ -15,7 +15,7 @@
                     <label for="floatingPassword">Password</label>
                 </div>
 
-                <div class="form-check mb-3 mt-3">
+                <div class="form-check mb-3 mt-3" >
                     <label>
                         <input type="checkbox" value="remember-me" class="form-check-input" id="remember" v-model="remember">
 

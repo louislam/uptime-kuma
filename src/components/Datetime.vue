@@ -18,7 +18,8 @@ export default {
 
     computed: {
         displayText() {
-            return this.value
+            let format = "YYYY-MM-DD HH:mm:ss";
+            return dayjs.utc(this.value).tz(this.$root.timezone).format(format)
         },
     }
 }

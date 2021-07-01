@@ -80,10 +80,12 @@ class Monitor extends BeanModel {
 
                 } else if (this.type === "port") {
                     bean.ping = await tcping(this.hostname, this.port);
+                    bean.msg = ""
                     bean.status = 1;
 
                 } else if (this.type === "ping") {
                     bean.ping = await ping(this.hostname);
+                    bean.msg = ""
                     bean.status = 1;
                 }
 
@@ -166,11 +168,8 @@ class Monitor extends BeanModel {
             if (value <= sec) {
                 downtime += value;
             } else {
-                console.log("Now: " + dayjs.utc());
-                console.log("Time: " + dayjs(time))
-
                 let trim = dayjs.utc().diff(dayjs(time), 'second');
-                console.log("trim: " + trim);
+
                 value = sec - trim;
 
                 if (value < 0) {

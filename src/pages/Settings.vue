@@ -6,11 +6,11 @@
 
             <div class="col-md-6">
                 <h2>General</h2>
-                <form class="mb-3">
+                <form class="mb-3" @submit.prevent="saveGeneral">
                     <div class="mb-3">
                         <label for="timezone" class="form-label">Timezone</label>
-                        <select class="form-select" aria-label="Default select example" id="timezone">
-                            <option name="auto">Auto: {{ guessTimezone }}</option>
+                        <select class="form-select" id="timezone" v-model="$root.userTimezone">
+                            <option value="auto">Auto: {{ guessTimezone }}</option>
                             <option v-for="timezone in timezoneList" :value="timezone.value">{{ timezone.name }}</option>
                         </select>
                     </div>
@@ -68,7 +68,9 @@ import utc  from 'dayjs/plugin/utc'
 import timezone  from 'dayjs/plugin/timezone'
 dayjs.extend(utc)
 dayjs.extend(timezone)
-import {timezoneList} from "../../server/util";
+import {timezoneList} from "../util-frontend";
+import { useToast } from 'vue-toastification'
+const toast = useToast()
 
 export default {
     components: {
@@ -78,6 +80,7 @@ export default {
         return {
             timezoneList: timezoneList(),
             guessTimezone: dayjs.tz.guess(),
+
             invalidPassword: false,
             password: {
                 currentPassword: "",
@@ -86,7 +89,18 @@ export default {
             }
         }
     },
+
+    mounted() {
+
+    },
+
     methods: {
+
+        saveGeneral() {
+            localStorage.timezone = this.$root.userTimezone;
+            toast.success("Saved.")
+        },
+
         savePassword() {
             if (this.password.newPassword !== this.password.repeatNewPassword) {
                 this.invalidPassword = true;
