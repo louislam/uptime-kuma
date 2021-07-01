@@ -3,7 +3,6 @@ import { useToast } from 'vue-toastification'
 import dayjs from "dayjs";
 const toast = useToast()
 
-let storage = localStorage;
 let socket;
 
 export default {
@@ -16,6 +15,7 @@ export default {
                 connected: false,
                 connectCount: 0,
             },
+            remember: (localStorage.remember !== "0"),
             userTimezone: localStorage.timezone || "auto",
             allowLoginDialog: false,        // Allowed to show login dialog, but "loggedIn" have to be true too. This exists because prevent the login dialog show 0.1s in first before the socket server auth-ed.
             loggedIn: false,
@@ -107,8 +107,8 @@ export default {
                 this.clearData()
             }
 
-            if (storage.token) {
-                this.loginByToken(storage.token)
+            if (this.storage().token) {
+                this.loginByToken(this.storage().token)
             } else {
                 this.allowLoginDialog = true;
             }
@@ -119,6 +119,10 @@ export default {
     },
 
     methods: {
+
+        storage() {
+            return (this.remember) ? localStorage : sessionStorage;
+        },
 
         getSocket() {
           return socket;
@@ -139,7 +143,7 @@ export default {
             }, (res) => {
 
                 if (res.ok) {
-                    storage.token = res.token;
+                    this.storage().token = res.token;
                     this.socket.token = res.token;
                     this.loggedIn = true;
 
@@ -164,7 +168,7 @@ export default {
         },
 
         logout() {
-            storage.removeItem("token");
+            this.storage().removeItem("token");
             this.socket.token = null;
             this.loggedIn = false;
 
@@ -240,6 +244,14 @@ export default {
 
             return result;
         }
+    },
+
+    watch: {
+
+        remember() {
+            localStorage.remember = (this.remember) ? "1" : "0"
+        }
+
     }
 
 }

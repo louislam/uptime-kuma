@@ -17,7 +17,7 @@
 
                 <div class="form-check mb-3 mt-3" >
                     <label>
-                        <input type="checkbox" value="remember-me" class="form-check-input" id="remember" v-model="remember">
+                        <input type="checkbox" value="remember-me" class="form-check-input" id="remember" v-model="$root.remember">
 
                         <label class="form-check-label" for="remember">
                             Remember me
@@ -41,7 +41,7 @@ export default {
             processing: false,
             username: "",
             password: "",
-            remember: true,
+
             res: null,
         }
     },
