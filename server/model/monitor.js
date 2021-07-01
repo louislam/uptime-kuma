@@ -28,6 +28,7 @@ class Monitor extends BeanModel {
             active: this.active,
             type: this.type,
             interval: this.interval,
+            keyword: this.keyword,
         };
     }
 
@@ -57,12 +58,25 @@ class Monitor extends BeanModel {
             }
 
             try {
-                if (this.type === "http") {
+                if (this.type === "http" || this.type === "keyword") {
                     let startTime = dayjs().valueOf();
                     let res = await axios.get(this.url)
                     bean.msg = `${res.status} - ${res.statusText}`
                     bean.ping = dayjs().valueOf() - startTime;
-                    bean.status = 1;
+
+                    if (this.type === "http") {
+                        bean.status = 1;
+                    } else {
+
+                        if (res.data.includes(this.keyword)) {
+                            bean.msg += ", keyword is found"
+                            bean.status = 1;
+                        } else {
+                            throw new Error(bean.msg + ", but keyword is not found")
+                        }
+
+                    }
+
 
                 } else if (this.type === "port") {
                     bean.ping = await tcping(this.hostname, this.port);

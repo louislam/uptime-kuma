@@ -22,10 +22,15 @@
                         <input type="text" class="form-control" id="name" v-model="monitor.name" required>
                     </div>
 
-                    <div class="mb-3" v-if="monitor.type === 'http' ">
+                    <div class="mb-3" v-if="monitor.type === 'http' || monitor.type === 'keyword' ">
                         <label for="url" class="form-label">URL</label>
                         <input type="url" class="form-control" id="url" v-model="monitor.url" pattern="https?://.+" required>
                     </div>
+
+                <div class="mb-3" v-if="monitor.type === 'keyword' ">
+                    <label for="keyword" class="form-label">Keyword <span style="color: #AAA">(search keyword in plain html response)</span></label>
+                    <input type="text" class="form-control" id="keyword" v-model="monitor.keyword" required>
+                </div>
 
                     <div class="mb-3" v-if="monitor.type === 'port' || monitor.type === 'ping' ">
                         <label for="hostname" class="form-label">Hostname</label>

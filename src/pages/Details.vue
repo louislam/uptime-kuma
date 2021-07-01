@@ -1,9 +1,13 @@
 <template>
     <h1> {{ monitor.name }}</h1>
     <p class="url">
-        <a :href="monitor.url" target="_blank" v-if="monitor.type === 'http'">{{ monitor.url }}</a>
+        <a :href="monitor.url" target="_blank" v-if="monitor.type === 'http' || monitor.type === 'keyword' ">{{ monitor.url }}</a>
         <span v-if="monitor.type === 'port'">TCP Ping {{ monitor.hostname }}:{{ monitor.port }}</span>
         <span v-if="monitor.type === 'ping'">Ping: {{ monitor.hostname }}</span>
+        <span v-if="monitor.type === 'keyword'">
+            <br />
+            <span>Keyword:</span> <span style="color: black">{{ monitor.keyword }}</span>
+        </span>
     </p>
 
     <div class="functions">
