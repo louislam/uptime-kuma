@@ -158,31 +158,54 @@ class Monitor extends BeanModel {
         ]);
 
         let downtime = 0;
+        let uptime = 0;
 
-        for (let row of downtimeList) {
-            let value = parseInt(row.duration)
-            let time = row.time
+        if (downtimeList.length === 0) {
+            for (let row of downtimeList) {
+                let value = parseInt(row.duration)
+                let time = row.time
 
-            // Handle if heartbeat duration longer than the target duration
-            // e.g.   Heartbeat duration = 28hrs, but target duration = 24hrs
-            if (value <= sec) {
-                downtime += value;
-            } else {
-                let trim = dayjs.utc().diff(dayjs(time), 'second');
+                // Handle if heartbeat duration longer than the target duration
+                // e.g.   Heartbeat duration = 28hrs, but target duration = 24hrs
+                if (value <= sec) {
+                    downtime += value;
+                } else {
+                    let trim = dayjs.utc().diff(dayjs(time), 'second');
 
-                value = sec - trim;
+                    value = sec - trim;
 
-                if (value < 0) {
-                    value = 0;
+                    if (value < 0) {
+                        value = 0;
+                    }
+                    downtime += value;
                 }
-                downtime += value;
             }
-        }
 
-        let uptime = (sec - downtime) / sec;
+            uptime = (sec - downtime) / sec;
 
-        if (uptime < 0) {
-            uptime = 0;
+            if (uptime < 0) {
+                uptime = 0;
+            }
+        } else {
+            // This case for someone who are not running UptimeKuma 24x7.
+            // If there is no heartbeat in this time range, use last heartbeat as reference
+            // If is down, uptime = 0
+            // If is up, uptime = 1
+
+            let lastHeartbeat = await R.findOne("heartbeat", " monitor_id = ? ORDER BY time DESC", [
+                monitorID
+            ]);
+
+            if (lastHeartbeat) {
+                if (lastHeartbeat.status === 1) {
+                    uptime = 1;
+                } else {
+                    uptime = 0;
+                }
+            } else {
+                // No heartbeat is found, assume 100%
+                uptime = 1;
+            }
         }
 
         io.to(userID).emit("uptime", monitorID, duration, uptime);
