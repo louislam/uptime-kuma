@@ -9,6 +9,7 @@ const {R} = require("redbean-node");
 const passwordHash = require('password-hash');
 const jwt = require('jsonwebtoken');
 const Monitor = require("./model/monitor");
+const {getSettings} = require("./util-server");
 
 let totalClient = 0;
 let jwtSecret = null;
@@ -23,7 +24,7 @@ let monitorList = {};
 
     await initDatabase();
 
-    app.use('/', express.static("public"));
+    app.use('/', express.static("dist"));
 
     io.on('connection', async (socket) => {
         console.log('a user connected');
@@ -298,6 +299,25 @@ let monitorList = {};
                 });
             }
         });
+
+        socket.on("getSettings", async (type, callback) => {
+            try {
+                checkLogin(socket)
+
+
+                callback({
+                    ok: true,
+                    data: await getSettings(type),
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message
+                });
+            }
+        });
+
     });
 
     server.listen(3001, () => {
