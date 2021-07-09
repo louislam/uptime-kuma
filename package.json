@@ -3,9 +3,10 @@
     "version": "1.0.0",
     "scripts": {
         "dev": "vite --host",
-        "dev-server": "node server/server.js",
-        "build": "vite build",
-        "serve": "vite preview --host"
+        "start-server": "node server/server.js",
+        "update": "",
+        "build": "npm install && vite build",
+        "vite-preview-dist": "vite preview --host"
     },
     "dependencies": {
         "@popperjs/core": "^2.9.2",
@@ -25,8 +26,10 @@
         "vue-toastification": "^2.0.0-rc.1"
     },
     "devDependencies": {
+        "@vitejs/plugin-legacy": "^1.4.3",
         "@vitejs/plugin-vue": "^1.2.3",
         "@vue/compiler-sfc": "^3.0.5",
+        "core-js": "^3.15.2",
         "sass": "^1.35.1",
         "vite": "^2.3.7"
     }

@@ -55,7 +55,13 @@
 
             <div class="col-md-6">
                 <h2>Notifications</h2>
-                <p>Not available, please setup.</p>
+                <p v-if="$root.notificationList.length === 0">Not available, please setup.</p>
+
+                <div class="form-check form-switch mb-3" v-for="notification in $root.notificationList">
+                    <input class="form-check-input" type="checkbox" :id=" 'notification' + notification.id">
+                    <label class="form-check-label" :for=" 'notification' + notification.id">{{ notification.name }} <a href="#" @click="$refs.notificationDialog.show(notification.id)">Edit</a></label>
+                </div>
+
                 <button class="btn btn-primary me-2" @click="$refs.notificationDialog.show()" type="button">Setup Notification</button>
             </div>
         </div>

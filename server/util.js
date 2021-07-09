@@ -10,6 +10,10 @@ export function sleep(ms) {
 }
 
 export function ucfirst(str) {
+    if (! str) {
+        return str;
+    }
+
     const firstLetter = str.substr(0, 1);
     return firstLetter.toUpperCase() + str.substr(1);
 }

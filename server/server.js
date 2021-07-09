@@ -10,6 +10,7 @@ const passwordHash = require('password-hash');
 const jwt = require('jsonwebtoken');
 const Monitor = require("./model/monitor");
 const {getSettings} = require("./util-server");
+const {Notification} = require("./notification")
 
 let totalClient = 0;
 let jwtSecret = null;
@@ -25,6 +26,10 @@ let monitorList = {};
     await initDatabase();
 
     app.use('/', express.static("dist"));
+
+    app.get('*', function(request, response, next) {
+        response.sendFile(process.cwd() + '/dist/index.html');
+    });
 
     io.on('connection', async (socket) => {
         console.log('a user connected');
@@ -318,6 +323,65 @@ let monitorList = {};
             }
         });
 
+        // Add or Edit
+        socket.on("addNotification", async (notification, notificationID, callback) => {
+            try {
+                checkLogin(socket)
+
+                await Notification.save(notification, notificationID, socket.userID)
+                await sendNotificationList(socket)
+
+                callback({
+                    ok: true,
+                    msg: "Saved",
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message
+                });
+            }
+        });
+
+        socket.on("deleteNotification", async (notificationID, callback) => {
+            try {
+                checkLogin(socket)
+
+                await Notification.delete(notificationID, socket.userID)
+                await sendNotificationList(socket)
+
+                callback({
+                    ok: true,
+                    msg: "Deleted",
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message
+                });
+            }
+        });
+
+        socket.on("testNotification", async (notification, callback) => {
+            try {
+                checkLogin(socket)
+
+                await Notification.send(notification, notification.name + " Testing")
+
+                callback({
+                    ok: true,
+                    msg: "Sent Successfully"
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message
+                });
+            }
+        });
     });
 
     server.listen(3001, () => {
@@ -344,6 +408,20 @@ async function sendMonitorList(socket) {
     return list;
 }
 
+async function sendNotificationList(socket) {
+    let result = [];
+    let list = await R.find("notification", " user_id = ? ", [
+        socket.userID
+    ]);
+
+    for (let bean of list) {
+        result.push(bean.export())
+    }
+
+    io.to(socket.userID).emit("notificationList", result)
+    return list;
+}
+
 async function afterLogin(socket, user) {
     socket.userID = user.id;
     socket.join(user.id)
@@ -355,6 +433,8 @@ async function afterLogin(socket, user) {
         await sendImportantHeartbeatList(socket, monitorID);
         await Monitor.sendStats(io, monitorID, user.id)
     }
+
+    await sendNotificationList(socket)
 }
 
 async function getMonitorJSONList(userID) {

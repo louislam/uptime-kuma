@@ -1,5 +1,6 @@
 const tcpp = require('tcp-ping');
 const Ping = require("./ping-lite");
+const {R} = require("redbean-node");
 
 exports.tcping = function (hostname, port) {
     return new Promise((resolve, reject) => {
@@ -36,4 +37,26 @@ exports.ping = function (hostname) {
             }
         });
     });
+}
+
+exports.setting = async function (key) {
+    return await R.getCell("SELECT `value` FROM setting WHERE `key` = ? ", [
+        key
+    ])
+}
+
+exports.getSettings = async function (type) {
+    let list = await R.getAll("SELECT * FROM setting WHERE `type` = ? ", [
+        type
+    ])
+
+    let result = {};
+
+    for (let row of list) {
+        result[row.key] = row.value;
+    }
+
+    console.log(result)
+
+    return result;
 }

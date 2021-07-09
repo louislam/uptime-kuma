@@ -23,7 +23,8 @@ export default {
             heartbeatList: { },
             importantHeartbeatList: { },
             avgPingList: { },
-            uptimeList: { }
+            uptimeList: { },
+            notificationList: [],
         }
     },
 
@@ -34,6 +35,10 @@ export default {
 
         socket.on('monitorList', (data) => {
             this.monitorList = data;
+        });
+
+        socket.on('notificationList', (data) => {
+            this.notificationList = data;
         });
 
         socket.on('heartbeat', (data) => {
