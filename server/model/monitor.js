@@ -109,7 +109,7 @@ class Monitor extends BeanModel {
             if (! previousBeat || previousBeat.status !== bean.status) {
                 bean.important = true;
 
-                let notificationList = await R.getAll(`SELECT notification.* FROM notification, monitor_notification WHERE monitor_id = ? `, [
+                let notificationList = await R.getAll(`SELECT notification.* FROM notification, monitor_notification WHERE monitor_id = ? AND monitor_notification.notification_id = notification.id `, [
                     this.id
                 ])
 
@@ -125,7 +125,7 @@ class Monitor extends BeanModel {
                 let msg = `[${this.name}] [${text}] ${bean.msg}`;
 
                 for(let notification of notificationList) {
-                    promiseList.push(Notification.send(JSON.parse(notification.config), msg));
+                    promiseList.push(Notification.send(JSON.parse(notification.config), msg, await this.toJSON(), bean.toJSON()));
                 }
 
                 await Promise.all(promiseList);

@@ -12,6 +12,8 @@ const Monitor = require("./model/monitor");
 const {getSettings} = require("./util-server");
 const {Notification} = require("./notification")
 
+app.use(express.json())
+
 let totalClient = 0;
 let jwtSecret = null;
 let monitorList = {};
@@ -26,6 +28,13 @@ let monitorList = {};
     await initDatabase();
 
     app.use('/', express.static("dist"));
+
+    app.post('/test-webhook', function(request, response, next) {
+        console.log("Test Webhook (application/json only)")
+        console.log("Content-Type: " + request.header("Content-Type"))
+        console.log(request.body)
+        response.end();
+    });
 
     app.get('*', function(request, response, next) {
         response.sendFile(process.cwd() + '/dist/index.html');

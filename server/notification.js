@@ -1,16 +1,56 @@
 const axios = require("axios");
 const {R} = require("redbean-node");
+const FormData = require('form-data');
 
 class Notification {
-    static async send(notification, msg) {
+    static async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         if (notification.type === "telegram") {
-            let res = await axios.get(`https://api.telegram.org/bot${notification.telegramBotToken}/sendMessage`, {
-                params: {
-                    chat_id: notification.telegramChatID,
-                    text: msg,
+            try {
+                await axios.get(`https://api.telegram.org/bot${notification.telegramBotToken}/sendMessage`, {
+                    params: {
+                        chat_id: notification.telegramChatID,
+                        text: msg,
+                    }
+                })
+                return true;
+            } catch (error) {
+                console.log(error)
+                return false;
+            }
+
+        } else if (notification.type === "webhook") {
+            try {
+
+                let data = {
+                    heartbeat: heartbeatJSON,
+                    monitor: monitorJSON,
+                    msg,
+                };
+                let finalData;
+                let config = {};
+
+                if (notification.webhookContentType === "form-data") {
+                    finalData = new FormData();
+                    finalData.append('data', JSON.stringify(data));
+
+                    config = {
+                        headers: finalData.getHeaders()
+                    }
+
+                } else {
+                    finalData = data;
                 }
-            })
-            return true;
+
+                let res = await axios.post(notification.webhookURL, finalData, config)
+
+                console.log(res.data)
+
+                return true;
+            } catch (error) {
+                console.log(error)
+                return false;
+            }
+
         } else {
             throw new Error("Notification type is not supported")
         }

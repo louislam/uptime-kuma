@@ -10,7 +10,6 @@
                     </div>
                     <div class="modal-body">
 
-
                             <div class="mb-3">
                                 <label for="type" class="form-label">Notification Type</label>
                                 <select class="form-select"  id="type" v-model="notification.type">
@@ -26,39 +25,62 @@
                                 <input type="text" class="form-control" id="name" required v-model="notification.name">
                             </div>
 
-                            <div class="mb-3" v-if="notification.type === 'telegram'">
-                                <label for="telegram-bot-token" class="form-label">Bot Token</label>
-                                <input type="text" class="form-control" id="telegram-bot-token" required v-model="notification.telegramBotToken">
-                                <div class="form-text">You can get a token from <a href="https://t.me/BotFather" target="_blank">https://t.me/BotFather</a>.</div>
+                            <template v-if="notification.type === 'telegram'">
+                                <div class="mb-3">
+                                    <label for="telegram-bot-token" class="form-label">Bot Token</label>
+                                    <input type="text" class="form-control" id="telegram-bot-token" required v-model="notification.telegramBotToken">
+                                    <div class="form-text">You can get a token from <a href="https://t.me/BotFather" target="_blank">https://t.me/BotFather</a>.</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="telegram-chat-id" class="form-label">Chat ID</label>
+
+                                    <div class="input-group mb-3">
+                                        <input type="text" class="form-control" id="telegram-chat-id" required v-model="notification.telegramChatID">
+                                        <button class="btn btn-outline-secondary" type="button" @click="autoGetTelegramChatID" v-if="notification.telegramBotToken">Auto Get</button>
+                                    </div>
+
+                                    <div class="form-text">
+                                        Support Direct Chat / Group / Channel's Chat ID
+
+                                        <p style="margin-top: 8px;">
+                                            You can get your chat id by sending message to the bot and go to this url to view the chat_id:
+                                        </p>
+
+                                        <p style="margin-top: 8px;">
+
+                                            <template v-if="notification.telegramBotToken">
+                                                <a :href="telegramGetUpdatesURL" target="_blank">{{ telegramGetUpdatesURL }}</a>
+                                            </template>
+
+                                            <template v-else>
+                                                {{ telegramGetUpdatesURL }}
+                                            </template>
+                                        </p>
+                                    </div>
+                                </div>
+                            </template>
+
+                        <template v-if="notification.type === 'webhook'">
+                            <div class="mb-3">
+                                <label for="webhook-url" class="form-label">Post URL</label>
+                                <input type="url" pattern="https?://.+"  class="form-control" id="webhook-url" required v-model="notification.webhookURL">
+
                             </div>
 
-                            <div class="mb-3" v-if="notification.type === 'telegram'">
-                                <label for="telegram-chat-id" class="form-label">Chat ID</label>
-
-                                <div class="input-group mb-3">
-                                    <input type="text" class="form-control" id="telegram-chat-id" required v-model="notification.telegramChatID">
-                                    <button class="btn btn-outline-secondary" type="button" @click="autoGetTelegramChatID" v-if="notification.telegramBotToken">Auto Get</button>
-                                </div>
+                            <div class="mb-3">
+                                <label for="webhook-content-type" class="form-label">Content Type</label>
+                                <select class="form-select"  id="webhook-content-type" v-model="notification.webhookContentType" required>
+                                    <option value="json">application/json</option>
+                                    <option value="form-data">multipart/form-data</option>
+                                </select>
 
                                 <div class="form-text">
-                                    Support Direct Chat / Group / Channel's Chat ID
-
-                                    <p style="margin-top: 8px;">
-                                    You can get your chat id by sending message to the bot and go to this url to view the chat_id:
-                                    </p>
-
-                                    <p style="margin-top: 8px;">
-
-                                        <template v-if="notification.telegramBotToken">
-                                            <a :href="telegramGetUpdatesURL" target="_blank">{{ telegramGetUpdatesURL }}</a>
-                                        </template>
-
-                                        <template v-else>
-                                            {{ telegramGetUpdatesURL }}
-                                        </template>
-                                    </p>
+                                    <p>"application/json" is good for any modern http servers such as express.js</p>
+                                    <p>"multipart/form-data" is good for PHP, you just need to parse the json by <strong>json_decode($_POST['data'])</strong></p>
                                 </div>
                             </div>
+                        </template>
 
 
                     </div>

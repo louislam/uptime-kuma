@@ -14,6 +14,7 @@
         "bootstrap": "^5.0.0",
         "dayjs": "^1.10.4",
         "express": "^4.17.1",
+        "form-data": "^4.0.0",
         "jsonwebtoken": "^8.5.1",
         "password-hash": "^1.2.2",
         "redbean-node": "0.0.20",
