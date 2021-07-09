@@ -15,7 +15,7 @@
                                 <select class="form-select"  id="type" v-model="notification.type">
                                     <option value="telegram">Telegram</option>
                                     <option value="webhook">Webhook</option>
-                                    <option value="email">Email</option>
+                                    <option value="smtp">Email (SMTP)</option>
                                     <option value="discord">Discord</option>
                                 </select>
                             </div>
@@ -82,6 +82,46 @@
                             </div>
                         </template>
 
+                        <template v-if="notification.type === 'smtp'">
+                            <div class="mb-3">
+                                <label for="hostname" class="form-label">Hostname</label>
+                                <input type="text" class="form-control" id="hostname" required v-model="notification.smtpHost">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="port" class="form-label">Port</label>
+                                <input type="number" class="form-control" id="port" v-model="notification.smtpPort" required min="0" max="65535" step="1">
+                            </div>
+
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" value="" id="secure"  v-model="notification.smtpSecure">
+                                <label class="form-check-label" for="secure">
+                                    Secure
+                                </label>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="username" required v-model="notification.smtpUsername" autocomplete="false">
+                            </div>
+
+
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="password" required v-model="notification.smtpPassword" autocomplete="false">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="from-email" class="form-label">From Email</label>
+                                <input type="email" class="form-control" id="from-email" required v-model="notification.smtpFrom" autocomplete="false">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="to-email" class="form-label">To Email</label>
+                                <input type="email" class="form-control" id="to-email" required v-model="notification.smtpTo" autocomplete="false">
+                            </div>
+
+                        </template>
 
                     </div>
                     <div class="modal-footer">

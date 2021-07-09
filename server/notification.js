@@ -1,6 +1,7 @@
 const axios = require("axios");
 const {R} = require("redbean-node");
 const FormData = require('form-data');
+const nodemailer = require("nodemailer");
 
 class Notification {
     static async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
@@ -42,15 +43,14 @@ class Notification {
                 }
 
                 let res = await axios.post(notification.webhookURL, finalData, config)
-
-                console.log(res.data)
-
                 return true;
             } catch (error) {
                 console.log(error)
                 return false;
             }
 
+        } else if (notification.type === "smtp") {
+            return await Notification.smtp(notification, msg)
         } else {
             throw new Error("Notification type is not supported")
         }
@@ -90,6 +90,29 @@ class Notification {
         }
 
         await R.trash(bean)
+    }
+
+    static async smtp(notification, msg) {
+
+        let transporter = nodemailer.createTransport({
+            host: notification.smtpHost,
+            port: notification.smtpPort,
+            secure: notification.smtpSecure,
+            auth: {
+                user: notification.smtpUsername,
+                pass: notification.smtpPassword,
+            },
+        });
+
+        // send mail with defined transport object
+        let info = await transporter.sendMail({
+            from: `"Uptime Kuma" <${notification.smtpFrom}>`,
+            to: notification.smtpTo,
+            subject: msg,
+            text: msg,
+        });
+
+        return true;
     }
 }
 
