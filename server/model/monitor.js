@@ -8,7 +8,7 @@ const axios = require("axios");
 const {tcping, ping} = require("../util-server");
 const {R} = require("redbean-node");
 const {BeanModel} = require("redbean-node/dist/bean-model");
-
+const {Notification} = require("../notification")
 
 /**
  * status:
@@ -17,7 +17,18 @@ const {BeanModel} = require("redbean-node/dist/bean-model");
  */
 class Monitor extends BeanModel {
 
-    toJSON() {
+    async toJSON() {
+
+        let notificationIDList = {};
+
+        let list = await R.find("monitor_notification", " monitor_id = ? ", [
+            this.id
+        ])
+
+        for (let bean of list) {
+            notificationIDList[bean.notification_id] = true;
+        }
+
         return {
             id: this.id,
             name: this.name,
@@ -29,6 +40,7 @@ class Monitor extends BeanModel {
             type: this.type,
             interval: this.interval,
             keyword: this.keyword,
+            notificationIDList
         };
     }
 
@@ -96,6 +108,28 @@ class Monitor extends BeanModel {
             // Mark as important if status changed
             if (! previousBeat || previousBeat.status !== bean.status) {
                 bean.important = true;
+
+                let notificationList = await R.getAll(`SELECT notification.* FROM notification, monitor_notification WHERE monitor_id = ? `, [
+                    this.id
+                ])
+
+                let promiseList = [];
+
+                let text;
+                if (bean.status === 1) {
+                    text = "✅ Up"
+                } else {
+                    text = "🔴 Down"
+                }
+
+                let msg = `[${this.name}] [${text}] ${bean.msg}`;
+
+                for(let notification of notificationList) {
+                    promiseList.push(Notification.send(JSON.parse(notification.config), msg));
+                }
+
+                await Promise.all(promiseList);
+
             } else {
                 bean.important = false;
             }

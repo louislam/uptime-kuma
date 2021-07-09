@@ -58,8 +58,12 @@
                 <p v-if="$root.notificationList.length === 0">Not available, please setup.</p>
 
                 <div class="form-check form-switch mb-3" v-for="notification in $root.notificationList">
-                    <input class="form-check-input" type="checkbox" :id=" 'notification' + notification.id">
-                    <label class="form-check-label" :for=" 'notification' + notification.id">{{ notification.name }} <a href="#" @click="$refs.notificationDialog.show(notification.id)">Edit</a></label>
+                    <input class="form-check-input" type="checkbox" :id=" 'notification' + notification.id" v-model="monitor.notificationIDList[notification.id]">
+
+                    <label class="form-check-label" :for=" 'notification' + notification.id">
+                        {{ notification.name }}
+                        <a href="#" @click="$refs.notificationDialog.show(notification.id)">Edit</a>
+                    </label>
                 </div>
 
                 <button class="btn btn-primary me-2" @click="$refs.notificationDialog.show()" type="button">Setup Notification</button>
@@ -86,7 +90,9 @@ export default {
     data() {
         return {
             processing: false,
-            monitor: { }
+            monitor: {
+                notificationIDList: {},
+            },
         }
     },
     computed: {
@@ -109,6 +115,7 @@ export default {
                     name: "",
                     url: "https://",
                     interval: 60,
+                    notificationIDList: {},
                 }
             } else if (this.isEdit) {
                 this.$root.getSocket().emit("getMonitor", this.$route.params.id, (res) => {

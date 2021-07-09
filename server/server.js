@@ -111,11 +111,16 @@ let monitorList = {};
         socket.on("add", async (monitor, callback) => {
             try {
                 checkLogin(socket)
-
                 let bean = R.dispense("monitor")
+
+                let notificationIDList = monitor.notificationIDList;
+                delete monitor.notificationIDList;
+
                 bean.import(monitor)
                 bean.user_id = socket.userID
                 await R.store(bean)
+
+                await updateMonitorNotification(bean.id, notificationIDList)
 
                 await startMonitor(socket.userID, bean.id);
                 await sendMonitorList(socket);
@@ -154,6 +159,8 @@ let monitorList = {};
 
                 await R.store(bean)
 
+                await updateMonitorNotification(bean.id, monitor.notificationIDList)
+
                 if (bean.active) {
                     await restartMonitor(socket.userID, bean.id)
                 }
@@ -188,7 +195,7 @@ let monitorList = {};
 
                 callback({
                     ok: true,
-                    monitor: bean.toJSON(),
+                    monitor: await bean.toJSON(),
                 });
 
             } catch (e) {
@@ -391,6 +398,21 @@ let monitorList = {};
 
 })();
 
+async function updateMonitorNotification(monitorID, notificationIDList) {
+    R.exec("DELETE FROM monitor_notification WHERE monitor_id = ? ", [
+        monitorID
+    ])
+
+    for (let notificationID in notificationIDList) {
+        if (notificationIDList[notificationID]) {
+            let relation = R.dispense("monitor_notification");
+            relation.monitor_id = monitorID;
+            relation.notification_id = notificationID;
+            await R.store(relation)
+        }
+    }
+}
+
 async function checkOwner(userID, monitorID) {
     let row = await R.getRow("SELECT id FROM monitor WHERE id = ? AND user_id = ? ", [
         monitorID,
@@ -445,7 +467,7 @@ async function getMonitorJSONList(userID) {
     ])
 
     for (let monitor of monitorList) {
-        result[monitor.id] = monitor.toJSON();
+        result[monitor.id] = await monitor.toJSON();
     }
 
     return result;

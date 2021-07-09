@@ -52,20 +52,30 @@
 
             <div class="col-md-6">
                 <h2>Notifications</h2>
-                <p>Empty</p>
-                <button class="btn btn-primary" type="submit">Add Notification</button>
+                <p v-if="$root.notificationList.length === 0">Not available, please setup.</p>
+
+                <ul>
+                    <li  v-for="notification in $root.notificationList">
+                        {{ notification.name }}
+                        <a href="#" @click="$refs.notificationDialog.show(notification.id)">Edit</a>
+                    </li>
+                </ul>
+
+                <button class="btn btn-primary me-2" @click="$refs.notificationDialog.show()" type="button">Setup Notification</button>
             </div>
+
 
         </div>
     </div>
 
-
+    <NotificationDialog ref="notificationDialog" />
 </template>
 
 <script>
 import dayjs from "dayjs";
 import utc  from 'dayjs/plugin/utc'
 import timezone  from 'dayjs/plugin/timezone'
+import NotificationDialog from "../components/NotificationDialog.vue";
 dayjs.extend(utc)
 dayjs.extend(timezone)
 import {timezoneList} from "../util-frontend";
@@ -74,7 +84,7 @@ const toast = useToast()
 
 export default {
     components: {
-
+        NotificationDialog
     },
     data() {
         return {

@@ -41,7 +41,11 @@
                                 </div>
 
                                 <div class="form-text">
+                                    Support Direct Chat / Group / Channel's Chat ID
+
+                                    <p style="margin-top: 8px;">
                                     You can get your chat id by sending message to the bot and go to this url to view the chat_id:
+                                    </p>
 
                                     <p style="margin-top: 8px;">
 
@@ -59,7 +63,7 @@
 
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-danger" @click="deleteNotification" :disabled="processing" v-if="id">Delete</button>
+                        <button type="button" class="btn btn-danger" @click="deleteConfirm" :disabled="processing" v-if="id">Delete</button>
                         <button type="button" class="btn btn-warning" @click="test" :disabled="processing">Test</button>
                         <button type="submit" class="btn btn-primary" :disabled="processing">Save</button>
                     </div>
@@ -68,6 +72,8 @@
         </div>
 
     </form>
+
+    <Confirm ref="confirmDelete" @yes="deleteNotification" btn-style="btn-danger">Are you sure want to delete this notification for all monitors?</Confirm>
 </template>
 
 <script>
@@ -75,9 +81,11 @@ import { Modal } from 'bootstrap'
 import { ucfirst } from "../../server/util";
 import axios from "axios";
 import { useToast } from 'vue-toastification'
+import Confirm from "./Confirm.vue";
 const toast = useToast()
 
 export default {
+    components: {Confirm},
     props: {
 
     },
@@ -103,6 +111,11 @@ export default {
 
     },
     methods: {
+
+        deleteConfirm() {
+            this.modal.hide();
+            this.$refs.confirmDelete.show()
+        },
 
         show(notificationID) {
             if (notificationID) {
@@ -166,7 +179,15 @@ export default {
 
                 if (res.data.result.length >= 1) {
                     let update = res.data.result[res.data.result.length - 1]
-                    this.notification.telegramChatID = update.message.chat.id;
+
+                    if (update.channel_post) {
+                        this.notification.telegramChatID = update.channel_post.chat.id;
+                    } else if (update.message) {
+                        this.notification.telegramChatID = update.message.chat.id;
+                    } else {
+                        throw new Error("Chat ID is not found, please send a message to this bot first")
+                    }
+
                 } else {
                     throw new Error("Chat ID is not found, please send a message to this bot first")
                 }
