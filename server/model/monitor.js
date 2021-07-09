@@ -109,26 +109,29 @@ class Monitor extends BeanModel {
             if (! previousBeat || previousBeat.status !== bean.status) {
                 bean.important = true;
 
-                let notificationList = await R.getAll(`SELECT notification.* FROM notification, monitor_notification WHERE monitor_id = ? AND monitor_notification.notification_id = notification.id `, [
-                    this.id
-                ])
+                // Do not send if first beat is UP
+                if (previousBeat || bean.status !== 1) {
+                    let notificationList = await R.getAll(`SELECT notification.* FROM notification, monitor_notification WHERE monitor_id = ? AND monitor_notification.notification_id = notification.id `, [
+                        this.id
+                    ])
 
-                let promiseList = [];
+                    let promiseList = [];
 
-                let text;
-                if (bean.status === 1) {
-                    text = "✅ Up"
-                } else {
-                    text = "🔴 Down"
+                    let text;
+                    if (bean.status === 1) {
+                        text = "✅ Up"
+                    } else {
+                        text = "🔴 Down"
+                    }
+
+                    let msg = `[${this.name}] [${text}] ${bean.msg}`;
+
+                    for(let notification of notificationList) {
+                        promiseList.push(Notification.send(JSON.parse(notification.config), msg, await this.toJSON(), bean.toJSON()));
+                    }
+
+                    await Promise.all(promiseList);
                 }
-
-                let msg = `[${this.name}] [${text}] ${bean.msg}`;
-
-                for(let notification of notificationList) {
-                    promiseList.push(Notification.send(JSON.parse(notification.config), msg, await this.toJSON(), bean.toJSON()));
-                }
-
-                await Promise.all(promiseList);
 
             } else {
                 bean.important = false;
