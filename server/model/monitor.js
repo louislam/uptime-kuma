@@ -66,7 +66,6 @@ class Monitor extends BeanModel {
                 bean.duration = dayjs(bean.time).diff(dayjs(previousBeat.time), 'second');
             } else {
                 bean.duration = 0;
-                console.log(previousBeat)
             }
 
             try {
@@ -167,7 +166,7 @@ class Monitor extends BeanModel {
         let avgPing = parseInt(await R.getCell(`
             SELECT AVG(ping)
             FROM heartbeat
-            WHERE time > DATE('now', ? || ' hours')
+            WHERE time > DATETIME('now', ? || ' hours')
             AND ping IS NOT NULL
             AND monitor_id = ? `, [
             -duration,
@@ -189,7 +188,7 @@ class Monitor extends BeanModel {
         let downtimeList = await R.getAll(`
             SELECT duration, time, status
             FROM heartbeat
-            WHERE time > DATE('now', ? || ' hours')
+            WHERE time > DATETIME('now', ? || ' hours')
             AND monitor_id = ? `, [
             -duration,
             monitorID

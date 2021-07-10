@@ -124,7 +124,6 @@ class Notification {
         const client = new Discord.Client();
         await client.login(notification.discordToken)
 
-        console.log(notification.discordChannelID)
         const channel = await client.channels.fetch(notification.discordChannelID);
         await channel.send(msg);
 

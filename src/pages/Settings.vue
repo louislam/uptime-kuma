@@ -54,9 +54,9 @@
                 <h2>Notifications</h2>
                 <p v-if="$root.notificationList.length === 0">Not available, please setup.</p>
 
-                <ul>
-                    <li  v-for="notification in $root.notificationList">
-                        {{ notification.name }}
+                <ul class="list-group mb-3" style="border-radius: 1rem;">
+                    <li  class="list-group-item"  v-for="notification in $root.notificationList">
+                        {{ notification.name }}<br />
                         <a href="#" @click="$refs.notificationDialog.show(notification.id)">Edit</a>
                     </li>
                 </ul>
