@@ -2,6 +2,7 @@ const axios = require("axios");
 const {R} = require("redbean-node");
 const FormData = require('form-data');
 const nodemailer = require("nodemailer");
+const Discord = require('discord.js');
 
 class Notification {
     static async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
@@ -51,6 +52,10 @@ class Notification {
 
         } else if (notification.type === "smtp") {
             return await Notification.smtp(notification, msg)
+
+        } else if (notification.type === "discord") {
+            return await Notification.discord(notification, msg)
+
         } else {
             throw new Error("Notification type is not supported")
         }
@@ -111,6 +116,19 @@ class Notification {
             subject: msg,
             text: msg,
         });
+
+        return true;
+    }
+
+    static async discord(notification, msg) {
+        const client = new Discord.Client();
+        await client.login(notification.discordToken)
+
+        console.log(notification.discordChannelID)
+        const channel = await client.channels.fetch(notification.discordChannelID);
+        await channel.send(msg);
+
+        client.destroy()
 
         return true;
     }

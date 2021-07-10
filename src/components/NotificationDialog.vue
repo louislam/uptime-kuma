@@ -93,18 +93,20 @@
                                 <input type="number" class="form-control" id="port" v-model="notification.smtpPort" required min="0" max="65535" step="1">
                             </div>
 
-                            <div class="form-check mb-3">
-                                <input class="form-check-input" type="checkbox" value="" id="secure"  v-model="notification.smtpSecure">
-                                <label class="form-check-label" for="secure">
-                                    Secure
-                                </label>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="" id="secure"  v-model="notification.smtpSecure">
+                                    <label class="form-check-label" for="secure">
+                                        Secure
+                                    </label>
+                                </div>
+                                <div class="form-text">Generally, true for 465, false for other ports.</div>
                             </div>
 
                             <div class="mb-3">
                                 <label for="username" class="form-label">Username</label>
                                 <input type="text" class="form-control" id="username" required v-model="notification.smtpUsername" autocomplete="false">
                             </div>
-
 
                             <div class="mb-3">
                                 <label for="password" class="form-label">Password</label>
@@ -121,6 +123,24 @@
                                 <input type="email" class="form-control" id="to-email" required v-model="notification.smtpTo" autocomplete="false">
                             </div>
 
+                        </template>
+
+                        <template v-if="notification.type === 'discord'">
+                            <div class="mb-3">
+                                <label for="discord-token" class="form-label">Discord Bot Token</label>
+                                <input type="text" class="form-control" id="discord-token" required v-model="notification.discordToken" autocomplete="false">
+                                <div class="form-text">You should create a Discord app and create a bot from <a href="https://discord.com/developers/applications" target="_blank">here</a>.</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="discordChannelID" class="form-label">Channel ID</label>
+                                <input type="text" class="form-control" id="discordChannelID" required v-model="notification.discordChannelID" autocomplete="false">
+                                <div class="form-text">
+                                    You should add the bot to your channel. <br />
+                                    <a href="https://support.discord.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID-" target="_blank">Where can I find the channel id?</a><br />
+                                    <a href="https://discordapi.com/permissions.html#8" target="_blank">How to add a bot to your channel?</a>
+                                </div>
+                            </div>
                         </template>
 
                     </div>
