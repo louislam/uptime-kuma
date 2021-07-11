@@ -71,7 +71,9 @@ class Monitor extends BeanModel {
             try {
                 if (this.type === "http" || this.type === "keyword") {
                     let startTime = dayjs().valueOf();
-                    let res = await axios.get(this.url)
+                    let res = await axios.get(this.url, {
+                        headers: { 'User-Agent':'Kuma Uptime Monitoring' }
+                    })
                     bean.msg = `${res.status} - ${res.statusText}`
                     bean.ping = dayjs().valueOf() - startTime;
 
