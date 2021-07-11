@@ -22,7 +22,7 @@ Browse to http://localhost:3001 after started.
 ```
 git clone git@github.com:louislam/uptime-kuma.git
 cd uptime-kuma
-npm run install
+npm run setup
 
 # 1. Try it
 npm run start-server
