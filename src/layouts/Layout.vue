@@ -9,7 +9,7 @@
     <!-- Desktop header -->
     <header class="d-flex flex-wrap justify-content-center py-3 mb-3 border-bottom" v-if="! $root.isMobile">
         <router-link to="/dashboard" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
-            <object class="bi me-2 ms-4" width="40" data="/icon.svg"></object>
+            <object class="bi me-2 ms-4" width="40" height="40" data="/icon.svg"></object>
             <span class="fs-4 title">Uptime Kuma</span>
         </router-link>
 
@@ -22,7 +22,7 @@
     <!-- Mobile header -->
     <header class="d-flex flex-wrap justify-content-center mt-3 mb-3" v-else>
         <router-link to="/dashboard" class="d-flex align-items-center  text-dark text-decoration-none">
-            <object class="bi" width="40" data="/icon.svg"></object>
+            <object class="bi" width="40" height="40" data="/icon.svg"></object>
             <span class="fs-4 title ms-2">Uptime Kuma</span>
         </router-link>
     </header>

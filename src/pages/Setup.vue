@@ -4,7 +4,7 @@
             <form @submit.prevent="submit">
 
                 <div>
-                    <object width="64" data="/icon.svg"></object>
+                    <object width="64" height="64" data="/icon.svg"></object>
                     <div style="font-size: 28px; font-weight: bold; margin-top: 5px;">Uptime Kuma</div>
                 </div>
 
