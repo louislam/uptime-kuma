@@ -185,7 +185,7 @@ class Monitor extends BeanModel {
     static async sendUptime(duration, io, monitorID, userID) {
         let sec = duration * 3600;
 
-        let downtimeList = await R.getAll(`
+        let heartbeatList = await R.getAll(`
             SELECT duration, time, status
             FROM heartbeat
             WHERE time > DATETIME('now', ? || ' hours')
@@ -198,32 +198,45 @@ class Monitor extends BeanModel {
         let total = 0;
         let uptime;
 
-        for (let row of downtimeList) {
-            let value = parseInt(row.duration)
-            let time = row.time
+        // Special handle for the first heartbeat only
+        if (heartbeatList.length === 1) {
 
-            // Handle if heartbeat duration longer than the target duration
-            // e.g.   Heartbeat duration = 28hrs, but target duration = 24hrs
-            if (value > sec) {
-                let trim = dayjs.utc().diff(dayjs(time), 'second');
-                value = sec - trim;
+            if (heartbeatList[0].status === 1) {
+                uptime = 1;
+            } else {
+                uptime = 0;
+            }
 
-                if (value < 0) {
-                    value = 0;
+        } else {
+            for (let row of heartbeatList) {
+                let value = parseInt(row.duration)
+                let time = row.time
+
+                // Handle if heartbeat duration longer than the target duration
+                // e.g.   Heartbeat duration = 28hrs, but target duration = 24hrs
+                if (value > sec) {
+                    let trim = dayjs.utc().diff(dayjs(time), 'second');
+                    value = sec - trim;
+
+                    if (value < 0) {
+                        value = 0;
+                    }
+                }
+
+                total += value;
+                if (row.status === 0) {
+                    downtime += value;
                 }
             }
 
-            total += value;
-            if (row.status === 0) {
-                downtime += value;
+            uptime = (total - downtime) / total;
+
+            if (uptime < 0) {
+                uptime = 0;
             }
         }
 
-        uptime = (total - downtime) / total;
 
-        if (uptime < 0) {
-            uptime = 0;
-        }
 
         io.to(userID).emit("uptime", monitorID, duration, uptime);
     }
