@@ -22,6 +22,12 @@ It is a self-hosted monitoring tool like "Uptime Robot".
 docker run -d --restart=always -p 3001:3001 louislam/uptime-kuma
 ```
 
+Change Port and Volume
+
+```bash
+docker run -d --restart=always -p <YOUR_PORT>:3001 -v <YOUR_DIR OR VOLUME>:/app/data louislam/uptime-kuma
+```
+
 Browse to http://localhost:3001 after started.
 
 ### Without Docker
