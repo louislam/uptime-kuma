@@ -47,7 +47,7 @@ Browse to http://localhost:3001 after started.
 
 ### One-click Deploy to DigitalOcean
 
-Coming Soon
+[![Deploy to DO](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/louislam/uptime-kuma/tree/master&refcode=e2c7eb658434)
 
 
 # More Screenshots
