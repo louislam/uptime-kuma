@@ -13,7 +13,7 @@
                         No Monitors, please <router-link to="/add">add one</router-link>.
                     </div>
 
-                    <router-link :to="monitorURL(item.id)" class="item" :class="{ 'disabled': ! item.active }" v-for="item in sortedMonitorList" @click="$root.cancelActiveList">
+                    <router-link v-bind:key="item.id" :to="monitorURL(item.id)" class="item" :class="{ 'disabled': ! item.active }" v-for="item in sortedMonitorList" @click="$root.cancelActiveList">
 
                         <div class="row">
                         	<div class="col-6 col-md-8 small-padding">
