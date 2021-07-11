@@ -1,0 +1,9 @@
+spec:
+    name: uptime-kuma
+    services:
+    - name: server
+      image:
+          registry_type: DOCKER_HUB
+          registry: louislam
+          repository: uptime-kuma
+
