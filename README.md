@@ -29,7 +29,7 @@ Browse to http://localhost:3001 after started.
 Required Tools: Node.js >= 14, git and pm2. 
 
 ```bash
-git clone git@github.com:louislam/uptime-kuma.git
+git clone https://github.com/louislam/uptime-kuma.git
 cd uptime-kuma
 npm run install
 
