@@ -18,6 +18,12 @@ a,
     color: #0a0a0a;
 }
 
+.form-control,
+.form-select {
+    color: var(--main-font-color);
+    background-color: var(--background-4);
+}
+
 #app {
     font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
         segoe ui, Roboto, helvetica neue, Arial, noto sans, sans-serif,
