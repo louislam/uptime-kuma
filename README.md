@@ -24,6 +24,12 @@ docker run -d --restart=always -p 3001:3001 louislam/uptime-kuma
 
 Browse to http://localhost:3001 after started.
 
+Change Port and Volume
+
+```bash
+docker run -d --restart=always -p <YOUR_PORT>:3001 -v <YOUR_DIR OR VOLUME>:/app/data louislam/uptime-kuma
+```
+
 ### Without Docker
 
 Required Tools: Node.js >= 14, git and pm2. 
