@@ -6,4 +6,5 @@ spec:
           registry_type: DOCKER_HUB
           registry: louislam
           repository: uptime-kuma
+      http_port: 3001
 
