@@ -11,11 +11,33 @@ It is a self-hosted monitoring tool like "Uptime Robot".
 
 # How to Use
 
-npm
+### Docker
+```
+docker run -d --restart=always -p 3001:3001 louislam/uptime-kuma
+```
 
-Docker
+Browse to http://localhost:3001 after started.
 
-One-click Deploy to DigitalOcean
+### Node.js >= 14 + GIT
+```
+git clone git@github.com:louislam/uptime-kuma.git
+cd uptime-kuma
+npm run install
+
+# 1. Try it
+npm run start-server
+
+# 2. Run in background using PM2
+# Install PM2 if you don't have: npm install pm2 -g
+pm2 start npm -- run start-server
+
+```
+
+Browse to http://localhost:3001 after started.
+
+### One-click Deploy to DigitalOcean
+
+Coming Soon
 
 # Motivation
 
