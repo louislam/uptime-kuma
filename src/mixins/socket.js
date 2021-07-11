@@ -25,10 +25,14 @@ export default {
             avgPingList: { },
             uptimeList: { },
             notificationList: [],
+            windowWidth: window.innerWidth,
+            showListMobile: false,
         }
     },
 
     created() {
+        window.addEventListener('resize', this.onResize);
+
         let wsHost;
         if (localStorage.dev === "dev") {
             wsHost = ":3001"
@@ -136,6 +140,14 @@ export default {
 
     methods: {
 
+        cancelActiveList() {
+            this.$root.showListMobile = false;
+        },
+
+        onResize() {
+            this.windowWidth = window.innerWidth;
+        },
+
         storage() {
             return (this.remember) ? localStorage : sessionStorage;
         },
@@ -208,6 +220,10 @@ export default {
     },
 
     computed: {
+
+        isMobile() {
+            return this.windowWidth <= 767.98;
+        },
 
         timezone() {
 

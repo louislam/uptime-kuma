@@ -55,6 +55,9 @@
             </div>
 
             <div class="col-md-6">
+
+                <div class="mt-3" v-if="$root.isMobile"></div>
+
                 <h2>Notifications</h2>
                 <p v-if="$root.notificationList.length === 0">Not available, please setup.</p>
 

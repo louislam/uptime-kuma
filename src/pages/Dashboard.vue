@@ -3,17 +3,17 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-12 col-md-5 col-xl-4">
-                <div>
+                <div v-if="! $root.isMobile">
                     <router-link to="/add" class="btn btn-primary">Add New Monitor</router-link>
                 </div>
 
-                <div class="shadow-box list mb-4">
+                <div class="shadow-box list mb-4" v-if="showList">
 
                     <div class="text-center mt-3" v-if="Object.keys($root.monitorList).length === 0">
                         No Monitors, please <router-link to="/add">add one</router-link>.
                     </div>
 
-                    <router-link :to="monitorURL(item.id)" class="item" :class="{ 'disabled': ! item.active }" v-for="item in sortedMonitorList">
+                    <router-link :to="monitorURL(item.id)" class="item" :class="{ 'disabled': ! item.active }" v-for="item in sortedMonitorList" @click="$root.cancelActiveList">
 
                         <div class="row">
                         	<div class="col-6 col-md-8 small-padding">
@@ -53,6 +53,7 @@ export default {
     },
     data() {
         return {
+
         }
     },
     computed: {
@@ -85,6 +86,9 @@ export default {
             })
 
             return result;
+        },
+        showList() {
+            return ! this.$root.isMobile || this.$root.showListMobile;
         },
     },
     methods: {
