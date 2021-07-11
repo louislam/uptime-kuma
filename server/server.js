@@ -9,6 +9,7 @@ const {R} = require("redbean-node");
 const passwordHash = require('password-hash');
 const jwt = require('jsonwebtoken');
 const Monitor = require("./model/monitor");
+const fs = require("fs");
 const {getSettings} = require("./util-server");
 const {Notification} = require("./notification")
 
@@ -17,14 +18,9 @@ app.use(express.json())
 let totalClient = 0;
 let jwtSecret = null;
 let monitorList = {};
+let needSetup = false;
 
 (async () => {
-    R.setup('sqlite', {
-        filename: './data/kuma.db'
-    });
-    R.freeze(true)
-    await R.autoloadModels("./server/model");
-
     await initDatabase();
 
     app.use('/', express.static("dist"));
@@ -43,6 +39,11 @@ let monitorList = {};
     io.on('connection', async (socket) => {
         console.log('a user connected');
         totalClient++;
+
+        if (needSetup) {
+            console.log("Redirect to setup page")
+            socket.emit("setup")
+        }
 
         socket.on('disconnect', () => {
             console.log('user disconnected');
@@ -113,6 +114,40 @@ let monitorList = {};
             socket.leave(socket.userID)
             socket.userID = null;
             callback();
+        });
+
+        socket.on("needSetup", async (callback) => {
+            callback(needSetup);
+        });
+
+        socket.on("setup", async (username, password, callback) => {
+            try {
+                if ((await R.count("user")) !== 0) {
+                    throw new Error("Uptime Kuma has been setup. If you want to setup again, please delete the database.")
+                }
+
+                let user = R.dispense("user")
+                user.username = username;
+                user.password = passwordHash.generate(password)
+                await R.store(user)
+
+                needSetup = false;
+
+                callback({
+                    ok: true,
+                    msg: "Added Successfully."
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message
+                });
+            }
+
+
+
+
         });
 
         // Auth Only API
@@ -402,6 +437,7 @@ let monitorList = {};
 
     server.listen(3001, () => {
         console.log('Listening on 3001');
+
         startMonitors();
     });
 
@@ -489,6 +525,21 @@ function checkLogin(socket) {
 }
 
 async function initDatabase() {
+    const path = './data/kuma.db';
+
+    if (! fs.existsSync(path)) {
+        console.log("Copy Database")
+        fs.copyFileSync("./db/kuma.db", path);
+    }
+
+    console.log("Connect to Database")
+
+    R.setup('sqlite', {
+        filename: path
+    });
+    R.freeze(true)
+    await R.autoloadModels("./server/model");
+
     let jwtSecretBean = await R.findOne("setting", " `key` = ? ", [
         "jwtSecret"
     ]);
@@ -502,6 +553,11 @@ async function initDatabase() {
         await R.store(jwtSecretBean)
     } else {
         console.log("Load JWT secret from database.")
+    }
+
+    if ((await R.count("user")) === 0) {
+        console.log("No user, need setup")
+        needSetup = true;
     }
 
     jwtSecret = jwtSecretBean.value;

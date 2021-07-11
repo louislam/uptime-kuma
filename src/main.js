@@ -14,6 +14,7 @@ import EditMonitor from "./pages/EditMonitor.vue";
 import Toast from "vue-toastification";
 import "vue-toastification/dist/index.css";
 import "bootstrap"
+import Setup from "./pages/Setup.vue";
 
 const routes = [
     {
@@ -56,8 +57,14 @@ const routes = [
                     },
                 ],
             },
+
         ],
-    }
+
+    },
+    {
+        path: '/setup',
+        component: Setup,
+    },
 ]
 
 const router = createRouter({

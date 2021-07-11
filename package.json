@@ -5,7 +5,7 @@
         "dev": "vite --host",
         "start-server": "node server/server.js",
         "update": "",
-        "build": "npm install && vite build",
+        "build": "vite build",
         "vite-preview-dist": "vite preview --host"
     },
     "dependencies": {

@@ -9,7 +9,9 @@
 
                 <div class="shadow-box list mb-4">
 
-                    <span v-if="$root.monitorList.length === 0">No Monitors, please <router-link to="/add">add one</router-link>.</span>
+                    <div class="text-center mt-3" v-if="Object.keys($root.monitorList).length === 0">
+                        No Monitors, please <router-link to="/add">add one</router-link>.
+                    </div>
 
                     <router-link :to="monitorURL(item.id)" class="item" :class="{ 'disabled': ! item.active }" v-for="item in sortedMonitorList">
 

@@ -33,6 +33,10 @@ export default {
             transports: ['websocket']
         });
 
+        socket.on('setup', (monitorID, data) => {
+            this.$router.push("/setup")
+        });
+
         socket.on('monitorList', (data) => {
             this.monitorList = data;
         });
