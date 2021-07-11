@@ -1,10 +1,12 @@
 # Uptime Kuma
 
+It is a self-hosted monitoring tool like "Uptime Robot".
+
 # Features
 
 * Monitoring uptime for HTTP(s) / TCP / Ping.
 * Fancy, Reactive, Fast UI/UX.
-* Notifications via Webhook, Telegram, Discord and email (SMTP).
+* Notifications via Webhook, Telegram, Discord and email (SMTP). 
 * 20 seconds interval.
 
 # How to Use
@@ -17,7 +19,7 @@ One-click Deploy to DigitalOcean
 
 # Motivation
 
-* I was looking for a self-hosted monitoring tool like "Uptime Robot", but it is hard to find a suitable one.
+* I was looking for a self-hosted monitoring tool like "Uptime Robot", but it is hard to find a suitable one. One of the close one is statping. Unfortunately, it is not stable and unmaintained. 
 * Want to build a fancy UI.
 * Learn Vue 3 and vite.js.
 * Show the power of Bootstrap 5. 

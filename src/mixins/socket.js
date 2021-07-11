@@ -29,7 +29,14 @@ export default {
     },
 
     created() {
-        socket = io(":3001", {
+        let wsHost;
+        if (localStorage.dev === "dev") {
+            wsHost = ":3001"
+        } else {
+            wsHost = ""
+        }
+
+        socket = io(wsHost, {
             transports: ['websocket']
         });
 

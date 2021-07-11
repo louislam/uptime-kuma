@@ -53,6 +53,7 @@
             <div class="col-md-6">
                 <h2>Notifications</h2>
                 <p v-if="$root.notificationList.length === 0">Not available, please setup.</p>
+                <p v-else>Please assign the notification to monitor(s) to get it works.</p>
 
                 <ul class="list-group mb-3" style="border-radius: 1rem;">
                     <li  class="list-group-item"  v-for="notification in $root.notificationList">
