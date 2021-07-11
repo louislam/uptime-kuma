@@ -52,7 +52,13 @@ Coming Soon
 
 # More Screenshots
 
+Settings Page:
+
 <img src="https://louislam.net/uptimekuma/2.jpg" width="400" alt="" />
+
+Telegram Notification Sample:
+
+<img src="https://louislam.net/uptimekuma/3.jpg" width="400" alt="" />
 
 
 # Motivation
