@@ -1,5 +1,9 @@
 # Uptime Kuma
 
+<div align="center" width="100%">
+    <img src="./public/icon.svg" width="128" alt="" />
+</div>
+
 It is a self-hosted monitoring tool like "Uptime Robot".
 
 # Features
