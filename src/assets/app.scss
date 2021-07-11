@@ -19,7 +19,9 @@ a,
 }
 
 .form-control,
-.form-select {
+.form-control:focus,
+.form-select,
+.form-select:focus {
     color: var(--main-font-color);
     background-color: var(--background-4);
 }
