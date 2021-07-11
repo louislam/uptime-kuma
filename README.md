@@ -24,7 +24,10 @@ docker run -d --restart=always -p 3001:3001 louislam/uptime-kuma
 
 Browse to http://localhost:3001 after started.
 
-### Node.js >= 14 + GIT
+### Without Docker
+
+Required Tools: Node.js >= 14, git and pm2. 
+
 ```bash
 git clone git@github.com:louislam/uptime-kuma.git
 cd uptime-kuma
