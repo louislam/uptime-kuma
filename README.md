@@ -6,6 +6,8 @@
 
 It is a self-hosted monitoring tool like "Uptime Robot".
 
+<img src="https://louislam.net/uptimekuma/1.jpg" width="512" alt="" />
+
 # Features
 
 * Monitoring uptime for HTTP(s) / TCP / Ping.
@@ -16,22 +18,23 @@ It is a self-hosted monitoring tool like "Uptime Robot".
 # How to Use
 
 ### Docker
-```
+```bash
 docker run -d --restart=always -p 3001:3001 louislam/uptime-kuma
 ```
 
 Browse to http://localhost:3001 after started.
 
 ### Node.js >= 14 + GIT
-```
+```bash
 git clone git@github.com:louislam/uptime-kuma.git
 cd uptime-kuma
 npm run install
 
-# 1. Try it
+# Option 1. Try it
 npm run start-server
 
-# 2. Run in background using PM2
+# (Recommanded) 
+# Option 2. Run in background using PM2
 # Install PM2 if you don't have: npm install pm2 -g
 pm2 start npm -- run start-server
 
@@ -42,6 +45,12 @@ Browse to http://localhost:3001 after started.
 ### One-click Deploy to DigitalOcean
 
 Coming Soon
+
+
+# More Screenshots
+
+<img src="https://louislam.net/uptimekuma/2.jpg" width="400" alt="" />
+
 
 # Motivation
 
