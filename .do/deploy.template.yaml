@@ -1,10 +1,10 @@
 spec:
   name: uptime-kuma
   services:
-  - name: server
-    image:
-      registry_type: DOCKER_HUB
-      registry: docker.io
-      repository: louislam/uptime-kuma
-    http_port: 3001
+    - name: server
+      image:
+        registry_type: DOCKER_HUB
+        registry: louislam
+        repository: uptime-kuma
+      http_port: 3001
 
