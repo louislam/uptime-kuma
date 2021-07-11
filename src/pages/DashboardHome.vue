@@ -137,7 +137,7 @@ export default {
 @import "../assets/vars";
 
 .num {
-    font-size: 30px;
+    font-size: 1rem;
     color: $primary;
     font-weight: bold;
     display: block;

@@ -115,7 +115,7 @@ export default {
         display: block;
         text-decoration: none;
         padding: 15px 15px 12px 15px;
-        border-radius: 10px;
+        border-radius: .25rem;
         transition: all ease-in-out 0.15s;
 
         &.disabled {
@@ -129,17 +129,19 @@ export default {
         }
 
         &:hover {
-            background-color: $highlight-white;
+            color: var(--main-font-color);
+            background-color: var(--background-4);
         }
 
         &.active {
-            background-color: #cdf8f4;
+            background-color: var(--background-secondary);
         }
     }
 }
 
 .badge {
     min-width: 58px;
+    color: #0a0a0a;
 }
 
 .small-padding {

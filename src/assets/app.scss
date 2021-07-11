@@ -1,16 +1,33 @@
 @import "vars.scss";
 @import "node_modules/bootstrap/scss/bootstrap";
 
+html,
+body,
+input,
+.modal-content {
+    background: var(--page-background);
+    color: var(--main-font-color);
+}
+a,
+.table,
+.nav-link {
+    color: var(--main-font-color);
+}
+.nav-pills .nav-link.active,
+.nav-pills .show > .nav-link {
+    color: #0a0a0a;
+}
+
 #app {
-    font-family: ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,segoe ui,Roboto,helvetica neue,Arial,noto sans,sans-serif,apple color emoji,segoe ui emoji,segoe ui symbol,noto color emoji;
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+        segoe ui, Roboto, helvetica neue, Arial, noto sans, sans-serif,
+        apple color emoji, segoe ui emoji, segoe ui symbol, noto color emoji;
 }
 
 .shadow-box {
     overflow: hidden;
-    box-shadow: 0 15px 70px rgba(0, 0, 0, .1);
+    box-shadow: 0 15px 70px rgba(0, 0, 0, 0.1);
     padding: 10px;
-    border-radius: 10px;
-
     &.big-padding {
         padding: 20px;
     }
@@ -22,10 +39,14 @@
 }
 
 .btn-primary {
-    color: white;
+    // color: white;
+    color: #0a0a0a;
 
-    &:hover, &:active, &:focus, &.active {
-        color: white;
+    &:hover,
+    &:active,
+    &:focus,
+    &.active {
+        color: #0a0a0a;
         background-color: $highlight;
         border-color: $highlight;
     }
@@ -35,4 +56,3 @@
     border-radius: 1rem;
     backdrop-filter: blur(3px);
 }
-
