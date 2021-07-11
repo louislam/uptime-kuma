@@ -55,6 +55,63 @@ Browse to http://localhost:3001 after started.
 
 [![Deploy to DO](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/louislam/uptime-kuma/tree/master&refcode=e2c7eb658434)
 
+### Reverse Proxy Examples
+
+Nginx with Certbot
+````
+server {
+    listen 80;
+    server_name subdomain.domain.com
+
+    location / {
+        proxy_pass http://127.0.0.1:3001
+
+    }
+
+}
+````
+
+Nginx without Certbot
+````
+server {    
+  listen 443 ssl http2;
+  server_name sub.domain.comt;
+  ssl_certificate     /path/to/ssl/cert/crt;
+  ssl_certificate_key /path/to/ssl/key/key;
+
+  location / {
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_pass           http://127.0.0.1:3001/;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection $connection_upgrade;
+  }
+}
+
+Credit to 12nick12
+````
+Apache
+````
+<VirtualHost *:80>
+  ServerName sub.domain.com
+
+  ProxyPass / http://127.0.0.1:3001/
+  RewriteEngine on
+  RewriteCond %{HTTP:Upgrade} websocket [NC]
+  RewriteCond %{HTTP:Connection} upgrade [NC]
+  RewriteRule ^/?(.*) "ws://127.0.0.1:3001/$1" [P,L]
+</VirtualHost>
+
+Credit to TheGuyDanish
+````
+
+Caddy
+````
+subdomain.domain.com {
+    reverse_proxy 127.0.0.1:3001 :
+}
+````
+
 
 # More Screenshots
 
