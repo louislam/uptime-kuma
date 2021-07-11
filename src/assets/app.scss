@@ -18,6 +18,11 @@ a,
     color: #0a0a0a;
 }
 
+.nav-link:hover,
+.nav-link:focus {
+    color: #5cdd8b;
+}
+
 .form-control,
 .form-control:focus,
 .form-select,
