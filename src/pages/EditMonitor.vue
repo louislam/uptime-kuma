@@ -30,7 +30,7 @@
                     <div class="mb-3" v-if="monitor.type === 'keyword' ">
                         <label for="keyword" class="form-label">Keyword</label>
                         <input type="text" class="form-control" id="keyword" v-model="monitor.keyword" required>
-                        <div class="form-text">Search keyword in plain html response and it is case-sensitive</div>
+                        <div class="form-text">Search keyword in plain html or JSON response and it is case-sensitive</div>
                     </div>
 
                     <div class="mb-3" v-if="monitor.type === 'port' || monitor.type === 'ping' ">

@@ -42,7 +42,7 @@ npm run setup
 # Option 1. Try it
 npm run start-server
 
-# (Recommanded) 
+# (Recommended) 
 # Option 2. Run in background using PM2
 # Install PM2 if you don't have: npm install pm2 -g
 pm2 start npm --name uptime-kuma -- run start-server
