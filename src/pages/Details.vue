@@ -137,7 +137,7 @@ export default {
         },
 
         ping() {
-            if (this.lastHeartBeat.ping) {
+            if (this.lastHeartBeat.ping || this.lastHeartBeat.ping === 0) {
                 return this.lastHeartBeat.ping;
             } else {
                 return "N/A"
@@ -145,7 +145,7 @@ export default {
         },
 
         avgPing() {
-            if (this.$root.avgPingList[this.monitor.id]) {
+            if (this.$root.avgPingList[this.monitor.id] || this.$root.avgPingList[this.monitor.id] === 0) {
                 return this.$root.avgPingList[this.monitor.id];
             } else {
                 return "N/A"
