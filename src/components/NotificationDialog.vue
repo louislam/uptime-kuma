@@ -45,8 +45,9 @@
                                         Support Direct Chat / Group / Channel's Chat ID
 
                                         <p style="margin-top: 8px;">
-                                            You can ge     <a href="https://github.com/bbernhard/signal-cli-rest-api" target="_blank">https://github.com/bbernhard/signal-cli-rest-api</a>
-                                    </p>
+                                            You can get your chat id by sending message to the bot and go to this url to view the chat_id:
+                                        </p>
+
                                         <p style="margin-top: 8px;">
 
                                             <template v-if="notification.telegramBotToken">
