@@ -71,7 +71,9 @@ class Monitor extends BeanModel {
             try {
                 if (this.type === "http" || this.type === "keyword") {
                     let startTime = dayjs().valueOf();
-                    let res = await axios.get(this.url)
+                    let res = await axios.get(this.url, {
+                        headers: { 'User-Agent':'Uptime-Kuma' }
+                    })
                     bean.msg = `${res.status} - ${res.statusText}`
                     bean.ping = dayjs().valueOf() - startTime;
 
@@ -79,7 +81,14 @@ class Monitor extends BeanModel {
                         bean.status = 1;
                     } else {
 
-                        if (res.data.includes(this.keyword)) {
+                        let data = res.data;
+
+                        // Convert to string for object/array
+                        if (typeof data !== "string") {
+                            data = JSON.stringify(data)
+                        }
+
+                        if (data.includes(this.keyword)) {
                             bean.msg += ", keyword is found"
                             bean.status = 1;
                         } else {

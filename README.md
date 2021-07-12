@@ -19,7 +19,11 @@ It is a self-hosted monitoring tool like "Uptime Robot".
 
 ### Docker
 ```bash
-docker run -d --restart=always -p 3001:3001 louislam/uptime-kuma
+# Create a volume
+docker volume create uptime-kuma
+
+# Start the container
+docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name uptime-kuma louislam/uptime-kuma
 ```
 
 Browse to http://localhost:3001 after started.
@@ -27,7 +31,7 @@ Browse to http://localhost:3001 after started.
 Change Port and Volume
 
 ```bash
-docker run -d --restart=always -p <YOUR_PORT>:3001 -v <YOUR_DIR OR VOLUME>:/app/data louislam/uptime-kuma
+docker run -d --restart=always -p <YOUR_PORT>:3001 -v <YOUR_DIR OR VOLUME>:/app/data --name uptime-kuma louislam/uptime-kuma
 ```
 
 ### Without Docker
@@ -42,10 +46,13 @@ npm run setup
 # Option 1. Try it
 npm run start-server
 
-# (Recommanded) 
+# (Recommended) 
 # Option 2. Run in background using PM2
 # Install PM2 if you don't have: npm install pm2 -g
 pm2 start npm --name uptime-kuma -- run start-server
+
+# Listen to different port or hostname
+pm2 start npm --name uptime-kuma -- run start-server -- --port=80 --hostname=0.0.0.0
 
 ```
 
@@ -55,6 +62,23 @@ Browse to http://localhost:3001 after started.
 
 [![Deploy to DO](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/louislam/uptime-kuma/tree/master&refcode=e2c7eb658434)
 
+Choose Cheapest Plan is enough. (US$ 5)
+
+# How to Update
+
+### Docker
+
+Re-pull the latest docker image and create another container with the same volume.
+
+### Without Docker
+
+```bash
+git fetch --all
+git checkout 1.0.1 --force
+npm install
+npm run build
+pm2 restart uptime-kuma
+```
 
 # More Screenshots
 

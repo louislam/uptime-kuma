@@ -24,7 +24,6 @@ const aryIannaTimeZones = [
     'Asia/Yerevan',
     'Antarctica/Casey',
     'Antarctica/Davis',
-    'Antarctica/DumontDUrville', // https://bugs.chromium.org/p/chromium/issues/detail?id=928068
     'Antarctica/Mawson',
     'Antarctica/Palmer',
     'Antarctica/Rothera',
@@ -195,7 +194,6 @@ const aryIannaTimeZones = [
     'Asia/Seoul',
     'Asia/Almaty',
     'Asia/Qyzylorda',
-    'Asia/Qostanay', // https://bugs.chromium.org/p/chromium/issues/detail?id=928068
     'Asia/Aqtobe',
     'Asia/Aqtau',
     'Asia/Atyrau',
