@@ -47,6 +47,9 @@ npm run start-server
 # Install PM2 if you don't have: npm install pm2 -g
 pm2 start npm --name uptime-kuma -- run start-server
 
+# Listen to different port or hostname
+pm2 start npm --name uptime-kuma -- run start-server -- --port=80 --hostname=0.0.0.0
+
 ```
 
 Browse to http://localhost:3001 after started.
@@ -55,6 +58,22 @@ Browse to http://localhost:3001 after started.
 
 [![Deploy to DO](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/louislam/uptime-kuma/tree/master&refcode=e2c7eb658434)
 
+
+# How to Update
+
+### Docker
+
+Re-pull the latest docker image and create another container with the same volume.
+
+### Without Docker
+
+```bash
+git fetch --all
+git checkout 1.0.1 --force
+npm install
+npm run build
+pm2 restart uptime-kuma
+```
 
 # More Screenshots
 
