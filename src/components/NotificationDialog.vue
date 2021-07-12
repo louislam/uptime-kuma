@@ -127,19 +127,9 @@
 
                         <template v-if="notification.type === 'discord'">
                             <div class="mb-3">
-                                <label for="discord-token" class="form-label">Discord Bot Token</label>
-                                <input type="text" class="form-control" id="discord-token" required v-model="notification.discordToken" autocomplete="false">
-                                <div class="form-text">You should create a Discord app and create a bot from <a href="https://discord.com/developers/applications" target="_blank">here</a>.</div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="discordChannelID" class="form-label">Channel ID</label>
-                                <input type="text" class="form-control" id="discordChannelID" required v-model="notification.discordChannelID" autocomplete="false">
-                                <div class="form-text">
-                                    You should add the bot to your channel. <br />
-                                    <a href="https://support.discord.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID-" target="_blank">Where can I find the channel id?</a><br />
-                                    <a href="https://discordapi.com/permissions.html#8" target="_blank">How to add a bot to your channel?</a>
-                                </div>
+                                <label for="discord-webhook-url" class="form-label">Discord Webhook URL</label>
+                                <input type="text" class="form-control" id="discord-webhook-url" required v-model="notification.discordWebhookUrl" autocomplete="false">
+                                <div class="form-text">You can get this by going to Server Settings -> Integrations -> Create Webhook</div>
                             </div>
                         </template>
 
