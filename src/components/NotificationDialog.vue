@@ -17,6 +17,7 @@
                                     <option value="webhook">Webhook</option>
                                     <option value="smtp">Email (SMTP)</option>
                                     <option value="discord">Discord</option>
+                                    <option value="signal">Signal</option>
                                 </select>
                             </div>
 
@@ -130,6 +131,41 @@
                                 <label for="discord-webhook-url" class="form-label">Discord Webhook URL</label>
                                 <input type="text" class="form-control" id="discord-webhook-url" required v-model="notification.discordWebhookUrl" autocomplete="false">
                                 <div class="form-text">You can get this by going to Server Settings -> Integrations -> Create Webhook</div>
+                            </div>
+                        </template>
+
+                        <template v-if="notification.type === 'signal'">
+                            <div class="mb-3">
+                                <label for="signal-url" class="form-label">Post URL</label>
+                                <input type="url" pattern="https?://.+"  class="form-control" id="signal-url" required v-model="notification.signalURL">
+
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="signal-number" class="form-label">Number</label>
+                                <input type="text" class="form-control" id="signal-number" required v-model="notification.signalNumber">
+
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="signal-recipients" class="form-label">Recipients</label>
+                                <input type="text" class="form-control" id="signal-recipients" required v-model="notification.signalRecipients">
+
+                                <div class="form-text">
+                                    You need to have a signal client with REST API.
+
+                                    <p style="margin-top: 8px;">
+                                        You can check this url to view how to setup one:
+                                    </p>
+
+                                    <p style="margin-top: 8px;">
+                                        <a href="https://github.com/bbernhard/signal-cli-rest-api" target="_blank">https://github.com/bbernhard/signal-cli-rest-api</a>
+                                    </p>
+
+                                    <p style="margin-top: 8px;">
+                                        IMPORTANT: You cannot mix groups and numbers in recipients!
+                                    </p>
+                                </div>
                             </div>
                         </template>
 
