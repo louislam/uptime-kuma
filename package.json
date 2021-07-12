@@ -15,7 +15,6 @@
         "axios": "0.21.1",
         "bootstrap": "5.0.2",
         "dayjs": "1.10.6",
-        "discord.js": "12.5.3",
         "express": "4.17.1",
         "form-data": "4.0.0",
         "jsonwebtoken": "8.5.1",
