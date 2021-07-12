@@ -6,8 +6,8 @@
         "update": "",
         "build": "vite build",
         "vite-preview-dist": "vite preview --host",
-        "build-docker": "docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma -t louislam/uptime-kuma:1 . --push",
-        "setup": "git checkout 1.0.0 && npm install && npm run build"
+        "build-docker": "docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma -t louislam/uptime-kuma:1 -t louislam/uptime-kuma:1.0.1 . --push",
+        "setup": "git checkout 1.0.1 && npm install && npm run build"
     },
     "dependencies": {
         "@popperjs/core": "^2.9.2",
