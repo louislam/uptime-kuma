@@ -81,7 +81,14 @@ class Monitor extends BeanModel {
                         bean.status = 1;
                     } else {
 
-                        if (res.data.includes(this.keyword)) {
+                        let data = res.data;
+
+                        // Convert to string for object/array
+                        if (typeof data !== "string") {
+                            data = JSON.stringify(data)
+                        }
+
+                        if (data.includes(this.keyword)) {
                             bean.msg += ", keyword is found"
                             bean.status = 1;
                         } else {
