@@ -271,7 +271,6 @@ export default {
         },
 
         test() {
-            console.log("test notification");
             this.processing = true;
             this.$root.getSocket().emit("testNotification", this.notification, (res) => {
                 this.$root.toastRes(res)
