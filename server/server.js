@@ -18,7 +18,7 @@ console.log("args:")
 console.log(args)
 
 const hostname = args.host || "0.0.0.0"
-const port = args.port || 3001
+const port = args.port || 50013
 
 app.use(express.json())
 

@@ -1,4 +1,4 @@
-import {io} from "socket.io-client";
+import { io } from "socket.io-client";
 import { useToast } from 'vue-toastification'
 import dayjs from "dayjs";
 const toast = useToast()
@@ -19,11 +19,11 @@ export default {
             userTimezone: localStorage.timezone || "auto",
             allowLoginDialog: false,        // Allowed to show login dialog, but "loggedIn" have to be true too. This exists because prevent the login dialog show 0.1s in first before the socket server auth-ed.
             loggedIn: false,
-            monitorList: { },
-            heartbeatList: { },
-            importantHeartbeatList: { },
-            avgPingList: { },
-            uptimeList: { },
+            monitorList: {},
+            heartbeatList: {},
+            importantHeartbeatList: {},
+            avgPingList: {},
+            uptimeList: {},
             notificationList: [],
             windowWidth: window.innerWidth,
             showListMobile: false,
@@ -33,12 +33,7 @@ export default {
     created() {
         window.addEventListener('resize', this.onResize);
 
-        let wsHost;
-        if (localStorage.dev === "dev") {
-            wsHost = ":3001"
-        } else {
-            wsHost = ""
-        }
+        const wsHost = ":50013"
 
         socket = io(wsHost, {
             transports: ['websocket']
@@ -57,7 +52,7 @@ export default {
         });
 
         socket.on('heartbeat', (data) => {
-            if (! (data.monitorID in this.heartbeatList)) {
+            if (!(data.monitorID in this.heartbeatList)) {
                 this.heartbeatList[data.monitorID] = [];
             }
 
@@ -80,7 +75,7 @@ export default {
                 }
 
 
-                if (! (data.monitorID in this.importantHeartbeatList)) {
+                if (!(data.monitorID in this.importantHeartbeatList)) {
                     this.importantHeartbeatList[data.monitorID] = [];
                 }
 
@@ -89,7 +84,7 @@ export default {
         });
 
         socket.on('heartbeatList', (monitorID, data) => {
-            if (! (monitorID in this.heartbeatList)) {
+            if (!(monitorID in this.heartbeatList)) {
                 this.heartbeatList[monitorID] = data;
             } else {
                 this.heartbeatList[monitorID] = data.concat(this.heartbeatList[monitorID])
@@ -105,7 +100,7 @@ export default {
         });
 
         socket.on('importantHeartbeatList', (monitorID, data) => {
-            if (! (monitorID in this.importantHeartbeatList)) {
+            if (!(monitorID in this.importantHeartbeatList)) {
                 this.importantHeartbeatList[monitorID] = data;
             } else {
                 this.importantHeartbeatList[monitorID] = data.concat(this.importantHeartbeatList[monitorID])
@@ -153,7 +148,7 @@ export default {
         },
 
         getSocket() {
-          return socket;
+            return socket;
         },
 
         toastRes(res) {
@@ -187,7 +182,7 @@ export default {
             socket.emit("loginByToken", token, (res) => {
                 this.allowLoginDialog = true;
 
-                if (! res.ok) {
+                if (!res.ok) {
                     this.logout()
                 } else {
                     this.loggedIn = true;
@@ -257,7 +252,7 @@ export default {
             for (let monitorID in this.lastHeartbeatList) {
                 let lastHeartBeat = this.lastHeartbeatList[monitorID]
 
-                if (! lastHeartBeat) {
+                if (!lastHeartBeat) {
                     result[monitorID] = unknown;
                 } else if (lastHeartBeat.status === 1) {
                     result[monitorID] = {
