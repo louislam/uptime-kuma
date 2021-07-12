@@ -18,6 +18,10 @@ It is a self-hosted monitoring tool like "Uptime Robot".
 # How to Use
 
 ## Docker
+### docker-compose
+see [sample docker-compose.yml](./docker-compose.yml)
+
+### Manual
 ```bash
 # Create a volume
 docker volume create uptime-kuma
