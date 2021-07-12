@@ -12,6 +12,13 @@ const Monitor = require("./model/monitor");
 const fs = require("fs");
 const {getSettings} = require("./util-server");
 const {Notification} = require("./notification")
+const args = require('args-parser')(process.argv);
+
+console.log("args:")
+console.log(args)
+
+const hostname = args.host || "0.0.0.0"
+const port = args.port || 3001
 
 app.use(express.json())
 
@@ -435,8 +442,8 @@ let needSetup = false;
         });
     });
 
-    server.listen(3001, () => {
-        console.log('Listening on 3001');
+    server.listen(port, hostname, () => {
+        console.log(`Listening on ${hostname}:${port}`);
 
         startMonitors();
     });
