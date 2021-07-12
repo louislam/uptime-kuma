@@ -69,3 +69,9 @@ a,
     border-radius: 1rem;
     backdrop-filter: blur(3px);
 }
+
+@media (prefers-color-scheme: dark) {
+    a:hover {
+        color: #7ce8a4;
+    }
+}
