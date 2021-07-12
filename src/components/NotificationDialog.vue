@@ -105,12 +105,12 @@
 
                             <div class="mb-3">
                                 <label for="username" class="form-label">Username</label>
-                                <input type="text" class="form-control" id="username" required v-model="notification.smtpUsername" autocomplete="false">
+                                <input type="text" class="form-control" id="username" v-model="notification.smtpUsername" autocomplete="false">
                             </div>
 
                             <div class="mb-3">
                                 <label for="password" class="form-label">Password</label>
-                                <input type="password" class="form-control" id="password" required v-model="notification.smtpPassword" autocomplete="false">
+                                <input type="password" class="form-control" id="password" v-model="notification.smtpPassword" autocomplete="false">
                             </div>
 
                             <div class="mb-3">
