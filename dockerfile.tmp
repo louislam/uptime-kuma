@@ -5,6 +5,6 @@ COPY . .
 RUN yarn
 RUN yarn build
 # 
-EXPOSE 3001
+EXPOSE 50013
 VOLUME ["/app/data"]
 CMD ["npm", "run", "start-server"]

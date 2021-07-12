@@ -1,0 +1,10 @@
+version: "3.4"
+
+services:
+    uptimekuma:
+        image: uptimekuma
+        build: .
+        environment:
+            NODE_ENV: production
+        ports:
+            - 50013:50013

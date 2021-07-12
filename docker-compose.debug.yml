@@ -1,0 +1,12 @@
+version: "3.4"
+
+services:
+    uptimekuma:
+        image: uptimekuma
+        build: .
+        environment:
+            NODE_ENV: development
+        ports:
+            - 50013:50013
+            - 9229:9229
+        command: ["node", "--inspect=0.0.0.0:9229", "server/server.js"]
