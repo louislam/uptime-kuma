@@ -56,6 +56,22 @@ class Notification {
         } else if (notification.type === "discord") {
             return await Notification.discord(notification, msg)
 
+        } else if (notification.type === "signal") {
+          try {
+            let data = {
+              "message": msg, 
+              "number": notification.signalNumber,
+              "recipients": notification.signalRecipients.replace(/\s/g, '').split(",")
+            };
+            let config = {};
+
+            let res = await axios.post(notification.signalURL, data, config)
+            return true;
+        } catch (error) {
+            console.log(error)
+            return false;
+        }
+
         } else {
             throw new Error("Notification type is not supported")
         }

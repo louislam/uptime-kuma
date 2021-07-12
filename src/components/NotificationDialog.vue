@@ -17,6 +17,7 @@
                                     <option value="webhook">Webhook</option>
                                     <option value="smtp">Email (SMTP)</option>
                                     <option value="discord">Discord</option>
+                                    <option value="signal">Signal</option>
                                 </select>
                             </div>
 
@@ -44,9 +45,8 @@
                                         Support Direct Chat / Group / Channel's Chat ID
 
                                         <p style="margin-top: 8px;">
-                                            You can get your chat id by sending message to the bot and go to this url to view the chat_id:
-                                        </p>
-
+                                            You can ge     <a href="https://github.com/bbernhard/signal-cli-rest-api" target="_blank">https://github.com/bbernhard/signal-cli-rest-api</a>
+                                    </p>
                                         <p style="margin-top: 8px;">
 
                                             <template v-if="notification.telegramBotToken">
@@ -139,6 +139,41 @@
                                     You should add the bot to your channel. <br />
                                     <a href="https://support.discord.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID-" target="_blank">Where can I find the channel id?</a><br />
                                     <a href="https://discordapi.com/permissions.html#8" target="_blank">How to add a bot to your channel?</a>
+                                </div>
+                            </div>
+                        </template>
+
+                        <template v-if="notification.type === 'signal'">
+                            <div class="mb-3">
+                                <label for="signal-url" class="form-label">Post URL</label>
+                                <input type="url" pattern="https?://.+"  class="form-control" id="signal-url" required v-model="notification.signalURL">
+
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="signal-number" class="form-label">Number</label>
+                                <input type="text" class="form-control" id="signal-number" required v-model="notification.signalNumber">
+
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="signal-recipients" class="form-label">Recipients</label>
+                                <input type="text" class="form-control" id="signal-recipients" required v-model="notification.signalRecipients">
+
+                                <div class="form-text">
+                                    You need to have a signal client with REST API.
+
+                                    <p style="margin-top: 8px;">
+                                        You can check this url to view how to setup one:
+                                    </p>
+
+                                    <p style="margin-top: 8px;">
+                                        <a href="https://github.com/bbernhard/signal-cli-rest-api" target="_blank">https://github.com/bbernhard/signal-cli-rest-api</a>
+                                    </p>
+
+                                    <p style="margin-top: 8px;">
+                                        IMPORTANT: You cannot mix groups and numbers in recipients!
+                                    </p>
                                 </div>
                             </div>
                         </template>
@@ -236,6 +271,7 @@ export default {
         },
 
         test() {
+            console.log("test notification");
             this.processing = true;
             this.$root.getSocket().emit("testNotification", this.notification, (res) => {
                 this.$root.toastRes(res)
