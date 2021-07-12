@@ -60,21 +60,21 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-14.17.5.tgz#b59daf6a7ffa461b5648456ca59050ba8e40ed54"
   integrity sha512-bjqH2cX/O33jXT/UmReo2pM7DIJREPMnarixbQ57DOOzzFaI6D2+IcwaJQaJpv0M1E9TIhPCYVxrkcityLjlqA==
 
-"@vitejs/plugin-legacy@1.4.3":
-  version "1.4.3"
-  resolved "https://registry.yarnpkg.com/@vitejs/plugin-legacy/-/plugin-legacy-1.4.3.tgz#d022275d08e6f1f777891fb405816a9dd41a9f1f"
-  integrity sha512-lxZUJaMWYMQuqvZM1wPzDP6KABQgA/drVL5fnaygEPcz9adc2OHhfFNN/SvvHQ1V0rP8gybIc7uA+iI1gAdkVQ==
+"@vitejs/plugin-legacy@1.4.4":
+  version "1.4.4"
+  resolved "https://registry.yarnpkg.com/@vitejs/plugin-legacy/-/plugin-legacy-1.4.4.tgz#a13bcfdf053f219fd8db6199e0d19c87b3d12994"
+  integrity sha512-pVYeQUDPG5InWwrTu7acy187WWjGonJnL/GMqMLmeKCFiwkZ6UcsoUjojiKmCUI0nAJTrrKH5lhjTqkccY9Iow==
   dependencies:
     "@babel/standalone" "^7.14.7"
-    core-js "^3.15.1"
+    core-js "^3.15.2"
     magic-string "^0.25.7"
     regenerator-runtime "^0.13.7"
-    systemjs "^6.10.1"
+    systemjs "^6.10.2"
 
-"@vitejs/plugin-vue@1.2.4":
-  version "1.2.4"
-  resolved "https://registry.yarnpkg.com/@vitejs/plugin-vue/-/plugin-vue-1.2.4.tgz#a7aa6e6a31c556a8b781de730316deeecf7f56f2"
-  integrity sha512-D/3H9plevPQGgQGwmV6eecvOnooLTecPR63HPffVVWPEhbfvmtYLWgznzs456NBb2DItiRTCIa1yWxvGqC+I8A==
+"@vitejs/plugin-vue@1.2.5":
+  version "1.2.5"
+  resolved "https://registry.yarnpkg.com/@vitejs/plugin-vue/-/plugin-vue-1.2.5.tgz#ef7dc4a92e53fe866b54bcc1266788513262ac09"
+  integrity sha512-GIR31mdXTEfvElmBUaRhDc5v7lfdkEdawWQqJRiaRL/5qKsH+xusukglkvJz5y7+c6dEpxgmvcATv2BbB7+fzQ==
 
 "@vue/compiler-core@3.0.5":
   version "3.0.5"
@@ -595,7 +595,7 @@ copy-descriptor@^0.1.0:
   resolved "https://registry.yarnpkg.com/copy-descriptor/-/copy-descriptor-0.1.1.tgz#676f6eb3c39997c2ee1ac3a924fd6124748f578d"
   integrity sha1-Z29us8OZl8LuGsOpJP1hJHSPV40=
 
-core-js@3.15.2, core-js@^3.15.1:
+core-js@3.15.2, core-js@^3.15.2:
   version "3.15.2"
   resolved "https://registry.yarnpkg.com/core-js/-/core-js-3.15.2.tgz#740660d2ff55ef34ce664d7e2455119c5bdd3d61"
   integrity sha512-tKs41J7NJVuaya8DxIOCnl8QuPHx5/ZVbFo1oKgVl1qHFBBrDctzQGtuLjPpRdNTWmKPH6oEvgN/MUID+l485Q==
@@ -2695,7 +2695,7 @@ strip-json-comments@~2.0.1:
   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-2.0.1.tgz#3c531942e908c2697c0ec344858c286c7ca0a60a"
   integrity sha1-PFMZQukIwml8DsNEhYwobHygpgo=
 
-systemjs@^6.10.1:
+systemjs@^6.10.2:
   version "6.10.2"
   resolved "https://registry.yarnpkg.com/systemjs/-/systemjs-6.10.2.tgz#c9870217bddf9cfd25d12d4fcd1989541ef1207c"
   integrity sha512-PwaC0Z6Y1E6gFekY2u38EC5+5w2M65jYVrD1aAcOptpHVhCwPIwPFJvYJyryQKUyeuQ5bKKI3PBHWNjdE9aizg==
@@ -2888,10 +2888,10 @@ verror@1.10.0:
     core-util-is "1.0.2"
     extsprintf "^1.2.0"
 
-vite@2.4.1:
-  version "2.4.1"
-  resolved "https://registry.yarnpkg.com/vite/-/vite-2.4.1.tgz#2e48b8dbfc69e4edbf7f4d1c0798d621585cb8da"
-  integrity sha512-4BpKRis9uxIqPfIEcJ18LTBsamqnDFxTx45CXwagHjNltHa6PFEvf8Pe6OpgIHb0OyWT30OXOSSQvdOaX4OBiQ==
+vite@2.4.2:
+  version "2.4.2"
+  resolved "https://registry.yarnpkg.com/vite/-/vite-2.4.2.tgz#07d00615775c808530bc9f65641062b349b67929"
+  integrity sha512-2MifxD2I9fjyDmmEzbULOo3kOUoqX90A58cT6mECxoVQlMYFuijZsPQBuA14mqSwvV3ydUsqnq+BRWXyO9Qa+w==
   dependencies:
     esbuild "^0.12.8"
     postcss "^8.3.5"
