@@ -14,9 +14,7 @@ const {getSettings} = require("./util-server");
 const {Notification} = require("./notification")
 const args = require('args-parser')(process.argv);
 
-console.log("args:")
-console.log(args)
-
+const version = require('../package.json').version;
 const hostname = args.host || "0.0.0.0"
 const port = args.port || 3001
 
@@ -32,18 +30,16 @@ let needSetup = false;
 
     app.use('/', express.static("dist"));
 
-    app.post('/test-webhook', function(request, response, next) {
-        console.log("Test Webhook (application/json only)")
-        console.log("Content-Type: " + request.header("Content-Type"))
-        console.log(request.body)
-        response.end();
-    });
-
     app.get('*', function(request, response, next) {
         response.sendFile(process.cwd() + '/dist/index.html');
     });
 
     io.on('connection', async (socket) => {
+
+        socket.emit("info", {
+            version,
+        })
+
         console.log('a user connected');
         totalClient++;
 

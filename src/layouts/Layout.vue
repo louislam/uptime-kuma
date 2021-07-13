@@ -33,6 +33,14 @@
         <Login v-if="! $root.loggedIn && $root.allowLoginDialog" />
     </main>
 
+    <footer>
+        <div class="container-fluid">
+            Uptime Kuma -
+            Version: {{ $root.info.version }} -
+            <a href="https://github.com/louislam/uptime-kuma/releases" target="_blank">Check Update On GitHub</a>
+        </div>
+    </footer>
+
     <!-- Mobile Only -->
     <div style="width: 100%;height: 60px;" v-if="$root.isMobile"></div>
     <nav class="bottom-nav" v-if="$root.isMobile">
@@ -130,6 +138,14 @@ export default {
 }
 
 main {
-    margin-bottom: 30px;
+
 }
+
+footer {
+    color: #AAA;
+    font-size: 13px;
+    margin-bottom: 30px;
+    margin-left: 10px;
+}
+
 </style>

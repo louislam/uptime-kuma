@@ -9,6 +9,7 @@ export default {
 
     data() {
         return {
+            info: { },
             socket: {
                 token: null,
                 firstConnect: true,
@@ -42,6 +43,10 @@ export default {
 
         socket = io(wsHost, {
             transports: ['websocket']
+        });
+
+        socket.on('info', (info) => {
+            this.info = info;
         });
 
         socket.on('setup', (monitorID, data) => {
@@ -279,6 +284,13 @@ export default {
     },
 
     watch: {
+
+        // Reload the SPA if the server version is changed.
+        "info.version"(to, from) {
+              if (from && from !== to) {
+                  window.location.reload()
+              }
+        },
 
         remember() {
             localStorage.remember = (this.remember) ? "1" : "0"
