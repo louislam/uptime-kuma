@@ -1,27 +1,7 @@
-$primary: #5cdd8b;
-$danger: #dc3545;
+$primary: #5CDD8B;
+$danger: #DC3545;
 $link-color: #111;
-$border-radius: .25rem;
+$border-radius: 50rem;
 
 $highlight: #7ce8a4;
 $highlight-white: #e7faec;
-
-:root {
-    color-scheme: light dark;
-    // 
-    --page-background: #fafafa;
-    --background-secondary: #d0d3d5;
-    --background-4: #d0d3d5;
-    --background-ternary: #d0d3d5;
-    --main-font-color: #212529;
-}
-
-@media (prefers-color-scheme: dark) {
-    :root {
-        --page-background: #0a0a0a;
-        --background-secondary: #656565;
-        --background-4: #313131;
-        --background-ternary: #a7a7a7;
-        --main-font-color: #e4e4e4;
-    }
-}

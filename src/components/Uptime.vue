@@ -57,7 +57,5 @@ export default {
 </script>
 
 <style scoped>
-.badge{
-    color: #0a0a0a;
-}
+
 </style>

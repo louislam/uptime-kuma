@@ -159,7 +159,7 @@ export default {
         border-radius: 50rem;
 
         &.empty {
-            background-color: var(--background-ternary);
+            background-color: aliceblue;
         }
 
         &.down {
