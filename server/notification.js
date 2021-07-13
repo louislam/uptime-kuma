@@ -92,6 +92,24 @@ class Notification {
               console.log(error)
               return false;
             }
+            return await Notification.discord(notification, msg)
+
+        } else if (notification.type === "signal") {
+          try {
+            let data = {
+              "message": msg,
+              "number": notification.signalNumber,
+              "recipients": notification.signalRecipients.replace(/\s/g, '').split(",")
+            };
+            let config = {};
+
+            let res = await axios.post(notification.signalURL, data, config)
+            return true;
+        } catch (error) {
+            console.log(error)
+            return false;
+        }
+
         } else {
             throw new Error("Notification type is not supported")
         }
@@ -135,20 +153,15 @@ class Notification {
 
     static async smtp(notification, msg) {
 
-        let data = {
+        let transporter = nodemailer.createTransport({
             host: notification.smtpHost,
             port: notification.smtpPort,
             secure: notification.smtpSecure,
-        };
-
-        if (notification.smtpUsername) {
-            data.auth =  {
+            auth: {
                 user: notification.smtpUsername,
                 pass: notification.smtpPassword,
-            };
-        }
-
-        let transporter = nodemailer.createTransport(data);
+            },
+        });
 
         // send mail with defined transport object
         let info = await transporter.sendMail({
@@ -157,6 +170,18 @@ class Notification {
             subject: msg,
             text: msg,
         });
+
+        return true;
+    }
+
+    static async discord(notification, msg) {
+        const client = new Discord.Client();
+        await client.login(notification.discordToken)
+
+        const channel = await client.channels.fetch(notification.discordChannelID);
+        await channel.send(msg);
+
+        client.destroy()
 
         return true;
     }
