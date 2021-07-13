@@ -2,13 +2,26 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
-#### [1.0.4](https://github.com/philippdormann/uptime-kuma/compare/1.0.3...1.0.4)
+#### [v1.0.5](https://github.com/philippdormann/uptime-kuma/compare/v1.0.4...v1.0.5)
+
+- Create docker-image-tag.yml [`3a70c15`](https://github.com/philippdormann/uptime-kuma/commit/3a70c15846b2b5bc2918ac322f00b32482eed7f1)
+- Create docker-image-nightly.yml [`1c125dd`](https://github.com/philippdormann/uptime-kuma/commit/1c125dd14ea9ca39e3c5fe835fcad222ef7ab9dd)
+- Add some shields by shields.io [`77ab9fb`](https://github.com/philippdormann/uptime-kuma/commit/77ab9fbc5700bb5688becf07f0cddbdcacafb431)
+- Update README.md [`137f5da`](https://github.com/philippdormann/uptime-kuma/commit/137f5da3da71b63792f47da2aa0b236e5519ade5)
+- Update README.md [`338d002`](https://github.com/philippdormann/uptime-kuma/commit/338d002d4292f6df771d466e0e31ca666e673ee3)
+- Update docker-image-nightly.yml [`eeb9eb8`](https://github.com/philippdormann/uptime-kuma/commit/eeb9eb8ffd2e8f9722f98c892e9299afe4a81552)
+- Update docker-image-nightly.yml [`9bfddd9`](https://github.com/philippdormann/uptime-kuma/commit/9bfddd9fdece0b7a0d2e90d6c225dd7c281da873)
+
+#### [v1.0.4](https://github.com/philippdormann/uptime-kuma/compare/1.0.3...v1.0.4)
+
+> 13 July 2021
 
 - add release config [`72a3b60`](https://github.com/philippdormann/uptime-kuma/commit/72a3b60a364aaa1218bf7515b0302607d5896eec)
 - 🌑 darkmode fixes [`35a9964`](https://github.com/philippdormann/uptime-kuma/commit/35a996454a1788653e845710753a7f8d81726e2a)
 - 🚀RELEASE v1.0.2 [`c9b0461`](https://github.com/philippdormann/uptime-kuma/commit/c9b046120f3fe4f429e140f44af2a153b2247ae3)
 - fix formatting... [`71b89af`](https://github.com/philippdormann/uptime-kuma/commit/71b89af535a864263aeda7aec39c11c606377a4f)
 - ⏫ bump vue@3.1.4 [`4c2b3a0`](https://github.com/philippdormann/uptime-kuma/commit/4c2b3a0f3e1e4f469315682249f3f6ff896b9663)
+- 🚀RELEASE v1.0.4 [`3965793`](https://github.com/philippdormann/uptime-kuma/commit/3965793b54c22c239f217fa90c47073b916caf9e)
 - several css color fixes [`deea889`](https://github.com/philippdormann/uptime-kuma/commit/deea889e8d3a078ad8b63416a700159b873c4582)
 - ⚡volta: pin node version 16.4.2 [`c5d0118`](https://github.com/philippdormann/uptime-kuma/commit/c5d011886c66c4f243d37ef33eeb19fd11a7d29c)
 - fix missing npm package version bump... [`731449f`](https://github.com/philippdormann/uptime-kuma/commit/731449f5fb5bd0bba8305c67a9888ae2163fefc6)
