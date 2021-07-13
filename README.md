@@ -73,6 +73,8 @@ Choose Cheapest Plan is enough. (US$ 5)
 
 Re-pull the latest docker image and create another container with the same volume.
 
+PS: For every new release, it takes some time to build the docker image, please be patient if it is not available yet.
+
 ### Without Docker
 
 ```bash
