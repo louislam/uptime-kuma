@@ -1,0 +1,27 @@
+name: Docker Image Tags
+
+on:
+  push:
+    tags: [ '*' ]
+  workflow_dispatch:
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+    -
+        name: Checkout
+        uses: actions/checkout@v2
+    -
+      name: Set up QEMU
+      uses: docker/setup-qemu-action@v1
+    -
+      name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+    -
+      name: Build and push
+      uses: mr-smithers-excellent/docker-build-push@v5
+      with:
+        image: philippdormann/uptime
+        registry: docker.io
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
