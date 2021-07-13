@@ -5,20 +5,18 @@ const server = http.createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server);
 const dayjs = require("dayjs");
-const { R } = require("redbean-node");
+const {R} = require("redbean-node");
 const passwordHash = require('password-hash');
 const jwt = require('jsonwebtoken');
 const Monitor = require("./model/monitor");
 const fs = require("fs");
-const { getSettings } = require("./util-server");
-const { Notification } = require("./notification")
+const {getSettings} = require("./util-server");
+const {Notification} = require("./notification")
 const args = require('args-parser')(process.argv);
 
-console.log("args:")
-console.log(args)
-
+const version = require('../package.json').version;
 const hostname = args.host || "0.0.0.0"
-const port = args.port || 50013
+const port = args.port || 3001
 
 app.use(express.json())
 
@@ -32,18 +30,16 @@ let needSetup = false;
 
     app.use('/', express.static("dist"));
 
-    app.post('/test-webhook', function (request, response, next) {
-        console.log("Test Webhook (application/json only)")
-        console.log("Content-Type: " + request.header("Content-Type"))
-        console.log(request.body)
-        response.end();
-    });
-
-    app.get('*', function (request, response, next) {
+    app.get('*', function(request, response, next) {
         response.sendFile(process.cwd() + '/dist/index.html');
     });
 
     io.on('connection', async (socket) => {
+
+        socket.emit("info", {
+            version,
+        })
+
         console.log('a user connected');
         totalClient++;
 
@@ -194,7 +190,7 @@ let needSetup = false;
             try {
                 checkLogin(socket)
 
-                let bean = await R.findOne("monitor", " id = ? ", [monitor.id])
+                let bean = await R.findOne("monitor", " id = ? ", [ monitor.id ])
 
                 if (bean.user_id !== socket.userID) {
                     throw new Error("Permission denied.")
@@ -332,7 +328,7 @@ let needSetup = false;
             try {
                 checkLogin(socket)
 
-                if (!password.currentPassword) {
+                if (! password.currentPassword) {
                     throw new Error("Invalid new password")
                 }
 
@@ -471,7 +467,7 @@ async function checkOwner(userID, monitorID) {
         userID,
     ])
 
-    if (!row) {
+    if (! row) {
         throw new Error("You do not own this monitor.");
     }
 }
@@ -526,7 +522,7 @@ async function getMonitorJSONList(userID) {
 }
 
 function checkLogin(socket) {
-    if (!socket.userID) {
+    if (! socket.userID) {
         throw new Error("You are not logged in.");
     }
 }
@@ -534,7 +530,7 @@ function checkLogin(socket) {
 async function initDatabase() {
     const path = './data/kuma.db';
 
-    if (!fs.existsSync(path)) {
+    if (! fs.existsSync(path)) {
         console.log("Copy Database")
         fs.copyFileSync("./db/kuma.db", path);
     }
@@ -551,7 +547,7 @@ async function initDatabase() {
         "jwtSecret"
     ]);
 
-    if (!jwtSecretBean) {
+    if (! jwtSecretBean) {
         console.log("JWT secret is not found, generate one.")
         jwtSecretBean = R.dispense("setting")
         jwtSecretBean.key = "jwtSecret"
@@ -638,7 +634,7 @@ async function sendHeartbeatList(socket, monitorID) {
     let result = [];
 
     for (let bean of list) {
-        result.unshift(bean.toJSON())
+       result.unshift(bean.toJSON())
     }
 
     socket.emit("heartbeatList", monitorID, result)

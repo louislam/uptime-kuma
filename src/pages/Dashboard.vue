@@ -129,19 +129,17 @@ export default {
         }
 
         &:hover {
-            color: var(--main-font-color);
-            background-color: var(--background-4);
+            background-color: $highlight-white;
         }
 
         &.active {
-            background-color: var(--background-secondary);
+            background-color: #cdf8f4;
         }
     }
 }
 
 .badge {
     min-width: 58px;
-    color: #0a0a0a;
 }
 
 .small-padding {
