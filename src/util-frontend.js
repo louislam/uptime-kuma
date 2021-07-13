@@ -362,22 +362,29 @@ const aryIannaTimeZones = [
     'Pacific/Efate',
     'Pacific/Wallis',
     'Pacific/Apia',
-    'Africa/Johannesburg'
+    'Africa/Johannesburg',
 ];
 
 
 export function timezoneList() {
+
     let result = [];
 
     for (let timezone of aryIannaTimeZones) {
 
-        let display = dayjs().tz(timezone).format("Z");
+        try {
+            let display = dayjs().tz(timezone).format("Z");
 
-        result.push({
-            name: `(UTC${display}) ${timezone}`,
-            value: timezone,
-            time: getTimezoneOffset(timezone),
-        })
+            result.push({
+                name: `(UTC${display}) ${timezone}`,
+                value: timezone,
+                time: getTimezoneOffset(timezone),
+            })
+        } catch (e) {
+            console.log(e.message);
+            console.log("Skip this timezone")
+        }
+
     }
 
     result.sort((a, b) => {
