@@ -133,7 +133,7 @@ export default {
         }
 
         &.active {
-            background-color: #cdf8f4;
+            background-color: var(--background-sidebar-active);
         }
     }
 }
