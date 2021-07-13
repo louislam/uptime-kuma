@@ -1,8 +1,9 @@
 {
     "name": "uptime-kuma",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "scripts": {
         "dev": "vite --host",
+        "release": "release-it",
         "start-server": "node server/server.js",
         "update": "",
         "build": "vite build",
@@ -40,6 +41,26 @@
         "@vue/compiler-sfc": "^3.0.5",
         "core-js": "^3.15.2",
         "sass": "^1.35.1",
-        "vite": "^2.3.7"
+        "vite": "^2.3.7",
+        "auto-changelog": "2.3.0",
+        "release-it": "14.10.0"
+    },
+    "release-it": {
+        "git": {
+            "commit": true,
+            "requireUpstream": false,
+            "requireCleanWorkingDir": false,
+            "commitMessage": "🚀RELEASE v${version}",
+            "push": false,
+            "tag": true,
+            "tagName": "v${version}",
+            "tagAnnotation": "v${version}"
+        },
+        "npm": {
+            "publish": false
+        },
+        "hooks": {
+            "after:bump": "auto-changelog --commit-limit false -p -u --hide-credit && git add CHANGELOG.md"
+        }
     }
 }
