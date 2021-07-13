@@ -160,12 +160,8 @@ export default {
     color: white;
 }
 
-main {
-}
-
 footer {
-    color: #aaa;
-    font-size: 13px;
+    font-size: 0.85rem;
     margin-bottom: 30px;
     margin-left: 10px;
 }

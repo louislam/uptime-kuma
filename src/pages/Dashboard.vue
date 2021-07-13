@@ -129,7 +129,7 @@ export default {
         }
 
         &:hover {
-            background-color: $highlight-white;
+            background-color: var(--background-sidebar-active);
         }
 
         &.active {
