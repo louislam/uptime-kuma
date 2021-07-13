@@ -6,7 +6,7 @@ const { Server } = require("socket.io");
 const io = new Server(server);
 const dayjs = require("dayjs");
 const { R } = require("redbean-node");
-const passwordHash = require('password-hash');
+const passwordHash = require('./password-hash');
 const jwt = require('jsonwebtoken');
 const Monitor = require("./model/monitor");
 const fs = require("fs");
@@ -95,6 +95,14 @@ let needSetup = false;
             ])
 
             if (user && passwordHash.verify(data.password, user.password)) {
+
+                // Upgrade the hash to bcrypt
+                if (passwordHash.needRehash(user.password)) {
+                    await R.exec("UPDATE `user` SET password = ? WHERE id = ? ", [
+                        passwordHash.generate(data.password),
+                        user.id
+                    ]);
+                }
 
                 await afterLogin(socket, user)
 

@@ -92,7 +92,6 @@ class Notification {
                 console.log(error)
                 return false;
             }
-            return await Notification.discord(notification, msg)
 
         } else if (notification.type === "signal") {
             try {
