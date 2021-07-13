@@ -5,6 +5,7 @@
         "dev": "vite --host",
         "start-server": "node server/server.js",
         "update": "",
+        "release": "release-it",
         "build": "vite build",
         "vite-preview-dist": "vite preview --host",
         "build-docker": "docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma -t louislam/uptime-kuma:1 -t louislam/uptime-kuma:1.0.1 . --push",
@@ -34,9 +35,28 @@
         "@vitejs/plugin-legacy": "1.4.4",
         "@vitejs/plugin-vue": "1.2.5",
         "@vue/compiler-sfc": "3.1.4",
+        "auto-changelog": "2.3.0",
         "core-js": "3.15.2",
+        "release-it": "14.10.0",
         "sass": "1.35.2",
         "vite": "2.4.2"
+    },
+    "release-it": {
+        "git": {
+            "commit": true,
+            "requireCleanWorkingDir": false,
+            "commitMessage": "🚀RELEASE v${version}",
+            "push": false,
+            "tag": true,
+            "tagName": "v${version}",
+            "tagAnnotation": "v${version}"
+        },
+        "npm": {
+            "publish": false
+        },
+        "hooks": {
+            "after:bump": "auto-changelog --commit-limit false -p -u --hide-credit && git add CHANGELOG.md"
+        }
     },
     "volta": {
         "node": "16.4.2"
