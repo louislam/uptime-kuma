@@ -1,5 +1,5 @@
 const axios = require("axios");
-const {R} = require("redbean-node");
+const { R } = require("redbean-node");
 const FormData = require('form-data');
 const nodemailer = require("nodemailer");
 
@@ -54,61 +54,61 @@ class Notification {
 
         } else if (notification.type === "discord") {
             try {
-              // If heartbeatJSON is null, assume we're testing.
-              if(heartbeatJSON == null) {
+                // If heartbeatJSON is null, assume we're testing.
+                if (heartbeatJSON == null) {
+                    let data = {
+                        username: 'Uptime-Kuma',
+                        content: msg
+                    }
+                    let res = await axios.post(notification.discordWebhookUrl, data)
+                    return true;
+                }
+                // If heartbeatJSON is not null, we go into the normal alerting loop.
+                if (heartbeatJSON['status'] == 0) {
+                    var alertColor = "16711680";
+                } else if (heartbeatJSON['status'] == 1) {
+                    var alertColor = "65280";
+                }
                 let data = {
-                  username: 'Uptime-Kuma',
-                  content: msg
+                    username: 'Uptime-Kuma',
+                    embeds: [{
+                        title: "Uptime-Kuma Alert",
+                        color: alertColor,
+                        fields: [
+                            {
+                                name: "Time (UTC)",
+                                value: heartbeatJSON["time"]
+                            },
+                            {
+                                name: "Message",
+                                value: msg
+                            }
+                        ]
+                    }]
                 }
                 let res = await axios.post(notification.discordWebhookUrl, data)
                 return true;
-              }
-              // If heartbeatJSON is not null, we go into the normal alerting loop.
-              if(heartbeatJSON['status'] == 0) {
-                var alertColor = "16711680";
-              } else if(heartbeatJSON['status'] == 1) {
-                var alertColor = "65280";
-              }
-              let data = {
-                username: 'Uptime-Kuma',
-                embeds: [{
-                  title: "Uptime-Kuma Alert",
-                  color: alertColor,
-                  fields: [
-                    {
-                      name: "Time (UTC)",
-                      value: heartbeatJSON["time"]
-                    },
-                    {
-                      name: "Message",
-                      value: msg
-                    }
-                  ]
-                }]
-              }
-              let res = await axios.post(notification.discordWebhookUrl, data)
-              return true;
-            } catch(error) {
-              console.log(error)
-              return false;
+            } catch (error) {
+                console.log(error)
+                return false;
             }
             return await Notification.discord(notification, msg)
 
         } else if (notification.type === "signal") {
-          try {
-            let data = {
-              "message": msg,
-              "number": notification.signalNumber,
-              "recipients": notification.signalRecipients.replace(/\s/g, '').split(",")
-            };
-            let config = {};
+            try {
+                let data = {
+                    "message": msg,
+                    "number": notification.signalNumber,
+                    "recipients": notification.signalRecipients.replace(/\s/g, '').split(",")
+                };
+                let config = {};
 
-            let res = await axios.post(notification.signalURL, data, config)
-            return true;
-        } catch (error) {
-            console.log(error)
-            return false;
-        }
+                let res = await axios.post(notification.signalURL, data, config)
+                return true;
+            } catch (error) {
+                console.log(error)
+                return false;
+            }
 
         } else {
             throw new Error("Notification type is not supported")
@@ -124,7 +124,7 @@ class Notification {
                 userID,
             ])
 
-            if (! bean) {
+            if (!bean) {
                 throw new Error("notification not found")
             }
 
@@ -144,7 +144,7 @@ class Notification {
             userID,
         ])
 
-        if (! bean) {
+        if (!bean) {
             throw new Error("notification not found")
         }
 
