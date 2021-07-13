@@ -1,4 +1,4 @@
-name: CI-Latest
+name: Docker Image Nightly
 on:
   schedule:
   - cron: "0 0 * * *"
