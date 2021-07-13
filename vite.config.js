@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [
       vue(),
       legacy({
-          targets: ['ie >= 11'],
+          targets: ['ie > 11'],
           additionalLegacyPolyfills: ['regenerator-runtime/runtime']
       })
   ]
