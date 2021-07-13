@@ -56,7 +56,5 @@ exports.getSettings = async function (type) {
         result[row.key] = row.value;
     }
 
-    console.log(result)
-
     return result;
 }
