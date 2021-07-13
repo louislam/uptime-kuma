@@ -1,3 +1,6 @@
+# Simple docker-composer.yml
+# You can change your port or volume location
+
 version: '3.3'
 
 services:
@@ -8,5 +11,3 @@ services:
       - ./uptime-kuma:/app/data
     ports:
       - 3001:3001
-    networks:
-      - traefik-network
