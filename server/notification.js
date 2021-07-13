@@ -135,15 +135,20 @@ class Notification {
 
     static async smtp(notification, msg) {
 
-        let transporter = nodemailer.createTransport({
+        let data = {
             host: notification.smtpHost,
             port: notification.smtpPort,
             secure: notification.smtpSecure,
-            auth: {
+        };
+
+        if (notification.smtpUsername) {
+            data.auth =  {
                 user: notification.smtpUsername,
                 pass: notification.smtpPassword,
-            },
-        });
+            };
+        }
+
+        let transporter = nodemailer.createTransport(data);
 
         // send mail with defined transport object
         let info = await transporter.sendMail({
