@@ -6,6 +6,9 @@
 
 It is a self-hosted monitoring tool like "Uptime Robot".
 
+[![Docker Image Tags](https://github.com/philippdormann/uptime-kuma/actions/workflows/docker-image-tag.yml/badge.svg)](https://github.com/philippdormann/uptime-kuma/actions/workflows/docker-image-tag.yml)
+[![Docker Image Nightly](https://github.com/philippdormann/uptime-kuma/actions/workflows/docker-image-nightly.yml/badge.svg)](https://github.com/philippdormann/uptime-kuma/actions/workflows/docker-image-nightly.yml)
+
 <img src="https://louislam.net/uptimekuma/1.jpg" width="512" alt="" />
 
 # Features
