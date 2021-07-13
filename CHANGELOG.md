@@ -2,7 +2,39 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
-#### [1.0.2](https://github.com/philippdormann/uptime-kuma/compare/1.0.1...1.0.2)
+#### [1.0.4](https://github.com/philippdormann/uptime-kuma/compare/1.0.3...1.0.4)
+
+- add release config [`72a3b60`](https://github.com/philippdormann/uptime-kuma/commit/72a3b60a364aaa1218bf7515b0302607d5896eec)
+- 🌑 darkmode fixes [`35a9964`](https://github.com/philippdormann/uptime-kuma/commit/35a996454a1788653e845710753a7f8d81726e2a)
+- 🚀RELEASE v1.0.2 [`c9b0461`](https://github.com/philippdormann/uptime-kuma/commit/c9b046120f3fe4f429e140f44af2a153b2247ae3)
+- fix formatting... [`71b89af`](https://github.com/philippdormann/uptime-kuma/commit/71b89af535a864263aeda7aec39c11c606377a4f)
+- ⏫ bump vue@3.1.4 [`4c2b3a0`](https://github.com/philippdormann/uptime-kuma/commit/4c2b3a0f3e1e4f469315682249f3f6ff896b9663)
+- several css color fixes [`deea889`](https://github.com/philippdormann/uptime-kuma/commit/deea889e8d3a078ad8b63416a700159b873c4582)
+- ⚡volta: pin node version 16.4.2 [`c5d0118`](https://github.com/philippdormann/uptime-kuma/commit/c5d011886c66c4f243d37ef33eeb19fd11a7d29c)
+- fix missing npm package version bump... [`731449f`](https://github.com/philippdormann/uptime-kuma/commit/731449f5fb5bd0bba8305c67a9888ae2163fefc6)
+- 🎨 improved ternary color in lightmode [`235b658`](https://github.com/philippdormann/uptime-kuma/commit/235b6580f61aab86c1ab8da3ce2d2bc55b699336)
+- add package version [`0c1486b`](https://github.com/philippdormann/uptime-kuma/commit/0c1486b905d42d2ddb0424105ee5fae0ab02f450)
+
+#### [1.0.3](https://github.com/philippdormann/uptime-kuma/compare/1.0.2...1.0.3)
+
+> 13 July 2021
+
+- update to 1.0.3 [`b6b7835`](https://github.com/philippdormann/uptime-kuma/commit/b6b7835d7ee66993fc4caec25fc1e966456fe873)
+- fix merging problem [`d4fe590`](https://github.com/philippdormann/uptime-kuma/commit/d4fe5908f5e2821e5cfafe0d478594cc5029dfe1)
+
+#### [1.0.2](https://github.com/philippdormann/uptime-kuma/compare/v1.0.2...1.0.2)
+
+> 13 July 2021
+
+- use bcrypt for password hash [`9c23cd0`](https://github.com/philippdormann/uptime-kuma/commit/9c23cd09ce586e651c802557e5a7368b9d196e73)
+- add version-global-replace.js [`6d4694d`](https://github.com/philippdormann/uptime-kuma/commit/6d4694da43931fe5dd08f80ff56c52ef4fbda7ec)
+- update 1.0.2 [`af838d6`](https://github.com/philippdormann/uptime-kuma/commit/af838d62e83de3652c7e39919978fce748da24bf)
+- add build-docker-nightly script [`c81930c`](https://github.com/philippdormann/uptime-kuma/commit/c81930cacc13e653c346197ebac2ba2d5f90db0b)
+- remove debug msg [`5a6e83b`](https://github.com/philippdormann/uptime-kuma/commit/5a6e83b777498b1abeaa7021e1fb048a980760e4)
+
+#### [v1.0.2](https://github.com/philippdormann/uptime-kuma/compare/1.0.1...v1.0.2)
+
+> 13 July 2021
 
 - Revert "basic darkmode" [`#35`](https://github.com/philippdormann/uptime-kuma/pull/35)
 - basic darkmode [`#32`](https://github.com/philippdormann/uptime-kuma/pull/32)
@@ -13,6 +45,7 @@ All notable changes to this project will be documented in this file. Dates are d
 - add release config [`72a3b60`](https://github.com/philippdormann/uptime-kuma/commit/72a3b60a364aaa1218bf7515b0302607d5896eec)
 - Discord revamp! Changed from bot to webhook, removed discord.js dep [`613c42b`](https://github.com/philippdormann/uptime-kuma/commit/613c42b6d8e53566516ee5e498c4ca48bae979d4)
 - 🌑 darkmode fixes [`35a9964`](https://github.com/philippdormann/uptime-kuma/commit/35a996454a1788653e845710753a7f8d81726e2a)
+- 🚀RELEASE v1.0.2 [`c9b0461`](https://github.com/philippdormann/uptime-kuma/commit/c9b046120f3fe4f429e140f44af2a153b2247ae3)
 - fix formatting... [`71b89af`](https://github.com/philippdormann/uptime-kuma/commit/71b89af535a864263aeda7aec39c11c606377a4f)
 - 🚧 WIP on darkmode 🌑 [`673d3c1`](https://github.com/philippdormann/uptime-kuma/commit/673d3c124ce09caddd2820fa04ed1603cbb838b7)
 - ⏫ bump vue@3.1.4 [`4c2b3a0`](https://github.com/philippdormann/uptime-kuma/commit/4c2b3a0f3e1e4f469315682249f3f6ff896b9663)
