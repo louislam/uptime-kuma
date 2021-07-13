@@ -74,7 +74,7 @@ Re-pull the latest docker image and create another container with the same volum
 
 ```bash
 git fetch --all
-git checkout 1.0.1 --force
+git checkout 1.0.2 --force
 npm install
 npm run build
 pm2 restart uptime-kuma
