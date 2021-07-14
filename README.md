@@ -21,6 +21,9 @@ It is a self-hosted monitoring tool like "Uptime Robot".
 # How to Use
 
 ### Docker
+
+⚠ For someone, who are using Raspberry Pi 3<=, please keep using 1.0.1.
+
 ```bash
 # Create a volume
 docker volume create uptime-kuma
