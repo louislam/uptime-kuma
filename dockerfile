@@ -1,11 +1,12 @@
 FROM node:14-alpine3.14
+WORKDIR /app
 
-# sqlite have to build on arm
-# TODO: use prebuilt sqlite for arm, because it is very very slow.
-RUN apk add --no-cache make g++ python3
+RUN apk add --no-cache make g++ python3 py3-pip python3-dev
 RUN ln -s /usr/bin/python3 /usr/bin/python
 
-WORKDIR /app
+# split the sqlite install here, so that it can caches the arm prebuilt
+RUN npm install sqlite3@5.0.2
+
 COPY . .
 RUN npm install
 RUN npm run build

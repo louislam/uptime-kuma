@@ -8,7 +8,7 @@
         "build": "vite build",
         "vite-preview-dist": "vite preview --host",
         "build-docker": "docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma -t louislam/uptime-kuma:1 -t louislam/uptime-kuma:1.0.3 . --push",
-        "build-docker-nightly": "docker buildx build --platform linux/amd64 -t louislam/uptime-kuma:nightly . --push",
+        "build-docker-nightly": "docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma:nightly . --push",
         "setup": "git checkout 1.0.3 && npm install && npm run build",
         "version-global-replace": "node extra/version-global-replace.js"
     },
