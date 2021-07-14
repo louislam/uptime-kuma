@@ -2,3 +2,4 @@
 /dist
 /node_modules
 /data/kuma.db
+/.do
