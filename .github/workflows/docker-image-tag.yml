@@ -30,4 +30,3 @@ jobs:
         tags: |
           latest
           ${{ github.sha }}
-          ${{ github.ref }}
