@@ -2,10 +2,18 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [v1.1.1](https://github.com/philippdormann/uptime-kuma/compare/v1.1.0...v1.1.1)
+
+- support trailing slashes in gotify server url [`b0d0ecd`](https://github.com/philippdormann/uptime-kuma/commit/b0d0ecd900e9dab57b9763b1bb679f81e8da01df)
+- 🐞 tmp: disable github.ref in docker-image-tag workflow [`f7695f4`](https://github.com/philippdormann/uptime-kuma/commit/f7695f47f3283c51b1bf06bc43301f6199968c20)
+
 #### [v1.1.0](https://github.com/philippdormann/uptime-kuma/compare/v1.0.5...v1.1.0)
+
+> 14 July 2021
 
 - ✨ add support for Gotify [`ccf9d2a`](https://github.com/philippdormann/uptime-kuma/commit/ccf9d2ad5c5ab5a3906dc8f2281c1e6daedd46cb)
 - Update docker-image-tag.yml [`671f503`](https://github.com/philippdormann/uptime-kuma/commit/671f503ffd2d492901334de1c3f4f11c11e9d043)
+- 🚀RELEASE v1.1.0 [`830cbfc`](https://github.com/philippdormann/uptime-kuma/commit/830cbfc13f04ee74979e14daf775d9c91905c76f)
 - Update docker-image-nightly.yml [`f2290c8`](https://github.com/philippdormann/uptime-kuma/commit/f2290c8fc1c75e23fb5f4e7519d0ba3985104448)
 - Update README.md [`30f0f0b`](https://github.com/philippdormann/uptime-kuma/commit/30f0f0b0eeaf3996e1889efacf3677bce850cada)
 - Update README.md [`fb9cad5`](https://github.com/philippdormann/uptime-kuma/commit/fb9cad5ac98b6069864be4ef70717edb91417788)
