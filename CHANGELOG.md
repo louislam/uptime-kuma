@@ -2,11 +2,18 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [v1.1.3](https://github.com/philippdormann/uptime-kuma/compare/v1.1.2...v1.1.3)
+
+- 🚑 fix yarn lockfile [`20f2302`](https://github.com/philippdormann/uptime-kuma/commit/20f2302d93bc6ebe133e74136d32b85bd00762a7)
+
 #### [v1.1.2](https://github.com/philippdormann/uptime-kuma/compare/v1.1.1...v1.1.2)
+
+> 14 July 2021
 
 - ✨ Gotify Support [`#43`](https://github.com/philippdormann/uptime-kuma/pull/43)
 - add gotify priority [`#50`](https://github.com/louislam/uptime-kuma/issues/50)
 - Added Slack Webhook support [`5f6d558`](https://github.com/philippdormann/uptime-kuma/commit/5f6d5588a6c84364b38a00a4051b3231f00a684a)
+- 🚀RELEASE v1.1.2 [`57d4076`](https://github.com/philippdormann/uptime-kuma/commit/57d4076e19b01f31537dc088e1847e31706ce5bf)
 - Updated Slack test notification [`60493f0`](https://github.com/philippdormann/uptime-kuma/commit/60493f0f8645ba2499ad4aaf10d0e94a2b212001)
 - ✨ added Gotify Support [`126f00e`](https://github.com/philippdormann/uptime-kuma/commit/126f00e739728056af00d3dab53cbb56499397ae)
 - Added Slack Webhook support [`63c6e29`](https://github.com/philippdormann/uptime-kuma/commit/63c6e29e62e4372031ae5138f8372a09d0298c2f)
