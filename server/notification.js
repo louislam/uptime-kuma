@@ -19,6 +19,22 @@ class Notification {
                 return false;
             }
 
+        } else if (notification.type === "gotify") {
+            try {
+                if (notification.gotifyserverurl.endsWith("/")) {
+                    notification.gotifyserverurl = notification.gotifyserverurl.slice(0, -1);
+                }
+                await axios.post(`${notification.gotifyserverurl}/message?token=${notification.gotifyapplicationToken}`, {
+                    "message": msg,
+                    "priority": 8,
+                    "title": "Uptime-Kuma"
+                })
+                return true;
+            } catch (error) {
+                console.log(error)
+                return false;
+            }
+
         } else if (notification.type === "webhook") {
             try {
 
