@@ -21,7 +21,7 @@
         "express": "4.17.1",
         "form-data": "4.0.0",
         "jsonwebtoken": "8.5.1",
-        "nodemailer": "6.6.2",
+        "nodemailer": "6.6.3",
         "password-hash": "1.2.2",
         "redbean-node": "0.0.20",
         "socket.io": "4.1.3",
