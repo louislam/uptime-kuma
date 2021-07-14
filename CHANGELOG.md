@@ -2,10 +2,21 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [v1.1.0](https://github.com/philippdormann/uptime-kuma/compare/v1.0.5...v1.1.0)
+
+- ✨ add support for Gotify [`ccf9d2a`](https://github.com/philippdormann/uptime-kuma/commit/ccf9d2ad5c5ab5a3906dc8f2281c1e6daedd46cb)
+- Update docker-image-tag.yml [`671f503`](https://github.com/philippdormann/uptime-kuma/commit/671f503ffd2d492901334de1c3f4f11c11e9d043)
+- Update docker-image-nightly.yml [`f2290c8`](https://github.com/philippdormann/uptime-kuma/commit/f2290c8fc1c75e23fb5f4e7519d0ba3985104448)
+- Update README.md [`30f0f0b`](https://github.com/philippdormann/uptime-kuma/commit/30f0f0b0eeaf3996e1889efacf3677bce850cada)
+- Update README.md [`fb9cad5`](https://github.com/philippdormann/uptime-kuma/commit/fb9cad5ac98b6069864be4ef70717edb91417788)
+
 #### [v1.0.5](https://github.com/philippdormann/uptime-kuma/compare/v1.0.4...v1.0.5)
+
+> 13 July 2021
 
 - Create docker-image-tag.yml [`3a70c15`](https://github.com/philippdormann/uptime-kuma/commit/3a70c15846b2b5bc2918ac322f00b32482eed7f1)
 - Create docker-image-nightly.yml [`1c125dd`](https://github.com/philippdormann/uptime-kuma/commit/1c125dd14ea9ca39e3c5fe835fcad222ef7ab9dd)
+- 🚀RELEASE v1.0.5 [`3803d83`](https://github.com/philippdormann/uptime-kuma/commit/3803d83bacfa3922b4a1752f0c08ce4c5fdce337)
 - Add some shields by shields.io [`77ab9fb`](https://github.com/philippdormann/uptime-kuma/commit/77ab9fbc5700bb5688becf07f0cddbdcacafb431)
 - Update README.md [`137f5da`](https://github.com/philippdormann/uptime-kuma/commit/137f5da3da71b63792f47da2aa0b236e5519ade5)
 - Update README.md [`338d002`](https://github.com/philippdormann/uptime-kuma/commit/338d002d4292f6df771d466e0e31ca666e673ee3)
