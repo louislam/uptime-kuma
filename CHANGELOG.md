@@ -2,8 +2,27 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [v1.1.2](https://github.com/philippdormann/uptime-kuma/compare/v1.1.1...v1.1.2)
+
+- ✨ Gotify Support [`#43`](https://github.com/philippdormann/uptime-kuma/pull/43)
+- add gotify priority [`#50`](https://github.com/louislam/uptime-kuma/issues/50)
+- Added Slack Webhook support [`5f6d558`](https://github.com/philippdormann/uptime-kuma/commit/5f6d5588a6c84364b38a00a4051b3231f00a684a)
+- Updated Slack test notification [`60493f0`](https://github.com/philippdormann/uptime-kuma/commit/60493f0f8645ba2499ad4aaf10d0e94a2b212001)
+- ✨ added Gotify Support [`126f00e`](https://github.com/philippdormann/uptime-kuma/commit/126f00e739728056af00d3dab53cbb56499397ae)
+- Added Slack Webhook support [`63c6e29`](https://github.com/philippdormann/uptime-kuma/commit/63c6e29e62e4372031ae5138f8372a09d0298c2f)
+- cache the sqlite built when docker build [`3b52433`](https://github.com/philippdormann/uptime-kuma/commit/3b52433202ee683e8e0bf502035140094f656039)
+- 🐞 fix for EditMonitor value binding [`77b83dd`](https://github.com/philippdormann/uptime-kuma/commit/77b83ddc44f0f72b339910a8565428e366f28eae)
+- Update README.md [`80466ac`](https://github.com/philippdormann/uptime-kuma/commit/80466ac9575e10d76d39cb20eae61291adbd1d30)
+- ⏫ bump nodemailer@6.6.3 [`c25e1dd`](https://github.com/philippdormann/uptime-kuma/commit/c25e1dd217faec172106eff7a153ad1cb518658c)
+- easier merging 🤞 [`25a93b0`](https://github.com/philippdormann/uptime-kuma/commit/25a93b05dc2b9a98ee39dd20b05dbb4f703aeddc)
+- add missing v-bind:key in EditMonitor [`3d5be4c`](https://github.com/philippdormann/uptime-kuma/commit/3d5be4c07f965c007d1182fa105961612fa9de70)
+- don't enforce 20s interval, but default to 20s [`49be12c`](https://github.com/philippdormann/uptime-kuma/commit/49be12cad6c1ceed164a211854131dab0b7a7326)
+
 #### [v1.1.1](https://github.com/philippdormann/uptime-kuma/compare/v1.1.0...v1.1.1)
 
+> 14 July 2021
+
+- 🚀RELEASE v1.1.1 [`07d3cfc`](https://github.com/philippdormann/uptime-kuma/commit/07d3cfccb3fe6fce153c64b9fa0d466c7544e68e)
 - support trailing slashes in gotify server url [`b0d0ecd`](https://github.com/philippdormann/uptime-kuma/commit/b0d0ecd900e9dab57b9763b1bb679f81e8da01df)
 - 🐞 tmp: disable github.ref in docker-image-tag workflow [`f7695f4`](https://github.com/philippdormann/uptime-kuma/commit/f7695f47f3283c51b1bf06bc43301f6199968c20)
 
@@ -18,18 +37,41 @@ All notable changes to this project will be documented in this file. Dates are d
 - Update README.md [`30f0f0b`](https://github.com/philippdormann/uptime-kuma/commit/30f0f0b0eeaf3996e1889efacf3677bce850cada)
 - Update README.md [`fb9cad5`](https://github.com/philippdormann/uptime-kuma/commit/fb9cad5ac98b6069864be4ef70717edb91417788)
 
-#### [v1.0.5](https://github.com/philippdormann/uptime-kuma/compare/v1.0.4...v1.0.5)
+#### [v1.0.5](https://github.com/philippdormann/uptime-kuma/compare/1.0.4...v1.0.5)
 
 > 13 July 2021
 
+- add release config [`72a3b60`](https://github.com/philippdormann/uptime-kuma/commit/72a3b60a364aaa1218bf7515b0302607d5896eec)
+- 🌑 darkmode fixes [`35a9964`](https://github.com/philippdormann/uptime-kuma/commit/35a996454a1788653e845710753a7f8d81726e2a)
+- 🚀RELEASE v1.0.2 [`c9b0461`](https://github.com/philippdormann/uptime-kuma/commit/c9b046120f3fe4f429e140f44af2a153b2247ae3)
+- fix formatting... [`71b89af`](https://github.com/philippdormann/uptime-kuma/commit/71b89af535a864263aeda7aec39c11c606377a4f)
+- ⏫ bump vue@3.1.4 [`4c2b3a0`](https://github.com/philippdormann/uptime-kuma/commit/4c2b3a0f3e1e4f469315682249f3f6ff896b9663)
+- 🚀RELEASE v1.0.4 [`3965793`](https://github.com/philippdormann/uptime-kuma/commit/3965793b54c22c239f217fa90c47073b916caf9e)
 - Create docker-image-tag.yml [`3a70c15`](https://github.com/philippdormann/uptime-kuma/commit/3a70c15846b2b5bc2918ac322f00b32482eed7f1)
 - Create docker-image-nightly.yml [`1c125dd`](https://github.com/philippdormann/uptime-kuma/commit/1c125dd14ea9ca39e3c5fe835fcad222ef7ab9dd)
 - 🚀RELEASE v1.0.5 [`3803d83`](https://github.com/philippdormann/uptime-kuma/commit/3803d83bacfa3922b4a1752f0c08ce4c5fdce337)
+- several css color fixes [`deea889`](https://github.com/philippdormann/uptime-kuma/commit/deea889e8d3a078ad8b63416a700159b873c4582)
+- ⚡volta: pin node version 16.4.2 [`c5d0118`](https://github.com/philippdormann/uptime-kuma/commit/c5d011886c66c4f243d37ef33eeb19fd11a7d29c)
+- Update docker-image-nightly.yml [`eeb9eb8`](https://github.com/philippdormann/uptime-kuma/commit/eeb9eb8ffd2e8f9722f98c892e9299afe4a81552)
+- fix missing npm package version bump... [`731449f`](https://github.com/philippdormann/uptime-kuma/commit/731449f5fb5bd0bba8305c67a9888ae2163fefc6)
+- 🎨 improved ternary color in lightmode [`235b658`](https://github.com/philippdormann/uptime-kuma/commit/235b6580f61aab86c1ab8da3ce2d2bc55b699336)
+- Update docker-image-nightly.yml [`9bfddd9`](https://github.com/philippdormann/uptime-kuma/commit/9bfddd9fdece0b7a0d2e90d6c225dd7c281da873)
+- add package version [`0c1486b`](https://github.com/philippdormann/uptime-kuma/commit/0c1486b905d42d2ddb0424105ee5fae0ab02f450)
+
+#### [1.0.4](https://github.com/philippdormann/uptime-kuma/compare/v1.0.4...1.0.4)
+
+> 15 July 2021
+
+- ✨ Gotify Support [`#43`](https://github.com/philippdormann/uptime-kuma/pull/43)
+- dockerfile: change the base image to node:14-alpine3.12; add apprise cli, prepare for implementing notification [`2b8e33c`](https://github.com/philippdormann/uptime-kuma/commit/2b8e33caed2fa825ac2c9d74e5c43f68a5cb8b59)
+- ✨ added Gotify Support [`126f00e`](https://github.com/philippdormann/uptime-kuma/commit/126f00e739728056af00d3dab53cbb56499397ae)
+- cache the sqlite built when docker build [`3b52433`](https://github.com/philippdormann/uptime-kuma/commit/3b52433202ee683e8e0bf502035140094f656039)
+- update to 1.0.4 [`f48f957`](https://github.com/philippdormann/uptime-kuma/commit/f48f957ba91336de0e58e010cd2091e37c9f6fbd)
+- minor [`bfb117c`](https://github.com/philippdormann/uptime-kuma/commit/bfb117cb7609e359b55d4c12d096ddd649c62958)
+- Update README.md [`80466ac`](https://github.com/philippdormann/uptime-kuma/commit/80466ac9575e10d76d39cb20eae61291adbd1d30)
 - Add some shields by shields.io [`77ab9fb`](https://github.com/philippdormann/uptime-kuma/commit/77ab9fbc5700bb5688becf07f0cddbdcacafb431)
 - Update README.md [`137f5da`](https://github.com/philippdormann/uptime-kuma/commit/137f5da3da71b63792f47da2aa0b236e5519ade5)
 - Update README.md [`338d002`](https://github.com/philippdormann/uptime-kuma/commit/338d002d4292f6df771d466e0e31ca666e673ee3)
-- Update docker-image-nightly.yml [`eeb9eb8`](https://github.com/philippdormann/uptime-kuma/commit/eeb9eb8ffd2e8f9722f98c892e9299afe4a81552)
-- Update docker-image-nightly.yml [`9bfddd9`](https://github.com/philippdormann/uptime-kuma/commit/9bfddd9fdece0b7a0d2e90d6c225dd7c281da873)
 
 #### [v1.0.4](https://github.com/philippdormann/uptime-kuma/compare/1.0.3...v1.0.4)
 
