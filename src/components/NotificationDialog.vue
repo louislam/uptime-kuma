@@ -260,7 +260,7 @@ export default {
                 this.id = null;
                 this.notification = {
                     name: "",
-                    type: null
+                    type: null,
                 }
                 
                 // Default set to Telegram
