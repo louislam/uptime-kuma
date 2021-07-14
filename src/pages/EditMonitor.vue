@@ -45,7 +45,7 @@
 
                     <div class="mb-3">
                         <label for="interval" class="form-label">Heartbeat Interval (Every {{ monitor.interval }} seconds)</label>
-                        <input type="number" class="form-control" id="interval" v-model="monitor.interval" required min="1" step="1" value="20">
+                        <input type="number" class="form-control" id="interval" v-model="monitor.interval" required min="1" step="1">
                     </div>
 
                     <div>
@@ -118,7 +118,7 @@ export default {
                     type: "http",
                     name: "",
                     url: "https://",
-                    interval: 60,
+                    interval: 20,
                     notificationIDList: {},
                 }
             } else if (this.isEdit) {
