@@ -8,7 +8,6 @@ RUN apk add --no-cache --virtual .build-deps make g++ python3 python3-dev && \
             npm install sqlite3@5.0.2 bcrypt@5.0.1 && \
             apk del .build-deps
 
-# New things add here
 # Touching above code may causes sqlite3 re-compile again, painful slow.
 
 # Install apprise
@@ -24,10 +23,11 @@ RUN apk add --no-cache --virtual .build-deps libffi-dev musl-dev openssl-dev car
             pip3 install apprise && \
             apk del .build-deps
 
+# New things add here
+
 COPY . .
 RUN npm install
 RUN npm run build
-
 
 EXPOSE 3001
 VOLUME ["/app/data"]
