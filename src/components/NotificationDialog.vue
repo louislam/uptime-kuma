@@ -19,6 +19,7 @@
                                     <option value="discord">Discord</option>
                                     <option value="signal">Signal</option>
                                     <option value="gotify">Gotify</option>
+                                    <option value="slack">Slack</option>
                                 </select>
                             </div>
 
@@ -171,18 +172,31 @@
                         </template>
 
                         <template v-if="notification.type === 'gotify'">
-                                <div class="mb-3">
-                                    <label for="gotify-application-token" class="form-label">Application Token</label>
-                                    <input type="text" class="form-control" id="gotify-application-token" required v-model="notification.gotifyapplicationToken">
-                                </div>
+                            <div class="mb-3">
+                                <label for="gotify-application-token" class="form-label">Application Token</label>
+                                <input type="text" class="form-control" id="gotify-application-token" required v-model="notification.gotifyapplicationToken">
+                            </div>
 
-                                <div class="mb-3">
-                                    <label for="gotify-server-url" class="form-label">Server URL</label>
-                                    <div class="input-group mb-3">
-                                        <input type="text" class="form-control" id="gotify-server-url" required v-model="notification.gotifyserverurl">
-                                    </div>
+                            <div class="mb-3">
+                                <label for="gotify-server-url" class="form-label">Server URL</label>
+                                <div class="input-group mb-3">
+                                    <input type="text" class="form-control" id="gotify-server-url" required v-model="notification.gotifyserverurl">
                                 </div>
-                            </template>
+                            </div>
+                        </template>
+                        <template v-if="notification.type === 'slack'">
+                            <div class="mb-3">
+                                <label for="slack-webhook-url" class="form-label">Slack Webhook URL</label>
+                                <input type="text" class="form-control" id="slack-webhook-url" required v-model="notification.slackwebhookURL" autocomplete="false">
+                                <label for="gotify-server-url" class="form-label">Uptime Kuma URL</label>
+                                    <div class="input-group mb-3">
+                                        <input type="text" class="form-control" id="slack-button" required v-model="notification.slackbutton" autocomplete="false">
+                                    </div>
+                                <p style="margin-top: 8px;">
+                                        More info on: <a href="https://api.slack.com/messaging/webhooks" target="_blank">https://api.slack.com/messaging/webhooks</a>
+                                </p>
+                            </div>
+                        </template>
 
                     </div>
                     <div class="modal-footer">
