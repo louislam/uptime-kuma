@@ -1,0 +1,8 @@
+name: uptime-kuma
+services:
+  - dockerfile_path: Dockerfile
+    github:
+      branch: main
+      deploy_on_push: true
+      repo: philippdormann/uptime-kuma
+    name: uptime-kuma

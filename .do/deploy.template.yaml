@@ -1,0 +1,8 @@
+spec:
+  name: uptime-kuma
+  services:
+  - dockerfile_path: Dockerfile
+    git:
+      branch: main
+      repo_clone_url: https://github.com/philippdormann/uptime-kuma.git
+    name: uptime-kuma
