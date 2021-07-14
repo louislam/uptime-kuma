@@ -128,42 +128,7 @@ class Notification {
         } else if (notification.type === "slack") {
             try {
                 if (heartbeatJSON == null) {
-                    let data = {
-                        "blocks": [{
-                                "type": "header",
-                                "text": {
-                                    "type": "plain_text",
-                                    "text": "Uptime Kuma - Slack Testing"
-                                }
-                            },
-                            {
-                                "type": "section",
-                                "fields": [{
-                                        "type": "mrkdwn",
-                                        "text": "*Message*\nSlack Testing"
-                                    },
-                                    {
-                                        "type": "mrkdwn",
-                                        "text": "*Time (UTC)*\nSlack Testing"
-                                    }
-                                ]
-                            },
-                            {
-                                "type": "actions",
-                                "elements": [
-                                    {
-                                        "type": "button",
-                                        "text": {
-                                            "type": "plain_text",
-                                            "text": "Visit Uptime Kuma",
-                                        },
-                                        "value": "Uptime-Kuma",
-                                        "url": notification.slackbutton
-                                    }
-                                ]
-                            }
-                        ]
-                    }
+                    let data = {'text': "Uptime Kuma Slack testing successful."}
                     let res = await axios.post(notification.slackwebhookURL, data)
                     return true;
                 }
