@@ -18,6 +18,7 @@
                                     <option value="smtp">Email (SMTP)</option>
                                     <option value="discord">Discord</option>
                                     <option value="signal">Signal</option>
+                                    <option value="gotify">Gotify</option>
                                 </select>
                             </div>
 
@@ -168,6 +169,20 @@
                                 </div>
                             </div>
                         </template>
+
+                        <template v-if="notification.type === 'gotify'">
+                                <div class="mb-3">
+                                    <label for="gotify-application-token" class="form-label">Application Token</label>
+                                    <input type="text" class="form-control" id="gotify-application-token" required v-model="notification.gotifyapplicationToken">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="gotify-server-url" class="form-label">Server URL</label>
+                                    <div class="input-group mb-3">
+                                        <input type="text" class="form-control" id="gotify-server-url" required v-model="notification.gotifyserverurl">
+                                    </div>
+                                </div>
+                            </template>
 
                     </div>
                     <div class="modal-footer">
