@@ -17,7 +17,7 @@ jobs:
       name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v1
     -
-      name: Build and push
+      name: Build and push dockerhub
       uses: mr-smithers-excellent/docker-build-push@v5
       with:
         image: philippdormann/uptime
@@ -25,3 +25,10 @@ jobs:
         registry: docker.io
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
+    -
+      name: Build and push ghcr
+      uses: craftech-io/package-action@v3.1.0
+      with:
+        access_token: ${{ secrets.GHCR_TOKEN }}
+        image_name: uptime
+        tags: nightly
