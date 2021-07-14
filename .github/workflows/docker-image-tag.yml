@@ -30,3 +30,11 @@ jobs:
         tags: |
           latest
           ${{ github.sha }}
+    - name: Build and push ghcr explicit release tag
+      uses: mr-smithers-excellent/docker-build-push@v5
+      with:
+        image: philippdormann/uptime
+        tags: nightly
+        registry: ghcr.io
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.GHCR_TOKEN }}
