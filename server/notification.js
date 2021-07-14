@@ -26,7 +26,7 @@ class Notification {
                 }
                 await axios.post(`${notification.gotifyserverurl}/message?token=${notification.gotifyapplicationToken}`, {
                     "message": msg,
-                    "priority": 8,
+                    "priority": notification.gotifyPriority || 8,
                     "title": "Uptime-Kuma"
                 })
                 return true;
