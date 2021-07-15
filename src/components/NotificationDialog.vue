@@ -188,7 +188,7 @@
                                     <input type="number" class="form-control" id="gotify-priority" v-model="notification.gotifyPriority" required min="0" max="10" step="1">
                                 </div>
                             </template>
-                            
+
                         <template v-if="notification.type === 'slack'">
                             <div class="mb-3">
                                 <label for="slack-webhook-url" class="form-label">Slack Webhook URL</label>
@@ -220,7 +220,7 @@
 
 <script>
 import { Modal } from 'bootstrap'
-import { ucfirst } from "../../server/util";
+const {ucfirst} = require("../../server/util")
 import axios from "axios";
 import { useToast } from 'vue-toastification'
 import Confirm from "./Confirm.vue";
@@ -276,7 +276,7 @@ export default {
                     name: "",
                     type: null,
                 }
-                
+
                 // Default set to Telegram
                 this.notification.type = "telegram"
                 this.notification.gotifyPriority = 8

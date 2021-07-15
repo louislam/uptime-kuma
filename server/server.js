@@ -1,9 +1,8 @@
+console.log("Welcome to Uptime Kuma ")
+console.log("Importing libraries")
 const express = require('express');
-const app = express();
 const http = require('http');
-const server = http.createServer(app);
 const { Server } = require("socket.io");
-const io = new Server(server);
 const dayjs = require("dayjs");
 const {R} = require("redbean-node");
 const passwordHash = require('./password-hash');
@@ -12,12 +11,20 @@ const Monitor = require("./model/monitor");
 const fs = require("fs");
 const {getSettings} = require("./util-server");
 const {Notification} = require("./notification")
+const gracefulShutdown = require('http-graceful-shutdown');
+const {sleep} = require("./util");
 const args = require('args-parser')(process.argv);
 
 const version = require('../package.json').version;
 const hostname = args.host || "0.0.0.0"
 const port = args.port || 3001
 
+console.log("Version: " + version)
+
+console.log("Creating express and socket.io instance")
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
 app.use(express.json())
 
 let totalClient = 0;
@@ -539,11 +546,11 @@ async function initDatabase() {
     const path = './data/kuma.db';
 
     if (! fs.existsSync(path)) {
-        console.log("Copy Database")
+        console.log("Copying Database")
         fs.copyFileSync("./db/kuma.db", path);
     }
 
-    console.log("Connect to Database")
+    console.log("Connecting to Database")
 
     R.setup('sqlite', {
         filename: path
@@ -660,3 +667,72 @@ async function sendImportantHeartbeatList(socket, monitorID) {
 
     socket.emit("importantHeartbeatList", monitorID, list)
 }
+
+
+
+const startGracefulShutdown = async () => {
+    console.log('Shutdown requested');
+
+
+    await (new Promise((resolve) => {
+        server.close(async function () {
+            console.log('Stopped Express.');
+            process.exit(0)
+            setTimeout(async () =>{
+                await R.close();
+                console.log("Stopped DB")
+
+                resolve();
+            }, 5000)
+
+        });
+    }));
+
+
+}
+
+let noReject = true;
+process.on('unhandledRejection', (reason, p) => {
+    noReject = false;
+});
+
+async function shutdownFunction(signal) {
+    console.log('Called signal: ' + signal);
+
+    console.log("Stopping all monitors")
+    for (let id in monitorList) {
+        let monitor = monitorList[id]
+        monitor.stop()
+    }
+    await sleep(2000)
+
+    console.log("Closing DB")
+
+    // Special handle, because tarn.js throw a promise reject that cannot be caught
+    while (true) {
+        noReject = true;
+        await R.close()
+        await sleep(2000)
+
+        if (noReject) {
+            break;
+        } else {
+            console.log("Waiting...")
+        }
+    }
+
+    console.log("OK")
+}
+
+function finalFunction() {
+    console.log('Graceful Shutdown')
+}
+
+gracefulShutdown(server, {
+    signals: 'SIGINT SIGTERM',
+    timeout: 30000,                   // timeout: 30 secs
+    development: false,               // not in dev mode
+    forceExit: true,                  // triggers process.exit() at the end of shutdown process
+    onShutdown: shutdownFunction,     // shutdown function (async) - e.g. for cleanup DB, ...
+    finally: finalFunction            // finally function (sync) - e.g. for logging
+});

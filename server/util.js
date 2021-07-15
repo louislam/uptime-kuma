@@ -5,11 +5,11 @@
 
 
 
-export function sleep(ms) {
+exports.sleep = function (ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-export function ucfirst(str) {
+exports.ucfirst = function (str) {
     if (! str) {
         return str;
     }

@@ -21,6 +21,7 @@
         "dayjs": "^1.10.4",
         "express": "^4.17.1",
         "form-data": "^4.0.0",
+        "http-graceful-shutdown": "^3.1.2",
         "jsonwebtoken": "^8.5.1",
         "nodemailer": "^6.6.2",
         "password-hash": "^1.2.2",

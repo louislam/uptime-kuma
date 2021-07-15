@@ -5,7 +5,7 @@
 
 <script>
 
-import {sleep} from "../../server/util";
+const {sleep} = require("../../server/util")
 
 export default {
 
