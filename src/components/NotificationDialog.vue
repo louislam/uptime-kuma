@@ -182,6 +182,11 @@
                                         <input type="text" class="form-control" id="gotify-server-url" required v-model="notification.gotifyserverurl">
                                     </div>
                                 </div>
+
+                                <div class="mb-3">
+                                    <label for="gotify-priority" class="form-label">Priority</label>
+                                    <input type="number" class="form-control" id="gotify-priority" v-model="notification.gotifyPriority" required min="0" max="10" step="1">
+                                </div>
                             </template>
 
                     </div>
@@ -220,6 +225,7 @@ export default {
             notification: {
                 name: "",
                 type: null,
+                gotifyPriority: 8
             },
         }
     },
@@ -256,9 +262,10 @@ export default {
                     name: "",
                     type: null,
                 }
-
+                
                 // Default set to Telegram
                 this.notification.type = "telegram"
+                this.notification.gotifyPriority = 8
             }
 
             this.modal.show()
