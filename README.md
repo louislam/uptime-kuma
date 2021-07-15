@@ -16,7 +16,7 @@ It is a self-hosted monitoring tool like "Uptime Robot".
 * Monitoring uptime for HTTP(s) / TCP / Ping.
 * Fancy, Reactive, Fast UI/UX.
 * Notifications via Webhook, Telegram, Discord and email (SMTP). 
-* 20 seconds interval.
+* Customizable interval.
 
 # How to Use
 
