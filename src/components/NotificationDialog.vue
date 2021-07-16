@@ -207,7 +207,6 @@
                         
                         <template v-if="notification.type === 'pushover'">
                             <div class="mb-3">
-                                <div class="mb-3">
                                 <label for="pushover-app-token" class="form-label">APP_TOKEN</label>
                                 <input type="text" class="form-control" id="pushover-app-token" required v-model="notification.pushoverAppToken">
                             </div>
