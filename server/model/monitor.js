@@ -5,7 +5,7 @@ var timezone = require('dayjs/plugin/timezone')
 dayjs.extend(utc)
 dayjs.extend(timezone)
 const axios = require("axios");
-const {tcping, ping} = require("../util-server");
+const {tcping, ping, dnsLookup, isIpAddress} = require("../util-server");
 const {R} = require("redbean-node");
 const {BeanModel} = require("redbean-node/dist/bean-model");
 const {Notification} = require("../notification")
@@ -70,34 +70,67 @@ class Monitor extends BeanModel {
 
             try {
                 if (this.type === "http" || this.type === "keyword") {
-                    let startTime = dayjs().valueOf();
-                    let res = await axios.get(this.url, {
-                        headers: { 'User-Agent':'Uptime-Kuma' }
-                    })
-                    bean.msg = `${res.status} - ${res.statusText}`
-                    bean.ping = dayjs().valueOf() - startTime;
-
-                    if (this.type === "http") {
-                        bean.status = 1;
+                    // Parse URL
+                    const targetUrl = new URL(this.url);
+                    const serversToCheck = [];
+                    if (!isIpAddress(targetUrl.hostname)) {
+                        // Get DNS Result
+                        const dnsResults = await dnsLookup(targetUrl.hostname);
+                        serversToCheck.push(...dnsResults);
                     } else {
-
-                        let data = res.data;
-
-                        // Convert to string for object/array
-                        if (typeof data !== "string") {
-                            data = JSON.stringify(data)
-                        }
-
-                        if (data.includes(this.keyword)) {
-                            bean.msg += ", keyword is found"
-                            bean.status = 1;
-                        } else {
-                            throw new Error(bean.msg + ", but keyword is not found")
-                        }
-
+                        serversToCheck.push({ address: targetUrl.hostname });
                     }
+                    // Check each server in parallel
+                    await Promise.all(
+                        serversToCheck.map(async (server) => {
+                            let startTime = dayjs().valueOf();
+                            let res;
 
+                            // Catch connection errors inside
+                            try {
+                                res = await axios.get(
+                                    `${targetUrl.protocol}//${server.address}`,
+                                    {
+                                        headers: {
+                                            "User-Agent": "Uptime-Kuma",
+                                            host: targetUrl.hostname,
+                                        },
+                                    }
+                                );
+                            } catch (error) {
+                                bean.msg = `server [${server.address}]: ${error.message}`;
+                                return;
+                            }
 
+                            // Stop if we found a server that's up
+                            if (bean.status == 1) {
+                                return;
+                            }
+
+                            bean.msg = `${res.status} - ${res.statusText}`;
+                            bean.ping = dayjs().valueOf() - startTime;
+
+                            if (this.type === "http") {
+                                bean.status = 1;
+                            } else {
+                                let data = res.data;
+
+                                // Convert to string for object/array
+                                if (typeof data !== "string") {
+                                    data = JSON.stringify(data);
+                                }
+
+                                if (data.includes(this.keyword)) {
+                                    bean.msg += ", keyword is found";
+                                    bean.status = 1;
+                                } else {
+                                    throw new Error(
+                                        bean.msg + ", but keyword is not found"
+                                    );
+                                }
+                            }
+                        })
+                    );
                 } else if (this.type === "port") {
                     bean.ping = await tcping(this.hostname, this.port);
                     bean.msg = ""
