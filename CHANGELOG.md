@@ -2,10 +2,20 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [v1.2.0](https://github.com/philippdormann/uptime-kuma/compare/v1.1.4...v1.2.0)
+
+- add Pushy notification service [`8c3ec93`](https://github.com/philippdormann/uptime-kuma/commit/8c3ec93af1b0b2f8f9bf9506f72a6734c58e354a)
+- 🚧 WIP: Pushover integration [`da8e15a`](https://github.com/philippdormann/uptime-kuma/commit/da8e15a90b2c661bdb551a8115bb6f08f167ad95)
+- fix accessibility of notification form for slack notifier [`dbe4ac2`](https://github.com/philippdormann/uptime-kuma/commit/dbe4ac210a016c62c55234d102b638ccf4638945)
+- 🐞 html fix [`6394c9b`](https://github.com/philippdormann/uptime-kuma/commit/6394c9b137c4b5848de2b2e228833aca475dd520)
+
 #### [v1.1.4](https://github.com/philippdormann/uptime-kuma/compare/v1.1.3...v1.1.4)
+
+> 14 July 2021
 
 - 🧹 cleanup docker nightly workflow [`8eb0d70`](https://github.com/philippdormann/uptime-kuma/commit/8eb0d706b4d687bbd90d36faf2dbf71d88d9e667)
 - add proper DigitalOcean templates [`dddbd34`](https://github.com/philippdormann/uptime-kuma/commit/dddbd3412526dd9706cb19f157789ca9df07e5a2)
+- 🚀RELEASE v1.1.4 [`ffe7122`](https://github.com/philippdormann/uptime-kuma/commit/ffe71229a9588e280974133c08ef0b2644d0f3d4)
 - add temporary workflow for explicit docker release on ghcr.io [`f7369e7`](https://github.com/philippdormann/uptime-kuma/commit/f7369e7e8f6914f289441cb19734fc1550a09002)
 - Apple icon [`8dd5b97`](https://github.com/philippdormann/uptime-kuma/commit/8dd5b97b794332eeec4bd2d7b5cf8a8a775ec050)
 - Add files via upload [`18744d8`](https://github.com/philippdormann/uptime-kuma/commit/18744d834fa9c4598efd233615cf310964af07ba)
