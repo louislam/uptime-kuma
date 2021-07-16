@@ -220,7 +220,7 @@
 
 <script>
 import { Modal } from 'bootstrap'
-const {ucfirst} = require("../../server/util")
+import { ucfirst } from '../util-frontend'
 import axios from "axios";
 import { useToast } from 'vue-toastification'
 import Confirm from "./Confirm.vue";

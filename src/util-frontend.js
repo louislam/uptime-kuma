@@ -5,6 +5,19 @@ import timezone  from 'dayjs/plugin/timezone'
 dayjs.extend(utc)
 dayjs.extend(timezone)
 
+export function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+export function ucfirst(str) {
+    if (! str) {
+        return str;
+    }
+
+    const firstLetter = str.substr(0, 1);
+    return firstLetter.toUpperCase() + str.substr(1);
+}
+
 
 function getTimezoneOffset(timeZone) {
     const now = new Date();
