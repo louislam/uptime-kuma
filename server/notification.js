@@ -35,6 +35,20 @@ class Notification {
                 return false;
             }
 
+        } else if (notification.type === "pushover") {
+            try {
+                await axios.post("https://api.pushover.net/1/messages.json", {
+                    "message": msg,
+                    "token": notification.pushoverAppToken,
+                    "user": notification.pushoverUserKey,
+                    "title": "Uptime-Kuma"
+                })
+                return true;
+            } catch (error) {
+                console.log(error)
+                return false;
+            }
+
         } else if (notification.type === "slack") {
             try {
                 if (heartbeatJSON == null) {

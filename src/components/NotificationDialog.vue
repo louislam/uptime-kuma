@@ -20,6 +20,7 @@
                                     <option value="signal">Signal</option>
                                     <option value="gotify">Gotify</option>
                                     <option value="slack">Slack</option>
+                                    <option value="pushover">Pushover</option>
                                 </select>
                             </div>
 
@@ -202,6 +203,24 @@
                                         More info on: <a href="https://api.slack.com/messaging/webhooks" target="_blank">https://api.slack.com/messaging/webhooks</a>
                                 </p>
                             </div>
+                        </template>
+                        
+                        <template v-if="notification.type === 'pushover'">
+                            <div class="mb-3">
+                                <div class="mb-3">
+                                <label for="pushover-app-token" class="form-label">APP_TOKEN</label>
+                                <input type="text" class="form-control" id="pushover-app-token" required v-model="notification.pushoverAppToken">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="pushover-user-key" class="form-label">USER_KEY</label>
+                                <div class="input-group mb-3">
+                                    <input type="text" class="form-control" id="pushover-user-key" required v-model="notification.pushoverUserKey">
+                                </div>
+                            </div>
+                            <p style="margin-top: 8px;">
+                                    More info on: <a href="https://pushover.net/api" target="_blank">https://pushover.net/api</a>
+                            </p>
                         </template>
 
                     </div>
