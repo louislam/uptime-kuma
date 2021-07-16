@@ -1,5 +1,5 @@
 # DON'T UPDATE TO alpine3.13, 1.14, see #41.
-FROM node:14-alpine3.12
+FROM node:14-alpine3.12 AS release
 WORKDIR /app
 
 # split the sqlite install here, so that it can caches the arm prebuilt
@@ -33,3 +33,5 @@ EXPOSE 3001
 VOLUME ["/app/data"]
 CMD ["npm", "run", "start-server"]
 
+FROM release AS nightly
+RUN npm run mark-as-nightly
