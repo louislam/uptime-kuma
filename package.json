@@ -1,15 +1,15 @@
 {
     "name": "uptime-kuma",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "scripts": {
         "dev": "vite --host",
         "start-server": "node server/server.js",
         "update": "",
         "build": "vite build",
         "vite-preview-dist": "vite preview --host",
-        "build-docker": "docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma -t louislam/uptime-kuma:1 -t louislam/uptime-kuma:1.0.4 --target release . --push",
+        "build-docker": "docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma -t louislam/uptime-kuma:1 -t louislam/uptime-kuma:1.0.5 --target release . --push",
         "build-docker-nightly": "docker buildx build --platform linux/amd64 -t louislam/uptime-kuma:nightly --target nightly . --push",
-        "setup": "git checkout 1.0.4 && npm install && npm run build",
+        "setup": "git checkout 1.0.5 && npm install && npm run build",
         "version-global-replace": "node extra/version-global-replace.js",
         "mark-as-nightly": "node extra/mark-as-nightly.js"
     },
