@@ -244,7 +244,7 @@
                                 <div class="form-text">
                                 <span style="color:red;"><sup>*</sup></span>Required
                                 <p style="margin-top: 8px;">
-                                        More info about webhooks on: <a href="https://pushover.net/api" target="_blank">https://pushover.net/api</a>
+                                        More info on: <a href="https://pushover.net/api" target="_blank">https://pushover.net/api</a>
                                 </p>
                                  <p style="margin-top: 8px;">
                                         Emergency priority(2) has default 30 second timeout between retries and will expire after 1 hour.
