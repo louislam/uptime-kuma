@@ -177,6 +177,35 @@ class Notification {
                 return false;
             }
 
+        } else if (notification.type === "pushover") {
+                    var pushoverlink = 'https://api.pushover.net/1/messages.json'
+            try {
+                if (heartbeatJSON == null) {
+                    let data = {'message': "<b>Uptime Kuma Pushover testing successful.</b>", 
+                    'user': notification.pushoveruserkey, 'token': notification.pushoverapptoken, 'sound':notification.pushoversounds,
+                    'priority': notification.pushoverpriority, 'title':notification.pushovertitle, 'retry': "30", 'expire':"3600", 'html': 1}
+                    let res = await axios.post(pushoverlink, data)
+                    return true;
+                }
+
+                let data = {
+                    "message": "<b>Uptime Kuma Alert</b>\n\n<b>Message</b>:" +msg + '\n<b>Time (UTC)</b>:' +time,
+                    "user":notification.pushoveruserkey,
+                    "token": notification.pushoverapptoken,
+                    "sound": notification.pushoversounds,
+                    "priority": notification.pushoverpriority,
+                    "title": notification.pushovertitle,
+                    "retry": "30",
+                    "expire": "3600",
+                    "html": 1
+                    }
+                let res = await axios.post(pushoverlink, data)
+                return true;
+            } catch (error) {
+                console.log(error)
+                return false;
+            }
+
         } else {
             throw new Error("Notification type is not supported")
         }
