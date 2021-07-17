@@ -191,15 +191,31 @@
 
                         <template v-if="notification.type === 'slack'">
                             <div class="mb-3">
-                                <label for="slack-webhook-url" class="form-label">Slack Webhook URL</label>
-                                <input type="text" class="form-control" id="slack-webhook-url" required v-model="notification.slackwebhookURL" autocomplete="false">
-                                <label for="gotify-server-url" class="form-label">Uptime Kuma URL</label>
-                                    <div class="input-group mb-3">
-                                        <input type="text" class="form-control" id="slack-button" required v-model="notification.slackbutton" autocomplete="false">
-                                    </div>
-                                <p style="margin-top: 8px;">
-                                        More info on: <a href="https://api.slack.com/messaging/webhooks" target="_blank">https://api.slack.com/messaging/webhooks</a>
-                                </p>
+                                <label for="slack-webhook-url" class="form-label">Webhook URL<span style="color:red;"><sup>*</sup></span></label>
+                                <input type="text" class="form-control" id="slack-webhook-url" required v-model="notification.slackwebhookURL">
+                                <label for="slack-username" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="slack-username" v-model="notification.slackusername">
+                                <label for="slack-iconemo" class="form-label">Icon Emoji</label>
+                                <input type="text" class="form-control" id="slack-iconemo" v-model="notification.slackiconemo">
+                                <label for="slack-channel" class="form-label">Channel Name</label>
+                                <input type="text" class="form-control" id="slack-channel-name" v-model="notification.slackchannel">
+                                <label for="slack-button-url" class="form-label">Uptime Kuma URL</label>
+                                <input type="text" class="form-control" id="slack-button" v-model="notification.slackbutton">
+                                <div class="form-text">
+                                <span style="color:red;"><sup>*</sup></span>Required
+                                    <p style="margin-top: 8px;">
+                                        More info about webhooks on: <a href="https://api.slack.com/messaging/webhooks" target="_blank">https://api.slack.com/messaging/webhooks</a>
+                                    </p>
+                                    <p style="margin-top: 8px;">
+                                        Enter the channel name on Slack Channel Name field if you want to bypass the webhook channel. Ex: #other-channel
+                                    </p>
+                                    <p style="margin-top: 8px;">
+                                        If you leave the Uptime Kuma URL field blank, it will default to the Project Github page.
+                                    </p>
+                                    <p style="margin-top: 8px;">
+                                        Emoji cheat sheet: <a href="https://www.webfx.com/tools/emoji-cheat-sheet/" target="_blank">https://www.webfx.com/tools/emoji-cheat-sheet/</a>
+                                    </p>
+                                </div>
                             </div>
                         </template>
 
