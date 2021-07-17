@@ -37,7 +37,7 @@
         <div class="container-fluid">
             Uptime Kuma -
             Version: {{ $root.info.version }} -
-            <a href="https://github.com/louislam/uptime-kuma/releases" target="_blank">Check Update On GitHub</a>
+            <a href="https://github.com/louislam/uptime-kuma/releases" target="_blank" rel="noopener">Check Update On GitHub</a>
         </div>
     </footer>
 
