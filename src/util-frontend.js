@@ -394,7 +394,7 @@ export function timezoneList() {
                 time: getTimezoneOffset(timezone),
             })
         } catch (e) {
-            console.log(e.message);
+            console.error(e.message);
             console.log("Skip this timezone")
         }
 
