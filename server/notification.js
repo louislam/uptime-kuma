@@ -168,7 +168,7 @@ class Notification {
                                             "text": "Visit Uptime Kuma",
                                         },
                                     "value": "Uptime-Kuma",
-                                    "url": "https://github.com/louislam/uptime-kuma" || notification.slackbutton
+                                    "url": notification.slackbutton || "https://github.com/louislam/uptime-kuma"
                                 }
                                 ]
                             }
