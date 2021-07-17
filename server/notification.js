@@ -128,13 +128,17 @@ class Notification {
         } else if (notification.type === "slack") {
             try {
                 if (heartbeatJSON == null) {
-                    let data = {'text': "Uptime Kuma Slack testing successful."}
+                    let data = {'text': "Uptime Kuma Slack testing successful.", 'channel': notification.slackchannel, 'username': notification.slackusername, 'icon_emoji': notification.slackiconemo}
                     let res = await axios.post(notification.slackwebhookURL, data)
                     return true;
                 }
 
                 const time = heartbeatJSON["time"];
                 let data = {
+                    "text": "Uptime Kuma Alert",
+                    "channel":notification.slackchannel,
+                    "username": notification.slackusername,
+                    "icon_emoji": notification.slackiconemo,
                     "blocks": [{
                             "type": "header",
                             "text": {
@@ -155,17 +159,17 @@ class Notification {
                             ]
                         },
                         {
-                                "type": "actions",
-                                "elements": [
-                                    {
-                                        "type": "button",
-                                        "text": {
+                            "type": "actions",
+                            "elements": [
+                                {
+                                    "type": "button",
+                                    "text": {
                                             "type": "plain_text",
                                             "text": "Visit Uptime Kuma",
                                         },
-                                        "value": "Uptime-Kuma",
-                                        "url": notification.slackbutton
-                                    }
+                                    "value": "Uptime-Kuma",
+                                    "url": "https://github.com/louislam/uptime-kuma" || notification.slackbutton
+                                }
                                 ]
                             }
                         ]
