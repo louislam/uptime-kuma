@@ -38,6 +38,11 @@ Change Port and Volume
 docker run -d --restart=always -p <YOUR_PORT>:3001 -v <YOUR_DIR OR VOLUME>:/app/data --name uptime-kuma louislam/uptime-kuma
 ```
 
+Build own Docker image (Linux containers):
+```bash
+docker build --pull -t uptime-kuma -f .\Dockerfile .
+```
+
 ### Without Docker
 
 Required Tools: Node.js >= 14, git and pm2. 
