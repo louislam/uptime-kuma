@@ -109,3 +109,12 @@ Telegram Notification Sample:
 
 If you love this project, please consider giving me a ⭐.
 
+
+# Contribute
+
+If you want to report a bug or request a new featue. Free feel to open a new issue.
+
+
+If you want to modify Uptime Kuma, this guideline maybe useful for you: https://github.com/louislam/uptime-kuma/wiki/%5BDev%5D-Setup-Development-Environment
+
+
