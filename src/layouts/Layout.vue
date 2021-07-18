@@ -146,6 +146,7 @@ footer {
     font-size: 13px;
     margin-bottom: 30px;
     margin-left: 10px;
+    text-align: center;
 }
 
 </style>
