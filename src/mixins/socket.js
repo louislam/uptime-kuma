@@ -46,9 +46,9 @@ export default {
             transports: ['websocket']
         });
 
-        if (!socket.connected) {
-            console.error("Failed to connect to the backend")
-        }
+        socket.on("connect_error", (err) => {
+            console.error(`Failed to connect to the backend. Socket.io connect_error: ${err.message}`);
+        });
 
         socket.on('info', (info) => {
             this.info = info;
