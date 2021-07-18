@@ -137,6 +137,7 @@ export default {
             this.processing = true;
 
             if (this.isAdd) {
+                this.monitor.created_date = Math.floor(new Date() / 1000);
                 this.$root.add(this.monitor, (res) => {
                     this.processing = false;
 
