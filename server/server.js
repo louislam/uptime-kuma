@@ -19,7 +19,7 @@ const version = require('../package.json').version;
 const hostname = args.host || "0.0.0.0"
 const port = args.port || 3001
 
-console.log("Version: " + version)
+console.info("Version: " + version)
 
 console.log("Creating express and socket.io instance")
 const app = express();
@@ -232,7 +232,7 @@ let needSetup = false;
                 });
 
             } catch (e) {
-                console.log(e)
+                console.error(e)
                 callback({
                     ok: false,
                     msg: e.message
