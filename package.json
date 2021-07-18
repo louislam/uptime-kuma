@@ -1,6 +1,11 @@
 {
     "name": "uptime-kuma",
     "version": "1.0.5",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/louislam/uptime-kuma.git"
+    },
     "scripts": {
         "dev": "vite --host",
         "start-server": "node server/server.js",
