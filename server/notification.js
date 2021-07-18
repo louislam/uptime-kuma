@@ -131,7 +131,6 @@ class Notification {
                 if (heartbeatJSON == null) {
                     let data = {'text': "Uptime Kuma Slack testing successful.", 'channel': notification.slackchannel, 'username': notification.slackusername, 'icon_emoji': notification.slackiconemo}
                     await axios.post(notification.slackwebhookURL, data)
-
                     return true;
                 }
 
