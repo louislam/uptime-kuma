@@ -5,12 +5,18 @@ const nodemailer = require("nodemailer");
 const child_process = require("child_process");
 
 class Notification {
-    static async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
 
-        let res = {
-            ok: true,
-            msg: "Sent Successfully"
-        }
+    /**
+     *
+     * @param notification
+     * @param msg
+     * @param monitorJSON
+     * @param heartbeatJSON
+     * @returns {Promise<string>} Successful msg
+     * Throw Error with fail msg
+     */
+    static async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
+        let okMsg = "Sent Successfully. ";
 
         if (notification.type === "telegram") {
             try {
@@ -20,15 +26,16 @@ class Notification {
                         text: msg,
                     }
                 })
-                return true;
+                return okMsg;
+
             } catch (error) {
-                console.error(error)
-                return false;
+                let msg = (error.response.data.description) ? error.response.data.description : "Error without description"
+                throw new Error(msg)
             }
 
         } else if (notification.type === "gotify") {
             try {
-                if (notification.gotifyserverurl.endsWith("/")) {
+                if (notification.gotifyserverurl && notification.gotifyserverurl.endsWith("/")) {
                     notification.gotifyserverurl = notification.gotifyserverurl.slice(0, -1);
                 }
                 await axios.post(`${notification.gotifyserverurl}/message?token=${notification.gotifyapplicationToken}`, {
@@ -36,15 +43,15 @@ class Notification {
                     "priority": notification.gotifyPriority || 8,
                     "title": "Uptime-Kuma"
                 })
-                return true;
+
+                return okMsg;
+
             } catch (error) {
-                console.error(error)
-                return false;
+                throwGeneralAxiosError(error)
             }
 
         } else if (notification.type === "webhook") {
             try {
-
                 let data = {
                     heartbeat: heartbeatJSON,
                     monitor: monitorJSON,
@@ -66,10 +73,10 @@ class Notification {
                 }
 
                 let res = await axios.post(notification.webhookURL, finalData, config)
-                return true;
+                return okMsg;
+
             } catch (error) {
-                console.error(error)
-                return false;
+                throwGeneralAxiosError(error)
             }
 
         } else if (notification.type === "smtp") {
@@ -84,7 +91,7 @@ class Notification {
                   content: msg
                 }
                 let res = await axios.post(notification.discordWebhookUrl, data)
-                return true;
+                return okMsg;
               }
               // If heartbeatJSON is not null, we go into the normal alerting loop.
               if(heartbeatJSON['status'] == 0) {
@@ -110,10 +117,9 @@ class Notification {
                 }]
               }
               let res = await axios.post(notification.discordWebhookUrl, data)
-              return true;
+              return okMsg;
             } catch(error) {
-              console.error(error)
-              return false;
+              throwGeneralAxiosError(error)
             }
 
         } else if (notification.type === "signal") {
@@ -126,10 +132,9 @@ class Notification {
             let config = {};
 
             let res = await axios.post(notification.signalURL, data, config)
-            return true;
+            return okMsg;
         } catch (error) {
-            console.error(error)
-            return false;
+              throwGeneralAxiosError(error)
         }
 
         } else if (notification.type === "slack") {
@@ -137,7 +142,7 @@ class Notification {
                 if (heartbeatJSON == null) {
                     let data = {'text': "Uptime Kuma Slack testing successful.", 'channel': notification.slackchannel, 'username': notification.slackusername, 'icon_emoji': notification.slackiconemo}
                     let res = await axios.post(notification.slackwebhookURL, data)
-                    return true;
+                    return okMsg;
                 }
 
                 const time = heartbeatJSON["time"];
@@ -182,10 +187,9 @@ class Notification {
                         ]
                     }
                 let res = await axios.post(notification.slackwebhookURL, data)
-                return true;
+                return okMsg;
             } catch (error) {
-                console.error(error)
-                return false;
+                throwGeneralAxiosError(error)
             }
 
         } else if (notification.type === "pushover") {
@@ -196,7 +200,7 @@ class Notification {
                     'user': notification.pushoveruserkey, 'token': notification.pushoverapptoken, 'sound':notification.pushoversounds,
                     'priority': notification.pushoverpriority, 'title':notification.pushovertitle, 'retry': "30", 'expire':"3600", 'html': 1}
                     let res = await axios.post(pushoverlink, data)
-                    return true;
+                    return okMsg;
                 }
 
                 let data = {
@@ -211,10 +215,9 @@ class Notification {
                     "html": 1
                     }
                 let res = await axios.post(pushoverlink, data)
-                return true;
+                return okMsg;
             } catch (error) {
-                console.log(error)
-                return false;
+                throwGeneralAxiosError(error)
             }
 
         } else if (notification.type === "apprise") {
@@ -282,22 +285,24 @@ class Notification {
             text: msg,
         });
 
-        return true;
+        return "Sent Successfully.";
     }
 
     static async apprise(notification, msg) {
         let s = child_process.spawnSync("apprise", [ "-vv", "-b", msg, notification.appriseURL])
-        let output = s.stdout.toString();
 
-        console.log(output)
+
+        let output = (s.stdout) ? s.stdout.toString() : 'ERROR: maybe apprise not found';
 
         if (output) {
-            return {
-                ok: ! output.includes("ERROR"),
-                msg: output
+
+            if (! output.includes("ERROR")) {
+                return "Sent Successfully";
+            } else {
+                throw new Error(output)
             }
         } else {
-            return { }
+            return ""
         }
     }
 
@@ -306,6 +311,21 @@ class Notification {
         let exists = commandExistsSync('apprise');
         return exists;
     }
+
+}
+
+function throwGeneralAxiosError(error) {
+    let msg = "Error: " + error + " ";
+
+    if (error.response && error.response.data) {
+        if (typeof error.response.data === "string") {
+            msg += error.response.data;
+        } else {
+            msg += JSON.stringify(error.response.data)
+        }
+    }
+
+    throw new Error(msg)
 }
 
 module.exports = {
