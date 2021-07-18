@@ -15,7 +15,7 @@ class Notification {
                 })
                 return true;
             } catch (error) {
-                console.log(error)
+                console.error(error)
                 return false;
             }
 
@@ -31,7 +31,7 @@ class Notification {
                 })
                 return true;
             } catch (error) {
-                console.log(error)
+                console.error(error)
                 return false;
             }
 
@@ -61,7 +61,7 @@ class Notification {
                 let res = await axios.post(notification.webhookURL, finalData, config)
                 return true;
             } catch (error) {
-                console.log(error)
+                console.error(error)
                 return false;
             }
 
@@ -105,7 +105,7 @@ class Notification {
               let res = await axios.post(notification.discordWebhookUrl, data)
               return true;
             } catch(error) {
-              console.log(error)
+              console.error(error)
               return false;
             }
 
@@ -121,20 +121,24 @@ class Notification {
             let res = await axios.post(notification.signalURL, data, config)
             return true;
         } catch (error) {
-            console.log(error)
+            console.error(error)
             return false;
         }
-            
+
         } else if (notification.type === "slack") {
             try {
                 if (heartbeatJSON == null) {
-                    let data = {'text': "Uptime Kuma Slack testing successful."}
+                    let data = {'text': "Uptime Kuma Slack testing successful.", 'channel': notification.slackchannel, 'username': notification.slackusername, 'icon_emoji': notification.slackiconemo}
                     let res = await axios.post(notification.slackwebhookURL, data)
                     return true;
                 }
 
                 const time = heartbeatJSON["time"];
                 let data = {
+                    "text": "Uptime Kuma Alert",
+                    "channel":notification.slackchannel,
+                    "username": notification.slackusername,
+                    "icon_emoji": notification.slackiconemo,
                     "blocks": [{
                             "type": "header",
                             "text": {
@@ -155,22 +159,51 @@ class Notification {
                             ]
                         },
                         {
-                                "type": "actions",
-                                "elements": [
-                                    {
-                                        "type": "button",
-                                        "text": {
+                            "type": "actions",
+                            "elements": [
+                                {
+                                    "type": "button",
+                                    "text": {
                                             "type": "plain_text",
                                             "text": "Visit Uptime Kuma",
                                         },
-                                        "value": "Uptime-Kuma",
-                                        "url": notification.slackbutton
-                                    }
+                                    "value": "Uptime-Kuma",
+                                    "url": notification.slackbutton || "https://github.com/louislam/uptime-kuma"
+                                }
                                 ]
                             }
                         ]
                     }
                 let res = await axios.post(notification.slackwebhookURL, data)
+                return true;
+            } catch (error) {
+                console.error(error)
+                return false;
+            }
+
+        } else if (notification.type === "pushover") {
+                    var pushoverlink = 'https://api.pushover.net/1/messages.json'
+            try {
+                if (heartbeatJSON == null) {
+                    let data = {'message': "<b>Uptime Kuma Pushover testing successful.</b>", 
+                    'user': notification.pushoveruserkey, 'token': notification.pushoverapptoken, 'sound':notification.pushoversounds,
+                    'priority': notification.pushoverpriority, 'title':notification.pushovertitle, 'retry': "30", 'expire':"3600", 'html': 1}
+                    let res = await axios.post(pushoverlink, data)
+                    return true;
+                }
+
+                let data = {
+                    "message": "<b>Uptime Kuma Alert</b>\n\n<b>Message</b>:" +msg + '\n<b>Time (UTC)</b>:' +time,
+                    "user":notification.pushoveruserkey,
+                    "token": notification.pushoverapptoken,
+                    "sound": notification.pushoversounds,
+                    "priority": notification.pushoverpriority,
+                    "title": notification.pushovertitle,
+                    "retry": "30",
+                    "expire": "3600",
+                    "html": 1
+                    }
+                let res = await axios.post(pushoverlink, data)
                 return true;
             } catch (error) {
                 console.log(error)
