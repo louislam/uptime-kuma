@@ -20,6 +20,7 @@
                                     <option value="signal">Signal</option>
                                     <option value="gotify">Gotify</option>
                                     <option value="slack">Slack</option>
+                                    <option value="pushover">Pushover</option>
                                 </select>
                             </div>
 
@@ -191,15 +192,80 @@
 
                         <template v-if="notification.type === 'slack'">
                             <div class="mb-3">
-                                <label for="slack-webhook-url" class="form-label">Slack Webhook URL</label>
-                                <input type="text" class="form-control" id="slack-webhook-url" required v-model="notification.slackwebhookURL" autocomplete="false">
-                                <label for="gotify-server-url" class="form-label">Uptime Kuma URL</label>
-                                    <div class="input-group mb-3">
-                                        <input type="text" class="form-control" id="slack-button" required v-model="notification.slackbutton" autocomplete="false">
-                                    </div>
+                                <label for="slack-webhook-url" class="form-label">Webhook URL<span style="color:red;"><sup>*</sup></span></label>
+                                <input type="text" class="form-control" id="slack-webhook-url" required v-model="notification.slackwebhookURL">
+                                <label for="slack-username" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="slack-username" v-model="notification.slackusername">
+                                <label for="slack-iconemo" class="form-label">Icon Emoji</label>
+                                <input type="text" class="form-control" id="slack-iconemo" v-model="notification.slackiconemo">
+                                <label for="slack-channel" class="form-label">Channel Name</label>
+                                <input type="text" class="form-control" id="slack-channel-name" v-model="notification.slackchannel">
+                                <label for="slack-button-url" class="form-label">Uptime Kuma URL</label>
+                                <input type="text" class="form-control" id="slack-button" v-model="notification.slackbutton">
+                                <div class="form-text">
+                                <span style="color:red;"><sup>*</sup></span>Required
+                                    <p style="margin-top: 8px;">
+                                        More info about webhooks on: <a href="https://api.slack.com/messaging/webhooks" target="_blank">https://api.slack.com/messaging/webhooks</a>
+                                    </p>
+                                    <p style="margin-top: 8px;">
+                                        Enter the channel name on Slack Channel Name field if you want to bypass the webhook channel. Ex: #other-channel
+                                    </p>
+                                    <p style="margin-top: 8px;">
+                                        If you leave the Uptime Kuma URL field blank, it will default to the Project Github page.
+                                    </p>
+                                    <p style="margin-top: 8px;">
+                                        Emoji cheat sheet: <a href="https://www.webfx.com/tools/emoji-cheat-sheet/" target="_blank">https://www.webfx.com/tools/emoji-cheat-sheet/</a>
+                                    </p>
+                                </div>
+                            </div>
+                        </template>
+                        
+                        <template v-if="notification.type === 'pushover'">
+                            <div class="mb-3">
+                                <label for="pushover-app-token" class="form-label">Application Token<span style="color:red;"><sup>*</sup></span></label>
+                                <input type="text" class="form-control" id="pushover-app-token" required v-model="notification.pushoverapptoken">
+                                <label for="pushover-user" class="form-label">User Key<span style="color:red;"><sup>*</sup></span></label>
+                                <input type="text" class="form-control" id="pushover-user" required v-model="notification.pushoveruserkey">
+                                <label for="pushover-device" class="form-label">Device</label>
+                                <input type="text" class="form-control" id="pushover-device" v-model="notification.pushoverdevice">
+                                <label for="pushover-device" class="form-label">Message Title</label>
+                                <input type="text" class="form-control" id="pushover-title" v-model="notification.pushovertitle">
+                                <label for="pushover-priority" class="form-label">Priority</label>
+                                <input type="text" class="form-control" id="pushover-priority" v-model="notification.pushoverpriority">
+                                <label for="pushover-sound" class="form-label">Notification Sound</label>
+                                <select class="form-select"  id="pushover-sound" v-model="notification.pushoversounds">
+                                    <option>pushover</option>
+                                    <option>bike</option>
+                                    <option>bugle</option>
+                                    <option>cashregister</option>
+                                    <option>classical</option>
+                                    <option>cosmic</option>
+                                    <option>falling</option>
+                                    <option>gamelan</option>
+                                    <option>incoming</option>
+                                    <option>intermission</option>
+                                    <option>mechanical</option>
+                                    <option>pianobar</option>
+                                    <option>siren</option>
+                                    <option>spacealarm</option>
+                                    <option>tugboat</option>
+                                    <option>alien</option>
+                                    <option>climb</option>
+                                    <option>persistent</option>
+                                    <option>echo</option>
+                                    <option>updown</option>
+                                    <option>vibrate</option>
+                                    <option>none</option>
+                                </select>
+                                <div class="form-text">
+                                <span style="color:red;"><sup>*</sup></span>Required
                                 <p style="margin-top: 8px;">
-                                        More info on: <a href="https://api.slack.com/messaging/webhooks" target="_blank">https://api.slack.com/messaging/webhooks</a>
+                                        More info on: <a href="https://pushover.net/api" target="_blank">https://pushover.net/api</a>
                                 </p>
+                                 <p style="margin-top: 8px;">
+                                        Emergency priority(2) has default 30 second timeout between retries and will expire after 1 hour.
+                                </p>
+                                </div>
                             </div>
                         </template>
 

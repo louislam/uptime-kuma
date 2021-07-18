@@ -9,7 +9,7 @@
     <!-- Desktop header -->
     <header class="d-flex flex-wrap justify-content-center py-3 mb-3 border-bottom" v-if="! $root.isMobile">
         <router-link to="/dashboard" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
-            <object class="bi me-2 ms-4" width="40" height="40" data="/icon.svg"></object>
+            <object class="bi me-2 ms-4" width="40" height="40" data="/icon.svg" alt="Logo"></object>
             <span class="fs-4 title">Uptime Kuma</span>
         </router-link>
 
@@ -37,7 +37,7 @@
         <div class="container-fluid">
             Uptime Kuma -
             Version: {{ $root.info.version }} -
-            <a href="https://github.com/louislam/uptime-kuma/releases" target="_blank">Check Update On GitHub</a>
+            <a href="https://github.com/louislam/uptime-kuma/releases" target="_blank" rel="noopener">Check Update On GitHub</a>
         </div>
     </footer>
 
@@ -146,6 +146,7 @@ footer {
     font-size: 13px;
     margin-bottom: 30px;
     margin-left: 10px;
+    text-align: center;
 }
 
 </style>
