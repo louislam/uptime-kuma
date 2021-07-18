@@ -34,6 +34,7 @@ if (newVersion) {
     fs.writeFileSync("package.json", JSON.stringify(pkg, null, 4) + "\n")
 
     // Process README.md
-   fs.writeFileSync("README.md", fs.readFileSync("README.md", 'utf8').replaceAll(oldVersion, newVersion))
+    if (fs.existsSync("README.md")) {
+        fs.writeFileSync("README.md", fs.readFileSync("README.md", 'utf8').replaceAll(oldVersion, newVersion))
+    }
 }
-
