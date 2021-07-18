@@ -2,9 +2,16 @@ const axios = require("axios");
 const {R} = require("redbean-node");
 const FormData = require('form-data');
 const nodemailer = require("nodemailer");
+const child_process = require("child_process");
 
 class Notification {
     static async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
+
+        let res = {
+            ok: true,
+            msg: "Sent Successfully"
+        }
+
         if (notification.type === "telegram") {
             try {
                 await axios.get(`https://api.telegram.org/bot${notification.telegramBotToken}/sendMessage`, {
@@ -185,7 +192,7 @@ class Notification {
                     var pushoverlink = 'https://api.pushover.net/1/messages.json'
             try {
                 if (heartbeatJSON == null) {
-                    let data = {'message': "<b>Uptime Kuma Pushover testing successful.</b>", 
+                    let data = {'message': "<b>Uptime Kuma Pushover testing successful.</b>",
                     'user': notification.pushoveruserkey, 'token': notification.pushoverapptoken, 'sound':notification.pushoversounds,
                     'priority': notification.pushoverpriority, 'title':notification.pushovertitle, 'retry': "30", 'expire':"3600", 'html': 1}
                     let res = await axios.post(pushoverlink, data)
@@ -209,6 +216,10 @@ class Notification {
                 console.log(error)
                 return false;
             }
+
+        } else if (notification.type === "apprise") {
+
+            return Notification.apprise(notification, msg)
 
         } else {
             throw new Error("Notification type is not supported")
@@ -274,16 +285,26 @@ class Notification {
         return true;
     }
 
-    static async discord(notification, msg) {
-        const client = new Discord.Client();
-        await client.login(notification.discordToken)
+    static async apprise(notification, msg) {
+        let s = child_process.spawnSync("apprise", [ "-vv", "-b", msg, notification.appriseURL])
+        let output = s.stdout.toString();
 
-        const channel = await client.channels.fetch(notification.discordChannelID);
-        await channel.send(msg);
+        console.log(output)
 
-        client.destroy()
+        if (output) {
+            return {
+                ok: ! output.includes("ERROR"),
+                msg: output
+            }
+        } else {
+            return { }
+        }
+    }
 
-        return true;
+    static checkApprise() {
+        let commandExistsSync = require('command-exists').sync;
+        let exists = commandExistsSync('apprise');
+        return exists;
     }
 }
 

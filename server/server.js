@@ -35,12 +35,15 @@ let needSetup = false;
 (async () => {
     await initDatabase();
 
+    console.log("Adding route")
     app.use('/', express.static("dist"));
 
     app.get('*', function(request, response, next) {
         response.sendFile(process.cwd() + '/dist/index.html');
     });
 
+
+    console.log("Adding socket handler")
     io.on('connection', async (socket) => {
 
         socket.emit("info", {
@@ -437,12 +440,9 @@ let needSetup = false;
             try {
                 checkLogin(socket)
 
-                await Notification.send(notification, notification.name + " Testing")
+                let res = await Notification.send(notification, notification.name + " Testing")
 
-                callback({
-                    ok: true,
-                    msg: "Sent Successfully"
-                });
+                callback(res);
 
             } catch (e) {
                 callback({
@@ -451,11 +451,20 @@ let needSetup = false;
                 });
             }
         });
+
+        socket.on("checkApprise", async (callback) => {
+            try {
+                checkLogin(socket)
+                callback(Notification.checkApprise());
+            } catch (e) {
+                callback(false);
+            }
+        });
     });
 
+    console.log("Init")
     server.listen(port, hostname, () => {
         console.log(`Listening on ${hostname}:${port}`);
-
         startMonitors();
     });
 
@@ -551,10 +560,11 @@ async function initDatabase() {
     }
 
     console.log("Connecting to Database")
-
     R.setup('sqlite', {
         filename: path
     });
+    console.log("Connected")
+
     R.freeze(true)
     await R.autoloadModels("./server/model");
 
@@ -569,6 +579,7 @@ async function initDatabase() {
 
         jwtSecretBean.value = passwordHash.generate(dayjs() + "")
         await R.store(jwtSecretBean)
+        console.log("Stored JWT secret into database")
     } else {
         console.log("Load JWT secret from database.")
     }
