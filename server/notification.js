@@ -15,7 +15,7 @@ class Notification {
                 })
                 return true;
             } catch (error) {
-                console.log(error)
+                console.error(error)
                 return false;
             }
 
@@ -31,7 +31,7 @@ class Notification {
                 })
                 return true;
             } catch (error) {
-                console.log(error)
+                console.error(error)
                 return false;
             }
 
@@ -61,7 +61,7 @@ class Notification {
                 let res = await axios.post(notification.webhookURL, finalData, config)
                 return true;
             } catch (error) {
-                console.log(error)
+                console.error(error)
                 return false;
             }
 
@@ -105,7 +105,7 @@ class Notification {
               let res = await axios.post(notification.discordWebhookUrl, data)
               return true;
             } catch(error) {
-              console.log(error)
+              console.error(error)
               return false;
             }
 
@@ -121,10 +121,10 @@ class Notification {
             let res = await axios.post(notification.signalURL, data, config)
             return true;
         } catch (error) {
-            console.log(error)
+            console.error(error)
             return false;
         }
-            
+
         } else if (notification.type === "slack") {
             try {
                 if (heartbeatJSON == null) {
@@ -177,7 +177,7 @@ class Notification {
                 let res = await axios.post(notification.slackwebhookURL, data)
                 return true;
             } catch (error) {
-                console.log(error)
+                console.error(error)
                 return false;
             }
 
