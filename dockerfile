@@ -31,6 +31,7 @@ RUN npm run build
 
 EXPOSE 3001
 VOLUME ["/app/data"]
+HEALTHCHECK --interval=5s --timeout=3s --start-period=30s CMD node extra/healthcheck.js
 CMD ["npm", "run", "start-server"]
 
 FROM release AS nightly
