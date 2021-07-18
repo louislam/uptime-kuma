@@ -163,7 +163,7 @@ export default {
         },
 
         getSocket() {
-          return socket;
+            return socket;
         },
 
         toastRes(res) {
