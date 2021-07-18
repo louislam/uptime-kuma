@@ -10,60 +10,61 @@
                     </div>
                     <div class="modal-body">
 
+                        <div class="mb-3">
+                            <label for="type" class="form-label">Notification Type</label>
+                            <select class="form-select"  id="type" v-model="notification.type">
+                                <option value="telegram">Telegram</option>
+                                <option value="webhook">Webhook</option>
+                                <option value="smtp">Email (SMTP)</option>
+                                <option value="discord">Discord</option>
+                                <option value="signal">Signal</option>
+                                <option value="gotify">Gotify</option>
+                                <option value="slack">Slack</option>
+                                <option value="pushover">Pushover</option>
+                                <option value="apprise">Apprise (Support 50+ Notification services)</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Friendly Name</label>
+                            <input type="text" class="form-control" id="name" required v-model="notification.name">
+                        </div>
+
+                        <template v-if="notification.type === 'telegram'">
                             <div class="mb-3">
-                                <label for="type" class="form-label">Notification Type</label>
-                                <select class="form-select"  id="type" v-model="notification.type">
-                                    <option value="telegram">Telegram</option>
-                                    <option value="webhook">Webhook</option>
-                                    <option value="smtp">Email (SMTP)</option>
-                                    <option value="discord">Discord</option>
-                                    <option value="signal">Signal</option>
-                                    <option value="gotify">Gotify</option>
-                                    <option value="slack">Slack</option>
-                                    <option value="pushover">Pushover</option>
-                                </select>
+                                <label for="telegram-bot-token" class="form-label">Bot Token</label>
+                                <input type="text" class="form-control" id="telegram-bot-token" required v-model="notification.telegramBotToken">
+                                <div class="form-text">You can get a token from <a href="https://t.me/BotFather" target="_blank">https://t.me/BotFather</a>.</div>
                             </div>
 
                             <div class="mb-3">
-                                <label for="name" class="form-label">Friendly Name</label>
-                                <input type="text" class="form-control" id="name" required v-model="notification.name">
+                                <label for="telegram-chat-id" class="form-label">Chat ID</label>
+
+                                <div class="input-group mb-3">
+                                    <input type="text" class="form-control" id="telegram-chat-id" required v-model="notification.telegramChatID">
+                                    <button class="btn btn-outline-secondary" type="button" @click="autoGetTelegramChatID" v-if="notification.telegramBotToken">Auto Get</button>
+                                </div>
+
+                                <div class="form-text">
+                                    Support Direct Chat / Group / Channel's Chat ID
+
+                                    <p style="margin-top: 8px;">
+                                        You can get your chat id by sending message to the bot and go to this url to view the chat_id:
+                                    </p>
+
+                                    <p style="margin-top: 8px;">
+
+                                        <template v-if="notification.telegramBotToken">
+                                            <a :href="telegramGetUpdatesURL" target="_blank">{{ telegramGetUpdatesURL }}</a>
+                                        </template>
+
+                                        <template v-else>
+                                            {{ telegramGetUpdatesURL }}
+                                        </template>
+                                    </p>
+                                </div>
                             </div>
-
-                            <template v-if="notification.type === 'telegram'">
-                                <div class="mb-3">
-                                    <label for="telegram-bot-token" class="form-label">Bot Token</label>
-                                    <input type="text" class="form-control" id="telegram-bot-token" required v-model="notification.telegramBotToken">
-                                    <div class="form-text">You can get a token from <a href="https://t.me/BotFather" target="_blank">https://t.me/BotFather</a>.</div>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="telegram-chat-id" class="form-label">Chat ID</label>
-
-                                    <div class="input-group mb-3">
-                                        <input type="text" class="form-control" id="telegram-chat-id" required v-model="notification.telegramChatID">
-                                        <button class="btn btn-outline-secondary" type="button" @click="autoGetTelegramChatID" v-if="notification.telegramBotToken">Auto Get</button>
-                                    </div>
-
-                                    <div class="form-text">
-                                        Support Direct Chat / Group / Channel's Chat ID
-
-                                        <p style="margin-top: 8px;">
-                                            You can get your chat id by sending message to the bot and go to this url to view the chat_id:
-                                        </p>
-
-                                        <p style="margin-top: 8px;">
-
-                                            <template v-if="notification.telegramBotToken">
-                                                <a :href="telegramGetUpdatesURL" target="_blank">{{ telegramGetUpdatesURL }}</a>
-                                            </template>
-
-                                            <template v-else>
-                                                {{ telegramGetUpdatesURL }}
-                                            </template>
-                                        </p>
-                                    </div>
-                                </div>
-                            </template>
+                        </template>
 
                         <template v-if="notification.type === 'webhook'">
                             <div class="mb-3">
@@ -219,7 +220,7 @@
                                 </div>
                             </div>
                         </template>
-                        
+
                         <template v-if="notification.type === 'pushover'">
                             <div class="mb-3">
                                 <label for="pushover-app-token" class="form-label">Application Token<span style="color:red;"><sup>*</sup></span></label>
@@ -269,6 +270,29 @@
                             </div>
                         </template>
 
+                        <template v-if="notification.type === 'apprise'">
+
+                            <div class="mb-3">
+                                <label for="gotify-application-token" class="form-label">Apprise URL</label>
+                                <input type="text" class="form-control" id="gotify-application-token" required v-model="notification.appriseURL">
+                                <div class="form-text">
+                                    <p>Example: twilio://AccountSid:AuthToken@FromPhoneNo</p>
+                                    <p>
+                                        Read more: <a href="https://github.com/caronc/apprise/wiki#notification-services" target="_blank">https://github.com/caronc/apprise/wiki#notification-services</a>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <p>
+                                    Status:
+                                    <span class="text-primary" v-if="appriseInstalled">Apprise is installed</span>
+                                    <span class="text-danger" v-else>Apprise is not installed. <a href="https://github.com/caronc/apprise">Read more</a></span>
+                                </p>
+                            </div>
+
+                        </template>
+
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-danger" @click="deleteConfirm" :disabled="processing" v-if="id">Delete</button>
@@ -307,17 +331,15 @@ export default {
                 type: null,
                 gotifyPriority: 8
             },
+            appriseInstalled: false,
         }
     },
     mounted() {
         this.modal = new Modal(this.$refs.modal)
 
-        // TODO: for edit
-        this.$root.getSocket().emit("getSettings", "notification", (data) => {
-          //  this.notification = data
+        this.$root.getSocket().emit("checkApprise", (installed) => {
+            this.appriseInstalled = installed;
         })
-
-
     },
     methods: {
 
