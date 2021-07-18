@@ -58,7 +58,7 @@ class Notification {
                     finalData = data;
                 }
 
-                let res = await axios.post(notification.webhookURL, finalData, config)
+                await axios.post(notification.webhookURL, finalData, config)
                 return true;
             } catch (error) {
                 console.log(error)
@@ -102,7 +102,8 @@ class Notification {
                   ]
                 }]
               }
-              let res = await axios.post(notification.discordWebhookUrl, data)
+
+              await axios.post(notification.discordWebhookUrl, data)
               return true;
             } catch(error) {
               console.log(error)
@@ -118,18 +119,18 @@ class Notification {
             };
             let config = {};
 
-            let res = await axios.post(notification.signalURL, data, config)
+            await axios.post(notification.signalURL, data, config)
             return true;
         } catch (error) {
             console.log(error)
             return false;
         }
-            
+
         } else if (notification.type === "slack") {
             try {
                 if (heartbeatJSON == null) {
                     let data = {'text': "Uptime Kuma Slack testing successful."}
-                    let res = await axios.post(notification.slackwebhookURL, data)
+                    await axios.post(notification.slackwebhookURL, data)
                     return true;
                 }
 
@@ -170,7 +171,7 @@ class Notification {
                             }
                         ]
                     }
-                let res = await axios.post(notification.slackwebhookURL, data)
+                await axios.post(notification.slackwebhookURL, data)
                 return true;
             } catch (error) {
                 console.log(error)
@@ -231,7 +232,7 @@ class Notification {
         });
 
         // send mail with defined transport object
-        let info = await transporter.sendMail({
+        await transporter.sendMail({
             from: `"Uptime Kuma" <${notification.smtpFrom}>`,
             to: notification.smtpTo,
             subject: msg,

@@ -162,10 +162,6 @@ let needSetup = false;
                     msg: e.message
                 });
             }
-
-
-
-
         });
 
         // Auth Only API
