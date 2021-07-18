@@ -440,11 +440,16 @@ let needSetup = false;
             try {
                 checkLogin(socket)
 
-                let res = await Notification.send(notification, notification.name + " Testing")
+                let msg = await Notification.send(notification, notification.name + " Testing")
 
-                callback(res);
+                callback({
+                    ok: true,
+                    msg
+                });
 
             } catch (e) {
+                console.error(e)
+
                 callback({
                     ok: false,
                     msg: e.message
