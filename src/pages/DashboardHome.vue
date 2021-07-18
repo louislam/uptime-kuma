@@ -47,7 +47,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr v-for="beat in importantHeartBeatList">
+                <tr v-for="(beat, index) in displayedRecords" :key="index">
                     <td>{{ beat.name }}</td>
                     <td><Status :status="beat.status" /></td>
                     <td><Datetime :value="beat.time" /></td>
@@ -59,6 +59,13 @@
                 </tr>
                 </tbody>
             </table>
+
+            <div class="d-flex justify-content-center kuma_pagination">
+                <pagination
+                    v-model="page"
+                    :records=importantHeartBeatList.length
+                    :per-page="perPage" />
+            </div>
         </div>
     </div>
 
@@ -68,8 +75,21 @@
 <script>
 import Status from "../components/Status.vue";
 import Datetime from "../components/Datetime.vue";
+import Pagination from "v-pagination-3";
+
 export default {
-    components: {Datetime, Status},
+    components: {
+        Datetime,
+        Status,
+        Pagination,
+    },
+    data() {
+        return {
+            page: 1,
+            perPage: 25,
+            heartBeatList: [],
+        }
+    },
     computed: {
         stats() {
             let result = {
@@ -127,8 +147,16 @@ export default {
                 }
             });
 
+            this.heartBeatList = result;
+
             return result;
-        }
+        },
+
+        displayedRecords() {
+            const startIndex = this.perPage * (this.page - 1);
+            const endIndex = startIndex + this.perPage;
+            return this.heartBeatList.slice(startIndex, endIndex);
+        },
     }
 }
 </script>

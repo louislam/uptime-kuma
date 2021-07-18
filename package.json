@@ -31,6 +31,7 @@
         "socket.io-client": "^4.1.2",
         "sqlite3": "^5.0.0",
         "tcp-ping": "^0.1.1",
+        "v-pagination-3": "^0.1.6",
         "vue": "^3.0.5",
         "vue-confirm-dialog": "^1.0.2",
         "vue-router": "^4.0.10",
