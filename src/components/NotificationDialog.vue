@@ -20,6 +20,7 @@
                                     <option value="signal">Signal</option>
                                     <option value="gotify">Gotify</option>
                                     <option value="slack">Slack</option>
+                                    <option value="pushover">Pushover</option>
                                 </select>
                             </div>
 
@@ -200,6 +201,55 @@
                                 <p style="margin-top: 8px;">
                                         More info on: <a href="https://api.slack.com/messaging/webhooks" target="_blank">https://api.slack.com/messaging/webhooks</a>
                                 </p>
+                            </div>
+                        </template>
+                        
+                        <template v-if="notification.type === 'pushover'">
+                            <div class="mb-3">
+                                <label for="pushover-app-token" class="form-label">Application Token<span style="color:red;"><sup>*</sup></span></label>
+                                <input type="text" class="form-control" id="pushover-app-token" required v-model="notification.pushoverapptoken">
+                                <label for="pushover-user" class="form-label">User Key<span style="color:red;"><sup>*</sup></span></label>
+                                <input type="text" class="form-control" id="pushover-user" required v-model="notification.pushoveruserkey">
+                                <label for="pushover-device" class="form-label">Device</label>
+                                <input type="text" class="form-control" id="pushover-device" v-model="notification.pushoverdevice">
+                                <label for="pushover-device" class="form-label">Message Title</label>
+                                <input type="text" class="form-control" id="pushover-title" v-model="notification.pushovertitle">
+                                <label for="pushover-priority" class="form-label">Priority</label>
+                                <input type="text" class="form-control" id="pushover-priority" v-model="notification.pushoverpriority">
+                                <label for="pushover-sound" class="form-label">Notification Sound</label>
+                                <select class="form-select"  id="pushover-sound" v-model="notification.pushoversounds">
+                                    <option>pushover</option>
+                                    <option>bike</option>
+                                    <option>bugle</option>
+                                    <option>cashregister</option>
+                                    <option>classical</option>
+                                    <option>cosmic</option>
+                                    <option>falling</option>
+                                    <option>gamelan</option>
+                                    <option>incoming</option>
+                                    <option>intermission</option>
+                                    <option>mechanical</option>
+                                    <option>pianobar</option>
+                                    <option>siren</option>
+                                    <option>spacealarm</option>
+                                    <option>tugboat</option>
+                                    <option>alien</option>
+                                    <option>climb</option>
+                                    <option>persistent</option>
+                                    <option>echo</option>
+                                    <option>updown</option>
+                                    <option>vibrate</option>
+                                    <option>none</option>
+                                </select>
+                                <div class="form-text">
+                                <span style="color:red;"><sup>*</sup></span>Required
+                                <p style="margin-top: 8px;">
+                                        More info on: <a href="https://pushover.net/api" target="_blank">https://pushover.net/api</a>
+                                </p>
+                                 <p style="margin-top: 8px;">
+                                        Emergency priority(2) has default 30 second timeout between retries and will expire after 1 hour.
+                                </p>
+                                </div>
                             </div>
                         </template>
 
