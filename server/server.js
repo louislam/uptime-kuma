@@ -50,7 +50,6 @@ let needSetup = false;
             version,
         })
 
-        console.log('a user connected');
         totalClient++;
 
         if (needSetup) {
@@ -59,7 +58,6 @@ let needSetup = false;
         }
 
         socket.on('disconnect', () => {
-            console.log('user disconnected');
             totalClient--;
         });
 
