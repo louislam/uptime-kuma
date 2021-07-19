@@ -48,6 +48,11 @@
                         <input type="number" class="form-control" id="interval" v-model="monitor.interval" required min="20" step="1">
                     </div>
 
+                      <div class="mb-3">
+                        <label for="interval" class="form-label">Retry Pings</label>
+                        <input type="number" class="form-control" id="interval" v-model="monitor.maxretries" required min="0" step="1">
+                    </div>
+
                     <div>
                         <button class="btn btn-primary" type="submit" :disabled="processing">Save</button>
                     </div>
@@ -61,7 +66,7 @@
                 <h2>Notifications</h2>
                 <p v-if="$root.notificationList.length === 0">Not available, please setup.</p>
 
-                <div class="form-check form-switch mb-3" v-for="notification in $root.notificationList">
+                <div class="form-check form-switch mb-3" :key="notification.id" v-for="notification in $root.notificationList">
                     <input class="form-check-input" type="checkbox" :id=" 'notification' + notification.id" v-model="monitor.notificationIDList[notification.id]">
 
                     <label class="form-check-label" :for=" 'notification' + notification.id">
@@ -119,6 +124,7 @@ export default {
                     name: "",
                     url: "https://",
                     interval: 60,
+                    maxretries: 0,                    
                     notificationIDList: {},
                 }
             } else if (this.isEdit) {

@@ -3,7 +3,7 @@
         <div class="hp-bar-big" :style="barStyle">
             <div
                 class="beat"
-                :class="{ 'empty' : (beat === 0), 'down' : (beat.status === 0) }"
+                :class="{ 'empty' : (beat === 0), 'down' : (beat.status === 0), 'pending' : (beat.status === 2) }"
                 :style="beatStyle"
                 v-for="(beat, index) in shortBeatList"
                 :key="index"
@@ -164,6 +164,10 @@ export default {
 
         &.down {
             background-color: $danger;
+        }
+
+        &.pending {
+            background-color: $warning;
         }
 
         &:not(.empty):hover {

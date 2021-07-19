@@ -219,6 +219,7 @@ let needSetup = false;
                 bean.url = monitor.url
                 bean.interval = monitor.interval
                 bean.hostname = monitor.hostname;
+                bean.maxretries = monitor.maxretries;
                 bean.port = monitor.port;
                 bean.keyword = monitor.keyword;
 
