@@ -35,8 +35,8 @@ export default {
         window.addEventListener('resize', this.onResize);
 
         let wsHost;
-        const env = process.env.NODE_ENV || 'development';
-        if (env === "development") {
+        const env = process.env.NODE_ENV || "production";
+        if (env === "development" || localStorage.dev === "dev") {
             wsHost = ":3001"
         } else {
             wsHost = ""
