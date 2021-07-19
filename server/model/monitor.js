@@ -95,6 +95,7 @@ class Monitor extends BeanModel {
                                             "User-Agent": "Uptime-Kuma",
                                             host: targetUrl.hostname,
                                         },
+                                        timeout: 3000,
                                     }
                                 );
                             } catch (error) {
