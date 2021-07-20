@@ -86,6 +86,11 @@ npm run build
 pm2 restart uptime-kuma
 ```
 
+## What's Next?
+
+I will mark requests/issues to the next milestone. 
+https://github.com/louislam/uptime-kuma/milestones
+
 # More Screenshots
 
 Settings Page:
