@@ -48,7 +48,7 @@
                         <input type="number" class="form-control" id="interval" v-model="monitor.interval" required min="20" step="1">
                     </div>
 
-                      <div class="mb-3">
+                    <div class="mb-3">
                         <label for="interval" class="form-label">Retry Pings</label>
                         <input type="number" class="form-control" id="interval" v-model="monitor.maxretries" required min="0" step="1">
                     </div>
