@@ -15,14 +15,14 @@
                     <label for="floatingPassword">Password</label>
                 </div>
 
-                <div class="form-check mb-3 mt-3" >
-                    <label>
+                <div class="form-check mb-3 mt-3 d-flex justify-content-center pe-4">
+                    <div class="form-check">
                         <input type="checkbox" value="remember-me" class="form-check-input" id="remember" v-model="$root.remember">
 
                         <label class="form-check-label" for="remember">
                             Remember me
                         </label>
-                    </label>
+                    </div>
                 </div>
                 <button class="w-100 btn btn-primary" type="submit" :disabled="processing">Login</button>
 
