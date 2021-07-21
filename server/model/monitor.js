@@ -48,8 +48,6 @@ class Monitor extends BeanModel {
         let previousBeat = null;
 
         const beat = async () => {
-            console.log(`Monitor ${this.id}: Heartbeat`)
-
             if (! previousBeat) {
                 previousBeat = await R.findOne("heartbeat", " monitor_id = ? ORDER BY time DESC", [
                     this.id
@@ -143,6 +141,12 @@ class Monitor extends BeanModel {
 
             } else {
                 bean.important = false;
+            }
+
+            if (bean.status === 1) {
+                console.info(`Monitor #${this.id} '${this.name}': Successful Response: ${bean.ping} ms | Interval: ${this.interval} seconds | Type: ${this.type}`)
+            } else {
+                console.warn(`Monitor #${this.id} '${this.name}': Failing: ${bean.msg} | Type: ${this.type}`)
             }
 
             io.to(this.user_id).emit("heartbeat", bean.toJSON());
