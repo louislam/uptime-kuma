@@ -54,6 +54,38 @@
         </div>
     </div>
 
+    <div class="shadow-box big-padding text-center stats" v-if="monitor.type === 'http' && monitor.url.startsWith('https') && certInfo != null">
+        <div class="row">
+            <div class="col">
+                <h4>Certificate Info</h4>
+                <table class="text-start">
+                    <tbody>
+                        <tr class="my-3">
+                            <td class="px-3">Valid: </td>
+                            <td>{{ certInfo.valid }}</td>
+                        </tr>
+                        <tr class="my-3">
+                            <td class="px-3">Valid To: </td>
+                            <td>{{ certInfo.validTo ? new Date(certInfo.validTo).toLocaleString() : "" }}</td>
+                        </tr>
+                        <tr class="my-3">
+                            <td class="px-3">Days Remaining: </td>
+                            <td>{{ certInfo.daysRemaining }}</td>
+                        </tr>
+                        <tr class="my-3">
+                            <td class="px-3">Issuer: </td>
+                            <td>{{ certInfo.issuer }}</td>
+                        </tr>
+                        <tr class="my-3">
+                            <td class="px-3">Fingerprint: </td>
+                            <td>{{ certInfo.fingerprint }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <div class="shadow-box">
         <table class="table table-borderless table-hover">
             <thead>
@@ -175,6 +207,14 @@ export default {
         status() {
             if (this.$root.statusList[this.monitor.id]) {
                 return this.$root.statusList[this.monitor.id]
+            } else {
+                return { }
+            }
+        },
+
+        certInfo() {
+            if (this.$root.certInfoList[this.monitor.id]) {
+                return this.$root.certInfoList[this.monitor.id]
             } else {
                 return { }
             }

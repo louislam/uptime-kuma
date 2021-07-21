@@ -6,7 +6,7 @@ dayjs.extend(utc)
 dayjs.extend(timezone)
 const axios = require("axios");
 const {UP, DOWN, PENDING} = require("../util");
-const {tcping, ping} = require("../util-server");
+const {tcping, ping, checkCertificate} = require("../util-server");
 const {R} = require("redbean-node");
 const {BeanModel} = require("redbean-node/dist/bean-model");
 const {Notification} = require("../notification")
@@ -79,6 +79,9 @@ class Monitor extends BeanModel {
                     })
                     bean.msg = `${res.status} - ${res.statusText}`
                     bean.ping = dayjs().valueOf() - startTime;
+                    if (this.url.startsWith("https")) {
+                        Monitor.sendCertInfo(checkCertificate(res), io, this.id, this.user_id);
+                    }
 
                     if (this.type === "http") {
                         bean.status = UP;
@@ -216,6 +219,14 @@ class Monitor extends BeanModel {
         ]));
 
         io.to(userID).emit("avgPing", monitorID, avgPing);
+    }
+
+    /**
+     *
+     * @param checkCertificateResult : Object return result of checkCertificate
+     */
+     static async sendCertInfo(checkCertificateResult, io, monitorID, userID) {
+        io.to(userID).emit("certInfo", monitorID, checkCertificateResult);
     }
 
     /**

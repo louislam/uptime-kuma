@@ -25,6 +25,7 @@ export default {
             importantHeartbeatList: { },
             avgPingList: { },
             uptimeList: { },
+            certInfoList: {},
             notificationList: [],
             windowWidth: window.innerWidth,
             showListMobile: false,
@@ -112,6 +113,10 @@ export default {
 
         socket.on('uptime', (monitorID, type, data) => {
             this.uptimeList[`${monitorID}_${type}`] = data
+        });
+
+        socket.on('certInfo', (monitorID, data) => {
+            this.certInfoList[monitorID] = data
         });
 
         socket.on('importantHeartbeatList', (monitorID, data) => {
