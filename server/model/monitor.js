@@ -1,4 +1,4 @@
-
+const Prometheus = require('prom-client');
 const dayjs = require("dayjs");
 const utc = require('dayjs/plugin/utc')
 var timezone = require('dayjs/plugin/timezone')
@@ -10,6 +10,16 @@ const {R} = require("redbean-node");
 const {BeanModel} = require("redbean-node/dist/bean-model");
 const {Notification} = require("../notification")
 
+const monitor_response_time = new Prometheus.Gauge({
+    name: 'monitor_response_time',
+    help: 'Monitor Response Time (ms)',
+    labelNames: ['monitor_name']
+});
+const monitor_status = new Prometheus.Gauge({
+    name: 'montor_status',
+    help: 'Monitor Status (1 = UP, 0= DOWN)',
+    labelNames: ['monitor_name']
+});
 /**
  * status:
  *      0 = DOWN
@@ -143,11 +153,20 @@ class Monitor extends BeanModel {
                 bean.important = false;
             }
 
+
+            monitor_status.set({
+                monitor_name: this.name
+            }, bean.status)
+
             if (bean.status === 1) {
                 console.info(`Monitor #${this.id} '${this.name}': Successful Response: ${bean.ping} ms | Interval: ${this.interval} seconds | Type: ${this.type}`)
             } else {
                 console.warn(`Monitor #${this.id} '${this.name}': Failing: ${bean.msg} | Type: ${this.type}`)
             }
+
+            monitor_response_time.set({
+                monitor_name: this.name
+            }, bean.ping)
 
             io.to(this.user_id).emit("heartbeat", bean.toJSON());
 
