@@ -54,7 +54,7 @@
         </div>
     </div>
 
-    <div class="shadow-box big-padding text-center stats" v-if="monitor.type === 'http' && monitor.url.startsWith('https') && certInfo != null">
+    <div class="shadow-box big-padding text-center stats" v-if="monitor.type === 'http' && monitor.getUrl().protocol === 'https:' && certInfo != null">
         <div class="row">
             <div class="col">
                 <h4>Certificate Info</h4>

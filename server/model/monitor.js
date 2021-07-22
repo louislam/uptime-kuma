@@ -79,8 +79,10 @@ class Monitor extends BeanModel {
                     })
                     bean.msg = `${res.status} - ${res.statusText}`
                     bean.ping = dayjs().valueOf() - startTime;
-                    if (this.url.startsWith("https")) {
-                        Monitor.sendCertInfo(checkCertificate(res), io, this.id, this.user_id);
+
+                    // Check certificate if https is used
+                    if (this.getUrl().protocol === "https:") {
+                        await this.updateTlsInfo(checkCertificate(res));
                     }
 
                     if (this.type === "http") {
@@ -197,10 +199,35 @@ class Monitor extends BeanModel {
         clearInterval(this.heartbeatInterval)
     }
 
+    // Helper Method: 
+    // returns URL object for further usage
+    // returns null if url is invalid
+    getUrl() {
+        try {
+            return new URL(this.url);
+        } catch (_) {
+            return null;
+        }
+    }
+
+    // Store TLS info to database
+    async updateTlsInfo(checkCertificateResult) {
+        let tls_info_bean = await R.findOne("monitor_tls_info", "monitor_id = ?", [
+            this.id
+        ]);
+        if (tls_info_bean == null) {
+            tls_info_bean = R.dispense("monitor_tls_info");
+            tls_info_bean.monitor_id = this.id;
+        }
+        tls_info_bean.info_json = JSON.stringify(checkCertificateResult);
+        R.store(tls_info_bean);
+    }
+
     static async sendStats(io, monitorID, userID) {
         Monitor.sendAvgPing(24, io, monitorID, userID);
         Monitor.sendUptime(24, io, monitorID, userID);
         Monitor.sendUptime(24 * 30, io, monitorID, userID);
+        Monitor.sendCertInfo(io, monitorID, userID);
     }
 
     /**
@@ -221,12 +248,13 @@ class Monitor extends BeanModel {
         io.to(userID).emit("avgPing", monitorID, avgPing);
     }
 
-    /**
-     *
-     * @param checkCertificateResult : Object return result of checkCertificate
-     */
-     static async sendCertInfo(checkCertificateResult, io, monitorID, userID) {
-        io.to(userID).emit("certInfo", monitorID, checkCertificateResult);
+    static async sendCertInfo(io, monitorID, userID) {
+         let tls_info = await R.findOne("monitor_tls_info", "monitor_id = ?", [
+            monitorID
+        ]);
+        if (tls_info != null) {
+            io.to(userID).emit("certInfo", monitorID, tls_info.info_json);
+        }
     }
 
     /**

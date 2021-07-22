@@ -59,7 +59,17 @@ export default {
             this.$router.push("/setup")
         });
 
-        socket.on('monitorList', (data) => {
+        socket.on("monitorList", (data) => {
+            // Add Helper function
+            Object.entries(data).forEach(([monitorID, monitor]) => {
+                monitor.getUrl = () => {
+                    try {
+                        return new URL(monitor.url);
+                    } catch (_) {
+                        return null;
+                    }
+                };
+            });
             this.monitorList = data;
         });
 
@@ -116,7 +126,7 @@ export default {
         });
 
         socket.on('certInfo', (monitorID, data) => {
-            this.certInfoList[monitorID] = data
+            this.certInfoList[monitorID] = JSON.parse(data)
         });
 
         socket.on('importantHeartbeatList', (monitorID, data) => {
