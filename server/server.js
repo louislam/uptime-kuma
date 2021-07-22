@@ -15,8 +15,7 @@ const gracefulShutdown = require('http-graceful-shutdown');
 const Database = require("./database");
 const {sleep} = require("./util");
 const args = require('args-parser')(process.argv);
-const prom_client = require('prom-client')
-
+const apiMetrics = require('prometheus-api-metrics');
 const version = require('../package.json').version;
 const hostname = args.host || "0.0.0.0"
 const port = args.port || 3001
@@ -33,11 +32,6 @@ app.use(express.json())
  * Total WebSocket client connected to server currently, no actual use
  * @type {number}
  */
-console.log("Setting up the Prometheus Client")
-
-const collectDefaultMetrics = prom_client.collectDefaultMetrics;
-collectDefaultMetrics({ prefix: 'uptimekuma' });
-
 let totalClient = 0;
 
 /**
@@ -63,12 +57,8 @@ let needSetup = false;
 
     console.log("Adding route")
     app.use('/', express.static("dist"));
+    app.use(apiMetrics())
 
-    console.log("Adding /metrics")
-     app.get('/metrics', function (req, res) {
-     res.set('Content-Type', prom_client.register.contentType);
-     res.end(prom_client.register.metrics());
-    });
 
     app.get('*', function(request, response, next) {
         response.sendFile(process.cwd() + '/dist/index.html');

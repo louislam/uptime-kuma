@@ -36,6 +36,7 @@
         "nodemailer": "^6.6.3",
         "password-hash": "^1.2.2",
         "prom-client": "^13.1.0",
+        "prometheus-api-metrics": "^3.2.0",
         "redbean-node": "0.0.20",
         "socket.io": "^4.1.3",
         "socket.io-client": "^4.1.3",
