@@ -35,7 +35,8 @@ export default {
         window.addEventListener('resize', this.onResize);
 
         let wsHost;
-        if (localStorage.dev === "dev") {
+        const env = process.env.NODE_ENV || "production";
+        if (env === "development" || localStorage.dev === "dev") {
             wsHost = ":3001"
         } else {
             wsHost = ""
@@ -43,6 +44,10 @@ export default {
 
         socket = io(wsHost, {
             transports: ['websocket']
+        });
+
+        socket.on("connect_error", (err) => {
+            console.error(`Failed to connect to the backend. Socket.io connect_error: ${err.message}`);
         });
 
         socket.on('info', (info) => {
@@ -158,7 +163,7 @@ export default {
         },
 
         getSocket() {
-          return socket;
+            return socket;
         },
 
         toastRes(res) {

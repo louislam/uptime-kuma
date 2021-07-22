@@ -48,8 +48,6 @@ class Monitor extends BeanModel {
         let previousBeat = null;
 
         const beat = async () => {
-            console.log(`Monitor ${this.id}: Heartbeat`)
-
             if (! previousBeat) {
                 previousBeat = await R.findOne("heartbeat", " monitor_id = ? ORDER BY time DESC", [
                     this.id
@@ -123,8 +121,6 @@ class Monitor extends BeanModel {
                         this.id
                     ])
 
-                    let promiseList = [];
-
                     let text;
                     if (bean.status === 1) {
                         text = "✅ Up"
@@ -135,14 +131,22 @@ class Monitor extends BeanModel {
                     let msg = `[${this.name}] [${text}] ${bean.msg}`;
 
                     for(let notification of notificationList) {
-                        promiseList.push(Notification.send(JSON.parse(notification.config), msg, await this.toJSON(), bean.toJSON()));
+                        try {
+                            await Notification.send(JSON.parse(notification.config), msg, await this.toJSON(), bean.toJSON())
+                        } catch (e) {
+                            console.error("Cannot send notification to " + notification.name)
+                        }
                     }
-
-                    await Promise.all(promiseList);
                 }
 
             } else {
                 bean.important = false;
+            }
+
+            if (bean.status === 1) {
+                console.info(`Monitor #${this.id} '${this.name}': Successful Response: ${bean.ping} ms | Interval: ${this.interval} seconds | Type: ${this.type}`)
+            } else {
+                console.warn(`Monitor #${this.id} '${this.name}': Failing: ${bean.msg} | Type: ${this.type}`)
             }
 
             io.to(this.user_id).emit("heartbeat", bean.toJSON());

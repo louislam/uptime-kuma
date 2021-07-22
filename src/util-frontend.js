@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
-import utc  from 'dayjs/plugin/utc'
-import timezone  from 'dayjs/plugin/timezone'
+import utc from 'dayjs/plugin/utc'
+import timezone from 'dayjs/plugin/timezone'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -29,6 +29,7 @@ function getTimezoneOffset(timeZone) {
 }
 
 // From: https://stackoverflow.com/questions/38399465/how-to-get-list-of-all-timezones-in-javascript
+// TODO: Move to separate file
 const aryIannaTimeZones = [
     'Europe/Andorra',
     'Asia/Dubai',
@@ -412,4 +413,3 @@ export function timezoneList() {
 
     return result;
 };
-
