@@ -76,7 +76,7 @@ class Monitor extends BeanModel {
                     bean.ping = dayjs().valueOf() - startTime;
 
                     // Check certificate if https is used
-                    if (this.getUrl().protocol === "https:") {
+                    if (this.getUrl()?.protocol === "https:") {
                         await this.updateTlsInfo(checkCertificate(res));
                     }
 
