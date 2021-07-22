@@ -120,7 +120,7 @@ class Monitor extends BeanModel {
 
             // Mark as important if status changed, ignore pending pings,
             // Don't notify if disrupted changes to up
-            if ((! previousBeat || previousBeat.status !== bean.status) && bean.status !== 2 && !(previousBeat.status === 2 && bean.status !== 0)) {
+            if ((!previousBeat) || ((previousBeat.status !== bean.status) && bean.status !== 2 && !(previousBeat.status === 2 && bean.status !== 0))) {
                 bean.important = true;
 
                 // Do not send if first beat is UP
