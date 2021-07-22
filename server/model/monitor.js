@@ -13,12 +13,24 @@ const {Notification} = require("../notification")
 const monitor_response_time = new Prometheus.Gauge({
     name: 'monitor_response_time',
     help: 'Monitor Response Time (ms)',
-    labelNames: ['monitor_name']
+    labelNames: [
+        'monitor_name',
+        'monitor_type',
+        'monitor_url',
+        'monitor_hostname',
+        'monitor_port'
+    ]
 });
 const monitor_status = new Prometheus.Gauge({
     name: 'montor_status',
     help: 'Monitor Status (1 = UP, 0= DOWN)',
-    labelNames: ['monitor_name']
+    labelNames: [
+        'monitor_name',
+        'monitor_type',
+        'monitor_url',
+        'monitor_hostname',
+        'monitor_port'
+    ]
 });
 /**
  * status:
@@ -155,7 +167,11 @@ class Monitor extends BeanModel {
 
 
             monitor_status.set({
-                monitor_name: this.name
+                monitor_name: this.name,
+                monitor_type: this.type,
+                monitor_url: this.url,
+                monitor_hostname: this.hostname,
+                monitor_port: this.port
             }, bean.status)
 
             if (bean.status === 1) {
@@ -165,7 +181,11 @@ class Monitor extends BeanModel {
             }
 
             monitor_response_time.set({
-                monitor_name: this.name
+                monitor_name: this.name,
+                monitor_type: this.type,
+                monitor_url: this.url,
+                monitor_hostname: this.hostname,
+                monitor_port: this.port
             }, bean.ping)
 
             io.to(this.user_id).emit("heartbeat", bean.toJSON());
