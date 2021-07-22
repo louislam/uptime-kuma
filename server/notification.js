@@ -204,7 +204,7 @@ class Notification {
                 }
 
                 let data = {
-                    "message": "<b>Uptime Kuma Alert</b>\n\n<b>Message</b>:" +msg + '\n<b>Time (UTC)</b>:' +time,
+                    "message": "<b>Uptime Kuma Alert</b>\n\n<b>Message</b>:"+msg+ '\n<b>Time (UTC)</b>:' +heartbeatJSON["time"],
                     "user":notification.pushoveruserkey,
                     "token": notification.pushoverapptoken,
                     "sound": notification.pushoversounds,
