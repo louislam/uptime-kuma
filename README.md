@@ -86,6 +86,35 @@ npm run build
 pm2 restart uptime-kuma
 ```
 
+# Passing metrics to other platforms
+
+If you already use [Prometheus.io](https://prometheus.io) or a platform that supports Prometheus exporter format, you can get the metrics about each monitoring target from `http://<your.installation>:<your_port>/metrics`.
+
+Labels to filter by include:
+
+| Label Name | Description |
++------------+-------------+
+|monitor_name| The "Friendly Name" of the monitor |
+|monitor_type| The type (http, keyword, tcp) of monitoring check |
+|monitor_url | The URL to be monitored (http, keyword)
+|monitor_hostname | The Hostname to be monitored (tcp) |
+|monitor_port | The port to be monitored (tcp) |
+
+## Example PromQL queries
+
+Assuming we have http monitors in place for bbc.co.uk and google.com:
+
+```
+# Show all response rates gouped by site
+sum(monitor_response_time) by (monitor_name)
+
+# Show only the response time for BBC.co.uk
+sum(monitor_reponse_time{monitor_url="https://www.bbc.co.uk/"})
+
+# Show the current status of Google.com
+monitor_status{monitor_name="Google"}
+```
+
 # What's Next?
 
 I will mark requests/issues to the next milestone. 
