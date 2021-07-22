@@ -51,7 +51,7 @@
                     <div class="mb-3">
                         <label for="maxRetries" class="form-label">Retries</label>
                         <input type="number" class="form-control" id="maxRetries" v-model="monitor.maxretries" required min="0" step="1">
-                        <div class="form-text">Maximum retries before the service is marked as down and send notifications</div>
+                        <div class="form-text">Maximum retries before the service is marked as down and a notification is sent</div>
                     </div>
 
                     <div>
