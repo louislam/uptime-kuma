@@ -45,6 +45,18 @@ exports.setting = async function (key) {
     ])
 }
 
+exports.setSetting = async function (key, value) {
+    let bean = await R.findOne("setting", " `key` = ? ", [
+        key
+    ])
+    if (! bean) {
+        bean = R.dispense("setting")
+        bean.key = key;
+    }
+    bean.value = value;
+    await R.store(bean)
+}
+
 exports.getSettings = async function (type) {
     let list = await R.getAll("SELECT * FROM setting WHERE `type` = ? ", [
         type

@@ -12,6 +12,7 @@ const fs = require("fs");
 const {getSettings} = require("./util-server");
 const {Notification} = require("./notification")
 const gracefulShutdown = require('http-graceful-shutdown');
+const Database = require("./database");
 const {sleep} = require("./util");
 const args = require('args-parser')(process.argv);
 
@@ -27,27 +28,48 @@ const server = http.createServer(app);
 const io = new Server(server);
 app.use(express.json())
 
+/**
+ * Total WebSocket client connected to server currently, no actual use
+ * @type {number}
+ */
 let totalClient = 0;
+
+/**
+ * Use for decode the auth object
+ * @type {null}
+ */
 let jwtSecret = null;
+
+/**
+ * Main monitor list
+ * @type {{}}
+ */
 let monitorList = {};
+
+/**
+ * Show Setup Page
+ * @type {boolean}
+ */
 let needSetup = false;
 
 (async () => {
     await initDatabase();
 
+    console.log("Adding route")
     app.use('/', express.static("dist"));
 
     app.get('*', function(request, response, next) {
         response.sendFile(process.cwd() + '/dist/index.html');
     });
 
+
+    console.log("Adding socket handler")
     io.on('connection', async (socket) => {
 
         socket.emit("info", {
             version,
         })
 
-        console.log('a user connected');
         totalClient++;
 
         if (needSetup) {
@@ -56,7 +78,6 @@ let needSetup = false;
         }
 
         socket.on('disconnect', () => {
-            console.log('user disconnected');
             totalClient--;
         });
 
@@ -433,25 +454,36 @@ let needSetup = false;
             try {
                 checkLogin(socket)
 
-                await Notification.send(notification, notification.name + " Testing")
+                let msg = await Notification.send(notification, notification.name + " Testing")
 
                 callback({
                     ok: true,
-                    msg: "Sent Successfully"
+                    msg
                 });
 
             } catch (e) {
+                console.error(e)
+
                 callback({
                     ok: false,
                     msg: e.message
                 });
             }
         });
+
+        socket.on("checkApprise", async (callback) => {
+            try {
+                checkLogin(socket)
+                callback(Notification.checkApprise());
+            } catch (e) {
+                callback(false);
+            }
+        });
     });
 
+    console.log("Init")
     server.listen(port, hostname, () => {
         console.log(`Listening on ${hostname}:${port}`);
-
         startMonitors();
     });
 
@@ -539,18 +571,21 @@ function checkLogin(socket) {
 }
 
 async function initDatabase() {
-    const path = './data/kuma.db';
-
-    if (! fs.existsSync(path)) {
+    if (! fs.existsSync(Database.path)) {
         console.log("Copying Database")
-        fs.copyFileSync("./db/kuma.db", path);
+        fs.copyFileSync(Database.templatePath, Database.path);
     }
 
     console.log("Connecting to Database")
-
     R.setup('sqlite', {
-        filename: path
+        filename: Database.path
     });
+    console.log("Connected")
+
+    // Patch the database
+    await Database.patch()
+
+    // Auto map the model to a bean object
     R.freeze(true)
     await R.autoloadModels("./server/model");
 
@@ -565,10 +600,12 @@ async function initDatabase() {
 
         jwtSecretBean.value = passwordHash.generate(dayjs() + "")
         await R.store(jwtSecretBean)
+        console.log("Stored JWT secret into database")
     } else {
         console.log("Load JWT secret from database.")
     }
 
+    // If there is no record in user table, it is a new Uptime Kuma instance, need to setup
     if ((await R.count("user")) === 0) {
         console.log("No user, need setup")
         needSetup = true;
@@ -687,11 +724,6 @@ const startGracefulShutdown = async () => {
 
 }
 
-let noReject = true;
-process.on('unhandledRejection', (reason, p) => {
-    noReject = false;
-});
-
 async function shutdownFunction(signal) {
     console.log('Called signal: ' + signal);
 
@@ -700,24 +732,8 @@ async function shutdownFunction(signal) {
         let monitor = monitorList[id]
         monitor.stop()
     }
-    await sleep(2000)
-
-    console.log("Closing DB")
-
-    // Special handle, because tarn.js throw a promise reject that cannot be caught
-    while (true) {
-        noReject = true;
-        await R.close()
-        await sleep(2000)
-
-        if (noReject) {
-            break;
-        } else {
-            console.log("Waiting...")
-        }
-    }
-
-    console.log("OK")
+    await sleep(2000);
+    await Database.close();
 }
 
 function finalFunction() {
