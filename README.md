@@ -95,14 +95,14 @@ Labels to filter by include:
 | Label Name | Description |
 +------------+-------------+
 |monitor_name| The "Friendly Name" of the monitor |
-|monitor_type| The type (http, keyword, tcp) of monitoring check |
-|monitor_url | The URL to be monitored (http, keyword)
-|monitor_hostname | The Hostname to be monitored (tcp) |
-|monitor_port | The port to be monitored (tcp) |
+|monitor_type| The type (HTTP, keyword, TCP) of monitoring check |
+|monitor_url | The URL to be monitored (HTTP, keyword)
+|monitor_hostname | The Hostname to be monitored (TCP) |
+|monitor_port | The port to be monitored (TCP) |
 
 ## Example PromQL queries
 
-Assuming we have http monitors in place for bbc.co.uk and google.com:
+Assuming we have HTTP monitors in place for bbc.co.uk and google.com:
 
 ```
 # Show all response rates gouped by site

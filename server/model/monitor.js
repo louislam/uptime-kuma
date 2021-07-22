@@ -18,6 +18,7 @@ const commonLabels = [
     'monitor_port',
 ]
 
+
 const monitor_response_time = new Prometheus.Gauge({
     name: 'monitor_response_time',
     help: 'Monitor Response Time (ms)',
@@ -64,6 +65,15 @@ class Monitor extends BeanModel {
 
     start(io) {
         let previousBeat = null;
+
+        const monitorLabelValues = {
+                monitor_name: this.name,
+                monitor_type: this.type,
+                monitor_url: this.url,
+                monitor_hostname: this.hostname,
+                monitor_port: this.port
+        }
+
 
         const beat = async () => {
             if (! previousBeat) {
@@ -162,13 +172,7 @@ class Monitor extends BeanModel {
             }
 
 
-            monitor_status.set({
-                monitor_name: this.name,
-                monitor_type: this.type,
-                monitor_url: this.url,
-                monitor_hostname: this.hostname,
-                monitor_port: this.port
-            }, bean.status)
+            monitor_status.set(monitorLabelValues, bean.status)
 
             if (bean.status === 1) {
                 console.info(`Monitor #${this.id} '${this.name}': Successful Response: ${bean.ping} ms | Interval: ${this.interval} seconds | Type: ${this.type}`)
@@ -176,13 +180,7 @@ class Monitor extends BeanModel {
                 console.warn(`Monitor #${this.id} '${this.name}': Failing: ${bean.msg} | Type: ${this.type}`)
             }
 
-            monitor_response_time.set({
-                monitor_name: this.name,
-                monitor_type: this.type,
-                monitor_url: this.url,
-                monitor_hostname: this.hostname,
-                monitor_port: this.port
-            }, bean.ping)
+            monitor_response_time.set(monitorLabelValues, bean.ping)
 
             io.to(this.user_id).emit("heartbeat", bean.toJSON());
 
