@@ -22,7 +22,7 @@ const monitor_response_time = new Prometheus.Gauge({
     ]
 });
 const monitor_status = new Prometheus.Gauge({
-    name: 'montor_status',
+    name: 'monitor_status',
     help: 'Monitor Status (1 = UP, 0= DOWN)',
     labelNames: [
         'monitor_name',
