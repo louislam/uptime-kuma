@@ -30,6 +30,14 @@
                             <input type="text" class="form-control" id="name" required v-model="notification.name">
                         </div>
 
+                        <div class="mb-3">
+                            <label for="type" class="form-label">Number of failures in a row before sending the notification</label>
+                            <input type="text" class="form-control" id="fail-threshold" required v-model="notification.failThreshold">
+                            <div class="form-text">
+                                <p>Only positive integer numbers allowed. Numbers higher than 1 may cause more heavy queries & more load for the server!</p>
+                            </div>
+                        </div>
+
                         <template v-if="notification.type === 'telegram'">
                             <div class="mb-3">
                                 <label for="telegram-bot-token" class="form-label">Bot Token</label>
@@ -368,6 +376,7 @@ export default {
                 // Default set to Telegram
                 this.notification.type = "telegram"
                 this.notification.gotifyPriority = 8
+                this.notification.gotifyPriority = 1
             }
 
             this.modal.show()

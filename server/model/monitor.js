@@ -46,12 +46,11 @@ class Monitor extends BeanModel {
 
     start(io) {
         let previousBeat = null;
-
         const beat = async () => {
             if (! previousBeat) {
                 previousBeat = await R.findOne("heartbeat", " monitor_id = ? ORDER BY time DESC", [
                     this.id
-                ])
+                ]);
             }
 
             let bean = R.dispense("heartbeat")
@@ -111,9 +110,12 @@ class Monitor extends BeanModel {
                 bean.msg = error.message;
             }
 
-            // Mark as important if status changed
-            if (! previousBeat || previousBeat.status !== bean.status) {
-                bean.important = true;
+            // Do the nottifications if status changed or if two subsequent beats are faulty
+            if (! previousBeat || previousBeat.status !== bean.status || (previousBeat && previousBeat.status !== 1 && bean.status != 1)) {
+                // Don't mark as important two subsequent faulty beats
+                let repeatedFailures = (previousBeat && previousBeat.status !== 1 && bean.status != 1);
+                if(repeatedFailures) bean.important = false;
+                else bean.important = true;
 
                 // Do not send if first beat is UP
                 if (previousBeat || bean.status !== 1) {
@@ -133,7 +135,23 @@ class Monitor extends BeanModel {
                     let msg = `[${this.name}] [${text}] ${bean.msg}`;
 
                     for(let notification of notificationList) {
-                        promiseList.push(Notification.send(JSON.parse(notification.config), msg, await this.toJSON(), bean.toJSON()));
+                        let notificationConfig = JSON.parse(notification.config);
+                        //Check for how many subsequent failures should happen before sending the notification
+                        notificationConfig.failThreshold = notificationConfig.failThreshold || 1;
+                        if(repeatedFailures && notificationConfig.failThreshold > 1) {
+                            let limit = notificationConfig.failThreshold;
+                            let query = await R.find("heartbeat", " monitor_id = ? ORDER BY time DESC LIMIT " + limit, [
+                                this.id
+                            ]);
+                            query = query.map(val => val.status);
+                            repeatedFailures = bean.status !== 1 && bean.status === query[0] && query.slice(0,-1).every( val => val === query[0] ) && [...query].reverse()[0] !== [...query].reverse()[1];
+                            console.log(query);
+                        }
+                        //0 t 2
+                        console.log(bean.status, repeatedFailures, notificationConfig.failThreshold)
+                        if((bean.status === 1 && !repeatedFailures) || 
+                        (notificationConfig.failThreshold <= 1 && !repeatedFailures) ||
+                        (notificationConfig.failThreshold > 1 && repeatedFailures)) promiseList.push(Notification.send(notificationConfig, msg, await this.toJSON(), bean.toJSON()));
                     }
 
                     await Promise.all(promiseList);

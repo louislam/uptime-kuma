@@ -398,6 +398,9 @@ let needSetup = false;
             try {
                 checkLogin(socket)
 
+                //Sanitize the threshold
+                notification.failThreshold = Math.abs(parseInt(notification.failThreshold) || 1);
+
                 await Notification.save(notification, notificationID, socket.userID)
                 await sendNotificationList(socket)
 
