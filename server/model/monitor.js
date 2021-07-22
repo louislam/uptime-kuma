@@ -10,27 +10,23 @@ const {R} = require("redbean-node");
 const {BeanModel} = require("redbean-node/dist/bean-model");
 const {Notification} = require("../notification")
 
+const commonLabels = [
+    'monitor_name',
+    'monitor_type',
+    'monitor_url',
+    'monitor_hostname',
+    'monitor_port',
+]
+
 const monitor_response_time = new Prometheus.Gauge({
     name: 'monitor_response_time',
     help: 'Monitor Response Time (ms)',
-    labelNames: [
-        'monitor_name',
-        'monitor_type',
-        'monitor_url',
-        'monitor_hostname',
-        'monitor_port'
-    ]
+    labelNames: commonLabels
 });
 const monitor_status = new Prometheus.Gauge({
     name: 'monitor_status',
     help: 'Monitor Status (1 = UP, 0= DOWN)',
-    labelNames: [
-        'monitor_name',
-        'monitor_type',
-        'monitor_url',
-        'monitor_hostname',
-        'monitor_port'
-    ]
+    labelNames: commonLabels
 });
 /**
  * status:
