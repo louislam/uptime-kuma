@@ -64,7 +64,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="beat in importantHeartBeatList">
+                <tr v-for="(beat, index) in displayedRecords" :key="index">
                     <td><Status :status="beat.status" /></td>
                     <td><Datetime :value="beat.time" /></td>
                     <td>{{ beat.msg }}</td>
@@ -75,6 +75,13 @@
                 </tr>
             </tbody>
         </table>
+
+        <div class="d-flex justify-content-center kuma_pagination">
+            <pagination
+                v-model="page"
+                :records=importantHeartBeatList.length
+                :per-page="perPage" />
+        </div>
     </div>
 
     <Confirm ref="confirmPause" @yes="pauseMonitor">
@@ -95,6 +102,7 @@ import Status from "../components/Status.vue";
 import Datetime from "../components/Datetime.vue";
 import CountUp from "../components/CountUp.vue";
 import Uptime from "../components/Uptime.vue";
+import Pagination from "v-pagination-3";
 
 export default {
     components: {
@@ -104,13 +112,16 @@ export default {
         HeartbeatBar,
         Confirm,
         Status,
+        Pagination,
     },
     mounted() {
 
     },
     data() {
         return {
-
+            page: 1,
+            perPage: 25,
+            heartBeatList: [],
         }
     },
     computed: {
@@ -154,6 +165,7 @@ export default {
 
         importantHeartBeatList() {
             if (this.$root.importantHeartbeatList[this.monitor.id]) {
+                this.heartBeatList = this.$root.importantHeartbeatList[this.monitor.id];
                 return this.$root.importantHeartbeatList[this.monitor.id]
             } else {
                 return [];
@@ -166,8 +178,13 @@ export default {
             } else {
                 return { }
             }
-        }
+        },
 
+        displayedRecords() {
+            const startIndex = this.perPage * (this.page - 1);
+            const endIndex = startIndex + this.perPage;
+            return this.heartBeatList.slice(startIndex, endIndex);
+        },
     },
     methods: {
         testNotification() {
