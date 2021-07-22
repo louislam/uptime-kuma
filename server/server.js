@@ -66,9 +66,9 @@ let needSetup = false;
 
     console.log("Adding /metrics")
      app.get('/metrics', function (req, res) {
-   res.set('Content-Type', prom_client.register.contentType);
-   res.end(prom_client.register.metrics());
- });
+     res.set('Content-Type', prom_client.register.contentType);
+     res.end(prom_client.register.metrics());
+    });
 
     app.get('*', function(request, response, next) {
         response.sendFile(process.cwd() + '/dist/index.html');
