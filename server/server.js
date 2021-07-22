@@ -19,7 +19,7 @@ const version = require('../package.json').version;
 const hostname = args.host || "0.0.0.0"
 const port = args.port || 3001
 
-console.log("Version: " + version)
+console.info("Version: " + version)
 
 console.log("Creating express and socket.io instance")
 const app = express();
@@ -35,19 +35,21 @@ let needSetup = false;
 (async () => {
     await initDatabase();
 
+    console.log("Adding route")
     app.use('/', express.static("dist"));
 
     app.get('*', function(request, response, next) {
         response.sendFile(process.cwd() + '/dist/index.html');
     });
 
+
+    console.log("Adding socket handler")
     io.on('connection', async (socket) => {
 
         socket.emit("info", {
             version,
         })
 
-        console.log('a user connected');
         totalClient++;
 
         if (needSetup) {
@@ -56,7 +58,6 @@ let needSetup = false;
         }
 
         socket.on('disconnect', () => {
-            console.log('user disconnected');
             totalClient--;
         });
 
@@ -236,7 +237,7 @@ let needSetup = false;
                 });
 
             } catch (e) {
-                console.log(e)
+                console.error(e)
                 callback({
                     ok: false,
                     msg: e.message
@@ -437,25 +438,36 @@ let needSetup = false;
             try {
                 checkLogin(socket)
 
-                await Notification.send(notification, notification.name + " Testing")
+                let msg = await Notification.send(notification, notification.name + " Testing")
 
                 callback({
                     ok: true,
-                    msg: "Sent Successfully"
+                    msg
                 });
 
             } catch (e) {
+                console.error(e)
+
                 callback({
                     ok: false,
                     msg: e.message
                 });
             }
         });
+
+        socket.on("checkApprise", async (callback) => {
+            try {
+                checkLogin(socket)
+                callback(Notification.checkApprise());
+            } catch (e) {
+                callback(false);
+            }
+        });
     });
 
+    console.log("Init")
     server.listen(port, hostname, () => {
         console.log(`Listening on ${hostname}:${port}`);
-
         startMonitors();
     });
 
@@ -551,10 +563,11 @@ async function initDatabase() {
     }
 
     console.log("Connecting to Database")
-
     R.setup('sqlite', {
         filename: path
     });
+    console.log("Connected")
+
     R.freeze(true)
     await R.autoloadModels("./server/model");
 
@@ -569,6 +582,7 @@ async function initDatabase() {
 
         jwtSecretBean.value = passwordHash.generate(dayjs() + "")
         await R.store(jwtSecretBean)
+        console.log("Stored JWT secret into database")
     } else {
         console.log("Load JWT secret from database.")
     }

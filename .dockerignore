@@ -3,3 +3,11 @@
 /node_modules
 /data/kuma.db
 /.do
+**/.dockerignore
+**/.git
+**/.gitignore
+**/docker-compose*
+**/Dockerfile*
+LICENSE
+README.md
+.editorconfig

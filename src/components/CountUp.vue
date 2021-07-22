@@ -5,7 +5,7 @@
 
 <script>
 
-const {sleep} = require("../../server/util")
+import {sleep} from '../util-frontend'
 
 export default {
 

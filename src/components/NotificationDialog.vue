@@ -10,59 +10,61 @@
                     </div>
                     <div class="modal-body">
 
+                        <div class="mb-3">
+                            <label for="type" class="form-label">Notification Type</label>
+                            <select class="form-select"  id="type" v-model="notification.type">
+                                <option value="telegram">Telegram</option>
+                                <option value="webhook">Webhook</option>
+                                <option value="smtp">Email (SMTP)</option>
+                                <option value="discord">Discord</option>
+                                <option value="signal">Signal</option>
+                                <option value="gotify">Gotify</option>
+                                <option value="slack">Slack</option>
+                                <option value="pushover">Pushover</option>
+                                <option value="apprise">Apprise (Support 50+ Notification services)</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Friendly Name</label>
+                            <input type="text" class="form-control" id="name" required v-model="notification.name">
+                        </div>
+
+                        <template v-if="notification.type === 'telegram'">
                             <div class="mb-3">
-                                <label for="type" class="form-label">Notification Type</label>
-                                <select class="form-select"  id="type" v-model="notification.type">
-                                    <option value="telegram">Telegram</option>
-                                    <option value="webhook">Webhook</option>
-                                    <option value="smtp">Email (SMTP)</option>
-                                    <option value="discord">Discord</option>
-                                    <option value="signal">Signal</option>
-                                    <option value="gotify">Gotify</option>
-                                    <option value="slack">Slack</option>
-                                </select>
+                                <label for="telegram-bot-token" class="form-label">Bot Token</label>
+                                <input type="text" class="form-control" id="telegram-bot-token" required v-model="notification.telegramBotToken">
+                                <div class="form-text">You can get a token from <a href="https://t.me/BotFather" target="_blank">https://t.me/BotFather</a>.</div>
                             </div>
 
                             <div class="mb-3">
-                                <label for="name" class="form-label">Friendly Name</label>
-                                <input type="text" class="form-control" id="name" required v-model="notification.name">
+                                <label for="telegram-chat-id" class="form-label">Chat ID</label>
+
+                                <div class="input-group mb-3">
+                                    <input type="text" class="form-control" id="telegram-chat-id" required v-model="notification.telegramChatID">
+                                    <button class="btn btn-outline-secondary" type="button" @click="autoGetTelegramChatID" v-if="notification.telegramBotToken">Auto Get</button>
+                                </div>
+
+                                <div class="form-text">
+                                    Support Direct Chat / Group / Channel's Chat ID
+
+                                    <p style="margin-top: 8px;">
+                                        You can get your chat id by sending message to the bot and go to this url to view the chat_id:
+                                    </p>
+
+                                    <p style="margin-top: 8px;">
+
+                                        <template v-if="notification.telegramBotToken">
+                                            <a :href="telegramGetUpdatesURL" target="_blank">{{ telegramGetUpdatesURL }}</a>
+                                        </template>
+
+                                        <template v-else>
+                                            {{ telegramGetUpdatesURL }}
+                                        </template>
+                                    </p>
+                                </div>
                             </div>
-
-                            <template v-if="notification.type === 'telegram'">
-                                <div class="mb-3">
-                                    <label for="telegram-bot-token" class="form-label">Bot Token</label>
-                                    <input type="text" class="form-control" id="telegram-bot-token" required v-model="notification.telegramBotToken">
-                                    <div class="form-text">You can get a token from <a href="https://t.me/BotFather" target="_blank">https://t.me/BotFather</a>.</div>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="telegram-chat-id" class="form-label">Chat ID</label>
-
-                                    <div class="input-group mb-3">
-                                        <input type="text" class="form-control" id="telegram-chat-id" required v-model="notification.telegramChatID">
-                                        <button class="btn btn-outline-secondary" type="button" @click="autoGetTelegramChatID" v-if="notification.telegramBotToken">Auto Get</button>
-                                    </div>
-
-                                    <div class="form-text">
-                                        Support Direct Chat / Group / Channel's Chat ID
-
-                                        <p style="margin-top: 8px;">
-                                            You can get your chat id by sending message to the bot and go to this url to view the chat_id:
-                                        </p>
-
-                                        <p style="margin-top: 8px;">
-
-                                            <template v-if="notification.telegramBotToken">
-                                                <a :href="telegramGetUpdatesURL" target="_blank">{{ telegramGetUpdatesURL }}</a>
-                                            </template>
-
-                                            <template v-else>
-                                                {{ telegramGetUpdatesURL }}
-                                            </template>
-                                        </p>
-                                    </div>
-                                </div>
-                            </template>
+                        </template>
 
                         <template v-if="notification.type === 'webhook'">
                             <div class="mb-3">
@@ -191,16 +193,104 @@
 
                         <template v-if="notification.type === 'slack'">
                             <div class="mb-3">
-                                <label for="slack-webhook-url" class="form-label">Slack Webhook URL</label>
-                                <input type="text" class="form-control" id="slack-webhook-url" required v-model="notification.slackwebhookURL" autocomplete="false">
-                                <label for="gotify-server-url" class="form-label">Uptime Kuma URL</label>
-                                    <div class="input-group mb-3">
-                                        <input type="text" class="form-control" id="slack-button" required v-model="notification.slackbutton" autocomplete="false">
-                                    </div>
+                                <label for="slack-webhook-url" class="form-label">Webhook URL<span style="color:red;"><sup>*</sup></span></label>
+                                <input type="text" class="form-control" id="slack-webhook-url" required v-model="notification.slackwebhookURL">
+                                <label for="slack-username" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="slack-username" v-model="notification.slackusername">
+                                <label for="slack-iconemo" class="form-label">Icon Emoji</label>
+                                <input type="text" class="form-control" id="slack-iconemo" v-model="notification.slackiconemo">
+                                <label for="slack-channel" class="form-label">Channel Name</label>
+                                <input type="text" class="form-control" id="slack-channel-name" v-model="notification.slackchannel">
+                                <label for="slack-button-url" class="form-label">Uptime Kuma URL</label>
+                                <input type="text" class="form-control" id="slack-button" v-model="notification.slackbutton">
+                                <div class="form-text">
+                                <span style="color:red;"><sup>*</sup></span>Required
+                                    <p style="margin-top: 8px;">
+                                        More info about webhooks on: <a href="https://api.slack.com/messaging/webhooks" target="_blank">https://api.slack.com/messaging/webhooks</a>
+                                    </p>
+                                    <p style="margin-top: 8px;">
+                                        Enter the channel name on Slack Channel Name field if you want to bypass the webhook channel. Ex: #other-channel
+                                    </p>
+                                    <p style="margin-top: 8px;">
+                                        If you leave the Uptime Kuma URL field blank, it will default to the Project Github page.
+                                    </p>
+                                    <p style="margin-top: 8px;">
+                                        Emoji cheat sheet: <a href="https://www.webfx.com/tools/emoji-cheat-sheet/" target="_blank">https://www.webfx.com/tools/emoji-cheat-sheet/</a>
+                                    </p>
+                                </div>
+                            </div>
+                        </template>
+
+                        <template v-if="notification.type === 'pushover'">
+                            <div class="mb-3">
+                                <label for="pushover-app-token" class="form-label">Application Token<span style="color:red;"><sup>*</sup></span></label>
+                                <input type="text" class="form-control" id="pushover-app-token" required v-model="notification.pushoverapptoken">
+                                <label for="pushover-user" class="form-label">User Key<span style="color:red;"><sup>*</sup></span></label>
+                                <input type="text" class="form-control" id="pushover-user" required v-model="notification.pushoveruserkey">
+                                <label for="pushover-device" class="form-label">Device</label>
+                                <input type="text" class="form-control" id="pushover-device" v-model="notification.pushoverdevice">
+                                <label for="pushover-device" class="form-label">Message Title</label>
+                                <input type="text" class="form-control" id="pushover-title" v-model="notification.pushovertitle">
+                                <label for="pushover-priority" class="form-label">Priority</label>
+                                <input type="text" class="form-control" id="pushover-priority" v-model="notification.pushoverpriority">
+                                <label for="pushover-sound" class="form-label">Notification Sound</label>
+                                <select class="form-select"  id="pushover-sound" v-model="notification.pushoversounds">
+                                    <option>pushover</option>
+                                    <option>bike</option>
+                                    <option>bugle</option>
+                                    <option>cashregister</option>
+                                    <option>classical</option>
+                                    <option>cosmic</option>
+                                    <option>falling</option>
+                                    <option>gamelan</option>
+                                    <option>incoming</option>
+                                    <option>intermission</option>
+                                    <option>mechanical</option>
+                                    <option>pianobar</option>
+                                    <option>siren</option>
+                                    <option>spacealarm</option>
+                                    <option>tugboat</option>
+                                    <option>alien</option>
+                                    <option>climb</option>
+                                    <option>persistent</option>
+                                    <option>echo</option>
+                                    <option>updown</option>
+                                    <option>vibrate</option>
+                                    <option>none</option>
+                                </select>
+                                <div class="form-text">
+                                <span style="color:red;"><sup>*</sup></span>Required
                                 <p style="margin-top: 8px;">
-                                        More info on: <a href="https://api.slack.com/messaging/webhooks" target="_blank">https://api.slack.com/messaging/webhooks</a>
+                                        More info on: <a href="https://pushover.net/api" target="_blank">https://pushover.net/api</a>
+                                </p>
+                                 <p style="margin-top: 8px;">
+                                        Emergency priority(2) has default 30 second timeout between retries and will expire after 1 hour.
+                                </p>
+                                </div>
+                            </div>
+                        </template>
+
+                        <template v-if="notification.type === 'apprise'">
+
+                            <div class="mb-3">
+                                <label for="gotify-application-token" class="form-label">Apprise URL</label>
+                                <input type="text" class="form-control" id="gotify-application-token" required v-model="notification.appriseURL">
+                                <div class="form-text">
+                                    <p>Example: twilio://AccountSid:AuthToken@FromPhoneNo</p>
+                                    <p>
+                                        Read more: <a href="https://github.com/caronc/apprise/wiki#notification-services" target="_blank">https://github.com/caronc/apprise/wiki#notification-services</a>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <p>
+                                    Status:
+                                    <span class="text-primary" v-if="appriseInstalled">Apprise is installed</span>
+                                    <span class="text-danger" v-else>Apprise is not installed. <a href="https://github.com/caronc/apprise">Read more</a></span>
                                 </p>
                             </div>
+
                         </template>
 
                     </div>
@@ -220,7 +310,7 @@
 
 <script>
 import { Modal } from 'bootstrap'
-const {ucfirst} = require("../../server/util")
+import { ucfirst } from '../util-frontend'
 import axios from "axios";
 import { useToast } from 'vue-toastification'
 import Confirm from "./Confirm.vue";
@@ -241,17 +331,15 @@ export default {
                 type: null,
                 gotifyPriority: 8
             },
+            appriseInstalled: false,
         }
     },
     mounted() {
         this.modal = new Modal(this.$refs.modal)
 
-        // TODO: for edit
-        this.$root.getSocket().emit("getSettings", "notification", (data) => {
-          //  this.notification = data
+        this.$root.getSocket().emit("checkApprise", (installed) => {
+            this.appriseInstalled = installed;
         })
-
-
     },
     methods: {
 
