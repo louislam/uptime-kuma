@@ -72,7 +72,7 @@ class Notification {
                     finalData = data;
                 }
 
-                let res = await axios.post(notification.webhookURL, finalData, config)
+                await axios.post(notification.webhookURL, finalData, config)
                 return okMsg;
 
             } catch (error) {
@@ -90,7 +90,7 @@ class Notification {
                   username: 'Uptime-Kuma',
                   content: msg
                 }
-                let res = await axios.post(notification.discordWebhookUrl, data)
+                await axios.post(notification.discordWebhookUrl, data)
                 return okMsg;
               }
               // If heartbeatJSON is not null, we go into the normal alerting loop.
@@ -116,7 +116,7 @@ class Notification {
                   ]
                 }]
               }
-              let res = await axios.post(notification.discordWebhookUrl, data)
+              await axios.post(notification.discordWebhookUrl, data)
               return okMsg;
             } catch(error) {
               throwGeneralAxiosError(error)
@@ -131,7 +131,7 @@ class Notification {
             };
             let config = {};
 
-            let res = await axios.post(notification.signalURL, data, config)
+            await axios.post(notification.signalURL, data, config)
             return okMsg;
         } catch (error) {
               throwGeneralAxiosError(error)
@@ -141,7 +141,7 @@ class Notification {
             try {
                 if (heartbeatJSON == null) {
                     let data = {'text': "Uptime Kuma Slack testing successful.", 'channel': notification.slackchannel, 'username': notification.slackusername, 'icon_emoji': notification.slackiconemo}
-                    let res = await axios.post(notification.slackwebhookURL, data)
+                    await axios.post(notification.slackwebhookURL, data)
                     return okMsg;
                 }
 
@@ -186,7 +186,7 @@ class Notification {
                             }
                         ]
                     }
-                let res = await axios.post(notification.slackwebhookURL, data)
+                await axios.post(notification.slackwebhookURL, data)
                 return okMsg;
             } catch (error) {
                 throwGeneralAxiosError(error)
@@ -199,7 +199,7 @@ class Notification {
                     let data = {'message': "<b>Uptime Kuma Pushover testing successful.</b>",
                     'user': notification.pushoveruserkey, 'token': notification.pushoverapptoken, 'sound':notification.pushoversounds,
                     'priority': notification.pushoverpriority, 'title':notification.pushovertitle, 'retry': "30", 'expire':"3600", 'html': 1}
-                    let res = await axios.post(pushoverlink, data)
+                    await axios.post(pushoverlink, data)
                     return okMsg;
                 }
 
@@ -214,7 +214,7 @@ class Notification {
                     "expire": "3600",
                     "html": 1
                     }
-                let res = await axios.post(pushoverlink, data)
+                await axios.post(pushoverlink, data)
                 return okMsg;
             } catch (error) {
                 throwGeneralAxiosError(error)
