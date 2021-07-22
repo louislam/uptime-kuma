@@ -114,6 +114,7 @@ class Monitor extends BeanModel {
             if (! previousBeat || previousBeat.status !== bean.status || (previousBeat && previousBeat.status !== 1 && bean.status != 1)) {
                 // Don't mark as important two subsequent faulty beats
                 let repeatedFailures = (previousBeat && previousBeat.status !== 1 && bean.status != 1);
+                let goUpAfterRepeatedFailures = false;
                 if(repeatedFailures) bean.important = false;
                 else bean.important = true;
 
@@ -146,9 +147,11 @@ class Monitor extends BeanModel {
                             query = query.map(val => val.status);
                             // All the heartbeats are failed except the oldest one
                             // Current beat is failed too
+                            goUpAfterRepeatedFailures = query.slice(0,-1).every( val => val === query[0] );
                             repeatedFailures = bean.status !== 1 && bean.status === query[0] && query.slice(0,-1).every( val => val === query[0] ) && [...query].reverse()[0] !== [...query].reverse()[1];
                         }
-                        if((bean.status === 1 && !repeatedFailures) || 
+                        if((notificationConfig.failThreshold <= 1 && bean.status === 1) || 
+                        (notificationConfig.failThreshold > 1 && bean.status === 1 && goUpAfterRepeatedFailures) || 
                         (notificationConfig.failThreshold <= 1 && !repeatedFailures) ||
                         (notificationConfig.failThreshold > 1 && repeatedFailures)) promiseList.push(Notification.send(notificationConfig, msg, await this.toJSON(), bean.toJSON()));
                     }
