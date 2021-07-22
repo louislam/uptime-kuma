@@ -16,7 +16,6 @@ const {Notification} = require("../notification")
  *      1 = UP
  */
 class Monitor extends BeanModel {
-
     async toJSON() {
 
         let notificationIDList = {};
@@ -35,6 +34,7 @@ class Monitor extends BeanModel {
             url: this.url,
             hostname: this.hostname,
             port: this.port,
+            maxretries: this.maxretries,
             weight: this.weight,
             active: this.active,
             type: this.type,
@@ -46,6 +46,7 @@ class Monitor extends BeanModel {
 
     start(io) {
         let previousBeat = null;
+        let retries = 0;
 
         const beat = async () => {
             if (! previousBeat) {
@@ -107,12 +108,19 @@ class Monitor extends BeanModel {
                     bean.status = 1;
                 }
 
+                retries = 0;
+
             } catch (error) {
+                if ((this.maxretries > 0) && (retries < this.maxretries)) {
+                    retries++;
+                    bean.status = 2;
+                }
                 bean.msg = error.message;
             }
 
-            // Mark as important if status changed
-            if (! previousBeat || previousBeat.status !== bean.status) {
+            // Mark as important if status changed, ignore pending pings,
+            // Don't notify if disrupted changes to up
+            if ((! previousBeat || previousBeat.status !== bean.status) && bean.status !== 2 && !(previousBeat.status === 2 && bean.status !== 0)) {
                 bean.important = true;
 
                 // Do not send if first beat is UP
@@ -237,7 +245,7 @@ class Monitor extends BeanModel {
                 }
 
                 total += value;
-                if (row.status === 0) {
+                if (row.status === 0 || row.status === 2) {
                     downtime += value;
                 }
             }

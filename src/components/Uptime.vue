@@ -30,6 +30,8 @@ export default {
                 return "danger"
             } else if (this.lastHeartBeat.status === 1) {
                 return "primary"
+            } else if (this.lastHeartBeat.status === 2) {
+                return "warning"
             } else {
                 return "secondary"
             }
