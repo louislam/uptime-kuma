@@ -55,7 +55,7 @@
                                     <p style="margin-top: 8px;">
 
                                         <template v-if="notification.telegramBotToken">
-                                            <a :href="telegramGetUpdatesURL" target="_blank">{{ telegramGetUpdatesURL }}</a>
+                                            <a :href="telegramGetUpdatesURL" target="_blank" style="word-break: break-word;">{{ telegramGetUpdatesURL }}</a>
                                         </template>
 
                                         <template v-else>
