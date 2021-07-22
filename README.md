@@ -80,11 +80,16 @@ PS: For every new release, it takes some time to build the docker image, please 
 
 ```bash
 git fetch --all
-git checkout 1.0.5 --force
+git checkout 1.0.6 --force
 npm install
 npm run build
 pm2 restart uptime-kuma
 ```
+
+# What's Next?
+
+I will mark requests/issues to the next milestone. 
+https://github.com/louislam/uptime-kuma/milestones
 
 # More Screenshots
 
@@ -112,7 +117,7 @@ If you love this project, please consider giving me a ⭐.
 
 # Contribute
 
-If you want to report a bug or request a new featue. Free feel to open a new issue.
+If you want to report a bug or request a new feature. Free feel to open a new issue.
 
 If you want to modify Uptime Kuma, this guideline maybe useful for you: https://github.com/louislam/uptime-kuma/wiki/%5BDev%5D-Setup-Development-Environment
 

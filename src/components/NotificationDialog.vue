@@ -55,7 +55,7 @@
                                     <p style="margin-top: 8px;">
 
                                         <template v-if="notification.telegramBotToken">
-                                            <a :href="telegramGetUpdatesURL" target="_blank">{{ telegramGetUpdatesURL }}</a>
+                                            <a :href="telegramGetUpdatesURL" target="_blank" style="word-break: break-word;">{{ telegramGetUpdatesURL }}</a>
                                         </template>
 
                                         <template v-else>
@@ -69,13 +69,13 @@
                         <template v-if="notification.type === 'webhook'">
                             <div class="mb-3">
                                 <label for="webhook-url" class="form-label">Post URL</label>
-                                <input type="url" pattern="https?://.+"  class="form-control" id="webhook-url" required v-model="notification.webhookURL">
+                                <input type="url" pattern="https?://.+" class="form-control" id="webhook-url" required v-model="notification.webhookURL">
 
                             </div>
 
                             <div class="mb-3">
                                 <label for="webhook-content-type" class="form-label">Content Type</label>
-                                <select class="form-select"  id="webhook-content-type" v-model="notification.webhookContentType" required>
+                                <select class="form-select" id="webhook-content-type" v-model="notification.webhookContentType" required>
                                     <option value="json">application/json</option>
                                     <option value="form-data">multipart/form-data</option>
                                 </select>
@@ -100,7 +100,7 @@
 
                             <div class="mb-3">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="" id="secure"  v-model="notification.smtpSecure">
+                                    <input class="form-check-input" type="checkbox" value="" id="secure" v-model="notification.smtpSecure">
                                     <label class="form-check-label" for="secure">
                                         Secure
                                     </label>
@@ -141,7 +141,7 @@
                         <template v-if="notification.type === 'signal'">
                             <div class="mb-3">
                                 <label for="signal-url" class="form-label">Post URL</label>
-                                <input type="url" pattern="https?://.+"  class="form-control" id="signal-url" required v-model="notification.signalURL">
+                                <input type="url" pattern="https?://.+" class="form-control" id="signal-url" required v-model="notification.signalURL">
 
                             </div>
 

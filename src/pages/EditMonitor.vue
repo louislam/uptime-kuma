@@ -124,7 +124,7 @@ export default {
                     name: "",
                     url: "https://",
                     interval: 60,
-                    maxretries: 0,                    
+                    maxretries: 0,
                     notificationIDList: {},
                 }
             } else if (this.isEdit) {
