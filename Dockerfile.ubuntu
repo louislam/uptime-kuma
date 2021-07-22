@@ -1,0 +1,15 @@
+from ubuntu
+
+RUN apt update -y
+RUN apt upgrade -y
+RUN DEBIAN_FRONTEND="noninteractive" apt install curl python3 python3-pip git cargo python3-six libffi-dev musl-dev python3-dev -y
+RUN curl -sL https://deb.nodesource.com/setup_14.x | bash -
+RUN apt-get install -y nodejs
+
+RUN npm install sqlite3@5.0.2 bcrypt@5.0.1
+RUN npm install -g pm2
+
+RUN git clone https://github.com/louislam/uptime-kuma.git
+RUN (cd uptime-kuma && npm run setup)
+
+CMD (cd /uptime-kuma && npm run start-server)
