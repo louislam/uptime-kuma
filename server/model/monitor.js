@@ -121,8 +121,6 @@ class Monitor extends BeanModel {
                         this.id
                     ])
 
-                    let promiseList = [];
-
                     let text;
                     if (bean.status === 1) {
                         text = "✅ Up"
@@ -133,10 +131,12 @@ class Monitor extends BeanModel {
                     let msg = `[${this.name}] [${text}] ${bean.msg}`;
 
                     for(let notification of notificationList) {
-                        promiseList.push(Notification.send(JSON.parse(notification.config), msg, await this.toJSON(), bean.toJSON()));
+                        try {
+                            await Notification.send(JSON.parse(notification.config), msg, await this.toJSON(), bean.toJSON())
+                        } catch (e) {
+                            console.error("Cannot send notification to " + notification.name)
+                        }
                     }
-
-                    await Promise.all(promiseList);
                 }
 
             } else {
