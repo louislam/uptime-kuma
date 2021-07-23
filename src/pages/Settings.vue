@@ -36,7 +36,7 @@
                         <label for="repeat-new-password" class="form-label">Repeat New Password</label>
                         <input type="password" class="form-control" :class="{ 'is-invalid' : invalidPassword }" id="repeat-new-password" required v-model="password.repeatNewPassword">
                         <div class="invalid-feedback">
-                            The repeat password is not match.
+                            The repeat password does not match.
                         </div>
                     </div>
 
@@ -56,7 +56,7 @@
 
                 <h2>Notifications</h2>
                 <p v-if="$root.notificationList.length === 0">Not available, please setup.</p>
-                <p v-else>Please assign the notification to monitor(s) to get it works.</p>
+                <p v-else>Please assign a notification to monitor(s) to get it to work.</p>
 
                 <ul class="list-group mb-3" style="border-radius: 1rem;">
                     <li class="list-group-item" v-for="(notification, index) in $root.notificationList" :key="index">
