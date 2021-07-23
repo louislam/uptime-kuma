@@ -6,6 +6,7 @@ var timezone = require('dayjs/plugin/timezone')
 dayjs.extend(utc)
 dayjs.extend(timezone)
 const axios = require("axios");
+const {debug} = require("../util");
 const {tcping, ping, checkCertificate} = require("../util-server");
 const {R} = require("redbean-node");
 const {BeanModel} = require("redbean-node/dist/bean-model");
@@ -84,9 +85,17 @@ class Monitor extends BeanModel {
                     bean.ping = dayjs().valueOf() - startTime;
 
                     // Check certificate if https is used
+
+                    let certInfoStartTime = dayjs().valueOf();
                     if (this.getUrl()?.protocol === "https:") {
-                        await this.updateTlsInfo(checkCertificate(res));
+                        try {
+                            await this.updateTlsInfo(checkCertificate(res));
+                        } catch (e) {
+                            console.error(e.message)
+                        }
                     }
+
+                    debug("Cert Info Query Time: " + (dayjs().valueOf() - certInfoStartTime) + "ms")
 
                     if (this.type === "http") {
                         bean.status = 1;
@@ -178,7 +187,7 @@ class Monitor extends BeanModel {
         clearInterval(this.heartbeatInterval)
     }
 
-    // Helper Method: 
+    // Helper Method:
     // returns URL object for further usage
     // returns null if url is invalid
     getUrl() {
@@ -199,7 +208,7 @@ class Monitor extends BeanModel {
             tls_info_bean.monitor_id = this.id;
         }
         tls_info_bean.info_json = JSON.stringify(checkCertificateResult);
-        R.store(tls_info_bean);
+        await R.store(tls_info_bean);
     }
 
     static async sendStats(io, monitorID, userID) {
