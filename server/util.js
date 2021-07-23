@@ -18,3 +18,9 @@ exports.ucfirst = function (str) {
     return firstLetter.toUpperCase() + str.substr(1);
 }
 
+exports.debug = (msg) => {
+    if (process.env.NODE_ENV === "development") {
+        console.log(msg)
+    }
+}
+
