@@ -1,4 +1,5 @@
 
+const https = require('https');
 const dayjs = require("dayjs");
 const utc = require('dayjs/plugin/utc')
 var timezone = require('dayjs/plugin/timezone')
@@ -10,6 +11,12 @@ const {tcping, ping, checkCertificate} = require("../util-server");
 const {R} = require("redbean-node");
 const {BeanModel} = require("redbean-node/dist/bean-model");
 const {Notification} = require("../notification")
+
+//  Use Custom agent to disable session reuse
+//  https://github.com/nodejs/node/issues/3940
+const customAgent = new https.Agent({
+    maxCachedSessions: 0
+});
 
 /**
  * status:
@@ -75,8 +82,9 @@ class Monitor extends BeanModel {
                 if (this.type === "http" || this.type === "keyword") {
                     let startTime = dayjs().valueOf();
                     let res = await axios.get(this.url, {
-                        headers: { 'User-Agent':'Uptime-Kuma' }
-                    })
+                        headers: { "User-Agent": "Uptime-Kuma" },
+                        httpsAgent: customAgent,
+                    });
                     bean.msg = `${res.status} - ${res.statusText}`
                     bean.ping = dayjs().valueOf() - startTime;
 
