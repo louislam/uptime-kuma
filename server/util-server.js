@@ -97,8 +97,7 @@ exports.checkCertificate = function (res) {
     } = res.request.res.socket.getPeerCertificate(false);
 
     if (!valid_from || !valid_to || !subjectaltname) {
-        reject(new Error('No certificate'));
-        return;
+        throw { message: 'No TLS certificate in response' };
     }
 
     const valid = res.request.res.socket.authorized || false;
