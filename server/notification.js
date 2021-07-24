@@ -192,6 +192,25 @@ class Notification {
                 throwGeneralAxiosError(error)
             }
 
+        }else if (notification.type === "pushy") {
+            try {
+                await axios.post(`https://api.pushy.me/push?api_key=${notification.pushyAPIKey}`, {
+                    "to": notification.pushyToken,
+                    "data": {
+                        "message": "Uptime-Kuma"
+                    },
+                    "notification": {
+                        "body": msg,
+                        "badge": 1,
+                        "sound": "ping.aiff"
+                    }
+                })
+                return true;
+            } catch (error) {
+                console.log(error)
+                return false;
+            }
+        
         } else if (notification.type === "pushover") {
                     var pushoverlink = 'https://api.pushover.net/1/messages.json'
             try {
@@ -219,11 +238,6 @@ class Notification {
             } catch (error) {
                 throwGeneralAxiosError(error)
             }
-
-        } else if (notification.type === "apprise") {
-
-            return Notification.apprise(notification, msg)
-
         } else {
             throw new Error("Notification type is not supported")
         }
@@ -287,31 +301,6 @@ class Notification {
 
         return "Sent Successfully.";
     }
-
-    static async apprise(notification, msg) {
-        let s = child_process.spawnSync("apprise", [ "-vv", "-b", msg, notification.appriseURL])
-
-
-        let output = (s.stdout) ? s.stdout.toString() : 'ERROR: maybe apprise not found';
-
-        if (output) {
-
-            if (! output.includes("ERROR")) {
-                return "Sent Successfully";
-            } else {
-                throw new Error(output)
-            }
-        } else {
-            return ""
-        }
-    }
-
-    static checkApprise() {
-        let commandExistsSync = require('command-exists').sync;
-        let exists = commandExistsSync('apprise');
-        return exists;
-    }
-
 }
 
 function throwGeneralAxiosError(error) {

@@ -21,7 +21,7 @@
                                 <option value="gotify">Gotify</option>
                                 <option value="slack">Slack</option>
                                 <option value="pushover">Pushover</option>
-                                <option value="apprise">Apprise (Support 50+ Notification services)</option>
+                                <option value="pushy">pushy</option>
                             </select>
                         </div>
 
@@ -221,6 +221,23 @@
                             </div>
                         </template>
 
+                        <template v-if="notification.type === 'pushy'">
+                            <div class="mb-3">
+                                <label for="pushy-app-token" class="form-label">API_KEY</label>
+                                <input type="text" class="form-control" id="pushy-app-token" required v-model="notification.pushyAPIKey">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="pushy-user-key" class="form-label">USER_TOKEN</label>
+                                <div class="input-group mb-3">
+                                    <input type="text" class="form-control" id="pushy-user-key" required v-model="notification.pushyToken">
+                                </div>
+                            </div>
+                            <p style="margin-top: 8px;">
+                                    More info on: <a href="https://pushy.me/docs/api/send-notifications" target="_blank">https://pushy.me/docs/api/send-notifications</a>
+                            </p>
+                        </template>
+
                         <template v-if="notification.type === 'pushover'">
                             <div class="mb-3">
                                 <label for="pushover-user" class="form-label">User Key<span style="color:red;"><sup>*</sup></span></label>
@@ -278,27 +295,6 @@
                                 </div>
                             </div>
                         </template>
-
-                        <template v-if="notification.type === 'apprise'">
-                            <div class="mb-3">
-                                <label for="apprise-url" class="form-label">Apprise URL</label>
-                                <input type="text" class="form-control" id="apprise-url" required v-model="notification.appriseURL">
-                                <div class="form-text">
-                                    <p>Example: twilio://AccountSid:AuthToken@FromPhoneNo</p>
-                                    <p>
-                                        Read more: <a href="https://github.com/caronc/apprise/wiki#notification-services" target="_blank">https://github.com/caronc/apprise/wiki#notification-services</a>
-                                    </p>
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <p>
-                                    Status:
-                                    <span class="text-primary" v-if="appriseInstalled">Apprise is installed</span>
-                                    <span class="text-danger" v-else>Apprise is not installed. <a href="https://github.com/caronc/apprise">Read more</a></span>
-                                </p>
-                            </div>
-                        </template>
-
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-danger" @click="deleteConfirm" :disabled="processing" v-if="id">Delete</button>
@@ -337,15 +333,10 @@ export default {
                 type: null,
                 gotifyPriority: 8
             },
-            appriseInstalled: false,
         }
     },
     mounted() {
         this.modal = new Modal(this.$refs.modal)
-
-        this.$root.getSocket().emit("checkApprise", (installed) => {
-            this.appriseInstalled = installed;
-        })
     },
     methods: {
 

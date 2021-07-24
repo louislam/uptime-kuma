@@ -471,15 +471,6 @@ let needSetup = false;
                 });
             }
         });
-
-        socket.on("checkApprise", async (callback) => {
-            try {
-                checkLogin(socket)
-                callback(Notification.checkApprise());
-            } catch (e) {
-                callback(false);
-            }
-        });
     });
 
     console.log("Init")
