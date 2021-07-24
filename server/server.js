@@ -1,46 +1,75 @@
+console.log("Welcome to Uptime Kuma ")
+console.log("Importing libraries")
 const express = require('express');
-const app = express();
 const http = require('http');
-const server = http.createServer(app);
 const { Server } = require("socket.io");
-const io = new Server(server);
 const dayjs = require("dayjs");
-const { R } = require("redbean-node");
+const {R} = require("redbean-node");
 const passwordHash = require('./password-hash');
 const jwt = require('jsonwebtoken');
 const Monitor = require("./model/monitor");
 const fs = require("fs");
-const { getSettings } = require("./util-server");
-const { Notification } = require("./notification")
+const {getSettings} = require("./util-server");
+const {Notification} = require("./notification")
+const gracefulShutdown = require('http-graceful-shutdown');
+const Database = require("./database");
+const {sleep} = require("./util");
 const args = require('args-parser')(process.argv);
 
 const version = require('../package.json').version;
 const hostname = args.host || "0.0.0.0"
 const port = args.port || 3001
 
+console.info("Version: " + version)
+
+console.log("Creating express and socket.io instance")
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
 app.use(express.json())
 
+/**
+ * Total WebSocket client connected to server currently, no actual use
+ * @type {number}
+ */
 let totalClient = 0;
+
+/**
+ * Use for decode the auth object
+ * @type {null}
+ */
 let jwtSecret = null;
+
+/**
+ * Main monitor list
+ * @type {{}}
+ */
 let monitorList = {};
+
+/**
+ * Show Setup Page
+ * @type {boolean}
+ */
 let needSetup = false;
 
 (async () => {
     await initDatabase();
 
+    console.log("Adding route")
     app.use('/', express.static("dist"));
 
-    app.get('*', function (request, response, next) {
+    app.get('*', function(request, response, next) {
         response.sendFile(process.cwd() + '/dist/index.html');
     });
 
+
+    console.log("Adding socket handler")
     io.on('connection', async (socket) => {
 
         socket.emit("info", {
             version,
         })
 
-        console.log('a user connected');
         totalClient++;
 
         if (needSetup) {
@@ -49,7 +78,6 @@ let needSetup = false;
         }
 
         socket.on('disconnect', () => {
-            console.log('user disconnected');
             totalClient--;
         });
 
@@ -155,10 +183,6 @@ let needSetup = false;
                     msg: e.message
                 });
             }
-
-
-
-
         });
 
         // Auth Only API
@@ -198,7 +222,7 @@ let needSetup = false;
             try {
                 checkLogin(socket)
 
-                let bean = await R.findOne("monitor", " id = ? ", [monitor.id])
+                let bean = await R.findOne("monitor", " id = ? ", [ monitor.id ])
 
                 if (bean.user_id !== socket.userID) {
                     throw new Error("Permission denied.")
@@ -209,6 +233,7 @@ let needSetup = false;
                 bean.url = monitor.url
                 bean.interval = monitor.interval
                 bean.hostname = monitor.hostname;
+                bean.maxretries = monitor.maxretries;
                 bean.port = monitor.port;
                 bean.keyword = monitor.keyword;
 
@@ -229,7 +254,7 @@ let needSetup = false;
                 });
 
             } catch (e) {
-                console.log(e)
+                console.error(e)
                 callback({
                     ok: false,
                     msg: e.message
@@ -336,7 +361,7 @@ let needSetup = false;
             try {
                 checkLogin(socket)
 
-                if (!password.currentPassword) {
+                if (! password.currentPassword) {
                     throw new Error("Invalid new password")
                 }
 
@@ -430,25 +455,36 @@ let needSetup = false;
             try {
                 checkLogin(socket)
 
-                await Notification.send(notification, notification.name + " Testing")
+                let msg = await Notification.send(notification, notification.name + " Testing")
 
                 callback({
                     ok: true,
-                    msg: "Sent Successfully"
+                    msg
                 });
 
             } catch (e) {
+                console.error(e)
+
                 callback({
                     ok: false,
                     msg: e.message
                 });
             }
         });
+
+        socket.on("checkApprise", async (callback) => {
+            try {
+                checkLogin(socket)
+                callback(Notification.checkApprise());
+            } catch (e) {
+                callback(false);
+            }
+        });
     });
 
+    console.log("Init")
     server.listen(port, hostname, () => {
         console.log(`Listening on ${hostname}:${port}`);
-
         startMonitors();
     });
 
@@ -475,7 +511,7 @@ async function checkOwner(userID, monitorID) {
         userID,
     ])
 
-    if (!row) {
+    if (! row) {
         throw new Error("You do not own this monitor.");
     }
 }
@@ -530,24 +566,27 @@ async function getMonitorJSONList(userID) {
 }
 
 function checkLogin(socket) {
-    if (!socket.userID) {
+    if (! socket.userID) {
         throw new Error("You are not logged in.");
     }
 }
 
 async function initDatabase() {
-    const path = './data/kuma.db';
-
-    if (!fs.existsSync(path)) {
-        console.log("Copy Database")
-        fs.copyFileSync("./db/kuma.db", path);
+    if (! fs.existsSync(Database.path)) {
+        console.log("Copying Database")
+        fs.copyFileSync(Database.templatePath, Database.path);
     }
 
-    console.log("Connect to Database")
-
+    console.log("Connecting to Database")
     R.setup('sqlite', {
-        filename: path
+        filename: Database.path
     });
+    console.log("Connected")
+
+    // Patch the database
+    await Database.patch()
+
+    // Auto map the model to a bean object
     R.freeze(true)
     await R.autoloadModels("./server/model");
 
@@ -555,17 +594,19 @@ async function initDatabase() {
         "jwtSecret"
     ]);
 
-    if (!jwtSecretBean) {
+    if (! jwtSecretBean) {
         console.log("JWT secret is not found, generate one.")
         jwtSecretBean = R.dispense("setting")
         jwtSecretBean.key = "jwtSecret"
 
         jwtSecretBean.value = passwordHash.generate(dayjs() + "")
         await R.store(jwtSecretBean)
+        console.log("Stored JWT secret into database")
     } else {
         console.log("Load JWT secret from database.")
     }
 
+    // If there is no record in user table, it is a new Uptime Kuma instance, need to setup
     if ((await R.count("user")) === 0) {
         console.log("No user, need setup")
         needSetup = true;
@@ -642,7 +683,7 @@ async function sendHeartbeatList(socket, monitorID) {
     let result = [];
 
     for (let bean of list) {
-        result.unshift(bean.toJSON())
+       result.unshift(bean.toJSON())
     }
 
     socket.emit("heartbeatList", monitorID, result)
@@ -660,3 +701,51 @@ async function sendImportantHeartbeatList(socket, monitorID) {
 
     socket.emit("importantHeartbeatList", monitorID, list)
 }
+
+
+
+const startGracefulShutdown = async () => {
+    console.log('Shutdown requested');
+
+
+    await (new Promise((resolve) => {
+        server.close(async function () {
+            console.log('Stopped Express.');
+            process.exit(0)
+            setTimeout(async () =>{
+                await R.close();
+                console.log("Stopped DB")
+
+                resolve();
+            }, 5000)
+
+        });
+    }));
+
+
+}
+
+async function shutdownFunction(signal) {
+    console.log('Called signal: ' + signal);
+
+    console.log("Stopping all monitors")
+    for (let id in monitorList) {
+        let monitor = monitorList[id]
+        monitor.stop()
+    }
+    await sleep(2000);
+    await Database.close();
+}
+
+function finalFunction() {
+    console.log('Graceful Shutdown')
+}
+
+gracefulShutdown(server, {
+    signals: 'SIGINT SIGTERM',
+    timeout: 30000,                   // timeout: 30 secs
+    development: false,               // not in dev mode
+    forceExit: true,                  // triggers process.exit() at the end of shutdown process
+    onShutdown: shutdownFunction,     // shutdown function (async) - e.g. for cleanup DB, ...
+    finally: finalFunction            // finally function (sync) - e.g. for logging
+});

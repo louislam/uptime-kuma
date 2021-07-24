@@ -5,7 +5,7 @@
 
 <script>
 
-import {sleep} from "../../server/util";
+import {sleep} from '../util-frontend'
 
 export default {
 

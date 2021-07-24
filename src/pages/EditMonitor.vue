@@ -45,7 +45,13 @@
 
                     <div class="mb-3">
                         <label for="interval" class="form-label">Heartbeat Interval (Every {{ monitor.interval }} seconds)</label>
-                        <input type="number" class="form-control" id="interval" v-model="monitor.interval" required min="1" step="1">
+                        <input type="number" class="form-control" id="interval" v-model="monitor.interval" required min="20" step="1">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="maxRetries" class="form-label">Retries</label>
+                        <input type="number" class="form-control" id="maxRetries" v-model="monitor.maxretries" required min="0" step="1">
+                        <div class="form-text">Maximum retries before the service is marked as down and a notification is sent</div>
                     </div>
 
                     <div>
@@ -61,7 +67,7 @@
                 <h2>Notifications</h2>
                 <p v-if="$root.notificationList.length === 0">Not available, please setup.</p>
 
-                <div v-bind:key="notification.id" class="form-check form-switch mb-3" v-for="notification in $root.notificationList">
+                <div class="form-check form-switch mb-3" :key="notification.id" v-for="notification in $root.notificationList">
                     <input class="form-check-input" type="checkbox" :id=" 'notification' + notification.id" v-model="monitor.notificationIDList[notification.id]">
 
                     <label class="form-check-label" :for=" 'notification' + notification.id">
@@ -118,7 +124,8 @@ export default {
                     type: "http",
                     name: "",
                     url: "https://",
-                    interval: 20,
+                    interval: 60,
+                    maxretries: 0,
                     notificationIDList: {},
                 }
             } else if (this.isEdit) {

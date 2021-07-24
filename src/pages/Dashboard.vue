@@ -13,7 +13,7 @@
                         No Monitors, please <router-link to="/add">add one</router-link>.
                     </div>
 
-                    <router-link v-bind:key="item.id" :to="monitorURL(item.id)" class="item" :class="{ 'disabled': ! item.active }" v-for="item in sortedMonitorList" @click="$root.cancelActiveList">
+                    <router-link :to="monitorURL(item.id)" class="item" :class="{ 'disabled': ! item.active }" v-for="(item, index) in sortedMonitorList" @click="$root.cancelActiveList" :key="index">
 
                         <div class="row">
                         	<div class="col-6 col-md-8 small-padding">
@@ -115,7 +115,7 @@ export default {
         display: block;
         text-decoration: none;
         padding: 15px 15px 12px 15px;
-        border-radius: .25rem;
+        border-radius: 10px;
         transition: all ease-in-out 0.15s;
 
         &.disabled {
@@ -129,11 +129,11 @@ export default {
         }
 
         &:hover {
-            background-color: var(--background-sidebar-active);
+            background-color: $highlight-white;
         }
 
         &.active {
-            background-color: var(--background-sidebar-active);
+            background-color: #cdf8f4;
         }
     }
 }

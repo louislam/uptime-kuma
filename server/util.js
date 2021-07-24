@@ -1,15 +1,15 @@
-/*
- * Common functions - can be used in frontend or backend
- */
+// Common JS cannot be used in frontend sadly
+// sleep, ucfirst is duplicated in ../src/util-frontend.js
 
+exports.DOWN = 0;
+exports.UP = 1;
+exports.PENDING = 2;
 
-
-
-export function sleep(ms) {
+exports.sleep = function (ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-export function ucfirst(str) {
+exports.ucfirst = function (str) {
     if (! str) {
         return str;
     }

@@ -14,6 +14,8 @@ export default {
                 return "danger"
             } else if (this.status === 1) {
                 return "primary"
+            } else if (this.status === 2) {
+                return "warning"
             } else {
                 return "secondary"
             }
@@ -24,6 +26,8 @@ export default {
                 return "Down"
             } else if (this.status === 1) {
                 return "Up"
+            } else if (this.status === 2) {
+                return "Pending"
             } else {
                 return "Unknown"
             }
@@ -34,6 +38,6 @@ export default {
 
 <style scoped>
     span {
-        width: 45px;
+        width: 54px;
     }
 </style>
