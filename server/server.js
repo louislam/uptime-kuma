@@ -15,7 +15,7 @@ const gracefulShutdown = require('http-graceful-shutdown');
 const Database = require("./database");
 const {sleep} = require("./util");
 const args = require('args-parser')(process.argv);
-
+const apiMetrics = require('prometheus-api-metrics');
 const version = require('../package.json').version;
 const hostname = args.host || "0.0.0.0"
 const port = args.port || 3001
@@ -57,6 +57,8 @@ let needSetup = false;
 
     console.log("Adding route")
     app.use('/', express.static("dist"));
+    app.use(apiMetrics())
+
 
     app.get('*', function(request, response, next) {
         response.sendFile(process.cwd() + '/dist/index.html');
