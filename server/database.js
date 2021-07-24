@@ -47,7 +47,7 @@ class Database {
                 console.error(ex)
 
                 console.error("Start Uptime-Kuma failed due to patch db failed")
-                console.error("Please submit the bug report if you still encounter the problem after restart: https://github.com/louislam/uptime-kuma/issues")
+                console.error("Please submit the bug report if you still encounter the problem after restart: https://github.com/philippdormann/uptime-kuma/issues")
                 process.exit(1);
             }
         }

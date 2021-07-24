@@ -29,10 +29,10 @@ see [sample docker-compose.yml](./docker-compose.yml)
 ### Manual
 ```bash
 # Create a volume
-docker volume create uptime-kuma
+docker volume create uptime
 
 # Start the container
-docker run -d --restart=always -p 50013:50013 -v uptime-kuma:/app/data --name uptime-kuma louislam/uptime-kuma
+docker run -d --restart=always -p 50013:50013 -v uptime:/app/data --name uptime philippdormann/uptime
 ```
 
 Browse to http://localhost:50013 after started.
@@ -40,7 +40,7 @@ Browse to http://localhost:50013 after started.
 Change Port and Volume
 
 ```bash
-docker run -d --restart=always -p <YOUR_PORT>:50013 -v <YOUR_DIR OR VOLUME>:/app/data --name uptime-kuma louislam/uptime-kuma
+docker run -d --restart=always -p <YOUR_PORT>:50013 -v <YOUR_DIR OR VOLUME>:/app/data --name uptime philippdormann/uptime
 ```
 
 ## Without Docker
@@ -48,8 +48,8 @@ docker run -d --restart=always -p <YOUR_PORT>:50013 -v <YOUR_DIR OR VOLUME>:/app
 Required Tools: Node.js >= 14, git and pm2. 
 
 ```bash
-git clone https://github.com/louislam/uptime-kuma.git
-cd uptime-kuma
+git clone https://github.com/philippdormann/uptime-kuma.git uptime
+cd uptime
 npm run setup
 
 # Option 1. Try it
@@ -58,10 +58,10 @@ npm run start-server
 # (Recommended) 
 # Option 2. Run in background using PM2
 # Install PM2 if you don't have: npm install pm2 -g
-pm2 start npm --name uptime-kuma -- run start-server
+pm2 start npm --name uptime -- run start-server
 
 # Listen to different port or hostname
-pm2 start npm --name uptime-kuma -- run start-server -- --port=80 --hostname=0.0.0.0
+pm2 start npm --name uptime -- run start-server -- --port=80 --hostname=0.0.0.0
 
 ```
 
@@ -83,7 +83,7 @@ Labels to filter by include:
 
 ## One-click Deploy to DigitalOcean
 
-[![Deploy to DO](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/louislam/uptime-kuma/tree/master&refcode=e2c7eb658434)
+[![Deploy to DO](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/philippdormann/uptime-kuma/tree/master)
 
 Choose Cheapest Plan is enough. (US$ 5)
 
