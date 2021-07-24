@@ -8,8 +8,8 @@
 
     <!-- Desktop header -->
     <header class="d-flex flex-wrap justify-content-center py-3 mb-3 border-bottom" v-if="! $root.isMobile">
-        <router-link to="/dashboard" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
-            <object class="bi me-2 ms-4" width="40" height="40" data="/icon.svg" alt="Logo"></object>
+        <router-link to="/dashboard" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-decoration-none">
+            <img class="bi me-2 ms-4" width="40" height="40" src="/icon.svg" />
             <span class="fs-4 title">Uptime Kuma</span>
         </router-link>
 
@@ -21,8 +21,8 @@
 
     <!-- Mobile header -->
     <header class="d-flex flex-wrap justify-content-center mt-3 mb-3" v-else>
-        <router-link to="/dashboard" class="d-flex align-items-center  text-dark text-decoration-none">
-            <object class="bi" width="40" height="40" data="/icon.svg"></object>
+        <router-link to="/dashboard" class="d-flex align-items-center text-decoration-none">
+            <img style="height:2rem;" src="/icon.svg" />
             <span class="fs-4 title ms-2">Uptime Kuma</span>
         </router-link>
     </header>
@@ -95,7 +95,7 @@ export default {
     height: 60px;
     width: 100%;
     left: 0;
-    background-color: #fff;
+    background-color: var(--background-4);
     box-shadow: 0 15px 47px 0 rgba(0, 0, 0, 0.05), 0 5px 14px 0 rgba(0, 0, 0, 0.05);
     text-align: center;
     white-space: nowrap;
