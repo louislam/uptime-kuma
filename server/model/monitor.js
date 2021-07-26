@@ -6,8 +6,7 @@ var timezone = require('dayjs/plugin/timezone')
 dayjs.extend(utc)
 dayjs.extend(timezone)
 const axios = require("axios");
-const {UP, DOWN, PENDING} = require("../util");
-const {debug} = require("../util");
+const {debug, UP, DOWN, PENDING} = require("../util");
 const {tcping, ping, checkCertificate} = require("../util-server");
 const {R} = require("redbean-node");
 const {BeanModel} = require("redbean-node/dist/bean-model");
