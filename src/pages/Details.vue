@@ -51,10 +51,18 @@
                 <p>(30-day)</p>
                 <span class="num"><Uptime :monitor="monitor" type="720" /></span>
             </div>
+
+            <div class="col" v-if="certInfo">
+                <h4>CertExp.</h4>
+                <p>(<Datetime :value="certInfo.validTo" date-only />)</p>
+                <span class="num" >
+                    <a href="#"  @click.prevent="toggleCertInfoBox = !toggleCertInfoBox">{{certInfo.daysRemaining}} days</a>
+                </span>
+            </div>
         </div>
     </div>
 
-    <div class="shadow-box big-padding text-center stats" v-if="monitor.type === 'http' && monitor.getUrl()?.protocol === 'https:' && certInfo != null">
+    <div class="shadow-box big-padding text-center" v-if="showCertInfoBox">
         <div class="row">
             <div class="col">
                 <h4>Certificate Info</h4>
@@ -66,7 +74,7 @@
                         </tr>
                         <tr class="my-3">
                             <td class="px-3">Valid To: </td>
-                            <td>{{ certInfo.validTo ? new Date(certInfo.validTo).toLocaleString() : "" }}</td>
+                            <td><Datetime :value="certInfo.validTo" /></td>
                         </tr>
                         <tr class="my-3">
                             <td class="px-3">Days Remaining: </td>
@@ -154,6 +162,7 @@ export default {
             page: 1,
             perPage: 25,
             heartBeatList: [],
+            toggleCertInfoBox: false,
         }
     },
     computed: {
@@ -216,8 +225,12 @@ export default {
             if (this.$root.certInfoList[this.monitor.id]) {
                 return this.$root.certInfoList[this.monitor.id]
             } else {
-                return { }
+                return null
             }
+        },
+
+        showCertInfoBox() {
+            return this.certInfo != null && this.toggleCertInfoBox;
         },
 
         displayedRecords() {
@@ -307,5 +320,13 @@ table {
 .stats p {
     font-size: 13px;
     color: #AAA;
+}
+
+.stats {
+    padding: 10px;
+
+    .col {
+        margin: 20px 0;
+    }
 }
 </style>

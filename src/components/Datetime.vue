@@ -14,12 +14,23 @@ dayjs.extend(relativeTime)
 export default {
     props: {
         value: String,
+        dateOnly: {
+            type: Boolean,
+            default: false,
+        },
     },
 
     computed: {
         displayText() {
-            let format = "YYYY-MM-DD HH:mm:ss";
-            return dayjs.utc(this.value).tz(this.$root.timezone).format(format)
+            if (this.value !== undefined && this.value !== "") {
+                let format = "YYYY-MM-DD HH:mm:ss";
+                if (this.dateOnly) {
+                    format = "YYYY-MM-DD";
+                }
+                return dayjs.utc(this.value).tz(this.$root.timezone).format(format);
+            } else {
+                return "";
+            }
         },
     }
 }
