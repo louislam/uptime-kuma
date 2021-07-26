@@ -110,6 +110,8 @@ export default {
                         result.up++;
                     } else if (beat.status === 0) {
                         result.down++;
+                    } else if (beat.status === 2) {
+                        result.up++;                
                     } else {
                         result.unknown++;
                     }

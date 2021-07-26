@@ -6,6 +6,7 @@ var timezone = require('dayjs/plugin/timezone')
 dayjs.extend(utc)
 dayjs.extend(timezone)
 const axios = require("axios");
+const {UP, DOWN, PENDING} = require("../util");
 const {debug} = require("../util");
 const {tcping, ping, checkCertificate} = require("../util-server");
 const {R} = require("redbean-node");
@@ -24,7 +25,6 @@ const customAgent = new https.Agent({
  *      1 = UP
  */
 class Monitor extends BeanModel {
-
     async toJSON() {
 
         let notificationIDList = {};
@@ -43,6 +43,7 @@ class Monitor extends BeanModel {
             url: this.url,
             hostname: this.hostname,
             port: this.port,
+            maxretries: this.maxretries,
             weight: this.weight,
             active: this.active,
             type: this.type,
@@ -54,21 +55,25 @@ class Monitor extends BeanModel {
 
     start(io) {
         let previousBeat = null;
+        let retries = 0;
 
         const beat = async () => {
+
             if (! previousBeat) {
                 previousBeat = await R.findOne("heartbeat", " monitor_id = ? ORDER BY time DESC", [
                     this.id
                 ])
             }
 
+            const isFirstBeat = !previousBeat;
+
             let bean = R.dispense("heartbeat")
             bean.monitor_id = this.id;
             bean.time = R.isoDateTime(dayjs.utc());
-            bean.status = 0;
+            bean.status = DOWN;
 
             // Duration
-            if (previousBeat) {
+            if (! isFirstBeat) {
                 bean.duration = dayjs(bean.time).diff(dayjs(previousBeat.time), 'second');
             } else {
                 bean.duration = 0;
@@ -98,7 +103,7 @@ class Monitor extends BeanModel {
                     debug("Cert Info Query Time: " + (dayjs().valueOf() - certInfoStartTime) + "ms")
 
                     if (this.type === "http") {
-                        bean.status = 1;
+                        bean.status = UP;
                     } else {
 
                         let data = res.data;
@@ -110,7 +115,7 @@ class Monitor extends BeanModel {
 
                         if (data.includes(this.keyword)) {
                             bean.msg += ", keyword is found"
-                            bean.status = 1;
+                            bean.status = UP;
                         } else {
                             throw new Error(bean.msg + ", but keyword is not found")
                         }
@@ -121,30 +126,52 @@ class Monitor extends BeanModel {
                 } else if (this.type === "port") {
                     bean.ping = await tcping(this.hostname, this.port);
                     bean.msg = ""
-                    bean.status = 1;
+                    bean.status = UP;
 
                 } else if (this.type === "ping") {
                     bean.ping = await ping(this.hostname);
                     bean.msg = ""
-                    bean.status = 1;
+                    bean.status = UP;
                 }
 
+                retries = 0;
+
             } catch (error) {
+                if ((this.maxretries > 0) && (retries < this.maxretries)) {
+                    retries++;
+                    bean.status = PENDING;
+                }
                 bean.msg = error.message;
             }
 
-            // Mark as important if status changed
-            if (! previousBeat || previousBeat.status !== bean.status) {
+            // * ? -> ANY STATUS = important [isFirstBeat]
+            // UP -> PENDING = not important
+            // * UP -> DOWN = important
+            // UP -> UP = not important
+            // PENDING -> PENDING = not important
+            // * PENDING -> DOWN = important
+            // PENDING -> UP = not important
+            // DOWN -> PENDING = this case not exists
+            // DOWN -> DOWN = not important
+            // * DOWN -> UP = important
+            let isImportant = isFirstBeat ||
+                (previousBeat.status === UP && bean.status === DOWN) ||
+                (previousBeat.status === DOWN && bean.status === UP) ||
+                (previousBeat.status === PENDING && bean.status === DOWN);
+
+            // Mark as important if status changed, ignore pending pings,
+            // Don't notify if disrupted changes to up
+            if (isImportant) {
                 bean.important = true;
 
-                // Do not send if first beat is UP
-                if (previousBeat || bean.status !== 1) {
+                // Send only if the first beat is DOWN
+                if (!isFirstBeat || bean.status === DOWN) {
                     let notificationList = await R.getAll(`SELECT notification.* FROM notification, monitor_notification WHERE monitor_id = ? AND monitor_notification.notification_id = notification.id `, [
                         this.id
                     ])
 
                     let text;
-                    if (bean.status === 1) {
+                    if (bean.status === UP) {
                         text = "✅ Up"
                     } else {
                         text = "🔴 Down"
@@ -165,8 +192,10 @@ class Monitor extends BeanModel {
                 bean.important = false;
             }
 
-            if (bean.status === 1) {
+            if (bean.status === UP) {
                 console.info(`Monitor #${this.id} '${this.name}': Successful Response: ${bean.ping} ms | Interval: ${this.interval} seconds | Type: ${this.type}`)
+            } else if (bean.status === PENDING) {
+                console.warn(`Monitor #${this.id} '${this.name}': Pending: ${bean.msg} | Type: ${this.type}`)
             } else {
                 console.warn(`Monitor #${this.id} '${this.name}': Failing: ${bean.msg} | Type: ${this.type}`)
             }
@@ -293,7 +322,7 @@ class Monitor extends BeanModel {
                 }
 
                 total += value;
-                if (row.status === 0) {
+                if (row.status === 0 || row.status === 2) {
                     downtime += value;
                 }
             }

@@ -223,16 +223,22 @@
 
                         <template v-if="notification.type === 'pushover'">
                             <div class="mb-3">
-                                <label for="pushover-app-token" class="form-label">Application Token<span style="color:red;"><sup>*</sup></span></label>
-                                <input type="text" class="form-control" id="pushover-app-token" required v-model="notification.pushoverapptoken">
                                 <label for="pushover-user" class="form-label">User Key<span style="color:red;"><sup>*</sup></span></label>
                                 <input type="text" class="form-control" id="pushover-user" required v-model="notification.pushoveruserkey">
+                                <label for="pushover-app-token" class="form-label">Application Token<span style="color:red;"><sup>*</sup></span></label>
+                                <input type="text" class="form-control" id="pushover-app-token" required v-model="notification.pushoverapptoken">
                                 <label for="pushover-device" class="form-label">Device</label>
                                 <input type="text" class="form-control" id="pushover-device" v-model="notification.pushoverdevice">
                                 <label for="pushover-device" class="form-label">Message Title</label>
                                 <input type="text" class="form-control" id="pushover-title" v-model="notification.pushovertitle">
                                 <label for="pushover-priority" class="form-label">Priority</label>
-                                <input type="text" class="form-control" id="pushover-priority" v-model="notification.pushoverpriority">
+                                <select class="form-select"  id="pushover-priority" v-model="notification.pushoverpriority">
+                                    <option>-2</option>
+                                    <option>-1</option>
+                                    <option>0</option>
+                                    <option>1</option>
+                                    <option>2</option>
+                                </select>
                                 <label for="pushover-sound" class="form-label">Notification Sound</label>
                                 <select class="form-select"  id="pushover-sound" v-model="notification.pushoversounds">
                                     <option>pushover</option>
@@ -264,17 +270,19 @@
                                         More info on: <a href="https://pushover.net/api" target="_blank">https://pushover.net/api</a>
                                 </p>
                                  <p style="margin-top: 8px;">
-                                        Emergency priority(2) has default 30 second timeout between retries and will expire after 1 hour.
+                                        Emergency priority (2) has default 30 second timeout between retries and will expire after 1 hour.
+                                </p>
+                                 <p style="margin-top: 8px;">
+                                        If you want to send notifications to different devices, fill out Device field.
                                 </p>
                                 </div>
                             </div>
                         </template>
 
                         <template v-if="notification.type === 'apprise'">
-
                             <div class="mb-3">
-                                <label for="gotify-application-token" class="form-label">Apprise URL</label>
-                                <input type="text" class="form-control" id="gotify-application-token" required v-model="notification.appriseURL">
+                                <label for="apprise-url" class="form-label">Apprise URL</label>
+                                <input type="text" class="form-control" id="apprise-url" required v-model="notification.appriseURL">
                                 <div class="form-text">
                                     <p>Example: twilio://AccountSid:AuthToken@FromPhoneNo</p>
                                     <p>
@@ -282,7 +290,6 @@
                                     </p>
                                 </div>
                             </div>
-
                             <div class="mb-3">
                                 <p>
                                     Status:
@@ -290,7 +297,6 @@
                                     <span class="text-danger" v-else>Apprise is not installed. <a href="https://github.com/caronc/apprise">Read more</a></span>
                                 </p>
                             </div>
-
                         </template>
 
                     </div>

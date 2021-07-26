@@ -294,6 +294,11 @@ export default {
                         text: "Down",
                         color: "danger"
                     };
+                } else if (lastHeartBeat.status === 2) {
+                    result[monitorID] = {
+                        text: "Pending",
+                        color: "warning"
+                    };
                 } else {
                     result[monitorID] = unknown;
                 }
