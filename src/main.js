@@ -91,4 +91,3 @@ app.use(Toast, options);
 app.component("FontAwesomeIcon", FontAwesomeIcon)
 
 app.mount("#app")
-

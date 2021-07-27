@@ -8,7 +8,7 @@ export default {
         monitor: Object,
         type: String,
         pill: {
-            Boolean,
+            type: Boolean,
             default: false,
         },
     },
@@ -57,7 +57,3 @@ export default {
     },
 }
 </script>
-
-<style scoped>
-
-</style>

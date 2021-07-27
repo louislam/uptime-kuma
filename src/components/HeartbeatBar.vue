@@ -69,7 +69,7 @@ export default {
             let width
             if (this.maxBeat > 0) {
                 width = (this.beatWidth + this.beatMargin * 2) * this.maxBeat + (leftRight * 2) + "px"
-            } {
+            } else {
                 width = "100%"
             }
 

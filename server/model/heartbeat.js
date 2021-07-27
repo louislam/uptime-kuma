@@ -9,6 +9,7 @@ const { BeanModel } = require("redbean-node/dist/bean-model");
  * status:
  *      0 = DOWN
  *      1 = UP
+ *      2 = PENDING
  */
 class Heartbeat extends BeanModel {
 

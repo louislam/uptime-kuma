@@ -12,11 +12,11 @@ export default {
     props: {
         value: [String, Number],
         time: {
-            Number,
+            type: Number,
             default: 0.3,
         },
         unit: {
-            String,
+            type: String,
             default: "ms",
         },
     },
@@ -61,7 +61,3 @@ export default {
 
 }
 </script>
-
-<style scoped>
-
-</style>

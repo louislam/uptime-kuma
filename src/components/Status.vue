@@ -17,8 +17,8 @@ export default {
             } if (this.status === 2) {
                 return "warning"
             }
-            return "secondary"
 
+            return "secondary"
         },
 
         text() {
@@ -29,8 +29,8 @@ export default {
             } if (this.status === 2) {
                 return "Pending"
             }
-            return "Unknown"
 
+            return "Unknown"
         },
     },
 }

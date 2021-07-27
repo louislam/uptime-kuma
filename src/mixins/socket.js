@@ -254,8 +254,8 @@ export default {
             if (this.userTimezone === "auto") {
                 return dayjs.tz.guess()
             }
-            return this.userTimezone
 
+            return this.userTimezone
         },
 
         lastHeartbeatList() {
@@ -322,4 +322,3 @@ export default {
     },
 
 }
-

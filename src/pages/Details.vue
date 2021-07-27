@@ -45,7 +45,7 @@
                 <span class="num"><CountUp :value="ping" /></span>
             </div>
             <div class="col">
-                <h4>Avg.{{ pingTitle }}</h4>
+                <h4>Avg. {{ pingTitle }}</h4>
                 <p>(24-hour)</p>
                 <span class="num"><CountUp :value="avgPing" /></span>
             </div>
@@ -61,7 +61,7 @@
             </div>
 
             <div v-if="certInfo" class="col">
-                <h4>CertExp.</h4>
+                <h4>Cert Exp.</h4>
                 <p>(<Datetime :value="certInfo.validTo" date-only />)</p>
                 <span class="num">
                     <a href="#" @click.prevent="toggleCertInfoBox = !toggleCertInfoBox">{{ certInfo.daysRemaining }} days</a>
