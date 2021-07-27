@@ -28,9 +28,13 @@ export default {
         color() {
             if (this.lastHeartBeat.status === 0) {
                 return "danger"
-            } if (this.lastHeartBeat.status === 1) {
+            }
+
+            if (this.lastHeartBeat.status === 1) {
                 return "primary"
-            } if (this.lastHeartBeat.status === 2) {
+            }
+
+            if (this.lastHeartBeat.status === 2) {
                 return "warning"
             }
 

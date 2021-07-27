@@ -12,9 +12,13 @@ export default {
         color() {
             if (this.status === 0) {
                 return "danger"
-            } if (this.status === 1) {
+            }
+
+            if (this.status === 1) {
                 return "primary"
-            } if (this.status === 2) {
+            }
+
+            if (this.status === 2) {
                 return "warning"
             }
 
@@ -24,9 +28,13 @@ export default {
         text() {
             if (this.status === 0) {
                 return "Down"
-            } if (this.status === 1) {
+            }
+
+            if (this.status === 1) {
                 return "Up"
-            } if (this.status === 2) {
+            }
+
+            if (this.status === 2) {
                 return "Pending"
             }
 
