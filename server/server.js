@@ -5,7 +5,6 @@ const http = require('http');
 const { Server } = require("socket.io");
 const dayjs = require("dayjs");
 const {R} = require("redbean-node");
-const passwordHash = require('./password-hash');
 const jwt = require('jsonwebtoken');
 const Monitor = require("./model/monitor");
 const fs = require("fs");
@@ -15,7 +14,9 @@ const gracefulShutdown = require('http-graceful-shutdown');
 const Database = require("./database");
 const {sleep} = require("./util");
 const args = require('args-parser')(process.argv);
-const apiMetrics = require('prometheus-api-metrics');
+const prometheusAPIMetrics = require('prometheus-api-metrics');
+const { basicAuth } = require("./auth");
+const {login} = require("./auth");
 const version = require('../package.json').version;
 const hostname = args.host || "0.0.0.0"
 const port = args.port || 3001
@@ -27,6 +28,9 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 app.use(express.json())
+const basicAuthRouter = express.Router();
+basicAuthRouter.use(basicAuth)
+app.use(basicAuthRouter)
 
 /**
  * Total WebSocket client connected to server currently, no actual use
@@ -56,14 +60,26 @@ let needSetup = false;
     await initDatabase();
 
     console.log("Adding route")
+
+    // Normal Router here
+
     app.use('/', express.static("dist"));
-    app.use(apiMetrics())
 
+    // Basic Auth Router here
 
+    // For testing
+    basicAuthRouter.get('/test-auth', (req, res) => {
+        res.end("OK")
+    });
+
+    // Prometheus API metrics  /metrics
+    // With Basic Auth using the first user's username/password
+    basicAuthRouter.use(prometheusAPIMetrics())
+
+    // Universal Route Handler, must be at the end
     app.get('*', function(request, response, next) {
         response.sendFile(process.cwd() + '/dist/index.html');
     });
-
 
     console.log("Adding socket handler")
     io.on('connection', async (socket) => {
@@ -120,20 +136,9 @@ let needSetup = false;
         socket.on("login", async (data, callback) => {
             console.log("Login")
 
-            let user = await R.findOne("user", " username = ? AND active = 1 ", [
-                data.username
-            ])
+            let user = await login(data.username, data.password)
 
-            if (user && passwordHash.verify(data.password, user.password)) {
-
-                // Upgrade the hash to bcrypt
-                if (passwordHash.needRehash(user.password)) {
-                    await R.exec("UPDATE `user` SET password = ? WHERE id = ? ", [
-                        passwordHash.generate(data.password),
-                        user.id
-                    ]);
-                }
-
+            if (user) {
                 await afterLogin(socket, user)
 
                 callback({

@@ -32,6 +32,7 @@
         "command-exists": "^1.2.9",
         "dayjs": "^1.10.6",
         "express": "^4.17.1",
+        "express-basic-auth": "^1.2.0",
         "form-data": "^4.0.0",
         "http-graceful-shutdown": "^3.1.2",
         "jsonwebtoken": "^8.5.1",
