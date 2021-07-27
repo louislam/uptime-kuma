@@ -1,48 +1,70 @@
 <template>
     <form @submit.prevent="submit">
-
-        <div class="modal fade" tabindex="-1" ref="modal" data-bs-backdrop="static">
+        <div ref="modal" class="modal fade" tabindex="-1" data-bs-backdrop="static">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">Setup Notification</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <h5 id="exampleModalLabel" class="modal-title">
+                            Setup Notification
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" />
                     </div>
                     <div class="modal-body">
-
                         <div class="mb-3">
                             <label for="type" class="form-label">Notification Type</label>
-                            <select class="form-select"  id="type" v-model="notification.type">
-                                <option value="telegram">Telegram</option>
-                                <option value="webhook">Webhook</option>
-                                <option value="smtp">Email (SMTP)</option>
-                                <option value="discord">Discord</option>
-                                <option value="signal">Signal</option>
-                                <option value="gotify">Gotify</option>
-                                <option value="slack">Slack</option>
-                                <option value="pushover">Pushover</option>
-                                <option value="apprise">Apprise (Support 50+ Notification services)</option>
+                            <select id="type" v-model="notification.type" class="form-select">
+                                <option value="telegram">
+                                    Telegram
+                                </option>
+                                <option value="webhook">
+                                    Webhook
+                                </option>
+                                <option value="smtp">
+                                    Email (SMTP)
+                                </option>
+                                <option value="discord">
+                                    Discord
+                                </option>
+                                <option value="signal">
+                                    Signal
+                                </option>
+                                <option value="gotify">
+                                    Gotify
+                                </option>
+                                <option value="slack">
+                                    Slack
+                                </option>
+                                <option value="pushover">
+                                    Pushover
+                                </option>
+                                <option value="apprise">
+                                    Apprise (Support 50+ Notification services)
+                                </option>
                             </select>
                         </div>
 
                         <div class="mb-3">
                             <label for="name" class="form-label">Friendly Name</label>
-                            <input type="text" class="form-control" id="name" required v-model="notification.name">
+                            <input id="name" v-model="notification.name" type="text" class="form-control" required>
                         </div>
 
                         <template v-if="notification.type === 'telegram'">
                             <div class="mb-3">
                                 <label for="telegram-bot-token" class="form-label">Bot Token</label>
-                                <input type="text" class="form-control" id="telegram-bot-token" required v-model="notification.telegramBotToken">
-                                <div class="form-text">You can get a token from <a href="https://t.me/BotFather" target="_blank">https://t.me/BotFather</a>.</div>
+                                <input id="telegram-bot-token" v-model="notification.telegramBotToken" type="text" class="form-control" required>
+                                <div class="form-text">
+                                    You can get a token from <a href="https://t.me/BotFather" target="_blank">https://t.me/BotFather</a>.
+                                </div>
                             </div>
 
                             <div class="mb-3">
                                 <label for="telegram-chat-id" class="form-label">Chat ID</label>
 
                                 <div class="input-group mb-3">
-                                    <input type="text" class="form-control" id="telegram-chat-id" required v-model="notification.telegramChatID">
-                                    <button class="btn btn-outline-secondary" type="button" @click="autoGetTelegramChatID" v-if="notification.telegramBotToken">Auto Get</button>
+                                    <input id="telegram-chat-id" v-model="notification.telegramChatID" type="text" class="form-control" required>
+                                    <button v-if="notification.telegramBotToken" class="btn btn-outline-secondary" type="button" @click="autoGetTelegramChatID">
+                                        Auto Get
+                                    </button>
                                 </div>
 
                                 <div class="form-text">
@@ -53,7 +75,6 @@
                                     </p>
 
                                     <p style="margin-top: 8px;">
-
                                         <template v-if="notification.telegramBotToken">
                                             <a :href="telegramGetUpdatesURL" target="_blank" style="word-break: break-word;">{{ telegramGetUpdatesURL }}</a>
                                         </template>
@@ -69,15 +90,18 @@
                         <template v-if="notification.type === 'webhook'">
                             <div class="mb-3">
                                 <label for="webhook-url" class="form-label">Post URL</label>
-                                <input type="url" pattern="https?://.+" class="form-control" id="webhook-url" required v-model="notification.webhookURL">
-
+                                <input id="webhook-url" v-model="notification.webhookURL" type="url" pattern="https?://.+" class="form-control" required>
                             </div>
 
                             <div class="mb-3">
                                 <label for="webhook-content-type" class="form-label">Content Type</label>
-                                <select class="form-select" id="webhook-content-type" v-model="notification.webhookContentType" required>
-                                    <option value="json">application/json</option>
-                                    <option value="form-data">multipart/form-data</option>
+                                <select id="webhook-content-type" v-model="notification.webhookContentType" class="form-select" required>
+                                    <option value="json">
+                                        application/json
+                                    </option>
+                                    <option value="form-data">
+                                        multipart/form-data
+                                    </option>
                                 </select>
 
                                 <div class="form-text">
@@ -90,70 +114,71 @@
                         <template v-if="notification.type === 'smtp'">
                             <div class="mb-3">
                                 <label for="hostname" class="form-label">Hostname</label>
-                                <input type="text" class="form-control" id="hostname" required v-model="notification.smtpHost">
+                                <input id="hostname" v-model="notification.smtpHost" type="text" class="form-control" required>
                             </div>
 
                             <div class="mb-3">
                                 <label for="port" class="form-label">Port</label>
-                                <input type="number" class="form-control" id="port" v-model="notification.smtpPort" required min="0" max="65535" step="1">
+                                <input id="port" v-model="notification.smtpPort" type="number" class="form-control" required min="0" max="65535" step="1">
                             </div>
 
                             <div class="mb-3">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="" id="secure" v-model="notification.smtpSecure">
+                                    <input id="secure" v-model="notification.smtpSecure" class="form-check-input" type="checkbox" value="">
                                     <label class="form-check-label" for="secure">
                                         Secure
                                     </label>
                                 </div>
-                                <div class="form-text">Generally, true for 465, false for other ports.</div>
+                                <div class="form-text">
+                                    Generally, true for 465, false for other ports.
+                                </div>
                             </div>
 
                             <div class="mb-3">
                                 <label for="username" class="form-label">Username</label>
-                                <input type="text" class="form-control" id="username" v-model="notification.smtpUsername" autocomplete="false">
+                                <input id="username" v-model="notification.smtpUsername" type="text" class="form-control" autocomplete="false">
                             </div>
 
                             <div class="mb-3">
                                 <label for="password" class="form-label">Password</label>
-                                <input type="password" class="form-control" id="password" v-model="notification.smtpPassword" autocomplete="false">
+                                <input id="password" v-model="notification.smtpPassword" type="password" class="form-control" autocomplete="false">
                             </div>
 
                             <div class="mb-3">
                                 <label for="from-email" class="form-label">From Email</label>
-                                <input type="email" class="form-control" id="from-email" required v-model="notification.smtpFrom" autocomplete="false">
+                                <input id="from-email" v-model="notification.smtpFrom" type="email" class="form-control" required autocomplete="false">
                             </div>
 
                             <div class="mb-3">
                                 <label for="to-email" class="form-label">To Email</label>
-                                <input type="email" class="form-control" id="to-email" required v-model="notification.smtpTo" autocomplete="false">
+                                <input id="to-email" v-model="notification.smtpTo" type="email" class="form-control" required autocomplete="false">
                             </div>
-
                         </template>
 
                         <template v-if="notification.type === 'discord'">
                             <div class="mb-3">
                                 <label for="discord-webhook-url" class="form-label">Discord Webhook URL</label>
-                                <input type="text" class="form-control" id="discord-webhook-url" required v-model="notification.discordWebhookUrl" autocomplete="false">
-                                <div class="form-text">You can get this by going to Server Settings -> Integrations -> Create Webhook</div>
+                                <input id="discord-webhook-url" v-model="notification.discordWebhookUrl" type="text" class="form-control" required autocomplete="false">
+                                <div class="form-text">
+                                    You can get this by going to Server Settings -> Integrations -> Create Webhook
+                                </div>
                             </div>
                         </template>
 
                         <template v-if="notification.type === 'signal'">
                             <div class="mb-3">
                                 <label for="signal-url" class="form-label">Post URL</label>
-                                <input type="url" pattern="https?://.+" class="form-control" id="signal-url" required v-model="notification.signalURL">
-
+                                <input id="signal-url" v-model="notification.signalURL" type="url" pattern="https?://.+" class="form-control" required>
                             </div>
 
                             <div class="mb-3">
                                 <label for="signal-number" class="form-label">Number</label>
-                                <input type="text" class="form-control" id="signal-number" required v-model="notification.signalNumber">
-
+                                <input id="signal-number" v-model="notification.signalNumber" type="text" class="form-control" required>
                             </div>
 
                             <div class="mb-3">
                                 <label for="signal-recipients" class="form-label">Recipients</label>
-                                <input type="text" class="form-control" id="signal-recipients" required v-model="notification.signalRecipients">
+                                <input id="signal-recipients" v-model="notification.signalRecipients" type="text" class="form-control" required>
 
                                 <div class="form-text">
                                     You need to have a signal client with REST API.
@@ -174,37 +199,37 @@
                         </template>
 
                         <template v-if="notification.type === 'gotify'">
-                                <div class="mb-3">
-                                    <label for="gotify-application-token" class="form-label">Application Token</label>
-                                    <input type="text" class="form-control" id="gotify-application-token" required v-model="notification.gotifyapplicationToken">
+                            <div class="mb-3">
+                                <label for="gotify-application-token" class="form-label">Application Token</label>
+                                <input id="gotify-application-token" v-model="notification.gotifyapplicationToken" type="text" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="gotify-server-url" class="form-label">Server URL</label>
+                                <div class="input-group mb-3">
+                                    <input id="gotify-server-url" v-model="notification.gotifyserverurl" type="text" class="form-control" required>
                                 </div>
-                                <div class="mb-3">
-                                    <label for="gotify-server-url" class="form-label">Server URL</label>
-                                    <div class="input-group mb-3">
-                                        <input type="text" class="form-control" id="gotify-server-url" required v-model="notification.gotifyserverurl">
-                                    </div>
-                                </div>
+                            </div>
 
-                                <div class="mb-3">
-                                    <label for="gotify-priority" class="form-label">Priority</label>
-                                    <input type="number" class="form-control" id="gotify-priority" v-model="notification.gotifyPriority" required min="0" max="10" step="1">
-                                </div>
-                            </template>
+                            <div class="mb-3">
+                                <label for="gotify-priority" class="form-label">Priority</label>
+                                <input id="gotify-priority" v-model="notification.gotifyPriority" type="number" class="form-control" required min="0" max="10" step="1">
+                            </div>
+                        </template>
 
                         <template v-if="notification.type === 'slack'">
                             <div class="mb-3">
                                 <label for="slack-webhook-url" class="form-label">Webhook URL<span style="color:red;"><sup>*</sup></span></label>
-                                <input type="text" class="form-control" id="slack-webhook-url" required v-model="notification.slackwebhookURL">
+                                <input id="slack-webhook-url" v-model="notification.slackwebhookURL" type="text" class="form-control" required>
                                 <label for="slack-username" class="form-label">Username</label>
-                                <input type="text" class="form-control" id="slack-username" v-model="notification.slackusername">
+                                <input id="slack-username" v-model="notification.slackusername" type="text" class="form-control">
                                 <label for="slack-iconemo" class="form-label">Icon Emoji</label>
-                                <input type="text" class="form-control" id="slack-iconemo" v-model="notification.slackiconemo">
+                                <input id="slack-iconemo" v-model="notification.slackiconemo" type="text" class="form-control">
                                 <label for="slack-channel" class="form-label">Channel Name</label>
-                                <input type="text" class="form-control" id="slack-channel-name" v-model="notification.slackchannel">
+                                <input id="slack-channel-name" v-model="notification.slackchannel" type="text" class="form-control">
                                 <label for="slack-button-url" class="form-label">Uptime Kuma URL</label>
-                                <input type="text" class="form-control" id="slack-button" v-model="notification.slackbutton">
+                                <input id="slack-button" v-model="notification.slackbutton" type="text" class="form-control">
                                 <div class="form-text">
-                                <span style="color:red;"><sup>*</sup></span>Required
+                                    <span style="color:red;"><sup>*</sup></span>Required
                                     <p style="margin-top: 8px;">
                                         More info about webhooks on: <a href="https://api.slack.com/messaging/webhooks" target="_blank">https://api.slack.com/messaging/webhooks</a>
                                     </p>
@@ -224,15 +249,15 @@
                         <template v-if="notification.type === 'pushover'">
                             <div class="mb-3">
                                 <label for="pushover-user" class="form-label">User Key<span style="color:red;"><sup>*</sup></span></label>
-                                <input type="text" class="form-control" id="pushover-user" required v-model="notification.pushoveruserkey">
+                                <input id="pushover-user" v-model="notification.pushoveruserkey" type="text" class="form-control" required>
                                 <label for="pushover-app-token" class="form-label">Application Token<span style="color:red;"><sup>*</sup></span></label>
-                                <input type="text" class="form-control" id="pushover-app-token" required v-model="notification.pushoverapptoken">
+                                <input id="pushover-app-token" v-model="notification.pushoverapptoken" type="text" class="form-control" required>
                                 <label for="pushover-device" class="form-label">Device</label>
-                                <input type="text" class="form-control" id="pushover-device" v-model="notification.pushoverdevice">
+                                <input id="pushover-device" v-model="notification.pushoverdevice" type="text" class="form-control">
                                 <label for="pushover-device" class="form-label">Message Title</label>
-                                <input type="text" class="form-control" id="pushover-title" v-model="notification.pushovertitle">
+                                <input id="pushover-title" v-model="notification.pushovertitle" type="text" class="form-control">
                                 <label for="pushover-priority" class="form-label">Priority</label>
-                                <select class="form-select"  id="pushover-priority" v-model="notification.pushoverpriority">
+                                <select id="pushover-priority" v-model="notification.pushoverpriority" class="form-select">
                                     <option>-2</option>
                                     <option>-1</option>
                                     <option>0</option>
@@ -240,7 +265,7 @@
                                     <option>2</option>
                                 </select>
                                 <label for="pushover-sound" class="form-label">Notification Sound</label>
-                                <select class="form-select"  id="pushover-sound" v-model="notification.pushoversounds">
+                                <select id="pushover-sound" v-model="notification.pushoversounds" class="form-select">
                                     <option>pushover</option>
                                     <option>bike</option>
                                     <option>bugle</option>
@@ -265,16 +290,16 @@
                                     <option>none</option>
                                 </select>
                                 <div class="form-text">
-                                <span style="color:red;"><sup>*</sup></span>Required
-                                <p style="margin-top: 8px;">
+                                    <span style="color:red;"><sup>*</sup></span>Required
+                                    <p style="margin-top: 8px;">
                                         More info on: <a href="https://pushover.net/api" target="_blank">https://pushover.net/api</a>
-                                </p>
-                                 <p style="margin-top: 8px;">
+                                    </p>
+                                    <p style="margin-top: 8px;">
                                         Emergency priority (2) has default 30 second timeout between retries and will expire after 1 hour.
-                                </p>
-                                 <p style="margin-top: 8px;">
+                                    </p>
+                                    <p style="margin-top: 8px;">
                                         If you want to send notifications to different devices, fill out Device field.
-                                </p>
+                                    </p>
                                 </div>
                             </div>
                         </template>
@@ -282,7 +307,7 @@
                         <template v-if="notification.type === 'apprise'">
                             <div class="mb-3">
                                 <label for="apprise-url" class="form-label">Apprise URL</label>
-                                <input type="text" class="form-control" id="apprise-url" required v-model="notification.appriseURL">
+                                <input id="apprise-url" v-model="notification.appriseURL" type="text" class="form-control" required>
                                 <div class="form-text">
                                     <p>Example: twilio://AccountSid:AuthToken@FromPhoneNo</p>
                                     <p>
@@ -293,40 +318,46 @@
                             <div class="mb-3">
                                 <p>
                                     Status:
-                                    <span class="text-primary" v-if="appriseInstalled">Apprise is installed</span>
-                                    <span class="text-danger" v-else>Apprise is not installed. <a href="https://github.com/caronc/apprise">Read more</a></span>
+                                    <span v-if="appriseInstalled" class="text-primary">Apprise is installed</span>
+                                    <span v-else class="text-danger">Apprise is not installed. <a href="https://github.com/caronc/apprise">Read more</a></span>
                                 </p>
                             </div>
                         </template>
-
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-danger" @click="deleteConfirm" :disabled="processing" v-if="id">Delete</button>
-                        <button type="button" class="btn btn-warning" @click="test" :disabled="processing">Test</button>
-                        <button type="submit" class="btn btn-primary" :disabled="processing">Save</button>
+                        <button v-if="id" type="button" class="btn btn-danger" :disabled="processing" @click="deleteConfirm">
+                            Delete
+                        </button>
+                        <button type="button" class="btn btn-warning" :disabled="processing" @click="test">
+                            Test
+                        </button>
+                        <button type="submit" class="btn btn-primary" :disabled="processing">
+                            Save
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
-
     </form>
 
-    <Confirm ref="confirmDelete" @yes="deleteNotification" btn-style="btn-danger">Are you sure want to delete this notification for all monitors?</Confirm>
+    <Confirm ref="confirmDelete" btn-style="btn-danger" @yes="deleteNotification">
+        Are you sure want to delete this notification for all monitors?
+    </Confirm>
 </template>
 
 <script>
-import { Modal } from 'bootstrap'
-import { ucfirst } from '../util-frontend'
+import { Modal } from "bootstrap"
+import { ucfirst } from "../util-frontend"
 import axios from "axios";
-import { useToast } from 'vue-toastification'
+import { useToast } from "vue-toastification"
 import Confirm from "./Confirm.vue";
 const toast = useToast()
 
 export default {
-    components: {Confirm},
-    props: {
-
+    components: {
+        Confirm,
     },
+    props: {},
     data() {
         return {
             model: null,
@@ -335,10 +366,36 @@ export default {
             notification: {
                 name: "",
                 type: null,
-                gotifyPriority: 8
+                gotifyPriority: 8,
             },
             appriseInstalled: false,
         }
+    },
+    computed: {
+        telegramGetUpdatesURL() {
+            let token = "<YOUR BOT TOKEN HERE>"
+
+            if (this.notification.telegramBotToken) {
+                token = this.notification.telegramBotToken;
+            }
+
+            return `https://api.telegram.org/bot${token}/getUpdates`;
+        },
+    },
+    watch: {
+        "notification.type"(to, from) {
+            let oldName;
+
+            if (from) {
+                oldName = `My ${ucfirst(from)} Alert (1)`;
+            } else {
+                oldName = "";
+            }
+
+            if (! this.notification.name || this.notification.name === oldName) {
+                this.notification.name = `My ${ucfirst(to)} Alert (1)`
+            }
+        },
     },
     mounted() {
         this.modal = new Modal(this.$refs.modal)
@@ -437,32 +494,6 @@ export default {
         },
 
     },
-    computed: {
-        telegramGetUpdatesURL() {
-            let token = "<YOUR BOT TOKEN HERE>"
-
-            if (this.notification.telegramBotToken) {
-                token = this.notification.telegramBotToken;
-            }
-
-            return `https://api.telegram.org/bot${token}/getUpdates`;
-        },
-    },
-    watch: {
-        "notification.type"(to, from) {
-            let oldName;
-
-            if (from) {
-                oldName =  `My ${ucfirst(from)} Alert (1)`;
-            } else {
-                oldName = "";
-            }
-
-            if (! this.notification.name || this.notification.name === oldName) {
-                this.notification.name = `My ${ucfirst(to)} Alert (1)`
-            }
-        }
-    }
 }
 </script>
 

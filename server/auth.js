@@ -1,6 +1,6 @@
-const basicAuth = require('express-basic-auth')
-const passwordHash = require('./password-hash');
-const {R} = require("redbean-node");
+const basicAuth = require("express-basic-auth")
+const passwordHash = require("./password-hash");
+const { R } = require("redbean-node");
 
 /**
  *
@@ -10,7 +10,7 @@ const {R} = require("redbean-node");
  */
 exports.login = async function (username, password) {
     let user = await R.findOne("user", " username = ? AND active = 1 ", [
-        username
+        username,
     ])
 
     if (user && passwordHash.verify(password, user.password)) {
@@ -18,13 +18,13 @@ exports.login = async function (username, password) {
         if (passwordHash.needRehash(user.password)) {
             await R.exec("UPDATE `user` SET password = ? WHERE id = ? ", [
                 passwordHash.generate(password),
-                user.id
+                user.id,
             ]);
         }
         return user;
-    } else {
-        return null;
     }
+
+    return null;
 }
 
 function myAuthorizer(username, password, callback) {
@@ -36,5 +36,5 @@ function myAuthorizer(username, password, callback) {
 exports.basicAuth = basicAuth({
     authorizer: myAuthorizer,
     authorizeAsync: true,
-    challenge: true
+    challenge: true,
 });

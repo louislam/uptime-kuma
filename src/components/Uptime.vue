@@ -5,7 +5,7 @@
 <script>
 export default {
     props: {
-        monitor : Object,
+        monitor: Object,
         type: String,
         pill: {
             Boolean,
@@ -20,41 +20,41 @@ export default {
 
             if (this.$root.uptimeList[key] !== undefined) {
                 return Math.round(this.$root.uptimeList[key] * 10000) / 100 + "%";
-            } else {
-                return "N/A"
             }
+
+            return "N/A"
         },
 
         color() {
             if (this.lastHeartBeat.status === 0) {
                 return "danger"
-            } else if (this.lastHeartBeat.status === 1) {
+            } if (this.lastHeartBeat.status === 1) {
                 return "primary"
-            } else if (this.lastHeartBeat.status === 2) {
+            } if (this.lastHeartBeat.status === 2) {
                 return "warning"
-            } else {
-                return "secondary"
             }
+
+            return "secondary"
         },
 
         lastHeartBeat() {
             if (this.monitor.id in this.$root.lastHeartbeatList && this.$root.lastHeartbeatList[this.monitor.id]) {
                 return this.$root.lastHeartbeatList[this.monitor.id]
-            } else {
-                return { status: -1 }
+            }
+
+            return {
+                status: -1,
             }
         },
 
         className() {
             if (this.pill) {
                 return `badge rounded-pill bg-${this.color}`;
-            } else {
-                return "";
             }
+
+            return "";
         },
-
     },
-
 }
 </script>
 

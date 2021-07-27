@@ -5,34 +5,34 @@
 <script>
 export default {
     props: {
-        status: Number
+        status: Number,
     },
 
     computed: {
         color() {
             if (this.status === 0) {
                 return "danger"
-            } else if (this.status === 1) {
+            } if (this.status === 1) {
                 return "primary"
-            } else if (this.status === 2) {
+            } if (this.status === 2) {
                 return "warning"
-            } else {
-                return "secondary"
             }
+            return "secondary"
+
         },
 
         text() {
             if (this.status === 0) {
                 return "Down"
-            } else if (this.status === 1) {
+            } if (this.status === 1) {
                 return "Up"
-            } else if (this.status === 2) {
+            } if (this.status === 2) {
                 return "Pending"
-            } else {
-                return "Unknown"
             }
+            return "Unknown"
+
         },
-    }
+    },
 }
 </script>
 

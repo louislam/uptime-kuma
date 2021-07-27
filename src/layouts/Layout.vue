@@ -1,28 +1,35 @@
 <template>
-
-    <div class="lost-connection" v-if="! $root.socket.connected && ! $root.socket.firstConnect">
+    <div v-if="! $root.socket.connected && ! $root.socket.firstConnect" class="lost-connection">
         <div class="container-fluid">
             Lost connection to the socket server. Reconnecting...
         </div>
     </div>
 
     <!-- Desktop header -->
-    <header class="d-flex flex-wrap justify-content-center py-3 mb-3 border-bottom" v-if="! $root.isMobile">
+    <header v-if="! $root.isMobile" class="d-flex flex-wrap justify-content-center py-3 mb-3 border-bottom">
         <router-link to="/dashboard" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
-            <object class="bi me-2 ms-4" width="40" height="40" data="/icon.svg" alt="Logo"></object>
+            <object class="bi me-2 ms-4" width="40" height="40" data="/icon.svg" alt="Logo" />
             <span class="fs-4 title">Uptime Kuma</span>
         </router-link>
 
-        <ul class="nav nav-pills" >
-            <li class="nav-item"><router-link to="/dashboard" class="nav-link"><font-awesome-icon icon="tachometer-alt" /> Dashboard</router-link></li>
-            <li class="nav-item"><router-link to="/settings" class="nav-link"><font-awesome-icon icon="cog" /> Settings</router-link></li>
+        <ul class="nav nav-pills">
+            <li class="nav-item">
+                <router-link to="/dashboard" class="nav-link">
+                    <font-awesome-icon icon="tachometer-alt" /> Dashboard
+                </router-link>
+            </li>
+            <li class="nav-item">
+                <router-link to="/settings" class="nav-link">
+                    <font-awesome-icon icon="cog" /> Settings
+                </router-link>
+            </li>
         </ul>
     </header>
 
     <!-- Mobile header -->
-    <header class="d-flex flex-wrap justify-content-center mt-3 mb-3" v-else>
+    <header v-else class="d-flex flex-wrap justify-content-center mt-3 mb-3">
         <router-link to="/dashboard" class="d-flex align-items-center  text-dark text-decoration-none">
-            <object class="bi" width="40" height="40" data="/icon.svg"></object>
+            <object class="bi" width="40" height="40" data="/icon.svg" />
             <span class="fs-4 title ms-2">Uptime Kuma</span>
         </router-link>
     </header>
@@ -42,9 +49,8 @@
     </footer>
 
     <!-- Mobile Only -->
-    <div style="width: 100%;height: 60px;" v-if="$root.isMobile"></div>
-    <nav class="bottom-nav" v-if="$root.isMobile">
-
+    <div v-if="$root.isMobile" style="width: 100%;height: 60px;" />
+    <nav v-if="$root.isMobile" class="bottom-nav">
         <router-link to="/dashboard" class="nav-link" @click="$root.cancelActiveList">
             <div><font-awesome-icon icon="tachometer-alt" /></div>
             Dashboard
@@ -64,7 +70,6 @@
             <div><font-awesome-icon icon="cog" /></div>
             Settings
         </router-link>
-
     </nav>
 </template>
 
@@ -73,23 +78,19 @@ import Login from "../components/Login.vue";
 
 export default {
     components: {
-        Login
+        Login,
     },
     data() {
-        return {
-
-        }
+        return {}
     },
-    computed: {
-
-    },
-    mounted() {
-        this.init();
-    },
+    computed: {},
     watch: {
         $route (to, from) {
             this.init();
-        }
+        },
+    },
+    mounted() {
+        this.init();
     },
     methods: {
         init() {
@@ -98,7 +99,7 @@ export default {
             }
         },
 
-    }
+    },
 }
 </script>
 

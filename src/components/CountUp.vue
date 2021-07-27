@@ -5,7 +5,7 @@
 
 <script>
 
-import {sleep} from '../util-frontend'
+import { sleep } from "../util-frontend"
 
 export default {
 
@@ -18,11 +18,7 @@ export default {
         unit: {
             String,
             default: "ms",
-        }
-    },
-
-    mounted() {
-        this.output = this.value;
+        },
     },
 
     data() {
@@ -32,14 +28,10 @@ export default {
         }
     },
 
-    methods: {
-
-    },
-
     computed: {
         isNum() {
-            return typeof this.value === 'number'
-        }
+            return typeof this.value === "number"
+        },
     },
 
     watch: {
@@ -60,6 +52,12 @@ export default {
             this.output = this.value;
         },
     },
+
+    mounted() {
+        this.output = this.value;
+    },
+
+    methods: {},
 
 }
 </script>

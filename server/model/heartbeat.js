@@ -1,10 +1,9 @@
 const dayjs = require("dayjs");
-const utc = require('dayjs/plugin/utc')
-var timezone = require('dayjs/plugin/timezone')
+const utc = require("dayjs/plugin/utc")
+let timezone = require("dayjs/plugin/timezone")
 dayjs.extend(utc)
 dayjs.extend(timezone)
-const {BeanModel} = require("redbean-node/dist/bean-model");
-
+const { BeanModel } = require("redbean-node/dist/bean-model");
 
 /**
  * status:
