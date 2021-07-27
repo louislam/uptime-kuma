@@ -309,8 +309,8 @@ class Notification {
             if (! output.includes("ERROR")) {
                 return "Sent Successfully";
             }
-            throw new Error(output)
 
+            throw new Error(output)
         } else {
             return ""
         }

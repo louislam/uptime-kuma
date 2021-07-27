@@ -97,6 +97,7 @@ Ping.prototype.send = function(callback) {
         if (stderr) {
             return callback(new Error(stderr));
         }
+
         if (!stdout) {
             return callback(new Error("No stdout detected"));
         }
