@@ -45,11 +45,16 @@
         "vue-toastification": "^2.0.0-rc.1"
     },
     "devDependencies": {
-        "@vitejs/plugin-legacy": "^1.4.4",
-        "@vitejs/plugin-vue": "^1.2.5",
+        "@vitejs/plugin-legacy": "^1.5.0",
+        "@vitejs/plugin-vue": "^1.3.0",
         "@vue/compiler-sfc": "^3.1.5",
         "core-js": "^3.15.2",
-        "sass": "^1.35.2",
-        "vite": "^2.4.2"
+        "eslint": "^7.31.0",
+        "eslint-plugin-vue": "^7.14.0",
+        "sass": "^1.36.0",
+        "stylelint": "^13.13.1",
+        "stylelint-config-recommended": "^5.0.0",
+        "stylelint-config-standard": "^22.0.0",
+        "vite": "^2.4.4"
     }
 }
