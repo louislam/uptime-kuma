@@ -86,20 +86,6 @@ npm run build
 pm2 restart uptime-kuma
 ```
 
-# Passing metrics to other platforms
-
-If you already use [Prometheus.io](https://prometheus.io) or a platform that supports Prometheus exporter format, you can get the metrics about each monitoring target from `http://<your.installation>:<your_port>/metrics`.
-
-Labels to filter by include:
-
-| Label Name | Description |
-+------------+-------------+
-|monitor_name| The "Friendly Name" of the monitor |
-|monitor_type| The type (HTTP, keyword, TCP) of monitoring check |
-|monitor_url | The URL to be monitored (HTTP, keyword)
-|monitor_hostname | The Hostname to be monitored (TCP) |
-|monitor_port | The port to be monitored (TCP) |
-
 # What's Next?
 
 I will mark requests/issues to the next milestone. 
