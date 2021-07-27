@@ -271,6 +271,8 @@ class Monitor extends BeanModel {
         if (tls_info != null) {
             io.to(userID).emit("certInfo", monitorID, tls_info.info_json);
         }
+
+        // TODO: Send Notification if expire soon
     }
 
     /**
