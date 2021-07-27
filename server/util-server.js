@@ -70,3 +70,52 @@ exports.getSettings = async function (type) {
 
     return result;
 }
+
+
+// ssl-checker by @dyaa
+// param: res - response object from axios
+// return an object containing the certificate information
+
+const getDaysBetween = (validFrom, validTo) =>
+    Math.round(Math.abs(+validFrom - +validTo) / 8.64e7);
+
+const getDaysRemaining = (validFrom, validTo) => {
+    const daysRemaining = getDaysBetween(validFrom, validTo);
+    if (new Date(validTo).getTime() < new Date().getTime()) {
+        return -daysRemaining;
+    }
+    return daysRemaining;
+};
+
+exports.checkCertificate = function (res) {
+    const {
+        valid_from,
+        valid_to,
+        subjectaltname,
+        issuer,
+        fingerprint,
+    } = res.request.res.socket.getPeerCertificate(false);
+
+    if (!valid_from || !valid_to || !subjectaltname) {
+        throw { message: 'No TLS certificate in response' };
+    }
+
+    const valid = res.request.res.socket.authorized || false;
+
+    const validTo = new Date(valid_to);
+
+    const validFor = subjectaltname
+        .replace(/DNS:|IP Address:/g, "")
+        .split(", ");
+
+    const daysRemaining = getDaysRemaining(new Date(), validTo);
+
+    return {
+        valid,
+        validFor,
+        validTo,
+        daysRemaining,
+        issuer,
+        fingerprint,
+    };
+}

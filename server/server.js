@@ -235,6 +235,7 @@ let needSetup = false;
                 bean.url = monitor.url
                 bean.interval = monitor.interval
                 bean.hostname = monitor.hostname;
+                bean.maxretries = monitor.maxretries;
                 bean.port = monitor.port;
                 bean.keyword = monitor.keyword;
 
@@ -544,12 +545,12 @@ async function afterLogin(socket, user) {
     let monitorList = await sendMonitorList(socket)
 
     for (let monitorID in monitorList) {
-        await sendHeartbeatList(socket, monitorID);
-        await sendImportantHeartbeatList(socket, monitorID);
-        await Monitor.sendStats(io, monitorID, user.id)
+        sendHeartbeatList(socket, monitorID);
+        sendImportantHeartbeatList(socket, monitorID);
+        Monitor.sendStats(io, monitorID, user.id)
     }
 
-    await sendNotificationList(socket)
+    sendNotificationList(socket)
 }
 
 async function getMonitorJSONList(userID) {

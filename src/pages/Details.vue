@@ -11,10 +11,10 @@
     </p>
 
     <div class="functions">
-        <button class="btn btn-light" @click="pauseDialog" v-if="monitor.active">Pause</button>
-        <button class="btn btn-primary" @click="resumeMonitor" v-if="! monitor.active">Resume</button>
-        <router-link :to=" '/edit/' + monitor.id " class="btn btn-secondary">Edit</router-link>
-        <button class="btn btn-danger" @click="deleteDialog">Delete</button>
+        <button class="btn btn-light" @click="pauseDialog" v-if="monitor.active"><font-awesome-icon icon="pause" /> Pause</button>
+        <button class="btn btn-primary" @click="resumeMonitor" v-if="! monitor.active"><font-awesome-icon icon="pause" /> Resume</button>
+        <router-link :to=" '/edit/' + monitor.id " class="btn btn-secondary"><font-awesome-icon icon="edit" /> Edit</router-link>
+        <button class="btn btn-danger" @click="deleteDialog"><font-awesome-icon icon="trash" /> Delete</button>
     </div>
 
     <div class="shadow-box">
@@ -50,6 +50,46 @@
                 <h4>Uptime</h4>
                 <p>(30-day)</p>
                 <span class="num"><Uptime :monitor="monitor" type="720" /></span>
+            </div>
+
+            <div class="col" v-if="certInfo">
+                <h4>CertExp.</h4>
+                <p>(<Datetime :value="certInfo.validTo" date-only />)</p>
+                <span class="num" >
+                    <a href="#"  @click.prevent="toggleCertInfoBox = !toggleCertInfoBox">{{certInfo.daysRemaining}} days</a>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="shadow-box big-padding text-center" v-if="showCertInfoBox">
+        <div class="row">
+            <div class="col">
+                <h4>Certificate Info</h4>
+                <table class="text-start">
+                    <tbody>
+                        <tr class="my-3">
+                            <td class="px-3">Valid: </td>
+                            <td>{{ certInfo.valid }}</td>
+                        </tr>
+                        <tr class="my-3">
+                            <td class="px-3">Valid To: </td>
+                            <td><Datetime :value="certInfo.validTo" /></td>
+                        </tr>
+                        <tr class="my-3">
+                            <td class="px-3">Days Remaining: </td>
+                            <td>{{ certInfo.daysRemaining }}</td>
+                        </tr>
+                        <tr class="my-3">
+                            <td class="px-3">Issuer: </td>
+                            <td>{{ certInfo.issuer }}</td>
+                        </tr>
+                        <tr class="my-3">
+                            <td class="px-3">Fingerprint: </td>
+                            <td>{{ certInfo.fingerprint }}</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -122,6 +162,7 @@ export default {
             page: 1,
             perPage: 25,
             heartBeatList: [],
+            toggleCertInfoBox: false,
         }
     },
     computed: {
@@ -178,6 +219,18 @@ export default {
             } else {
                 return { }
             }
+        },
+
+        certInfo() {
+            if (this.$root.certInfoList[this.monitor.id]) {
+                return this.$root.certInfoList[this.monitor.id]
+            } else {
+                return null
+            }
+        },
+
+        showCertInfoBox() {
+            return this.certInfo != null && this.toggleCertInfoBox;
         },
 
         displayedRecords() {
@@ -267,5 +320,13 @@ table {
 .stats p {
     font-size: 13px;
     color: #AAA;
+}
+
+.stats {
+    padding: 10px;
+
+    .col {
+        margin: 20px 0;
+    }
 }
 </style>
