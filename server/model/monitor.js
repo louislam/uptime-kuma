@@ -1,4 +1,4 @@
-
+const Prometheus = require('prom-client');
 const https = require('https');
 const dayjs = require("dayjs");
 const utc = require('dayjs/plugin/utc')
@@ -16,6 +16,26 @@ const {Notification} = require("../notification")
 //  https://github.com/nodejs/node/issues/3940
 const customAgent = new https.Agent({
     maxCachedSessions: 0
+});
+
+const commonLabels = [
+    'monitor_name',
+    'monitor_type',
+    'monitor_url',
+    'monitor_hostname',
+    'monitor_port',
+]
+
+const monitor_response_time = new Prometheus.Gauge({
+    name: 'monitor_response_time',
+    help: 'Monitor Response Time (ms)',
+    labelNames: commonLabels
+});
+
+const monitor_status = new Prometheus.Gauge({
+    name: 'monitor_status',
+    help: 'Monitor Status (1 = UP, 0= DOWN)',
+    labelNames: commonLabels
 });
 
 /**
@@ -55,6 +75,14 @@ class Monitor extends BeanModel {
     start(io) {
         let previousBeat = null;
         let retries = 0;
+
+        const monitorLabelValues = {
+                monitor_name: this.name,
+                monitor_type: this.type,
+                monitor_url: this.url,
+                monitor_hostname: this.hostname,
+                monitor_port: this.port
+        }
 
         const beat = async () => {
 
@@ -191,6 +219,8 @@ class Monitor extends BeanModel {
                 bean.important = false;
             }
 
+            monitor_status.set(monitorLabelValues, bean.status)
+
             if (bean.status === UP) {
                 console.info(`Monitor #${this.id} '${this.name}': Successful Response: ${bean.ping} ms | Interval: ${this.interval} seconds | Type: ${this.type}`)
             } else if (bean.status === PENDING) {
@@ -198,6 +228,8 @@ class Monitor extends BeanModel {
             } else {
                 console.warn(`Monitor #${this.id} '${this.name}': Failing: ${bean.msg} | Type: ${this.type}`)
             }
+
+            monitor_response_time.set(monitorLabelValues, bean.ping)
 
             io.to(this.user_id).emit("heartbeat", bean.toJSON());
 
