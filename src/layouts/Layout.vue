@@ -155,10 +155,6 @@ export default {
     color: white;
 }
 
-main {
-
-}
-
 footer {
     color: #AAA;
     font-size: 13px;
