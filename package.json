@@ -1,6 +1,6 @@
 {
     "name": "uptime-kuma",
-    "version": "1.0.6",
+    "version": "1.0.7",
     "license": "MIT",
     "repository": {
         "type": "git",
@@ -12,10 +12,10 @@
         "update": "",
         "build": "vite build",
         "vite-preview-dist": "vite preview --host",
-        "build-docker": "docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma -t louislam/uptime-kuma:1 -t louislam/uptime-kuma:1.0.6 --target release . --push",
+        "build-docker": "docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma -t louislam/uptime-kuma:1 -t louislam/uptime-kuma:1.0.7 --target release . --push",
         "build-docker-nightly": "docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma:nightly --target nightly . --push",
         "build-docker-nightly-amd64": "docker buildx build --platform linux/amd64 -t louislam/uptime-kuma:nightly-amd64 --target nightly . --push",
-        "setup": "git checkout 1.0.6 && npm install && npm run build",
+        "setup": "git checkout 1.0.7 && npm install && npm run build",
         "version-global-replace": "node extra/version-global-replace.js",
         "mark-as-nightly": "node extra/mark-as-nightly.js"
     },
