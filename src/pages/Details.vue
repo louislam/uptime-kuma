@@ -11,10 +11,10 @@
     </p>
 
     <div class="functions">
-        <button class="btn btn-light" @click="pauseDialog" v-if="monitor.active">Pause</button>
-        <button class="btn btn-primary" @click="resumeMonitor" v-if="! monitor.active">Resume</button>
-        <router-link :to=" '/edit/' + monitor.id " class="btn btn-secondary">Edit</router-link>
-        <button class="btn btn-danger" @click="deleteDialog">Delete</button>
+        <button class="btn btn-light" @click="pauseDialog" v-if="monitor.active"><font-awesome-icon icon="pause" /> Pause</button>
+        <button class="btn btn-primary" @click="resumeMonitor" v-if="! monitor.active"><font-awesome-icon icon="pause" /> Resume</button>
+        <router-link :to=" '/edit/' + monitor.id " class="btn btn-secondary"><font-awesome-icon icon="edit" /> Edit</router-link>
+        <button class="btn btn-danger" @click="deleteDialog"><font-awesome-icon icon="trash" /> Delete</button>
     </div>
 
     <div class="shadow-box">

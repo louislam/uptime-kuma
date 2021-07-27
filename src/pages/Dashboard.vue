@@ -4,7 +4,7 @@
         <div class="row">
             <div class="col-12 col-md-5 col-xl-4">
                 <div v-if="! $root.isMobile">
-                    <router-link to="/add" class="btn btn-primary">Add New Monitor</router-link>
+                    <router-link to="/add" class="btn btn-primary"><font-awesome-icon icon="plus" /> Add New Monitor</router-link>
                 </div>
 
                 <div class="shadow-box list mb-4" v-if="showList">

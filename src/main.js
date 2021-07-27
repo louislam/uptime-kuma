@@ -15,6 +15,7 @@ import Toast from "vue-toastification";
 import "vue-toastification/dist/index.css";
 import "bootstrap"
 import Setup from "./pages/Setup.vue";
+import {FontAwesomeIcon} from "./icon.js"
 
 const routes = [
     {
@@ -87,6 +88,8 @@ const options = {
 };
 
 app.use(Toast, options);
+
+app.component('font-awesome-icon', FontAwesomeIcon)
 
 app.mount('#app')
 
