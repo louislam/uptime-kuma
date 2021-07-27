@@ -1,15 +1,22 @@
-
+const https = require('https');
 const dayjs = require("dayjs");
 const utc = require('dayjs/plugin/utc')
 var timezone = require('dayjs/plugin/timezone')
 dayjs.extend(utc)
 dayjs.extend(timezone)
 const axios = require("axios");
-const {UP, DOWN, PENDING} = require("../util");
-const {tcping, ping} = require("../util-server");
+const {Prometheus} = require("../prometheus");
+const {debug, UP, DOWN, PENDING} = require("../util");
+const {tcping, ping, checkCertificate} = require("../util-server");
 const {R} = require("redbean-node");
 const {BeanModel} = require("redbean-node/dist/bean-model");
 const {Notification} = require("../notification")
+
+//  Use Custom agent to disable session reuse
+//  https://github.com/nodejs/node/issues/3940
+const customAgent = new https.Agent({
+    maxCachedSessions: 0
+});
 
 /**
  * status:
@@ -49,6 +56,8 @@ class Monitor extends BeanModel {
         let previousBeat = null;
         let retries = 0;
 
+        let prometheus = new Prometheus(this);
+
         const beat = async () => {
 
             if (! previousBeat) {
@@ -75,10 +84,24 @@ class Monitor extends BeanModel {
                 if (this.type === "http" || this.type === "keyword") {
                     let startTime = dayjs().valueOf();
                     let res = await axios.get(this.url, {
-                        headers: { 'User-Agent':'Uptime-Kuma' }
-                    })
+                        headers: { "User-Agent": "Uptime-Kuma" },
+                        httpsAgent: customAgent,
+                    });
                     bean.msg = `${res.status} - ${res.statusText}`
                     bean.ping = dayjs().valueOf() - startTime;
+
+                    // Check certificate if https is used
+
+                    let certInfoStartTime = dayjs().valueOf();
+                    if (this.getUrl()?.protocol === "https:") {
+                        try {
+                            await this.updateTlsInfo(checkCertificate(res));
+                        } catch (e) {
+                            console.error(e.message)
+                        }
+                    }
+
+                    debug("Cert Info Query Time: " + (dayjs().valueOf() - certInfoStartTime) + "ms")
 
                     if (this.type === "http") {
                         bean.status = UP;
@@ -170,6 +193,7 @@ class Monitor extends BeanModel {
                 bean.important = false;
             }
 
+
             if (bean.status === UP) {
                 console.info(`Monitor #${this.id} '${this.name}': Successful Response: ${bean.ping} ms | Interval: ${this.interval} seconds | Type: ${this.type}`)
             } else if (bean.status === PENDING) {
@@ -177,6 +201,8 @@ class Monitor extends BeanModel {
             } else {
                 console.warn(`Monitor #${this.id} '${this.name}': Failing: ${bean.msg} | Type: ${this.type}`)
             }
+
+            prometheus.update(bean)
 
             io.to(this.user_id).emit("heartbeat", bean.toJSON());
 
@@ -194,10 +220,35 @@ class Monitor extends BeanModel {
         clearInterval(this.heartbeatInterval)
     }
 
+    // Helper Method:
+    // returns URL object for further usage
+    // returns null if url is invalid
+    getUrl() {
+        try {
+            return new URL(this.url);
+        } catch (_) {
+            return null;
+        }
+    }
+
+    // Store TLS info to database
+    async updateTlsInfo(checkCertificateResult) {
+        let tls_info_bean = await R.findOne("monitor_tls_info", "monitor_id = ?", [
+            this.id
+        ]);
+        if (tls_info_bean == null) {
+            tls_info_bean = R.dispense("monitor_tls_info");
+            tls_info_bean.monitor_id = this.id;
+        }
+        tls_info_bean.info_json = JSON.stringify(checkCertificateResult);
+        await R.store(tls_info_bean);
+    }
+
     static async sendStats(io, monitorID, userID) {
         Monitor.sendAvgPing(24, io, monitorID, userID);
         Monitor.sendUptime(24, io, monitorID, userID);
         Monitor.sendUptime(24 * 30, io, monitorID, userID);
+        Monitor.sendCertInfo(io, monitorID, userID);
     }
 
     /**
@@ -216,6 +267,15 @@ class Monitor extends BeanModel {
         ]));
 
         io.to(userID).emit("avgPing", monitorID, avgPing);
+    }
+
+    static async sendCertInfo(io, monitorID, userID) {
+         let tls_info = await R.findOne("monitor_tls_info", "monitor_id = ?", [
+            monitorID
+        ]);
+        if (tls_info != null) {
+            io.to(userID).emit("certInfo", monitorID, tls_info.info_json);
+        }
     }
 
     /**

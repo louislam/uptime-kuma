@@ -14,8 +14,8 @@
         </router-link>
 
         <ul class="nav nav-pills" >
-            <li class="nav-item"><router-link to="/dashboard" class="nav-link">📊 Dashboard</router-link></li>
-            <li class="nav-item"><router-link to="/settings" class="nav-link">🔧 Settings</router-link></li>
+            <li class="nav-item"><router-link to="/dashboard" class="nav-link"><font-awesome-icon icon="tachometer-alt" /> Dashboard</router-link></li>
+            <li class="nav-item"><router-link to="/settings" class="nav-link"><font-awesome-icon icon="cog" /> Settings</router-link></li>
         </ul>
     </header>
 
@@ -44,10 +44,27 @@
     <!-- Mobile Only -->
     <div style="width: 100%;height: 60px;" v-if="$root.isMobile"></div>
     <nav class="bottom-nav" v-if="$root.isMobile">
-        <router-link to="/dashboard" class="nav-link" @click="$root.cancelActiveList"><div>📊</div>Dashboard</router-link>
-        <a href="#" :class=" { 'router-link-exact-active' : $root.showListMobile } " @click="$root.showListMobile = ! $root.showListMobile"><div>📃</div>List</a>
-        <router-link to="/add" class="nav-link" @click="$root.cancelActiveList"><div>➕</div>Add</router-link>
-        <router-link to="/settings" class="nav-link" @click="$root.cancelActiveList"><div>🔧</div>Settings</router-link>
+
+        <router-link to="/dashboard" class="nav-link" @click="$root.cancelActiveList">
+            <div><font-awesome-icon icon="tachometer-alt" /></div>
+            Dashboard
+        </router-link>
+
+        <a href="#" :class=" { 'router-link-exact-active' : $root.showListMobile } " @click="$root.showListMobile = ! $root.showListMobile">
+            <div><font-awesome-icon icon="list" /></div>
+            List
+        </a>
+
+        <router-link to="/add" class="nav-link" @click="$root.cancelActiveList">
+            <div><font-awesome-icon icon="plus" /></div>
+            Add
+        </router-link>
+
+        <router-link to="/settings" class="nav-link" @click="$root.cancelActiveList">
+            <div><font-awesome-icon icon="cog" /></div>
+            Settings
+        </router-link>
+
     </nav>
 </template>
 
@@ -99,7 +116,7 @@ export default {
     box-shadow: 0 15px 47px 0 rgba(0, 0, 0, 0.05), 0 5px 14px 0 rgba(0, 0, 0, 0.05);
     text-align: center;
     white-space: nowrap;
-    padding: 0 35px;
+    padding: 0 10px;
 
     a {
         text-align: center;
@@ -144,6 +161,7 @@ main {
 footer {
     color: #AAA;
     font-size: 13px;
+    margin-top: 10px;
     margin-bottom: 30px;
     margin-left: 10px;
     text-align: center;
