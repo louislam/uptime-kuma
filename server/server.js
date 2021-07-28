@@ -29,9 +29,6 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 app.use(express.json())
-const basicAuthRouter = express.Router();
-basicAuthRouter.use(basicAuth)
-app.use(basicAuthRouter)
 
 /**
  * Total WebSocket client connected to server currently, no actual use
@@ -57,6 +54,12 @@ let monitorList = {};
  */
 let needSetup = false;
 
+/**
+ * Cache Index HTML
+ * @type {string}
+ */
+let indexHTML = fs.readFileSync("./dist/index.html").toString();
+
 (async () => {
     await initDatabase();
 
@@ -68,18 +71,13 @@ let needSetup = false;
 
     // Basic Auth Router here
 
-    // For testing
-    basicAuthRouter.get("/test-auth", (req, res) => {
-        res.end("OK")
-    });
-
     // Prometheus API metrics  /metrics
     // With Basic Auth using the first user's username/password
-    basicAuthRouter.use(prometheusAPIMetrics())
+    app.get("/metrics", basicAuth, prometheusAPIMetrics())
 
     // Universal Route Handler, must be at the end
     app.get("*", function(request, response, next) {
-        response.sendFile(process.cwd() + "/dist/index.html");
+        response.end(indexHTML)
     });
 
     console.log("Adding socket handler")
