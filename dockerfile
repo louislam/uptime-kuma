@@ -1,5 +1,5 @@
 # DON'T UPDATE TO alpine3.13, 1.14, see #41.
-FROM node:14-alpine3.12 AS release
+FROM node:14-alpine3.12 AS release-base
 WORKDIR /app
 
 # split the sqlite install here, so that it can caches the arm prebuilt
@@ -28,14 +28,27 @@ RUN apprise --version
 
 # New things add here
 
+FROM release-base AS build
+
 COPY . .
 RUN npm install
 RUN npm run build
 
+FROM release-base AS release-final
+
 EXPOSE 3001
 VOLUME ["/app/data"]
 HEALTHCHECK --interval=60s --timeout=30s --start-period=300s CMD node extra/healthcheck.js
+
+COPY --from=build /app/package.json package.json
+RUN npm install --only=prod
+RUN rm package-lock.json
+
+COPY --from=build /app/extra /app/extra
+COPY --from=build /app/server /app/server
+COPY --from=build /app/dist /app/dist
+
 CMD ["npm", "run", "start-server"]
 
-FROM release AS nightly
+FROM release-final AS nightly
 RUN npm run mark-as-nightly
