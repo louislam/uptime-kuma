@@ -7,7 +7,7 @@ const {setSetting, setting} = require("./util-server");
 class Database {
 
     static templatePath = "./db/kuma.db"
-    static path =  './data/kuma.db';
+    static path = "./data/kuma.db";
     static latestVersion = 3;
     static noReject = true;
 
