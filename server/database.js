@@ -8,7 +8,7 @@ class Database {
 
     static templatePath = "./db/kuma.db"
     static path = "./data/kuma.db";
-    static latestVersion = 3;
+    static latestVersion = 4;
     static noReject = true;
 
     static async patch() {
