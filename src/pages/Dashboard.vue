@@ -3,16 +3,12 @@
         <div class="row">
             <div class="col-12 col-md-5 col-xl-4">
                 <div v-if="! $root.isMobile">
-                    <router-link to="/add" class="btn btn-primary">
-                        <font-awesome-icon icon="plus" /> Add New Monitor
-                    </router-link>
+                    <router-link to="/add" class="btn btn-primary"><font-awesome-icon icon="plus" /> Add New Monitor</router-link>
                 </div>
 
                 <div v-if="showList" class="shadow-box list mb-4">
                     <div v-if="Object.keys($root.monitorList).length === 0" class="text-center mt-3">
-                        No Monitors, please <router-link to="/add">
-                            add one
-                        </router-link>.
+                        No Monitors, please <router-link to="/add">add one</router-link>.
                     </div>
 
                     <router-link v-for="(item, index) in sortedMonitorList" :key="index" :to="monitorURL(item.id)" class="item" :class="{ 'disabled': ! item.active }" @click="$root.cancelActiveList">

@@ -22,6 +22,7 @@ module.exports = {
         //semi: ['off', 'never'],
         "vue/html-indent": ["warn", 4], // default: 2
         "vue/max-attributes-per-line": "off",
+        "vue/singleline-html-element-content-newline": "off",
         "no-multi-spaces": ["error", {
             ignoreEOLComments: true,
         }],
