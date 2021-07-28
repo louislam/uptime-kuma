@@ -17,7 +17,7 @@ const args = require("args-parser")(process.argv);
 const prometheusAPIMetrics = require("prometheus-api-metrics");
 const { basicAuth } = require("./auth");
 const { login } = require("./auth");
-const passwordHash = require('./password-hash');
+const passwordHash = require("./password-hash");
 const version = require("../package.json").version;
 const hostname = args.host || "0.0.0.0"
 const port = args.port || 3001
@@ -708,26 +708,8 @@ async function sendImportantHeartbeatList(socket, monitorID) {
     socket.emit("importantHeartbeatList", monitorID, list)
 }
 
-const startGracefulShutdown = async () => {
-    console.log("Shutdown requested");
-
-    await (new Promise((resolve) => {
-        server.close(async function () {
-            console.log("Stopped Express.");
-            process.exit(0)
-            setTimeout(async () => {
-                await R.close();
-                console.log("Stopped DB")
-
-                resolve();
-            }, 5000)
-
-        });
-    }));
-
-}
-
 async function shutdownFunction(signal) {
+    console.log("Shutdown requested");
     console.log("Called signal: " + signal);
 
     console.log("Stopping all monitors")
@@ -737,10 +719,11 @@ async function shutdownFunction(signal) {
     }
     await sleep(2000);
     await Database.close();
+    console.log("Stopped DB")
 }
 
 function finalFunction() {
-    console.log("Graceful Shutdown")
+    console.log("Graceful Shutdown Done")
 }
 
 gracefulShutdown(server, {
