@@ -8,6 +8,7 @@
     },
     "scripts": {
         "dev": "vite --host",
+        "start": "npm run start-server",
         "start-server": "node server/server.js",
         "update": "",
         "build": "vite build",
@@ -17,7 +18,8 @@
         "build-docker-nightly-amd64": "docker buildx build --platform linux/amd64 -t louislam/uptime-kuma:nightly-amd64 --target nightly . --push",
         "setup": "git checkout 1.0.7 && npm install && npm run build",
         "version-global-replace": "node extra/version-global-replace.js",
-        "mark-as-nightly": "node extra/mark-as-nightly.js"
+        "mark-as-nightly": "node extra/mark-as-nightly.js",
+        "heroku-postbuild": "npm run setup"
     },
     "dependencies": {
         "@fortawesome/fontawesome-svg-core": "^1.2.35",
