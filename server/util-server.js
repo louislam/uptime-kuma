@@ -1,6 +1,6 @@
-const tcpp = require('tcp-ping');
+const tcpp = require("tcp-ping");
 const Ping = require("./ping-lite");
-const {R} = require("redbean-node");
+const { R } = require("redbean-node");
 
 exports.tcping = function (hostname, port) {
     return new Promise((resolve, reject) => {
@@ -41,13 +41,13 @@ exports.ping = function (hostname) {
 
 exports.setting = async function (key) {
     return await R.getCell("SELECT `value` FROM setting WHERE `key` = ? ", [
-        key
+        key,
     ])
 }
 
 exports.setSetting = async function (key, value) {
     let bean = await R.findOne("setting", " `key` = ? ", [
-        key
+        key,
     ])
     if (! bean) {
         bean = R.dispense("setting")
@@ -59,7 +59,7 @@ exports.setSetting = async function (key, value) {
 
 exports.getSettings = async function (type) {
     let list = await R.getAll("SELECT * FROM setting WHERE `type` = ? ", [
-        type
+        type,
     ])
 
     let result = {};
@@ -70,7 +70,6 @@ exports.getSettings = async function (type) {
 
     return result;
 }
-
 
 // ssl-checker by @dyaa
 // param: res - response object from axios
@@ -97,7 +96,9 @@ exports.checkCertificate = function (res) {
     } = res.request.res.socket.getPeerCertificate(false);
 
     if (!valid_from || !valid_to || !subjectaltname) {
-        throw { message: 'No TLS certificate in response' };
+        throw {
+            message: "No TLS certificate in response",
+        };
     }
 
     const valid = res.request.res.socket.authorized || false;

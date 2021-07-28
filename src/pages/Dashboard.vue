@@ -1,36 +1,33 @@
 <template>
-
     <div class="container-fluid">
         <div class="row">
             <div class="col-12 col-md-5 col-xl-4">
                 <div v-if="! $root.isMobile">
-                    <router-link to="/add" class="btn btn-primary"><font-awesome-icon icon="plus" /> Add New Monitor</router-link>
+                    <router-link to="/add" class="btn btn-primary">
+                        <font-awesome-icon icon="plus" /> Add New Monitor
+                    </router-link>
                 </div>
 
-                <div class="shadow-box list mb-4" v-if="showList">
-
-                    <div class="text-center mt-3" v-if="Object.keys($root.monitorList).length === 0">
-                        No Monitors, please <router-link to="/add">add one</router-link>.
+                <div v-if="showList" class="shadow-box list mb-4">
+                    <div v-if="Object.keys($root.monitorList).length === 0" class="text-center mt-3">
+                        No Monitors, please <router-link to="/add">
+                            add one
+                        </router-link>.
                     </div>
 
-                    <router-link :to="monitorURL(item.id)" class="item" :class="{ 'disabled': ! item.active }" v-for="(item, index) in sortedMonitorList" @click="$root.cancelActiveList" :key="index">
-
+                    <router-link v-for="(item, index) in sortedMonitorList" :key="index" :to="monitorURL(item.id)" class="item" :class="{ 'disabled': ! item.active }" @click="$root.cancelActiveList">
                         <div class="row">
-                        	<div class="col-6 col-md-8 small-padding">
-
+                            <div class="col-6 col-md-8 small-padding">
                                 <div class="info">
                                     <Uptime :monitor="item" type="24" :pill="true" />
                                     {{ item.name }}
                                 </div>
-
                             </div>
-                        	<div class="col-6 col-md-4">
+                            <div class="col-6 col-md-4">
                                 <HeartbeatBar size="small" :monitor-id="item.id" />
                             </div>
                         </div>
-
                     </router-link>
-
                 </div>
             </div>
             <div class="col-12 col-md-7 col-xl-8">
@@ -38,7 +35,6 @@
             </div>
         </div>
     </div>
-
 </template>
 
 <script>
@@ -49,12 +45,10 @@ import Uptime from "../components/Uptime.vue";
 export default {
     components: {
         Uptime,
-        HeartbeatBar
+        HeartbeatBar,
     },
     data() {
-        return {
-
-        }
+        return {}
     },
     computed: {
         sortedMonitorList() {
@@ -94,8 +88,8 @@ export default {
     methods: {
         monitorURL(id) {
             return "/dashboard/" + id;
-        }
-    }
+        },
+    },
 }
 </script>
 

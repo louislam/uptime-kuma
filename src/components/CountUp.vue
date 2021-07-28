@@ -5,24 +5,20 @@
 
 <script>
 
-import {sleep} from '../util-frontend'
+import { sleep } from "../util-frontend"
 
 export default {
 
     props: {
         value: [String, Number],
         time: {
-            Number,
+            type: Number,
             default: 0.3,
         },
         unit: {
-            String,
+            type: String,
             default: "ms",
-        }
-    },
-
-    mounted() {
-        this.output = this.value;
+        },
     },
 
     data() {
@@ -32,14 +28,10 @@ export default {
         }
     },
 
-    methods: {
-
-    },
-
     computed: {
         isNum() {
-            return typeof this.value === 'number'
-        }
+            return typeof this.value === "number"
+        },
     },
 
     watch: {
@@ -61,9 +53,11 @@ export default {
         },
     },
 
+    mounted() {
+        this.output = this.value;
+    },
+
+    methods: {},
+
 }
 </script>
-
-<style scoped>
-
-</style>

@@ -1,28 +1,27 @@
 <template>
-    <div class="wrap" :style="wrapStyle" ref="wrap">
+    <div ref="wrap" class="wrap" :style="wrapStyle">
         <div class="hp-bar-big" :style="barStyle">
             <div
+                v-for="(beat, index) in shortBeatList"
+                :key="index"
                 class="beat"
                 :class="{ 'empty' : (beat === 0), 'down' : (beat.status === 0), 'pending' : (beat.status === 2) }"
                 :style="beatStyle"
-                v-for="(beat, index) in shortBeatList"
-                :key="index"
-                :title="beat.msg">
-            </div>
+                :title="beat.msg"
+            />
         </div>
     </div>
 </template>
 
 <script>
 
-
 export default {
     props: {
         size: {
             type: String,
-            default: "big"
+            default: "big",
         },
-        monitorId: Number
+        monitorId: Number,
     },
     data() {
         return {
@@ -32,26 +31,6 @@ export default {
             beatMargin: 3,      // Odd number only, even = blurry
             move: false,
             maxBeat: -1,
-        }
-    },
-    unmounted() {
-        window.removeEventListener("resize", this.resize);
-    },
-    mounted() {
-        if (this.size === "small") {
-            this.beatWidth = 5.6;
-            this.beatMargin = 2.4;
-            this.beatHeight = 16
-        }
-
-        window.addEventListener("resize", this.resize);
-        this.resize();
-    },
-    methods: {
-        resize() {
-            if (this.$refs.wrap) {
-                this.maxBeat = Math.floor(this.$refs.wrap.clientWidth / (this.beatWidth + this.beatMargin * 2))
-            }
         }
     },
     computed: {
@@ -80,8 +59,6 @@ export default {
                 start = 0;
             }
 
-
-
             return placeholders.concat(this.beatList.slice(start))
         },
 
@@ -92,13 +69,13 @@ export default {
             let width
             if (this.maxBeat > 0) {
                 width = (this.beatWidth + this.beatMargin * 2) * this.maxBeat + (leftRight * 2) + "px"
-            } {
+            } else {
                 width = "100%"
             }
 
             return {
                 padding: `${topBottom}px ${leftRight}px`,
-                width: width
+                width: width,
             }
         },
 
@@ -111,11 +88,11 @@ export default {
                     transform: `translateX(${width}px)`,
                 }
 
-            } else {
-                return {
-                    transform: `translateX(0)`,
-                }
             }
+            return {
+                transform: "translateX(0)",
+            }
+
         },
 
         beatStyle() {
@@ -125,7 +102,7 @@ export default {
                 margin: this.beatMargin + "px",
                 "--hover-scale": this.hoverScale,
             }
-        }
+        },
 
     },
     watch: {
@@ -138,8 +115,28 @@ export default {
                 }, 300)
             },
             deep: true,
+        },
+    },
+    unmounted() {
+        window.removeEventListener("resize", this.resize);
+    },
+    mounted() {
+        if (this.size === "small") {
+            this.beatWidth = 5.6;
+            this.beatMargin = 2.4;
+            this.beatHeight = 16
         }
-    }
+
+        window.addEventListener("resize", this.resize);
+        this.resize();
+    },
+    methods: {
+        resize() {
+            if (this.$refs.wrap) {
+                this.maxBeat = Math.floor(this.$refs.wrap.clientWidth / (this.beatWidth + this.beatMargin * 2))
+            }
+        },
+    },
 }
 </script>
 

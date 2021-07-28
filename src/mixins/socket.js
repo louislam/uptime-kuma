@@ -1,6 +1,6 @@
-import {io} from "socket.io-client";
-import { useToast } from 'vue-toastification'
 import dayjs from "dayjs";
+import { io } from "socket.io-client";
+import { useToast } from "vue-toastification";
 const toast = useToast()
 
 let socket;
@@ -33,7 +33,7 @@ export default {
     },
 
     created() {
-        window.addEventListener('resize', this.onResize);
+        window.addEventListener("resize", this.onResize);
 
         let wsHost;
         const env = process.env.NODE_ENV || "production";
@@ -44,18 +44,18 @@ export default {
         }
 
         socket = io(wsHost, {
-            transports: ['websocket']
+            transports: ["websocket"],
         });
 
         socket.on("connect_error", (err) => {
             console.error(`Failed to connect to the backend. Socket.io connect_error: ${err.message}`);
         });
 
-        socket.on('info', (info) => {
+        socket.on("info", (info) => {
             this.info = info;
         });
 
-        socket.on('setup', (monitorID, data) => {
+        socket.on("setup", (monitorID, data) => {
             this.$router.push("/setup")
         });
 
@@ -73,11 +73,11 @@ export default {
             this.monitorList = data;
         });
 
-        socket.on('notificationList', (data) => {
+        socket.on("notificationList", (data) => {
             this.notificationList = data;
         });
 
-        socket.on('heartbeat', (data) => {
+        socket.on("heartbeat", (data) => {
             if (! (data.monitorID in this.heartbeatList)) {
                 this.heartbeatList[data.monitorID] = [];
             }
@@ -100,7 +100,6 @@ export default {
                     toast(`[${this.monitorList[data.monitorID].name}] ${data.msg}`);
                 }
 
-
                 if (! (data.monitorID in this.importantHeartbeatList)) {
                     this.importantHeartbeatList[data.monitorID] = [];
                 }
@@ -109,7 +108,7 @@ export default {
             }
         });
 
-        socket.on('heartbeatList', (monitorID, data) => {
+        socket.on("heartbeatList", (monitorID, data) => {
             if (! (monitorID in this.heartbeatList)) {
                 this.heartbeatList[monitorID] = data;
             } else {
@@ -117,19 +116,19 @@ export default {
             }
         });
 
-        socket.on('avgPing', (monitorID, data) => {
+        socket.on("avgPing", (monitorID, data) => {
             this.avgPingList[monitorID] = data
         });
 
-        socket.on('uptime', (monitorID, type, data) => {
+        socket.on("uptime", (monitorID, type, data) => {
             this.uptimeList[`${monitorID}_${type}`] = data
         });
 
-        socket.on('certInfo', (monitorID, data) => {
+        socket.on("certInfo", (monitorID, data) => {
             this.certInfoList[monitorID] = JSON.parse(data)
         });
 
-        socket.on('importantHeartbeatList', (monitorID, data) => {
+        socket.on("importantHeartbeatList", (monitorID, data) => {
             if (! (monitorID in this.importantHeartbeatList)) {
                 this.importantHeartbeatList[monitorID] = data;
             } else {
@@ -137,12 +136,12 @@ export default {
             }
         });
 
-        socket.on('disconnect', () => {
+        socket.on("disconnect", () => {
             console.log("disconnect")
             this.socket.connected = false;
         });
 
-        socket.on('connect', () => {
+        socket.on("connect", () => {
             console.log("connect")
             this.socket.connectCount++;
             this.socket.connected = true;
@@ -201,7 +200,7 @@ export default {
                     this.loggedIn = true;
 
                     // Trigger Chrome Save Password
-                    history.pushState({}, '')
+                    history.pushState({}, "")
                 }
 
                 callback(res)
@@ -254,10 +253,9 @@ export default {
 
             if (this.userTimezone === "auto") {
                 return dayjs.tz.guess()
-            } else {
-                return this.userTimezone
             }
 
+            return this.userTimezone
         },
 
         lastHeartbeatList() {
@@ -276,7 +274,7 @@ export default {
 
             let unknown = {
                 text: "Unknown",
-                color: "secondary"
+                color: "secondary",
             }
 
             for (let monitorID in this.lastHeartbeatList) {
@@ -287,17 +285,17 @@ export default {
                 } else if (lastHeartBeat.status === 1) {
                     result[monitorID] = {
                         text: "Up",
-                        color: "primary"
+                        color: "primary",
                     };
                 } else if (lastHeartBeat.status === 0) {
                     result[monitorID] = {
                         text: "Down",
-                        color: "danger"
+                        color: "danger",
                     };
                 } else if (lastHeartBeat.status === 2) {
                     result[monitorID] = {
                         text: "Pending",
-                        color: "warning"
+                        color: "warning",
                     };
                 } else {
                     result[monitorID] = unknown;
@@ -305,23 +303,22 @@ export default {
             }
 
             return result;
-        }
+        },
     },
 
     watch: {
 
         // Reload the SPA if the server version is changed.
         "info.version"(to, from) {
-              if (from && from !== to) {
-                  window.location.reload()
-              }
+            if (from && from !== to) {
+                window.location.reload()
+            }
         },
 
         remember() {
             localStorage.remember = (this.remember) ? "1" : "0"
-        }
+        },
 
-    }
+    },
 
 }
-

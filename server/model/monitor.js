@@ -22,6 +22,7 @@ const customAgent = new https.Agent({
  * status:
  *      0 = DOWN
  *      1 = UP
+ *      2 = PENDING
  */
 class Monitor extends BeanModel {
     async toJSON() {
@@ -197,7 +198,7 @@ class Monitor extends BeanModel {
             if (bean.status === UP) {
                 console.info(`Monitor #${this.id} '${this.name}': Successful Response: ${bean.ping} ms | Interval: ${this.interval} seconds | Type: ${this.type}`)
             } else if (bean.status === PENDING) {
-                console.warn(`Monitor #${this.id} '${this.name}': Pending: ${bean.msg} | Type: ${this.type}`)
+                console.warn(`Monitor #${this.id} '${this.name}': Pending: ${bean.msg} | Max retries: ${this.maxretries} | Type: ${this.type}`)
             } else {
                 console.warn(`Monitor #${this.id} '${this.name}': Failing: ${bean.msg} | Type: ${this.type}`)
             }
