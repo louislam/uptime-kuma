@@ -66,16 +66,9 @@ export default {
             let topBottom = (((this.beatHeight * this.hoverScale) - this.beatHeight) / 2);
             let leftRight = (((this.beatWidth * this.hoverScale) - this.beatWidth) / 2);
 
-            let width
-            if (this.maxBeat > 0) {
-                width = (this.beatWidth + this.beatMargin * 2) * this.maxBeat + (leftRight * 2) + "px"
-            } else {
-                width = "100%"
-            }
-
             return {
                 padding: `${topBottom}px ${leftRight}px`,
-                width: width,
+                width: "100%",
             }
         },
 
