@@ -17,6 +17,7 @@ const args = require('args-parser')(process.argv);
 const prometheusAPIMetrics = require('prometheus-api-metrics');
 const { basicAuth } = require("./auth");
 const {login} = require("./auth");
+const passwordHash = require('./password-hash');
 const version = require('../package.json').version;
 const hostname = args.host || "0.0.0.0"
 const port = args.port || 3001
