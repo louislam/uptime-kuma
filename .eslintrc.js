@@ -17,7 +17,14 @@ module.exports = {
         // override/add rules settings here, such as:
         // 'vue/no-unused-vars': 'error'
         "no-unused-vars": "warn",
-        indent: ["error", 4],
+        indent: [
+            "error",
+            4,
+            {
+                ignoredNodes: ["TemplateLiteral"],
+                SwitchCase: 1,
+            },
+        ],
         quotes: ["warn", "double"],
         //semi: ['off', 'never'],
         "vue/html-indent": ["warn", 4], // default: 2
