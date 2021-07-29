@@ -67,6 +67,25 @@
                         </div>
                     </div>
 
+                    <h2>Advanced</h2>
+
+                    <div v-if="monitor.type === 'http' || monitor.type === 'keyword' " class="mb-3 form-check">
+                        <input id="ignore-tls" v-model="monitor.ignoreTls" class="form-check-input" type="checkbox" value="">
+                        <label class="form-check-label" for="ignore-tls">
+                            Ignore TLS/SSL error for HTTPS websites
+                        </label>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <input id="upside-down" v-model="monitor.upsideDown" class="form-check-input" type="checkbox">
+                        <label class="form-check-label" for="upside-down">
+                            Upside Down Mode
+                        </label>
+                        <div class="form-text">
+                            Flip the status upside down. If the service is reachable, it is DOWN.
+                        </div>
+                    </div>
+
                     <div>
                         <button class="btn btn-primary" type="submit" :disabled="processing">
                             Save
@@ -149,6 +168,8 @@ export default {
                     interval: 60,
                     maxretries: 0,
                     notificationIDList: {},
+                    ignoreTLS: false,
+                    upsideDown: false,
                 }
             } else if (this.isEdit) {
                 this.$root.getSocket().emit("getMonitor", this.$route.params.id, (res) => {
