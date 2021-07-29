@@ -2,14 +2,6 @@
 FROM node:14-alpine3.12 AS release-base
 WORKDIR /app
 
-# split the sqlite install here, so that it can caches the arm prebuilt
-RUN apk add --no-cache --virtual .build-deps make g++ python3 python3-dev && \
-            ln -s /usr/bin/python3 /usr/bin/python && \
-            npm install sqlite3@5.0.2 bcrypt@5.0.1 && \
-            apk del .build-deps
-
-# Touching above code may causes sqlite3 re-compile again, painful slow.
-
 # Install apprise
 # Hate pip!!! I never run pip install successfully in first run for anything in my life without Google :/
 # Compilation Fail 1 => Google Search "alpine ffi.h" => Add libffi-dev
@@ -20,9 +12,11 @@ RUN apk add --no-cache --virtual .build-deps make g++ python3 python3-dev && \
 # Runtime Error => ModuleNotFoundError: No module named 'six' => pip3 install six
 # Runtime Error 2 => ModuleNotFoundError: No module named 'six' => apk add py3-six
 ENV CRYPTOGRAPHY_DONT_BUILD_RUST=1
-RUN apk add --no-cache python3 py3-pip py3-six cargo
-RUN apk add --no-cache --virtual .build-deps libffi-dev musl-dev openssl-dev python3-dev && \
+RUN apk add --no-cache py3-six
+RUN apk add --no-cache --virtual .build-deps python3 py3-pip cargo libffi-dev musl-dev openssl-dev python3-dev && \
             pip3 install apprise && \
+            pip3 cache purge && \
+            rm -rf /root/.cache && \
             apk del .build-deps
 RUN apprise --version
 
@@ -42,6 +36,7 @@ HEALTHCHECK --interval=60s --timeout=30s --start-period=300s CMD node extra/heal
 
 COPY --from=build /app/package.json package.json
 RUN npm install --only=prod
+RUN npm cache clean --force
 RUN rm package-lock.json
 
 COPY --from=build /app/extra /app/extra
