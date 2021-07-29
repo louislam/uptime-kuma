@@ -23,14 +23,15 @@ ENV CRYPTOGRAPHY_DONT_BUILD_RUST=1
 RUN apk add --no-cache python3 py3-pip py3-six cargo
 RUN apk add --no-cache --virtual .build-deps libffi-dev musl-dev openssl-dev python3-dev && \
             pip3 install apprise && \
+            pip3 cache purge && \
+            rm -rf /root/.cache && \
             apk del .build-deps
 RUN apprise --version
 
 # New things add here
 
 COPY . .
-RUN npm install
-RUN npm run build
+RUN npm install && npm run build && npm prune
 
 EXPOSE 3001
 VOLUME ["/app/data"]
