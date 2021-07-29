@@ -2,16 +2,15 @@ module.exports = {
     env: {
         browser: true,
         commonjs: true,
-        es2017: true,
-        es11: true,
+        es2020: true,
         node: true,
     },
     extends: [
         "eslint:recommended",
         "plugin:vue/vue3-recommended",
     ],
+    parser: "babel-eslint",
     parserOptions: {
-        ecmaVersion: 2020,
         sourceType: "module",
     },
     rules: {
