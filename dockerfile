@@ -2,6 +2,14 @@
 FROM node:14-alpine3.12 AS release-base
 WORKDIR /app
 
+# split the SQLite install here, so that it can caches the ARM prebuilt
+RUN apk add --no-cache --virtual .build-deps make g++ python3 python3-dev && \
+            ln -s /usr/bin/python3 /usr/bin/python && \
+            npm install sqlite3@5.0.2 bcrypt@5.0.1 && \
+            apk del .build-deps
+
+# Touching above code may causes sqlite3 re-compile again, painful slow.
+
 # Install apprise
 # Hate pip!!! I never run pip install successfully in first run for anything in my life without Google :/
 # Compilation Fail 1 => Google Search "alpine ffi.h" => Add libffi-dev
