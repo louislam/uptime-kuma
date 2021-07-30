@@ -197,6 +197,7 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
         // Auth Only API
         // ***************************
 
+        // Add a new monitor
         socket.on("add", async (monitor, callback) => {
             try {
                 checkLogin(socket)
@@ -228,6 +229,7 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
             }
         });
 
+        // Edit a monitor
         socket.on("editMonitor", async (monitor, callback) => {
             try {
                 checkLogin(socket)
@@ -246,6 +248,8 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                 bean.maxretries = monitor.maxretries;
                 bean.port = monitor.port;
                 bean.keyword = monitor.keyword;
+                bean.ignoreTls = monitor.ignoreTls;
+                bean.upsideDown = monitor.upsideDown;
 
                 await R.store(bean)
 

@@ -168,7 +168,7 @@ export default {
                     interval: 60,
                     maxretries: 0,
                     notificationIDList: {},
-                    ignoreTLS: false,
+                    ignoreTls: false,
                     upsideDown: false,
                 }
             } else if (this.isEdit) {
