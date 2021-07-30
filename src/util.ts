@@ -7,6 +7,18 @@ export const DOWN = 0;
 export const UP = 1;
 export const PENDING = 2;
 
+export function flipStatus(s) {
+    if (s === UP) {
+        return DOWN;
+    }
+
+    if (s === DOWN) {
+        return UP;
+    }
+
+    return s;
+}
+
 export function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }

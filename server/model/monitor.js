@@ -6,7 +6,7 @@ dayjs.extend(utc)
 dayjs.extend(timezone)
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
-const { debug, UP, DOWN, PENDING } = require("../../src/util");
+const { debug, UP, DOWN, PENDING, flipStatus } = require("../../src/util");
 const { tcping, ping, checkCertificate } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
@@ -44,7 +44,7 @@ class Monitor extends BeanModel {
             interval: this.interval,
             keyword: this.keyword,
             ignoreTls: this.getIgnoreTls(),
-            upsideDown: this.getUpsideDown(),
+            upsideDown: this.isUpsideDown(),
             notificationIDList,
         };
     }
@@ -61,7 +61,7 @@ class Monitor extends BeanModel {
      * Parse to boolean
      * @returns {boolean}
      */
-    getUpsideDown() {
+    isUpsideDown() {
         return Boolean(this.upsideDown);
     }
 
@@ -85,6 +85,10 @@ class Monitor extends BeanModel {
             bean.monitor_id = this.id;
             bean.time = R.isoDateTime(dayjs.utc());
             bean.status = DOWN;
+
+            if (this.isUpsideDown()) {
+                bean.status = flipStatus(bean.status);
+            }
 
             // Duration
             if (! isFirstBeat) {
@@ -155,14 +159,29 @@ class Monitor extends BeanModel {
                     bean.status = UP;
                 }
 
+                if (this.isUpsideDown()) {
+                    bean.status = flipStatus(bean.status);
+
+                    if (bean.status === DOWN) {
+                        throw new Error("Flip UP to DOWN");
+                    }
+                }
+
                 retries = 0;
 
             } catch (error) {
-                if ((this.maxretries > 0) && (retries < this.maxretries)) {
+
+                bean.msg = error.message;
+
+                // If UP come in here, it must be upside down mode
+                // Just reset the retries
+                if (this.isUpsideDown() && bean.status === UP) {
+                    retries = 0;
+
+                } else if ((this.maxretries > 0) && (retries < this.maxretries)) {
                     retries++;
                     bean.status = PENDING;
                 }
-                bean.msg = error.message;
             }
 
             // * ? -> ANY STATUS = important [isFirstBeat]

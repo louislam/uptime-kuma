@@ -1,9 +1,19 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.debug = exports.ucfirst = exports.sleep = exports.PENDING = exports.UP = exports.DOWN = void 0;
+exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.PENDING = exports.UP = exports.DOWN = void 0;
 exports.DOWN = 0;
 exports.UP = 1;
 exports.PENDING = 2;
+function flipStatus(s) {
+    if (s === exports.UP) {
+        return exports.DOWN;
+    }
+    if (s === exports.DOWN) {
+        return exports.UP;
+    }
+    return s;
+}
+exports.flipStatus = flipStatus;
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
