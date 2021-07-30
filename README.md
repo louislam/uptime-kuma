@@ -15,7 +15,7 @@ It is a self-hosted monitoring tool like "Uptime Robot".
 
 * Monitoring uptime for HTTP(s) / TCP / Ping.
 * Fancy, Reactive, Fast UI/UX.
-* Notifications via Webhook, Telegram, Discord, Gotify, Slack, Pushover, Email (SMTP) and more by Apprise. 
+* Notifications via Webhook, Telegram, Discord, Gotify, Slack, Pushover, Email (SMTP) and more by Apprise.
 * 20 seconds interval.
 
 # How to Use
@@ -40,7 +40,7 @@ docker run -d --restart=always -p <YOUR_PORT>:3001 -v <YOUR_DIR OR VOLUME>:/app/
 
 ### Without Docker
 
-Required Tools: Node.js >= 14, git and pm2. 
+Required Tools: Node.js >= 14, git and pm2.
 
 ```bash
 git clone https://github.com/louislam/uptime-kuma.git
@@ -62,11 +62,14 @@ pm2 start npm --name uptime-kuma -- run start-server -- --port=80 --hostname=0.0
 
 Browse to http://localhost:3001 after started.
 
-### One-click Deploy to DigitalOcean
+### One-click Deploy
+
+<!---
+Abort. Heroku instance killed the server.js if idle, stupid.
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/louislam/uptime-kuma/tree/1.0.8)
+-->
 
 [![Deploy to DO](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/louislam/uptime-kuma/tree/master&refcode=e2c7eb658434)
-
-Choose Cheapest Plan is enough. (US$ 5)
 
 # How to Update
 
@@ -88,7 +91,7 @@ pm2 restart uptime-kuma
 
 # What's Next?
 
-I will mark requests/issues to the next milestone. 
+I will mark requests/issues to the next milestone.
 https://github.com/louislam/uptime-kuma/milestones
 
 # More Screenshots
@@ -104,10 +107,10 @@ Telegram Notification Sample:
 
 # Motivation
 
-* I was looking for a self-hosted monitoring tool like "Uptime Robot", but it is hard to find a suitable one. One of the close one is statping. Unfortunately, it is not stable and unmaintained. 
+* I was looking for a self-hosted monitoring tool like "Uptime Robot", but it is hard to find a suitable one. One of the close one is statping. Unfortunately, it is not stable and unmaintained.
 * Want to build a fancy UI.
 * Learn Vue 3 and vite.js.
-* Show the power of Bootstrap 5. 
+* Show the power of Bootstrap 5.
 * Try to use WebSocket with SPA instead of REST API.
 * Deploy my first Docker image to Docker Hub.
 
