@@ -16,7 +16,7 @@ It is a self-hosted monitoring tool like "Uptime Robot".
 * Monitoring uptime for HTTP(s) / TCP / Ping.
 * Fancy, Reactive, Fast UI/UX.
 * Notifications via Webhook, Telegram, Discord, Gotify, Slack, Pushover, Email (SMTP) and more by Apprise. 
-* 20 seconds interval.
+* Custom Heartbeat intervals.
 
 # How to Use
 
