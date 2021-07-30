@@ -3,9 +3,9 @@
     <span v-else>{{ value }}</span>
 </template>
 
-<script>
+<script lang="ts">
 
-import { sleep } from "../util-frontend"
+import { sleep } from "../util.ts"
 
 export default {
 

@@ -345,9 +345,9 @@
     </Confirm>
 </template>
 
-<script>
+<script lang="ts">
 import { Modal } from "bootstrap"
-import { ucfirst } from "../util-frontend"
+import { ucfirst } from "../util.ts"
 import axios from "axios";
 import { useToast } from "vue-toastification"
 import Confirm from "./Confirm.vue";

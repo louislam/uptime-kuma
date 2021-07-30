@@ -1,5 +1,5 @@
 const fs = require("fs");
-const {sleep} = require("./util");
+const {sleep} = require("../src/util");
 const {R} = require("redbean-node");
 const {setSetting, setting} = require("./util-server");
 

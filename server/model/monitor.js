@@ -6,7 +6,7 @@ dayjs.extend(utc)
 dayjs.extend(timezone)
 const axios = require("axios");
 const {Prometheus} = require("../prometheus");
-const {debug, UP, DOWN, PENDING} = require("../util");
+const {debug, UP, DOWN, PENDING} = require("../../src/util");
 const {tcping, ping, checkCertificate} = require("../util-server");
 const {R} = require("redbean-node");
 const {BeanModel} = require("redbean-node/dist/bean-model");
@@ -221,9 +221,12 @@ class Monitor extends BeanModel {
         clearInterval(this.heartbeatInterval)
     }
 
-    // Helper Method:
-    // returns URL object for further usage
-    // returns null if url is invalid
+    /**
+     * Helper Method:
+     * returns URL object for further usage
+     * returns null if url is invalid
+     * @returns {null|URL}
+     */
     getUrl() {
         try {
             return new URL(this.url);
@@ -232,7 +235,11 @@ class Monitor extends BeanModel {
         }
     }
 
-    // Store TLS info to database
+    /**
+     * Store TLS info to database
+     * @param checkCertificateResult
+     * @returns {Promise<void>}
+     */
     async updateTlsInfo(checkCertificateResult) {
         let tls_info_bean = await R.findOne("monitor_tls_info", "monitor_id = ?", [
             this.id
