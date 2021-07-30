@@ -6,21 +6,11 @@ dayjs.extend(utc)
 dayjs.extend(timezone)
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
-const {
-    debug, UP, DOWN, PENDING,
-} = require("../../src/util");
-const {
-    tcping, ping, checkCertificate,
-} = require("../util-server");
+const { debug, UP, DOWN, PENDING } = require("../../src/util");
+const { tcping, ping, checkCertificate } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification")
-
-//  Use Custom agent to disable session reuse
-//  https://github.com/nodejs/node/issues/3940
-const customAgent = new https.Agent({
-    maxCachedSessions: 0,
-});
 
 /**
  * status:
@@ -53,10 +43,26 @@ class Monitor extends BeanModel {
             type: this.type,
             interval: this.interval,
             keyword: this.keyword,
-            ignoreTls: Boolean(this.ignoreTls),
-            upsideDown: Boolean(this.upsideDown),
+            ignoreTls: this.getIgnoreTls(),
+            upsideDown: this.getUpsideDown(),
             notificationIDList,
         };
+    }
+
+    /**
+     * Parse to boolean
+     * @returns {boolean}
+     */
+    getIgnoreTls() {
+        return Boolean(this.ignoreTls)
+    }
+
+    /**
+     * Parse to boolean
+     * @returns {boolean}
+     */
+    getUpsideDown() {
+        return Boolean(this.upsideDown);
     }
 
     start(io) {
@@ -90,11 +96,17 @@ class Monitor extends BeanModel {
             try {
                 if (this.type === "http" || this.type === "keyword") {
                     let startTime = dayjs().valueOf();
+
+                    // Use Custom agent to disable session reuse
+                    // https://github.com/nodejs/node/issues/3940
                     let res = await axios.get(this.url, {
                         headers: {
                             "User-Agent": "Uptime-Kuma",
                         },
-                        httpsAgent: customAgent,
+                        httpsAgent: new https.Agent({
+                            maxCachedSessions: 0,
+                            rejectUnauthorized: ! this.getIgnoreTls(),
+                        }),
                     });
                     bean.msg = `${res.status} - ${res.statusText}`
                     bean.ping = dayjs().valueOf() - startTime;

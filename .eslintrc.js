@@ -36,22 +36,7 @@ module.exports = {
         }],
         "curly": "error",
         "object-curly-spacing": ["error", "always"],
-        "object-curly-newline": ["error", {
-            "ObjectExpression": {
-                "minProperties": 1,
-            },
-            "ObjectPattern": {
-                "multiline": true,
-                "minProperties": 2,
-            },
-            "ImportDeclaration": {
-                "multiline": true,
-            },
-            "ExportDeclaration": {
-                "multiline": true,
-                //'minProperties': 2,
-            },
-        }],
+        "object-curly-newline": "off",
         "object-property-newline": "error",
         "comma-spacing": "error",
         "brace-style": "error",
