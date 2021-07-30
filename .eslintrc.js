@@ -61,6 +61,9 @@ module.exports = {
         "space-infix-ops": "warn",
         "arrow-spacing": "warn",
         "no-trailing-spaces": "warn",
+        "no-constant-condition": ["error", {
+            "checkLoops": false,
+        }],
         "space-before-blocks": "warn",
         //'no-console': 'warn',
         "no-extra-boolean-cast": "off",

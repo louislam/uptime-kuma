@@ -100,7 +100,7 @@ class Database {
 
         console.log("Closing DB")
 
-        for (;;) {
+        while (true) {
             Database.noReject = true;
             await R.close()
             await sleep(2000)
