@@ -2,22 +2,30 @@ module.exports = {
     env: {
         browser: true,
         commonjs: true,
-        es2017: true,
+        es2020: true,
         node: true,
     },
     extends: [
         "eslint:recommended",
         "plugin:vue/vue3-recommended",
     ],
+    parser: "@babel/eslint-parser",
     parserOptions: {
-        ecmaVersion: 2018,
         sourceType: "module",
+        requireConfigFile: false,
     },
     rules: {
         // override/add rules settings here, such as:
         // 'vue/no-unused-vars': 'error'
         "no-unused-vars": "warn",
-        indent: ["error", 4],
+        indent: [
+            "error",
+            4,
+            {
+                ignoredNodes: ["TemplateLiteral"],
+                SwitchCase: 1,
+            },
+        ],
         quotes: ["warn", "double"],
         //semi: ['off', 'never'],
         "vue/html-indent": ["warn", 4], // default: 2
@@ -53,6 +61,9 @@ module.exports = {
         "space-infix-ops": "warn",
         "arrow-spacing": "warn",
         "no-trailing-spaces": "warn",
+        "no-constant-condition": ["error", {
+            "checkLoops": false,
+        }],
         "space-before-blocks": "warn",
         //'no-console': 'warn',
         "no-extra-boolean-cast": "off",
