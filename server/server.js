@@ -20,7 +20,7 @@ const { login } = require("./auth");
 const passwordHash = require("./password-hash");
 const version = require("../package.json").version;
 const hostname = args.host || "0.0.0.0"
-const port = process.env.PORT || args.port || 3001
+const port = parseInt(process.env.PORT || args.port || 3001);
 
 console.info("Version: " + version)
 
@@ -98,7 +98,9 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
             totalClient--;
         });
 
+        // ***************************
         // Public API
+        // ***************************
 
         socket.on("loginByToken", async (token, callback) => {
 
@@ -191,7 +193,9 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
             }
         });
 
+        // ***************************
         // Auth Only API
+        // ***************************
 
         socket.on("add", async (monitor, callback) => {
             try {
