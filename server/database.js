@@ -1,8 +1,9 @@
 const fs = require("fs");
-const {sleep} = require("../src/util");
-const {R} = require("redbean-node");
-const {setSetting, setting} = require("./util-server");
-
+const { sleep } = require("../src/util");
+const { R } = require("redbean-node");
+const {
+    setSetting, setting,
+} = require("./util-server");
 
 class Database {
 
@@ -95,7 +96,7 @@ class Database {
         const listener = (reason, p) => {
             Database.noReject = false;
         };
-        process.addListener('unhandledRejection', listener);
+        process.addListener("unhandledRejection", listener);
 
         console.log("Closing DB")
 
@@ -112,7 +113,7 @@ class Database {
         }
         console.log("SQLite closed")
 
-        process.removeListener('unhandledRejection', listener);
+        process.removeListener("unhandledRejection", listener);
     }
 }
 
