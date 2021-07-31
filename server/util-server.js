@@ -40,9 +40,15 @@ exports.ping = function (hostname) {
 }
 
 exports.setting = async function (key) {
-    return await R.getCell("SELECT `value` FROM setting WHERE `key` = ? ", [
+    let value = await R.getCell("SELECT `value` FROM setting WHERE `key` = ? ", [
         key,
-    ])
+    ]);
+
+    try {
+        return JSON.parse(value);
+    } catch (e) {
+        return value;
+    }
 }
 
 exports.setSetting = async function (key, value) {
@@ -53,7 +59,7 @@ exports.setSetting = async function (key, value) {
         bean = R.dispense("setting")
         bean.key = key;
     }
-    bean.value = value;
+    bean.value = JSON.stringify(value);
     await R.store(bean)
 }
 
@@ -65,7 +71,11 @@ exports.getSettings = async function (type) {
     let result = {};
 
     for (let row of list) {
-        result[row.key] = JSON.parse(row.value);
+        try {
+            result[row.key] = JSON.parse(row.value);
+        } catch (e) {
+            result[row.key] = row.value;
+        }
     }
 
     return result;
