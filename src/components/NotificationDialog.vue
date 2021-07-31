@@ -323,7 +323,7 @@
                                 </p>
                             </div>
                         </template>
-                        
+
                         <template v-if="notification.type === 'lunasea'">
                             <div class="mb-3">
                                 <label for="lunasea-device" class="form-label">LunaSea Device ID<span style="color:red;"><sup>*</sup></span></label>
@@ -333,7 +333,7 @@
                                 </div>
                             </div>
                         </template>
-                        
+
                     </div>
                     <div class="modal-footer">
                         <button v-if="id" type="button" class="btn btn-danger" :disabled="processing" @click="deleteConfirm">

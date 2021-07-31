@@ -236,13 +236,13 @@ class Notification {
             return Notification.apprise(notification, msg)
 
         } else if (notification.type === "lunasea") {
-            let lunaseadevice = "https://notify.lunasea.app/v1/custom/device/"+notification.lunaseaDevice
+            let lunaseadevice = "https://notify.lunasea.app/v1/custom/device/" + notification.lunaseaDevice
 
             try {
                 if (heartbeatJSON == null) {
                     let testdata = {
                         "title": "Uptime Kuma Alert",
-                        "body": "Testing Successful."
+                        "body": "Testing Successful.",
                     }
                     await axios.post(lunaseadevice, testdata)
                     return okMsg;
@@ -250,8 +250,8 @@ class Notification {
 
                 if (heartbeatJSON["status"] == 0) {
                     let downdata = {
-                        "title": "UptimeKuma Alert:" +monitorJSON["name"],
-                        "body": "[🔴 Down]"+heartbeatJSON["msg"]+  "\nTime (UTC):" + heartbeatJSON["time"]
+                        "title": "UptimeKuma Alert:" + monitorJSON["name"],
+                        "body": "[🔴 Down]" + heartbeatJSON["msg"] + "\nTime (UTC):" + heartbeatJSON["time"],
                     }
                     await axios.post(lunaseadevice, downdata)
                     return okMsg;
@@ -259,14 +259,14 @@ class Notification {
 
                 if (heartbeatJSON["status"] == 1) {
                     let updata = {
-                        "title": "UptimeKuma Alert:" +monitorJSON["name"],
-                        "body": "[✅ Up]"+heartbeatJSON["msg"]+  "\nTime (UTC):" + heartbeatJSON["time"]
+                        "title": "UptimeKuma Alert:" + monitorJSON["name"],
+                        "body": "[✅ Up]" + heartbeatJSON["msg"] + "\nTime (UTC):" + heartbeatJSON["time"],
                     }
                     await axios.post(lunaseadevice, updata)
                     return okMsg;
                 }
-                
-        } catch (error) {
+
+            } catch (error) {
                 throwGeneralAxiosError(error)
             }
 
