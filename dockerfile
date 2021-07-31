@@ -11,27 +11,17 @@ RUN apk add --no-cache --virtual .build-deps make g++ python3 python3-dev && \
 # Touching above code may causes sqlite3 re-compile again, painful slow.
 
 # Install apprise
-# Hate pip!!! I never run pip install successfully in first run for anything in my life without Google :/
-# Compilation Fail 1 => Google Search "alpine ffi.h" => Add libffi-dev
-# Compilation Fail 2 => Google Search "alpine cargo" => Add cargo
-# Compilation Fail 3 => Google Search "alpine opensslv.h" => Add openssl-dev
-# Compilation Fail 4 => Google Search "alpine opensslv.h" again => Change to libressl-dev musl-dev
-# Compilation Fail 5 => Google Search "ERROR: libressl3.3-libtls-3.3.3-r0: trying to overwrite usr/lib/libtls.so.20 owned by libretls-3.3.3-r0." again => Change back to openssl-dev with musl-dev
-# Runtime Error => ModuleNotFoundError: No module named 'six' => pip3 install six
-# Runtime Error 2 => ModuleNotFoundError: No module named 'six' => apk add py3-six
-ENV CRYPTOGRAPHY_DONT_BUILD_RUST=1
-RUN apk add --no-cache python3 py3-pip py3-six cargo
-RUN apk add --no-cache --virtual .build-deps libffi-dev musl-dev openssl-dev python3-dev && \
-            pip3 install apprise && \
-            pip3 cache purge && \
-            rm -rf /root/.cache && \
-            apk del .build-deps
+RUN apk add --no-cache python3 py3-cryptography py3-pip py3-six py3-yaml py3-click py3-markdown py3-requests py3-requests-oauthlib
+RUN pip3 --no-cache-dir install apprise && \
+            rm -rf /root/.cache
 RUN apprise --version
 
 # New things add here
 
 COPY . .
-RUN npm install && npm run build && npm prune
+RUN npm install && \
+            npm run build && \
+            npm prune
 
 EXPOSE 3001
 VOLUME ["/app/data"]
