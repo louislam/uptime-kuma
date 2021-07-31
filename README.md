@@ -65,7 +65,7 @@ Browse to http://localhost:3001 after started.
 
 ## One more step for Reverse Proxy
 
-Unlikely other web apps, Uptime Kuma is based on WebSocket. You need two more header "Upgrade" and "Connection" in order to reverse proxy WebSocket.
+Unlikely other web apps, Uptime Kuma is based on WebSocket. You need two more headers "Upgrade" and "Connection" in order to reverse proxy WebSocket.
 
 Please read wiki for more info:
 https://github.com/louislam/uptime-kuma/wiki/Reverse-Proxy
