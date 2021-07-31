@@ -12,15 +12,16 @@ RUN apk add --no-cache --virtual .build-deps make g++ python3 python3-dev && \
 
 # Install apprise
 RUN apk add --no-cache python3 py3-cryptography py3-pip py3-six py3-yaml py3-click py3-markdown py3-requests py3-requests-oauthlib
-RUN pip3 install apprise && \
-    pip3 cache purge && \
-    rm -rf /root/.cache
+RUN pip3 --no-cache-dir install apprise && \
+            rm -rf /root/.cache
 RUN apprise --version
 
 # New things add here
 
 COPY . .
-RUN npm install && npm run build && npm prune
+RUN npm install && \
+            npm run build && \
+            npm prune
 
 EXPOSE 3001
 VOLUME ["/app/data"]
