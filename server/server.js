@@ -26,7 +26,7 @@ console.log("Importing this project modules");
 debug("Importing Monitor");
 const Monitor = require("./model/monitor");
 debug("Importing Settings");
-const { getSettings, setSettings } = require("./util-server");
+const { getSettings, setSettings, setting } = require("./util-server");
 debug("Importing Notification");
 const { Notification } = require("./notification");
 debug("Importing Database");
@@ -112,6 +112,11 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
         if (needSetup) {
             console.log("Redirect to setup page")
             socket.emit("setup")
+        }
+
+        if (await setting("disableAuth")) {
+            console.log("Disabled Auth: auto login to admin")
+            await afterLogin(socket, await R.findOne("user", " username = 'admin' "))
         }
 
         socket.on("disconnect", () => {
@@ -600,6 +605,8 @@ async function afterLogin(socket, user) {
     }
 
     sendNotificationList(socket)
+
+    socket.emit("autoLogin")
 }
 
 async function getMonitorJSONList(userID) {

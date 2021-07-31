@@ -56,6 +56,11 @@ export default {
             this.$router.push("/setup")
         });
 
+        socket.on("autoLogin", (monitorID, data) => {
+            this.loggedIn = true;
+            this.storage().token = "autoLogin"
+        });
+
         socket.on("monitorList", (data) => {
             // Add Helper function
             Object.entries(data).forEach(([monitorID, monitor]) => {
@@ -156,8 +161,12 @@ export default {
                 this.clearData()
             }
 
-            if (this.storage().token) {
-                this.loginByToken(this.storage().token)
+            let token = this.storage().token;
+
+            if (token) {
+                if (token !== "autoLogin") {
+                    this.loginByToken(token)
+                }
             } else {
                 this.allowLoginDialog = true;
             }

@@ -27,40 +27,44 @@
                     </div>
                 </form>
 
-                <h2>Change Password</h2>
-                <form class="mb-3" @submit.prevent="savePassword">
-                    <div class="mb-3">
-                        <label for="current-password" class="form-label">Current Password</label>
-                        <input id="current-password" v-model="password.currentPassword" type="password" class="form-control" required>
-                    </div>
+                <template v-if="loaded">
+                    <template v-if="! settings.disableAuth">
+                        <h2>Change Password</h2>
+                        <form class="mb-3" @submit.prevent="savePassword">
+                            <div class="mb-3">
+                                <label for="current-password" class="form-label">Current Password</label>
+                                <input id="current-password" v-model="password.currentPassword" type="password" class="form-control" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="new-password" class="form-label">New Password</label>
+                                <input id="new-password" v-model="password.newPassword" type="password" class="form-control" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="repeat-new-password" class="form-label">Repeat New Password</label>
+                                <input id="repeat-new-password" v-model="password.repeatNewPassword" type="password" class="form-control" :class="{ 'is-invalid' : invalidPassword }" required>
+                                <div class="invalid-feedback">
+                                    The repeat password does not match.
+                                </div>
+                            </div>
+
+                            <div>
+                                <button class="btn btn-primary" type="submit">
+                                    Update Password
+                                </button>
+                            </div>
+                        </form>
+                    </template>
+
+                    <h2>Advanced</h2>
 
                     <div class="mb-3">
-                        <label for="new-password" class="form-label">New Password</label>
-                        <input id="new-password" v-model="password.newPassword" type="password" class="form-control" required>
+                        <button v-if="settings.disableAuth" class="btn btn-outline-primary me-1" @click="enableAuth">Enable Auth</button>
+                        <button v-if="! settings.disableAuth" class="btn btn-primary me-1" @click="confirmDisableAuth">Disable Auth</button>
+                        <button v-if="! settings.disableAuth" class="btn btn-danger me-1" @click="$root.logout">Logout</button>
                     </div>
-
-                    <div class="mb-3">
-                        <label for="repeat-new-password" class="form-label">Repeat New Password</label>
-                        <input id="repeat-new-password" v-model="password.repeatNewPassword" type="password" class="form-control" :class="{ 'is-invalid' : invalidPassword }" required>
-                        <div class="invalid-feedback">
-                            The repeat password does not match.
-                        </div>
-                    </div>
-
-                    <div>
-                        <button class="btn btn-primary" type="submit">
-                            Update Password
-                        </button>
-                    </div>
-                </form>
-
-                <h2>Advanced</h2>
-
-                <div class="mb-3">
-                    <button v-if="settings.disableAuth" class="btn btn-outline-primary me-1" @click="enableAuth">Enable Auth</button>
-                    <button v-if="! settings.disableAuth" class="btn btn-primary me-1" @click="confirmDisableAuth">Disable Auth</button>
-                    <button class="btn btn-danger me-1" @click="$root.logout">Logout</button>
-                </div>
+                </template>
             </div>
 
             <div class="col-md-6">
@@ -128,7 +132,8 @@ export default {
             },
             settings: {
 
-            }
+            },
+            loaded: false,
         }
     },
     watch: {
@@ -166,6 +171,7 @@ export default {
         loadSettings() {
             this.$root.getSocket().emit("getSettings", (res) => {
                 this.settings = res.data;
+                this.loaded = true;
             })
         },
 
@@ -188,6 +194,7 @@ export default {
         enableAuth() {
             this.settings.disableAuth = false;
             this.saveSettings();
+            this.$root.storage().token = null;
         },
 
     },
