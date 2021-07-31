@@ -9,8 +9,9 @@ module.exports = {
         "eslint:recommended",
         "plugin:vue/vue3-recommended",
     ],
-    parser: "@babel/eslint-parser",
+    parser: "vue-eslint-parser",
     parserOptions: {
+        parser: "@babel/eslint-parser",
         sourceType: "module",
         requireConfigFile: false,
     },
