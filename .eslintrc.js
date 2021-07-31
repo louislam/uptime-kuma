@@ -32,6 +32,7 @@ module.exports = {
         "vue/html-indent": ["warn", 4], // default: 2
         "vue/max-attributes-per-line": "off",
         "vue/singleline-html-element-content-newline": "off",
+        "vue/html-self-closing": "off",
         "no-multi-spaces": ["error", {
             ignoreEOLComments: true,
         }],
