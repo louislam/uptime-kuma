@@ -54,10 +54,12 @@
                     </div>
                 </form>
 
-                <div>
-                    <button class="btn btn-danger" @click="$root.logout">
-                        Logout
-                    </button>
+                <h2>Advanced</h2>
+
+                <div class="mb-3">
+                    <button v-if="settings.disableAuth" class="btn btn-outline-primary me-1" @click="enableAuth">Enable Auth</button>
+                    <button v-if="! settings.disableAuth" class="btn btn-primary me-1" @click="confirmDisableAuth">Disable Auth</button>
+                    <button class="btn btn-danger me-1" @click="$root.logout">Logout</button>
                 </div>
             </div>
 
@@ -87,15 +89,23 @@
     </div>
 
     <NotificationDialog ref="notificationDialog" />
+
+    <Confirm ref="confirmDisableAuth" btn-style="btn-danger" yes-text="I understand, please disable" no-text="Leave" @yes="disableAuth">
+        <p>Are you sure want to <strong>disable auth</strong>?</p>
+        <p>It is for <strong>someone who have 3rd-party auth</strong> in front of  Uptime Kuma such as Cloudflare Access.</p>
+        <p>Please use it carefully.</p>
+    </Confirm>
 </template>
 
 <script>
+import Confirm from "../components/Confirm.vue";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc"
 import timezone from "dayjs/plugin/timezone"
 import NotificationDialog from "../components/NotificationDialog.vue";
 dayjs.extend(utc)
 dayjs.extend(timezone)
+
 import { timezoneList } from "../util-frontend";
 import { useToast } from "vue-toastification"
 const toast = useToast()
@@ -103,6 +113,7 @@ const toast = useToast()
 export default {
     components: {
         NotificationDialog,
+        Confirm,
     },
     data() {
         return {
@@ -115,6 +126,9 @@ export default {
                 newPassword: "",
                 repeatNewPassword: "",
             },
+            settings: {
+
+            }
         }
     },
     watch: {
@@ -124,7 +138,7 @@ export default {
     },
 
     mounted() {
-
+        this.loadSettings();
     },
 
     methods: {
@@ -148,6 +162,34 @@ export default {
                 })
             }
         },
+
+        loadSettings() {
+            this.$root.getSocket().emit("getSettings", (res) => {
+                this.settings = res.data;
+            })
+        },
+
+        saveSettings() {
+            this.$root.getSocket().emit("setSettings", this.settings, (res) => {
+                this.$root.toastRes(res);
+                this.loadSettings();
+            })
+        },
+
+        confirmDisableAuth() {
+            this.$refs.confirmDisableAuth.show();
+        },
+
+        disableAuth() {
+            this.settings.disableAuth = true;
+            this.saveSettings();
+        },
+
+        enableAuth() {
+            this.settings.disableAuth = false;
+            this.saveSettings();
+        },
+
     },
 }
 </script>
