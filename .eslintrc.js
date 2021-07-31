@@ -68,6 +68,6 @@ module.exports = {
         "array-bracket-newline": ["error", "consistent"],
         "eol-last": ["error", "always"],
         //'prefer-template': 'error',
-        "comma-dangle": ["warn", "always-multiline"],
+        "comma-dangle": ["warn", "only-multiline"],
     },
 }
