@@ -20,7 +20,7 @@ It is a self-hosted monitoring tool like "Uptime Robot".
 
 # How to Use
 
-### Docker
+## Docker
 
 ```bash
 # Create a volume
@@ -38,7 +38,7 @@ Change Port and Volume
 docker run -d --restart=always -p <YOUR_PORT>:3001 -v <YOUR_DIR OR VOLUME>:/app/data --name uptime-kuma louislam/uptime-kuma:1
 ```
 
-### Without Docker
+## Without Docker
 
 Required Tools: Node.js >= 14, git and pm2.
 
@@ -62,7 +62,15 @@ pm2 start npm --name uptime-kuma -- run start-server -- --port=80 --hostname=0.0
 
 Browse to http://localhost:3001 after started.
 
-### One-click Deploy
+
+## One more step for Reverse Proxy
+
+Unlikely other web apps, Uptime Kuma is based on WebSocket. You need two more header "Upgrade" and "Connection" in order to reverse proxy WebSocket.
+
+Please read wiki for more info:
+https://github.com/louislam/uptime-kuma/wiki/Reverse-Proxy
+
+## One-click Deploy
 
 <!---
 Abort. Heroku instance killed the server.js if idle, stupid.
