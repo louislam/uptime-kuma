@@ -29,6 +29,7 @@ export default {
             notificationList: [],
             windowWidth: window.innerWidth,
             showListMobile: false,
+            connectionErrorMsg: "Cannot connect to the socket server. Reconnecting..."
         }
     },
 
@@ -45,10 +46,6 @@ export default {
 
         socket = io(wsHost, {
             transports: ["websocket"],
-        });
-
-        socket.on("connect_error", (err) => {
-            console.error(`Failed to connect to the backend. Socket.io connect_error: ${err.message}`);
         });
 
         socket.on("info", (info) => {
@@ -136,8 +133,16 @@ export default {
             }
         });
 
+        socket.on("connect_error", (err) => {
+            console.error(`Failed to connect to the backend. Socket.io connect_error: ${err.message}`);
+            this.connectionErrorMsg = `Cannot connect to the socket server. [${err}] Reconnecting...`;
+            this.socket.connected = false;
+            this.socket.firstConnect = false;
+        });
+
         socket.on("disconnect", () => {
             console.log("disconnect")
+            this.connectionErrorMsg = "Lost connection to the socket server. Reconnecting...";
             this.socket.connected = false;
         });
 
