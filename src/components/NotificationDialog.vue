@@ -13,33 +13,16 @@
                         <div class="mb-3">
                             <label for="type" class="form-label">Notification Type</label>
                             <select id="type" v-model="notification.type" class="form-select">
-                                <option value="telegram">
-                                    Telegram
-                                </option>
-                                <option value="webhook">
-                                    Webhook
-                                </option>
-                                <option value="smtp">
-                                    Email (SMTP)
-                                </option>
-                                <option value="discord">
-                                    Discord
-                                </option>
-                                <option value="signal">
-                                    Signal
-                                </option>
-                                <option value="gotify">
-                                    Gotify
-                                </option>
-                                <option value="slack">
-                                    Slack
-                                </option>
-                                <option value="pushover">
-                                    Pushover
-                                </option>
-                                <option value="apprise">
-                                    Apprise (Support 50+ Notification services)
-                                </option>
+                                <option value="telegram">Telegram</option>
+                                <option value="webhook">Webhook</option>
+                                <option value="smtp">Email (SMTP)</option>
+                                <option value="discord">Discord</option>
+                                <option value="signal">Signal</option>
+                                <option value="gotify">Gotify</option>
+                                <option value="slack">Slack</option>
+                                <option value="pushover">Pushover</option>
+                                <option value="lunasea">LunaSea</option>
+                                <option value="apprise">Apprise (Support 50+ Notification services)</option>
                             </select>
                         </div>
 
