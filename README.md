@@ -63,9 +63,11 @@ pm2 start npm --name uptime-kuma -- run start-server -- --port=80 --hostname=0.0
 Browse to http://localhost:3001 after started.
 
 
-## One more step for Reverse Proxy
+## (Optional) One more step for Reverse Proxy
 
-Unlikely other web apps, Uptime Kuma is based on WebSocket. You need two more headers "Upgrade" and "Connection" in order to reverse proxy WebSocket.
+This is optional for someone who want to do reverse proxy.
+
+Unlikely other web apps, Uptime Kuma is based on WebSocket. You need two more headers **"Upgrade"** and **"Connection"** in order to reverse proxy WebSocket.
 
 Please read wiki for more info:
 https://github.com/louislam/uptime-kuma/wiki/Reverse-Proxy
