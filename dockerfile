@@ -22,8 +22,7 @@ FROM release-base AS build
 
 COPY . .
 RUN npm install && \
-            npm run build && \
-            npm prune
+            npm run build
 
 FROM release-base AS release-final
 
