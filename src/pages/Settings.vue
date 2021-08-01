@@ -27,38 +27,44 @@
                     </div>
                 </form>
 
-                <h2>Change Password</h2>
-                <form class="mb-3" @submit.prevent="savePassword">
-                    <div class="mb-3">
-                        <label for="current-password" class="form-label">Current Password</label>
-                        <input id="current-password" v-model="password.currentPassword" type="password" class="form-control" required>
-                    </div>
+                <template v-if="loaded">
+                    <template v-if="! settings.disableAuth">
+                        <h2>Change Password</h2>
+                        <form class="mb-3" @submit.prevent="savePassword">
+                            <div class="mb-3">
+                                <label for="current-password" class="form-label">Current Password</label>
+                                <input id="current-password" v-model="password.currentPassword" type="password" class="form-control" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="new-password" class="form-label">New Password</label>
+                                <input id="new-password" v-model="password.newPassword" type="password" class="form-control" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="repeat-new-password" class="form-label">Repeat New Password</label>
+                                <input id="repeat-new-password" v-model="password.repeatNewPassword" type="password" class="form-control" :class="{ 'is-invalid' : invalidPassword }" required>
+                                <div class="invalid-feedback">
+                                    The repeat password does not match.
+                                </div>
+                            </div>
+
+                            <div>
+                                <button class="btn btn-primary" type="submit">
+                                    Update Password
+                                </button>
+                            </div>
+                        </form>
+                    </template>
+
+                    <h2>Advanced</h2>
 
                     <div class="mb-3">
-                        <label for="new-password" class="form-label">New Password</label>
-                        <input id="new-password" v-model="password.newPassword" type="password" class="form-control" required>
+                        <button v-if="settings.disableAuth" class="btn btn-outline-primary me-1" @click="enableAuth">Enable Auth</button>
+                        <button v-if="! settings.disableAuth" class="btn btn-primary me-1" @click="confirmDisableAuth">Disable Auth</button>
+                        <button v-if="! settings.disableAuth" class="btn btn-danger me-1" @click="$root.logout">Logout</button>
                     </div>
-
-                    <div class="mb-3">
-                        <label for="repeat-new-password" class="form-label">Repeat New Password</label>
-                        <input id="repeat-new-password" v-model="password.repeatNewPassword" type="password" class="form-control" :class="{ 'is-invalid' : invalidPassword }" required>
-                        <div class="invalid-feedback">
-                            The repeat password does not match.
-                        </div>
-                    </div>
-
-                    <div>
-                        <button class="btn btn-primary" type="submit">
-                            Update Password
-                        </button>
-                    </div>
-                </form>
-
-                <div>
-                    <button class="btn btn-danger" @click="$root.logout">
-                        Logout
-                    </button>
-                </div>
+                </template>
             </div>
 
             <div class="col-md-6">
@@ -87,15 +93,23 @@
     </div>
 
     <NotificationDialog ref="notificationDialog" />
+
+    <Confirm ref="confirmDisableAuth" btn-style="btn-danger" yes-text="I understand, please disable" no-text="Leave" @yes="disableAuth">
+        <p>Are you sure want to <strong>disable auth</strong>?</p>
+        <p>It is for <strong>someone who have 3rd-party auth</strong> in front of  Uptime Kuma such as Cloudflare Access.</p>
+        <p>Please use it carefully.</p>
+    </Confirm>
 </template>
 
 <script>
+import Confirm from "../components/Confirm.vue";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc"
 import timezone from "dayjs/plugin/timezone"
 import NotificationDialog from "../components/NotificationDialog.vue";
 dayjs.extend(utc)
 dayjs.extend(timezone)
+
 import { timezoneList } from "../util-frontend";
 import { useToast } from "vue-toastification"
 const toast = useToast()
@@ -103,6 +117,7 @@ const toast = useToast()
 export default {
     components: {
         NotificationDialog,
+        Confirm,
     },
     data() {
         return {
@@ -115,6 +130,10 @@ export default {
                 newPassword: "",
                 repeatNewPassword: "",
             },
+            settings: {
+
+            },
+            loaded: false,
         }
     },
     watch: {
@@ -124,7 +143,7 @@ export default {
     },
 
     mounted() {
-
+        this.loadSettings();
     },
 
     methods: {
@@ -148,6 +167,36 @@ export default {
                 })
             }
         },
+
+        loadSettings() {
+            this.$root.getSocket().emit("getSettings", (res) => {
+                this.settings = res.data;
+                this.loaded = true;
+            })
+        },
+
+        saveSettings() {
+            this.$root.getSocket().emit("setSettings", this.settings, (res) => {
+                this.$root.toastRes(res);
+                this.loadSettings();
+            })
+        },
+
+        confirmDisableAuth() {
+            this.$refs.confirmDisableAuth.show();
+        },
+
+        disableAuth() {
+            this.settings.disableAuth = true;
+            this.saveSettings();
+        },
+
+        enableAuth() {
+            this.settings.disableAuth = false;
+            this.saveSettings();
+            this.$root.storage().token = null;
+        },
+
     },
 }
 </script>

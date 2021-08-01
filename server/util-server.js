@@ -40,9 +40,15 @@ exports.ping = function (hostname) {
 }
 
 exports.setting = async function (key) {
-    return await R.getCell("SELECT `value` FROM setting WHERE `key` = ? ", [
+    let value = await R.getCell("SELECT `value` FROM setting WHERE `key` = ? ", [
         key,
-    ])
+    ]);
+
+    try {
+        return JSON.parse(value);
+    } catch (e) {
+        return value;
+    }
 }
 
 exports.setSetting = async function (key, value) {
@@ -53,22 +59,51 @@ exports.setSetting = async function (key, value) {
         bean = R.dispense("setting")
         bean.key = key;
     }
-    bean.value = value;
+    bean.value = JSON.stringify(value);
     await R.store(bean)
 }
 
 exports.getSettings = async function (type) {
-    let list = await R.getAll("SELECT * FROM setting WHERE `type` = ? ", [
+    let list = await R.getAll("SELECT `key`, `value` FROM setting WHERE `type` = ? ", [
         type,
     ])
 
     let result = {};
 
     for (let row of list) {
-        result[row.key] = row.value;
+        try {
+            result[row.key] = JSON.parse(row.value);
+        } catch (e) {
+            result[row.key] = row.value;
+        }
     }
 
     return result;
+}
+
+exports.setSettings = async function (type, data) {
+    let keyList = Object.keys(data);
+
+    let promiseList = [];
+
+    for (let key of keyList) {
+        let bean = await R.findOne("setting", " `key` = ? ", [
+            key
+        ]);
+
+        if (bean == null) {
+            bean = R.dispense("setting");
+            bean.type = type;
+            bean.key = key;
+        }
+
+        if (bean.type === type) {
+            bean.value = JSON.stringify(data[key]);
+            promiseList.push(R.store(bean))
+        }
+    }
+
+    await Promise.all(promiseList);
 }
 
 // ssl-checker by @dyaa

@@ -1,26 +1,46 @@
-console.log("Welcome to Uptime Kuma ")
-console.log("Importing libraries")
-const express = require("express");
-const http = require("http");
-const { Server } = require("socket.io");
-const dayjs = require("dayjs");
-const { R } = require("redbean-node");
-const jwt = require("jsonwebtoken");
-const Monitor = require("./model/monitor");
+console.log("Welcome to Uptime Kuma")
+
+const { sleep, debug } = require("../src/util");
+
+console.log("Importing Node libraries")
 const fs = require("fs");
-const { getSettings } = require("./util-server");
-const { Notification } = require("./notification")
+const http = require("http");
+
+console.log("Importing 3rd-party libraries")
+debug("Importing express");
+const express = require("express");
+debug("Importing socket.io");
+const { Server } = require("socket.io");
+debug("Importing dayjs");
+const dayjs = require("dayjs");
+debug("Importing redbean-node");
+const { R } = require("redbean-node");
+debug("Importing jsonwebtoken");
+const jwt = require("jsonwebtoken");
+debug("Importing http-graceful-shutdown");
 const gracefulShutdown = require("http-graceful-shutdown");
-const Database = require("./database");
-const { sleep } = require("./util");
-const args = require("args-parser")(process.argv);
+debug("Importing prometheus-api-metrics");
 const prometheusAPIMetrics = require("prometheus-api-metrics");
+
+console.log("Importing this project modules");
+debug("Importing Monitor");
+const Monitor = require("./model/monitor");
+debug("Importing Settings");
+const { getSettings, setSettings, setting } = require("./util-server");
+debug("Importing Notification");
+const { Notification } = require("./notification");
+debug("Importing Database");
+const Database = require("./database");
+
 const { basicAuth } = require("./auth");
 const { login } = require("./auth");
 const passwordHash = require("./password-hash");
+
+const args = require("args-parser")(process.argv);
+
 const version = require("../package.json").version;
-const hostname = args.host || "0.0.0.0"
-const port = process.env.PORT || args.port || 3001
+const hostname = process.env.HOST || args.host || "0.0.0.0"
+const port = parseInt(process.env.PORT || args.port || 3001);
 
 console.info("Version: " + version)
 
@@ -94,11 +114,18 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
             socket.emit("setup")
         }
 
+        if (await setting("disableAuth")) {
+            console.log("Disabled Auth: auto login to admin")
+            await afterLogin(socket, await R.findOne("user", " username = 'admin' "))
+        }
+
         socket.on("disconnect", () => {
             totalClient--;
         });
 
+        // ***************************
         // Public API
+        // ***************************
 
         socket.on("loginByToken", async (token, callback) => {
 
@@ -191,8 +218,11 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
             }
         });
 
+        // ***************************
         // Auth Only API
+        // ***************************
 
+        // Add a new monitor
         socket.on("add", async (monitor, callback) => {
             try {
                 checkLogin(socket)
@@ -224,6 +254,7 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
             }
         });
 
+        // Edit a monitor
         socket.on("editMonitor", async (monitor, callback) => {
             try {
                 checkLogin(socket)
@@ -242,6 +273,8 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                 bean.maxretries = monitor.maxretries;
                 bean.port = monitor.port;
                 bean.keyword = monitor.keyword;
+                bean.ignoreTls = monitor.ignoreTls;
+                bean.upsideDown = monitor.upsideDown;
 
                 await R.store(bean)
 
@@ -397,13 +430,32 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
             }
         });
 
-        socket.on("getSettings", async (type, callback) => {
+        socket.on("getSettings", async (callback) => {
             try {
                 checkLogin(socket)
 
                 callback({
                     ok: true,
-                    data: await getSettings(type),
+                    data: await getSettings("general"),
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("setSettings", async (data, callback) => {
+            try {
+                checkLogin(socket)
+
+                await setSettings("general", data)
+
+                callback({
+                    ok: true,
+                    msg: "Saved"
                 });
 
             } catch (e) {
@@ -553,6 +605,8 @@ async function afterLogin(socket, user) {
     }
 
     sendNotificationList(socket)
+
+    socket.emit("autoLogin")
 }
 
 async function getMonitorJSONList(userID) {

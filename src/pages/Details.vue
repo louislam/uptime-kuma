@@ -15,7 +15,7 @@
             <font-awesome-icon icon="pause" /> Pause
         </button>
         <button v-if="! monitor.active" class="btn btn-primary" @click="resumeMonitor">
-            <font-awesome-icon icon="pause" /> Resume
+            <font-awesome-icon icon="play" /> Resume
         </button>
         <router-link :to=" '/edit/' + monitor.id " class="btn btn-secondary">
             <font-awesome-icon icon="edit" /> Edit

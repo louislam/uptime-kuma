@@ -1,0 +1,14 @@
+{
+    "compileOnSave": true,
+    "compilerOptions": {
+        "target": "ES2018",
+        "module": "commonjs",
+        "removeComments": true,
+        "preserveConstEnums": true,
+        "sourceMap": false,
+        "files.insertFinalNewline": true
+    },
+    "files": [
+        "./server/util.ts"
+    ]
+}

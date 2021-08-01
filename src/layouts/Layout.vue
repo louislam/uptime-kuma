@@ -1,7 +1,7 @@
 <template>
     <div v-if="! $root.socket.connected && ! $root.socket.firstConnect" class="lost-connection">
         <div class="container-fluid">
-            Lost connection to the socket server. Reconnecting...
+            {{ $root.connectionErrorMsg }}
         </div>
     </div>
 

@@ -29,6 +29,7 @@ export default {
             notificationList: [],
             windowWidth: window.innerWidth,
             showListMobile: false,
+            connectionErrorMsg: "Cannot connect to the socket server. Reconnecting..."
         }
     },
 
@@ -47,16 +48,17 @@ export default {
             transports: ["websocket"],
         });
 
-        socket.on("connect_error", (err) => {
-            console.error(`Failed to connect to the backend. Socket.io connect_error: ${err.message}`);
-        });
-
         socket.on("info", (info) => {
             this.info = info;
         });
 
         socket.on("setup", (monitorID, data) => {
             this.$router.push("/setup")
+        });
+
+        socket.on("autoLogin", (monitorID, data) => {
+            this.loggedIn = true;
+            this.storage().token = "autoLogin"
         });
 
         socket.on("monitorList", (data) => {
@@ -136,8 +138,16 @@ export default {
             }
         });
 
+        socket.on("connect_error", (err) => {
+            console.error(`Failed to connect to the backend. Socket.io connect_error: ${err.message}`);
+            this.connectionErrorMsg = `Cannot connect to the socket server. [${err}] Reconnecting...`;
+            this.socket.connected = false;
+            this.socket.firstConnect = false;
+        });
+
         socket.on("disconnect", () => {
             console.log("disconnect")
+            this.connectionErrorMsg = "Lost connection to the socket server. Reconnecting...";
             this.socket.connected = false;
         });
 
@@ -151,8 +161,12 @@ export default {
                 this.clearData()
             }
 
-            if (this.storage().token) {
-                this.loginByToken(this.storage().token)
+            let token = this.storage().token;
+
+            if (token) {
+                if (token !== "autoLogin") {
+                    this.loginByToken(token)
+                }
             } else {
                 this.allowLoginDialog = true;
             }

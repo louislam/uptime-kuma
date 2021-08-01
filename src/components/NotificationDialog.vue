@@ -13,33 +13,16 @@
                         <div class="mb-3">
                             <label for="type" class="form-label">Notification Type</label>
                             <select id="type" v-model="notification.type" class="form-select">
-                                <option value="telegram">
-                                    Telegram
-                                </option>
-                                <option value="webhook">
-                                    Webhook
-                                </option>
-                                <option value="smtp">
-                                    Email (SMTP)
-                                </option>
-                                <option value="discord">
-                                    Discord
-                                </option>
-                                <option value="signal">
-                                    Signal
-                                </option>
-                                <option value="gotify">
-                                    Gotify
-                                </option>
-                                <option value="slack">
-                                    Slack
-                                </option>
-                                <option value="pushover">
-                                    Pushover
-                                </option>
-                                <option value="apprise">
-                                    Apprise (Support 50+ Notification services)
-                                </option>
+                                <option value="telegram">Telegram</option>
+                                <option value="webhook">Webhook</option>
+                                <option value="smtp">Email (SMTP)</option>
+                                <option value="discord">Discord</option>
+                                <option value="signal">Signal</option>
+                                <option value="gotify">Gotify</option>
+                                <option value="slack">Slack</option>
+                                <option value="pushover">Pushover</option>
+                                <option value="lunasea">LunaSea</option>
+                                <option value="apprise">Apprise (Support 50+ Notification services)</option>
                             </select>
                         </div>
 
@@ -323,6 +306,17 @@
                                 </p>
                             </div>
                         </template>
+
+                        <template v-if="notification.type === 'lunasea'">
+                            <div class="mb-3">
+                                <label for="lunasea-device" class="form-label">LunaSea Device ID<span style="color:red;"><sup>*</sup></span></label>
+                                <input id="lunasea-device" v-model="notification.lunaseaDevice" type="text" class="form-control" required>
+                                <div class="form-text">
+                                    <p><span style="color:red;"><sup>*</sup></span>Required</p>
+                                </div>
+                            </div>
+                        </template>
+
                     </div>
                     <div class="modal-footer">
                         <button v-if="id" type="button" class="btn btn-danger" :disabled="processing" @click="deleteConfirm">
@@ -345,9 +339,9 @@
     </Confirm>
 </template>
 
-<script>
+<script lang="ts">
 import { Modal } from "bootstrap"
-import { ucfirst } from "../util-frontend"
+import { ucfirst } from "../util.ts"
 import axios from "axios";
 import { useToast } from "vue-toastification"
 import Confirm from "./Confirm.vue";

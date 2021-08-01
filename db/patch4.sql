@@ -1,4 +1,6 @@
 -- You should not modify if this have pushed to Github, unless it does serious wrong with the db.
+-- OK.... serious wrong, missing maxretries column
+-- Developers should patch it manually if you have missing the maxretries column
 PRAGMA foreign_keys=off;
 
 BEGIN TRANSACTION;
@@ -20,11 +22,12 @@ create table monitor_dg_tmp
     port INTEGER,
     created_date DATETIME,
     keyword VARCHAR(255),
+    maxretries INTEGER NOT NULL DEFAULT 0,
     ignore_tls BOOLEAN default 0 not null,
     upside_down BOOLEAN default 0 not null
 );
 
-insert into monitor_dg_tmp(id, name, active, user_id, interval, url, type, weight, hostname, port, created_date, keyword) select id, name, active, user_id, interval, url, type, weight, hostname, port, created_date, keyword from monitor;
+insert into monitor_dg_tmp(id, name, active, user_id, interval, url, type, weight, hostname, port, created_date, keyword, maxretries) select id, name, active, user_id, interval, url, type, weight, hostname, port, created_date, keyword, maxretries from monitor;
 
 drop table monitor;
 

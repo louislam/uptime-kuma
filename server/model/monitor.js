@@ -1,22 +1,16 @@
-const https = require('https');
+const https = require("https");
 const dayjs = require("dayjs");
-const utc = require('dayjs/plugin/utc')
-var timezone = require('dayjs/plugin/timezone')
+const utc = require("dayjs/plugin/utc")
+let timezone = require("dayjs/plugin/timezone")
 dayjs.extend(utc)
 dayjs.extend(timezone)
 const axios = require("axios");
-const {Prometheus} = require("../prometheus");
-const {debug, UP, DOWN, PENDING} = require("../util");
-const {tcping, ping, checkCertificate} = require("../util-server");
-const {R} = require("redbean-node");
-const {BeanModel} = require("redbean-node/dist/bean-model");
-const {Notification} = require("../notification")
-
-//  Use Custom agent to disable session reuse
-//  https://github.com/nodejs/node/issues/3940
-const customAgent = new https.Agent({
-    maxCachedSessions: 0
-});
+const { Prometheus } = require("../prometheus");
+const { debug, UP, DOWN, PENDING, flipStatus } = require("../../src/util");
+const { tcping, ping, checkCertificate } = require("../util-server");
+const { R } = require("redbean-node");
+const { BeanModel } = require("redbean-node/dist/bean-model");
+const { Notification } = require("../notification")
 
 /**
  * status:
@@ -30,7 +24,7 @@ class Monitor extends BeanModel {
         let notificationIDList = {};
 
         let list = await R.find("monitor_notification", " monitor_id = ? ", [
-            this.id
+            this.id,
         ])
 
         for (let bean of list) {
@@ -49,8 +43,26 @@ class Monitor extends BeanModel {
             type: this.type,
             interval: this.interval,
             keyword: this.keyword,
-            notificationIDList
+            ignoreTls: this.getIgnoreTls(),
+            upsideDown: this.isUpsideDown(),
+            notificationIDList,
         };
+    }
+
+    /**
+     * Parse to boolean
+     * @returns {boolean}
+     */
+    getIgnoreTls() {
+        return Boolean(this.ignoreTls)
+    }
+
+    /**
+     * Parse to boolean
+     * @returns {boolean}
+     */
+    isUpsideDown() {
+        return Boolean(this.upsideDown);
     }
 
     start(io) {
@@ -63,7 +75,7 @@ class Monitor extends BeanModel {
 
             if (! previousBeat) {
                 previousBeat = await R.findOne("heartbeat", " monitor_id = ? ORDER BY time DESC", [
-                    this.id
+                    this.id,
                 ])
             }
 
@@ -74,9 +86,13 @@ class Monitor extends BeanModel {
             bean.time = R.isoDateTime(dayjs.utc());
             bean.status = DOWN;
 
+            if (this.isUpsideDown()) {
+                bean.status = flipStatus(bean.status);
+            }
+
             // Duration
             if (! isFirstBeat) {
-                bean.duration = dayjs(bean.time).diff(dayjs(previousBeat.time), 'second');
+                bean.duration = dayjs(bean.time).diff(dayjs(previousBeat.time), "second");
             } else {
                 bean.duration = 0;
             }
@@ -84,9 +100,17 @@ class Monitor extends BeanModel {
             try {
                 if (this.type === "http" || this.type === "keyword") {
                     let startTime = dayjs().valueOf();
+
+                    // Use Custom agent to disable session reuse
+                    // https://github.com/nodejs/node/issues/3940
                     let res = await axios.get(this.url, {
-                        headers: { "User-Agent": "Uptime-Kuma" },
-                        httpsAgent: customAgent,
+                        headers: {
+                            "User-Agent": "Uptime-Kuma",
+                        },
+                        httpsAgent: new https.Agent({
+                            maxCachedSessions: 0,
+                            rejectUnauthorized: ! this.getIgnoreTls(),
+                        }),
                     });
                     bean.msg = `${res.status} - ${res.statusText}`
                     bean.ping = dayjs().valueOf() - startTime;
@@ -124,7 +148,6 @@ class Monitor extends BeanModel {
 
                     }
 
-
                 } else if (this.type === "port") {
                     bean.ping = await tcping(this.hostname, this.port);
                     bean.msg = ""
@@ -136,14 +159,29 @@ class Monitor extends BeanModel {
                     bean.status = UP;
                 }
 
+                if (this.isUpsideDown()) {
+                    bean.status = flipStatus(bean.status);
+
+                    if (bean.status === DOWN) {
+                        throw new Error("Flip UP to DOWN");
+                    }
+                }
+
                 retries = 0;
 
             } catch (error) {
-                if ((this.maxretries > 0) && (retries < this.maxretries)) {
+
+                bean.msg = error.message;
+
+                // If UP come in here, it must be upside down mode
+                // Just reset the retries
+                if (this.isUpsideDown() && bean.status === UP) {
+                    retries = 0;
+
+                } else if ((this.maxretries > 0) && (retries < this.maxretries)) {
                     retries++;
                     bean.status = PENDING;
                 }
-                bean.msg = error.message;
             }
 
             // * ? -> ANY STATUS = important [isFirstBeat]
@@ -168,8 +206,8 @@ class Monitor extends BeanModel {
 
                 // Send only if the first beat is DOWN
                 if (!isFirstBeat || bean.status === DOWN) {
-                    let notificationList = await R.getAll(`SELECT notification.* FROM notification, monitor_notification WHERE monitor_id = ? AND monitor_notification.notification_id = notification.id `, [
-                        this.id
+                    let notificationList = await R.getAll("SELECT notification.* FROM notification, monitor_notification WHERE monitor_id = ? AND monitor_notification.notification_id = notification.id ", [
+                        this.id,
                     ])
 
                     let text;
@@ -181,7 +219,7 @@ class Monitor extends BeanModel {
 
                     let msg = `[${this.name}] [${text}] ${bean.msg}`;
 
-                    for(let notification of notificationList) {
+                    for (let notification of notificationList) {
                         try {
                             await Notification.send(JSON.parse(notification.config), msg, await this.toJSON(), bean.toJSON())
                         } catch (e) {
@@ -193,7 +231,6 @@ class Monitor extends BeanModel {
             } else {
                 bean.important = false;
             }
-
 
             if (bean.status === UP) {
                 console.info(`Monitor #${this.id} '${this.name}': Successful Response: ${bean.ping} ms | Interval: ${this.interval} seconds | Type: ${this.type}`)
@@ -221,9 +258,12 @@ class Monitor extends BeanModel {
         clearInterval(this.heartbeatInterval)
     }
 
-    // Helper Method:
-    // returns URL object for further usage
-    // returns null if url is invalid
+    /**
+     * Helper Method:
+     * returns URL object for further usage
+     * returns null if url is invalid
+     * @returns {null|URL}
+     */
     getUrl() {
         try {
             return new URL(this.url);
@@ -232,10 +272,14 @@ class Monitor extends BeanModel {
         }
     }
 
-    // Store TLS info to database
+    /**
+     * Store TLS info to database
+     * @param checkCertificateResult
+     * @returns {Promise<void>}
+     */
     async updateTlsInfo(checkCertificateResult) {
         let tls_info_bean = await R.findOne("monitor_tls_info", "monitor_id = ?", [
-            this.id
+            this.id,
         ]);
         if (tls_info_bean == null) {
             tls_info_bean = R.dispense("monitor_tls_info");
@@ -264,15 +308,15 @@ class Monitor extends BeanModel {
             AND ping IS NOT NULL
             AND monitor_id = ? `, [
             -duration,
-            monitorID
+            monitorID,
         ]));
 
         io.to(userID).emit("avgPing", monitorID, avgPing);
     }
 
     static async sendCertInfo(io, monitorID, userID) {
-         let tls_info = await R.findOne("monitor_tls_info", "monitor_id = ?", [
-            monitorID
+        let tls_info = await R.findOne("monitor_tls_info", "monitor_id = ?", [
+            monitorID,
         ]);
         if (tls_info != null) {
             io.to(userID).emit("certInfo", monitorID, tls_info.info_json);
@@ -294,7 +338,7 @@ class Monitor extends BeanModel {
             WHERE time > DATETIME('now', ? || ' hours')
             AND monitor_id = ? `, [
             -duration,
-            monitorID
+            monitorID,
         ]);
 
         let downtime = 0;
@@ -318,7 +362,7 @@ class Monitor extends BeanModel {
                 // Handle if heartbeat duration longer than the target duration
                 // e.g.   Heartbeat duration = 28hrs, but target duration = 24hrs
                 if (value > sec) {
-                    let trim = dayjs.utc().diff(dayjs(time), 'second');
+                    let trim = dayjs.utc().diff(dayjs(time), "second");
                     value = sec - trim;
 
                     if (value < 0) {
@@ -338,8 +382,6 @@ class Monitor extends BeanModel {
                 uptime = 0;
             }
         }
-
-
 
         io.to(userID).emit("uptime", monitorID, duration, uptime);
     }
