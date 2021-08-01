@@ -37,6 +37,7 @@ RUN rm package-lock.json
 
 COPY --from=build /app/extra /app/extra
 COPY --from=build /app/server /app/server
+COPY --from=build /app/src /app/src
 COPY --from=build /app/dist /app/dist
 
 CMD ["npm", "run", "start-server"]
