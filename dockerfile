@@ -20,8 +20,8 @@ RUN apk add --no-cache --virtual .build-deps make g++ python3 python3-dev && \
 # Runtime Error => ModuleNotFoundError: No module named 'six' => pip3 install six
 # Runtime Error 2 => ModuleNotFoundError: No module named 'six' => apk add py3-six
 ENV CRYPTOGRAPHY_DONT_BUILD_RUST=1
-RUN apk add --no-cache py3-six
-RUN apk add --no-cache --virtual .build-deps python3 py3-pip cargo libffi-dev musl-dev openssl-dev python3-dev && \
+RUN apk add --no-cache py3-six cargo
+RUN apk add --no-cache --virtual .build-deps python3 py3-pip libffi-dev musl-dev openssl-dev python3-dev && \
             pip3 install apprise && \
             pip3 cache purge && \
             rm -rf /root/.cache && \
