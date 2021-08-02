@@ -1,6 +1,7 @@
 const tcpp = require("tcp-ping");
 const Ping = require("./ping-lite");
 const { R } = require("redbean-node");
+const { debug } = require("../src/util");
 
 exports.tcping = function (hostname, port) {
     return new Promise((resolve, reject) => {
@@ -45,7 +46,9 @@ exports.setting = async function (key) {
     ]);
 
     try {
-        return JSON.parse(value);
+        const v = JSON.parse(value);
+        debug(`Get Setting: ${key}: ${v}`)
+        return v;
     } catch (e) {
         return value;
     }
