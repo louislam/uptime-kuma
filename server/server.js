@@ -1,24 +1,46 @@
-console.log("Welcome to Uptime Kuma ")
-console.log("Importing libraries")
-const express = require('express');
-const http = require('http');
-const { Server } = require("socket.io");
-const dayjs = require("dayjs");
-const {R} = require("redbean-node");
-const passwordHash = require('./password-hash');
-const jwt = require('jsonwebtoken');
-const Monitor = require("./model/monitor");
+console.log("Welcome to Uptime Kuma")
+
+const { sleep, debug } = require("../src/util");
+
+console.log("Importing Node libraries")
 const fs = require("fs");
-const {getSettings} = require("./util-server");
-const {Notification} = require("./notification")
-const gracefulShutdown = require('http-graceful-shutdown');
+const http = require("http");
+
+console.log("Importing 3rd-party libraries")
+debug("Importing express");
+const express = require("express");
+debug("Importing socket.io");
+const { Server } = require("socket.io");
+debug("Importing dayjs");
+const dayjs = require("dayjs");
+debug("Importing redbean-node");
+const { R } = require("redbean-node");
+debug("Importing jsonwebtoken");
+const jwt = require("jsonwebtoken");
+debug("Importing http-graceful-shutdown");
+const gracefulShutdown = require("http-graceful-shutdown");
+debug("Importing prometheus-api-metrics");
+const prometheusAPIMetrics = require("prometheus-api-metrics");
+
+console.log("Importing this project modules");
+debug("Importing Monitor");
+const Monitor = require("./model/monitor");
+debug("Importing Settings");
+const { getSettings, setSettings, setting } = require("./util-server");
+debug("Importing Notification");
+const { Notification } = require("./notification");
+debug("Importing Database");
 const Database = require("./database");
-const {sleep} = require("./util");
-const args = require('args-parser')(process.argv);
-const apiMetrics = require('prometheus-api-metrics');
-const version = require('../package.json').version;
-const hostname = args.host || "0.0.0.0"
-const port = args.port || 3001
+
+const { basicAuth } = require("./auth");
+const { login } = require("./auth");
+const passwordHash = require("./password-hash");
+
+const args = require("args-parser")(process.argv);
+
+const version = require("../package.json").version;
+const hostname = process.env.HOST || args.host || "0.0.0.0"
+const port = parseInt(process.env.PORT || args.port || 3001);
 
 console.info("Version: " + version)
 
@@ -52,21 +74,34 @@ let monitorList = {};
  */
 let needSetup = false;
 
+/**
+ * Cache Index HTML
+ * @type {string}
+ */
+let indexHTML = fs.readFileSync("./dist/index.html").toString();
+
 (async () => {
     await initDatabase();
 
     console.log("Adding route")
-    app.use('/', express.static("dist"));
-    app.use(apiMetrics())
 
+    // Normal Router here
 
-    app.get('*', function(request, response, next) {
-        response.sendFile(process.cwd() + '/dist/index.html');
+    app.use("/", express.static("dist"));
+
+    // Basic Auth Router here
+
+    // Prometheus API metrics  /metrics
+    // With Basic Auth using the first user's username/password
+    app.get("/metrics", basicAuth, prometheusAPIMetrics())
+
+    // Universal Route Handler, must be at the end
+    app.get("*", function(request, response, next) {
+        response.end(indexHTML)
     });
 
-
     console.log("Adding socket handler")
-    io.on('connection', async (socket) => {
+    io.on("connection", async (socket) => {
 
         socket.emit("info", {
             version,
@@ -79,11 +114,18 @@ let needSetup = false;
             socket.emit("setup")
         }
 
-        socket.on('disconnect', () => {
+        if (await setting("disableAuth")) {
+            console.log("Disabled Auth: auto login to admin")
+            await afterLogin(socket, await R.findOne("user", " username = 'admin' "))
+        }
+
+        socket.on("disconnect", () => {
             totalClient--;
         });
 
+        // ***************************
         // Public API
+        // ***************************
 
         socket.on("loginByToken", async (token, callback) => {
 
@@ -93,7 +135,7 @@ let needSetup = false;
                 console.log("Username from JWT: " + decoded.username)
 
                 let user = await R.findOne("user", " username = ? AND active = 1 ", [
-                    decoded.username
+                    decoded.username,
                 ])
 
                 if (user) {
@@ -105,13 +147,13 @@ let needSetup = false;
                 } else {
                     callback({
                         ok: false,
-                        msg: "The user is inactive or deleted."
+                        msg: "The user is inactive or deleted.",
                     })
                 }
             } catch (error) {
                 callback({
                     ok: false,
-                    msg: "Invalid token."
+                    msg: "Invalid token.",
                 })
             }
 
@@ -120,32 +162,21 @@ let needSetup = false;
         socket.on("login", async (data, callback) => {
             console.log("Login")
 
-            let user = await R.findOne("user", " username = ? AND active = 1 ", [
-                data.username
-            ])
+            let user = await login(data.username, data.password)
 
-            if (user && passwordHash.verify(data.password, user.password)) {
-
-                // Upgrade the hash to bcrypt
-                if (passwordHash.needRehash(user.password)) {
-                    await R.exec("UPDATE `user` SET password = ? WHERE id = ? ", [
-                        passwordHash.generate(data.password),
-                        user.id
-                    ]);
-                }
-
+            if (user) {
                 await afterLogin(socket, user)
 
                 callback({
                     ok: true,
                     token: jwt.sign({
-                        username: data.username
-                    }, jwtSecret)
+                        username: data.username,
+                    }, jwtSecret),
                 })
             } else {
                 callback({
                     ok: false,
-                    msg: "Incorrect username or password."
+                    msg: "Incorrect username or password.",
                 })
             }
 
@@ -176,19 +207,22 @@ let needSetup = false;
 
                 callback({
                     ok: true,
-                    msg: "Added Successfully."
+                    msg: "Added Successfully.",
                 });
 
             } catch (e) {
                 callback({
                     ok: false,
-                    msg: e.message
+                    msg: e.message,
                 });
             }
         });
 
+        // ***************************
         // Auth Only API
+        // ***************************
 
+        // Add a new monitor
         socket.on("add", async (monitor, callback) => {
             try {
                 checkLogin(socket)
@@ -209,17 +243,18 @@ let needSetup = false;
                 callback({
                     ok: true,
                     msg: "Added Successfully.",
-                    monitorID: bean.id
+                    monitorID: bean.id,
                 });
 
             } catch (e) {
                 callback({
                     ok: false,
-                    msg: e.message
+                    msg: e.message,
                 });
             }
         });
 
+        // Edit a monitor
         socket.on("editMonitor", async (monitor, callback) => {
             try {
                 checkLogin(socket)
@@ -238,6 +273,8 @@ let needSetup = false;
                 bean.maxretries = monitor.maxretries;
                 bean.port = monitor.port;
                 bean.keyword = monitor.keyword;
+                bean.ignoreTls = monitor.ignoreTls;
+                bean.upsideDown = monitor.upsideDown;
 
                 await R.store(bean)
 
@@ -252,14 +289,14 @@ let needSetup = false;
                 callback({
                     ok: true,
                     msg: "Saved.",
-                    monitorID: bean.id
+                    monitorID: bean.id,
                 });
 
             } catch (e) {
                 console.error(e)
                 callback({
                     ok: false,
-                    msg: e.message
+                    msg: e.message,
                 });
             }
         });
@@ -283,7 +320,7 @@ let needSetup = false;
             } catch (e) {
                 callback({
                     ok: false,
-                    msg: e.message
+                    msg: e.message,
                 });
             }
         });
@@ -297,13 +334,13 @@ let needSetup = false;
 
                 callback({
                     ok: true,
-                    msg: "Resumed Successfully."
+                    msg: "Resumed Successfully.",
                 });
 
             } catch (e) {
                 callback({
                     ok: false,
-                    msg: e.message
+                    msg: e.message,
                 });
             }
         });
@@ -316,14 +353,13 @@ let needSetup = false;
 
                 callback({
                     ok: true,
-                    msg: "Paused Successfully."
+                    msg: "Paused Successfully.",
                 });
-
 
             } catch (e) {
                 callback({
                     ok: false,
-                    msg: e.message
+                    msg: e.message,
                 });
             }
         });
@@ -341,12 +377,12 @@ let needSetup = false;
 
                 await R.exec("DELETE FROM monitor WHERE id = ? AND user_id = ? ", [
                     monitorID,
-                    socket.userID
+                    socket.userID,
                 ]);
 
                 callback({
                     ok: true,
-                    msg: "Deleted Successfully."
+                    msg: "Deleted Successfully.",
                 });
 
                 await sendMonitorList(socket);
@@ -354,7 +390,7 @@ let needSetup = false;
             } catch (e) {
                 callback({
                     ok: false,
-                    msg: e.message
+                    msg: e.message,
                 });
             }
         });
@@ -368,19 +404,19 @@ let needSetup = false;
                 }
 
                 let user = await R.findOne("user", " id = ? AND active = 1 ", [
-                    socket.userID
+                    socket.userID,
                 ])
 
                 if (user && passwordHash.verify(password.currentPassword, user.password)) {
 
                     await R.exec("UPDATE `user` SET password = ? WHERE id = ? ", [
                         passwordHash.generate(password.newPassword),
-                        socket.userID
+                        socket.userID,
                     ]);
 
                     callback({
                         ok: true,
-                        msg: "Password has been updated successfully."
+                        msg: "Password has been updated successfully.",
                     })
                 } else {
                     throw new Error("Incorrect current password")
@@ -389,25 +425,43 @@ let needSetup = false;
             } catch (e) {
                 callback({
                     ok: false,
-                    msg: e.message
+                    msg: e.message,
                 });
             }
         });
 
-        socket.on("getSettings", async (type, callback) => {
+        socket.on("getSettings", async (callback) => {
             try {
                 checkLogin(socket)
 
-
                 callback({
                     ok: true,
-                    data: await getSettings(type),
+                    data: await getSettings("general"),
                 });
 
             } catch (e) {
                 callback({
                     ok: false,
-                    msg: e.message
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("setSettings", async (data, callback) => {
+            try {
+                checkLogin(socket)
+
+                await setSettings("general", data)
+
+                callback({
+                    ok: true,
+                    msg: "Saved"
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
                 });
             }
         });
@@ -428,7 +482,7 @@ let needSetup = false;
             } catch (e) {
                 callback({
                     ok: false,
-                    msg: e.message
+                    msg: e.message,
                 });
             }
         });
@@ -448,7 +502,7 @@ let needSetup = false;
             } catch (e) {
                 callback({
                     ok: false,
-                    msg: e.message
+                    msg: e.message,
                 });
             }
         });
@@ -461,7 +515,7 @@ let needSetup = false;
 
                 callback({
                     ok: true,
-                    msg
+                    msg,
                 });
 
             } catch (e) {
@@ -469,7 +523,7 @@ let needSetup = false;
 
                 callback({
                     ok: false,
-                    msg: e.message
+                    msg: e.message,
                 });
             }
         });
@@ -485,7 +539,7 @@ let needSetup = false;
 
 async function updateMonitorNotification(monitorID, notificationIDList) {
     R.exec("DELETE FROM monitor_notification WHERE monitor_id = ? ", [
-        monitorID
+        monitorID,
     ])
 
     for (let notificationID in notificationIDList) {
@@ -518,7 +572,7 @@ async function sendMonitorList(socket) {
 async function sendNotificationList(socket) {
     let result = [];
     let list = await R.find("notification", " user_id = ? ", [
-        socket.userID
+        socket.userID,
     ]);
 
     for (let bean of list) {
@@ -536,19 +590,21 @@ async function afterLogin(socket, user) {
     let monitorList = await sendMonitorList(socket)
 
     for (let monitorID in monitorList) {
-        await sendHeartbeatList(socket, monitorID);
-        await sendImportantHeartbeatList(socket, monitorID);
-        await Monitor.sendStats(io, monitorID, user.id)
+        sendHeartbeatList(socket, monitorID);
+        sendImportantHeartbeatList(socket, monitorID);
+        Monitor.sendStats(io, monitorID, user.id)
     }
 
-    await sendNotificationList(socket)
+    sendNotificationList(socket)
+
+    socket.emit("autoLogin")
 }
 
 async function getMonitorJSONList(userID) {
     let result = {};
 
     let monitorList = await R.find("monitor", " user_id = ? ", [
-        userID
+        userID,
     ])
 
     for (let monitor of monitorList) {
@@ -571,8 +627,8 @@ async function initDatabase() {
     }
 
     console.log("Connecting to Database")
-    R.setup('sqlite', {
-        filename: Database.path
+    R.setup("sqlite", {
+        filename: Database.path,
     });
     console.log("Connected")
 
@@ -584,7 +640,7 @@ async function initDatabase() {
     await R.autoloadModels("./server/model");
 
     let jwtSecretBean = await R.findOne("setting", " `key` = ? ", [
-        "jwtSecret"
+        "jwtSecret",
     ]);
 
     if (! jwtSecretBean) {
@@ -615,11 +671,11 @@ async function startMonitor(userID, monitorID) {
 
     await R.exec("UPDATE monitor SET active = 1 WHERE id = ? AND user_id = ? ", [
         monitorID,
-        userID
+        userID,
     ]);
 
     let monitor = await R.findOne("monitor", " id = ? ", [
-        monitorID
+        monitorID,
     ])
 
     if (monitor.id in monitorList) {
@@ -641,7 +697,7 @@ async function pauseMonitor(userID, monitorID) {
 
     await R.exec("UPDATE monitor SET active = 0 WHERE id = ? AND user_id = ? ", [
         monitorID,
-        userID
+        userID,
     ]);
 
     if (monitorID in monitorList) {
@@ -670,13 +726,13 @@ async function sendHeartbeatList(socket, monitorID) {
         ORDER BY time DESC
         LIMIT 100
     `, [
-        monitorID
+        monitorID,
     ])
 
     let result = [];
 
     for (let bean of list) {
-       result.unshift(bean.toJSON())
+        result.unshift(bean.toJSON())
     }
 
     socket.emit("heartbeatList", monitorID, result)
@@ -689,37 +745,15 @@ async function sendImportantHeartbeatList(socket, monitorID) {
         ORDER BY time DESC
         LIMIT 500
     `, [
-        monitorID
+        monitorID,
     ])
 
     socket.emit("importantHeartbeatList", monitorID, list)
 }
 
-
-
-const startGracefulShutdown = async () => {
-    console.log('Shutdown requested');
-
-
-    await (new Promise((resolve) => {
-        server.close(async function () {
-            console.log('Stopped Express.');
-            process.exit(0)
-            setTimeout(async () =>{
-                await R.close();
-                console.log("Stopped DB")
-
-                resolve();
-            }, 5000)
-
-        });
-    }));
-
-
-}
-
 async function shutdownFunction(signal) {
-    console.log('Called signal: ' + signal);
+    console.log("Shutdown requested");
+    console.log("Called signal: " + signal);
 
     console.log("Stopping all monitors")
     for (let id in monitorList) {
@@ -728,17 +762,18 @@ async function shutdownFunction(signal) {
     }
     await sleep(2000);
     await Database.close();
+    console.log("Stopped DB")
 }
 
 function finalFunction() {
-    console.log('Graceful Shutdown')
+    console.log("Graceful Shutdown Done")
 }
 
 gracefulShutdown(server, {
-    signals: 'SIGINT SIGTERM',
+    signals: "SIGINT SIGTERM",
     timeout: 30000,                   // timeout: 30 secs
     development: false,               // not in dev mode
     forceExit: true,                  // triggers process.exit() at the end of shutdown process
     onShutdown: shutdownFunction,     // shutdown function (async) - e.g. for cleanup DB, ...
-    finally: finalFunction            // finally function (sync) - e.g. for logging
+    finally: finalFunction,            // finally function (sync) - e.g. for logging
 });

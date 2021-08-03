@@ -1,5 +1,5 @@
-const passwordHashOld = require('password-hash');
-const bcrypt = require('bcrypt');
+const passwordHashOld = require("password-hash");
+const bcrypt = require("bcrypt");
 const saltRounds = 10;
 
 exports.generate = function (password) {
@@ -9,9 +9,9 @@ exports.generate = function (password) {
 exports.verify = function (password, hash) {
     if (isSHA1(hash)) {
         return passwordHashOld.verify(password, hash)
-    } else {
-        return bcrypt.compareSync(password, hash);
     }
+
+    return bcrypt.compareSync(password, hash);
 }
 
 function isSHA1(hash) {
