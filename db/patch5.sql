@@ -36,7 +36,9 @@ insert into
 		hostname,
 		port,
 		keyword,
-		maxretries
+		maxretries,
+		ignore_tls,
+		upside_down
 	)
 select
 	id,
@@ -50,7 +52,9 @@ select
 	hostname,
 	port,
 	keyword,
-	maxretries
+	maxretries,
+	ignore_tls,
+	upside_down
 from
 	monitor;
 
