@@ -168,4 +168,8 @@ export default {
     }
 }
 
+.active .hp-bar-big .beat.empty{
+    background-color: #848484;
+}
+
 </style>
