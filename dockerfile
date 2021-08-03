@@ -14,7 +14,6 @@ RUN apk add --no-cache --virtual .build-deps make g++ python3 python3-dev && \
 RUN apk add --no-cache python3 py3-cryptography py3-pip py3-six py3-yaml py3-click py3-markdown py3-requests py3-requests-oauthlib
 RUN pip3 --no-cache-dir install apprise && \
             rm -rf /root/.cache
-RUN apprise --version
 
 # New things add here
 
