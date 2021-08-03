@@ -56,7 +56,7 @@
 
                     <div class="mb-3">
                         <label for="interval" class="form-label">Heartbeat Interval (Every {{ monitor.interval }} seconds)</label>
-                        <input id="interval" v-model="monitor.interval" type="number" class="form-control" required min="20" step="1">
+                        <input id="interval" v-model="monitor.interval" type="number" class="form-control" required min="1" step="1">
                     </div>
 
                     <div class="mb-3">
