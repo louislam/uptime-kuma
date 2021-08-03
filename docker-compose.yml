@@ -1,8 +1,8 @@
 version: "3.4"
 
 services:
-    uptimekuma:
-        image: uptimekuma
+    uptime:
+        image: philippdormann/uptime
         build: .
         environment:
             NODE_ENV: production
