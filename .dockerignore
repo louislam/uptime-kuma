@@ -16,7 +16,6 @@ README.md
 .stylelint*
 /.github
 package-lock.json
-yarn.lock
 app.json
 
 ### .gitignore content (commented rules are duplicated)
