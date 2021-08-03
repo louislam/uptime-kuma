@@ -137,6 +137,24 @@ class Notification {
                 throwGeneralAxiosError(error)
             }
 
+        } else if (notification.type === "pushy") {
+            try {
+                await axios.post(`https://api.pushy.me/push?api_key=${notification.pushyAPIKey}`, {
+                    "to": notification.pushyToken,
+                    "data": {
+                        "message": "Uptime-Kuma"
+                    },
+                    "notification": {
+                        "body": msg,
+                        "badge": 1,
+                        "sound": "ping.aiff"
+                    }
+                })
+                return true;
+            } catch (error) {
+                console.log(error)
+                return false;
+            }
         } else if (notification.type === "slack") {
             try {
                 if (heartbeatJSON == null) {
