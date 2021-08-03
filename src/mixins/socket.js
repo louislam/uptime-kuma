@@ -58,7 +58,8 @@ export default {
 
         socket.on("autoLogin", (monitorID, data) => {
             this.loggedIn = true;
-            this.storage().token = "autoLogin"
+            this.storage().token = "autoLogin";
+            this.allowLoginDialog = false;
         });
 
         socket.on("monitorList", (data) => {
@@ -166,6 +167,16 @@ export default {
             if (token) {
                 if (token !== "autoLogin") {
                     this.loginByToken(token)
+                } else {
+
+                    // Timeout if it is not actually auto login
+                    setTimeout(() => {
+                        if (! this.loggedIn) {
+                            this.allowLoginDialog = true;
+                            this.$root.storage().removeItem("token");
+                        }
+                    }, 5000);
+
                 }
             } else {
                 this.allowLoginDialog = true;

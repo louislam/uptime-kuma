@@ -194,7 +194,7 @@ export default {
         enableAuth() {
             this.settings.disableAuth = false;
             this.saveSettings();
-            this.$root.storage().token = null;
+            this.$root.storage().removeItem("token");
         },
 
     },
