@@ -1,8 +1,32 @@
-$primary: #5CDD8B;
-$danger: #DC3545;
-$warning: #f8a306;
+$primary: #5cdd8b;
+$danger: #dc3545;
+$warning: #dca235;
 $link-color: #111;
-$border-radius: 50rem;
+$border-radius: .25rem;
 
 $highlight: #7ce8a4;
 $highlight-white: #e7faec;
+
+:root {
+    color-scheme: light dark;
+    // 
+    --page-background: #fafafa;
+    --background-secondary: #d0d3d5;
+    --background-4: #d0d3d5;
+    --background-ternary: #8e8e8e;
+    --background-sidebar-active: #e4e4e4;
+    --background-navbar: #FFF;
+    --main-font-color: #212529;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --page-background: #0a0a0a;
+        --background-secondary: #656565;
+        --background-4: #313131;
+        --background-ternary: #a7a7a7;
+        --background-sidebar-active: #777777;
+        --background-navbar: #333333;
+        --main-font-color: #e4e4e4;
+    }
+}

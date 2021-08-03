@@ -205,4 +205,8 @@ export default {
     .shadow-box {
         padding: 20px;
     }
+    .list-group-item{
+        background-color: var(--background-4);
+        color: var(--main-font-color);
+    }
 </style>

@@ -149,7 +149,7 @@ export default {
         border-radius: 50rem;
 
         &.empty {
-            background-color: aliceblue;
+            background-color: #d0d3d5;
         }
 
         &.down {
@@ -166,6 +166,10 @@ export default {
             transform: scale(var(--hover-scale));
         }
     }
+}
+
+.hp-bar-big .beat.empty{
+    background-color: #848484;
 }
 
 </style>
