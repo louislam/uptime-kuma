@@ -46,6 +46,6 @@ export default {
 
 <style scoped>
     span {
-        width: 54px;
+        width: 64px;
     }
 </style>
