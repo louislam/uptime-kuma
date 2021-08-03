@@ -114,11 +114,6 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
             socket.emit("setup")
         }
 
-        if (await setting("disableAuth")) {
-            console.log("Disabled Auth: auto login to admin")
-            await afterLogin(socket, await R.findOne("user", " username = 'admin' "))
-        }
-
         socket.on("disconnect", () => {
             totalClient--;
         });
@@ -139,7 +134,11 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                 ])
 
                 if (user) {
+                    debug("afterLogin")
+
                     await afterLogin(socket, user)
+
+                    debug("afterLogin ok")
 
                     callback({
                         ok: true,
@@ -536,6 +535,18 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                 callback(false);
             }
         });
+
+        debug("added all socket handlers")
+
+        debug("check auto login")
+        if (await setting("disableAuth")) {
+            console.log("Disabled Auth: auto login to admin")
+            await afterLogin(socket, await R.findOne("user"))
+            socket.emit("autoLogin")
+        } else {
+            debug("need auth")
+        }
+
     });
 
     console.log("Init")
@@ -605,8 +616,6 @@ async function afterLogin(socket, user) {
     }
 
     sendNotificationList(socket)
-
-    socket.emit("autoLogin")
 }
 
 async function getMonitorJSONList(userID) {
