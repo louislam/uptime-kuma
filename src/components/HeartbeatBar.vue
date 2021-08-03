@@ -149,7 +149,7 @@ export default {
         border-radius: 50rem;
 
         &.empty {
-            background-color: aliceblue;
+            background-color: #d0d3d5;
         }
 
         &.down {
