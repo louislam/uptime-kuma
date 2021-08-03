@@ -2,7 +2,14 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [v1.4.1](https://github.com/philippdormann/uptime-kuma/compare/v1.4.0...v1.4.1)
+
+- ⏫ dependency bumps [`6863f30`](https://github.com/philippdormann/uptime-kuma/commit/6863f30c5ed5c28fd1e834a9b132d2ebb83310ff)
+- fix: don't dockerignore yarn.lock [`68f5db3`](https://github.com/philippdormann/uptime-kuma/commit/68f5db3ebb2e23a0d2a126efd3bf7473adb50d59)
+
 #### [v1.4.0](https://github.com/philippdormann/uptime-kuma/compare/v1.3.0...v1.4.0)
+
+> 3 August 2021
 
 - Fix: Increase width of status pill [`#145`](https://github.com/philippdormann/uptime-kuma/pull/145)
 - Create CODE_OF_CONDUCT.md [`#137`](https://github.com/philippdormann/uptime-kuma/pull/137)
@@ -14,6 +21,7 @@ All notable changes to this project will be documented in this file. Dates are d
 - Autofix on save [`9648d70`](https://github.com/philippdormann/uptime-kuma/commit/9648d700d7e6c8a8754ae7cbc0a4788354fa28f9)
 - fix icon for "Resume" [`4b86c84`](https://github.com/philippdormann/uptime-kuma/commit/4b86c84c369f9306aded64e6c155ba84a44c9002)
 - add fields to EditMonitor.vue [`71af902`](https://github.com/philippdormann/uptime-kuma/commit/71af902a4e0fac82563258aff652bc70d977ecf6)
+- 🚀RELEASE v1.4.0 [`ac0fd13`](https://github.com/philippdormann/uptime-kuma/commit/ac0fd1352df5338a4397059c3179be264f93e788)
 - Add Basic Auth for /metrics [`209fa83`](https://github.com/philippdormann/uptime-kuma/commit/209fa83cff4b35a955ba202c5079fdb9bad1cf57)
 - add util.ts for sharing common functions between frontend and backend [`081abcb`](https://github.com/philippdormann/uptime-kuma/commit/081abcb6a146aab00a7e4e619c69f6903c0c67a4)
 - add setting for disable auth [`c6a66fa`](https://github.com/philippdormann/uptime-kuma/commit/c6a66fad79060a16e38d7dfff2430c17346be5c2)
