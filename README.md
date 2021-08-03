@@ -93,7 +93,7 @@ PS: For every new release, it takes some time to build the docker image, please 
 
 ```bash
 git fetch --all
-git checkout 1.0.7 --force
+git checkout 1.0.8 --force
 npm install
 npm run build
 pm2 restart uptime-kuma
