@@ -1,6 +1,6 @@
 {
     "name": "uptime-kuma",
-    "version": "1.3.0",
+    "version": "1.4.0",
     "scripts": {
         "dev": "vite --host",
         "start-server": "node server/server.js",
