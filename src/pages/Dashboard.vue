@@ -128,10 +128,6 @@ export default {
     }
 }
 
-.badge {
-    min-width: 58px;
-}
-
 .small-padding {
     padding-left: 5px !important;
     padding-right: 5px !important;

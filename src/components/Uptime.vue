@@ -61,3 +61,9 @@ export default {
     },
 }
 </script>
+
+<style>
+.badge {
+    min-width: 62px;
+}
+</style>
