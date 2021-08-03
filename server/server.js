@@ -593,15 +593,15 @@ async function sendNotificationList(socket) {
 }
 
 async function afterLogin(socket, user) {
-    socket.userID = user.id;
-    socket.join(user.id)
+    socket.userID = 0;
+    socket.join(0)
 
     let monitorList = await sendMonitorList(socket)
 
     for (let monitorID in monitorList) {
         sendHeartbeatList(socket, monitorID);
         sendImportantHeartbeatList(socket, monitorID);
-        Monitor.sendStats(io, monitorID, user.id)
+        Monitor.sendStats(io, monitorID, 0)
     }
 
     sendNotificationList(socket)
