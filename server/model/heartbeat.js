@@ -1,17 +1,15 @@
 const dayjs = require("dayjs");
-const utc = require('dayjs/plugin/utc')
-var timezone = require('dayjs/plugin/timezone')
+const utc = require("dayjs/plugin/utc")
+let timezone = require("dayjs/plugin/timezone")
 dayjs.extend(utc)
 dayjs.extend(timezone)
-const axios = require("axios");
-const {R} = require("redbean-node");
-const {BeanModel} = require("redbean-node/dist/bean-model");
-
+const { BeanModel } = require("redbean-node/dist/bean-model");
 
 /**
  * status:
  *      0 = DOWN
  *      1 = UP
+ *      2 = PENDING
  */
 class Heartbeat extends BeanModel {
 

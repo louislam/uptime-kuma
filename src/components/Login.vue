@@ -2,31 +2,32 @@
     <div class="form-container">
         <div class="form">
             <form @submit.prevent="submit">
-
-                <h1 class="h3 mb-3 fw-normal"></h1>
+                <h1 class="h3 mb-3 fw-normal" />
 
                 <div class="form-floating">
-                    <input type="text" class="form-control" id="floatingInput" placeholder="Username" v-model="username">
+                    <input id="floatingInput" v-model="username" type="text" class="form-control" placeholder="Username">
                     <label for="floatingInput">Username</label>
                 </div>
 
                 <div class="form-floating mt-3">
-                    <input type="password" class="form-control" id="floatingPassword" placeholder="Password" v-model="password">
+                    <input id="floatingPassword" v-model="password" type="password" class="form-control" placeholder="Password">
                     <label for="floatingPassword">Password</label>
                 </div>
 
-                <div class="form-check mb-3 mt-3" >
-                    <label>
-                        <input type="checkbox" value="remember-me" class="form-check-input" id="remember" v-model="$root.remember">
+                <div class="form-check mb-3 mt-3 d-flex justify-content-center pe-4">
+                    <div class="form-check">
+                        <input id="remember" v-model="$root.remember" type="checkbox" value="remember-me" class="form-check-input">
 
                         <label class="form-check-label" for="remember">
                             Remember me
                         </label>
-                    </label>
+                    </div>
                 </div>
-                <button class="w-100 btn btn-primary" type="submit" :disabled="processing">Login</button>
+                <button class="w-100 btn btn-primary" type="submit" :disabled="processing">
+                    Login
+                </button>
 
-                <div class="alert alert-danger mt-3" role="alert" v-if="res && !res.ok">
+                <div v-if="res && !res.ok" class="alert alert-danger mt-3" role="alert">
                     {{ res.msg }}
                 </div>
             </form>
@@ -52,8 +53,8 @@ export default {
                 this.processing = false;
                 this.res = res;
             })
-        }
-    }
+        },
+    },
 }
 </script>
 

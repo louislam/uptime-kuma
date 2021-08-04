@@ -1,20 +1,28 @@
 <template>
     <h1> {{ monitor.name }}</h1>
     <p class="url">
-        <a :href="monitor.url" target="_blank" v-if="monitor.type === 'http' || monitor.type === 'keyword' ">{{ monitor.url }}</a>
+        <a v-if="monitor.type === 'http' || monitor.type === 'keyword' " :href="monitor.url" target="_blank">{{ monitor.url }}</a>
         <span v-if="monitor.type === 'port'">TCP Ping {{ monitor.hostname }}:{{ monitor.port }}</span>
         <span v-if="monitor.type === 'ping'">Ping: {{ monitor.hostname }}</span>
         <span v-if="monitor.type === 'keyword'">
-            <br />
+            <br>
             <span>Keyword:</span> <span style="color: black">{{ monitor.keyword }}</span>
         </span>
     </p>
 
     <div class="functions">
-        <button class="btn btn-light" @click="pauseDialog" v-if="monitor.active">Pause</button>
-        <button class="btn btn-primary" @click="resumeMonitor"  v-if="! monitor.active">Resume</button>
-        <router-link :to=" '/edit/' + monitor.id " class="btn btn-secondary">Edit</router-link>
-        <button class="btn btn-danger" @click="deleteDialog">Delete</button>
+        <button v-if="monitor.active" class="btn btn-light" @click="pauseDialog">
+            <font-awesome-icon icon="pause" /> Pause
+        </button>
+        <button v-if="! monitor.active" class="btn btn-primary" @click="resumeMonitor">
+            <font-awesome-icon icon="play" /> Resume
+        </button>
+        <router-link :to=" '/edit/' + monitor.id " class="btn btn-secondary">
+            <font-awesome-icon icon="edit" /> Edit
+        </router-link>
+        <button class="btn btn-danger" @click="deleteDialog">
+            <font-awesome-icon icon="trash" /> Delete
+        </button>
     </div>
 
     <div class="shadow-box">
@@ -37,7 +45,7 @@
                 <span class="num"><CountUp :value="ping" /></span>
             </div>
             <div class="col">
-                <h4>Avg.{{ pingTitle }}</h4>
+                <h4>Avg. {{ pingTitle }}</h4>
                 <p>(24-hour)</p>
                 <span class="num"><CountUp :value="avgPing" /></span>
             </div>
@@ -50,6 +58,56 @@
                 <h4>Uptime</h4>
                 <p>(30-day)</p>
                 <span class="num"><Uptime :monitor="monitor" type="720" /></span>
+            </div>
+
+            <div v-if="certInfo" class="col">
+                <h4>Cert Exp.</h4>
+                <p>(<Datetime :value="certInfo.validTo" date-only />)</p>
+                <span class="num">
+                    <a href="#" @click.prevent="toggleCertInfoBox = !toggleCertInfoBox">{{ certInfo.daysRemaining }} days</a>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div v-if="showCertInfoBox" class="shadow-box big-padding text-center">
+        <div class="row">
+            <div class="col">
+                <h4>Certificate Info</h4>
+                <table class="text-start">
+                    <tbody>
+                        <tr class="my-3">
+                            <td class="px-3">
+                                Valid:
+                            </td>
+                            <td>{{ certInfo.valid }}</td>
+                        </tr>
+                        <tr class="my-3">
+                            <td class="px-3">
+                                Valid To:
+                            </td>
+                            <td><Datetime :value="certInfo.validTo" /></td>
+                        </tr>
+                        <tr class="my-3">
+                            <td class="px-3">
+                                Days Remaining:
+                            </td>
+                            <td>{{ certInfo.daysRemaining }}</td>
+                        </tr>
+                        <tr class="my-3">
+                            <td class="px-3">
+                                Issuer:
+                            </td>
+                            <td>{{ certInfo.issuer }}</td>
+                        </tr>
+                        <tr class="my-3">
+                            <td class="px-3">
+                                Fingerprint:
+                            </td>
+                            <td>{{ certInfo.fingerprint }}</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -64,30 +122,40 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="beat in importantHeartBeatList">
+                <tr v-for="(beat, index) in displayedRecords" :key="index">
                     <td><Status :status="beat.status" /></td>
                     <td><Datetime :value="beat.time" /></td>
                     <td>{{ beat.msg }}</td>
                 </tr>
 
                 <tr v-if="importantHeartBeatList.length === 0">
-                    <td colspan="3">No important events</td>
+                    <td colspan="3">
+                        No important events
+                    </td>
                 </tr>
             </tbody>
         </table>
+
+        <div class="d-flex justify-content-center kuma_pagination">
+            <pagination
+                v-model="page"
+                :records="importantHeartBeatList.length"
+                :per-page="perPage"
+            />
+        </div>
     </div>
 
     <Confirm ref="confirmPause" @yes="pauseMonitor">
         Are you sure want to pause?
     </Confirm>
 
-    <Confirm ref="confirmDelete" btnStyle="btn-danger" @yes="deleteMonitor">
+    <Confirm ref="confirmDelete" btn-style="btn-danger" @yes="deleteMonitor">
         Are you sure want to delete this monitor?
     </Confirm>
 </template>
 
 <script>
-import { useToast } from 'vue-toastification'
+import { useToast } from "vue-toastification"
 const toast = useToast()
 import Confirm from "../components/Confirm.vue";
 import HeartbeatBar from "../components/HeartbeatBar.vue";
@@ -95,6 +163,7 @@ import Status from "../components/Status.vue";
 import Datetime from "../components/Datetime.vue";
 import CountUp from "../components/CountUp.vue";
 import Uptime from "../components/Uptime.vue";
+import Pagination from "v-pagination-3";
 
 export default {
     components: {
@@ -104,13 +173,14 @@ export default {
         HeartbeatBar,
         Confirm,
         Status,
-    },
-    mounted() {
-
+        Pagination,
     },
     data() {
         return {
-
+            page: 1,
+            perPage: 25,
+            heartBeatList: [],
+            toggleCertInfoBox: false,
         }
     },
     computed: {
@@ -118,9 +188,9 @@ export default {
         pingTitle() {
             if (this.monitor.type === "http") {
                 return "Response"
-            } else {
-                return "Ping"
             }
+
+            return "Ping"
         },
 
         monitor() {
@@ -131,42 +201,65 @@ export default {
         lastHeartBeat() {
             if (this.monitor.id in this.$root.lastHeartbeatList && this.$root.lastHeartbeatList[this.monitor.id]) {
                 return this.$root.lastHeartbeatList[this.monitor.id]
-            } else {
-                return { status: -1 }
+            }
+
+            return {
+                status: -1,
             }
         },
 
         ping() {
             if (this.lastHeartBeat.ping || this.lastHeartBeat.ping === 0) {
                 return this.lastHeartBeat.ping;
-            } else {
-                return "N/A"
             }
+
+            return "N/A"
         },
 
         avgPing() {
             if (this.$root.avgPingList[this.monitor.id] || this.$root.avgPingList[this.monitor.id] === 0) {
                 return this.$root.avgPingList[this.monitor.id];
-            } else {
-                return "N/A"
             }
+
+            return "N/A"
         },
 
         importantHeartBeatList() {
             if (this.$root.importantHeartbeatList[this.monitor.id]) {
+                this.heartBeatList = this.$root.importantHeartbeatList[this.monitor.id];
                 return this.$root.importantHeartbeatList[this.monitor.id]
-            } else {
-                return [];
             }
+
+            return [];
         },
 
         status() {
             if (this.$root.statusList[this.monitor.id]) {
                 return this.$root.statusList[this.monitor.id]
-            } else {
-                return { }
             }
-        }
+
+            return { }
+        },
+
+        certInfo() {
+            if (this.$root.certInfoList[this.monitor.id]) {
+                return this.$root.certInfoList[this.monitor.id]
+            }
+
+            return null
+        },
+
+        showCertInfoBox() {
+            return this.certInfo != null && this.toggleCertInfoBox;
+        },
+
+        displayedRecords() {
+            const startIndex = this.perPage * (this.page - 1);
+            const endIndex = startIndex + this.perPage;
+            return this.heartBeatList.slice(startIndex, endIndex);
+        },
+    },
+    mounted() {
 
     },
     methods: {
@@ -204,9 +297,9 @@ export default {
                     toast.error(res.msg);
                 }
             })
-        }
+        },
 
-    }
+    },
 }
 </script>
 
@@ -250,5 +343,13 @@ table {
 .stats p {
     font-size: 13px;
     color: #AAA;
+}
+
+.stats {
+    padding: 10px;
+
+    .col {
+        margin: 20px 0;
+    }
 }
 </style>

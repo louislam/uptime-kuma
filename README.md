@@ -1,5 +1,8 @@
 # Uptime Kuma
 
+<a target="_blank" href="https://github.com/louislam/uptime-kuma"><img src="https://img.shields.io/github/stars/louislam/uptime-kuma" /></a> <a target="_blank" href="https://hub.docker.com/r/louislam/uptime-kuma"><img src="https://img.shields.io/docker/pulls/louislam/uptime-kuma" /></a> <a target="_blank" href="https://hub.docker.com/r/louislam/uptime-kuma"><img src="https://img.shields.io/docker/v/louislam/uptime-kuma/latest?label=docker%20image%20ver." /></a> <a target="_blank" href="https://github.com/louislam/uptime-kuma"><img src="https://img.shields.io/github/last-commit/louislam/uptime-kuma" /></a>
+
+
 <div align="center" width="100%">
     <img src="./public/icon.svg" width="128" alt="" />
 </div>
@@ -12,18 +15,19 @@ It is a self-hosted monitoring tool like "Uptime Robot".
 
 * Monitoring uptime for HTTP(s) / TCP / Ping.
 * Fancy, Reactive, Fast UI/UX.
-* Notifications via Webhook, Telegram, Discord and email (SMTP). 
+* Notifications via Webhook, Telegram, Discord, Gotify, Slack, Pushover, Email (SMTP) and more by Apprise.
 * 20 seconds interval.
 
 # How to Use
 
-### Docker
+## Docker
+
 ```bash
 # Create a volume
 docker volume create uptime-kuma
 
 # Start the container
-docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name uptime-kuma louislam/uptime-kuma
+docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name uptime-kuma louislam/uptime-kuma:1
 ```
 
 Browse to http://localhost:3001 after started.
@@ -31,12 +35,12 @@ Browse to http://localhost:3001 after started.
 Change Port and Volume
 
 ```bash
-docker run -d --restart=always -p <YOUR_PORT>:3001 -v <YOUR_DIR OR VOLUME>:/app/data --name uptime-kuma louislam/uptime-kuma
+docker run -d --restart=always -p <YOUR_PORT>:3001 -v <YOUR_DIR OR VOLUME>:/app/data --name uptime-kuma louislam/uptime-kuma:1
 ```
 
-### Without Docker
+## Without Docker
 
-Required Tools: Node.js >= 14, git and pm2. 
+Required Tools: Node.js >= 14, git and pm2.
 
 ```bash
 git clone https://github.com/louislam/uptime-kuma.git
@@ -58,11 +62,24 @@ pm2 start npm --name uptime-kuma -- run start-server -- --port=80 --hostname=0.0
 
 Browse to http://localhost:3001 after started.
 
-### One-click Deploy to DigitalOcean
+
+## (Optional) One more step for Reverse Proxy
+
+This is optional for someone who want to do reverse proxy.
+
+Unlikely other web apps, Uptime Kuma is based on WebSocket. You need two more headers **"Upgrade"** and **"Connection"** in order to reverse proxy WebSocket.
+
+Please read wiki for more info:
+https://github.com/louislam/uptime-kuma/wiki/Reverse-Proxy
+
+## One-click Deploy
+
+<!---
+Abort. Heroku instance killed the server.js if idle, stupid.
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/louislam/uptime-kuma/tree/1.0.8)
+-->
 
 [![Deploy to DO](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/louislam/uptime-kuma/tree/master&refcode=e2c7eb658434)
-
-Choose Cheapest Plan is enough. (US$ 5)
 
 # How to Update
 
@@ -70,15 +87,22 @@ Choose Cheapest Plan is enough. (US$ 5)
 
 Re-pull the latest docker image and create another container with the same volume.
 
+PS: For every new release, it takes some time to build the docker image, please be patient if it is not available yet.
+
 ### Without Docker
 
 ```bash
 git fetch --all
-git checkout 1.0.3 --force
+git checkout 1.0.8 --force
 npm install
 npm run build
 pm2 restart uptime-kuma
 ```
+
+# What's Next?
+
+I will mark requests/issues to the next milestone.
+https://github.com/louislam/uptime-kuma/milestones
 
 # More Screenshots
 
@@ -93,13 +117,21 @@ Telegram Notification Sample:
 
 # Motivation
 
-* I was looking for a self-hosted monitoring tool like "Uptime Robot", but it is hard to find a suitable one. One of the close one is statping. Unfortunately, it is not stable and unmaintained. 
+* I was looking for a self-hosted monitoring tool like "Uptime Robot", but it is hard to find a suitable one. One of the close one is statping. Unfortunately, it is not stable and unmaintained.
 * Want to build a fancy UI.
 * Learn Vue 3 and vite.js.
-* Show the power of Bootstrap 5. 
+* Show the power of Bootstrap 5.
 * Try to use WebSocket with SPA instead of REST API.
 * Deploy my first Docker image to Docker Hub.
 
 
 If you love this project, please consider giving me a ⭐.
 
+
+# Contribute
+
+If you want to report a bug or request a new feature. Free feel to open a new issue.
+
+If you want to modify Uptime Kuma, this guideline maybe useful for you: https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md
+
+English proofreading is needed too, because my grammar is not that great sadly. Feel free to correct my grammar in this Readme, source code or wiki.
