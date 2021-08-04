@@ -96,8 +96,8 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
     app.get("/metrics", basicAuth, prometheusAPIMetrics())
 
     // Universal Route Handler, must be at the end
-    app.get("*", function(request, response, next) {
-        response.end(indexHTML)
+    app.get("*", function(_request, response) {
+        response.send(indexHTML);
     });
 
     console.log("Adding socket handler")
