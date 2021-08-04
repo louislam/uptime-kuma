@@ -52,11 +52,19 @@ if (! exists) {
 
 function commit(version) {
     let msg = "update to " + version;
-    child_process.spawnSync("git", ["commit", "-m", msg]);
+
+    let res = child_process.spawnSync("git", ["commit", "-m", msg, "-a"]);
+    let stdout = res.stdout.toString().trim();
+    console.log(stdout)
+
+    if (stdout.includes("no changes added to commit")) {
+        throw new Error("commit error")
+    }
 }
 
 function tag(version) {
-    child_process.spawnSync("git", ["tag", version]);
+    let res = child_process.spawnSync("git", ["tag", version]);
+    console.log(res.stdout.toString().trim())
 }
 
 function tagExists(version) {

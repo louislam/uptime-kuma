@@ -76,7 +76,7 @@ https://github.com/louislam/uptime-kuma/wiki/Reverse-Proxy
 
 <!---
 Abort. Heroku instance killed the server.js if idle, stupid.
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/louislam/uptime-kuma/tree/1.0.9)
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/louislam/uptime-kuma/tree/1.0.10)
 -->
 
 [![Deploy to DO](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/louislam/uptime-kuma/tree/master&refcode=e2c7eb658434)
@@ -93,7 +93,7 @@ PS: For every new release, it takes some time to build the docker image, please 
 
 ```bash
 git fetch --all
-git checkout 1.0.9 --force
+git checkout 1.0.10 --force
 npm install
 npm run build
 pm2 restart uptime-kuma
