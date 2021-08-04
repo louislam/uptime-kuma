@@ -44,8 +44,8 @@ if (! exists) {
     // Process README.md
     fs.writeFileSync("README.md", fs.readFileSync("README.md", "utf8").replaceAll(oldVersion, newVersion));
 
-    //commit(newVersion);
-    //tag(newVersion);
+    commit(newVersion);
+    tag(newVersion);
 } else {
     console.log("version exists")
 }
