@@ -63,7 +63,7 @@
         "@vue/compiler-sfc": "^3.1.5",
         "core-js": "^3.15.2",
         "eslint": "^7.31.0",
-        "eslint-plugin-vue": "^7.14.0",
+        "eslint-plugin-vue": "^7.15.1",
         "sass": "^1.36.0",
         "stylelint": "^13.13.1",
         "stylelint-config-recommended": "^5.0.0",
