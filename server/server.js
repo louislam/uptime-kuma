@@ -538,6 +538,10 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
 
         debug("added all socket handlers")
 
+        // ***************************
+        // Better do anything after added all socket handlers here
+        // ***************************
+
         debug("check auto login")
         if (await setting("disableAuth")) {
             console.log("Disabled Auth: auto login to admin")
