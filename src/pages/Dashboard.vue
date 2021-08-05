@@ -99,7 +99,7 @@ export default {
 .list {
     margin-top: 25px;
     height: auto;
-    min-height: calc(100vh - 200px);
+    min-height: calc(100vh - 240px);
 
     .item {
         display: block;
