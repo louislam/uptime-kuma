@@ -83,41 +83,91 @@ class Notification {
             return await Notification.smtp(notification, msg)
 
         } else if (notification.type === "discord") {
+            let kumaURL = notification.discorduptimekumaUrl || "https://github.com/louislam/uptime-kuma";
+            let dashboardURL = notification.discorduptimekumaUrl + '/dashboard/' + monitorJSON["id"];
             try {
                 // If heartbeatJSON is null, assume we're testing.
                 if (heartbeatJSON == null) {
-                    let data = {
-                        username: "Uptime-Kuma",
+                    let discordtestdata = {
+                        username: "Uptime Kuma",
                         content: msg,
                     }
-                    await axios.post(notification.discordWebhookUrl, data)
+                    await axios.post(notification.discordWebhookUrl, discordtestdata)
                     return okMsg;
                 }
                 // If heartbeatJSON is not null, we go into the normal alerting loop.
                 if (heartbeatJSON["status"] == 0) {
-                    var alertColor = "16711680";
-                } else if (heartbeatJSON["status"] == 1) {
-                    var alertColor = "65280";
-                }
-                let data = {
-                    username: "Uptime-Kuma",
+                    let discorddowndata = {
+                    username: "Uptime Kuma",
                     embeds: [{
-                        title: "Uptime-Kuma Alert",
-                        color: alertColor,
+                        title: "❌ One of your services went down. ❌",
+                        color: 16711680,
+                        timestamp: heartbeatJSON["time"],
                         fields: [
+                            {
+                                name: "Service Name",
+                                value: monitorJSON["name"],
+                            },
+                            {
+                                name: "Service URL",
+                                value: monitorJSON["url"],
+                            },
                             {
                                 name: "Time (UTC)",
                                 value: heartbeatJSON["time"],
                             },
                             {
-                                name: "Message",
-                                value: msg,
+                                name: "Error",
+                                value: heartbeatJSON["msg"],
+                            },
+                            {
+                                name: "Visit Service Dashboard",
+                                value: "[Visit Dashboard]("+ dashboardURL + ")",
+                            },
+                            {
+                                name: "Visit Uptime Kuma",
+                                value: "[Visit]("+ kumaURL +")",
                             },
                         ],
                     }],
                 }
-                await axios.post(notification.discordWebhookUrl, data)
+                await axios.post(notification.discordWebhookUrl, discorddowndata)
                 return okMsg;
+                    
+                } else if (heartbeatJSON["status"] == 1) {
+                    let discordupdata = {
+                    username: "Uptime Kuma",
+                    embeds: [{
+                        title: "✅ Your service " +  monitorJSON["name"] + " is up! ✅",
+                        color: 65280,
+                        timestamp: heartbeatJSON["time"],
+                        fields: [
+                            {
+                                name: "Service Name",
+                                value: monitorJSON["name"],
+                            },
+                            {
+                                name: "Service URL",
+                                value: "[Visit Service]("+ monitorJSON["url"] +")",
+                            },
+                            {
+                                name: "Time (UTC)",
+                                value: heartbeatJSON["time"],
+                            },
+                            {
+                                name: "Ping",
+                                value: heartbeatJSON["ping"] + "ms",
+                            },
+                            {
+                                name: "Visit Uptime Kuma",
+                                value: "[Visit]("+ kumaURL +")",
+                            },
+                        ],
+                    }],
+                }
+                await axios.post(notification.discordWebhookUrl, discordupdata)
+                return okMsg;
+                }
             } catch (error) {
                 throwGeneralAxiosError(error)
             }
