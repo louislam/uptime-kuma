@@ -87,7 +87,7 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
 
     // Normal Router here
 
-    app.use("/", express.static("dist"));
+    app.use(express.static("dist"));
 
     // Basic Auth Router here
 
