@@ -87,6 +87,14 @@ Abort. Heroku instance killed the server.js if idle, stupid.
 
 Re-pull the latest docker image and create another container with the same volume.
 
+For someone who used my "How-to-use" commands to install Uptime Kuma, you can update by this:
+```bash
+docker pull uptime-kuma:1
+docker stop uptime-kuma
+docker rm uptime-kuma
+docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name uptime-kuma louislam/uptime-kuma:1
+```
+
 PS: For every new release, it takes some time to build the docker image, please be patient if it is not available yet.
 
 ### Without Docker
