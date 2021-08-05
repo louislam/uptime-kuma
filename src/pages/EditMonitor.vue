@@ -148,7 +148,7 @@ const toast = useToast()
 export default {
     components: {
         NotificationDialog,
-        VueMultiselect
+        VueMultiselect,
     },
     data() {
         let acceptedStatusCodeOptions = [
