@@ -7,7 +7,7 @@ dayjs.extend(timezone)
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
 const { debug, UP, DOWN, PENDING, flipStatus } = require("../../src/util");
-const { tcping, ping, checkCertificate } = require("../util-server");
+const { tcping, ping, checkCertificate, checkStatusCode } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification")
@@ -45,6 +45,8 @@ class Monitor extends BeanModel {
             keyword: this.keyword,
             ignoreTls: this.getIgnoreTls(),
             upsideDown: this.isUpsideDown(),
+            maxredirects: this.maxredirects,
+            accepted_statuscodes: this.getAcceptedStatuscodes(),
             notificationIDList,
         };
     }
@@ -63,6 +65,10 @@ class Monitor extends BeanModel {
      */
     isUpsideDown() {
         return Boolean(this.upsideDown);
+    }
+
+    getAcceptedStatuscodes() {
+        return JSON.parse(this.accepted_statuscodes_json);
     }
 
     start(io) {
@@ -111,6 +117,10 @@ class Monitor extends BeanModel {
                             maxCachedSessions: 0,
                             rejectUnauthorized: ! this.getIgnoreTls(),
                         }),
+                        maxRedirects: this.maxredirects,
+                        validateStatus: (status) => {
+                            return checkStatusCode(status, this.getAcceptedStatuscodes());
+                        },
                     });
                     bean.msg = `${res.status} - ${res.statusText}`
                     bean.ping = dayjs().valueOf() - startTime;

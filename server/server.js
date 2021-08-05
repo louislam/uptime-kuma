@@ -274,6 +274,7 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                 bean.keyword = monitor.keyword;
                 bean.ignoreTls = monitor.ignoreTls;
                 bean.upsideDown = monitor.upsideDown;
+                bean.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
 
                 await R.store(bean)
 
