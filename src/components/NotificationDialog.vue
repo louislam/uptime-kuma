@@ -21,6 +21,7 @@
                                 <option value="gotify">Gotify</option>
                                 <option value="slack">Slack</option>
                                 <option value="pushover">Pushover</option>
+                                <option value="pushy">Pushy</option>
                                 <option value="lunasea">LunaSea</option>
                                 <option value="apprise">Apprise (Support 50+ Notification services)</option>
                             </select>
@@ -227,6 +228,23 @@
                                     </p>
                                 </div>
                             </div>
+                        </template>
+
+                        <template v-if="notification.type === 'pushy'">
+                            <div class="mb-3">
+                                <label for="pushy-app-token" class="form-label">API_KEY</label>
+                                <input type="text" class="form-control" id="pushy-app-token" required v-model="notification.pushyAPIKey">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="pushy-user-key" class="form-label">USER_TOKEN</label>
+                                <div class="input-group mb-3">
+                                    <input type="text" class="form-control" id="pushy-user-key" required v-model="notification.pushyToken">
+                                </div>
+                            </div>
+                            <p style="margin-top: 8px;">
+                                    More info on: <a href="https://pushy.me/docs/api/send-notifications" target="_blank">https://pushy.me/docs/api/send-notifications</a>
+                            </p>
                         </template>
 
                         <template v-if="notification.type === 'pushover'">

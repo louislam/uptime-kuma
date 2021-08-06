@@ -96,8 +96,8 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
     app.get("/metrics", basicAuth, prometheusAPIMetrics())
 
     // Universal Route Handler, must be at the end
-    app.get("*", function(request, response, next) {
-        response.end(indexHTML)
+    app.get("*", function(_request, response) {
+        response.send(indexHTML);
     });
 
     console.log("Adding socket handler")
@@ -112,11 +112,6 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
         if (needSetup) {
             console.log("Redirect to setup page")
             socket.emit("setup")
-        }
-
-        if (await setting("disableAuth")) {
-            console.log("Disabled Auth: auto login to admin")
-            await afterLogin(socket, await R.findOne("user", " username = 'admin' "))
         }
 
         socket.on("disconnect", () => {
@@ -139,7 +134,11 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                 ])
 
                 if (user) {
+                    debug("afterLogin")
+
                     await afterLogin(socket, user)
+
+                    debug("afterLogin ok")
 
                     callback({
                         ok: true,
@@ -536,6 +535,22 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                 callback(false);
             }
         });
+
+        debug("added all socket handlers")
+
+        // ***************************
+        // Better do anything after added all socket handlers here
+        // ***************************
+
+        debug("check auto login")
+        if (await setting("disableAuth")) {
+            console.log("Disabled Auth: auto login to admin")
+            await afterLogin(socket, await R.findOne("user"))
+            socket.emit("autoLogin")
+        } else {
+            debug("need auth")
+        }
+
     });
 
     console.log("Init")
@@ -605,8 +620,6 @@ async function afterLogin(socket, user) {
     }
 
     sendNotificationList(socket)
-
-    socket.emit("autoLogin")
 }
 
 async function getMonitorJSONList(userID) {
@@ -636,9 +649,7 @@ async function initDatabase() {
     }
 
     console.log("Connecting to Database")
-    R.setup("sqlite", {
-        filename: Database.path,
-    });
+    Database.connect();
     console.log("Connected")
 
     // Patch the database

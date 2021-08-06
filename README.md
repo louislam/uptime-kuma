@@ -76,7 +76,7 @@ https://github.com/louislam/uptime-kuma/wiki/Reverse-Proxy
 
 <!---
 Abort. Heroku instance killed the server.js if idle, stupid.
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/louislam/uptime-kuma/tree/1.0.8)
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/louislam/uptime-kuma/tree/1.0.10)
 -->
 
 [![Deploy to DO](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/louislam/uptime-kuma/tree/master&refcode=e2c7eb658434)
@@ -87,13 +87,21 @@ Abort. Heroku instance killed the server.js if idle, stupid.
 
 Re-pull the latest docker image and create another container with the same volume.
 
+For someone who used my "How-to-use" commands to install Uptime Kuma, you can update by this:
+```bash
+docker pull uptime-kuma:1
+docker stop uptime-kuma
+docker rm uptime-kuma
+docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name uptime-kuma louislam/uptime-kuma:1
+```
+
 PS: For every new release, it takes some time to build the docker image, please be patient if it is not available yet.
 
 ### Without Docker
 
 ```bash
 git fetch --all
-git checkout 1.0.8 --force
+git checkout 1.0.10 --force
 npm install
 npm run build
 pm2 restart uptime-kuma
