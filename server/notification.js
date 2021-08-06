@@ -83,8 +83,6 @@ class Notification {
             return await Notification.smtp(notification, msg)
 
         } else if (notification.type === "discord") {
-            let kumaURL = notification.discorduptimekumaUrl || "https://github.com/louislam/uptime-kuma";
-            let dashboardURL = notification.discorduptimekumaUrl + '/dashboard/' + monitorJSON["id"];
             try {
                 // If heartbeatJSON is null, assume we're testing.
                 if (heartbeatJSON == null) {
@@ -120,14 +118,6 @@ class Notification {
                                 name: "Error",
                                 value: heartbeatJSON["msg"],
                             },
-                            {
-                                name: "Visit Service Dashboard",
-                                value: "[Visit Dashboard]("+ dashboardURL + ")",
-                            },
-                            {
-                                name: "Visit Uptime Kuma",
-                                value: "[Visit]("+ kumaURL +")",
-                            },
                         ],
                     }],
                 }
@@ -157,10 +147,6 @@ class Notification {
                             {
                                 name: "Ping",
                                 value: heartbeatJSON["ping"] + "ms",
-                            },
-                            {
-                                name: "Visit Uptime Kuma",
-                                value: "[Visit]("+ kumaURL +")",
                             },
                         ],
                     }],
