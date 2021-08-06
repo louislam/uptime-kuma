@@ -115,6 +115,7 @@ export default {
     height: 60px;
     width: 100%;
     left: 0;
+    background-color: #fff;
     box-shadow: 0 15px 47px 0 rgba(0, 0, 0, 0.05), 0 5px 14px 0 rgba(0, 0, 0, 0.05);
     text-align: center;
     white-space: nowrap;
