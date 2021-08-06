@@ -244,13 +244,28 @@ export default {
 
 <style src="vue-multiselect/dist/vue-multiselect.css"></style>
 
-<style>
+<style lang="scss">
+    @import "../assets/vars.scss";
+
     .multiselect__tags {
         border-radius: 2rem;
         border: 1px solid #ced4da;
     }
+
     .multiselect--active .multiselect__tags {
         border-radius: 1rem;
+    }
+
+    .multiselect__option--highlight {
+        background: $primary !important;
+    }
+
+    .multiselect__option--highlight::after {
+        background: $primary !important;
+    }
+
+    .multiselect__tag {
+        background: $primary !important;
     }
 </style>
 
