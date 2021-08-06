@@ -1,9 +1,7 @@
 const fs = require("fs");
 const { sleep } = require("../src/util");
 const { R } = require("redbean-node");
-const {
-    setSetting, setting,
-} = require("./util-server");
+const { setSetting, setting } = require("./util-server");
 const knex = require("knex");
 
 class Database {
