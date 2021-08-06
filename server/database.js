@@ -4,6 +4,7 @@ const { R } = require("redbean-node");
 const {
     setSetting, setting,
 } = require("./util-server");
+const knex = require("knex");
 
 class Database {
 
@@ -11,6 +12,24 @@ class Database {
     static path = "./data/kuma.db";
     static latestVersion = 5;
     static noReject = true;
+
+    static connect() {
+        const Dialect = require("knex/lib/dialects/sqlite3/index.js");
+        Dialect.prototype._driver = () => require("@louislam/sqlite3");
+
+        R.setup(knex({
+            client: Dialect,
+            connection: {
+                filename: Database.path,
+            },
+            useNullAsDefault: true,
+            pool: {
+                min: 1,
+                max: 1,
+                idleTimeoutMillis: 30000,
+            }
+        }));
+    }
 
     static async patch() {
         let version = parseInt(await setting("database_version"));
