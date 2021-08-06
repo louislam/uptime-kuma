@@ -143,8 +143,6 @@
                             <div class="mb-3">
                                 <label for="discord-webhook-url" class="form-label">Discord Webhook URL</label>
                                 <input id="discord-webhook-url" v-model="notification.discordWebhookUrl" type="text" class="form-control" required autocomplete="false">
-                                <label for="discord-uptime-kuma-url" class="form-label">Uptime Kuma URL</label>
-                                <input id="discord-uptime-kuma-url" v-model="notification.discorduptimekumaUrl" type="text" class="form-control" autocomplete="false">
                                 <div class="form-text">
                                     You can get this by going to Server Settings -> Integrations -> Create Webhook
                                 </div>
