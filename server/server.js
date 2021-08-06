@@ -650,9 +650,7 @@ async function initDatabase() {
     }
 
     console.log("Connecting to Database")
-    R.setup("sqlite", {
-        filename: Database.path,
-    });
+    Database.connect();
     console.log("Connected")
 
     // Patch the database
