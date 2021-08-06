@@ -29,7 +29,7 @@ export default {
             notificationList: [],
             windowWidth: window.innerWidth,
             showListMobile: false,
-            connectionErrorMsg: "Cannot connect to the socket server. Reconnecting..."
+            connectionErrorMsg: "Cannot connect to the socket server. Reconnecting...",
         }
     },
 

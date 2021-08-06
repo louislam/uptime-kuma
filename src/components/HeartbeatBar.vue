@@ -133,7 +133,7 @@ export default {
 }
 </script>
 
-<style scoped lang="scss">
+<style lang="scss" scoped>
 @import "../assets/vars.scss";
 
 .wrap {
@@ -149,7 +149,11 @@ export default {
         border-radius: 50rem;
 
         &.empty {
-            background-color: #d0d3d5;
+            background-color: aliceblue;
+
+            .dark & {
+                background-color: #d0d3d5;
+            }
         }
 
         &.down {
@@ -168,8 +172,10 @@ export default {
     }
 }
 
-.hp-bar-big .beat.empty{
-    background-color: #848484;
+.dark {
+    .hp-bar-big .beat.empty{
+        background-color: #848484;
+    }
 }
 
 </style>

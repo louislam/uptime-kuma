@@ -20,6 +20,19 @@
                         </select>
                     </div>
 
+                    <div class="mb-3">
+                        <div class="btn-group" role="group" aria-label="Basic checkbox toggle button group">
+                            <input id="btncheck1" type="radio" class="btn-check" name="theme" autocomplete="off">
+                            <label class="btn btn-outline-primary" for="btncheck1">Light</label>
+
+                            <input id="btncheck2" type="radio" class="btn-check" name="theme" autocomplete="off">
+                            <label class="btn btn-outline-primary" for="btncheck2">Dark</label>
+
+                            <input id="btncheck3" type="radio" class="btn-check" name="theme" autocomplete="off">
+                            <label class="btn btn-outline-primary" for="btncheck3">Auto</label>
+                        </div>
+                    </div>
+
                     <div>
                         <button class="btn btn-primary" type="submit">
                             Save
@@ -201,12 +214,15 @@ export default {
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
     .shadow-box {
         padding: 20px;
     }
-    .list-group-item{
-        background-color: var(--background-4);
-        color: var(--main-font-color);
+
+    .dark {
+        .list-group-item {
+            background-color: var(--background-4);
+            color: var(--main-font-color);
+        }
     }
 </style>

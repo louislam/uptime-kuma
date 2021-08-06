@@ -1,46 +1,16 @@
 @import "vars.scss";
 @import "node_modules/bootstrap/scss/bootstrap";
 
-html,
-body,
-input,
-.modal-content {
-    background: var(--page-background);
-    color: var(--main-font-color);
-}
-a,
-.table,
-.nav-link {
-    color: var(--main-font-color);
-}
-.nav-pills .nav-link.active,
-.nav-pills .show > .nav-link {
-    color: #0a0a0a;
-}
-
-.nav-link:hover,
-.nav-link:focus {
-    color: #5cdd8b;
-}
-
-.form-control,
-.form-control:focus,
-.form-select,
-.form-select:focus {
-    color: var(--main-font-color);
-    background-color: var(--background-4);
-}
-
 #app {
-    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
-        segoe ui, Roboto, helvetica neue, Arial, noto sans, sans-serif,
-        apple color emoji, segoe ui emoji, segoe ui symbol, noto color emoji;
+    font-family: ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,segoe ui,Roboto,helvetica neue,Arial,noto sans,sans-serif,apple color emoji,segoe ui emoji,segoe ui symbol,noto color emoji;
 }
 
 .shadow-box {
     overflow: hidden;
-    box-shadow: 0 15px 70px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 15px 70px rgba(0, 0, 0, .1);
     padding: 10px;
+    border-radius: 10px;
+
     &.big-padding {
         padding: 20px;
     }
@@ -52,13 +22,10 @@ a,
 }
 
 .btn-primary {
-    color: #0a0a0a;
+    color: white;
 
-    &:hover,
-    &:active,
-    &:focus,
-    &.active {
-        color: #0a0a0a;
+    &:hover, &:active, &:focus, &.active {
+        color: white;
         background-color: $highlight;
         border-color: $highlight;
     }
@@ -69,8 +36,49 @@ a,
     backdrop-filter: blur(3px);
 }
 
-@media (prefers-color-scheme: dark) {
+// Dark Theme override here
+.dark {
     a:hover {
         color: #7ce8a4;
+    }
+
+    .btn-primary {
+        color: #0a0a0a;
+
+        &:hover, &:active, &:focus, &.active {
+            color: #0a0a0a;
+            background-color: $highlight;
+            border-color: $highlight;
+        }
+    }
+
+    html,
+    body,
+    input,
+    .modal-content {
+        background: var(--page-background);
+        color: var(--main-font-color);
+    }
+    a,
+    .table,
+    .nav-link {
+        color: var(--main-font-color);
+    }
+    .nav-pills .nav-link.active,
+    .nav-pills .show > .nav-link {
+        color: #0a0a0a;
+    }
+
+    .nav-link:hover,
+    .nav-link:focus {
+        color: #5cdd8b;
+    }
+
+    .form-control,
+    .form-control:focus,
+    .form-select,
+    .form-select:focus {
+        color: var(--main-font-color);
+        background-color: var(--background-4);
     }
 }

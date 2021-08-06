@@ -233,17 +233,17 @@
                         <template v-if="notification.type === 'pushy'">
                             <div class="mb-3">
                                 <label for="pushy-app-token" class="form-label">API_KEY</label>
-                                <input type="text" class="form-control" id="pushy-app-token" required v-model="notification.pushyAPIKey">
+                                <input id="pushy-app-token" v-model="notification.pushyAPIKey" type="text" class="form-control" required>
                             </div>
 
                             <div class="mb-3">
                                 <label for="pushy-user-key" class="form-label">USER_TOKEN</label>
                                 <div class="input-group mb-3">
-                                    <input type="text" class="form-control" id="pushy-user-key" required v-model="notification.pushyToken">
+                                    <input id="pushy-user-key" v-model="notification.pushyToken" type="text" class="form-control" required>
                                 </div>
                             </div>
                             <p style="margin-top: 8px;">
-                                    More info on: <a href="https://pushy.me/docs/api/send-notifications" target="_blank">https://pushy.me/docs/api/send-notifications</a>
+                                More info on: <a href="https://pushy.me/docs/api/send-notifications" target="_blank">https://pushy.me/docs/api/send-notifications</a>
                             </p>
                         </template>
 
@@ -334,7 +334,6 @@
                                 </div>
                             </div>
                         </template>
-
                     </div>
                     <div class="modal-footer">
                         <button v-if="id" type="button" class="btn btn-danger" :disabled="processing" @click="deleteConfirm">
@@ -509,14 +508,16 @@ export default {
 }
 </script>
 
-<style>
-.modal-dialog .form-text, .modal-dialog p{
-    color: var(--main-font-color);
-}
-.modal-content{
-    border: 1px solid var(--main-font-color);
-}
-@media (prefers-color-scheme: dark) {
+<style lang="scss" scoped>
+.dark {
+    .modal-dialog .form-text, .modal-dialog p{
+        color: var(--main-font-color);
+    }
+
+    .modal-content{
+        border: 1px solid var(--main-font-color);
+    }
+
     .btn-close{
         background: transparent url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23FFF'%3e%3cpath d='M.293.293a1 1 0 011.414 0L8 6.586 14.293.293a1 1 0 111.414 1.414L9.414 8l6.293 6.293a1 1 0 01-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 01-1.414-1.414L6.586 8 .293 1.707a1 1 0 010-1.414z'/%3e%3c/svg%3e") center/1em auto no-repeat;
         opacity: 1;

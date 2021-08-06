@@ -169,11 +169,11 @@ export default {
 }
 </script>
 
-<style scoped lang="scss">
+<style lang="scss" scoped>
 @import "../assets/vars";
 
 .num {
-    font-size: 1rem;
+    font-size: 30px;
     color: $primary;
     font-weight: bold;
     display: block;
