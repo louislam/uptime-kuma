@@ -38,6 +38,13 @@
 
 // Dark Theme override here
 .dark {
+    background-color: #090C10;
+    color: $dark-font-color;
+
+    .shadow-box {
+        background-color: #0D1117;
+    }
+
     a:hover {
         color: #7ce8a4;
     }
@@ -80,5 +87,9 @@
     .form-select:focus {
         color: var(--main-font-color);
         background-color: var(--background-4);
+    }
+
+    .form-control {
+        border-color: #21262D;
     }
 }

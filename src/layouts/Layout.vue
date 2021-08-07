@@ -143,12 +143,6 @@ export default {
     }
 }
 
-.dark {
-    .bottom-nav {
-        background-color: var(--background-navbar);
-    }
-}
-
 .title {
     font-weight: bold;
 }
@@ -170,6 +164,21 @@ footer {
     margin-bottom: 30px;
     margin-left: 10px;
     text-align: center;
+}
+
+.dark {
+    header {
+        background-color: #161B22;
+        border-bottom-color: #161B22 !important;
+
+        span {
+            color: #F0F6FC;
+        }
+    }
+
+    .bottom-nav {
+        background-color: var(--background-navbar);
+    }
 }
 
 </style>

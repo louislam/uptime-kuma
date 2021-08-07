@@ -23,10 +23,9 @@ export default {
         }
     },
 
-    methods: {
-        changeTheme(name) {
-            localStorage.theme = name;
-            this.userTheme = name;
+    watch: {
+        userTheme(to, from) {
+            localStorage.theme = to;
         }
     }
 }

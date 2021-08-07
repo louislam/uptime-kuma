@@ -7,18 +7,15 @@ $border-radius: 50rem;
 $highlight: #7ce8a4;
 $highlight-white: #e7faec;
 
-.dark {
-    $primary: #5cdd8b;
-    $danger: #dc3545;
-    $warning: #dca235;
 
-    :root {
-        --page-background: #0a0a0a;
-        --background-secondary: #656565;
-        --background-4: #313131;
-        --background-ternary: #a7a7a7;
-        --background-sidebar-active: #777777;
-        --background-navbar: #333333;
-        --main-font-color: #e4e4e4;
-    }
+$dark-font-color: #b1b8c0;
+
+.dark {
+    --page-background: #0a0a0a;
+    --background-secondary: #656565;
+    --background-4: #070A10;
+    --background-ternary: #a7a7a7;
+    --background-sidebar-active: #777777;
+    --background-navbar: #333333;
+    --main-font-color: $dark-font-color;
 }
