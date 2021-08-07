@@ -1,0 +1,131 @@
+# a full working kubernetes manifest
+#
+# for deploying uptime-kuma in it's namespace
+# as a deployment of a single pod
+# with a service and ingress definition
+# ans a persistent volume for data
+#
+# This example should work on most Kuberntes clusters
+# but might need some tweaks as per specific implementations
+# of ingress and persistent storage.
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: uptime-kuma
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: uptime-kuma-data
+  namespace: uptime-kuma
+  labels:
+    app.kubernetes.io/name: uptime-kuma
+    app.kubernetes.io/instance: uptime-kuma
+spec:
+  accessModes:
+    - "ReadWriteOnce"
+  resources:
+    requests:
+      storage: "5Gi"
+  #storageClassName: "longhorn"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: uptime-kuma-web
+  namespace: uptime-kuma
+  labels:
+    app.kubernetes.io/name: uptime-kuma
+    app.kubernetes.io/instance: uptime-kuma
+spec:
+  type: ClusterIP
+  publishNotReadyAddresses: false
+  ports:
+    - name: web
+      port: 3001
+      protocol: TCP
+      targetPort: 3001
+  selector:
+    app.kubernetes.io/name: uptime-kuma
+    app.kubernetes.io/instance: uptime-kuma
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: uptime-kuma
+  namespace: uptime-kuma
+  labels:
+    app.kubernetes.io/name: uptime-kuma
+    app.kubernetes.io/instance: uptime-kuma
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: uptime-kuma
+      app.kubernetes.io/instance: uptime-kuma
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: uptime-kuma
+        app.kubernetes.io/instance: uptime-kuma
+    spec:
+      containers:
+        - name: uptime-kuma
+          # https://hub.docker.com/r/louislam/uptime-kuma/tags?page=1&ordering=last_updated
+          image: louislam/uptime-kuma:1.0.10
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: web
+              containerPort: 3001
+              protocol: TCP
+          livenessProbe:
+            exec:
+              command:
+                - node
+                - extra/healthcheck.js
+          readinessProbe:
+            httpGet:
+              path: /
+              port: web
+              scheme: HTTP
+          volumeMounts:
+          - mountPath: /app/data
+            name: uptime-kuma-data
+      volumes:
+      - name: uptime-kuma-data
+        persistentVolumeClaim:
+          claimName: uptime-kuma-data
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: uptime-kuma
+  namespace: uptime-kuma
+  labels:
+    app.kubernetes.io/name: uptime-kuma
+    app.kubernetes.io/instance: uptime-kuma
+  annotations:
+    #cert-manager.io/cluster-issuer: acme
+    #kubernetes.io/ingress.class: ingress-nginx
+    #nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    # note: default ingress-nginx has neede config for websockets
+    #nginx.org/websocket-services: "uptime-kuma-web"
+spec:
+  tls:
+    - hosts:
+        - "uptime.example.com"
+      secretName: uptime-kuma-tls
+  rules:
+    - host: "uptime.example.com"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: uptime-kuma-web
+                port:
+                  number: 3001
