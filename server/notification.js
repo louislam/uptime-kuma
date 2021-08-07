@@ -124,7 +124,7 @@ class Notification {
                     await axios.post(notification.discordWebhookUrl, discorddowndata)
                     return okMsg;
 
-                } if (heartbeatJSON["status"] == 1) {
+                } else if (heartbeatJSON["status"] == 1) {
                     let discordupdata = {
                         username: notification.discordUsername || "Uptime Kuma",
                         embeds: [{
