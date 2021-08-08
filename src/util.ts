@@ -3,6 +3,7 @@
 // Frontend uses util.ts
 // Need to run "tsc" to compile if there are any changes.
 
+export const appName = "Uptime Kuma";
 export const DOWN = 0;
 export const UP = 1;
 export const PENDING = 2;
@@ -38,6 +39,6 @@ export function ucfirst(str) {
 
 export function debug(msg) {
     if (process.env.NODE_ENV === "development") {
-        console.log(msg)
+        console.debug(msg);
     }
 }

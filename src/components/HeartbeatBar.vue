@@ -133,7 +133,7 @@ export default {
 }
 </script>
 
-<style scoped lang="scss">
+<style lang="scss" scoped>
 @import "../assets/vars.scss";
 
 .wrap {
@@ -150,6 +150,10 @@ export default {
 
         &.empty {
             background-color: aliceblue;
+
+            .dark & {
+                background-color: #d0d3d5;
+            }
         }
 
         &.down {
@@ -165,6 +169,12 @@ export default {
             opacity: 0.8;
             transform: scale(var(--hover-scale));
         }
+    }
+}
+
+.dark {
+    .hp-bar-big .beat.empty{
+        background-color: #848484;
     }
 }
 

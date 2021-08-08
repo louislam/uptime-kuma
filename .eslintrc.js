@@ -62,9 +62,6 @@ module.exports = {
             exceptAfterSingleLine: true,
         }],
         "no-unneeded-ternary": "error",
-        "no-else-return": ["error", {
-            "allowElseIf": false,
-        }],
         "array-bracket-newline": ["error", "consistent"],
         "eol-last": ["error", "always"],
         //'prefer-template': 'error',

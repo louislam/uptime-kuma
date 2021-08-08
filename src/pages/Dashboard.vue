@@ -89,7 +89,7 @@ export default {
 }
 </script>
 
-<style scoped lang="scss">
+<style lang="scss" scoped>
 @import "../assets/vars.scss";
 
 .container-fluid {
@@ -131,6 +131,20 @@ export default {
 .small-padding {
     padding-left: 5px !important;
     padding-right: 5px !important;
+}
+
+.dark {
+    .list {
+        .item {
+            &:hover {
+                background-color: $dark-bg2;
+            }
+
+            &.active {
+                background-color: $dark-bg2;
+            }
+        }
+    }
 }
 
 </style>
