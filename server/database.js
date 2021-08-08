@@ -41,6 +41,8 @@ class Database {
 
         if (version === this.latestVersion) {
             console.info("Database no need to patch");
+        } else if (version > this.latestVersion) {
+            console.info("Warning: Database version is newer than expected");
         } else {
             console.info("Database patch is needed")
 
