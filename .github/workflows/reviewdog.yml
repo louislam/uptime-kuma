@@ -8,5 +8,4 @@ jobs:
       - uses: actions/checkout@v2
       - uses: reviewdog/action-eslint@v1
         with:
-          reporter: github-pr-review # Change reporter.
-          eslint_flags: 'src/'
+          reporter: github-pr-review
