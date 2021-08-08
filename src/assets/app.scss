@@ -132,4 +132,27 @@
         border-color: $dark-border-color;
         color: $dark-font-color;
     }
+
+    // Multiselect
+    .multiselect__tags {
+        background-color: $dark-bg2;
+        border-color: $dark-border-color;
+    }
+
+    .multiselect__input, .multiselect__single {
+        background-color: $dark-bg2;
+        color: $dark-font-color;
+    }
+
+    .multiselect__content-wrapper {
+        background-color: $dark-bg2;
+    }
+
+    .multiselect__option--selected.multiselect__option--highlight {
+
+    }
+
+    .multiselect__option--selected {
+        background-color: $dark-bg;
+    }
 }
