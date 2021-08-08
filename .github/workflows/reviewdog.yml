@@ -9,3 +9,4 @@ jobs:
       - uses: reviewdog/action-eslint@v1
         with:
           reporter: github-pr-review
+          eslint_flags: --ext .js,.ts,.vue .
