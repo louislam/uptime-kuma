@@ -1,0 +1,7 @@
+{
+    "name": "Uptime Kuma",
+    "description": "A fancy self-hosted monitoring tool",
+    "repository": "https://github.com/louislam/uptime-kuma",
+    "logo": "https://raw.githubusercontent.com/louislam/uptime-kuma/master/public/icon.png",
+    "keywords": ["node", "express", "socket-io", "uptime-kuma", "uptime"]
+}

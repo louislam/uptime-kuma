@@ -1,58 +1,60 @@
-import {createApp, h} from "vue";
-import {createRouter, createWebHistory} from 'vue-router'
-
-import App from './App.vue'
-import Layout from './layouts/Layout.vue'
-import EmptyLayout from './layouts/EmptyLayout.vue'
-import Settings from "./pages/Settings.vue";
+import "bootstrap";
+import { createApp, h } from "vue";
+import { createRouter, createWebHistory } from "vue-router";
+import Toast from "vue-toastification";
+import "vue-toastification/dist/index.css";
+import App from "./App.vue";
+import "./assets/app.scss";
+import { FontAwesomeIcon } from "./icon.js";
+import EmptyLayout from "./layouts/EmptyLayout.vue";
+import Layout from "./layouts/Layout.vue";
+import socket from "./mixins/socket";
+import theme from "./mixins/theme";
 import Dashboard from "./pages/Dashboard.vue";
 import DashboardHome from "./pages/DashboardHome.vue";
 import Details from "./pages/Details.vue";
-import socket from "./mixins/socket"
-import "./assets/app.scss"
 import EditMonitor from "./pages/EditMonitor.vue";
-import Toast from "vue-toastification";
-import "vue-toastification/dist/index.css";
-import "bootstrap"
+import Settings from "./pages/Settings.vue";
 import Setup from "./pages/Setup.vue";
+import { appName } from "./util.ts";
 
 const routes = [
     {
-        path: '/',
+        path: "/",
         component: Layout,
         children: [
             {
                 name: "root",
-                path: '',
+                path: "",
                 component: Dashboard,
                 children: [
                     {
                         name: "DashboardHome",
-                        path: '/dashboard',
+                        path: "/dashboard",
                         component: DashboardHome,
                         children: [
                             {
-                                path: '/dashboard/:id',
+                                path: "/dashboard/:id",
                                 component: EmptyLayout,
                                 children: [
                                     {
-                                        path: '',
+                                        path: "",
                                         component: Details,
                                     },
                                     {
-                                        path: '/edit/:id',
+                                        path: "/edit/:id",
                                         component: EditMonitor,
                                     },
-                                ]
+                                ],
                             },
                             {
-                                path: '/add',
+                                path: "/add",
                                 component: EditMonitor,
                             },
-                        ]
+                        ],
                     },
                     {
-                        path: '/settings',
+                        path: "/settings",
                         component: Settings,
                     },
                 ],
@@ -62,13 +64,13 @@ const routes = [
 
     },
     {
-        path: '/setup',
+        path: "/setup",
         component: Setup,
     },
 ]
 
 const router = createRouter({
-    linkActiveClass: 'active',
+    linkActiveClass: "active",
     history: createWebHistory(),
     routes,
 })
@@ -76,17 +78,24 @@ const router = createRouter({
 const app = createApp({
     mixins: [
         socket,
+        theme
     ],
-    render: ()=>h(App)
+    data() {
+        return {
+            appName: appName
+        }
+    },
+    render: () => h(App),
 })
 
 app.use(router)
 
 const options = {
-    position: "bottom-right"
+    position: "bottom-right",
 };
 
 app.use(Toast, options);
 
-app.mount('#app')
+app.component("FontAwesomeIcon", FontAwesomeIcon)
 
+app.mount("#app")

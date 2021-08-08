@@ -1,15 +1,33 @@
 const fs = require("fs");
-const {sleep} = require("./util");
-const {R} = require("redbean-node");
-const {setSetting, setting} = require("./util-server");
-
+const { sleep } = require("../src/util");
+const { R } = require("redbean-node");
+const { setSetting, setting } = require("./util-server");
+const knex = require("knex");
 
 class Database {
 
     static templatePath = "./db/kuma.db"
-    static path =  './data/kuma.db';
-    static latestVersion = 3;
+    static path = "./data/kuma.db";
+    static latestVersion = 6;
     static noReject = true;
+
+    static connect() {
+        const Dialect = require("knex/lib/dialects/sqlite3/index.js");
+        Dialect.prototype._driver = () => require("@louislam/sqlite3");
+
+        R.setup(knex({
+            client: Dialect,
+            connection: {
+                filename: Database.path,
+            },
+            useNullAsDefault: true,
+            pool: {
+                min: 1,
+                max: 1,
+                idleTimeoutMillis: 30000,
+            }
+        }));
+    }
 
     static async patch() {
         let version = parseInt(await setting("database_version"));
@@ -23,6 +41,8 @@ class Database {
 
         if (version === this.latestVersion) {
             console.info("Database no need to patch");
+        } else if (version > this.latestVersion) {
+            console.info("Warning: Database version is newer than expected");
         } else {
             console.info("Database patch is needed")
 
@@ -95,7 +115,7 @@ class Database {
         const listener = (reason, p) => {
             Database.noReject = false;
         };
-        process.addListener('unhandledRejection', listener);
+        process.addListener("unhandledRejection", listener);
 
         console.log("Closing DB")
 
@@ -112,7 +132,7 @@ class Database {
         }
         console.log("SQLite closed")
 
-        process.removeListener('unhandledRejection', listener);
+        process.removeListener("unhandledRejection", listener);
     }
 }
 

@@ -1,6 +1,7 @@
-const tcpp = require('tcp-ping');
+const tcpp = require("tcp-ping");
 const Ping = require("./ping-lite");
-const {R} = require("redbean-node");
+const { R } = require("redbean-node");
+const { debug } = require("../src/util");
 
 exports.tcping = function (hostname, port) {
     return new Promise((resolve, reject) => {
@@ -8,7 +9,7 @@ exports.tcping = function (hostname, port) {
             address: hostname,
             port: port,
             attempts: 1,
-        }, function(err, data) {
+        }, function (err, data) {
 
             if (err) {
                 reject(err);
@@ -27,7 +28,7 @@ exports.ping = function (hostname) {
     return new Promise((resolve, reject) => {
         const ping = new Ping(hostname);
 
-        ping.send(function(err, ms) {
+        ping.send(function (err, ms) {
             if (err) {
                 reject(err)
             } else if (ms === null) {
@@ -40,37 +41,73 @@ exports.ping = function (hostname) {
 }
 
 exports.setting = async function (key) {
-    return await R.getCell("SELECT `value` FROM setting WHERE `key` = ? ", [
-        key
-    ])
+    let value = await R.getCell("SELECT `value` FROM setting WHERE `key` = ? ", [
+        key,
+    ]);
+
+    try {
+        const v = JSON.parse(value);
+        debug(`Get Setting: ${key}: ${v}`)
+        return v;
+    } catch (e) {
+        return value;
+    }
 }
 
 exports.setSetting = async function (key, value) {
     let bean = await R.findOne("setting", " `key` = ? ", [
-        key
+        key,
     ])
-    if (! bean) {
+    if (!bean) {
         bean = R.dispense("setting")
         bean.key = key;
     }
-    bean.value = value;
+    bean.value = JSON.stringify(value);
     await R.store(bean)
 }
 
 exports.getSettings = async function (type) {
-    let list = await R.getAll("SELECT * FROM setting WHERE `type` = ? ", [
-        type
+    let list = await R.getAll("SELECT `key`, `value` FROM setting WHERE `type` = ? ", [
+        type,
     ])
 
     let result = {};
 
     for (let row of list) {
-        result[row.key] = row.value;
+        try {
+            result[row.key] = JSON.parse(row.value);
+        } catch (e) {
+            result[row.key] = row.value;
+        }
     }
 
     return result;
 }
 
+exports.setSettings = async function (type, data) {
+    let keyList = Object.keys(data);
+
+    let promiseList = [];
+
+    for (let key of keyList) {
+        let bean = await R.findOne("setting", " `key` = ? ", [
+            key
+        ]);
+
+        if (bean == null) {
+            bean = R.dispense("setting");
+            bean.type = type;
+            bean.key = key;
+        }
+
+        if (bean.type === type) {
+            bean.value = JSON.stringify(data[key]);
+            promiseList.push(R.store(bean))
+        }
+    }
+
+    await Promise.all(promiseList);
+}
 
 // ssl-checker by @dyaa
 // param: res - response object from axios
@@ -97,7 +134,9 @@ exports.checkCertificate = function (res) {
     } = res.request.res.socket.getPeerCertificate(false);
 
     if (!valid_from || !valid_to || !subjectaltname) {
-        throw { message: 'No TLS certificate in response' };
+        throw {
+            message: "No TLS certificate in response",
+        };
     }
 
     const valid = res.request.res.socket.authorized || false;
@@ -118,4 +157,33 @@ exports.checkCertificate = function (res) {
         issuer,
         fingerprint,
     };
+}
+
+// Check if the provided status code is within the accepted ranges
+// Param: status - the status code to check
+// Param: accepted_codes - an array of accepted status codes
+// Return: true if the status code is within the accepted ranges, false otherwise
+// Will throw an error if the provided status code is not a valid range string or code string
+
+exports.checkStatusCode = function (status, accepted_codes) {
+    if (accepted_codes == null || accepted_codes.length === 0) {
+        return false;
+    }
+
+    for (const code_range of accepted_codes) {
+        const code_range_split = code_range.split("-").map(string => parseInt(string));
+        if (code_range_split.length === 1) {
+            if (status === code_range_split[0]) {
+                return true;
+            }
+        } else if (code_range_split.length === 2) {
+            if (status >= code_range_split[0] && status <= code_range_split[1]) {
+                return true;
+            }
+        } else {
+            throw new Error("Invalid status code range");
+        }
+    }
+
+    return false;
 }
