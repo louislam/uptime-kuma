@@ -143,6 +143,10 @@ export default {
     }
 }
 
+main {
+    min-height: calc(100vh - 160px)
+}
+
 .title {
     font-weight: bold;
 }

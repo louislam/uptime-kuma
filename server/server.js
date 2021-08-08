@@ -619,13 +619,17 @@ async function afterLogin(socket, user) {
 
     let monitorList = await sendMonitorList(socket)
 
-    for (let monitorID in monitorList) {
-        sendHeartbeatList(socket, monitorID);
-        sendImportantHeartbeatList(socket, monitorID);
-        Monitor.sendStats(io, monitorID, user.id)
-    }
-
     sendNotificationList(socket)
+
+    // Delay a bit, so that it let the main page to query the data first, since SQLite can process one sql at the same time only.
+    // For example, query the edit data first.
+    setTimeout(() => {
+        for (let monitorID in monitorList) {
+            sendHeartbeatList(socket, monitorID);
+            sendImportantHeartbeatList(socket, monitorID);
+            Monitor.sendStats(io, monitorID, user.id)
+        }
+    }, 500);
 }
 
 async function getMonitorJSONList(userID) {
