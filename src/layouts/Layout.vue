@@ -1,76 +1,78 @@
 <template>
-    <div v-if="! $root.socket.connected && ! $root.socket.firstConnect" class="lost-connection">
-        <div class="container-fluid">
-            {{ $root.connectionErrorMsg }}
+    <div :class="$root.theme">
+        <div v-if="! $root.socket.connected && ! $root.socket.firstConnect" class="lost-connection">
+            <div class="container-fluid">
+                {{ $root.connectionErrorMsg }}
+            </div>
         </div>
+
+        <!-- Desktop header -->
+        <header v-if="! $root.isMobile" class="d-flex flex-wrap justify-content-center py-3 mb-3 border-bottom">
+            <router-link to="/dashboard" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
+                <object class="bi me-2 ms-4" width="40" height="40" data="/icon.svg" alt="Logo" />
+                <span class="fs-4 title">Uptime Kuma</span>
+            </router-link>
+
+            <ul class="nav nav-pills">
+                <li class="nav-item">
+                    <router-link to="/dashboard" class="nav-link">
+                        <font-awesome-icon icon="tachometer-alt" /> Dashboard
+                    </router-link>
+                </li>
+                <li class="nav-item">
+                    <router-link to="/settings" class="nav-link">
+                        <font-awesome-icon icon="cog" /> Settings
+                    </router-link>
+                </li>
+            </ul>
+        </header>
+
+        <!-- Mobile header -->
+        <header v-else class="d-flex flex-wrap justify-content-center pt-2 pb-2 mb-3">
+            <router-link to="/dashboard" class="d-flex align-items-center text-dark text-decoration-none">
+                <object class="bi" width="40" height="40" data="/icon.svg" />
+                <span class="fs-4 title ms-2">Uptime Kuma</span>
+            </router-link>
+        </header>
+
+        <main>
+            <!-- Add :key to disable vue router re-use the same component -->
+            <router-view v-if="$root.loggedIn" :key="$route.fullPath" />
+            <Login v-if="! $root.loggedIn && $root.allowLoginDialog" />
+        </main>
+
+        <footer>
+            <div class="container-fluid">
+                Uptime Kuma -
+                Version: {{ $root.info.version }} -
+                <a href="https://github.com/louislam/uptime-kuma/releases" target="_blank" rel="noopener">Check Update On GitHub</a>
+            </div>
+        </footer>
+
+        <!-- Mobile Only -->
+        <div v-if="$root.isMobile" style="width: 100%;height: 60px;" />
+        <nav v-if="$root.isMobile" class="bottom-nav">
+            <router-link to="/dashboard" class="nav-link" @click="$root.cancelActiveList">
+                <div><font-awesome-icon icon="tachometer-alt" /></div>
+                Dashboard
+            </router-link>
+
+            <a href="#" :class=" { 'router-link-exact-active' : $root.showListMobile } " @click="$root.showListMobile = ! $root.showListMobile">
+                <div><font-awesome-icon icon="list" /></div>
+                List
+            </a>
+
+            <router-link to="/add" class="nav-link" @click="$root.cancelActiveList">
+                <div><font-awesome-icon icon="plus" /></div>
+                Add
+            </router-link>
+
+            <router-link to="/settings" class="nav-link" @click="$root.cancelActiveList">
+                <div><font-awesome-icon icon="cog" /></div>
+                Settings
+            </router-link>
+        </nav>
     </div>
-
-    <!-- Desktop header -->
-    <header v-if="! $root.isMobile" class="d-flex flex-wrap justify-content-center py-3 mb-3 border-bottom">
-        <router-link to="/dashboard" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
-            <object class="bi me-2 ms-4" width="40" height="40" data="/icon.svg" alt="Logo" />
-            <span class="fs-4 title">Uptime Kuma</span>
-        </router-link>
-
-        <ul class="nav nav-pills">
-            <li class="nav-item">
-                <router-link to="/dashboard" class="nav-link">
-                    <font-awesome-icon icon="tachometer-alt" /> Dashboard
-                </router-link>
-            </li>
-            <li class="nav-item">
-                <router-link to="/settings" class="nav-link">
-                    <font-awesome-icon icon="cog" /> Settings
-                </router-link>
-            </li>
-        </ul>
-    </header>
-
-    <!-- Mobile header -->
-    <header v-else class="d-flex flex-wrap justify-content-center mt-3 mb-3">
-        <router-link to="/dashboard" class="d-flex align-items-center  text-dark text-decoration-none">
-            <object class="bi" width="40" height="40" data="/icon.svg" />
-            <span class="fs-4 title ms-2">Uptime Kuma</span>
-        </router-link>
-    </header>
-
-    <main>
-        <!-- Add :key to disable vue router re-use the same component -->
-        <router-view v-if="$root.loggedIn" :key="$route.fullPath" />
-        <Login v-if="! $root.loggedIn && $root.allowLoginDialog" />
-    </main>
-
-    <footer>
-        <div class="container-fluid">
-            Uptime Kuma -
-            Version: {{ $root.info.version }} -
-            <a href="https://github.com/louislam/uptime-kuma/releases" target="_blank" rel="noopener">Check Update On GitHub</a>
-        </div>
-    </footer>
-
-    <!-- Mobile Only -->
-    <div v-if="$root.isMobile" style="width: 100%;height: 60px;" />
-    <nav v-if="$root.isMobile" class="bottom-nav">
-        <router-link to="/dashboard" class="nav-link" @click="$root.cancelActiveList">
-            <div><font-awesome-icon icon="tachometer-alt" /></div>
-            Dashboard
-        </router-link>
-
-        <a href="#" :class=" { 'router-link-exact-active' : $root.showListMobile } " @click="$root.showListMobile = ! $root.showListMobile">
-            <div><font-awesome-icon icon="list" /></div>
-            List
-        </a>
-
-        <router-link to="/add" class="nav-link" @click="$root.cancelActiveList">
-            <div><font-awesome-icon icon="plus" /></div>
-            Add
-        </router-link>
-
-        <router-link to="/settings" class="nav-link" @click="$root.cancelActiveList">
-            <div><font-awesome-icon icon="cog" /></div>
-            Settings
-        </router-link>
-    </nav>
 </template>
 
 <script>
@@ -103,7 +105,7 @@ export default {
 }
 </script>
 
-<style scoped lang="scss">
+<style lang="scss" scoped>
 @import "../assets/vars.scss";
 
 .bottom-nav {
@@ -159,9 +161,24 @@ footer {
     color: #AAA;
     font-size: 13px;
     margin-top: 10px;
-    margin-bottom: 30px;
+    padding-bottom: 30px;
     margin-left: 10px;
     text-align: center;
+}
+
+.dark {
+    header {
+        background-color: #161B22;
+        border-bottom-color: #161B22 !important;
+
+        span {
+            color: #F0F6FC;
+        }
+    }
+
+    .bottom-nav {
+        background-color: $dark-bg;
+    }
 }
 
 </style>

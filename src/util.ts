@@ -39,6 +39,6 @@ export function ucfirst(str) {
 
 export function debug(msg) {
     if (process.env.NODE_ENV === "development") {
-        console.log(msg)
+        console.debug(msg);
     }
 }

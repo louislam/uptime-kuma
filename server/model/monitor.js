@@ -122,7 +122,9 @@ class Monitor extends BeanModel {
                         try {
                             await this.updateTlsInfo(checkCertificate(res));
                         } catch (e) {
-                            console.error(e.message)
+                            if (e.message !== "No TLS certificate in response") {
+                                console.error(e.message)
+                            }
                         }
                     }
 

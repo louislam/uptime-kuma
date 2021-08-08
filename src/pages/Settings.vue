@@ -20,6 +20,19 @@
                         </select>
                     </div>
 
+                    <div class="mb-3">
+                        <div class="btn-group" role="group" aria-label="Basic checkbox toggle button group">
+                            <input id="btncheck1" v-model="$root.userTheme" type="radio" class="btn-check" name="theme" autocomplete="off" value="light">
+                            <label class="btn btn-outline-primary" for="btncheck1">Light</label>
+
+                            <input id="btncheck2" v-model="$root.userTheme" type="radio" class="btn-check" name="theme" autocomplete="off" value="dark">
+                            <label class="btn btn-outline-primary" for="btncheck2">Dark</label>
+
+                            <input id="btncheck3" v-model="$root.userTheme" type="radio" class="btn-check" name="theme" autocomplete="off" value="auto">
+                            <label class="btn btn-outline-primary" for="btncheck3">Auto</label>
+                        </div>
+                    </div>
+
                     <div>
                         <button class="btn btn-primary" type="submit">
                             Save
@@ -67,7 +80,7 @@
                 </template>
             </div>
 
-            <div class="col-md-6">
+            <div class="notification-list col-md-6">
                 <div v-if="$root.isMobile" class="mt-3" />
 
                 <h2>Notifications</h2>
@@ -201,8 +214,17 @@ export default {
 }
 </script>
 
-<style scoped>
-    .shadow-box {
-        padding: 20px;
+<style lang="scss" scoped>
+@import "../assets/vars.scss";
+
+.shadow-box {
+    padding: 20px;
+}
+
+.dark {
+    .list-group-item {
+        background-color: $dark-bg2;
+        color: $dark-font-color;
     }
+}
 </style>

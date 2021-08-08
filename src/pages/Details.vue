@@ -6,7 +6,7 @@
         <span v-if="monitor.type === 'ping'">Ping: {{ monitor.hostname }}</span>
         <span v-if="monitor.type === 'keyword'">
             <br>
-            <span>Keyword:</span> <span style="color: black">{{ monitor.keyword }}</span>
+            <span>Keyword:</span> <span class="keyword">{{ monitor.keyword }}</span>
         </span>
     </p>
 
@@ -350,6 +350,16 @@ table {
 
     .col {
         margin: 20px 0;
+    }
+}
+
+.keyword {
+    color: black;
+}
+
+.dark  {
+    .keyword {
+        color: $dark-font-color;
     }
 }
 </style>
