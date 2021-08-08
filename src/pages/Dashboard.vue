@@ -3,7 +3,7 @@
         <div class="row">
             <div class="col-12 col-md-5 col-xl-4">
                 <div v-if="! $root.isMobile">
-                    <router-link to="/add" class="btn btn-primary"><font-awesome-icon icon="plus" /> Add New Monitor</router-link>
+                    <router-link to="/add" class="btn btn-primary mb-3"><font-awesome-icon icon="plus" /> Add New Monitor</router-link>
                 </div>
 
                 <div v-if="showList" class="shadow-box list mb-4">
@@ -97,7 +97,6 @@ export default {
 }
 
 .list {
-    margin-top: 25px;
     height: auto;
     min-height: calc(100vh - 240px);
 

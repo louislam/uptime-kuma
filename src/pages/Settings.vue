@@ -6,7 +6,7 @@
     <div class="shadow-box">
         <div class="row">
             <div class="col-md-6">
-                <h2>General</h2>
+                <h2 class="mb-2">General</h2>
                 <form class="mb-3" @submit.prevent="saveGeneral">
                     <div class="mb-3">
                         <label for="timezone" class="form-label">Timezone</label>
@@ -42,7 +42,7 @@
 
                 <template v-if="loaded">
                     <template v-if="! settings.disableAuth">
-                        <h2>Change Password</h2>
+                        <h2 class="mt-5 mb-2">Change Password</h2>
                         <form class="mb-3" @submit.prevent="savePassword">
                             <div class="mb-3">
                                 <label for="current-password" class="form-label">Current Password</label>
@@ -70,7 +70,7 @@
                         </form>
                     </template>
 
-                    <h2>Advanced</h2>
+                    <h2 class="mt-5 mb-2">Advanced</h2>
 
                     <div class="mb-3">
                         <button v-if="settings.disableAuth" class="btn btn-outline-primary me-1" @click="enableAuth">Enable Auth</button>

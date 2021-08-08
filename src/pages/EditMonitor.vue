@@ -1,12 +1,10 @@
 <template>
-    <h1 class="my-3">
-        {{ pageName }}
-    </h1>
+    <h1 class="mb-3">{{ pageName }}</h1>
     <form @submit.prevent="submit">
         <div class="shadow-box">
             <div class="row">
                 <div class="col-md-6">
-                    <h2>General</h2>
+                    <h2 class="mb-2">General</h2>
 
                     <div class="my-3">
                         <label for="type" class="form-label">Monitor Type</label>
@@ -67,7 +65,7 @@
                         </div>
                     </div>
 
-                    <h2 class="my-3">Advanced</h2>
+                    <h2 class="mt-5 mb-2">Advanced</h2>
 
                     <div v-if="monitor.type === 'http' || monitor.type === 'keyword' " class="my-3 form-check">
                         <input id="ignore-tls" v-model="monitor.ignoreTls" class="form-check-input" type="checkbox" value="">
@@ -116,17 +114,15 @@
                         </div>
                     </div>
 
-                    <div>
-                        <button class="btn btn-primary" type="submit" :disabled="processing">
-                            Save
-                        </button>
+                    <div class="mt-5 mb-1">
+                        <button class="btn btn-primary" type="submit" :disabled="processing">Save</button>
                     </div>
                 </div>
 
                 <div class="col-md-6">
                     <div v-if="$root.isMobile" class="mt-3" />
 
-                    <h2>Notifications</h2>
+                    <h2 class="mb-2">Notifications</h2>
                     <p v-if="$root.notificationList.length === 0">
                         Not available, please setup.
                     </p>
