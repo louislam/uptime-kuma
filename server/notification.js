@@ -84,10 +84,12 @@ class Notification {
 
         } else if (notification.type === "discord") {
             try {
+                const discordDisplayName = notification.discordUsername || "Uptime Kuma";
+
                 // If heartbeatJSON is null, assume we're testing.
                 if (heartbeatJSON == null) {
                     let discordtestdata = {
-                        username: notification.discordUsername || "Uptime Kuma",
+                        username: discordDisplayName,
                         content: msg,
                     }
                     await axios.post(notification.discordWebhookUrl, discordtestdata)
@@ -96,7 +98,7 @@ class Notification {
                 // If heartbeatJSON is not null, we go into the normal alerting loop.
                 if (heartbeatJSON["status"] == 0) {
                     let discorddowndata = {
-                        username: notification.discordUsername || "Uptime Kuma",
+                        username: discordDisplayName,
                         embeds: [{
                             title: "❌ One of your services went down. ❌",
                             color: 16711680,
@@ -126,7 +128,7 @@ class Notification {
 
                 } else if (heartbeatJSON["status"] == 1) {
                     let discordupdata = {
-                        username: notification.discordUsername || "Uptime Kuma",
+                        username: discordDisplayName,
                         embeds: [{
                             title: "✅ Your service " + monitorJSON["name"] + " is up! ✅",
                             color: 65280,
