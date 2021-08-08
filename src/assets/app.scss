@@ -162,8 +162,8 @@
         border-color: $dark-border-color;
     }
 
-    .multiselect__option--selected.multiselect__option--highlight {
-
+    .multiselect--above .multiselect__content-wrapper {
+        border-color: $dark-border-color;
     }
 
     .multiselect__option--selected {

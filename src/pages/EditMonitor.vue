@@ -107,6 +107,7 @@
                             :preserve-search="true"
                             placeholder="Pick Accepted Status Codes..."
                             :preselect-first="false"
+                            :max-height="600"
                             :taggable="true"
                         ></VueMultiselect>
 
@@ -161,25 +162,17 @@ export default {
         NotificationDialog,
         VueMultiselect,
     },
+
     data() {
-        let acceptedStatusCodeOptions = [
-            "100-199",
-            "200-299",
-            "300-399",
-            "400-499",
-            "500-599",
-        ];
-        for (let i = 100; i <= 999; i++) {
-            acceptedStatusCodeOptions.push(i.toString());
-        }
         return {
             processing: false,
             monitor: {
                 notificationIDList: {},
             },
-            acceptedStatusCodeOptions,
+            acceptedStatusCodeOptions: [],
         }
     },
+
     computed: {
         pageName() {
             return (this.isAdd) ? "Add New Monitor" : "Edit"
@@ -198,6 +191,20 @@ export default {
     },
     mounted() {
         this.init();
+
+        let acceptedStatusCodeOptions = [
+            "100-199",
+            "200-299",
+            "300-399",
+            "400-499",
+            "500-599",
+        ];
+
+        for (let i = 100; i <= 999; i++) {
+            acceptedStatusCodeOptions.push(i.toString());
+        }
+
+        this.acceptedStatusCodeOptions = acceptedStatusCodeOptions;
     },
     methods: {
         init() {
