@@ -60,6 +60,14 @@ pm2 start npm --name uptime-kuma -- run start-server -- --port=80 --hostname=0.0
 
 ```
 
+More useful commands if you have installed.
+
+```bash
+pm2 start uptime-kuma
+pm2 restart uptime-kuma
+pm2 stop uptime-kuma
+```
+
 Browse to http://localhost:3001 after started.
 
 
