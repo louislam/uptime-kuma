@@ -5,6 +5,15 @@
     font-family: ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,segoe ui,Roboto,helvetica neue,Arial,noto sans,sans-serif,apple color emoji,segoe ui emoji,segoe ui symbol,noto color emoji;
 }
 
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #CCC;
+    border-radius: 20px;
+}
+
 .modal {
     backdrop-filter: blur(3px);
 }
@@ -26,7 +35,7 @@
 
 
 .shadow-box {
-    overflow: hidden;
+    //overflow: hidden;   // Forget why add this, but multiple select hide by this
     box-shadow: 0 15px 70px rgba(0, 0, 0, .1);
     padding: 10px;
     border-radius: 10px;
@@ -61,6 +70,10 @@
 .dark {
     background-color: #090C10;
     color: $dark-font-color;
+
+    &::-webkit-scrollbar-thumb {
+        background: $dark-border-color;
+    }
 
     .shadow-box {
         background-color: $dark-bg;
@@ -131,5 +144,29 @@
         background-color: $dark-bg;
         border-color: $dark-border-color;
         color: $dark-font-color;
+    }
+
+    // Multiselect
+    .multiselect__tags {
+        background-color: $dark-bg2;
+        border-color: $dark-border-color;
+    }
+
+    .multiselect__input, .multiselect__single {
+        background-color: $dark-bg2;
+        color: $dark-font-color;
+    }
+
+    .multiselect__content-wrapper {
+        background-color: $dark-bg2;
+        border-color: $dark-border-color;
+    }
+
+    .multiselect--above .multiselect__content-wrapper {
+        border-color: $dark-border-color;
+    }
+
+    .multiselect__option--selected {
+        background-color: $dark-bg;
     }
 }

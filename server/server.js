@@ -1,4 +1,5 @@
-console.log("Welcome to Uptime Kuma")
+console.log("Welcome to Uptime Kuma");
+console.log("Node Env: " + process.env.NODE_ENV);
 
 const { sleep, debug } = require("../src/util");
 
@@ -230,6 +231,9 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                 let notificationIDList = monitor.notificationIDList;
                 delete monitor.notificationIDList;
 
+                monitor.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
+                delete monitor.accepted_statuscodes;
+
                 bean.import(monitor)
                 bean.user_id = socket.userID
                 await R.store(bean)
@@ -274,6 +278,7 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                 bean.keyword = monitor.keyword;
                 bean.ignoreTls = monitor.ignoreTls;
                 bean.upsideDown = monitor.upsideDown;
+                bean.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
 
                 await R.store(bean)
 

@@ -9,7 +9,7 @@ exports.tcping = function (hostname, port) {
             address: hostname,
             port: port,
             attempts: 1,
-        }, function(err, data) {
+        }, function (err, data) {
 
             if (err) {
                 reject(err);
@@ -28,7 +28,7 @@ exports.ping = function (hostname) {
     return new Promise((resolve, reject) => {
         const ping = new Ping(hostname);
 
-        ping.send(function(err, ms) {
+        ping.send(function (err, ms) {
             if (err) {
                 reject(err)
             } else if (ms === null) {
@@ -58,7 +58,7 @@ exports.setSetting = async function (key, value) {
     let bean = await R.findOne("setting", " `key` = ? ", [
         key,
     ])
-    if (! bean) {
+    if (!bean) {
         bean = R.dispense("setting")
         bean.key = key;
     }
@@ -157,4 +157,33 @@ exports.checkCertificate = function (res) {
         issuer,
         fingerprint,
     };
+}
+
+// Check if the provided status code is within the accepted ranges
+// Param: status - the status code to check
+// Param: accepted_codes - an array of accepted status codes
+// Return: true if the status code is within the accepted ranges, false otherwise
+// Will throw an error if the provided status code is not a valid range string or code string
+
+exports.checkStatusCode = function (status, accepted_codes) {
+    if (accepted_codes == null || accepted_codes.length === 0) {
+        return false;
+    }
+
+    for (const code_range of accepted_codes) {
+        const code_range_split = code_range.split("-").map(string => parseInt(string));
+        if (code_range_split.length === 1) {
+            if (status === code_range_split[0]) {
+                return true;
+            }
+        } else if (code_range_split.length === 2) {
+            if (status >= code_range_split[0] && status <= code_range_split[1]) {
+                return true;
+            }
+        } else {
+            throw new Error("Invalid status code range");
+        }
+    }
+
+    return false;
 }
