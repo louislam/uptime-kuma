@@ -230,6 +230,9 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                 let notificationIDList = monitor.notificationIDList;
                 delete monitor.notificationIDList;
 
+                monitor.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
+                delete monitor.accepted_statuscodes;
+
                 bean.import(monitor)
                 bean.user_id = socket.userID
                 await R.store(bean)
