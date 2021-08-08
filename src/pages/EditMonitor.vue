@@ -84,7 +84,7 @@
                         </div>
                     </div>
 
-                    <div class="my-3">
+                    <div v-if="monitor.type === 'http' || monitor.type === 'keyword' " class="my-3">
                         <label for="maxRedirects" class="form-label">Max. Redirects</label>
                         <input id="maxRedirects" v-model="monitor.maxredirects" type="number" class="form-control" required min="0" step="1">
                         <div class="form-text">
@@ -92,7 +92,7 @@
                         </div>
                     </div>
 
-                    <div class="my-3">
+                    <div v-if="monitor.type === 'http' || monitor.type === 'keyword' " class="my-3">
                         <label for="acceptedStatusCodes" class="form-label">Accepted Status Codes</label>
 
                         <VueMultiselect
