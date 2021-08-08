@@ -3,6 +3,7 @@
 // Frontend uses util.ts
 // Need to run "tsc" to compile if there are any changes.
 
+export const appName = "Uptime Kuma";
 export const DOWN = 0;
 export const UP = 1;
 export const PENDING = 2;
