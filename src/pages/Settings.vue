@@ -7,7 +7,25 @@
         <div class="row">
             <div class="col-md-6">
                 <h2 class="mb-2">General</h2>
+
                 <form class="mb-3" @submit.prevent="saveGeneral">
+                    <div class="mb-3">
+                        <label for="timezone" class="form-label">Theme</label>
+
+                        <div>
+                            <div class="btn-group" role="group" aria-label="Basic checkbox toggle button group">
+                                <input id="btncheck1" v-model="$root.userTheme" type="radio" class="btn-check" name="theme" autocomplete="off" value="light">
+                                <label class="btn btn-outline-primary" for="btncheck1">Light</label>
+
+                                <input id="btncheck2" v-model="$root.userTheme" type="radio" class="btn-check" name="theme" autocomplete="off" value="dark">
+                                <label class="btn btn-outline-primary" for="btncheck2">Dark</label>
+
+                                <input id="btncheck3" v-model="$root.userTheme" type="radio" class="btn-check" name="theme" autocomplete="off" value="auto">
+                                <label class="btn btn-outline-primary" for="btncheck3">Auto</label>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="mb-3">
                         <label for="timezone" class="form-label">Timezone</label>
                         <select id="timezone" v-model="$root.userTimezone" class="form-select">
@@ -21,15 +39,19 @@
                     </div>
 
                     <div class="mb-3">
-                        <div class="btn-group" role="group" aria-label="Basic checkbox toggle button group">
-                            <input id="btncheck1" v-model="$root.userTheme" type="radio" class="btn-check" name="theme" autocomplete="off" value="light">
-                            <label class="btn btn-outline-primary" for="btncheck1">Light</label>
+                        <label class="form-label">Search Engine Visibility</label>
 
-                            <input id="btncheck2" v-model="$root.userTheme" type="radio" class="btn-check" name="theme" autocomplete="off" value="dark">
-                            <label class="btn btn-outline-primary" for="btncheck2">Dark</label>
-
-                            <input id="btncheck3" v-model="$root.userTheme" type="radio" class="btn-check" name="theme" autocomplete="off" value="auto">
-                            <label class="btn btn-outline-primary" for="btncheck3">Auto</label>
+                        <div class="form-check">
+                            <input id="searchEngineIndexYes" v-model="settings.searchEngineIndex" class="form-check-input" type="radio" name="flexRadioDefault">
+                            <label class="form-check-label" for="searchEngineIndexYes">
+                                Allow indexing
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input id="searchEngineIndexNo" v-model="settings.searchEngineIndex" class="form-check-input" type="radio" name="flexRadioDefault">
+                            <label class="form-check-label" for="searchEngineIndexNo">
+                                Discourage search engines from indexing site
+                            </label>
                         </div>
                     </div>
 
