@@ -80,7 +80,7 @@
                 </template>
             </div>
 
-            <div class="col-md-6">
+            <div class="notification-list col-md-6">
                 <div v-if="$root.isMobile" class="mt-3" />
 
                 <h2>Notifications</h2>
@@ -215,14 +215,16 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-    .shadow-box {
-        padding: 20px;
-    }
+@import "../assets/vars.scss";
 
-    .dark {
-        .list-group-item {
-            background-color: var(--background-4);
-            color: var(--main-font-color);
-        }
+.shadow-box {
+    padding: 20px;
+}
+
+.dark {
+    .list-group-item {
+        background-color: $dark-bg2;
+        color: $dark-font-color;
     }
+}
 </style>

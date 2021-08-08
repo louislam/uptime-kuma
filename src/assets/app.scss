@@ -5,6 +5,26 @@
     font-family: ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,segoe ui,Roboto,helvetica neue,Arial,noto sans,sans-serif,apple color emoji,segoe ui emoji,segoe ui symbol,noto color emoji;
 }
 
+.modal {
+    backdrop-filter: blur(3px);
+}
+
+.modal-content {
+    border-radius: 1rem;
+    box-shadow: 0 15px 70px rgba(0, 0, 0, .1);
+
+    .dark & {
+        box-shadow: 0 15px 70px rgb(0 0 0);
+        background-color: $dark-bg;
+    }
+}
+
+.VuePagination__count {
+    font-size: 13px;
+    text-align: center;
+}
+
+
 .shadow-box {
     overflow: hidden;
     box-shadow: 0 15px 70px rgba(0, 0, 0, .1);
@@ -29,12 +49,13 @@
         background-color: $highlight;
         border-color: $highlight;
     }
+
+    .dark & {
+        color: $dark-font-color2;
+    }
 }
 
-.modal-content {
-    border-radius: 1rem;
-    backdrop-filter: blur(3px);
-}
+
 
 // Dark Theme override here
 .dark {
@@ -42,54 +63,73 @@
     color: $dark-font-color;
 
     .shadow-box {
-        background-color: #0D1117;
+        background-color: $dark-bg;
     }
 
-    a:hover {
-        color: #7ce8a4;
+    .form-check-input {
+        background-color: $dark-bg2;
     }
 
-    .btn-primary {
-        color: #0a0a0a;
-
-        &:hover, &:active, &:focus, &.active {
-            color: #0a0a0a;
-            background-color: $highlight;
-            border-color: $highlight;
-        }
+    .form-switch .form-check-input {
+        background-color: #131a21;
     }
 
-    html,
-    body,
-    input,
-    .modal-content {
-        background: var(--page-background);
-        color: var(--main-font-color);
-    }
     a,
     .table,
     .nav-link {
-        color: var(--main-font-color);
-    }
-    .nav-pills .nav-link.active,
-    .nav-pills .show > .nav-link {
-        color: #0a0a0a;
-    }
-
-    .nav-link:hover,
-    .nav-link:focus {
-        color: #5cdd8b;
+        color: $dark-font-color;
     }
 
     .form-control,
     .form-control:focus,
     .form-select,
     .form-select:focus {
-        color: var(--main-font-color);
-        background-color: var(--background-4);
+        color: $dark-font-color;
+        background-color: $dark-bg2;
     }
 
-    .form-control {
-        border-color: #21262D;
+    .form-control, .form-select {
+        border-color: $dark-border-color;
+    }
+
+    .table-hover > tbody > tr:hover {
+        --bs-table-accent-bg: #070A10;
+        color: $dark-font-color;
+    }
+
+    .nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+        color: $dark-font-color2;
+    }
+
+    .bg-primary {
+        color: $dark-font-color2;
+    }
+
+    .btn-secondary {
+        color: white;
+    }
+
+    .btn-close {
+        opacity: 1;
+    }
+
+    .modal-header {
+        border-color: $dark-bg;
+    }
+
+    .modal-footer {
+        border-color: $dark-bg;
+    }
+
+    // Pagination
+    .page-item.disabled .page-link {
+        background-color: $dark-bg;
+        border-color: $dark-border-color;
+    }
+
+    .page-link {
+        background-color: $dark-bg;
+        border-color: $dark-border-color;
+        color: $dark-font-color;
     }
 }

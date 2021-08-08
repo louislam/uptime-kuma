@@ -28,7 +28,7 @@
         </header>
 
         <!-- Mobile header -->
-        <header v-else class="d-flex flex-wrap justify-content-center mt-3 mb-3">
+        <header v-else class="d-flex flex-wrap justify-content-center pt-2 pb-2 mb-3">
             <router-link to="/dashboard" class="d-flex align-items-center text-dark text-decoration-none">
                 <object class="bi" width="40" height="40" data="/icon.svg" />
                 <span class="fs-4 title ms-2">Uptime Kuma</span>
@@ -161,7 +161,7 @@ footer {
     color: #AAA;
     font-size: 13px;
     margin-top: 10px;
-    margin-bottom: 30px;
+    padding-bottom: 30px;
     margin-left: 10px;
     text-align: center;
 }
@@ -177,7 +177,7 @@ footer {
     }
 
     .bottom-nav {
-        background-color: var(--background-navbar);
+        background-color: $dark-bg;
     }
 }
 

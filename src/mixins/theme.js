@@ -12,6 +12,8 @@ export default {
         if (! this.userTheme) {
             this.userTheme = "light";
         }
+
+        document.body.classList.add(this.theme);
     },
 
     computed: {
@@ -26,6 +28,11 @@ export default {
     watch: {
         userTheme(to, from) {
             localStorage.theme = to;
+        },
+
+        theme(to, from) {
+            document.body.classList.remove(from);
+            document.body.classList.add(this.theme);
         }
     }
 }

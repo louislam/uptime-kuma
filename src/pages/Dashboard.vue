@@ -137,11 +137,11 @@ export default {
     .list {
         .item {
             &:hover {
-                background-color: var(--background-4);
+                background-color: $dark-bg2;
             }
 
             &.active {
-                background-color: var(--background-4);
+                background-color: $dark-bg2;
             }
         }
     }
