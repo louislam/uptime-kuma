@@ -96,9 +96,20 @@
 
                     <div class="my-3">
                         <label for="acceptedStatusCodes" class="form-label">Accepted Status Codes</label>
-                        <VueMultiselect id="acceptedStatusCodes" v-model="monitor.accepted_statuscodes" :options="acceptedStatusCodeOptions" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" placeholder="Pick Accepted Status Codes..." :preselect-first="false">
-                            <template #selection="{ values, isOpen }"><span v-if="values.length && !isOpen" class="multiselect__single">{{ values.length }} options selected</span></template>
-                        </VueMultiselect>
+
+                        <VueMultiselect
+                            id="acceptedStatusCodes"
+                            v-model="monitor.accepted_statuscodes"
+                            :options="acceptedStatusCodeOptions"
+                            :multiple="true"
+                            :close-on-select="false"
+                            :clear-on-select="false"
+                            :preserve-search="true"
+                            placeholder="Pick Accepted Status Codes..."
+                            :preselect-first="false"
+                            :taggable="true"
+                        ></VueMultiselect>
+
                         <div class="form-text">
                             Select status codes which are considered as a successful response.
                         </div>
@@ -248,7 +259,7 @@ export default {
     @import "../assets/vars.scss";
 
     .multiselect__tags {
-        border-radius: 2rem;
+        border-radius: 1.5rem;
         border: 1px solid #ced4da;
     }
 
@@ -265,7 +276,14 @@ export default {
     }
 
     .multiselect__tag {
+        border-radius: 50rem;
         background: $primary !important;
+    }
+
+    .dark {
+        .multiselect__tag {
+            color: $dark-font-color2;
+        }
     }
 </style>
 

@@ -29,7 +29,7 @@ function ucfirst(str) {
 exports.ucfirst = ucfirst;
 function debug(msg) {
     if (process.env.NODE_ENV === "development") {
-        console.debug(msg);
+        console.log(msg);
     }
 }
 exports.debug = debug;

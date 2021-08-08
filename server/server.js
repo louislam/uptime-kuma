@@ -1,4 +1,5 @@
-console.log("Welcome to Uptime Kuma")
+console.log("Welcome to Uptime Kuma");
+console.log("Node Env: " + process.env.NODE_ENV);
 
 const { sleep, debug } = require("../src/util");
 
