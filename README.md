@@ -37,9 +37,11 @@ Change Port and Volume
 docker run -d --restart=always -p <YOUR_PORT>:3001 -v <YOUR_DIR OR VOLUME>:/app/data --name uptime-kuma louislam/uptime-kuma:1
 ```
 
-### Without Docker
+### Without Docker (x86/x64 only)
 
 Required Tools: Node.js >= 14, git and pm2.
+
+(**Not recommanded for ARM CPU users.** Since there is no prebuilt for node-sqlite3, it is hard to get it running)
 
 ```bash
 git clone https://github.com/louislam/uptime-kuma.git
