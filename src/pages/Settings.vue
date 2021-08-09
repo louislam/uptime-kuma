@@ -42,13 +42,13 @@
                         <label class="form-label">Search Engine Visibility</label>
 
                         <div class="form-check">
-                            <input id="searchEngineIndexYes" v-model="settings.searchEngineIndex" class="form-check-input" type="radio" name="flexRadioDefault">
+                            <input id="searchEngineIndexYes" v-model="settings.searchEngineIndex" class="form-check-input" type="radio" name="flexRadioDefault" :value="true" required>
                             <label class="form-check-label" for="searchEngineIndexYes">
                                 Allow indexing
                             </label>
                         </div>
                         <div class="form-check">
-                            <input id="searchEngineIndexNo" v-model="settings.searchEngineIndex" class="form-check-input" type="radio" name="flexRadioDefault">
+                            <input id="searchEngineIndexNo" v-model="settings.searchEngineIndex" class="form-check-input" type="radio" name="flexRadioDefault" :value="false" required>
                             <label class="form-check-label" for="searchEngineIndexNo">
                                 Discourage search engines from indexing site
                             </label>
@@ -185,7 +185,7 @@ export default {
 
         saveGeneral() {
             localStorage.timezone = this.$root.userTimezone;
-            toast.success("Saved.")
+            this.saveSettings();
         },
 
         savePassword() {

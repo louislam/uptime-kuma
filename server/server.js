@@ -88,16 +88,26 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
 
     // Normal Router here
 
-    app.use("/", express.static("dist"));
+    // Robots.txt
+    app.get("/robots.txt", async (_request, response) => {
+        let txt = "User-agent: *\nDisallow:";
+        if (! await setting("searchEngineIndex")) {
+            txt += " /";
+        }
+        response.setHeader("Content-Type", "text/plain");
+        response.send(txt);
+    });
 
     // Basic Auth Router here
 
     // Prometheus API metrics  /metrics
     // With Basic Auth using the first user's username/password
-    app.get("/metrics", basicAuth, prometheusAPIMetrics())
+    app.get("/metrics", basicAuth, prometheusAPIMetrics());
+
+    app.use("/", express.static("dist"));
 
     // Universal Route Handler, must be at the end
-    app.get("*", function(_request, response) {
+    app.get("*", async (_request, response) => {
         response.send(indexHTML);
     });
 
