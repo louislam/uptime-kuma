@@ -5,8 +5,9 @@ WORKDIR /app
 # split the sqlite install here, so that it can caches the arm prebuilt
 RUN apk add --no-cache --virtual .build-deps make g++ python3 python3-dev && \
             ln -s /usr/bin/python3 /usr/bin/python && \
-            npm install sqlite3@5.0.2 bcrypt@5.0.1 && \
-            apk del .build-deps
+            npm install @louislam/sqlite3@5.0.3 bcrypt@5.0.1 && \
+            apk del .build-deps && \
+            rm -f /usr/bin/python
 
 # Touching above code may causes sqlite3 re-compile again, painful slow.
 
