@@ -678,7 +678,7 @@ async function initDatabase() {
 
     if (! jwtSecretBean) {
         console.log("JWT secret is not found, generate one.");
-        jwtSecretBean = initJWTSecret();
+        jwtSecretBean = await initJWTSecret();
         console.log("Stored JWT secret into database");
     } else {
         console.log("Load JWT secret from database.");
