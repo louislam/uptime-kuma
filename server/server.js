@@ -27,7 +27,7 @@ console.log("Importing this project modules");
 debug("Importing Monitor");
 const Monitor = require("./model/monitor");
 debug("Importing Settings");
-const { getSettings, setSettings, setting } = require("./util-server");
+const { getSettings, setSettings, setting, initJWTSecret } = require("./util-server");
 debug("Importing Notification");
 const { Notification } = require("./notification");
 debug("Importing Database");
@@ -414,10 +414,7 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
 
                 if (user && passwordHash.verify(password.currentPassword, user.password)) {
 
-                    await R.exec("UPDATE `user` SET password = ? WHERE id = ? ", [
-                        passwordHash.generate(password.newPassword),
-                        socket.userID,
-                    ]);
+                    user.resetPassword(password.newPassword);
 
                     callback({
                         ok: true,
@@ -659,30 +656,22 @@ async function initDatabase() {
     }
 
     console.log("Connecting to Database")
-    Database.connect();
+    await Database.connect();
     console.log("Connected")
 
     // Patch the database
     await Database.patch()
-
-    // Auto map the model to a bean object
-    R.freeze(true)
-    await R.autoloadModels("./server/model");
 
     let jwtSecretBean = await R.findOne("setting", " `key` = ? ", [
         "jwtSecret",
     ]);
 
     if (! jwtSecretBean) {
-        console.log("JWT secret is not found, generate one.")
-        jwtSecretBean = R.dispense("setting")
-        jwtSecretBean.key = "jwtSecret"
-
-        jwtSecretBean.value = passwordHash.generate(dayjs() + "")
-        await R.store(jwtSecretBean)
-        console.log("Stored JWT secret into database")
+        console.log("JWT secret is not found, generate one.");
+        jwtSecretBean = initJWTSecret();
+        console.log("Stored JWT secret into database");
     } else {
-        console.log("Load JWT secret from database.")
+        console.log("Load JWT secret from database.");
     }
 
     // If there is no record in user table, it is a new Uptime Kuma instance, need to setup

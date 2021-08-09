@@ -21,7 +21,8 @@
         "build-docker-nightly-amd64": "docker buildx build --platform linux/amd64 -t louislam/uptime-kuma:nightly-amd64 --target nightly . --push",
         "setup": "git checkout 1.0.10 && npm install && npm run build",
         "update-version": "node extra/update-version.js",
-        "mark-as-nightly": "node extra/mark-as-nightly.js"
+        "mark-as-nightly": "node extra/mark-as-nightly.js",
+        "reset-password": "node extra/reset-password.js"
     },
     "dependencies": {
         "@fortawesome/fontawesome-svg-core": "^1.2.36",

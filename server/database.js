@@ -11,7 +11,7 @@ class Database {
     static latestVersion = 6;
     static noReject = true;
 
-    static connect() {
+    static async connect() {
         const Dialect = require("knex/lib/dialects/sqlite3/index.js");
         Dialect.prototype._driver = () => require("@louislam/sqlite3");
 
@@ -27,6 +27,10 @@ class Database {
                 idleTimeoutMillis: 30000,
             }
         }));
+
+        // Auto map the model to a bean object
+        R.freeze(true)
+        await R.autoloadModels("./server/model");
     }
 
     static async patch() {

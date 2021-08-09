@@ -2,6 +2,27 @@ const tcpp = require("tcp-ping");
 const Ping = require("./ping-lite");
 const { R } = require("redbean-node");
 const { debug } = require("../src/util");
+const passwordHash = require("./password-hash");
+const dayjs = require("dayjs");
+
+/**
+ * Init or reset JWT secret
+ * @returns {Promise<Bean>}
+ */
+exports.initJWTSecret = async () => {
+    let jwtSecretBean = await R.findOne("setting", " `key` = ? ", [
+        "jwtSecret",
+    ]);
+
+    if (! jwtSecretBean) {
+        jwtSecretBean = R.dispense("setting");
+        jwtSecretBean.key = "jwtSecret";
+    }
+
+    jwtSecretBean.value = passwordHash.generate(dayjs() + "");
+    await R.store(jwtSecretBean);
+    return jwtSecretBean;
+}
 
 exports.tcping = function (hostname, port) {
     return new Promise((resolve, reject) => {
