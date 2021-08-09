@@ -1,8 +1,11 @@
 {
     "compileOnSave": true,
     "compilerOptions": {
-        "target": "ES2018",
+        "target": "es2018",
         "module": "commonjs",
+        "lib": [
+            "es2020"
+        ],
         "removeComments": true,
         "preserveConstEnums": true,
         "sourceMap": false,

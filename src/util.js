@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.PENDING = exports.UP = exports.DOWN = exports.appName = void 0;
+exports.polyfill = exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.PENDING = exports.UP = exports.DOWN = exports.appName = void 0;
 exports.appName = "Uptime Kuma";
 exports.DOWN = 0;
 exports.UP = 1;
@@ -33,3 +33,14 @@ function debug(msg) {
     }
 }
 exports.debug = debug;
+function polyfill() {
+    if (!String.prototype.replaceAll) {
+        String.prototype.replaceAll = function (str, newStr) {
+            if (Object.prototype.toString.call(str).toLowerCase() === "[object regexp]") {
+                return this.replace(str, newStr);
+            }
+            return this.replace(new RegExp(str, "g"), newStr);
+        };
+    }
+}
+exports.polyfill = polyfill;
