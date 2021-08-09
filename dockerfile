@@ -16,13 +16,8 @@ RUN apk add --no-cache python3 py3-cryptography py3-pip py3-six py3-yaml py3-cli
 RUN pip3 --no-cache-dir install apprise && \
             rm -rf /root/.cache
 
-# Install packages and cache the layer
-COPY ./package.json ./package.json
-RUN npm install --only=prod && rm -f ./package-lock.json
-
-# Install dev packages, delete it after build
 COPY . .
-RUN npm install --only=dev && npm run build && npm prune
+RUN npm install && npm run build && npm prune
 
 EXPOSE 3001
 VOLUME ["/app/data"]
