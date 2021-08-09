@@ -110,6 +110,7 @@ class Monitor extends BeanModel {
                     // Use Custom agent to disable session reuse
                     // https://github.com/nodejs/node/issues/3940
                     let res = await axios.get(this.url, {
+                        timeout: 15000,
                         headers: {
                             "User-Agent": "Uptime-Kuma",
                         },
