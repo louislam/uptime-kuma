@@ -206,6 +206,11 @@ export default {
         loadSettings() {
             this.$root.getSocket().emit("getSettings", (res) => {
                 this.settings = res.data;
+
+                if (this.settings.searchEngineIndex === undefined) {
+                    this.settings.searchEngineIndex = false;
+                }
+
                 this.loaded = true;
             })
         },
