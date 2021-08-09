@@ -306,6 +306,12 @@ export default {
 <style lang="scss" scoped>
 @import "../assets/vars.scss";
 
+@media (max-width: 499px) { 
+    .url {
+        margin-top: 50px;
+    }
+}
+
 .url {
     color: $primary;
     margin-bottom: 20px;
