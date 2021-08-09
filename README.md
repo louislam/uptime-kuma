@@ -123,6 +123,10 @@ https://github.com/louislam/uptime-kuma/milestones
 
 ## More Screenshots
 
+Dark Mode:
+
+<img src="https://user-images.githubusercontent.com/1336778/128710166-908f8d88-9256-43f3-9c49-bfc2c56011d2.png" width="400" alt="" />
+
 Settings Page:
 
 <img src="https://louislam.net/uptimekuma/2.jpg" width="400" alt="" />
