@@ -132,8 +132,12 @@ h2 {
     }
 
     .btn-close {
-        opacity: 1;
+        box-shadow: none;
         filter: invert(1);
+
+        &:hover {
+            opacity: 0.6;
+        }
     }
 
     .modal-header {
