@@ -38,7 +38,13 @@ function Ping(host, options) {
         this._regmatch = /=([0-9.]+?) ms/;
 
     } else if (MAC) {
-        this._bin = "/sbin/ping";
+
+        if (net.isIPv6(host) || options.ipv6) {
+            this._bin = "/sbin/ping6";
+        } else {
+            this._bin = "/sbin/ping";
+        }
+
         this._args = (options.args) ? options.args : [ "-n", "-t", "2", "-c", "1", host ];
         this._regmatch = /=([0-9.]+?) ms/;
 
