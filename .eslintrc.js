@@ -36,6 +36,7 @@ module.exports = {
         "no-multi-spaces": ["error", {
             ignoreEOLComments: true,
         }],
+        "space-before-function-paren": ["error", "always"],
         "curly": "error",
         "object-curly-spacing": ["error", "always"],
         "object-curly-newline": "off",
