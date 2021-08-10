@@ -570,15 +570,19 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
 
     });
 
-    console.log("Init")
-    server.listen(port, hostname, () => {
+    console.log("Init the server")
 
+    server.once("error", async (err) => {
+        console.error("Cannot listen: " + err.message);
+        await Database.close();
+    });
+
+    server.listen(port, hostname, () => {
         if (hostname) {
             console.log(`Listening on ${hostname}:${port}`);
         } else {
             console.log("Listening on ${port}");
         }
-
         startMonitors();
     });
 
