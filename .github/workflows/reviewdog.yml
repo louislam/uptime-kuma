@@ -10,5 +10,6 @@ jobs:
       - uses: actions/checkout@v2
       - uses: reviewdog/action-eslint@v1
         with:
+          github_token: ${{ secrets.PERSONAL_TOKEN }}
           reporter: github-pr-review
           eslint_flags: --ext .js,.ts,.vue .
