@@ -47,11 +47,11 @@ exports.tcping = function (hostname, port) {
 
 exports.ping = async (hostname) => {
     try {
-        await exports.pingAsync(hostname);
+        return await exports.pingAsync(hostname);
     } catch (e) {
         // If the host cannot be resolved, try again with ipv6
         if (e.message.includes("service not known")) {
-            await exports.pingAsync(hostname, true);
+            return await exports.pingAsync(hostname, true);
         } else {
             throw e;
         }

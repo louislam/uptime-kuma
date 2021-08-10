@@ -11,7 +11,7 @@ const { debug } = require("../src/util");
 
 module.exports = Ping;
 
-function Ping (host, options) {
+function Ping(host, options) {
     if (!host) {
         throw new Error("You must specify a host to ping!");
     }
@@ -106,7 +106,7 @@ Ping.prototype.send = function (callback) {
         }
     });
 
-    function onEnd () {
+    function onEnd() {
         let stdout = this.stdout._stdout,
             stderr = this.stderr._stderr,
             ms;
@@ -121,10 +121,6 @@ Ping.prototype.send = function (callback) {
 
         ms = stdout.match(self._regmatch); // parse out the ##ms response
         ms = (ms && ms[1]) ? Number(ms[1]) : ms;
-
-        if (! ms) {
-            debug(stdout)
-        }
 
         callback(null, ms, stdout);
     }

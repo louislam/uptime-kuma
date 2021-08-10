@@ -581,7 +581,7 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
         if (hostname) {
             console.log(`Listening on ${hostname}:${port}`);
         } else {
-            console.log("Listening on ${port}");
+            console.log(`Listening on ${port}`);
         }
         startMonitors();
     });
