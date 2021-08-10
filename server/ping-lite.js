@@ -7,10 +7,11 @@ const spawn = require("child_process").spawn,
     WIN = /^win/.test(process.platform),
     LIN = /^linux/.test(process.platform),
     MAC = /^darwin/.test(process.platform);
+const { debug } = require("../src/util");
 
 module.exports = Ping;
 
-function Ping(host, options) {
+function Ping (host, options) {
     if (!host) {
         throw new Error("You must specify a host to ping!");
     }
@@ -65,9 +66,9 @@ Ping.prototype.__proto__ = events.EventEmitter.prototype;
 
 // SEND A PING
 // ===========
-Ping.prototype.send = function(callback) {
+Ping.prototype.send = function (callback) {
     let self = this;
-    callback = callback || function(err, ms) {
+    callback = callback || function (err, ms) {
         if (err) {
             return self.emit("error", err);
         }
@@ -78,34 +79,34 @@ Ping.prototype.send = function(callback) {
 
     this._ping = spawn(this._bin, this._args); // spawn the binary
 
-    this._ping.on("error", function(err) { // handle binary errors
+    this._ping.on("error", function (err) { // handle binary errors
         _errored = true;
         callback(err);
     });
 
-    this._ping.stdout.on("data", function(data) { // log stdout
+    this._ping.stdout.on("data", function (data) { // log stdout
         this._stdout = (this._stdout || "") + data;
     });
 
-    this._ping.stdout.on("end", function() {
+    this._ping.stdout.on("end", function () {
         _ended = true;
         if (_exited && !_errored) {
             onEnd.call(self._ping);
         }
     });
 
-    this._ping.stderr.on("data", function(data) { // log stderr
+    this._ping.stderr.on("data", function (data) { // log stderr
         this._stderr = (this._stderr || "") + data;
     });
 
-    this._ping.on("exit", function(code) { // handle complete
+    this._ping.on("exit", function (code) { // handle complete
         _exited = true;
         if (_ended && !_errored) {
             onEnd.call(self._ping);
         }
     });
 
-    function onEnd() {
+    function onEnd () {
         let stdout = this.stdout._stdout,
             stderr = this.stderr._stderr,
             ms;
@@ -121,15 +122,19 @@ Ping.prototype.send = function(callback) {
         ms = stdout.match(self._regmatch); // parse out the ##ms response
         ms = (ms && ms[1]) ? Number(ms[1]) : ms;
 
+        if (! ms) {
+            debug(stdout)
+        }
+
         callback(null, ms, stdout);
     }
 };
 
 // CALL Ping#send(callback) ON A TIMER
 // ===================================
-Ping.prototype.start = function(callback) {
+Ping.prototype.start = function (callback) {
     let self = this;
-    this._i = setInterval(function() {
+    this._i = setInterval(function () {
         self.send(callback);
     }, (self._options.interval || 5000));
     self.send(callback);
@@ -137,6 +142,6 @@ Ping.prototype.start = function(callback) {
 
 // STOP SENDING PINGS
 // ==================
-Ping.prototype.stop = function() {
+Ping.prototype.stop = function () {
     clearInterval(this._i);
 };
