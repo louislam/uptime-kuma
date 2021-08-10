@@ -1,0 +1,91 @@
+<template>
+    <LineChart :chart-data="chartData" :height="100" :options="chartOptions" />
+</template>
+
+<script>
+import { Chart, registerables } from "chart.js";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+import "chartjs-adapter-dayjs";
+import { LineChart } from "vue-chart-3";
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
+Chart.register(...registerables);
+
+export default {
+    components: { LineChart },
+    props: {
+        monitorId: {
+            type: Number,
+            required: true,
+        },
+    },
+    data() {
+        return {
+            chartPeriodHrs: 24,
+        };
+    },
+    computed: {
+        chartOptions() {
+            return {
+                responsive: true,
+                layout: {
+                    padding: {
+                        left: 10,
+                        right: 30,
+                        top: 30,
+                        bottom: 10,
+                    },
+                },
+                scales: {
+                    x: {
+                        type: "time",
+                        time: {
+                            stepSize: 30,
+                        },
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: "Response Time (ms)",
+                        },
+                    }
+                },
+                bounds: "ticks",
+                plugins: {
+                    legend: {
+                        display: false,
+                    },
+                },
+            }
+        },
+        chartData() {
+            let data = [];
+            if (this.monitorId in this.$root.heartbeatList) {
+                data = this.$root.heartbeatList[this.monitorId]
+                    .filter(
+                        (beat) => dayjs.utc(beat.time).tz(this.$root.timezone).isAfter(dayjs().subtract(this.chartPeriodHrs, "hours")))
+                    .map((beat) => {
+                        return {
+                            x: dayjs.utc(beat.time).tz(this.$root.timezone).format("YYYY-MM-DD HH:mm:ss"),
+                            y: beat.ping,
+                        };
+                    });
+            }
+            return {
+                datasets: [
+                    {
+                        data: data,
+                        fill: "origin",
+                        tension: 0.2,
+                        borderColor: "#5CDD8B",
+                        backgroundColor: "#5CDD8B38",
+                    },
+                ],
+            };
+        },
+    },
+};
+</script>

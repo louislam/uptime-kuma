@@ -42,7 +42,11 @@
             <div class="col">
                 <h4>{{ pingTitle }}</h4>
                 <p>(Current)</p>
-                <span class="num"><CountUp :value="ping" /></span>
+                <span class="num">
+                    <a href="#" @click.prevent="showPingChartBox = !showPingChartBox">
+                        <CountUp :value="ping" />
+                    </a>
+                </span>
             </div>
             <div class="col">
                 <h4>Avg. {{ pingTitle }}</h4>
@@ -66,6 +70,14 @@
                 <span class="num">
                     <a href="#" @click.prevent="toggleCertInfoBox = !toggleCertInfoBox">{{ certInfo.daysRemaining }} days</a>
                 </span>
+            </div>
+        </div>
+    </div>
+
+    <div v-if="showPingChartBox" class="shadow-box big-padding text-center">
+        <div class="row">
+            <div class="col">
+                <PingChart :monitor-id="monitor.id" />
             </div>
         </div>
     </div>
@@ -164,6 +176,7 @@ import Datetime from "../components/Datetime.vue";
 import CountUp from "../components/CountUp.vue";
 import Uptime from "../components/Uptime.vue";
 import Pagination from "v-pagination-3";
+import PingChart from "../components/PingChart.vue";
 
 export default {
     components: {
@@ -174,6 +187,7 @@ export default {
         Confirm,
         Status,
         Pagination,
+        PingChart,
     },
     data() {
         return {
@@ -181,6 +195,7 @@ export default {
             perPage: 25,
             heartBeatList: [],
             toggleCertInfoBox: false,
+            showPingChartBox: false,
         }
     },
     computed: {
