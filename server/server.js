@@ -589,7 +589,7 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
 })();
 
 async function updateMonitorNotification(monitorID, notificationIDList) {
-    R.exec("DELETE FROM monitor_notification WHERE monitor_id = ? ", [
+    await R.exec("DELETE FROM monitor_notification WHERE monitor_id = ? ", [
         monitorID,
     ])
 
