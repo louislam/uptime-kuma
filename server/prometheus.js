@@ -45,13 +45,10 @@ class Prometheus {
     }
 
     update(heartbeat, tlsInfo) {
-
-        // TODO: TLS Info here
-
-        if (typeof tlsInfo !== "undefined"){
+        if (typeof tlsInfo !== "undefined") {
             try {
-                var is_valid = 0
-                if (tlsInfo.valid == true){
+                let is_valid = 0
+                if (tlsInfo.valid == true) {
                     is_valid = 1
                 } else {
                     is_valid = 0
