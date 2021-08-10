@@ -47,7 +47,26 @@ class Prometheus {
     update(heartbeat, tlsInfo) {
 
         // TODO: TLS Info here
-        console.log(tlsInfo)
+
+        if (typeof tlsInfo !== "undefined"){
+            try {
+                var is_valid = 0
+                if (tlsInfo.valid == true){
+                    is_valid = 1
+                } else {
+                    is_valid = 0
+                }
+                monitor_cert_is_valid.set(this.monitorLabelValues, is_valid)
+            } catch (e) {
+                console.error(e)
+            }
+
+            try {
+                monitor_cert_days_remaining.set(this.monitorLabelValues, tlsInfo.daysRemaining)
+            } catch (e) {
+                console.error(e)
+            }
+        }
 
         try {
             monitor_status.set(this.monitorLabelValues, heartbeat.status)
