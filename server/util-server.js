@@ -45,15 +45,30 @@ exports.tcping = function (hostname, port) {
     });
 }
 
-exports.ping = function (hostname) {
-    return new Promise((resolve, reject) => {
-        const ping = new Ping(hostname);
+exports.ping = async (hostname) => {
+    try {
+        await exports.pingAsync(hostname);
+    } catch (e) {
+        // If the host cannot be resolved, try again with ipv6
+        if (e.message.includes("service not known")) {
+            await exports.pingAsync(hostname, true);
+        } else {
+            throw e;
+        }
+    }
+}
 
-        ping.send(function (err, ms) {
+exports.pingAsync = function (hostname, ipv6 = false) {
+    return new Promise((resolve, reject) => {
+        const ping = new Ping(hostname, {
+            ipv6
+        });
+
+        ping.send(function (err, ms, stdout) {
             if (err) {
-                reject(err)
+                reject(err);
             } else if (ms === null) {
-                reject(new Error("timeout"))
+                reject(new Error(stdout))
             } else {
                 resolve(Math.round(ms))
             }

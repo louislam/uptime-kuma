@@ -30,7 +30,7 @@ function Ping(host, options) {
 
         const defaultArgs = [ "-n", "-w", "2", "-c", "1", host ];
 
-        if (net.isIPv6(host)) {
+        if (net.isIPv6(host) || options.ipv6) {
             defaultArgs.unshift("-6");
         }
 
@@ -115,7 +115,7 @@ Ping.prototype.send = function(callback) {
         ms = stdout.match(self._regmatch); // parse out the ##ms response
         ms = (ms && ms[1]) ? Number(ms[1]) : ms;
 
-        callback(null, ms);
+        callback(null, ms, stdout);
     }
 };
 
