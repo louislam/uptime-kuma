@@ -112,6 +112,7 @@ class Monitor extends BeanModel {
                     let res = await axios.get(this.url, {
                         timeout: 15000,
                         headers: {
+                            "Accept": "*/*",
                             "User-Agent": "Uptime-Kuma",
                         },
                         httpsAgent: new https.Agent({
