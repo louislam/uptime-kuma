@@ -8,6 +8,17 @@ const commonLabels = [
     'monitor_port',
 ]
 
+const monitor_cert_days_remaining = new PrometheusClient.Gauge({
+    name: 'monitor_cert_days_remaining',
+    help: 'The number of days remaining until the certificate expires',
+    labelNames: commonLabels
+});
+
+const monitor_cert_is_valid = new PrometheusClient.Gauge({
+    name: 'monitor_cert_is_valid',
+    help: 'Is the certificate still valid? (1 = Yes, 0= No)',
+    labelNames: commonLabels
+});
 const monitor_response_time = new PrometheusClient.Gauge({
     name: 'monitor_response_time',
     help: 'Monitor Response Time (ms)',
