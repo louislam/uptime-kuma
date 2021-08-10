@@ -10,6 +10,7 @@ import EmptyLayout from "./layouts/EmptyLayout.vue";
 import Layout from "./layouts/Layout.vue";
 import socket from "./mixins/socket";
 import theme from "./mixins/theme";
+import mobile from "./mixins/mobile";
 import Dashboard from "./pages/Dashboard.vue";
 import DashboardHome from "./pages/DashboardHome.vue";
 import Details from "./pages/Details.vue";
@@ -78,7 +79,8 @@ const router = createRouter({
 const app = createApp({
     mixins: [
         socket,
-        theme
+        theme,
+        mobile
     ],
     data() {
         return {

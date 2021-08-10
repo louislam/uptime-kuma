@@ -1,5 +1,5 @@
 <template>
-    <div :class="$root.theme">
+    <div :class="classes">
         <div v-if="! $root.socket.connected && ! $root.socket.firstConnect" class="lost-connection">
             <div class="container-fluid">
                 {{ $root.connectionErrorMsg }}
@@ -79,29 +79,45 @@
 import Login from "../components/Login.vue";
 
 export default {
+
     components: {
         Login,
     },
+
     data() {
         return {}
     },
-    computed: {},
+
+    computed: {
+
+        // Theme or Mobile
+        classes() {
+            const classes = {};
+            classes[this.$root.theme] = true;
+            classes["mobile"] = this.$root.isMobile;
+            return classes;
+        }
+
+    },
+
     watch: {
         $route (to, from) {
             this.init();
         },
     },
+
     mounted() {
         this.init();
     },
+
     methods: {
         init() {
             if (this.$route.name === "root") {
                 this.$router.push("/dashboard")
             }
         },
-
     },
+
 }
 </script>
 

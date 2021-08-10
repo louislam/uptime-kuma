@@ -27,7 +27,6 @@ export default {
             uptimeList: { },
             certInfoList: {},
             notificationList: [],
-            windowWidth: window.innerWidth,
             showListMobile: false,
             connectionErrorMsg: "Cannot connect to the socket server. Reconnecting...",
         }
@@ -193,10 +192,6 @@ export default {
             this.$root.showListMobile = false;
         },
 
-        onResize() {
-            this.windowWidth = window.innerWidth;
-        },
-
         storage() {
             return (this.remember) ? localStorage : sessionStorage;
         },
@@ -269,10 +264,6 @@ export default {
     },
 
     computed: {
-
-        isMobile() {
-            return this.windowWidth <= 767.98;
-        },
 
         timezone() {
 
