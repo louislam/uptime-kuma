@@ -3,8 +3,6 @@ on: [pull_request]
 jobs:
   eslint:
     name: runner / eslint
-    env:
-      REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
