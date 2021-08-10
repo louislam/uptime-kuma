@@ -80,15 +80,6 @@ Unlikely other web apps, Uptime Kuma is based on WebSocket. You need two more he
 Please read wiki for more info:
 https://github.com/louislam/uptime-kuma/wiki/Reverse-Proxy
 
-### One-click Deploy
-
-<!---
-Abort. Heroku instance killed the server.js if idle, stupid.
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/louislam/uptime-kuma/tree/1.1.0)
--->
-
-[![Deploy to DO](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/louislam/uptime-kuma/tree/master&refcode=e2c7eb658434)
-
 ## How to Update
 
 ### Docker

@@ -248,10 +248,22 @@ export default {
     padding: 20px;
 }
 
+.btn-check:active + .btn-outline-primary,
+.btn-check:checked + .btn-outline-primary,
+.btn-check:hover + .btn-outline-primary {
+    color: #fff;
+}
+
 .dark {
     .list-group-item {
         background-color: $dark-bg2;
         color: $dark-font-color;
+    }
+
+    .btn-check:active + .btn-outline-primary,
+    .btn-check:checked + .btn-outline-primary,
+    .btn-check:hover + .btn-outline-primary {
+        color: #000;
     }
 }
 </style>
