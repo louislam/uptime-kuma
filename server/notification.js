@@ -193,6 +193,33 @@ class Notification {
                 console.log(error)
                 return false;
             }
+        } else if (notification.type === "octopush") {
+            try {
+                let config = {
+                    headers: {
+                        'api-key': notification.octopushAPIKey,
+                        'api-login': notification.octopushLogin,
+                        'cache-control': 'no-cache'
+                    }
+                };
+                let data = {
+                    "recipients": [
+                        {
+                            "phone_number": notification.octopushPhoneNumber
+                        }
+                    ],
+                    "text": msg,
+                    "type": notification.octopushSMSType,
+                    "purpose": "alert",
+                    "sender": notification.octopushSenderName
+                };
+
+                await axios.post(`https://api.octopush.com/v1/public/sms-campaign/send`, data, config)
+                return true;
+            } catch (error) {
+                console.log(error)
+                return false;
+            }
         } else if (notification.type === "slack") {
             try {
                 if (heartbeatJSON == null) {
