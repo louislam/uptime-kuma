@@ -3,7 +3,7 @@
 </template>
 
 <script>
-import { Chart, registerables } from "chart.js";
+import { BarController, BarElement, Chart, Filler, LinearScale, LineController, LineElement, PointElement, TimeScale, Tooltip } from "chart.js";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
@@ -12,7 +12,7 @@ import { LineChart } from "vue-chart-3";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-Chart.register(...registerables);
+Chart.register(LineController, BarController, LineElement, PointElement, TimeScale, BarElement, LinearScale, Tooltip, Filler);
 
 export default {
     components: { LineChart },
@@ -86,9 +86,17 @@ export default {
                 bounds: "ticks",
                 plugins: {
                     tooltip: {
+                        mode: "nearest",
+                        intersect: false,
+                        padding: 10,
                         filter: function (tooltipItem) {
                             return tooltipItem.datasetIndex === 0;
                         },
+                        callbacks: {
+                            label: (context) => {
+                                return ` ${new Intl.NumberFormat().format(context.parsed.y)} ms`
+                            },
+                        }
                     },
                     legend: {
                         display: false,
