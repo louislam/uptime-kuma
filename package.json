@@ -13,6 +13,7 @@
         "dev": "vite --host",
         "start": "npm run start-server",
         "start-server": "node server/server.js",
+        "start-demo-server": "set NODE_ENV=demo && node server/server.js",
         "update": "",
         "build": "vite build",
         "vite-preview-dist": "vite preview --host",
@@ -22,7 +23,8 @@
         "setup": "git checkout 1.1.0 && npm install && npm run build",
         "update-version": "node extra/update-version.js",
         "mark-as-nightly": "node extra/mark-as-nightly.js",
-        "reset-password": "node extra/reset-password.js"
+        "reset-password": "node extra/reset-password.js",
+        "compile-install-script": "@powershell -NoProfile -ExecutionPolicy Unrestricted -Command ./extra/compile-install-script.ps1"
     },
     "dependencies": {
         "@fortawesome/fontawesome-svg-core": "^1.2.36",
@@ -51,7 +53,7 @@
         "@louislam/sqlite3": "^5.0.3",
         "tcp-ping": "^0.1.1",
         "v-pagination-3": "^0.1.6",
-        "vue": "^3.1.5",
+        "vue": "^3.2.1",
         "vue-confirm-dialog": "^1.0.2",
         "vue-multiselect": "^3.0.0-alpha.2",
         "vue-router": "^4.0.10",
