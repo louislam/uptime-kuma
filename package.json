@@ -53,7 +53,7 @@
         "@louislam/sqlite3": "^5.0.3",
         "tcp-ping": "^0.1.1",
         "v-pagination-3": "^0.1.6",
-        "vue": "^3.1.5",
+        "vue": "^3.2.1",
         "vue-confirm-dialog": "^1.0.2",
         "vue-multiselect": "^3.0.0-alpha.2",
         "vue-router": "^4.0.10",
