@@ -24,7 +24,7 @@ export default {
     },
     data() {
         return {
-            chartPeriodHrs: 24,
+            chartPeriodHrs: 6,
         };
     },
     computed: {
@@ -39,11 +39,27 @@ export default {
                         bottom: 10,
                     },
                 },
+
+                elements: {
+                    point: {
+                        radius: 0,
+                    },
+                    bar: {
+                        barThickness: "flex",
+                    }
+                },
                 scales: {
                     x: {
                         type: "time",
                         time: {
-                            stepSize: 30,
+                            unit: "minute",
+                        },
+                        ticks: {
+                            maxRotation: 0,
+                            autoSkipPadding: 10,
+                        },
+                        grid: {
+                            color: this.$root.theme === "light" ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.1)",
                         },
                     },
                     y: {
@@ -51,10 +67,29 @@ export default {
                             display: true,
                             text: "Response Time (ms)",
                         },
-                    }
+                        offset: false,
+                        grid: {
+                            color: this.$root.theme === "light" ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.1)",
+                        },
+                    },
+                    y1: {
+                        display: false,
+                        position: "right",
+                        grid: {
+                            drawOnChartArea: false,
+                        },
+                        min: 0,
+                        max: 1,
+                        offset: false,
+                    },
                 },
                 bounds: "ticks",
                 plugins: {
+                    tooltip: {
+                        filter: function (tooltipItem) {
+                            return tooltipItem.datasetIndex === 0;
+                        },
+                    },
                     legend: {
                         display: false,
                     },
@@ -62,9 +97,10 @@ export default {
             }
         },
         chartData() {
-            let data = [];
+            let ping_data = [];
+            let down_data = [];
             if (this.monitorId in this.$root.heartbeatList) {
-                data = this.$root.heartbeatList[this.monitorId]
+                ping_data = this.$root.heartbeatList[this.monitorId]
                     .filter(
                         (beat) => dayjs.utc(beat.time).tz(this.$root.timezone).isAfter(dayjs().subtract(this.chartPeriodHrs, "hours")))
                     .map((beat) => {
@@ -73,15 +109,32 @@ export default {
                             y: beat.ping,
                         };
                     });
+                down_data = this.$root.heartbeatList[this.monitorId]
+                    .filter(
+                        (beat) => dayjs.utc(beat.time).tz(this.$root.timezone).isAfter(dayjs().subtract(this.chartPeriodHrs, "hours")))
+                    .map((beat) => {
+                        return {
+                            x: dayjs.utc(beat.time).tz(this.$root.timezone).format("YYYY-MM-DD HH:mm:ss"),
+                            y: beat.status === 0 ? 1 : 0,
+                        };
+                    });
             }
             return {
                 datasets: [
                     {
-                        data: data,
+                        data: ping_data,
                         fill: "origin",
                         tension: 0.2,
                         borderColor: "#5CDD8B",
                         backgroundColor: "#5CDD8B38",
+                        yAxisID: "y",
+                    },
+                    {
+                        type: "bar",
+                        data: down_data,
+                        borderColor: "#00000000",
+                        backgroundColor: "#DC354568",
+                        yAxisID: "y1",
                     },
                 ],
             };
