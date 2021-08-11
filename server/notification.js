@@ -208,7 +208,8 @@ class Notification {
                             "phone_number": notification.octopushPhoneNumber
                         }
                     ],
-                    "text": msg,
+                    //octopush not supporting non ascii char
+                    "text": msg.replace(/[^\x00-\x7F]/g, ""),
                     "type": notification.octopushSMSType,
                     "purpose": "alert",
                     "sender": notification.octopushSenderName
