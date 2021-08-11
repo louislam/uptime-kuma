@@ -195,7 +195,7 @@ export default {
             perPage: 25,
             heartBeatList: [],
             toggleCertInfoBox: false,
-            showPingChartBox: false,
+            showPingChartBox: true,
         }
     },
     computed: {
