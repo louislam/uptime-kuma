@@ -306,6 +306,31 @@ export default {
 <style lang="scss" scoped>
 @import "../assets/vars.scss";
 
+@media (max-width: 550px) { 
+    .functions {
+        text-align: center;
+    }
+
+    button, a {
+        margin-left: 10px !important;
+        margin-right: 10px !important;
+    }
+}
+
+@media (max-width: 400px) { 
+    .btn {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        padding-top: 10px;
+    }
+
+    a.btn {
+        padding-left: 25px;
+        padding-right: 25px;
+    }
+}
+
 .url {
     color: $primary;
     margin-bottom: 20px;
