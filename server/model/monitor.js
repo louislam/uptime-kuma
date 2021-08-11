@@ -11,6 +11,7 @@ const { tcping, ping, checkCertificate, checkStatusCode } = require("../util-ser
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification")
+const version = require("../package.json").version;
 
 /**
  * status:
@@ -113,7 +114,7 @@ class Monitor extends BeanModel {
                         timeout: this.interval * 1000 * 0.8,
                         headers: {
                             "Accept": "*/*",
-                            "User-Agent": "Uptime-Kuma",
+                            "User-Agent": "Uptime-Kuma/" + version,
                         },
                         httpsAgent: new https.Agent({
                             maxCachedSessions: 0,
