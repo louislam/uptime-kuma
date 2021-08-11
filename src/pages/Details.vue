@@ -306,6 +306,12 @@ export default {
 <style lang="scss" scoped>
 @import "../assets/vars.scss";
 
+@media (max-width: 767px) { 
+    .badge {
+        margin-top: 14px;
+    }
+}
+
 @media (max-width: 550px) { 
     .functions {
         text-align: center;
