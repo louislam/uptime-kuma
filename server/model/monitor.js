@@ -80,6 +80,10 @@ class Monitor extends BeanModel {
 
         const beat = async () => {
 
+            // Expose here for prometheus update
+            // undefined if not https
+            let tlsInfo = undefined;
+
             if (! previousBeat) {
                 previousBeat = await R.findOne("heartbeat", " monitor_id = ? ORDER BY time DESC", [
                     this.id,
@@ -133,7 +137,7 @@ class Monitor extends BeanModel {
                     let certInfoStartTime = dayjs().valueOf();
                     if (this.getUrl()?.protocol === "https:") {
                         try {
-                            await this.updateTlsInfo(checkCertificate(res));
+                            tlsInfo = await this.updateTlsInfo(checkCertificate(res));
                         } catch (e) {
                             if (e.message !== "No TLS certificate in response") {
                                 console.error(e.message)
@@ -255,7 +259,7 @@ class Monitor extends BeanModel {
                 console.warn(`Monitor #${this.id} '${this.name}': Failing: ${bean.msg} | Type: ${this.type}`)
             }
 
-            prometheus.update(bean)
+            prometheus.update(bean, tlsInfo)
 
             io.to(this.user_id).emit("heartbeat", bean.toJSON());
 
@@ -290,7 +294,7 @@ class Monitor extends BeanModel {
     /**
      * Store TLS info to database
      * @param checkCertificateResult
-     * @returns {Promise<void>}
+     * @returns {Promise<object>}
      */
     async updateTlsInfo(checkCertificateResult) {
         let tls_info_bean = await R.findOne("monitor_tls_info", "monitor_id = ?", [
@@ -302,6 +306,8 @@ class Monitor extends BeanModel {
         }
         tls_info_bean.info_json = JSON.stringify(checkCertificateResult);
         await R.store(tls_info_bean);
+
+        return checkCertificateResult;
     }
 
     static async sendStats(io, monitorID, userID) {
