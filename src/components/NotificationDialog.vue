@@ -22,6 +22,7 @@
                                 <option value="slack">Slack</option>
                                 <option value="pushover">Pushover</option>
                                 <option value="pushy">Pushy</option>
+                                <option value="octopush">Octopush</option>
                                 <option value="lunasea">LunaSea</option>
                                 <option value="apprise">Apprise (Support 50+ Notification services)</option>
                             </select>
@@ -249,6 +250,37 @@
                             </div>
                             <p style="margin-top: 8px;">
                                 More info on: <a href="https://pushy.me/docs/api/send-notifications" target="_blank">https://pushy.me/docs/api/send-notifications</a>
+                            </p>
+                        </template>
+
+                        <template v-if="notification.type === 'octopush'">
+                            <div class="mb-3">
+                                <label for="octopush-key" class="form-label">API KEY</label>
+                                <input id="octopush-key" v-model="notification.octopushAPIKey" type="text" class="form-control" required>
+                                <label for="octopush-login" class="form-label">API LOGIN</label>
+                                <input id="octopush-login" v-model="notification.octopushLogin" type="text" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="octopush-type-sms" class="form-label">SMS Type</label>
+                                <select id="octopush-type-sms" v-model="notification.octopushSMSType" class="form-select">
+                                    <option value="sms_premium">Premium (Fast - recommended for alerting)</option>
+                                    <option value="sms_low_cost">Low Cost (Slow, sometimes blocked by operator)</option>
+                                </select>
+                                <div class="form-text">
+                                    Check octopush prices <a href="https://octopush.com/tarifs-sms-international/" target="_blank">https://octopush.com/tarifs-sms-international/</a>.
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="octopush-phone-number" class="form-label">Phone number (intl format, eg : +33612345678) </label>
+                                <input id="octopush-phone-number" v-model="notification.octopushPhoneNumber" type="text" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="octopush-sender-name" class="form-label">SMS Sender Name : 3-11 alphanumeric characters and space (a-zA-Z0-9)</label>
+                                <input id="octopush-sender-name" v-model="notification.octopushSenderName" type="text" minlength="3" maxlength="11" class="form-control">
+                            </div>
+
+                            <p style="margin-top: 8px;">
+                                More info on: <a href="https://octopush.com/api-sms-documentation/envoi-de-sms/" target="_blank">https://octopush.com/api-sms-documentation/envoi-de-sms/</a>
                             </p>
                         </template>
 
