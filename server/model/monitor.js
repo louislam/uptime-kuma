@@ -11,7 +11,7 @@ const { tcping, ping, checkCertificate, checkStatusCode } = require("../util-ser
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification")
-const version = require("../package.json").version;
+const version = require("../../package.json").version;
 
 /**
  * status:
