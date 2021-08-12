@@ -2,7 +2,7 @@ export default {
 
     data() {
         return {
-            system: (window.matchMedia("(prefers-color-scheme: dark)")) ? "dark" : "light",
+            system: (window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light",
             userTheme: localStorage.theme,
         };
     },
