@@ -131,6 +131,7 @@ class Monitor extends BeanModel {
                     });
                     bean.msg = `${res.status} - ${res.statusText}`
                     bean.ping = dayjs().valueOf() - startTime;
+                    bean.http_code = `${res.status}`
 
                     // Check certificate if https is used
 
@@ -189,8 +190,11 @@ class Monitor extends BeanModel {
                 retries = 0;
 
             } catch (error) {
-
                 bean.msg = error.message;
+
+                if (error.response) {
+                bean.http_code = error.response.status;
+                }
 
                 // If UP come in here, it must be upside down mode
                 // Just reset the retries
