@@ -22,6 +22,7 @@ class Heartbeat extends BeanModel {
             ping: this.ping,
             important: this.important,
             duration: this.duration,
+            httpcode: this.http_code,
         };
     }
 
