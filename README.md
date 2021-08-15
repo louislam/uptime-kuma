@@ -100,6 +100,7 @@ PS: For every new release, it takes some time to build the docker image, please 
 ### Without Docker
 
 ```bash
+cd <uptime-kuma-directory>
 git fetch --all
 git checkout 1.1.0 --force
 npm install
