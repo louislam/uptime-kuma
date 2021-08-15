@@ -4,6 +4,7 @@ export default {
         return {
             system: (window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light",
             userTheme: localStorage.theme,
+            userHeartbeatBar: localStorage.heartbeatBarTheme
         };
     },
 
@@ -11,6 +12,11 @@ export default {
         // Default Light
         if (! this.userTheme) {
             this.userTheme = "light";
+        }
+
+        //Default Heartbeat Bar
+        if (! this.userHeartbeatBar) {
+            this.userHeartbeatBar = "normal";
         }
 
         document.body.classList.add(this.theme);
@@ -35,6 +41,15 @@ export default {
             document.body.classList.remove(from);
             document.body.classList.add(this.theme);
             this.updateThemeColorMeta();
+        },
+
+        userHeartbeatBar(to, from) {
+            localStorage.heartbeatBarTheme = to;
+        },
+
+        heartbeatBarTheme(to, from) {
+            document.body.classList.remove(from);
+            document.body.classList.add(this.heartbeatBarTheme);
         }
     },
 
