@@ -10,16 +10,16 @@ It is a self-hosted monitoring tool like "Uptime Robot".
 
 <img src="https://louislam.net/uptimekuma/1.jpg" width="512" alt="" />
 
-## Features
+## ⭐ Features
 
 * Monitoring uptime for HTTP(s) / TCP / Ping.
 * Fancy, Reactive, Fast UI/UX.
 * Notifications via Webhook, Telegram, Discord, Gotify, Slack, Pushover, Email (SMTP) and more by Apprise.
 * 20 seconds interval.
 
-## How to Use
+## 🔧 How to Install
 
-### Docker
+### 🐳 Docker
 
 ```bash
 # Create a volume
@@ -31,17 +31,12 @@ docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name upti
 
 Browse to http://localhost:3001 after started.
 
-Change Port and Volume
 
-```bash
-docker run -d --restart=always -p <YOUR_PORT>:3001 -v <YOUR_DIR OR VOLUME>:/app/data --name uptime-kuma louislam/uptime-kuma:1
-```
+If you want to change port and volume, or need to browse via a reserve proxy, please read: https://github.com/louislam/uptime-kuma/wiki/Installation.
 
-### Without Docker (x86/x64 only)
+### 💪🏻 Without Docker (Recommanded for x86/x64 only)
 
 Required Tools: Node.js >= 14, git and pm2.
-
-(**Not recommanded for ARM CPU users.** Since there is no prebuilt for node-sqlite3, it is hard to get it running)
 
 ```bash
 git clone https://github.com/louislam/uptime-kuma.git
@@ -56,33 +51,15 @@ npm run start-server
 # Install PM2 if you don't have: npm install pm2 -g
 pm2 start npm --name uptime-kuma -- run start-server
 
-# Listen to different port or hostname
-pm2 start npm --name uptime-kuma -- run start-server -- --port=80 --hostname=0.0.0.0
-
-```
-
-More useful commands if you have installed.
-
-```bash
-pm2 start uptime-kuma
-pm2 restart uptime-kuma
-pm2 stop uptime-kuma
 ```
 
 Browse to http://localhost:3001 after started.
 
-### (Optional) One more step for Reverse Proxy
+If you want to change port and hostname, or need to browse via a reserve proxy, please read: https://github.com/louislam/uptime-kuma/wiki/Installation.
 
-This is optional for someone who want to do reverse proxy.
+## 🆙 How to Update
 
-Unlikely other web apps, Uptime Kuma is based on WebSocket. You need two more headers **"Upgrade"** and **"Connection"** in order to reverse proxy WebSocket.
-
-Please read wiki for more info:
-https://github.com/louislam/uptime-kuma/wiki/Reverse-Proxy
-
-## How to Update
-
-### Docker
+### 🆙🐳 Docker
 
 Re-pull the latest docker image and create another container with the same volume.
 
@@ -97,9 +74,10 @@ docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name upti
 
 PS: For every new release, it takes some time to build the docker image, please be patient if it is not available yet.
 
-### Without Docker
+### 🆙 💪🏻 Without Docker
 
 ```bash
+cd <uptime-kuma-directory>
 git fetch --all
 git checkout 1.1.0 --force
 npm install
@@ -107,12 +85,12 @@ npm run build
 pm2 restart uptime-kuma
 ```
 
-## What's Next?
+## 🆕 What's Next?
 
 I will mark requests/issues to the next milestone.
 https://github.com/louislam/uptime-kuma/milestones
 
-## More Screenshots
+## 🖼 More Screenshots
 
 Dark Mode:
 
@@ -144,3 +122,5 @@ If you want to report a bug or request a new feature. Free feel to open a new is
 If you want to modify Uptime Kuma, this guideline maybe useful for you: https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md
 
 English proofreading is needed too, because my grammar is not that great sadly. Feel free to correct my grammar in this Readme, source code or wiki.
+
+🐻

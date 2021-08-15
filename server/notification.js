@@ -193,6 +193,34 @@ class Notification {
                 console.log(error)
                 return false;
             }
+        } else if (notification.type === "octopush") {
+            try {
+                let config = {
+                    headers: {
+                        'api-key': notification.octopushAPIKey,
+                        'api-login': notification.octopushLogin,
+                        'cache-control': 'no-cache'
+                    }
+                };
+                let data = {
+                    "recipients": [
+                        {
+                            "phone_number": notification.octopushPhoneNumber
+                        }
+                    ],
+                    //octopush not supporting non ascii char
+                    "text": msg.replace(/[^\x00-\x7F]/g, ""),
+                    "type": notification.octopushSMSType,
+                    "purpose": "alert",
+                    "sender": notification.octopushSenderName
+                };
+
+                await axios.post(`https://api.octopush.com/v1/public/sms-campaign/send`, data, config)
+                return true;
+            } catch (error) {
+                console.log(error)
+                return false;
+            }
         } else if (notification.type === "slack") {
             try {
                 if (heartbeatJSON == null) {
@@ -326,6 +354,41 @@ class Notification {
                 throwGeneralAxiosError(error)
             }
 
+        } else if (notification.type === "pushbullet") {
+            try {
+                let pushbulletUrl = `https://api.pushbullet.com/v2/pushes`;
+                let config = {
+                    headers: {
+                        'Access-Token': notification.pushbulletAccessToken,
+                        'Content-Type': 'application/json'
+                    }
+                };
+                if (heartbeatJSON == null) {
+                    let testdata = {
+                        "type": "note", 
+                        "title": "Uptime Kuma Alert",
+                        "body": "Testing Successful.",
+                    }
+                    await axios.post(pushbulletUrl, testdata, config)
+                } else if (heartbeatJSON["status"] == 0) {
+                    let downdata = {
+                        "type": "note", 
+                        "title": "UptimeKuma Alert:" + monitorJSON["name"],
+                        "body": "[🔴 Down]" + heartbeatJSON["msg"] + "\nTime (UTC):" + heartbeatJSON["time"],
+                    }
+                    await axios.post(pushbulletUrl, downdata, config)
+                } else if (heartbeatJSON["status"] == 1) {
+                    let updata = {
+                        "type": "note", 
+                        "title": "UptimeKuma Alert:" + monitorJSON["name"],
+                        "body": "[✅ Up]" + heartbeatJSON["msg"] + "\nTime (UTC):" + heartbeatJSON["time"],
+                    }
+                    await axios.post(pushbulletUrl, updata, config)
+                }
+                return okMsg;
+            } catch (error) {
+                throwGeneralAxiosError(error)
+            }
         } else {
             throw new Error("Notification type is not supported")
         }

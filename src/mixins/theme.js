@@ -2,7 +2,7 @@ export default {
 
     data() {
         return {
-            system: (window.matchMedia("(prefers-color-scheme: dark)")) ? "dark" : "light",
+            system: (window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light",
             userTheme: localStorage.theme,
         };
     },
@@ -14,6 +14,7 @@ export default {
         }
 
         document.body.classList.add(this.theme);
+        this.updateThemeColorMeta();
     },
 
     computed: {
@@ -33,6 +34,17 @@ export default {
         theme(to, from) {
             document.body.classList.remove(from);
             document.body.classList.add(this.theme);
+            this.updateThemeColorMeta();
+        }
+    },
+
+    methods: {
+        updateThemeColorMeta() {
+            if (this.theme === "dark") {
+                document.querySelector("#theme-color").setAttribute("content", "#161B22");
+            } else {
+                document.querySelector("#theme-color").setAttribute("content", "#5cdd8b");
+            }
         }
     }
 }
