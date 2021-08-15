@@ -25,6 +25,7 @@
                                 <option value="octopush">Octopush</option>
                                 <option value="lunasea">LunaSea</option>
                                 <option value="apprise">Apprise (Support 50+ Notification services)</option>
+                                <option value="pushbullet">Pushbullet</option>
                             </select>
                         </div>
 
@@ -370,6 +371,17 @@
                                     <p><span style="color:red;"><sup>*</sup></span>Required</p>
                                 </div>
                             </div>
+                        </template>
+
+                        <template v-if="notification.type === 'pushbullet'">
+                            <div class="mb-3">
+                                <label for="pushbullet-access-token" class="form-label">Access Token</label>
+                                <input id="pushbullet-access-token" v-model="notification.pushbulletAccessToken" type="text" class="form-control" required>
+                            </div>
+
+                            <p style="margin-top: 8px;">
+                                More info on: <a href="https://docs.pushbullet.com" target="_blank">https://docs.pushbullet.com</a>
+                            </p>
                         </template>
                     </div>
                     <div class="modal-footer">
