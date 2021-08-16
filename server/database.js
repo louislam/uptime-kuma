@@ -24,7 +24,8 @@ class Database {
             pool: {
                 min: 1,
                 max: 1,
-                idleTimeoutMillis: 30000,
+                acquireTimeoutMillis: 3600 * 1000,
+                idleTimeoutMillis: 3600 * 1000
             }
         }));
 
