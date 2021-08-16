@@ -4,7 +4,7 @@ export default {
         return {
             system: (window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light",
             userTheme: localStorage.theme,
-            userHeartbeatBar: localStorage.heartbeatBarTheme
+            userHeartbeatBar: localStorage.heartbeatBarTheme,
         };
     },
 
