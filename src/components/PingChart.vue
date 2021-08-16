@@ -52,12 +52,19 @@ export default {
                     x: {
                         type: "time",
                         time: {
-                            unit: "minute",
+                            minUnit: "minute",
+                            round: "second",
+                            tooltipFormat: "YYYY-MM-DD HH:mm:ss",
+                            displayFormats: {
+                                minute: "HH:mm",
+                                hour: "MM-DD HH:mm",
+                            }
                         },
                         ticks: {
                             maxRotation: 0,
-                            autoSkipPadding: 10,
+                            autoSkipPadding: 30,
                         },
+                        bounds: "ticks",
                         grid: {
                             color: this.$root.theme === "light" ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.1)",
                         },
@@ -65,7 +72,7 @@ export default {
                     y: {
                         title: {
                             display: true,
-                            text: "Response Time (ms)",
+                            text: "Resp. Time (ms)",
                         },
                         offset: false,
                         grid: {
