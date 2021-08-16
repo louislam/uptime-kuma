@@ -23,15 +23,16 @@ Steps to reproduce the behavior:
 **Expected behavior**
 A clear and concise description of what you expected to happen.
 
+
+**Info**
+- Uptime Kuma Version:
+- Using Docker?: Yes/No
+- OS: 
+- Browser:
+
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
 
-**Desktop (please complete the following information):**
- - Uptime Kuma Version:
- - Using Docker?: Yes/No
- - OS: 
- - Browser:
+**Error Log**
+It is easier for us to find out the problem.
 
-
-**Additional context**
-Add any other context about the problem here.
