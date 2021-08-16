@@ -197,9 +197,9 @@ class Notification {
             try {
                 let config = {
                     headers: {
-                        'api-key': notification.octopushAPIKey,
-                        'api-login': notification.octopushLogin,
-                        'cache-control': 'no-cache'
+                        "api-key": notification.octopushAPIKey,
+                        "api-login": notification.octopushLogin,
+                        "cache-control": "no-cache"
                     }
                 };
                 let data = {
@@ -215,7 +215,7 @@ class Notification {
                     "sender": notification.octopushSenderName
                 };
 
-                await axios.post(`https://api.octopush.com/v1/public/sms-campaign/send`, data, config)
+                await axios.post("https://api.octopush.com/v1/public/sms-campaign/send", data, config)
                 return true;
             } catch (error) {
                 console.log(error)
@@ -356,30 +356,30 @@ class Notification {
 
         } else if (notification.type === "pushbullet") {
             try {
-                let pushbulletUrl = `https://api.pushbullet.com/v2/pushes`;
+                let pushbulletUrl = "https://api.pushbullet.com/v2/pushes";
                 let config = {
                     headers: {
-                        'Access-Token': notification.pushbulletAccessToken,
-                        'Content-Type': 'application/json'
+                        "Access-Token": notification.pushbulletAccessToken,
+                        "Content-Type": "application/json"
                     }
                 };
                 if (heartbeatJSON == null) {
                     let testdata = {
-                        "type": "note", 
+                        "type": "note",
                         "title": "Uptime Kuma Alert",
                         "body": "Testing Successful.",
                     }
                     await axios.post(pushbulletUrl, testdata, config)
                 } else if (heartbeatJSON["status"] == 0) {
                     let downdata = {
-                        "type": "note", 
+                        "type": "note",
                         "title": "UptimeKuma Alert:" + monitorJSON["name"],
                         "body": "[🔴 Down]" + heartbeatJSON["msg"] + "\nTime (UTC):" + heartbeatJSON["time"],
                     }
                     await axios.post(pushbulletUrl, downdata, config)
                 } else if (heartbeatJSON["status"] == 1) {
                     let updata = {
-                        "type": "note", 
+                        "type": "note",
                         "title": "UptimeKuma Alert:" + monitorJSON["name"],
                         "body": "[✅ Up]" + heartbeatJSON["msg"] + "\nTime (UTC):" + heartbeatJSON["time"],
                     }
@@ -432,15 +432,21 @@ class Notification {
 
     static async smtp(notification, msg) {
 
-        let transporter = nodemailer.createTransport({
+        const config = {
             host: notification.smtpHost,
             port: notification.smtpPort,
             secure: notification.smtpSecure,
-            auth: {
+        };
+
+        // Should fix the issue in https://github.com/louislam/uptime-kuma/issues/26#issuecomment-896373904
+        if (notification.smtpUsername || notification.smtpPassword) {
+            config.auth = {
                 user: notification.smtpUsername,
                 pass: notification.smtpPassword,
-            },
-        });
+            };
+        }
+
+        let transporter = nodemailer.createTransport(config);
 
         // send mail with defined transport object
         await transporter.sendMail({
