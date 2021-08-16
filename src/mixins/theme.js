@@ -15,7 +15,7 @@ export default {
         }
 
         // Default Heartbeat Bar
-        if (! this.userHeartbeatBar) {
+        if (!this.userHeartbeatBar) {
             this.userHeartbeatBar = "normal";
         }
 
