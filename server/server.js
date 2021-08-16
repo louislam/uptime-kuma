@@ -1,7 +1,7 @@
 console.log("Welcome to Uptime Kuma");
 console.log("Node Env: " + process.env.NODE_ENV);
 
-const { sleep, debug } = require("../src/util");
+const { sleep, debug, TimeLogger } = require("../src/util");
 
 console.log("Importing Node libraries")
 const fs = require("fs");
@@ -644,11 +644,11 @@ async function afterLogin(socket, user) {
 
     // Delay a bit, so that it let the main page to query the data first, since SQLite can process one sql at the same time only.
     // For example, query the edit data first.
-    setTimeout(() => {
+    setTimeout(async () => {
         for (let monitorID in monitorList) {
-            sendHeartbeatList(socket, monitorID);
-            sendImportantHeartbeatList(socket, monitorID);
-            Monitor.sendStats(io, monitorID, user.id)
+            await sendHeartbeatList(socket, monitorID);
+            await sendImportantHeartbeatList(socket, monitorID);
+            await Monitor.sendStats(io, monitorID, user.id)
         }
     }, 500);
 }
@@ -764,6 +764,8 @@ async function startMonitors() {
  * Send Heartbeat History list to socket
  */
 async function sendHeartbeatList(socket, monitorID) {
+    const timeLogger = new TimeLogger();
+
     let list = await R.find("heartbeat", `
         monitor_id = ?
         ORDER BY time DESC
@@ -782,6 +784,8 @@ async function sendHeartbeatList(socket, monitorID) {
 }
 
 async function sendImportantHeartbeatList(socket, monitorID) {
+    const timeLogger = new TimeLogger();
+
     let list = await R.find("heartbeat", `
         monitor_id = ?
         AND important = 1
@@ -790,6 +794,8 @@ async function sendImportantHeartbeatList(socket, monitorID) {
     `, [
         monitorID,
     ])
+
+    timeLogger.print(`[Monitor: ${monitorID}] sendImportantHeartbeatList`);
 
     socket.emit("importantHeartbeatList", monitorID, list)
 }

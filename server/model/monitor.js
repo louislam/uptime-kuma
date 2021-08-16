@@ -6,7 +6,7 @@ dayjs.extend(utc)
 dayjs.extend(timezone)
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
-const { debug, UP, DOWN, PENDING, flipStatus } = require("../../src/util");
+const { debug, UP, DOWN, PENDING, flipStatus, TimeLogger } = require("../../src/util");
 const { tcping, ping, checkCertificate, checkStatusCode } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
@@ -133,7 +133,6 @@ class Monitor extends BeanModel {
                     bean.ping = dayjs().valueOf() - startTime;
 
                     // Check certificate if https is used
-
                     let certInfoStartTime = dayjs().valueOf();
                     if (this.getUrl()?.protocol === "https:") {
                         try {
@@ -311,10 +310,10 @@ class Monitor extends BeanModel {
     }
 
     static async sendStats(io, monitorID, userID) {
-        Monitor.sendAvgPing(24, io, monitorID, userID);
-        Monitor.sendUptime(24, io, monitorID, userID);
-        Monitor.sendUptime(24 * 30, io, monitorID, userID);
-        Monitor.sendCertInfo(io, monitorID, userID);
+        await Monitor.sendAvgPing(24, io, monitorID, userID);
+        await Monitor.sendUptime(24, io, monitorID, userID);
+        await Monitor.sendUptime(24 * 30, io, monitorID, userID);
+        await Monitor.sendCertInfo(io, monitorID, userID);
     }
 
     /**
@@ -322,6 +321,8 @@ class Monitor extends BeanModel {
      * @param duration : int Hours
      */
     static async sendAvgPing(duration, io, monitorID, userID) {
+        const timeLogger = new TimeLogger();
+
         let avgPing = parseInt(await R.getCell(`
             SELECT AVG(ping)
             FROM heartbeat
@@ -331,6 +332,8 @@ class Monitor extends BeanModel {
             -duration,
             monitorID,
         ]));
+
+        timeLogger.print(`[Monitor: ${monitorID}] avgPing`);
 
         io.to(userID).emit("avgPing", monitorID, avgPing);
     }
@@ -351,6 +354,8 @@ class Monitor extends BeanModel {
      * @param duration : int Hours
      */
     static async sendUptime(duration, io, monitorID, userID) {
+        const timeLogger = new TimeLogger();
+
         let sec = duration * 3600;
 
         let heartbeatList = await R.getAll(`
@@ -361,6 +366,8 @@ class Monitor extends BeanModel {
             -duration,
             monitorID,
         ]);
+
+        timeLogger.print(`[Monitor: ${monitorID}][${duration}] sendUptime`);
 
         let downtime = 0;
         let total = 0;

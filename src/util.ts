@@ -4,6 +4,9 @@
 // Frontend uses util.ts
 // Need to run "tsc" to compile if there are any changes.
 
+import * as dayjs from "dayjs";
+
+export const isDev = process.env.NODE_ENV === "development";
 export const appName = "Uptime Kuma";
 export const DOWN = 0;
 export const UP = 1;
@@ -39,7 +42,7 @@ export function ucfirst(str) {
 }
 
 export function debug(msg) {
-    if (process.env.NODE_ENV === "development") {
+    if (isDev) {
         console.log(msg);
     }
 }
@@ -52,7 +55,7 @@ export function polyfill() {
      * @license MIT
      */
     if (!String.prototype.replaceAll) {
-        String.prototype.replaceAll = function(str, newStr) {
+        String.prototype.replaceAll = function (str, newStr) {
 
             // If a regex pattern
             if (Object.prototype.toString.call(str).toLowerCase() === "[object regexp]") {
@@ -63,5 +66,17 @@ export function polyfill() {
             return this.replace(new RegExp(str, "g"), newStr);
 
         };
+    }
+}
+
+export class TimeLogger {
+    constructor() {
+        this.startTime = dayjs().valueOf();
+    }
+
+    print(name) {
+        if (isDev) {
+            console.log(name + ": " + (dayjs().valueOf() - this.startTime) + "ms")
+        }
     }
 }

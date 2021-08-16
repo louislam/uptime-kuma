@@ -29,6 +29,10 @@ class Database {
             }
         }));
 
+        if (process.env.SQL_LOG === "1") {
+            R.debug(true);
+        }
+
         // Auto map the model to a bean object
         R.freeze(true)
         await R.autoloadModels("./server/model");
