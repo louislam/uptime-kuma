@@ -14,7 +14,7 @@ export default {
             this.userTheme = "light";
         }
 
-        //Default Heartbeat Bar
+        // Default Heartbeat Bar
         if (! this.userHeartbeatBar) {
             this.userHeartbeatBar = "normal";
         }
