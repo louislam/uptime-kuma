@@ -17,6 +17,7 @@ class Database {
 
         if (! this.sqliteInstance) {
             this.sqliteInstance = new sqlite3.Database(Database.path);
+            this.sqliteInstance.run("PRAGMA journal_mode = WAL");
         }
 
         const Dialect = require("knex/lib/dialects/sqlite3/index.js");

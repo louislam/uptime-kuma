@@ -646,9 +646,9 @@ async function afterLogin(socket, user) {
     // For example, query the edit data first.
     setTimeout(async () => {
         for (let monitorID in monitorList) {
-            await sendHeartbeatList(socket, monitorID);
-            await sendImportantHeartbeatList(socket, monitorID);
-            await Monitor.sendStats(io, monitorID, user.id)
+            sendHeartbeatList(socket, monitorID);
+            sendImportantHeartbeatList(socket, monitorID);
+            Monitor.sendStats(io, monitorID, user.id)
         }
     }, 500);
 }
