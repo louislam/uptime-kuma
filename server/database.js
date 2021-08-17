@@ -3,6 +3,7 @@ const { sleep } = require("../src/util");
 const { R } = require("redbean-node");
 const { setSetting, setting } = require("./util-server");
 const knex = require("knex");
+const sqlite3 = require("@louislam/sqlite3");
 
 class Database {
 
@@ -10,24 +11,32 @@ class Database {
     static path = "./data/kuma.db";
     static latestVersion = 6;
     static noReject = true;
+    static sqliteInstance = null;
 
     static async connect() {
-        const Dialect = require("knex/lib/dialects/sqlite3/index.js");
-        Dialect.prototype._driver = () => require("@louislam/sqlite3");
 
-        R.setup(knex({
+        if (! this.sqliteInstance) {
+            this.sqliteInstance = new sqlite3.Database(Database.path);
+        }
+
+        const Dialect = require("knex/lib/dialects/sqlite3/index.js");
+        Dialect.prototype._driver = () => sqlite3;
+
+        // Disable Pool by overriding acquireConnection()
+        Dialect.prototype.acquireConnection = async () => {
+            return this.sqliteInstance;
+        }
+        Dialect.prototype.releaseConnection = async () => { }
+
+        const knexInstance = knex({
             client: Dialect,
             connection: {
                 filename: Database.path,
             },
             useNullAsDefault: true,
-            pool: {
-                min: 1,
-                max: 1,
-                acquireTimeoutMillis: 3600 * 1000,
-                idleTimeoutMillis: 3600 * 1000
-            }
-        }));
+        });
+
+        R.setup(knexInstance);
 
         if (process.env.SQL_LOG === "1") {
             R.debug(true);
@@ -121,27 +130,10 @@ class Database {
      * @returns {Promise<void>}
      */
     static async close() {
-        const listener = (reason, p) => {
-            Database.noReject = false;
-        };
-        process.addListener("unhandledRejection", listener);
-
-        console.log("Closing DB")
-
-        while (true) {
-            Database.noReject = true;
-            await R.close()
-            await sleep(2000)
-
-            if (Database.noReject) {
-                break;
-            } else {
-                console.log("Waiting to close the db")
-            }
+        if (this.sqliteInstance) {
+            this.sqliteInstance.close();
         }
-        console.log("SQLite closed")
-
-        process.removeListener("unhandledRejection", listener);
+        console.log("Stopped database");
     }
 }
 

@@ -811,11 +811,10 @@ async function shutdownFunction(signal) {
     }
     await sleep(2000);
     await Database.close();
-    console.log("Stopped DB")
 }
 
 function finalFunction() {
-    console.log("Graceful Shutdown Done")
+    console.log("Graceful shutdown successfully!");
 }
 
 gracefulShutdown(server, {
