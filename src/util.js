@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TimeLogger = exports.polyfill = exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isDev = void 0;
-const dayjs = require("dayjs");
+const _dayjs = require("dayjs");
+const dayjs = _dayjs;
 exports.isDev = process.env.NODE_ENV === "development";
 exports.appName = "Uptime Kuma";
 exports.DOWN = 0;
