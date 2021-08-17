@@ -1,6 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.polyfill = exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.PENDING = exports.UP = exports.DOWN = exports.appName = void 0;
+exports.TimeLogger = exports.polyfill = exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isDev = void 0;
+const dayjs = require("dayjs");
+exports.isDev = process.env.NODE_ENV === "development";
 exports.appName = "Uptime Kuma";
 exports.DOWN = 0;
 exports.UP = 1;
@@ -28,7 +30,7 @@ function ucfirst(str) {
 }
 exports.ucfirst = ucfirst;
 function debug(msg) {
-    if (process.env.NODE_ENV === "development") {
+    if (exports.isDev) {
         console.log(msg);
     }
 }
@@ -44,3 +46,14 @@ function polyfill() {
     }
 }
 exports.polyfill = polyfill;
+class TimeLogger {
+    constructor() {
+        this.startTime = dayjs().valueOf();
+    }
+    print(name) {
+        if (exports.isDev) {
+            console.log(name + ": " + (dayjs().valueOf() - this.startTime) + "ms");
+        }
+    }
+}
+exports.TimeLogger = TimeLogger;

@@ -32,7 +32,7 @@ docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name upti
 Browse to http://localhost:3001 after started.
 
 
-If you want to change port and volume, or need to browse via a reserve proxy, please read: https://github.com/louislam/uptime-kuma/wiki/Installation.
+If you want to change **port** and **volume**, or need to browse via a reserve proxy, please read <a href="https://github.com/louislam/uptime-kuma/wiki/Installation#docker">wiki</a>.
 
 ### 💪🏻 Without Docker (Recommanded for x86/x64 only)
 
@@ -55,7 +55,7 @@ pm2 start npm --name uptime-kuma -- run start-server
 
 Browse to http://localhost:3001 after started.
 
-If you want to change port and hostname, or need to browse via a reserve proxy, please read: https://github.com/louislam/uptime-kuma/wiki/Installation.
+If you want to change **port** and **hostname**, or need to browse via a reserve proxy, please read <a href="https://github.com/louislam/uptime-kuma/wiki/Installation#without-docker-x86x64-only">wiki</a>.
 
 ## 🆙 How to Update
 
@@ -79,7 +79,7 @@ PS: For every new release, it takes some time to build the docker image, please 
 ```bash
 cd <uptime-kuma-directory>
 git fetch --all
-git checkout 1.1.0 --force
+git checkout 1.2.0 --force
 npm install
 npm run build
 pm2 restart uptime-kuma
