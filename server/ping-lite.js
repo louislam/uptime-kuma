@@ -7,6 +7,7 @@ const spawn = require("child_process").spawn,
     WIN = /^win/.test(process.platform),
     LIN = /^linux/.test(process.platform),
     MAC = /^darwin/.test(process.platform);
+    FBSD = /^freebsd/.test(process.platform);
 const { debug } = require("../src/util");
 
 module.exports = Ping;
@@ -47,6 +48,18 @@ function Ping(host, options) {
         }
 
         this._args = (options.args) ? options.args : [ "-n", "-t", "2", "-c", "1", host ];
+        this._regmatch = /=([0-9.]+?) ms/;
+        
+    } else if (FBSD) {
+        this._bin = "/sbin/ping";
+
+        const defaultArgs = [ "-n", "-t", "2", "-c", "1", host ];
+
+        if (net.isIPv6(host) || options.ipv6) {
+            defaultArgs.unshift("-6");
+        }
+
+        this._args = (options.args) ? options.args : defaultArgs;
         this._regmatch = /=([0-9.]+?) ms/;
 
     } else {
