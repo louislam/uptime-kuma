@@ -6,6 +6,10 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.extend(relativeTime);
 
+/**
+ * DateTime Mixin
+ * Handled timezone and format
+ */
 export default {
     data() {
         return {
