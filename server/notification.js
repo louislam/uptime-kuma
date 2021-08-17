@@ -389,6 +389,53 @@ class Notification {
             } catch (error) {
                 throwGeneralAxiosError(error)
             }
+        } else if (notification.type === "line") {
+            try {
+                let lineAPIUrl = "https://api.line.me/v2/bot/message/push";
+                let config = {
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": "Bearer " + notification.lineChannelAccessToken
+                    }
+                };
+                if (heartbeatJSON == null) {
+                    let testMessage = {
+                        "to": notification.lineUserID,
+                        "messages": [
+                            {
+                                "type": "text",
+                                "text":"Test Successful!"
+                            }
+                        ]
+                    }
+                    await axios.post(lineAPIUrl, testMessage, config)
+                } else if (heartbeatJSON["status"] == 0) {
+                    let downMessage = {
+                        "to": notification.lineUserID,
+                        "messages": [
+                            {
+                                "type": "text",
+                                "text":"UptimeKuma Alert: [🔴 Down]\n" + "Name: " + monitorJSON["name"] + " \n" + heartbeatJSON["msg"] + "\nTime (UTC): " + heartbeatJSON["time"]
+                            }
+                        ]
+                    }
+                    await axios.post(lineAPIUrl, downMessage, config)
+                } else if (heartbeatJSON["status"] == 1) {
+                    let upMessage = {
+                        "to": notification.lineUserID,
+                        "messages": [
+                            {
+                                "type": "text",
+                                "text":"UptimeKuma Alert: [✅ Up]\n"  + "Name: " +  monitorJSON["name"] + " \n" + heartbeatJSON["msg"] + "\nTime (UTC): " + heartbeatJSON["time"]
+                            }
+                        ]
+                    }
+                    await axios.post(lineAPIUrl, upMessage, config)
+                }
+                return okMsg;
+            } catch (error) {
+                throwGeneralAxiosError(error)
+            }
         } else {
             throw new Error("Notification type is not supported")
         }
