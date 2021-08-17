@@ -826,3 +826,9 @@ gracefulShutdown(server, {
     onShutdown: shutdownFunction,     // shutdown function (async) - e.g. for cleanup DB, ...
     finally: finalFunction,            // finally function (sync) - e.g. for logging
 });
+
+// Catch unexpected errors here
+process.addListener("unhandledRejection", (error, promise) => {
+    console.trace(error);
+    console.error("If you keep encountering errors, please report to https://github.com/louislam/uptime-kuma/issues");
+});
