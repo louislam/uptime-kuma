@@ -19,7 +19,7 @@
                                     {{ item.name }}
                                 </div>
                             </div>
-                            <div class="col-6 col-md-4" v-bind:class="{ 'hideHeartbeatBar': $root.userHeartbeatBar == 'bottom' || $root.userHeartbeatBar == 'none' }">
+                            <div class="col-6 col-md-4" v-show="$root.userHeartbeatBar == 'normal'" :key="$root.userHeartbeatBar">
                                 <HeartbeatBar size="small" :monitor-id="item.id" />
                             </div>
                         </div>
@@ -151,10 +151,6 @@ export default {
             }
         }
     }
-}
-
-.hideHeartbeatBar {
-    display: none;
 }
 
 .monitorItem {
