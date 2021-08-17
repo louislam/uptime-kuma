@@ -1,4 +1,3 @@
-import dayjs from "dayjs";
 import { io } from "socket.io-client";
 import { useToast } from "vue-toastification";
 const toast = useToast()
@@ -17,7 +16,6 @@ export default {
                 connectCount: 0,
             },
             remember: (localStorage.remember !== "0"),
-            userTimezone: localStorage.timezone || "auto",
             allowLoginDialog: false,        // Allowed to show login dialog, but "loggedIn" have to be true too. This exists because prevent the login dialog show 0.1s in first before the socket server auth-ed.
             loggedIn: false,
             monitorList: { },
@@ -264,15 +262,6 @@ export default {
     },
 
     computed: {
-
-        timezone() {
-
-            if (this.userTimezone === "auto") {
-                return dayjs.tz.guess()
-            }
-
-            return this.userTimezone
-        },
 
         lastHeartbeatList() {
             let result = {}
