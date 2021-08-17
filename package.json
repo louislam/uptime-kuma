@@ -24,7 +24,8 @@
         "update-version": "node extra/update-version.js",
         "mark-as-nightly": "node extra/mark-as-nightly.js",
         "reset-password": "node extra/reset-password.js",
-        "compile-install-script": "@powershell -NoProfile -ExecutionPolicy Unrestricted -Command ./extra/compile-install-script.ps1"
+        "compile-install-script": "@powershell -NoProfile -ExecutionPolicy Unrestricted -Command ./extra/compile-install-script.ps1",
+        "test-install-script": "docker build --no-cache -f test/test_install_script/centos7.dockerfile ."
     },
     "dependencies": {
         "@fortawesome/fontawesome-svg-core": "^1.2.36",
