@@ -34,7 +34,7 @@ Browse to http://localhost:3001 after started.
 
 If you want to change **port** and **volume**, or need to browse via a reserve proxy, please read <a href="https://github.com/louislam/uptime-kuma/wiki/Installation#docker">wiki</a>.
 
-### 💪🏻 Without Docker (Recommanded for x86/x64 only)
+### 💪🏻 Without Docker (Recommended for x86/x64 only)
 
 Required Tools: Node.js >= 14, git and pm2.
 
