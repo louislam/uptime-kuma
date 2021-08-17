@@ -4,7 +4,8 @@
 // Frontend uses util.ts
 // Need to run "tsc" to compile if there are any changes.
 
-import * as dayjs from "dayjs";
+import * as _dayjs from "dayjs";
+const dayjs = _dayjs;
 
 export const isDev = process.env.NODE_ENV === "development";
 export const appName = "Uptime Kuma";
