@@ -74,7 +74,7 @@
         </div>
     </div>
 
-    <div v-if="showPingChartBox" class="shadow-box big-padding text-center">
+    <div v-if="showPingChartBox" class="shadow-box big-padding text-center ping-chart-wrapper">
         <div class="row">
             <div class="col">
                 <PingChart :monitor-id="monitor.id" />
@@ -322,13 +322,13 @@ export default {
 <style lang="scss" scoped>
 @import "../assets/vars.scss";
 
-@media (max-width: 767px) { 
+@media (max-width: 767px) {
     .badge {
         margin-top: 14px;
     }
 }
 
-@media (max-width: 550px) { 
+@media (max-width: 550px) {
     .functions {
         text-align: center;
     }
@@ -337,9 +337,13 @@ export default {
         margin-left: 10px !important;
         margin-right: 10px !important;
     }
+
+    .ping-chart-wrapper {
+        padding: 10px !important;
+    }
 }
 
-@media (max-width: 400px) { 
+@media (max-width: 400px) {
     .btn {
         display: inline-flex;
         flex-direction: column;
