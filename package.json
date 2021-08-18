@@ -25,7 +25,11 @@
         "mark-as-nightly": "node extra/mark-as-nightly.js",
         "reset-password": "node extra/reset-password.js",
         "compile-install-script": "@powershell -NoProfile -ExecutionPolicy Unrestricted -Command ./extra/compile-install-script.ps1",
-        "test-install-script": "docker build --no-cache -f test/test_install_script/centos7.dockerfile ."
+        "test-install-script-centos7": "npm run compile-install-script && docker build --progress plain -f test/test_install_script/centos7.dockerfile .",
+        "test-install-script-alpine3": "npm run compile-install-script && docker build --progress plain -f test/test_install_script/alpine3.dockerfile .",
+        "test-install-script-ubuntu": "npm run compile-install-script && docker build --progress plain -f test/test_install_script/ubuntu.dockerfile .",
+        "test-install-script-ubuntu1604": "npm run compile-install-script && docker build --progress plain -f test/test_install_script/ubuntu1604.dockerfile .",
+        "test-install-script-debian": "npm run compile-install-script && docker build --progress plain -f test/test_install_script/debian.dockerfile ."
     },
     "dependencies": {
         "@fortawesome/fontawesome-svg-core": "^1.2.36",
