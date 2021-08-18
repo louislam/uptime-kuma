@@ -7,7 +7,7 @@
                 class="beat"
                 :class="{ 'empty' : (beat === 0), 'down' : (beat.status === 0), 'pending' : (beat.status === 2) }"
                 :style="beatStyle"
-                :title="beat.msg"
+                :title="getBeatTitle(beat)"
             />
         </div>
     </div>
@@ -21,7 +21,10 @@ export default {
             type: String,
             default: "big",
         },
-        monitorId: Number,
+        monitorId: {
+            type: Number,
+            required: true,
+        },
     },
     data() {
         return {
@@ -36,9 +39,6 @@ export default {
     computed: {
 
         beatList() {
-            if (! (this.monitorId in this.$root.heartbeatList)) {
-                this.$root.heartbeatList[this.monitorId] = [];
-            }
             return this.$root.heartbeatList[this.monitorId]
         },
 
@@ -113,6 +113,11 @@ export default {
     unmounted() {
         window.removeEventListener("resize", this.resize);
     },
+    beforeMount() {
+        if (! (this.monitorId in this.$root.heartbeatList)) {
+            this.$root.heartbeatList[this.monitorId] = [];
+        }
+    },
     mounted() {
         if (this.size === "small") {
             this.beatWidth = 5.6;
@@ -129,6 +134,10 @@ export default {
                 this.maxBeat = Math.floor(this.$refs.wrap.clientWidth / (this.beatWidth + this.beatMargin * 2))
             }
         },
+
+        getBeatTitle(beat) {
+            return `${this.$root.datetime(beat.time)} - ${beat.msg}`;
+        }
     },
 }
 </script>
