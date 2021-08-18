@@ -27,6 +27,22 @@
                     </div>
 
                     <div class="mb-3">
+                        <label class="form-label">Theme - Heartbeat Bar</label>
+                        <div>
+                            <div class="btn-group" role="group" aria-label="Basic checkbox toggle button group">
+                                <input id="btncheck4" v-model="$root.userHeartbeatBar" type="radio" class="btn-check" name="heartbeatBarTheme" autocomplete="off" value="normal">
+                                <label class="btn btn-outline-primary" for="btncheck4">Normal</label>
+
+                                <input id="btncheck5" v-model="$root.userHeartbeatBar" type="radio" class="btn-check" name="heartbeatBarTheme" autocomplete="off" value="bottom">
+                                <label class="btn btn-outline-primary" for="btncheck5">Bottom</label>
+
+                                <input id="btncheck6" v-model="$root.userHeartbeatBar" type="radio" class="btn-check" name="heartbeatBarTheme" autocomplete="off" value="none">
+                                <label class="btn btn-outline-primary" for="btncheck6">None</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
                         <label for="timezone" class="form-label">Timezone</label>
                         <select id="timezone" v-model="$root.userTimezone" class="form-select">
                             <option value="auto">

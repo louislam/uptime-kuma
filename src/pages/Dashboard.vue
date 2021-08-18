@@ -13,17 +13,24 @@
 
                     <router-link v-for="(item, index) in sortedMonitorList" :key="index" :to="monitorURL(item.id)" class="item" :class="{ 'disabled': ! item.active }" @click="$root.cancelActiveList">
                         <div class="row">
-                            <div class="col-6 col-md-8 small-padding">
+                            <div class="col-6 col-md-8 small-padding" v-bind:class="{ 'monitorItem': $root.userHeartbeatBar == 'bottom' || $root.userHeartbeatBar == 'none' }">
                                 <div class="info">
                                     <Uptime :monitor="item" type="24" :pill="true" />
                                     {{ item.name }}
                                 </div>
                             </div>
-                            <div class="col-6 col-md-4">
+                            <div class="col-6 col-md-4" v-show="$root.userHeartbeatBar == 'normal'" :key="$root.userHeartbeatBar">
+                                <HeartbeatBar size="small" :monitor-id="item.id" />
+                            </div>
+                        </div>
+
+                        <div class="row" v-if="$root.userHeartbeatBar == 'bottom'">
+                            <div class="col-12">
                                 <HeartbeatBar size="small" :monitor-id="item.id" />
                             </div>
                         </div>
                     </router-link>
+                    
                 </div>
             </div>
             <div class="col-12 col-md-7 col-xl-8">
@@ -144,6 +151,10 @@ export default {
             }
         }
     }
+}
+
+.monitorItem {
+    width: 100%;
 }
 
 </style>
