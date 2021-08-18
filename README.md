@@ -31,6 +31,10 @@ docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name upti
 
 Browse to http://localhost:3001 after started.
 
+### ☸️ Kubernetes
+
+See more [here](kubernetes/README.md) 
+
 
 If you want to change **port** and **volume**, or need to browse via a reserve proxy, please read <a href="https://github.com/louislam/uptime-kuma/wiki/Installation#docker">wiki</a>.
 

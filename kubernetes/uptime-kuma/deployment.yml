@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    component: uptime-kuma
+  name: uptime-kuma
+spec:
+  selector:
+    matchLabels:
+      component: uptime-kuma
+  replicas: 3
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+
+  template:
+    metadata:
+      labels:
+        component: uptime-kuma
+    spec:
+      containers:
+        - name: uptime-kuma
+          image: louislam/uptime-kuma:1.2.0
+          ports:
+            - containerPort: 3001
+          volumeMounts:
+            - mountPath: /app/data
+              name: uptime-kuma-storage
+      volumes:
+        - name: uptime-kuma-storage
+          persistentVolumeClaim:
+            claimName: uptime-kuma-pvc
