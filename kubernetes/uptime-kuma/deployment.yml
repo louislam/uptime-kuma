@@ -8,12 +8,9 @@ spec:
   selector:
     matchLabels:
       component: uptime-kuma
-  replicas: 3
+  replicas: 1
   strategy:
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 1
-    type: RollingUpdate
+    type: Recreate
 
   template:
     metadata:
@@ -28,6 +25,17 @@ spec:
           volumeMounts:
             - mountPath: /app/data
               name: uptime-kuma-storage
+          livenessProbe:
+            exec:
+              command:
+                - node
+                - extra/healthcheck.js
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3001
+              scheme: HTTP
+
       volumes:
         - name: uptime-kuma-storage
           persistentVolumeClaim:
