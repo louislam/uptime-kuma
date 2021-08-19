@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   labels:
     component: uptime-kuma
-  name: uptime-kuma
+  name: deployment
 spec:
   selector:
     matchLabels:
@@ -18,13 +18,13 @@ spec:
         component: uptime-kuma
     spec:
       containers:
-        - name: uptime-kuma
+        - name: app
           image: louislam/uptime-kuma:1
           ports:
             - containerPort: 3001
           volumeMounts:
             - mountPath: /app/data
-              name: uptime-kuma-storage
+              name: storage
           livenessProbe:
             exec:
               command:
@@ -37,6 +37,6 @@ spec:
               scheme: HTTP
 
       volumes:
-        - name: uptime-kuma-storage
+        - name: storage
           persistentVolumeClaim:
-            claimName: uptime-kuma-pvc
+            claimName: pvc

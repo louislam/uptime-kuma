@@ -20,11 +20,11 @@ metadata:
         proxy_set_header   Upgrade $http_upgrade;
         proxy_cache_bypass $http_upgrade;
         }
-  name: uptime-kuma-ingress
+  name: ingress
 spec:
   tls:
   - hosts:
-    - monitor.cxde.link
+    - uk.kube.cxde.link
     secretName: monitor-cxde-link-tls
   rules:
   - host: monitor.cxde.link
@@ -34,6 +34,6 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: uptime-kuma-uptime-kuma
+            name: service
             port:
               number: 3001

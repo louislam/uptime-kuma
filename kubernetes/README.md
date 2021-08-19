@@ -3,6 +3,7 @@
 
 Kustomize is a tool which builds a complete deployment file for all config elements.
 You can edit the files in the ```uptime-kuma``` folder except the ```kustomization.yml``` until you know what you're doing.
+If you want to choose another namespace you can edit the ```kustomization.yml``` in the ```kubernetes```-Folder and change the ```namespace: uptime-kuma``` to something you like.
 
 It creates a certificate with the specified Issuer and creates the Ingress for the Uptime-Kuma ClusterIP-Service
 

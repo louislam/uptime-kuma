@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: uptime-kuma-pvc
+  name: pvc
 spec:
   accessModes:
     - ReadWriteOnce
