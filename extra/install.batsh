@@ -209,6 +209,13 @@ if (type == "local") {
         bash("exit 1");
     }
 
+    bash("check=$(docker info)");
+
+    if (check == bash("*Is the docker daemon running*")) {
+        println("Error: docker is not running!");
+        bash("exit 1");
+    }
+
     if ("$3" != "") {
         port = "$3";
     } else {

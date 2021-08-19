@@ -174,6 +174,11 @@ else
     "echo" "-e" "Error: docker is not found!"
     exit 1  
 fi
+  check=$(docker info)
+  if [ "$check" == *Is the docker daemon running* ]; then
+    "echo" "-e" "Error: docker is not running!"
+    exit 1  
+fi
   if [ "$3" != "" ]; then
     port="$3"
   else
