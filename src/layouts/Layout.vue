@@ -52,22 +52,22 @@
         <!-- Mobile Only -->
         <div v-if="$root.isMobile" style="width: 100%;height: 60px;" />
         <nav v-if="$root.isMobile" class="bottom-nav">
-            <router-link to="/dashboard" class="nav-link" @click="$root.cancelActiveList">
+            <router-link to="/dashboard" class="nav-link">
                 <div><font-awesome-icon icon="tachometer-alt" /></div>
                 Dashboard
             </router-link>
 
-            <a href="#" :class=" { 'router-link-exact-active' : $root.showListMobile } " @click="$root.showListMobile = ! $root.showListMobile">
+            <router-link to="/list" class="nav-link">
                 <div><font-awesome-icon icon="list" /></div>
                 List
-            </a>
+            </router-link>
 
-            <router-link to="/add" class="nav-link" @click="$root.cancelActiveList">
+            <router-link to="/add" class="nav-link">
                 <div><font-awesome-icon icon="plus" /></div>
                 Add
             </router-link>
 
-            <router-link to="/settings" class="nav-link" @click="$root.cancelActiveList">
+            <router-link to="/settings" class="nav-link">
                 <div><font-awesome-icon icon="cog" /></div>
                 Settings
             </router-link>
@@ -101,7 +101,7 @@ export default {
     },
 
     watch: {
-        $route (to, from) {
+        $route(to, from) {
             this.init();
         },
     },

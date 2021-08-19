@@ -25,7 +25,6 @@ export default {
             uptimeList: { },
             certInfoList: {},
             notificationList: [],
-            showListMobile: false,
             connectionErrorMsg: "Cannot connect to the socket server. Reconnecting...",
         }
     },
@@ -185,10 +184,6 @@ export default {
     },
 
     methods: {
-
-        cancelActiveList() {
-            this.$root.showListMobile = false;
-        },
 
         storage() {
             return (this.remember) ? localStorage : sessionStorage;

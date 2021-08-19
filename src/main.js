@@ -18,6 +18,8 @@ import Details from "./pages/Details.vue";
 import EditMonitor from "./pages/EditMonitor.vue";
 import Settings from "./pages/Settings.vue";
 import Setup from "./pages/Setup.vue";
+import List from "./pages/List.vue";
+
 import { appName } from "./util.ts";
 
 const routes = [
@@ -52,6 +54,10 @@ const routes = [
                             {
                                 path: "/add",
                                 component: EditMonitor,
+                            },
+                            {
+                                path: "/list",
+                                component: List,
                             },
                         ],
                     },
