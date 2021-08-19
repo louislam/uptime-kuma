@@ -1,7 +1,7 @@
 console.log("Welcome to Uptime Kuma");
 console.log("Node Env: " + process.env.NODE_ENV);
 
-const { sleep, debug, TimeLogger } = require("../src/util");
+const { sleep, debug, TimeLogger, getRandomInt } = require("../src/util");
 
 console.log("Importing Node libraries")
 const fs = require("fs");
@@ -755,8 +755,11 @@ async function startMonitors() {
     let list = await R.find("monitor", " active = 1 ")
 
     for (let monitor of list) {
-        monitor.start(io)
+        monitor.start(io);
         monitorList[monitor.id] = monitor;
+
+        // Give some delays, so all monitors won't make request at the same moment when just start the server.
+        await sleep(getRandomInt(300, 1000));
     }
 }
 
