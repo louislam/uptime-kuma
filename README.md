@@ -41,11 +41,12 @@ docker volume create uptime-kuma
 docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name uptime-kuma louislam/uptime-kuma:1
 ```
 
+Browse to http://localhost:3001 after started.
+
 ### ☸️ Kubernetes
 
 See more [here](kubernetes/README.md) 
 
-Browse to http://localhost:3001 after started.
 
 ### Advanced Installation
 
