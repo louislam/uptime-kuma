@@ -1,5 +1,5 @@
 <template>
-    <LineChart :chart-data="chartData" :height="100" :options="chartOptions" />
+    <LineChart :chart-data="chartData" :options="chartOptions" />
 </template>
 
 <script>
@@ -31,6 +31,19 @@ export default {
         chartOptions() {
             return {
                 responsive: true,
+                maintainAspectRatio: false,
+                onResize: (chart) => {
+                    chart.canvas.parentNode.style.position = "relative";
+                    if (screen.width < 576) {
+                        chart.canvas.parentNode.style.height = "275px";
+                    } else if (screen.width < 768) {
+                        chart.canvas.parentNode.style.height = "320px";
+                    } else if (screen.width < 992) {
+                        chart.canvas.parentNode.style.height = "300px";
+                    } else {
+                        chart.canvas.parentNode.style.height = "250px";
+                    }
+                },
                 layout: {
                     padding: {
                         left: 10,
