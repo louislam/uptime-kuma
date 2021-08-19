@@ -755,9 +755,11 @@ async function startMonitors() {
     let list = await R.find("monitor", " active = 1 ")
 
     for (let monitor of list) {
-        monitor.start(io);
         monitorList[monitor.id] = monitor;
+    }
 
+    for (let monitor of list) {
+        monitor.start(io);
         // Give some delays, so all monitors won't make request at the same moment when just start the server.
         await sleep(getRandomInt(300, 1000));
     }

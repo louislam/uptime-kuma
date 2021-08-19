@@ -43,7 +43,11 @@ export default {
         },
 
         shortBeatList() {
-            let placeholders = []
+            if (! this.beatList) {
+                return [];
+            }
+
+            let placeholders = [];
 
             let start = this.beatList.length - this.maxBeat;
 
