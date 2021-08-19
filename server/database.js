@@ -69,6 +69,16 @@ class Database {
             const backupPath = "./data/kuma.db.bak" + version;
             fs.copyFileSync(Database.path, backupPath);
 
+            const shmPath = Database.path + "-shm";
+            if (fs.existsSync(shmPath)) {
+                fs.copyFileSync(shmPath, shmPath + ".bak" + version);
+            }
+
+            const walPath = Database.path + "-wal";
+            if (fs.existsSync(walPath)) {
+                fs.copyFileSync(walPath, walPath + ".bak" + version);
+            }
+
             // Try catch anything here, if gone wrong, restore the backup
             try {
                 for (let i = version + 1; i <= this.latestVersion; i++) {
