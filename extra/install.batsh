@@ -3,7 +3,7 @@
 // The command is working on Windows PowerShell and Docker for Windows only.
 
 
-// curl -o uptime-kuma-install.sh https://raw.githubusercontent.com/louislam/uptime-kuma/master/install.sh && sudo bash uptime-kuma-install.sh
+// curl -o kuma_install.sh https://raw.githubusercontent.com/louislam/uptime-kuma/master/install.sh && sudo bash kuma_install.sh
 println("=====================");
 println("Uptime Kuma Installer");
 println("=====================");
@@ -211,10 +211,10 @@ if (type == "local") {
 
     bash("check=$(docker info)");
 
-    if (check == bash("*Is the docker daemon running*")) {
-        println("Error: docker is not running!");
-        bash("exit 1");
-    }
+    bash("if [[\"$check\" == *\"Is the docker daemon running\"*]]; then
+      echo \"Error: docker is not running\"
+      exit 1
+    fi");
 
     if ("$3" != "") {
         port = "$3";
