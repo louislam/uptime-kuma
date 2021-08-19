@@ -19,75 +19,41 @@ It is a self-hosted monitoring tool like "Uptime Robot".
 
 ## 🔧 How to Install
 
+### 🚀 Installer via cli
+
+Interactive cli installer, supports Docker or without Docker. 
+
+```bash
+curl -o kuma_install.sh https://raw.githubusercontent.com/louislam/uptime-kuma/master/install.sh && sudo bash kuma_install.sh
+```
+
 ### 🐳 Docker
 
 ```bash
-# Create a volume
 docker volume create uptime-kuma
-
-# Start the container
 docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name uptime-kuma louislam/uptime-kuma:1
 ```
 
 Browse to http://localhost:3001 after started.
 
+### Advanced Installation
 
-If you want to change **port** and **volume**, or need to browse via a reserve proxy, please read <a href="https://github.com/louislam/uptime-kuma/wiki/Installation#docker">wiki</a>.
+If you need more options or need to browse via a reserve proxy, please read:
 
-### 💪🏻 Without Docker (Recommended for x86/x64 only)
+https://github.com/louislam/uptime-kuma/wiki/%F0%9F%94%A7-How-to-Install
 
-Required Tools: Node.js >= 14, git and pm2.
 
-```bash
-git clone https://github.com/louislam/uptime-kuma.git
-cd uptime-kuma
-npm run setup
-
-# Option 1. Try it
-npm run start-server
-
-# (Recommended)
-# Option 2. Run in background using PM2
-# Install PM2 if you don't have: npm install pm2 -g
-pm2 start npm --name uptime-kuma -- run start-server
-
-```
-
-Browse to http://localhost:3001 after started.
-
-If you want to change **port** and **hostname**, or need to browse via a reserve proxy, please read <a href="https://github.com/louislam/uptime-kuma/wiki/Installation#without-docker-x86x64-only">wiki</a>.
 
 ## 🆙 How to Update
 
-### 🆙🐳 Docker
+Please read:
 
-Re-pull the latest docker image and create another container with the same volume.
-
-For someone who used my "How-to-use" commands to install Uptime Kuma, you can update by this:
-
-```bash
-docker pull louislam/uptime-kuma:1
-docker stop uptime-kuma
-docker rm uptime-kuma
-docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name uptime-kuma louislam/uptime-kuma:1
-```
-
-PS: For every new release, it takes some time to build the docker image, please be patient if it is not available yet.
-
-### 🆙 💪🏻 Without Docker
-
-```bash
-cd <uptime-kuma-directory>
-git fetch --all
-git checkout 1.2.0 --force
-npm install
-npm run build
-pm2 restart uptime-kuma
-```
+https://github.com/louislam/uptime-kuma/wiki/%F0%9F%86%99-How-to-Update
 
 ## 🆕 What's Next?
 
 I will mark requests/issues to the next milestone.
+
 https://github.com/louislam/uptime-kuma/milestones
 
 ## 🖼 More Screenshots
@@ -122,5 +88,3 @@ If you want to report a bug or request a new feature. Free feel to open a new is
 If you want to modify Uptime Kuma, this guideline maybe useful for you: https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md
 
 English proofreading is needed too, because my grammar is not that great sadly. Feel free to correct my grammar in this Readme, source code or wiki.
-
-🐻
