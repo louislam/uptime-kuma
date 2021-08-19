@@ -1,169 +1,175 @@
 <template>
-    <h1> {{ monitor.name }}</h1>
-    <p class="url">
-        <a v-if="monitor.type === 'http' || monitor.type === 'keyword' " :href="monitor.url" target="_blank">{{ monitor.url }}</a>
-        <span v-if="monitor.type === 'port'">TCP Ping {{ monitor.hostname }}:{{ monitor.port }}</span>
-        <span v-if="monitor.type === 'ping'">Ping: {{ monitor.hostname }}</span>
-        <span v-if="monitor.type === 'keyword'">
-            <br>
-            <span>Keyword:</span> <span class="keyword">{{ monitor.keyword }}</span>
-        </span>
-    </p>
-
-    <div class="functions">
-        <button v-if="monitor.active" class="btn btn-light" @click="pauseDialog">
-            <font-awesome-icon icon="pause" /> Pause
-        </button>
-        <button v-if="! monitor.active" class="btn btn-primary" @click="resumeMonitor">
-            <font-awesome-icon icon="play" /> Resume
-        </button>
-        <router-link :to=" '/edit/' + monitor.id " class="btn btn-secondary">
-            <font-awesome-icon icon="edit" /> Edit
-        </router-link>
-        <button class="btn btn-danger" @click="deleteDialog">
-            <font-awesome-icon icon="trash" /> Delete
-        </button>
-    </div>
-
-    <div class="shadow-box">
-        <div class="row">
-            <div class="col-md-8">
-                <HeartbeatBar :monitor-id="monitor.id" />
-                <span class="word">Check every {{ monitor.interval }} seconds.</span>
-            </div>
-            <div class="col-md-4 text-center">
-                <span class="badge rounded-pill" :class=" 'bg-' + status.color " style="font-size: 30px">{{ status.text }}</span>
-            </div>
-        </div>
-    </div>
-
-    <div class="shadow-box big-padding text-center stats">
-        <div class="row">
-            <div class="col">
-                <h4>{{ pingTitle }}</h4>
-                <p>(Current)</p>
-                <span class="num">
-                    <a href="#" @click.prevent="showPingChartBox = !showPingChartBox">
-                        <CountUp :value="ping" />
-                    </a>
+    <transition name="slide-fade" appear>
+        <div>
+            <h1> {{ monitor.name }}</h1>
+            <p class="url">
+                <a v-if="monitor.type === 'http' || monitor.type === 'keyword' " :href="monitor.url" target="_blank">{{ monitor.url }}</a>
+                <span v-if="monitor.type === 'port'">TCP Ping {{ monitor.hostname }}:{{ monitor.port }}</span>
+                <span v-if="monitor.type === 'ping'">Ping: {{ monitor.hostname }}</span>
+                <span v-if="monitor.type === 'keyword'">
+                    <br>
+                    <span>Keyword:</span> <span class="keyword">{{ monitor.keyword }}</span>
                 </span>
-            </div>
-            <div class="col">
-                <h4>Avg. {{ pingTitle }}</h4>
-                <p>(24-hour)</p>
-                <span class="num"><CountUp :value="avgPing" /></span>
-            </div>
-            <div class="col">
-                <h4>Uptime</h4>
-                <p>(24-hour)</p>
-                <span class="num"><Uptime :monitor="monitor" type="24" /></span>
-            </div>
-            <div class="col">
-                <h4>Uptime</h4>
-                <p>(30-day)</p>
-                <span class="num"><Uptime :monitor="monitor" type="720" /></span>
+            </p>
+
+            <div class="functions">
+                <button v-if="monitor.active" class="btn btn-light" @click="pauseDialog">
+                    <font-awesome-icon icon="pause" /> Pause
+                </button>
+                <button v-if="! monitor.active" class="btn btn-primary" @click="resumeMonitor">
+                    <font-awesome-icon icon="play" /> Resume
+                </button>
+                <router-link :to=" '/edit/' + monitor.id " class="btn btn-secondary">
+                    <font-awesome-icon icon="edit" /> Edit
+                </router-link>
+                <button class="btn btn-danger" @click="deleteDialog">
+                    <font-awesome-icon icon="trash" /> Delete
+                </button>
             </div>
 
-            <div v-if="certInfo" class="col">
-                <h4>Cert Exp.</h4>
-                <p>(<Datetime :value="certInfo.validTo" date-only />)</p>
-                <span class="num">
-                    <a href="#" @click.prevent="toggleCertInfoBox = !toggleCertInfoBox">{{ certInfo.daysRemaining }} days</a>
-                </span>
+            <div class="shadow-box">
+                <div class="row">
+                    <div class="col-md-8">
+                        <HeartbeatBar :monitor-id="monitor.id" />
+                        <span class="word">Check every {{ monitor.interval }} seconds.</span>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <span class="badge rounded-pill" :class=" 'bg-' + status.color " style="font-size: 30px">{{ status.text }}</span>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
 
-    <div v-if="showPingChartBox" class="shadow-box big-padding text-center ping-chart-wrapper">
-        <div class="row">
-            <div class="col">
-                <PingChart :monitor-id="monitor.id" />
+            <div class="shadow-box big-padding text-center stats">
+                <div class="row">
+                    <div class="col">
+                        <h4>{{ pingTitle }}</h4>
+                        <p>(Current)</p>
+                        <span class="num">
+                            <a href="#" @click.prevent="showPingChartBox = !showPingChartBox">
+                                <CountUp :value="ping" />
+                            </a>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <h4>Avg. {{ pingTitle }}</h4>
+                        <p>(24-hour)</p>
+                        <span class="num"><CountUp :value="avgPing" /></span>
+                    </div>
+                    <div class="col">
+                        <h4>Uptime</h4>
+                        <p>(24-hour)</p>
+                        <span class="num"><Uptime :monitor="monitor" type="24" /></span>
+                    </div>
+                    <div class="col">
+                        <h4>Uptime</h4>
+                        <p>(30-day)</p>
+                        <span class="num"><Uptime :monitor="monitor" type="720" /></span>
+                    </div>
+
+                    <div v-if="certInfo" class="col">
+                        <h4>Cert Exp.</h4>
+                        <p>(<Datetime :value="certInfo.validTo" date-only />)</p>
+                        <span class="num">
+                            <a href="#" @click.prevent="toggleCertInfoBox = !toggleCertInfoBox">{{ certInfo.daysRemaining }} days</a>
+                        </span>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
 
-    <div v-if="showCertInfoBox" class="shadow-box big-padding text-center">
-        <div class="row">
-            <div class="col">
-                <h4>Certificate Info</h4>
-                <table class="text-start">
+            <transition name="slide-fade" appear>
+                <div v-if="showCertInfoBox" class="shadow-box big-padding text-center">
+                    <div class="row">
+                        <div class="col">
+                            <h4>Certificate Info</h4>
+                            <table class="text-start">
+                                <tbody>
+                                    <tr class="my-3">
+                                        <td class="px-3">
+                                            Valid:
+                                        </td>
+                                        <td>{{ certInfo.valid }}</td>
+                                    </tr>
+                                    <tr class="my-3">
+                                        <td class="px-3">
+                                            Valid To:
+                                        </td>
+                                        <td><Datetime :value="certInfo.validTo" /></td>
+                                    </tr>
+                                    <tr class="my-3">
+                                        <td class="px-3">
+                                            Days Remaining:
+                                        </td>
+                                        <td>{{ certInfo.daysRemaining }}</td>
+                                    </tr>
+                                    <tr class="my-3">
+                                        <td class="px-3">
+                                            Issuer:
+                                        </td>
+                                        <td>{{ certInfo.issuer }}</td>
+                                    </tr>
+                                    <tr class="my-3">
+                                        <td class="px-3">
+                                            Fingerprint:
+                                        </td>
+                                        <td>{{ certInfo.fingerprint }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </transition>
+
+            <div v-if="showPingChartBox" class="shadow-box big-padding text-center ping-chart-wrapper">
+                <div class="row">
+                    <div class="col">
+                        <PingChart :monitor-id="monitor.id" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="shadow-box">
+                <table class="table table-borderless table-hover">
+                    <thead>
+                        <tr>
+                            <th>Status</th>
+                            <th>DateTime</th>
+                            <th>Message</th>
+                        </tr>
+                    </thead>
                     <tbody>
-                        <tr class="my-3">
-                            <td class="px-3">
-                                Valid:
-                            </td>
-                            <td>{{ certInfo.valid }}</td>
+                        <tr v-for="(beat, index) in displayedRecords" :key="index">
+                            <td><Status :status="beat.status" /></td>
+                            <td><Datetime :value="beat.time" /></td>
+                            <td>{{ beat.msg }}</td>
                         </tr>
-                        <tr class="my-3">
-                            <td class="px-3">
-                                Valid To:
+
+                        <tr v-if="importantHeartBeatList.length === 0">
+                            <td colspan="3">
+                                No important events
                             </td>
-                            <td><Datetime :value="certInfo.validTo" /></td>
-                        </tr>
-                        <tr class="my-3">
-                            <td class="px-3">
-                                Days Remaining:
-                            </td>
-                            <td>{{ certInfo.daysRemaining }}</td>
-                        </tr>
-                        <tr class="my-3">
-                            <td class="px-3">
-                                Issuer:
-                            </td>
-                            <td>{{ certInfo.issuer }}</td>
-                        </tr>
-                        <tr class="my-3">
-                            <td class="px-3">
-                                Fingerprint:
-                            </td>
-                            <td>{{ certInfo.fingerprint }}</td>
                         </tr>
                     </tbody>
                 </table>
+
+                <div class="d-flex justify-content-center kuma_pagination">
+                    <pagination
+                        v-model="page"
+                        :records="importantHeartBeatList.length"
+                        :per-page="perPage"
+                    />
+                </div>
             </div>
+
+            <Confirm ref="confirmPause" @yes="pauseMonitor">
+                Are you sure want to pause?
+            </Confirm>
+
+            <Confirm ref="confirmDelete" btn-style="btn-danger" @yes="deleteMonitor">
+                Are you sure want to delete this monitor?
+            </Confirm>
         </div>
-    </div>
-
-    <div class="shadow-box">
-        <table class="table table-borderless table-hover">
-            <thead>
-                <tr>
-                    <th>Status</th>
-                    <th>DateTime</th>
-                    <th>Message</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="(beat, index) in displayedRecords" :key="index">
-                    <td><Status :status="beat.status" /></td>
-                    <td><Datetime :value="beat.time" /></td>
-                    <td>{{ beat.msg }}</td>
-                </tr>
-
-                <tr v-if="importantHeartBeatList.length === 0">
-                    <td colspan="3">
-                        No important events
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-
-        <div class="d-flex justify-content-center kuma_pagination">
-            <pagination
-                v-model="page"
-                :records="importantHeartBeatList.length"
-                :per-page="perPage"
-            />
-        </div>
-    </div>
-
-    <Confirm ref="confirmPause" @yes="pauseMonitor">
-        Are you sure want to pause?
-    </Confirm>
-
-    <Confirm ref="confirmDelete" btn-style="btn-danger" @yes="deleteMonitor">
-        Are you sure want to delete this monitor?
-    </Confirm>
+    </transition>
 </template>
 
 <script>

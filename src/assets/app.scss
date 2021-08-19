@@ -183,3 +183,20 @@ h2 {
         background-color: $dark-bg;
     }
 }
+
+/*
+ * Transitions
+ */
+
+// page-change
+.slide-fade-enter-active {
+    transition: all 0.20s $easing-in;
+}
+.slide-fade-leave-active {
+    transition: all 0.20s $easing-in;
+}
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+    transform: translateY(50px);
+    opacity: 0;
+}
