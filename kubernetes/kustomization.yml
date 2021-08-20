@@ -1,0 +1,10 @@
+namespace: uptime-kuma
+namePrefix: uptime-kuma-
+
+commonLabels:
+  app: uptime-kuma
+
+bases:
+   - uptime-kuma
+
+

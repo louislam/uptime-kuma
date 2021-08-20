@@ -36,12 +36,16 @@ docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name upti
 
 Browse to http://localhost:3001 after started.
 
+### ☸️ Kubernetes
+
+See more [here](kubernetes/README.md) 
+
+
 ### Advanced Installation
 
 If you need more options or need to browse via a reserve proxy, please read:
 
 https://github.com/louislam/uptime-kuma/wiki/%F0%9F%94%A7-How-to-Install
-
 
 
 ## 🆙 How to Update
