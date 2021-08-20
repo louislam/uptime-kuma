@@ -24,10 +24,10 @@ metadata:
 spec:
   tls:
   - hosts:
-    - uk.kube.cxde.link
-    secretName: monitor-cxde-link-tls
+    - example.com
+    secretName: example-com-tls
   rules:
-  - host: monitor.cxde.link
+  - host: example.com
     http:
       paths:
       - path: /
