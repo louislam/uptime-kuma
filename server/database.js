@@ -1,5 +1,5 @@
 const fs = require("fs");
-const { sleep } = require("../src/util");
+const { sleep, debug, isDev } = require("../src/util");
 const { R } = require("redbean-node");
 const { setSetting, setting } = require("./util-server");
 const knex = require("knex");
@@ -23,19 +23,36 @@ class Database {
         const Dialect = require("knex/lib/dialects/sqlite3/index.js");
         Dialect.prototype._driver = () => sqlite3;
 
-        // Disable Pool by overriding acquireConnection()
-        Dialect.prototype.acquireConnection = async () => {
-            return this.sqliteInstance;
+        if (isDev) {
+            Dialect.prototype.acquireConnectionOrg = Dialect.prototype.acquireConnection;
+
+            Dialect.prototype.acquireConnection = async function () {
+                let a = await this.acquireConnectionOrg();
+                debug("acquired Connection");
+                return a;
+            };
         }
-        Dialect.prototype.releaseConnection = async () => { }
+
+        // Always return same connection.
+        Dialect.prototype.acquireRawConnection = async function () {
+            return Database.sqliteInstance;
+        };
+
+        Dialect.prototype.destroyRawConnection = async () => { }
 
         const knexInstance = knex({
             client: Dialect,
-            connection: {
-                filename: Database.path,
-            },
+            connection: { },        // Do not remove, Leave it empty is ok
             useNullAsDefault: true,
+            pool: {
+                min: 1,
+                max: 5,
+                idleTimeoutMillis: 30000,
+            }
         });
+
+        console.log( knexInstance.pool)
+        console.log("pool size")
 
         R.setup(knexInstance);
 
