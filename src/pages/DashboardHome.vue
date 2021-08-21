@@ -52,8 +52,8 @@
                         <tr v-for="(beat, index) in displayedRecords" :key="index" :class="{ 'shadow-box': $root.windowWidth <= 550}">
                             <td>{{ beat.name }}</td>
                             <td><Status :status="beat.status" /></td>
-                            <td><Datetime :value="beat.time" /></td>
-                            <td class="no-border">{{ beat.msg }}</td>
+                            <td :class="{ 'border-0':! beat.msg}"><Datetime :value="beat.time" /></td>
+                            <td class="border-0">{{ beat.msg }}</td>
                         </tr>
 
                         <tr v-if="importantHeartBeatList.length === 0">
@@ -193,10 +193,6 @@ table {
 }
 
 @media (max-width: 550px) {
-    .no-border {
-        border: 0px;
-    }
-
     tr.shadow-box, .shadow-box:last-child {
         padding: 10px;
     }
