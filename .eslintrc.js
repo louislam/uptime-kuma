@@ -71,5 +71,8 @@ module.exports = {
         "eol-last": ["error", "always"],
         //'prefer-template': 'error',
         "comma-dangle": ["warn", "only-multiline"],
+        "no-empty": ["error", {
+            "allowEmptyCatch": true
+        }],
     },
 }
