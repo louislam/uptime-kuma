@@ -13,6 +13,10 @@
                 <span class="fs-4 title">Uptime Kuma</span>
             </router-link>
 
+            <a v-if="hasNewVersion" target="_blank" href="https://github.com/louislam/uptime-kuma/releases" class="btn btn-info me-3">
+                <font-awesome-icon icon="arrow-alt-circle-up" /> New Update
+            </a>
+
             <ul class="nav nav-pills">
                 <li class="nav-item">
                     <router-link to="/dashboard" class="nav-link">
@@ -77,6 +81,7 @@
 
 <script>
 import Login from "../components/Login.vue";
+import compareVersions from "compare-versions";
 
 export default {
 
@@ -96,7 +101,15 @@ export default {
             classes[this.$root.theme] = true;
             classes["mobile"] = this.$root.isMobile;
             return classes;
-        }
+        },
+
+        hasNewVersion() {
+            if (this.$root.info.latestVersion && this.$root.info.version) {
+                return compareVersions(this.$root.info.latestVersion, this.$root.info.version) >= 1;
+            } else {
+                return false;
+            }
+        },
 
     },
 

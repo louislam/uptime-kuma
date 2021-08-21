@@ -39,15 +39,13 @@ const passwordHash = require("./password-hash");
 
 const args = require("args-parser")(process.argv);
 
-const version = require("../package.json").version;
+const checkVersion = require("./check-version");
+console.info("Version: " + checkVersion.version);
 
 // If host is omitted, the server will accept connections on the unspecified IPv6 address (::) when IPv6 is available and the unspecified IPv4 address (0.0.0.0) otherwise.
 // Dual-stack support for (::)
 const hostname = process.env.HOST || args.host;
-
 const port = parseInt(process.env.PORT || args.port || 3001);
-
-console.info("Version: " + version)
 
 console.log("Creating express and socket.io instance")
 const app = express();
@@ -119,7 +117,8 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
     io.on("connection", async (socket) => {
 
         socket.emit("info", {
-            version,
+            version: checkVersion.version,
+            latestVersion: checkVersion.latestVersion,
         })
 
         totalClient++;
@@ -584,6 +583,7 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
             console.log(`Listening on ${port}`);
         }
         startMonitors();
+        checkVersion.startInterval();
     });
 
 })();

@@ -45,6 +45,7 @@
         "chart.js": "^3.5.0",
         "chartjs-adapter-dayjs": "^1.0.0",
         "command-exists": "^1.2.9",
+        "compare-versions": "^3.6.0",
         "dayjs": "^1.10.6",
         "express": "^4.17.1",
         "express-basic-auth": "^1.2.0",

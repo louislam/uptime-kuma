@@ -72,7 +72,13 @@ h2 {
     }
 }
 
+.btn-info {
+    color: white;
 
+    &:hover, &:active, &:focus, &.active {
+        color: white;
+    }
+}
 
 // Dark Theme override here
 .dark {
@@ -99,6 +105,10 @@ h2 {
     .table,
     .nav-link {
         color: $dark-font-color;
+
+        &.btn-info {
+            color: white;
+        }
     }
 
     .form-control,
