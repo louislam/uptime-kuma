@@ -80,6 +80,12 @@ h2 {
     }
 }
 
+@media (max-width: 550px) {
+    tbody .shadow-box {
+        background-color: white;
+    }
+}
+
 // Dark Theme override here
 .dark {
     background-color: #090C10;
@@ -191,6 +197,12 @@ h2 {
 
     .multiselect__option--selected {
         background-color: $dark-bg;
+    }
+
+    @media (max-width: 550px) {
+        tbody .shadow-box {
+            background-color: $dark-bg2;
+        }
     }
 }
 
