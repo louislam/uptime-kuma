@@ -23,6 +23,9 @@
                                     <option value="keyword">
                                         HTTP(s) - Keyword
                                     </option>
+                                    <option value="dns">
+                                        DNS
+                                    </option>
                                 </select>
                             </div>
 
@@ -52,6 +55,41 @@
                             <div v-if="monitor.type === 'port' " class="my-3">
                                 <label for="port" class="form-label">Port</label>
                                 <input id="port" v-model="monitor.port" type="number" class="form-control" required min="0" max="65535" step="1">
+                            </div>
+
+                            <div v-if="monitor.type === 'dns'" class="my-3">
+                                <label for="hostname" class="form-label">Hostname</label>
+                                <input id="hostname" v-model="monitor.hostname" type="text" class="form-control" required>
+                            </div>
+
+                            <div v-if="monitor.type === 'dns'" class="my-3">
+                                <label for="dns_resolve_server" class="form-label">Resolver Server</label>
+                                <input id="dns_resolve_server" v-model="monitor.dns_resolve_server" type="text" class="form-control" :pattern="this.ipRegex" required>
+                                <div class="form-text">
+                                    Cloudflare is the default server, you can change the resolver server anytime.
+                                </div>
+                            </div>
+
+                            <div v-if="monitor.type === 'dns'" class="my-3">
+                                <label for="dns_resolve_type" class="form-label">Resource Record Type</label>
+
+                                <VueMultiselect
+                                    id="dns_resolve_type"
+                                    v-model="monitor.dns_resolve_type"
+                                    :options="dnsresolvetypeOptions"
+                                    :multiple="false"
+                                    :close-on-select="true"
+                                    :clear-on-select="false"
+                                    :preserve-search="false"
+                                    placeholder="Pick a RR-Type..."
+                                    :preselect-first="false"
+                                    :max-height="500"
+                                    :taggable="false"
+                                ></VueMultiselect>
+
+                                <div class="form-text">
+                                    Select the RR-Type you want to monitor
+                                </div>
                             </div>
 
                             <div class="my-3">
@@ -170,6 +208,8 @@ export default {
                 notificationIDList: {},
             },
             acceptedStatusCodeOptions: [],
+            dnsresolvetypeOptions: [],
+            ipRegex: "((^\s*((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\s*$)|(^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$))",
         }
     },
 
@@ -200,11 +240,25 @@ export default {
             "500-599",
         ];
 
+        let dnsresolvetypeOptions = [
+            "A",
+            "AAAA",
+            "CAA",
+            "CNAME",
+            "MX",
+            "NS",
+            "PTR",
+            "SOA",
+            "SRV",
+            "TXT",
+        ];
+
         for (let i = 100; i <= 999; i++) {
             acceptedStatusCodeOptions.push(i.toString());
         }
 
         this.acceptedStatusCodeOptions = acceptedStatusCodeOptions;
+        this.dnsresolvetypeOptions = dnsresolvetypeOptions;
     },
     methods: {
         init() {
@@ -221,6 +275,7 @@ export default {
                     upsideDown: false,
                     maxredirects: 10,
                     accepted_statuscodes: ["200-299"],
+                    dns_resolve_server: "1.1.1.1",
                 }
             } else if (this.isEdit) {
                 this.$root.getSocket().emit("getMonitor", this.$route.params.id, (res) => {

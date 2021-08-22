@@ -293,6 +293,8 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                 bean.upsideDown = monitor.upsideDown;
                 bean.maxredirects = monitor.maxredirects;
                 bean.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
+                bean.dns_resolve_type = monitor.dns_resolve_type;
+                bean.dns_resolve_server = monitor.dns_resolve_server;
 
                 await R.store(bean)
 
