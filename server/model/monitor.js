@@ -179,41 +179,40 @@ class Monitor extends BeanModel {
                     bean.status = UP;
                 } else if (this.type === "dns") {
                     let startTime = dayjs().valueOf();
+                    let dnsMessage = "";
 
-                    var dnsRes = await dnsResolve(this.hostname, this.dns_resolve_server, this.dns_resolve_type);
-
-                    var dnsMessage = "";
+                    let dnsRes = await dnsResolve(this.hostname, this.dns_resolve_server, this.dns_resolve_type);
+                    bean.ping = dayjs().valueOf() - startTime;
 
                     if (this.dns_resolve_type == 'A' || this.dns_resolve_type == 'AAAA' || this.dns_resolve_type == 'CNAME' || this.dns_resolve_type == 'PTR') {
-                        var dnsMessage = dnsRes[0];
+                        dnsMessage = dnsRes[0];
                     } else if (this.dns_resolve_type == 'CAA') {
-                        var dnsMessage = dnsRes[0].issue;
+                        dnsMessage = dnsRes[0].issue;
                     } else if (this.dns_resolve_type == 'MX') {
                         dnsRes.forEach(record => {
                             dnsMessage += `Server: ${record.exchange} - Priority: ${record.priority} | `;
                         });
-                        var dnsMessage = dnsMessage.slice(0, -2)
+                        dnsMessage = dnsMessage.slice(0, -2)
                     } else if (this.dns_resolve_type == 'NS') { 
                         dnsRes.forEach(record => {
                             dnsMessage += `Server: ${record} | `;
                         });
-                        var dnsMessage = dnsMessage.slice(0, -2)
+                        dnsMessage = dnsMessage.slice(0, -2)
                     } else if (this.dns_resolve_type == 'SOA') {
                         dnsMessage += `NS-Name: ${dnsRes.nsname} | Hostmaster: ${dnsRes.hostmaster} | Serial: ${dnsRes.serial} | Refresh: ${dnsRes.refresh} | Retry: ${dnsRes.retry} | Expire: ${dnsRes.expire} | MinTTL: ${dnsRes.minttl}`;
                     } else if (this.dns_resolve_type == 'SRV') {
                         dnsRes.forEach(record => {
                             dnsMessage += `Name: ${record.name} | Port: ${record.port} | Priority: ${record.priority} | Weight: ${record.weight} | `;
                         });
-                        var dnsMessage = dnsMessage.slice(0, -2)
+                        dnsMessage = dnsMessage.slice(0, -2)
                     } else if (this.dns_resolve_type == 'TXT') {
                         dnsRes.forEach(record => {
                             dnsMessage += `Record: ${record} | `;
                         });
-                        var dnsMessage = dnsMessage.slice(0, -2)
+                        dnsMessage = dnsMessage.slice(0, -2)
                     }
 
                     bean.msg = dnsMessage;
-                    bean.ping = dayjs().valueOf() - startTime;
                     bean.status = UP;
                 }
 
