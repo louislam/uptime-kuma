@@ -84,6 +84,30 @@ h2 {
     tbody .shadow-box {
         background-color: white;
     }
+
+    div.tableShadowbox {
+        padding: 10px !important;
+    }
+
+    .tableShadowbox tr {
+        margin-top: 0 !important;
+        padding: 10px !important;
+    }
+
+    .tableShadowbox thead {
+        display: none;
+    }
+  
+    .tableShadowbox tr {
+        display: block;
+        margin-bottom: 10px;
+    }
+  
+    .tableShadowbox td {
+        border-bottom: 1px solid $dark-font-color;
+        display: block;
+        padding: 6px;
+    }
 }
 
 // Dark Theme override here

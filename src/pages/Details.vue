@@ -128,7 +128,7 @@
                 </div>
             </div>
 
-            <div class="shadow-box">
+            <div class="shadow-box tableShadowbox">
                 <table class="table table-borderless table-hover">
                     <thead>
                         <tr>
@@ -138,10 +138,10 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(beat, index) in displayedRecords" :key="index">
+                        <tr v-for="(beat, index) in displayedRecords" :key="index" :class="{ 'shadow-box': $root.windowWidth <= 550}" style="padding: 10px;">
                             <td><Status :status="beat.status" /></td>
-                            <td><Datetime :value="beat.time" /></td>
-                            <td>{{ beat.msg }}</td>
+                            <td :class="{ 'border-0':! beat.msg}"><Datetime :value="beat.time" /></td>
+                            <td class="border-0">{{ beat.msg }}</td>
                         </tr>
 
                         <tr v-if="importantHeartBeatList.length === 0">
