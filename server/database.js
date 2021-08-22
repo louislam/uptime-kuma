@@ -40,19 +40,21 @@ class Database {
 
         Dialect.prototype.destroyRawConnection = async () => { }
 
+        const acquireConnectionTimeout = 120 * 1000;
+
         const knexInstance = knex({
             client: Dialect,
             connection: { },        // Do not remove, Leave it empty is ok
             useNullAsDefault: true,
+            acquireConnectionTimeout: acquireConnectionTimeout,
             pool: {
                 min: 1,
                 max: 1,
-                idleTimeoutMillis: 30000,
+                idleTimeoutMillis: 120 * 1000,
+                propagateCreateError: false,
+                acquireTimeoutMillis: acquireConnectionTimeout,
             }
         });
-
-        console.log( knexInstance.pool)
-        console.log("pool size")
 
         R.setup(knexInstance);
 
