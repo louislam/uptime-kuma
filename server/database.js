@@ -46,7 +46,7 @@ class Database {
             useNullAsDefault: true,
             pool: {
                 min: 1,
-                max: 5,
+                max: 1,
                 idleTimeoutMillis: 30000,
             }
         });
