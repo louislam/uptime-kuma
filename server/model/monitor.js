@@ -240,7 +240,8 @@ class Monitor extends BeanModel {
                         try {
                             await Notification.send(JSON.parse(notification.config), msg, await this.toJSON(), bean.toJSON())
                         } catch (e) {
-                            console.error("Cannot send notification to " + notification.name)
+                            console.error("Cannot send notification to " + notification.name);
+                            console.log(e);
                         }
                     }
                 }
