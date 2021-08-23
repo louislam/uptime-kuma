@@ -10,6 +10,9 @@
         "node": "14.*"
     },
     "scripts": {
+        "lint:js": "eslint --ext \".js,.vue\" --ignore-path .gitignore .",
+        "lint:style": "stylelint \"**/*.{vue,css}\" --ignore-path .gitignore",
+        "lint": "npm run lint:js && npm run lint:style",
         "dev": "vite --host",
         "start": "npm run start-server",
         "start-server": "node server/server.js",
