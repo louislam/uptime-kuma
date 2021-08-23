@@ -128,7 +128,7 @@
                 </div>
             </div>
 
-            <div class="shadow-box tableShadowbox">
+            <div class="shadow-box table-shadow-box">
                 <table class="table table-borderless table-hover">
                     <thead>
                         <tr>

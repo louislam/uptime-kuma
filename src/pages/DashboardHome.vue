@@ -38,7 +38,7 @@
                 </div>
             </div>
 
-            <div class="shadow-box tableShadowbox" style="overflow-x: scroll">
+            <div class="shadow-box table-shadow-box" style="overflow-x: scroll">
                 <table class="table table-borderless table-hover">
                     <thead>
                         <tr>

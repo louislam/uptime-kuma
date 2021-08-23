@@ -81,33 +81,34 @@ h2 {
 }
 
 @media (max-width: 550px) {
-    tbody .shadow-box {
-        background-color: white;
-    }
 
-    div.tableShadowbox {
+    .table-shadow-box {
         padding: 10px !important;
+
+        thead {
+            display: none;
+        }
+
+        tbody  {
+            .shadow-box {
+                background-color: white;
+            }
+        }
+
+        tr {
+            margin-top: 0 !important;
+            padding: 10px !important;
+            display: block;
+            margin-bottom: 10px;
+
+            td {
+                border-bottom: 1px solid $dark-font-color;
+                display: block;
+                padding: 6px;
+            }
+        }
     }
 
-    .tableShadowbox tr {
-        margin-top: 0 !important;
-        padding: 10px !important;
-    }
-
-    .tableShadowbox thead {
-        display: none;
-    }
-  
-    .tableShadowbox tr {
-        display: block;
-        margin-bottom: 10px;
-    }
-  
-    .tableShadowbox td {
-        border-bottom: 1px solid $dark-font-color;
-        display: block;
-        padding: 6px;
-    }
 }
 
 // Dark Theme override here
@@ -224,8 +225,12 @@ h2 {
     }
 
     @media (max-width: 550px) {
-        tbody .shadow-box {
-            background-color: $dark-bg2;
+        .table-shadow-box {
+            tbody {
+                .shadow-box {
+                    background-color: $dark-bg2;
+                }
+            }
         }
     }
 }
