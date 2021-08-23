@@ -1,4 +1,3 @@
-// @ts-nocheck
 // Common Util for frontend and backend
 // Backend uses the compiled file util.js
 // Frontend uses util.ts
@@ -13,7 +12,7 @@ export const DOWN = 0;
 export const UP = 1;
 export const PENDING = 2;
 
-export function flipStatus(s) {
+export function flipStatus(s: number) {
     if (s === UP) {
         return DOWN;
     }
@@ -25,7 +24,7 @@ export function flipStatus(s) {
     return s;
 }
 
-export function sleep(ms) {
+export function sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
@@ -33,8 +32,8 @@ export function sleep(ms) {
  * PHP's ucfirst
  * @param str
  */
-export function ucfirst(str) {
-    if (! str) {
+export function ucfirst(str: string) {
+    if (!str) {
         return str;
     }
 
@@ -42,11 +41,14 @@ export function ucfirst(str) {
     return firstLetter.toUpperCase() + str.substr(1);
 }
 
-export function debug(msg) {
+export function debug(msg: any) {
     if (isDev) {
         console.log(msg);
     }
 }
+
+
+declare global { interface String { replaceAll(str: string, newStr: string): string; } }
 
 export function polyfill() {
     /**
@@ -56,7 +58,7 @@ export function polyfill() {
      * @license MIT
      */
     if (!String.prototype.replaceAll) {
-        String.prototype.replaceAll = function (str, newStr) {
+        String.prototype.replaceAll = function (str: string, newStr: string) {
 
             // If a regex pattern
             if (Object.prototype.toString.call(str).toLowerCase() === "[object regexp]") {
@@ -71,11 +73,13 @@ export function polyfill() {
 }
 
 export class TimeLogger {
+    startTime: number;
+
     constructor() {
         this.startTime = dayjs().valueOf();
     }
 
-    print(name) {
+    print(name: string) {
         if (isDev) {
             console.log(name + ": " + (dayjs().valueOf() - this.startTime) + "ms")
         }
@@ -85,7 +89,7 @@ export class TimeLogger {
 /**
  * Returns a random number between min (inclusive) and max (exclusive)
  */
-export function getRandomArbitrary(min, max) {
+export function getRandomArbitrary(min: number, max: number) {
     return Math.random() * (max - min) + min;
 }
 
@@ -98,7 +102,7 @@ export function getRandomArbitrary(min, max) {
  * lower than max if max isn't an integer).
  * Using Math.round() will give you a non-uniform distribution!
  */
-export function getRandomInt(min, max) {
+export function getRandomInt(min: number, max: number) {
     min = Math.ceil(min);
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;

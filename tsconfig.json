@@ -4,14 +4,15 @@
         "target": "es2018",
         "module": "commonjs",
         "lib": [
-            "es2020"
+            "es2020",
+            "DOM",
         ],
         "removeComments": true,
         "preserveConstEnums": true,
         "sourceMap": false,
-        "files.insertFinalNewline": true
+        "strict": true
     },
     "files": [
-        "./server/util.ts"
+        "./src/util.ts"
     ]
 }

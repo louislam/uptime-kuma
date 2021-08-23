@@ -28,7 +28,7 @@ exports.startInterval = () => {
     };
 
     check();
-    interval = setInterval(check, 3600 * 48);
+    interval = setInterval(check, 3600 * 1000 * 48);
 };
 
 exports.enableCheckUpdate = async (value) => {
