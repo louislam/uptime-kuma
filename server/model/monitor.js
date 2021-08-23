@@ -110,10 +110,9 @@ class Monitor extends BeanModel {
 
             try {
                 if (this.type === "http" || this.type === "keyword") {
+                    // Do not do any queries/high loading things before the "bean.ping"
                     let startTime = dayjs().valueOf();
 
-                    // Use Custom agent to disable session reuse
-                    // https://github.com/nodejs/node/issues/3940
                     let res = await axios.get(this.url, {
                         timeout: this.interval * 1000 * 0.8,
                         headers: {
@@ -121,7 +120,7 @@ class Monitor extends BeanModel {
                             "User-Agent": "Uptime-Kuma/" + version,
                         },
                         httpsAgent: new https.Agent({
-                            maxCachedSessions: 0,
+                            maxCachedSessions: 0,      // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
                             rejectUnauthorized: ! this.getIgnoreTls(),
                         }),
                         maxRedirects: this.maxredirects,
@@ -258,22 +257,22 @@ class Monitor extends BeanModel {
                 console.warn(`Monitor #${this.id} '${this.name}': Failing: ${bean.msg} | Type: ${this.type}`)
             }
 
-            prometheus.update(bean, tlsInfo)
-
             io.to(this.user_id).emit("heartbeat", bean.toJSON());
-
-            await R.store(bean)
             Monitor.sendStats(io, this.id, this.user_id)
 
+            await R.store(bean);
+            prometheus.update(bean, tlsInfo);
+
             previousBeat = bean;
+
+            this.heartbeatInterval = setTimeout(beat, this.interval * 1000);
         }
 
         beat();
-        this.heartbeatInterval = setInterval(beat, this.interval * 1000);
     }
 
     stop() {
-        clearInterval(this.heartbeatInterval)
+        clearTimeout(this.heartbeatInterval);
     }
 
     /**
