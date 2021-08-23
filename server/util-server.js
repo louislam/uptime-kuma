@@ -4,7 +4,7 @@ const { R } = require("redbean-node");
 const { debug } = require("../src/util");
 const passwordHash = require("./password-hash");
 const dayjs = require("dayjs");
-const { Resolver } = require('dns');
+const { Resolver } = require("dns");
 
 /**
  * Init or reset JWT secret
@@ -81,7 +81,7 @@ exports.dnsResolve = function (hostname, resolver_server, rrtype) {
     const resolver = new Resolver();
     resolver.setServers([resolver_server]);
     return new Promise((resolve, reject) => {
-        if (rrtype == 'PTR') {
+        if (rrtype == "PTR") {
             resolver.reverse(hostname, (err, records) => {
                 if (err) {
                     reject(err);
