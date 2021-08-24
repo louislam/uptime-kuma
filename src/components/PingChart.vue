@@ -57,9 +57,6 @@ export default {
                     point: {
                         radius: 0,
                     },
-                    bar: {
-                        barThickness: "flex",
-                    }
                 },
                 scales: {
                     x: {
@@ -77,9 +74,9 @@ export default {
                             maxRotation: 0,
                             autoSkipPadding: 30,
                         },
-                        bounds: "ticks",
                         grid: {
                             color: this.$root.theme === "light" ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.1)",
+                            offset: false,
                         },
                     },
                     y: {
@@ -163,6 +160,9 @@ export default {
                         borderColor: "#00000000",
                         backgroundColor: "#DC354568",
                         yAxisID: "y1",
+                        barThickness: "flex",
+                        barPercentage: 1,
+                        categoryPercentage: 1,
                     },
                 ],
             };
