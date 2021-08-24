@@ -210,7 +210,7 @@
 
                         <template v-if="notification.type === 'slack'">
                             <div class="mb-3">
-                                <label for="slack-webhook-url" class="form-label">Webhook URL<span style="color:red;"><sup>*</sup></span></label>
+                                <label for="slack-webhook-url" class="form-label">Webhook URL<span style="color: red;"><sup>*</sup></span></label>
                                 <input id="slack-webhook-url" v-model="notification.slackwebhookURL" type="text" class="form-control" required>
                                 <label for="slack-username" class="form-label">Username</label>
                                 <input id="slack-username" v-model="notification.slackusername" type="text" class="form-control">
@@ -221,7 +221,7 @@
                                 <label for="slack-button-url" class="form-label">Uptime Kuma URL</label>
                                 <input id="slack-button" v-model="notification.slackbutton" type="text" class="form-control">
                                 <div class="form-text">
-                                    <span style="color:red;"><sup>*</sup></span>Required
+                                    <span style="color: red;"><sup>*</sup></span>Required
                                     <p style="margin-top: 8px;">
                                         More info about webhooks on: <a href="https://api.slack.com/messaging/webhooks" target="_blank">https://api.slack.com/messaging/webhooks</a>
                                     </p>
@@ -288,9 +288,9 @@
 
                         <template v-if="notification.type === 'pushover'">
                             <div class="mb-3">
-                                <label for="pushover-user" class="form-label">User Key<span style="color:red;"><sup>*</sup></span></label>
+                                <label for="pushover-user" class="form-label">User Key<span style="color: red;"><sup>*</sup></span></label>
                                 <input id="pushover-user" v-model="notification.pushoveruserkey" type="text" class="form-control" required>
-                                <label for="pushover-app-token" class="form-label">Application Token<span style="color:red;"><sup>*</sup></span></label>
+                                <label for="pushover-app-token" class="form-label">Application Token<span style="color: red;"><sup>*</sup></span></label>
                                 <input id="pushover-app-token" v-model="notification.pushoverapptoken" type="text" class="form-control" required>
                                 <label for="pushover-device" class="form-label">Device</label>
                                 <input id="pushover-device" v-model="notification.pushoverdevice" type="text" class="form-control">
@@ -330,7 +330,7 @@
                                     <option>none</option>
                                 </select>
                                 <div class="form-text">
-                                    <span style="color:red;"><sup>*</sup></span>Required
+                                    <span style="color: red;"><sup>*</sup></span>Required
                                     <p style="margin-top: 8px;">
                                         More info on: <a href="https://pushover.net/api" target="_blank">https://pushover.net/api</a>
                                     </p>
@@ -366,10 +366,10 @@
 
                         <template v-if="notification.type === 'lunasea'">
                             <div class="mb-3">
-                                <label for="lunasea-device" class="form-label">LunaSea Device ID<span style="color:red;"><sup>*</sup></span></label>
+                                <label for="lunasea-device" class="form-label">LunaSea Device ID<span style="color: red;"><sup>*</sup></span></label>
                                 <input id="lunasea-device" v-model="notification.lunaseaDevice" type="text" class="form-control" required>
                                 <div class="form-text">
-                                    <p><span style="color:red;"><sup>*</sup></span>Required</p>
+                                    <p><span style="color: red;"><sup>*</sup></span>Required</p>
                                 </div>
                             </div>
                         </template>

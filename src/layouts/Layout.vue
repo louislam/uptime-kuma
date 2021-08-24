@@ -9,7 +9,7 @@
         <!-- Desktop header -->
         <header v-if="! $root.isMobile" class="d-flex flex-wrap justify-content-center py-3 mb-3 border-bottom">
             <router-link to="/dashboard" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
-                <object class="bi me-2 ms-4" width="40" height="40" data="/icon.svg" alt="Logo" />
+                <object class="bi me-2 ms-4" width="40" height="40" data="/icon.svg" />
                 <span class="fs-4 title">Uptime Kuma</span>
             </router-link>
 
@@ -54,7 +54,7 @@
         </footer>
 
         <!-- Mobile Only -->
-        <div v-if="$root.isMobile" style="width: 100%;height: 60px;" />
+        <div v-if="$root.isMobile" style="width: 100%; height: 60px;" />
         <nav v-if="$root.isMobile" class="bottom-nav">
             <router-link to="/dashboard" class="nav-link">
                 <div><font-awesome-icon icon="tachometer-alt" /></div>
@@ -173,7 +173,7 @@ export default {
 }
 
 main {
-    min-height: calc(100vh - 160px)
+    min-height: calc(100vh - 160px);
 }
 
 .title {
@@ -191,7 +191,6 @@ main {
 }
 
 footer {
-    color: #AAA;
     font-size: 13px;
     margin-top: 10px;
     padding-bottom: 30px;
@@ -199,13 +198,17 @@ footer {
     text-align: center;
 }
 
+footer {
+    color: #aaa;
+}
+
 .dark {
     header {
-        background-color: #161B22;
-        border-bottom-color: #161B22 !important;
+        background-color: #161b22;
+        border-bottom-color: #161b22 !important;
 
         span {
-            color: #F0F6FC;
+            color: #f0f6fc;
         }
     }
 

@@ -186,7 +186,7 @@ export default {
 }
 
 .dark {
-    .hp-bar-big .beat.empty{
+    .hp-bar-big .beat.empty {
         background-color: #848484;
     }
 }

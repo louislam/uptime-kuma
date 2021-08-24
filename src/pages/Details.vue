@@ -34,7 +34,7 @@
                         <span class="word">{{ $t("checkEverySecond", [ monitor.interval ]) }}</span>
                     </div>
                     <div class="col-md-4 text-center">
-                        <span class="badge rounded-pill" :class=" 'bg-' + status.color " style="font-size: 30px">{{ status.text }}</span>
+                        <span class="badge rounded-pill" :class=" 'bg-' + status.color " style="font-size: 30px;">{{ status.text }}</span>
                     </div>
                 </div>
             </div>
@@ -384,7 +384,7 @@ export default {
 }
 
 .word {
-    color: #AAA;
+    color: #aaa;
     font-size: 14px;
 }
 
@@ -398,7 +398,7 @@ table {
 
 .stats p {
     font-size: 13px;
-    color: #AAA;
+    color: #aaa;
 }
 
 .stats {
@@ -413,7 +413,7 @@ table {
     color: black;
 }
 
-.dark  {
+.dark {
     .keyword {
         color: $dark-font-color;
     }
