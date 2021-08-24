@@ -6,8 +6,6 @@ The project was created with vite.js (vue3). Then I created a sub-directory call
 
 The frontend code build into "dist" directory. The server uses "dist" as root. This is how production is working.
 
-Your IDE should follow the config in ".editorconfig". The most special thing is I set it to 4 spaces indentation. I know 2 spaces indentation became a kind of standard nowadays for js, but my eyes is not so comfortable for this. In my opinion, there is no callback-hell nowadays, it is good to go back 4 spaces world again.
-
 # Project Styles
 
 I personally do not like something need to learn so much and need to config so much before you can finally start the app. 
@@ -19,16 +17,27 @@ For example, recently, because I am not a python expert, I spent a 2 hours to re
 - All settings in frontend.
 - Easy to use
 
+# Coding Styles
+
+- Follow .editorconfig
+- Follow eslint
+
+## Name convention
+
+- Javascript/Typescript: camelCaseType
+- SQLite: underscore_type
+- CSS/SCSS: dash-type
+
 # Tools
 - Node.js >= 14
 - Git
-- IDE that supports .editorconfig  (I am using Intellji Idea)
+- IDE that supports .editorconfig and eslint (I am using Intellji Idea)
 - A SQLite tool (I am using SQLite Expert Personal)
 
-# Prepare the dev
+# Install dependencies 
 
 ```bash
-npm install
+npm install --dev
 ```
 
 # Backend Dev
@@ -39,7 +48,6 @@ npm run start-server
 # Or 
 
 node server/server.js
-
 ```
 
 It binds to 0.0.0.0:3001 by default.
@@ -92,7 +100,8 @@ The data and socket logic in "src/mixins/socket.js"
 
 # Database Migration
 
-TODO
+1. create `patch{num}.sql` in `./db/`
+1. update `latestVersion` in `./server/database.js`
 
 # Unit Test
 
