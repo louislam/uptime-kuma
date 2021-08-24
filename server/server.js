@@ -12,8 +12,6 @@ debug("Importing express");
 const express = require("express");
 debug("Importing socket.io");
 const { Server } = require("socket.io");
-debug("Importing dayjs");
-const dayjs = require("dayjs");
 debug("Importing redbean-node");
 const { R } = require("redbean-node");
 debug("Importing jsonwebtoken");
