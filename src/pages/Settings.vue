@@ -2,48 +2,58 @@
     <transition name="slide-fade" appear>
         <div>
             <h1 v-show="show" class="mb-3">
-                Settings
+                {{ $t("Settings") }}
             </h1>
 
             <div class="shadow-box">
                 <div class="row">
                     <div class="col-md-6">
-                        <h2 class="mb-2">General</h2>
+                        <h2 class="mb-2">{{ $t("Appearance") }}</h2>
 
+                        <div class="mb-3">
+                            <label for="language" class="form-label">{{ $t("Language") }}</label>
+                            <select id="language" v-model="$i18n.locale" class="form-select">
+                                <option v-for="(lang, i) in $i18n.availableLocales" :key="`Lang${i}`" :value="lang">
+                                    {{ $i18n.messages[lang].languageName }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="timezone" class="form-label">{{ $t("Theme") }}</label>
+
+                            <div>
+                                <div class="btn-group" role="group" aria-label="Basic checkbox toggle button group">
+                                    <input id="btncheck1" v-model="$root.userTheme" type="radio" class="btn-check" name="theme" autocomplete="off" value="light">
+                                    <label class="btn btn-outline-primary" for="btncheck1">Light</label>
+
+                                    <input id="btncheck2" v-model="$root.userTheme" type="radio" class="btn-check" name="theme" autocomplete="off" value="dark">
+                                    <label class="btn btn-outline-primary" for="btncheck2">Dark</label>
+
+                                    <input id="btncheck3" v-model="$root.userTheme" type="radio" class="btn-check" name="theme" autocomplete="off" value="auto">
+                                    <label class="btn btn-outline-primary" for="btncheck3">Auto</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Theme - Heartbeat Bar</label>
+                            <div>
+                                <div class="btn-group" role="group" aria-label="Basic checkbox toggle button group">
+                                    <input id="btncheck4" v-model="$root.userHeartbeatBar" type="radio" class="btn-check" name="heartbeatBarTheme" autocomplete="off" value="normal">
+                                    <label class="btn btn-outline-primary" for="btncheck4">Normal</label>
+
+                                    <input id="btncheck5" v-model="$root.userHeartbeatBar" type="radio" class="btn-check" name="heartbeatBarTheme" autocomplete="off" value="bottom">
+                                    <label class="btn btn-outline-primary" for="btncheck5">Bottom</label>
+
+                                    <input id="btncheck6" v-model="$root.userHeartbeatBar" type="radio" class="btn-check" name="heartbeatBarTheme" autocomplete="off" value="none">
+                                    <label class="btn btn-outline-primary" for="btncheck6">None</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h2 class="mt-5 mb-2">{{ $t("General") }}</h2>
                         <form class="mb-3" @submit.prevent="saveGeneral">
-                            <div class="mb-3">
-                                <label for="timezone" class="form-label">Theme</label>
-
-                                <div>
-                                    <div class="btn-group" role="group" aria-label="Basic checkbox toggle button group">
-                                        <input id="btncheck1" v-model="$root.userTheme" type="radio" class="btn-check" name="theme" autocomplete="off" value="light">
-                                        <label class="btn btn-outline-primary" for="btncheck1">Light</label>
-
-                                        <input id="btncheck2" v-model="$root.userTheme" type="radio" class="btn-check" name="theme" autocomplete="off" value="dark">
-                                        <label class="btn btn-outline-primary" for="btncheck2">Dark</label>
-
-                                        <input id="btncheck3" v-model="$root.userTheme" type="radio" class="btn-check" name="theme" autocomplete="off" value="auto">
-                                        <label class="btn btn-outline-primary" for="btncheck3">Auto</label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Theme - Heartbeat Bar</label>
-                                <div>
-                                    <div class="btn-group" role="group" aria-label="Basic checkbox toggle button group">
-                                        <input id="btncheck4" v-model="$root.userHeartbeatBar" type="radio" class="btn-check" name="heartbeatBarTheme" autocomplete="off" value="normal">
-                                        <label class="btn btn-outline-primary" for="btncheck4">Normal</label>
-
-                                        <input id="btncheck5" v-model="$root.userHeartbeatBar" type="radio" class="btn-check" name="heartbeatBarTheme" autocomplete="off" value="bottom">
-                                        <label class="btn btn-outline-primary" for="btncheck5">Bottom</label>
-
-                                        <input id="btncheck6" v-model="$root.userHeartbeatBar" type="radio" class="btn-check" name="heartbeatBarTheme" autocomplete="off" value="none">
-                                        <label class="btn btn-outline-primary" for="btncheck6">None</label>
-                                    </div>
-                                </div>
-                            </div>
-
                             <div class="mb-3">
                                 <label for="timezone" class="form-label">Timezone</label>
                                 <select id="timezone" v-model="$root.userTimezone" class="form-select">
@@ -194,6 +204,10 @@ export default {
     watch: {
         "password.repeatNewPassword"() {
             this.invalidPassword = false;
+        },
+
+        "$i18n.locale"() {
+            localStorage.locale = this.$i18n.locale;
         },
     },
 

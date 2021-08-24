@@ -14,18 +14,18 @@
             </router-link>
 
             <a v-if="hasNewVersion" target="_blank" href="https://github.com/louislam/uptime-kuma/releases" class="btn btn-info me-3">
-                <font-awesome-icon icon="arrow-alt-circle-up" /> New Update
+                <font-awesome-icon icon="arrow-alt-circle-up" /> {{ $t("New Update") }}
             </a>
 
             <ul class="nav nav-pills">
                 <li class="nav-item">
                     <router-link to="/dashboard" class="nav-link">
-                        <font-awesome-icon icon="tachometer-alt" /> Dashboard
+                        <font-awesome-icon icon="tachometer-alt" /> {{ $t("Dashboard") }}
                     </router-link>
                 </li>
                 <li class="nav-item">
                     <router-link to="/settings" class="nav-link">
-                        <font-awesome-icon icon="cog" /> Settings
+                        <font-awesome-icon icon="cog" /> {{ $t("Settings") }}
                     </router-link>
                 </li>
             </ul>
@@ -58,7 +58,7 @@
         <nav v-if="$root.isMobile" class="bottom-nav">
             <router-link to="/dashboard" class="nav-link">
                 <div><font-awesome-icon icon="tachometer-alt" /></div>
-                Dashboard
+                {{ $t("Dashboard") }}
             </router-link>
 
             <router-link to="/list" class="nav-link">
@@ -73,7 +73,7 @@
 
             <router-link to="/settings" class="nav-link">
                 <div><font-awesome-icon icon="cog" /></div>
-                Settings
+                {{ $t("Settings") }}
             </router-link>
         </nav>
     </div>

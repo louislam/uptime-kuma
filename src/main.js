@@ -1,5 +1,6 @@
 import "bootstrap";
 import { createApp, h } from "vue";
+import { createI18n } from "vue-i18n"
 import { createRouter, createWebHistory } from "vue-router";
 import Toast from "vue-toastification";
 import "vue-toastification/dist/index.css";
@@ -21,6 +22,9 @@ import Setup from "./pages/Setup.vue";
 import List from "./pages/List.vue";
 
 import { appName } from "./util.ts";
+
+import en from "./languages/en";
+import zhHK from "./languages/zh-hk";
 
 const routes = [
     {
@@ -83,6 +87,19 @@ const router = createRouter({
     routes,
 })
 
+const languageList = {
+    en,
+    zhHK,
+};
+
+const i18n = createI18n({
+    locale: localStorage.locale || "en",
+    fallbackLocale: "en",
+    silentFallbackWarn: true,
+    silentTranslationWarn: true,
+    messages: languageList
+});
+
 const app = createApp({
     mixins: [
         socket,
@@ -98,7 +115,8 @@ const app = createApp({
     render: () => h(App),
 })
 
-app.use(router)
+app.use(router);
+app.use(i18n);
 
 const options = {
     position: "bottom-right",
