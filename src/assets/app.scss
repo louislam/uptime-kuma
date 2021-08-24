@@ -101,14 +101,27 @@ h2 {
             display: block;
             margin-bottom: 6px;
 
+            td:first-child {
+                font-weight: bold;
+            }
+            
+            td:nth-child(-n+3) {
+                text-align: center;
+            }
+
+            td:last-child {
+                text-align: left;
+            }
+
             td {
                 border-bottom: 1px solid $dark-font-color;
                 display: block;
                 padding: 4px;
 
                 .badge {
-                    margin-top: 0px;
+                    margin: auto;
                     display: block;
+                    width: 30%;
                 }
             }
         }
