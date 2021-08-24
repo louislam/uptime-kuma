@@ -104,7 +104,7 @@ h2 {
             td:first-child {
                 font-weight: bold;
             }
-            
+
             td:nth-child(-n+3) {
                 text-align: center;
             }
@@ -247,6 +247,10 @@ h2 {
             tbody {
                 .shadow-box {
                     background-color: $dark-bg2;
+
+                    td {
+                        border-bottom: 1px solid $dark-border-color;
+                    }
                 }
             }
         }
