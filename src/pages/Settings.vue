@@ -25,29 +25,29 @@
                             <div>
                                 <div class="btn-group" role="group" aria-label="Basic checkbox toggle button group">
                                     <input id="btncheck1" v-model="$root.userTheme" type="radio" class="btn-check" name="theme" autocomplete="off" value="light">
-                                    <label class="btn btn-outline-primary" for="btncheck1">Light</label>
+                                    <label class="btn btn-outline-primary" for="btncheck1">{{ $t("Light") }}</label>
 
                                     <input id="btncheck2" v-model="$root.userTheme" type="radio" class="btn-check" name="theme" autocomplete="off" value="dark">
-                                    <label class="btn btn-outline-primary" for="btncheck2">Dark</label>
+                                    <label class="btn btn-outline-primary" for="btncheck2">{{ $t("Dark") }}</label>
 
                                     <input id="btncheck3" v-model="$root.userTheme" type="radio" class="btn-check" name="theme" autocomplete="off" value="auto">
-                                    <label class="btn btn-outline-primary" for="btncheck3">Auto</label>
+                                    <label class="btn btn-outline-primary" for="btncheck3">{{ $t("Auto") }}</label>
                                 </div>
                             </div>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Theme - Heartbeat Bar</label>
+                            <label class="form-label">{{ $t("Theme - Heartbeat Bar") }}</label>
                             <div>
                                 <div class="btn-group" role="group" aria-label="Basic checkbox toggle button group">
                                     <input id="btncheck4" v-model="$root.userHeartbeatBar" type="radio" class="btn-check" name="heartbeatBarTheme" autocomplete="off" value="normal">
-                                    <label class="btn btn-outline-primary" for="btncheck4">Normal</label>
+                                    <label class="btn btn-outline-primary" for="btncheck4">{{ $t("Normal") }}</label>
 
                                     <input id="btncheck5" v-model="$root.userHeartbeatBar" type="radio" class="btn-check" name="heartbeatBarTheme" autocomplete="off" value="bottom">
-                                    <label class="btn btn-outline-primary" for="btncheck5">Bottom</label>
+                                    <label class="btn btn-outline-primary" for="btncheck5">{{ $t("Bottom") }}</label>
 
                                     <input id="btncheck6" v-model="$root.userHeartbeatBar" type="radio" class="btn-check" name="heartbeatBarTheme" autocomplete="off" value="none">
-                                    <label class="btn btn-outline-primary" for="btncheck6">None</label>
+                                    <label class="btn btn-outline-primary" for="btncheck6">{{ $t("None") }}</label>
                                 </div>
                             </div>
                         </div>
@@ -55,10 +55,10 @@
                         <h2 class="mt-5 mb-2">{{ $t("General") }}</h2>
                         <form class="mb-3" @submit.prevent="saveGeneral">
                             <div class="mb-3">
-                                <label for="timezone" class="form-label">Timezone</label>
+                                <label for="timezone" class="form-label">{{ $t("Timezone") }}</label>
                                 <select id="timezone" v-model="$root.userTimezone" class="form-select">
                                     <option value="auto">
-                                        Auto: {{ guessTimezone }}
+                                        {{ $t("Auto") }}: {{ guessTimezone }}
                                     </option>
                                     <option v-for="(timezone, index) in timezoneList" :key="index" :value="timezone.value">
                                         {{ timezone.name }}
@@ -67,65 +67,65 @@
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label">Search Engine Visibility</label>
+                                <label class="form-label">{{ $t("Search Engine Visibility") }}</label>
 
                                 <div class="form-check">
                                     <input id="searchEngineIndexYes" v-model="settings.searchEngineIndex" class="form-check-input" type="radio" name="flexRadioDefault" :value="true" required>
                                     <label class="form-check-label" for="searchEngineIndexYes">
-                                        Allow indexing
+                                        {{ $t("Allow indexing") }}
                                     </label>
                                 </div>
                                 <div class="form-check">
                                     <input id="searchEngineIndexNo" v-model="settings.searchEngineIndex" class="form-check-input" type="radio" name="flexRadioDefault" :value="false" required>
                                     <label class="form-check-label" for="searchEngineIndexNo">
-                                        Discourage search engines from indexing site
+                                        {{ $t("Discourage search engines from indexing site") }}
                                     </label>
                                 </div>
                             </div>
 
                             <div>
                                 <button class="btn btn-primary" type="submit">
-                                    Save
+                                    {{ $t("Save") }}
                                 </button>
                             </div>
                         </form>
 
                         <template v-if="loaded">
                             <template v-if="! settings.disableAuth">
-                                <h2 class="mt-5 mb-2">Change Password</h2>
+                                <h2 class="mt-5 mb-2">{{ $t("Change Password") }}</h2>
                                 <form class="mb-3" @submit.prevent="savePassword">
                                     <div class="mb-3">
-                                        <label for="current-password" class="form-label">Current Password</label>
+                                        <label for="current-password" class="form-label">{{ $t("Current Password") }}</label>
                                         <input id="current-password" v-model="password.currentPassword" type="password" class="form-control" required>
                                     </div>
 
                                     <div class="mb-3">
-                                        <label for="new-password" class="form-label">New Password</label>
+                                        <label for="new-password" class="form-label">{{ $t("New Password") }}</label>
                                         <input id="new-password" v-model="password.newPassword" type="password" class="form-control" required>
                                     </div>
 
                                     <div class="mb-3">
-                                        <label for="repeat-new-password" class="form-label">Repeat New Password</label>
+                                        <label for="repeat-new-password" class="form-label">{{ $t("Repeat New Password") }}</label>
                                         <input id="repeat-new-password" v-model="password.repeatNewPassword" type="password" class="form-control" :class="{ 'is-invalid' : invalidPassword }" required>
                                         <div class="invalid-feedback">
-                                            The repeat password does not match.
+                                            {{ $t("passwordNotMatchMsg") }}
                                         </div>
                                     </div>
 
                                     <div>
                                         <button class="btn btn-primary" type="submit">
-                                            Update Password
+                                            {{ $t("Update Password") }}
                                         </button>
                                     </div>
                                 </form>
                             </template>
 
-                            <h2 class="mt-5 mb-2">Advanced</h2>
+                            <h2 class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
 
                             <div class="mb-3">
-                                <button v-if="settings.disableAuth" class="btn btn-outline-primary me-1" @click="enableAuth">Enable Auth</button>
-                                <button v-if="! settings.disableAuth" class="btn btn-primary me-1" @click="confirmDisableAuth">Disable Auth</button>
-                                <button v-if="! settings.disableAuth" class="btn btn-danger me-1" @click="$root.logout">Logout</button>
+                                <button v-if="settings.disableAuth" class="btn btn-outline-primary me-1" @click="enableAuth">{{ $t("Enable Auth") }}</button>
+                                <button v-if="! settings.disableAuth" class="btn btn-primary me-1" @click="confirmDisableAuth">{{ $t("Disable Auth") }}</button>
+                                <button v-if="! settings.disableAuth" class="btn btn-danger me-1" @click="$root.logout">{{ $t("Logout") }}</button>
                             </div>
                         </template>
                     </div>
@@ -133,23 +133,23 @@
                     <div class="notification-list col-md-6">
                         <div v-if="$root.isMobile" class="mt-3" />
 
-                        <h2>Notifications</h2>
+                        <h2>{{ $t("Notifications") }}</h2>
                         <p v-if="$root.notificationList.length === 0">
-                            Not available, please setup.
+                            {{ $t("Not available, please setup.") }}
                         </p>
                         <p v-else>
-                            Please assign a notification to monitor(s) to get it to work.
+                            {{ $t("notificationDescription") }}
                         </p>
 
                         <ul class="list-group mb-3" style="border-radius: 1rem;">
                             <li v-for="(notification, index) in $root.notificationList" :key="index" class="list-group-item">
                                 {{ notification.name }}<br>
-                                <a href="#" @click="$refs.notificationDialog.show(notification.id)">Edit</a>
+                                <a href="#" @click="$refs.notificationDialog.show(notification.id)">{{ $t("Edit") }}</a>
                             </li>
                         </ul>
 
                         <button class="btn btn-primary me-2" type="button" @click="$refs.notificationDialog.show()">
-                            Setup Notification
+                            {{ $t("Setup Notification") }}
                         </button>
                     </div>
                 </div>
@@ -157,10 +157,18 @@
 
             <NotificationDialog ref="notificationDialog" />
 
-            <Confirm ref="confirmDisableAuth" btn-style="btn-danger" yes-text="I understand, please disable" no-text="Leave" @yes="disableAuth">
-                <p>Are you sure want to <strong>disable auth</strong>?</p>
-                <p>It is for <strong>someone who have 3rd-party auth</strong> in front of  Uptime Kuma such as Cloudflare Access.</p>
-                <p>Please use it carefully.</p>
+            <Confirm ref="confirmDisableAuth" btn-style="btn-danger" :yes-text="$t('I understand, please disable')" :no-text="$t('Leave')" @yes="disableAuth">
+                <template v-if="$i18n.locale === 'en' ">
+                    <p>Are you sure want to <strong>disable auth</strong>?</p>
+                    <p>It is for <strong>someone who have 3rd-party auth</strong> in front of Uptime Kuma such as Cloudflare Access.</p>
+                    <p>Please use it carefully.</p>
+                </template>
+
+                <template v-if="$i18n.locale === 'zh-HK' ">
+                    <p>你是否確認<strong>取消登入認証</strong>？</p>
+                    <p>這個功能是設計給已有<strong>第三方認証</strong>的用家，例如 Cloudflare Access。</p>
+                    <p>請小心使用。</p>
+                </template>
             </Confirm>
         </div>
     </transition>

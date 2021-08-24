@@ -48,8 +48,8 @@
         <footer>
             <div class="container-fluid">
                 Uptime Kuma -
-                Version: {{ $root.info.version }} -
-                <a href="https://github.com/louislam/uptime-kuma/releases" target="_blank" rel="noopener">Check Update On GitHub</a>
+                {{ $t("Version") }}: {{ $root.info.version }} -
+                <a href="https://github.com/louislam/uptime-kuma/releases" target="_blank" rel="noopener">{{ $t("Check Update On GitHub") }}</a>
             </div>
         </footer>
 
@@ -63,12 +63,12 @@
 
             <router-link to="/list" class="nav-link">
                 <div><font-awesome-icon icon="list" /></div>
-                List
+                {{ $t("List") }}
             </router-link>
 
             <router-link to="/add" class="nav-link">
                 <div><font-awesome-icon icon="plus" /></div>
-                Add
+                {{ $t("Add") }}
             </router-link>
 
             <router-link to="/settings" class="nav-link">

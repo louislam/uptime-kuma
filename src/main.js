@@ -24,7 +24,7 @@ import List from "./pages/List.vue";
 import { appName } from "./util.ts";
 
 import en from "./languages/en";
-import zhHK from "./languages/zh-hk";
+import zhHK from "./languages/zh-HK";
 
 const routes = [
     {
@@ -89,7 +89,7 @@ const router = createRouter({
 
 const languageList = {
     en,
-    zhHK,
+    "zh-HK": zhHK,
 };
 
 const i18n = createI18n({
