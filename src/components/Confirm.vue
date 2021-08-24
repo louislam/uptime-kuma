@@ -4,7 +4,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 id="exampleModalLabel" class="modal-title">
-                        Confirm
+                        {{ $t("Confirm") }}
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" />
                 </div>
@@ -35,7 +35,7 @@ export default {
         },
         yesText: {
             type: String,
-            default: "Yes",
+            default: "Yes",     // TODO: No idea what to translate this
         },
         noText: {
             type: String,

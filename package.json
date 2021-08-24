@@ -10,6 +10,9 @@
         "node": "14.*"
     },
     "scripts": {
+        "lint:js": "eslint --ext \".js,.vue\" --ignore-path .gitignore .",
+        "lint:style": "stylelint \"**/*.{vue,css}\" --ignore-path .gitignore",
+        "lint": "npm run lint:js && npm run lint:style",
         "dev": "vite --host",
         "start": "npm run start-server",
         "start-server": "node server/server.js",
@@ -64,6 +67,7 @@
         "vue": "^3.2.2",
         "vue-chart-3": "^0.5.7",
         "vue-confirm-dialog": "^1.0.2",
+        "vue-i18n": "^9.1.7",
         "vue-multiselect": "^3.0.0-alpha.2",
         "vue-router": "^4.0.11",
         "vue-toastification": "^2.0.0-rc.1"

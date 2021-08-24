@@ -14,16 +14,16 @@
 
             <div class="functions">
                 <button v-if="monitor.active" class="btn btn-light" @click="pauseDialog">
-                    <font-awesome-icon icon="pause" /> Pause
+                    <font-awesome-icon icon="pause" /> {{ $t("Pause") }}
                 </button>
                 <button v-if="! monitor.active" class="btn btn-primary" @click="resumeMonitor">
-                    <font-awesome-icon icon="play" /> Resume
+                    <font-awesome-icon icon="play" /> {{ $t("Resume") }}
                 </button>
                 <router-link :to=" '/edit/' + monitor.id " class="btn btn-secondary">
-                    <font-awesome-icon icon="edit" /> Edit
+                    <font-awesome-icon icon="edit" /> {{ $t("Edit") }}
                 </router-link>
                 <button class="btn btn-danger" @click="deleteDialog">
-                    <font-awesome-icon icon="trash" /> Delete
+                    <font-awesome-icon icon="trash" /> {{ $t("Delete") }}
                 </button>
             </div>
 
@@ -31,7 +31,7 @@
                 <div class="row">
                     <div class="col-md-8">
                         <HeartbeatBar :monitor-id="monitor.id" />
-                        <span class="word">Check every {{ monitor.interval }} seconds.</span>
+                        <span class="word">{{ $t("checkEverySecond", [ monitor.interval ]) }}</span>
                     </div>
                     <div class="col-md-4 text-center">
                         <span class="badge rounded-pill" :class=" 'bg-' + status.color " style="font-size: 30px">{{ status.text }}</span>
@@ -43,7 +43,7 @@
                 <div class="row">
                     <div class="col">
                         <h4>{{ pingTitle }}</h4>
-                        <p>(Current)</p>
+                        <p>({{ $t("Current") }})</p>
                         <span class="num">
                             <a href="#" @click.prevent="showPingChartBox = !showPingChartBox">
                                 <CountUp :value="ping" />
@@ -51,26 +51,26 @@
                         </span>
                     </div>
                     <div class="col">
-                        <h4>Avg. {{ pingTitle }}</h4>
-                        <p>(24-hour)</p>
+                        <h4>{{ $t("Avg.") }}{{ pingTitle }}</h4>
+                        <p>(24{{ $t("-hour") }})</p>
                         <span class="num"><CountUp :value="avgPing" /></span>
                     </div>
                     <div class="col">
-                        <h4>Uptime</h4>
-                        <p>(24-hour)</p>
+                        <h4>{{ $t("Uptime") }}</h4>
+                        <p>(24{{ $t("-hour") }})</p>
                         <span class="num"><Uptime :monitor="monitor" type="24" /></span>
                     </div>
                     <div class="col">
-                        <h4>Uptime</h4>
-                        <p>(30-day)</p>
+                        <h4>{{ $t("Uptime") }}</h4>
+                        <p>(30{{ $t("-day") }})</p>
                         <span class="num"><Uptime :monitor="monitor" type="720" /></span>
                     </div>
 
                     <div v-if="certInfo" class="col">
-                        <h4>Cert Exp.</h4>
+                        <h4>{{ $t("Cert Exp.") }}</h4>
                         <p>(<Datetime :value="certInfo.validTo" date-only />)</p>
                         <span class="num">
-                            <a href="#" @click.prevent="toggleCertInfoBox = !toggleCertInfoBox">{{ certInfo.daysRemaining }} days</a>
+                            <a href="#" @click.prevent="toggleCertInfoBox = !toggleCertInfoBox">{{ certInfo.daysRemaining }} {{ $t("days") }}</a>
                         </span>
                     </div>
                 </div>
@@ -132,9 +132,9 @@
                 <table class="table table-borderless table-hover">
                     <thead>
                         <tr>
-                            <th>Status</th>
-                            <th>DateTime</th>
-                            <th>Message</th>
+                            <th>{{ $t("Status") }}</th>
+                            <th>{{ $t("DateTime") }}</th>
+                            <th>{{ $t("Message") }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -146,7 +146,7 @@
 
                         <tr v-if="importantHeartBeatList.length === 0">
                             <td colspan="3">
-                                No important events
+                                {{ $t("No important events") }}
                             </td>
                         </tr>
                     </tbody>
@@ -209,10 +209,9 @@ export default {
 
         pingTitle() {
             if (this.monitor.type === "http") {
-                return "Response"
+                return this.$t("Response");
             }
-
-            return "Ping"
+            return this.$t("Ping");
         },
 
         monitor() {

@@ -16,6 +16,7 @@ module.exports = {
         requireConfigFile: false,
     },
     rules: {
+        "camelcase": "warn",
         // override/add rules settings here, such as:
         // 'vue/no-unused-vars': 'error'
         "no-unused-vars": "warn",

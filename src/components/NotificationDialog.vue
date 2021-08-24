@@ -5,17 +5,17 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 id="exampleModalLabel" class="modal-title">
-                            Setup Notification
+                            {{ $t("Setup Notification") }}
                         </h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" />
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label for="type" class="form-label">Notification Type</label>
+                            <label for="type" class="form-label">{{ $t("Notification Type") }}</label>
                             <select id="type" v-model="notification.type" class="form-select">
                                 <option value="telegram">Telegram</option>
                                 <option value="webhook">Webhook</option>
-                                <option value="smtp">Email (SMTP)</option>
+                                <option value="smtp">{{ $t("Email") }} (SMTP)</option>
                                 <option value="discord">Discord</option>
                                 <option value="signal">Signal</option>
                                 <option value="gotify">Gotify</option>
@@ -31,7 +31,7 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="name" class="form-label">Friendly Name</label>
+                            <label for="name" class="form-label">{{ $t("Friendly Name") }}</label>
                             <input id="name" v-model="notification.name" type="text" class="form-control" required>
                         </div>
 
@@ -407,13 +407,13 @@
                     </div>
                     <div class="modal-footer">
                         <button v-if="id" type="button" class="btn btn-danger" :disabled="processing" @click="deleteConfirm">
-                            Delete
+                            {{ $t("Delete") }}
                         </button>
                         <button type="button" class="btn btn-warning" :disabled="processing" @click="test">
-                            Test
+                            {{ $t("Test") }}
                         </button>
                         <button type="submit" class="btn btn-primary" :disabled="processing">
-                            Save
+                            {{ $t("Save") }}
                         </button>
                     </div>
                 </div>

@@ -14,18 +14,18 @@
             </router-link>
 
             <a v-if="hasNewVersion" target="_blank" href="https://github.com/louislam/uptime-kuma/releases" class="btn btn-info me-3">
-                <font-awesome-icon icon="arrow-alt-circle-up" /> New Update
+                <font-awesome-icon icon="arrow-alt-circle-up" /> {{ $t("New Update") }}
             </a>
 
             <ul class="nav nav-pills">
                 <li class="nav-item">
                     <router-link to="/dashboard" class="nav-link">
-                        <font-awesome-icon icon="tachometer-alt" /> Dashboard
+                        <font-awesome-icon icon="tachometer-alt" /> {{ $t("Dashboard") }}
                     </router-link>
                 </li>
                 <li class="nav-item">
                     <router-link to="/settings" class="nav-link">
-                        <font-awesome-icon icon="cog" /> Settings
+                        <font-awesome-icon icon="cog" /> {{ $t("Settings") }}
                     </router-link>
                 </li>
             </ul>
@@ -48,8 +48,8 @@
         <footer>
             <div class="container-fluid">
                 Uptime Kuma -
-                Version: {{ $root.info.version }} -
-                <a href="https://github.com/louislam/uptime-kuma/releases" target="_blank" rel="noopener">Check Update On GitHub</a>
+                {{ $t("Version") }}: {{ $root.info.version }} -
+                <a href="https://github.com/louislam/uptime-kuma/releases" target="_blank" rel="noopener">{{ $t("Check Update On GitHub") }}</a>
             </div>
         </footer>
 
@@ -58,22 +58,22 @@
         <nav v-if="$root.isMobile" class="bottom-nav">
             <router-link to="/dashboard" class="nav-link">
                 <div><font-awesome-icon icon="tachometer-alt" /></div>
-                Dashboard
+                {{ $t("Dashboard") }}
             </router-link>
 
             <router-link to="/list" class="nav-link">
                 <div><font-awesome-icon icon="list" /></div>
-                List
+                {{ $t("List") }}
             </router-link>
 
             <router-link to="/add" class="nav-link">
                 <div><font-awesome-icon icon="plus" /></div>
-                Add
+                {{ $t("Add") }}
             </router-link>
 
             <router-link to="/settings" class="nav-link">
                 <div><font-awesome-icon icon="cog" /></div>
-                Settings
+                {{ $t("Settings") }}
             </router-link>
         </nav>
     </div>
