@@ -75,5 +75,6 @@ module.exports = {
         "no-empty": ["error", {
             "allowEmptyCatch": true
         }],
+        "no-control-regex": "off"
     },
 }

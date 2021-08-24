@@ -404,7 +404,7 @@ class Notification {
                         "messages": [
                             {
                                 "type": "text",
-                                "text":"Test Successful!"
+                                "text": "Test Successful!"
                             }
                         ]
                     }
@@ -415,7 +415,7 @@ class Notification {
                         "messages": [
                             {
                                 "type": "text",
-                                "text":"UptimeKuma Alert: [🔴 Down]\n" + "Name: " + monitorJSON["name"] + " \n" + heartbeatJSON["msg"] + "\nTime (UTC): " + heartbeatJSON["time"]
+                                "text": "UptimeKuma Alert: [🔴 Down]\n" + "Name: " + monitorJSON["name"] + " \n" + heartbeatJSON["msg"] + "\nTime (UTC): " + heartbeatJSON["time"]
                             }
                         ]
                     }
@@ -426,7 +426,7 @@ class Notification {
                         "messages": [
                             {
                                 "type": "text",
-                                "text":"UptimeKuma Alert: [✅ Up]\n"  + "Name: " +  monitorJSON["name"] + " \n" + heartbeatJSON["msg"] + "\nTime (UTC): " + heartbeatJSON["time"]
+                                "text": "UptimeKuma Alert: [✅ Up]\n" + "Name: " + monitorJSON["name"] + " \n" + heartbeatJSON["msg"] + "\nTime (UTC): " + heartbeatJSON["time"]
                             }
                         ]
                     }
