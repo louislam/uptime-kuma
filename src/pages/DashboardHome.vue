@@ -26,7 +26,7 @@
                 </div>
             </div>
 
-            <div class="shadow-box" style="margin-top: 25px;overflow-x: scroll">
+            <div class="shadow-box table-shadow-box" style="overflow-x: scroll">
                 <table class="table table-borderless table-hover">
                     <thead>
                         <tr>
@@ -37,11 +37,11 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(beat, index) in displayedRecords" :key="index">
+                        <tr v-for="(beat, index) in displayedRecords" :key="index" :class="{ 'shadow-box': $root.windowWidth <= 550}">
                             <td>{{ beat.name }}</td>
                             <td><Status :status="beat.status" /></td>
-                            <td><Datetime :value="beat.time" /></td>
-                            <td>{{ beat.msg }}</td>
+                            <td :class="{ 'border-0':! beat.msg}"><Datetime :value="beat.time" /></td>
+                            <td class="border-0">{{ beat.msg }}</td>
                         </tr>
 
                         <tr v-if="importantHeartBeatList.length === 0">
@@ -170,6 +170,7 @@ export default {
 
 .shadow-box {
     padding: 20px;
+    margin-top: 25px;
 }
 
 table {
