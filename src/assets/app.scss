@@ -97,14 +97,19 @@ h2 {
 
         tr {
             margin-top: 0 !important;
-            padding: 10px !important;
+            padding: 4px 10px !important;
             display: block;
-            margin-bottom: 10px;
+            margin-bottom: 6px;
 
             td {
                 border-bottom: 1px solid $dark-font-color;
                 display: block;
-                padding: 6px;
+                padding: 4px;
+
+                .badge {
+                    margin-top: 0px;
+                    display: block;
+                }
             }
         }
     }
