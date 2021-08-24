@@ -184,18 +184,25 @@ class Monitor extends BeanModel {
                     let dnsRes = await dnsResolve(this.hostname, this.dns_resolve_server, this.dns_resolve_type);
                     bean.ping = dayjs().valueOf() - startTime;
 
-                    if (this.dns_resolve_type == "A" || this.dns_resolve_type == "AAAA" || this.dns_resolve_type == "CNAME" || this.dns_resolve_type == "PTR") {
+                    if (this.dns_resolve_type == "A" || this.dns_resolve_type == "AAAA") {
+                        dnsMessage += "Records: ";
+                        dnsRes.forEach(record => {
+                            dnsMessage += `${record} | `;
+                        });
+                        dnsMessage = dnsMessage.slice(0, -2)
+                    } else if (this.dns_resolve_type == "CNAME" || this.dns_resolve_type == "PTR") {
                         dnsMessage = dnsRes[0];
                     } else if (this.dns_resolve_type == "CAA") {
                         dnsMessage = dnsRes[0].issue;
                     } else if (this.dns_resolve_type == "MX") {
                         dnsRes.forEach(record => {
-                            dnsMessage += `Server: ${record.exchange} - Priority: ${record.priority} | `;
+                            dnsMessage += `Hostname: ${record.exchange} - Priority: ${record.priority} | `;
                         });
                         dnsMessage = dnsMessage.slice(0, -2)
                     } else if (this.dns_resolve_type == "NS") {
+                        dnsMessage += "Servers: ";
                         dnsRes.forEach(record => {
-                            dnsMessage += `Server: ${record} | `;
+                            dnsMessage += `${record} | `;
                         });
                         dnsMessage = dnsMessage.slice(0, -2)
                     } else if (this.dns_resolve_type == "SOA") {
