@@ -6,6 +6,39 @@ The project was created with vite.js (vue3). Then I created a sub-directory call
 
 The frontend code build into "dist" directory. The server uses "dist" as root. This is how production is working.
 
+# Can I create a pull request for Uptime Kuma?
+
+Generally, if the pull request is working fine and it do not affect any existing logic, workflow and perfomance, I will merge to the master branch once it is tested.
+
+If you are not sure, feel free to create an empty pull request draft first.
+
+## Pull Request Examples
+
+### ✅ High - Medium Priority
+
+- Add a new notification
+- Add a chart
+- Fix a bug
+
+### *️⃣ Requires one more reviewer 
+
+I do not have such knowledge to test it
+
+- Add k8s supports 
+
+### *️⃣ Low Priority 
+
+It chnaged my current workflow and require further studies.
+
+- Change my release approach
+
+### ❌ Won't Merge
+
+- Duplicated pull request
+- Buggy
+- Existing logic is completely modified or deleted
+- A function that is completely out of scope
+
 # Project Styles
 
 I personally do not like something need to learn so much and need to config so much before you can finally start the app. 
