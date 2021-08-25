@@ -184,12 +184,9 @@ class Monitor extends BeanModel {
                     let dnsRes = await dnsResolve(this.hostname, this.dns_resolve_server, this.dns_resolve_type);
                     bean.ping = dayjs().valueOf() - startTime;
 
-                    if (this.dns_resolve_type == "A" || this.dns_resolve_type == "AAAA") {
+                    if (this.dns_resolve_type == "A" || this.dns_resolve_type == "AAAA" || this.dns_resolve_type == "TXT") {
                         dnsMessage += "Records: ";
-                        dnsRes.forEach(record => {
-                            dnsMessage += `${record} | `;
-                        });
-                        dnsMessage = dnsMessage.slice(0, -2)
+                        dnsMessage += dnsRes.join(" | ");
                     } else if (this.dns_resolve_type == "CNAME" || this.dns_resolve_type == "PTR") {
                         dnsMessage = dnsRes[0];
                     } else if (this.dns_resolve_type == "CAA") {
@@ -201,20 +198,12 @@ class Monitor extends BeanModel {
                         dnsMessage = dnsMessage.slice(0, -2)
                     } else if (this.dns_resolve_type == "NS") {
                         dnsMessage += "Servers: ";
-                        dnsRes.forEach(record => {
-                            dnsMessage += `${record} | `;
-                        });
-                        dnsMessage = dnsMessage.slice(0, -2)
+                        dnsMessage += dnsRes.join(" | ");
                     } else if (this.dns_resolve_type == "SOA") {
                         dnsMessage += `NS-Name: ${dnsRes.nsname} | Hostmaster: ${dnsRes.hostmaster} | Serial: ${dnsRes.serial} | Refresh: ${dnsRes.refresh} | Retry: ${dnsRes.retry} | Expire: ${dnsRes.expire} | MinTTL: ${dnsRes.minttl}`;
                     } else if (this.dns_resolve_type == "SRV") {
                         dnsRes.forEach(record => {
                             dnsMessage += `Name: ${record.name} | Port: ${record.port} | Priority: ${record.priority} | Weight: ${record.weight} | `;
-                        });
-                        dnsMessage = dnsMessage.slice(0, -2)
-                    } else if (this.dns_resolve_type == "TXT") {
-                        dnsRes.forEach(record => {
-                            dnsMessage += `Record: ${record} | `;
                         });
                         dnsMessage = dnsMessage.slice(0, -2)
                     }
