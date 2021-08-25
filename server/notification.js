@@ -95,8 +95,11 @@ class Notification {
                     await axios.post(notification.discordWebhookUrl, discordtestdata)
                     return okMsg;
                 }
+
                 let url = monitorJSON["url"] === "https://" ? monitorJSON["hostname"] : monitorJSON["url"]
-                if (monitorJSON["port"]) url += ":" + monitorJSON[port]
+                if (monitorJSON["port"]) {
+                    url += ":" + monitorJSON[port];
+                }
 
                 // If heartbeatJSON is not null, we go into the normal alerting loop.
                 if (heartbeatJSON["status"] == 0) {
