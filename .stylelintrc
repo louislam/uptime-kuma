@@ -4,7 +4,6 @@
         "indentation": 4,
         "no-descending-specificity": null,
         "selector-list-comma-newline-after": null,
-        "declaration-empty-line-before": null,
-        "no-duplicate-selectors": null
+        "declaration-empty-line-before": null
     }
 }

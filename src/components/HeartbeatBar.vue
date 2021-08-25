@@ -163,10 +163,6 @@ export default {
 
         &.empty {
             background-color: aliceblue;
-
-            .dark & {
-                background-color: #d0d3d5;
-            }
         }
 
         &.down {
