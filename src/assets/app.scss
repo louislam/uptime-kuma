@@ -2,7 +2,7 @@
 @import "node_modules/bootstrap/scss/bootstrap";
 
 #app {
-    font-family: ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,segoe ui,Roboto,helvetica neue,Arial,noto sans,sans-serif,apple color emoji,segoe ui emoji,segoe ui symbol,noto color emoji;
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, segoe ui, Roboto, helvetica neue, Arial, noto sans, sans-serif, apple color emoji, segoe ui emoji, segoe ui symbol, noto color emoji;
 }
 
 h1 {
@@ -18,7 +18,7 @@ h2 {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #CCC;
+    background: #ccc;
     border-radius: 20px;
 }
 
@@ -28,7 +28,7 @@ h2 {
 
 .modal-content {
     border-radius: 1rem;
-    box-shadow: 0 15px 70px rgba(0, 0, 0, .1);
+    box-shadow: 0 15px 70px rgba(0, 0, 0, 0.1);
 
     .dark & {
         box-shadow: 0 15px 70px rgb(0 0 0);
@@ -41,10 +41,9 @@ h2 {
     text-align: center;
 }
 
-
 .shadow-box {
     //overflow: hidden;   // Forget why add this, but multiple select hide by this
-    box-shadow: 0 15px 70px rgba(0, 0, 0, .1);
+    box-shadow: 0 15px 70px rgba(0, 0, 0, 0.1);
     padding: 10px;
     border-radius: 10px;
 
@@ -80,9 +79,56 @@ h2 {
     }
 }
 
+@media (max-width: 550px) {
+    .table-shadow-box {
+        padding: 10px !important;
+
+        thead {
+            display: none;
+        }
+
+        tbody {
+            .shadow-box {
+                background-color: white;
+            }
+        }
+
+        tr {
+            margin-top: 0 !important;
+            padding: 4px 10px !important;
+            display: block;
+            margin-bottom: 6px;
+
+            td:first-child {
+                font-weight: bold;
+            }
+
+            td:nth-child(-n+3) {
+                text-align: center;
+            }
+
+            td:last-child {
+                text-align: left;
+            }
+
+            td {
+                border-bottom: 1px solid $dark-font-color;
+                display: block;
+                padding: 4px;
+
+                .badge {
+                    margin: auto;
+                    display: block;
+                    width: 30%;
+                }
+            }
+        }
+    }
+}
+
 // Dark Theme override here
 .dark {
-    background-color: #090C10;
+    background-color: #090c10;
     color: $dark-font-color;
 
     &::-webkit-scrollbar-thumb {
@@ -124,7 +170,7 @@ h2 {
     }
 
     .table-hover > tbody > tr:hover {
-        --bs-table-accent-bg: #070A10;
+        --bs-table-accent-bg: #070a10;
         color: $dark-font-color;
     }
 
@@ -192,6 +238,20 @@ h2 {
     .multiselect__option--selected {
         background-color: $dark-bg;
     }
+
+    @media (max-width: 550px) {
+        .table-shadow-box {
+            tbody {
+                .shadow-box {
+                    background-color: $dark-bg2;
+
+                    td {
+                        border-bottom: 1px solid $dark-border-color;
+                    }
+                }
+            }
+        }
+    }
 }
 
 /*
@@ -200,11 +260,13 @@ h2 {
 
 // page-change
 .slide-fade-enter-active {
-    transition: all 0.20s $easing-in;
+    transition: all 0.2s $easing-in;
 }
+
 .slide-fade-leave-active {
-    transition: all 0.20s $easing-in;
+    transition: all 0.2s $easing-in;
 }
+
 .slide-fade-enter-from,
 .slide-fade-leave-to {
     transform: translateY(50px);

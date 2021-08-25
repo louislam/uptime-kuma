@@ -1,9 +1,6 @@
 const fs = require("fs");
-const { sleep, debug, isDev } = require("../src/util");
 const { R } = require("redbean-node");
 const { setSetting, setting } = require("./util-server");
-const knex = require("knex");
-const sqlite3 = require("@louislam/sqlite3");
 
 class Database {
 
@@ -14,47 +11,22 @@ class Database {
     static sqliteInstance = null;
 
     static async connect() {
+        const acquireConnectionTimeout = 120 * 1000;
 
-        if (! this.sqliteInstance) {
-            this.sqliteInstance = new sqlite3.Database(Database.path);
-            this.sqliteInstance.run("PRAGMA journal_mode = WAL");
-        }
+        R.useBetterSQLite3 = true;
+        R.betterSQLite3Options.timeout = acquireConnectionTimeout;
 
-        const Dialect = require("knex/lib/dialects/sqlite3/index.js");
-        Dialect.prototype._driver = () => sqlite3;
-
-        if (isDev) {
-            Dialect.prototype.acquireConnectionOrg = Dialect.prototype.acquireConnection;
-
-            Dialect.prototype.acquireConnection = async function () {
-                let a = await this.acquireConnectionOrg();
-                debug("acquired Connection");
-                return a;
-            };
-        }
-
-        // Always return same connection.
-        Dialect.prototype.acquireRawConnection = async function () {
-            return Database.sqliteInstance;
-        };
-
-        Dialect.prototype.destroyRawConnection = async () => { }
-
-        const knexInstance = knex({
-            client: Dialect,
-            connection: { },        // Do not remove, Leave it empty is ok
+        R.setup("sqlite", {
+            filename: Database.path,
             useNullAsDefault: true,
-            pool: {
-                min: 1,
-                max: 1,
-                idleTimeoutMillis: 30000,
-            }
+            acquireConnectionTimeout: acquireConnectionTimeout,
+        }, {
+            min: 1,
+            max: 1,
+            idleTimeoutMillis: 120 * 1000,
+            propagateCreateError: false,
+            acquireTimeoutMillis: acquireConnectionTimeout,
         });
-
-        console.log( knexInstance.pool)
-        console.log("pool size")
-
-        R.setup(knexInstance);
 
         if (process.env.SQL_LOG === "1") {
             R.debug(true);
@@ -63,6 +35,10 @@ class Database {
         // Auto map the model to a bean object
         R.freeze(true)
         await R.autoloadModels("./server/model");
+
+        // Change to WAL
+        await R.exec("PRAGMA journal_mode = WAL");
+        console.log(await R.getAll("PRAGMA journal_mode"));
     }
 
     static async patch() {
@@ -148,9 +124,16 @@ class Database {
                 return statement !== "";
             })
 
+        // Use better-sqlite3 to run, prevent "This statement does not return data. Use run() instead"
+        const db = await this.getBetterSQLite3Database();
+
         for (let statement of statements) {
-            await R.exec(statement);
+            db.prepare(statement).run();
         }
+    }
+
+    static getBetterSQLite3Database() {
+        return R.knex.client.acquireConnection();
     }
 
     /**

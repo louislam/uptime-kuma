@@ -163,10 +163,6 @@ export default {
 
         &.empty {
             background-color: aliceblue;
-
-            .dark & {
-                background-color: #d0d3d5;
-            }
         }
 
         &.down {
@@ -186,7 +182,7 @@ export default {
 }
 
 .dark {
-    .hp-bar-big .beat.empty{
+    .hp-bar-big .beat.empty {
         background-color: #848484;
     }
 }

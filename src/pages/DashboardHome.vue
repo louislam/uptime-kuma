@@ -2,63 +2,51 @@
     <transition name="slide-fade" appear>
         <div v-if="$route.name === 'DashboardHome'">
             <h1 class="mb-3">
-                Quick Stats
+                {{ $t("Quick Stats") }}
             </h1>
 
             <div class="shadow-box big-padding text-center">
                 <div class="row">
                     <div class="col">
-                        <h3>Up</h3>
+                        <h3>{{ $t("Up") }}</h3>
                         <span class="num">{{ stats.up }}</span>
                     </div>
                     <div class="col">
-                        <h3>Down</h3>
+                        <h3>{{ $t("Down") }}</h3>
                         <span class="num text-danger">{{ stats.down }}</span>
                     </div>
                     <div class="col">
-                        <h3>Unknown</h3>
+                        <h3>{{ $t("Unknown") }}</h3>
                         <span class="num text-secondary">{{ stats.unknown }}</span>
                     </div>
                     <div class="col">
-                        <h3>Pause</h3>
+                        <h3>{{ $t("Pause") }}</h3>
                         <span class="num text-secondary">{{ stats.pause }}</span>
-                    </div>
-                </div>
-                <div v-if="false" class="row">
-                    <div class="col-3">
-                        <h3>Uptime</h3>
-                        <p>(24-hour)</p>
-                        <span class="num" />
-                    </div>
-                    <div class="col-3">
-                        <h3>Uptime</h3>
-                        <p>(30-day)</p>
-                        <span class="num" />
                     </div>
                 </div>
             </div>
 
-            <div class="shadow-box" style="margin-top: 25px;overflow-x: scroll">
+            <div class="shadow-box table-shadow-box" style="overflow-x: scroll;">
                 <table class="table table-borderless table-hover">
                     <thead>
                         <tr>
-                            <th>Name</th>
-                            <th>Status</th>
-                            <th>DateTime</th>
-                            <th>Message</th>
+                            <th>{{ $t("Name") }}</th>
+                            <th>{{ $t("Status") }}</th>
+                            <th>{{ $t("DateTime") }}</th>
+                            <th>{{ $t("Message") }}</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(beat, index) in displayedRecords" :key="index">
+                        <tr v-for="(beat, index) in displayedRecords" :key="index" :class="{ 'shadow-box': $root.windowWidth <= 550}">
                             <td>{{ beat.name }}</td>
                             <td><Status :status="beat.status" /></td>
-                            <td><Datetime :value="beat.time" /></td>
-                            <td>{{ beat.msg }}</td>
+                            <td :class="{ 'border-0':! beat.msg}"><Datetime :value="beat.time" /></td>
+                            <td class="border-0">{{ beat.msg }}</td>
                         </tr>
 
                         <tr v-if="importantHeartBeatList.length === 0">
                             <td colspan="4">
-                                No important events
+                                {{ $t("No important events") }}
                             </td>
                         </tr>
                     </tbody>
@@ -182,6 +170,7 @@ export default {
 
 .shadow-box {
     padding: 20px;
+    margin-top: 25px;
 }
 
 table {

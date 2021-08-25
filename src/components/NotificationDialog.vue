@@ -5,17 +5,17 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 id="exampleModalLabel" class="modal-title">
-                            Setup Notification
+                            {{ $t("Setup Notification") }}
                         </h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" />
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label for="type" class="form-label">Notification Type</label>
+                            <label for="type" class="form-label">{{ $t("Notification Type") }}</label>
                             <select id="type" v-model="notification.type" class="form-select">
                                 <option value="telegram">Telegram</option>
                                 <option value="webhook">Webhook</option>
-                                <option value="smtp">Email (SMTP)</option>
+                                <option value="smtp">{{ $t("Email") }} (SMTP)</option>
                                 <option value="discord">Discord</option>
                                 <option value="signal">Signal</option>
                                 <option value="gotify">Gotify</option>
@@ -27,11 +27,12 @@
                                 <option value="apprise">Apprise (Support 50+ Notification services)</option>
                                 <option value="pushbullet">Pushbullet</option>
                                 <option value="line">Line Messenger</option>
+                                <option value="mattermost">Mattermost</option>
                             </select>
                         </div>
 
                         <div class="mb-3">
-                            <label for="name" class="form-label">Friendly Name</label>
+                            <label for="name" class="form-label">{{ $t("Friendly Name") }}</label>
                             <input id="name" v-model="notification.name" type="text" class="form-control" required>
                         </div>
 
@@ -210,7 +211,7 @@
 
                         <template v-if="notification.type === 'slack'">
                             <div class="mb-3">
-                                <label for="slack-webhook-url" class="form-label">Webhook URL<span style="color:red;"><sup>*</sup></span></label>
+                                <label for="slack-webhook-url" class="form-label">Webhook URL<span style="color: red;"><sup>*</sup></span></label>
                                 <input id="slack-webhook-url" v-model="notification.slackwebhookURL" type="text" class="form-control" required>
                                 <label for="slack-username" class="form-label">Username</label>
                                 <input id="slack-username" v-model="notification.slackusername" type="text" class="form-control">
@@ -221,7 +222,7 @@
                                 <label for="slack-button-url" class="form-label">Uptime Kuma URL</label>
                                 <input id="slack-button" v-model="notification.slackbutton" type="text" class="form-control">
                                 <div class="form-text">
-                                    <span style="color:red;"><sup>*</sup></span>Required
+                                    <span style="color: red;"><sup>*</sup></span>Required
                                     <p style="margin-top: 8px;">
                                         More info about webhooks on: <a href="https://api.slack.com/messaging/webhooks" target="_blank">https://api.slack.com/messaging/webhooks</a>
                                     </p>
@@ -233,6 +234,39 @@
                                     </p>
                                     <p style="margin-top: 8px;">
                                         Emoji cheat sheet: <a href="https://www.webfx.com/tools/emoji-cheat-sheet/" target="_blank">https://www.webfx.com/tools/emoji-cheat-sheet/</a>
+                                    </p>
+                                </div>
+                            </div>
+                        </template>
+
+                        <template v-if="notification.type === 'mattermost'">
+                            <div class="mb-3">
+                                <label for="mattermost-webhook-url" class="form-label">Webhook URL<span style="color:red;"><sup>*</sup></span></label>
+                                <input id="mattermost-webhook-url" v-model="notification.mattermostWebhookUrl" type="text" class="form-control" required>
+                                <label for="mattermost-username" class="form-label">Username</label>
+                                <input id="mattermost-username" v-model="notification.mattermostusername" type="text" class="form-control">
+                                <label for="mattermost-iconurl" class="form-label">Icon URL</label>
+                                <input id="mattermost-iconurl" v-model="notification.mattermosticonurl" type="text" class="form-control">
+                                <label for="mattermost-iconemo" class="form-label">Icon Emoji</label>
+                                <input id="mattermost-iconemo" v-model="notification.mattermosticonemo" type="text" class="form-control">
+                                <label for="mattermost-channel" class="form-label">Channel Name</label>
+                                <input id="mattermost-channel-name" v-model="notification.mattermostchannel" type="text" class="form-control">
+                                <div class="form-text">
+                                    <span style="color:red;"><sup>*</sup></span>Required
+                                    <p style="margin-top: 8px;">
+                                        More info about webhooks on: <a href="https://docs.mattermost.com/developer/webhooks-incoming.html" target="_blank">https://docs.mattermost.com/developer/webhooks-incoming.html</a>
+                                    </p>
+                                    <p style="margin-top: 8px;">
+                                        You can override the default channel that webhook posts to by entering the channel name into "Channel Name" field. This needs to be enabled in Mattermost webhook settings. Ex: #other-channel
+                                    </p>
+                                    <p style="margin-top: 8px;">
+                                        If you leave the Uptime Kuma URL field blank, it will default to the Project Github page.
+                                    </p>
+                                    <p style="margin-top: 8px;">
+                                        You can provide a link to a picture in "Icon URL" to override the default profile picture. Will not be used if Icon Emoji is set.
+                                    </p>
+                                    <p style="margin-top: 8px;">
+                                        Emoji cheat sheet: <a href="https://www.webfx.com/tools/emoji-cheat-sheet/" target="_blank">https://www.webfx.com/tools/emoji-cheat-sheet/</a> Note: emoji takes preference over Icon URL.
                                     </p>
                                 </div>
                             </div>
@@ -288,9 +322,9 @@
 
                         <template v-if="notification.type === 'pushover'">
                             <div class="mb-3">
-                                <label for="pushover-user" class="form-label">User Key<span style="color:red;"><sup>*</sup></span></label>
+                                <label for="pushover-user" class="form-label">User Key<span style="color: red;"><sup>*</sup></span></label>
                                 <input id="pushover-user" v-model="notification.pushoveruserkey" type="text" class="form-control" required>
-                                <label for="pushover-app-token" class="form-label">Application Token<span style="color:red;"><sup>*</sup></span></label>
+                                <label for="pushover-app-token" class="form-label">Application Token<span style="color: red;"><sup>*</sup></span></label>
                                 <input id="pushover-app-token" v-model="notification.pushoverapptoken" type="text" class="form-control" required>
                                 <label for="pushover-device" class="form-label">Device</label>
                                 <input id="pushover-device" v-model="notification.pushoverdevice" type="text" class="form-control">
@@ -330,7 +364,7 @@
                                     <option>none</option>
                                 </select>
                                 <div class="form-text">
-                                    <span style="color:red;"><sup>*</sup></span>Required
+                                    <span style="color: red;"><sup>*</sup></span>Required
                                     <p style="margin-top: 8px;">
                                         More info on: <a href="https://pushover.net/api" target="_blank">https://pushover.net/api</a>
                                     </p>
@@ -366,10 +400,10 @@
 
                         <template v-if="notification.type === 'lunasea'">
                             <div class="mb-3">
-                                <label for="lunasea-device" class="form-label">LunaSea Device ID<span style="color:red;"><sup>*</sup></span></label>
+                                <label for="lunasea-device" class="form-label">LunaSea Device ID<span style="color: red;"><sup>*</sup></span></label>
                                 <input id="lunasea-device" v-model="notification.lunaseaDevice" type="text" class="form-control" required>
                                 <div class="form-text">
-                                    <p><span style="color:red;"><sup>*</sup></span>Required</p>
+                                    <p><span style="color: red;"><sup>*</sup></span>Required</p>
                                 </div>
                             </div>
                         </template>
@@ -407,13 +441,13 @@
                     </div>
                     <div class="modal-footer">
                         <button v-if="id" type="button" class="btn btn-danger" :disabled="processing" @click="deleteConfirm">
-                            Delete
+                            {{ $t("Delete") }}
                         </button>
                         <button type="button" class="btn btn-warning" :disabled="processing" @click="test">
-                            Test
+                            {{ $t("Test") }}
                         </button>
                         <button type="submit" class="btn btn-primary" :disabled="processing">
-                            Save
+                            {{ $t("Save") }}
                         </button>
                     </div>
                 </div>

@@ -16,6 +16,9 @@ module.exports = {
         requireConfigFile: false,
     },
     rules: {
+        "camelcase": ["warn", {
+            "properties": "never"
+        }],
         // override/add rules settings here, such as:
         // 'vue/no-unused-vars': 'error'
         "no-unused-vars": "warn",
@@ -74,5 +77,6 @@ module.exports = {
         "no-empty": ["error", {
             "allowEmptyCatch": true
         }],
+        "no-control-regex": "off"
     },
 }

@@ -3,7 +3,7 @@
         <div class="row">
             <div v-if="! $root.isMobile" class="col-12 col-md-5 col-xl-4">
                 <div>
-                    <router-link to="/add" class="btn btn-primary mb-3"><font-awesome-icon icon="plus" /> Add New Monitor</router-link>
+                    <router-link to="/add" class="btn btn-primary mb-3"><font-awesome-icon icon="plus" /> {{ $t("Add New Monitor") }}</router-link>
                 </div>
                 <MonitorList />
             </div>
@@ -32,6 +32,6 @@ export default {
 
 <style lang="scss" scoped>
 .container-fluid {
-    width: 98%
+    width: 98%;
 }
 </style>

@@ -6,7 +6,38 @@ The project was created with vite.js (vue3). Then I created a sub-directory call
 
 The frontend code build into "dist" directory. The server uses "dist" as root. This is how production is working.
 
-Your IDE should follow the config in ".editorconfig". The most special thing is I set it to 4 spaces indentation. I know 2 spaces indentation became a kind of standard nowadays for js, but my eyes is not so comfortable for this. In my opinion, there is no callback-hell nowadays, it is good to go back 4 spaces world again.
+# Can I create a pull request for Uptime Kuma?
+
+Generally, if the pull request is working fine and it do not affect any existing logic, workflow and perfomance, I will merge to the master branch once it is tested.
+
+If you are not sure, feel free to create an empty pull request draft first.
+
+## Pull Request Examples
+
+### ✅ High - Medium Priority
+
+- Add a new notification
+- Add a chart
+- Fix a bug
+
+### *️⃣ Requires one more reviewer 
+
+I do not have such knowledge to test it
+
+- Add k8s supports 
+
+### *️⃣ Low Priority 
+
+It chnaged my current workflow and require further studies.
+
+- Change my release approach
+
+### ❌ Won't Merge
+
+- Duplicated pull request
+- Buggy
+- Existing logic is completely modified or deleted
+- A function that is completely out of scope
 
 # Project Styles
 
@@ -19,16 +50,27 @@ For example, recently, because I am not a python expert, I spent a 2 hours to re
 - All settings in frontend.
 - Easy to use
 
+# Coding Styles
+
+- Follow .editorconfig
+- Follow eslint
+
+## Name convention
+
+- Javascript/Typescript: camelCaseType
+- SQLite: underscore_type
+- CSS/SCSS: dash-type
+
 # Tools
 - Node.js >= 14
 - Git
-- IDE that supports .editorconfig  (I am using Intellji Idea)
+- IDE that supports .editorconfig and eslint (I am using Intellji Idea)
 - A SQLite tool (I am using SQLite Expert Personal)
 
-# Prepare the dev
+# Install dependencies 
 
 ```bash
-npm install
+npm install --dev
 ```
 
 # Backend Dev
@@ -39,7 +81,6 @@ npm run start-server
 # Or 
 
 node server/server.js
-
 ```
 
 It binds to 0.0.0.0:3001 by default.
@@ -92,7 +133,8 @@ The data and socket logic in "src/mixins/socket.js"
 
 # Database Migration
 
-TODO
+1. create `patch{num}.sql` in `./db/`
+1. update `latestVersion` in `./server/database.js`
 
 # Unit Test
 

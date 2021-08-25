@@ -9,23 +9,23 @@
         <!-- Desktop header -->
         <header v-if="! $root.isMobile" class="d-flex flex-wrap justify-content-center py-3 mb-3 border-bottom">
             <router-link to="/dashboard" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
-                <object class="bi me-2 ms-4" width="40" height="40" data="/icon.svg" alt="Logo" />
+                <object class="bi me-2 ms-4" width="40" height="40" data="/icon.svg" />
                 <span class="fs-4 title">Uptime Kuma</span>
             </router-link>
 
             <a v-if="hasNewVersion" target="_blank" href="https://github.com/louislam/uptime-kuma/releases" class="btn btn-info me-3">
-                <font-awesome-icon icon="arrow-alt-circle-up" /> New Update
+                <font-awesome-icon icon="arrow-alt-circle-up" /> {{ $t("New Update") }}
             </a>
 
             <ul class="nav nav-pills">
                 <li class="nav-item">
                     <router-link to="/dashboard" class="nav-link">
-                        <font-awesome-icon icon="tachometer-alt" /> Dashboard
+                        <font-awesome-icon icon="tachometer-alt" /> {{ $t("Dashboard") }}
                     </router-link>
                 </li>
                 <li class="nav-item">
                     <router-link to="/settings" class="nav-link">
-                        <font-awesome-icon icon="cog" /> Settings
+                        <font-awesome-icon icon="cog" /> {{ $t("Settings") }}
                     </router-link>
                 </li>
             </ul>
@@ -48,32 +48,32 @@
         <footer>
             <div class="container-fluid">
                 Uptime Kuma -
-                Version: {{ $root.info.version }} -
-                <a href="https://github.com/louislam/uptime-kuma/releases" target="_blank" rel="noopener">Check Update On GitHub</a>
+                {{ $t("Version") }}: {{ $root.info.version }} -
+                <a href="https://github.com/louislam/uptime-kuma/releases" target="_blank" rel="noopener">{{ $t("Check Update On GitHub") }}</a>
             </div>
         </footer>
 
         <!-- Mobile Only -->
-        <div v-if="$root.isMobile" style="width: 100%;height: 60px;" />
+        <div v-if="$root.isMobile" style="width: 100%; height: 60px;" />
         <nav v-if="$root.isMobile" class="bottom-nav">
             <router-link to="/dashboard" class="nav-link">
                 <div><font-awesome-icon icon="tachometer-alt" /></div>
-                Dashboard
+                {{ $t("Dashboard") }}
             </router-link>
 
             <router-link to="/list" class="nav-link">
                 <div><font-awesome-icon icon="list" /></div>
-                List
+                {{ $t("List") }}
             </router-link>
 
             <router-link to="/add" class="nav-link">
                 <div><font-awesome-icon icon="plus" /></div>
-                Add
+                {{ $t("Add") }}
             </router-link>
 
             <router-link to="/settings" class="nav-link">
                 <div><font-awesome-icon icon="cog" /></div>
-                Settings
+                {{ $t("Settings") }}
             </router-link>
         </nav>
     </div>
@@ -173,7 +173,7 @@ export default {
 }
 
 main {
-    min-height: calc(100vh - 160px)
+    min-height: calc(100vh - 160px);
 }
 
 .title {
@@ -191,7 +191,7 @@ main {
 }
 
 footer {
-    color: #AAA;
+    color: #aaa;
     font-size: 13px;
     margin-top: 10px;
     padding-bottom: 30px;
@@ -201,11 +201,11 @@ footer {
 
 .dark {
     header {
-        background-color: #161B22;
-        border-bottom-color: #161B22 !important;
+        background-color: #161b22;
+        border-bottom-color: #161b22 !important;
 
         span {
-            color: #F0F6FC;
+            color: #f0f6fc;
         }
     }
 

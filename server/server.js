@@ -12,8 +12,6 @@ debug("Importing express");
 const express = require("express");
 debug("Importing socket.io");
 const { Server } = require("socket.io");
-debug("Importing dayjs");
-const dayjs = require("dayjs");
 debug("Importing redbean-node");
 const { R } = require("redbean-node");
 debug("Importing jsonwebtoken");
@@ -150,7 +148,7 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                 if (user) {
                     debug("afterLogin")
 
-                    await afterLogin(socket, user)
+                    afterLogin(socket, user)
 
                     debug("afterLogin ok")
 
@@ -178,7 +176,7 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
             let user = await login(data.username, data.password)
 
             if (user) {
-                await afterLogin(socket, user)
+                afterLogin(socket, user)
 
                 callback({
                     ok: true,
@@ -563,7 +561,7 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
         debug("check auto login")
         if (await setting("disableAuth")) {
             console.log("Disabled Auth: auto login to admin")
-            await afterLogin(socket, await R.findOne("user"))
+            afterLogin(socket, await R.findOne("user"))
             socket.emit("autoLogin")
         } else {
             debug("need auth")
@@ -623,6 +621,8 @@ async function sendMonitorList(socket) {
 }
 
 async function sendNotificationList(socket) {
+    const timeLogger = new TimeLogger();
+
     let result = [];
     let list = await R.find("notification", " user_id = ? ", [
         socket.userID,
@@ -633,6 +633,9 @@ async function sendNotificationList(socket) {
     }
 
     io.to(socket.userID).emit("notificationList", result)
+
+    timeLogger.print("Send Notification List");
+
     return list;
 }
 
@@ -641,24 +644,27 @@ async function afterLogin(socket, user) {
     socket.join(user.id)
 
     let monitorList = await sendMonitorList(socket)
-
     sendNotificationList(socket)
 
-    // Delay a bit, so that it let the main page to query the data first, since SQLite can process one sql at the same time only.
-    // For example, query the edit data first.
-    setTimeout(async () => {
-        for (let monitorID in monitorList) {
-            sendHeartbeatList(socket, monitorID);
-            sendImportantHeartbeatList(socket, monitorID);
-            Monitor.sendStats(io, monitorID, user.id)
-        }
-    }, 500);
+    await sleep(500);
+
+    for (let monitorID in monitorList) {
+        await sendHeartbeatList(socket, monitorID);
+    }
+
+    for (let monitorID in monitorList) {
+        await sendImportantHeartbeatList(socket, monitorID);
+    }
+
+    for (let monitorID in monitorList) {
+        await Monitor.sendStats(io, monitorID, user.id)
+    }
 }
 
 async function getMonitorJSONList(userID) {
     let result = {};
 
-    let monitorList = await R.find("monitor", " user_id = ? ", [
+    let monitorList = await R.find("monitor", " user_id = ? ORDER BY weight DESC, name", [
         userID,
     ])
 
@@ -788,6 +794,8 @@ async function sendHeartbeatList(socket, monitorID) {
     }
 
     socket.emit("heartbeatList", monitorID, result)
+
+    timeLogger.print(`[Monitor: ${monitorID}] sendHeartbeatList`)
 }
 
 async function sendImportantHeartbeatList(socket, monitorID) {
