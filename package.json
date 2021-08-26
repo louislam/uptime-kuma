@@ -33,7 +33,8 @@
         "test-install-script-ubuntu": "npm run compile-install-script && docker build --progress plain -f test/test_install_script/ubuntu.dockerfile .",
         "test-install-script-ubuntu1604": "npm run compile-install-script && docker build --progress plain -f test/test_install_script/ubuntu1604.dockerfile .",
         "test-install-script-debian": "npm run compile-install-script && docker build --progress plain -f test/test_install_script/debian.dockerfile .",
-        "simple-dns-server": "node extra/simple-dns-server.js"
+        "simple-dns-server": "node extra/simple-dns-server.js",
+        "codesandbox": "npm run build && npm run start-server"
     },
     "dependencies": {
         "@fortawesome/fontawesome-svg-core": "^1.2.36",
