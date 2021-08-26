@@ -198,7 +198,7 @@ if (type == "local") {
    bash("git clone https://github.com/louislam/uptime-kuma.git .");
    bash("npm run setup");
 
-   bash("pm2 start npm --name uptime-kuma -- run start-server -- --port=$port");
+   bash("pm2 start server/server.js --name uptime-kuma -- --port=$port");
 
 } else {
     defaultVolume = "uptime-kuma";
