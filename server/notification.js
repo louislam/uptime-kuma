@@ -95,12 +95,18 @@ class Notification {
                     await axios.post(notification.discordWebhookUrl, discordtestdata)
                     return okMsg;
                 }
+
+                let url = monitorJSON["url"] === "https://" ? monitorJSON["hostname"] : monitorJSON["url"]
+                if (monitorJSON["port"]) {
+                    url += ":" + monitorJSON[port];
+                }
+
                 // If heartbeatJSON is not null, we go into the normal alerting loop.
                 if (heartbeatJSON["status"] == 0) {
                     let discorddowndata = {
                         username: discordDisplayName,
                         embeds: [{
-                            title: "❌ One of your services went down. ❌",
+                            title: "❌ Your service " + monitorJSON["name"] + " went down. ❌",
                             color: 16711680,
                             timestamp: heartbeatJSON["time"],
                             fields: [
@@ -110,7 +116,7 @@ class Notification {
                                 },
                                 {
                                     name: "Service URL",
-                                    value: monitorJSON["url"],
+                                    value: url,
                                 },
                                 {
                                     name: "Time (UTC)",
@@ -140,7 +146,7 @@ class Notification {
                                 },
                                 {
                                     name: "Service URL",
-                                    value: "[Visit Service](" + monitorJSON["url"] + ")",
+                                    value: url.startsWith("http") ? "[Visit Service](" + url + ")" : url,
                                 },
                                 {
                                     name: "Time (UTC)",
