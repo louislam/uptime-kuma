@@ -11,6 +11,9 @@
                         <Uptime :monitor="item" type="24" :pill="true" />
                         {{ item.name }}
                     </div>
+                    <div class="tags">
+                        <Tag v-for="tag in item.tags" :key="tag" :item="tag" :size="'sm'" />
+                    </div>
                 </div>
                 <div v-show="$root.userHeartbeatBar == 'normal'" :key="$root.userHeartbeatBar" class="col-6 col-md-4">
                     <HeartbeatBar size="small" :monitor-id="item.id" />
@@ -29,10 +32,13 @@
 <script>
 import HeartbeatBar from "../components/HeartbeatBar.vue";
 import Uptime from "../components/Uptime.vue";
+import Tag from "../components/Tag.vue";
+
 export default {
     components: {
         Uptime,
         HeartbeatBar,
+        Tag,
     },
     props: {
         scrollbar: {
@@ -139,5 +145,12 @@ export default {
 
 .monitorItem {
     width: 100%;
+}
+
+.tags {
+    padding-left: 62px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
 }
 </style>

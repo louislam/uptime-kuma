@@ -266,6 +266,10 @@ export default {
             socket.emit("twoFAStatus", callback)
         },
 
+        getMonitorList(callback) {
+            socket.emit("getMonitorList", callback)
+        },
+
         add(monitor, callback) {
             socket.emit("add", monitor, callback)
         },

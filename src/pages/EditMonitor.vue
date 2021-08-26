@@ -158,6 +158,10 @@
                                 </div>
                             </template>
 
+                            <div class="my-3">
+                                <tags-manager ref="tagsManager" :pre-selected-tags="monitor.tags"></tags-manager>
+                            </div>
+
                             <div class="mt-5 mb-1">
                                 <button class="btn btn-primary" type="submit" :disabled="processing">{{ $t("Save") }}</button>
                             </div>
@@ -197,6 +201,7 @@
 
 <script>
 import NotificationDialog from "../components/NotificationDialog.vue";
+import TagsManager from "../components/TagsManager.vue";
 import { useToast } from "vue-toastification"
 import VueMultiselect from "vue-multiselect"
 import { isDev } from "../util.ts";
@@ -205,6 +210,7 @@ const toast = useToast()
 export default {
     components: {
         NotificationDialog,
+        TagsManager,
         VueMultiselect,
     },
 
@@ -317,22 +323,28 @@ export default {
 
         },
 
-        submit() {
+        async submit() {
             this.processing = true;
 
             if (this.isAdd) {
-                this.$root.add(this.monitor, (res) => {
-                    this.processing = false;
+                this.$root.add(this.monitor, async (res) => {
 
                     if (res.ok) {
+                        await this.$refs.tagsManager.submit(res.monitorID);
+
                         toast.success(res.msg);
+                        this.processing = false;
+                        this.$root.getMonitorList();
                         this.$router.push("/dashboard/" + res.monitorID)
                     } else {
                         toast.error(res.msg);
+                        this.processing = false;
                     }
 
                 })
             } else {
+                await this.$refs.tagsManager.submit(this.monitor.id);
+
                 this.$root.getSocket().emit("editMonitor", this.monitor, (res) => {
                     this.processing = false;
                     this.$root.toastRes(res)
@@ -357,6 +369,8 @@ export default {
     .multiselect__tags {
         border-radius: 1.5rem;
         border: 1px solid #ced4da;
+        min-height: 38px;
+        padding: 6px 40px 0 8px;
     }
 
     .multiselect--active .multiselect__tags {
@@ -373,7 +387,23 @@ export default {
 
     .multiselect__tag {
         border-radius: 50rem;
+        margin-bottom: 0;
+        padding: 6px 26px 6px 10px;
         background: $primary !important;
+    }
+
+    .multiselect__placeholder {
+        font-size: 1rem;
+        padding-left: 6px;
+        padding-top: 0;
+        padding-bottom: 0;
+        margin-bottom: 0;
+        opacity: 0.67;
+    }
+
+    .multiselect__input, .multiselect__single {
+        line-height: 14px;
+        margin-bottom: 0;
     }
 
     .dark {
