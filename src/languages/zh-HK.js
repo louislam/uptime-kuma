@@ -95,4 +95,8 @@ export default {
     "Notification Type": "通知類型",
     "Email": "電郵",
     "Test": "測試",
+    keywordDescription: "搜索 HTML 或 JSON 裡是否有出現關鍵字（注意英文大細階）",
+    "Certificate Info": "憑證詳細資料",
+    deleteMonitorMsg: "是否確定刪除這個監測器",
+    deleteNotificationMsg: "是否確定刪除這個通知設定？如監測器啟用了這個通知，將會收不到通知。",
 }
