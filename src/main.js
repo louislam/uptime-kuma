@@ -25,6 +25,7 @@ import { appName } from "./util.ts";
 
 import en from "./languages/en";
 import zhHK from "./languages/zh-HK";
+import deDE from "./languages/de-DE";
 
 const routes = [
     {
@@ -90,6 +91,7 @@ const router = createRouter({
 const languageList = {
     en,
     "zh-HK": zhHK,
+    "de-DE": deDE,
 };
 
 const i18n = createI18n({

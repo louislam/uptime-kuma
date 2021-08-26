@@ -421,8 +421,8 @@
         </div>
     </form>
 
-    <Confirm ref="confirmDelete" btn-style="btn-danger" @yes="deleteNotification">
-        Are you sure want to delete this notification for all monitors?
+    <Confirm ref="confirmDelete" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="deleteNotification">
+        {{ $t("deleteNotificationMsg") }}
     </Confirm>
 </template>
 

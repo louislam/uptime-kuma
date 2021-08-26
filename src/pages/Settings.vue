@@ -169,6 +169,12 @@
                     <p>這個功能是設計給已有<strong>第三方認証</strong>的用家，例如 Cloudflare Access。</p>
                     <p>請小心使用。</p>
                 </template>
+
+                <template v-if="$i18n.locale === 'de-DE' ">
+                    <p>Bist du sicher das du die <strong>Authentifizierung deaktivieren</strong> möchtest?</p>
+                    <p>Es ist für <strong>jemanden der eine externe Authentifizierung</strong> vor Uptime Kuma geschaltet hat, wie z.B. Cloudflare Access.</p>
+                    <p>Bitte mit Vorsicht nutzen.</p>
+                </template>
             </Confirm>
         </div>
     </transition>
