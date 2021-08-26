@@ -191,15 +191,12 @@ main {
 }
 
 footer {
+    color: #aaa;
     font-size: 13px;
     margin-top: 10px;
     padding-bottom: 30px;
     margin-left: 10px;
     text-align: center;
-}
-
-footer {
-    color: #aaa;
 }
 
 .dark {

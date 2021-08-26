@@ -24,6 +24,7 @@ export default {
     },
     data() {
         return {
+            // Configurable filtering on top of the returned data
             chartPeriodHrs: 6,
         };
     },
@@ -55,11 +56,10 @@ export default {
 
                 elements: {
                     point: {
+                        // Hide points on chart unless mouse-over
                         radius: 0,
+                        hitRadius: 100,
                     },
-                    bar: {
-                        barThickness: "flex",
-                    }
                 },
                 scales: {
                     x: {
@@ -77,9 +77,9 @@ export default {
                             maxRotation: 0,
                             autoSkipPadding: 30,
                         },
-                        bounds: "ticks",
                         grid: {
                             color: this.$root.theme === "light" ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.1)",
+                            offset: false,
                         },
                     },
                     y: {
@@ -109,8 +109,11 @@ export default {
                         mode: "nearest",
                         intersect: false,
                         padding: 10,
+                        backgroundColor: this.$root.theme === "light" ? "rgba(212,232,222,1.0)" : "rgba(32,42,38,1.0)",
+                        bodyColor: this.$root.theme === "light" ? "rgba(12,12,18,1.0)" : "rgba(220,220,220,1.0)",
+                        titleColor: this.$root.theme === "light" ? "rgba(12,12,18,1.0)" : "rgba(220,220,220,1.0)",
                         filter: function (tooltipItem) {
-                            return tooltipItem.datasetIndex === 0;
+                            return tooltipItem.datasetIndex === 0;  // Hide tooltip on Bar Chart
                         },
                         callbacks: {
                             label: (context) => {
@@ -125,32 +128,29 @@ export default {
             }
         },
         chartData() {
-            let ping_data = [];
-            let down_data = [];
+            let pingData = [];  // Ping Data for Line Chart, y-axis contains ping time
+            let downData = [];  // Down Data for Bar Chart, y-axis is 1 if target is down, 0 if target is up
             if (this.monitorId in this.$root.heartbeatList) {
-                ping_data = this.$root.heartbeatList[this.monitorId]
+                this.$root.heartbeatList[this.monitorId]
                     .filter(
                         (beat) => dayjs.utc(beat.time).tz(this.$root.timezone).isAfter(dayjs().subtract(this.chartPeriodHrs, "hours")))
                     .map((beat) => {
-                        return {
-                            x: dayjs.utc(beat.time).tz(this.$root.timezone).format("YYYY-MM-DD HH:mm:ss"),
+                        const x = this.$root.datetime(beat.time);
+                        pingData.push({
+                            x,
                             y: beat.ping,
-                        };
-                    });
-                down_data = this.$root.heartbeatList[this.monitorId]
-                    .filter(
-                        (beat) => dayjs.utc(beat.time).tz(this.$root.timezone).isAfter(dayjs().subtract(this.chartPeriodHrs, "hours")))
-                    .map((beat) => {
-                        return {
-                            x: dayjs.utc(beat.time).tz(this.$root.timezone).format("YYYY-MM-DD HH:mm:ss"),
+                        });
+                        downData.push({
+                            x,
                             y: beat.status === 0 ? 1 : 0,
-                        };
+                        })
                     });
             }
             return {
                 datasets: [
                     {
-                        data: ping_data,
+                        // Line Chart
+                        data: pingData,
                         fill: "origin",
                         tension: 0.2,
                         borderColor: "#5CDD8B",
@@ -158,11 +158,15 @@ export default {
                         yAxisID: "y",
                     },
                     {
+                        // Bar Chart
                         type: "bar",
-                        data: down_data,
+                        data: downData,
                         borderColor: "#00000000",
                         backgroundColor: "#DC354568",
                         yAxisID: "y1",
+                        barThickness: "flex",
+                        barPercentage: 1,
+                        categoryPercentage: 1,
                     },
                 ],
             };
