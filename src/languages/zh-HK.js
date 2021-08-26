@@ -18,6 +18,7 @@ export default {
     Pending: "待定",
     Unknown: "不明",
     Pause: "暫停",
+    pauseDashboardHome: "暫停",
     Name: "名稱",
     Status: "狀態",
     DateTime: "日期時間",

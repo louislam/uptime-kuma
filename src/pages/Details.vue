@@ -8,7 +8,7 @@
                 <span v-if="monitor.type === 'ping'">Ping: {{ monitor.hostname }}</span>
                 <span v-if="monitor.type === 'keyword'">
                     <br>
-                    <span>Keyword:</span> <span class="keyword">{{ monitor.keyword }}</span>
+                    <span>{{ $t("Keyword") }}:</span> <span class="keyword">{{ monitor.keyword }}</span>
                 </span>
             </p>
 
@@ -80,7 +80,7 @@
                 <div v-if="showCertInfoBox" class="shadow-box big-padding text-center">
                     <div class="row">
                         <div class="col">
-                            <h4>Certificate Info</h4>
+                            <h4>{{ $t("Certificate Info") }}</h4>
                             <table class="text-start">
                                 <tbody>
                                     <tr class="my-3">
@@ -165,8 +165,8 @@
                 Are you sure want to pause?
             </Confirm>
 
-            <Confirm ref="confirmDelete" btn-style="btn-danger" @yes="deleteMonitor">
-                Are you sure want to delete this monitor?
+            <Confirm ref="confirmDelete" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="deleteMonitor">
+                {{ $t("deleteMonitorMsg") }}
             </Confirm>
         </div>
     </transition>

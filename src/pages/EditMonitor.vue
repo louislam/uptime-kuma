@@ -40,7 +40,7 @@
                                 <label for="keyword" class="form-label">{{ $t("Keyword") }}</label>
                                 <input id="keyword" v-model="monitor.keyword" type="text" class="form-control" required>
                                 <div class="form-text">
-                                    Search keyword in plain html or JSON response and it is case-sensitive
+                                    {{ $t("keywordDescription")}}
                                 </div>
                             </div>
 

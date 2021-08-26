@@ -20,7 +20,7 @@
                         <span class="num text-secondary">{{ stats.unknown }}</span>
                     </div>
                     <div class="col">
-                        <h3>{{ $t("Pause") }}</h3>
+                        <h3>{{ $t("pauseDashboardHome") }}</h3>
                         <span class="num text-secondary">{{ stats.pause }}</span>
                     </div>
                 </div>
