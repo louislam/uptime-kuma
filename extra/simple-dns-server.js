@@ -59,14 +59,6 @@ server.on("request", (request, send, rinfo) => {
                     ttl: 300,
                     ns: "ns1.existing.com",
                 });
-            } else if (question.type === Packet.TYPE.PTR) {
-                response.answers.push({
-                    name: question.name,
-                    type: question.type,
-                    class: question.class,
-                    ttl: 300,
-                    domain: "ptr1.existing.com",
-                });
             } else if (question.type === Packet.TYPE.SOA) {
                 response.answers.push({
                     name: question.name,
