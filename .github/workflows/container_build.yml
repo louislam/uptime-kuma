@@ -31,7 +31,7 @@ jobs:
         with:
           # list of Docker images to use as base name for tags
           images: |
-            ghcr.io/louislam/uptim-kuma
+            ghcr.io/louislam/uptime-kuma
           # generate Docker tags based on the following events/attributes
           tags: |
             type=schedule
