@@ -26,10 +26,95 @@ server.on("request", (request, send, rinfo) => {
                     ttl: 300,
                     address: "1.2.3.4"
                 });
+            } if (question.type === Packet.TYPE.AAAA) {
+                response.answers.push({
+                    name: question.name,
+                    type: question.type,
+                    class: question.class,
+                    ttl: 300,
+                    address: "fe80::::1234:5678:abcd:ef00",
+                });
+            } else if (question.type === Packet.TYPE.CNAME) {
+                response.answers.push({
+                    name: question.name,
+                    type: question.type,
+                    class: question.class,
+                    ttl: 300,
+                    domain: "cname1.existing.com",
+                });
+            } else if (question.type === Packet.TYPE.MX) {
+                response.answers.push({
+                    name: question.name,
+                    type: question.type,
+                    class: question.class,
+                    ttl: 300,
+                    exchange: "mx1.existing.com",
+                    priority: 5
+                });
+            } else if (question.type === Packet.TYPE.NS) {
+                response.answers.push({
+                    name: question.name,
+                    type: question.type,
+                    class: question.class,
+                    ttl: 300,
+                    ns: "ns1.existing.com",
+                });
+            } else if (question.type === Packet.TYPE.PTR) {
+                response.answers.push({
+                    name: question.name,
+                    type: question.type,
+                    class: question.class,
+                    ttl: 300,
+                    domain: "ptr1.existing.com",
+                });
+            } else if (question.type === Packet.TYPE.SOA) {
+                response.answers.push({
+                    name: question.name,
+                    type: question.type,
+                    class: question.class,
+                    ttl: 300,
+                    primary: "existing.com",
+                    admin: "admin@existing.com",
+                    serial: 2021082701,
+                    refresh: 300,
+                    retry: 3,
+                    expiration: 10,
+                    minimum: 10,
+                });
+            } else if (question.type === Packet.TYPE.SRV) {
+                response.answers.push({
+                    name: question.name,
+                    type: question.type,
+                    class: question.class,
+                    ttl: 300,
+                    priority: 5,
+                    weight: 5,
+                    port: 8080,
+                    target: "srv1.existing.com",
+                });
+            } else if (question.type === Packet.TYPE.TXT) {
+                response.answers.push({
+                    name: question.name,
+                    type: question.type,
+                    class: question.class,
+                    ttl: 300,
+                    data: "#v=spf1 include:_spf.existing.com ~all",
+                });
             }
 
-            // TODO: all other types
+            // TODO: CAA type
+        }
 
+        if (question.name === "4.3.2.1.in-addr.arpa") {
+            if (question.type === Packet.TYPE.PTR) {
+                response.answers.push({
+                    name: question.name,
+                    type: question.type,
+                    class: question.class,
+                    ttl: 300,
+                    domain: "ptr1.existing.com",
+                });
+            }
         }
 
         send(response);
