@@ -92,9 +92,18 @@ server.on("request", (request, send, rinfo) => {
                     ttl: 300,
                     data: "#v=spf1 include:_spf.existing.com ~all",
                 });
+            } else if (question.type === Packet.TYPE.CAA) {
+                response.answers.push({
+                    name: question.name,
+                    type: question.type,
+                    class: question.class,
+                    ttl: 300,
+                    flags: 0,
+                    tag: "issue",
+                    value: "ca.existing.com",
+                });
             }
 
-            // TODO: CAA type
         }
 
         if (question.name === "4.3.2.1.in-addr.arpa") {
