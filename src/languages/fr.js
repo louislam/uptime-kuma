@@ -1,0 +1,16 @@
+export default {
+    languageName: "Français",
+    checkEverySecond: "Vérification toutes les  {0} secondes.",
+    "Avg.": "Moy. ",
+    retriesDescription: "Nombre de tentatives avant que le service soit déclaré comme inaccessible.",
+    ignoreTLSError: "Ignorer les erreurs SSL/TLS pour ce site",
+    upsideDownModeDescription: "Inverser le en ligne / hors ligne (Si le service est hors ligne il sera marqué comme en ligne).",
+    maxRedirectDescription: "Nombre maximal de redirections à suivre si besoin. 0 Pour désactiver cette option.",
+    acceptedStatusCodesDescription: "Séléctionnez les codes http correspondant à une réponse positive.",
+    passwordNotMatchMsg: "Le second mot de passe ne correspond pas !",
+    notificationDescription: "Merci de bien vouloir associer un check à cette notification pour la faire fonctionner.",
+    keywordDescription: "Rechercher un mot clé dans la réponse HTML ou JSON. Sensible aux caractères.",
+    pauseDashboardHome: "Pause",
+    deleteMonitorMsg: "Êtes-vous sûr de vouloir supprimer ce check ?",
+    deleteNotificationMsg: "Êtes-vous sûr de vouloir supprimer cette notification de tout vos check ?",
+}
