@@ -6,7 +6,7 @@ class Database {
 
     static templatePath = "./db/kuma.db"
     static path = "./data/kuma.db";
-    static latestVersion = 6;
+    static latestVersion = 7;
     static noReject = true;
     static sqliteInstance = null;
 
