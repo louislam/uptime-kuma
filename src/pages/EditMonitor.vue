@@ -43,7 +43,7 @@
                                 <label for="keyword" class="form-label">{{ $t("Keyword") }}</label>
                                 <input id="keyword" v-model="monitor.keyword" type="text" class="form-control" required>
                                 <div class="form-text">
-                                    {{ $t("keywordDescription")}}
+                                    {{ $t("keywordDescription") }}
                                 </div>
                             </div>
 
@@ -63,10 +63,10 @@
                             </div>
 
                             <div v-if="monitor.type === 'dns'" class="my-3">
-                                <label for="dns_resolve_server" class="form-label">Resolver Server</label>
+                                <label for="dns_resolve_server" class="form-label">{{ $t("Resolver Server") }}</label>
                                 <input id="dns_resolve_server" v-model="monitor.dns_resolve_server" type="text" class="form-control" :pattern="ipRegex" required>
                                 <div class="form-text">
-                                    Cloudflare is the default server, you can change the resolver server anytime.
+                                    {{ $t("resoverserverDescription") }}
                                 </div>
                             </div>
 
@@ -88,7 +88,7 @@
                                 ></VueMultiselect>
 
                                 <div class="form-text">
-                                    Select the RR-Type you want to monitor
+                                    {{ $t("rrtypeDescription") }}
                                 </div>
                             </div>
 
