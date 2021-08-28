@@ -22,13 +22,13 @@ If you are not sure, feel free to create an empty pull request draft first.
 
 ### *️⃣ Requires one more reviewer 
 
-I do not have such knowledge to test it
+I do not have such knowledge to test it.
 
 - Add k8s supports 
 
 ### *️⃣ Low Priority 
 
-It chnaged my current workflow and require further studies.
+It changed my current workflow and require further studies.
 
 - Change my release approach
 
