@@ -47,50 +47,51 @@
                                 </div>
                             </div>
 
-                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' " class="my-3">
+                            <!-- TCP Port / Ping / DNS only -->
+                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' " class="my-3">
                                 <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>
                                 <input id="hostname" v-model="monitor.hostname" type="text" class="form-control" required>
                             </div>
 
+                            <!-- For TCP Port Type -->
                             <div v-if="monitor.type === 'port' " class="my-3">
                                 <label for="port" class="form-label">{{ $t("Port") }}</label>
                                 <input id="port" v-model="monitor.port" type="number" class="form-control" required min="0" max="65535" step="1">
                             </div>
 
-                            <div v-if="monitor.type === 'dns'" class="my-3">
-                                <label for="hostname" class="form-label">Hostname</label>
-                                <input id="hostname" v-model="monitor.hostname" type="text" class="form-control" required>
-                            </div>
-
-                            <div v-if="monitor.type === 'dns'" class="my-3">
-                                <label for="dns_resolve_server" class="form-label">{{ $t("Resolver Server") }}</label>
-                                <input id="dns_resolve_server" v-model="monitor.dns_resolve_server" type="text" class="form-control" :pattern="ipRegex" required>
-                                <div class="form-text">
-                                    {{ $t("resoverserverDescription") }}
+                            <!-- For DNS Type -->
+                            <template v-if="monitor.type === 'dns'">
+                                <div class="my-3">
+                                    <label for="dns_resolve_server" class="form-label">{{ $t("Resolver Server") }}</label>
+                                    <input id="dns_resolve_server" v-model="monitor.dns_resolve_server" type="text" class="form-control" :pattern="ipRegex" required>
+                                    <div class="form-text">
+                                        {{ $t("resoverserverDescription") }}
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div v-if="monitor.type === 'dns'" class="my-3">
-                                <label for="dns_resolve_type" class="form-label">{{ $t("Resource Record Type") }}</label>
+                                <div class="my-3">
+                                    <label for="dns_resolve_type" class="form-label">{{ $t("Resource Record Type") }}</label>
 
-                                <VueMultiselect
-                                    id="dns_resolve_type"
-                                    v-model="monitor.dns_resolve_type"
-                                    :options="dnsresolvetypeOptions"
-                                    :multiple="false"
-                                    :close-on-select="true"
-                                    :clear-on-select="false"
-                                    :preserve-search="false"
-                                    placeholder="Pick a RR-Type..."
-                                    :preselect-first="false"
-                                    :max-height="500"
-                                    :taggable="false"
-                                ></VueMultiselect>
+                                    <!-- :allow-empty="false" is not working, set a default value instead https://github.com/shentao/vue-multiselect/issues/336   -->
+                                    <VueMultiselect
+                                        id="dns_resolve_type"
+                                        v-model="monitor.dns_resolve_type"
+                                        :options="dnsresolvetypeOptions"
+                                        :multiple="false"
+                                        :close-on-select="true"
+                                        :clear-on-select="false"
+                                        :preserve-search="false"
+                                        placeholder="Pick a RR-Type..."
+                                        :preselect-first="false"
+                                        :max-height="500"
+                                        :taggable="false"
+                                    ></VueMultiselect>
 
-                                <div class="form-text">
-                                    {{ $t("rrtypeDescription") }}
+                                    <div class="form-text">
+                                        {{ $t("rrtypeDescription") }}
+                                    </div>
                                 </div>
-                            </div>
+                            </template>
 
                             <div class="my-3">
                                 <label for="interval" class="form-label">{{ $t("Heartbeat Interval") }} ({{ $t("checkEverySecond", [ monitor.interval ]) }})</label>
@@ -124,35 +125,38 @@
                                 </div>
                             </div>
 
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' " class="my-3">
-                                <label for="maxRedirects" class="form-label">{{ $t("Max. Redirects") }}</label>
-                                <input id="maxRedirects" v-model="monitor.maxredirects" type="number" class="form-control" required min="0" step="1">
-                                <div class="form-text">
-                                    {{ $t("maxRedirectDescription") }}
+                            <!-- HTTP / Keyword only -->
+                            <template v-if="monitor.type === 'http' || monitor.type === 'keyword' ">
+                                <div class="my-3">
+                                    <label for="maxRedirects" class="form-label">{{ $t("Max. Redirects") }}</label>
+                                    <input id="maxRedirects" v-model="monitor.maxredirects" type="number" class="form-control" required min="0" step="1">
+                                    <div class="form-text">
+                                        {{ $t("maxRedirectDescription") }}
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' " class="my-3">
-                                <label for="acceptedStatusCodes" class="form-label">{{ $t("Accepted Status Codes") }}</label>
+                                <div class="my-3">
+                                    <label for="acceptedStatusCodes" class="form-label">{{ $t("Accepted Status Codes") }}</label>
 
-                                <VueMultiselect
-                                    id="acceptedStatusCodes"
-                                    v-model="monitor.accepted_statuscodes"
-                                    :options="acceptedStatusCodeOptions"
-                                    :multiple="true"
-                                    :close-on-select="false"
-                                    :clear-on-select="false"
-                                    :preserve-search="true"
-                                    placeholder="Pick Accepted Status Codes..."
-                                    :preselect-first="false"
-                                    :max-height="600"
-                                    :taggable="true"
-                                ></VueMultiselect>
+                                    <VueMultiselect
+                                        id="acceptedStatusCodes"
+                                        v-model="monitor.accepted_statuscodes"
+                                        :options="acceptedStatusCodeOptions"
+                                        :multiple="true"
+                                        :close-on-select="false"
+                                        :clear-on-select="false"
+                                        :preserve-search="true"
+                                        placeholder="Pick Accepted Status Codes..."
+                                        :preselect-first="false"
+                                        :max-height="600"
+                                        :taggable="true"
+                                    ></VueMultiselect>
 
-                                <div class="form-text">
-                                    {{ $t("acceptedStatusCodesDescription") }}
+                                    <div class="form-text">
+                                        {{ $t("acceptedStatusCodesDescription") }}
+                                    </div>
                                 </div>
-                            </div>
+                            </template>
 
                             <div class="mt-5 mb-1">
                                 <button class="btn btn-primary" type="submit" :disabled="processing">{{ $t("Save") }}</button>
@@ -207,6 +211,7 @@ export default {
             processing: false,
             monitor: {
                 notificationIDList: {},
+                // Do not add default value here, please check init() method
             },
             acceptedStatusCodeOptions: [],
             dnsresolvetypeOptions: [],
@@ -288,6 +293,7 @@ export default {
                     upsideDown: false,
                     maxredirects: 10,
                     accepted_statuscodes: ["200-299"],
+                    dns_resolve_type: "A",
                     dns_resolve_server: "1.1.1.1",
                 }
             } else if (this.isEdit) {
