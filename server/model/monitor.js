@@ -208,11 +208,7 @@ class Monitor extends BeanModel {
                         dnsMessage = dnsMessage.slice(0, -2)
                     }
 
-                    let dnsLastResult = await R.findOne("monitor", "id = ?", [
-                        this.id,
-                    ]);
-
-                    if (dnsLastResult.dnsLastResult !== dnsMessage) {
+                    if (this.dnsLastResult !== dnsMessage) {
                         R.exec("UPDATE `monitor` SET dns_last_result = ? WHERE id = ? ", [
                             dnsMessage,
                             this.id
