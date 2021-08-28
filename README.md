@@ -14,7 +14,7 @@ It is a self-hosted monitoring tool like "Uptime Robot".
 
 * Monitoring uptime for HTTP(s) / TCP / Ping.
 * Fancy, Reactive, Fast UI/UX.
-* Notifications via Webhook, Telegram, Discord, Gotify, Slack, Pushover, Email (SMTP) and more by Apprise.
+* Notifications via Telegram, Discord, Gotify, Slack, Pushover, Email (SMTP) and [70+ notification services, click here for the full list](https://github.com/louislam/uptime-kuma/issues/284). 
 * 20 seconds interval.
 
 ## 🔧 How to Install
