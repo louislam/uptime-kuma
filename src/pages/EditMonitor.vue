@@ -71,7 +71,7 @@
                             </div>
 
                             <div v-if="monitor.type === 'dns'" class="my-3">
-                                <label for="dns_resolve_type" class="form-label">Resource Record Type</label>
+                                <label for="dns_resolve_type" class="form-label">{{ $t("Resource Record Type") }}</label>
 
                                 <VueMultiselect
                                     id="dns_resolve_type"
