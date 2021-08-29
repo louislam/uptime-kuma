@@ -552,6 +552,54 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
             }
         });
 
+        socket.on("clearEvents", async (monitorID, callback) => {
+            try {
+                checkLogin(socket)
+
+                console.log(`Clear Events Monitor: ${monitorID} User ID: ${socket.userID}`)
+
+                await R.exec("UPDATE heartbeat SET msg = ?, important = ? WHERE monitor_id = ? ", [
+                    "",
+                    "0",
+                    monitorID,
+                ]);
+
+                callback({
+                    ok: true,
+                    msg: "Events Successfully Cleared.",
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("clearHeartbeats", async (monitorID, callback) => {
+            try {
+                checkLogin(socket)
+
+                console.log(`Clear Heartbeats Monitor: ${monitorID} User ID: ${socket.userID}`)
+
+                await R.exec("DELETE FROM heartbeat WHERE monitor_id = ?", [
+                    monitorID
+                ]);
+
+                callback({
+                    ok: true,
+                    msg: "Heartbeats Successfully Cleared.",
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
         debug("added all socket handlers")
 
         // ***************************

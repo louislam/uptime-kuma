@@ -133,6 +133,23 @@
             </div>
 
             <div class="shadow-box table-shadow-box">
+                <div class="dropdown dropdown-clear-data">
+                    <button class="btn btn-sm btn-outline-danger dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <font-awesome-icon icon="trash" /> {{ $t("Clear Data") }}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <button type="button" class="dropdown-item" @click="clearEventsDialog">
+                                {{ $t("Events") }}
+                            </button>
+                        </li>
+                        <li>
+                            <button type="button" class="dropdown-item" @click="clearHeartbeatsDialog">
+                                {{ $t("Heartbeats") }}
+                            </button>
+                        </li>
+                    </ul>
+                </div>
                 <table class="table table-borderless table-hover">
                     <thead>
                         <tr>
@@ -171,6 +188,14 @@
 
             <Confirm ref="confirmDelete" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="deleteMonitor">
                 {{ $t("deleteMonitorMsg") }}
+            </Confirm>
+
+            <Confirm ref="confirmClearEvents" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="clearEvents">
+                {{ $t("clearEventsMsg") }}
+            </Confirm>
+
+            <Confirm ref="confirmClearHeartbeats" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="clearHeartbeats">
+                {{ $t("clearHeartbeatsMsg") }}
             </Confirm>
         </div>
     </transition>
@@ -313,6 +338,14 @@ export default {
             this.$refs.confirmDelete.show();
         },
 
+        clearEventsDialog() {
+            this.$refs.confirmClearEvents.show();
+        },
+
+        clearHeartbeatsDialog() {
+            this.$refs.confirmClearHeartbeats.show();
+        },
+
         deleteMonitor() {
             this.$root.deleteMonitor(this.monitor.id, (res) => {
                 if (res.ok) {
@@ -324,6 +357,27 @@ export default {
             })
         },
 
+        clearEvents() {
+            this.$root.clearEvents(this.monitor.id, (res) => {
+                if (res.ok) {
+                    toast.success(res.msg);
+                    this.$router.go();
+                } else {
+                    toast.error(res.msg);
+                }
+            })
+        },
+
+        clearHeartbeats() {
+            this.$root.clearHeartbeats(this.monitor.id, (res) => {
+                if (res.ok) {
+                    toast.success(res.msg);
+                    this.$router.go();
+                } else {
+                    toast.error(res.msg);
+                }
+            })
+        },
     },
 }
 </script>
@@ -340,15 +394,19 @@ export default {
 @media (max-width: 550px) {
     .functions {
         text-align: center;
-    }
 
-    button, a {
-        margin-left: 10px !important;
-        margin-right: 10px !important;
+        button, a {
+            margin-left: 10px !important;
+            margin-right: 10px !important;
+        }
     }
 
     .ping-chart-wrapper {
         padding: 10px !important;
+    }
+
+    .dropdown-clear-data {
+        margin-bottom: 10px;
     }
 }
 
@@ -363,6 +421,13 @@ export default {
     a.btn {
         padding-left: 25px;
         padding-right: 25px;
+    }
+
+    .dropdown-clear-data {
+        button {
+            display: block;
+            padding-top: 4px;
+        }
     }
 }
 
@@ -417,9 +482,29 @@ table {
     color: black;
 }
 
+.dropdown-clear-data {
+    float: right;
+}
+
 .dark {
     .keyword {
         color: $dark-font-color;
+    }
+
+    .dropdown-clear-data {
+        ul {
+            background-color: $dark-bg;
+            border-color: $dark-bg2;
+            border-width: 2px;
+
+            li button{
+                color: $dark-font-color;
+            }
+
+            li button:hover {
+                background-color: $dark-bg2;
+            }
+        }
     }
 }
 </style>

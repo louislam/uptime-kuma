@@ -254,6 +254,13 @@ export default {
             this.importantHeartbeatList = {}
         },
 
+        clearEvents(monitorID, callback) {
+            socket.emit("clearEvents", monitorID, callback)
+        },
+
+        clearHeartbeats(monitorID, callback) {
+            socket.emit("clearHeartbeats", monitorID, callback)
+        },
     },
 
     computed: {
