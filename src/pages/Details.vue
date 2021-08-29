@@ -1,6 +1,6 @@
 <template>
     <transition name="slide-fade" appear>
-        <div v-if="monitor" class="monitor">
+        <div v-if="monitor">
             <h1> {{ monitor.name }}</h1>
             <p class="url">
                 <a v-if="monitor.type === 'http' || monitor.type === 'keyword' " :href="monitor.url" target="_blank">{{ monitor.url }}</a>
@@ -422,9 +422,5 @@ table {
         color: $dark-font-color;
     }
 }
-.monitor {
-    position: sticky;
-    top: 7px;
-    margin: 0 0 24px;
-}
+
 </style>

@@ -155,6 +155,14 @@
                 </div>
             </div>
 
+            <footer>
+                <div class="container-fluid">
+                    Uptime Kuma -
+                    {{ $t("Version") }}: {{ $root.info.version }} -
+                    <a href="https://github.com/louislam/uptime-kuma/releases" target="_blank" rel="noopener">{{ $t("Check Update On GitHub") }}</a>
+                </div>
+            </footer>
+
             <NotificationDialog ref="notificationDialog" />
 
             <Confirm ref="confirmDisableAuth" btn-style="btn-danger" :yes-text="$t('I understand, please disable')" :no-text="$t('Leave')" @yes="disableAuth">
@@ -313,5 +321,13 @@ export default {
     .btn-check:hover + .btn-outline-primary {
         color: #000;
     }
+}
+
+footer {
+    color: #aaa;
+    font-size: 13px;
+    margin-top: 20px;
+    padding-bottom: 30px;
+    text-align: center;
 }
 </style>

@@ -5,10 +5,10 @@
                 <div>
                     <router-link to="/add" class="btn btn-primary mb-3"><font-awesome-icon icon="plus" /> {{ $t("Add New Monitor") }}</router-link>
                 </div>
-                <MonitorList />
+                <MonitorList scrollbar="true" />
             </div>
 
-            <div class="col-12 col-md-7 col-xl-8">
+            <div class="col-12 col-md-7 col-xl-8 mb-3">
                 <router-view />
             </div>
         </div>
@@ -26,7 +26,6 @@ export default {
     data() {
         return {}
     },
-
 }
 </script>
 

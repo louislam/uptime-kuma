@@ -1,5 +1,5 @@
 <template>
-    <div class="shadow-box list mb-4">
+    <div class="shadow-box list mb-3" :class="{ scrollbar: scrollbar }">
         <div v-if="Object.keys($root.monitorList).length === 0" class="text-center mt-3">
             {{ $t("No Monitors, please") }} <router-link to="/add">{{ $t("add one") }}</router-link>
         </div>
@@ -33,6 +33,11 @@ export default {
     components: {
         Uptime,
         HeartbeatBar,
+    },
+    props: {
+        scrollbar: {
+            type: Boolean,
+        },
     },
     computed: {
         sortedMonitorList() {
@@ -83,8 +88,12 @@ export default {
 }
 
 .list {
-    height: auto;
-    min-height: calc(100vh - 240px);
+    &.scrollbar {
+        height: calc(100vh - 20px);
+        overflow-y: scroll;
+        position: sticky;
+        top: 10px;
+    }
 
     .item {
         display: block;
