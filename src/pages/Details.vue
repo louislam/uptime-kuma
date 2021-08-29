@@ -10,7 +10,10 @@
                     <br>
                     <span>{{ $t("Keyword") }}:</span> <span class="keyword">{{ monitor.keyword }}</span>
                 </span>
-                <span v-if="monitor.type === 'dns'">[{{ monitor.dns_resolve_type }}] {{ monitor.hostname }} [ {{ monitor.dns_last_result }} ]</span>
+                <span v-if="monitor.type === 'dns'">[{{ monitor.dns_resolve_type }}] {{ monitor.hostname }}
+                    <br>
+                    <span>{{ $t("Last Result") }}:</span> <span class="keyword">{{ monitor.dns_last_result }}</span>
+                </span>
             </p>
 
             <div class="functions">
