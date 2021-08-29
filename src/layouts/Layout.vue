@@ -40,8 +40,7 @@
         </header>
 
         <main>
-            <!-- Add :key to disable vue router re-use the same component -->
-            <router-view v-if="$root.loggedIn" :key="$route.fullPath" />
+            <router-view v-if="$root.loggedIn" />
             <Login v-if="! $root.loggedIn && $root.allowLoginDialog" />
         </main>
 

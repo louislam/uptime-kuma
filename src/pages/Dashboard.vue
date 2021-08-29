@@ -9,7 +9,8 @@
             </div>
 
             <div class="col-12 col-md-7 col-xl-8 mb-3">
-                <router-view />
+                <!-- Add :key to disable vue router re-use the same component -->
+                <router-view :key="$route.fullPath" />
             </div>
         </div>
     </div>
