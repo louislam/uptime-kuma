@@ -7,7 +7,4 @@ ALTER TABLE monitor
 ALTER TABLE monitor
 	ADD dns_resolve_server VARCHAR(255);
 
-ALTER TABLE monitor
-	ADD dns_last_result VARCHAR(255);	
-
 COMMIT;
