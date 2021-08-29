@@ -50,6 +50,7 @@ class Monitor extends BeanModel {
             accepted_statuscodes: this.getAcceptedStatuscodes(),
             dns_resolve_type: this.dns_resolve_type,
             dns_resolve_server: this.dns_resolve_server,
+            dns_last_result: this.dns_last_result,
             notificationIDList,
         };
     }
@@ -205,6 +206,13 @@ class Monitor extends BeanModel {
                             dnsMessage += `Name: ${record.name} | Port: ${record.port} | Priority: ${record.priority} | Weight: ${record.weight} | `;
                         });
                         dnsMessage = dnsMessage.slice(0, -2)
+                    }
+
+                    if (this.dnsLastResult !== dnsMessage) {
+                        R.exec("UPDATE `monitor` SET dns_last_result = ? WHERE id = ? ", [
+                            dnsMessage,
+                            this.id
+                        ]);
                     }
 
                     bean.msg = dnsMessage;

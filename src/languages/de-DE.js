@@ -102,4 +102,6 @@ export default {
     resoverserverDescription: "Cloudflare ist der Standardserver, dieser kann jederzeit geändern werden.",
     "Resolver Server": "Auflösungsserver",
     rrtypeDescription: "Wähle den RR-Typ aus, welchen du überwachen möchtest.",
+    "Last Result": "Letztes Ergebnis",
+    pauseMonitorMsg: "Bist du sicher das du den Monitor pausieren möchtest?",
 }
