@@ -32,7 +32,8 @@
         "test-install-script-alpine3": "npm run compile-install-script && docker build --progress plain -f test/test_install_script/alpine3.dockerfile .",
         "test-install-script-ubuntu": "npm run compile-install-script && docker build --progress plain -f test/test_install_script/ubuntu.dockerfile .",
         "test-install-script-ubuntu1604": "npm run compile-install-script && docker build --progress plain -f test/test_install_script/ubuntu1604.dockerfile .",
-        "test-install-script-debian": "npm run compile-install-script && docker build --progress plain -f test/test_install_script/debian.dockerfile ."
+        "test-install-script-debian": "npm run compile-install-script && docker build --progress plain -f test/test_install_script/debian.dockerfile .",
+        "simple-dns-server": "node extra/simple-dns-server.js"
     },
     "dependencies": {
         "@fortawesome/fontawesome-svg-core": "^1.2.36",
@@ -79,6 +80,7 @@
         "@vitejs/plugin-vue": "^1.4.0",
         "@vue/compiler-sfc": "^3.2.2",
         "core-js": "^3.16.1",
+        "dns2": "^2.0.1",
         "eslint": "^7.32.0",
         "eslint-plugin-vue": "^7.16.0",
         "sass": "^1.37.5",

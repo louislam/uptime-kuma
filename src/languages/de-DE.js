@@ -99,4 +99,9 @@ export default {
     keywordDescription: "Suche nach einen Schlüsselwort in einer schlichten HTML oder JSON Ausgabe. Bitte beachte, es wird in der Groß-/Kleinschreibung unterschieden.",
     deleteMonitorMsg: "Bist du sicher das du den Monitor löschen möchtest?",
     deleteNotificationMsg: "Möchtest du diese Benachrichtigung wirklich für alle Monitore löschen?",
+    resoverserverDescription: "Cloudflare ist der Standardserver, dieser kann jederzeit geändern werden.",
+    "Resolver Server": "Auflösungsserver",
+    rrtypeDescription: "Wähle den RR-Typ aus, welchen du überwachen möchtest.",
+    "Last Result": "Letztes Ergebnis",
+    pauseMonitorMsg: "Bist du sicher das du den Monitor pausieren möchtest?",
 }

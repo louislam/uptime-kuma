@@ -23,6 +23,9 @@
                                     <option value="keyword">
                                         HTTP(s) - {{ $t("Keyword") }}
                                     </option>
+                                    <option value="dns">
+                                        DNS
+                                    </option>
                                 </select>
                             </div>
 
@@ -40,19 +43,55 @@
                                 <label for="keyword" class="form-label">{{ $t("Keyword") }}</label>
                                 <input id="keyword" v-model="monitor.keyword" type="text" class="form-control" required>
                                 <div class="form-text">
-                                    {{ $t("keywordDescription")}}
+                                    {{ $t("keywordDescription") }}
                                 </div>
                             </div>
 
-                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' " class="my-3">
+                            <!-- TCP Port / Ping / DNS only -->
+                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' " class="my-3">
                                 <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>
                                 <input id="hostname" v-model="monitor.hostname" type="text" class="form-control" required>
                             </div>
 
+                            <!-- For TCP Port Type -->
                             <div v-if="monitor.type === 'port' " class="my-3">
                                 <label for="port" class="form-label">{{ $t("Port") }}</label>
                                 <input id="port" v-model="monitor.port" type="number" class="form-control" required min="0" max="65535" step="1">
                             </div>
+
+                            <!-- For DNS Type -->
+                            <template v-if="monitor.type === 'dns'">
+                                <div class="my-3">
+                                    <label for="dns_resolve_server" class="form-label">{{ $t("Resolver Server") }}</label>
+                                    <input id="dns_resolve_server" v-model="monitor.dns_resolve_server" type="text" class="form-control" :pattern="ipRegex" required>
+                                    <div class="form-text">
+                                        {{ $t("resoverserverDescription") }}
+                                    </div>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="dns_resolve_type" class="form-label">{{ $t("Resource Record Type") }}</label>
+
+                                    <!-- :allow-empty="false" is not working, set a default value instead https://github.com/shentao/vue-multiselect/issues/336   -->
+                                    <VueMultiselect
+                                        id="dns_resolve_type"
+                                        v-model="monitor.dns_resolve_type"
+                                        :options="dnsresolvetypeOptions"
+                                        :multiple="false"
+                                        :close-on-select="true"
+                                        :clear-on-select="false"
+                                        :preserve-search="false"
+                                        placeholder="Pick a RR-Type..."
+                                        :preselect-first="false"
+                                        :max-height="500"
+                                        :taggable="false"
+                                    ></VueMultiselect>
+
+                                    <div class="form-text">
+                                        {{ $t("rrtypeDescription") }}
+                                    </div>
+                                </div>
+                            </template>
 
                             <div class="my-3">
                                 <label for="interval" class="form-label">{{ $t("Heartbeat Interval") }} ({{ $t("checkEverySecond", [ monitor.interval ]) }})</label>
@@ -86,35 +125,38 @@
                                 </div>
                             </div>
 
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' " class="my-3">
-                                <label for="maxRedirects" class="form-label">{{ $t("Max. Redirects") }}</label>
-                                <input id="maxRedirects" v-model="monitor.maxredirects" type="number" class="form-control" required min="0" step="1">
-                                <div class="form-text">
-                                    {{ $t("maxRedirectDescription") }}
+                            <!-- HTTP / Keyword only -->
+                            <template v-if="monitor.type === 'http' || monitor.type === 'keyword' ">
+                                <div class="my-3">
+                                    <label for="maxRedirects" class="form-label">{{ $t("Max. Redirects") }}</label>
+                                    <input id="maxRedirects" v-model="monitor.maxredirects" type="number" class="form-control" required min="0" step="1">
+                                    <div class="form-text">
+                                        {{ $t("maxRedirectDescription") }}
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' " class="my-3">
-                                <label for="acceptedStatusCodes" class="form-label">{{ $t("Accepted Status Codes") }}</label>
+                                <div class="my-3">
+                                    <label for="acceptedStatusCodes" class="form-label">{{ $t("Accepted Status Codes") }}</label>
 
-                                <VueMultiselect
-                                    id="acceptedStatusCodes"
-                                    v-model="monitor.accepted_statuscodes"
-                                    :options="acceptedStatusCodeOptions"
-                                    :multiple="true"
-                                    :close-on-select="false"
-                                    :clear-on-select="false"
-                                    :preserve-search="true"
-                                    placeholder="Pick Accepted Status Codes..."
-                                    :preselect-first="false"
-                                    :max-height="600"
-                                    :taggable="true"
-                                ></VueMultiselect>
+                                    <VueMultiselect
+                                        id="acceptedStatusCodes"
+                                        v-model="monitor.accepted_statuscodes"
+                                        :options="acceptedStatusCodeOptions"
+                                        :multiple="true"
+                                        :close-on-select="false"
+                                        :clear-on-select="false"
+                                        :preserve-search="true"
+                                        placeholder="Pick Accepted Status Codes..."
+                                        :preselect-first="false"
+                                        :max-height="600"
+                                        :taggable="true"
+                                    ></VueMultiselect>
 
-                                <div class="form-text">
-                                    {{ $t("acceptedStatusCodesDescription") }}
+                                    <div class="form-text">
+                                        {{ $t("acceptedStatusCodesDescription") }}
+                                    </div>
                                 </div>
-                            </div>
+                            </template>
 
                             <div class="mt-5 mb-1">
                                 <button class="btn btn-primary" type="submit" :disabled="processing">{{ $t("Save") }}</button>
@@ -155,6 +197,7 @@
 import NotificationDialog from "../components/NotificationDialog.vue";
 import { useToast } from "vue-toastification"
 import VueMultiselect from "vue-multiselect"
+import { isDev } from "../util.ts";
 const toast = useToast()
 
 export default {
@@ -168,12 +211,27 @@ export default {
             processing: false,
             monitor: {
                 notificationIDList: {},
+                // Do not add default value here, please check init() method
             },
             acceptedStatusCodeOptions: [],
+            dnsresolvetypeOptions: [],
+
+            // Source: https://digitalfortress.tech/tips/top-15-commonly-used-regex/
+            ipRegexPattern: "((^\s*((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\s*$)|(^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$))",
         }
     },
 
     computed: {
+
+        ipRegex() {
+
+            // Allow to test with simple dns server with port (127.0.0.1:5300)
+            if (! isDev) {
+                return this.ipRegexPattern;
+            }
+            return null;
+        },
+
         pageName() {
             return this.$t((this.isAdd) ? "Add New Monitor" : "Edit");
         },
@@ -200,11 +258,25 @@ export default {
             "500-599",
         ];
 
+        let dnsresolvetypeOptions = [
+            "A",
+            "AAAA",
+            "CAA",
+            "CNAME",
+            "MX",
+            "NS",
+            "PTR",
+            "SOA",
+            "SRV",
+            "TXT",
+        ];
+
         for (let i = 100; i <= 999; i++) {
             acceptedStatusCodeOptions.push(i.toString());
         }
 
         this.acceptedStatusCodeOptions = acceptedStatusCodeOptions;
+        this.dnsresolvetypeOptions = dnsresolvetypeOptions;
     },
     methods: {
         init() {
@@ -221,6 +293,8 @@ export default {
                     upsideDown: false,
                     maxredirects: 10,
                     accepted_statuscodes: ["200-299"],
+                    dns_resolve_type: "A",
+                    dns_resolve_server: "1.1.1.1",
                 }
             } else if (this.isEdit) {
                 this.$root.getSocket().emit("getMonitor", this.$route.params.id, (res) => {

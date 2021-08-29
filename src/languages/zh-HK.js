@@ -99,4 +99,8 @@ export default {
     "Certificate Info": "憑證詳細資料",
     deleteMonitorMsg: "是否確定刪除這個監測器",
     deleteNotificationMsg: "是否確定刪除這個通知設定？如監測器啟用了這個通知，將會收不到通知。",
+    "Resolver Server": "DNS 伺服器",
+    "Resource Record Type": "DNS 記錄類型",
+    resoverserverDescription: "預設值為 Cloudflare DNS 伺服器，你可以轉用其他 DNS 伺服器。",
+    rrtypeDescription: "請選擇 DNS 記錄類型",
 }

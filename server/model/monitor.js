@@ -7,7 +7,7 @@ dayjs.extend(timezone)
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
 const { debug, UP, DOWN, PENDING, flipStatus, TimeLogger } = require("../../src/util");
-const { tcping, ping, checkCertificate, checkStatusCode } = require("../util-server");
+const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification")
@@ -48,6 +48,9 @@ class Monitor extends BeanModel {
             upsideDown: this.isUpsideDown(),
             maxredirects: this.maxredirects,
             accepted_statuscodes: this.getAcceptedStatuscodes(),
+            dns_resolve_type: this.dns_resolve_type,
+            dns_resolve_server: this.dns_resolve_server,
+            dns_last_result: this.dns_last_result,
             notificationIDList,
         };
     }
@@ -173,6 +176,46 @@ class Monitor extends BeanModel {
                 } else if (this.type === "ping") {
                     bean.ping = await ping(this.hostname);
                     bean.msg = ""
+                    bean.status = UP;
+                } else if (this.type === "dns") {
+                    let startTime = dayjs().valueOf();
+                    let dnsMessage = "";
+
+                    let dnsRes = await dnsResolve(this.hostname, this.dns_resolve_server, this.dns_resolve_type);
+                    bean.ping = dayjs().valueOf() - startTime;
+
+                    if (this.dns_resolve_type == "A" || this.dns_resolve_type == "AAAA" || this.dns_resolve_type == "TXT") {
+                        dnsMessage += "Records: ";
+                        dnsMessage += dnsRes.join(" | ");
+                    } else if (this.dns_resolve_type == "CNAME" || this.dns_resolve_type == "PTR") {
+                        dnsMessage = dnsRes[0];
+                    } else if (this.dns_resolve_type == "CAA") {
+                        dnsMessage = dnsRes[0].issue;
+                    } else if (this.dns_resolve_type == "MX") {
+                        dnsRes.forEach(record => {
+                            dnsMessage += `Hostname: ${record.exchange} - Priority: ${record.priority} | `;
+                        });
+                        dnsMessage = dnsMessage.slice(0, -2)
+                    } else if (this.dns_resolve_type == "NS") {
+                        dnsMessage += "Servers: ";
+                        dnsMessage += dnsRes.join(" | ");
+                    } else if (this.dns_resolve_type == "SOA") {
+                        dnsMessage += `NS-Name: ${dnsRes.nsname} | Hostmaster: ${dnsRes.hostmaster} | Serial: ${dnsRes.serial} | Refresh: ${dnsRes.refresh} | Retry: ${dnsRes.retry} | Expire: ${dnsRes.expire} | MinTTL: ${dnsRes.minttl}`;
+                    } else if (this.dns_resolve_type == "SRV") {
+                        dnsRes.forEach(record => {
+                            dnsMessage += `Name: ${record.name} | Port: ${record.port} | Priority: ${record.priority} | Weight: ${record.weight} | `;
+                        });
+                        dnsMessage = dnsMessage.slice(0, -2)
+                    }
+
+                    if (this.dnsLastResult !== dnsMessage) {
+                        R.exec("UPDATE `monitor` SET dns_last_result = ? WHERE id = ? ", [
+                            dnsMessage,
+                            this.id
+                        ]);
+                    }
+
+                    bean.msg = dnsMessage;
                     bean.status = UP;
                 }
 

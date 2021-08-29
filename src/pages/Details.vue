@@ -10,6 +10,10 @@
                     <br>
                     <span>{{ $t("Keyword") }}:</span> <span class="keyword">{{ monitor.keyword }}</span>
                 </span>
+                <span v-if="monitor.type === 'dns'">[{{ monitor.dns_resolve_type }}] {{ monitor.hostname }}
+                    <br>
+                    <span>{{ $t("Last Result") }}:</span> <span class="keyword">{{ monitor.dns_last_result }}</span>
+                </span>
             </p>
 
             <div class="functions">
@@ -161,8 +165,8 @@
                 </div>
             </div>
 
-            <Confirm ref="confirmPause" @yes="pauseMonitor">
-                Are you sure want to pause?
+            <Confirm ref="confirmPause" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="pauseMonitor">
+                {{ $t("pauseMonitorMsg") }}
             </Confirm>
 
             <Confirm ref="confirmDelete" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="deleteMonitor">

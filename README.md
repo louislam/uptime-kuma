@@ -12,16 +12,16 @@ It is a self-hosted monitoring tool like "Uptime Robot".
 
 ## ⭐ Features
 
-* Monitoring uptime for HTTP(s) / TCP / Ping.
+* Monitoring uptime for HTTP(s) / TCP / Ping / DNS Record.
 * Fancy, Reactive, Fast UI/UX.
-* Notifications via Webhook, Telegram, Discord, Gotify, Slack, Pushover, Email (SMTP) and more by Apprise.
+* Notifications via Telegram, Discord, Gotify, Slack, Pushover, Email (SMTP), and [70+ notification services, click here for the full list](https://github.com/louislam/uptime-kuma/issues/284). 
 * 20 seconds interval.
 
 ## 🔧 How to Install
 
-### 🚀 Installer via cli
+### 🚀 Installer via CLI
 
-Interactive cli installer, supports Docker or without Docker. 
+Interactive CLI installer, supports Docker or without Docker. 
 
 ```bash
 curl -o kuma_install.sh https://raw.githubusercontent.com/louislam/uptime-kuma/master/install.sh && sudo bash kuma_install.sh
@@ -35,11 +35,6 @@ docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name upti
 ```
 
 Browse to http://localhost:3001 after started.
-
-### ☸️ Kubernetes
-
-See more [here](kubernetes/README.md) 
-
 
 ### Advanced Installation
 
@@ -76,7 +71,7 @@ Telegram Notification Sample:
 
 ## Motivation
 
-* I was looking for a self-hosted monitoring tool like "Uptime Robot", but it is hard to find a suitable one. One of the close one is statping. Unfortunately, it is not stable and unmaintained.
+* I was looking for a self-hosted monitoring tool like "Uptime Robot", but it is hard to find a suitable one. One of the close ones is statping. Unfortunately, it is not stable and unmaintained.
 * Want to build a fancy UI.
 * Learn Vue 3 and vite.js.
 * Show the power of Bootstrap 5.
@@ -89,6 +84,6 @@ If you love this project, please consider giving me a ⭐.
 
 If you want to report a bug or request a new feature. Free feel to open a new issue.
 
-If you want to modify Uptime Kuma, this guideline maybe useful for you: https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md
+If you want to modify Uptime Kuma, this guideline may be useful for you: https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md
 
-English proofreading is needed too, because my grammar is not that great sadly. Feel free to correct my grammar in this Readme, source code or wiki.
+English proofreading is needed too because my grammar is not that great sadly. Feel free to correct my grammar in this readme, source code, or wiki.
