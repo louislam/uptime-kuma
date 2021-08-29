@@ -103,4 +103,5 @@ export default {
     "Resolver Server": "Auflösungsserver",
     rrtypeDescription: "Wähle den RR-Typ aus, welchen du überwachen möchtest.",
     "Last Result": "Letztes Ergebnis",
+    pauseMonitorMsg: "Bist du sicher das du den Monitor pausieren möchtest?",
 }

@@ -165,8 +165,8 @@
                 </div>
             </div>
 
-            <Confirm ref="confirmPause" @yes="pauseMonitor">
-                Are you sure want to pause?
+            <Confirm ref="confirmPause" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="pauseMonitor">
+                {{ $t("pauseMonitorMsg") }}
             </Confirm>
 
             <Confirm ref="confirmDelete" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="deleteMonitor">

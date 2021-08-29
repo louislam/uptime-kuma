@@ -15,4 +15,5 @@ export default {
     deleteNotificationMsg: "Are you sure want to delete this notification for all monitors?",
     resoverserverDescription: "Cloudflare is the default server, you can change the resolver server anytime.",
     rrtypeDescription: "Select the RR-Type you want to monitor",
+    pauseMonitorMsg: "Are you sure want to pause?",
 }
