@@ -248,3 +248,26 @@ exports.checkStatusCode = function (status, accepted_codes) {
 
     return false;
 }
+
+exports.getTotalClientInRoom = (io, roomName) => {
+
+    const sockets = io.sockets;
+
+    if (! sockets) {
+        return 0;
+    }
+
+    const adapter = sockets.adapter;
+
+    if (! adapter) {
+        return 0;
+    }
+
+    const room = adapter.rooms.get(roomName);
+
+    if (room) {
+        return room.size;
+    } else {
+        return 0;
+    }
+}
