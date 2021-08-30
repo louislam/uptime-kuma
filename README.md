@@ -19,19 +19,30 @@ It is a self-hosted monitoring tool like "Uptime Robot".
 
 ## 🔧 How to Install
 
-### 🚀 Installer via CLI
-
-Interactive CLI installer, supports Docker or without Docker. 
-
-```bash
-curl -o kuma_install.sh http://git.kuma.pet/install.sh && sudo bash kuma_install.sh
-```
-
 ### 🐳 Docker
 
 ```bash
 docker volume create uptime-kuma
 docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name uptime-kuma louislam/uptime-kuma:1
+```
+
+Browse to http://localhost:3001 after started.
+
+### 💪🏻 Without Docker
+
+Required Tools: Node.js >= 14, git and pm2.
+
+```bash
+git clone https://github.com/louislam/uptime-kuma.git
+cd uptime-kuma
+npm run setup
+
+# Option 1. Try it
+node server/server.js
+
+# (Recommended) Option 2. Run in background using PM2
+# Install PM2 if you don't have: npm install pm2 -g
+pm2 start server/server.js --name uptime-kuma
 ```
 
 Browse to http://localhost:3001 after started.
