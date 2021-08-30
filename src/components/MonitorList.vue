@@ -90,7 +90,7 @@ export default {
 .list {
     &.scrollbar {
         min-height: calc(100vh - 240px);
-        max-height: calc(100vh - 20px);
+        max-height: calc(100vh - 30px);
         overflow-y: auto;
         position: sticky;
         top: 10px;
