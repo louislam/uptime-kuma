@@ -24,7 +24,7 @@ It is a self-hosted monitoring tool like "Uptime Robot".
 Interactive CLI installer, supports Docker or without Docker. 
 
 ```bash
-curl -o kuma_install.sh https://raw.githubusercontent.com/louislam/uptime-kuma/master/install.sh && sudo bash kuma_install.sh
+curl -o kuma_install.sh http://git.kuma.pet/install.sh && sudo bash kuma_install.sh
 ```
 
 ### 🐳 Docker
