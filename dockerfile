@@ -8,7 +8,7 @@ RUN pip3 --no-cache-dir install apprise && \
             rm -rf /root/.cache
 
 COPY . .
-RUN npm install && npm run build && npm prune
+RUN npm install --legacy-peer-deps && npm run build && npm prune
 
 EXPOSE 3001
 VOLUME ["/app/data"]
