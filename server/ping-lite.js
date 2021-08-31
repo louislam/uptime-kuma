@@ -1,14 +1,13 @@
 // https://github.com/ben-bradley/ping-lite/blob/master/ping-lite.js
 // Fixed on Windows
 const net = require("net");
-const spawn = require("child_process").spawn,
-    events = require("events"),
-    fs = require("fs"),
-    WIN = /^win/.test(process.platform),
-    LIN = /^linux/.test(process.platform),
-    MAC = /^darwin/.test(process.platform);
-    FBSD = /^freebsd/.test(process.platform);
-const { debug } = require("../src/util");
+const spawn = require("child_process").spawn;
+const events = require("events");
+const fs = require("fs");
+const WIN = /^win/.test(process.platform);
+const LIN = /^linux/.test(process.platform);
+const MAC = /^darwin/.test(process.platform);
+const FBSD = /^freebsd/.test(process.platform);
 
 module.exports = Ping;
 
@@ -49,7 +48,7 @@ function Ping(host, options) {
 
         this._args = (options.args) ? options.args : [ "-n", "-t", "2", "-c", "1", host ];
         this._regmatch = /=([0-9.]+?) ms/;
-        
+
     } else if (FBSD) {
         this._bin = "/sbin/ping";
 
@@ -88,7 +87,9 @@ Ping.prototype.send = function (callback) {
         return self.emit("result", ms);
     };
 
-    let _ended, _exited, _errored;
+    let _ended;
+    let _exited;
+    let _errored;
 
     this._ping = spawn(this._bin, this._args); // spawn the binary
 
@@ -120,9 +121,9 @@ Ping.prototype.send = function (callback) {
     });
 
     function onEnd() {
-        let stdout = this.stdout._stdout,
-            stderr = this.stderr._stderr,
-            ms;
+        let stdout = this.stdout._stdout;
+        let stderr = this.stderr._stderr;
+        let ms;
 
         if (stderr) {
             return callback(new Error(stderr));
