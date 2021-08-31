@@ -261,6 +261,10 @@ export default {
         clearHeartbeats(monitorID, callback) {
             socket.emit("clearHeartbeats", monitorID, callback)
         },
+
+        clearStatistics(callback) {
+            socket.emit("clearStatistics", callback)
+        },
     },
 
     computed: {

@@ -360,7 +360,6 @@ export default {
         clearEvents() {
             this.$root.clearEvents(this.monitor.id, (res) => {
                 if (res.ok) {
-                    toast.success(res.msg);
                     this.$router.go();
                 } else {
                     toast.error(res.msg);
@@ -371,7 +370,6 @@ export default {
         clearHeartbeats() {
             this.$root.clearHeartbeats(this.monitor.id, (res) => {
                 if (res.ok) {
-                    toast.success(res.msg);
                     this.$router.go();
                 } else {
                     toast.error(res.msg);

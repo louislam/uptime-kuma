@@ -566,7 +566,6 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
 
                 callback({
                     ok: true,
-                    msg: "Events Successfully Cleared.",
                 });
 
             } catch (e) {
@@ -589,7 +588,26 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
 
                 callback({
                     ok: true,
-                    msg: "Heartbeats Successfully Cleared.",
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("clearStatistics", async (callback) => {
+            try {
+                checkLogin(socket)
+
+                console.log(`Clear Statistics User ID: ${socket.userID}`)
+
+                await R.exec("DELETE FROM heartbeat");
+
+                callback({
+                    ok: true,
                 });
 
             } catch (e) {

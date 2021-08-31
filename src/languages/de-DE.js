@@ -104,9 +104,10 @@ export default {
     rrtypeDescription: "Wähle den RR-Typ aus, welchen du überwachen möchtest.",
     "Last Result": "Letztes Ergebnis",
     pauseMonitorMsg: "Bist du sicher das du den Monitor pausieren möchtest?",
-    clearEventsMsg: "Bist du sicher das du alle Ereignisse löschen möchtest?",
-    clearHeartbeatsMsg: "Bist du sicher das du alle Statistiken löschen möchtest?",
+    clearEventsMsg: "Bist du sicher das du alle Ereignisse für diesen Monitor löschen möchtest?",
+    clearHeartbeatsMsg: "Bist du sicher das du alle Statistiken für diesen Monitor löschen möchtest?",
     "Clear Data": "Lösche Daten",
     "Events": "Ereignisse",
     "Heartbeats": "Statistiken",
+    confirmClearStatisticsMsg: "Bist du sicher das du ALLE Statistiken löschen möchtest?",
 }

@@ -16,6 +16,7 @@ export default {
     resoverserverDescription: "Cloudflare is the default server, you can change the resolver server anytime.",
     rrtypeDescription: "Select the RR-Type you want to monitor",
     pauseMonitorMsg: "Are you sure want to pause?",
-    clearEventsMsg: "Are you sure want to delete all events?",
-    clearHeartbeatsMsg: "Are you sure want to delete all heartbeats?",
+    clearEventsMsg: "Are you sure want to delete all events for this monitor?",
+    clearHeartbeatsMsg: "Are you sure want to delete all heartbeats for this monitor?",
+    confirmClearStatisticsMsg: "Are you sure want to delete ALL statistics?",
 }

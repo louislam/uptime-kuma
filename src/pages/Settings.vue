@@ -126,6 +126,7 @@
                                 <button v-if="settings.disableAuth" class="btn btn-outline-primary me-1" @click="enableAuth">{{ $t("Enable Auth") }}</button>
                                 <button v-if="! settings.disableAuth" class="btn btn-primary me-1" @click="confirmDisableAuth">{{ $t("Disable Auth") }}</button>
                                 <button v-if="! settings.disableAuth" class="btn btn-danger me-1" @click="$root.logout">{{ $t("Logout") }}</button>
+                                <button class="btn btn-outline-danger me-1" @click="confirmClearStatistics">{{ $t("Clear all Statistics") }}</button>
                             </div>
                         </template>
                     </div>
@@ -183,6 +184,10 @@
                     <p>Es ist für <strong>jemanden der eine externe Authentifizierung</strong> vor Uptime Kuma geschaltet hat, wie z.B. Cloudflare Access.</p>
                     <p>Bitte mit Vorsicht nutzen.</p>
                 </template>
+            </Confirm>
+
+            <Confirm ref="confirmClearStatistics" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="clearStatistics">
+                {{ $t("confirmClearStatisticsMsg") }}
             </Confirm>
         </div>
     </transition>
@@ -282,6 +287,10 @@ export default {
             this.$refs.confirmDisableAuth.show();
         },
 
+        confirmClearStatistics() {
+            this.$refs.confirmClearStatistics.show();
+        },
+
         disableAuth() {
             this.settings.disableAuth = true;
             this.saveSettings();
@@ -293,6 +302,15 @@ export default {
             this.$root.storage().removeItem("token");
         },
 
+        clearStatistics() {
+            this.$root.clearStatistics((res) => {
+                if (res.ok) {
+                    this.$router.go();
+                } else {
+                    toast.error(res.msg);
+                }
+            })
+        },
     },
 }
 </script>
