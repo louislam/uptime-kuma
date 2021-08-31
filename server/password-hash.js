@@ -1,5 +1,5 @@
 const passwordHashOld = require("password-hash");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const saltRounds = 10;
 
 exports.generate = function (password) {

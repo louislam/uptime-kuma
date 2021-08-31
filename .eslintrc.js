@@ -77,6 +77,8 @@ module.exports = {
         "no-empty": ["error", {
             "allowEmptyCatch": true
         }],
-        "no-control-regex": "off"
+        "no-control-regex": "off",
+        "one-var": ["error", "never"],
+        "max-statements-per-line": ["error", { "max": 1 }]
     },
 }

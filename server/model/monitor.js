@@ -7,7 +7,7 @@ dayjs.extend(timezone)
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
 const { debug, UP, DOWN, PENDING, flipStatus, TimeLogger } = require("../../src/util");
-const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode } = require("../util-server");
+const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification")
@@ -353,10 +353,16 @@ class Monitor extends BeanModel {
     }
 
     static async sendStats(io, monitorID, userID) {
-        await Monitor.sendAvgPing(24, io, monitorID, userID);
-        await Monitor.sendUptime(24, io, monitorID, userID);
-        await Monitor.sendUptime(24 * 30, io, monitorID, userID);
-        await Monitor.sendCertInfo(io, monitorID, userID);
+        const hasClients = getTotalClientInRoom(io, userID) > 0;
+
+        if (hasClients) {
+            await Monitor.sendAvgPing(24, io, monitorID, userID);
+            await Monitor.sendUptime(24, io, monitorID, userID);
+            await Monitor.sendUptime(24 * 30, io, monitorID, userID);
+            await Monitor.sendCertInfo(io, monitorID, userID);
+        } else {
+            debug("No clients in the room, no need to send stats");
+        }
     }
 
     /**

@@ -131,7 +131,7 @@ h2 {
     background-color: #090c10;
     color: $dark-font-color;
 
-    &::-webkit-scrollbar-thumb {
+    &::-webkit-scrollbar-thumb, ::-webkit-scrollbar-thumb {
         background: $dark-border-color;
     }
 

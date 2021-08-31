@@ -96,9 +96,16 @@ class Notification {
                     return okMsg;
                 }
 
-                let url = monitorJSON["url"] === "https://" ? monitorJSON["hostname"] : monitorJSON["url"]
-                if (monitorJSON["port"]) {
-                    url += ":" + monitorJSON[port];
+                let url;
+
+                if (monitorJSON["type"] === "port") {
+                    url = monitorJSON["hostname"];
+                    if (monitorJSON["port"]) {
+                        url += ":" + monitorJSON["port"];
+                    }
+
+                } else {
+                    url = monitorJSON["url"];
                 }
 
                 // If heartbeatJSON is not null, we go into the normal alerting loop.
@@ -331,7 +338,7 @@ class Notification {
                     await axios.post(notification.mattermostWebhookUrl, mattermostTestData)
                     return okMsg;
                 }
-                
+
                 const mattermostChannel = notification.mattermostchannel;
                 const mattermostIconEmoji = notification.mattermosticonemo;
                 const mattermostIconUrl = notification.mattermosticonurl;
