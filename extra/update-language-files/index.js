@@ -46,7 +46,9 @@ for (const file of files) {
             obj = lang.default;
         } else {
             console.log("empty file");
-            obj = {};
+            obj = {
+                languageName: "<Your Language name in your language (not in English)>"
+            };
         }
 
         // En first
