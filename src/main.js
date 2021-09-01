@@ -29,6 +29,7 @@ import deDE from "./languages/de-DE";
 import fr from "./languages/fr";
 import ja from "./languages/ja";
 import daDK from "./languages/da-DK";
+import svSE from "./languages/sv-SE";
 import koKR from "./languages/ko-KR";
 
 const routes = [
@@ -99,6 +100,7 @@ const languageList = {
     "fr": fr,
     "ja": ja,
     "da-DK": daDK,
+    "sv-SE": svSE,
     "ko-KR": koKR,
 };
 
