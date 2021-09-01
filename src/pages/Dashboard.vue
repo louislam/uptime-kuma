@@ -5,7 +5,7 @@
                 <div>
                     <router-link to="/add" class="btn btn-primary mb-3"><font-awesome-icon icon="plus" /> {{ $t("Add New Monitor") }}</router-link>
                 </div>
-                <MonitorList scrollbar="true" />
+                <MonitorList :scrollbar="true" />
             </div>
 
             <div class="col-12 col-md-7 col-xl-8 mb-3">
