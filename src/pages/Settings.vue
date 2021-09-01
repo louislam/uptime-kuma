@@ -365,15 +365,16 @@ export default {
         color: #000;
     }
 
-    input[type=file]::file-selector-button {
-        color: $primary;
-        background-color: $dark-bg;
-    }
+    #importBackup {
+        &::file-selector-button {
+            color: $primary;
+            background-color: $dark-bg;
+        }
 
-    //Does not work for some reason
-    input[type=file]::file-selector-button:hover {
-        color: $dark-font-color;
-        background-color: $primary;
+        &:hover:not(:disabled):not([readonly])::file-selector-button {
+            color: $dark-font-color2;
+            background-color: $primary;
+        }
     }
 }
 
