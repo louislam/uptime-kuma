@@ -93,8 +93,8 @@ export default {
     "No Monitors, please": "Keine Monitore, bitte",
     "add one": "hinzufügen",
     "Notification Type": "Benachrichtigungs Dienst",
-    "Email": "E-Mail",
-    "Test": "Test",
+    Email: "E-Mail",
+    Test: "Test",
     "Certificate Info": "Zertifikatsinfo",
     keywordDescription: "Suche nach einen Schlüsselwort in einer schlichten HTML oder JSON Ausgabe. Bitte beachte, es wird in der Groß-/Kleinschreibung unterschieden.",
     deleteMonitorMsg: "Bist du sicher das du den Monitor löschen möchtest?",
@@ -110,4 +110,7 @@ export default {
     "Events": "Ereignisse",
     "Heartbeats": "Statistiken",
     confirmClearStatisticsMsg: "Bist du sicher das du ALLE Statistiken löschen möchtest?",
+    "Create your admin account": "Erstelle dein Admin Konto",
+    "Repeat Password": "Wiederhole das Passwort",
+    "Resource Record Type": "Resource Record Type"
 }
