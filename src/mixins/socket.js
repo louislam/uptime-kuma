@@ -254,6 +254,9 @@ export default {
             this.importantHeartbeatList = {}
         },
 
+        uploadBackup(uploadedJSON, callback) {
+            socket.emit("uploadBackup", uploadedJSON, callback)
+        },
     },
 
     computed: {

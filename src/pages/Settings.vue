@@ -120,6 +120,14 @@
                                 </form>
                             </template>
 
+                            <h2 class="mt-5 mb-2">{{ $t("Import/Export Backup") }}</h2>
+
+                            <div class="input-group mb-3">
+                                <button class="btn btn-outline-primary" @click="downloadBackup">{{ $t("Export") }}</button>
+                                <button type="button" class="btn btn-outline-primary" @click="importBackup">{{ $t("Import") }}</button>
+                                <input id="importBackup" type="file" class="form-control">
+                            </div>
+
                             <h2 class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
 
                             <div class="mb-3">
@@ -293,6 +301,41 @@ export default {
             this.$root.storage().removeItem("token");
         },
 
+        downloadBackup() {
+            let time = dayjs().format("YYYY_MM_DD-hh_mm_ss");
+            let fileName = `Uptime_Kuma_Backup_${time}.json`;
+            let exportData = {
+                notificationList: this.$root.notificationList,
+                monitorList: this.$root.monitorList,
+            }
+            exportData = JSON.stringify(exportData);
+            let downloadItem = document.createElement("a");
+            downloadItem.setAttribute("href", `data:application/json;charset=utf-8, ${exportData}`);
+            downloadItem.setAttribute("download", fileName);
+            downloadItem.click();
+        },
+
+        importBackup() {
+            let uploadItem = document.getElementById("importBackup").files;
+            if (uploadItem.length <= 0) {
+                return false;
+            }
+
+            let fileReader = new FileReader();
+            fileReader.readAsText(uploadItem.item(0));
+
+            fileReader.onload = item => {
+                let resultParse = JSON.parse(item.target.result);
+                let result = Object.values(resultParse);
+                this.$root.uploadBackup(result, (res) => {
+                    if (res.ok) {
+                        toast.success(res.msg);
+                    } else {
+                        toast.error(res.msg);
+                    }
+                })
+            }
+        },
     },
 }
 </script>
@@ -320,6 +363,17 @@ export default {
     .btn-check:checked + .btn-outline-primary,
     .btn-check:hover + .btn-outline-primary {
         color: #000;
+    }
+
+    input[type=file]::file-selector-button {
+        color: $primary;
+        background-color: $dark-bg;
+    }
+
+    //Does not work for some reason
+    input[type=file]::file-selector-button:hover {
+        color: $dark-font-color;
+        background-color: $primary;
     }
 }
 
