@@ -93,8 +93,8 @@ export default {
     "No Monitors, please": "Pas de monitor, veuillez ",
     "add one": "en ajouter un.",
     "Notification Type": "Type de notification",
-    "Email": "Email",
-    "Test": "Tester",
+    Email: "Email",
+    Test: "Tester",
     keywordDescription: "Le mot clé sera cherché dans la réponse HTML/JSON reçue du site internet.",
     "Certificate Info": "Des informations sur le certificat SSL",
     deleteMonitorMsg: "Êtes-vous sûr de vouloir supprimer ce monitor ?",
@@ -103,4 +103,6 @@ export default {
     "Resource Record Type": "Type d'enregistrement DNS recherché",
     resoverserverDescription: "Le DNS de cloudflare est utilisé par défaut, mais vous pouvez le changer si vous le souhaitez.",
     rrtypeDescription: "Veuillez séléctionner un type d'enregistrement DNS",
+    pauseMonitorMsg: "Are you sure want to pause?",
+    "Last Result": "Last Result"
 }

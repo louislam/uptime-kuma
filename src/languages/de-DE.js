@@ -93,8 +93,8 @@ export default {
     "No Monitors, please": "Keine Monitore, bitte",
     "add one": "hinzufügen",
     "Notification Type": "Benachrichtigungs Dienst",
-    "Email": "E-Mail",
-    "Test": "Test",
+    Email: "E-Mail",
+    Test: "Test",
     "Certificate Info": "Zertifikatsinfo",
     keywordDescription: "Suche nach einen Schlüsselwort in einer schlichten HTML oder JSON Ausgabe. Bitte beachte, es wird in der Groß-/Kleinschreibung unterschieden.",
     deleteMonitorMsg: "Bist du sicher das du den Monitor löschen möchtest?",
@@ -104,4 +104,5 @@ export default {
     rrtypeDescription: "Wähle den RR-Typ aus, welchen du überwachen möchtest.",
     "Last Result": "Letztes Ergebnis",
     pauseMonitorMsg: "Bist du sicher das du den Monitor pausieren möchtest?",
+    "Resource Record Type": "Resource Record Type"
 }

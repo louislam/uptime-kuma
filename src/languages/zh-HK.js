@@ -93,8 +93,8 @@ export default {
     "No Monitors, please": "沒有監測器，請",
     "add one": "新增",
     "Notification Type": "通知類型",
-    "Email": "電郵",
-    "Test": "測試",
+    Email: "電郵",
+    Test: "測試",
     keywordDescription: "搜索 HTML 或 JSON 裡是否有出現關鍵字（注意英文大細階）",
     "Certificate Info": "憑證詳細資料",
     deleteMonitorMsg: "是否確定刪除這個監測器",
@@ -103,4 +103,6 @@ export default {
     "Resource Record Type": "DNS 記錄類型",
     resoverserverDescription: "預設值為 Cloudflare DNS 伺服器，你可以轉用其他 DNS 伺服器。",
     rrtypeDescription: "請選擇 DNS 記錄類型",
+    pauseMonitorMsg: "Are you sure want to pause?",
+    "Last Result": "Last Result"
 }
