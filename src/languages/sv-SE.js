@@ -7,7 +7,7 @@ export default {
     upsideDownModeDescription: "Vänd upp och ner på statusen. Om tjänsten är nåbar visas den som NERE.",
     maxRedirectDescription: "Max antal omdirigeringar att följa. Välj 0 för att avaktivera omdirigeringar.",
     acceptedStatusCodesDescription: "Välj statuskoder som räknas som lyckade.",
-    passwordNotMatchMsg: "Det bekräftade lösenorder stämmer ej överens.",
+    passwordNotMatchMsg: "Det bekräftade lösenordet stämmer ej överens.",
     notificationDescription: "Vänligen lägg till en notistjänst till övervakaren.",
     keywordDescription: "Sök efter nyckelord i ren HTML eller JSON-svar. Sökningen är skiftkänslig.",
     pauseDashboardHome: "Pausa",
