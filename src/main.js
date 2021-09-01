@@ -29,6 +29,7 @@ import deDE from "./languages/de-DE";
 import fr from "./languages/fr";
 import ja from "./languages/ja";
 import daDK from "./languages/da-DK";
+import koKR from "./languages/ko-KR";
 
 const routes = [
     {
@@ -98,6 +99,7 @@ const languageList = {
     "fr": fr,
     "ja": ja,
     "da-DK": daDK,
+    "ko-KR": koKR,
 };
 
 const i18n = createI18n({
