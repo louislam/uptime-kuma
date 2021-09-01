@@ -4,7 +4,7 @@ export default {
     'Avg.': '평균 ',
     retriesDescription: '서비스가 중단된 후 알림을 보내기 전 최대 재시도 횟수',
     ignoreTLSError: 'HTTPS 웹사이트에서 TLS/SSL 에러 무시하기',
-    upsideDownModeDescription: '서버 상태를 반대로 표시해요. 서버가 작동하면 DOWN으로 표시할 거에요.',
+    upsideDownModeDescription: '서버 상태를 반대로 표시해요. 서버가 작동하면 오프라인으로 표시할 거에요.',
     maxRedirectDescription: '최대 리다이렉트 횟수에요. 0을 입력하면 리다이렉트를 꺼요.',
     acceptedStatusCodesDescription: '응답 성공으로 간주할 상태 코드를 정해요.',
     passwordNotMatchMsg: '비밀번호 재입력이 일치하지 않아요.',
