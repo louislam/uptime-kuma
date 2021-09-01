@@ -40,18 +40,9 @@
         </header>
 
         <main>
-            <!-- Add :key to disable vue router re-use the same component -->
-            <router-view v-if="$root.loggedIn" :key="$route.fullPath" />
+            <router-view v-if="$root.loggedIn" />
             <Login v-if="! $root.loggedIn && $root.allowLoginDialog" />
         </main>
-
-        <footer>
-            <div class="container-fluid">
-                Uptime Kuma -
-                {{ $t("Version") }}: {{ $root.info.version }} -
-                <a href="https://github.com/louislam/uptime-kuma/releases" target="_blank" rel="noopener">{{ $t("Check Update On GitHub") }}</a>
-            </div>
-        </footer>
 
         <!-- Mobile Only -->
         <div v-if="$root.isMobile" style="width: 100%; height: 60px;" />
@@ -188,15 +179,6 @@ main {
     padding: 5px;
     background-color: crimson;
     color: white;
-}
-
-footer {
-    color: #aaa;
-    font-size: 13px;
-    margin-top: 10px;
-    padding-bottom: 30px;
-    margin-left: 10px;
-    text-align: center;
 }
 
 .dark {

@@ -422,4 +422,5 @@ table {
         color: $dark-font-color;
     }
 }
+
 </style>

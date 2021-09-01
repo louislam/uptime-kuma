@@ -176,8 +176,8 @@ else
 fi
   check=$(docker info)
   if [[ "$check" == *"Is the docker daemon running"* ]]; then
-      echo "Error: docker is not running"
-      exit 1
+      "echo" "Error: docker is not running"
+      "exit" "1"
     fi
   if [ "$3" != "" ]; then
     port="$3"

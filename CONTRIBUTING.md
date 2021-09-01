@@ -73,6 +73,12 @@ For example, recently, because I am not a python expert, I spent a 2 hours to re
 npm install --dev
 ```
 
+For npm@7, you need --legacy-peer-deps
+
+```
+npm install --legacy-peer-deps --dev
+```
+
 # Backend Dev
 
 ```bash

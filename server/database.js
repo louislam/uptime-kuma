@@ -13,9 +13,6 @@ class Database {
     static async connect() {
         const acquireConnectionTimeout = 120 * 1000;
 
-        R.useBetterSQLite3 = true;
-        R.betterSQLite3Options.timeout = acquireConnectionTimeout;
-
         R.setup("sqlite", {
             filename: Database.path,
             useNullAsDefault: true,
@@ -124,11 +121,8 @@ class Database {
                 return statement !== "";
             })
 
-        // Use better-sqlite3 to run, prevent "This statement does not return data. Use run() instead"
-        const db = await this.getBetterSQLite3Database();
-
         for (let statement of statements) {
-            db.prepare(statement).run();
+            await R.exec(statement);
         }
     }
 
