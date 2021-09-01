@@ -556,7 +556,7 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
             try {
                 checkLogin(socket)
 
-                console.log(`Import Backup User ID: ${socket.userID}`)
+                console.log(`Importing Backup, User ID: ${socket.userID}`)
 
                 let notificationList = uploadedJSON[0];
                 let monitorList = uploadedJSON[1];
