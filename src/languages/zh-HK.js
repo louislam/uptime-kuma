@@ -104,5 +104,7 @@ export default {
     resoverserverDescription: "預設值為 Cloudflare DNS 伺服器，你可以轉用其他 DNS 伺服器。",
     rrtypeDescription: "請選擇 DNS 記錄類型",
     pauseMonitorMsg: "Are you sure want to pause?",
-    "Last Result": "Last Result"
+    "Last Result": "Last Result",
+    "Create your admin account": "Create your admin account",
+    "Repeat Password": "Repeat Password"
 }

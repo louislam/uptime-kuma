@@ -104,5 +104,7 @@ export default {
     "Certificate Info": "Certificate Info",
     "Resolver Server": "Resolver Server",
     "Resource Record Type": "Resource Record Type",
-    "Last Result": "Last Result"
+    "Last Result": "Last Result",
+    "Create your admin account": "Create your admin account",
+    "Repeat Password": "Repeat Password"
 }

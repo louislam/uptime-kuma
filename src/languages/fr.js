@@ -104,5 +104,7 @@ export default {
     resoverserverDescription: "Le DNS de cloudflare est utilisé par défaut, mais vous pouvez le changer si vous le souhaitez.",
     rrtypeDescription: "Veuillez séléctionner un type d'enregistrement DNS",
     pauseMonitorMsg: "Are you sure want to pause?",
-    "Last Result": "Last Result"
+    "Last Result": "Last Result",
+    "Create your admin account": "Create your admin account",
+    "Repeat Password": "Repeat Password"
 }

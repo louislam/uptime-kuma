@@ -75,3 +75,4 @@ for (const file of files) {
 }
 
 fs.rmdirSync("./languages", { recursive: true });
+console.log("Done, fix the format by eslint now");

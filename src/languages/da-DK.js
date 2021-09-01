@@ -93,8 +93,8 @@ export default {
     "No Monitors, please": "Ingen Overvågere",
     "add one": "tilføj en",
     "Notification Type": "Underretningstype",
-    "Email": "E-Mail",
-    "Test": "Test",
+    Email: "E-Mail",
+    Test: "Test",
     "Certificate Info": "Certifikatoplysninger",
     keywordDescription: "Søg efter et søgeord i almindelig HTML- eller JSON -output. Bemærk, at der skelnes mellem store og små bogstaver.",
     deleteMonitorMsg: "Er du sikker på, at du vil slette overvågeren?",
@@ -106,4 +106,5 @@ export default {
     pauseMonitorMsg: "Er du sikker på, at du vil pause Overvågeren?",
     "Create your admin account": "Opret din administratorkonto",
     "Repeat Password": "Gentag adgangskoden",
+    "Resource Record Type": "Resource Record Type"
 }

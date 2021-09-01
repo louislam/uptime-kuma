@@ -104,5 +104,7 @@ export default {
     "Certificate Info": "証明書情報",
     "Resolver Server": "問い合わせ先DNSサーバ",
     "Resource Record Type": "DNSレコード設定",
-    "Last Result": "最終結果"
+    "Last Result": "最終結果",
+    "Create your admin account": "Create your admin account",
+    "Repeat Password": "Repeat Password"
 }
