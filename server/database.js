@@ -13,9 +13,6 @@ class Database {
     static async connect() {
         const acquireConnectionTimeout = 120 * 1000;
 
-        R.useBetterSQLite3 = true;
-        R.betterSQLite3Options.timeout = acquireConnectionTimeout;
-
         R.setup("sqlite", {
             filename: Database.path,
             useNullAsDefault: true,
