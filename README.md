@@ -66,6 +66,10 @@ I will mark requests/issues to the next milestone.
 
 https://github.com/louislam/uptime-kuma/milestones
 
+Project Plan:
+
+https://github.com/louislam/uptime-kuma/projects/1
+
 ## 🖼 More Screenshots
 
 Dark Mode:
