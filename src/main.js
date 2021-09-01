@@ -28,6 +28,7 @@ import zhHK from "./languages/zh-HK";
 import deDE from "./languages/de-DE";
 import fr from "./languages/fr";
 import ja from "./languages/ja";
+import daDK from "./languages/da-DK";
 
 const routes = [
     {
@@ -96,6 +97,7 @@ const languageList = {
     "de-DE": deDE,
     "fr": fr,
     "ja": ja,
+    "da-DK": daDK,
 };
 
 const i18n = createI18n({
