@@ -556,14 +556,12 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
             try {
                 checkLogin(socket)
 
-                console.log(`Importing Backup, User ID: ${socket.userID}, Version: ${uploadedJSON[0]}`)
+                let backupData = JSON.parse(uploadedJSON);
 
-                let notificationList = uploadedJSON[1];
-                let monitorList = uploadedJSON[2];
+                console.log(`Importing Backup, User ID: ${socket.userID}, Version: ${backupData.version}`)
 
-                monitorList = JSON.stringify(monitorList);
-                monitorList = JSON.parse(monitorList);
-                monitorList = Object.values(monitorList);
+                let notificationList = backupData.notificationList;
+                let monitorList = backupData.monitorList;
 
                 if (notificationList.length >= 1) {
                     for (let i = 0; i < notificationList.length; i++) {

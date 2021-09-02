@@ -304,10 +304,11 @@ export default {
         downloadBackup() {
             let time = dayjs().format("YYYY_MM_DD-hh_mm_ss");
             let fileName = `Uptime_Kuma_Backup_${time}.json`;
+            let monitorList = Object.values(this.$root.monitorList);
             let exportData = {
                 version: this.$root.info.version,
                 notificationList: this.$root.notificationList,
-                monitorList: this.$root.monitorList,
+                monitorList: monitorList,
             }
             exportData = JSON.stringify(exportData);
             let downloadItem = document.createElement("a");
@@ -326,9 +327,7 @@ export default {
             fileReader.readAsText(uploadItem.item(0));
 
             fileReader.onload = item => {
-                let resultParse = JSON.parse(item.target.result);
-                let result = Object.values(resultParse);
-                this.$root.uploadBackup(result, (res) => {
+                this.$root.uploadBackup(item.target.result, (res) => {
                     if (res.ok) {
                         toast.success(res.msg);
                     } else {
