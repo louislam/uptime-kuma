@@ -55,7 +55,6 @@ const demoMode = args["demo"] || false;
 
 if (demoMode) {
     console.log("==== Demo Mode ====");
-    Database.templatePath = "./db/demo_kuma.db";
 }
 
 // Data Directory (must be end with "/")
