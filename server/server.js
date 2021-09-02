@@ -50,15 +50,21 @@ const port = parseInt(process.env.PORT || args.port || 3001);
 const sslKey = process.env.SSL_KEY || args.ssl_key || undefined;
 const sslCert = process.env.SSL_CERT || args.ssl_cert || undefined;
 
+// Data Directory (must be end with "/")
+Database.dataDir = process.env.DATA_DIR || process.env.data_dir || "./data/";
+console.log(`Data Dir: ${Database.dataDir}`);
+
 console.log("Creating express and socket.io instance")
 const app = express();
 
 let server;
 
 if (sslKey && sslCert) {
-    https.createServer(app);
+    console.log("Server Type: HTTPS");
+    server = https.createServer(app);
 } else {
-    http.createServer(app);
+    console.log("Server Type: HTTP");
+    server = http.createServer(app);
 }
 
 const io = new Server(server);
