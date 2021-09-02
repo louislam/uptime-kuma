@@ -5,8 +5,8 @@ const { setSetting, setting } = require("./util-server");
 class Database {
 
     static templatePath = "./db/kuma.db"
-    static dataDir = "./data/";
-    static path = this.dataDir + "kuma.db";
+    static dataDir;
+    static path;
     static latestVersion = 8;
     static noReject = true;
     static sqliteInstance = null;
