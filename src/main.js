@@ -31,6 +31,7 @@ import ja from "./languages/ja";
 import daDK from "./languages/da-DK";
 import svSE from "./languages/sv-SE";
 import koKR from "./languages/ko-KR";
+import ruRU from "./languages/ru-RU";
 
 const routes = [
     {
@@ -102,6 +103,7 @@ const languageList = {
     "da-DK": daDK,
     "sv-SE": svSE,
     "ko-KR": koKR,
+    "ru-RU": ruRU,
 };
 
 const i18n = createI18n({
