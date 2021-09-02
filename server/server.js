@@ -53,6 +53,9 @@ const sslCert = process.env.SSL_CERT || args["ssl-cert"] || undefined;
 // Data Directory (must be end with "/")
 Database.dataDir = process.env.DATA_DIR || args["data-dir"] || "./data/";
 Database.path = Database.dataDir + "kuma.db";
+if (! fs.existsSync(this.dataDir)) {
+    fs.mkdirSync(this.dataDir, { recursive: true });
+}
 console.log(`Data Dir: ${Database.dataDir}`);
 
 console.log("Creating express and socket.io instance")
