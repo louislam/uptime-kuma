@@ -12,6 +12,10 @@ class Database {
     static sqliteInstance = null;
 
     static async connect() {
+        if (! fs.existsSync(this.dataDir)) {
+            fs.mkdirSync(this.dataDir, { recursive: true });
+        }
+
         const acquireConnectionTimeout = 120 * 1000;
 
         R.setup("sqlite", {
