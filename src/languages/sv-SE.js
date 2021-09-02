@@ -106,5 +106,7 @@ export default {
     "Resource Record Type": "RR-typ",
     "Last Result": "Senaste resultat",
     "Create your admin account": "Skapa ditt administratörskonto",
-    "Repeat Password": "Upprepa Lösenord"
+    "Repeat Password": "Upprepa Lösenord",
+    respTime: "Resp. Time (ms)",
+    notAvailableShort: "N/A"
 }
