@@ -491,7 +491,7 @@ class Notification {
 
                 if (heartbeatJSON["status"] == 0) {
                     let downdata = {
-                        "title": "UptimeKuma Alert:" + monitorJSON["name"],
+                        "title": "UptimeKuma Alert: " + monitorJSON["name"],
                         "body": "[🔴 Down]" + heartbeatJSON["msg"] + "\nTime (UTC):" + heartbeatJSON["time"],
                     }
                     await axios.post(lunaseadevice, downdata)
@@ -500,7 +500,7 @@ class Notification {
 
                 if (heartbeatJSON["status"] == 1) {
                     let updata = {
-                        "title": "UptimeKuma Alert:" + monitorJSON["name"],
+                        "title": "UptimeKuma Alert: " + monitorJSON["name"],
                         "body": "[✅ Up]" + heartbeatJSON["msg"] + "\nTime (UTC):" + heartbeatJSON["time"],
                     }
                     await axios.post(lunaseadevice, updata)
@@ -530,14 +530,14 @@ class Notification {
                 } else if (heartbeatJSON["status"] == 0) {
                     let downdata = {
                         "type": "note",
-                        "title": "UptimeKuma Alert:" + monitorJSON["name"],
+                        "title": "UptimeKuma Alert: " + monitorJSON["name"],
                         "body": "[🔴 Down]" + heartbeatJSON["msg"] + "\nTime (UTC):" + heartbeatJSON["time"],
                     }
                     await axios.post(pushbulletUrl, downdata, config)
                 } else if (heartbeatJSON["status"] == 1) {
                     let updata = {
                         "type": "note",
-                        "title": "UptimeKuma Alert:" + monitorJSON["name"],
+                        "title": "UptimeKuma Alert: " + monitorJSON["name"],
                         "body": "[✅ Up]" + heartbeatJSON["msg"] + "\nTime (UTC):" + heartbeatJSON["time"],
                     }
                     await axios.post(pushbulletUrl, updata, config)
