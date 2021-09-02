@@ -172,6 +172,12 @@
                     <p>Please use it carefully.</p>
                 </template>
 
+                <template v-if="$i18n.locale === 'es-ES' ">
+                    <p>Seguro que deseas <strong>deshabilitar la autenticación</strong>?</p>
+                    <p>Es para <strong>quien implementa autenticación de terceros</strong> ante Uptime Kuma como por ejemplo Cloudflare Access.</p>
+                    <p>Por favor usar con cuidado.</p>
+                </template>
+
                 <template v-if="$i18n.locale === 'zh-HK' ">
                     <p>你是否確認<strong>取消登入認証</strong>？</p>
                     <p>這個功能是設計給已有<strong>第三方認証</strong>的用家，例如 Cloudflare Access。</p>
