@@ -26,6 +26,7 @@ import { appName } from "./util.ts";
 import en from "./languages/en";
 import zhHK from "./languages/zh-HK";
 import deDE from "./languages/de-DE";
+import nlNL from "./languages/nl-NL";
 import fr from "./languages/fr";
 import ja from "./languages/ja";
 import daDK from "./languages/da-DK";
@@ -98,6 +99,7 @@ const languageList = {
     en,
     "zh-HK": zhHK,
     "de-DE": deDE,
+    "nl-NL": nlNL,
     "fr": fr,
     "ja": ja,
     "da-DK": daDK,
