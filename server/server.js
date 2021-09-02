@@ -47,11 +47,11 @@ const hostname = process.env.HOST || args.host;
 const port = parseInt(process.env.PORT || args.port || 3001);
 
 // SSL
-const sslKey = process.env.SSL_KEY || args.ssl_key || undefined;
-const sslCert = process.env.SSL_CERT || args.ssl_cert || undefined;
+const sslKey = process.env.SSL_KEY || args["ssl-key"] || undefined;
+const sslCert = process.env.SSL_CERT || args["ssl-cert"] || undefined;
 
 // Data Directory (must be end with "/")
-Database.dataDir = process.env.DATA_DIR || process.env.data_dir || "./data/";
+Database.dataDir = process.env.DATA_DIR || args["data-dir"] || "./data/";
 console.log(`Data Dir: ${Database.dataDir}`);
 
 console.log("Creating express and socket.io instance")
