@@ -66,8 +66,8 @@ let server;
 if (sslKey && sslCert) {
     console.log("Server Type: HTTPS");
     server = https.createServer({
-        key: sslKey,
-        cert: sslCert
+        key: fs.readFileSync(sslKey),
+        cert: fs.readFileSync(sslCert)
     }, app);
 } else {
     console.log("Server Type: HTTP");
