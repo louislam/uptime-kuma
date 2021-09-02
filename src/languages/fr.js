@@ -106,5 +106,7 @@ export default {
     pauseMonitorMsg: "Are you sure want to pause?",
     "Last Result": "Last Result",
     "Create your admin account": "Create your admin account",
-    "Repeat Password": "Repeat Password"
+    "Repeat Password": "Repeat Password",
+    respTime: "Resp. Time (ms)",
+    notAvailableShort: "N/A"
 }

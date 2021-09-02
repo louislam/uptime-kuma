@@ -106,5 +106,7 @@ export default {
     pauseMonitorMsg: "Bist du sicher das du den Monitor pausieren möchtest?",
     "Create your admin account": "Erstelle dein Admin Konto",
     "Repeat Password": "Wiederhole das Passwort",
-    "Resource Record Type": "Resource Record Type"
+    "Resource Record Type": "Resource Record Type",
+    respTime: "Resp. Time (ms)",
+    notAvailableShort: "N/A"
 }

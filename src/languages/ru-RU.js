@@ -106,5 +106,7 @@ export default {
     "Resource Record Type": "Тип ресурсной записи",
     "Last Result": "Последний результат",
     "Create your admin account": "Создайте аккаунт администратора",
-    "Repeat Password": "Повторите пароль"
+    "Repeat Password": "Повторите пароль",
+    respTime: "Resp. Time (ms)",
+    notAvailableShort: "N/A"
 }
