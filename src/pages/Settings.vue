@@ -305,6 +305,7 @@ export default {
             let time = dayjs().format("YYYY_MM_DD-hh_mm_ss");
             let fileName = `Uptime_Kuma_Backup_${time}.json`;
             let exportData = {
+                version: this.$root.info.version,
                 notificationList: this.$root.notificationList,
                 monitorList: this.$root.monitorList,
             }
