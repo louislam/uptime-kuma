@@ -6,6 +6,7 @@ const { sleep, debug, TimeLogger, getRandomInt } = require("../src/util");
 console.log("Importing Node libraries")
 const fs = require("fs");
 const http = require("http");
+const https = require("https");
 
 console.log("Importing 3rd-party libraries")
 debug("Importing express");
@@ -45,9 +46,21 @@ console.info("Version: " + checkVersion.version);
 const hostname = process.env.HOST || args.host;
 const port = parseInt(process.env.PORT || args.port || 3001);
 
+// SSL
+const sslKey = process.env.SSL_KEY || args.ssl_key || undefined;
+const sslCert = process.env.SSL_CERT || args.ssl_cert || undefined;
+
 console.log("Creating express and socket.io instance")
 const app = express();
-const server = http.createServer(app);
+
+let server;
+
+if (sslKey && sslCert) {
+    https.createServer(app);
+} else {
+    http.createServer(app);
+}
+
 const io = new Server(server);
 app.use(express.json())
 
