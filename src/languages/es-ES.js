@@ -84,7 +84,7 @@ export default {
     "New Password": "Nueva contraseña",
     "Repeat New Password": "Repetir nueva contraseña",
     "Update Password": "Actualizar contraseña",
-    "Disable Auth": "deshabilitar Autenticación ",
+    "Disable Auth": "Deshabilitar Autenticación ",
     "Enable Auth": "Habilitar Autenticación ",
     Logout: "Cerrar sesión",
     Leave: "Salir",
