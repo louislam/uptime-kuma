@@ -16,8 +16,6 @@
         "dev": "vite --host",
         "start": "npm run start-server",
         "start-server": "node server/server.js",
-        "start-demo-server": "set NODE_ENV=demo && node server/server.js",
-        "update": "",
         "build": "vite build",
         "vite-preview-dist": "vite preview --host",
         "build-docker": "docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma -t louislam/uptime-kuma:1 -t louislam/uptime-kuma:1.5.2 --target release . --push",

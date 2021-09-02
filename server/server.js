@@ -50,6 +50,14 @@ const port = parseInt(process.env.PORT || args.port || 3001);
 const sslKey = process.env.SSL_KEY || args["ssl-key"] || undefined;
 const sslCert = process.env.SSL_CERT || args["ssl-cert"] || undefined;
 
+// Demo Mode?
+const demoMode = args["demo"] || false;
+
+if (demoMode) {
+    console.log("==== Demo Mode ====");
+    Database.templatePath = "./demo_kuma.db";
+}
+
 // Data Directory (must be end with "/")
 Database.dataDir = process.env.DATA_DIR || args["data-dir"] || "./data/";
 Database.path = Database.dataDir + "kuma.db";
