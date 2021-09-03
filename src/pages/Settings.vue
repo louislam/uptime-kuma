@@ -207,6 +207,12 @@
                     <p>To je za <strong>one koji imaju dodatu autentifikaciju</strong> ispred Uptime Kuma kao na primer Cloudflare Access.</p>
                     <p>Molim Vas koristite ovo sa pažnjom.</p>
                 </template>
+
+                <template v-if="$i18n.locale === 'ko-KR' ">
+                    <p>정말로 <strong>인증 기능을 끌까요</strong>?</p>
+                    <p>이 기능은 <strong>Cloudflare Access와 같은 서드파티 인증</strong>을 Uptime Kuma 앞에 둔 사용자를 위한 기능이에요.</p>
+                    <p>신중하게 사용하세요.</p>
+                </template>
             </Confirm>
         </div>
     </transition>
