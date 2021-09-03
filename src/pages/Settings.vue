@@ -201,6 +201,12 @@
                     <p>То је за <strong>оне који имају додату аутентификацију</strong> испред Uptime Kuma као на пример Cloudflare Access.</p>
                     <p>Молим Вас користите ово са пажњом.</p>
                 </template>
+
+                <template v-if="$i18n.locale === 'sr-latn' ">
+                    <p>Da li ste sigurni da želite da <strong>isključite autentifikaciju</strong>?</p>
+                    <p>To je za <strong>one koji imaju dodatu autentifikaciju</strong> ispred Uptime Kuma kao na primer Cloudflare Access.</p>
+                    <p>Molim Vas koristite ovo sa pažnjom.</p>
+                </template>
             </Confirm>
         </div>
     </transition>
