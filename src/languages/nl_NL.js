@@ -24,7 +24,7 @@ export default {
     Theme: "Thema",
     General: "Algemeen",
     Version: "Versie",
-    "Check Update On GitHub": "Controleer update op GitHub",
+    "Check Update On GitHub": "Controleer voor updates op GitHub",
     List: "Lijst",
     Add: "Toevoegen",
     "Add New Monitor": "Nieuwe monitor toevoegen",
