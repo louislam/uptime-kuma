@@ -172,16 +172,40 @@
                     <p>Please use it carefully.</p>
                 </template>
 
+                <template v-if="$i18n.locale === 'es-ES' ">
+                    <p>Seguro que deseas <strong>deshabilitar la autenticación</strong>?</p>
+                    <p>Es para <strong>quien implementa autenticación de terceros</strong> ante Uptime Kuma como por ejemplo Cloudflare Access.</p>
+                    <p>Por favor usar con cuidado.</p>
+                </template>
+
                 <template v-if="$i18n.locale === 'zh-HK' ">
                     <p>你是否確認<strong>取消登入認証</strong>？</p>
                     <p>這個功能是設計給已有<strong>第三方認証</strong>的用家，例如 Cloudflare Access。</p>
                     <p>請小心使用。</p>
                 </template>
 
+                <template v-if="$i18n.locale === 'zh-CN' ">
+                    <p>是否确定 <strong>取消登录验证</strong>？</p>
+                    <p>这是为 <strong>有第三方认证</strong> 的用户提供的功能，如 Cloudflare Access</p>
+                    <p>请谨慎使用！</p>
+                </template>
+
                 <template v-if="$i18n.locale === 'de-DE' ">
                     <p>Bist du sicher das du die <strong>Authentifizierung deaktivieren</strong> möchtest?</p>
                     <p>Es ist für <strong>jemanden der eine externe Authentifizierung</strong> vor Uptime Kuma geschaltet hat, wie z.B. Cloudflare Access.</p>
                     <p>Bitte mit Vorsicht nutzen.</p>
+                </template>
+
+                <template v-if="$i18n.locale === 'sr' ">
+                    <p>Да ли сте сигурни да желите да <strong>искључите аутентификацију</strong>?</p>
+                    <p>То је за <strong>оне који имају додату аутентификацију</strong> испред Uptime Kuma као на пример Cloudflare Access.</p>
+                    <p>Молим Вас користите ово са пажњом.</p>
+                </template>
+
+                <template v-if="$i18n.locale === 'sr-latn' ">
+                    <p>Da li ste sigurni da želite da <strong>isključite autentifikaciju</strong>?</p>
+                    <p>To je za <strong>one koji imaju dodatu autentifikaciju</strong> ispred Uptime Kuma kao na primer Cloudflare Access.</p>
+                    <p>Molim Vas koristite ovo sa pažnjom.</p>
                 </template>
             </Confirm>
         </div>
