@@ -184,6 +184,12 @@
                     <p>請小心使用。</p>
                 </template>
 
+                <template v-if="$i18n.locale === 'zh-CN' ">
+                    <p>是否确定 <strong>取消登录验证</strong>？</p>
+                    <p>这是为 <strong>有第三方认证</strong> 的用户提供的功能，如 Cloudflare Access</p>
+                    <p>请谨慎使用！</p>
+                </template>
+
                 <template v-if="$i18n.locale === 'de-DE' ">
                     <p>Bist du sicher das du die <strong>Authentifizierung deaktivieren</strong> möchtest?</p>
                     <p>Es ist für <strong>jemanden der eine externe Authentifizierung</strong> vor Uptime Kuma geschaltet hat, wie z.B. Cloudflare Access.</p>
