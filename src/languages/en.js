@@ -106,5 +106,8 @@ export default {
     "Resource Record Type": "Resource Record Type",
     "Last Result": "Last Result",
     "Create your admin account": "Create your admin account",
-    "Repeat Password": "Repeat Password"
+    "Repeat Password": "Repeat Password",
+    "Import/Export Backup": "Import/Export Backup",
+    "Export": "Export",
+    "Import": "Import",
 }
