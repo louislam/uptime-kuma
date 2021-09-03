@@ -5,7 +5,8 @@ const { setSetting, setting } = require("./util-server");
 class Database {
 
     static templatePath = "./db/kuma.db"
-    static path = "./data/kuma.db";
+    static dataDir;
+    static path;
     static latestVersion = 8;
     static noReject = true;
     static sqliteInstance = null;
@@ -56,7 +57,7 @@ class Database {
             console.info("Database patch is needed")
 
             console.info("Backup the db")
-            const backupPath = "./data/kuma.db.bak" + version;
+            const backupPath = this.dataDir + "kuma.db.bak" + version;
             fs.copyFileSync(Database.path, backupPath);
 
             const shmPath = Database.path + "-shm";

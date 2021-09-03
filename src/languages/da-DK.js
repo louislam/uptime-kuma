@@ -106,5 +106,7 @@ export default {
     pauseMonitorMsg: "Er du sikker på, at du vil pause Overvågeren?",
     "Create your admin account": "Opret din administratorkonto",
     "Repeat Password": "Gentag adgangskoden",
-    "Resource Record Type": "Resource Record Type"
+    "Resource Record Type": "Resource Record Type",
+    respTime: "Resp. Time (ms)",
+    notAvailableShort: "N/A"
 }

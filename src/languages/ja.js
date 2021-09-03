@@ -106,5 +106,7 @@ export default {
     "Resource Record Type": "DNSレコード設定",
     "Last Result": "最終結果",
     "Create your admin account": "Create your admin account",
-    "Repeat Password": "Repeat Password"
+    "Repeat Password": "Repeat Password",
+    respTime: "Resp. Time (ms)",
+    notAvailableShort: "N/A"
 }
