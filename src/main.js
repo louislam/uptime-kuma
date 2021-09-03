@@ -30,6 +30,7 @@ import esEs from "./languages/es-ES";
 import fr from "./languages/fr";
 import ja from "./languages/ja";
 import daDK from "./languages/da-DK";
+import sr from "./languages/sr";
 import svSE from "./languages/sv-SE";
 import koKR from "./languages/ko-KR";
 import ruRU from "./languages/ru-RU";
@@ -104,6 +105,7 @@ const languageList = {
     "fr": fr,
     "ja": ja,
     "da-DK": daDK,
+    "sr": sr,
     "sv-SE": svSE,
     "ko-KR": koKR,
     "ru-RU": ruRU,
