@@ -26,11 +26,17 @@ import { appName } from "./util.ts";
 import en from "./languages/en";
 import zhHK from "./languages/zh-HK";
 import deDE from "./languages/de-DE";
+import nlNL from "./languages/nl-NL";
+import esEs from "./languages/es-ES";
 import fr from "./languages/fr";
 import ja from "./languages/ja";
 import daDK from "./languages/da-DK";
+import sr from "./languages/sr";
+import srLatn from "./languages/sr-latn";
 import svSE from "./languages/sv-SE";
 import koKR from "./languages/ko-KR";
+import ruRU from "./languages/ru-RU";
+import zhCN from "./languages/zh-CN";
 
 const routes = [
     {
@@ -97,11 +103,17 @@ const languageList = {
     en,
     "zh-HK": zhHK,
     "de-DE": deDE,
+    "nl-NL": nlNL,
+    "es-ES": esEs,
     "fr": fr,
     "ja": ja,
     "da-DK": daDK,
+    "sr": sr,
+    "sr-latn": srLatn,
     "sv-SE": svSE,
     "ko-KR": koKR,
+    "ru-RU": ruRU,
+    "zh-CN": zhCN,
 };
 
 const i18n = createI18n({

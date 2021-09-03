@@ -70,7 +70,7 @@ export default {
     Timezone: "Zeitzone",
     "Search Engine Visibility": "Suchmaschinensichtbarkeit",
     "Allow indexing": "Indizierung zulassen",
-    "Discourage search engines from indexing site": "Halte Suchmaschinen von der Indexierung der Site ab",
+    "Discourage search engines from indexing site": "Halte Suchmaschinen von der Indexierung der Seite ab",
     "Change Password": "Passwort ändern",
     "Current Password": "Dezeitiges Passwort",
     "New Password": "Neues Passwort",
@@ -96,10 +96,10 @@ export default {
     Email: "E-Mail",
     Test: "Test",
     "Certificate Info": "Zertifikatsinfo",
-    keywordDescription: "Suche nach einen Schlüsselwort in einer schlichten HTML oder JSON Ausgabe. Bitte beachte, es wird in der Groß-/Kleinschreibung unterschieden.",
+    keywordDescription: "Suche nach einem Schlüsselwort in der HTML oder JSON Ausgabe. Bitte beachte, es wird in der Groß-/Kleinschreibung unterschieden.",
     deleteMonitorMsg: "Bist du sicher das du den Monitor löschen möchtest?",
     deleteNotificationMsg: "Möchtest du diese Benachrichtigung wirklich für alle Monitore löschen?",
-    resoverserverDescription: "Cloudflare ist der Standardserver, dieser kann jederzeit geändern werden.",
+    resoverserverDescription: "Cloudflare ist als der Standardserver festgelegt, dieser kann jederzeit geändern werden.",
     "Resolver Server": "Auflösungsserver",
     rrtypeDescription: "Wähle den RR-Typ aus, welchen du überwachen möchtest.",
     "Last Result": "Letztes Ergebnis",
@@ -110,4 +110,6 @@ export default {
     "Import/Export Backup": "Import/Export Backup",
     "Export": "Export",
     "Import": "Import",
+    respTime: "Antw. Zeit (ms)",
+    notAvailableShort: "N/A"
 }

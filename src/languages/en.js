@@ -110,4 +110,6 @@ export default {
     "Import/Export Backup": "Import/Export Backup",
     "Export": "Export",
     "Import": "Import",
+    respTime: "Resp. Time (ms)",
+    notAvailableShort: "N/A"
 }

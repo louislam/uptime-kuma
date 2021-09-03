@@ -6,6 +6,7 @@ const { sleep, debug, TimeLogger, getRandomInt } = require("../src/util");
 console.log("Importing Node libraries")
 const fs = require("fs");
 const http = require("http");
+const https = require("https");
 
 console.log("Importing 3rd-party libraries")
 debug("Importing express");
@@ -45,9 +46,41 @@ console.info("Version: " + checkVersion.version);
 const hostname = process.env.HOST || args.host;
 const port = parseInt(process.env.PORT || args.port || 3001);
 
+// SSL
+const sslKey = process.env.SSL_KEY || args["ssl-key"] || undefined;
+const sslCert = process.env.SSL_CERT || args["ssl-cert"] || undefined;
+
+// Demo Mode?
+const demoMode = args["demo"] || false;
+
+if (demoMode) {
+    console.log("==== Demo Mode ====");
+}
+
+// Data Directory (must be end with "/")
+Database.dataDir = process.env.DATA_DIR || args["data-dir"] || "./data/";
+Database.path = Database.dataDir + "kuma.db";
+if (! fs.existsSync(Database.dataDir)) {
+    fs.mkdirSync(Database.dataDir, { recursive: true });
+}
+console.log(`Data Dir: ${Database.dataDir}`);
+
 console.log("Creating express and socket.io instance")
 const app = express();
-const server = http.createServer(app);
+
+let server;
+
+if (sslKey && sslCert) {
+    console.log("Server Type: HTTPS");
+    server = https.createServer({
+        key: fs.readFileSync(sslKey),
+        cert: fs.readFileSync(sslCert)
+    }, app);
+} else {
+    console.log("Server Type: HTTP");
+    server = http.createServer(app);
+}
+
 const io = new Server(server);
 app.use(express.json())
 

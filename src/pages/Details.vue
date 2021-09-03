@@ -238,7 +238,7 @@ export default {
                 return this.lastHeartBeat.ping;
             }
 
-            return "N/A"
+            return this.$t("notAvailableShort")
         },
 
         avgPing() {
@@ -246,7 +246,7 @@ export default {
                 return this.$root.avgPingList[this.monitor.id];
             }
 
-            return "N/A"
+            return this.$t("notAvailableShort")
         },
 
         importantHeartBeatList() {
