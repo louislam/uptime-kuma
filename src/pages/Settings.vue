@@ -189,6 +189,12 @@
                     <p>Es ist für <strong>jemanden der eine externe Authentifizierung</strong> vor Uptime Kuma geschaltet hat, wie z.B. Cloudflare Access.</p>
                     <p>Bitte mit Vorsicht nutzen.</p>
                 </template>
+
+                <template v-if="$i18n.locale === 'sr-latn' ">
+                    <p>Da li ste sigurni da želite da <strong>isključite autentifikaciju</strong>?</p>
+                    <p>To je za <strong>one koji imaju dodatu autentifikaciju</strong> ispred Uptime Kuma kao na primer Cloudflare Access.</p>
+                    <p>Molim Vas koristite ovo sa pažnjom.</p>
+                </template>
             </Confirm>
         </div>
     </transition>
