@@ -10,6 +10,17 @@ It is a self-hosted monitoring tool like "Uptime Robot".
 
 <img src="https://louislam.net/uptimekuma/1.jpg" width="512" alt="" />
 
+## 🥔 Live Demo
+
+Try it!
+
+https://demo.uptime.kuma.pet
+
+It is a 5 minutes live demo, all data will be deleted after that. The server is located at Tokyo, if you live far away from here, it may affact your experience. I suggest that you should install to try it.
+
+VPS is sponsored by Uptime Kuma sponsors on [Open Collective](https://opencollective.com/uptime-kuma)! Thank you so much!
+
+
 ## ⭐ Features
 
 * Monitoring uptime for HTTP(s) / TCP / Ping / DNS Record.
@@ -65,6 +76,10 @@ https://github.com/louislam/uptime-kuma/wiki/%F0%9F%86%99-How-to-Update
 I will mark requests/issues to the next milestone.
 
 https://github.com/louislam/uptime-kuma/milestones
+
+Project Plan:
+
+https://github.com/louislam/uptime-kuma/projects/1
 
 ## 🖼 More Screenshots
 

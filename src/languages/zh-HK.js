@@ -103,8 +103,10 @@ export default {
     "Resource Record Type": "DNS 記錄類型",
     resoverserverDescription: "預設值為 Cloudflare DNS 伺服器，你可以轉用其他 DNS 伺服器。",
     rrtypeDescription: "請選擇 DNS 記錄類型",
-    pauseMonitorMsg: "Are you sure want to pause?",
-    "Last Result": "Last Result",
-    "Create your admin account": "Create your admin account",
-    "Repeat Password": "Repeat Password"
+    pauseMonitorMsg: "是否確定暫停？",
+    "Last Result": "最後結果",
+    "Create your admin account": "製作你的管理員帳號",
+    "Repeat Password": "重複密碼",
+    respTime: "反應時間 (ms)",
+    notAvailableShort: "N/A"
 }
