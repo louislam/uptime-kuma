@@ -270,18 +270,9 @@ class Monitor extends BeanModel {
                         this.id,
                     ])
 
-                    let text;
-                    if (bean.status === UP) {
-                        text = "✅ Up"
-                    } else {
-                        text = "🔴 Down"
-                    }
-
-                    let msg = `[${this.name}] [${text}] ${bean.msg}`;
-
                     for (let notification of notificationList) {
                         try {
-                            await Notification.send(JSON.parse(notification.config), msg, await this.toJSON(), bean.toJSON())
+                            await Notification.send(JSON.parse(notification.config), this.name, await this.toJSON(), bean.toJSON())
                         } catch (e) {
                             console.error("Cannot send notification to " + notification.name);
                             console.log(e);
