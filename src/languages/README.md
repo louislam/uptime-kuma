@@ -8,5 +8,11 @@
 8. Import your language file in `src/main.js` and add it to `languageList` constant.
 9. Make a [pull request](https://github.com/louislam/uptime-kuma/pulls) when you have done.
 
+
+
+One of good examples:
+https://github.com/louislam/uptime-kuma/pull/316/files
+
+
 If you do not have programming skills, let me know in [Issues section](https://github.com/louislam/uptime-kuma/issues). I will assist you. 😏
 

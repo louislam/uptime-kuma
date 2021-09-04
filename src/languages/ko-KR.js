@@ -88,7 +88,7 @@ export default {
     "Enable Auth": "인증 켜기",
     Logout: "로그아웃",
     Leave: "나가기",
-    "I understand, please disable": "기능에 대해 이해했어요.",
+    "I understand, please disable": "기능에 대해 이해했으니 꺼주세요.",
     Confirm: "확인",
     Yes: "확인",
     No: "취소",
@@ -107,6 +107,6 @@ export default {
     "Last Result": "최근 결과",
     "Create your admin account": "관리자 계정 만들기",
     "Repeat Password": "비밀번호 재입력",
-    respTime: "Resp. Time (ms)",
+    respTime: "응답 시간 (ms)",
     notAvailableShort: "N/A"
 }
