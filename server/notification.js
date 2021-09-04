@@ -492,7 +492,7 @@ class Notification {
                 if (heartbeatJSON["status"] == 0) {
                     let downdata = {
                         "title": "UptimeKuma Alert: " + monitorJSON["name"],
-                        "body": "[🔴 Down]" + heartbeatJSON["msg"] + "\nTime (UTC):" + heartbeatJSON["time"],
+                        "body": "[🔴 Down] " + heartbeatJSON["msg"] + "\nTime (UTC): " + heartbeatJSON["time"],
                     }
                     await axios.post(lunaseadevice, downdata)
                     return okMsg;
