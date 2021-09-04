@@ -107,6 +107,6 @@ export default {
     "Last Result": "Senaste resultat",
     "Create your admin account": "Skapa ditt administratörskonto",
     "Repeat Password": "Upprepa Lösenord",
-    respTime: "Resp. Time (ms)",
-    notAvailableShort: "N/A"
+    respTime: "Svarstid (ms)",
+    notAvailableShort: "Ej Tillg."
 }
