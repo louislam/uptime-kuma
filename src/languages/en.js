@@ -111,5 +111,8 @@ export default {
     "Create your admin account": "Create your admin account",
     "Repeat Password": "Repeat Password",
     respTime: "Resp. Time (ms)",
-    notAvailableShort: "N/A"
+    notAvailableShort: "N/A",
+    "Clear Data": "Clear Data",
+    "Events": "Events",
+    "Heartbeats": "Heartbeats",
 }
