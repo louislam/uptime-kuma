@@ -33,7 +33,7 @@ export default {
     Down: "Nere",
     Pending: "Pågående",
     Unknown: "Okänt",
-    Pause: "Paus",
+    Pause: "Pausa",
     Name: "Namn",
     Status: "Status",
     DateTime: "Datum & Tid",
