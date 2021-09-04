@@ -531,7 +531,7 @@ class Notification {
                     let downdata = {
                         "type": "note",
                         "title": "UptimeKuma Alert: " + monitorJSON["name"],
-                        "body": "[🔴 Down]" + heartbeatJSON["msg"] + "\nTime (UTC):" + heartbeatJSON["time"],
+                        "body": "[🔴 Down] " + heartbeatJSON["msg"] + "\nTime (UTC): " + heartbeatJSON["time"],
                     }
                     await axios.post(pushbulletUrl, downdata, config)
                 } else if (heartbeatJSON["status"] == 1) {
