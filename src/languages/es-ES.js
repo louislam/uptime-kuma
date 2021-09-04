@@ -108,5 +108,11 @@ export default {
     "Create your admin account": "Crea tu cuenta de administrador",
     "Repeat Password": "Repetir contraseña",
     respTime: "Tiempo de resp. (ms)",
-    notAvailableShort: "N/A"
+    notAvailableShort: "N/A",
+    clearEventsMsg: "Are you sure want to delete all events for this monitor?",
+    clearHeartbeatsMsg: "Are you sure want to delete all heartbeats for this monitor?",
+    confirmClearStatisticsMsg: "Are you sure want to delete ALL statistics?",
+    "Clear Data": "Clear Data",
+    Events: "Events",
+    Heartbeats: "Heartbeats"
 }

@@ -108,5 +108,11 @@ export default {
     "Create your admin account": "Maak uw beheerdersaccount aan",
     "Repeat Password": "Herhaal wachtwoord",
     respTime: "resp. tijd (ms)",
-    notAvailableShort: "N.v.t."
+    notAvailableShort: "N.v.t.",
+    clearEventsMsg: "Are you sure want to delete all events for this monitor?",
+    clearHeartbeatsMsg: "Are you sure want to delete all heartbeats for this monitor?",
+    confirmClearStatisticsMsg: "Are you sure want to delete ALL statistics?",
+    "Clear Data": "Clear Data",
+    Events: "Events",
+    Heartbeats: "Heartbeats"
 }
