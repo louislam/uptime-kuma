@@ -31,7 +31,7 @@ export default {
             beatWidth: 10,
             beatHeight: 30,
             hoverScale: 1.5,
-            beatMargin: 3,      // Odd number only, even = blurry
+            beatMargin: 4,
             move: false,
             maxBeat: -1,
         }
@@ -122,29 +122,26 @@ export default {
             this.$root.heartbeatList[this.monitorId] = [];
         }
     },
+
     mounted() {
         if (this.size === "small") {
+            this.beatWidth = 5;
             this.beatHeight = 16;
+            this.beatMargin = 2;
+        }
 
-            // Handle strange render problem in different DPI.
-            if (window.devicePixelRatio === 1.25) {
-                this.beatWidth = 5.6;
-                this.beatMargin = 2.4;
+        // Suddenly, have an idea how to handle it universally.
+        // If the pixel * ratio != Integer, then it causes render issue, round it to solve it!!
+        const actualWidth = this.beatWidth * window.devicePixelRatio;
+        const actualMargin = this.beatMargin * window.devicePixelRatio;
 
-            } else if (window.devicePixelRatio === 1.75) {
-                this.beatWidth = 5.7;
-                this.beatMargin = 2.4;
+        if (! Number.isInteger(actualWidth)) {
+            this.beatWidth = Math.round(actualWidth) / window.devicePixelRatio;
+            console.log(this.beatWidth);
+        }
 
-            } else if (window.devicePixelRatio === 2.25) {
-                this.beatWidth = 5.8;
-                this.beatMargin = 2.4;
-
-            } else {
-                // 100%, 150%, 200% ...
-                this.beatWidth = 6;
-                this.beatMargin = 2;
-            }
-
+        if (! Number.isInteger(actualMargin)) {
+            this.beatMargin = Math.round(actualMargin) / window.devicePixelRatio;
         }
 
         window.addEventListener("resize", this.resize);
