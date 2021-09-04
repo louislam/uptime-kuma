@@ -276,6 +276,7 @@ export default {
 
         importantHeartBeatList() {
             if (this.$root.importantHeartbeatList[this.monitor.id]) {
+                // eslint-disable-next-line vue/no-side-effects-in-computed-properties
                 this.heartBeatList = this.$root.importantHeartbeatList[this.monitor.id];
                 return this.$root.importantHeartbeatList[this.monitor.id]
             }
@@ -359,9 +360,7 @@ export default {
 
         clearEvents() {
             this.$root.clearEvents(this.monitor.id, (res) => {
-                if (res.ok) {
-                    this.$router.go();
-                } else {
+                if (! res.ok) {
                     toast.error(res.msg);
                 }
             })
@@ -369,9 +368,7 @@ export default {
 
         clearHeartbeats() {
             this.$root.clearHeartbeats(this.monitor.id, (res) => {
-                if (res.ok) {
-                    this.$router.go();
-                } else {
+                if (! res.ok) {
                     toast.error(res.msg);
                 }
             })
@@ -495,7 +492,7 @@ table {
             border-color: $dark-bg2;
             border-width: 2px;
 
-            li button{
+            li button {
                 color: $dark-font-color;
             }
 

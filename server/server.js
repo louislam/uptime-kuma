@@ -82,7 +82,12 @@ if (sslKey && sslCert) {
 }
 
 const io = new Server(server);
-app.use(express.json())
+module.exports.io = io;
+
+// Must be after io instantiation
+const { sendNotificationList, sendHeartbeatList, sendImportantHeartbeatList } = require("./client");
+
+app.use(express.json());
 
 /**
  * Total WebSocket client connected to server currently, no actual use
@@ -597,6 +602,8 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                     monitorID,
                 ]);
 
+                await sendImportantHeartbeatList(socket, monitorID, true, true);
+
                 callback({
                     ok: true,
                 });
@@ -618,6 +625,8 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                 await R.exec("DELETE FROM heartbeat WHERE monitor_id = ?", [
                     monitorID
                 ]);
+
+                await sendHeartbeatList(socket, monitorID, true, true);
 
                 callback({
                     ok: true,
@@ -716,25 +725,6 @@ async function checkOwner(userID, monitorID) {
 async function sendMonitorList(socket) {
     let list = await getMonitorJSONList(socket.userID);
     io.to(socket.userID).emit("monitorList", list)
-    return list;
-}
-
-async function sendNotificationList(socket) {
-    const timeLogger = new TimeLogger();
-
-    let result = [];
-    let list = await R.find("notification", " user_id = ? ", [
-        socket.userID,
-    ]);
-
-    for (let bean of list) {
-        result.push(bean.export())
-    }
-
-    io.to(socket.userID).emit("notificationList", result)
-
-    timeLogger.print("Send Notification List");
-
     return list;
 }
 
@@ -870,48 +860,6 @@ async function startMonitors() {
         // Give some delays, so all monitors won't make request at the same moment when just start the server.
         await sleep(getRandomInt(300, 1000));
     }
-}
-
-/**
- * Send Heartbeat History list to socket
- */
-async function sendHeartbeatList(socket, monitorID) {
-    const timeLogger = new TimeLogger();
-
-    let list = await R.find("heartbeat", `
-        monitor_id = ?
-        ORDER BY time DESC
-        LIMIT 100
-    `, [
-        monitorID,
-    ])
-
-    let result = [];
-
-    for (let bean of list) {
-        result.unshift(bean.toJSON())
-    }
-
-    socket.emit("heartbeatList", monitorID, result)
-
-    timeLogger.print(`[Monitor: ${monitorID}] sendHeartbeatList`)
-}
-
-async function sendImportantHeartbeatList(socket, monitorID) {
-    const timeLogger = new TimeLogger();
-
-    let list = await R.find("heartbeat", `
-        monitor_id = ?
-        AND important = 1
-        ORDER BY time DESC
-        LIMIT 500
-    `, [
-        monitorID,
-    ])
-
-    timeLogger.print(`[Monitor: ${monitorID}] sendImportantHeartbeatList`);
-
-    socket.emit("importantHeartbeatList", monitorID, list)
 }
 
 async function shutdownFunction(signal) {
