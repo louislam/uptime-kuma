@@ -538,7 +538,7 @@ class Notification {
                     let updata = {
                         "type": "note",
                         "title": "UptimeKuma Alert: " + monitorJSON["name"],
-                        "body": "[✅ Up]" + heartbeatJSON["msg"] + "\nTime (UTC):" + heartbeatJSON["time"],
+                        "body": "[✅ Up] " + heartbeatJSON["msg"] + "\nTime (UTC): " + heartbeatJSON["time"],
                     }
                     await axios.post(pushbulletUrl, updata, config)
                 }
