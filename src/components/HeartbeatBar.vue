@@ -124,9 +124,27 @@ export default {
     },
     mounted() {
         if (this.size === "small") {
-            this.beatWidth = 5.6;
-            this.beatMargin = 2.4;
-            this.beatHeight = 16
+            this.beatHeight = 16;
+
+            // Handle strange render problem in different DPI.
+            if (window.devicePixelRatio === 1.25) {
+                this.beatWidth = 5.6;
+                this.beatMargin = 2.4;
+
+            } else if (window.devicePixelRatio === 1.75) {
+                this.beatWidth = 5.7;
+                this.beatMargin = 2.4;
+
+            } else if (window.devicePixelRatio === 2.25) {
+                this.beatWidth = 5.8;
+                this.beatMargin = 2.4;
+
+            } else {
+                // 100%, 150%, 200% ...
+                this.beatWidth = 6;
+                this.beatMargin = 2;
+            }
+
         }
 
         window.addEventListener("resize", this.resize);
