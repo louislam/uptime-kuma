@@ -552,7 +552,7 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
             try {
                 checkLogin(socket)
 
-                let msg = await Notification.send(notification)
+                let msg = await Notification.send(notification, notification.name + " Testing")
 
                 callback({
                     ok: true,

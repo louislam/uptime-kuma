@@ -17,20 +17,8 @@ class Notification {
      * @returns {Promise<string>} Successful msg
      * Throw Error with fail msg
      */
-    static async send(notification, monitorName = null, monitorJSON = null, heartbeatJSON = null) {
+    static async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully. ";
-
-        let msg = `[${notification.name}] Testing`;
-        // heartbeatJSON is only defined if we're not testing
-        if(heartbeatJSON) {
-            let text;
-            if (heartbeatJSON["status"] === UP) {
-                text = "✅ Up"
-            } else {
-                text = "🔴 Down"
-            }
-            msg = `[${monitorName}] [${text}] ${heartbeatJSON["msg"]}`;
-        }
 
         if (notification.type === "telegram") {
             try {
