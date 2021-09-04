@@ -94,7 +94,7 @@ class Notification {
             }
 
         } else if (notification.type === "smtp") {
-            return await Notification.smtp(notification, msg)
+            return await Notification.smtp(notification, msg, heartbeatJSON)
 
         } else if (notification.type === "discord") {
             try {
@@ -648,7 +648,7 @@ class Notification {
         await R.trash(bean)
     }
 
-    static async smtp(notification, msg) {
+    static async smtp(notification, msg, heartbeatJSON = null) {
 
         const config = {
             host: notification.smtpHost,
@@ -666,12 +666,17 @@ class Notification {
 
         let transporter = nodemailer.createTransport(config);
 
+        let bodyTextContent = msg;
+        if(heartbeatJSON) {
+            bodyTextContent = `${msg}\nTime (UTC): ${heartbeatJSON["time"]}`;
+        }
+
         // send mail with defined transport object
         await transporter.sendMail({
             from: `"Uptime Kuma" <${notification.smtpFrom}>`,
             to: notification.smtpTo,
             subject: msg,
-            text: msg,
+            text: bodyTextContent,
         });
 
         return "Sent Successfully.";
