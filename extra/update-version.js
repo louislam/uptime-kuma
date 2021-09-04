@@ -23,6 +23,8 @@ if (! exists) {
     pkg.version = newVersion;
     pkg.scripts.setup = pkg.scripts.setup.replaceAll(oldVersion, newVersion);
     pkg.scripts["build-docker"] = pkg.scripts["build-docker"].replaceAll(oldVersion, newVersion);
+    pkg.scripts["build-docker-alpine"] = pkg.scripts["build-docker-alpine"].replaceAll(oldVersion, newVersion);
+    pkg.scripts["build-docker-debian"] = pkg.scripts["build-docker-debian"].replaceAll(oldVersion, newVersion);
     fs.writeFileSync("package.json", JSON.stringify(pkg, null, 4) + "\n");
 
     commit(newVersion);
