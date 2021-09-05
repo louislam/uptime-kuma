@@ -106,7 +106,7 @@ const languageList = {
     "de-DE": deDE,
     "nl-NL": nlNL,
     "es-ES": esEs,
-    "fr": fr,
+    "fr-FR": frFR,
     "ja": ja,
     "da-DK": daDK,
     "sr": sr,
