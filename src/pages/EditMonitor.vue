@@ -298,16 +298,16 @@ export default {
                     dns_resolve_type: "A",
                     dns_resolve_server: "1.1.1.1",
                 }
+
+                for (let i = 0; i < this.$root.notificationList.length; i++) {
+                    if (this.$root.notificationList[i].isDefault == true) {
+                        this.monitor.notificationIDList[this.$root.notificationList[i].id] = true;
+                    }
+                }
             } else if (this.isEdit) {
                 this.$root.getSocket().emit("getMonitor", this.$route.params.id, (res) => {
                     if (res.ok) {
                         this.monitor = res.monitor;
-
-                        for (let i = 0; i < this.$root.notificationList.length; i++) {
-                            if (this.$root.notificationList[i].isDefault == true) {
-                                this.monitor.notificationIDList[this.$root.notificationList[i].id] = true;
-                            }
-                        }
                     } else {
                         toast.error(res.msg)
                     }
