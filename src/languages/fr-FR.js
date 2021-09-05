@@ -66,7 +66,7 @@ export default {
     "Theme - Heartbeat Bar": "Voir les services surveillés",
     Normal: "Général",
     Bottom: "En dessous",
-    None: "Non",
+    None: "Rien",
     Timezone: "Fuseau Horaire",
     "Search Engine Visibility": "Visibilité par les moteurs de recherche",
     "Allow indexing": "Autoriser l'indexation par des moteurs de recherche",
@@ -109,5 +109,5 @@ export default {
     "Repeat Password": "Répéter le mot de passe",
     respTime: "Temps de réponse (ms)",
     notAvailableShort: "N/A",
-    Create: "Create"
+    Create: "Créer"
 }
