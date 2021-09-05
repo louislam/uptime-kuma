@@ -37,6 +37,7 @@ import svSE from "./languages/sv-SE";
 import koKR from "./languages/ko-KR";
 import ruRU from "./languages/ru-RU";
 import zhCN from "./languages/zh-CN";
+import pl from "./languages/pl"
 
 const routes = [
     {
@@ -114,6 +115,7 @@ const languageList = {
     "ko-KR": koKR,
     "ru-RU": ruRU,
     "zh-CN": zhCN,
+    "pl": pl,
 };
 
 const i18n = createI18n({
