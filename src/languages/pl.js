@@ -8,7 +8,7 @@ export default {
     maxRedirectDescription: "Maksymalna liczba przekierowań do wykonania. Ustaw na 0, aby wyłączyć przekierowania.",
     acceptedStatusCodesDescription: "Wybierz kody stanu, które są uważane za udaną odpowiedź.",
     passwordNotMatchMsg: "Powtórzone hasło nie pasuje.",
-    notificationDescription: "Proszę przypisać powiadomienie do monitora(ów), aby zadziałał.",
+    notificationDescription: "Proszę przypisać powiadomienie do monitora(ów), aby zadziałało.",
     keywordDescription: "Wyszukiwanie słów kluczowych w zwykłym html lub odpowiedzi JSON. Wielkość liter ma znaczenie.",
     pauseDashboardHome: "Pauza",
     deleteMonitorMsg: "Czy na pewno chcesz usunąć ten monitor?",
