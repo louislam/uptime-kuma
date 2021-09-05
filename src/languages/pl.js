@@ -4,7 +4,7 @@ export default {
     "Avg.": "Średnia ",
     retriesDescription: "Maksymalna liczba powtórzeń, zanim usługa zostanie oznaczona jako wyłączona i zostanie wysłane powiadomienie",
     ignoreTLSError: "Ignoruj błąd TLS/SSL dla stron HTTPS",
-    upsideDownModeDescription: "Odwróć status do góry nogami. Jeśli usługa jest osiągalna, to jest niedostępna.",
+    upsideDownModeDescription: "Odwróć status do góry nogami. Jeśli usługa jest osiągalna, to jest oznaczona jako niedostępna.",
     maxRedirectDescription: "Maksymalna liczba przekierowań do wykonania. Ustaw na 0, aby wyłączyć przekierowania.",
     acceptedStatusCodesDescription: "Wybierz kody stanu, które są uważane za udaną odpowiedź.",
     passwordNotMatchMsg: "Powtórzone hasło nie pasuje.",
