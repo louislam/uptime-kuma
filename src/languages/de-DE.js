@@ -108,5 +108,6 @@ export default {
     "Repeat Password": "Wiederhole das Passwort",
     "Resource Record Type": "Resource Record Type",
     respTime: "Antw. Zeit (ms)",
-    notAvailableShort: "N/A"
+    notAvailableShort: "N/A",
+    Create: "Erstellen",
 }
