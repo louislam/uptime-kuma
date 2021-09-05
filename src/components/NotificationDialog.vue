@@ -469,6 +469,25 @@
                                 First access the <a href="https://developers.line.biz/console/" target="_blank">Line Developers Console</a>, create a provider and channel (Messaging API), then you can get the channel access token and user id from the above mentioned menu items.
                             </div>
                         </template>
+
+                        <div class="mb-3">
+                            <hr class="dropdown-divider">
+
+                            <div class="form-check form-switch">
+                                <input v-model="notification.isDefault" class="form-check-input" type="checkbox">
+                                <label class="form-check-label">{{ $t("Default enabled") }}</label>
+                            </div>
+                            <div class="form-text">
+                                {{ $t("enableDefaultNotificationDescription") }}
+                            </div>
+
+                            <br>
+
+                            <div class="form-check form-switch">
+                                <input v-model="notification.applyExisting" class="form-check-input" type="checkbox">
+                                <label class="form-check-label">{{ $t("Also apply to existing monitors") }}</label>
+                            </div>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button v-if="id" type="button" class="btn btn-danger" :disabled="processing" @click="deleteConfirm">

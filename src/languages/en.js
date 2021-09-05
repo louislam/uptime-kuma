@@ -16,6 +16,7 @@ export default {
     resoverserverDescription: "Cloudflare is the default server, you can change the resolver server anytime.",
     rrtypeDescription: "Select the RR-Type you want to monitor",
     pauseMonitorMsg: "Are you sure want to pause?",
+    enableDefaultNotificationDescription: "For every new monitor this notification will be enabled by default. You can still disable the notification separately for each monitor.",
     Settings: "Settings",
     Dashboard: "Dashboard",
     "New Update": "New Update",
@@ -108,5 +109,7 @@ export default {
     "Create your admin account": "Create your admin account",
     "Repeat Password": "Repeat Password",
     respTime: "Resp. Time (ms)",
-    notAvailableShort: "N/A"
+    notAvailableShort: "N/A",
+    "Default enabled": "Default enabled",
+    "Also apply to existing monitors": "Also apply to existing monitors",
 }
