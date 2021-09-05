@@ -108,5 +108,6 @@ export default {
     "Repeat Password": "Gentag adgangskoden",
     "Resource Record Type": "Resource Record Type",
     respTime: "Resp. Time (ms)",
-    notAvailableShort: "N/A"
+    notAvailableShort: "N/A",
+    Create: "Create"
 }

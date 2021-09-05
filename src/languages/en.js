@@ -112,4 +112,5 @@ export default {
     notAvailableShort: "N/A",
     "Default enabled": "Default enabled",
     "Also apply to existing monitors": "Also apply to existing monitors",
+    Create: "Create",
 }
