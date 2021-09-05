@@ -108,5 +108,6 @@ export default {
     "Create your admin account": "Créez votre compte administrateur",
     "Repeat Password": "Répéter le mot de passe",
     respTime: "Temps de réponse (ms)",
-    notAvailableShort: "N/A"
+    notAvailableShort: "N/A",
+    Create: "Create"
 }

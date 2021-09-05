@@ -108,5 +108,6 @@ export default {
     "Create your admin account": "Skapa ditt administratörskonto",
     "Repeat Password": "Upprepa Lösenord",
     respTime: "Svarstid (ms)",
-    notAvailableShort: "Ej Tillg."
+    notAvailableShort: "Ej Tillg.",
+    Create: "Create"
 }

@@ -108,5 +108,6 @@ export default {
     "Create your admin account": "Maak uw beheerdersaccount aan",
     "Repeat Password": "Herhaal wachtwoord",
     respTime: "resp. tijd (ms)",
-    notAvailableShort: "N.v.t."
+    notAvailableShort: "N.v.t.",
+    Create: "Create"
 }

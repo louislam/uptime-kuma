@@ -108,5 +108,6 @@ export default {
     "Create your admin account": "Создайте аккаунт администратора",
     "Repeat Password": "Повторите пароль",
     respTime: "Resp. Time (ms)",
-    notAvailableShort: "N/A"
+    notAvailableShort: "N/A",
+    Create: "Create"
 }

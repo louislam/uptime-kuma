@@ -108,5 +108,6 @@ export default {
     "Create your admin account": "Наприви администраторски налог",
     "Repeat Password": "Поновите лозинку",
     respTime: "Време одг. (мс)",
-    notAvailableShort: "N/A"
+    notAvailableShort: "N/A",
+    Create: "Create"
 }
