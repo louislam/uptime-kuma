@@ -28,7 +28,7 @@ import zhHK from "./languages/zh-HK";
 import deDE from "./languages/de-DE";
 import nlNL from "./languages/nl-NL";
 import esEs from "./languages/es-ES";
-import fr from "./languages/fr";
+import frFR from "./languages/fr-FR";
 import ja from "./languages/ja";
 import daDK from "./languages/da-DK";
 import sr from "./languages/sr";
@@ -106,7 +106,7 @@ const languageList = {
     "de-DE": deDE,
     "nl-NL": nlNL,
     "es-ES": esEs,
-    "fr": fr,
+    "fr-FR": frFR,
     "ja": ja,
     "da-DK": daDK,
     "sr": sr,
