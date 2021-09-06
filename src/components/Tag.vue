@@ -44,9 +44,14 @@ export default {
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .tag-wrapper {
     color: white;
+    opacity: 0.85;
+
+    .dark & {
+        opacity: 1;
+    }
 }
 
 .tag-text {
