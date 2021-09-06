@@ -108,5 +108,6 @@ export default {
     "Create your admin account": "创建管理员账号",
     "Repeat Password": "重复密码",
     respTime: "Resp. Time (ms)",
-    notAvailableShort: "N/A"
+    notAvailableShort: "N/A",
+    Create: "Create"
 }

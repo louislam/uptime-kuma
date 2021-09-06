@@ -108,5 +108,6 @@ export default {
     "Create your admin account": "製作你的管理員帳號",
     "Repeat Password": "重複密碼",
     respTime: "反應時間 (ms)",
-    notAvailableShort: "N/A"
+    notAvailableShort: "N/A",
+    Create: "建立"
 }

@@ -108,5 +108,6 @@ export default {
     "Create your admin account": "관리자 계정 만들기",
     "Repeat Password": "비밀번호 재입력",
     respTime: "응답 시간 (ms)",
-    notAvailableShort: "N/A"
+    notAvailableShort: "N/A",
+    Create: "Create"
 }

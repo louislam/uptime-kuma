@@ -4,6 +4,8 @@ const FormData = require("form-data");
 const nodemailer = require("nodemailer");
 const child_process = require("child_process");
 
+const { UP, DOWN } = require("../src/util");
+
 class Notification {
 
     /**
@@ -80,7 +82,7 @@ class Notification {
             }
 
         } else if (notification.type === "smtp") {
-            return await Notification.smtp(notification, msg)
+            return await Notification.smtp(notification, msg, heartbeatJSON)
 
         } else if (notification.type === "discord") {
             try {
@@ -109,7 +111,7 @@ class Notification {
                 }
 
                 // If heartbeatJSON is not null, we go into the normal alerting loop.
-                if (heartbeatJSON["status"] == 0) {
+                if (heartbeatJSON["status"] == DOWN) {
                     let discorddowndata = {
                         username: discordDisplayName,
                         embeds: [{
@@ -139,7 +141,7 @@ class Notification {
                     await axios.post(notification.discordWebhookUrl, discorddowndata)
                     return okMsg;
 
-                } else if (heartbeatJSON["status"] == 1) {
+                } else if (heartbeatJSON["status"] == UP) {
                     let discordupdata = {
                         username: discordDisplayName,
                         embeds: [{
@@ -343,7 +345,7 @@ class Notification {
                 const mattermostIconEmoji = notification.mattermosticonemo;
                 const mattermostIconUrl = notification.mattermosticonurl;
 
-                if (heartbeatJSON["status"] == 0) {
+                if (heartbeatJSON["status"] == DOWN) {
                     let mattermostdowndata = {
                         username: mattermostUserName,
                         text: "Uptime Kuma Alert",
@@ -387,7 +389,7 @@ class Notification {
                         mattermostdowndata
                     );
                     return okMsg;
-                } else if (heartbeatJSON["status"] == 1) {
+                } else if (heartbeatJSON["status"] == UP) {
                     let mattermostupdata = {
                         username: mattermostUserName,
                         text: "Uptime Kuma Alert",
@@ -489,19 +491,19 @@ class Notification {
                     return okMsg;
                 }
 
-                if (heartbeatJSON["status"] == 0) {
+                if (heartbeatJSON["status"] == DOWN) {
                     let downdata = {
-                        "title": "UptimeKuma Alert:" + monitorJSON["name"],
-                        "body": "[🔴 Down]" + heartbeatJSON["msg"] + "\nTime (UTC):" + heartbeatJSON["time"],
+                        "title": "UptimeKuma Alert: " + monitorJSON["name"],
+                        "body": "[🔴 Down] " + heartbeatJSON["msg"] + "\nTime (UTC): " + heartbeatJSON["time"],
                     }
                     await axios.post(lunaseadevice, downdata)
                     return okMsg;
                 }
 
-                if (heartbeatJSON["status"] == 1) {
+                if (heartbeatJSON["status"] == UP) {
                     let updata = {
-                        "title": "UptimeKuma Alert:" + monitorJSON["name"],
-                        "body": "[✅ Up]" + heartbeatJSON["msg"] + "\nTime (UTC):" + heartbeatJSON["time"],
+                        "title": "UptimeKuma Alert: " + monitorJSON["name"],
+                        "body": "[✅ Up] " + heartbeatJSON["msg"] + "\nTime (UTC): " + heartbeatJSON["time"],
                     }
                     await axios.post(lunaseadevice, updata)
                     return okMsg;
@@ -527,18 +529,18 @@ class Notification {
                         "body": "Testing Successful.",
                     }
                     await axios.post(pushbulletUrl, testdata, config)
-                } else if (heartbeatJSON["status"] == 0) {
+                } else if (heartbeatJSON["status"] == DOWN) {
                     let downdata = {
                         "type": "note",
-                        "title": "UptimeKuma Alert:" + monitorJSON["name"],
-                        "body": "[🔴 Down]" + heartbeatJSON["msg"] + "\nTime (UTC):" + heartbeatJSON["time"],
+                        "title": "UptimeKuma Alert: " + monitorJSON["name"],
+                        "body": "[🔴 Down] " + heartbeatJSON["msg"] + "\nTime (UTC): " + heartbeatJSON["time"],
                     }
                     await axios.post(pushbulletUrl, downdata, config)
-                } else if (heartbeatJSON["status"] == 1) {
+                } else if (heartbeatJSON["status"] == UP) {
                     let updata = {
                         "type": "note",
-                        "title": "UptimeKuma Alert:" + monitorJSON["name"],
-                        "body": "[✅ Up]" + heartbeatJSON["msg"] + "\nTime (UTC):" + heartbeatJSON["time"],
+                        "title": "UptimeKuma Alert: " + monitorJSON["name"],
+                        "body": "[✅ Up] " + heartbeatJSON["msg"] + "\nTime (UTC): " + heartbeatJSON["time"],
                     }
                     await axios.post(pushbulletUrl, updata, config)
                 }
@@ -566,7 +568,7 @@ class Notification {
                         ]
                     }
                     await axios.post(lineAPIUrl, testMessage, config)
-                } else if (heartbeatJSON["status"] == 0) {
+                } else if (heartbeatJSON["status"] == DOWN) {
                     let downMessage = {
                         "to": notification.lineUserID,
                         "messages": [
@@ -577,7 +579,7 @@ class Notification {
                         ]
                     }
                     await axios.post(lineAPIUrl, downMessage, config)
-                } else if (heartbeatJSON["status"] == 1) {
+                } else if (heartbeatJSON["status"] == UP) {
                     let upMessage = {
                         "to": notification.lineUserID,
                         "messages": [
@@ -639,7 +641,7 @@ class Notification {
         await R.trash(bean)
     }
 
-    static async smtp(notification, msg) {
+    static async smtp(notification, msg, heartbeatJSON = null) {
 
         const config = {
             host: notification.smtpHost,
@@ -657,12 +659,17 @@ class Notification {
 
         let transporter = nodemailer.createTransport(config);
 
+        let bodyTextContent = msg;
+        if(heartbeatJSON) {
+            bodyTextContent = `${msg}\nTime (UTC): ${heartbeatJSON["time"]}`;
+        }
+
         // send mail with defined transport object
         await transporter.sendMail({
             from: `"Uptime Kuma" <${notification.smtpFrom}>`,
             to: notification.smtpTo,
             subject: msg,
-            text: msg,
+            text: bodyTextContent,
         });
 
         return "Sent Successfully.";

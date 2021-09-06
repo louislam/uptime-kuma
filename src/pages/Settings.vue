@@ -213,6 +213,11 @@
                     <p>이 기능은 <strong>Cloudflare Access와 같은 서드파티 인증</strong>을 Uptime Kuma 앞에 둔 사용자를 위한 기능이에요.</p>
                     <p>신중하게 사용하세요.</p>
                 </template>
+                <template v-if="$i18n.locale === 'pl' ">
+                    <p>Czy na pewno chcesz <strong>wyłączyć autoryzację</strong>?</p>
+                    <p>Jest przeznaczony dla <strong>kogoś, kto ma autoryzację zewnętrzną</strong> przed Uptime Kuma, taką jak Cloudflare Access.</p>
+                    <p>Proszę używać ostrożnie.</p>
+                </template>
             </Confirm>
         </div>
     </transition>

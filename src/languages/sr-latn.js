@@ -108,5 +108,6 @@ export default {
     "Create your admin account": "Naprivi administratorski nalog",
     "Repeat Password": "Ponovite lozinku",
     respTime: "Vreme odg. (ms)",
-    notAvailableShort: "N/A"
+    notAvailableShort: "N/A",
+    Create: "Create"
 }
