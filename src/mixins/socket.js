@@ -107,8 +107,8 @@ export default {
             }
         });
 
-        socket.on("heartbeatList", (monitorID, data) => {
-            if (! (monitorID in this.heartbeatList)) {
+        socket.on("heartbeatList", (monitorID, data, overwrite = false) => {
+            if (! (monitorID in this.heartbeatList) || overwrite) {
                 this.heartbeatList[monitorID] = data;
             } else {
                 this.heartbeatList[monitorID] = data.concat(this.heartbeatList[monitorID])
@@ -127,8 +127,8 @@ export default {
             this.certInfoList[monitorID] = JSON.parse(data)
         });
 
-        socket.on("importantHeartbeatList", (monitorID, data) => {
-            if (! (monitorID in this.importantHeartbeatList)) {
+        socket.on("importantHeartbeatList", (monitorID, data, overwrite) => {
+            if (! (monitorID in this.importantHeartbeatList) || overwrite) {
                 this.importantHeartbeatList[monitorID] = data;
             } else {
                 this.importantHeartbeatList[monitorID] = data.concat(this.importantHeartbeatList[monitorID])
@@ -256,6 +256,18 @@ export default {
 
         uploadBackup(uploadedJSON, callback) {
             socket.emit("uploadBackup", uploadedJSON, callback)
+        },
+
+        clearEvents(monitorID, callback) {
+            socket.emit("clearEvents", monitorID, callback)
+        },
+
+        clearHeartbeats(monitorID, callback) {
+            socket.emit("clearHeartbeats", monitorID, callback)
+        },
+
+        clearStatistics(callback) {
+            socket.emit("clearStatistics", callback)
         },
     },
 

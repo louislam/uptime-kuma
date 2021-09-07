@@ -16,6 +16,9 @@ export default {
     resoverserverDescription: "Cloudflare is the default server, you can change the resolver server anytime.",
     rrtypeDescription: "Select the RR-Type you want to monitor",
     pauseMonitorMsg: "Are you sure want to pause?",
+    clearEventsMsg: "Are you sure want to delete all events for this monitor?",
+    clearHeartbeatsMsg: "Are you sure want to delete all heartbeats for this monitor?",
+    confirmClearStatisticsMsg: "Are you sure want to delete ALL statistics?",
     Settings: "Settings",
     Dashboard: "Dashboard",
     "New Update": "New Update",
@@ -111,5 +114,9 @@ export default {
     "Export": "Export",
     "Import": "Import",
     respTime: "Resp. Time (ms)",
-    notAvailableShort: "N/A"
+    notAvailableShort: "N/A",
+    Create: "Create",
+    "Clear Data": "Clear Data",
+    Events: "Events",
+    Heartbeats: "Heartbeats"
 }

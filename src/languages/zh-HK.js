@@ -108,5 +108,12 @@ export default {
     "Create your admin account": "製作你的管理員帳號",
     "Repeat Password": "重複密碼",
     respTime: "反應時間 (ms)",
-    notAvailableShort: "N/A"
+    notAvailableShort: "N/A",
+    Create: "建立",
+    clearEventsMsg: "是否確定刪除這個監測器的所有事件？",
+    clearHeartbeatsMsg: "是否確定刪除這個監測器的所有脈搏資料？",
+    confirmClearStatisticsMsg: "是否確定刪除所有監測器的脈搏資料？（您的監測器會繼續正常運作）",
+    "Clear Data": "清除資料",
+    Events: "事件",
+    Heartbeats: "脈搏"
 }

@@ -66,7 +66,7 @@ export default {
     "Theme - Heartbeat Bar": "Voir les services surveillés",
     Normal: "Général",
     Bottom: "En dessous",
-    None: "Non",
+    None: "Rien",
     Timezone: "Fuseau Horaire",
     "Search Engine Visibility": "Visibilité par les moteurs de recherche",
     "Allow indexing": "Autoriser l'indexation par des moteurs de recherche",
@@ -108,5 +108,12 @@ export default {
     "Create your admin account": "Créez votre compte administrateur",
     "Repeat Password": "Répéter le mot de passe",
     respTime: "Temps de réponse (ms)",
-    notAvailableShort: "N/A"
+    notAvailableShort: "N/A",
+    Create: "Créer",
+    clearEventsMsg: "Are you sure want to delete all events for this monitor?",
+    clearHeartbeatsMsg: "Are you sure want to delete all heartbeats for this monitor?",
+    confirmClearStatisticsMsg: "Are you sure want to delete ALL statistics?",
+    "Clear Data": "Clear Data",
+    Events: "Events",
+    Heartbeats: "Heartbeats"
 }

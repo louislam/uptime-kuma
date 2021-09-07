@@ -28,7 +28,7 @@ import zhHK from "./languages/zh-HK";
 import deDE from "./languages/de-DE";
 import nlNL from "./languages/nl-NL";
 import esEs from "./languages/es-ES";
-import fr from "./languages/fr";
+import frFR from "./languages/fr-FR";
 import ja from "./languages/ja";
 import daDK from "./languages/da-DK";
 import sr from "./languages/sr";
@@ -37,6 +37,7 @@ import svSE from "./languages/sv-SE";
 import koKR from "./languages/ko-KR";
 import ruRU from "./languages/ru-RU";
 import zhCN from "./languages/zh-CN";
+import pl from "./languages/pl"
 
 const routes = [
     {
@@ -105,7 +106,7 @@ const languageList = {
     "de-DE": deDE,
     "nl-NL": nlNL,
     "es-ES": esEs,
-    "fr": fr,
+    "fr-FR": frFR,
     "ja": ja,
     "da-DK": daDK,
     "sr": sr,
@@ -114,6 +115,7 @@ const languageList = {
     "ko-KR": koKR,
     "ru-RU": ruRU,
     "zh-CN": zhCN,
+    "pl": pl,
 };
 
 const i18n = createI18n({

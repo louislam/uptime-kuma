@@ -104,6 +104,12 @@ export default {
     rrtypeDescription: "Wähle den RR-Typ aus, welchen du überwachen möchtest.",
     "Last Result": "Letztes Ergebnis",
     pauseMonitorMsg: "Bist du sicher das du den Monitor pausieren möchtest?",
+    clearEventsMsg: "Bist du sicher das du alle Ereignisse für diesen Monitor löschen möchtest?",
+    clearHeartbeatsMsg: "Bist du sicher das du alle Statistiken für diesen Monitor löschen möchtest?",
+    "Clear Data": "Lösche Daten",
+    Events: "Ereignisse",
+    Heartbeats: "Statistiken",
+    confirmClearStatisticsMsg: "Bist du sicher das du ALLE Statistiken löschen möchtest?",
     "Create your admin account": "Erstelle dein Admin Konto",
     "Repeat Password": "Wiederhole das Passwort",
     "Resource Record Type": "Resource Record Type",
@@ -111,5 +117,6 @@ export default {
     "Export": "Export",
     "Import": "Import",
     respTime: "Antw. Zeit (ms)",
-    notAvailableShort: "N/A"
+    notAvailableShort: "N/A",
+    Create: "Erstellen",
 }

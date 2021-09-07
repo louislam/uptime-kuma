@@ -108,5 +108,12 @@ export default {
     "Create your admin account": "관리자 계정 만들기",
     "Repeat Password": "비밀번호 재입력",
     respTime: "응답 시간 (ms)",
-    notAvailableShort: "N/A"
+    notAvailableShort: "N/A",
+    Create: "Create",
+    clearEventsMsg: "Are you sure want to delete all events for this monitor?",
+    clearHeartbeatsMsg: "Are you sure want to delete all heartbeats for this monitor?",
+    confirmClearStatisticsMsg: "Are you sure want to delete ALL statistics?",
+    "Clear Data": "Clear Data",
+    Events: "Events",
+    Heartbeats: "Heartbeats"
 }
