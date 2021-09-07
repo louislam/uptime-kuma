@@ -85,7 +85,12 @@ export default {
                 this.$root.toastRes(res)
 
                 if (res.ok) {
-                    this.$router.push("/")
+                    this.processing = true;
+
+                    this.$root.login(this.username, this.password, (res) => {
+                        this.processing = false;
+                        this.$router.push("/")
+                    })
                 }
             })
         },

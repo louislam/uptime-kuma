@@ -115,5 +115,6 @@ export default {
     confirmClearStatisticsMsg: "Are you sure want to delete ALL statistics?",
     "Clear Data": "Clear Data",
     Events: "Events",
-    Heartbeats: "Heartbeats"
+    Heartbeats: "Heartbeats",
+    "Auto Get": "Auto Get"
 }

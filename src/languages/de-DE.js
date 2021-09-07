@@ -119,4 +119,5 @@ export default {
     respTime: "Antw. Zeit (ms)",
     notAvailableShort: "N/A",
     Create: "Erstellen",
+    "Auto Get": "Auto Get"
 }
