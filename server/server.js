@@ -645,7 +645,11 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
 
                         await updateMonitorNotification(bean.id, notificationIDList)
 
-                        await startMonitor(socket.userID, bean.id);
+                        if (monitorList[i].active == 1) {
+                            await startMonitor(socket.userID, bean.id);
+                        } else {
+                            await pauseMonitor(socket.userID, bean.id);
+                        }
                     }
 
                     await sendNotificationList(socket)
