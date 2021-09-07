@@ -37,44 +37,9 @@
                             <input id="name" v-model="notification.name" type="text" class="form-control" required>
                         </div>
 
-                        <template v-if="notification.type === 'telegram'">
-                            <div class="mb-3">
-                                <label for="telegram-bot-token" class="form-label">Bot Token</label>
-                                <HiddenInput id="telegram-bot-token" v-model="notification.telegramBotToken" :required="true" autocomplete="one-time-code"></HiddenInput>
-                                <div class="form-text">
-                                    You can get a token from <a href="https://t.me/BotFather" target="_blank">https://t.me/BotFather</a>.
-                                </div>
-                            </div>
+                        <Telegram></Telegram>
 
-                            <div class="mb-3">
-                                <label for="telegram-chat-id" class="form-label">Chat ID</label>
-
-                                <div class="input-group mb-3">
-                                    <input id="telegram-chat-id" v-model="notification.telegramChatID" type="text" class="form-control" required>
-                                    <button v-if="notification.telegramBotToken" class="btn btn-outline-secondary" type="button" @click="autoGetTelegramChatID">
-                                        Auto Get
-                                    </button>
-                                </div>
-
-                                <div class="form-text">
-                                    Support Direct Chat / Group / Channel's Chat ID
-
-                                    <p style="margin-top: 8px;">
-                                        You can get your chat id by sending message to the bot and go to this url to view the chat_id:
-                                    </p>
-
-                                    <p style="margin-top: 8px;">
-                                        <template v-if="notification.telegramBotToken">
-                                            <a :href="telegramGetUpdatesURL" target="_blank" style="word-break: break-word;">{{ telegramGetUpdatesURL }}</a>
-                                        </template>
-
-                                        <template v-else>
-                                            {{ telegramGetUpdatesURL }}
-                                        </template>
-                                    </p>
-                                </div>
-                            </div>
-                        </template>
+                        <!-- TODO: Convert all into vue components, but not an easy task.  -->
 
                         <template v-if="notification.type === 'webhook'">
                             <div class="mb-3">
@@ -469,6 +434,8 @@
                                 First access the <a href="https://developers.line.biz/console/" target="_blank">Line Developers Console</a>, create a provider and channel (Messaging API), then you can get the channel access token and user id from the above mentioned menu items.
                             </div>
                         </template>
+
+                        <!-- DEPRECATED! Please create vue component in "./src/components/notifications/{notification name}.vue" -->
                     </div>
                     <div class="modal-footer">
                         <button v-if="id" type="button" class="btn btn-danger" :disabled="processing" @click="deleteConfirm">
@@ -495,15 +462,18 @@
 import { Modal } from "bootstrap"
 import { ucfirst } from "../util.ts"
 import axios from "axios";
-import { useToast } from "vue-toastification"
+
 import Confirm from "./Confirm.vue";
 import HiddenInput from "./HiddenInput.vue";
-const toast = useToast()
+import Telegram from "./notifications/Telegram.vue";
+import { useToast } from "vue-toastification"
+const toast = useToast();
 
 export default {
     components: {
         Confirm,
         HiddenInput,
+        Telegram,
     },
     props: {},
     data() {
@@ -519,17 +489,7 @@ export default {
             appriseInstalled: false,
         }
     },
-    computed: {
-        telegramGetUpdatesURL() {
-            let token = "<YOUR BOT TOKEN HERE>"
 
-            if (this.notification.telegramBotToken) {
-                token = this.notification.telegramBotToken;
-            }
-
-            return `https://api.telegram.org/bot${token}/getUpdates`;
-        },
-    },
     watch: {
         "notification.type"(to, from) {
             let oldName;
@@ -615,32 +575,6 @@ export default {
                 }
             })
         },
-
-        async autoGetTelegramChatID() {
-            try {
-                let res = await axios.get(this.telegramGetUpdatesURL)
-
-                if (res.data.result.length >= 1) {
-                    let update = res.data.result[res.data.result.length - 1]
-
-                    if (update.channel_post) {
-                        this.notification.telegramChatID = update.channel_post.chat.id;
-                    } else if (update.message) {
-                        this.notification.telegramChatID = update.message.chat.id;
-                    } else {
-                        throw new Error("Chat ID is not found, please send a message to this bot first")
-                    }
-
-                } else {
-                    throw new Error("Chat ID is not found, please send a message to this bot first")
-                }
-
-            } catch (error) {
-                toast.error(error.message)
-            }
-
-        },
-
     },
 }
 </script>
