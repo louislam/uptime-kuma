@@ -464,6 +464,7 @@
                             {{ $t("Test") }}
                         </button>
                         <button type="submit" class="btn btn-primary" :disabled="processing">
+                            <div v-if="processing" class="spinner-border spinner-border-sm me-1"></div>
                             {{ $t("Save") }}
                         </button>
                     </div>
