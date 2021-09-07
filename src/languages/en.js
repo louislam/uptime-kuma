@@ -113,7 +113,6 @@ export default {
     respTime: "Resp. Time (ms)",
     notAvailableShort: "N/A",
     Create: "Create",
-    notAvailableShort: "N/A",
     "Clear Data": "Clear Data",
     Events: "Events",
     Heartbeats: "Heartbeats"

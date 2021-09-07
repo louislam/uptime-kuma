@@ -109,7 +109,7 @@ export default {
     "Repeat Password": "Ponovite lozinku",
     respTime: "Vreme odg. (ms)",
     notAvailableShort: "N/A",
-    Create: "Create"
+    Create: "Create",
     clearEventsMsg: "Are you sure want to delete all events for this monitor?",
     clearHeartbeatsMsg: "Are you sure want to delete all heartbeats for this monitor?",
     confirmClearStatisticsMsg: "Are you sure want to delete ALL statistics?",
