@@ -504,6 +504,7 @@ export default {
                 name: "",
                 type: null,
                 gotifyPriority: 8,
+                isDefault: false,
             },
             appriseInstalled: false,
         }
@@ -553,6 +554,7 @@ export default {
                 this.notification = {
                     name: "",
                     type: null,
+                    isDefault: false,
                 }
 
                 // Default set to Telegram
