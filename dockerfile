@@ -13,6 +13,12 @@ RUN apt --yes install python3-cryptography python3-six python3-yaml python3-clic
 RUN pip3 --no-cache-dir install apprise && \
     rm -rf /root/.cache
 
+# additional package should be added here, since we don't want to re-compile the arm prebuilt again
+
+# add sqlite3 cli for debugging in the future
+RUN apt --yes install sqlite3
+
+
 COPY . .
 RUN npm install --legacy-peer-deps && npm run build && npm prune
 
