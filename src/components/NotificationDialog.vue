@@ -37,44 +37,9 @@
                             <input id="name" v-model="notification.name" type="text" class="form-control" required>
                         </div>
 
-                        <template v-if="notification.type === 'telegram'">
-                            <div class="mb-3">
-                                <label for="telegram-bot-token" class="form-label">Bot Token</label>
-                                <HiddenInput id="telegram-bot-token" v-model="notification.telegramBotToken" :required="true" :readonly="true"></HiddenInput>
-                                <div class="form-text">
-                                    You can get a token from <a href="https://t.me/BotFather" target="_blank">https://t.me/BotFather</a>.
-                                </div>
-                            </div>
+                        <Telegram></Telegram>
 
-                            <div class="mb-3">
-                                <label for="telegram-chat-id" class="form-label">Chat ID</label>
-
-                                <div class="input-group mb-3">
-                                    <input id="telegram-chat-id" v-model="notification.telegramChatID" type="text" class="form-control" required>
-                                    <button v-if="notification.telegramBotToken" class="btn btn-outline-secondary" type="button" @click="autoGetTelegramChatID">
-                                        Auto Get
-                                    </button>
-                                </div>
-
-                                <div class="form-text">
-                                    Support Direct Chat / Group / Channel's Chat ID
-
-                                    <p style="margin-top: 8px;">
-                                        You can get your chat id by sending message to the bot and go to this url to view the chat_id:
-                                    </p>
-
-                                    <p style="margin-top: 8px;">
-                                        <template v-if="notification.telegramBotToken">
-                                            <a :href="telegramGetUpdatesURL" target="_blank" style="word-break: break-word;">{{ telegramGetUpdatesURL }}</a>
-                                        </template>
-
-                                        <template v-else>
-                                            {{ telegramGetUpdatesURL }}
-                                        </template>
-                                    </p>
-                                </div>
-                            </div>
-                        </template>
+                        <!-- TODO: Convert all into vue components, but not an easy task.  -->
 
                         <template v-if="notification.type === 'webhook'">
                             <div class="mb-3">
@@ -130,7 +95,7 @@
 
                             <div class="mb-3">
                                 <label for="password" class="form-label">Password</label>
-                                <HiddenInput id="password" v-model="notification.smtpPassword" :required="true" autocomplete="false"></HiddenInput>
+                                <HiddenInput id="password" v-model="notification.smtpPassword" :required="true" autocomplete="one-time-code"></HiddenInput>
                             </div>
 
                             <div class="mb-3">
@@ -195,7 +160,7 @@
                         <template v-if="notification.type === 'gotify'">
                             <div class="mb-3">
                                 <label for="gotify-application-token" class="form-label">Application Token</label>
-                                <HiddenInput id="gotify-application-token" v-model="notification.gotifyapplicationToken" :required="true"></HiddenInput>
+                                <HiddenInput id="gotify-application-token" v-model="notification.gotifyapplicationToken" :required="true" autocomplete="one-time-code"></HiddenInput>
                             </div>
                             <div class="mb-3">
                                 <label for="gotify-server-url" class="form-label">Server URL</label>
@@ -306,13 +271,13 @@
                         <template v-if="notification.type === 'pushy'">
                             <div class="mb-3">
                                 <label for="pushy-app-token" class="form-label">API_KEY</label>
-                                <HiddenInput id="pushy-app-token" v-model="notification.pushyAPIKey" :required="true"></HiddenInput>
+                                <HiddenInput id="pushy-app-token" v-model="notification.pushyAPIKey" :required="true" autocomplete="one-time-code"></HiddenInput>
                             </div>
 
                             <div class="mb-3">
                                 <label for="pushy-user-key" class="form-label">USER_TOKEN</label>
                                 <div class="input-group mb-3">
-                                    <HiddenInput id="pushy-user-key" v-model="notification.pushyToken" :required="true"></HiddenInput>
+                                    <HiddenInput id="pushy-user-key" v-model="notification.pushyToken" :required="true" autocomplete="one-time-code"></HiddenInput>
                                 </div>
                             </div>
                             <p style="margin-top: 8px;">
@@ -323,7 +288,7 @@
                         <template v-if="notification.type === 'octopush'">
                             <div class="mb-3">
                                 <label for="octopush-key" class="form-label">API KEY</label>
-                                <HiddenInput id="octopush-key" v-model="notification.octopushAPIKey" :required="true"></HiddenInput>
+                                <HiddenInput id="octopush-key" v-model="notification.octopushAPIKey" :required="true" autocomplete="one-time-code"></HiddenInput>
                                 <label for="octopush-login" class="form-label">API LOGIN</label>
                                 <input id="octopush-login" v-model="notification.octopushLogin" type="text" class="form-control" required>
                             </div>
@@ -354,9 +319,9 @@
                         <template v-if="notification.type === 'pushover'">
                             <div class="mb-3">
                                 <label for="pushover-user" class="form-label">User Key<span style="color: red;"><sup>*</sup></span></label>
-                                <HiddenInput id="pushover-user" v-model="notification.pushoveruserkey" :required="true"></HiddenInput>
+                                <HiddenInput id="pushover-user" v-model="notification.pushoveruserkey" :required="true" autocomplete="one-time-code"></HiddenInput>
                                 <label for="pushover-app-token" class="form-label">Application Token<span style="color: red;"><sup>*</sup></span></label>
-                                <HiddenInput id="pushover-app-token" v-model="notification.pushoverapptoken" :required="true"></HiddenInput>
+                                <HiddenInput id="pushover-app-token" v-model="notification.pushoverapptoken" :required="true" autocomplete="one-time-code"></HiddenInput>
                                 <label for="pushover-device" class="form-label">Device</label>
                                 <input id="pushover-device" v-model="notification.pushoverdevice" type="text" class="form-control">
                                 <label for="pushover-device" class="form-label">Message Title</label>
@@ -442,7 +407,7 @@
                         <template v-if="notification.type === 'pushbullet'">
                             <div class="mb-3">
                                 <label for="pushbullet-access-token" class="form-label">Access Token</label>
-                                <HiddenInput id="pushbullet-access-token" v-model="notification.pushbulletAccessToken" :required="true"></HiddenInput>
+                                <HiddenInput id="pushbullet-access-token" v-model="notification.pushbulletAccessToken" :required="true" autocomplete="one-time-code"></HiddenInput>
                             </div>
 
                             <p style="margin-top: 8px;">
@@ -453,7 +418,7 @@
                         <template v-if="notification.type === 'line'">
                             <div class="mb-3">
                                 <label for="line-channel-access-token" class="form-label">Channel access token</label>
-                                <HiddenInput id="line-channel-access-token" v-model="notification.lineChannelAccessToken" :required="true"></HiddenInput>
+                                <HiddenInput id="line-channel-access-token" v-model="notification.lineChannelAccessToken" :required="true" autocomplete="one-time-code"></HiddenInput>
                             </div>
                             <div class="form-text">
                                 Line Developers Console - <b>Basic Settings</b>
@@ -469,6 +434,8 @@
                                 First access the <a href="https://developers.line.biz/console/" target="_blank">Line Developers Console</a>, create a provider and channel (Messaging API), then you can get the channel access token and user id from the above mentioned menu items.
                             </div>
                         </template>
+
+                        <!-- DEPRECATED! Please create vue component in "./src/components/notifications/{notification name}.vue" -->
 
                         <div class="mb-3">
                             <hr class="dropdown-divider">
@@ -514,15 +481,18 @@
 import { Modal } from "bootstrap"
 import { ucfirst } from "../util.ts"
 import axios from "axios";
-import { useToast } from "vue-toastification"
+
 import Confirm from "./Confirm.vue";
 import HiddenInput from "./HiddenInput.vue";
-const toast = useToast()
+import Telegram from "./notifications/Telegram.vue";
+import { useToast } from "vue-toastification"
+const toast = useToast();
 
 export default {
     components: {
         Confirm,
         HiddenInput,
+        Telegram,
     },
     props: {},
     data() {
@@ -538,17 +508,7 @@ export default {
             appriseInstalled: false,
         }
     },
-    computed: {
-        telegramGetUpdatesURL() {
-            let token = "<YOUR BOT TOKEN HERE>"
 
-            if (this.notification.telegramBotToken) {
-                token = this.notification.telegramBotToken;
-            }
-
-            return `https://api.telegram.org/bot${token}/getUpdates`;
-        },
-    },
     watch: {
         "notification.type"(to, from) {
             let oldName;
@@ -634,32 +594,6 @@ export default {
                 }
             })
         },
-
-        async autoGetTelegramChatID() {
-            try {
-                let res = await axios.get(this.telegramGetUpdatesURL)
-
-                if (res.data.result.length >= 1) {
-                    let update = res.data.result[res.data.result.length - 1]
-
-                    if (update.channel_post) {
-                        this.notification.telegramChatID = update.channel_post.chat.id;
-                    } else if (update.message) {
-                        this.notification.telegramChatID = update.message.chat.id;
-                    } else {
-                        throw new Error("Chat ID is not found, please send a message to this bot first")
-                    }
-
-                } else {
-                    throw new Error("Chat ID is not found, please send a message to this bot first")
-                }
-
-            } catch (error) {
-                toast.error(error.message)
-            }
-
-        },
-
     },
 }
 </script>

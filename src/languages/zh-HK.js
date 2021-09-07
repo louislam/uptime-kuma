@@ -115,5 +115,6 @@ export default {
     confirmClearStatisticsMsg: "是否確定刪除所有監測器的脈搏資料？（您的監測器會繼續正常運作）",
     "Clear Data": "清除資料",
     Events: "事件",
-    Heartbeats: "脈搏"
+    Heartbeats: "脈搏",
+    "Auto Get": "自動獲取"
 }

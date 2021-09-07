@@ -118,5 +118,6 @@ export default {
     Create: "Create",
     "Clear Data": "Clear Data",
     Events: "Events",
-    Heartbeats: "Heartbeats"
+    Heartbeats: "Heartbeats",
+    "Auto Get": "Auto Get"
 }

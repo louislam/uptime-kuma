@@ -27,8 +27,11 @@ debug("Importing Monitor");
 const Monitor = require("./model/monitor");
 debug("Importing Settings");
 const { getSettings, setSettings, setting, initJWTSecret } = require("./util-server");
+
 debug("Importing Notification");
 const { Notification } = require("./notification");
+Notification.init();
+
 debug("Importing Database");
 const Database = require("./database");
 
