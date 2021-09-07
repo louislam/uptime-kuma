@@ -66,7 +66,7 @@ export default {
         },
     },
     mounted() {
-        console.log(this.$parent.notification.type);
+
     },
     methods: {
         async autoGetTelegramChatID() {

@@ -137,7 +137,6 @@ export default {
 
         if (! Number.isInteger(actualWidth)) {
             this.beatWidth = Math.round(actualWidth) / window.devicePixelRatio;
-            console.log(this.beatWidth);
         }
 
         if (! Number.isInteger(actualMargin)) {
