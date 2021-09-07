@@ -122,11 +122,18 @@
 
                             <h2 class="mt-5 mb-2">{{ $t("Import/Export Backup") }}</h2>
 
+                            <p>
+                                {{ $t("backupDescription") }} <br />
+                                ({{ $t("backupDescription2") }}) <br />
+                            </p>
+
                             <div class="input-group mb-3">
                                 <button class="btn btn-outline-primary" @click="downloadBackup">{{ $t("Export") }}</button>
                                 <button type="button" class="btn btn-outline-primary" @click="importBackup">{{ $t("Import") }}</button>
                                 <input id="importBackup" type="file" class="form-control">
                             </div>
+
+                            <p><strong>{{ $t("backupDescription3") }}</strong></p>
 
                             <h2 class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
 

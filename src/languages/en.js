@@ -119,5 +119,8 @@ export default {
     "Clear Data": "Clear Data",
     Events: "Events",
     Heartbeats: "Heartbeats",
-    "Auto Get": "Auto Get"
+    "Auto Get": "Auto Get",
+    backupDescription: "You can backup all monitors and all notifications into a JSON file.",
+    backupDescription2: "PS: History and event data is not included.",
+    backupDescription3: "Sensitive data such as notification tokens is included in the export file, please keep it carefully.",
 }
