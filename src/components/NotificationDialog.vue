@@ -40,7 +40,7 @@
                         <template v-if="notification.type === 'telegram'">
                             <div class="mb-3">
                                 <label for="telegram-bot-token" class="form-label">Bot Token</label>
-                                <HiddenInput id="telegram-bot-token" v-model="notification.telegramBotToken" :required="true"></HiddenInput>
+                                <HiddenInput id="telegram-bot-token" v-model="notification.telegramBotToken" :required="true" :readonly="true"></HiddenInput>
                                 <div class="form-text">
                                     You can get a token from <a href="https://t.me/BotFather" target="_blank">https://t.me/BotFather</a>.
                                 </div>

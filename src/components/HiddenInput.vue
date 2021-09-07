@@ -13,8 +13,8 @@
             :maxlength="maxlength"
             :autocomplete="autocomplete"
             :required="required"
-            readonly
-            onfocus="this.removeAttribute('readonly');"
+            :readonly="isReadOnly"
+            @focus="removeReadOnly"
         >
 
         <a v-if="visibility == 'password'" class="btn btn-outline-primary" @click="showInput()">
@@ -47,10 +47,15 @@ export default {
         required: {
             type: Boolean
         },
+        readonly: {
+            type: Boolean,
+            default: false,
+        },
     },
     data() {
         return {
-            visibility: "password"
+            visibility: "password",
+            readOnlyValue: false,
         }
     },
     computed: {
@@ -61,6 +66,21 @@ export default {
             set(value) {
                 this.$emit("update:modelValue", value)
             }
+        },
+        isReadOnly() {
+            // Actually readonly from prop
+            if (this.readonly) {
+                return true;
+            }
+
+            // Hack - Disable Chrome save password
+            return this.readOnlyValue;
+        }
+    },
+    created() {
+        // Hack - Disable Chrome save password
+        if (this.autocomplete) {
+            this.readOnlyValue = "readonly";
         }
     },
     methods: {
@@ -69,6 +89,13 @@ export default {
         },
         hideInput() {
             this.visibility = "password";
+        },
+
+        // Hack - Disable Chrome save password
+        removeReadOnly() {
+            if (this.autocomplete) {
+                this.readOnlyValue = false;
+            }
         }
     }
 }
