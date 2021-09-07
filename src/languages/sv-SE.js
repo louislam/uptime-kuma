@@ -109,6 +109,7 @@ export default {
     "Repeat Password": "Upprepa Lösenord",
     respTime: "Svarstid (ms)",
     notAvailableShort: "Ej Tillg.",
+    Create: "Create"
     clearEventsMsg: "Are you sure want to delete all events for this monitor?",
     clearHeartbeatsMsg: "Are you sure want to delete all heartbeats for this monitor?",
     confirmClearStatisticsMsg: "Are you sure want to delete ALL statistics?",

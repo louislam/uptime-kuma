@@ -109,6 +109,7 @@ export default {
     "Repeat Password": "重複密碼",
     respTime: "反應時間 (ms)",
     notAvailableShort: "N/A",
+    Create: "建立",
     clearEventsMsg: "是否確定刪除這個監測器的所有事件？",
     clearHeartbeatsMsg: "是否確定刪除這個監測器的所有脈搏資料？",
     confirmClearStatisticsMsg: "是否確定刪除所有監測器的脈搏資料？（您的監測器會繼續正常運作）",

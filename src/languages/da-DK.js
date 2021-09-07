@@ -109,6 +109,8 @@ export default {
     "Resource Record Type": "Resource Record Type",
     respTime: "Resp. Time (ms)",
     notAvailableShort: "N/A",
+    Create: "Create",
+    notAvailableShort: "N/A",
     clearEventsMsg: "Are you sure want to delete all events for this monitor?",
     clearHeartbeatsMsg: "Are you sure want to delete all heartbeats for this monitor?",
     confirmClearStatisticsMsg: "Are you sure want to delete ALL statistics?",

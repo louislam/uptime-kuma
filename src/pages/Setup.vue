@@ -14,6 +14,15 @@
                 </p>
 
                 <div class="form-floating">
+                    <select id="language" v-model="$i18n.locale" class="form-select">
+                        <option v-for="(lang, i) in $i18n.availableLocales" :key="`Lang${i}`" :value="lang">
+                            {{ $i18n.messages[lang].languageName }}
+                        </option>
+                    </select>
+                    <label for="language" class="form-label">{{ $t("Language") }}</label>
+                </div>
+
+                <div class="form-floating mt-3">
                     <input id="floatingInput" v-model="username" type="text" class="form-control" placeholder="Username" required>
                     <label for="floatingInput">{{ $t("Username") }}</label>
                 </div>
@@ -29,7 +38,7 @@
                 </div>
 
                 <button class="w-100 btn btn-primary mt-3" type="submit" :disabled="processing">
-                    Create
+                    {{ $t("Create") }}
                 </button>
             </form>
         </div>
@@ -48,6 +57,11 @@ export default {
             password: "",
             repeatPassword: "",
         }
+    },
+    watch: {
+        "$i18n.locale"() {
+            localStorage.locale = this.$i18n.locale;
+        },
     },
     mounted() {
         this.$root.getSocket().emit("needSetup", (needSetup) => {
