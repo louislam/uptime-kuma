@@ -40,7 +40,7 @@
                         <template v-if="notification.type === 'telegram'">
                             <div class="mb-3">
                                 <label for="telegram-bot-token" class="form-label">Bot Token</label>
-                                <HiddenInput id="telegram-bot-token" v-model="notification.telegramBotToken" :required="true" :readonly="true"></HiddenInput>
+                                <HiddenInput id="telegram-bot-token" v-model="notification.telegramBotToken" :required="true" autocomplete="one-time-code"></HiddenInput>
                                 <div class="form-text">
                                     You can get a token from <a href="https://t.me/BotFather" target="_blank">https://t.me/BotFather</a>.
                                 </div>
@@ -130,7 +130,7 @@
 
                             <div class="mb-3">
                                 <label for="password" class="form-label">Password</label>
-                                <HiddenInput id="password" v-model="notification.smtpPassword" :required="true" autocomplete="false"></HiddenInput>
+                                <HiddenInput id="password" v-model="notification.smtpPassword" :required="true" autocomplete="one-time-code"></HiddenInput>
                             </div>
 
                             <div class="mb-3">
@@ -195,7 +195,7 @@
                         <template v-if="notification.type === 'gotify'">
                             <div class="mb-3">
                                 <label for="gotify-application-token" class="form-label">Application Token</label>
-                                <HiddenInput id="gotify-application-token" v-model="notification.gotifyapplicationToken" :required="true"></HiddenInput>
+                                <HiddenInput id="gotify-application-token" v-model="notification.gotifyapplicationToken" :required="true" autocomplete="one-time-code"></HiddenInput>
                             </div>
                             <div class="mb-3">
                                 <label for="gotify-server-url" class="form-label">Server URL</label>
@@ -306,13 +306,13 @@
                         <template v-if="notification.type === 'pushy'">
                             <div class="mb-3">
                                 <label for="pushy-app-token" class="form-label">API_KEY</label>
-                                <HiddenInput id="pushy-app-token" v-model="notification.pushyAPIKey" :required="true"></HiddenInput>
+                                <HiddenInput id="pushy-app-token" v-model="notification.pushyAPIKey" :required="true" autocomplete="one-time-code"></HiddenInput>
                             </div>
 
                             <div class="mb-3">
                                 <label for="pushy-user-key" class="form-label">USER_TOKEN</label>
                                 <div class="input-group mb-3">
-                                    <HiddenInput id="pushy-user-key" v-model="notification.pushyToken" :required="true"></HiddenInput>
+                                    <HiddenInput id="pushy-user-key" v-model="notification.pushyToken" :required="true" autocomplete="one-time-code"></HiddenInput>
                                 </div>
                             </div>
                             <p style="margin-top: 8px;">
@@ -323,7 +323,7 @@
                         <template v-if="notification.type === 'octopush'">
                             <div class="mb-3">
                                 <label for="octopush-key" class="form-label">API KEY</label>
-                                <HiddenInput id="octopush-key" v-model="notification.octopushAPIKey" :required="true"></HiddenInput>
+                                <HiddenInput id="octopush-key" v-model="notification.octopushAPIKey" :required="true" autocomplete="one-time-code"></HiddenInput>
                                 <label for="octopush-login" class="form-label">API LOGIN</label>
                                 <input id="octopush-login" v-model="notification.octopushLogin" type="text" class="form-control" required>
                             </div>
@@ -354,9 +354,9 @@
                         <template v-if="notification.type === 'pushover'">
                             <div class="mb-3">
                                 <label for="pushover-user" class="form-label">User Key<span style="color: red;"><sup>*</sup></span></label>
-                                <HiddenInput id="pushover-user" v-model="notification.pushoveruserkey" :required="true"></HiddenInput>
+                                <HiddenInput id="pushover-user" v-model="notification.pushoveruserkey" :required="true" autocomplete="one-time-code"></HiddenInput>
                                 <label for="pushover-app-token" class="form-label">Application Token<span style="color: red;"><sup>*</sup></span></label>
-                                <HiddenInput id="pushover-app-token" v-model="notification.pushoverapptoken" :required="true"></HiddenInput>
+                                <HiddenInput id="pushover-app-token" v-model="notification.pushoverapptoken" :required="true" autocomplete="one-time-code"></HiddenInput>
                                 <label for="pushover-device" class="form-label">Device</label>
                                 <input id="pushover-device" v-model="notification.pushoverdevice" type="text" class="form-control">
                                 <label for="pushover-device" class="form-label">Message Title</label>
@@ -442,7 +442,7 @@
                         <template v-if="notification.type === 'pushbullet'">
                             <div class="mb-3">
                                 <label for="pushbullet-access-token" class="form-label">Access Token</label>
-                                <HiddenInput id="pushbullet-access-token" v-model="notification.pushbulletAccessToken" :required="true"></HiddenInput>
+                                <HiddenInput id="pushbullet-access-token" v-model="notification.pushbulletAccessToken" :required="true" autocomplete="one-time-code"></HiddenInput>
                             </div>
 
                             <p style="margin-top: 8px;">
@@ -453,7 +453,7 @@
                         <template v-if="notification.type === 'line'">
                             <div class="mb-3">
                                 <label for="line-channel-access-token" class="form-label">Channel access token</label>
-                                <HiddenInput id="line-channel-access-token" v-model="notification.lineChannelAccessToken" :required="true"></HiddenInput>
+                                <HiddenInput id="line-channel-access-token" v-model="notification.lineChannelAccessToken" :required="true" autocomplete="one-time-code"></HiddenInput>
                             </div>
                             <div class="form-text">
                                 Line Developers Console - <b>Basic Settings</b>
