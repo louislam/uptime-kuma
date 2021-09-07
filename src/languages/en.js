@@ -17,6 +17,9 @@ export default {
     rrtypeDescription: "Select the RR-Type you want to monitor",
     pauseMonitorMsg: "Are you sure want to pause?",
     enableDefaultNotificationDescription: "For every new monitor this notification will be enabled by default. You can still disable the notification separately for each monitor.",
+    clearEventsMsg: "Are you sure want to delete all events for this monitor?",
+    clearHeartbeatsMsg: "Are you sure want to delete all heartbeats for this monitor?",
+    confirmClearStatisticsMsg: "Are you sure want to delete ALL statistics?",
     Settings: "Settings",
     Dashboard: "Dashboard",
     "New Update": "New Update",
@@ -113,4 +116,7 @@ export default {
     "Default enabled": "Default enabled",
     "Also apply to existing monitors": "Also apply to existing monitors",
     Create: "Create",
+    "Clear Data": "Clear Data",
+    Events: "Events",
+    Heartbeats: "Heartbeats"
 }

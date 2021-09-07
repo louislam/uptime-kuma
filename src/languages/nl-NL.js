@@ -109,5 +109,11 @@ export default {
     "Repeat Password": "Herhaal wachtwoord",
     respTime: "resp. tijd (ms)",
     notAvailableShort: "N.v.t.",
-    Create: "Create"
+    Create: "Create",
+    clearEventsMsg: "Are you sure want to delete all events for this monitor?",
+    clearHeartbeatsMsg: "Are you sure want to delete all heartbeats for this monitor?",
+    confirmClearStatisticsMsg: "Are you sure want to delete ALL statistics?",
+    "Clear Data": "Clear Data",
+    Events: "Events",
+    Heartbeats: "Heartbeats"
 }

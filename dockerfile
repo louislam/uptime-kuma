@@ -1,25 +1,30 @@
-# DON'T UPDATE TO alpine3.13, 1.14, see #41.
-FROM node:14-alpine3.12 AS release
+FROM node:14-bullseye-slim AS release
 WORKDIR /app
 
+# install dependencies
+RUN apt update && apt --yes install python3 python3-pip python3-dev git g++ make iputils-ping
+RUN ln -s /usr/bin/python3 /usr/bin/python
+
 # split the sqlite install here, so that it can caches the arm prebuilt
-RUN apk add --no-cache --virtual .build-deps make g++ python3 python3-dev git && \
-            ln -s /usr/bin/python3 /usr/bin/python && \
-            npm install mapbox/node-sqlite3#593c9d && \
-            apk del .build-deps && \
-            rm -f /usr/bin/python
+RUN npm install mapbox/node-sqlite3#593c9d
 
 # Install apprise
-RUN apk add --no-cache python3 py3-cryptography py3-pip py3-six py3-yaml py3-click py3-markdown py3-requests py3-requests-oauthlib
+RUN apt --yes install python3-cryptography python3-six python3-yaml python3-click python3-markdown python3-requests python3-requests-oauthlib
 RUN pip3 --no-cache-dir install apprise && \
-            rm -rf /root/.cache
+    rm -rf /root/.cache
+
+# additional package should be added here, since we don't want to re-compile the arm prebuilt again
+
+# add sqlite3 cli for debugging in the future
+RUN apt --yes install sqlite3
+
 
 COPY . .
 RUN npm install --legacy-peer-deps && npm run build && npm prune
 
 EXPOSE 3001
 VOLUME ["/app/data"]
-HEALTHCHECK --interval=60s --timeout=30s --start-period=300s CMD node extra/healthcheck.js
+HEALTHCHECK --interval=600s --timeout=130s --start-period=300s CMD node extra/healthcheck.js
 CMD ["node", "server/server.js"]
 
 FROM release AS nightly
