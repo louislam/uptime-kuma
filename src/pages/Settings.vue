@@ -218,6 +218,11 @@
                     <p>Jest przeznaczony dla <strong>kogoś, kto ma autoryzację zewnętrzną</strong> przed Uptime Kuma, taką jak Cloudflare Access.</p>
                     <p>Proszę używać ostrożnie.</p>
                 </template>
+                <template v-if="$i18n.locale === 'et-EE' ">
+                    <p>Kas soovid <strong>lülitada autentimise välja</strong>?</p>
+                    <p>Kastuamiseks <strong>välise autentimispakkujaga</strong>, näiteks Cloudflare Access.</p>
+                    <p>Palun kasuta vastutustundlikult.</p>
+                </template>
             </Confirm>
         </div>
     </transition>
