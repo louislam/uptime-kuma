@@ -123,4 +123,6 @@ export default {
     backupDescription: "You can backup all monitors and all notifications into a JSON file.",
     backupDescription2: "PS: History and event data is not included.",
     backupDescription3: "Sensitive data such as notification tokens is included in the export file, please keep it carefully.",
+    alertNoFile: "Please select a file to import.",
+    alertWrongFileType: "Please select a JSON file.",
 }

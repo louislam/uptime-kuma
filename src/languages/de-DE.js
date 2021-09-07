@@ -123,4 +123,6 @@ export default {
     backupDescription: "Es können alle Monitore und alle Benachrichtigungen in einer JSON-Datei gesichert werden.",
     backupDescription2: "PS: Verlaufs- und Ereignisdaten sind nicht enthalten.",
     backupDescription3: "Sensible Daten wie Benachrichtigungstoken sind in der Exportdatei enthalten, bitte bewahre sie sorgfältig auf.",
+    alertNoFile: "Bitte wähle eine Datei zum importieren aus.",
+    alertWrongFileType: "Bitte wähle eine JSON Datei aus.",
 }
