@@ -2,7 +2,7 @@ export default {
     languageName: "Italiano (Italian)",
     checkEverySecond: "Controlla ogni {0} secondi.",
     "Avg.": "Media ",
-    retriesDescription: "Tentativi da fare prima che il servizio sia marcato come \"giù\" e che una notifica venga inviata.",
+    retriesDescription: "Tentativi da fare prima che il servizio venga marcato come \"giù\" e che una notifica venga inviata.",
     ignoreTLSError: "Ignora gli errori TLS/SSL per i siti in HTTPS.",
     upsideDownModeDescription: "Capovolgi lo stato. Se il servizio è raggiungibile viene marcato come \"GIÙ\".",
     maxRedirectDescription: "Numero massimo di redirezionamenti consentito. Per disabilitare impostare \"0\".",
