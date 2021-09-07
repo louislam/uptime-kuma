@@ -1,6 +1,22 @@
 <template>
     <div class="input-group mb-3">
-        <input v-model="model" :type="visibility" class="form-control" :placeholder="placeholder" :maxlength="maxlength" :autocomplete="autocomplete" :required="required">
+        <!--
+        Hack - Disable Chrome save password
+        readonly + onfocus
+        https://stackoverflow.com/questions/41217019/how-to-prevent-a-browser-from-storing-passwords
+       -->
+        <input
+            v-model="model"
+            :type="visibility"
+            class="form-control"
+            :placeholder="placeholder"
+            :maxlength="maxlength"
+            :autocomplete="autocomplete"
+            :required="required"
+            readonly
+            onfocus="this.removeAttribute('readonly');"
+        >
+
         <a v-if="visibility == 'password'" class="btn btn-outline-primary" @click="showInput()">
             <font-awesome-icon icon="eye" />
         </a>
@@ -43,7 +59,7 @@ export default {
                 return this.modelValue
             },
             set(value) {
-                this.$emit('update:modelValue', value)
+                this.$emit("update:modelValue", value)
             }
         }
     },
