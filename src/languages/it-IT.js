@@ -35,8 +35,8 @@ export default {
     Up: "Su",
     Down: "Giù",
     Pending: "Pendente",
-    Unknown: "Sconosciuto",
-    Pause: "Pausa",
+    Unknown: "Sconosciuti",
+    Pause: "In Pausa",
     Name: "Nome",
     Status: "Stato",
     DateTime: "Data e Ora",
@@ -115,6 +115,6 @@ export default {
     Create: "Crea",
     "Clear Data": "Cancella dati",
     Events: "Eventi",
-    Heartbeats: "Heartbeats",
+    Heartbeats: "Controlli",
     "Auto Get": "Auto Get"
 }
