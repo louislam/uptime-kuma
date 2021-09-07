@@ -119,5 +119,8 @@ export default {
     respTime: "Antw. Zeit (ms)",
     notAvailableShort: "N/A",
     Create: "Erstellen",
-    "Auto Get": "Auto Get"
+    "Auto Get": "Auto Get",
+    backupDescription: "Es können alle Monitore und alle Benachrichtigungen in einer JSON-Datei gesichert werden.",
+    backupDescription2: "PS: Verlaufs- und Ereignisdaten sind nicht enthalten.",
+    backupDescription3: "Sensible Daten wie Benachrichtigungstoken sind in der Exportdatei enthalten, bitte bewahre sie sorgfältig auf.",
 }
