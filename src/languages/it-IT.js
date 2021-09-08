@@ -52,7 +52,7 @@ export default {
     day: "giorno",
     "-day": "-giorni",
     hour: "ora",
-    "-hour": "-otr",
+    "-hour": "-ore",
     Response: "Risposta",
     Ping: "Ping",
     "Monitor Type": "Tipo di Monitoraggio",
