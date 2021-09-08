@@ -29,6 +29,7 @@ import deDE from "./languages/de-DE";
 import nlNL from "./languages/nl-NL";
 import esEs from "./languages/es-ES";
 import frFR from "./languages/fr-FR";
+import itIT from "./languages/it-IT";
 import ja from "./languages/ja";
 import daDK from "./languages/da-DK";
 import sr from "./languages/sr";
@@ -108,6 +109,7 @@ const languageList = {
     "nl-NL": nlNL,
     "es-ES": esEs,
     "fr-FR": frFR,
+    "it-IT": itIT,
     "ja": ja,
     "da-DK": daDK,
     "sr": sr,
