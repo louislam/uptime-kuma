@@ -37,7 +37,7 @@
                             <input id="name" v-model="notification.name" type="text" class="form-control" required>
                         </div>
 
-                        <Telegram></Telegram>
+                        <Telegram v-if="notification.type === 'telegram'"></Telegram>
 
                         <!-- TODO: Convert all into vue components, but not an easy task.  -->
 
@@ -436,6 +436,25 @@
                         </template>
 
                         <!-- DEPRECATED! Please create vue component in "./src/components/notifications/{notification name}.vue" -->
+
+                        <div class="mb-3">
+                            <hr class="dropdown-divider">
+
+                            <div class="form-check form-switch">
+                                <input v-model="notification.isDefault" class="form-check-input" type="checkbox">
+                                <label class="form-check-label">{{ $t("Default enabled") }}</label>
+                            </div>
+                            <div class="form-text">
+                                {{ $t("enableDefaultNotificationDescription") }}
+                            </div>
+
+                            <br>
+
+                            <div class="form-check form-switch">
+                                <input v-model="notification.applyExisting" class="form-check-input" type="checkbox">
+                                <label class="form-check-label">{{ $t("Also apply to existing monitors") }}</label>
+                            </div>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button v-if="id" type="button" class="btn btn-danger" :disabled="processing" @click="deleteConfirm">
@@ -445,6 +464,7 @@
                             {{ $t("Test") }}
                         </button>
                         <button type="submit" class="btn btn-primary" :disabled="processing">
+                            <div v-if="processing" class="spinner-border spinner-border-sm me-1"></div>
                             {{ $t("Save") }}
                         </button>
                     </div>
@@ -485,6 +505,7 @@ export default {
                 name: "",
                 type: null,
                 gotifyPriority: 8,
+                isDefault: false,
             },
             appriseInstalled: false,
         }
@@ -534,6 +555,7 @@ export default {
                 this.notification = {
                     name: "",
                     type: null,
+                    isDefault: false,
                 }
 
                 // Default set to Telegram

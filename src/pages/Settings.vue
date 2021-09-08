@@ -167,57 +167,65 @@
             <NotificationDialog ref="notificationDialog" />
 
             <Confirm ref="confirmDisableAuth" btn-style="btn-danger" :yes-text="$t('I understand, please disable')" :no-text="$t('Leave')" @yes="disableAuth">
-                <template v-if="$i18n.locale === 'en' ">
-                    <p>Are you sure want to <strong>disable auth</strong>?</p>
-                    <p>It is for <strong>someone who have 3rd-party auth</strong> in front of Uptime Kuma such as Cloudflare Access.</p>
-                    <p>Please use it carefully.</p>
-                </template>
-
                 <template v-if="$i18n.locale === 'es-ES' ">
                     <p>Seguro que deseas <strong>deshabilitar la autenticación</strong>?</p>
                     <p>Es para <strong>quien implementa autenticación de terceros</strong> ante Uptime Kuma como por ejemplo Cloudflare Access.</p>
                     <p>Por favor usar con cuidado.</p>
                 </template>
 
-                <template v-if="$i18n.locale === 'zh-HK' ">
+                <template v-else-if="$i18n.locale === 'zh-HK' ">
                     <p>你是否確認<strong>取消登入認証</strong>？</p>
                     <p>這個功能是設計給已有<strong>第三方認証</strong>的用家，例如 Cloudflare Access。</p>
                     <p>請小心使用。</p>
                 </template>
 
-                <template v-if="$i18n.locale === 'zh-CN' ">
+                <template v-else-if="$i18n.locale === 'zh-CN' ">
                     <p>是否确定 <strong>取消登录验证</strong>？</p>
                     <p>这是为 <strong>有第三方认证</strong> 的用户提供的功能，如 Cloudflare Access</p>
                     <p>请谨慎使用！</p>
                 </template>
 
-                <template v-if="$i18n.locale === 'de-DE' ">
+                <template v-else-if="$i18n.locale === 'de-DE' ">
                     <p>Bist du sicher das du die <strong>Authentifizierung deaktivieren</strong> möchtest?</p>
                     <p>Es ist für <strong>jemanden der eine externe Authentifizierung</strong> vor Uptime Kuma geschaltet hat, wie z.B. Cloudflare Access.</p>
                     <p>Bitte mit Vorsicht nutzen.</p>
                 </template>
 
-                <template v-if="$i18n.locale === 'sr' ">
+                <template v-else-if="$i18n.locale === 'sr' ">
                     <p>Да ли сте сигурни да желите да <strong>искључите аутентификацију</strong>?</p>
                     <p>То је за <strong>оне који имају додату аутентификацију</strong> испред Uptime Kuma као на пример Cloudflare Access.</p>
                     <p>Молим Вас користите ово са пажњом.</p>
                 </template>
 
-                <template v-if="$i18n.locale === 'sr-latn' ">
+                <template v-else-if="$i18n.locale === 'sr-latn' ">
                     <p>Da li ste sigurni da želite da <strong>isključite autentifikaciju</strong>?</p>
                     <p>To je za <strong>one koji imaju dodatu autentifikaciju</strong> ispred Uptime Kuma kao na primer Cloudflare Access.</p>
                     <p>Molim Vas koristite ovo sa pažnjom.</p>
                 </template>
 
-                <template v-if="$i18n.locale === 'ko-KR' ">
+                <template v-else-if="$i18n.locale === 'ko-KR' ">
                     <p>정말로 <strong>인증 기능을 끌까요</strong>?</p>
                     <p>이 기능은 <strong>Cloudflare Access와 같은 서드파티 인증</strong>을 Uptime Kuma 앞에 둔 사용자를 위한 기능이에요.</p>
                     <p>신중하게 사용하세요.</p>
                 </template>
-                <template v-if="$i18n.locale === 'pl' ">
+
+                <template v-else-if="$i18n.locale === 'pl' ">
                     <p>Czy na pewno chcesz <strong>wyłączyć autoryzację</strong>?</p>
                     <p>Jest przeznaczony dla <strong>kogoś, kto ma autoryzację zewnętrzną</strong> przed Uptime Kuma, taką jak Cloudflare Access.</p>
                     <p>Proszę używać ostrożnie.</p>
+                </template>
+
+                <template v-else-if="$i18n.locale === 'et-EE' ">
+                    <p>Kas soovid <strong>lülitada autentimise välja</strong>?</p>
+                    <p>Kastuamiseks <strong>välise autentimispakkujaga</strong>, näiteks Cloudflare Access.</p>
+                    <p>Palun kasuta vastutustundlikult.</p>
+                </template>
+
+                <!-- English (en) -->
+                <template v-else>
+                    <p>Are you sure want to <strong>disable auth</strong>?</p>
+                    <p>It is for <strong>someone who have 3rd-party auth</strong> in front of Uptime Kuma such as Cloudflare Access.</p>
+                    <p>Please use it carefully.</p>
                 </template>
             </Confirm>
 

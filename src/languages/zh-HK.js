@@ -116,5 +116,8 @@ export default {
     "Clear Data": "清除資料",
     Events: "事件",
     Heartbeats: "脈搏",
-    "Auto Get": "自動獲取"
+    "Auto Get": "自動獲取",
+    enableDefaultNotificationDescription: "新增監測器時這個通知會預設啟用，當然每個監測器亦可分別控制開關。",
+    "Default enabled": "預設通知",
+    "Also apply to existing monitors": "同時取用至目前所有監測器"
 }

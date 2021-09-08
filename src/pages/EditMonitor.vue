@@ -178,6 +178,8 @@
                                     {{ notification.name }}
                                     <a href="#" @click="$refs.notificationDialog.show(notification.id)">{{ $t("Edit") }}</a>
                                 </label>
+
+                                <span v-if="notification.isDefault == true" class="badge bg-primary ms-2">Default</span>
                             </div>
 
                             <button class="btn btn-primary me-2" type="button" @click="$refs.notificationDialog.show()">
@@ -295,6 +297,12 @@ export default {
                     accepted_statuscodes: ["200-299"],
                     dns_resolve_type: "A",
                     dns_resolve_server: "1.1.1.1",
+                }
+
+                for (let i = 0; i < this.$root.notificationList.length; i++) {
+                    if (this.$root.notificationList[i].isDefault == true) {
+                        this.monitor.notificationIDList[this.$root.notificationList[i].id] = true;
+                    }
                 }
             } else if (this.isEdit) {
                 this.$root.getSocket().emit("getMonitor", this.$route.params.id, (res) => {

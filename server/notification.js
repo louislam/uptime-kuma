@@ -92,8 +92,13 @@ class Notification {
 
         bean.name = notification.name;
         bean.user_id = userID;
-        bean.config = JSON.stringify(notification)
+        bean.config = JSON.stringify(notification);
+        bean.is_default = notification.isDefault;
         await R.store(bean)
+
+        if (notification.applyExisting) {
+            await applyNotificationEveryMonitor(bean.id, userID);
+        }
     }
 
     static async delete(notificationID, userID) {
@@ -115,6 +120,26 @@ class Notification {
         return exists;
     }
 
+}
+
+async function applyNotificationEveryMonitor(notificationID, userID) {
+    let monitors = await R.getAll("SELECT id FROM monitor WHERE user_id = ?", [
+        userID
+    ]);
+
+    for (let i = 0; i < monitors.length; i++) {
+        let checkNotification = await R.findOne("monitor_notification", " monitor_id = ? AND notification_id = ? ", [
+            monitors[i].id,
+            notificationID,
+        ])
+
+        if (! checkNotification) {
+            let relation = R.dispense("monitor_notification");
+            relation.monitor_id = monitors[i].id;
+            relation.notification_id = notificationID;
+            await R.store(relation)
+        }
+    }
 }
 
 module.exports = {
