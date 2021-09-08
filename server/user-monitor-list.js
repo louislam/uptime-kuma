@@ -1,7 +1,5 @@
-/**
- * Main monitor list
- */
 class UserMonitorList {
+
     list = {};
 
     add(userID, monitor) {
@@ -48,6 +46,4 @@ class UserMonitorList {
 
 }
 
-module.exports = {
-    userMonitorList: new UserMonitorList(),
-};
+module.exports = UserMonitorList;
