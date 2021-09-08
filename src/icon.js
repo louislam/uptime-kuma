@@ -9,6 +9,7 @@ import {
     faPause,
     faPlay,
     faPlus,
+    faSearch,
     faTachometerAlt,
     faTimes,
     faTrash
@@ -28,6 +29,7 @@ library.add(
     faPause,
     faPlay,
     faPlus,
+    faSearch,
     faTachometerAlt,
     faTimes,
     faTrash,
