@@ -4,6 +4,7 @@
 const { TimeLogger } = require("../src/util");
 const { R } = require("redbean-node");
 const { io } = require("./server");
+const { userMonitorList } = require("./user-monitor-list");
 
 async function sendNotificationList(socket) {
     const timeLogger = new TimeLogger();

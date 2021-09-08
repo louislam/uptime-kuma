@@ -11,6 +11,7 @@ const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalCli
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification")
+const { userMonitorList } = require("../user-monitor-list");
 const version = require("../../package.json").version;
 
 /**

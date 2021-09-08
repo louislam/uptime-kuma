@@ -27,7 +27,7 @@ debug("Importing Monitor");
 const Monitor = require("./model/monitor");
 debug("Importing Settings");
 const { getSettings, setSettings, setting, initJWTSecret } = require("./util-server");
-const UserMonitorList = require("./user-monitor-list");
+const { userMonitorList } = require("./user-monitor-list");
 
 debug("Importing Notification");
 const { Notification } = require("./notification");
@@ -104,11 +104,6 @@ let totalClient = 0;
  * @type {null}
  */
 let jwtSecret = null;
-
-/**
- * Main monitor list, filled by startMonitors()
- */
-let userMonitorList = new UserMonitorList();
 
 /**
  * Show Setup Page
