@@ -37,7 +37,7 @@
                             <input id="name" v-model="notification.name" type="text" class="form-control" required>
                         </div>
 
-                        <Telegram></Telegram>
+                        <Telegram v-if="notification.type === 'telegram'"></Telegram>
 
                         <!-- TODO: Convert all into vue components, but not an easy task.  -->
 
