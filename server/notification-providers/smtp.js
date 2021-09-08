@@ -30,10 +30,15 @@ class SMTP extends NotificationProvider {
 
         // send mail with defined transport object
         await transporter.sendMail({
-            from: `"Uptime Kuma" <${notification.smtpFrom}>`,
+            from: notification.smtpFrom,
+            cc: notification.smtpCC,
+            bcc: notification.smtpBCC,
             to: notification.smtpTo,
             subject: msg,
             text: bodyTextContent,
+            tls: {
+                rejectUnauthorized: notification.smtpIgnoreTLSError || false,
+            },
         });
 
         return "Sent Successfully.";
