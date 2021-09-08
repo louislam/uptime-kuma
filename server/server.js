@@ -27,6 +27,7 @@ debug("Importing Monitor");
 const Monitor = require("./model/monitor");
 debug("Importing Settings");
 const { getSettings, setSettings, setting, initJWTSecret } = require("./util-server");
+const UserMonitorList = require("./user-monitor-list");
 
 debug("Importing Notification");
 const { Notification } = require("./notification");
@@ -105,10 +106,9 @@ let totalClient = 0;
 let jwtSecret = null;
 
 /**
- * Main monitor list
- * @type {{}}
+ * Main monitor list, filled by startMonitors()
  */
-let monitorList = {};
+let userMonitorList = new UserMonitorList();
 
 /**
  * Show Setup Page
@@ -427,11 +427,13 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
             try {
                 checkLogin(socket)
 
-                console.log(`Delete Monitor: ${monitorID} User ID: ${socket.userID}`)
+                console.log(`Delete Monitor: ${monitorID} User ID: ${socket.userID}`);
 
-                if (monitorID in monitorList) {
-                    monitorList[monitorID].stop();
-                    delete monitorList[monitorID]
+                let monitor = userMonitorList.getMonitor(socket.userID, monitorID);
+
+                if (monitor) {
+                    monitor.stop();
+                    userMonitorList.delete(socket.userID, monitorID);
                 }
 
                 await R.exec("DELETE FROM monitor WHERE id = ? AND user_id = ? ", [
@@ -680,7 +682,10 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
 
     });
 
-    console.log("Init the server")
+    console.log("Starting All Monitors");
+    await startMonitors();
+
+    console.log("Init the server");
 
     server.once("error", async (err) => {
         console.error("Cannot listen: " + err.message);
@@ -693,7 +698,7 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
         } else {
             console.log(`Listening on ${port}`);
         }
-        startMonitors();
+
         checkVersion.startInterval();
     });
 
@@ -756,11 +761,10 @@ async function afterLogin(socket, user) {
 async function getMonitorJSONList(userID) {
     let result = {};
 
-    let monitorList = await R.find("monitor", " user_id = ? ORDER BY weight DESC, name", [
-        userID,
-    ])
+    let monitorList = userMonitorList.getMonitorList(userID);
 
-    for (let monitor of monitorList) {
+    for (let monitorID in monitorList) {
+        let monitor = monitorList[monitorID];
         result[monitor.id] = await monitor.toJSON();
     }
 
@@ -821,11 +825,13 @@ async function startMonitor(userID, monitorID) {
         monitorID,
     ])
 
-    if (monitor.id in monitorList) {
-        monitorList[monitor.id].stop();
+    let oldMonitor = userMonitorList.getMonitor(userID, monitorID);
+
+    if (oldMonitor) {
+        oldMonitor.stop();
     }
 
-    monitorList[monitor.id] = monitor;
+    userMonitorList.add(userID, monitor);
     monitor.start(io)
 }
 
@@ -843,8 +849,10 @@ async function pauseMonitor(userID, monitorID) {
         userID,
     ]);
 
-    if (monitorID in monitorList) {
-        monitorList[monitorID].stop();
+    let monitor = userMonitorList.getMonitor(userID, monitorID);
+
+    if (monitor) {
+        monitor.stop();
     }
 }
 
@@ -852,16 +860,23 @@ async function pauseMonitor(userID, monitorID) {
  * Resume active monitors
  */
 async function startMonitors() {
-    let list = await R.find("monitor", " active = 1 ")
+    let list = await R.find("monitor", " active = 1 ");
 
     for (let monitor of list) {
-        monitorList[monitor.id] = monitor;
+        userMonitorList.add(monitor.user_id, monitor);
     }
 
+    delayStartMonitors(list);
+}
+
+/**
+ * Only used by startMonitors()
+ */
+async function delayStartMonitors(list) {
     for (let monitor of list) {
         monitor.start(io);
         // Give some delays, so all monitors won't make request at the same moment when just start the server.
-        await sleep(getRandomInt(300, 1000));
+        await sleep(getRandomInt(500, 1200));
     }
 }
 
@@ -870,9 +885,12 @@ async function shutdownFunction(signal) {
     console.log("Called signal: " + signal);
 
     console.log("Stopping all monitors")
-    for (let id in monitorList) {
-        let monitor = monitorList[id]
-        monitor.stop()
+
+    let allMonitorList = userMonitorList.getAllMonitorList();
+
+    for (let id in allMonitorList) {
+        let monitor = allMonitorList[id];
+        monitor.stop();
     }
     await sleep(2000);
     await Database.close();
