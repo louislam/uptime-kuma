@@ -309,7 +309,10 @@ class Monitor extends BeanModel {
 
             previousBeat = bean;
 
-            this.heartbeatInterval = setTimeout(beat, this.interval * 1000);
+            if (! this.isStop) {
+                this.heartbeatInterval = setTimeout(beat, this.interval * 1000);
+            }
+
         }
 
         beat();
@@ -317,6 +320,7 @@ class Monitor extends BeanModel {
 
     stop() {
         clearTimeout(this.heartbeatInterval);
+        this.isStop = true;
     }
 
     /**
