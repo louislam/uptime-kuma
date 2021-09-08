@@ -283,7 +283,8 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
 
                 bean.import(monitor)
                 bean.user_id = socket.userID
-                await R.store(bean);
+                await R.store(bean)
+
                 await updateMonitorNotification(bean.id, notificationIDList)
 
                 await startMonitor(socket.userID, bean.id);
@@ -426,6 +427,7 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                 let monitor = userMonitorList.getMonitor(socket.userID, monitorID);
 
                 if (monitor) {
+                    monitor.stop();
                     userMonitorList.delete(socket.userID, monitorID);
                 }
 
@@ -676,7 +678,7 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
     });
 
     console.log("Starting All Monitors");
-    await initMonitors();
+    await startMonitors();
 
     console.log("Init the server");
 
@@ -816,18 +818,24 @@ async function startMonitor(userID, monitorID) {
 
     let monitor = await R.findOne("monitor", " id = ? ", [
         monitorID,
-    ]);
+    ])
+
+    let oldMonitor = userMonitorList.getMonitor(userID, monitorID);
+
+    if (oldMonitor) {
+        oldMonitor.stop();
+    }
 
     userMonitorList.add(userID, monitor);
     monitor.start(io)
 }
 
 async function restartMonitor(userID, monitorID) {
-    return await startMonitor(userID, monitorID);
+    return await startMonitor(userID, monitorID)
 }
 
 async function pauseMonitor(userID, monitorID) {
-    await checkOwner(userID, monitorID);
+    await checkOwner(userID, monitorID)
 
     console.log(`Pause Monitor: ${monitorID} User ID: ${userID}`)
 
@@ -839,7 +847,6 @@ async function pauseMonitor(userID, monitorID) {
     let monitor = userMonitorList.getMonitor(userID, monitorID);
 
     if (monitor) {
-        monitor.active = 0;
         monitor.stop();
     }
 }
@@ -847,21 +854,14 @@ async function pauseMonitor(userID, monitorID) {
 /**
  * Resume active monitors
  */
-async function initMonitors() {
-    // Init all monitors
-    let list = await R.find("monitor");
-    let activeList = [];
+async function startMonitors() {
+    let list = await R.find("monitor", " active = 1 ");
 
     for (let monitor of list) {
         userMonitorList.add(monitor.user_id, monitor);
-
-        if (monitor.active) {
-            activeList.push(monitor);
-        }
     }
 
-    // Start active monitors only
-    delayStartMonitors(activeList);
+    delayStartMonitors(list);
 }
 
 /**

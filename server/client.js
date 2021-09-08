@@ -33,14 +33,13 @@ async function sendNotificationList(socket) {
 async function sendHeartbeatList(socket, monitorID, toUser = false, overwrite = false) {
     const timeLogger = new TimeLogger();
 
-    let monitor = userMonitorList.getMonitor(socket.userID, monitorID);
-
-    if (! monitor) {
-        console.error("No this monitor??");
-        return;
-    }
-
-    let list = monitor.getCachedHeartbeatList().array;
+    let list = await R.find("heartbeat", `
+        monitor_id = ?
+        ORDER BY time DESC
+        LIMIT 100
+    `, [
+        monitorID,
+    ])
 
     let result = [];
 
