@@ -215,6 +215,7 @@
                     <p>Proszę używać ostrożnie.</p>
                 </template>
 
+                <!-- English (en) -->
                 <template v-else>
                     <p>Are you sure want to <strong>disable auth</strong>?</p>
                     <p>It is for <strong>someone who have 3rd-party auth</strong> in front of Uptime Kuma such as Cloudflare Access.</p>
