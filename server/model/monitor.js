@@ -6,13 +6,19 @@ dayjs.extend(utc)
 dayjs.extend(timezone)
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
-const { debug, UP, DOWN, PENDING, flipStatus, TimeLogger } = require("../../src/util");
+const { debug, UP, DOWN, PENDING, flipStatus, TimeLogger, getRandomInt } = require("../../src/util");
 const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification")
 const { userMonitorList } = require("../user-monitor-list");
+const LimitArray = require("../limit-array");
 const version = require("../../package.json").version;
+
+/**
+ * Master List
+ */
+const cachedHeartbeatList = {};
 
 /**
  * status:
@@ -21,6 +27,29 @@ const version = require("../../package.json").version;
  *      2 = PENDING
  */
 class Monitor extends BeanModel {
+
+    /**
+     * Cache Last 100 Heartbeat list
+     * @returns {LimitArray}
+     */
+    getCachedHeartbeatList() {
+        return cachedHeartbeatList[this.id];
+    }
+
+    async onOpen() {
+        this.beanMeta.extraData = {};
+
+        cachedHeartbeatList[this.id] = new LimitArray();
+
+        cachedHeartbeatList[this.id].array = await R.find("heartbeat", `
+            monitor_id = ?
+            ORDER BY time DESC
+            LIMIT 100
+        `, [
+            this.id,
+        ]);
+    }
+
     async toJSON() {
 
         let notificationIDList = {};
@@ -83,7 +112,6 @@ class Monitor extends BeanModel {
         let prometheus = new Prometheus(this);
 
         const beat = async () => {
-
             // Expose here for prometheus update
             // undefined if not https
             let tlsInfo = undefined;
@@ -302,22 +330,37 @@ class Monitor extends BeanModel {
                 console.warn(`Monitor #${this.id} '${this.name}': Failing: ${bean.msg} | Type: ${this.type}`)
             }
 
+            if (! this.beanMeta.extraData.uniqueNumber) {
+                this.beanMeta.extraData.uniqueNumber = getRandomInt(0, 9999999999);
+            }
+
+            debug(this.beanMeta.extraData.uniqueNumber);
+
             io.to(this.user_id).emit("heartbeat", bean.toJSON());
             Monitor.sendStats(io, this.id, this.user_id)
 
             await R.store(bean);
+
+            // Also add to cache
+            this.getCachedHeartbeatList().add(bean);
+
             prometheus.update(bean, tlsInfo);
 
             previousBeat = bean;
 
-            this.heartbeatInterval = setTimeout(beat, this.interval * 1000);
+            if (this.beanMeta.extraData.stop !== true) {
+                this.heartbeatInterval = setTimeout(beat, this.interval * 1000);
+            }
         }
 
         beat();
     }
 
     stop() {
+        console.log(`[Monitor: ${this.id}] Stop`);
+        debug("Stop " + this.beanMeta.extraData.uniqueNumber)
         clearTimeout(this.heartbeatInterval);
+        this.beanMeta.extraData.stop = true;
     }
 
     /**
