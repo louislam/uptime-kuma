@@ -116,5 +116,8 @@ export default {
     "Clear Data": "Clear Data",
     Events: "Events",
     Heartbeats: "Heartbeats",
-    "Auto Get": "Auto Get"
+    "Auto Get": "Auto Get",
+    enableDefaultNotificationDescription: "For every new monitor this notification will be enabled by default. You can still disable the notification separately for each monitor.",
+    "Default enabled": "Default enabled",
+    "Also apply to existing monitors": "Also apply to existing monitors"
 }
