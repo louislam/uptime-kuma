@@ -371,7 +371,7 @@ export default {
             }
             exportData = JSON.stringify(exportData);
             let downloadItem = document.createElement("a");
-            downloadItem.setAttribute("href", `data:application/json;charset=utf-8, ${exportData}`);
+            downloadItem.setAttribute("href", "data:application/json;charset=utf-8," + encodeURI(exportData));
             downloadItem.setAttribute("download", fileName);
             downloadItem.click();
         },
