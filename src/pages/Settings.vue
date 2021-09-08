@@ -215,6 +215,12 @@
                     <p>Proszę używać ostrożnie.</p>
                 </template>
 
+                <template v-else-if="$i18n.locale === 'et-EE' ">
+                    <p>Kas soovid <strong>lülitada autentimise välja</strong>?</p>
+                    <p>Kastuamiseks <strong>välise autentimispakkujaga</strong>, näiteks Cloudflare Access.</p>
+                    <p>Palun kasuta vastutustundlikult.</p>
+                </template>
+
                 <!-- English (en) -->
                 <template v-else>
                     <p>Are you sure want to <strong>disable auth</strong>?</p>
