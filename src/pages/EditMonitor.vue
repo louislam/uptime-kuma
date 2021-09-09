@@ -10,7 +10,7 @@
 
                             <div class="my-3">
                                 <label for="type" class="form-label">{{ $t("Monitor Type") }}</label>
-                                <select id="type" v-model="monitor.type" class="form-select" aria-label="Default select example">
+                                <select id="type" v-model="monitor.type" class="form-select">
                                     <option value="http">
                                         HTTP(s)
                                     </option>
@@ -190,7 +190,7 @@
                 </div>
             </form>
 
-            <NotificationDialog ref="notificationDialog" />
+            <NotificationDialog ref="notificationDialog" @added="addedNotification" />
         </div>
     </transition>
 </template>
@@ -283,7 +283,7 @@ export default {
     methods: {
         init() {
             if (this.isAdd) {
-                console.log("??????")
+
                 this.monitor = {
                     type: "http",
                     name: "",
@@ -337,6 +337,12 @@ export default {
                     this.$root.toastRes(res)
                 })
             }
+        },
+
+        // Added a Notification Event
+        // Enable it if the notification is added in EditMonitor.vue
+        addedNotification(id) {
+            this.monitor.notificationIDList[id] = true;
         },
     },
 }

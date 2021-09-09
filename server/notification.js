@@ -99,6 +99,8 @@ class Notification {
         if (notification.applyExisting) {
             await applyNotificationEveryMonitor(bean.id, userID);
         }
+
+        return bean;
     }
 
     static async delete(notificationID, userID) {

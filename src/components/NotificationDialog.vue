@@ -454,6 +454,7 @@ export default {
         SMTP,
     },
     props: {},
+    emits: ["added"],
     data() {
         return {
             model: null,
@@ -532,7 +533,13 @@ export default {
                 this.processing = false;
 
                 if (res.ok) {
-                    this.modal.hide()
+                    this.modal.hide();
+
+                    // Emit added event, doesn't emit edit.
+                    if (! this.id) {
+                        this.$emit("added", res.id);
+                    }
+
                 }
             })
         },

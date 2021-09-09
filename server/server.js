@@ -527,12 +527,13 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
             try {
                 checkLogin(socket)
 
-                await Notification.save(notification, notificationID, socket.userID)
+                let notificationBean = await Notification.save(notification, notificationID, socket.userID)
                 await sendNotificationList(socket)
 
                 callback({
                     ok: true,
                     msg: "Saved",
+                    id: notificationBean.id,
                 });
 
             } catch (e) {
