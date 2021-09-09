@@ -107,10 +107,19 @@ Telegram Notification Sample:
 
 If you love this project, please consider giving me a ⭐.
 
+
+## 🗣️ Discussion
+
+You can also discuss or ask for help in [Issues](https://github.com/louislam/uptime-kuma/issues).
+
+I think the real "Discussion" tab is hard to use, as it is reddit-like flow, I always missed new comments. 
+
+
 ## Contribute
 
-If you want to report a bug or request a new feature. Free feel to open a new issue.
+If you want to report a bug or request a new feature. Free feel to open a [new issue](https://github.com/louislam/uptime-kuma/issues).
 
 If you want to modify Uptime Kuma, this guideline may be useful for you: https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md
 
 English proofreading is needed too because my grammar is not that great sadly. Feel free to correct my grammar in this readme, source code, or wiki.
+
