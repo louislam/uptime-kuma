@@ -112,8 +112,8 @@ export default {
     "Create your admin account": "Create your admin account",
     "Repeat Password": "Repeat Password",
     "Import/Export Backup": "Import/Export Backup",
-    "Export": "Export",
-    "Import": "Import",
+    Export: "Export",
+    Import: "Import",
     respTime: "Resp. Time (ms)",
     notAvailableShort: "N/A",
     "Default enabled": "Default enabled",
@@ -127,5 +127,5 @@ export default {
     backupDescription2: "PS: History and event data is not included.",
     backupDescription3: "Sensitive data such as notification tokens is included in the export file, please keep it carefully.",
     alertNoFile: "Please select a file to import.",
-    alertWrongFileType: "Please select a JSON file.",
+    alertWrongFileType: "Please select a JSON file."
 }

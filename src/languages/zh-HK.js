@@ -119,5 +119,13 @@ export default {
     "Auto Get": "自動獲取",
     enableDefaultNotificationDescription: "新增監測器時這個通知會預設啟用，當然每個監測器亦可分別控制開關。",
     "Default enabled": "預設通知",
-    "Also apply to existing monitors": "同時取用至目前所有監測器"
+    "Also apply to existing monitors": "同時取用至目前所有監測器",
+    "Import/Export Backup": "匯入/匯出 備份",
+    Export: "匯出",
+    Import: "匯入",
+    backupDescription: "您可以備份所有監測器及所有通知。",
+    backupDescription2: "註：此備份不包括歷史記錄。",
+    backupDescription3: "此備份可能包含了一些敏感資料如通知裡的 Token，請小心保存備份。",
+    alertNoFile: "請選擇一個檔案",
+    alertWrongFileType: "請選擇 JSON 檔案"
 }

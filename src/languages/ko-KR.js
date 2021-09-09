@@ -119,5 +119,13 @@ export default {
     "Auto Get": "Auto Get",
     enableDefaultNotificationDescription: "For every new monitor this notification will be enabled by default. You can still disable the notification separately for each monitor.",
     "Default enabled": "Default enabled",
-    "Also apply to existing monitors": "Also apply to existing monitors"
+    "Also apply to existing monitors": "Also apply to existing monitors",
+    "Import/Export Backup": "Import/Export Backup",
+    Export: "Export",
+    Import: "Import",
+    backupDescription: "You can backup all monitors and all notifications into a JSON file.",
+    backupDescription2: "PS: History and event data is not included.",
+    backupDescription3: "Sensitive data such as notification tokens is included in the export file, please keep it carefully.",
+    alertNoFile: "Please select a file to import.",
+    alertWrongFileType: "Please select a JSON file."
 }
