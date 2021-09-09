@@ -123,9 +123,10 @@ export default {
     enableDefaultNotificationDescription: "Für jeden neuen Monitor wird diese Benachrichtigung standardmäßig aktiviert. Die Benachrichtigung kann weiterhin für jeden Monitor separat deaktiviert werden.",
     Create: "Erstellen",
     "Auto Get": "Auto Get",
-    backupDescription: "Es können alle Monitore und alle Benachrichtigungen in einer JSON-Datei gesichert werden.",
+    backupDescription: "Es können alle Monitore und Benachrichtigungen in einer JSON-Datei gesichert werden.",
     backupDescription2: "PS: Verlaufs- und Ereignisdaten sind nicht enthalten.",
     backupDescription3: "Sensible Daten wie Benachrichtigungstoken sind in der Exportdatei enthalten, bitte bewahre sie sorgfältig auf.",
     alertNoFile: "Bitte wähle eine Datei zum importieren aus.",
     alertWrongFileType: "Bitte wähle eine JSON Datei aus.",
+    "Clear all statistics": "Lösche alle Statistiken"
 }
