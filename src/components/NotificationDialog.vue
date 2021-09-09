@@ -11,8 +11,8 @@
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label for="type" class="form-label">{{ $t("Notification Type") }}</label>
-                            <select id="type" v-model="notification.type" class="form-select">
+                            <label for="notification-type" class="form-label">{{ $t("Notification Type") }}</label>
+                            <select id="notification-type" v-model="notification.type" class="form-select">
                                 <option value="telegram">Telegram</option>
                                 <option value="webhook">Webhook</option>
                                 <option value="smtp">{{ $t("Email") }} (SMTP)</option>
@@ -33,8 +33,8 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="name" class="form-label">{{ $t("Friendly Name") }}</label>
-                            <input id="name" v-model="notification.name" type="text" class="form-control" required>
+                            <label for="notification-name" class="form-label">{{ $t("Friendly Name") }}</label>
+                            <input id="notification-name" v-model="notification.name" type="text" class="form-control" required>
                         </div>
 
                         <Telegram v-if="notification.type === 'telegram'" />
