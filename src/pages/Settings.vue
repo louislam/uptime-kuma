@@ -120,6 +120,27 @@
                                 </form>
                             </template>
 
+                            <h2 class="mt-5 mb-2">{{ $t("Import/Export Backup") }}</h2>
+
+                            <p>
+                                {{ $t("backupDescription") }} <br />
+                                ({{ $t("backupDescription2") }}) <br />
+                            </p>
+
+                            <div class="input-group mb-3">
+                                <button class="btn btn-outline-primary" @click="downloadBackup">{{ $t("Export") }}</button>
+                                <button type="button" class="btn btn-outline-primary" :disabled="processing" @click="importBackup">
+                                    <div v-if="processing" class="spinner-border spinner-border-sm me-1"></div>
+                                    {{ $t("Import") }}
+                                </button>
+                                <input id="importBackup" type="file" class="form-control" accept="application/json">
+                            </div>
+                            <div v-if="importAlert" class="alert alert-danger mt-3" style="padding: 6px 16px;">
+                                {{ importAlert }}
+                            </div>
+
+                            <p><strong>{{ $t("backupDescription3") }}</strong></p>
+
                             <h2 class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
 
                             <div class="mb-3">
@@ -275,6 +296,8 @@ export default {
 
             },
             loaded: false,
+            importAlert: null,
+            processing: false,
         }
     },
     watch: {
@@ -351,6 +374,52 @@ export default {
             this.$root.storage().removeItem("token");
         },
 
+        downloadBackup() {
+            let time = dayjs().format("YYYY_MM_DD-hh_mm_ss");
+            let fileName = `Uptime_Kuma_Backup_${time}.json`;
+            let monitorList = Object.values(this.$root.monitorList);
+            let exportData = {
+                version: this.$root.info.version,
+                notificationList: this.$root.notificationList,
+                monitorList: monitorList,
+            }
+            exportData = JSON.stringify(exportData);
+            let downloadItem = document.createElement("a");
+            downloadItem.setAttribute("href", "data:application/json;charset=utf-8," + encodeURI(exportData));
+            downloadItem.setAttribute("download", fileName);
+            downloadItem.click();
+        },
+
+        importBackup() {
+            this.processing = true;
+            let uploadItem = document.getElementById("importBackup").files;
+
+            if (uploadItem.length <= 0) {
+                this.processing = false;
+                return this.importAlert = this.$t("alertNoFile")
+            }
+
+            if (uploadItem.item(0).type !== "application/json") {
+                this.processing = false;
+                return this.importAlert = this.$t("alertWrongFileType")
+            }
+
+            let fileReader = new FileReader();
+            fileReader.readAsText(uploadItem.item(0));
+
+            fileReader.onload = item => {
+                this.$root.uploadBackup(item.target.result, (res) => {
+                    this.processing = false;
+
+                    if (res.ok) {
+                        toast.success(res.msg);
+                    } else {
+                        toast.error(res.msg);
+                    }
+                })
+            }
+        },
+
         clearStatistics() {
             this.$root.clearStatistics((res) => {
                 if (res.ok) {
@@ -387,6 +456,18 @@ export default {
     .btn-check:checked + .btn-outline-primary,
     .btn-check:hover + .btn-outline-primary {
         color: #000;
+    }
+
+    #importBackup {
+        &::file-selector-button {
+            color: $primary;
+            background-color: $dark-bg;
+        }
+
+        &:hover:not(:disabled):not([readonly])::file-selector-button {
+            color: $dark-font-color2;
+            background-color: $primary;
+        }
     }
 }
 

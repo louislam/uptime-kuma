@@ -593,6 +593,82 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
             }
         });
 
+        socket.on("uploadBackup", async (uploadedJSON, callback) => {
+            try {
+                checkLogin(socket)
+
+                let backupData = JSON.parse(uploadedJSON);
+
+                console.log(`Importing Backup, User ID: ${socket.userID}, Version: ${backupData.version}`)
+
+                let notificationList = backupData.notificationList;
+                let monitorList = backupData.monitorList;
+
+                if (notificationList.length >= 1) {
+                    for (let i = 0; i < notificationList.length; i++) {
+                        let notification = JSON.parse(notificationList[i].config);
+                        await Notification.save(notification, null, socket.userID)
+                    }
+                }
+
+                if (monitorList.length >= 1) {
+                    for (let i = 0; i < monitorList.length; i++) {
+                        let monitor = {
+                            name: monitorList[i].name,
+                            type: monitorList[i].type,
+                            url: monitorList[i].url,
+                            interval: monitorList[i].interval,
+                            hostname: monitorList[i].hostname,
+                            maxretries: monitorList[i].maxretries,
+                            port: monitorList[i].port,
+                            keyword: monitorList[i].keyword,
+                            ignoreTls: monitorList[i].ignoreTls,
+                            upsideDown: monitorList[i].upsideDown,
+                            maxredirects: monitorList[i].maxredirects,
+                            accepted_statuscodes: monitorList[i].accepted_statuscodes,
+                            dns_resolve_type: monitorList[i].dns_resolve_type,
+                            dns_resolve_server: monitorList[i].dns_resolve_server,
+                            notificationIDList: {},
+                        }
+
+                        let bean = R.dispense("monitor")
+
+                        let notificationIDList = monitor.notificationIDList;
+                        delete monitor.notificationIDList;
+
+                        monitor.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
+                        delete monitor.accepted_statuscodes;
+
+                        bean.import(monitor)
+                        bean.user_id = socket.userID
+                        await R.store(bean)
+
+                        await updateMonitorNotification(bean.id, notificationIDList)
+
+                        if (monitorList[i].active == 1) {
+                            await startMonitor(socket.userID, bean.id);
+                        } else {
+                            await pauseMonitor(socket.userID, bean.id);
+                        }
+                    }
+
+                    await sendNotificationList(socket)
+                    await sendMonitorList(socket);
+                }
+
+                callback({
+                    ok: true,
+                    msg: "Backup successfully restored.",
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
         socket.on("clearEvents", async (monitorID, callback) => {
             try {
                 checkLogin(socket)
