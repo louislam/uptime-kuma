@@ -38,7 +38,7 @@
                         </div>
                     </div>
 
-                    <div v-if="twoFAStatus == false" class="modal-footer">
+                    <div v-if="uri && twoFAStatus == false" class="modal-footer">
                         <button type="submit" class="btn btn-primary" :disabled="processing || tokenValid == false" @click="confirmEnableTwoFA()">
                             <div v-if="processing" class="spinner-border spinner-border-sm me-1"></div>
                             {{ $t("Save") }}
