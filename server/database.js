@@ -36,7 +36,11 @@ class Database {
 
         // Change to WAL
         await R.exec("PRAGMA journal_mode = WAL");
+        await R.exec("PRAGMA cache_size = -12000");
+
+        console.log("SQLite config:");
         console.log(await R.getAll("PRAGMA journal_mode"));
+        console.log(await R.getAll("PRAGMA cache_size"));
     }
 
     static async patch() {

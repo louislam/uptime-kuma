@@ -37,7 +37,7 @@
                             <input id="name" v-model="notification.name" type="text" class="form-control" required>
                         </div>
 
-                        <Telegram v-if="notification.type === 'telegram'"></Telegram>
+                        <Telegram v-if="notification.type === 'telegram'" />
 
                         <!-- TODO: Convert all into vue components, but not an easy task.  -->
 
@@ -65,49 +65,7 @@
                             </div>
                         </template>
 
-                        <template v-if="notification.type === 'smtp'">
-                            <div class="mb-3">
-                                <label for="hostname" class="form-label">Hostname</label>
-                                <input id="hostname" v-model="notification.smtpHost" type="text" class="form-control" required>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="port" class="form-label">Port</label>
-                                <input id="port" v-model="notification.smtpPort" type="number" class="form-control" required min="0" max="65535" step="1">
-                            </div>
-
-                            <div class="mb-3">
-                                <div class="form-check">
-                                    <input id="secure" v-model="notification.smtpSecure" class="form-check-input" type="checkbox" value="">
-                                    <label class="form-check-label" for="secure">
-                                        Secure
-                                    </label>
-                                </div>
-                                <div class="form-text">
-                                    Generally, true for 465, false for other ports.
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="username" class="form-label">Username</label>
-                                <input id="username" v-model="notification.smtpUsername" type="text" class="form-control" autocomplete="false">
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="password" class="form-label">Password</label>
-                                <HiddenInput id="password" v-model="notification.smtpPassword" :required="true" autocomplete="one-time-code"></HiddenInput>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="from-email" class="form-label">From Email</label>
-                                <input id="from-email" v-model="notification.smtpFrom" type="email" class="form-control" required autocomplete="false">
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="to-email" class="form-label">To Email</label>
-                                <input id="to-email" v-model="notification.smtpTo" type="email" class="form-control" required autocomplete="false">
-                            </div>
-                        </template>
+                        <SMTP v-if="notification.type === 'smtp'" />
 
                         <template v-if="notification.type === 'discord'">
                             <div class="mb-3">
@@ -437,8 +395,8 @@
 
                         <!-- DEPRECATED! Please create vue component in "./src/components/notifications/{notification name}.vue" -->
 
-                        <div class="mb-3">
-                            <hr class="dropdown-divider">
+                        <div class="mb-3 mt-4">
+                            <hr class="dropdown-divider mb-4">
 
                             <div class="form-check form-switch">
                                 <input v-model="notification.isDefault" class="form-check-input" type="checkbox">
@@ -456,6 +414,7 @@
                             </div>
                         </div>
                     </div>
+
                     <div class="modal-footer">
                         <button v-if="id" type="button" class="btn btn-danger" :disabled="processing" @click="deleteConfirm">
                             {{ $t("Delete") }}
@@ -481,19 +440,18 @@
 <script lang="ts">
 import { Modal } from "bootstrap"
 import { ucfirst } from "../util.ts"
-import axios from "axios";
 
 import Confirm from "./Confirm.vue";
 import HiddenInput from "./HiddenInput.vue";
 import Telegram from "./notifications/Telegram.vue";
-import { useToast } from "vue-toastification"
-const toast = useToast();
+import SMTP from "./notifications/SMTP.vue";
 
 export default {
     components: {
         Confirm,
         HiddenInput,
         Telegram,
+        SMTP,
     },
     props: {},
     data() {
@@ -504,8 +462,8 @@ export default {
             notification: {
                 name: "",
                 type: null,
-                gotifyPriority: 8,
                 isDefault: false,
+                // Do not set default value here, please scroll to show()
             },
             appriseInstalled: false,
         }
@@ -558,9 +516,10 @@ export default {
                     isDefault: false,
                 }
 
-                // Default set to Telegram
-                this.notification.type = "telegram"
-                this.notification.gotifyPriority = 8
+                // Set Default value here
+                this.notification.type = "telegram";
+                this.notification.gotifyPriority = 8;
+                this.notification.smtpSecure = false;
             }
 
             this.modal.show()

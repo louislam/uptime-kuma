@@ -409,58 +409,59 @@ class Monitor extends BeanModel {
     static async sendUptime(duration, io, monitorID, userID) {
         const timeLogger = new TimeLogger();
 
-        let sec = duration * 3600;
+        const startTime = R.isoDateTime(dayjs.utc().subtract(duration, "hour"));
 
-        let heartbeatList = await R.getAll(`
-            SELECT duration, time, status
+        // Handle if heartbeat duration longer than the target duration
+        // e.g. If the last beat's duration is bigger that the 24hrs window, it will use the duration between the (beat time - window margin) (THEN case in SQL)
+        let result = await R.getRow(`
+            SELECT
+               -- SUM all duration, also trim off the beat out of time window
+                SUM(
+                    CASE
+                        WHEN (JULIANDAY(\`time\`) - JULIANDAY(?)) * 86400 < duration
+                        THEN (JULIANDAY(\`time\`) - JULIANDAY(?)) * 86400
+                        ELSE duration
+                    END
+                ) AS total_duration,
+
+               -- SUM all uptime duration, also trim off the beat out of time window
+                SUM(
+                    CASE
+                        WHEN (status = 1)
+                        THEN
+                            CASE
+                                WHEN (JULIANDAY(\`time\`) - JULIANDAY(?)) * 86400 < duration
+                                    THEN (JULIANDAY(\`time\`) - JULIANDAY(?)) * 86400
+                                ELSE duration
+                            END
+                        END
+                ) AS uptime_duration
             FROM heartbeat
-            WHERE time > DATETIME('now', ? || ' hours')
-            AND monitor_id = ? `, [
-            -duration,
+            WHERE time > ?
+            AND monitor_id = ?
+        `, [
+            startTime, startTime, startTime, startTime, startTime,
             monitorID,
         ]);
 
         timeLogger.print(`[Monitor: ${monitorID}][${duration}] sendUptime`);
 
-        let downtime = 0;
-        let total = 0;
-        let uptime;
+        let totalDuration = result.total_duration;
+        let uptimeDuration = result.uptime_duration;
+        let uptime = 0;
 
-        // Special handle for the first heartbeat only
-        if (heartbeatList.length === 1) {
-
-            if (heartbeatList[0].status === 1) {
-                uptime = 1;
-            } else {
+        if (totalDuration > 0) {
+            uptime = uptimeDuration / totalDuration;
+            if (uptime < 0) {
                 uptime = 0;
             }
 
         } else {
-            for (let row of heartbeatList) {
-                let value = parseInt(row.duration)
-                let time = row.time
-
-                // Handle if heartbeat duration longer than the target duration
-                // e.g.   Heartbeat duration = 28hrs, but target duration = 24hrs
-                if (value > sec) {
-                    let trim = dayjs.utc().diff(dayjs(time), "second");
-                    value = sec - trim;
-
-                    if (value < 0) {
-                        value = 0;
-                    }
-                }
-
-                total += value;
-                if (row.status === 0 || row.status === 2) {
-                    downtime += value;
-                }
-            }
-
-            uptime = (total - downtime) / total;
-
-            if (uptime < 0) {
-                uptime = 0;
+            // Handle new monitor with only one beat, because the beat's duration = 0
+            let status = parseInt(await R.getCell("SELECT `status` FROM heartbeat WHERE monitor_id = ?", [ monitorID ]));
+            console.log("here???" + status);
+            if (status === UP) {
+                uptime = 1;
             }
         }
 

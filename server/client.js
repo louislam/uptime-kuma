@@ -32,19 +32,16 @@ async function sendNotificationList(socket) {
 async function sendHeartbeatList(socket, monitorID, toUser = false, overwrite = false) {
     const timeLogger = new TimeLogger();
 
-    let list = await R.find("heartbeat", `
-        monitor_id = ?
+    let list = await R.getAll(`
+        SELECT * FROM heartbeat
+        WHERE monitor_id = ?
         ORDER BY time DESC
         LIMIT 100
     `, [
         monitorID,
     ])
 
-    let result = [];
-
-    for (let bean of list) {
-        result.unshift(bean.toJSON());
-    }
+    let result = list.reverse();
 
     if (toUser) {
         io.to(socket.userID).emit("heartbeatList", monitorID, result, overwrite);
