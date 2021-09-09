@@ -22,7 +22,7 @@ const gracefulShutdown = require("http-graceful-shutdown");
 debug("Importing prometheus-api-metrics");
 const prometheusAPIMetrics = require("prometheus-api-metrics");
 
-debug("2FA Modules");
+debug("Importing 2FA Modules");
 const notp = require("notp");
 const base32 = require("thirty-two");
 
