@@ -112,6 +112,8 @@ If you love this project, please consider giving me a ⭐.
 
 You can also discuss or ask for help in [Issues](https://github.com/louislam/uptime-kuma/issues).
 
+Alternatively, you can discuss in my original post on reddit: https://www.reddit.com/r/selfhosted/comments/oi7dc7/uptime_kuma_a_fancy_selfhosted_monitoring_tool_an/
+
 I think the real "Discussion" tab is hard to use, as it is reddit-like flow, I always missed new comments. 
 
 
