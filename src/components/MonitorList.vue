@@ -131,13 +131,21 @@ export default {
     border-radius: 10px 10px 0 0;
     margin: -10px;
     margin-bottom: 10px;
-    padding: 15px;
+    padding: 10px;
     display: flex;
     justify-content: space-between;
 
     .dark & {
         background-color: #161b22;
         border-bottom: 0;
+    }
+}
+
+@media (max-width: 770px) {
+    .list-header {
+        margin: -20px;
+        margin-bottom: 10px;
+        padding: 5px;
     }
 }
 
