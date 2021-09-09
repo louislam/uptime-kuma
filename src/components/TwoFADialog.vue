@@ -30,7 +30,7 @@
                             <div v-if="uri && twoFAStatus == false" class="mt-3">
                                 <label for="basic-url" class="form-label">{{ $t("twoFAVerifyLabel") }}</label>
                                 <div class="input-group">
-                                    <input v-model="token" type="text" class="form-control">
+                                    <input v-model="token" type="text" maxlength="6" class="form-control">
                                     <button class="btn btn-outline-primary" type="button" @click="verifyToken()">{{ $t("Verify Token") }}</button>
                                 </div>
                                 <p v-show="tokenValid" class="mt-2" style="color: green">{{ $t("tokenValidSettingsMsg") }}</p>
