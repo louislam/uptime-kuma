@@ -11,7 +11,7 @@ export default {
     notificationDescription: "Assegnare la notifica a uno o più elementi monitorati per metterla in funzione.",
     keywordDescription: "Cerca la parola chiave nella risposta in html o JSON e fai distinzione tra maiuscole e minuscole",
     pauseDashboardHome: "In Pausa",
-    deleteMonitorMsg: "Si è certi di eliminare questo monitoraggio?",
+    deleteMonitorMsg: "Si è certi di voler eliminare questo monitoraggio?",
     deleteNotificationMsg: "Si è certi di voler eliminare questa notifica per tutti gli oggetti monitorati?",
     resoverserverDescription: "Cloudflare è il server predefinito, è possibile cambiare il server DNS.",
     rrtypeDescription: "Scegliere il tipo di RR che si vuole monitorare",
