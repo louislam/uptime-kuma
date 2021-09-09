@@ -141,4 +141,5 @@ export default {
     Active: "Active",
     Inactive: "Inactive",
     Token: "Token",
+    "Show URI": "Show URI"
 }

@@ -15,7 +15,7 @@
                         <div class="mb-3">
                             <div v-if="uri && twoFAStatus == false" class="mx-auto text-center" style="width: 210px;">
                                 <vue-qrcode :key="uri" :value="uri" type="image/png" :quality="1" :color="{ light: '#ffffffff' }" />
-                                <button v-show="!showURI" type="button" class="btn btn-outline-primary btn-sm mt-2" @click="showURI = true">Show URI</button>
+                                <button v-show="!showURI" type="button" class="btn btn-outline-primary btn-sm mt-2" @click="showURI = true">{{ $t("Show URI") }}</button>
                             </div>
                             <p v-if="showURI && twoFAStatus == false" class="text-break mt-2">{{ uri }}</p>
 
