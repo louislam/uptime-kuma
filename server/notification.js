@@ -93,7 +93,7 @@ class Notification {
         bean.name = notification.name;
         bean.user_id = userID;
         bean.config = JSON.stringify(notification);
-        bean.is_default = notification.isDefault;
+        bean.is_default = notification.isDefault || false;
         await R.store(bean)
 
         if (notification.applyExisting) {
