@@ -10,7 +10,7 @@
 
                             <div class="my-3">
                                 <label for="type" class="form-label">{{ $t("Monitor Type") }}</label>
-                                <select id="type" v-model="monitor.type" class="form-select" aria-label="Default select example">
+                                <select id="type" v-model="monitor.type" class="form-select">
                                     <option value="http">
                                         HTTP(s)
                                     </option>
@@ -178,6 +178,8 @@
                                     {{ notification.name }}
                                     <a href="#" @click="$refs.notificationDialog.show(notification.id)">{{ $t("Edit") }}</a>
                                 </label>
+
+                                <span v-if="notification.isDefault == true" class="badge bg-primary ms-2">Default</span>
                             </div>
 
                             <button class="btn btn-primary me-2" type="button" @click="$refs.notificationDialog.show()">
@@ -188,7 +190,7 @@
                 </div>
             </form>
 
-            <NotificationDialog ref="notificationDialog" />
+            <NotificationDialog ref="notificationDialog" @added="addedNotification" />
         </div>
     </transition>
 </template>
@@ -281,7 +283,7 @@ export default {
     methods: {
         init() {
             if (this.isAdd) {
-                console.log("??????")
+
                 this.monitor = {
                     type: "http",
                     name: "",
@@ -295,6 +297,12 @@ export default {
                     accepted_statuscodes: ["200-299"],
                     dns_resolve_type: "A",
                     dns_resolve_server: "1.1.1.1",
+                }
+
+                for (let i = 0; i < this.$root.notificationList.length; i++) {
+                    if (this.$root.notificationList[i].isDefault == true) {
+                        this.monitor.notificationIDList[this.$root.notificationList[i].id] = true;
+                    }
                 }
             } else if (this.isEdit) {
                 this.$root.getSocket().emit("getMonitor", this.$route.params.id, (res) => {
@@ -329,6 +337,12 @@ export default {
                     this.$root.toastRes(res)
                 })
             }
+        },
+
+        // Added a Notification Event
+        // Enable it if the notification is added in EditMonitor.vue
+        addedNotification(id) {
+            this.monitor.notificationIDList[id] = true;
         },
     },
 }

@@ -11,7 +11,7 @@ export default {
     mounted() {
         // Default Light
         if (! this.userTheme) {
-            this.userTheme = "light";
+            this.userTheme = "auto";
         }
 
         // Default Heartbeat Bar

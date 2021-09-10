@@ -5,8 +5,9 @@ const { setSetting, setting } = require("./util-server");
 class Database {
 
     static templatePath = "./db/kuma.db"
-    static path = "./data/kuma.db";
-    static latestVersion = 8;
+    static dataDir;
+    static path;
+    static latestVersion = 9;
     static noReject = true;
     static sqliteInstance = null;
 
@@ -35,7 +36,11 @@ class Database {
 
         // Change to WAL
         await R.exec("PRAGMA journal_mode = WAL");
+        await R.exec("PRAGMA cache_size = -12000");
+
+        console.log("SQLite config:");
         console.log(await R.getAll("PRAGMA journal_mode"));
+        console.log(await R.getAll("PRAGMA cache_size"));
     }
 
     static async patch() {
@@ -56,7 +61,7 @@ class Database {
             console.info("Database patch is needed")
 
             console.info("Backup the db")
-            const backupPath = "./data/kuma.db.bak" + version;
+            const backupPath = this.dataDir + "kuma.db.bak" + version;
             fs.copyFileSync(Database.path, backupPath);
 
             const shmPath = Database.path + "-shm";

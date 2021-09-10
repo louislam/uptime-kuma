@@ -71,6 +71,14 @@ h2 {
     }
 }
 
+.btn-warning {
+    color: white;
+
+    &:hover, &:active, &:focus, &.active {
+        color: white;
+    }
+}
+
 .btn-info {
     color: white;
 
@@ -144,7 +152,7 @@ h2 {
     }
 
     .form-switch .form-check-input {
-        background-color: #131a21;
+        background-color: #232f3b;
     }
 
     a,
@@ -184,6 +192,14 @@ h2 {
 
     .btn-secondary {
         color: white;
+    }
+
+    .btn-warning {
+        color: $dark-font-color2;
+
+        &:hover, &:active, &:focus, &.active {
+            color: $dark-font-color2;
+        }
     }
 
     .btn-close {

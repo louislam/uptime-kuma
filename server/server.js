@@ -6,6 +6,7 @@ const { sleep, debug, TimeLogger, getRandomInt } = require("../src/util");
 console.log("Importing Node libraries")
 const fs = require("fs");
 const http = require("http");
+const https = require("https");
 
 console.log("Importing 3rd-party libraries")
 debug("Importing express");
@@ -26,8 +27,11 @@ debug("Importing Monitor");
 const Monitor = require("./model/monitor");
 debug("Importing Settings");
 const { getSettings, setSettings, setting, initJWTSecret } = require("./util-server");
+
 debug("Importing Notification");
 const { Notification } = require("./notification");
+Notification.init();
+
 debug("Importing Database");
 const Database = require("./database");
 
@@ -45,11 +49,48 @@ console.info("Version: " + checkVersion.version);
 const hostname = process.env.HOST || args.host;
 const port = parseInt(process.env.PORT || args.port || 3001);
 
+// SSL
+const sslKey = process.env.SSL_KEY || args["ssl-key"] || undefined;
+const sslCert = process.env.SSL_CERT || args["ssl-cert"] || undefined;
+
+// Demo Mode?
+const demoMode = args["demo"] || false;
+
+if (demoMode) {
+    console.log("==== Demo Mode ====");
+}
+
+// Data Directory (must be end with "/")
+Database.dataDir = process.env.DATA_DIR || args["data-dir"] || "./data/";
+Database.path = Database.dataDir + "kuma.db";
+if (! fs.existsSync(Database.dataDir)) {
+    fs.mkdirSync(Database.dataDir, { recursive: true });
+}
+console.log(`Data Dir: ${Database.dataDir}`);
+
 console.log("Creating express and socket.io instance")
 const app = express();
-const server = http.createServer(app);
+
+let server;
+
+if (sslKey && sslCert) {
+    console.log("Server Type: HTTPS");
+    server = https.createServer({
+        key: fs.readFileSync(sslKey),
+        cert: fs.readFileSync(sslCert)
+    }, app);
+} else {
+    console.log("Server Type: HTTP");
+    server = http.createServer(app);
+}
+
 const io = new Server(server);
-app.use(express.json())
+module.exports.io = io;
+
+// Must be after io instantiation
+const { sendNotificationList, sendHeartbeatList, sendImportantHeartbeatList } = require("./client");
+
+app.use(express.json());
 
 /**
  * Total WebSocket client connected to server currently, no actual use
@@ -486,12 +527,13 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
             try {
                 checkLogin(socket)
 
-                await Notification.save(notification, notificationID, socket.userID)
+                let notificationBean = await Notification.save(notification, notificationID, socket.userID)
                 await sendNotificationList(socket)
 
                 callback({
                     ok: true,
                     msg: "Saved",
+                    id: notificationBean.id,
                 });
 
             } catch (e) {
@@ -549,6 +591,152 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                 callback(Notification.checkApprise());
             } catch (e) {
                 callback(false);
+            }
+        });
+
+        socket.on("uploadBackup", async (uploadedJSON, callback) => {
+            try {
+                checkLogin(socket)
+
+                let backupData = JSON.parse(uploadedJSON);
+
+                console.log(`Importing Backup, User ID: ${socket.userID}, Version: ${backupData.version}`)
+
+                let notificationList = backupData.notificationList;
+                let monitorList = backupData.monitorList;
+
+                if (notificationList.length >= 1) {
+                    for (let i = 0; i < notificationList.length; i++) {
+                        let notification = JSON.parse(notificationList[i].config);
+                        await Notification.save(notification, null, socket.userID)
+                    }
+                }
+
+                if (monitorList.length >= 1) {
+                    for (let i = 0; i < monitorList.length; i++) {
+                        let monitor = {
+                            name: monitorList[i].name,
+                            type: monitorList[i].type,
+                            url: monitorList[i].url,
+                            interval: monitorList[i].interval,
+                            hostname: monitorList[i].hostname,
+                            maxretries: monitorList[i].maxretries,
+                            port: monitorList[i].port,
+                            keyword: monitorList[i].keyword,
+                            ignoreTls: monitorList[i].ignoreTls,
+                            upsideDown: monitorList[i].upsideDown,
+                            maxredirects: monitorList[i].maxredirects,
+                            accepted_statuscodes: monitorList[i].accepted_statuscodes,
+                            dns_resolve_type: monitorList[i].dns_resolve_type,
+                            dns_resolve_server: monitorList[i].dns_resolve_server,
+                            notificationIDList: {},
+                        }
+
+                        let bean = R.dispense("monitor")
+
+                        let notificationIDList = monitor.notificationIDList;
+                        delete monitor.notificationIDList;
+
+                        monitor.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
+                        delete monitor.accepted_statuscodes;
+
+                        bean.import(monitor)
+                        bean.user_id = socket.userID
+                        await R.store(bean)
+
+                        await updateMonitorNotification(bean.id, notificationIDList)
+
+                        if (monitorList[i].active == 1) {
+                            await startMonitor(socket.userID, bean.id);
+                        } else {
+                            await pauseMonitor(socket.userID, bean.id);
+                        }
+                    }
+
+                    await sendNotificationList(socket)
+                    await sendMonitorList(socket);
+                }
+
+                callback({
+                    ok: true,
+                    msg: "Backup successfully restored.",
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("clearEvents", async (monitorID, callback) => {
+            try {
+                checkLogin(socket)
+
+                console.log(`Clear Events Monitor: ${monitorID} User ID: ${socket.userID}`)
+
+                await R.exec("UPDATE heartbeat SET msg = ?, important = ? WHERE monitor_id = ? ", [
+                    "",
+                    "0",
+                    monitorID,
+                ]);
+
+                await sendImportantHeartbeatList(socket, monitorID, true, true);
+
+                callback({
+                    ok: true,
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("clearHeartbeats", async (monitorID, callback) => {
+            try {
+                checkLogin(socket)
+
+                console.log(`Clear Heartbeats Monitor: ${monitorID} User ID: ${socket.userID}`)
+
+                await R.exec("DELETE FROM heartbeat WHERE monitor_id = ?", [
+                    monitorID
+                ]);
+
+                await sendHeartbeatList(socket, monitorID, true, true);
+
+                callback({
+                    ok: true,
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("clearStatistics", async (callback) => {
+            try {
+                checkLogin(socket)
+
+                console.log(`Clear Statistics User ID: ${socket.userID}`)
+
+                await R.exec("DELETE FROM heartbeat");
+
+                callback({
+                    ok: true,
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
             }
         });
 
@@ -617,25 +805,6 @@ async function checkOwner(userID, monitorID) {
 async function sendMonitorList(socket) {
     let list = await getMonitorJSONList(socket.userID);
     io.to(socket.userID).emit("monitorList", list)
-    return list;
-}
-
-async function sendNotificationList(socket) {
-    const timeLogger = new TimeLogger();
-
-    let result = [];
-    let list = await R.find("notification", " user_id = ? ", [
-        socket.userID,
-    ]);
-
-    for (let bean of list) {
-        result.push(bean.export())
-    }
-
-    io.to(socket.userID).emit("notificationList", result)
-
-    timeLogger.print("Send Notification List");
-
     return list;
 }
 
@@ -771,48 +940,6 @@ async function startMonitors() {
         // Give some delays, so all monitors won't make request at the same moment when just start the server.
         await sleep(getRandomInt(300, 1000));
     }
-}
-
-/**
- * Send Heartbeat History list to socket
- */
-async function sendHeartbeatList(socket, monitorID) {
-    const timeLogger = new TimeLogger();
-
-    let list = await R.find("heartbeat", `
-        monitor_id = ?
-        ORDER BY time DESC
-        LIMIT 100
-    `, [
-        monitorID,
-    ])
-
-    let result = [];
-
-    for (let bean of list) {
-        result.unshift(bean.toJSON())
-    }
-
-    socket.emit("heartbeatList", monitorID, result)
-
-    timeLogger.print(`[Monitor: ${monitorID}] sendHeartbeatList`)
-}
-
-async function sendImportantHeartbeatList(socket, monitorID) {
-    const timeLogger = new TimeLogger();
-
-    let list = await R.find("heartbeat", `
-        monitor_id = ?
-        AND important = 1
-        ORDER BY time DESC
-        LIMIT 500
-    `, [
-        monitorID,
-    ])
-
-    timeLogger.print(`[Monitor: ${monitorID}] sendImportantHeartbeatList`);
-
-    socket.emit("importantHeartbeatList", monitorID, list)
 }
 
 async function shutdownFunction(signal) {
