@@ -76,7 +76,12 @@
                     </vue-multiselect>
                 </div>
             </div>
-            <input v-model="newDraftTag.value" class="form-control mb-2" :placeholder="$t('value (optional)')" />
+            <div class="mb-2">
+                <input v-model="newDraftTag.value" class="form-control" :class="{'is-invalid': newDraftTag.valueInvalid}" :placeholder="$t('value (optional)')" />
+                <div class="invalid-feedback">
+                    {{ $t("Tag with this value already exist.") }}
+                </div>
+            </div>
             <div class="mb-2">
                 <button
                     type="button"
@@ -158,11 +163,15 @@ export default {
             this.validateDraftTag();
         },
         "newDraftTag.name": function (newName) {
-            this.newDraftTag.name = newName.trim();
+            this.newDraftTag.name = newName;
             this.validateDraftTag();
         },
         "newDraftTag.color": function (newColor) {
             this.newDraftTag.color = newColor;
+            this.validateDraftTag();
+        },
+        "newDraftTag.value": function (newValue) {
+            this.newDraftTag.value = newValue;
             this.validateDraftTag();
         },
     },
@@ -182,16 +191,25 @@ export default {
         deleteTag(item) {
             if (item.new) {
                 // Undo Adding a new Tag
-                this.newTags = this.newTags.filter(tag => tag.name != item.name && tag.value != item.value);
+                this.newTags = this.newTags.filter(tag => !(tag.name == item.name && tag.value == item.value));
             } else {
                 // Remove an Existing Tag
                 this.deleteTags.push(item);
             }
         },
         validateDraftTag() {
-            if (this.newDraftTag.select != null) {
+            if (this.newTags.concat(this.preSelectedTags).filter(tag => (
+                tag.name == this.newDraftTag.select?.name && tag.value == this.newDraftTag.value
+            ) || (
+                tag.name == this.newDraftTag.name && tag.value == this.newDraftTag.value
+            )).length > 0) {
+                // Try to add a tag with existing name and value
+                this.newDraftTag.valueInvalid = true;
+                this.newDraftTag.invalid = true;
+            } else if (this.newDraftTag.select != null) {
                 // Select an existing tag, no need to validate
                 this.newDraftTag.invalid = false;
+                this.newDraftTag.valueInvalid = false;
             } else if (this.existingTags.filter(tag => tag.name === this.newDraftTag.name).length > 0) {
                 // Try to create new tag with existing name
                 this.newDraftTag.nameInvalid = true;
@@ -204,6 +222,7 @@ export default {
                 // Looks valid
                 this.newDraftTag.invalid = false;
                 this.newDraftTag.nameInvalid = false;
+                this.newDraftTag.valueInvalid = false;
             }
         },
         textColor(option) {
@@ -228,11 +247,22 @@ export default {
                 // Add new Tag
                 this.newTags.push({
                     color: this.newDraftTag.color.color,
-                    name: this.newDraftTag.name,
+                    name: this.newDraftTag.name.trim(),
                     value: this.newDraftTag.value,
                     new: true,
                 })
             }
+            this.clearDraftTag();
+        },
+        clearDraftTag() {
+            this.newDraftTag = {
+                name: null,
+                select: null,
+                color: null,
+                value: "",
+                invalid: true,
+                nameInvalid: false,
+            };
         },
         addTagAsync(newTag) {
             return new Promise((resolve) => {
@@ -244,9 +274,9 @@ export default {
                 this.$root.getSocket().emit("addMonitorTag", tagId, monitorId, value, resolve);
             });
         },
-        deleteMonitorTagAsync(tagId, monitorId) {
+        deleteMonitorTagAsync(tagId, monitorId, value) {
             return new Promise((resolve) => {
-                this.$root.getSocket().emit("deleteMonitorTag", tagId, monitorId, resolve);
+                this.$root.getSocket().emit("deleteMonitorTag", tagId, monitorId, value, resolve);
             });
         },
         async submit(monitorId) {
@@ -291,7 +321,7 @@ export default {
 
             for (const deleteTag of this.deleteTags) {
                 let deleteMonitorTagResult;
-                await this.deleteMonitorTagAsync(deleteTag.tag_id, deleteTag.monitor_id).then((res) => {
+                await this.deleteMonitorTagAsync(deleteTag.tag_id, deleteTag.monitor_id, deleteTag.value).then((res) => {
                     if (!res.ok) {
                         toast.error(res.msg);
                         deleteMonitorTagResult = false;
@@ -306,6 +336,8 @@ export default {
             }
 
             this.getExistingTags();
+            this.newTags = [];
+            this.deleteTags = [];
             this.processing = false;
         }
     },
