@@ -198,7 +198,12 @@ export default {
             }
         },
         validateDraftTag() {
-            if (this.newTags.concat(this.preSelectedTags).filter(tag => (
+            if (this.deleteTags.find(tag => tag.name == this.newDraftTag.select?.name && tag.value == this.newDraftTag.value)) {
+                // Undo removing a Tag
+                this.newDraftTag.nameInvalid = false;
+                this.newDraftTag.valueInvalid = false;
+                this.newDraftTag.invalid = false;
+            } else if (this.newTags.concat(this.preSelectedTags).filter(tag => (
                 tag.name == this.newDraftTag.select?.name && tag.value == this.newDraftTag.value
             ) || (
                 tag.name == this.newDraftTag.name && tag.value == this.newDraftTag.value
@@ -235,14 +240,19 @@ export default {
         addDraftTag() {
             console.log("Adding Draft Tag: ", this.newDraftTag);
             if (this.newDraftTag.select != null) {
-                // Add an existing Tag
-                this.newTags.push({
-                    id: this.newDraftTag.select.id,
-                    color: this.newDraftTag.select.color,
-                    name: this.newDraftTag.select.name,
-                    value: this.newDraftTag.value,
-                    new: true,
-                })
+                if (this.deleteTags.find(tag => tag.name == this.newDraftTag.select.name && tag.value == this.newDraftTag.value)) {
+                    // Undo removing a tag
+                    this.deleteTags = this.deleteTags.filter(tag => !(tag.name == this.newDraftTag.select.name && tag.value == this.newDraftTag.value));
+                } else {
+                    // Add an existing Tag
+                    this.newTags.push({
+                        id: this.newDraftTag.select.id,
+                        color: this.newDraftTag.select.color,
+                        name: this.newDraftTag.select.name,
+                        value: this.newDraftTag.value,
+                        new: true,
+                    })
+                }
             } else {
                 // Add new Tag
                 this.newTags.push({
