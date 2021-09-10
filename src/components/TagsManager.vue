@@ -9,94 +9,111 @@
                 :remove="deleteTag"
             />
         </div>
-        <div>
-            <vue-multiselect
-                v-model="newDraftTag.select"
-                class="mb-2"
-                :options="tagOptions"
-                :multiple="false"
-                :searchable="true"
-                :placeholder="$t('Add New below or Select...')"
-                track-by="id"
-                label="name"
+        <div class="p-1">
+            <button
+                type="button"
+                class="btn btn-outline-secondary btn-add"
+                :disabled="processing"
+                @click.stop="showAddDialog"
             >
-                <template #option="{ option }">
-                    <div class="mx-2 py-1 px-3 rounded d-inline-flex"
-                         style="margin-top: -5px; margin-bottom: -5px; height: 24px;"
-                         :style="{ color: textColor(option), backgroundColor: option.color + ' !important' }"
-                    >
-                        <span>
-                            {{ option.name }}</span>
-                    </div>
-                </template>
-                <template #singleLabel="{ option }">
-                    <div class="py-1 px-3 rounded d-inline-flex"
-                         style="height: 24px;"
-                         :style="{ color: textColor(option), backgroundColor: option.color + ' !important' }"
-                    >
-                        <span>{{ option.name }}</span>
-                    </div>
-                </template>
-            </vue-multiselect>
-            <div v-if="newDraftTag.select?.id == null" class="d-flex mb-2">
-                <div class="w-50 pe-2">
-                    <input v-model="newDraftTag.name" class="form-control" :class="{'is-invalid': validateDraftTag.nameInvalid}" placeholder="name" />
-                    <div class="invalid-feedback">
-                        {{ $t("Tag with this name already exist.") }}
-                    </div>
-                </div>
-                <div class="w-50 ps-2">
-                    <vue-multiselect
-                        v-model="newDraftTag.color"
-                        :options="colorOptions"
-                        :multiple="false"
-                        :searchable="true"
-                        :placeholder="$t('color')"
-                        track-by="color"
-                        label="name"
-                        select-label=""
-                        deselect-label=""
-                    >
-                        <template #option="{ option }">
-                            <div class="mx-2 py-1 px-3 rounded d-inline-flex"
-                                 style="height: 24px; color: white;"
-                                 :style="{ backgroundColor: option.color + ' !important' }"
-                            >
-                                <span>{{ option.name }}</span>
+                <font-awesome-icon class="me-1" icon="plus" /> {{ $t("Add") }}
+            </button>
+        </div>
+        <div ref="modal" class="modal fade" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <vue-multiselect
+                            v-model="newDraftTag.select"
+                            class="mb-2"
+                            :options="tagOptions"
+                            :multiple="false"
+                            :searchable="true"
+                            :placeholder="$t('Add New below or Select...')"
+                            track-by="id"
+                            label="name"
+                        >
+                            <template #option="{ option }">
+                                <div class="mx-2 py-1 px-3 rounded d-inline-flex"
+                                     style="margin-top: -5px; margin-bottom: -5px; height: 24px;"
+                                     :style="{ color: textColor(option), backgroundColor: option.color + ' !important' }"
+                                >
+                                    <span>
+                                        {{ option.name }}</span>
+                                </div>
+                            </template>
+                            <template #singleLabel="{ option }">
+                                <div class="py-1 px-3 rounded d-inline-flex"
+                                     style="height: 24px;"
+                                     :style="{ color: textColor(option), backgroundColor: option.color + ' !important' }"
+                                >
+                                    <span>{{ option.name }}</span>
+                                </div>
+                            </template>
+                        </vue-multiselect>
+                        <div v-if="newDraftTag.select?.id == null" class="d-flex mb-2">
+                            <div class="w-50 pe-2">
+                                <input v-model="newDraftTag.name" class="form-control" :class="{'is-invalid': validateDraftTag.nameInvalid}" :placeholder="$t('name')" />
+                                <div class="invalid-feedback">
+                                    {{ $t("Tag with this name already exist.") }}
+                                </div>
                             </div>
-                        </template>
-                        <template #singleLabel="{ option }">
-                            <div class="py-1 px-3 rounded d-inline-flex"
-                                 style="height: 24px; color: white;"
-                                 :style="{ backgroundColor: option.color + ' !important' }"
-                            >
-                                <span>{{ option.name }}</span>
+                            <div class="w-50 ps-2">
+                                <vue-multiselect
+                                    v-model="newDraftTag.color"
+                                    :options="colorOptions"
+                                    :multiple="false"
+                                    :searchable="true"
+                                    :placeholder="$t('color')"
+                                    track-by="color"
+                                    label="name"
+                                    select-label=""
+                                    deselect-label=""
+                                >
+                                    <template #option="{ option }">
+                                        <div class="mx-2 py-1 px-3 rounded d-inline-flex"
+                                             style="height: 24px; color: white;"
+                                             :style="{ backgroundColor: option.color + ' !important' }"
+                                        >
+                                            <span>{{ option.name }}</span>
+                                        </div>
+                                    </template>
+                                    <template #singleLabel="{ option }">
+                                        <div class="py-1 px-3 rounded d-inline-flex"
+                                             style="height: 24px; color: white;"
+                                             :style="{ backgroundColor: option.color + ' !important' }"
+                                        >
+                                            <span>{{ option.name }}</span>
+                                        </div>
+                                    </template>
+                                </vue-multiselect>
                             </div>
-                        </template>
-                    </vue-multiselect>
+                        </div>
+                        <div class="mb-2">
+                            <input v-model="newDraftTag.value" class="form-control" :class="{'is-invalid': validateDraftTag.valueInvalid}" :placeholder="$t('value (optional)')" />
+                            <div class="invalid-feedback">
+                                {{ $t("Tag with this value already exist.") }}
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <button
+                                type="button"
+                                class="btn btn-secondary float-end"
+                                :disabled="processing || validateDraftTag.invalid"
+                                @click.stop="addDraftTag"
+                            >
+                                {{ $t("Add") }}
+                            </button>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <div class="mb-2">
-                <input v-model="newDraftTag.value" class="form-control" :class="{'is-invalid': validateDraftTag.valueInvalid}" :placeholder="$t('value (optional)')" />
-                <div class="invalid-feedback">
-                    {{ $t("Tag with this value already exist.") }}
-                </div>
-            </div>
-            <div class="mb-2">
-                <button
-                    type="button"
-                    class="btn btn-secondary float-end"
-                    :disabled="processing || validateDraftTag.invalid"
-                    @click.stop="addDraftTag"
-                >
-                    {{ $t("Add") }}
-                </button>
             </div>
         </div>
     </div>
 </template>
 
 <script>
+import { Modal } from "bootstrap";
 import VueMultiselect from "vue-multiselect";
 import Tag from "../components/Tag.vue";
 import { useToast } from "vue-toastification"
@@ -115,6 +132,7 @@ export default {
     },
     data() {
         return {
+            modal: null,
             existingTags: [],
             processing: false,
             newTags: [],
@@ -205,9 +223,13 @@ export default {
         },
     },
     mounted() {
+        this.modal = new Modal(this.$refs.modal);
         this.getExistingTags();
     },
     methods: {
+        showAddDialog() {
+            this.modal.show();
+        },
         getExistingTags() {
             this.$root.getSocket().emit("getTags", (res) => {
                 if (res.ok) {
@@ -269,6 +291,7 @@ export default {
                 invalid: true,
                 nameInvalid: false,
             };
+            this.modal.hide();
         },
         addTagAsync(newTag) {
             return new Promise((resolve) => {
@@ -357,3 +380,13 @@ export default {
     },
 };
 </script>
+
+<style scoped>
+.btn-add {
+    width: 100%;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+</style>
