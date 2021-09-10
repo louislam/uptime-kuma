@@ -347,7 +347,8 @@ export default {
 
                 this.$root.getSocket().emit("editMonitor", this.monitor, (res) => {
                     this.processing = false;
-                    this.$root.toastRes(res)
+                    this.$root.toastRes(res);
+                    this.init();
                 })
             }
         },
