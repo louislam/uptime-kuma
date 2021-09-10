@@ -1,3 +1,6 @@
+/*
+ * This script should be run after a period of time (180s), because the server may need some time to prepare.
+ */
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 let client;
