@@ -752,13 +752,14 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
             }
         });
 
-        socket.on("deleteMonitorTag", async (tagID, monitorID, callback) => {
+        socket.on("deleteMonitorTag", async (tagID, monitorID, value, callback) => {
             try {
                 checkLogin(socket)
 
-                await R.exec("DELETE FROM monitor_tag WHERE tag_id = ? AND monitor_id = ?", [
+                await R.exec("DELETE FROM monitor_tag WHERE tag_id = ? AND monitor_id = ? AND value = ?", [
                     tagID,
                     monitorID,
+                    value,
                 ])
 
                 // Cleanup unused Tags

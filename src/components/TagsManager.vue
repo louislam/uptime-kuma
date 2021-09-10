@@ -40,7 +40,7 @@
             </vue-multiselect>
             <div v-if="newDraftTag.select?.id == null" class="d-flex mb-2">
                 <div class="w-50 pe-2">
-                    <input v-model="newDraftTag.name" class="form-control" :class="{'is-invalid': newDraftTag.nameInvalid}" placeholder="name" />
+                    <input v-model="newDraftTag.name" class="form-control" :class="{'is-invalid': validateDraftTag.nameInvalid}" placeholder="name" />
                     <div class="invalid-feedback">
                         {{ $t("Tag with this name already exist.") }}
                     </div>
@@ -77,7 +77,7 @@
                 </div>
             </div>
             <div class="mb-2">
-                <input v-model="newDraftTag.value" class="form-control" :class="{'is-invalid': newDraftTag.valueInvalid}" :placeholder="$t('value (optional)')" />
+                <input v-model="newDraftTag.value" class="form-control" :class="{'is-invalid': validateDraftTag.valueInvalid}" :placeholder="$t('value (optional)')" />
                 <div class="invalid-feedback">
                     {{ $t("Tag with this value already exist.") }}
                 </div>
@@ -86,7 +86,7 @@
                 <button
                     type="button"
                     class="btn btn-secondary float-end"
-                    :disabled="processing || newDraftTag.invalid"
+                    :disabled="processing || validateDraftTag.invalid"
                     @click.stop="addDraftTag"
                 >
                     {{ $t("Add") }}
@@ -131,7 +131,13 @@ export default {
     },
     computed: {
         tagOptions() {
-            return this.existingTags;
+            const tagOptions = this.existingTags;
+            for (const tag of this.newTags) {
+                if (!tagOptions.find(t => t.name == tag.name && t.color == tag.color)) {
+                    tagOptions.push(tag);
+                }
+            }
+            return tagOptions;
         },
         selectedTags() {
             return this.preSelectedTags.concat(this.newTags).filter(tag => !this.deleteTags.find(monitorTag => monitorTag.id == tag.id));
@@ -155,24 +161,47 @@ export default {
                 { name: this.$t("Pink"),
                     color: "#DB2777" },
             ]
-        }
-    },
-    watch: {
-        "newDraftTag.select": function (newSelected) {
-            this.newDraftTag.select = newSelected;
-            this.validateDraftTag();
         },
-        "newDraftTag.name": function (newName) {
-            this.newDraftTag.name = newName;
-            this.validateDraftTag();
-        },
-        "newDraftTag.color": function (newColor) {
-            this.newDraftTag.color = newColor;
-            this.validateDraftTag();
-        },
-        "newDraftTag.value": function (newValue) {
-            this.newDraftTag.value = newValue;
-            this.validateDraftTag();
+        validateDraftTag() {
+            let nameInvalid = false;
+            let valueInvalid = false;
+            let invalid = true;
+            if (this.deleteTags.find(tag => tag.name == this.newDraftTag.select?.name && tag.value == this.newDraftTag.value)) {
+                // Undo removing a Tag
+                nameInvalid = false;
+                valueInvalid = false;
+                invalid = false;
+            } else if (this.existingTags.filter(tag => tag.name === this.newDraftTag.name).length > 0) {
+                // Try to create new tag with existing name
+                nameInvalid = true;
+                invalid = true;
+            } else if (this.newTags.concat(this.preSelectedTags).filter(tag => (
+                tag.name == this.newDraftTag.select?.name && tag.value == this.newDraftTag.value
+            ) || (
+                tag.name == this.newDraftTag.name && tag.value == this.newDraftTag.value
+            )).length > 0) {
+                // Try to add a tag with existing name and value
+                valueInvalid = true;
+                invalid = true;
+            } else if (this.newDraftTag.select != null) {
+                // Select an existing tag, no need to validate
+                invalid = false;
+                valueInvalid = false;
+            } else if (this.newDraftTag.color == null || this.newDraftTag.name === "") {
+                // Missing form inputs
+                nameInvalid = false;
+                invalid = true;
+            } else {
+                // Looks valid
+                invalid = false;
+                nameInvalid = false;
+                valueInvalid = false;
+            }
+            return {
+                invalid,
+                nameInvalid,
+                valueInvalid,
+            }
         },
     },
     mounted() {
@@ -195,39 +224,6 @@ export default {
             } else {
                 // Remove an Existing Tag
                 this.deleteTags.push(item);
-            }
-        },
-        validateDraftTag() {
-            if (this.deleteTags.find(tag => tag.name == this.newDraftTag.select?.name && tag.value == this.newDraftTag.value)) {
-                // Undo removing a Tag
-                this.newDraftTag.nameInvalid = false;
-                this.newDraftTag.valueInvalid = false;
-                this.newDraftTag.invalid = false;
-            } else if (this.newTags.concat(this.preSelectedTags).filter(tag => (
-                tag.name == this.newDraftTag.select?.name && tag.value == this.newDraftTag.value
-            ) || (
-                tag.name == this.newDraftTag.name && tag.value == this.newDraftTag.value
-            )).length > 0) {
-                // Try to add a tag with existing name and value
-                this.newDraftTag.valueInvalid = true;
-                this.newDraftTag.invalid = true;
-            } else if (this.newDraftTag.select != null) {
-                // Select an existing tag, no need to validate
-                this.newDraftTag.invalid = false;
-                this.newDraftTag.valueInvalid = false;
-            } else if (this.existingTags.filter(tag => tag.name === this.newDraftTag.name).length > 0) {
-                // Try to create new tag with existing name
-                this.newDraftTag.nameInvalid = true;
-                this.newDraftTag.invalid = true;
-            } else if (this.newDraftTag.color == null || this.newDraftTag.name === "") {
-                // Missing form inputs
-                this.newDraftTag.nameInvalid = false;
-                this.newDraftTag.invalid = true;
-            } else {
-                // Looks valid
-                this.newDraftTag.invalid = false;
-                this.newDraftTag.nameInvalid = false;
-                this.newDraftTag.valueInvalid = false;
             }
         },
         textColor(option) {
@@ -296,6 +292,7 @@ export default {
             for (const newTag of this.newTags) {
                 let tagId;
                 if (newTag.id == null) {
+                    // Create a New Tag
                     let newTagResult;
                     await this.addTagAsync(newTag).then((res) => {
                         if (!res.ok) {
@@ -310,11 +307,18 @@ export default {
                         return;
                     }
                     tagId = newTagResult.id;
+                    // Assign the new ID to the tags of the same name & color
+                    this.newTags.map(tag => {
+                        if (tag.name == newTag.name && tag.color == newTag.color) {
+                            tag.id = newTagResult.id;
+                        }
+                    })
                 } else {
                     tagId = newTag.id;
                 }
 
                 let newMonitorTagResult;
+                // Assign tag to monitor
                 await this.addMonitorTagAsync(tagId, monitorId, newTag.value).then((res) => {
                     if (!res.ok) {
                         toast.error(res.msg);
