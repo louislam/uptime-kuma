@@ -18,7 +18,7 @@
         "start-server": "node server/server.js",
         "build": "vite build",
         "vite-preview-dist": "vite preview --host",
-        "build-docker": "npm run build-docker-alpine && npm run build-docker-debian",
+        "build-docker": "npm run build-docker-debian && npm run build-docker-alpine",
         "build-docker-alpine": "docker buildx build -f dockerfile-alpine --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma:alpine -t louislam/uptime-kuma:1-alpine -t louislam/uptime-kuma:1.6.0-alpine --target release . --push",
         "build-docker-debian": "docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma -t louislam/uptime-kuma:1 -t louislam/uptime-kuma:1.6.0 -t louislam/uptime-kuma:debian -t louislam/uptime-kuma:1-debian -t louislam/uptime-kuma:1.6.0-debian --target release . --push",
         "build-docker-nightly": "docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma:nightly --target nightly . --push",
