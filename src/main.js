@@ -20,6 +20,7 @@ import EditMonitor from "./pages/EditMonitor.vue";
 import Settings from "./pages/Settings.vue";
 import Setup from "./pages/Setup.vue";
 import List from "./pages/List.vue";
+import StatusPage from "./pages/StatusPage.vue";
 
 import { appName } from "./util.ts";
 
@@ -93,6 +94,10 @@ const routes = [
     {
         path: "/setup",
         component: Setup,
+    },
+    {
+        path: "/status-page",
+        component: StatusPage,
     },
 ]
 
