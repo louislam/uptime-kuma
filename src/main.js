@@ -13,7 +13,6 @@ import Dashboard from "./pages/Dashboard.vue";
 import DashboardHome from "./pages/DashboardHome.vue";
 import Details from "./pages/Details.vue";
 import EditMonitor from "./pages/EditMonitor.vue";
-import Login from "./pages/Login.vue";
 import Settings from "./pages/Settings.vue";
 import Setup from "./pages/Setup.vue";
 
@@ -58,11 +57,9 @@ const routes = [
                     },
                 ],
             },
-            {
-                path: "/login",
-                component: Login,
-            },
+
         ],
+
     },
     {
         path: "/setup",

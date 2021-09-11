@@ -53,6 +53,12 @@
                         </button>
                     </div>
                 </form>
+
+                <div>
+                    <button class="btn btn-danger" @click="$root.logout">
+                        Logout
+                    </button>
+                </div>
             </div>
 
             <div class="col-md-6">

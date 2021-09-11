@@ -23,16 +23,6 @@
                     <font-awesome-icon icon="cog" /> Settings
                 </router-link>
             </li>
-            <li class="nav-item">
-                <router-link to="/login" class="nav-link">
-                    <font-awesome-icon icon="sign-in-alt" /> Login
-                </router-link>
-            </li>
-            <li v-if="$root.loggedIn" class="nav-item">
-                <a href="#" class="nav-link" @click="$root.logout">
-                    <font-awesome-icon icon="sign-out-alt" /> Logout
-                </a>
-            </li>
         </ul>
     </header>
 
