@@ -1,4 +1,7 @@
 # Uptime-Kuma K8s Deployment
+
+⚠ Warning: K8s deployment is provided by contributors. I have no experience with K8s and I can't fix error in the future. I only test Docker and Node.js. Use at your own risk.
+
 ## How does it work?
 
 Kustomize is a tool which builds a complete deployment file for all config elements.
