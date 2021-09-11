@@ -21,7 +21,7 @@ export default {
     clearHeartbeatsMsg: "Are you sure want to delete all heartbeats for this monitor?",
     confirmClearStatisticsMsg: "Are you sure want to delete ALL statistics?",
     twoFAVerifyLabel: "Please type in your token to verify that 2FA is working",
-    tokenValidSettingsMsg: "Token valid! You can now save the 2FA settings.",
+    tokenValidSettingsMsg: "Token is valid! You can now save the 2FA settings.",
     confirmEnableTwoFAMsg: "Are you sure you want to enable 2FA?",
     confirmDisableTwoFAMsg: "Are you sure you want to disable 2FA?",
     Settings: "Settings",
