@@ -25,14 +25,20 @@ A clear and concise description of what you expected to happen.
 
 
 **Info**
-- Uptime Kuma Version:
-- Using Docker?: Yes/No
-- OS: 
-- Browser:
+Uptime Kuma Version:
+Using Docker?: Yes/No
+Docker Version:
+Node.js Version (Without Docker only):
+OS:
+Browser:
+
 
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
 
 **Error Log**
 It is easier for us to find out the problem.
+
+Docker: "docker logs <container id>"
+PM2: "~/.pm2/logs/"  (e.g. /home/ubuntu/.pm2/logs)
 

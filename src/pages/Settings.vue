@@ -155,7 +155,7 @@
                                 <button v-if="settings.disableAuth" class="btn btn-outline-primary me-1" @click="enableAuth">{{ $t("Enable Auth") }}</button>
                                 <button v-if="! settings.disableAuth" class="btn btn-primary me-1" @click="confirmDisableAuth">{{ $t("Disable Auth") }}</button>
                                 <button v-if="! settings.disableAuth" class="btn btn-danger me-1" @click="$root.logout">{{ $t("Logout") }}</button>
-                                <button class="btn btn-outline-danger me-1" @click="confirmClearStatistics">{{ $t("Clear all Statistics") }}</button>
+                                <button class="btn btn-outline-danger me-1" @click="confirmClearStatistics">{{ $t("Clear all statistics") }}</button>
                             </div>
                         </template>
                     </div>
@@ -394,7 +394,7 @@ export default {
                 notificationList: this.$root.notificationList,
                 monitorList: monitorList,
             }
-            exportData = JSON.stringify(exportData);
+            exportData = JSON.stringify(exportData, null, 4);
             let downloadItem = document.createElement("a");
             downloadItem.setAttribute("href", "data:application/json;charset=utf-8," + encodeURI(exportData));
             downloadItem.setAttribute("download", fileName);
