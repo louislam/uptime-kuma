@@ -383,7 +383,7 @@ export default {
                 notificationList: this.$root.notificationList,
                 monitorList: monitorList,
             }
-            exportData = JSON.stringify(exportData);
+            exportData = JSON.stringify(exportData, null, 4);
             let downloadItem = document.createElement("a");
             downloadItem.setAttribute("href", "data:application/json;charset=utf-8," + encodeURI(exportData));
             downloadItem.setAttribute("download", fileName);
