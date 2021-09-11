@@ -51,7 +51,7 @@
                                 </div>
                             </template>
                         </vue-multiselect>
-                        <div v-if="newDraftTag.select?.id == null" class="d-flex mb-2">
+                        <div v-if="newDraftTag.select?.name == null" class="d-flex mb-2">
                             <div class="w-50 pe-2">
                                 <input v-model="newDraftTag.name" class="form-control" :class="{'is-invalid': validateDraftTag.nameInvalid}" :placeholder="$t('name')" />
                                 <div class="invalid-feedback">
