@@ -30,6 +30,7 @@ class Database {
     static patchList = {
         "patch-setting-value-type.sql": true,
         "patch-improve-performance.sql": true,
+        "patch-monitor-public.sql": true,
     }
 
     /**

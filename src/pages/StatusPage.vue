@@ -18,30 +18,24 @@
             <font-awesome-icon icon="check-circle" class="ok" /> All Systems Operational
         </div>
 
-        <div class="shadow-box list mt-4" :class="{ scrollbar: scrollbar }">
-            <div v-if="Object.keys($root.monitorList).length === 0" class="text-center mt-3">
-                {{ $t("No Monitors, please") }} <router-link to="/add">{{ $t("add one") }}</router-link>
+        <div class="shadow-box monitor-list mt-4">
+            <div v-if="Object.keys(monitorList).length === 0" class="text-center my-3">
+                {{ $t("No Monitors") }}
             </div>
 
-            <router-link v-for="(item, index) in sortedMonitorList" :key="index" :to="monitorURL(item.id)" class="item" :class="{ 'disabled': ! item.active }">
+            <div v-for="(item, index) in monitorList" :key="index" class="item">
                 <div class="row">
-                    <div class="col-6 col-md-8 small-padding" :class="{ 'monitorItem': $root.userHeartbeatBar == 'bottom' || $root.userHeartbeatBar == 'none' }">
+                    <div class="col-6 col-md-8 small-padding">
                         <div class="info">
                             <Uptime :monitor="item" type="24" :pill="true" />
                             {{ item.name }}
                         </div>
                     </div>
-                    <div v-show="$root.userHeartbeatBar == 'normal'" :key="$root.userHeartbeatBar" class="col-6 col-md-4">
+                    <div :key="$root.userHeartbeatBar" class="col-6 col-md-4">
                         <HeartbeatBar size="small" :monitor-id="item.id" />
                     </div>
                 </div>
-
-                <div v-if="$root.userHeartbeatBar == 'bottom'" class="row">
-                    <div class="col-12">
-                        <HeartbeatBar size="small" :monitor-id="item.id" />
-                    </div>
-                </div>
-            </router-link>
+            </div>
         </div>
 
         <footer class="mt-4">
@@ -51,9 +45,13 @@
 </template>
 
 <script>
-import { useToast } from "vue-toastification"
-import axios from "axios";
+import { useToast } from "vue-toastification";
 const toast = useToast();
+
+import axios from "axios";
+import HeartbeatBar from "../components/HeartbeatBar.vue";
+import Uptime from "../components/Uptime.vue";
+
 const env = process.env.NODE_ENV || "production";
 
 // change the axios base url for development
@@ -62,10 +60,15 @@ if (env === "development" || localStorage.dev === "dev") {
 }
 
 export default {
+    components: {
+        HeartbeatBar,
+        Uptime,
+    },
     data() {
         return {
             hasToken: false,
             config: {},
+            monitorList: {},
         }
     },
     computed: {
@@ -76,13 +79,13 @@ export default {
     },
     async created() {
         this.hasToken = ("token" in localStorage);
-        this.config = await axios.get("/api/status-page/config");
+        this.config = (await axios.get("/api/status-page/config")).data;
 
         // Set Theme
         this.$root.statusPageTheme = this.config.statusPageTheme;
     },
-    mounted() {
-
+    async mounted() {
+        this.monitorList = (await axios.get("/api/status-page/monitor-list")).data;
     },
     methods: {
         edit() {

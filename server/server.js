@@ -165,9 +165,36 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
         response.json(config);
     });
 
-    // Status Page Polling Data
-    app.get("/api/status-page", async (_request, response) => {
+    // Status Page - Monitor List
+    app.get("/api/status-page/monitor-list", async (_request, response) => {
         allowDevAllOrigin(response);
+
+        const monitorList = {};
+        let list = await R.find("monitor", " public = 1 ORDER BY weight DESC, name ", [
+        ]);
+
+        for (let monitor of list) {
+            monitorList[monitor.id] = await monitor.toJSON();
+        }
+
+        response.json(monitorList);
+    });
+
+    // Status Page Polling Data
+    app.get("/api/status-page/heartbeat", async (_request, response) => {
+        allowDevAllOrigin(response);
+
+        const monitorList = {};
+        let list = await R.find("", "  ", [
+        ])
+
+        for (let monitor of list) {
+            monitorList[monitor.id] = await monitor.toJSON();
+        }
+
+        response.json({
+            monitorList: monitorList,
+        });
     });
 
     // Universal Route Handler, must be at the end of all express route.

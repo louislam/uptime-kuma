@@ -1,5 +1,5 @@
 <template>
-    <div class="shadow-box list mb-3" :class="{ scrollbar: scrollbar }">
+    <div class="shadow-box monitor-list mb-3" :class="{ scrollbar: scrollbar }">
         <div v-if="Object.keys($root.monitorList).length === 0" class="text-center mt-3">
             {{ $t("No Monitors, please") }} <router-link to="/add">{{ $t("add one") }}</router-link>
         </div>
@@ -85,56 +85,6 @@ export default {
 .small-padding {
     padding-left: 5px !important;
     padding-right: 5px !important;
-}
-
-.list {
-    &.scrollbar {
-        min-height: calc(100vh - 240px);
-        max-height: calc(100vh - 30px);
-        overflow-y: auto;
-        position: sticky;
-        top: 10px;
-    }
-
-    .item {
-        display: block;
-        text-decoration: none;
-        padding: 13px 15px 10px 15px;
-        border-radius: 10px;
-        transition: all ease-in-out 0.15s;
-
-        &.disabled {
-            opacity: 0.3;
-        }
-
-        .info {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        &:hover {
-            background-color: $highlight-white;
-        }
-
-        &.active {
-            background-color: #cdf8f4;
-        }
-    }
-}
-
-.dark {
-    .list {
-        .item {
-            &:hover {
-                background-color: $dark-bg2;
-            }
-
-            &.active {
-                background-color: $dark-bg2;
-            }
-        }
-    }
 }
 
 .monitorItem {
