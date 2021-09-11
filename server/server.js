@@ -281,7 +281,7 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                 if (user.twofa_status == 0) {
                     let newSecret = await genSecret()
                     let encodedSecret = base32.encode(newSecret);
-                    let uri = `otpauth://totp/UptimeKuma:${user.username}?secret=${encodedSecret}`;
+                    let uri = `otpauth://totp/Uptime%20Kuma:${user.username}?secret=${encodedSecret}`;
 
                     await R.exec("UPDATE `user` SET twofa_secret = ? WHERE id = ? ", [
                         newSecret,
