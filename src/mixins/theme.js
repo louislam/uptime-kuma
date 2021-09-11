@@ -5,6 +5,8 @@ export default {
             system: (window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light",
             userTheme: localStorage.theme,
             userHeartbeatBar: localStorage.heartbeatBarTheme,
+            statusPageTheme: "dark",
+            path: "",
         };
     },
 
@@ -25,14 +27,22 @@ export default {
 
     computed: {
         theme() {
-            if (this.userTheme === "auto") {
-                return this.system;
+            if (this.path === "/status-page") {
+                return this.statusPageTheme;
+            } else {
+                if (this.userTheme === "auto") {
+                    return this.system;
+                }
+                return this.userTheme;
             }
-            return this.userTheme;
         }
     },
 
     watch: {
+        "$route.fullPath"(path) {
+            this.path = path;
+        },
+
         userTheme(to, from) {
             localStorage.theme = to;
         },

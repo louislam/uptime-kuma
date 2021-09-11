@@ -1,10 +1,11 @@
 import { io } from "socket.io-client";
 import { useToast } from "vue-toastification";
+import axios from "axios";
 const toast = useToast()
 
 let socket;
 
-const noSocketIOPage = [
+const noSocketIOPages = [
     "/status-page",
 ];
 
@@ -19,7 +20,6 @@ export default {
                 connected: false,
                 connectCount: 0,
                 initedSocketIO: false,
-
             },
             remember: (localStorage.remember !== "0"),
             allowLoginDialog: false,        // Allowed to show login dialog, but "loggedIn" have to be true too. This exists because prevent the login dialog show 0.1s in first before the socket server auth-ed.
@@ -49,7 +49,7 @@ export default {
             }
 
             // No need to connect to the socket.io for status page
-            if (! bypass && noSocketIOPage.includes(location.pathname)) {
+            if (! bypass && noSocketIOPages.includes(location.pathname)) {
                 return;
             }
 
@@ -359,7 +359,7 @@ export default {
 
         // Reconnect the socket io, if status-page to dashboard
         "$route.fullPath"(newValue, oldValue) {
-            if (noSocketIOPage.includes(newValue)) {
+            if (noSocketIOPages.includes(newValue)) {
                 return;
             }
             this.initSocketIO();

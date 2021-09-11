@@ -26,7 +26,7 @@ console.log("Importing this project modules");
 debug("Importing Monitor");
 const Monitor = require("./model/monitor");
 debug("Importing Settings");
-const { getSettings, setSettings, setting, initJWTSecret } = require("./util-server");
+const { getSettings, setSettings, setting, initJWTSecret, allowDevAllOrigin } = require("./util-server");
 
 debug("Importing Notification");
 const { Notification } = require("./notification");
@@ -127,7 +127,9 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
 
     console.log("Adding route")
 
+    // ***************************
     // Normal Router here
+    // ***************************
 
     // Robots.txt
     app.get("/robots.txt", async (_request, response) => {
@@ -147,7 +149,28 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
 
     app.use("/", express.static("dist"));
 
-    // Universal Route Handler, must be at the end
+    // ***************************
+    // Public API
+    // ***************************
+
+    // Status Page Config
+    app.get("/api/status-page/config", async (_request, response) => {
+        allowDevAllOrigin(response);
+        let config = getSettings("statusPage");
+
+        if (! config.statusPageTheme) {
+            config.statusPageTheme = "light";
+        }
+
+        response.json(config);
+    });
+
+    // Status Page Polling Data
+    app.get("/api/status-page", async (_request, response) => {
+        allowDevAllOrigin(response);
+    });
+
+    // Universal Route Handler, must be at the end of all express route.
     app.get("*", async (_request, response) => {
         response.send(indexHTML);
     });
@@ -172,7 +195,7 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
         });
 
         // ***************************
-        // Public API
+        // Public Socket API
         // ***************************
 
         socket.on("loginByToken", async (token, callback) => {

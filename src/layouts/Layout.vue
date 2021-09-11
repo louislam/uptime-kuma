@@ -19,6 +19,11 @@
 
             <ul class="nav nav-pills">
                 <li class="nav-item">
+                    <router-link to="/status-page" class="nav-link status-page">
+                        <font-awesome-icon icon="stream" /> {{ $t("Status Page") }}
+                    </router-link>
+                </li>
+                <li class="nav-item">
                     <router-link to="/dashboard" class="nav-link">
                         <font-awesome-icon icon="tachometer-alt" /> {{ $t("Dashboard") }}
                     </router-link>
@@ -127,6 +132,12 @@ export default {
 
 <style lang="scss" scoped>
 @import "../assets/vars.scss";
+
+.nav-link {
+    &.status-page {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+}
 
 .bottom-nav {
     z-index: 1000;

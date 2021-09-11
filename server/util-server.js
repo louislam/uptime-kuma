@@ -5,6 +5,7 @@ const { debug } = require("../src/util");
 const passwordHash = require("./password-hash");
 const dayjs = require("dayjs");
 const { Resolver } = require("dns");
+const { allowAllOrigin } = require("./util-server");
 
 /**
  * Init or reset JWT secret
@@ -270,4 +271,15 @@ exports.getTotalClientInRoom = (io, roomName) => {
     } else {
         return 0;
     }
+}
+
+exports.allowDevAllOrigin = (res) => {
+    if (process.env.NODE_ENV === "development") {
+        exports.allowAllOrigin(res);
+    }
+}
+
+exports.allowAllOrigin = (res) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
 }
