@@ -10,26 +10,35 @@
                 </div>
 
                 <p class="mt-3">
-                    Create your admin account
+                    {{ $t("Create your admin account") }}
                 </p>
 
                 <div class="form-floating">
+                    <select id="language" v-model="$i18n.locale" class="form-select">
+                        <option v-for="(lang, i) in $i18n.availableLocales" :key="`Lang${i}`" :value="lang">
+                            {{ $i18n.messages[lang].languageName }}
+                        </option>
+                    </select>
+                    <label for="language" class="form-label">{{ $t("Language") }}</label>
+                </div>
+
+                <div class="form-floating mt-3">
                     <input id="floatingInput" v-model="username" type="text" class="form-control" placeholder="Username" required>
-                    <label for="floatingInput">Username</label>
+                    <label for="floatingInput">{{ $t("Username") }}</label>
                 </div>
 
                 <div class="form-floating mt-3">
                     <input id="floatingPassword" v-model="password" type="password" class="form-control" placeholder="Password" required>
-                    <label for="floatingPassword">Password</label>
+                    <label for="floatingPassword">{{ $t("Password") }}</label>
                 </div>
 
                 <div class="form-floating mt-3">
                     <input id="repeat" v-model="repeatPassword" type="password" class="form-control" placeholder="Repeat Password" required>
-                    <label for="repeat">Repeat Password</label>
+                    <label for="repeat">{{ $t("Repeat Password") }}</label>
                 </div>
 
                 <button class="w-100 btn btn-primary mt-3" type="submit" :disabled="processing">
-                    Create
+                    {{ $t("Create") }}
                 </button>
             </form>
         </div>
@@ -48,6 +57,11 @@ export default {
             password: "",
             repeatPassword: "",
         }
+    },
+    watch: {
+        "$i18n.locale"() {
+            localStorage.locale = this.$i18n.locale;
+        },
     },
     mounted() {
         this.$root.getSocket().emit("needSetup", (needSetup) => {
@@ -71,7 +85,12 @@ export default {
                 this.$root.toastRes(res)
 
                 if (res.ok) {
-                    this.$router.push("/")
+                    this.processing = true;
+
+                    this.$root.login(this.username, this.password, (res) => {
+                        this.processing = false;
+                        this.$router.push("/")
+                    })
                 }
             })
         },

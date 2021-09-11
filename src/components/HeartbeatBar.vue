@@ -7,7 +7,7 @@
                 class="beat"
                 :class="{ 'empty' : (beat === 0), 'down' : (beat.status === 0), 'pending' : (beat.status === 2) }"
                 :style="beatStyle"
-                :title="beat.msg"
+                :title="getBeatTitle(beat)"
             />
         </div>
     </div>
@@ -21,14 +21,17 @@ export default {
             type: String,
             default: "big",
         },
-        monitorId: Number,
+        monitorId: {
+            type: Number,
+            required: true,
+        },
     },
     data() {
         return {
             beatWidth: 10,
             beatHeight: 30,
             hoverScale: 1.5,
-            beatMargin: 3,      // Odd number only, even = blurry
+            beatMargin: 4,
             move: false,
             maxBeat: -1,
         }
@@ -36,14 +39,15 @@ export default {
     computed: {
 
         beatList() {
-            if (! (this.monitorId in this.$root.heartbeatList)) {
-                this.$root.heartbeatList[this.monitorId] = [];
-            }
             return this.$root.heartbeatList[this.monitorId]
         },
 
         shortBeatList() {
-            let placeholders = []
+            if (! this.beatList) {
+                return [];
+            }
+
+            let placeholders = [];
 
             let start = this.beatList.length - this.maxBeat;
 
@@ -113,11 +117,30 @@ export default {
     unmounted() {
         window.removeEventListener("resize", this.resize);
     },
+    beforeMount() {
+        if (! (this.monitorId in this.$root.heartbeatList)) {
+            this.$root.heartbeatList[this.monitorId] = [];
+        }
+    },
+
     mounted() {
         if (this.size === "small") {
-            this.beatWidth = 5.6;
-            this.beatMargin = 2.4;
-            this.beatHeight = 16
+            this.beatWidth = 5;
+            this.beatHeight = 16;
+            this.beatMargin = 2;
+        }
+
+        // Suddenly, have an idea how to handle it universally.
+        // If the pixel * ratio != Integer, then it causes render issue, round it to solve it!!
+        const actualWidth = this.beatWidth * window.devicePixelRatio;
+        const actualMargin = this.beatMargin * window.devicePixelRatio;
+
+        if (! Number.isInteger(actualWidth)) {
+            this.beatWidth = Math.round(actualWidth) / window.devicePixelRatio;
+        }
+
+        if (! Number.isInteger(actualMargin)) {
+            this.beatMargin = Math.round(actualMargin) / window.devicePixelRatio;
         }
 
         window.addEventListener("resize", this.resize);
@@ -129,11 +152,15 @@ export default {
                 this.maxBeat = Math.floor(this.$refs.wrap.clientWidth / (this.beatWidth + this.beatMargin * 2))
             }
         },
+
+        getBeatTitle(beat) {
+            return `${this.$root.datetime(beat.time)} - ${beat.msg}`;
+        }
     },
 }
 </script>
 
-<style scoped lang="scss">
+<style lang="scss" scoped>
 @import "../assets/vars.scss";
 
 .wrap {
@@ -165,6 +192,12 @@ export default {
             opacity: 0.8;
             transform: scale(var(--hover-scale));
         }
+    }
+}
+
+.dark {
+    .hp-bar-big .beat.empty {
+        background-color: #848484;
     }
 }
 

@@ -1,14 +1,18 @@
 {
     "compileOnSave": true,
     "compilerOptions": {
-        "target": "ES2018",
+        "target": "es2018",
         "module": "commonjs",
+        "lib": [
+            "es2020",
+            "DOM",
+        ],
         "removeComments": true,
         "preserveConstEnums": true,
         "sourceMap": false,
-        "files.insertFinalNewline": true
+        "strict": true
     },
     "files": [
-        "./server/util.ts"
+        "./src/util.ts"
     ]
 }

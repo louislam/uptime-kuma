@@ -5,87 +5,41 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 id="exampleModalLabel" class="modal-title">
-                            Setup Notification
+                            {{ $t("Setup Notification") }}
                         </h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" />
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label for="type" class="form-label">Notification Type</label>
-                            <select id="type" v-model="notification.type" class="form-select">
-                                <option value="telegram">
-                                    Telegram
-                                </option>
-                                <option value="webhook">
-                                    Webhook
-                                </option>
-                                <option value="smtp">
-                                    Email (SMTP)
-                                </option>
-                                <option value="discord">
-                                    Discord
-                                </option>
-                                <option value="signal">
-                                    Signal
-                                </option>
-                                <option value="gotify">
-                                    Gotify
-                                </option>
-                                <option value="slack">
-                                    Slack
-                                </option>
-                                <option value="pushover">
-                                    Pushover
-                                </option>
-                                <option value="apprise">
-                                    Apprise (Support 50+ Notification services)
-                                </option>
+                            <label for="notification-type" class="form-label">{{ $t("Notification Type") }}</label>
+                            <select id="notification-type" v-model="notification.type" class="form-select">
+                                <option value="telegram">Telegram</option>
+                                <option value="webhook">Webhook</option>
+                                <option value="smtp">{{ $t("Email") }} (SMTP)</option>
+                                <option value="discord">Discord</option>
+                                <option value="signal">Signal</option>
+                                <option value="gotify">Gotify</option>
+                                <option value="slack">Slack</option>
+                                <option value="rocket.chat">Rocket.chat</option>
+                                <option value="pushover">Pushover</option>
+                                <option value="pushy">Pushy</option>
+                                <option value="octopush">Octopush</option>
+                                <option value="lunasea">LunaSea</option>
+                                <option value="apprise">Apprise (Support 50+ Notification services)</option>
+                                <option value="pushbullet">Pushbullet</option>
+                                <option value="line">Line Messenger</option>
+                                <option value="mattermost">Mattermost</option>
                             </select>
                         </div>
 
                         <div class="mb-3">
-                            <label for="name" class="form-label">Friendly Name</label>
-                            <input id="name" v-model="notification.name" type="text" class="form-control" required>
+                            <label for="notification-name" class="form-label">{{ $t("Friendly Name") }}</label>
+                            <input id="notification-name" v-model="notification.name" type="text" class="form-control" required>
                         </div>
 
-                        <template v-if="notification.type === 'telegram'">
-                            <div class="mb-3">
-                                <label for="telegram-bot-token" class="form-label">Bot Token</label>
-                                <input id="telegram-bot-token" v-model="notification.telegramBotToken" type="text" class="form-control" required>
-                                <div class="form-text">
-                                    You can get a token from <a href="https://t.me/BotFather" target="_blank">https://t.me/BotFather</a>.
-                                </div>
-                            </div>
+                        <Telegram v-if="notification.type === 'telegram'" />
 
-                            <div class="mb-3">
-                                <label for="telegram-chat-id" class="form-label">Chat ID</label>
-
-                                <div class="input-group mb-3">
-                                    <input id="telegram-chat-id" v-model="notification.telegramChatID" type="text" class="form-control" required>
-                                    <button v-if="notification.telegramBotToken" class="btn btn-outline-secondary" type="button" @click="autoGetTelegramChatID">
-                                        Auto Get
-                                    </button>
-                                </div>
-
-                                <div class="form-text">
-                                    Support Direct Chat / Group / Channel's Chat ID
-
-                                    <p style="margin-top: 8px;">
-                                        You can get your chat id by sending message to the bot and go to this url to view the chat_id:
-                                    </p>
-
-                                    <p style="margin-top: 8px;">
-                                        <template v-if="notification.telegramBotToken">
-                                            <a :href="telegramGetUpdatesURL" target="_blank" style="word-break: break-word;">{{ telegramGetUpdatesURL }}</a>
-                                        </template>
-
-                                        <template v-else>
-                                            {{ telegramGetUpdatesURL }}
-                                        </template>
-                                    </p>
-                                </div>
-                            </div>
-                        </template>
+                        <!-- TODO: Convert all into vue components, but not an easy task.  -->
 
                         <template v-if="notification.type === 'webhook'">
                             <div class="mb-3">
@@ -111,49 +65,7 @@
                             </div>
                         </template>
 
-                        <template v-if="notification.type === 'smtp'">
-                            <div class="mb-3">
-                                <label for="hostname" class="form-label">Hostname</label>
-                                <input id="hostname" v-model="notification.smtpHost" type="text" class="form-control" required>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="port" class="form-label">Port</label>
-                                <input id="port" v-model="notification.smtpPort" type="number" class="form-control" required min="0" max="65535" step="1">
-                            </div>
-
-                            <div class="mb-3">
-                                <div class="form-check">
-                                    <input id="secure" v-model="notification.smtpSecure" class="form-check-input" type="checkbox" value="">
-                                    <label class="form-check-label" for="secure">
-                                        Secure
-                                    </label>
-                                </div>
-                                <div class="form-text">
-                                    Generally, true for 465, false for other ports.
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="username" class="form-label">Username</label>
-                                <input id="username" v-model="notification.smtpUsername" type="text" class="form-control" autocomplete="false">
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="password" class="form-label">Password</label>
-                                <input id="password" v-model="notification.smtpPassword" type="password" class="form-control" autocomplete="false">
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="from-email" class="form-label">From Email</label>
-                                <input id="from-email" v-model="notification.smtpFrom" type="email" class="form-control" required autocomplete="false">
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="to-email" class="form-label">To Email</label>
-                                <input id="to-email" v-model="notification.smtpTo" type="email" class="form-control" required autocomplete="false">
-                            </div>
-                        </template>
+                        <SMTP v-if="notification.type === 'smtp'" />
 
                         <template v-if="notification.type === 'discord'">
                             <div class="mb-3">
@@ -162,6 +74,11 @@
                                 <div class="form-text">
                                     You can get this by going to Server Settings -> Integrations -> Create Webhook
                                 </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="discord-username" class="form-label">Bot Display Name</label>
+                                <input id="discord-username" v-model="notification.discordUsername" type="text" class="form-control" autocomplete="false" :placeholder="$root.appName">
                             </div>
                         </template>
 
@@ -201,7 +118,7 @@
                         <template v-if="notification.type === 'gotify'">
                             <div class="mb-3">
                                 <label for="gotify-application-token" class="form-label">Application Token</label>
-                                <input id="gotify-application-token" v-model="notification.gotifyapplicationToken" type="text" class="form-control" required>
+                                <HiddenInput id="gotify-application-token" v-model="notification.gotifyapplicationToken" :required="true" autocomplete="one-time-code"></HiddenInput>
                             </div>
                             <div class="mb-3">
                                 <label for="gotify-server-url" class="form-label">Server URL</label>
@@ -218,7 +135,7 @@
 
                         <template v-if="notification.type === 'slack'">
                             <div class="mb-3">
-                                <label for="slack-webhook-url" class="form-label">Webhook URL<span style="color:red;"><sup>*</sup></span></label>
+                                <label for="slack-webhook-url" class="form-label">Webhook URL<span style="color: red;"><sup>*</sup></span></label>
                                 <input id="slack-webhook-url" v-model="notification.slackwebhookURL" type="text" class="form-control" required>
                                 <label for="slack-username" class="form-label">Username</label>
                                 <input id="slack-username" v-model="notification.slackusername" type="text" class="form-control">
@@ -229,7 +146,7 @@
                                 <label for="slack-button-url" class="form-label">Uptime Kuma URL</label>
                                 <input id="slack-button" v-model="notification.slackbutton" type="text" class="form-control">
                                 <div class="form-text">
-                                    <span style="color:red;"><sup>*</sup></span>Required
+                                    <span style="color: red;"><sup>*</sup></span>Required
                                     <p style="margin-top: 8px;">
                                         More info about webhooks on: <a href="https://api.slack.com/messaging/webhooks" target="_blank">https://api.slack.com/messaging/webhooks</a>
                                     </p>
@@ -246,12 +163,123 @@
                             </div>
                         </template>
 
+                        <template v-if="notification.type === 'rocket.chat'">
+                            <div class="mb-3">
+                                <label for="rocket-webhook-url" class="form-label">Webhook URL<span style="color: red;"><sup>*</sup></span></label>
+                                <input id="rocket-webhook-url" v-model="notification.rocketwebhookURL" type="text" class="form-control" required>
+                                <label for="rocket-username" class="form-label">Username</label>
+                                <input id="rocket-username" v-model="notification.rocketusername" type="text" class="form-control">
+                                <label for="rocket-iconemo" class="form-label">Icon Emoji</label>
+                                <input id="rocket-iconemo" v-model="notification.rocketiconemo" type="text" class="form-control">
+                                <label for="rocket-channel" class="form-label">Channel Name</label>
+                                <input id="rocket-channel-name" v-model="notification.rocketchannel" type="text" class="form-control">
+                                <label for="rocket-button-url" class="form-label">Uptime Kuma URL</label>
+                                <input id="rocket-button" v-model="notification.rocketbutton" type="text" class="form-control">
+                                <div class="form-text">
+                                    <span style="color: red;"><sup>*</sup></span>Required
+                                    <p style="margin-top: 8px;">
+                                        More info about webhooks on: <a href="https://docs.rocket.chat/guides/administration/administration/integrations" target="_blank">https://api.slack.com/messaging/webhooks</a>
+                                    </p>
+                                    <p style="margin-top: 8px;">
+                                        Enter the channel name on Rocket.chat Channel Name field if you want to bypass the webhook channel. Ex: #other-channel
+                                    </p>
+                                    <p style="margin-top: 8px;">
+                                        If you leave the Uptime Kuma URL field blank, it will default to the Project Github page.
+                                    </p>
+                                    <p style="margin-top: 8px;">
+                                        Emoji cheat sheet: <a href="https://www.webfx.com/tools/emoji-cheat-sheet/" target="_blank">https://www.webfx.com/tools/emoji-cheat-sheet/</a>
+                                    </p>
+                                </div>
+                            </div>
+                        </template>
+
+                        <template v-if="notification.type === 'mattermost'">
+                            <div class="mb-3">
+                                <label for="mattermost-webhook-url" class="form-label">Webhook URL<span style="color:red;"><sup>*</sup></span></label>
+                                <input id="mattermost-webhook-url" v-model="notification.mattermostWebhookUrl" type="text" class="form-control" required>
+                                <label for="mattermost-username" class="form-label">Username</label>
+                                <input id="mattermost-username" v-model="notification.mattermostusername" type="text" class="form-control">
+                                <label for="mattermost-iconurl" class="form-label">Icon URL</label>
+                                <input id="mattermost-iconurl" v-model="notification.mattermosticonurl" type="text" class="form-control">
+                                <label for="mattermost-iconemo" class="form-label">Icon Emoji</label>
+                                <input id="mattermost-iconemo" v-model="notification.mattermosticonemo" type="text" class="form-control">
+                                <label for="mattermost-channel" class="form-label">Channel Name</label>
+                                <input id="mattermost-channel-name" v-model="notification.mattermostchannel" type="text" class="form-control">
+                                <div class="form-text">
+                                    <span style="color:red;"><sup>*</sup></span>Required
+                                    <p style="margin-top: 8px;">
+                                        More info about webhooks on: <a href="https://docs.mattermost.com/developer/webhooks-incoming.html" target="_blank">https://docs.mattermost.com/developer/webhooks-incoming.html</a>
+                                    </p>
+                                    <p style="margin-top: 8px;">
+                                        You can override the default channel that webhook posts to by entering the channel name into "Channel Name" field. This needs to be enabled in Mattermost webhook settings. Ex: #other-channel
+                                    </p>
+                                    <p style="margin-top: 8px;">
+                                        If you leave the Uptime Kuma URL field blank, it will default to the Project Github page.
+                                    </p>
+                                    <p style="margin-top: 8px;">
+                                        You can provide a link to a picture in "Icon URL" to override the default profile picture. Will not be used if Icon Emoji is set.
+                                    </p>
+                                    <p style="margin-top: 8px;">
+                                        Emoji cheat sheet: <a href="https://www.webfx.com/tools/emoji-cheat-sheet/" target="_blank">https://www.webfx.com/tools/emoji-cheat-sheet/</a> Note: emoji takes preference over Icon URL.
+                                    </p>
+                                </div>
+                            </div>
+                        </template>
+
+                        <template v-if="notification.type === 'pushy'">
+                            <div class="mb-3">
+                                <label for="pushy-app-token" class="form-label">API_KEY</label>
+                                <HiddenInput id="pushy-app-token" v-model="notification.pushyAPIKey" :required="true" autocomplete="one-time-code"></HiddenInput>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="pushy-user-key" class="form-label">USER_TOKEN</label>
+                                <div class="input-group mb-3">
+                                    <HiddenInput id="pushy-user-key" v-model="notification.pushyToken" :required="true" autocomplete="one-time-code"></HiddenInput>
+                                </div>
+                            </div>
+                            <p style="margin-top: 8px;">
+                                More info on: <a href="https://pushy.me/docs/api/send-notifications" target="_blank">https://pushy.me/docs/api/send-notifications</a>
+                            </p>
+                        </template>
+
+                        <template v-if="notification.type === 'octopush'">
+                            <div class="mb-3">
+                                <label for="octopush-key" class="form-label">API KEY</label>
+                                <HiddenInput id="octopush-key" v-model="notification.octopushAPIKey" :required="true" autocomplete="one-time-code"></HiddenInput>
+                                <label for="octopush-login" class="form-label">API LOGIN</label>
+                                <input id="octopush-login" v-model="notification.octopushLogin" type="text" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="octopush-type-sms" class="form-label">SMS Type</label>
+                                <select id="octopush-type-sms" v-model="notification.octopushSMSType" class="form-select">
+                                    <option value="sms_premium">Premium (Fast - recommended for alerting)</option>
+                                    <option value="sms_low_cost">Low Cost (Slow, sometimes blocked by operator)</option>
+                                </select>
+                                <div class="form-text">
+                                    Check octopush prices <a href="https://octopush.com/tarifs-sms-international/" target="_blank">https://octopush.com/tarifs-sms-international/</a>.
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="octopush-phone-number" class="form-label">Phone number (intl format, eg : +33612345678) </label>
+                                <input id="octopush-phone-number" v-model="notification.octopushPhoneNumber" type="text" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="octopush-sender-name" class="form-label">SMS Sender Name : 3-11 alphanumeric characters and space (a-zA-Z0-9)</label>
+                                <input id="octopush-sender-name" v-model="notification.octopushSenderName" type="text" minlength="3" maxlength="11" class="form-control">
+                            </div>
+
+                            <p style="margin-top: 8px;">
+                                More info on: <a href="https://octopush.com/api-sms-documentation/envoi-de-sms/" target="_blank">https://octopush.com/api-sms-documentation/envoi-de-sms/</a>
+                            </p>
+                        </template>
+
                         <template v-if="notification.type === 'pushover'">
                             <div class="mb-3">
-                                <label for="pushover-user" class="form-label">User Key<span style="color:red;"><sup>*</sup></span></label>
-                                <input id="pushover-user" v-model="notification.pushoveruserkey" type="text" class="form-control" required>
-                                <label for="pushover-app-token" class="form-label">Application Token<span style="color:red;"><sup>*</sup></span></label>
-                                <input id="pushover-app-token" v-model="notification.pushoverapptoken" type="text" class="form-control" required>
+                                <label for="pushover-user" class="form-label">User Key<span style="color: red;"><sup>*</sup></span></label>
+                                <HiddenInput id="pushover-user" v-model="notification.pushoveruserkey" :required="true" autocomplete="one-time-code"></HiddenInput>
+                                <label for="pushover-app-token" class="form-label">Application Token<span style="color: red;"><sup>*</sup></span></label>
+                                <HiddenInput id="pushover-app-token" v-model="notification.pushoverapptoken" :required="true" autocomplete="one-time-code"></HiddenInput>
                                 <label for="pushover-device" class="form-label">Device</label>
                                 <input id="pushover-device" v-model="notification.pushoverdevice" type="text" class="form-control">
                                 <label for="pushover-device" class="form-label">Message Title</label>
@@ -290,7 +318,7 @@
                                     <option>none</option>
                                 </select>
                                 <div class="form-text">
-                                    <span style="color:red;"><sup>*</sup></span>Required
+                                    <span style="color: red;"><sup>*</sup></span>Required
                                     <p style="margin-top: 8px;">
                                         More info on: <a href="https://pushover.net/api" target="_blank">https://pushover.net/api</a>
                                     </p>
@@ -319,20 +347,84 @@
                                 <p>
                                     Status:
                                     <span v-if="appriseInstalled" class="text-primary">Apprise is installed</span>
-                                    <span v-else class="text-danger">Apprise is not installed. <a href="https://github.com/caronc/apprise">Read more</a></span>
+                                    <span v-else class="text-danger">Apprise is not installed. <a href="https://github.com/caronc/apprise" target="_blank">Read more</a></span>
                                 </p>
                             </div>
                         </template>
+
+                        <template v-if="notification.type === 'lunasea'">
+                            <div class="mb-3">
+                                <label for="lunasea-device" class="form-label">LunaSea Device ID<span style="color: red;"><sup>*</sup></span></label>
+                                <input id="lunasea-device" v-model="notification.lunaseaDevice" type="text" class="form-control" required>
+                                <div class="form-text">
+                                    <p><span style="color: red;"><sup>*</sup></span>Required</p>
+                                </div>
+                            </div>
+                        </template>
+
+                        <template v-if="notification.type === 'pushbullet'">
+                            <div class="mb-3">
+                                <label for="pushbullet-access-token" class="form-label">Access Token</label>
+                                <HiddenInput id="pushbullet-access-token" v-model="notification.pushbulletAccessToken" :required="true" autocomplete="one-time-code"></HiddenInput>
+                            </div>
+
+                            <p style="margin-top: 8px;">
+                                More info on: <a href="https://docs.pushbullet.com" target="_blank">https://docs.pushbullet.com</a>
+                            </p>
+                        </template>
+
+                        <template v-if="notification.type === 'line'">
+                            <div class="mb-3">
+                                <label for="line-channel-access-token" class="form-label">Channel access token</label>
+                                <HiddenInput id="line-channel-access-token" v-model="notification.lineChannelAccessToken" :required="true" autocomplete="one-time-code"></HiddenInput>
+                            </div>
+                            <div class="form-text">
+                                Line Developers Console - <b>Basic Settings</b>
+                            </div>
+                            <div class="mb-3" style="margin-top: 12px;">
+                                <label for="line-user-id" class="form-label">User ID</label>
+                                <input id="line-user-id" v-model="notification.lineUserID" type="text" class="form-control" required>
+                            </div>
+                            <div class="form-text">
+                                Line Developers Console - <b>Messaging API</b>
+                            </div>
+                            <div class="form-text" style="margin-top: 8px;">
+                                First access the <a href="https://developers.line.biz/console/" target="_blank">Line Developers Console</a>, create a provider and channel (Messaging API), then you can get the channel access token and user id from the above mentioned menu items.
+                            </div>
+                        </template>
+
+                        <!-- DEPRECATED! Please create vue component in "./src/components/notifications/{notification name}.vue" -->
+
+                        <div class="mb-3 mt-4">
+                            <hr class="dropdown-divider mb-4">
+
+                            <div class="form-check form-switch">
+                                <input v-model="notification.isDefault" class="form-check-input" type="checkbox">
+                                <label class="form-check-label">{{ $t("Default enabled") }}</label>
+                            </div>
+                            <div class="form-text">
+                                {{ $t("enableDefaultNotificationDescription") }}
+                            </div>
+
+                            <br>
+
+                            <div class="form-check form-switch">
+                                <input v-model="notification.applyExisting" class="form-check-input" type="checkbox">
+                                <label class="form-check-label">{{ $t("Also apply to existing monitors") }}</label>
+                            </div>
+                        </div>
                     </div>
+
                     <div class="modal-footer">
                         <button v-if="id" type="button" class="btn btn-danger" :disabled="processing" @click="deleteConfirm">
-                            Delete
+                            {{ $t("Delete") }}
                         </button>
                         <button type="button" class="btn btn-warning" :disabled="processing" @click="test">
-                            Test
+                            {{ $t("Test") }}
                         </button>
                         <button type="submit" class="btn btn-primary" :disabled="processing">
-                            Save
+                            <div v-if="processing" class="spinner-border spinner-border-sm me-1"></div>
+                            {{ $t("Save") }}
                         </button>
                     </div>
                 </div>
@@ -340,24 +432,29 @@
         </div>
     </form>
 
-    <Confirm ref="confirmDelete" btn-style="btn-danger" @yes="deleteNotification">
-        Are you sure want to delete this notification for all monitors?
+    <Confirm ref="confirmDelete" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="deleteNotification">
+        {{ $t("deleteNotificationMsg") }}
     </Confirm>
 </template>
 
 <script lang="ts">
 import { Modal } from "bootstrap"
 import { ucfirst } from "../util.ts"
-import axios from "axios";
-import { useToast } from "vue-toastification"
+
 import Confirm from "./Confirm.vue";
-const toast = useToast()
+import HiddenInput from "./HiddenInput.vue";
+import Telegram from "./notifications/Telegram.vue";
+import SMTP from "./notifications/SMTP.vue";
 
 export default {
     components: {
         Confirm,
+        HiddenInput,
+        Telegram,
+        SMTP,
     },
     props: {},
+    emits: ["added"],
     data() {
         return {
             model: null,
@@ -366,22 +463,13 @@ export default {
             notification: {
                 name: "",
                 type: null,
-                gotifyPriority: 8,
+                isDefault: false,
+                // Do not set default value here, please scroll to show()
             },
             appriseInstalled: false,
         }
     },
-    computed: {
-        telegramGetUpdatesURL() {
-            let token = "<YOUR BOT TOKEN HERE>"
 
-            if (this.notification.telegramBotToken) {
-                token = this.notification.telegramBotToken;
-            }
-
-            return `https://api.telegram.org/bot${token}/getUpdates`;
-        },
-    },
     watch: {
         "notification.type"(to, from) {
             let oldName;
@@ -426,11 +514,13 @@ export default {
                 this.notification = {
                     name: "",
                     type: null,
+                    isDefault: false,
                 }
 
-                // Default set to Telegram
-                this.notification.type = "telegram"
-                this.notification.gotifyPriority = 8
+                // Set Default value here
+                this.notification.type = "telegram";
+                this.notification.gotifyPriority = 8;
+                this.notification.smtpSecure = false;
             }
 
             this.modal.show()
@@ -443,7 +533,13 @@ export default {
                 this.processing = false;
 
                 if (res.ok) {
-                    this.modal.hide()
+                    this.modal.hide();
+
+                    // Emit added event, doesn't emit edit.
+                    if (! this.id) {
+                        this.$emit("added", res.id);
+                    }
+
                 }
             })
         },
@@ -467,32 +563,16 @@ export default {
                 }
             })
         },
-
-        async autoGetTelegramChatID() {
-            try {
-                let res = await axios.get(this.telegramGetUpdatesURL)
-
-                if (res.data.result.length >= 1) {
-                    let update = res.data.result[res.data.result.length - 1]
-
-                    if (update.channel_post) {
-                        this.notification.telegramChatID = update.channel_post.chat.id;
-                    } else if (update.message) {
-                        this.notification.telegramChatID = update.message.chat.id;
-                    } else {
-                        throw new Error("Chat ID is not found, please send a message to this bot first")
-                    }
-
-                } else {
-                    throw new Error("Chat ID is not found, please send a message to this bot first")
-                }
-
-            } catch (error) {
-                toast.error(error.message)
-            }
-
-        },
-
     },
 }
 </script>
+
+<style lang="scss" scoped>
+@import "../assets/vars.scss";
+
+.dark {
+    .modal-dialog .form-text, .modal-dialog p {
+        color: $dark-font-color;
+    }
+}
+</style>

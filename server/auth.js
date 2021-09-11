@@ -1,6 +1,8 @@
 const basicAuth = require("express-basic-auth")
 const passwordHash = require("./password-hash");
 const { R } = require("redbean-node");
+const { setting } = require("./util-server");
+const { debug } = require("../src/util");
 
 /**
  *
@@ -28,9 +30,18 @@ exports.login = async function (username, password) {
 }
 
 function myAuthorizer(username, password, callback) {
-    exports.login(username, password).then((user) => {
-        callback(null, user != null)
+
+    setting("disableAuth").then((result) => {
+
+        if (result) {
+            callback(null, true)
+        } else {
+            exports.login(username, password).then((user) => {
+                callback(null, user != null)
+            })
+        }
     })
+
 }
 
 exports.basicAuth = basicAuth({

@@ -1,6 +1,29 @@
 const tcpp = require("tcp-ping");
 const Ping = require("./ping-lite");
 const { R } = require("redbean-node");
+const { debug } = require("../src/util");
+const passwordHash = require("./password-hash");
+const dayjs = require("dayjs");
+const { Resolver } = require("dns");
+
+/**
+ * Init or reset JWT secret
+ * @returns {Promise<Bean>}
+ */
+exports.initJWTSecret = async () => {
+    let jwtSecretBean = await R.findOne("setting", " `key` = ? ", [
+        "jwtSecret",
+    ]);
+
+    if (! jwtSecretBean) {
+        jwtSecretBean = R.dispense("setting");
+        jwtSecretBean.key = "jwtSecret";
+    }
+
+    jwtSecretBean.value = passwordHash.generate(dayjs() + "");
+    await R.store(jwtSecretBean);
+    return jwtSecretBean;
+}
 
 exports.tcping = function (hostname, port) {
     return new Promise((resolve, reject) => {
@@ -8,7 +31,7 @@ exports.tcping = function (hostname, port) {
             address: hostname,
             port: port,
             attempts: 1,
-        }, function(err, data) {
+        }, function (err, data) {
 
             if (err) {
                 reject(err);
@@ -23,15 +46,30 @@ exports.tcping = function (hostname, port) {
     });
 }
 
-exports.ping = function (hostname) {
-    return new Promise((resolve, reject) => {
-        const ping = new Ping(hostname);
+exports.ping = async (hostname) => {
+    try {
+        return await exports.pingAsync(hostname);
+    } catch (e) {
+        // If the host cannot be resolved, try again with ipv6
+        if (e.message.includes("service not known")) {
+            return await exports.pingAsync(hostname, true);
+        } else {
+            throw e;
+        }
+    }
+}
 
-        ping.send(function(err, ms) {
+exports.pingAsync = function (hostname, ipv6 = false) {
+    return new Promise((resolve, reject) => {
+        const ping = new Ping(hostname, {
+            ipv6
+        });
+
+        ping.send(function (err, ms, stdout) {
             if (err) {
-                reject(err)
+                reject(err);
             } else if (ms === null) {
-                reject(new Error("timeout"))
+                reject(new Error(stdout))
             } else {
                 resolve(Math.round(ms))
             }
@@ -39,36 +77,97 @@ exports.ping = function (hostname) {
     });
 }
 
+exports.dnsResolve = function (hostname, resolver_server, rrtype) {
+    const resolver = new Resolver();
+    resolver.setServers([resolver_server]);
+    return new Promise((resolve, reject) => {
+        if (rrtype == "PTR") {
+            resolver.reverse(hostname, (err, records) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(records);
+                }
+            });
+        } else {
+            resolver.resolve(hostname, rrtype, (err, records) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(records);
+                }
+            });
+        }
+    })
+}
+
 exports.setting = async function (key) {
-    return await R.getCell("SELECT `value` FROM setting WHERE `key` = ? ", [
+    let value = await R.getCell("SELECT `value` FROM setting WHERE `key` = ? ", [
         key,
-    ])
+    ]);
+
+    try {
+        const v = JSON.parse(value);
+        debug(`Get Setting: ${key}: ${v}`)
+        return v;
+    } catch (e) {
+        return value;
+    }
 }
 
 exports.setSetting = async function (key, value) {
     let bean = await R.findOne("setting", " `key` = ? ", [
         key,
     ])
-    if (! bean) {
+    if (!bean) {
         bean = R.dispense("setting")
         bean.key = key;
     }
-    bean.value = value;
+    bean.value = JSON.stringify(value);
     await R.store(bean)
 }
 
 exports.getSettings = async function (type) {
-    let list = await R.getAll("SELECT * FROM setting WHERE `type` = ? ", [
+    let list = await R.getAll("SELECT `key`, `value` FROM setting WHERE `type` = ? ", [
         type,
     ])
 
     let result = {};
 
     for (let row of list) {
-        result[row.key] = row.value;
+        try {
+            result[row.key] = JSON.parse(row.value);
+        } catch (e) {
+            result[row.key] = row.value;
+        }
     }
 
     return result;
+}
+
+exports.setSettings = async function (type, data) {
+    let keyList = Object.keys(data);
+
+    let promiseList = [];
+
+    for (let key of keyList) {
+        let bean = await R.findOne("setting", " `key` = ? ", [
+            key
+        ]);
+
+        if (bean == null) {
+            bean = R.dispense("setting");
+            bean.type = type;
+            bean.key = key;
+        }
+
+        if (bean.type === type) {
+            bean.value = JSON.stringify(data[key]);
+            promiseList.push(R.store(bean))
+        }
+    }
+
+    await Promise.all(promiseList);
 }
 
 // ssl-checker by @dyaa
@@ -119,4 +218,56 @@ exports.checkCertificate = function (res) {
         issuer,
         fingerprint,
     };
+}
+
+// Check if the provided status code is within the accepted ranges
+// Param: status - the status code to check
+// Param: accepted_codes - an array of accepted status codes
+// Return: true if the status code is within the accepted ranges, false otherwise
+// Will throw an error if the provided status code is not a valid range string or code string
+
+exports.checkStatusCode = function (status, accepted_codes) {
+    if (accepted_codes == null || accepted_codes.length === 0) {
+        return false;
+    }
+
+    for (const code_range of accepted_codes) {
+        const code_range_split = code_range.split("-").map(string => parseInt(string));
+        if (code_range_split.length === 1) {
+            if (status === code_range_split[0]) {
+                return true;
+            }
+        } else if (code_range_split.length === 2) {
+            if (status >= code_range_split[0] && status <= code_range_split[1]) {
+                return true;
+            }
+        } else {
+            throw new Error("Invalid status code range");
+        }
+    }
+
+    return false;
+}
+
+exports.getTotalClientInRoom = (io, roomName) => {
+
+    const sockets = io.sockets;
+
+    if (! sockets) {
+        return 0;
+    }
+
+    const adapter = sockets.adapter;
+
+    if (! adapter) {
+        return 0;
+    }
+
+    const room = adapter.rooms.get(roomName);
+
+    if (room) {
+        return room.size;
+    } else {
+        return 0;
+    }
 }

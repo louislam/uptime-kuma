@@ -1,9 +1,23 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.debug = exports.ucfirst = exports.sleep = exports.PENDING = exports.UP = exports.DOWN = void 0;
+exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isDev = void 0;
+const _dayjs = require("dayjs");
+const dayjs = _dayjs;
+exports.isDev = process.env.NODE_ENV === "development";
+exports.appName = "Uptime Kuma";
 exports.DOWN = 0;
 exports.UP = 1;
 exports.PENDING = 2;
+function flipStatus(s) {
+    if (s === exports.UP) {
+        return exports.DOWN;
+    }
+    if (s === exports.DOWN) {
+        return exports.UP;
+    }
+    return s;
+}
+exports.flipStatus = flipStatus;
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -17,8 +31,40 @@ function ucfirst(str) {
 }
 exports.ucfirst = ucfirst;
 function debug(msg) {
-    if (process.env.NODE_ENV === "development") {
+    if (exports.isDev) {
         console.log(msg);
     }
 }
 exports.debug = debug;
+function polyfill() {
+    if (!String.prototype.replaceAll) {
+        String.prototype.replaceAll = function (str, newStr) {
+            if (Object.prototype.toString.call(str).toLowerCase() === "[object regexp]") {
+                return this.replace(str, newStr);
+            }
+            return this.replace(new RegExp(str, "g"), newStr);
+        };
+    }
+}
+exports.polyfill = polyfill;
+class TimeLogger {
+    constructor() {
+        this.startTime = dayjs().valueOf();
+    }
+    print(name) {
+        if (exports.isDev) {
+            console.log(name + ": " + (dayjs().valueOf() - this.startTime) + "ms");
+        }
+    }
+}
+exports.TimeLogger = TimeLogger;
+function getRandomArbitrary(min, max) {
+    return Math.random() * (max - min) + min;
+}
+exports.getRandomArbitrary = getRandomArbitrary;
+function getRandomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+exports.getRandomInt = getRandomInt;

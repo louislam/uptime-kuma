@@ -22,7 +22,7 @@ export default {
                 return Math.round(this.$root.uptimeList[key] * 10000) / 100 + "%";
             }
 
-            return "N/A"
+            return this.$t("notAvailableShort")
         },
 
         color() {
@@ -61,3 +61,9 @@ export default {
     },
 }
 </script>
+
+<style>
+.badge {
+    min-width: 62px;
+}
+</style>

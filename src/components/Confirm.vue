@@ -4,7 +4,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 id="exampleModalLabel" class="modal-title">
-                        Confirm
+                        {{ $t("Confirm") }}
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" />
                 </div>
@@ -13,10 +13,10 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn" :class="btnStyle" data-bs-dismiss="modal" @click="yes">
-                        Yes
+                        {{ yesText }}
                     </button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        No
+                        {{ noText }}
                     </button>
                 </div>
             </div>
@@ -32,6 +32,14 @@ export default {
         btnStyle: {
             type: String,
             default: "btn-primary",
+        },
+        yesText: {
+            type: String,
+            default: "Yes",     // TODO: No idea what to translate this
+        },
+        noText: {
+            type: String,
+            default: "No",
         },
     },
     data: () => ({

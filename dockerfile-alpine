@@ -1,0 +1,33 @@
+# DON'T UPDATE TO alpine3.13, 1.14, see #41.
+FROM node:14-alpine3.12 AS build
+WORKDIR /app
+
+# split the sqlite install here, so that it can caches the arm prebuilt
+RUN apk add --no-cache --virtual .build-deps make g++ python3 python3-dev git && \
+            ln -s /usr/bin/python3 /usr/bin/python && \
+            npm install mapbox/node-sqlite3#593c9d && \
+            apk del .build-deps && \
+            rm -f /usr/bin/python
+
+COPY . .
+RUN npm install --legacy-peer-deps && npm run build && npm prune --production
+
+
+FROM node:14-alpine3.12 AS release
+WORKDIR /app
+
+# Install apprise
+RUN apk add --no-cache python3 py3-cryptography py3-pip py3-six py3-yaml py3-click py3-markdown py3-requests py3-requests-oauthlib && \
+            pip3 --no-cache-dir install apprise && \
+            rm -rf /root/.cache
+
+# Copy app files from build layer
+COPY  --from=build /app /app
+
+EXPOSE 3001
+VOLUME ["/app/data"]
+HEALTHCHECK --interval=60s --timeout=30s --start-period=180s --retries=5 CMD node extra/healthcheck.js
+CMD ["node", "server/server.js"]
+
+FROM release AS nightly
+RUN npm run mark-as-nightly

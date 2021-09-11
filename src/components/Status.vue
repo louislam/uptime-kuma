@@ -27,18 +27,18 @@ export default {
 
         text() {
             if (this.status === 0) {
-                return "Down"
+                return this.$t("Down");
             }
 
             if (this.status === 1) {
-                return "Up"
+                return this.$t("Up");
             }
 
             if (this.status === 2) {
-                return "Pending"
+                return this.$t("Pending");
             }
 
-            return "Unknown"
+            return this.$t("Unknown");
         },
     },
 }
@@ -46,6 +46,6 @@ export default {
 
 <style scoped>
     span {
-        width: 54px;
+        width: 64px;
     }
 </style>

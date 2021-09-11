@@ -1,34 +1,96 @@
-console.log("Welcome to Uptime Kuma ")
-console.log("Importing libraries")
-const express = require("express");
-const http = require("http");
-const { Server } = require("socket.io");
-const dayjs = require("dayjs");
-const { R } = require("redbean-node");
-const jwt = require("jsonwebtoken");
-const Monitor = require("./model/monitor");
+console.log("Welcome to Uptime Kuma");
+console.log("Node Env: " + process.env.NODE_ENV);
+
+const { sleep, debug, TimeLogger, getRandomInt } = require("../src/util");
+
+console.log("Importing Node libraries")
 const fs = require("fs");
-const { getSettings } = require("./util-server");
-const { Notification } = require("./notification")
+const http = require("http");
+const https = require("https");
+
+console.log("Importing 3rd-party libraries")
+debug("Importing express");
+const express = require("express");
+debug("Importing socket.io");
+const { Server } = require("socket.io");
+debug("Importing redbean-node");
+const { R } = require("redbean-node");
+debug("Importing jsonwebtoken");
+const jwt = require("jsonwebtoken");
+debug("Importing http-graceful-shutdown");
 const gracefulShutdown = require("http-graceful-shutdown");
-const Database = require("./database");
-const { sleep } = require("../src/util");
-const args = require("args-parser")(process.argv);
+debug("Importing prometheus-api-metrics");
 const prometheusAPIMetrics = require("prometheus-api-metrics");
+
+console.log("Importing this project modules");
+debug("Importing Monitor");
+const Monitor = require("./model/monitor");
+debug("Importing Settings");
+const { getSettings, setSettings, setting, initJWTSecret } = require("./util-server");
+
+debug("Importing Notification");
+const { Notification } = require("./notification");
+Notification.init();
+
+debug("Importing Database");
+const Database = require("./database");
+
 const { basicAuth } = require("./auth");
 const { login } = require("./auth");
 const passwordHash = require("./password-hash");
-const version = require("../package.json").version;
-const hostname = args.host || "0.0.0.0"
+
+const args = require("args-parser")(process.argv);
+
+const checkVersion = require("./check-version");
+console.info("Version: " + checkVersion.version);
+
+// If host is omitted, the server will accept connections on the unspecified IPv6 address (::) when IPv6 is available and the unspecified IPv4 address (0.0.0.0) otherwise.
+// Dual-stack support for (::)
+const hostname = process.env.HOST || args.host;
 const port = parseInt(process.env.PORT || args.port || 3001);
 
-console.info("Version: " + version)
+// SSL
+const sslKey = process.env.SSL_KEY || args["ssl-key"] || undefined;
+const sslCert = process.env.SSL_CERT || args["ssl-cert"] || undefined;
+
+// Demo Mode?
+const demoMode = args["demo"] || false;
+
+if (demoMode) {
+    console.log("==== Demo Mode ====");
+}
+
+// Data Directory (must be end with "/")
+Database.dataDir = process.env.DATA_DIR || args["data-dir"] || "./data/";
+Database.path = Database.dataDir + "kuma.db";
+if (! fs.existsSync(Database.dataDir)) {
+    fs.mkdirSync(Database.dataDir, { recursive: true });
+}
+console.log(`Data Dir: ${Database.dataDir}`);
 
 console.log("Creating express and socket.io instance")
 const app = express();
-const server = http.createServer(app);
+
+let server;
+
+if (sslKey && sslCert) {
+    console.log("Server Type: HTTPS");
+    server = https.createServer({
+        key: fs.readFileSync(sslKey),
+        cert: fs.readFileSync(sslCert)
+    }, app);
+} else {
+    console.log("Server Type: HTTP");
+    server = http.createServer(app);
+}
+
 const io = new Server(server);
-app.use(express.json())
+module.exports.io = io;
+
+// Must be after io instantiation
+const { sendNotificationList, sendHeartbeatList, sendImportantHeartbeatList } = require("./client");
+
+app.use(express.json());
 
 /**
  * Total WebSocket client connected to server currently, no actual use
@@ -67,24 +129,35 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
 
     // Normal Router here
 
-    app.use("/", express.static("dist"));
+    // Robots.txt
+    app.get("/robots.txt", async (_request, response) => {
+        let txt = "User-agent: *\nDisallow:";
+        if (! await setting("searchEngineIndex")) {
+            txt += " /";
+        }
+        response.setHeader("Content-Type", "text/plain");
+        response.send(txt);
+    });
 
     // Basic Auth Router here
 
     // Prometheus API metrics  /metrics
     // With Basic Auth using the first user's username/password
-    app.get("/metrics", basicAuth, prometheusAPIMetrics())
+    app.get("/metrics", basicAuth, prometheusAPIMetrics());
+
+    app.use("/", express.static("dist"));
 
     // Universal Route Handler, must be at the end
-    app.get("*", function(request, response, next) {
-        response.end(indexHTML)
+    app.get("*", async (_request, response) => {
+        response.send(indexHTML);
     });
 
     console.log("Adding socket handler")
     io.on("connection", async (socket) => {
 
         socket.emit("info", {
-            version,
+            version: checkVersion.version,
+            latestVersion: checkVersion.latestVersion,
         })
 
         totalClient++;
@@ -114,7 +187,11 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                 ])
 
                 if (user) {
-                    await afterLogin(socket, user)
+                    debug("afterLogin")
+
+                    afterLogin(socket, user)
+
+                    debug("afterLogin ok")
 
                     callback({
                         ok: true,
@@ -140,7 +217,7 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
             let user = await login(data.username, data.password)
 
             if (user) {
-                await afterLogin(socket, user)
+                afterLogin(socket, user)
 
                 callback({
                     ok: true,
@@ -197,6 +274,7 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
         // Auth Only API
         // ***************************
 
+        // Add a new monitor
         socket.on("add", async (monitor, callback) => {
             try {
                 checkLogin(socket)
@@ -204,6 +282,9 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
 
                 let notificationIDList = monitor.notificationIDList;
                 delete monitor.notificationIDList;
+
+                monitor.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
+                delete monitor.accepted_statuscodes;
 
                 bean.import(monitor)
                 bean.user_id = socket.userID
@@ -228,6 +309,7 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
             }
         });
 
+        // Edit a monitor
         socket.on("editMonitor", async (monitor, callback) => {
             try {
                 checkLogin(socket)
@@ -246,6 +328,12 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                 bean.maxretries = monitor.maxretries;
                 bean.port = monitor.port;
                 bean.keyword = monitor.keyword;
+                bean.ignoreTls = monitor.ignoreTls;
+                bean.upsideDown = monitor.upsideDown;
+                bean.maxredirects = monitor.maxredirects;
+                bean.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
+                bean.dns_resolve_type = monitor.dns_resolve_type;
+                bean.dns_resolve_server = monitor.dns_resolve_server;
 
                 await R.store(bean)
 
@@ -380,10 +468,7 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
 
                 if (user && passwordHash.verify(password.currentPassword, user.password)) {
 
-                    await R.exec("UPDATE `user` SET password = ? WHERE id = ? ", [
-                        passwordHash.generate(password.newPassword),
-                        socket.userID,
-                    ]);
+                    user.resetPassword(password.newPassword);
 
                     callback({
                         ok: true,
@@ -401,13 +486,32 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
             }
         });
 
-        socket.on("getSettings", async (type, callback) => {
+        socket.on("getSettings", async (callback) => {
             try {
                 checkLogin(socket)
 
                 callback({
                     ok: true,
-                    data: await getSettings(type),
+                    data: await getSettings("general"),
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("setSettings", async (data, callback) => {
+            try {
+                checkLogin(socket)
+
+                await setSettings("general", data)
+
+                callback({
+                    ok: true,
+                    msg: "Saved"
                 });
 
             } catch (e) {
@@ -423,12 +527,13 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
             try {
                 checkLogin(socket)
 
-                await Notification.save(notification, notificationID, socket.userID)
+                let notificationBean = await Notification.save(notification, notificationID, socket.userID)
                 await sendNotificationList(socket)
 
                 callback({
                     ok: true,
                     msg: "Saved",
+                    id: notificationBean.id,
                 });
 
             } catch (e) {
@@ -488,18 +593,191 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                 callback(false);
             }
         });
+
+        socket.on("uploadBackup", async (uploadedJSON, callback) => {
+            try {
+                checkLogin(socket)
+
+                let backupData = JSON.parse(uploadedJSON);
+
+                console.log(`Importing Backup, User ID: ${socket.userID}, Version: ${backupData.version}`)
+
+                let notificationList = backupData.notificationList;
+                let monitorList = backupData.monitorList;
+
+                if (notificationList.length >= 1) {
+                    for (let i = 0; i < notificationList.length; i++) {
+                        let notification = JSON.parse(notificationList[i].config);
+                        await Notification.save(notification, null, socket.userID)
+                    }
+                }
+
+                if (monitorList.length >= 1) {
+                    for (let i = 0; i < monitorList.length; i++) {
+                        let monitor = {
+                            name: monitorList[i].name,
+                            type: monitorList[i].type,
+                            url: monitorList[i].url,
+                            interval: monitorList[i].interval,
+                            hostname: monitorList[i].hostname,
+                            maxretries: monitorList[i].maxretries,
+                            port: monitorList[i].port,
+                            keyword: monitorList[i].keyword,
+                            ignoreTls: monitorList[i].ignoreTls,
+                            upsideDown: monitorList[i].upsideDown,
+                            maxredirects: monitorList[i].maxredirects,
+                            accepted_statuscodes: monitorList[i].accepted_statuscodes,
+                            dns_resolve_type: monitorList[i].dns_resolve_type,
+                            dns_resolve_server: monitorList[i].dns_resolve_server,
+                            notificationIDList: {},
+                        }
+
+                        let bean = R.dispense("monitor")
+
+                        let notificationIDList = monitor.notificationIDList;
+                        delete monitor.notificationIDList;
+
+                        monitor.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
+                        delete monitor.accepted_statuscodes;
+
+                        bean.import(monitor)
+                        bean.user_id = socket.userID
+                        await R.store(bean)
+
+                        await updateMonitorNotification(bean.id, notificationIDList)
+
+                        if (monitorList[i].active == 1) {
+                            await startMonitor(socket.userID, bean.id);
+                        } else {
+                            await pauseMonitor(socket.userID, bean.id);
+                        }
+                    }
+
+                    await sendNotificationList(socket)
+                    await sendMonitorList(socket);
+                }
+
+                callback({
+                    ok: true,
+                    msg: "Backup successfully restored.",
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("clearEvents", async (monitorID, callback) => {
+            try {
+                checkLogin(socket)
+
+                console.log(`Clear Events Monitor: ${monitorID} User ID: ${socket.userID}`)
+
+                await R.exec("UPDATE heartbeat SET msg = ?, important = ? WHERE monitor_id = ? ", [
+                    "",
+                    "0",
+                    monitorID,
+                ]);
+
+                await sendImportantHeartbeatList(socket, monitorID, true, true);
+
+                callback({
+                    ok: true,
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("clearHeartbeats", async (monitorID, callback) => {
+            try {
+                checkLogin(socket)
+
+                console.log(`Clear Heartbeats Monitor: ${monitorID} User ID: ${socket.userID}`)
+
+                await R.exec("DELETE FROM heartbeat WHERE monitor_id = ?", [
+                    monitorID
+                ]);
+
+                await sendHeartbeatList(socket, monitorID, true, true);
+
+                callback({
+                    ok: true,
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("clearStatistics", async (callback) => {
+            try {
+                checkLogin(socket)
+
+                console.log(`Clear Statistics User ID: ${socket.userID}`)
+
+                await R.exec("DELETE FROM heartbeat");
+
+                callback({
+                    ok: true,
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        debug("added all socket handlers")
+
+        // ***************************
+        // Better do anything after added all socket handlers here
+        // ***************************
+
+        debug("check auto login")
+        if (await setting("disableAuth")) {
+            console.log("Disabled Auth: auto login to admin")
+            afterLogin(socket, await R.findOne("user"))
+            socket.emit("autoLogin")
+        } else {
+            debug("need auth")
+        }
+
     });
 
-    console.log("Init")
+    console.log("Init the server")
+
+    server.once("error", async (err) => {
+        console.error("Cannot listen: " + err.message);
+        await Database.close();
+    });
+
     server.listen(port, hostname, () => {
-        console.log(`Listening on ${hostname}:${port}`);
+        if (hostname) {
+            console.log(`Listening on ${hostname}:${port}`);
+        } else {
+            console.log(`Listening on ${port}`);
+        }
         startMonitors();
+        checkVersion.startInterval();
     });
 
 })();
 
 async function updateMonitorNotification(monitorID, notificationIDList) {
-    R.exec("DELETE FROM monitor_notification WHERE monitor_id = ? ", [
+    await R.exec("DELETE FROM monitor_notification WHERE monitor_id = ? ", [
         monitorID,
     ])
 
@@ -530,39 +808,32 @@ async function sendMonitorList(socket) {
     return list;
 }
 
-async function sendNotificationList(socket) {
-    let result = [];
-    let list = await R.find("notification", " user_id = ? ", [
-        socket.userID,
-    ]);
-
-    for (let bean of list) {
-        result.push(bean.export())
-    }
-
-    io.to(socket.userID).emit("notificationList", result)
-    return list;
-}
-
 async function afterLogin(socket, user) {
     socket.userID = user.id;
     socket.join(user.id)
 
     let monitorList = await sendMonitorList(socket)
+    sendNotificationList(socket)
+
+    await sleep(500);
 
     for (let monitorID in monitorList) {
-        sendHeartbeatList(socket, monitorID);
-        sendImportantHeartbeatList(socket, monitorID);
-        Monitor.sendStats(io, monitorID, user.id)
+        await sendHeartbeatList(socket, monitorID);
     }
 
-    sendNotificationList(socket)
+    for (let monitorID in monitorList) {
+        await sendImportantHeartbeatList(socket, monitorID);
+    }
+
+    for (let monitorID in monitorList) {
+        await Monitor.sendStats(io, monitorID, user.id)
+    }
 }
 
 async function getMonitorJSONList(userID) {
     let result = {};
 
-    let monitorList = await R.find("monitor", " user_id = ? ", [
+    let monitorList = await R.find("monitor", " user_id = ? ORDER BY weight DESC, name", [
         userID,
     ])
 
@@ -586,32 +857,22 @@ async function initDatabase() {
     }
 
     console.log("Connecting to Database")
-    R.setup("sqlite", {
-        filename: Database.path,
-    });
+    await Database.connect();
     console.log("Connected")
 
     // Patch the database
     await Database.patch()
-
-    // Auto map the model to a bean object
-    R.freeze(true)
-    await R.autoloadModels("./server/model");
 
     let jwtSecretBean = await R.findOne("setting", " `key` = ? ", [
         "jwtSecret",
     ]);
 
     if (! jwtSecretBean) {
-        console.log("JWT secret is not found, generate one.")
-        jwtSecretBean = R.dispense("setting")
-        jwtSecretBean.key = "jwtSecret"
-
-        jwtSecretBean.value = passwordHash.generate(dayjs() + "")
-        await R.store(jwtSecretBean)
-        console.log("Stored JWT secret into database")
+        console.log("JWT secret is not found, generate one.");
+        jwtSecretBean = await initJWTSecret();
+        console.log("Stored JWT secret into database");
     } else {
-        console.log("Load JWT secret from database.")
+        console.log("Load JWT secret from database.");
     }
 
     // If there is no record in user table, it is a new Uptime Kuma instance, need to setup
@@ -671,43 +932,14 @@ async function startMonitors() {
     let list = await R.find("monitor", " active = 1 ")
 
     for (let monitor of list) {
-        monitor.start(io)
         monitorList[monitor.id] = monitor;
     }
-}
 
-/**
- * Send Heartbeat History list to socket
- */
-async function sendHeartbeatList(socket, monitorID) {
-    let list = await R.find("heartbeat", `
-        monitor_id = ?
-        ORDER BY time DESC
-        LIMIT 100
-    `, [
-        monitorID,
-    ])
-
-    let result = [];
-
-    for (let bean of list) {
-        result.unshift(bean.toJSON())
+    for (let monitor of list) {
+        monitor.start(io);
+        // Give some delays, so all monitors won't make request at the same moment when just start the server.
+        await sleep(getRandomInt(300, 1000));
     }
-
-    socket.emit("heartbeatList", monitorID, result)
-}
-
-async function sendImportantHeartbeatList(socket, monitorID) {
-    let list = await R.find("heartbeat", `
-        monitor_id = ?
-        AND important = 1
-        ORDER BY time DESC
-        LIMIT 500
-    `, [
-        monitorID,
-    ])
-
-    socket.emit("importantHeartbeatList", monitorID, list)
 }
 
 async function shutdownFunction(signal) {
@@ -721,11 +953,10 @@ async function shutdownFunction(signal) {
     }
     await sleep(2000);
     await Database.close();
-    console.log("Stopped DB")
 }
 
 function finalFunction() {
-    console.log("Graceful Shutdown Done")
+    console.log("Graceful shutdown successfully!");
 }
 
 gracefulShutdown(server, {
@@ -735,4 +966,10 @@ gracefulShutdown(server, {
     forceExit: true,                  // triggers process.exit() at the end of shutdown process
     onShutdown: shutdownFunction,     // shutdown function (async) - e.g. for cleanup DB, ...
     finally: finalFunction,            // finally function (sync) - e.g. for logging
+});
+
+// Catch unexpected errors here
+process.addListener("unhandledRejection", (error, promise) => {
+    console.trace(error);
+    console.error("If you keep encountering errors, please report to https://github.com/louislam/uptime-kuma/issues");
 });

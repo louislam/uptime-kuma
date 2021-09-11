@@ -1,4 +1,3 @@
-import dayjs from "dayjs";
 import { io } from "socket.io-client";
 import { useToast } from "vue-toastification";
 const toast = useToast()
@@ -17,7 +16,6 @@ export default {
                 connectCount: 0,
             },
             remember: (localStorage.remember !== "0"),
-            userTimezone: localStorage.timezone || "auto",
             allowLoginDialog: false,        // Allowed to show login dialog, but "loggedIn" have to be true too. This exists because prevent the login dialog show 0.1s in first before the socket server auth-ed.
             loggedIn: false,
             monitorList: { },
@@ -27,28 +25,25 @@ export default {
             uptimeList: { },
             certInfoList: {},
             notificationList: [],
-            windowWidth: window.innerWidth,
-            showListMobile: false,
+            connectionErrorMsg: "Cannot connect to the socket server. Reconnecting...",
         }
     },
 
     created() {
         window.addEventListener("resize", this.onResize);
 
+        let protocol = (location.protocol === "https:") ? "wss://" : "ws://";
+
         let wsHost;
         const env = process.env.NODE_ENV || "production";
         if (env === "development" || localStorage.dev === "dev") {
-            wsHost = ":3001"
+            wsHost = protocol + location.hostname + ":3001";
         } else {
-            wsHost = ""
+            wsHost = protocol + location.host;
         }
 
         socket = io(wsHost, {
             transports: ["websocket"],
-        });
-
-        socket.on("connect_error", (err) => {
-            console.error(`Failed to connect to the backend. Socket.io connect_error: ${err.message}`);
         });
 
         socket.on("info", (info) => {
@@ -57,6 +52,12 @@ export default {
 
         socket.on("setup", (monitorID, data) => {
             this.$router.push("/setup")
+        });
+
+        socket.on("autoLogin", (monitorID, data) => {
+            this.loggedIn = true;
+            this.storage().token = "autoLogin";
+            this.allowLoginDialog = false;
         });
 
         socket.on("monitorList", (data) => {
@@ -108,8 +109,8 @@ export default {
             }
         });
 
-        socket.on("heartbeatList", (monitorID, data) => {
-            if (! (monitorID in this.heartbeatList)) {
+        socket.on("heartbeatList", (monitorID, data, overwrite = false) => {
+            if (! (monitorID in this.heartbeatList) || overwrite) {
                 this.heartbeatList[monitorID] = data;
             } else {
                 this.heartbeatList[monitorID] = data.concat(this.heartbeatList[monitorID])
@@ -128,16 +129,24 @@ export default {
             this.certInfoList[monitorID] = JSON.parse(data)
         });
 
-        socket.on("importantHeartbeatList", (monitorID, data) => {
-            if (! (monitorID in this.importantHeartbeatList)) {
+        socket.on("importantHeartbeatList", (monitorID, data, overwrite) => {
+            if (! (monitorID in this.importantHeartbeatList) || overwrite) {
                 this.importantHeartbeatList[monitorID] = data;
             } else {
                 this.importantHeartbeatList[monitorID] = data.concat(this.importantHeartbeatList[monitorID])
             }
         });
 
+        socket.on("connect_error", (err) => {
+            console.error(`Failed to connect to the backend. Socket.io connect_error: ${err.message}`);
+            this.connectionErrorMsg = `Cannot connect to the socket server. [${err}] Reconnecting...`;
+            this.socket.connected = false;
+            this.socket.firstConnect = false;
+        });
+
         socket.on("disconnect", () => {
             console.log("disconnect")
+            this.connectionErrorMsg = "Lost connection to the socket server. Reconnecting...";
             this.socket.connected = false;
         });
 
@@ -151,8 +160,22 @@ export default {
                 this.clearData()
             }
 
-            if (this.storage().token) {
-                this.loginByToken(this.storage().token)
+            let token = this.storage().token;
+
+            if (token) {
+                if (token !== "autoLogin") {
+                    this.loginByToken(token)
+                } else {
+
+                    // Timeout if it is not actually auto login
+                    setTimeout(() => {
+                        if (! this.loggedIn) {
+                            this.allowLoginDialog = true;
+                            this.$root.storage().removeItem("token");
+                        }
+                    }, 5000);
+
+                }
             } else {
                 this.allowLoginDialog = true;
             }
@@ -163,14 +186,6 @@ export default {
     },
 
     methods: {
-
-        cancelActiveList() {
-            this.$root.showListMobile = false;
-        },
-
-        onResize() {
-            this.windowWidth = window.innerWidth;
-        },
 
         storage() {
             return (this.remember) ? localStorage : sessionStorage;
@@ -241,22 +256,24 @@ export default {
             this.importantHeartbeatList = {}
         },
 
+        uploadBackup(uploadedJSON, callback) {
+            socket.emit("uploadBackup", uploadedJSON, callback)
+        },
+
+        clearEvents(monitorID, callback) {
+            socket.emit("clearEvents", monitorID, callback)
+        },
+
+        clearHeartbeats(monitorID, callback) {
+            socket.emit("clearHeartbeats", monitorID, callback)
+        },
+
+        clearStatistics(callback) {
+            socket.emit("clearStatistics", callback)
+        },
     },
 
     computed: {
-
-        isMobile() {
-            return this.windowWidth <= 767.98;
-        },
-
-        timezone() {
-
-            if (this.userTimezone === "auto") {
-                return dayjs.tz.guess()
-            }
-
-            return this.userTimezone
-        },
 
         lastHeartbeatList() {
             let result = {}
