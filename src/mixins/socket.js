@@ -32,12 +32,14 @@ export default {
     created() {
         window.addEventListener("resize", this.onResize);
 
+        let protocol = (location.protocol === "https:") ? "wss://" : "ws://";
+
         let wsHost;
         const env = process.env.NODE_ENV || "production";
         if (env === "development" || localStorage.dev === "dev") {
-            wsHost = ":3001"
+            wsHost = protocol + location.hostname + ":3001";
         } else {
-            wsHost = ""
+            wsHost = protocol + location.host;
         }
 
         socket = io(wsHost, {
