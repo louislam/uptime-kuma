@@ -37,7 +37,7 @@ export default {
     "-hour": "-Timer",
     checkEverySecond: "Tjek hvert {0} sekund",
     "Avg.": "Gns.",
-    Response: " Respons",
+    Response: "Respons",
     Ping: "Ping",
     "Monitor Type": "Overvåger Type",
     Keyword: "Nøgleord",

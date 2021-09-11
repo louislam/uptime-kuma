@@ -1,7 +1,7 @@
 export default {
     languageName: "eesti",
     checkEverySecond: "Kontrolli {0} sekundilise vahega.",
-    "Avg.": "≈ ",
+    "Avg.": "≈",
     retriesDescription: "Mitu korda tuleb kontrollida, mille järel märkida 'maas' ja saata välja teavitus.",
     ignoreTLSError: "Eira TLS/SSL viga HTTPS veebisaitidel.",
     upsideDownModeDescription: "Käitle teenuse saadavust rikkena, teenuse kättesaamatust töötavaks.",
