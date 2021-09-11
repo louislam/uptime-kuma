@@ -20,6 +20,8 @@ export default {
     clearEventsMsg: "Are you sure want to delete all events for this monitor?",
     clearHeartbeatsMsg: "Are you sure want to delete all heartbeats for this monitor?",
     confirmClearStatisticsMsg: "Are you sure want to delete ALL statistics?",
+    importHandleDescription: "Choose 'Skip Existing' if you want to skip every monitor or notification with the same name. 'Overwrite' will delete every existing monitor and notification.",
+    confirmImportMsg: "Are you sure to import the backup? Please make sure you've selected the right import option.",
     Settings: "Settings",
     Dashboard: "Dashboard",
     "New Update": "New Update",
@@ -128,5 +130,9 @@ export default {
     backupDescription3: "Sensitive data such as notification tokens is included in the export file, please keep it carefully.",
     alertNoFile: "Please select a file to import.",
     alertWrongFileType: "Please select a JSON file.",
-    "Clear all statistics": "Clear all Statistics"
+    "Clear all statistics": "Clear all Statistics",
+    "Skip existing": "Skip existing",
+    "Overwrite": "Overwrite",
+    "Import Options": "Import Options",
+    "Keep both": "Keep both",
 }

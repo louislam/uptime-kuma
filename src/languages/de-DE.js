@@ -128,5 +128,11 @@ export default {
     backupDescription3: "Sensible Daten wie Benachrichtigungstoken sind in der Exportdatei enthalten, bitte bewahre sie sorgfältig auf.",
     alertNoFile: "Bitte wähle eine Datei zum importieren aus.",
     alertWrongFileType: "Bitte wähle eine JSON Datei aus.",
-    "Clear all statistics": "Lösche alle Statistiken"
+    "Clear all statistics": "Lösche alle Statistiken",
+    importHandleDescription: "Wähle 'Vorhandene überspringen' aus, wenn jeder Monitor oder Benachrichtigung mit demselben Namen übersprungen werden soll. 'Überschreiben' löscht jeden vorhandenen Monitor sowie Benachrichtigungen.",
+    "Skip existing": "Vorhandene überspringen",
+    "Overwrite": "Überschreiben",
+    "Import Options": "Import Optionen",
+    confirmImportMsg: "Möchtest du das Backup wirklich importieren? Bitte stelle sicher, dass die richtige Import Option ausgewählt ist.",
+    "Keep both": "Beide behalten",
 }
