@@ -361,7 +361,7 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
             } else {
                 callback({
                     ok: false,
-                    msg: "Token Invalid.",
+                    msg: "Invalid Token.",
                     valid: false,
                 })
             }
