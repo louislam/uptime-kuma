@@ -43,6 +43,7 @@ class Monitor extends BeanModel {
             active: this.active,
             type: this.type,
             interval: this.interval,
+            retryInterval: this.retryInterval,
             keyword: this.keyword,
             ignoreTls: this.getIgnoreTls(),
             upsideDown: this.isUpsideDown(),
@@ -293,12 +294,17 @@ class Monitor extends BeanModel {
                 bean.important = false;
             }
 
+            let beatInterval = this.interval;
+
             if (bean.status === UP) {
-                console.info(`Monitor #${this.id} '${this.name}': Successful Response: ${bean.ping} ms | Interval: ${this.interval} seconds | Type: ${this.type}`)
+                console.info(`Monitor #${this.id} '${this.name}': Successful Response: ${bean.ping} ms | Interval: ${beatInterval} seconds | Type: ${this.type}`)
             } else if (bean.status === PENDING) {
-                console.warn(`Monitor #${this.id} '${this.name}': Pending: ${bean.msg} | Max retries: ${this.maxretries} | Type: ${this.type}`)
+                if (this.retryInterval > 0) {
+                    beatInterval = this.retryInterval;
+                }
+                console.warn(`Monitor #${this.id} '${this.name}': Pending: ${bean.msg} | Max retries: ${this.maxretries} | Retry: ${retries} | Retry Interval: ${beatInterval} seconds | Type: ${this.type}`)
             } else {
-                console.warn(`Monitor #${this.id} '${this.name}': Failing: ${bean.msg} | Type: ${this.type}`)
+                console.warn(`Monitor #${this.id} '${this.name}': Failing: ${bean.msg} | Interval: ${beatInterval} seconds | Type: ${this.type}`)
             }
 
             io.to(this.user_id).emit("heartbeat", bean.toJSON());
@@ -310,7 +316,7 @@ class Monitor extends BeanModel {
             previousBeat = bean;
 
             if (! this.isStop) {
-                this.heartbeatInterval = setTimeout(beat, this.interval * 1000);
+                this.heartbeatInterval = setTimeout(beat, beatInterval * 1000);
             }
 
         }

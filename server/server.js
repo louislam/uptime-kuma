@@ -324,6 +324,7 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                 bean.type = monitor.type
                 bean.url = monitor.url
                 bean.interval = monitor.interval
+                bean.retryInterval = monitor.retryInterval;
                 bean.hostname = monitor.hostname;
                 bean.maxretries = monitor.maxretries;
                 bean.port = monitor.port;
