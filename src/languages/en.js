@@ -20,7 +20,7 @@ export default {
     clearEventsMsg: "Are you sure want to delete all events for this monitor?",
     clearHeartbeatsMsg: "Are you sure want to delete all heartbeats for this monitor?",
     confirmClearStatisticsMsg: "Are you sure want to delete ALL statistics?",
-    importHandleDescription: "Choose 'Skip Existing' if you want to skip every monitor or notification with the same name. 'Overwrite' will delete every existing monitor and notification.",
+    importHandleDescription: "Choose 'Skip existing' if you want to skip every monitor or notification with the same name. 'Overwrite' will delete every existing monitor and notification.",
     confirmImportMsg: "Are you sure to import the backup? Please make sure you've selected the right import option.",
     Settings: "Settings",
     Dashboard: "Dashboard",
