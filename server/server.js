@@ -22,11 +22,15 @@ const gracefulShutdown = require("http-graceful-shutdown");
 debug("Importing prometheus-api-metrics");
 const prometheusAPIMetrics = require("prometheus-api-metrics");
 
+debug("Importing 2FA Modules");
+const notp = require("notp");
+const base32 = require("thirty-two");
+
 console.log("Importing this project modules");
 debug("Importing Monitor");
 const Monitor = require("./model/monitor");
 debug("Importing Settings");
-const { getSettings, setSettings, setting, initJWTSecret } = require("./util-server");
+const { getSettings, setSettings, setting, initJWTSecret, genSecret } = require("./util-server");
 
 debug("Importing Notification");
 const { Notification } = require("./notification");
@@ -219,12 +223,38 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
             if (user) {
                 afterLogin(socket, user)
 
-                callback({
-                    ok: true,
-                    token: jwt.sign({
-                        username: data.username,
-                    }, jwtSecret),
-                })
+                if (user.twofaStatus == 0) {
+                    callback({
+                        ok: true,
+                        token: jwt.sign({
+                            username: data.username,
+                        }, jwtSecret),
+                    })
+                }
+
+                if (user.twofaStatus == 1 && !data.token) {
+                    callback({
+                        tokenRequired: true,
+                    })
+                }
+
+                if (data.token) {
+                    let verify = notp.totp.verify(data.token, user.twofa_secret);
+
+                    if (verify && verify.delta == 0) {
+                        callback({
+                            ok: true,
+                            token: jwt.sign({
+                                username: data.username,
+                            }, jwtSecret),
+                        })
+                    } else {
+                        callback({
+                            ok: false,
+                            msg: "Invalid Token!",
+                        })
+                    }
+                }
             } else {
                 callback({
                     ok: false,
@@ -238,6 +268,130 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
             socket.leave(socket.userID)
             socket.userID = null;
             callback();
+        });
+
+        socket.on("prepare2FA", async (callback) => {
+            try {
+                checkLogin(socket)
+
+                let user = await R.findOne("user", " id = ? AND active = 1 ", [
+                    socket.userID,
+                ])
+
+                if (user.twofa_status == 0) {
+                    let newSecret = await genSecret()
+                    let encodedSecret = base32.encode(newSecret);
+                    let uri = `otpauth://totp/Uptime%20Kuma:${user.username}?secret=${encodedSecret}`;
+
+                    await R.exec("UPDATE `user` SET twofa_secret = ? WHERE id = ? ", [
+                        newSecret,
+                        socket.userID,
+                    ]);
+
+                    callback({
+                        ok: true,
+                        uri: uri,
+                    })
+                } else {
+                    callback({
+                        ok: false,
+                        msg: "2FA is already enabled.",
+                    })
+                }
+            } catch (error) {
+                callback({
+                    ok: false,
+                    msg: "Error while trying to prepare 2FA.",
+                })
+            }
+        });
+
+        socket.on("save2FA", async (callback) => {
+            try {
+                checkLogin(socket)
+
+                await R.exec("UPDATE `user` SET twofa_status = 1 WHERE id = ? ", [
+                    socket.userID,
+                ]);
+
+                callback({
+                    ok: true,
+                    msg: "2FA Enabled.",
+                })
+            } catch (error) {
+                callback({
+                    ok: false,
+                    msg: "Error while trying to change 2FA.",
+                })
+            }
+        });
+
+        socket.on("disable2FA", async (callback) => {
+            try {
+                checkLogin(socket)
+
+                await R.exec("UPDATE `user` SET twofa_status = 0 WHERE id = ? ", [
+                    socket.userID,
+                ]);
+
+                callback({
+                    ok: true,
+                    msg: "2FA Disabled.",
+                })
+            } catch (error) {
+                callback({
+                    ok: false,
+                    msg: "Error while trying to change 2FA.",
+                })
+            }
+        });
+
+        socket.on("verifyToken", async (token, callback) => {
+            let user = await R.findOne("user", " id = ? AND active = 1 ", [
+                socket.userID,
+            ])
+
+            let verify = notp.totp.verify(token, user.twofa_secret);
+
+            if (verify && verify.delta == 0) {
+                callback({
+                    ok: true,
+                    valid: true,
+                })
+            } else {
+                callback({
+                    ok: false,
+                    msg: "Invalid Token.",
+                    valid: false,
+                })
+            }
+        });
+
+        socket.on("twoFAStatus", async (callback) => {
+            checkLogin(socket)
+
+            try {
+                let user = await R.findOne("user", " id = ? AND active = 1 ", [
+                    socket.userID,
+                ])
+
+                if (user.twofa_status == 1) {
+                    callback({
+                        ok: true,
+                        status: true,
+                    })
+                } else {
+                    callback({
+                        ok: true,
+                        status: false,
+                    })
+                }
+            } catch (error) {
+                callback({
+                    ok: false,
+                    msg: "Error while trying to get 2FA status.",
+                })
+            }
         });
 
         socket.on("needSetup", async (callback) => {
