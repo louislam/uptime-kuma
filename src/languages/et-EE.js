@@ -113,7 +113,6 @@ export default {
     clearEventsMsg: "Kas soovid seire kõik sündmused kustutada?",
     clearHeartbeatsMsg: "Kas soovid seire kõik tuksed kustutada?",
     confirmClearStatisticsMsg: "Kas soovid KÕIK statistika kustutada?",
-    "Import/Export Backup": "Impordi/Ekspordi varukoopia",
     Export: "Eksport",
     Import: "Import",
     "Default enabled": "Kasuta vaikimisi",
