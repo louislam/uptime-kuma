@@ -271,3 +271,13 @@ exports.getTotalClientInRoom = (io, roomName) => {
         return 0;
     }
 }
+
+exports.genSecret = () => {
+    let secret = "";
+    let chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let charsLength = chars.length;
+    for ( let i = 0; i < 64; i++ ) {
+        secret += chars.charAt(Math.floor(Math.random() * charsLength));
+    }
+    return secret;
+}
