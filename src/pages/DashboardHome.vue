@@ -26,7 +26,7 @@
                 </div>
             </div>
 
-            <div class="shadow-box table-shadow-box" style="overflow-x: scroll;">
+            <div class="shadow-box table-shadow-box" style="overflow-x: hidden;">
                 <table class="table table-borderless table-hover">
                     <thead>
                         <tr>
@@ -177,6 +177,11 @@ table {
 
     tr {
         transition: all ease-in-out 0.2ms;
+    }
+
+    @media (max-width: 550px) {
+        table-layout: fixed;
+        overflow-wrap: break-word;
     }
 }
 </style>
