@@ -77,7 +77,8 @@
         "vue-multiselect": "^3.0.0-alpha.2",
         "vue-qrcode": "^1.0.0",
         "vue-router": "^4.0.11",
-        "vue-toastification": "^2.0.0-rc.1"
+        "vue-toastification": "^2.0.0-rc.1",
+        "vuedraggable": "^4.1.0"
     },
     "devDependencies": {
         "@babel/eslint-parser": "^7.15.0",

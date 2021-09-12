@@ -20,6 +20,19 @@ const version = require("../../package.json").version;
  *      2 = PENDING
  */
 class Monitor extends BeanModel {
+
+    /**
+     * Return a object that ready to parse to JSON for public
+     * Only show necessary data to public
+     */
+    async toPublicJSON() {
+        // TODO Only show necessary
+        return this.toJSON();
+    }
+
+    /**
+     * Return a object that ready to parse to JSON
+     */
     async toJSON() {
 
         let notificationIDList = {};

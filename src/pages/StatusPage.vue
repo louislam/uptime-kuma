@@ -3,19 +3,34 @@
         <h1><img src="/icon.svg" alt /> Uptime Kuma</h1>
 
         <div v-if="hasToken" class="mt-3">
-            <button class="btn btn-info me-2" @click="edit">
+            <button v-if="!enableEditMode" class="btn btn-info me-2" @click="edit">
                 <font-awesome-icon icon="edit" />
                 Edit Status Page
             </button>
 
-            <router-link to="/dashboard" class="btn btn-info">
+            <button v-if="enableEditMode" class="btn btn-dark me-2" @click="leaveEditMode">
+                <font-awesome-icon icon="" />
+                Leave Edit Mode
+            </button>
+
+            <router-link v-if="!enableEditMode" to="/dashboard" class="btn btn-info">
                 <font-awesome-icon icon="tachometer-alt" />
                 Go to Dashboard
             </router-link>
         </div>
 
-        <div class="shadow-box list mt-4 p-4 overall-status">
+        <div class="shadow-box list  p-4 overall-status mt-4">
             <font-awesome-icon icon="check-circle" class="ok" /> All Systems Operational
+        </div>
+
+        <div v-if="showEditFeature" class="mt-4">
+            <VueMultiselect
+                v-model="selectedMonitor"
+                :options="allMonitorList"
+                :custom-label="monitorSelectorLabel"
+                :searchable="true"
+                @select="onSelectedMonitor"
+            ></VueMultiselect>
         </div>
 
         <div class="shadow-box monitor-list mt-4">
@@ -45,6 +60,7 @@
 </template>
 
 <script>
+import VueMultiselect from "vue-multiselect"
 import { useToast } from "vue-toastification";
 const toast = useToast();
 
@@ -63,16 +79,24 @@ export default {
     components: {
         HeartbeatBar,
         Uptime,
+        VueMultiselect,
     },
     data() {
         return {
+            enableEditMode: false,
             hasToken: false,
             config: {},
             monitorList: {},
+            selectedMonitor: null,
         }
     },
     computed: {
-
+        allMonitorList() {
+            return Object.values(this.$root.monitorList);
+        },
+        showEditFeature() {
+            return this.enableEditMode && this.$root.socket.connected;
+        }
     },
     watch: {
 
@@ -88,9 +112,28 @@ export default {
         this.monitorList = (await axios.get("/api/status-page/monitor-list")).data;
     },
     methods: {
+
         edit() {
             this.$root.initSocketIO(true);
+            this.enableEditMode = true;
+        },
+
+        leaveEditMode() {
+            this.enableEditMode = false;
+        },
+
+        monitorSelectorLabel(monitor) {
+            return `${monitor.name}`;
+        },
+
+        onSelectedMonitor(selectedOption, id) {
+            console.log(selectedOption);
+            console.log(id);
+
+            // TODO: emit socket cmd to set it public
+            // TODO: Reload monitor or add to list
         }
+
     },
 }
 </script>
