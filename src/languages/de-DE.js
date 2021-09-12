@@ -115,6 +115,9 @@ export default {
     "Resource Record Type": "Resource Record Type",
     "Export": "Export",
     "Import": "Import",
+    "Import/Export Backup": "Import/Export Backup",
+    Export: "Export",
+    Import: "Import",
     respTime: "Antw. Zeit (ms)",
     notAvailableShort: "N/A",
     "Default enabled": "Standardmäßig aktiviert",
@@ -148,5 +151,5 @@ export default {
     Inactive: "Inaktiv",
     Token: "Token",
     "Show URI": "URI Anzeigen",
-    "Clear all statistics": "Lösche alle Statistiken"
+    "Clear all statistics": "Lösche alle Statistiken",
 }

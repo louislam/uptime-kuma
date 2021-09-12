@@ -82,4 +82,12 @@ module.exports = {
         "one-var": ["error", "never"],
         "max-statements-per-line": ["error", { "max": 1 }]
     },
+    "overrides": [
+        {
+            "files": [ "src/languages/*.js" ],
+            "rules": {
+                "comma-dangle": ["error", "always-multiline"],
+            }
+        }
+    ]
 }
