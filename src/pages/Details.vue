@@ -55,7 +55,7 @@
                         </span>
                     </div>
                     <div class="col">
-                        <h4>{{ $t("Avg.") }}{{ pingTitle }}</h4>
+                        <h4>{{ $t("Avg.") }} {{ pingTitle }}</h4>
                         <p>(24{{ $t("-hour") }})</p>
                         <span class="num"><CountUp :value="avgPing" /></span>
                     </div>

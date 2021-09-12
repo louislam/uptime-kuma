@@ -1,7 +1,7 @@
 export default {
     languageName: "Svenska",
     checkEverySecond: "Uppdatera var {0} sekund.",
-    "Avg.": "Genomsnittligt ",
+    "Avg.": "Genomsnittligt",
     retriesDescription: "Max antal försök innan tjänsten markeras som nere och en notis skickas",
     ignoreTLSError: "Ignorera TLS/SSL-fel för webbsidor med HTTPS",
     upsideDownModeDescription: "Vänd upp och ner på statusen. Om tjänsten är nåbar visas den som NERE.",
