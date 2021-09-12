@@ -80,6 +80,11 @@
                                 <label for="discord-username" class="form-label">Bot Display Name</label>
                                 <input id="discord-username" v-model="notification.discordUsername" type="text" class="form-control" autocomplete="false" :placeholder="$root.appName">
                             </div>
+
+                            <div class="mb-3">
+                                <label for="discord-prefix-message" class="form-label">Prefix</label>
+                                <input id="discord-prefix-message" v-model="notification.discordPrefixMessage" type="text" class="form-control" autocomplete="false" placeholder="Hello @everyone is...">
+                            </div>
                         </template>
 
                         <template v-if="notification.type === 'signal'">
