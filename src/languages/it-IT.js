@@ -118,7 +118,6 @@ export default {
     Heartbeats: "Controlli",
     "Auto Get": "Auto Get",
     enableDefaultNotificationDescription: "For every new monitor this notification will be enabled by default. You can still disable the notification separately for each monitor.",
-    "Import/Export Backup": "Import/Export Backup",
     Export: "Export",
     Import: "Import",
     "Default enabled": "Default enabled",

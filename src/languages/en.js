@@ -117,7 +117,8 @@ export default {
     "Last Result": "Last Result",
     "Create your admin account": "Create your admin account",
     "Repeat Password": "Repeat Password",
-    "Import/Export Backup": "Import/Export Backup",
+    "Import Backup": "Import Backup",
+    "Export Backup": "Export Backup",
     Export: "Export",
     Import: "Import",
     respTime: "Resp. Time (ms)",
@@ -137,7 +138,7 @@ export default {
     "Clear all statistics": "Clear all Statistics",
     "Skip existing": "Skip existing",
     "Overwrite": "Overwrite",
-    "Import Options": "Import Options",
+    "Options": "Options",
     "Keep both": "Keep both",
     "Verify Token": "Verify Token",
     "Setup 2FA": "Setup 2FA",
@@ -149,5 +150,4 @@ export default {
     Inactive: "Inactive",
     Token: "Token",
     "Show URI": "Show URI",
-    "Clear all statistics": "Clear all Statistics"
 }

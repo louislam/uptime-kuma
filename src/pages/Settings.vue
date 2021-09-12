@@ -143,7 +143,7 @@
 
                             <h2 class="mt-5 mb-2">{{ $t("Import Backup") }}</h2>
 
-                            <label class="form-label">{{ $t("Import Options") }}:</label>
+                            <label class="form-label">{{ $t("Options") }}:</label>
                             <br>
                             <div class="form-check form-check-inline">
                                 <input id="radioKeep" v-model="importHandle" class="form-check-input" type="radio" name="radioImportHandle" value="keep">

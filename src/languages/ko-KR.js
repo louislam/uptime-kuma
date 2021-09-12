@@ -120,7 +120,6 @@ export default {
     enableDefaultNotificationDescription: "For every new monitor this notification will be enabled by default. You can still disable the notification separately for each monitor.",
     "Default enabled": "Default enabled",
     "Also apply to existing monitors": "Also apply to existing monitors",
-    "Import/Export Backup": "Import/Export Backup",
     Export: "Export",
     Import: "Import",
     backupDescription: "You can backup all monitors and all notifications into a JSON file.",
