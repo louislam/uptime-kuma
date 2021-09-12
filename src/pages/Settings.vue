@@ -128,45 +128,53 @@
                                 <button class="btn btn-primary me-2" type="button" @click="$refs.TwoFADialog.show()">{{ $t("2FA Settings") }}</button>
                             </div>
 
-                            <h2 class="mt-5 mb-2">{{ $t("Import/Export Backup") }}</h2>
+                            <h2 class="mt-5 mb-2">{{ $t("Export Backup") }}</h2>
 
                             <p>
                                 {{ $t("backupDescription") }} <br />
                                 ({{ $t("backupDescription2") }}) <br />
                             </p>
 
-                            <div class="input-group mb-2">
-                                <button class="btn btn-outline-primary" @click="downloadBackup">{{ $t("Export") }}</button>
-                                <button type="button" class="btn btn-outline-primary" :disabled="processing" @click="confirmImport">
-                                    <div v-if="processing" class="spinner-border spinner-border-sm me-1"></div>
-                                    {{ $t("Import") }}
-                                </button>
-                                <input id="importBackup" type="file" class="form-control" accept="application/json">
+                            <div class="d-flex mb-2 justify-content-center">
+                                <button class="btn btn-primary" @click="downloadBackup">{{ $t("Export") }}</button>
                             </div>
+
+                            <p><strong>{{ $t("backupDescription3") }}</strong></p>
+
+                            <h2 class="mt-5 mb-2">{{ $t("Import Backup") }}</h2>
 
                             <label class="form-label">{{ $t("Import Options") }}:</label>
                             <br>
                             <div class="form-check form-check-inline">
-                                <input v-model="importHandle" class="form-check-input" type="radio" name="radioImportHandle" id="radioKeep" value="keep">
+                                <input id="radioKeep" v-model="importHandle" class="form-check-input" type="radio" name="radioImportHandle" value="keep">
                                 <label class="form-check-label" for="radioKeep">{{ $t("Keep both") }}</label>
                             </div>
                             <div class="form-check form-check-inline">
-                                <input v-model="importHandle" class="form-check-input" type="radio" name="radioImportHandle" id="radioSkip" value="skip">
+                                <input id="radioSkip" v-model="importHandle" class="form-check-input" type="radio" name="radioImportHandle" value="skip">
                                 <label class="form-check-label" for="radioSkip">{{ $t("Skip existing") }}</label>
                             </div>
                             <div class="form-check form-check-inline">
-                                <input v-model="importHandle" class="form-check-input" type="radio" name="radioImportHandle" id="radioOverwrite" value="overwrite">
+                                <input id="radioOverwrite" v-model="importHandle" class="form-check-input" type="radio" name="radioImportHandle" value="overwrite">
                                 <label class="form-check-label" for="radioOverwrite">{{ $t("Overwrite") }}</label>
                             </div>
                             <div class="form-text mb-2">
                                 {{ $t("importHandleDescription") }}
                             </div>
 
+                            <div class="mb-2">
+                                <input id="importBackup" type="file" class="form-control" accept="application/json">
+                            </div>
+
+                            <div class="input-group mb-2 justify-content-end">
+                                <button type="button" class="btn btn-outline-primary" :disabled="processing" @click="confirmImport">
+                                    <div v-if="processing" class="spinner-border spinner-border-sm me-1"></div>
+                                    {{ $t("Import") }}
+                                </button>
+                            </div>
+
                             <div v-if="importAlert" class="alert alert-danger mt-3" style="padding: 6px 16px;">
                                 {{ importAlert }}
                             </div>
-
-                            <p><strong>{{ $t("backupDescription3") }}</strong></p>
 
                             <h2 class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
 
