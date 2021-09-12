@@ -142,5 +142,5 @@ export default {
     Inactive: "未生效",
     Token: "Token",
     "Show URI": "顯示 URI",
-    "Clear all statistics": "清除所有歷史記錄"
+    "Clear all statistics": "清除所有歷史記錄",
 }

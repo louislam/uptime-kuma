@@ -143,5 +143,5 @@ export default {
     Inactive: "Inactive",
     Token: "Token",
     "Show URI": "Show URI",
-    "Clear all statistics": "Clear all Statistics"
+    "Clear all statistics": "Clear all Statistics",
 }

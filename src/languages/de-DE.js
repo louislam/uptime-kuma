@@ -114,8 +114,8 @@ export default {
     "Repeat Password": "Wiederhole das Passwort",
     "Resource Record Type": "Resource Record Type",
     "Import/Export Backup": "Import/Export Backup",
-    "Export": "Export",
-    "Import": "Import",
+    Export: "Export",
+    Import: "Import",
     respTime: "Antw. Zeit (ms)",
     notAvailableShort: "N/A",
     "Default enabled": "Standardmäßig aktiviert",
@@ -142,5 +142,5 @@ export default {
     Inactive: "Inaktiv",
     Token: "Token",
     "Show URI": "URI Anzeigen",
-    "Clear all statistics": "Lösche alle Statistiken"
+    "Clear all statistics": "Lösche alle Statistiken",
 }
