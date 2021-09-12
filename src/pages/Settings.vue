@@ -446,6 +446,10 @@ export default {
     color: #fff;
 }
 
+.me-1 {
+    margin-bottom: .25rem;
+}
+
 .dark {
     .list-group-item {
         background-color: $dark-bg2;
