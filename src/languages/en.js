@@ -121,7 +121,7 @@ export default {
     respTime: "Resp. Time (ms)",
     notAvailableShort: "N/A",
     "Default enabled": "Default enabled",
-    "Also apply to existing monitors": "Also apply to existing monitors",
+    "Apply on all existing monitors": "Apply on all existing monitors",
     Create: "Create",
     "Clear Data": "Clear Data",
     Events: "Events",

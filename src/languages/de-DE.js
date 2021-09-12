@@ -119,7 +119,7 @@ export default {
     respTime: "Antw. Zeit (ms)",
     notAvailableShort: "N/A",
     "Default enabled": "Standardmäßig aktiviert",
-    "Also apply to existing monitors": "Auch für alle existierenden Monitore aktivieren",
+    "Apply on all existing monitors": "Auf alle existierenden Monitore anwenden",
     enableDefaultNotificationDescription: "Für jeden neuen Monitor wird diese Benachrichtigung standardmäßig aktiviert. Die Benachrichtigung kann weiterhin für jeden Monitor separat deaktiviert werden.",
     Create: "Erstellen",
     "Auto Get": "Auto Get",
