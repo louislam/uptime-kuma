@@ -31,6 +31,7 @@ class Database {
         "patch-setting-value-type.sql": true,
         "patch-improve-performance.sql": true,
         "patch-2fa.sql": true,
+        "patch-add-monitor-checks-table.sql": true,
     }
 
     /**
