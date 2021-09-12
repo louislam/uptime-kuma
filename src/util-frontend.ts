@@ -18,7 +18,6 @@ function getTimezoneOffset(timeZone) {
 }
 
 export function timezoneList() {
-
     let result = [];
 
     for (let timezone of timezones) {
