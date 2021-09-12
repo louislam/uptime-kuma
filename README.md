@@ -20,12 +20,11 @@ It is a 5 minutes live demo, all data will be deleted after that. The server is 
 
 VPS is sponsored by Uptime Kuma sponsors on [Open Collective](https://opencollective.com/uptime-kuma)! Thank you so much!
 
-
 ## ⭐ Features
 
 * Monitoring uptime for HTTP(s) / TCP / Ping / DNS Record.
 * Fancy, Reactive, Fast UI/UX.
-* Notifications via Telegram, Discord, Gotify, Slack, Pushover, Email (SMTP), and [70+ notification services, click here for the full list](https://github.com/louislam/uptime-kuma/issues/284). 
+* Notifications via Telegram, Discord, Gotify, Slack, Pushover, Email (SMTP), and [70+ notification services, click here for the full list](https://github.com/louislam/uptime-kuma/issues/284).
 * 20 seconds interval.
 * [Multi Languages](https://github.com/louislam/uptime-kuma/tree/master/src/languages)
 
@@ -64,7 +63,6 @@ Browse to http://localhost:3001 after started.
 If you need more options or need to browse via a reserve proxy, please read:
 
 https://github.com/louislam/uptime-kuma/wiki/%F0%9F%94%A7-How-to-Install
-
 
 ## 🆙 How to Update
 
@@ -107,15 +105,13 @@ Telegram Notification Sample:
 
 If you love this project, please consider giving me a ⭐.
 
-
 ## 🗣️ Discussion
 
 You can also discuss or ask for help in [Issues](https://github.com/louislam/uptime-kuma/issues).
 
 Alternatively, you can discuss in my original post on reddit: https://www.reddit.com/r/selfhosted/comments/oi7dc7/uptime_kuma_a_fancy_selfhosted_monitoring_tool_an/
 
-I think the real "Discussion" tab is hard to use, as it is reddit-like flow, I always missed new comments. 
-
+I think the real "Discussion" tab is hard to use, as it is reddit-like flow, I always missed new comments.
 
 ## Contribute
 
@@ -126,4 +122,3 @@ If you want to translate Uptime Kuma into your langauge, please read: https://gi
 If you want to modify Uptime Kuma, this guideline may be useful for you: https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md
 
 English proofreading is needed too because my grammar is not that great sadly. Feel free to correct my grammar in this readme, source code, or wiki.
-
