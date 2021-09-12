@@ -203,11 +203,15 @@ export default {
             }
         },
 
-        login(username, password, callback) {
+        login(username, password, token, callback) {
             socket.emit("login", {
                 username,
                 password,
+                token,
             }, (res) => {
+                if (res.tokenRequired) {
+                    callback(res)
+                }
 
                 if (res.ok) {
                     this.storage().token = res.token;
@@ -240,6 +244,26 @@ export default {
             this.loggedIn = false;
 
             this.clearData()
+        },
+
+        prepare2FA(callback) {
+            socket.emit("prepare2FA", callback)
+        },
+
+        save2FA(secret, callback) {
+            socket.emit("save2FA", callback)
+        },
+
+        disable2FA(callback) {
+            socket.emit("disable2FA", callback)
+        },
+
+        verifyToken(token, callback) {
+            socket.emit("verifyToken", token, callback)
+        },
+
+        twoFAStatus(callback) {
+            socket.emit("twoFAStatus", callback)
         },
 
         add(monitor, callback) {
