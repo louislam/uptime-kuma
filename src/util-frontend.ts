@@ -22,7 +22,6 @@ export function timezoneList() {
     let result = [];
 
     for (let timezone of timezones) {
-
         try {
             let display = dayjs().tz(timezone.tzCode).format("Z");
 
@@ -33,9 +32,8 @@ export function timezoneList() {
             })
         } catch (e) {
             console.error(e.message);
-            console.log("Skip this timezone")
+            console.log("Skip this timezone");
         }
-
     }
 
     result.sort((a, b) => {
