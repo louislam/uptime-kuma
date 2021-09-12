@@ -273,6 +273,16 @@ exports.getTotalClientInRoom = (io, roomName) => {
     }
 }
 
+exports.genSecret = () => {
+    let secret = "";
+    let chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let charsLength = chars.length;
+    for ( let i = 0; i < 64; i++ ) {
+        secret += chars.charAt(Math.floor(Math.random() * charsLength));
+    }
+    return secret;
+}
+
 exports.allowDevAllOrigin = (res) => {
     if (process.env.NODE_ENV === "development") {
         exports.allowAllOrigin(res);
