@@ -64,6 +64,7 @@
         "socket.io-client": "^4.2.0",
         "sqlite3": "github:mapbox/node-sqlite3#593c9d",
         "tcp-ping": "^0.1.1",
+        "timezones-list": "^3.0.1",
         "v-pagination-3": "^0.1.6",
         "vue": "^3.2.8",
         "vue-chart-3": "^0.5.7",
