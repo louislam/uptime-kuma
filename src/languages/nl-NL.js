@@ -1,7 +1,7 @@
 export default {
     languageName: "Nederlands",
     checkEverySecond: "Controleer elke {0} seconden.",
-    "Avg.": "Gem. ",
+    "Avg.": "Gem.",
     retriesDescription: "Maximum aantal nieuwe pogingen voordat de service wordt gemarkeerd als niet beschikbaar en er een melding wordt verzonden",
     ignoreTLSError: "Negeer TLS/SSL-fout voor HTTPS-websites",
     upsideDownModeDescription: "Draai de status om. Als de service bereikbaar is, is deze OFFLINE.",

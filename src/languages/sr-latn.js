@@ -1,7 +1,7 @@
 export default {
     languageName: "Srpski",
     checkEverySecond: "Proveri svakih {0} sekundi.",
-    "Avg.": "Prosečni ",
+    "Avg.": "Prosečni",
     retriesDescription: "Maksimum pokušaja pre nego što se servis obeleži kao neaktivan i pošalje se obaveštenje.",
     ignoreTLSError: "Ignoriši TLS/SSL greške za HTTPS veb stranice.",
     upsideDownModeDescription: "Obrnite status. Ako je servis dostupan, onda je obeležen kao neaktivan.",

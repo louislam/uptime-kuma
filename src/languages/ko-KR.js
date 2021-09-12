@@ -1,7 +1,7 @@
 export default {
     languageName: "한국어",
     checkEverySecond: "{0} 초마다 체크해요.",
-    "Avg.": "평균 ",
+    "Avg.": "평균",
     retriesDescription: "서비스가 중단된 후 알림을 보내기 전 최대 재시도 횟수",
     ignoreTLSError: "HTTPS 웹사이트에서 TLS/SSL 에러 무시하기",
     upsideDownModeDescription: "서버 상태를 반대로 표시해요. 서버가 작동하면 오프라인으로 표시할 거에요.",

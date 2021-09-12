@@ -120,6 +120,14 @@
                                 </form>
                             </template>
 
+                            <h2 class="mt-5 mb-2">
+                                {{ $t("Two Factor Authentication") }}
+                            </h2>
+
+                            <div class="mb-3">
+                                <button class="btn btn-primary me-2" type="button" @click="$refs.TwoFADialog.show()">{{ $t("2FA Settings") }}</button>
+                            </div>
+
                             <h2 class="mt-5 mb-2">{{ $t("Import/Export Backup") }}</h2>
 
                             <p>
@@ -163,10 +171,10 @@
                             <h2 class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
 
                             <div class="mb-3">
-                                <button v-if="settings.disableAuth" class="btn btn-outline-primary me-1" @click="enableAuth">{{ $t("Enable Auth") }}</button>
-                                <button v-if="! settings.disableAuth" class="btn btn-primary me-1" @click="confirmDisableAuth">{{ $t("Disable Auth") }}</button>
-                                <button v-if="! settings.disableAuth" class="btn btn-danger me-1" @click="$root.logout">{{ $t("Logout") }}</button>
-                                <button class="btn btn-outline-danger me-1" @click="confirmClearStatistics">{{ $t("Clear all statistics") }}</button>
+                                <button v-if="settings.disableAuth" class="btn btn-outline-primary me-1 mb-1" @click="enableAuth">{{ $t("Enable Auth") }}</button>
+                                <button v-if="! settings.disableAuth" class="btn btn-primary me-1 mb-1" @click="confirmDisableAuth">{{ $t("Disable Auth") }}</button>
+                                <button v-if="! settings.disableAuth" class="btn btn-danger me-1 mb-1" @click="$root.logout">{{ $t("Logout") }}</button>
+                                <button class="btn btn-outline-danger me-1 mb-1" @click="confirmClearStatistics">{{ $t("Clear all statistics") }}</button>
                             </div>
                         </template>
                     </div>
@@ -205,6 +213,7 @@
             </footer>
 
             <NotificationDialog ref="notificationDialog" />
+            <TwoFADialog ref="TwoFADialog" />
 
             <Confirm ref="confirmDisableAuth" btn-style="btn-danger" :yes-text="$t('I understand, please disable')" :no-text="$t('Leave')" @yes="disableAuth">
                 <template v-if="$i18n.locale === 'es-ES' ">
@@ -291,6 +300,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc"
 import timezone from "dayjs/plugin/timezone"
 import NotificationDialog from "../components/NotificationDialog.vue";
+import TwoFADialog from "../components/TwoFADialog.vue";
 dayjs.extend(utc)
 dayjs.extend(timezone)
 
@@ -301,6 +311,7 @@ const toast = useToast()
 export default {
     components: {
         NotificationDialog,
+        TwoFADialog,
         Confirm,
     },
     data() {

@@ -1,7 +1,7 @@
 export default {
     languageName: "日本語",
     checkEverySecond: "{0}秒ごとにチェックします。",
-    "Avg.": "平均 ",
+    "Avg.": "平均",
     retriesDescription: "サービスがダウンとしてマークされ、通知が送信されるまでの最大リトライ数",
     ignoreTLSError: "HTTPS ウェブサイトの TLS/SSL エラーを無視する",
     upsideDownModeDescription: "ステータスの扱いを逆にします。サービスに到達可能な場合は、DOWNとなる。",

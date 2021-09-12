@@ -1,7 +1,7 @@
 export default {
     languageName: "Polski",
     checkEverySecond: "Sprawdzaj co {0} sekund.",
-    "Avg.": "Średnia ",
+    "Avg.": "Średnia",
     retriesDescription: "Maksymalna liczba powtórzeń, zanim usługa zostanie oznaczona jako wyłączona i zostanie wysłane powiadomienie",
     ignoreTLSError: "Ignoruj błąd TLS/SSL dla stron HTTPS",
     upsideDownModeDescription: "Odwróć status do góry nogami. Jeśli usługa jest osiągalna, to jest oznaczona jako niedostępna.",

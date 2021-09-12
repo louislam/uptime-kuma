@@ -1,7 +1,7 @@
 export default {
     languageName: "Español",
     checkEverySecond: "Comprobar cada {0} segundos.",
-    "Avg.": "Media. ",
+    "Avg.": "Media.",
     retriesDescription: "Número máximo de intentos antes de que el servicio se marque como CAÍDO y una notificación sea enviada.",
     ignoreTLSError: "Ignorar error TLS/SSL para sitios web HTTPS",
     upsideDownModeDescription: "Invertir el estado. Si el servicio es alcanzable, está CAÍDO.",
