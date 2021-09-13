@@ -11,7 +11,7 @@
         <div class="form-text">
             You can learn how to create a webhook url
             <a
-                href="https://docs.microsoft.com/pt-br/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook"
+                href="https://docs.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook"
                 target="_blank"
             >here</a>.
         </div>
