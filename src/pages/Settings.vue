@@ -120,11 +120,10 @@
                                 </form>
                             </template>
 
-                            <h2 class="mt-5 mb-2">
-                                {{ $t("Two Factor Authentication") }}
-                            </h2>
-
-                            <div class="mb-3">
+                            <div v-if="! settings.disableAuth" class="mt-5 mb-3">
+                                <h2 class="mb-2">
+                                    {{ $t("Two Factor Authentication") }}
+                                </h2>
                                 <button class="btn btn-primary me-2" type="button" @click="$refs.TwoFADialog.show()">{{ $t("2FA Settings") }}</button>
                             </div>
 
