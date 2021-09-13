@@ -101,7 +101,7 @@ class Teams extends NotificationProvider {
             }
 
             const payload = this._notificationPayloadFactory({
-                monitorMessage: heartbeatJSON.msg,
+                monitorMessage: heartbeatJSON.msg || msg,
                 monitorName: monitorJSON.name,
                 monitorUrl: url,
                 status: heartbeatJSON.status,
