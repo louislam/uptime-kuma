@@ -127,5 +127,6 @@ export default {
     backupDescription2: "P.S.: lo storico e i dati relativi agli eventi non saranno inclusi.",
     backupDescription3: "Dati sensibili come i token di autenticazione saranno inclusi nel backup, tenere quindi in un luogo sicuro.",
     alertNoFile: "Selezionare il file da importare.",
-    alertWrongFileType: "Selezionare un file JSON."
+    alertWrongFileType: "Selezionare un file JSON.",
+    "Clear all statistics": "Pulisci tutte le statistiche",
 }
