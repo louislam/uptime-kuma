@@ -30,8 +30,7 @@ export function timezoneList() {
                 time: getTimezoneOffset(timezone.tzCode),
             })
         } catch (e) {
-            console.error(e.message);
-            console.log("Skip this timezone");
+            console.log("Skip Timezone: " + timezone.tzCode);
         }
     }
 
