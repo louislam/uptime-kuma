@@ -2,58 +2,61 @@
     <div class="container mt-3">
         <h1><img src="/icon.svg" alt /> Uptime Kuma</h1>
 
-        <div v-if="hasToken" class="mt-3">
-            <button v-if="!enableEditMode" class="btn btn-info me-2" @click="edit">
-                <font-awesome-icon icon="edit" />
-                Edit Status Page
-            </button>
+        <div v-if="hasToken" class="mt-3" style="height: 38px;">
+            <div v-if="!enableEditMode">
+                <button class="btn btn-info me-2" @click="edit">
+                    <font-awesome-icon icon="edit" />
+                    Edit Status Page
+                </button>
 
-            <button v-if="enableEditMode" class="btn btn-dark me-2" @click="leaveEditMode">
-                <font-awesome-icon icon="" />
-                Leave Edit Mode
-            </button>
+                <router-link to="/dashboard" class="btn btn-info">
+                    <font-awesome-icon icon="tachometer-alt" />
+                    Go to Dashboard
+                </router-link>
+            </div>
 
-            <router-link v-if="!enableEditMode" to="/dashboard" class="btn btn-info">
-                <font-awesome-icon icon="tachometer-alt" />
-                Go to Dashboard
-            </router-link>
+            <div v-else>
+                <button class="btn btn-success me-2" @click="leaveEditMode">
+                    <font-awesome-icon icon="save" />
+                    {{ $t("Save") }}
+                </button>
+
+                <button class="btn btn-danger me-2" @click="">
+                    <font-awesome-icon icon="save" />
+                    {{ $t("Discard") }}
+                </button>
+
+                <!-- Set Default Language -->
+                <!-- Set theme -->
+            </div>
         </div>
 
         <div class="shadow-box list  p-4 overall-status mt-4">
             <font-awesome-icon icon="check-circle" class="ok" /> All Systems Operational
         </div>
 
-        <div v-if="showEditFeature" class="mt-4">
-            <VueMultiselect
-                v-model="selectedMonitor"
-                :options="allMonitorList"
-                :custom-label="monitorSelectorLabel"
-                :searchable="true"
-                @select="onSelectedMonitor"
-            ></VueMultiselect>
-        </div>
-
-        <div class="shadow-box monitor-list mt-4">
-            <div v-if="Object.keys(monitorList).length === 0" class="text-center my-3">
-                {{ $t("No Monitors") }}
+        <div v-if="showEditFeature" class="row mt-4" style="height: 43px;">
+            <div class="col-2">
+                <button class="btn btn-primary btn-add-group" @click="addGroup">Add Group</button>
             </div>
-
-            <div v-for="(item, index) in monitorList" :key="index" class="item">
-                <div class="row">
-                    <div class="col-6 col-md-8 small-padding">
-                        <div class="info">
-                            <Uptime :monitor="item" type="24" :pill="true" />
-                            {{ item.name }}
-                        </div>
-                    </div>
-                    <div :key="$root.userHeartbeatBar" class="col-6 col-md-4">
-                        <HeartbeatBar size="small" :monitor-id="item.id" />
-                    </div>
+            <div class="col-10">
+                <div>
+                    <VueMultiselect
+                        v-model="selectedMonitor"
+                        :options="allMonitorList"
+                        :custom-label="monitorSelectorLabel"
+                        :searchable="true"
+                        placeholder="Add a monitor"
+                    ></VueMultiselect>
                 </div>
             </div>
         </div>
 
-        <footer class="mt-4">
+        <div>
+            <GroupList :edit-mode="enableEditMode" />
+        </div>
+
+        <footer class="my-4">
             Powered by <a target="_blank" href="https://github.com/louislam/uptime-kuma">Uptime Kuma</a>
         </footer>
     </div>
@@ -61,12 +64,8 @@
 
 <script>
 import VueMultiselect from "vue-multiselect"
-import { useToast } from "vue-toastification";
-const toast = useToast();
-
 import axios from "axios";
-import HeartbeatBar from "../components/HeartbeatBar.vue";
-import Uptime from "../components/Uptime.vue";
+import GroupList from "../components/GroupList.vue";
 
 const env = process.env.NODE_ENV || "production";
 
@@ -77,8 +76,7 @@ if (env === "development" || localStorage.dev === "dev") {
 
 export default {
     components: {
-        HeartbeatBar,
-        Uptime,
+        GroupList,
         VueMultiselect,
     },
     data() {
@@ -91,8 +89,18 @@ export default {
         }
     },
     computed: {
+
         allMonitorList() {
-            return Object.values(this.$root.monitorList);
+            let result = [];
+
+            for (let id in this.$root.monitorList) {
+                if (this.$root.monitorList[id] && ! (id in this.monitorList)) {
+                    let monitor = this.$root.monitorList[id];
+                    result.push(monitor);
+                }
+            }
+
+            return result;
         },
         showEditFeature() {
             return this.enableEditMode && this.$root.socket.connected;
@@ -100,6 +108,21 @@ export default {
     },
     watch: {
 
+        /**
+         * Selected a monitor and add to the list.
+         */
+        selectedMonitor(monitor) {
+            if (monitor) {
+                if (this.$root.publicGroupList.length === 0) {
+                    this.addGroup();
+                }
+
+                const firstGroup = this.$root.publicGroupList[0];
+
+                firstGroup.monitorList.push(monitor);
+                this.selectedMonitor = null;
+            }
+        }
     },
     async created() {
         this.hasToken = ("token" in localStorage);
@@ -126,14 +149,12 @@ export default {
             return `${monitor.name}`;
         },
 
-        onSelectedMonitor(selectedOption, id) {
-            console.log(selectedOption);
-            console.log(id);
-
-            // TODO: emit socket cmd to set it public
-            // TODO: Reload monitor or add to list
+        addGroup() {
+            this.$root.publicGroupList.push({
+                name: "Untitled Group",
+                monitorList: [],
+            })
         }
-
     },
 }
 </script>
@@ -163,5 +184,10 @@ h1 {
 footer {
     text-align: center;
     font-size: 14px;
+}
+
+.btn-add-group {
+    height: 100%;
+    width: 100%;
 }
 </style>

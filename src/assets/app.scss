@@ -301,6 +301,20 @@ h2 {
     opacity: 0;
 }
 
+.slide-fade-right-enter-active {
+    transition: all 0.2s $easing-in;
+}
+
+.slide-fade-right-leave-active {
+    transition: all 0.2s $easing-in;
+}
+
+.slide-fade-right-enter-from,
+.slide-fade-right-leave-to {
+    transform: translateX(50px);
+    opacity: 0;
+}
+
 .monitor-list {
     &.scrollbar {
         min-height: calc(100vh - 240px);

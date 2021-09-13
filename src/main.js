@@ -13,6 +13,8 @@ import socket from "./mixins/socket";
 import theme from "./mixins/theme";
 import mobile from "./mixins/mobile";
 import datetime from "./mixins/datetime";
+import publicMixin from "./mixins/public";
+
 import Dashboard from "./pages/Dashboard.vue";
 import DashboardHome from "./pages/DashboardHome.vue";
 import Details from "./pages/Details.vue";
@@ -140,7 +142,8 @@ const app = createApp({
         socket,
         theme,
         mobile,
-        datetime
+        datetime,
+        publicMixin,
     ],
     data() {
         return {
