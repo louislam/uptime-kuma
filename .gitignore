@@ -7,4 +7,5 @@ dist-ssr
 
 /data
 !/data/.gitkeep
+/uptime-kuma
 .vscode
