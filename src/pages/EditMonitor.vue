@@ -109,13 +109,9 @@
                             <div class="my-3">
                                 <label for="retry-interval" class="form-label">
                                     {{ $t("Heartbeat Retry Interval") }}
-                                    <span v-if="monitor.retryInterval > 0">({{ $t("retryCheckEverySecond", [ monitor.retryInterval ]) }})</span>
-                                    <span v-else>({{ $t("retryIntervalInactive") }})</span>
+                                    <span>({{ $t("retryCheckEverySecond", [ monitor.retryInterval ]) }})</span>
                                 </label>
                                 <input id="retry-interval" v-model="monitor.retryInterval" type="number" class="form-control" required min="20" step="1">
-                                <div class="form-text">
-                                    {{ $t("retryIntervalDescription") }}
-                                </div>
                             </div>
 
                             <h2 class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
