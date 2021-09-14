@@ -8,6 +8,7 @@ import EditMonitor from "./pages/EditMonitor.vue";
 import List from "./pages/List.vue";
 import Settings from "./pages/Settings.vue";
 import Setup from "./pages/Setup.vue";
+import StatusPage from "./pages/StatusPage.vue";
 
 const routes = [
     {
@@ -54,15 +55,17 @@ const routes = [
                     },
                 ],
             },
-
         ],
-
     },
     {
         path: "/setup",
         component: Setup,
     },
-]
+    {
+        path: "/status-page",
+        component: StatusPage,
+    },
+];
 
 export const router = createRouter({
     linkActiveClass: "active",
