@@ -53,7 +53,11 @@
                         </vue-multiselect>
                         <div v-if="newDraftTag.select?.name == null" class="d-flex mb-2">
                             <div class="w-50 pe-2">
-                                <input v-model="newDraftTag.name" class="form-control" :class="{'is-invalid': validateDraftTag.nameInvalid}" :placeholder="$t('name')" />
+                                <input v-model="newDraftTag.name" class="form-control"
+                                       :class="{'is-invalid': validateDraftTag.nameInvalid}"
+                                       :placeholder="$t('name')"
+                                       @keydown.enter.prevent="onEnter"
+                                />
                                 <div class="invalid-feedback">
                                     {{ $t("Tag with this name already exist.") }}
                                 </div>
@@ -90,7 +94,11 @@
                             </div>
                         </div>
                         <div class="mb-2">
-                            <input v-model="newDraftTag.value" class="form-control" :class="{'is-invalid': validateDraftTag.valueInvalid}" :placeholder="$t('value (optional)')" />
+                            <input v-model="newDraftTag.value" class="form-control"
+                                   :class="{'is-invalid': validateDraftTag.valueInvalid}"
+                                   :placeholder="$t('value (optional)')"
+                                   @keydown.enter.prevent="onEnter"
+                            />
                             <div class="invalid-feedback">
                                 {{ $t("Tag with this value already exist.") }}
                             </div>
@@ -307,6 +315,11 @@ export default {
             return new Promise((resolve) => {
                 this.$root.getSocket().emit("deleteMonitorTag", tagId, monitorId, value, resolve);
             });
+        },
+        onEnter() {
+            if (!this.validateDraftTag.invalid) {
+                this.addDraftTag();
+            }
         },
         async submit(monitorId) {
             console.log(`Submitting tag changes for monitor ${monitorId}...`);
