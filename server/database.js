@@ -39,7 +39,7 @@ class Database {
      * The finally version should be 10 after merged tag feature
      * @deprecated Use patchList for any new feature
      */
-    static latestVersion = 9;
+    static latestVersion = 10;
 
     static noReject = true;
 
