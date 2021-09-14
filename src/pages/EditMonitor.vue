@@ -108,11 +108,11 @@
 
                             <div class="my-3">
                                 <label for="retry-interval" class="form-label">
-                                    {{ $t("Heartbeat Retry Interval") }} 
+                                    {{ $t("Heartbeat Retry Interval") }}
                                     <span v-if="monitor.retryInterval > 0">({{ $t("retryCheckEverySecond", [ monitor.retryInterval ]) }})</span>
                                     <span v-else>({{ $t("retryIntervalInactive") }})</span>
                                 </label>
-                                <input id="retry-interval" v-model="monitor.retryInterval" type="number" class="form-control" required min="0" step="1">
+                                <input id="retry-interval" v-model="monitor.retryInterval" type="number" class="form-control" required min="20" step="1">
                                 <div class="form-text">
                                     {{ $t("retryIntervalDescription") }}
                                 </div>
@@ -261,6 +261,12 @@ export default {
         "$route.fullPath"() {
             this.init();
         },
+        "monitor.interval"(value, oldValue) {
+            // Link interval and retryInerval if they are the same value.
+            if (this.monitor.retryInterval === oldValue) {
+                this.monitor.retryInterval = value;
+            }
+        }
     },
     mounted() {
         this.init();
@@ -302,7 +308,7 @@ export default {
                     name: "",
                     url: "https://",
                     interval: 60,
-                    retryInterval: 0,
+                    retryInterval: this.interval,
                     maxretries: 0,
                     notificationIDList: {},
                     ignoreTls: false,
