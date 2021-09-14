@@ -10,6 +10,6 @@ currently being supported with security updates.
 | 1.x.x  | :white_check_mark: |
 
 ## Reporting a Vulnerability
-Please report security issues to <email>
+Please report security issues to uptime@kuma.pet
 
 https://github.com/louislam/uptime-kuma/issues
