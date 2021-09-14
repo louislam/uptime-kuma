@@ -12,6 +12,10 @@ router.get("/api/status-page/config", async (_request, response) => {
         config.statusPageTheme = "light";
     }
 
+    if (! config.title) {
+        config.title = "Uptime Kuma";
+    }
+
     response.json(config);
 });
 

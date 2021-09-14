@@ -1,6 +1,7 @@
 import "bootstrap";
 import { createApp, h } from "vue";
 import Toast from "vue-toastification";
+import contenteditable from "vue-contenteditable"
 import "vue-toastification/dist/index.css";
 import App from "./App.vue";
 import "./assets/app.scss";
@@ -39,7 +40,7 @@ const options = {
 };
 
 app.use(Toast, options);
+app.component("Editable", contenteditable);
+app.component("FontAwesomeIcon", FontAwesomeIcon);
 
-app.component("FontAwesomeIcon", FontAwesomeIcon)
-
-app.mount("#app")
+app.mount("#app");

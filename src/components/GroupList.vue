@@ -8,7 +8,10 @@
     >
         <template #item="{ element }">
             <div>
-                <h2 class="mt-5">{{ element.name }}</h2>
+                <!-- Group Title -->
+                <h2 class="mt-5">
+                    <Editable v-model="element.name" :contenteditable="editMode" tag="span" />
+                </h2>
 
                 <div class="shadow-box monitor-list mt-4 position-relative">
                     <div v-if="element.monitorList.length === 0" class="text-center no-monitor-msg">

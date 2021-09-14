@@ -374,3 +374,18 @@ h2 {
     background-color: #4caf50;
     border-color: #4caf50;
 }
+
+[contenteditable=true] {
+    &:focus {
+        outline: 0 solid #eee;
+        border: 1px solid #aaa;
+        border-radius: 8px;
+    }
+
+    &::after {
+        margin-left: 5px;
+        content: "🖊️";
+        font-size: 13px;
+        color: #eee;
+    }
+}
