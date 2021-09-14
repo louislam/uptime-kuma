@@ -157,4 +157,5 @@ export default {
     Indigo: "Indigo",
     Purple: "Lila",
     Pink: "Pink",
+    "Search...": "Suchen...",
 }
