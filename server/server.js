@@ -153,6 +153,10 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
 
     app.use("/", express.static("dist"));
 
+    app.get("/.well-known/change-password", async (_, response) => {
+        response.redirect("https://github.com/louislam/uptime-kuma/wiki/Reset-Password-via-CLI");
+    });
+
     // ***************************
     // Public API
     // ***************************

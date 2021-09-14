@@ -62,6 +62,11 @@ class Discord extends NotificationProvider {
                         ],
                     }],
                 }
+
+                if (notification.discordPrefixMessage) {
+                    discorddowndata.content = notification.discordPrefixMessage;
+                }
+
                 await axios.post(notification.discordWebhookUrl, discorddowndata)
                 return okMsg;
 
@@ -92,6 +97,11 @@ class Discord extends NotificationProvider {
                         ],
                     }],
                 }
+
+                if (notification.discordPrefixMessage) {
+                    discordupdata.content = notification.discordPrefixMessage;
+                }
+
                 await axios.post(notification.discordWebhookUrl, discordupdata)
                 return okMsg;
             }

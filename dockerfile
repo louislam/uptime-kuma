@@ -7,7 +7,7 @@ WORKDIR /app
 RUN apt update && \
             apt --yes install python3 python3-pip python3-dev git g++ make && \
             ln -s /usr/bin/python3 /usr/bin/python && \
-            npm install mapbox/node-sqlite3#593c9d  --build-from-source
+            npm install mapbox/node-sqlite3#593c9d --build-from-source
 
 COPY . .
 RUN npm install --legacy-peer-deps && npm run build && npm prune --production
@@ -26,7 +26,7 @@ RUN apt update && \
             rm -rf /var/lib/apt/lists/*
 
 # Copy app files from build layer
-COPY  --from=build /app /app
+COPY --from=build /app /app
 
 EXPOSE 3001
 VOLUME ["/app/data"]

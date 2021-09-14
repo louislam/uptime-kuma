@@ -22,7 +22,7 @@ RUN apk add --no-cache python3 py3-cryptography py3-pip py3-six py3-yaml py3-cli
             rm -rf /root/.cache
 
 # Copy app files from build layer
-COPY  --from=build /app /app
+COPY --from=build /app /app
 
 EXPOSE 3001
 VOLUME ["/app/data"]
