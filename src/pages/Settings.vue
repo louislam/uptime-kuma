@@ -232,6 +232,12 @@
                     <p>Molim Vas koristite ovo sa pažnjom.</p>
                 </template>
 
+                <template v-else-if="$i18n.locale === 'tr-TR' ">
+                    <p><strong>Şifreli girişi devre dışı bırakmak istediğinizden</strong>emin misiniz?</p>
+                     <p>Bu, Uptime Kuma'nın önünde Cloudflare Access gibi <strong>üçüncü taraf yetkilendirmesi olan</strong> kişiler içindir.</p>
+                     <p>Lütfen dikkatli kullanın.</p>
+                </template>
+
                 <template v-else-if="$i18n.locale === 'ko-KR' ">
                     <p>정말로 <strong>인증 기능을 끌까요</strong>?</p>
                     <p>이 기능은 <strong>Cloudflare Access와 같은 서드파티 인증</strong>을 Uptime Kuma 앞에 둔 사용자를 위한 기능이에요.</p>
