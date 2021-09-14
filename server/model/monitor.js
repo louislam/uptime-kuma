@@ -32,6 +32,8 @@ class Monitor extends BeanModel {
             notificationIDList[bean.notification_id] = true;
         }
 
+        const tags = await R.getAll("SELECT mt.*, tag.name, tag.color FROM monitor_tag mt JOIN tag ON mt.tag_id = tag.id WHERE mt.monitor_id = ?", [this.id]);
+
         return {
             id: this.id,
             name: this.name,
@@ -52,6 +54,7 @@ class Monitor extends BeanModel {
             dns_resolve_server: this.dns_resolve_server,
             dns_last_result: this.dns_last_result,
             notificationIDList,
+            tags: tags,
         };
     }
 
