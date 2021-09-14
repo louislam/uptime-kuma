@@ -1,4 +1,9 @@
 console.log("Welcome to Uptime Kuma");
+
+if (! process.env.NODE_ENV) {
+    process.env.NODE_ENV = "production";
+}
+
 console.log("Node Env: " + process.env.NODE_ENV);
 
 const { sleep, debug, TimeLogger, getRandomInt } = require("../src/util");
