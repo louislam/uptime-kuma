@@ -22,6 +22,7 @@
                         group="same-group"
                         :disabled="!editMode"
                         :animation="100"
+                        item-key="id"
                     >
                         <template #item="{ element }">
                             <div class="item">

@@ -73,6 +73,7 @@
         "vue": "^3.2.8",
         "vue-chart-3": "^0.5.7",
         "vue-confirm-dialog": "^1.0.2",
+        "vue-contenteditable": "^3.0.4",
         "vue-i18n": "^9.1.7",
         "vue-multiselect": "^3.0.0-alpha.2",
         "vue-qrcode": "^1.0.0",

@@ -350,3 +350,21 @@ h2 {
         }
     }
 }
+
+.alert-success {
+    color: #122f21;
+    background-color: $primary;
+    border-color: $primary;
+}
+
+.alert-info {
+    color: #055160;
+    background-color: #cff4fc;
+    border-color: #cff4fc;
+}
+
+.alert-danger {
+    color: #842029;
+    background-color: #f8d7da;
+    border-color: #f8d7da;
+}

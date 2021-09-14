@@ -21,7 +21,7 @@
                     {{ $t("Save") }}
                 </button>
 
-                <button class="btn btn-danger me-2" @click="">
+                <button class="btn btn-danger me-2" @click="discard">
                     <font-awesome-icon icon="save" />
                     {{ $t("Discard") }}
                 </button>
@@ -32,7 +32,21 @@
         </div>
 
         <div class="shadow-box list  p-4 overall-status mt-4">
-            <font-awesome-icon icon="check-circle" class="ok" /> All Systems Operational
+            <div v-if="false">
+                <font-awesome-icon icon="check-circle" class="ok" />
+                All Systems Operational
+            </div>
+            <div>
+                <font-awesome-icon icon="exclamation-circle" class="warning" />
+                Partially Degraded Service
+            </div>
+        </div>
+
+        <div class="shadow-box alert alert-success mt-4 p-4" role="alert">
+            <h4 class="alert-heading">Well done!</h4>
+            <p>Aww yeah, you successfully read this important alert message. This example text is going to run a bit longer so that you can see how spacing within an alert works with this kind of content.</p>
+            <hr>
+            <p class="mb-0">Whenever you need to, be sure to use margin utilities to keep things nice and tidy.</p>
         </div>
 
         <div v-if="showEditFeature" class="row mt-4" style="height: 43px;">
@@ -84,17 +98,19 @@ export default {
             enableEditMode: false,
             hasToken: false,
             config: {},
-            monitorList: {},
             selectedMonitor: null,
         }
     },
     computed: {
 
+        /**
+         * If the monitor is added to public list, which will not be in this list.
+         */
         allMonitorList() {
             let result = [];
 
             for (let id in this.$root.monitorList) {
-                if (this.$root.monitorList[id] && ! (id in this.monitorList)) {
+                if (this.$root.monitorList[id] && ! (id in this.$root.publicMonitorList)) {
                     let monitor = this.$root.monitorList[id];
                     result.push(monitor);
                 }
@@ -154,6 +170,10 @@ export default {
                 name: "Untitled Group",
                 monitorList: [],
             })
+        },
+
+        discard() {
+            location.reload();
         }
     },
 }
@@ -164,10 +184,14 @@ export default {
 
 .overall-status {
     font-weight: bold;
-    font-size: 20px;
+    font-size: 25px;
 
     .ok {
         color: $primary;
+    }
+
+    .warning {
+        color: $warning;
     }
 }
 
