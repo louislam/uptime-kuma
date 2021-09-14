@@ -1,4 +1,5 @@
 # DON'T UPDATE TO node:14-bullseye-slim, see #372.
+# If the image changed, the second stage image should be changed too
 FROM node:14-buster-slim AS build
 WORKDIR /app
 
@@ -12,7 +13,7 @@ RUN apt update && \
 COPY . .
 RUN npm install --legacy-peer-deps && npm run build && npm prune --production
 
-FROM node:14-bullseye-slim AS release
+FROM node:14-buster-slim AS release
 WORKDIR /app
 
 # Install Apprise,
