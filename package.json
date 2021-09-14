@@ -1,6 +1,6 @@
 {
     "name": "uptime-kuma",
-    "version": "1.6.1",
+    "version": "1.6.2",
     "license": "MIT",
     "repository": {
         "type": "git",
@@ -19,11 +19,11 @@
         "build": "vite build",
         "vite-preview-dist": "vite preview --host",
         "build-docker": "npm run build-docker-debian && npm run build-docker-alpine",
-        "build-docker-alpine": "docker buildx build -f dockerfile-alpine --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma:alpine -t louislam/uptime-kuma:1-alpine -t louislam/uptime-kuma:1.6.1-alpine --target release . --push",
-        "build-docker-debian": "docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma -t louislam/uptime-kuma:1 -t louislam/uptime-kuma:1.6.1 -t louislam/uptime-kuma:debian -t louislam/uptime-kuma:1-debian -t louislam/uptime-kuma:1.6.1-debian --target release . --push",
+        "build-docker-alpine": "docker buildx build -f dockerfile-alpine --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma:alpine -t louislam/uptime-kuma:1-alpine -t louislam/uptime-kuma:1.6.2-alpine --target release . --push",
+        "build-docker-debian": "docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma -t louislam/uptime-kuma:1 -t louislam/uptime-kuma:1.6.2 -t louislam/uptime-kuma:debian -t louislam/uptime-kuma:1-debian -t louislam/uptime-kuma:1.6.2-debian --target release . --push",
         "build-docker-nightly": "docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma:nightly --target nightly . --push",
         "build-docker-nightly-amd64": "docker buildx build --platform linux/amd64 -t louislam/uptime-kuma:nightly-amd64 --target nightly . --push --progress plain",
-        "setup": "git checkout 1.6.1 && npm install --legacy-peer-deps && node node_modules/esbuild/install.js && npm run build && npm prune",
+        "setup": "git checkout 1.6.2 && npm install --legacy-peer-deps && node node_modules/esbuild/install.js && npm run build && npm prune",
         "update-version": "node extra/update-version.js",
         "mark-as-nightly": "node extra/mark-as-nightly.js",
         "reset-password": "node extra/reset-password.js",
