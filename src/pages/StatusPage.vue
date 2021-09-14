@@ -31,6 +31,10 @@
             </div>
         </div>
 
+        <div class="mt-4">
+            Free text here.
+        </div>
+
         <div class="shadow-box list  p-4 overall-status mt-4">
             <div v-if="false">
                 <font-awesome-icon icon="check-circle" class="ok" />

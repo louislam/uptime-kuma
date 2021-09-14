@@ -157,53 +157,9 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
         response.redirect("https://github.com/louislam/uptime-kuma/wiki/Reset-Password-via-CLI");
     });
 
-    // ***************************
-    // Public API
-    // ***************************
-
-    // Status Page Config
-    app.get("/api/status-page/config", async (_request, response) => {
-        allowDevAllOrigin(response);
-        let config = getSettings("statusPage");
-
-        if (! config.statusPageTheme) {
-            config.statusPageTheme = "light";
-        }
-
-        response.json(config);
-    });
-
-    // Status Page - Monitor List
-    app.get("/api/status-page/monitor-list", async (_request, response) => {
-        allowDevAllOrigin(response);
-
-        const monitorList = {};
-        let list = await R.find("monitor", " public = 1 ORDER BY weight DESC, name ", [
-        ]);
-
-        for (let monitor of list) {
-            monitorList[monitor.id] = await monitor.toJSON();
-        }
-
-        response.json(monitorList);
-    });
-
-    // Status Page Polling Data
-    app.get("/api/status-page/heartbeat", async (_request, response) => {
-        allowDevAllOrigin(response);
-
-        const monitorList = {};
-        let list = await R.find("", "  ", [
-        ])
-
-        for (let monitor of list) {
-            monitorList[monitor.id] = await monitor.toJSON();
-        }
-
-        response.json({
-            monitorList: monitorList,
-        });
-    });
+    // API Router
+    const apiRouter = require("./routers/api-router");
+    app.use(apiRouter);
 
     // Universal Route Handler, must be at the end of all express route.
     app.get("*", async (_request, response) => {
