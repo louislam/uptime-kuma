@@ -119,6 +119,7 @@ export default {
     "Auto Get": "自動獲取",
     enableDefaultNotificationDescription: "新增監測器時這個通知會預設啟用，當然每個監測器亦可分別控制開關。",
     "Default enabled": "預設通知",
+    "Also apply to existing monitors": "同時取用至目前所有監測器",
     "Import/Export Backup": "匯入/匯出 備份",
     Export: "匯出",
     Import: "匯入",

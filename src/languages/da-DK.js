@@ -120,7 +120,6 @@ export default {
     enableDefaultNotificationDescription: "For hver ny overvåger aktiveres denne underretning som standard. Du kan stadig deaktivere underretningen separat for hver skærm.",
     "Default enabled": "Standard aktiveret",
     "Also apply to existing monitors": "Anvend også på eksisterende overvågere",
-    "Import/Export Backup": " Importér/Eksportér sikkerhedskopi",
     Export: "Eksport",
     Import: "Import",
     backupDescription: "Du kan sikkerhedskopiere alle Overvågere og alle underretninger til en JSON-fil.",

@@ -127,6 +127,7 @@ export default {
     Events: "Eventi",
     Heartbeats: "Controlli",
     "Auto Get": "Auto Get",
+    "Also apply to existing monitors": "Also apply to existing monitors",
     backupDescription: "È possibile fare il backup di tutti i monitoraggi e di tutte le notifiche in un file JSON.",
     backupDescription2: "P.S.: lo storico e i dati relativi agli eventi non saranno inclusi.",
     backupDescription3: "Dati sensibili come i token di autenticazione saranno inclusi nel backup, tenere quindi in un luogo sicuro.",

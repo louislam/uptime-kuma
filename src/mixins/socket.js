@@ -284,8 +284,8 @@ export default {
             this.importantHeartbeatList = {}
         },
 
-        uploadBackup(uploadedJSON, callback) {
-            socket.emit("uploadBackup", uploadedJSON, callback)
+        uploadBackup(uploadedJSON, importHandle, callback) {
+            socket.emit("uploadBackup", uploadedJSON, importHandle, callback)
         },
 
         clearEvents(monitorID, callback) {

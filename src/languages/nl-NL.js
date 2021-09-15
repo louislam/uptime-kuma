@@ -140,6 +140,7 @@ export default {
     "Two Factor Authentication": "Two Factor Authenticatie",
     Active: "Actief",
     Inactive: "Inactief",
+    "Also apply to existing monitors": "Also apply to existing monitors",
     Token: "Token",
     "Show URI": "Toon URI",
     "Clear all statistics": "Wis alle statistieken",

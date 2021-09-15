@@ -927,7 +927,7 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
             }
         });
 
-        socket.on("uploadBackup", async (uploadedJSON, callback) => {
+        socket.on("uploadBackup", async (uploadedJSON, importHandle, callback) => {
             try {
                 checkLogin(socket)
 
@@ -935,54 +935,80 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
 
                 console.log(`Importing Backup, User ID: ${socket.userID}, Version: ${backupData.version}`)
 
-                let notificationList = backupData.notificationList;
-                let monitorList = backupData.monitorList;
+                let notificationListData = backupData.notificationList;
+                let monitorListData = backupData.monitorList;
 
-                if (notificationList.length >= 1) {
-                    for (let i = 0; i < notificationList.length; i++) {
-                        let notification = JSON.parse(notificationList[i].config);
-                        await Notification.save(notification, null, socket.userID)
+                if (importHandle == "overwrite") {
+                    for (let id in monitorList) {
+                        let monitor = monitorList[id]
+                        await monitor.stop()
+                    }
+                    await R.exec("DELETE FROM heartbeat");
+                    await R.exec("DELETE FROM monitor_notification");
+                    await R.exec("DELETE FROM monitor_tls_info");
+                    await R.exec("DELETE FROM notification");
+                    await R.exec("DELETE FROM monitor");
+                }
+
+                if (notificationListData.length >= 1) {
+                    let notificationNameList = await R.getAll("SELECT name FROM notification");
+                    let notificationNameListString = JSON.stringify(notificationNameList);
+
+                    for (let i = 0; i < notificationListData.length; i++) {
+                        if ((importHandle == "skip" && notificationNameListString.includes(notificationListData[i].name) == false) || importHandle == "keep" || importHandle == "overwrite") {
+
+                            let notification = JSON.parse(notificationListData[i].config);
+                            await Notification.save(notification, null, socket.userID)
+
+                        }
                     }
                 }
 
-                if (monitorList.length >= 1) {
-                    for (let i = 0; i < monitorList.length; i++) {
-                        let monitor = {
-                            name: monitorList[i].name,
-                            type: monitorList[i].type,
-                            url: monitorList[i].url,
-                            interval: monitorList[i].interval,
-                            hostname: monitorList[i].hostname,
-                            maxretries: monitorList[i].maxretries,
-                            port: monitorList[i].port,
-                            keyword: monitorList[i].keyword,
-                            ignoreTls: monitorList[i].ignoreTls,
-                            upsideDown: monitorList[i].upsideDown,
-                            maxredirects: monitorList[i].maxredirects,
-                            accepted_statuscodes: monitorList[i].accepted_statuscodes,
-                            dns_resolve_type: monitorList[i].dns_resolve_type,
-                            dns_resolve_server: monitorList[i].dns_resolve_server,
-                            notificationIDList: {},
-                        }
+                if (monitorListData.length >= 1) {
+                    let monitorNameList = await R.getAll("SELECT name FROM monitor");
+                    let monitorNameListString = JSON.stringify(monitorNameList);
 
-                        let bean = R.dispense("monitor")
+                    for (let i = 0; i < monitorListData.length; i++) {
+                        if ((importHandle == "skip" && monitorNameListString.includes(monitorListData[i].name) == false) || importHandle == "keep" || importHandle == "overwrite") {
 
-                        let notificationIDList = monitor.notificationIDList;
-                        delete monitor.notificationIDList;
+                            let monitor = {
+                                name: monitorListData[i].name,
+                                type: monitorListData[i].type,
+                                url: monitorListData[i].url,
+                                interval: monitorListData[i].interval,
+                                hostname: monitorListData[i].hostname,
+                                maxretries: monitorListData[i].maxretries,
+                                port: monitorListData[i].port,
+                                keyword: monitorListData[i].keyword,
+                                ignoreTls: monitorListData[i].ignoreTls,
+                                upsideDown: monitorListData[i].upsideDown,
+                                maxredirects: monitorListData[i].maxredirects,
+                                accepted_statuscodes: monitorListData[i].accepted_statuscodes,
+                                dns_resolve_type: monitorListData[i].dns_resolve_type,
+                                dns_resolve_server: monitorListData[i].dns_resolve_server,
+                                notificationIDList: {},
+                            }
 
-                        monitor.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
-                        delete monitor.accepted_statuscodes;
+                            let bean = R.dispense("monitor")
 
-                        bean.import(monitor)
-                        bean.user_id = socket.userID
-                        await R.store(bean)
+                            let notificationIDList = monitor.notificationIDList;
+                            delete monitor.notificationIDList;
 
-                        await updateMonitorNotification(bean.id, notificationIDList)
+                            monitor.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
+                            delete monitor.accepted_statuscodes;
 
-                        if (monitorList[i].active == 1) {
-                            await startMonitor(socket.userID, bean.id);
-                        } else {
-                            await pauseMonitor(socket.userID, bean.id);
+                            bean.import(monitor)
+                            bean.user_id = socket.userID
+                            await R.store(bean)
+
+                            await updateMonitorNotification(bean.id, notificationIDList)
+
+                            if (monitorListData[i].active == 1) {
+                                await startMonitor(socket.userID, bean.id);
+                            } else {
+                                await pauseMonitor(socket.userID, bean.id);
+                            }
+
                         }
                     }
 
