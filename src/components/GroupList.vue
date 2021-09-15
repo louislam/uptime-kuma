@@ -6,38 +6,44 @@
         item-key="id"
         :animation="100"
     >
-        <template #item="{ element }">
+        <template #item="group">
             <div>
                 <!-- Group Title -->
                 <h2 class="mt-5">
-                    <Editable v-model="element.name" :contenteditable="editMode" tag="span" />
+                    <font-awesome-icon v-if="editMode && showGroupDrag" icon="arrows-alt-v" class="action drag me-3" />
+                    <font-awesome-icon v-if="editMode" icon="times" class="action remove me-3" @click="removeGroup(group.index)" />
+                    <Editable v-model="group.element.name" :contenteditable="editMode" tag="span" />
                 </h2>
 
                 <div class="shadow-box monitor-list mt-4 position-relative">
-                    <div v-if="element.monitorList.length === 0" class="text-center no-monitor-msg">
+                    <div v-if="group.element.monitorList.length === 0" class="text-center no-monitor-msg">
                         {{ $t("No Monitors") }}
                     </div>
 
                     <!-- Monitor List -->
+                    <!-- animation is not working, no idea why -->
                     <Draggable
-                        v-model="element.monitorList"
+                        v-model="group.element.monitorList"
                         class="monitor-list"
                         group="same-group"
                         :disabled="!editMode"
                         :animation="100"
                         item-key="id"
                     >
-                        <template #item="{ element }">
+                        <template #item="monitor">
                             <div class="item">
                                 <div class="row">
                                     <div class="col-6 col-md-8 small-padding">
                                         <div class="info">
-                                            <Uptime :monitor="element" type="24" :pill="true" />
-                                            {{ element.name }}
+                                            <font-awesome-icon v-if="editMode && showMonitorDrag(group.index)" icon="arrows-alt-v" class="action drag me-3" />
+                                            <font-awesome-icon v-if="editMode" icon="times" class="action remove me-3" @click="removeMonitor(group.index, monitor.index)" />
+
+                                            <Uptime :monitor="monitor.element" type="24" :pill="true" />
+                                            {{ monitor.element.name }}
                                         </div>
                                     </div>
                                     <div :key="$root.userHeartbeatBar" class="col-6 col-md-4">
-                                        <HeartbeatBar size="small" :monitor-id="element.id" />
+                                        <HeartbeatBar size="small" :monitor-id="monitor.element.id" />
                                     </div>
                                 </div>
                             </div>
@@ -72,29 +78,58 @@ export default {
 
         }
     },
+    computed: {
+        showGroupDrag() {
+            return (this.$root.publicGroupList.length >= 2);
+        }
+    },
     created() {
 
+    },
+    methods: {
+        removeGroup(index) {
+            this.$root.publicGroupList.splice(index, 1);
+        },
+
+        removeMonitor(groupIndex, index) {
+            this.$root.publicGroupList[groupIndex].monitorList.splice(index, 1);
+        },
+
+        showMonitorDrag(groupIndex) {
+            return this.$root.publicGroupList[groupIndex].monitorList.length >= 2
+        }
     }
 }
 </script>
 
 <style lang="scss" scoped>
-    .no-monitor-msg {
-        position: absolute;
-        width: 100%;
-        top: 20px;
-        left: 0;
-    }
+@import "../assets/vars";
 
-    .monitor-list {
-        min-height: 46px;
-    }
+.no-monitor-msg {
+    position: absolute;
+    width: 100%;
+    top: 20px;
+    left: 0;
+}
 
-    .flip-list-move {
-        transition: transform 0.5s;
-    }
+.monitor-list {
+    min-height: 46px;
+}
 
-    .no-move {
-        transition: transform 0s;
-    }
+.flip-list-move {
+    transition: transform 0.5s;
+}
+
+.no-move {
+    transition: transform 0s;
+}
+
+.drag {
+    color: #bbb;
+    cursor: grab;
+}
+
+.remove {
+    color: $danger;
+}
 </style>

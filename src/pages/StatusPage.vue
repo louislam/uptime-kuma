@@ -2,7 +2,7 @@
     <div class="container mt-3">
         <h1>
             <img src="/icon.svg" alt class="me-2" />
-            <Editable v-model="config.title" tag="span" :contenteditable="editMode" />
+            <Editable v-model="config.title" tag="span" :contenteditable="editMode" :noNL="true" />
         </h1>
 
         <div v-if="hasToken" class="mt-3" style="height: 38px;">
@@ -29,6 +29,21 @@
                     {{ $t("Discard") }}
                 </button>
 
+                <button class="btn btn-primary btn-add-group me-2" @click="">
+                    <font-awesome-icon icon="bullhorn" />
+                    {{ $t("Create Incident") }}
+                </button>
+
+                <button v-if="isPublished" class="btn btn-light me-2" @click="">
+                    <font-awesome-icon icon="save" />
+                    {{ $t("Unpublish") }}
+                </button>
+
+                <button v-if="!isPublished" class="btn btn-info me-2" @click="">
+                    <font-awesome-icon icon="save" />
+                    {{ $t("Publish") }}
+                </button>
+
                 <!-- Set Default Language -->
                 <!-- Set theme -->
             </div>
@@ -39,9 +54,13 @@
                 <font-awesome-icon icon="check-circle" class="ok" />
                 All Systems Operational
             </div>
-            <div>
+            <div v-if="false">
                 <font-awesome-icon icon="exclamation-circle" class="warning" />
                 Partially Degraded Service
+            </div>
+            <div>
+                <font-awesome-icon icon="times-circle" class="danger" />
+                Degraded Service
             </div>
         </div>
 
@@ -61,12 +80,15 @@
             </div>
         </div>
 
-        <div v-if="editMode" class="row mt-4" style="height: 43px;">
+        <div v-if="editMode" class="mt-4">
             <div>
-                <button class="btn btn-primary btn-add-group" @click="addGroup">Add Group</button>
+                <button class="btn btn-primary btn-add-group me-2" @click="addGroup">
+                    <font-awesome-icon icon="plus" />
+                    Add Group
+                </button>
             </div>
 
-            <div class="mt-5">
+            <div class="mt-3">
                 <VueMultiselect
                     v-model="selectedMonitor"
                     :options="allMonitorList"
@@ -77,11 +99,15 @@
             </div>
         </div>
 
-        <div>
+        <div class="mt-4">
+            <div v-if="$root.publicGroupList.length === 0" class="text-center">
+                👀 Nothing here, please add a group or a monitor.
+            </div>
+
             <GroupList :edit-mode="enableEditMode" />
         </div>
 
-        <footer class="my-4">
+        <footer class="mt-5 mb-4">
             Powered by <a target="_blank" href="https://github.com/louislam/uptime-kuma">Uptime Kuma</a>
         </footer>
     </div>
@@ -99,11 +125,27 @@ if (env === "development" || localStorage.dev === "dev") {
     axios.defaults.baseURL = location.protocol + "//" + location.hostname + ":3001";
 }
 
+const leavePageMsg = "Do you really want to leave? you have unsaved changes!";
+
 export default {
     components: {
         GroupList,
         VueMultiselect,
     },
+
+    // Leave Page for vue route change
+    beforeRouteLeave(to, from, next) {
+        if (this.editMode) {
+            const answer = window.confirm(leavePageMsg);
+            if (answer) {
+                next();
+            } else {
+                next(false);
+            }
+        }
+        next();
+    },
+
     data() {
         return {
             enableEditMode: false,
@@ -129,9 +171,15 @@ export default {
 
             return result;
         },
+
         editMode() {
             return this.enableEditMode && this.$root.socket.connected;
-        }
+        },
+
+        isPublished() {
+            return this.config.statusPagePublished;
+        },
+
     },
     watch: {
 
@@ -157,6 +205,17 @@ export default {
 
         // Set Theme
         this.$root.statusPageTheme = this.config.statusPageTheme;
+
+        // Browser change page
+        // https://stackoverflow.com/questions/7317273/warn-user-before-leaving-web-page-with-unsaved-changes
+        window.addEventListener("beforeunload", (e) => {
+            if (this.editMode) {
+                (e || window.event).returnValue = leavePageMsg;
+                return leavePageMsg;
+            } else {
+                return null;
+            }
+        });
     },
     async mounted() {
         this.monitorList = (await axios.get("/api/status-page/monitor-list")).data;
@@ -177,8 +236,14 @@ export default {
         },
 
         addGroup() {
+            let groupName = "Untitled Group";
+
+            if (this.$root.publicGroupList.length === 0) {
+                groupName = "Services";
+            }
+
             this.$root.publicGroupList.push({
-                name: "Untitled Group",
+                name: groupName,
                 monitorList: [],
             })
         },
@@ -186,7 +251,7 @@ export default {
         discard() {
             location.reload();
         }
-    },
+    }
 }
 </script>
 
@@ -203,6 +268,10 @@ export default {
 
     .warning {
         color: $warning;
+    }
+
+    .danger {
+        color: $danger;
     }
 }
 

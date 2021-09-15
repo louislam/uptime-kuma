@@ -378,7 +378,10 @@ h2 {
 [contenteditable=true] {
     &:focus {
         outline: 0 solid #eee;
-        border: 1px solid #aaa;
+    }
+
+    &:hover, &:focus {
+        background-color: #efefef;
         border-radius: 8px;
     }
 
@@ -387,5 +390,14 @@ h2 {
         content: "🖊️";
         font-size: 13px;
         color: #eee;
+    }
+}
+
+.action {
+    transition: all $easing-in 0.2s;
+
+    &:hover {
+        cursor: pointer;
+        transform: scale(1.2);
     }
 }

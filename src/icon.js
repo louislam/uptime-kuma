@@ -1,8 +1,8 @@
-// Add Free Font Awesome Icons
-// https://fontawesome.com/v5.15/icons?d=gallery&p=2&s=solid&m=free
-
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+
+// Add Free Font Awesome Icons
+// https://fontawesome.com/v5.15/icons?d=gallery&p=2&s=solid&m=free
 import {
     faArrowAltCircleUp,
     faCog,
@@ -16,11 +16,14 @@ import {
     faSearch,
     faTachometerAlt,
     faTimes,
+    faTimesCircle,
     faTrash,
     faCheckCircle,
     faStream,
     faSave,
-    faExclamationCircle
+    faExclamationCircle,
+    faBullhorn,
+    faArrowsAltV,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -36,11 +39,14 @@ library.add(
     faSearch,
     faTachometerAlt,
     faTimes,
+    faTimesCircle,
     faTrash,
     faCheckCircle,
     faStream,
     faSave,
-    faExclamationCircle
+    faExclamationCircle,
+    faBullhorn,
+    faArrowsAltV,
 );
 
 export { FontAwesomeIcon };
