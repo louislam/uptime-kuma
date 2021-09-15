@@ -11,7 +11,7 @@ class Teams extends NotificationProvider {
         } else if (status === UP) {
             return `✅ Application [${monitorName}] is back online`;
         }
-        return "Notification test";
+        return "Notification";
     };
 
     _getThemeColor = (status) => {
@@ -34,6 +34,23 @@ class Teams extends NotificationProvider {
             status,
             monitorName
         );
+
+        const facts = [];
+
+        if (monitorName) {
+            facts.push({
+                name: "Monitor",
+                value: monitorName,
+            });
+        }
+
+        if (monitorUrl) {
+            facts.push({
+                name: "URL",
+                value: monitorUrl,
+            });
+        }
+
         return {
             "@context": "https://schema.org/extensions",
             "@type": "MessageCard",
@@ -51,16 +68,7 @@ class Teams extends NotificationProvider {
                 {
                     activityTitle: "**Description**",
                     text: monitorMessage,
-                    facts: [
-                        {
-                            name: "Monitor",
-                            value: monitorName,
-                        },
-                        {
-                            name: "URL",
-                            value: monitorUrl,
-                        },
-                    ],
+                    facts,
                 },
             ],
         };
@@ -70,11 +78,9 @@ class Teams extends NotificationProvider {
         await axios.post(webhookUrl, payload);
     };
 
-    _handleTestNotification = (webhookUrl) => {
+    _handleGeneralNotification = (webhookUrl, msg) => {
         const payload = this._notificationPayloadFactory({
-            monitorMessage: "Just a test",
-            monitorName: "Test Notification",
-            monitorUrl: "http://localhost:3000",
+            monitorMessage: msg
         });
 
         return this._sendNotification(webhookUrl, payload);
@@ -85,7 +91,7 @@ class Teams extends NotificationProvider {
 
         try {
             if (heartbeatJSON == null) {
-                await this._handleTestNotification(notification.webhookUrl);
+                await this._handleGeneralNotification(notification.webhookUrl, msg);
                 return okMsg;
             }
 
@@ -101,7 +107,7 @@ class Teams extends NotificationProvider {
             }
 
             const payload = this._notificationPayloadFactory({
-                monitorMessage: heartbeatJSON.msg || msg,
+                monitorMessage: heartbeatJSON.msg,
                 monitorName: monitorJSON.name,
                 monitorUrl: url,
                 status: heartbeatJSON.status,
