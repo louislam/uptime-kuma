@@ -1,7 +1,13 @@
 let express = require("express");
 const { allowDevAllOrigin, getSettings, setting } = require("../util-server");
 const { R } = require("redbean-node");
+const server = require("../server");
 let router = express.Router();
+
+router.get("/api/entry-page", async (_, response) => {
+    allowDevAllOrigin(response);
+    response.json(server.entryPage);
+});
 
 // Status Page Config
 router.get("/api/status-page/config", async (_request, response) => {

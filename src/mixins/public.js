@@ -1,3 +1,12 @@
+import axios from "axios";
+
+const env = process.env.NODE_ENV || "production";
+
+// change the axios base url for development
+if (env === "development" || localStorage.dev === "dev") {
+    axios.defaults.baseURL = location.protocol + "//" + location.hostname + ":3001";
+}
+
 export default {
     data() {
         return {

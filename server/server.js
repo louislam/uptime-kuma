@@ -131,10 +131,14 @@ let needSetup = false;
  */
 let indexHTML = fs.readFileSync("./dist/index.html").toString();
 
+exports.entryPage = "dashboard";
+
 (async () => {
     await initDatabase();
 
-    console.log("Adding route")
+    exports.entryPage = await setting("entryPage");
+
+    console.log("Adding route");
 
     // ***************************
     // Normal Router here
@@ -846,7 +850,8 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
             try {
                 checkLogin(socket)
 
-                await setSettings("general", data)
+                await setSettings("general", data);
+                exports.entryPage = data.entryPage;
 
                 callback({
                     ok: true,

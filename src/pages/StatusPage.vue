@@ -150,13 +150,6 @@ import axios from "axios";
 import GroupList from "../components/GroupList.vue";
 import ImageCropUpload from "vue-image-crop-upload";
 
-const env = process.env.NODE_ENV || "production";
-
-// change the axios base url for development
-if (env === "development" || localStorage.dev === "dev") {
-    axios.defaults.baseURL = location.protocol + "//" + location.hostname + ":3001";
-}
-
 const leavePageMsg = "Do you really want to leave? you have unsaved changes!";
 
 export default {

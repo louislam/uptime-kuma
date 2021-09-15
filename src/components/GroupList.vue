@@ -35,7 +35,7 @@
                                 <div class="row">
                                     <div class="col-6 col-md-8 small-padding">
                                         <div class="info">
-                                            <font-awesome-icon v-if="editMode && showMonitorDrag(group.index)" icon="arrows-alt-v" class="action drag me-3" />
+                                            <font-awesome-icon v-if="editMode" icon="arrows-alt-v" class="action drag me-3" />
                                             <font-awesome-icon v-if="editMode" icon="times" class="action remove me-3" @click="removeMonitor(group.index, monitor.index)" />
 
                                             <Uptime :monitor="monitor.element" type="24" :pill="true" />
@@ -94,10 +94,6 @@ export default {
         removeMonitor(groupIndex, index) {
             this.$root.publicGroupList[groupIndex].monitorList.splice(index, 1);
         },
-
-        showMonitorDrag(groupIndex) {
-            return this.$root.publicGroupList[groupIndex].monitorList.length >= 2
-        }
     }
 }
 </script>

@@ -78,6 +78,7 @@
 <script>
 import Login from "../components/Login.vue";
 import compareVersions from "compare-versions";
+import axios from "axios";
 
 export default {
 
@@ -120,9 +121,16 @@ export default {
     },
 
     methods: {
-        init() {
+        async init() {
             if (this.$route.name === "root") {
-                this.$router.push("/dashboard")
+
+                let entryPage = (await axios.get("/api/entry-page")).data;
+
+                if (entryPage === "statusPage") {
+                    this.$router.push("/status-page");
+                } else {
+                    this.$router.push("/dashboard");
+                }
             }
         },
     },
