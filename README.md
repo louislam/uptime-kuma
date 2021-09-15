@@ -8,7 +8,7 @@
 
 It is a self-hosted monitoring tool like "Uptime Robot".
 
-<img src="https://louislam.net/uptimekuma/1.jpg" width="512" alt="" />
+![Dashboard Screenshot](docs/Screenshot-Dashboard.jpg)
 
 ## 🥔 Live Demo
 
