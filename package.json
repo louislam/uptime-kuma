@@ -35,7 +35,8 @@
         "test-install-script-ubuntu": "npm run compile-install-script && docker build --progress plain -f test/test_install_script/ubuntu.dockerfile .",
         "test-install-script-ubuntu1604": "npm run compile-install-script && docker build --progress plain -f test/test_install_script/ubuntu1604.dockerfile .",
         "simple-dns-server": "node extra/simple-dns-server.js",
-        "update-language-files": "cd extra/update-language-files && node index.js %npm_config_base_lang% && eslint ../../src/languages/**.js --fix"
+        "update-language-files_old": "cd extra/update-language-files && node index.js %npm_config_base_lang% && eslint ../../src/languages/**.js --fix",
+        "update-language-files": "cd extra/update-language-files && node index.js && eslint ../../src/languages/**.js --fix"
     },
     "dependencies": {
         "@fortawesome/fontawesome-svg-core": "^1.2.36",
