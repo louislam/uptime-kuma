@@ -2,8 +2,11 @@
 /dist
 /node_modules
 /data
+/out
 /.do
+/kubernetes
 **/.dockerignore
+/private
 **/.git
 **/.gitignore
 **/docker-compose*
