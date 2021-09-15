@@ -163,4 +163,8 @@ export default {
     Purple: "Lila",
     Pink: "Pink",
     "Search...": "Suchen...",
+    "Heartbeat Retry Interval": "Takt-Wiederholungsintervall",
+    retryCheckEverySecond: "Versuche alle {0} Sekunden",
+    "Import Backup": "Import Backup",
+    "Export Backup": "Export Backup",
 }
