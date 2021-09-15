@@ -144,7 +144,9 @@ h2 {
     }
 
     .shadow-box {
-        background-color: $dark-bg;
+        &:not(.alert) {
+            background-color: $dark-bg;
+        }
     }
 
     .form-check-input {
@@ -376,12 +378,19 @@ h2 {
 }
 
 [contenteditable=true] {
+    transition: all $easing-in 0.2s;
+
     &:focus {
         outline: 0 solid #eee;
     }
 
     &:hover, &:focus {
-        background-color: #efefef;
+        background-color: rgb(239, 239, 239);
+
+        .dark & {
+            background-color: rgba(239, 239, 239, 0.2);
+        }
+
         border-radius: 8px;
     }
 
@@ -400,4 +409,8 @@ h2 {
         cursor: pointer;
         transform: scale(1.2);
     }
+}
+
+.vue-image-crop-upload .vicp-wrap {
+    border-radius: 10px !important;
 }

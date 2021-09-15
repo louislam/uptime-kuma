@@ -85,14 +85,32 @@ router.get("/api/status-page/heartbeat", async (_request, response) => {
     }
 });
 
+router.post("/api/status-page/upload-logo", async (request, response) => {
+    allowDevAllOrigin(response);
+
+    // TODO: Check Bearer token
+
+    console.log(request);
+
+    response.json({});
+});
+
 async function checkPublished() {
     if (! await isPublished()) {
         throw new Error("The status page is not published");
     }
 }
 
+/**
+ * Default is published
+ * @returns {Promise<boolean>}
+ */
 async function isPublished() {
-    return await setting("statusPagePublished");
+    const value = await setting("statusPagePublished");
+    if (value === null) {
+        return true;
+    }
+    return value;
 }
 
 function send403(res, msg = "") {
