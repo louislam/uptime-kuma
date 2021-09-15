@@ -26,7 +26,7 @@ const copyRecursiveSync = function (src, dest) {
     }
 };
 
-console.log("Arguments: ", process.argv)
+console.log("Arguments:", process.argv)
 const baseLangCode = process.argv[2] || "en";
 console.log("Base Lang: " + baseLangCode);
 fs.rmdirSync("./languages", { recursive: true });
@@ -35,7 +35,7 @@ copyRecursiveSync("../../src/languages", "./languages");
 const en = (await import("./languages/en.js")).default;
 const baseLang = (await import(`./languages/${baseLangCode}.js`)).default;
 const files = fs.readdirSync("./languages");
-console.log("Files: ", files);
+console.log("Files:", files);
 
 for (const file of files) {
     if (!file.endsWith(".js")) {
