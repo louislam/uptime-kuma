@@ -13,6 +13,7 @@ import pl from "./languages/pl";
 import ruRU from "./languages/ru-RU";
 import sr from "./languages/sr";
 import srLatn from "./languages/sr-latn";
+import trTR from "./languages/tr-TR";
 import svSE from "./languages/sv-SE";
 import zhCN from "./languages/zh-CN";
 import zhHK from "./languages/zh-HK";
@@ -30,6 +31,7 @@ const languageList = {
     "sr": sr,
     "sr-latn": srLatn,
     "sv-SE": svSE,
+    "tr-TR": trTR,
     "ko-KR": koKR,
     "ru-RU": ruRU,
     "zh-CN": zhCN,
