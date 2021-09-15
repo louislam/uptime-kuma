@@ -135,7 +135,7 @@
                                 ({{ $t("backupDescription2") }}) <br />
                             </p>
 
-                            <div class="d-flex mb-2 justify-content-center">
+                            <div class="mb-2">
                                 <button class="btn btn-primary" @click="downloadBackup">{{ $t("Export") }}</button>
                             </div>
 
