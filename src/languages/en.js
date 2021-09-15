@@ -1,6 +1,7 @@
 export default {
     languageName: "English",
     checkEverySecond: "Check every {0} seconds.",
+    retryCheckEverySecond: "Retry every {0} seconds.",
     "Avg.": "Avg.",
     retriesDescription: "Maximum retries before the service is marked as down and a notification is sent",
     ignoreTLSError: "Ignore TLS/SSL error for HTTPS websites",
@@ -70,6 +71,7 @@ export default {
     Port: "Port",
     "Heartbeat Interval": "Heartbeat Interval",
     Retries: "Retries",
+    "Heartbeat Retry Interval": "Heartbeat Retry Interval",
     Advanced: "Advanced",
     "Upside Down Mode": "Upside Down Mode",
     "Max. Redirects": "Max. Redirects",
