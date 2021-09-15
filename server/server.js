@@ -948,6 +948,8 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                     await R.exec("DELETE FROM monitor_notification");
                     await R.exec("DELETE FROM monitor_tls_info");
                     await R.exec("DELETE FROM notification");
+                    await R.exec("DELETE FROM monitor_tag");
+                    await R.exec("DELETE FROM tag");
                     await R.exec("DELETE FROM monitor");
                 }
 
@@ -972,11 +974,18 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                     for (let i = 0; i < monitorListData.length; i++) {
                         if ((importHandle == "skip" && monitorNameListString.includes(monitorListData[i].name) == false) || importHandle == "keep" || importHandle == "overwrite") {
 
+                            if (backupData.version.includes("1.7")) {
+                                var retryInterval = monitorListData[i].retryInterval;
+                            } else {
+                                var retryInterval = 0;
+                            }
+
                             let monitor = {
                                 name: monitorListData[i].name,
                                 type: monitorListData[i].type,
                                 url: monitorListData[i].url,
                                 interval: monitorListData[i].interval,
+                                retryInterval: retryInterval,
                                 hostname: monitorListData[i].hostname,
                                 maxretries: monitorListData[i].maxretries,
                                 port: monitorListData[i].port,
@@ -1001,6 +1010,34 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                             bean.import(monitor)
                             bean.user_id = socket.userID
                             await R.store(bean)
+
+                            if (backupData.version.includes("1.7")) {
+                                if (monitorListData[i].tags.length >= 1) {
+                                    for (let o = 0; o < monitorListData[i].tags.length; o++) {
+
+                                        let tag = await R.findOne("tag", " name = ?", [
+                                            monitorListData[i].tags[o].name,
+                                        ])
+
+                                        if (! tag) {
+                                            let beanTag = R.dispense("tag")
+                                            beanTag.name = monitorListData[i].tags[o].name
+                                            beanTag.color = monitorListData[i].tags[o].color
+                                            await R.store(beanTag)
+
+                                            var tagId = beanTag.id
+                                        } else {
+                                            var tagId = tag.id
+                                        }
+
+                                        await R.exec("INSERT INTO monitor_tag (tag_id, monitor_id, value) VALUES (?, ?, ?)", [
+                                            tagId,
+                                            bean.id,
+                                            monitorListData[i].tags[o].value,
+                                        ])
+                                    }
+                                }
+                            }
 
                             await updateMonitorNotification(bean.id, notificationIDList)
 
