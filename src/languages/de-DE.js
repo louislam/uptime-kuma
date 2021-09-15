@@ -113,8 +113,6 @@ export default {
     "Create your admin account": "Erstelle dein Admin Konto",
     "Repeat Password": "Wiederhole das Passwort",
     "Resource Record Type": "Resource Record Type",
-    "Export": "Export",
-    "Import": "Import",
     "Import/Export Backup": "Import/Export Backup",
     Export: "Export",
     Import: "Import",
@@ -151,7 +149,6 @@ export default {
     Inactive: "Inaktiv",
     Token: "Token",
     "Show URI": "URI Anzeigen",
-    "Clear all statistics": "Lösche alle Statistiken",
     Tags: "Tags",
     "Add New below or Select...": "Füge neuen hinzu oder wähle aus...",
     "Tag with this name already exist.": "Ein Tag mit dem Namen existiert bereits.",
@@ -167,4 +164,6 @@ export default {
     Purple: "Lila",
     Pink: "Pink",
     "Search...": "Suchen...",
+    "Heartbeat Retry Interval": "Takt-Wiederholungsintervall",
+    retryCheckEverySecond: "Versuche alle {0} Sekunden",
 }

@@ -152,7 +152,6 @@ export default {
     Inactive: "Inactive",
     Token: "Token",
     "Show URI": "Show URI",
-    "Clear all statistics": "Clear all Statistics",
     Tags: "Tags",
     "Add New below or Select...": "Add New below or Select...",
     "Tag with this name already exist.": "Tag with this name already exist.",
