@@ -43,6 +43,6 @@ export const i18n = createI18n({
     locale: localStorage.locale || "en",
     fallbackLocale: "en",
     silentFallbackWarn: true,
-    silentTranslationWarn: false,
+    silentTranslationWarn: true,
     messages: languageList,
 });

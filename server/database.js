@@ -34,6 +34,7 @@ class Database {
         "patch-2fa.sql": true,
         "patch-add-retry-interval-monitor.sql": true,
         "patch-monitor-public-weight.sql": true,
+        "patch-incident-table.sql": true,
     }
 
     /**

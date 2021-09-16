@@ -293,3 +293,9 @@ exports.allowAllOrigin = (res) => {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
 }
+
+exports.checkLogin = (socket) => {
+    if (! socket.userID) {
+        throw new Error("You are not logged in.");
+    }
+}

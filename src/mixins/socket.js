@@ -106,7 +106,11 @@ export default {
                     this.heartbeatList[data.monitorID] = [];
                 }
 
-                this.heartbeatList[data.monitorID].push(data)
+                this.heartbeatList[data.monitorID].push(data);
+
+                if (this.heartbeatList[data.monitorID].length >= 150) {
+                    this.heartbeatList[data.monitorID].shift();
+                }
 
                 // Add to important list if it is important
                 // Also toast

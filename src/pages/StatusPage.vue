@@ -12,7 +12,6 @@
                              :width="128"
                              :height="128"
                              :langType="$i18n.locale"
-                             :headers="uploadHeader"
                              img-format="png"
                              :noCircle="true"
                              :noSquare="false"
@@ -24,7 +23,7 @@
         </h1>
 
         <!-- Admin functions -->
-        <div v-if="hasToken" class="mt-3">
+        <div v-if="hasToken" class="mb-4">
             <div v-if="!enableEditMode">
                 <button class="btn btn-info me-2" @click="edit">
                     <font-awesome-icon icon="edit" />
@@ -78,30 +77,44 @@
         </div>
 
         <!-- Incident -->
-        <div v-if="incident !== null" class="shadow-box alert alert-success mt-4 p-4 incident" role="alert">
+        <div v-if="incident !== null" class="shadow-box alert mb-4 p-4 incident" role="alert" :class="incidentClass">
+            <strong v-if="editIncidentMode">{{ $t("Title") }}:</strong>
             <Editable v-model="incident.title" tag="h4" :contenteditable="editIncidentMode" :noNL="true" class="alert-heading" />
 
+            <strong v-if="editIncidentMode">{{ $t("Content") }}:</strong>
             <Editable v-model="incident.content" tag="div" :contenteditable="editIncidentMode" class="content" />
 
             <div v-if="editMode" class="mt-3">
-                <button v-if="editMode && !incident.id" class="btn btn-light me-2" @click="postIncident">
+                <button v-if="editIncidentMode" class="btn btn-light me-2" @click="postIncident">
                     <font-awesome-icon icon="bullhorn" />
                     {{ $t("Post") }}
                 </button>
 
-                <button v-if="editMode && !incident.id" class="btn btn-light me-2" @click="cancelIncident">
-                    <font-awesome-icon icon="times" />
-                    {{ $t("Cancel") }}
-                </button>
-
-                <!-- TODO : color change -->
-
-                <button v-if="editMode && incident.id" class="btn btn-light me-2" @click="editIncident">
+                <button v-if="!editIncidentMode && incident.id" class="btn btn-light me-2" @click="editIncident">
                     <font-awesome-icon icon="edit" />
                     {{ $t("Edit") }}
                 </button>
 
-                <button v-if="editMode && incident.id" class="btn btn-light me-2" @click="unpinIncident">
+                <button v-if="editIncidentMode" class="btn btn-light me-2" @click="cancelIncident">
+                    <font-awesome-icon icon="times" />
+                    {{ $t("Cancel") }}
+                </button>
+
+                <div v-if="editIncidentMode" class="dropdown d-inline-block me-2">
+                    <button id="dropdownMenuButton1" class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Style: {{ incident.style }}
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                        <li><a class="dropdown-item" href="#" @click="incident.style = 'info'">info</a></li>
+                        <li><a class="dropdown-item" href="#" @click="incident.style = 'warning'">warning</a></li>
+                        <li><a class="dropdown-item" href="#" @click="incident.style = 'danger'">danger</a></li>
+                        <li><a class="dropdown-item" href="#" @click="incident.style = 'primary'">primary</a></li>
+                        <li><a class="dropdown-item" href="#" @click="incident.style = 'light'">light</a></li>
+                        <li><a class="dropdown-item" href="#" @click="incident.style = 'dark'">dark</a></li>
+                    </ul>
+                </div>
+
+                <button v-if="!editIncidentMode && incident.id" class="btn btn-light me-2" @click="unpinIncident">
                     <font-awesome-icon icon="unlink" />
                     {{ $t("Unpin") }}
                 </button>
@@ -109,25 +122,35 @@
         </div>
 
         <!-- Overall Status -->
-        <div v-if="$root.publicGroupList.length > 0" class="shadow-box list  p-4 overall-status mt-4">
-            <div v-if="false">
-                <font-awesome-icon icon="check-circle" class="ok" />
-                All Systems Operational
+        <div class="shadow-box list  p-4 overall-status mb-4">
+            <div v-if="Object.keys($root.publicMonitorList).length === 0">
+                <font-awesome-icon icon="question-circle" class="ok" />
+                No Services
             </div>
-            <div v-if="false">
-                <font-awesome-icon icon="exclamation-circle" class="warning" />
-                Partially Degraded Service
-            </div>
-            <div>
-                <font-awesome-icon icon="times-circle" class="danger" />
-                Degraded Service
-            </div>
+
+            <template v-else>
+                <div v-if="allUp">
+                    <font-awesome-icon icon="check-circle" class="ok" />
+                    All Systems Operational
+                </div>
+
+                <div v-if="partialDown">
+                    <font-awesome-icon icon="exclamation-circle" class="warning" />
+                    Partially Degraded Service
+                </div>
+
+                <div v-if="allDown">
+                    <font-awesome-icon icon="times-circle" class="danger" />
+                    Degraded Service
+                </div>
+            </template>
         </div>
 
         <!-- Description -->
-        <Editable v-model="config.description" :contenteditable="editMode" tag="div" class="mt-4 description" />
+        <strong v-if="editMode">{{ $t("Description") }}:</strong>
+        <Editable v-model="config.description" :contenteditable="editMode" tag="div" class="mb-4 description" />
 
-        <div v-if="editMode" class="mt-4">
+        <div v-if="editMode" class="mb-4">
             <div>
                 <button class="btn btn-primary btn-add-group me-2" @click="addGroup">
                     <font-awesome-icon icon="plus" />
@@ -146,12 +169,12 @@
             </div>
         </div>
 
-        <div class="mt-4">
+        <div class="mb-4">
             <div v-if="$root.publicGroupList.length === 0" class="text-center">
                 👀 Nothing here, please add a group or a monitor.
             </div>
 
-            <GroupList :edit-mode="enableEditMode" />
+            <PublicGroupList :edit-mode="enableEditMode" />
         </div>
 
         <footer class="mt-5 mb-4">
@@ -163,14 +186,17 @@
 <script>
 import VueMultiselect from "vue-multiselect"
 import axios from "axios";
-import GroupList from "../components/GroupList.vue";
+import PublicGroupList from "../components/PublicGroupList.vue";
 import ImageCropUpload from "vue-image-crop-upload";
+import { STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_PARTIAL_DOWN, UP } from "../util.ts";
+import { useToast } from "vue-toastification";
+const toast = useToast();
 
 const leavePageMsg = "Do you really want to leave? you have unsaved changes!";
 
 export default {
     components: {
-        GroupList,
+        PublicGroupList,
         VueMultiselect,
         ImageCropUpload
     },
@@ -223,7 +249,7 @@ export default {
         },
 
         editIncidentMode() {
-            return this.editMode && this.enableEditIncidentMode;
+            return this.enableEditIncidentMode;
         },
 
         isPublished() {
@@ -234,12 +260,6 @@ export default {
             return this.config.statusPageTheme;
         },
 
-        uploadHeader() {
-            return {
-                Authorization: "Bearer " + localStorage.token,
-            }
-        },
-
         logoClass() {
             if (this.editMode) {
                 return {
@@ -247,7 +267,44 @@ export default {
                 }
             }
             return {};
-        }
+        },
+
+        incidentClass() {
+            return "bg-" + this.incident.style;
+        },
+
+        overallStatus() {
+            let status = STATUS_PAGE_ALL_UP;
+            let hasUp = false;
+
+            for (let id in this.$root.publicLastHeartbeatList) {
+                let beat = this.$root.publicLastHeartbeatList[id];
+
+                if (beat.status === UP) {
+                    hasUp = true;
+                } else {
+                    status = STATUS_PAGE_PARTIAL_DOWN;
+                }
+            }
+
+            if (! hasUp) {
+                status = STATUS_PAGE_ALL_DOWN;
+            }
+
+            return status;
+        },
+
+        allUp() {
+            return this.overallStatus === STATUS_PAGE_ALL_UP;
+        },
+
+        partialDown() {
+            return this.overallStatus === STATUS_PAGE_PARTIAL_DOWN;
+        },
+
+        allDown() {
+            return this.overallStatus === STATUS_PAGE_ALL_DOWN;
+        },
 
     },
     watch: {
@@ -276,7 +333,6 @@ export default {
     },
     async created() {
         this.hasToken = ("token" in localStorage);
-        this.config = (await axios.get("/api/status-page/config")).data;
 
         // Browser change page
         // https://stackoverflow.com/questions/7317273/warn-user-before-leaving-web-page-with-unsaved-changes
@@ -290,7 +346,19 @@ export default {
         });
     },
     async mounted() {
-        this.monitorList = (await axios.get("/api/status-page/monitor-list")).data;
+        axios.get("/api/status-page/config").then((res) => {
+            this.config = res.data;
+        });
+
+        axios.get("/api/status-page/incident").then((res) => {
+            if (res.data.ok) {
+                this.incident = res.data.incident;
+            }
+        });
+
+        axios.get("/api/status-page/monitor-list").then((res) => {
+            this.monitorList = res.data;
+        });
     },
     methods: {
 
@@ -346,27 +414,44 @@ export default {
             this.incident = {
                 title: "",
                 content: "",
+                style: "primary",
             };
         },
 
         postIncident() {
-            this.enableEditIncidentMode = false;
-            // TODO
+            if (this.incident.title == "" || this.incident.content == "") {
+                toast.error("Please input title and content.");
+                return;
+            }
+
+            this.$root.getSocket().emit("postIncident", this.incident, (res) => {
+
+                if (res.ok) {
+                    this.enableEditIncidentMode = false;
+                    this.incident = res.incident;
+                } else {
+                    toast.error(res.msg);
+                }
+
+            });
+
         },
 
+        /**
+         * Click Edit Button
+         */
         editIncident() {
             this.enableEditIncidentMode = true;
-            // TODO
         },
 
         cancelIncident() {
             this.enableEditIncidentMode = false;
-            this.incident = null;
         },
 
         unpinIncident() {
-            this.incident = null;
-            // TODO
+            this.$root.getSocket().emit("unpinIncident", () => {
+                this.incident = null;
+            })
         }
     }
 }

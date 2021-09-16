@@ -35,7 +35,7 @@ console.log("Importing this project modules");
 debug("Importing Monitor");
 const Monitor = require("./model/monitor");
 debug("Importing Settings");
-const { getSettings, setSettings, setting, initJWTSecret, genSecret, allowDevAllOrigin } = require("./util-server");
+const { getSettings, setSettings, setting, initJWTSecret, genSecret, allowDevAllOrigin, checkLogin } = require("./util-server");
 
 debug("Importing Notification");
 const { Notification } = require("./notification");
@@ -91,6 +91,7 @@ module.exports.io = io;
 
 // Must be after io instantiation
 const { sendNotificationList, sendHeartbeatList, sendImportantHeartbeatList } = require("./client");
+const { statusPageSocketHandler } = require("./socket-handlers/status-page-socket-handler");
 
 app.use(express.json());
 
@@ -1104,7 +1105,10 @@ exports.entryPage = "dashboard";
             }
         });
 
-        debug("added all socket handlers")
+        // Status Page Socket Handler for admin only
+        statusPageSocketHandler(socket);
+
+        debug("added all socket handlers");
 
         // ***************************
         // Better do anything after added all socket handlers here
@@ -1206,12 +1210,6 @@ async function getMonitorJSONList(userID) {
     }
 
     return result;
-}
-
-function checkLogin(socket) {
-    if (! socket.userID) {
-        throw new Error("You are not logged in.");
-    }
 }
 
 async function initDatabase() {

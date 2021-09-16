@@ -38,7 +38,10 @@ router.get("/api/status-page/incident", async (_, response) => {
     try {
         await checkPublished();
 
-        // TODO:
+        response.json({
+            ok: true,
+            incident: (await R.findOne("incident", " pin = 1 AND active = 1")).toPublicJSON(),
+        })
 
     } catch (error) {
         send403(response, error.message);

@@ -22,8 +22,19 @@ export default {
                     result[monitor.id] = monitor;
                 }
             }
+            return result;
+        },
+
+        publicLastHeartbeatList() {
+            let result = {}
+
+            for (let monitorID in this.publicMonitorList) {
+                if (this.lastHeartbeatList[monitorID]) {
+                    result[monitorID] = this.lastHeartbeatList[monitorID];
+                }
+            }
 
             return result;
-        }
+        },
     }
 }

@@ -25,6 +25,7 @@ import {
     faBullhorn,
     faArrowsAltV,
     faUnlink,
+    faQuestionCircle,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -49,6 +50,7 @@ library.add(
     faBullhorn,
     faArrowsAltV,
     faUnlink,
+    faQuestionCircle,
 );
 
 export { FontAwesomeIcon };
