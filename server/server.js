@@ -933,6 +933,7 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                 checkLogin(socket)
 
                 let backupData = JSON.parse(uploadedJSON);
+                let version = backupData.version.replace(/\./g, "");
 
                 console.log(`Importing Backup, User ID: ${socket.userID}, Version: ${backupData.version}`)
 
@@ -976,7 +977,7 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
 
                             let retryInterval = 0;
 
-                            if (backupData.version.includes("1.7")) {
+                            if (version >= 170) {
                                 retryInterval = monitorListData[i].retryInterval;
                             }
 
@@ -1011,7 +1012,7 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                             bean.user_id = socket.userID
                             await R.store(bean)
 
-                            if (backupData.version.includes("1.7")) {
+                            if (version >= 170) {
                                 if (monitorListData[i].tags.length >= 1) {
                                     for (let o = 0; o < monitorListData[i].tags.length; o++) {
 
