@@ -17,8 +17,6 @@
                              :noCircle="true"
                              :noSquare="false"
                              @crop-success="cropSuccess"
-                             @crop-upload-success="cropUploadSuccess"
-                             @crop-upload-fail="cropUploadFail"
             />
 
             <!-- Title -->
@@ -26,7 +24,7 @@
         </h1>
 
         <!-- Admin functions -->
-        <div v-if="hasToken" class="mt-3" style="height: 38px;">
+        <div v-if="hasToken" class="mt-3">
             <div v-if="!enableEditMode">
                 <button class="btn btn-info me-2" @click="edit">
                     <font-awesome-icon icon="edit" />
@@ -50,7 +48,7 @@
                     {{ $t("Discard") }}
                 </button>
 
-                <button class="btn btn-primary btn-add-group me-2" @click="">
+                <button class="btn btn-primary btn-add-group me-2" @click="createIncident">
                     <font-awesome-icon icon="bullhorn" />
                     {{ $t("Create Incident") }}
                 </button>
@@ -79,8 +77,39 @@
             </div>
         </div>
 
+        <!-- Incident -->
+        <div v-if="incident !== null" class="shadow-box alert alert-success mt-4 p-4 incident" role="alert">
+            <Editable v-model="incident.title" tag="h4" :contenteditable="editIncidentMode" :noNL="true" class="alert-heading" />
+
+            <Editable v-model="incident.content" tag="div" :contenteditable="editIncidentMode" class="content" />
+
+            <div v-if="editMode" class="mt-3">
+                <button v-if="editMode && !incident.id" class="btn btn-light me-2" @click="postIncident">
+                    <font-awesome-icon icon="bullhorn" />
+                    {{ $t("Post") }}
+                </button>
+
+                <button v-if="editMode && !incident.id" class="btn btn-light me-2" @click="cancelIncident">
+                    <font-awesome-icon icon="times" />
+                    {{ $t("Cancel") }}
+                </button>
+
+                <!-- TODO : color change -->
+
+                <button v-if="editMode && incident.id" class="btn btn-light me-2" @click="editIncident">
+                    <font-awesome-icon icon="edit" />
+                    {{ $t("Edit") }}
+                </button>
+
+                <button v-if="editMode && incident.id" class="btn btn-light me-2" @click="unpinIncident">
+                    <font-awesome-icon icon="unlink" />
+                    {{ $t("Unpin") }}
+                </button>
+            </div>
+        </div>
+
         <!-- Overall Status -->
-        <div class="shadow-box list  p-4 overall-status mt-4">
+        <div v-if="$root.publicGroupList.length > 0" class="shadow-box list  p-4 overall-status mt-4">
             <div v-if="false">
                 <font-awesome-icon icon="check-circle" class="ok" />
                 All Systems Operational
@@ -97,19 +126,6 @@
 
         <!-- Description -->
         <Editable v-model="config.description" :contenteditable="editMode" tag="div" class="mt-4 description" />
-
-        <!-- Incident -->
-        <div class="shadow-box alert alert-success mt-4 p-4" role="alert">
-            <h4 class="alert-heading">Well done!</h4>
-            <p>Aww yeah, you successfully read this important alert message. This example text is going to run a bit longer so that you can see how spacing within an alert works with this kind of content.</p>
-            <hr>
-            <p class="mb-0">Whenever you need to, be sure to use margin utilities to keep things nice and tidy.</p>
-
-            <div class="mt-3">
-                <button v-if="editMode" class="btn btn-light me-2">Unpin</button>
-                <button v-if="editMode" class="btn btn-light">Edit</button>
-            </div>
-        </div>
 
         <div v-if="editMode" class="mt-4">
             <div>
@@ -175,6 +191,7 @@ export default {
     data() {
         return {
             enableEditMode: false,
+            enableEditIncidentMode: false,
             hasToken: false,
             config: {},
             selectedMonitor: null,
@@ -203,6 +220,10 @@ export default {
 
         editMode() {
             return this.enableEditMode && this.$root.socket.connected;
+        },
+
+        editIncidentMode() {
+            return this.editMode && this.enableEditIncidentMode;
         },
 
         isPublished() {
@@ -308,10 +329,9 @@ export default {
         },
 
         /**
-         * Crop success
+         * Crop Success
          */
-        cropSuccess(imgDataUrl, field) {
-            console.log("-------- crop success --------");
+        cropSuccess(imgDataUrl) {
             this.imgDataUrl = imgDataUrl;
         },
 
@@ -319,6 +339,34 @@ export default {
             if (this.editMode) {
                 this.showImageCropUpload = true;
             }
+        },
+
+        createIncident() {
+            this.enableEditIncidentMode = true;
+            this.incident = {
+                title: "",
+                content: "",
+            };
+        },
+
+        postIncident() {
+            this.enableEditIncidentMode = false;
+            // TODO
+        },
+
+        editIncident() {
+            this.enableEditIncidentMode = true;
+            // TODO
+        },
+
+        cancelIncident() {
+            this.enableEditIncidentMode = false;
+            this.incident = null;
+        },
+
+        unpinIncident() {
+            this.incident = null;
+            // TODO
         }
     }
 }
@@ -372,6 +420,12 @@ footer {
         &:hover {
             transform: scale(1.2);
         }
+    }
+}
+
+.incident {
+    .content {
+        min-height: 60px;
     }
 }
 

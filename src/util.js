@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isDev = void 0;
+exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isDev = void 0;
 const _dayjs = require("dayjs");
 const dayjs = _dayjs;
 exports.isDev = process.env.NODE_ENV === "development";
@@ -8,6 +8,9 @@ exports.appName = "Uptime Kuma";
 exports.DOWN = 0;
 exports.UP = 1;
 exports.PENDING = 2;
+exports.STATUS_PAGE_ALL_DOWN = 0;
+exports.STATUS_PAGE_ALL_UP = 1;
+exports.STATUS_PAGE_PARTIAL_DOWN = 2;
 function flipStatus(s) {
     if (s === exports.UP) {
         return exports.DOWN;

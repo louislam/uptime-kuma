@@ -379,20 +379,24 @@ h2 {
 
 [contenteditable=true] {
     transition: all $easing-in 0.2s;
+    background-color: rgba(239, 239, 239, 0.7);
+    border-radius: 8px;
 
     &:focus {
         outline: 0 solid #eee;
+        background-color: rgba(245, 245, 245, 0.9);
     }
 
-    &:hover, &:focus {
-        background-color: rgb(239, 239, 239);
-
-        .dark & {
-            background-color: rgba(239, 239, 239, 0.2);
-        }
-
-        border-radius: 8px;
+    &:hover {
+        background-color: rgba(239, 239, 239, 0.8);
     }
+
+    .dark & {
+        background-color: rgba(239, 239, 239, 0.2);
+    }
+
+    /*
+
 
     &::after {
         margin-left: 5px;
@@ -400,6 +404,8 @@ h2 {
         font-size: 13px;
         color: #eee;
     }
+    */
+
 }
 
 .action {
