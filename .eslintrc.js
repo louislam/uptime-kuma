@@ -33,7 +33,7 @@ module.exports = {
             },
         ],
         quotes: ["warn", "double"],
-        //semi: ['off', 'never'],
+        semi: "warn",
         "vue/html-indent": ["warn", 4], // default: 2
         "vue/max-attributes-per-line": "off",
         "vue/singleline-html-element-content-newline": "off",
@@ -92,4 +92,4 @@ module.exports = {
             }
         }
     ]
-}
+};

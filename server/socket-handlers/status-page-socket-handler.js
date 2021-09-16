@@ -33,12 +33,12 @@ module.exports.statusPageSocketHandler = (socket) => {
             callback({
                 ok: true,
                 incident: incidentBean.toPublicJSON(),
-            })
+            });
         } catch (error) {
             callback({
                 ok: false,
                 msg: error.message,
-            })
+            });
         }
     });
 
@@ -50,12 +50,12 @@ module.exports.statusPageSocketHandler = (socket) => {
 
             callback({
                 ok: true,
-            })
+            });
         } catch (error) {
             callback({
                 ok: false,
                 msg: error.message,
-            })
+            });
         }
     });
-}
+};
