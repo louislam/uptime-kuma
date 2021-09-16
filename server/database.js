@@ -32,6 +32,7 @@ class Database {
         "patch-improve-performance.sql": true,
         "patch-monitor-public.sql": true,
         "patch-2fa.sql": true,
+        "patch-add-retry-interval-monitor.sql": true,
         "patch-monitor-public-weight.sql": true,
     }
 

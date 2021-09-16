@@ -119,6 +119,7 @@ export default {
     "Auto Get": "自动获取",
     enableDefaultNotificationDescription: "新的监控项将默认启用，你也可以在每个监控项中分别设置",
     "Default enabled": "默认开启",
+    "Also apply to existing monitors": "应用到所有监控项",
     "Import/Export Backup": "导入/导出备份",
     Export: "导出",
     Import: "导入",
