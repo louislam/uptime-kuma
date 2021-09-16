@@ -120,7 +120,6 @@ export default {
     enableDefaultNotificationDescription: "新的监控项将默认启用，你也可以在每个监控项中分别设置",
     "Default enabled": "默认开启",
     "Also apply to existing monitors": "应用到所有监控项",
-    "Import/Export Backup": "导入/导出备份",
     Export: "导出",
     Import: "导入",
     backupDescription: "你可以将所有的监控项和消息通知备份到一个 JSON 文件中",

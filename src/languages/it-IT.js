@@ -115,7 +115,6 @@ export default {
     "Last Result": "Ultimo risultato",
     "Create your admin account": "Crea l'account amministratore",
     "Repeat Password": "Ripeti Password",
-    "Import/Export Backup": "Importa/Esporta Backup",
     Export: "Esporta",
     Import: "Importa",
     respTime: "Tempo di Risposta (ms)",

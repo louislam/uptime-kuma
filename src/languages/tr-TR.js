@@ -116,5 +116,5 @@ export default {
     "Clear Data": "Verileri Temizle",
     Events: "Olaylar",
     Heartbeats: "Sağlık Durumları",
-    "Auto Get": "Otomatik Al"
+    "Auto Get": "Otomatik Al",
 }

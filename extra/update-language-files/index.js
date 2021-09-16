@@ -1,4 +1,4 @@
-// Need to use es6 to read language files
+// Need to use ES6 to read language files
 
 import fs from "fs";
 import path from "path";
@@ -14,6 +14,7 @@ const copyRecursiveSync = function (src, dest) {
     let exists = fs.existsSync(src);
     let stats = exists && fs.statSync(src);
     let isDirectory = exists && stats.isDirectory();
+
     if (isDirectory) {
         fs.mkdirSync(dest);
         fs.readdirSync(src).forEach(function (childItemName) {
@@ -24,8 +25,9 @@ const copyRecursiveSync = function (src, dest) {
         fs.copyFileSync(src, dest);
     }
 };
-console.log(process.argv)
-const baseLangCode = process.argv[2] || "zh-HK";
+
+console.log("Arguments:", process.argv)
+const baseLangCode = process.argv[2] || "en";
 console.log("Base Lang: " + baseLangCode);
 fs.rmdirSync("./languages", { recursive: true });
 copyRecursiveSync("../../src/languages", "./languages");
@@ -33,46 +35,50 @@ copyRecursiveSync("../../src/languages", "./languages");
 const en = (await import("./languages/en.js")).default;
 const baseLang = (await import(`./languages/${baseLangCode}.js`)).default;
 const files = fs.readdirSync("./languages");
-console.log(files);
+console.log("Files:", files);
+
 for (const file of files) {
-    if (file.endsWith(".js")) {
-        console.log("Processing " + file);
-        const lang = await import("./languages/" + file);
+    if (!file.endsWith(".js")) {
+        console.log("Skipping " + file)
+        continue;
+    }
 
-        let obj;
+    console.log("Processing " + file);
+    const lang = await import("./languages/" + file);
 
-        if (lang.default) {
-            console.log("is js module");
-            obj = lang.default;
-        } else {
-            console.log("empty file");
-            obj = {
-                languageName: "<Your Language name in your language (not in English)>"
-            };
+    let obj;
+
+    if (lang.default) {
+        obj = lang.default;
+    } else {
+        console.log("Empty file");
+        obj = {
+            languageName: "<Your Language name in your language (not in English)>"
+        };
+    }
+
+    // En first
+    for (const key in en) {
+        if (! obj[key]) {
+            obj[key] = en[key];
         }
+    }
 
-        // En first
-        for (const key in en) {
-            if (! obj[key]) {
-                obj[key] = en[key];
-            }
-        }
-
+    if (baseLang !== en) {
         // Base second
         for (const key in baseLang) {
             if (! obj[key]) {
                 obj[key] = key;
             }
         }
-
-        const code = "export default " + util.inspect(obj, {
-            depth: null,
-        });
-
-        fs.writeFileSync(`../../src/languages/${file}`, code);
-
     }
+
+    const code = "export default " + util.inspect(obj, {
+        depth: null,
+    });
+
+    fs.writeFileSync(`../../src/languages/${file}`, code);
 }
 
 fs.rmdirSync("./languages", { recursive: true });
-console.log("Done, fix the format by eslint now");
+console.log("Done. Fixing formatting by ESLint...");
