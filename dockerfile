@@ -28,6 +28,7 @@ RUN apt update && \
 # Copy app files from build layer
 COPY --from=build /app /app
 
+USER node
 EXPOSE 3001
 VOLUME ["/app/data"]
 HEALTHCHECK --interval=60s --timeout=30s --start-period=180s --retries=5 CMD node extra/healthcheck.js
