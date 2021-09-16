@@ -19,6 +19,7 @@ WORKDIR /app
 # Install apprise
 RUN apk add --no-cache iputils python3 py3-cryptography py3-pip py3-six py3-yaml py3-click py3-markdown py3-requests py3-requests-oauthlib && \
             pip3 --no-cache-dir install apprise && \
+            install -d -m 0755 -o node -g node /app/data && \
             rm -rf /root/.cache
 
 # Copy app files from build layer

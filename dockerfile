@@ -23,6 +23,7 @@ RUN apt update && \
                 sqlite3 \
                 iputils-ping && \
             pip3 --no-cache-dir install apprise && \
+            install -d -m 0755 -o node -g node /app/data && \
             rm -rf /var/lib/apt/lists/*
 
 # Copy app files from build layer
