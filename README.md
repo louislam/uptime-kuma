@@ -33,7 +33,6 @@ VPS is sponsored by Uptime Kuma sponsors on [Open Collective](https://opencollec
 ### 🐳 Docker
 
 ```bash
-docker volume create uptime-kuma
 docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name uptime-kuma louislam/uptime-kuma:1
 ```
 
