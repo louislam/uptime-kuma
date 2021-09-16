@@ -974,10 +974,10 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                     for (let i = 0; i < monitorListData.length; i++) {
                         if ((importHandle == "skip" && monitorNameListString.includes(monitorListData[i].name) == false) || importHandle == "keep" || importHandle == "overwrite") {
 
+                            let retryInterval = 0;
+
                             if (backupData.version.includes("1.7")) {
-                                var retryInterval = monitorListData[i].retryInterval;
-                            } else {
-                                var retryInterval = 0;
+                                retryInterval = monitorListData[i].retryInterval;
                             }
 
                             let monitor = {
@@ -1019,15 +1019,15 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                                             monitorListData[i].tags[o].name,
                                         ])
 
+                                        let tagId = tag.id
+
                                         if (! tag) {
                                             let beanTag = R.dispense("tag")
                                             beanTag.name = monitorListData[i].tags[o].name
                                             beanTag.color = monitorListData[i].tags[o].color
                                             await R.store(beanTag)
 
-                                            var tagId = beanTag.id
-                                        } else {
-                                            var tagId = tag.id
+                                            tagId = beanTag.id
                                         }
 
                                         await R.exec("INSERT INTO monitor_tag (tag_id, monitor_id, value) VALUES (?, ?, ?)", [
