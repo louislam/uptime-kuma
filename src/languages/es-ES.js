@@ -32,7 +32,7 @@ export default {
     Up: "Funcional",
     Down: "Caído",
     Pending: "Pendiente",
-    Unknown: "Desconociso",
+    Unknown: "Desconocido",
     Pause: "Pausa",
     Name: "Nombre",
     Status: "Estado",
