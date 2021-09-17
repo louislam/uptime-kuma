@@ -8,7 +8,7 @@ create table monitor_checks
                     constraint monitor_checks_pk
                     primary key autoincrement,
     type       VARCHAR(50) not null,
-    value      TEXTt,
+    value      TEXT,
     monitor_id INTEGER     not null
                     constraint monitor_checks_monitor_id_fk
                         references monitor

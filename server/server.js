@@ -1,7 +1,7 @@
 console.log("Welcome to Uptime Kuma");
 console.log("Node Env: " + process.env.NODE_ENV);
 
-const { sleep, debug, TimeLogger, getRandomInt } = require("../src/util");
+const { sleep, debug, getRandomInt } = require("../src/util");
 
 console.log("Importing Node libraries")
 const fs = require("fs");
@@ -437,8 +437,8 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                 let notificationIDList = monitor.notificationIDList;
                 delete monitor.notificationIDList;
 
-                monitor.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
-                delete monitor.accepted_statuscodes;
+                monitor.checks_json = JSON.stringify(monitor.checks);
+                delete monitor.checks;
 
                 bean.import(monitor)
                 bean.user_id = socket.userID
@@ -481,13 +481,12 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                 bean.hostname = monitor.hostname;
                 bean.maxretries = monitor.maxretries;
                 bean.port = monitor.port;
-                bean.keyword = monitor.keyword;
                 bean.ignoreTls = monitor.ignoreTls;
                 bean.upsideDown = monitor.upsideDown;
                 bean.maxredirects = monitor.maxredirects;
-                bean.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
                 bean.dns_resolve_type = monitor.dns_resolve_type;
                 bean.dns_resolve_server = monitor.dns_resolve_server;
+                bean.checks_json = JSON.stringify(monitor.checks);
 
                 await R.store(bean)
 
@@ -776,11 +775,10 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                             hostname: monitorList[i].hostname,
                             maxretries: monitorList[i].maxretries,
                             port: monitorList[i].port,
-                            keyword: monitorList[i].keyword,
                             ignoreTls: monitorList[i].ignoreTls,
                             upsideDown: monitorList[i].upsideDown,
                             maxredirects: monitorList[i].maxredirects,
-                            accepted_statuscodes: monitorList[i].accepted_statuscodes,
+                            checks: monitorList[i].checks,
                             dns_resolve_type: monitorList[i].dns_resolve_type,
                             dns_resolve_server: monitorList[i].dns_resolve_server,
                             notificationIDList: {},
@@ -791,7 +789,7 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                         let notificationIDList = monitor.notificationIDList;
                         delete monitor.notificationIDList;
 
-                        monitor.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
+                        monitor.checks_json = JSON.stringify(monitor.checks);
                         delete monitor.accepted_statuscodes;
 
                         bean.import(monitor)

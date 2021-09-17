@@ -12,19 +12,16 @@
                                 <label for="type" class="form-label">{{ $t("Monitor Type") }}</label>
                                 <select id="type" v-model="monitor.type" class="form-select">
                                     <option value="http">
-                                        HTTP(s)
+                                        {{ $t("HTTP(s)") }}
                                     </option>
                                     <option value="port">
-                                        TCP Port
+                                        {{ $t("TCP Port") }}
                                     </option>
                                     <option value="ping">
-                                        Ping
-                                    </option>
-                                    <option value="keyword">
-                                        HTTP(s) - {{ $t("Keyword") }}
+                                        {{ $t("Ping") }}
                                     </option>
                                     <option value="dns">
-                                        DNS
+                                        {{ $t("DNS") }}
                                     </option>
                                 </select>
                             </div>
@@ -34,17 +31,9 @@
                                 <input id="name" v-model="monitor.name" type="text" class="form-control" required>
                             </div>
 
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' " class="my-3">
+                            <div v-if="monitor.type === 'http'" class="my-3">
                                 <label for="url" class="form-label">{{ $t("URL") }}</label>
                                 <input id="url" v-model="monitor.url" type="url" class="form-control" pattern="https?://.+" required>
-                            </div>
-
-                            <div v-if="monitor.type === 'keyword' " class="my-3">
-                                <label for="keyword" class="form-label">{{ $t("Keyword") }}</label>
-                                <input id="keyword" v-model="monitor.keyword" type="text" class="form-control" required>
-                                <div class="form-text">
-                                    {{ $t("keywordDescription") }}
-                                </div>
                             </div>
 
                             <!-- TCP Port / Ping / DNS only -->
@@ -108,7 +97,7 @@
 
                             <h2 class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
 
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' " class="my-3 form-check">
+                            <div v-if="monitor.type === 'http'" class="my-3 form-check">
                                 <input id="ignore-tls" v-model="monitor.ignoreTls" class="form-check-input" type="checkbox" value="">
                                 <label class="form-check-label" for="ignore-tls">
                                     {{ $t("ignoreTLSError") }}
@@ -125,8 +114,8 @@
                                 </div>
                             </div>
 
-                            <!-- HTTP / Keyword only -->
-                            <template v-if="monitor.type === 'http' || monitor.type === 'keyword' ">
+                            <!-- HTTP only -->                            
+                            <template v-if="monitor.type === 'http'">
                                 <div class="my-3">
                                     <label for="maxRedirects" class="form-label">{{ $t("Max. Redirects") }}</label>
                                     <input id="maxRedirects" v-model="monitor.maxredirects" type="number" class="form-control" required min="0" step="1">
@@ -135,26 +124,13 @@
                                     </div>
                                 </div>
 
+                                <h2 class="mt-5 mb-2">{{ $t("Checks") }}</h2>
+
                                 <div class="my-3">
-                                    <label for="acceptedStatusCodes" class="form-label">{{ $t("Accepted Status Codes") }}</label>
-
-                                    <VueMultiselect
-                                        id="acceptedStatusCodes"
-                                        v-model="monitor.accepted_statuscodes"
-                                        :options="acceptedStatusCodeOptions"
-                                        :multiple="true"
-                                        :close-on-select="false"
-                                        :clear-on-select="false"
-                                        :preserve-search="true"
-                                        placeholder="Pick Accepted Status Codes..."
-                                        :preselect-first="false"
-                                        :max-height="600"
-                                        :taggable="true"
-                                    ></VueMultiselect>
-
-                                    <div class="form-text">
-                                        {{ $t("acceptedStatusCodesDescription") }}
+                                    <div v-for="(monitorCheck, index) in monitor.checks" :key="index" class="mb-3">
+                                        <MonitorCheckEditor :monitorCheck="monitorCheck" :index="index" @delete="deleteMonitorCheck(index)"></MonitorCheckEditor>
                                     </div>
+                                    <button class="btn btn-light" type="button" @click="addMonitorCheck()">{{ $t("Add check") }}</button>
                                 </div>
                             </template>
 
@@ -197,6 +173,7 @@
 
 <script>
 import NotificationDialog from "../components/NotificationDialog.vue";
+import MonitorCheckEditor from "../components/MonitorCheckEditor.vue";
 import { useToast } from "vue-toastification"
 import VueMultiselect from "vue-multiselect"
 import { isDev } from "../util.ts";
@@ -205,6 +182,7 @@ const toast = useToast()
 export default {
     components: {
         NotificationDialog,
+        MonitorCheckEditor,
         VueMultiselect,
     },
 
@@ -314,7 +292,17 @@ export default {
                     }
                 })
             }
+        },
 
+        addMonitorCheck() {
+            this.monitor.checks = [...(this.monitor.checks || []), {
+                type: null,
+                value: '',
+            }];
+        },
+
+        deleteMonitorCheck(index) {
+            this.monitor.checks = this.monitor.checks.splice(index, 1);
         },
 
         submit() {
