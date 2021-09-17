@@ -931,16 +931,19 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
         socket.on("uploadBackup", async (uploadedJSON, importHandle, callback) => {
             try {
                 checkLogin(socket)
+                console.log(`Importing Backup, User ID: ${socket.userID}, Version: ${backupData.version}`)
 
                 let backupData = JSON.parse(uploadedJSON);
-                let version = backupData.version.replace(/\./g, "");
-
-                console.log(`Importing Backup, User ID: ${socket.userID}, Version: ${backupData.version}`)
 
                 let notificationListData = backupData.notificationList;
                 let monitorListData = backupData.monitorList;
 
+                // Converts the Uptime Kuma Version to a Number | 1.6.0 => 160
+                let version = backupData.version.replace(/\./g, "");
+
+                // If the import option is "overwrite" it'll clear most of the tables, except "settings" and "user"
                 if (importHandle == "overwrite") {
+                    // Stops every monitor first, so it doesn't execute any heartbeat while importing
                     for (let id in monitorList) {
                         let monitor = monitorList[id]
                         await monitor.stop()
@@ -954,11 +957,14 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                     await R.exec("DELETE FROM monitor");
                 }
 
+                // Only starts importing if the backup file contains at least one notification
                 if (notificationListData.length >= 1) {
+                    // Get every existing notification name and puts them in one simple string
                     let notificationNameList = await R.getAll("SELECT name FROM notification");
                     let notificationNameListString = JSON.stringify(notificationNameList);
 
                     for (let i = 0; i < notificationListData.length; i++) {
+                        // Only starts importing the notification if the import option is "overwrite", "keep" or "skip" but the notification doesn't exists
                         if ((importHandle == "skip" && notificationNameListString.includes(notificationListData[i].name) == false) || importHandle == "keep" || importHandle == "overwrite") {
 
                             let notification = JSON.parse(notificationListData[i].config);
@@ -968,20 +974,34 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                     }
                 }
 
+                // Only starts importing if the backup file contains at least one monitor
                 if (monitorListData.length >= 1) {
+                    // Get every existing monitor name and puts them in one simple string
                     let monitorNameList = await R.getAll("SELECT name FROM monitor");
                     let monitorNameListString = JSON.stringify(monitorNameList);
 
                     for (let i = 0; i < monitorListData.length; i++) {
+                        // Only starts importing the monitor if the import option is "overwrite", "keep" or "skip" but the notification doesn't exists
                         if ((importHandle == "skip" && monitorNameListString.includes(monitorListData[i].name) == false) || importHandle == "keep" || importHandle == "overwrite") {
 
+                            // Define in here every new variable for monitors which where implemented after the first version of the Import/Export function (1.6.0)
+                            // --- Start ---
+
+                            // Define default values
                             let retryInterval = 0;
 
+                            /*
+                            Only replace the default value with the backup file data for the specific version, where it appears the first time
+                            More information about that where "let version" will be defined
+                            */
                             if (version >= 170) {
                                 retryInterval = monitorListData[i].retryInterval;
                             }
 
+                            // --- End ---
+
                             let monitor = {
+                                // Define the new variable from earlier here
                                 name: monitorListData[i].name,
                                 type: monitorListData[i].type,
                                 url: monitorListData[i].url,
@@ -1012,16 +1032,21 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                             bean.user_id = socket.userID
                             await R.store(bean)
 
+                            // Only for backup files with the version 1.7.0 or higher, since there was the tag feature implemented
                             if (version >= 170) {
+                                // Only import if the specific monitor has tags assigned
                                 if (monitorListData[i].tags.length >= 1) {
                                     for (let o = 0; o < monitorListData[i].tags.length; o++) {
 
+                                        // Check if tag already exists and get data ->
                                         let tag = await R.findOne("tag", " name = ?", [
                                             monitorListData[i].tags[o].name,
                                         ])
 
+                                        // Set tagId to vaule from database
                                         let tagId = tag.id
 
+                                        // -> If it doesn't, create new tag from backup file
                                         if (! tag) {
                                             let beanTag = R.dispense("tag")
                                             beanTag.name = monitorListData[i].tags[o].name
@@ -1031,6 +1056,7 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                                             tagId = beanTag.id
                                         }
 
+                                        // Assign the new created tag to the monitor
                                         await R.exec("INSERT INTO monitor_tag (tag_id, monitor_id, value) VALUES (?, ?, ?)", [
                                             tagId,
                                             bean.id,
@@ -1042,6 +1068,7 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
 
                             await updateMonitorNotification(bean.id, notificationIDList)
 
+                            // If monitor was active start it immediately, otherwise pause it
                             if (monitorListData[i].active == 1) {
                                 await startMonitor(socket.userID, bean.id);
                             } else {
