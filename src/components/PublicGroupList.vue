@@ -7,9 +7,9 @@
         :animation="100"
     >
         <template #item="group">
-            <div>
+            <div class="mb-5 ">
                 <!-- Group Title -->
-                <h2 class="mt-5 group-title">
+                <h2 class="group-title">
                     <font-awesome-icon v-if="editMode && showGroupDrag" icon="arrows-alt-v" class="action drag me-3" />
                     <font-awesome-icon v-if="editMode" icon="times" class="action remove me-3" @click="removeGroup(group.index)" />
                     <Editable v-model="group.element.name" :contenteditable="editMode" tag="span" />
@@ -76,7 +76,7 @@ export default {
     data() {
         return {
 
-        }
+        };
     },
     computed: {
         showGroupDrag() {
@@ -95,7 +95,7 @@ export default {
             this.$root.publicGroupList[groupIndex].monitorList.splice(index, 1);
         },
     }
-}
+};
 </script>
 
 <style lang="scss" scoped>

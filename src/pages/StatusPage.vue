@@ -184,7 +184,7 @@
 </template>
 
 <script>
-import VueMultiselect from "vue-multiselect"
+import VueMultiselect from "vue-multiselect";
 import axios from "axios";
 import PublicGroupList from "../components/PublicGroupList.vue";
 import ImageCropUpload from "vue-image-crop-upload";
@@ -193,6 +193,8 @@ import { useToast } from "vue-toastification";
 const toast = useToast();
 
 const leavePageMsg = "Do you really want to leave? you have unsaved changes!";
+
+let feedInterval;
 
 export default {
     components: {
@@ -222,9 +224,10 @@ export default {
             config: {},
             selectedMonitor: null,
             incident: null,
+            previousIncident: null,
             showImageCropUpload: false,
             imgDataUrl: "/icon.svg",
-        }
+        };
     },
     computed: {
 
@@ -264,7 +267,7 @@ export default {
             if (this.editMode) {
                 return {
                     "edit-mode": true,
-                }
+                };
             }
             return {};
         },
@@ -359,6 +362,16 @@ export default {
         axios.get("/api/status-page/monitor-list").then((res) => {
             this.monitorList = res.data;
         });
+
+        // 5mins a loop
+        feedInterval = setInterval(() => {
+            // If editMode, it will use the data from websocket.
+            if (! this.editMode) {
+                axios.get("/api/status-page/heartbeat").then((res) => {
+                    // TODO
+                });
+            }
+        }, 5 * 60 * 1000);
     },
     methods: {
 
@@ -385,7 +398,7 @@ export default {
             this.$root.publicGroupList.push({
                 name: groupName,
                 monitorList: [],
-            })
+            });
         },
 
         discard() {
@@ -411,6 +424,11 @@ export default {
 
         createIncident() {
             this.enableEditIncidentMode = true;
+
+            if (this.incident) {
+                this.previousIncident = this.incident;
+            }
+
             this.incident = {
                 title: "",
                 content: "",
@@ -442,19 +460,25 @@ export default {
          */
         editIncident() {
             this.enableEditIncidentMode = true;
+            this.previousIncident = Object.assign({}, this.incident);
         },
 
         cancelIncident() {
             this.enableEditIncidentMode = false;
+
+            if (this.previousIncident) {
+                this.incident = this.previousIncident;
+                this.previousIncident = null;
+            }
         },
 
         unpinIncident() {
             this.$root.getSocket().emit("unpinIncident", () => {
                 this.incident = null;
-            })
+            });
         }
     }
-}
+};
 </script>
 
 <style lang="scss" scoped>
