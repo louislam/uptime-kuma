@@ -18,13 +18,3 @@
         <input id="discord-prefix-message" v-model="$parent.notification.discordPrefixMessage" type="text" class="form-control" autocomplete="false" placeholder="Hello @everyone is...">
     </div>
 </template>
-
-<script>
-export default {
-    data() {
-        return {
-            name: "discord",
-        }
-    },
-}
-</script>

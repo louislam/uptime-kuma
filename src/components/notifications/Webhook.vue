@@ -21,17 +21,3 @@
         </div>
     </div>
 </template>
-
-<script>
-export default {
-    data() {
-        return {
-            name: "webhook",
-        }
-    },
-}
-</script>
-
-<style lang="less" scoped>
-
-</style>

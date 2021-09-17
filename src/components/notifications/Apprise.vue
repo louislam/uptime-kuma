@@ -22,7 +22,6 @@
 export default {
     data() {
         return {
-            name: "apprise",
             appriseInstalled: false
         }
     },

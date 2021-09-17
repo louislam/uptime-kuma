@@ -16,10 +16,5 @@ export default {
     components: {
         HiddenInput,
     },
-    data() {
-        return {
-            name: "pushbullet",
-        }
-    },
 }
 </script>

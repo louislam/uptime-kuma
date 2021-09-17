@@ -66,10 +66,5 @@ export default {
     components: {
         HiddenInput,
     },
-    data() {
-        return {
-            name: "smtp",
-        }
-    },
 }
 </script>

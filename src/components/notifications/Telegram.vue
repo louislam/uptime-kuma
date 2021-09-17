@@ -47,11 +47,6 @@ export default {
     components: {
         HiddenInput,
     },
-    data() {
-        return {
-            name: "telegram",
-        }
-    },
     computed: {
         telegramGetUpdatesURL() {
             let token = "<YOUR BOT TOKEN HERE>"
@@ -62,9 +57,6 @@ export default {
 
             return `https://api.telegram.org/bot${token}/getUpdates`;
         },
-    },
-    mounted() {
-
     },
     methods: {
         async autoGetTelegramChatID() {

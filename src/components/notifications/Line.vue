@@ -25,10 +25,5 @@ export default {
     components: {
         HiddenInput,
     },
-    data() {
-        return {
-            name: "line",
-        }
-    },
 }
 </script>

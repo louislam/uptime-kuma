@@ -27,13 +27,3 @@
         </div>
     </div>
 </template>
-
-<script>
-export default {
-    data() {
-        return {
-            name: "slack",
-        }
-    },
-}
-</script>

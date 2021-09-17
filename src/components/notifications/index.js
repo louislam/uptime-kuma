@@ -17,7 +17,7 @@ import Line from "./Line.vue";
 import Mattermost from "./Mattermost.vue";
 
 /**
- * manage all notification form.
+ * Manage all notification form.
  *
  * @type { Record<string, any> }
  */
