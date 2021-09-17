@@ -72,19 +72,11 @@ import { Modal } from "bootstrap"
 import { ucfirst } from "../util.ts"
 
 import Confirm from "./Confirm.vue";
-import HiddenInput from "./HiddenInput.vue";
-import Telegram from "./notifications/Telegram.vue";
-import Teams from "./notifications/Teams.vue";
-import SMTP from "./notifications/SMTP.vue";
 import NotificationForm from "./notifications"
 
 export default {
     components: {
         Confirm,
-        HiddenInput,
-        Telegram,
-        Teams,
-        SMTP,
     },
     props: {},
     emits: ["added"],
