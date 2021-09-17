@@ -100,8 +100,7 @@ export default {
                 type: null,
                 isDefault: false,
                 // Do not set default value here, please scroll to show()
-            },
-            appriseInstalled: false,
+            }
         }
     },
 
@@ -131,10 +130,6 @@ export default {
     },
     mounted() {
         this.modal = new Modal(this.$refs.modal)
-
-        this.$root.getSocket().emit("checkApprise", (installed) => {
-            this.appriseInstalled = installed;
-        })
     },
     methods: {
 

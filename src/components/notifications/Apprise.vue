@@ -12,8 +12,7 @@
     <div class="mb-3">
         <p>
             Status:
-            <!-- TODO: appriseInstalled -->
-            <span v-if="$parent.appriseInstalled" class="text-primary">Apprise is installed</span>
+            <span v-if="appriseInstalled" class="text-primary">Apprise is installed</span>
             <span v-else class="text-danger">Apprise is not installed. <a href="https://github.com/caronc/apprise" target="_blank">Read more</a></span>
         </p>
     </div>
@@ -24,7 +23,13 @@ export default {
     data() {
         return {
             name: "apprise",
+            appriseInstalled: false
         }
+    },
+    mounted() {
+        this.$root.getSocket().emit("checkApprise", (installed) => {
+            this.appriseInstalled = installed;
+        })
     },
 }
 </script>
