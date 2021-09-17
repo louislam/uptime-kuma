@@ -13,7 +13,7 @@
                         <div class="mb-3">
                             <label for="notification-type" class="form-label">{{ $t("Notification Type") }}</label>
                             <select id="notification-type" v-model="notification.type" class="form-select">
-                                <option v-for="type in notificationTypes" :value="type">{{ $t(type) }}</option>
+                                <option v-for="type in notificationTypes" :key="type" :value="type">{{ $t(type) }}</option>
                             </select>
                         </div>
 
@@ -72,7 +72,7 @@ import { Modal } from "bootstrap"
 import { ucfirst } from "../util.ts"
 
 import Confirm from "./Confirm.vue";
-import NotificationForm from "./notifications"
+import NotificationFormList from "./notifications"
 
 export default {
     components: {
@@ -85,10 +85,10 @@ export default {
             model: null,
             processing: false,
             id: null,
-            notificationTypes: Object.keys(NotificationForm),
+            notificationTypes: Object.keys(NotificationFormList),
             notification: {
                 name: "",
-                /** @type { null | keyof NotificationForm } */
+                /** @type { null | keyof NotificationFormList } */
                 type: null,
                 isDefault: false,
                 // Do not set default value here, please scroll to show()
@@ -101,7 +101,7 @@ export default {
             if (!this.notification.type) {
                 return null
             }
-            return NotificationForm[this.notification.type]
+            return NotificationFormList[this.notification.type]
         }
     },
 

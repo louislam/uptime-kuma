@@ -21,7 +21,7 @@ import Mattermost from "./Mattermost.vue";
  *
  * @type { Record<string, any> }
  */
-const NotificationForm = {
+const NotificationFormList = {
     "telegram": Telegram,
     "webhook": Webhook,
     "smtp": STMP,
@@ -41,4 +41,4 @@ const NotificationForm = {
     "mattermost": Mattermost
 }
 
-export default NotificationForm
+export default NotificationFormList
