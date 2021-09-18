@@ -1,13 +1,15 @@
 #!/usr/bin/env sh
 
 set -e
+PUID=${PUID=1000}
+PGID=${PGID=1000}
 
 files_ownership () {
-    chown -hRc "${PUID=1000}":"${PGID=1000}" /app/data
+    chown -hRc "$PUID":"$PGID" /app/data
 }
 
 echo "==> Performing startup jobs and maintenance tasks"
 files_ownership
 
-echo "==> Starting application with user ${PUID=1000} group ${PGID=1000}"
-exec setpriv --reuid "${PUID=1000}" --regid "${PGID=1000}" --clear-groups "$@"
+echo "==> Starting application with user $PUID group $PGID"
+exec setpriv --reuid "$PUID" --regid "$PGID" --clear-groups "$@"
