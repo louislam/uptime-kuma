@@ -4,7 +4,35 @@
             <h1 class="mb-3">
                 {{ $t("Quick Stats") }}
             </h1>
-
+            <div class="shadow-box big-padding text-start mb-4 d-flex flex-row justify-content-start align-items-center">
+                <span class="rounded-circle bg-primary d-inline-block me-3" :class="{'bg-primary': (stats.down === 0), 'bg-danger': (stats.down !== 0)}" :style="{width: '1.5em', height: '1.5em'}" />
+                <h3 class="mb-0">{{ (stats.down === 0) ? $t("allMonitorsOperational") : $t("notAllMonitorsOperational") }}</h3>
+            </div>
+            <div class="shadow-box big-padding text-center mb-4">
+                <div class="row">
+                    <div class="col">
+                        <h3>{{ $t("overallUptime") }}</h3>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <h4>24{{ $t("-hour") }}</h4>
+                        <span class="num"><Uptime :type="24" /></span>
+                    </div>
+                    <div class="col">
+                        <h4>7{{ $t("-day") }}</h4>
+                        <span class="num"><Uptime :type="168" /></span>
+                    </div>
+                    <div class="col">
+                        <h4>30{{ $t("-day") }}</h4>
+                        <span class="num"><Uptime :type="720" /></span>
+                    </div>
+                    <div class="col">
+                        <h4>90{{ $t("-day") }}</h4>
+                        <span class="num"><Uptime :type="2160" /></span>
+                    </div>
+                </div>
+            </div>
             <div class="shadow-box big-padding text-center mb-4">
                 <div class="row">
                     <div class="col">
@@ -69,10 +97,12 @@
 import Status from "../components/Status.vue";
 import Datetime from "../components/Datetime.vue";
 import Pagination from "v-pagination-3";
+import Uptime from "../components/Uptime.vue";
 
 export default {
     components: {
         Datetime,
+        Uptime,
         Status,
         Pagination,
     },

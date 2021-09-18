@@ -167,4 +167,7 @@ export default {
     Purple: "Purple",
     Pink: "Pink",
     "Search...": "Search...",
+    allMonitorsOperational: "All systems operational",
+    notAllMonitorsOperational: "Not all systems operational",
+    overallUptime: "Overall uptime",
 }

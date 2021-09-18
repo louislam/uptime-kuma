@@ -15,11 +15,17 @@ export default {
 
     computed: {
         uptime() {
+            // If monitor is not set, display average uptime of all monitors
+            if (this.monitor) {
+                let key = this.monitor.id + "_" + this.type;
 
-            let key = this.monitor.id + "_" + this.type;
-
-            if (this.$root.uptimeList[key] !== undefined) {
-                return Math.round(this.$root.uptimeList[key] * 10000) / 100 + "%";
+                if (this.$root.uptimeList[key] !== undefined) {
+                    return Math.round(this.$root.uptimeList[key] * 10000) / 100 + "%";
+                }
+            } else {
+                if (this.$root.averageUptimeList[this.type] !== undefined) {
+                    return Math.round(this.$root.averageUptimeList[this.type] * 10000) / 100 + "%";
+                }
             }
 
             return this.$t("notAvailableShort")
@@ -42,7 +48,7 @@ export default {
         },
 
         lastHeartBeat() {
-            if (this.monitor.id in this.$root.lastHeartbeatList && this.$root.lastHeartbeatList[this.monitor.id]) {
+            if (this.monitor && this.monitor.id in this.$root.lastHeartbeatList && this.$root.lastHeartbeatList[this.monitor.id]) {
                 return this.$root.lastHeartbeatList[this.monitor.id]
             }
 

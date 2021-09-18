@@ -23,6 +23,7 @@ export default {
             importantHeartbeatList: { },
             avgPingList: { },
             uptimeList: { },
+            averageUptimeList: {},
             certInfoList: {},
             notificationList: [],
             connectionErrorMsg: "Cannot connect to the socket server. Reconnecting...",
@@ -123,6 +124,10 @@ export default {
 
         socket.on("uptime", (monitorID, type, data) => {
             this.uptimeList[`${monitorID}_${type}`] = data
+        });
+
+        socket.on("average_uptime", (type, data) => {
+            this.averageUptimeList[`${type}`] = data
         });
 
         socket.on("certInfo", (monitorID, data) => {

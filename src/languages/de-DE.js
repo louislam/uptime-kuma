@@ -167,4 +167,7 @@ export default {
     retryCheckEverySecond: "Versuche alle {0} Sekunden",
     "Import Backup": "Import Backup",
     "Export Backup": "Export Backup",
+    allMonitorsOperational: "Alle Systeme in Betrieb",
+    notAllMonitorsOperational: "Nicht alle Systeme in Betrieb",
+    overallUptime: "Durchschnittliche Verfügbarkeit",
 }

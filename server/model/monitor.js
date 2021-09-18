@@ -372,6 +372,10 @@ class Monitor extends BeanModel {
             await Monitor.sendAvgPing(24, io, monitorID, userID);
             await Monitor.sendUptime(24, io, monitorID, userID);
             await Monitor.sendUptime(24 * 30, io, monitorID, userID);
+            await Monitor.sendAverageUptime(24, io, userID);
+            await Monitor.sendAverageUptime(24 * 7, io, userID);
+            await Monitor.sendAverageUptime(24 * 30, io, userID);
+            await Monitor.sendAverageUptime(24 * 90, io, userID);
             await Monitor.sendCertInfo(io, monitorID, userID);
         } else {
             debug("No clients in the room, no need to send stats");
@@ -468,13 +472,77 @@ class Monitor extends BeanModel {
         } else {
             // Handle new monitor with only one beat, because the beat's duration = 0
             let status = parseInt(await R.getCell("SELECT `status` FROM heartbeat WHERE monitor_id = ?", [ monitorID ]));
-            console.log("here???" + status);
             if (status === UP) {
                 uptime = 1;
             }
         }
 
         io.to(userID).emit("uptime", monitorID, duration, uptime);
+    }
+
+    /**
+     * Average Uptime of all Monitors
+     * Calculation based on:
+     * https://www.uptrends.com/support/kb/reporting/calculation-of-uptime-and-downtime
+     * @param duration : int Hours
+     */
+    static async sendAverageUptime(duration, io, userID) {
+        const timeLogger = new TimeLogger();
+
+        const startTime = R.isoDateTime(dayjs.utc().subtract(duration, "hour"));
+
+        // Handle if heartbeat duration longer than the target duration
+        // e.g. If the last beat's duration is bigger that the 24hrs window, it will use the duration between the (beat time - window margin) (THEN case in SQL)
+        // JOIN is necessary, because heartbeat has still data of deleted monitors.
+        let result = await R.getRow(`
+            SELECT
+               -- SUM all duration, also trim off the beat out of time window
+                SUM(
+                    CASE
+                        WHEN (JULIANDAY(\`time\`) - JULIANDAY(?)) * 86400 < duration
+                            THEN (JULIANDAY(\`time\`) - JULIANDAY(?)) * 86400
+                        ELSE duration
+                    END
+                ) AS total_duration,
+
+               -- SUM all uptime duration, also trim off the beat out of time window
+                SUM(
+                    CASE
+                        WHEN (status = 1)
+                        THEN
+                            CASE
+                                WHEN (JULIANDAY(\`time\`) - JULIANDAY(?)) * 86400 < duration
+                                    THEN (JULIANDAY(\`time\`) - JULIANDAY(?)) * 86400
+                                ELSE duration
+                            END
+                        END
+                ) AS uptime_duration
+            FROM heartbeat
+            JOIN monitor on monitor.id == heartbeat.monitor_id
+            WHERE time > ?
+        `, [
+            startTime, startTime, startTime, startTime, startTime
+        ]);
+
+        timeLogger.print(`[${duration}] sendAverageUptime`);
+
+        let totalDuration = result.total_duration;
+        let uptimeDuration = result.uptime_duration;
+        let uptime = 0;
+
+        if (totalDuration > 0) {
+            uptime = uptimeDuration / totalDuration;
+            if (uptime < 0) {
+                uptime = 0;
+            }
+
+        } else {
+            // Handle new monitor with only one beat, because the beat's duration = 0
+            let result = await R.getRow("SELECT SUM(`status`) AS up_monitor, COUNT(`status`) AS sum_monitor FROM heartbeat JOIN monitor on monitor.id == heartbeat.monitor_id");
+            uptime = result.up_monitor / result.sum_monitor;
+        }
+
+        io.to(userID).emit("average_uptime", duration, uptime);
     }
 }
 
