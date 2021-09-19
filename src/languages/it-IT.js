@@ -2,7 +2,6 @@ export default {
     languageName: "Italiano (Italian)",
     checkEverySecond: "controlla ogni {0} secondi",
     retryCheckEverySecond: "Riprova ogni {0} secondi.",
-    "Avg.": "Media",
     retriesDescription: "Tentativi da fare prima che il servizio venga marcato come \"giù\" e che una notifica venga inviata.",
     ignoreTLSError: "Ignora gli errori TLS/SSL per i siti in HTTPS.",
     upsideDownModeDescription: "Capovolgi lo stato. Se il servizio è raggiungibile viene marcato come \"GIÙ\".",
@@ -167,4 +166,6 @@ export default {
     Purple: "Viola",
     Pink: "Rosa",
     "Search...": "Cerca...",
+    "Avg. Ping": "Avg. Ping",
+    "Avg. Response": "Avg. Response",
 }

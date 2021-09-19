@@ -1,7 +1,6 @@
 export default {
     languageName: "Русский",
     checkEverySecond: "Проверять каждые {0} секунд.",
-    "Avg.": "Средн.",
     retriesDescription: "Максимальное количество попыток перед пометкой сервиса как недоступного и отправкой уведомления",
     ignoreTLSError: "Игнорировать ошибку TLS/SSL для HTTPS сайтов",
     upsideDownModeDescription: "Реверс статуса сервиса. Если сервис доступен, то он помечается как НЕДОСТУПНЫЙ.",
@@ -168,4 +167,6 @@ export default {
     Purple: "Пурпурный",
     Pink: "Розовый",
     "Search...": "Поиск...",
+    "Avg. Ping": "Avg. Ping",
+    "Avg. Response": "Avg. Response",
 }

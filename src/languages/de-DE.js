@@ -36,7 +36,6 @@ export default {
     hour: "Stunde",
     "-hour": "-Stunden",
     checkEverySecond: "Überprüfe alle {0} Sekunden",
-    "Avg.": "Durchschn.",
     Response: "Antwortzeit",
     Ping: "Ping",
     "Monitor Type": "Monitor Typ",
@@ -167,4 +166,6 @@ export default {
     retryCheckEverySecond: "Versuche alle {0} Sekunden",
     "Import Backup": "Import Backup",
     "Export Backup": "Export Backup",
+    "Avg. Ping": "Avg. Ping",
+    "Avg. Response": "Avg. Response",
 }
