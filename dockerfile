@@ -11,6 +11,19 @@ RUN npm install --legacy-peer-deps && \
 
 
 FROM node:14-buster-slim AS release
+
+ARG BUILD_DATE
+
+LABEL org.opencontainers.image.authors='Louis Lam' \
+      org.opencontainers.image.url='https://uptime.kuma.pet' \
+      org.opencontainers.image.documentation='https://github.com/louislam/uptime-kuma/wiki' \
+      org.opencontainers.image.source='https://github.com/louislam/uptime-kuma.git' \
+      org.opencontainers.image.vendor='Louis Lam' \
+      org.opencontainers.image.licenses='MIT License' \
+      org.opencontainers.image.title="Uptime Kuma" \
+      org.opencontainers.image.description="Self-hosted uptime monitoring tool with notifications" \
+      org.opencontainers.image.created=$BUILD_DATE
+
 WORKDIR /app
 
 # Install Apprise, add sqlite3 cli for debugging in the future, iputils-ping for ping, util-linux for setpriv
