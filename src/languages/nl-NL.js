@@ -115,7 +115,6 @@ export default {
     "Last Result": "Laatste resultaat",
     "Create your admin account": "Maak uw beheerdersaccount aan",
     "Repeat Password": "Herhaal wachtwoord",
-    "Import/Export Backup": "Backup importeren/exporteren",
     Export: "Exporteren",
     Import: "Importeren",
     respTime: "resp. tijd (ms)",
