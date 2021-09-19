@@ -10,6 +10,7 @@ class Incident extends BeanModel {
             content: this.content,
             pin: this.pin,
             createdDate: this.createdDate,
+            lastUpdatedDate: this.lastUpdatedDate,
         };
     }
 }

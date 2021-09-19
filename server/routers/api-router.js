@@ -41,7 +41,7 @@ router.get("/api/status-page/incident", async (_, response) => {
         response.json({
             ok: true,
             incident: (await R.findOne("incident", " pin = 1 AND active = 1")).toPublicJSON(),
-        })
+        });
 
     } catch (error) {
         send403(response, error.message);
@@ -55,15 +55,14 @@ router.get("/api/status-page/monitor-list", async (_request, response) => {
 
     try {
         await checkPublished();
-        const monitorList = {};
-        let list = await R.find("monitor", " public = 1 ORDER BY weight DESC, name ", [
-        ]);
+        const publicGroupList = [];
+        let list = await R.find("group", " public = 1 ORDER BY weight, name ");
 
-        for (let monitor of list) {
-            monitorList[monitor.id] = await monitor.toJSON();
+        for (let groupBean of list) {
+            publicGroupList.push(await groupBean.toPublicJSON());
         }
 
-        response.json(monitorList);
+        response.json(publicGroupList);
 
     } catch (error) {
         send403(response, error.message);
@@ -79,7 +78,7 @@ router.get("/api/status-page/heartbeat", async (_request, response) => {
 
         const monitorList = {};
         let list = await R.find("", "  ", [
-        ])
+        ]);
 
         for (let monitor of list) {
             monitorList[monitor.id] = await monitor.toJSON();
@@ -126,7 +125,7 @@ function send403(res, msg = "") {
     res.status(403).json({
         "status": "fail",
         "msg": msg,
-    })
+    });
 }
 
 module.exports = router;

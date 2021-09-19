@@ -11,11 +11,13 @@ export default {
     data() {
         return {
             publicGroupList: [],
-        }
+        };
     },
     computed: {
         publicMonitorList() {
             let result = {};
+
+            console.log(this.publicGroupList);
 
             for (let group of this.publicGroupList) {
                 for (let monitor of group.monitorList) {
@@ -26,7 +28,7 @@ export default {
         },
 
         publicLastHeartbeatList() {
-            let result = {}
+            let result = {};
 
             for (let monitorID in this.publicMonitorList) {
                 if (this.lastHeartbeatList[monitorID]) {
@@ -37,4 +39,4 @@ export default {
             return result;
         },
     }
-}
+};

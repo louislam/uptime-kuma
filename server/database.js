@@ -30,11 +30,10 @@ class Database {
     static patchList = {
         "patch-setting-value-type.sql": true,
         "patch-improve-performance.sql": true,
-        "patch-monitor-public.sql": true,
         "patch-2fa.sql": true,
         "patch-add-retry-interval-monitor.sql": true,
-        "patch-monitor-public-weight.sql": true,
         "patch-incident-table.sql": true,
+        "patch-group-table.sql": true,
     }
 
     /**
@@ -65,7 +64,7 @@ class Database {
         }
 
         // Auto map the model to a bean object
-        R.freeze(true)
+        R.freeze(true);
         await R.autoloadModels("./server/model");
 
         // Change to WAL
@@ -92,7 +91,7 @@ class Database {
         } else if (version > this.latestVersion) {
             console.info("Warning: Database version is newer than expected");
         } else {
-            console.info("Database patch is needed")
+            console.info("Database patch is needed");
 
             this.backup(version);
 
@@ -107,11 +106,12 @@ class Database {
                 }
             } catch (ex) {
                 await Database.close();
-                this.restore();
 
-                console.error(ex)
-                console.error("Start Uptime-Kuma failed due to patch db failed")
-                console.error("Please submit the bug report if you still encounter the problem after restart: https://github.com/louislam/uptime-kuma/issues")
+                console.error(ex);
+                console.error("Start Uptime-Kuma failed due to patch db failed");
+                console.error("Please submit the bug report if you still encounter the problem after restart: https://github.com/louislam/uptime-kuma/issues");
+
+                this.restore();
                 process.exit(1);
             }
         }
@@ -136,7 +136,7 @@ class Database {
 
         try {
             for (let sqlFilename in this.patchList) {
-                await this.patch2Recursion(sqlFilename, databasePatchedFiles)
+                await this.patch2Recursion(sqlFilename, databasePatchedFiles);
             }
 
             if (this.patched) {
@@ -145,11 +145,13 @@ class Database {
 
         } catch (ex) {
             await Database.close();
-            this.restore();
 
-            console.error(ex)
+            console.error(ex);
             console.error("Start Uptime-Kuma failed due to patch db failed");
             console.error("Please submit the bug report if you still encounter the problem after restart: https://github.com/louislam/uptime-kuma/issues");
+
+            this.restore();
+
             process.exit(1);
         }
 
@@ -189,7 +191,7 @@ class Database {
             console.log(sqlFilename + " is patched successfully");
 
         } else {
-            console.log(sqlFilename + " is already patched, skip");
+            debug(sqlFilename + " is already patched, skip");
         }
     }
 
@@ -207,12 +209,12 @@ class Database {
         // Remove all comments (--)
         let lines = text.split("\n");
         lines = lines.filter((line) => {
-            return ! line.startsWith("--")
+            return ! line.startsWith("--");
         });
 
         // Split statements by semicolon
         // Filter out empty line
-        text = lines.join("\n")
+        text = lines.join("\n");
 
         let statements = text.split(";")
             .map((statement) => {
@@ -220,7 +222,7 @@ class Database {
             })
             .filter((statement) => {
                 return statement !== "";
-            })
+            });
 
         for (let statement of statements) {
             await R.exec(statement);
@@ -266,7 +268,7 @@ class Database {
      */
     static backup(version) {
         if (! this.backupPath) {
-            console.info("Backup the db")
+            console.info("Backup the db");
             this.backupPath = this.dataDir + "kuma.db.bak" + version;
             fs.copyFileSync(Database.path, this.backupPath);
 

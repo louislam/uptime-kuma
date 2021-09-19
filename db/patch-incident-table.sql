@@ -10,6 +10,7 @@ create table incident
     content TEXT not null,
     style VARCHAR(30) default 'warning' not null,
     created_date DATETIME default (DATETIME('now')) not null,
+    last_updated_date DATETIME,
     pin BOOLEAN default 1 not null,
     active BOOLEAN default 1 not null
 );

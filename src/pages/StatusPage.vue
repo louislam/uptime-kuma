@@ -37,7 +37,7 @@
             </div>
 
             <div v-else>
-                <button class="btn btn-success me-2" @click="leaveEditMode">
+                <button class="btn btn-success me-2" @click="save">
                     <font-awesome-icon icon="save" />
                     {{ $t("Save") }}
                 </button>
@@ -52,6 +52,7 @@
                     {{ $t("Create Incident") }}
                 </button>
 
+                <!--
                 <button v-if="isPublished" class="btn btn-light me-2" @click="">
                     <font-awesome-icon icon="save" />
                     {{ $t("Unpublish") }}
@@ -60,7 +61,7 @@
                 <button v-if="!isPublished" class="btn btn-info me-2" @click="">
                     <font-awesome-icon icon="save" />
                     {{ $t("Publish") }}
-                </button>
+                </button>-->
 
                 <!-- Set Default Language -->
                 <!-- Set theme -->
@@ -83,6 +84,14 @@
 
             <strong v-if="editIncidentMode">{{ $t("Content") }}:</strong>
             <Editable v-model="incident.content" tag="div" :contenteditable="editIncidentMode" class="content" />
+
+            <!-- Incident Date -->
+            <div class="date mt-3">
+                Created: {{ incident.createdDate }} ({{ createdDateFromNow }})<br />
+                <span v-if="incident.lastUpdatedDate">
+                    Last Updated: {{ incident.lastUpdatedDate }} ({{ lastUpdatedDateFromNow }})
+                </span>
+            </div>
 
             <div v-if="editMode" class="mt-3">
                 <button v-if="editIncidentMode" class="btn btn-light me-2" @click="postIncident">
@@ -190,6 +199,7 @@ import PublicGroupList from "../components/PublicGroupList.vue";
 import ImageCropUpload from "vue-image-crop-upload";
 import { STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_PARTIAL_DOWN, UP } from "../util.ts";
 import { useToast } from "vue-toastification";
+import dayjs from "dayjs";
 const toast = useToast();
 
 const leavePageMsg = "Do you really want to leave? you have unsaved changes!";
@@ -309,6 +319,14 @@ export default {
             return this.overallStatus === STATUS_PAGE_ALL_DOWN;
         },
 
+        createdDateFromNow() {
+            return dayjs.utc(this.incident.createdDate).fromNow();
+        },
+
+        lastUpdatedDateFromNow() {
+            return dayjs.utc(this.incident. lastUpdatedDate).fromNow();
+        }
+
     },
     watch: {
 
@@ -360,7 +378,7 @@ export default {
         });
 
         axios.get("/api/status-page/monitor-list").then((res) => {
-            this.monitorList = res.data;
+            this.$root.publicGroupList = res.data;
         });
 
         // 5mins a loop
@@ -380,8 +398,16 @@ export default {
             this.enableEditMode = true;
         },
 
-        leaveEditMode() {
-            this.enableEditMode = false;
+        save() {
+            this.$root.getSocket().emit("saveStatusPage", this.$root.publicGroupList, (res) => {
+                if (res.ok) {
+                    this.enableEditMode = false;
+                    console.log(res);
+                    this.$root.publicGroupList = res.publicGroupList;
+                } else {
+                    toast.error(res.msg);
+                }
+            });
         },
 
         monitorSelectorLabel(monitor) {
@@ -534,7 +560,13 @@ footer {
 
 .incident {
     .content {
-        min-height: 60px;
+        &[contenteditable=true] {
+            min-height: 60px;
+        }
+    }
+
+    .date {
+        font-size: 14px;
     }
 }
 

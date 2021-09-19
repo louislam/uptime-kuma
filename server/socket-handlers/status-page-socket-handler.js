@@ -1,6 +1,7 @@
 const { R } = require("redbean-node");
 const { checkLogin } = require("../util-server");
 const dayjs = require("dayjs");
+const { debug } = require("../../src/util");
 
 module.exports.statusPageSocketHandler = (socket) => {
 
@@ -27,7 +28,13 @@ module.exports.statusPageSocketHandler = (socket) => {
             incidentBean.content = incident.content;
             incidentBean.style = incident.style;
             incidentBean.pin = true;
-            incidentBean.createdDate = R.isoDateTime(dayjs.utc());
+
+            if (incident.id) {
+                incidentBean.lastUpdatedDate = R.isoDateTime(dayjs.utc());
+            } else {
+                incidentBean.createdDate = R.isoDateTime(dayjs.utc());
+            }
+
             await R.store(incidentBean);
 
             callback({
@@ -58,4 +65,67 @@ module.exports.statusPageSocketHandler = (socket) => {
             });
         }
     });
+
+    // Save Status Page
+    socket.on("saveStatusPage", async (publicGroupList, callback) => {
+
+        try {
+            checkLogin(socket);
+
+            await R.transaction(async (trx) => {
+                const groupIDList = [];
+                let groupOrder = 1;
+
+                for (let group of publicGroupList) {
+                    let groupBean;
+                    if (group.id) {
+                        groupBean = await trx.findOne("group", " id = ? AND public = 1 ", [
+                            group.id
+                        ]);
+                    } else {
+                        groupBean = R.dispense("group");
+                    }
+
+                    groupBean.name = group.name;
+                    groupBean.public = true;
+                    groupBean.weight = groupOrder++;
+
+                    await trx.store(groupBean);
+
+                    await trx.exec("DELETE FROM monitor_group WHERE group_id = ? ", [
+                        groupBean.id
+                    ]);
+
+                    let monitorOrder = 1;
+                    for (let monitor of group.monitorList) {
+                        let relationBean = R.dispense("monitor_group");
+                        relationBean.weight = monitorOrder++;
+                        relationBean.group_id = groupBean.id;
+                        relationBean.monitor_id = monitor.id;
+                        await trx.store(relationBean);
+                    }
+
+                    groupIDList.push(groupBean.id);
+                    group.id = groupBean.id;
+                }
+
+                // Delete groups that not in the list
+                debug("Delete groups that not in the list");
+                const slots = groupIDList.map(() => "?").join(",");
+                await trx.exec(`DELETE FROM \`group\` WHERE id NOT IN (${slots})`, groupIDList);
+
+                callback({
+                    ok: true,
+                    publicGroupList,
+                });
+            });
+        } catch (error) {
+
+            callback({
+                ok: false,
+                msg: error.message,
+            });
+        }
+    });
+
 };

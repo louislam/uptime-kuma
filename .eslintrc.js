@@ -17,6 +17,7 @@ module.exports = {
         requireConfigFile: false,
     },
     rules: {
+        "linebreak-style": ["error", "unix"],
         "camelcase": ["warn", {
             "properties": "never",
             "ignoreImports": true

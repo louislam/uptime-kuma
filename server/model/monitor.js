@@ -26,8 +26,10 @@ class Monitor extends BeanModel {
      * Only show necessary data to public
      */
     async toPublicJSON() {
-        // TODO Only show necessary
-        return this.toJSON();
+        return {
+            id: this.id,
+            name: this.name,
+        };
     }
 
     /**
