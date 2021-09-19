@@ -55,7 +55,7 @@
                             <div class="w-50 pe-2">
                                 <input v-model="newDraftTag.name" class="form-control"
                                        :class="{'is-invalid': validateDraftTag.nameInvalid}"
-                                       :placeholder="$t('name')"
+                                       :placeholder="$t('Name')"
                                        @keydown.enter.prevent="onEnter"
                                 />
                                 <div class="invalid-feedback">

@@ -34,6 +34,7 @@
         "test-install-script-alpine3": "npm run compile-install-script && docker build --progress plain -f test/test_install_script/alpine3.dockerfile .",
         "test-install-script-ubuntu": "npm run compile-install-script && docker build --progress plain -f test/test_install_script/ubuntu.dockerfile .",
         "test-install-script-ubuntu1604": "npm run compile-install-script && docker build --progress plain -f test/test_install_script/ubuntu1604.dockerfile .",
+        "test-nodejs16": "docker build --progress plain -f test/ubuntu-nodejs16.dockerfile .",
         "simple-dns-server": "node extra/simple-dns-server.js",
         "update-language-files-with-base-lang": "cd extra/update-language-files && node index.js %npm_config_base_lang% && eslint ../../src/languages/**.js --fix",
         "update-language-files": "cd extra/update-language-files && node index.js && eslint ../../src/languages/**.js --fix"

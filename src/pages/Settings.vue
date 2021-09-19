@@ -304,6 +304,12 @@
                     <p>Utilizzare con attenzione.</p>
                 </template>
 
+                <template v-else-if="$i18n.locale === 'ru-RU' ">
+                    <p>Вы уверены, что хотите <strong>отключить авторизацию</strong>?</p>
+                    <p>Это подходит для <strong>тех, у кого стоит другая авторизация</strong> перед открытием Uptime Kuma, например Cloudflare Access.</p>
+                    <p>Пожалуйста, используйте с осторожностью.</p>
+                </template>
+
                 <!-- English (en) -->
                 <template v-else>
                     <p>Are you sure want to <strong>disable auth</strong>?</p>

@@ -3,8 +3,9 @@
 /node_modules
 /data
 /out
-/.do
+/test
 /kubernetes
+/.do
 **/.dockerignore
 /private
 **/.git
