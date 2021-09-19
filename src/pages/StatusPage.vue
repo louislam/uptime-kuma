@@ -30,10 +30,10 @@
                     Edit Status Page
                 </button>
 
-                <router-link to="/dashboard" class="btn btn-info">
+                <a href="/dashboard" class="btn btn-info">
                     <font-awesome-icon icon="tachometer-alt" />
                     Go to Dashboard
-                </router-link>
+                </a>
             </div>
 
             <div v-else>
@@ -168,13 +168,10 @@
             </div>
 
             <div class="mt-3">
-                <VueMultiselect
-                    v-model="selectedMonitor"
-                    :options="allMonitorList"
-                    :custom-label="monitorSelectorLabel"
-                    :searchable="true"
-                    placeholder="Add a monitor"
-                ></VueMultiselect>
+                <label>Add a monitor:</label>
+                <select v-model="selectedMonitor" class="form-control">
+                    <option v-for="monitor in allMonitorList" :key="monitor.id" :value="monitor">{{ monitor.name }}</option>
+                </select>
             </div>
         </div>
 
@@ -382,16 +379,21 @@ export default {
         });
 
         // 5mins a loop
+        this.updateHeartbeatList();
         feedInterval = setInterval(() => {
+            this.updateHeartbeatList();
+        }, 10 * 1000);
+    },
+    methods: {
+
+        updateHeartbeatList() {
             // If editMode, it will use the data from websocket.
             if (! this.editMode) {
                 axios.get("/api/status-page/heartbeat").then((res) => {
-                    // TODO
+                    this.$root.heartbeatList = res.data.heartbeatList;
                 });
             }
-        }, 5 * 60 * 1000);
-    },
-    methods: {
+        },
 
         edit() {
             this.$root.initSocketIO(true);

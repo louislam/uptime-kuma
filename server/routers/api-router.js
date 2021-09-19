@@ -38,9 +38,15 @@ router.get("/api/status-page/incident", async (_, response) => {
     try {
         await checkPublished();
 
+        let incident = await R.findOne("incident", " pin = 1 AND active = 1");
+
+        if (incident) {
+            incident = incident.toPublicJSON();
+        }
+
         response.json({
             ok: true,
-            incident: (await R.findOne("incident", " pin = 1 AND active = 1")).toPublicJSON(),
+            incident,
         });
 
     } catch (error) {
@@ -56,7 +62,7 @@ router.get("/api/status-page/monitor-list", async (_request, response) => {
     try {
         await checkPublished();
         const publicGroupList = [];
-        let list = await R.find("group", " public = 1 ORDER BY weight, name ");
+        let list = await R.find("group", " public = 1 ORDER BY weight ");
 
         for (let groupBean of list) {
             publicGroupList.push(await groupBean.toPublicJSON());
@@ -76,16 +82,30 @@ router.get("/api/status-page/heartbeat", async (_request, response) => {
     try {
         await checkPublished();
 
-        const monitorList = {};
-        let list = await R.find("", "  ", [
-        ]);
+        let heartbeatList = {};
 
-        for (let monitor of list) {
-            monitorList[monitor.id] = await monitor.toJSON();
+        let monitorIDList = await R.getCol(`
+            SELECT monitor_group.monitor_id FROM monitor_group, \`group\`
+            WHERE monitor_group.group_id = \`group\`.id
+            AND public = 1
+        `);
+
+        for (let monitorID of monitorIDList) {
+            let list = await R.getAll(`
+                    SELECT * FROM heartbeat
+                    WHERE monitor_id = ?
+                    ORDER BY time DESC
+                    LIMIT 100
+            `, [
+                monitorID,
+            ]);
+
+            list = R.convertToBeans("heartbeat", list);
+            heartbeatList[monitorID] = list.reverse().map(row => row.toPublicJSON());
         }
 
         response.json({
-            monitorList: monitorList,
+            heartbeatList,
         });
 
     } catch (error) {

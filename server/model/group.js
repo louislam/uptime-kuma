@@ -4,17 +4,7 @@ const { R } = require("redbean-node");
 class Group extends BeanModel {
 
     async toPublicJSON() {
-
-        let monitorBeanList = R.convertToBeans("monitor", await R.getAll(`
-            SELECT * FROM monitor, monitor_group
-            WHERE monitor.id = monitor_group.monitor_id
-            AND group_id = ?
-        `, [
-            this.id,
-        ]));
-
-        console.log(monitorBeanList);
-
+        let monitorBeanList = await this.getMonitorList();
         let monitorList = [];
 
         for (let bean of monitorBeanList) {
@@ -27,6 +17,16 @@ class Group extends BeanModel {
             weight: this.weight,
             monitorList,
         };
+    }
+
+    async getMonitorList() {
+        return R.convertToBeans("monitor", await R.getAll(`
+            SELECT monitor.* FROM monitor, monitor_group
+            WHERE monitor.id = monitor_group.monitor_id
+            AND group_id = ?
+        `, [
+            this.id,
+        ]));
     }
 }
 

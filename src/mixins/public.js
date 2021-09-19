@@ -17,8 +17,6 @@ export default {
         publicMonitorList() {
             let result = {};
 
-            console.log(this.publicGroupList);
-
             for (let group of this.publicGroupList) {
                 for (let monitor of group.monitorList) {
                     result[monitor.id] = monitor;
