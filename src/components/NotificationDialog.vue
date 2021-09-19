@@ -150,8 +150,6 @@ export default {
 
                 // Set Default value here
                 this.notification.type = this.notificationTypes[0];
-                this.notification.gotifyPriority = 8;
-                this.notification.smtpSecure = false;
             }
 
             this.modal.show()

@@ -66,5 +66,10 @@ export default {
     components: {
         HiddenInput,
     },
+    mounted() {
+        if (typeof this.$parent.notification.smtpSecure === "undefined") {
+            this.$parent.notification.smtpSecure = false;
+        }
+    },
 }
 </script>

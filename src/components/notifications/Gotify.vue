@@ -23,5 +23,10 @@ export default {
     components: {
         HiddenInput,
     },
+    mounted() {
+        if (typeof this.$parent.notification.gotifyPriority === "undefined") {
+            this.$parent.notification.gotifyPriority = 8;
+        }
+    },
 }
 </script>
