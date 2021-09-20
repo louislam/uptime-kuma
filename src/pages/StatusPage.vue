@@ -1,5 +1,5 @@
 <template>
-    <div class="container mt-3">
+    <div v-if="loadedTheme" class="container mt-3">
         <!-- Logo & Title -->
         <h1>
             <!-- Logo -->
@@ -143,14 +143,18 @@
                     All Systems Operational
                 </div>
 
-                <div v-if="partialDown">
+                <div v-else-if="partialDown">
                     <font-awesome-icon icon="exclamation-circle" class="warning" />
                     Partially Degraded Service
                 </div>
 
-                <div v-if="allDown">
+                <div v-else-if="allDown">
                     <font-awesome-icon icon="times-circle" class="danger" />
                     Degraded Service
+                </div>
+
+                <div v-else>
+                    <font-awesome-icon icon="question-circle" style="color: #efefef" />
                 </div>
             </template>
         </div>
@@ -190,7 +194,6 @@
 </template>
 
 <script>
-import VueMultiselect from "vue-multiselect";
 import axios from "axios";
 import PublicGroupList from "../components/PublicGroupList.vue";
 import ImageCropUpload from "vue-image-crop-upload";
@@ -206,7 +209,6 @@ let feedInterval;
 export default {
     components: {
         PublicGroupList,
-        VueMultiselect,
         ImageCropUpload
     },
 
@@ -234,6 +236,7 @@ export default {
             previousIncident: null,
             showImageCropUpload: false,
             imgDataUrl: "/icon.svg",
+            loadedTheme: false,
         };
     },
     computed: {
@@ -284,6 +287,11 @@ export default {
         },
 
         overallStatus() {
+
+            if (Object.keys(this.$root.publicLastHeartbeatList).length === 0) {
+                return -1;
+            }
+
             let status = STATUS_PAGE_ALL_UP;
             let hasUp = false;
 
@@ -346,6 +354,7 @@ export default {
         // Set Theme
         "config.statusPageTheme"() {
             this.$root.statusPageTheme = this.config.statusPageTheme;
+            this.loadedTheme = true;
         }
 
     },
@@ -366,6 +375,7 @@ export default {
     async mounted() {
         axios.get("/api/status-page/config").then((res) => {
             this.config = res.data;
+
         });
 
         axios.get("/api/status-page/incident").then((res) => {
@@ -401,10 +411,9 @@ export default {
         },
 
         save() {
-            this.$root.getSocket().emit("saveStatusPage", this.$root.publicGroupList, (res) => {
+            this.$root.getSocket().emit("saveStatusPage", this.config, this.imgDataUrl, this.$root.publicGroupList, (res) => {
                 if (res.ok) {
                     this.enableEditMode = false;
-                    console.log(res);
                     this.$root.publicGroupList = res.publicGroupList;
                 } else {
                     toast.error(res.msg);

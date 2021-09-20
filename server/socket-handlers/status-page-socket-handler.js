@@ -1,5 +1,5 @@
 const { R } = require("redbean-node");
-const { checkLogin } = require("../util-server");
+const { checkLogin, setSettings } = require("../util-server");
 const dayjs = require("dayjs");
 const { debug } = require("../../src/util");
 
@@ -67,12 +67,19 @@ module.exports.statusPageSocketHandler = (socket) => {
     });
 
     // Save Status Page
-    socket.on("saveStatusPage", async (publicGroupList, callback) => {
+    socket.on("saveStatusPage", async (config, imgDataUrl, publicGroupList, callback) => {
 
         try {
             checkLogin(socket);
 
             await R.transaction(async (trx) => {
+                // Save Config
+                //TODO
+                await setSettings("statusPage", config);
+
+                // Save Icon
+
+                // Save Public Group List
                 const groupIDList = [];
                 let groupOrder = 1;
 
@@ -120,6 +127,7 @@ module.exports.statusPageSocketHandler = (socket) => {
                 });
             });
         } catch (error) {
+            console.log(error);
 
             callback({
                 ok: false,
