@@ -3,6 +3,7 @@ const { R } = require("redbean-node");
 const { setSetting, setting } = require("./util-server");
 const { debug, sleep } = require("../src/util");
 const dayjs = require("dayjs");
+const knex = require("knex");
 
 class Database {
 
@@ -55,17 +56,26 @@ class Database {
     static async connect() {
         const acquireConnectionTimeout = 120 * 1000;
 
-        R.setup("sqlite", {
-            filename: Database.path,
+        const Dialect = require("knex/lib/dialects/sqlite3/index.js");
+        Dialect.prototype._driver = () => require("@louislam/sqlite3");
+
+        const knexInstance = knex({
+            client: Dialect,
+            connection: {
+                filename: Database.path,
+                acquireConnectionTimeout: acquireConnectionTimeout,
+            },
             useNullAsDefault: true,
-            acquireConnectionTimeout: acquireConnectionTimeout,
-        }, {
-            min: 1,
-            max: 1,
-            idleTimeoutMillis: 120 * 1000,
-            propagateCreateError: false,
-            acquireTimeoutMillis: acquireConnectionTimeout,
+            pool: {
+                min: 1,
+                max: 1,
+                idleTimeoutMillis: 120 * 1000,
+                propagateCreateError: false,
+                acquireTimeoutMillis: acquireConnectionTimeout,
+            }
         });
+
+        R.setup(knexInstance);
 
         if (process.env.SQL_LOG === "1") {
             R.debug(true);
@@ -82,6 +92,7 @@ class Database {
         console.log("SQLite config:");
         console.log(await R.getAll("PRAGMA journal_mode"));
         console.log(await R.getAll("PRAGMA cache_size"));
+        console.log("SQLite Version: " + await R.getCell("SELECT sqlite_version()"));
     }
 
     static async patch() {
