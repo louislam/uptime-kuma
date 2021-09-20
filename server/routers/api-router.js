@@ -13,7 +13,7 @@ router.get("/api/entry-page", async (_, response) => {
 router.get("/api/status-page/config", async (_request, response) => {
     allowDevAllOrigin(response);
 
-    let config = getSettings("statusPage");
+    let config = await getSettings("statusPage");
 
     if (! config.statusPageTheme) {
         config.statusPageTheme = "light";

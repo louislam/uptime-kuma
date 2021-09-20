@@ -72,10 +72,10 @@ module.exports.statusPageSocketHandler = (socket) => {
         try {
             checkLogin(socket);
 
+            // Save Config
+            await setSettings("statusPage", config);
+
             await R.transaction(async (trx) => {
-                // Save Config
-                //TODO
-                await setSettings("statusPage", config);
 
                 // Save Icon
 
