@@ -40,6 +40,16 @@ class Database {
 
     static noReject = true;
 
+    static init(args) {
+        // Data Directory (must be end with "/")
+        Database.dataDir = process.env.DATA_DIR || args["data-dir"] || "./data/";
+        Database.path = Database.dataDir + "kuma.db";
+        if (! fs.existsSync(Database.dataDir)) {
+            fs.mkdirSync(Database.dataDir, { recursive: true });
+        }
+        console.log(`Data Dir: ${Database.dataDir}`);
+    }
+
     static async connect() {
         const acquireConnectionTimeout = 120 * 1000;
 

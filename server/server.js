@@ -60,14 +60,6 @@ if (demoMode) {
     console.log("==== Demo Mode ====");
 }
 
-// Data Directory (must be end with "/")
-Database.dataDir = process.env.DATA_DIR || args["data-dir"] || "./data/";
-Database.path = Database.dataDir + "kuma.db";
-if (! fs.existsSync(Database.dataDir)) {
-    fs.mkdirSync(Database.dataDir, { recursive: true });
-}
-console.log(`Data Dir: ${Database.dataDir}`);
-
 console.log("Creating express and socket.io instance")
 const app = express();
 
@@ -123,6 +115,7 @@ let needSetup = false;
 let indexHTML = fs.readFileSync("./dist/index.html").toString();
 
 (async () => {
+    Database.init(args);
     await initDatabase();
 
     console.log("Adding route")
