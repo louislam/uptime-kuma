@@ -2,6 +2,9 @@
     <transition name="slide-fade" appear>
         <div v-if="monitor">
             <h1> {{ monitor.name }}</h1>
+            <div class="tags">
+                <Tag v-for="tag in monitor.tags" :key="tag.id" :item="tag" :size="'sm'" />
+            </div>
             <p class="url">
                 <a v-if="monitor.type === 'http'" :href="monitor.url" target="_blank">{{ monitor.url }}</a>
                 <span v-if="monitor.type === 'port'">TCP Ping {{ monitor.hostname }}:{{ monitor.port }}</span>
@@ -42,7 +45,7 @@
             <div class="shadow-box big-padding text-center stats">
                 <div class="row">
                     <div class="col">
-                        <h4>{{ pingTitle }}</h4>
+                        <h4>{{ pingTitle() }}</h4>
                         <p>({{ $t("Current") }})</p>
                         <span class="num">
                             <a href="#" @click.prevent="showPingChartBox = !showPingChartBox">
@@ -51,7 +54,7 @@
                         </span>
                     </div>
                     <div class="col">
-                        <h4>{{ $t("Avg.") }} {{ pingTitle }}</h4>
+                        <h4>{{ pingTitle(true) }}</h4>
                         <p>(24{{ $t("-hour") }})</p>
                         <span class="num"><CountUp :value="avgPing" /></span>
                     </div>
@@ -209,6 +212,7 @@ import CountUp from "../components/CountUp.vue";
 import Uptime from "../components/Uptime.vue";
 import Pagination from "v-pagination-3";
 const PingChart = defineAsyncComponent(() => import("../components/PingChart.vue"));
+import Tag from "../components/Tag.vue";
 
 export default {
     components: {
@@ -220,6 +224,7 @@ export default {
         Status,
         Pagination,
         PingChart,
+        Tag,
     },
     data() {
         return {
@@ -231,14 +236,6 @@ export default {
         }
     },
     computed: {
-
-        pingTitle() {
-            if (this.monitor.type === "http") {
-                return this.$t("Response");
-            }
-            return this.$t("Ping");
-        },
-
         monitor() {
             let id = this.$route.params.id
             return this.$root.monitorList[id];
@@ -369,6 +366,19 @@ export default {
                 }
             })
         },
+
+        pingTitle(average = false) {
+            let translationPrefix = ""
+            if (average) {
+                translationPrefix = "Avg. "
+            }
+
+            if (this.monitor.type === "http") {
+                return this.$t(translationPrefix + "Response");
+            }
+
+            return this.$t(translationPrefix + "Ping");
+        },
     },
 }
 </script>
@@ -497,6 +507,14 @@ table {
             }
         }
     }
+}
+
+.tags {
+    margin-bottom: 0.5rem;
+}
+
+.tags > div:first-child {
+    margin-left: 0 !important;
 }
 
 </style>

@@ -1,4 +1,9 @@
 console.log("Welcome to Uptime Kuma");
+
+if (! process.env.NODE_ENV) {
+    process.env.NODE_ENV = "production";
+}
+
 console.log("Node Env: " + process.env.NODE_ENV);
 
 const { sleep, debug, getRandomInt } = require("../src/util");
@@ -150,6 +155,10 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
     app.get("/metrics", basicAuth, prometheusAPIMetrics());
 
     app.use("/", express.static("dist"));
+
+    app.get("/.well-known/change-password", async (_, response) => {
+        response.redirect("https://github.com/louislam/uptime-kuma/wiki/Reset-Password-via-CLI");
+    });
 
     // Universal Route Handler, must be at the end
     app.get("*", async (_request, response) => {
@@ -478,6 +487,7 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                 bean.type = monitor.type
                 bean.url = monitor.url
                 bean.interval = monitor.interval
+                bean.retryInterval = monitor.retryInterval;
                 bean.hostname = monitor.hostname;
                 bean.maxretries = monitor.maxretries;
                 bean.port = monitor.port;
@@ -504,6 +514,22 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                     monitorID: bean.id,
                 });
 
+            } catch (e) {
+                console.error(e)
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("getMonitorList", async (callback) => {
+            try {
+                checkLogin(socket)
+                await sendMonitorList(socket);
+                callback({
+                    ok: true,
+                });
             } catch (e) {
                 console.error(e)
                 callback({
@@ -598,6 +624,160 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                 });
 
                 await sendMonitorList(socket);
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("getTags", async (callback) => {
+            try {
+                checkLogin(socket)
+
+                const list = await R.findAll("tag")
+
+                callback({
+                    ok: true,
+                    tags: list.map(bean => bean.toJSON()),
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("addTag", async (tag, callback) => {
+            try {
+                checkLogin(socket)
+
+                let bean = R.dispense("tag")
+                bean.name = tag.name
+                bean.color = tag.color
+                await R.store(bean)
+
+                callback({
+                    ok: true,
+                    tag: await bean.toJSON(),
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("editTag", async (tag, callback) => {
+            try {
+                checkLogin(socket)
+
+                let bean = await R.findOne("monitor", " id = ? ", [ tag.id ])
+                bean.name = tag.name
+                bean.color = tag.color
+                await R.store(bean)
+
+                callback({
+                    ok: true,
+                    tag: await bean.toJSON(),
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("deleteTag", async (tagID, callback) => {
+            try {
+                checkLogin(socket)
+
+                await R.exec("DELETE FROM tag WHERE id = ? ", [ tagID ])
+
+                callback({
+                    ok: true,
+                    msg: "Deleted Successfully.",
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("addMonitorTag", async (tagID, monitorID, value, callback) => {
+            try {
+                checkLogin(socket)
+
+                await R.exec("INSERT INTO monitor_tag (tag_id, monitor_id, value) VALUES (?, ?, ?)", [
+                    tagID,
+                    monitorID,
+                    value,
+                ])
+
+                callback({
+                    ok: true,
+                    msg: "Added Successfully.",
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("editMonitorTag", async (tagID, monitorID, value, callback) => {
+            try {
+                checkLogin(socket)
+
+                await R.exec("UPDATE monitor_tag SET value = ? WHERE tag_id = ? AND monitor_id = ?", [
+                    value,
+                    tagID,
+                    monitorID,
+                ])
+
+                callback({
+                    ok: true,
+                    msg: "Edited Successfully.",
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("deleteMonitorTag", async (tagID, monitorID, value, callback) => {
+            try {
+                checkLogin(socket)
+
+                await R.exec("DELETE FROM monitor_tag WHERE tag_id = ? AND monitor_id = ? AND value = ?", [
+                    tagID,
+                    monitorID,
+                    value,
+                ])
+
+                // Cleanup unused Tags
+                await R.exec("delete from tag where ( select count(*) from monitor_tag mt where tag.id = mt.tag_id ) = 0");
+
+                callback({
+                    ok: true,
+                    msg: "Deleted Successfully.",
+                });
 
             } catch (e) {
                 callback({
@@ -747,7 +927,7 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
             }
         });
 
-        socket.on("uploadBackup", async (uploadedJSON, callback) => {
+        socket.on("uploadBackup", async (uploadedJSON, importHandle, callback) => {
             try {
                 checkLogin(socket)
 
@@ -755,53 +935,79 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
 
                 console.log(`Importing Backup, User ID: ${socket.userID}, Version: ${backupData.version}`)
 
-                let notificationList = backupData.notificationList;
-                let monitorList = backupData.monitorList;
+                let notificationListData = backupData.notificationList;
+                let monitorListData = backupData.monitorList;
 
-                if (notificationList.length >= 1) {
-                    for (let i = 0; i < notificationList.length; i++) {
-                        let notification = JSON.parse(notificationList[i].config);
-                        await Notification.save(notification, null, socket.userID)
+                if (importHandle == "overwrite") {
+                    for (let id in monitorList) {
+                        let monitor = monitorList[id]
+                        await monitor.stop()
+                    }
+                    await R.exec("DELETE FROM heartbeat");
+                    await R.exec("DELETE FROM monitor_notification");
+                    await R.exec("DELETE FROM monitor_tls_info");
+                    await R.exec("DELETE FROM notification");
+                    await R.exec("DELETE FROM monitor");
+                }
+
+                if (notificationListData.length >= 1) {
+                    let notificationNameList = await R.getAll("SELECT name FROM notification");
+                    let notificationNameListString = JSON.stringify(notificationNameList);
+
+                    for (let i = 0; i < notificationListData.length; i++) {
+                        if ((importHandle == "skip" && notificationNameListString.includes(notificationListData[i].name) == false) || importHandle == "keep" || importHandle == "overwrite") {
+
+                            let notification = JSON.parse(notificationListData[i].config);
+                            await Notification.save(notification, null, socket.userID)
+
+                        }
                     }
                 }
 
-                if (monitorList.length >= 1) {
-                    for (let i = 0; i < monitorList.length; i++) {
-                        let monitor = {
-                            name: monitorList[i].name,
-                            type: monitorList[i].type,
-                            url: monitorList[i].url,
-                            interval: monitorList[i].interval,
-                            hostname: monitorList[i].hostname,
-                            maxretries: monitorList[i].maxretries,
-                            port: monitorList[i].port,
-                            ignoreTls: monitorList[i].ignoreTls,
-                            upsideDown: monitorList[i].upsideDown,
-                            maxredirects: monitorList[i].maxredirects,
-                            checks: monitorList[i].checks,
-                            dns_resolve_type: monitorList[i].dns_resolve_type,
-                            dns_resolve_server: monitorList[i].dns_resolve_server,
-                            notificationIDList: {},
-                        }
+                if (monitorListData.length >= 1) {
+                    let monitorNameList = await R.getAll("SELECT name FROM monitor");
+                    let monitorNameListString = JSON.stringify(monitorNameList);
 
-                        let bean = R.dispense("monitor")
+                    for (let i = 0; i < monitorListData.length; i++) {
+                        if ((importHandle == "skip" && monitorNameListString.includes(monitorListData[i].name) == false) || importHandle == "keep" || importHandle == "overwrite") {
 
-                        let notificationIDList = monitor.notificationIDList;
-                        delete monitor.notificationIDList;
+                            let monitor = {
+                                name: monitorList[i].name,
+                                type: monitorList[i].type,
+                                url: monitorList[i].url,
+                                interval: monitorList[i].interval,
+                                hostname: monitorList[i].hostname,
+                                maxretries: monitorList[i].maxretries,
+                                port: monitorList[i].port,
+                                ignoreTls: monitorList[i].ignoreTls,
+                                upsideDown: monitorList[i].upsideDown,
+                                maxredirects: monitorList[i].maxredirects,
+                                checks: monitorList[i].checks,
+                                dns_resolve_type: monitorList[i].dns_resolve_type,
+                                dns_resolve_server: monitorList[i].dns_resolve_server,
+                                notificationIDList: {},
+                            }
 
-                        monitor.checks_json = JSON.stringify(monitor.checks);
-                        delete monitor.accepted_statuscodes;
+                            let bean = R.dispense("monitor")
 
-                        bean.import(monitor)
-                        bean.user_id = socket.userID
-                        await R.store(bean)
+                            let notificationIDList = monitor.notificationIDList;
+                            delete monitor.notificationIDList;
+                            
+                            monitor.checks_json = JSON.stringify(monitor.checks);
+                            delete monitor.accepted_statuscodes;
 
-                        await updateMonitorNotification(bean.id, notificationIDList)
+                            bean.import(monitor)
+                            bean.user_id = socket.userID
+                            await R.store(bean)
 
-                        if (monitorList[i].active == 1) {
-                            await startMonitor(socket.userID, bean.id);
-                        } else {
-                            await pauseMonitor(socket.userID, bean.id);
+                            await updateMonitorNotification(bean.id, notificationIDList)
+
+                            if (monitorListData[i].active == 1) {
+                                await startMonitor(socket.userID, bean.id);
+                            } else {
+                                await pauseMonitor(socket.userID, bean.id);
+                            }
+
                         }
                     }
 

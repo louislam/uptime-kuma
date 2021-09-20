@@ -33,6 +33,8 @@ class Monitor extends BeanModel {
             notificationIDList[bean.notification_id] = true;
         }
 
+        const tags = await R.getAll("SELECT mt.*, tag.name, tag.color FROM monitor_tag mt JOIN tag ON mt.tag_id = tag.id WHERE mt.monitor_id = ?", [this.id]);
+
         return {
             id: this.id,
             name: this.name,
@@ -44,6 +46,7 @@ class Monitor extends BeanModel {
             active: this.active,
             type: this.type,
             interval: this.interval,
+            retryInterval: this.retryInterval,
             ignoreTls: this.getIgnoreTls(),
             upsideDown: this.isUpsideDown(),
             maxredirects: this.maxredirects,
@@ -52,6 +55,7 @@ class Monitor extends BeanModel {
             dns_last_result: this.dns_last_result,
             notificationIDList,
             checks: this.checks,
+            tags: tags,
         };
     }
 
@@ -288,12 +292,17 @@ class Monitor extends BeanModel {
                 bean.important = false;
             }
 
+            let beatInterval = this.interval;
+
             if (bean.status === UP) {
-                console.info(`Monitor #${this.id} '${this.name}': Successful Response: ${bean.ping} ms | Interval: ${this.interval} seconds | Type: ${this.type}`)
+                console.info(`Monitor #${this.id} '${this.name}': Successful Response: ${bean.ping} ms | Interval: ${beatInterval} seconds | Type: ${this.type}`)
             } else if (bean.status === PENDING) {
-                console.warn(`Monitor #${this.id} '${this.name}': Pending: ${bean.msg} | Max retries: ${this.maxretries} | Type: ${this.type}`)
+                if (this.retryInterval !== this.interval) {
+                    beatInterval = this.retryInterval;
+                }
+                console.warn(`Monitor #${this.id} '${this.name}': Pending: ${bean.msg} | Max retries: ${this.maxretries} | Retry: ${retries} | Retry Interval: ${beatInterval} seconds | Type: ${this.type}`)
             } else {
-                console.warn(`Monitor #${this.id} '${this.name}': Failing: ${bean.msg} | Type: ${this.type}`)
+                console.warn(`Monitor #${this.id} '${this.name}': Failing: ${bean.msg} | Interval: ${beatInterval} seconds | Type: ${this.type}`)
             }
 
             io.to(this.user_id).emit("heartbeat", bean.toJSON());
@@ -305,7 +314,7 @@ class Monitor extends BeanModel {
             previousBeat = bean;
 
             if (! this.isStop) {
-                this.heartbeatInterval = setTimeout(beat, this.interval * 1000);
+                this.heartbeatInterval = setTimeout(beat, beatInterval * 1000);
             }
 
         }

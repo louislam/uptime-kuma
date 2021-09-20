@@ -33,7 +33,7 @@
 
     <div class="mb-3">
         <label for="password" class="form-label">{{ $t("Password") }}</label>
-        <HiddenInput id="password" v-model="$parent.notification.smtpPassword" :required="true" autocomplete="one-time-code"></HiddenInput>
+        <HiddenInput id="password" v-model="$parent.notification.smtpPassword" :required="false" autocomplete="one-time-code"></HiddenInput>
     </div>
 
     <div class="mb-3">

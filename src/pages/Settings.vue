@@ -120,34 +120,60 @@
                                 </form>
                             </template>
 
-                            <h2 class="mt-5 mb-2">
-                                {{ $t("Two Factor Authentication") }}
-                            </h2>
-
-                            <div class="mb-3">
+                            <div v-if="! settings.disableAuth" class="mt-5 mb-3">
+                                <h2 class="mb-2">
+                                    {{ $t("Two Factor Authentication") }}
+                                </h2>
                                 <button class="btn btn-primary me-2" type="button" @click="$refs.TwoFADialog.show()">{{ $t("2FA Settings") }}</button>
                             </div>
 
-                            <h2 class="mt-5 mb-2">{{ $t("Import/Export Backup") }}</h2>
+                            <h2 class="mt-5 mb-2">{{ $t("Export Backup") }}</h2>
 
                             <p>
                                 {{ $t("backupDescription") }} <br />
                                 ({{ $t("backupDescription2") }}) <br />
                             </p>
 
-                            <div class="input-group mb-3">
-                                <button class="btn btn-outline-primary" @click="downloadBackup">{{ $t("Export") }}</button>
-                                <button type="button" class="btn btn-outline-primary" :disabled="processing" @click="importBackup">
-                                    <div v-if="processing" class="spinner-border spinner-border-sm me-1"></div>
-                                    {{ $t("Import") }}
-                                </button>
-                                <input id="importBackup" type="file" class="form-control" accept="application/json">
-                            </div>
-                            <div v-if="importAlert" class="alert alert-danger mt-3" style="padding: 6px 16px;">
-                                {{ importAlert }}
+                            <div class="mb-2">
+                                <button class="btn btn-primary" @click="downloadBackup">{{ $t("Export") }}</button>
                             </div>
 
                             <p><strong>{{ $t("backupDescription3") }}</strong></p>
+
+                            <h2 class="mt-5 mb-2">{{ $t("Import Backup") }}</h2>
+
+                            <label class="form-label">{{ $t("Options") }}:</label>
+                            <br>
+                            <div class="form-check form-check-inline">
+                                <input id="radioKeep" v-model="importHandle" class="form-check-input" type="radio" name="radioImportHandle" value="keep">
+                                <label class="form-check-label" for="radioKeep">{{ $t("Keep both") }}</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input id="radioSkip" v-model="importHandle" class="form-check-input" type="radio" name="radioImportHandle" value="skip">
+                                <label class="form-check-label" for="radioSkip">{{ $t("Skip existing") }}</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input id="radioOverwrite" v-model="importHandle" class="form-check-input" type="radio" name="radioImportHandle" value="overwrite">
+                                <label class="form-check-label" for="radioOverwrite">{{ $t("Overwrite") }}</label>
+                            </div>
+                            <div class="form-text mb-2">
+                                {{ $t("importHandleDescription") }}
+                            </div>
+
+                            <div class="mb-2">
+                                <input id="importBackup" type="file" class="form-control" accept="application/json">
+                            </div>
+
+                            <div class="input-group mb-2 justify-content-end">
+                                <button type="button" class="btn btn-outline-primary" :disabled="processing" @click="confirmImport">
+                                    <div v-if="processing" class="spinner-border spinner-border-sm me-1"></div>
+                                    {{ $t("Import") }}
+                                </button>
+                            </div>
+
+                            <div v-if="importAlert" class="alert alert-danger mt-3" style="padding: 6px 16px;">
+                                {{ importAlert }}
+                            </div>
 
                             <h2 class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
 
@@ -233,6 +259,12 @@
                     <p>Molim Vas koristite ovo sa pažnjom.</p>
                 </template>
 
+                <template v-else-if="$i18n.locale === 'tr-TR' ">
+                    <p><strong>Şifreli girişi devre dışı bırakmak istediğinizden</strong>emin misiniz?</p>
+                     <p>Bu, Uptime Kuma'nın önünde Cloudflare Access gibi <strong>üçüncü taraf yetkilendirmesi olan</strong> kişiler içindir.</p>
+                     <p>Lütfen dikkatli kullanın.</p>
+                </template>
+
                 <template v-else-if="$i18n.locale === 'ko-KR' ">
                     <p>정말로 <strong>인증 기능을 끌까요</strong>?</p>
                     <p>이 기능은 <strong>Cloudflare Access와 같은 서드파티 인증</strong>을 Uptime Kuma 앞에 둔 사용자를 위한 기능이에요.</p>
@@ -257,6 +289,12 @@
                     <p>Utilizzare con attenzione.</p>
                 </template>
 
+                <template v-else-if="$i18n.locale === 'ru-RU' ">
+                    <p>Вы уверены, что хотите <strong>отключить авторизацию</strong>?</p>
+                    <p>Это подходит для <strong>тех, у кого стоит другая авторизация</strong> перед открытием Uptime Kuma, например Cloudflare Access.</p>
+                    <p>Пожалуйста, используйте с осторожностью.</p>
+                </template>
+
                 <!-- English (en) -->
                 <template v-else>
                     <p>Are you sure want to <strong>disable auth</strong>?</p>
@@ -267,6 +305,9 @@
 
             <Confirm ref="confirmClearStatistics" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="clearStatistics">
                 {{ $t("confirmClearStatisticsMsg") }}
+            </Confirm>
+            <Confirm ref="confirmImport" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="importBackup">
+                {{ $t("confirmImportMsg") }}
             </Confirm>
         </div>
     </transition>
@@ -308,6 +349,7 @@ export default {
             },
             loaded: false,
             importAlert: null,
+            importHandle: "skip",
             processing: false,
         }
     },
@@ -374,6 +416,10 @@ export default {
             this.$refs.confirmClearStatistics.show();
         },
 
+        confirmImport() {
+            this.$refs.confirmImport.show();
+        },
+
         disableAuth() {
             this.settings.disableAuth = true;
             this.saveSettings();
@@ -396,7 +442,7 @@ export default {
             }
             exportData = JSON.stringify(exportData, null, 4);
             let downloadItem = document.createElement("a");
-            downloadItem.setAttribute("href", "data:application/json;charset=utf-8," + encodeURI(exportData));
+            downloadItem.setAttribute("href", "data:application/json;charset=utf-8," + encodeURIComponent(exportData));
             downloadItem.setAttribute("download", fileName);
             downloadItem.click();
         },
@@ -419,7 +465,7 @@ export default {
             fileReader.readAsText(uploadItem.item(0));
 
             fileReader.onload = item => {
-                this.$root.uploadBackup(item.target.result, (res) => {
+                this.$root.uploadBackup(item.target.result, this.importHandle, (res) => {
                     this.processing = false;
 
                     if (res.ok) {

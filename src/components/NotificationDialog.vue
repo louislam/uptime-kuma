@@ -17,6 +17,7 @@
                                 <option value="webhook">Webhook</option>
                                 <option value="smtp">{{ $t("Email") }} (SMTP)</option>
                                 <option value="discord">Discord</option>
+                                <option value="teams">Microsoft Teams</option>
                                 <option value="signal">Signal</option>
                                 <option value="gotify">Gotify</option>
                                 <option value="slack">Slack</option>
@@ -79,6 +80,11 @@
                             <div class="mb-3">
                                 <label for="discord-username" class="form-label">Bot Display Name</label>
                                 <input id="discord-username" v-model="notification.discordUsername" type="text" class="form-control" autocomplete="false" :placeholder="$root.appName">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="discord-prefix-message" class="form-label">Prefix Custom Message</label>
+                                <input id="discord-prefix-message" v-model="notification.discordPrefixMessage" type="text" class="form-control" autocomplete="false" placeholder="Hello @everyone is...">
                             </div>
                         </template>
 
@@ -395,6 +401,8 @@
 
                         <!-- DEPRECATED! Please create vue component in "./src/components/notifications/{notification name}.vue" -->
 
+                        <Teams v-if="notification.type === 'teams'" />
+
                         <div class="mb-3 mt-4">
                             <hr class="dropdown-divider mb-4">
 
@@ -444,6 +452,7 @@ import { ucfirst } from "../util.ts"
 import Confirm from "./Confirm.vue";
 import HiddenInput from "./HiddenInput.vue";
 import Telegram from "./notifications/Telegram.vue";
+import Teams from "./notifications/Teams.vue";
 import SMTP from "./notifications/SMTP.vue";
 
 export default {
@@ -451,6 +460,7 @@ export default {
         Confirm,
         HiddenInput,
         Telegram,
+        Teams,
         SMTP,
     },
     props: {},
