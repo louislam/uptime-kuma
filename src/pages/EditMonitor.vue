@@ -333,6 +333,11 @@ export default {
                 this.$root.getSocket().emit("getMonitor", this.$route.params.id, (res) => {
                     if (res.ok) {
                         this.monitor = res.monitor;
+
+                        // Handling for monitors that are created before 1.7.0
+                        if (this.monitor.retryInterval === 0) {
+                            this.monitor.retryInterval = this.monitor.interval;
+                        }
                     } else {
                         toast.error(res.msg)
                     }

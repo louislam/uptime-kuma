@@ -128,6 +128,7 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
 exports.entryPage = "dashboard";
 
 (async () => {
+    Database.init(args);
     await initDatabase();
 
     exports.entryPage = await setting("entryPage");
