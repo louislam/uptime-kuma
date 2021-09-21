@@ -169,6 +169,7 @@ export default {
     "Avg. Ping": "Avg. Ping",
     "Avg. Response": "Avg. Response",
     // Start notification form
+    defaultNotificationName: "My {0} Alert ({1})",
     here: "here",
     "Required": "Required",
 

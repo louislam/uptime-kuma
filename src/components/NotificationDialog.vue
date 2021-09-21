@@ -108,15 +108,15 @@ export default {
     watch: {
         "notification.type"(to, from) {
             let oldName;
-
+            console.log(this.$root.notificationList)
             if (from) {
-                oldName = `My ${ucfirst(from)} Alert (1)`;
+                oldName = this.getUniqueDefaultName(from);
             } else {
                 oldName = "";
             }
 
             if (! this.notification.name || this.notification.name === oldName) {
-                this.notification.name = `My ${ucfirst(to)} Alert (1)`
+                this.notification.name = this.getUniqueDefaultName(to);
             }
         },
     },
@@ -192,6 +192,21 @@ export default {
                 }
             })
         },
+        /**
+         * @param {string} notificationKey
+         * @return {string}
+         */
+        getUniqueDefaultName(notificationKey) {
+            let index = 1
+            let name = ""
+            do {
+                name = this.$t("defaultNotificationName", [
+                    this.$t(notificationKey).replace(/\(.+\)/, ""),
+                    index++
+                ]);
+            } while (this.$root.notificationList.find(it => it.name === name))
+            return name
+        }
     },
 }
 </script>
