@@ -358,6 +358,10 @@ export default {
         "config.statusPageTheme"() {
             this.$root.statusPageTheme = this.config.statusPageTheme;
             this.loadedTheme = true;
+        },
+
+        "config.title"(title) {
+            document.title = title;
         }
 
     },
@@ -405,7 +409,7 @@ export default {
         this.updateHeartbeatList();
         feedInterval = setInterval(() => {
             this.updateHeartbeatList();
-        }, 10 * 1000);
+        }, 5 * 60 * 1000);
     },
     methods: {
 
