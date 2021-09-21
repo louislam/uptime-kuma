@@ -19,6 +19,7 @@
         "start": "npm run start-server",
         "start-server": "node server/server.js",
         "build": "vite build",
+        "tsc": "tsc",
         "vite-preview-dist": "vite preview --host",
         "build-docker": "npm run build-docker-debian && npm run build-docker-alpine",
         "build-docker-alpine": "docker buildx build -f dockerfile-alpine --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma:alpine -t louislam/uptime-kuma:1-alpine -t louislam/uptime-kuma:1.6.0-alpine --target release . --push",

@@ -1,7 +1,10 @@
 // Common Util for frontend and backend
+//
+// DOT NOT MODIFY util.js!
+// Need to run "tsc" to compile if there are any changes.
+//
 // Backend uses the compiled file util.js
 // Frontend uses util.ts
-// Need to run "tsc" to compile if there are any changes.
 
 import * as _dayjs from "dayjs";
 const dayjs = _dayjs;

@@ -1,8 +1,11 @@
 "use strict";
 // Common Util for frontend and backend
+//
+// DOT NOT MODIFY util.js!
+// Need to run "tsc" to compile if there are any changes.
+//
 // Backend uses the compiled file util.js
 // Frontend uses util.ts
-// Need to run "tsc" to compile if there are any changes.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isDev = void 0;
 const _dayjs = require("dayjs");
