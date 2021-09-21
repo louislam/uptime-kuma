@@ -238,7 +238,7 @@ export default {
             // Source: https://stackoverflow.com/questions/106179/regular-expression-to-match-dns-hostname-or-ip-address
             // Modified to disallow IP addresses with port
             // eslint-disable-next-line
-            hostnameRegexPattern: "^((([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-\\.]*[a-zA-Z0-9]\\.))*([A-Za-z]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z]))$"
+            hostnameRegexPattern: "^((([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\.]*[a-zA-Z0-9]\\.))*([A-Za-z]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z]))$"
         }
     },
 
