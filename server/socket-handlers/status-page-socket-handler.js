@@ -2,6 +2,9 @@ const { R } = require("redbean-node");
 const { checkLogin, setSettings } = require("../util-server");
 const dayjs = require("dayjs");
 const { debug } = require("../../src/util");
+const ImageDataURI = require("../image-data-uri");
+const Database = require("../database");
+const fs = require("fs");
 
 module.exports.statusPageSocketHandler = (socket) => {
 
@@ -67,17 +70,34 @@ module.exports.statusPageSocketHandler = (socket) => {
     });
 
     // Save Status Page
+    // imgDataUrl Only Accept PNG!
     socket.on("saveStatusPage", async (config, imgDataUrl, publicGroupList, callback) => {
 
         try {
             checkLogin(socket);
 
+            const header = "data:image/png;base64,";
+
+            // Check logo format
+            // If is image data url, convert to png file
+            // Else assume it is a url, nothing to do
+            if (imgDataUrl.startsWith("data:")) {
+                if (! imgDataUrl.startsWith(header)) {
+                    throw new Error("Only allowed PNG logo.");
+                }
+
+                // Convert to file
+                await ImageDataURI.outputFile(imgDataUrl, Database.uploadDir + "logo.png");
+                config.logo = "/upload/logo.png?t=" + Date.now();
+
+            } else {
+                config.icon = imgDataUrl;
+            }
+
             // Save Config
             await setSettings("statusPage", config);
 
             await R.transaction(async (trx) => {
-
-                // Save Icon
 
                 // Save Public Group List
                 const groupIDList = [];

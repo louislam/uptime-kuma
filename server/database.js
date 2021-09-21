@@ -5,10 +5,23 @@ const { debug, sleep } = require("../src/util");
 const dayjs = require("dayjs");
 const knex = require("knex");
 
+/**
+ * Database & App Data Folder
+ */
 class Database {
 
     static templatePath = "./db/kuma.db";
+
+    /**
+     * Data Dir (Default: ./data)
+     */
     static dataDir;
+
+    /**
+     * User Upload Dir (Default: ./data/upload)
+     */
+    static uploadDir;
+
     static path;
 
     /**
@@ -52,6 +65,13 @@ class Database {
         if (! fs.existsSync(Database.dataDir)) {
             fs.mkdirSync(Database.dataDir, { recursive: true });
         }
+
+        Database.uploadDir = Database.dataDir + "upload/";
+
+        if (! fs.existsSync(Database.uploadDir)) {
+            fs.mkdirSync(Database.uploadDir, { recursive: true });
+        }
+
         console.log(`Data Dir: ${Database.dataDir}`);
     }
 

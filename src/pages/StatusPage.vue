@@ -3,7 +3,10 @@
         <!-- Logo & Title -->
         <h1>
             <!-- Logo -->
-            <img :src="imgDataUrl" alt class="logo me-2" :class="logoClass" @click="showImageCropUploadMethod" />
+            <div class="logo-wrapper" @click="showImageCropUploadMethod">
+                <img :src="imgDataUrl" alt class="logo me-2" :class="logoClass" />
+                <font-awesome-icon v-if="enableEditMode" class="icon-upload" icon="upload" />
+            </div>
 
             <!-- Uploader -->
             <!--    url="/api/status-page/upload-logo" -->
@@ -376,6 +379,16 @@ export default {
         axios.get("/api/status-page/config").then((res) => {
             this.config = res.data;
 
+            if (this.config.logo) {
+                this.imgDataUrl = this.config.logo;
+
+                // Special handle for dev
+                const env = process.env.NODE_ENV;
+                if (env === "development" || localStorage.dev === "dev") {
+                    let baseURL = location.protocol + "//" + location.hostname + ":3001";
+                    this.imgDataUrl = baseURL + this.imgDataUrl;
+                }
+            }
         });
 
         axios.get("/api/status-page/incident").then((res) => {
@@ -557,6 +570,30 @@ footer {
     min-width: 50px;
 }
 
+.logo-wrapper {
+    display: inline-block;
+    position: relative;
+
+    &:hover {
+        .icon-upload {
+            transform: scale(1.2);
+        }
+    }
+
+    .icon-upload {
+        transition: all $easing-in 0.2s;
+        position: absolute;
+        bottom: 6px;
+        font-size: 20px;
+        left: -14px;
+        background-color: white;
+        padding: 5px;
+        border-radius: 10px;
+        cursor: pointer;
+        box-shadow: 0 15px 70px rgba(0, 0, 0, 0.9);
+    }
+}
+
 .logo {
     transition: all $easing-in 0.2s;
 
@@ -577,7 +614,7 @@ footer {
     }
 
     .date {
-        font-size: 14px;
+        font-size: 12px;
     }
 }
 

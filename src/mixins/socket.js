@@ -1,7 +1,6 @@
 import { io } from "socket.io-client";
 import { useToast } from "vue-toastification";
-import axios from "axios";
-const toast = useToast()
+const toast = useToast();
 
 let socket;
 
@@ -32,7 +31,7 @@ export default {
             certInfoList: {},
             notificationList: [],
             connectionErrorMsg: "Cannot connect to the socket server. Reconnecting...",
-        }
+        };
     },
 
     created() {
@@ -74,7 +73,7 @@ export default {
             });
 
             socket.on("setup", (monitorID, data) => {
-                this.$router.push("/setup")
+                this.$router.push("/setup");
             });
 
             socket.on("autoLogin", (monitorID, data) => {
@@ -132,7 +131,7 @@ export default {
                         this.importantHeartbeatList[data.monitorID] = [];
                     }
 
-                    this.importantHeartbeatList[data.monitorID].unshift(data)
+                    this.importantHeartbeatList[data.monitorID].unshift(data);
                 }
             });
 
@@ -140,27 +139,27 @@ export default {
                 if (! (monitorID in this.heartbeatList) || overwrite) {
                     this.heartbeatList[monitorID] = data;
                 } else {
-                    this.heartbeatList[monitorID] = data.concat(this.heartbeatList[monitorID])
+                    this.heartbeatList[monitorID] = data.concat(this.heartbeatList[monitorID]);
                 }
             });
 
             socket.on("avgPing", (monitorID, data) => {
-                this.avgPingList[monitorID] = data
+                this.avgPingList[monitorID] = data;
             });
 
             socket.on("uptime", (monitorID, type, data) => {
-                this.uptimeList[`${monitorID}_${type}`] = data
+                this.uptimeList[`${monitorID}_${type}`] = data;
             });
 
             socket.on("certInfo", (monitorID, data) => {
-                this.certInfoList[monitorID] = JSON.parse(data)
+                this.certInfoList[monitorID] = JSON.parse(data);
             });
 
             socket.on("importantHeartbeatList", (monitorID, data, overwrite) => {
                 if (! (monitorID in this.importantHeartbeatList) || overwrite) {
                     this.importantHeartbeatList[monitorID] = data;
                 } else {
-                    this.importantHeartbeatList[monitorID] = data.concat(this.importantHeartbeatList[monitorID])
+                    this.importantHeartbeatList[monitorID] = data.concat(this.importantHeartbeatList[monitorID]);
                 }
             });
 
@@ -172,26 +171,26 @@ export default {
             });
 
             socket.on("disconnect", () => {
-                console.log("disconnect")
+                console.log("disconnect");
                 this.connectionErrorMsg = "Lost connection to the socket server. Reconnecting...";
                 this.socket.connected = false;
             });
 
             socket.on("connect", () => {
-                console.log("connect")
+                console.log("connect");
                 this.socket.connectCount++;
                 this.socket.connected = true;
 
                 // Reset Heartbeat list if it is re-connect
                 if (this.socket.connectCount >= 2) {
-                    this.clearData()
+                    this.clearData();
                 }
 
                 let token = this.storage().token;
 
                 if (token) {
                     if (token !== "autoLogin") {
-                        this.loginByToken(token)
+                        this.loginByToken(token);
                     } else {
 
                         // Timeout if it is not actually auto login
@@ -235,7 +234,7 @@ export default {
                 token,
             }, (res) => {
                 if (res.tokenRequired) {
-                    callback(res)
+                    callback(res);
                 }
 
                 if (res.ok) {
@@ -244,11 +243,11 @@ export default {
                     this.loggedIn = true;
 
                     // Trigger Chrome Save Password
-                    history.pushState({}, "")
+                    history.pushState({}, "");
                 }
 
-                callback(res)
-            })
+                callback(res);
+            });
         },
 
         loginByToken(token) {
@@ -256,11 +255,11 @@ export default {
                 this.allowLoginDialog = true;
 
                 if (! res.ok) {
-                    this.logout()
+                    this.logout();
                 } else {
                     this.loggedIn = true;
                 }
-            })
+            });
         },
 
         logout() {
@@ -268,68 +267,68 @@ export default {
             this.socket.token = null;
             this.loggedIn = false;
 
-            this.clearData()
+            this.clearData();
         },
 
         prepare2FA(callback) {
-            socket.emit("prepare2FA", callback)
+            socket.emit("prepare2FA", callback);
         },
 
         save2FA(secret, callback) {
-            socket.emit("save2FA", callback)
+            socket.emit("save2FA", callback);
         },
 
         disable2FA(callback) {
-            socket.emit("disable2FA", callback)
+            socket.emit("disable2FA", callback);
         },
 
         verifyToken(token, callback) {
-            socket.emit("verifyToken", token, callback)
+            socket.emit("verifyToken", token, callback);
         },
 
         twoFAStatus(callback) {
-            socket.emit("twoFAStatus", callback)
+            socket.emit("twoFAStatus", callback);
         },
 
         getMonitorList(callback) {
-            socket.emit("getMonitorList", callback)
+            socket.emit("getMonitorList", callback);
         },
 
         add(monitor, callback) {
-            socket.emit("add", monitor, callback)
+            socket.emit("add", monitor, callback);
         },
 
         deleteMonitor(monitorID, callback) {
-            socket.emit("deleteMonitor", monitorID, callback)
+            socket.emit("deleteMonitor", monitorID, callback);
         },
 
         clearData() {
-            console.log("reset heartbeat list")
-            this.heartbeatList = {}
-            this.importantHeartbeatList = {}
+            console.log("reset heartbeat list");
+            this.heartbeatList = {};
+            this.importantHeartbeatList = {};
         },
 
         uploadBackup(uploadedJSON, importHandle, callback) {
-            socket.emit("uploadBackup", uploadedJSON, importHandle, callback)
+            socket.emit("uploadBackup", uploadedJSON, importHandle, callback);
         },
 
         clearEvents(monitorID, callback) {
-            socket.emit("clearEvents", monitorID, callback)
+            socket.emit("clearEvents", monitorID, callback);
         },
 
         clearHeartbeats(monitorID, callback) {
-            socket.emit("clearHeartbeats", monitorID, callback)
+            socket.emit("clearHeartbeats", monitorID, callback);
         },
 
         clearStatistics(callback) {
-            socket.emit("clearStatistics", callback)
+            socket.emit("clearStatistics", callback);
         },
     },
 
     computed: {
 
         lastHeartbeatList() {
-            let result = {}
+            let result = {};
 
             for (let monitorID in this.heartbeatList) {
                 let index = this.heartbeatList[monitorID].length - 1;
@@ -340,15 +339,15 @@ export default {
         },
 
         statusList() {
-            let result = {}
+            let result = {};
 
             let unknown = {
                 text: "Unknown",
                 color: "secondary",
-            }
+            };
 
             for (let monitorID in this.lastHeartbeatList) {
-                let lastHeartBeat = this.lastHeartbeatList[monitorID]
+                let lastHeartBeat = this.lastHeartbeatList[monitorID];
 
                 if (! lastHeartBeat) {
                     result[monitorID] = unknown;
@@ -381,12 +380,12 @@ export default {
         // Reload the SPA if the server version is changed.
         "info.version"(to, from) {
             if (from && from !== to) {
-                window.location.reload()
+                window.location.reload();
             }
         },
 
         remember() {
-            localStorage.remember = (this.remember) ? "1" : "0"
+            localStorage.remember = (this.remember) ? "1" : "0";
         },
 
         // Reconnect the socket io, if status-page to dashboard
@@ -399,4 +398,4 @@ export default {
 
     },
 
-}
+};
