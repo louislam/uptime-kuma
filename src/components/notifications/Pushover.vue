@@ -1,14 +1,14 @@
 <template>
     <div class="mb-3">
-        <label for="pushover-user" class="form-label">User Key<span style="color: red;"><sup>*</sup></span></label>
+        <label for="pushover-user" class="form-label">{{ $t("User Key") }}<span style="color: red;"><sup>*</sup></span></label>
         <HiddenInput id="pushover-user" v-model="$parent.notification.pushoveruserkey" :required="true" autocomplete="one-time-code"></HiddenInput>
-        <label for="pushover-app-token" class="form-label">Application Token<span style="color: red;"><sup>*</sup></span></label>
+        <label for="pushover-app-token" class="form-label">{{ $t("Application Token") }}<span style="color: red;"><sup>*</sup></span></label>
         <HiddenInput id="pushover-app-token" v-model="$parent.notification.pushoverapptoken" :required="true" autocomplete="one-time-code"></HiddenInput>
-        <label for="pushover-device" class="form-label">Device</label>
+        <label for="pushover-device" class="form-label">{{ $t("Device") }}</label>
         <input id="pushover-device" v-model="$parent.notification.pushoverdevice" type="text" class="form-control">
-        <label for="pushover-device" class="form-label">Message Title</label>
+        <label for="pushover-device" class="form-label">{{ $t("Message Title") }}</label>
         <input id="pushover-title" v-model="$parent.notification.pushovertitle" type="text" class="form-control">
-        <label for="pushover-priority" class="form-label">Priority</label>
+        <label for="pushover-priority" class="form-label">{{ $t("Priority") }}</label>
         <select id="pushover-priority" v-model="$parent.notification.pushoverpriority" class="form-select">
             <option>-2</option>
             <option>-1</option>
@@ -16,7 +16,7 @@
             <option>1</option>
             <option>2</option>
         </select>
-        <label for="pushover-sound" class="form-label">Notification Sound</label>
+        <label for="pushover-sound" class="form-label">{{ $t("Notification Sound") }}</label>
         <select id="pushover-sound" v-model="$parent.notification.pushoversounds" class="form-select">
             <option>pushover</option>
             <option>bike</option>
@@ -42,15 +42,15 @@
             <option>none</option>
         </select>
         <div class="form-text">
-            <span style="color: red;"><sup>*</sup></span>Required
+            <span style="color: red;"><sup>*</sup></span>{{ $t("Required") }}
+            <i18n-t keypath="More info on:" tag="p" style="margin-top: 8px;">
+                <a href="https://pushover.net/api" target="_blank">https://pushover.net/api</a>
+            </i18n-t>
             <p style="margin-top: 8px;">
-                More info on: <a href="https://pushover.net/api" target="_blank">https://pushover.net/api</a>
+                {{ $t("pushoverDesc1") }}
             </p>
             <p style="margin-top: 8px;">
-                Emergency priority (2) has default 30 second timeout between retries and will expire after 1 hour.
-            </p>
-            <p style="margin-top: 8px;">
-                If you want to send notifications to different devices, fill out Device field.
+                {{ $t("pushoverDesc2") }}
             </p>
         </div>
     </div>

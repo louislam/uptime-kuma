@@ -10,9 +10,9 @@
             <HiddenInput id="pushy-user-key" v-model="$parent.notification.pushyToken" :required="true" autocomplete="one-time-code"></HiddenInput>
         </div>
     </div>
-    <p style="margin-top: 8px;">
-        More info on: <a href="https://pushy.me/docs/api/send-notifications" target="_blank">https://pushy.me/docs/api/send-notifications</a>
-    </p>
+    <i18n-t keypath="More info on:" tag="p" style="margin-top: 8px;">
+        <a href="https://pushy.me/docs/api/send-notifications" target="_blank">https://pushy.me/docs/api/send-notifications</a>
+    </i18n-t>
 </template>
 
 <script>
