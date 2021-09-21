@@ -2,13 +2,6 @@
 FROM node:14-buster-slim AS build
 WORKDIR /app
 
-# split the sqlite install here, so that it can caches the arm prebuilt
-# do not modify it, since we don't want to re-compile the arm prebuilt again
-RUN apt update && \
-    apt --yes install python3 python3-pip python3-dev git g++ make && \
-    ln -s /usr/bin/python3 /usr/bin/python && \
-    npm install mapbox/node-sqlite3#593c9d --build-from-source
-
 COPY . .
 RUN npm install --legacy-peer-deps && \
     npm run build && \
@@ -16,7 +9,7 @@ RUN npm install --legacy-peer-deps && \
     chmod +x /app/extra/entrypoint.sh
 
 
-FROM node:14-bullseye-slim AS release
+FROM node:14-buster-slim AS release
 WORKDIR /app
 
 # Install Apprise, add sqlite3 cli for debugging in the future, iputils-ping for ping, util-linux for setpriv
