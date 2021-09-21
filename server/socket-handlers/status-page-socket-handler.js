@@ -4,7 +4,7 @@ const dayjs = require("dayjs");
 const { debug } = require("../../src/util");
 const ImageDataURI = require("../image-data-uri");
 const Database = require("../database");
-const fs = require("fs");
+const apicache = require("../modules/apicache");
 
 module.exports.statusPageSocketHandler = (socket) => {
 
@@ -75,6 +75,8 @@ module.exports.statusPageSocketHandler = (socket) => {
 
         try {
             checkLogin(socket);
+
+            apicache.clear();
 
             const header = "data:image/png;base64,";
 

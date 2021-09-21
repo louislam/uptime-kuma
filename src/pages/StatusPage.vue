@@ -409,7 +409,7 @@ export default {
         this.updateHeartbeatList();
         feedInterval = setInterval(() => {
             this.updateHeartbeatList();
-        }, 5 * 60 * 1000);
+        }, (300 + 10) * 1000);
     },
     methods: {
 

@@ -2,7 +2,10 @@ let express = require("express");
 const { allowDevAllOrigin, getSettings, setting } = require("../util-server");
 const { R } = require("redbean-node");
 const server = require("../server");
+const apicache = require("../modules/apicache");
 let router = express.Router();
+
+let cache = apicache.middleware;
 
 router.get("/api/entry-page", async (_, response) => {
     allowDevAllOrigin(response);
@@ -56,7 +59,7 @@ router.get("/api/status-page/incident", async (_, response) => {
 
 // Status Page - Monitor List
 // Can fetch only if published
-router.get("/api/status-page/monitor-list", async (_request, response) => {
+router.get("/api/status-page/monitor-list", cache("5 minutes"), async (_request, response) => {
     allowDevAllOrigin(response);
 
     try {
@@ -77,7 +80,7 @@ router.get("/api/status-page/monitor-list", async (_request, response) => {
 
 // Status Page Polling Data
 // Can fetch only if published
-router.get("/api/status-page/heartbeat", async (_request, response) => {
+router.get("/api/status-page/heartbeat", cache("5 minutes"), async (_request, response) => {
     allowDevAllOrigin(response);
     try {
         await checkPublished();
@@ -111,16 +114,6 @@ router.get("/api/status-page/heartbeat", async (_request, response) => {
     } catch (error) {
         send403(response, error.message);
     }
-});
-
-router.post("/api/status-page/upload-logo", async (request, response) => {
-    allowDevAllOrigin(response);
-
-    // TODO: Check Bearer token
-
-    console.log(request);
-
-    response.json({});
 });
 
 async function checkPublished() {
