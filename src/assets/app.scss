@@ -282,6 +282,16 @@ h2 {
             }
         }
     }
+
+    .alert {
+        &.bg-info,
+        &.bg-warning,
+        &.bg-danger,
+        &.bg-light {
+            color: $dark-font-color2;
+        }
+    }
+
 }
 
 /*
@@ -396,8 +406,6 @@ h2 {
     }
 
     /*
-
-
     &::after {
         margin-left: 5px;
         content: "🖊️";
