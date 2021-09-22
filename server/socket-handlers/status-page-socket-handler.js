@@ -124,6 +124,8 @@ module.exports.statusPageSocketHandler = (socket) => {
                 ]);
 
                 let monitorOrder = 1;
+                console.log(group.monitorList);
+
                 for (let monitor of group.monitorList) {
                     let relationBean = R.dispense("monitor_group");
                     relationBean.weight = monitorOrder++;
