@@ -16,8 +16,8 @@ create table `group`
 CREATE TABLE [monitor_group]
 (
     [id]         INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-    [monitor_id] INTEGER                           NOT NULL REFERENCES [group] ([id]) ON DELETE CASCADE ON UPDATE CASCADE REFERENCES [monitor] ([id]) ON DELETE CASCADE ON UPDATE CASCADE,
-    [group_id]   INTEGER                           NOT NULL,
+    [monitor_id] INTEGER                           NOT NULL REFERENCES [monitor] ([id]) ON DELETE CASCADE ON UPDATE CASCADE,
+    [group_id]   INTEGER                           NOT NULL REFERENCES [group] ([id]) ON DELETE CASCADE ON UPDATE CASCADE,
     weight BOOLEAN NOT NULL DEFAULT 1000
 );
 
