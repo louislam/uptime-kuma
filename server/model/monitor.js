@@ -430,7 +430,7 @@ class Monitor extends BeanModel {
      * https://www.uptrends.com/support/kb/reporting/calculation-of-uptime-and-downtime
      * @param duration : int Hours
      */
-    static async sendUptime(duration, io, monitorID, userID) {
+    static async calcUptime(duration, monitorID) {
         const timeLogger = new TimeLogger();
 
         const startTime = R.isoDateTime(dayjs.utc().subtract(duration, "hour"));
@@ -489,6 +489,15 @@ class Monitor extends BeanModel {
             }
         }
 
+        return uptime;
+    }
+
+    /**
+     * Send Uptime
+     * @param duration : int Hours
+     */
+    static async sendUptime(duration, io, monitorID, userID) {
+        const uptime = await this.calcUptime(duration, monitorID);
         io.to(userID).emit("uptime", monitorID, duration, uptime);
     }
 }

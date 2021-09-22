@@ -3,6 +3,7 @@ const { allowDevAllOrigin, getSettings, setting } = require("../util-server");
 const { R } = require("redbean-node");
 const server = require("../server");
 const apicache = require("../modules/apicache");
+const Monitor = require("../model/monitor");
 let router = express.Router();
 
 let cache = apicache.middleware;
@@ -86,6 +87,7 @@ router.get("/api/status-page/heartbeat", cache("5 minutes"), async (_request, re
         await checkPublished();
 
         let heartbeatList = {};
+        let uptimeList = {};
 
         let monitorIDList = await R.getCol(`
             SELECT monitor_group.monitor_id FROM monitor_group, \`group\`
@@ -98,17 +100,21 @@ router.get("/api/status-page/heartbeat", cache("5 minutes"), async (_request, re
                     SELECT * FROM heartbeat
                     WHERE monitor_id = ?
                     ORDER BY time DESC
-                    LIMIT 100
+                    LIMIT 50
             `, [
                 monitorID,
             ]);
 
             list = R.convertToBeans("heartbeat", list);
             heartbeatList[monitorID] = list.reverse().map(row => row.toPublicJSON());
+
+            const type = 24;
+            uptimeList[`${monitorID}_${type}`] = await Monitor.calcUptime(type, monitorID);
         }
 
         response.json({
             heartbeatList,
+            uptimeList
         });
 
     } catch (error) {

@@ -99,55 +99,53 @@ module.exports.statusPageSocketHandler = (socket) => {
             // Save Config
             await setSettings("statusPage", config);
 
-            await R.transaction(async (trx) => {
+            // Save Public Group List
+            const groupIDList = [];
+            let groupOrder = 1;
 
-                // Save Public Group List
-                const groupIDList = [];
-                let groupOrder = 1;
-
-                for (let group of publicGroupList) {
-                    let groupBean;
-                    if (group.id) {
-                        groupBean = await trx.findOne("group", " id = ? AND public = 1 ", [
-                            group.id
-                        ]);
-                    } else {
-                        groupBean = R.dispense("group");
-                    }
-
-                    groupBean.name = group.name;
-                    groupBean.public = true;
-                    groupBean.weight = groupOrder++;
-
-                    await trx.store(groupBean);
-
-                    await trx.exec("DELETE FROM monitor_group WHERE group_id = ? ", [
-                        groupBean.id
+            for (let group of publicGroupList) {
+                let groupBean;
+                if (group.id) {
+                    groupBean = await R.findOne("group", " id = ? AND public = 1 ", [
+                        group.id
                     ]);
-
-                    let monitorOrder = 1;
-                    for (let monitor of group.monitorList) {
-                        let relationBean = R.dispense("monitor_group");
-                        relationBean.weight = monitorOrder++;
-                        relationBean.group_id = groupBean.id;
-                        relationBean.monitor_id = monitor.id;
-                        await trx.store(relationBean);
-                    }
-
-                    groupIDList.push(groupBean.id);
-                    group.id = groupBean.id;
+                } else {
+                    groupBean = R.dispense("group");
                 }
 
-                // Delete groups that not in the list
-                debug("Delete groups that not in the list");
-                const slots = groupIDList.map(() => "?").join(",");
-                await trx.exec(`DELETE FROM \`group\` WHERE id NOT IN (${slots})`, groupIDList);
+                groupBean.name = group.name;
+                groupBean.public = true;
+                groupBean.weight = groupOrder++;
 
-                callback({
-                    ok: true,
-                    publicGroupList,
-                });
+                await R.store(groupBean);
+
+                await R.exec("DELETE FROM monitor_group WHERE group_id = ? ", [
+                    groupBean.id
+                ]);
+
+                let monitorOrder = 1;
+                for (let monitor of group.monitorList) {
+                    let relationBean = R.dispense("monitor_group");
+                    relationBean.weight = monitorOrder++;
+                    relationBean.group_id = groupBean.id;
+                    relationBean.monitor_id = monitor.id;
+                    await R.store(relationBean);
+                }
+
+                groupIDList.push(groupBean.id);
+                group.id = groupBean.id;
+            }
+
+            // Delete groups that not in the list
+            debug("Delete groups that not in the list");
+            const slots = groupIDList.map(() => "?").join(",");
+            await R.exec(`DELETE FROM \`group\` WHERE id NOT IN (${slots})`, groupIDList);
+
+            callback({
+                ok: true,
+                publicGroupList,
             });
+
         } catch (error) {
             console.log(error);
 

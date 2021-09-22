@@ -1,7 +1,7 @@
 <template>
     <div v-if="loadedTheme" class="container mt-3">
         <!-- Logo & Title -->
-        <h1>
+        <h1 class="mb-4">
             <!-- Logo -->
             <div class="logo-wrapper" @click="showImageCropUploadMethod">
                 <img :src="imgDataUrl" alt class="logo me-2" :class="logoClass" />
@@ -135,7 +135,7 @@
 
         <!-- Overall Status -->
         <div class="shadow-box list  p-4 overall-status mb-4">
-            <div v-if="Object.keys($root.publicMonitorList).length === 0">
+            <div v-if="Object.keys($root.publicMonitorList).length === 0 && loadedData">
                 <font-awesome-icon icon="question-circle" class="ok" />
                 No Services
             </div>
@@ -183,7 +183,7 @@
         </div>
 
         <div class="mb-4">
-            <div v-if="$root.publicGroupList.length === 0" class="text-center">
+            <div v-if="$root.publicGroupList.length === 0 && loadedData" class="text-center">
                 👀 Nothing here, please add a group or a monitor.
             </div>
 
@@ -240,6 +240,7 @@ export default {
             showImageCropUpload: false,
             imgDataUrl: "/icon.svg",
             loadedTheme: false,
+            loadedData: false,
         };
     },
     computed: {
@@ -418,6 +419,8 @@ export default {
             if (! this.editMode) {
                 axios.get("/api/status-page/heartbeat").then((res) => {
                     this.$root.heartbeatList = res.data.heartbeatList;
+                    this.$root.uptimeList = res.data.uptimeList;
+                    this.loadedData = true;
                 });
             }
         },
@@ -432,6 +435,7 @@ export default {
                 if (res.ok) {
                     this.enableEditMode = false;
                     this.$root.publicGroupList = res.publicGroupList;
+                    location.reload();
                 } else {
                     toast.error(res.msg);
                 }
