@@ -259,8 +259,8 @@ export default {
     "Read more:": "Read more: {0}",
     "Status:": "Status: {0}",
     "Read more": "Read more",
-    "Apprise is installed.": "Apprise is installed. ",
-    "Apprise is not installed.": "Apprise is not installed. ",
+    appriseInstalled: "Apprise is installed.",
+    appriseNotInstalled: "Apprise is not installed. {0}",
 
     "pushbullet": "Pushbullet",
     "Access Token": "Access Token",

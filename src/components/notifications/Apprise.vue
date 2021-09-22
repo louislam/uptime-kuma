@@ -11,8 +11,10 @@
     </div>
     <div class="mb-3">
         <i18n-t keypath="Status:" tag="p">
-            <span v-if="appriseInstalled" class="text-primary">{{ $t("Apprise is installed.") }}</span>
-            <span v-else class="text-danger">{{ $t("Apprise is not installed.") }}<a href="https://github.com/caronc/apprise" target="_blank">{{ $t("Read more") }}</a></span>
+            <span v-if="appriseInstalled" class="text-primary">{{ $t("appriseInstalled") }}</span>
+            <i18n-t v-else keypath="appriseNotInstalled" tag="span" class="text-danger">
+                <a href="https://github.com/caronc/apprise" target="_blank">{{ $t("Read more") }}</a>
+            </i18n-t>
         </i18n-t>
     </div>
 </template>

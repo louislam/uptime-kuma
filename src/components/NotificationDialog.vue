@@ -200,7 +200,7 @@ export default {
             let name = ""
             do {
                 name = this.$t("defaultNotificationName", [
-                    this.$t(notificationKey).replace(/\(.+\)/, ""),
+                    this.$t(notificationKey).replace(/\(.+\)/, "").trim(),
                     index++
                 ]);
             } while (this.$root.notificationList.find(it => it.name === name))
