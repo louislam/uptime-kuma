@@ -19,9 +19,9 @@
 
             <ul class="nav nav-pills">
                 <li class="nav-item me-2">
-                    <router-link to="/status-page" class="nav-link status-page">
+                    <a href="/status-page" class="nav-link status-page">
                         <font-awesome-icon icon="stream" /> {{ $t("Status Page") }}
-                    </router-link>
+                    </a>
                 </li>
                 <li class="nav-item">
                     <router-link to="/dashboard" class="nav-link">
@@ -87,7 +87,7 @@ export default {
     },
 
     data() {
-        return {}
+        return {};
     },
 
     computed: {
@@ -135,7 +135,7 @@ export default {
         },
     },
 
-}
+};
 </script>
 
 <style lang="scss" scoped>
