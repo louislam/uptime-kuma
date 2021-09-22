@@ -3,10 +3,10 @@
         <!-- Logo & Title -->
         <h1 class="mb-4">
             <!-- Logo -->
-            <div class="logo-wrapper" @click="showImageCropUploadMethod">
-                <img :src="imgDataUrl" alt class="logo me-2" :class="logoClass" />
+            <span class="logo-wrapper" @click="showImageCropUploadMethod">
+                <img :src="logoURL" alt class="logo me-2" :class="logoClass" />
                 <font-awesome-icon v-if="enableEditMode" class="icon-upload" icon="upload" />
-            </div>
+            </span>
 
             <!-- Uploader -->
             <!--    url="/api/status-page/upload-logo" -->
@@ -241,9 +241,18 @@ export default {
             imgDataUrl: "/icon.svg",
             loadedTheme: false,
             loadedData: false,
+            baseURL: "",
         };
     },
     computed: {
+
+        logoURL() {
+            if (this.imgDataUrl.startsWith("data:")) {
+                return this.imgDataUrl;
+            } else {
+                return this.baseURL + this.imgDataUrl;
+            }
+        },
 
         /**
          * If the monitor is added to public list, which will not be in this list.
@@ -379,6 +388,12 @@ export default {
                 return null;
             }
         });
+
+        // Special handle for dev
+        const env = process.env.NODE_ENV;
+        if (env === "development" || localStorage.dev === "dev") {
+            this.baseURL = location.protocol + "//" + location.hostname + ":3001";
+        }
     },
     async mounted() {
         axios.get("/api/status-page/config").then((res) => {
@@ -386,13 +401,6 @@ export default {
 
             if (this.config.logo) {
                 this.imgDataUrl = this.config.logo;
-
-                // Special handle for dev
-                const env = process.env.NODE_ENV;
-                if (env === "development" || localStorage.dev === "dev") {
-                    let baseURL = location.protocol + "//" + location.hostname + ":3001";
-                    this.imgDataUrl = baseURL + this.imgDataUrl;
-                }
             }
         });
 
