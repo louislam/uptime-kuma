@@ -212,7 +212,7 @@ export default {
     "Number": "Number",
     "Recipients": "Recipients",
     needSignalAPI: "You need to have a signal client with REST API.",
-    canCheckLike: "You can check this url to view how to setup one:",
+    wayToCheckSignalURL: "You can check this url to view how to setup one:",
     signalImportant: "IMPORTANT: You cannot mix groups and numbers in recipients!",
 
     "gotify": "Gotify",
@@ -259,7 +259,7 @@ export default {
     "Read more:": "Read more: {0}",
     "Status:": "Status: {0}",
     "Read more": "Read more",
-    "Apprise is installed": "Apprise is installed",
+    "Apprise is installed. ": "Apprise is installed. ",
     "Apprise is not installed. ": "Apprise is not installed. ",
 
     "pushbullet": "Pushbullet",

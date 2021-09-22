@@ -108,7 +108,6 @@ export default {
     watch: {
         "notification.type"(to, from) {
             let oldName;
-            console.log(this.$root.notificationList)
             if (from) {
                 oldName = this.getUniqueDefaultName(from);
             } else {
@@ -193,7 +192,7 @@ export default {
             })
         },
         /**
-         * @param {string} notificationKey
+         * @param {keyof NotificationFormList} notificationKey
          * @return {string}
          */
         getUniqueDefaultName(notificationKey) {

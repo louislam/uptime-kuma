@@ -19,7 +19,7 @@
             </p>
 
             <p style="margin-top: 8px;">
-                {{ $t("canCheckLike") }}
+                {{ $t("wayToCheckSignalURL") }}
             </p>
 
             <p style="margin-top: 8px;">
