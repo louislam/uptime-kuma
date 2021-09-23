@@ -78,7 +78,6 @@
 <script>
 import Login from "../components/Login.vue";
 import compareVersions from "compare-versions";
-import axios from "axios";
 
 export default {
 

@@ -6,19 +6,6 @@
 import axios from "axios";
 
 export default {
-
-    data() {
-        return {};
-    },
-
-    computed: {
-
-    },
-
-    watch: {
-
-    },
-
     async mounted() {
         let entryPage = (await axios.get("/api/entry-page")).data;
 

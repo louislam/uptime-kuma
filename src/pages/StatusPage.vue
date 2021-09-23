@@ -634,4 +634,14 @@ footer {
     }
 }
 
+.mobile {
+    h1 {
+        font-size: 22px;
+    }
+
+    .overall-status {
+        font-size: 20px;
+    }
+}
+
 </style>

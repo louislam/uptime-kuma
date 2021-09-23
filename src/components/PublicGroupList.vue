@@ -33,7 +33,7 @@
                         <template #item="monitor">
                             <div class="item">
                                 <div class="row">
-                                    <div class="col-6 col-md-8 small-padding">
+                                    <div class="col-9 col-md-8 small-padding">
                                         <div class="info">
                                             <font-awesome-icon v-if="editMode" icon="arrows-alt-v" class="action drag me-3" />
                                             <font-awesome-icon v-if="editMode" icon="times" class="action remove me-3" @click="removeMonitor(group.index, monitor.index)" />
@@ -42,7 +42,7 @@
                                             {{ monitor.element.name }}
                                         </div>
                                     </div>
-                                    <div :key="$root.userHeartbeatBar" class="col-6 col-md-4">
+                                    <div :key="$root.userHeartbeatBar" class="col-3 col-md-4">
                                         <HeartbeatBar size="small" :monitor-id="monitor.element.id" />
                                     </div>
                                 </div>
@@ -61,7 +61,6 @@ import HeartbeatBar from "./HeartbeatBar.vue";
 import Uptime from "./Uptime.vue";
 
 export default {
-    name: "GroupList",
     components: {
         Draggable,
         HeartbeatBar,
@@ -133,6 +132,12 @@ export default {
     span {
         display: inline-block;
         min-width: 15px;
+    }
+}
+
+.mobile {
+    .item {
+        padding: 13px 0 10px 0;
     }
 }
 
