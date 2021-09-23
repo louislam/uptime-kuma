@@ -951,9 +951,8 @@ exports.entryPage = "dashboard";
                 let notificationListData = backupData.notificationList;
                 let monitorListData = backupData.monitorList;
 
-                // Converts the Uptime Kuma Version to a Number | 1.6.0 => 160
-                let version = backupData.version.replace(/\./g, "");
-
+                let version17x = compareVersions.compare(backupData.version, '1.7.0', '>=')
+                
                 // If the import option is "overwrite" it'll clear most of the tables, except "settings" and "user"
                 if (importHandle == "overwrite") {
                     // Stops every monitor first, so it doesn't execute any heartbeat while importing
@@ -1007,7 +1006,7 @@ exports.entryPage = "dashboard";
                             Only replace the default value with the backup file data for the specific version, where it appears the first time
                             More information about that where "let version" will be defined
                             */
-                            if (version >= 170) {
+                            if (version17x) {
                                 retryInterval = monitorListData[i].retryInterval;
                             }
 
@@ -1046,7 +1045,7 @@ exports.entryPage = "dashboard";
                             await R.store(bean);
 
                             // Only for backup files with the version 1.7.0 or higher, since there was the tag feature implemented
-                            if (version >= 170) {
+                            if (version17x) {
                                 // Only import if the specific monitor has tags assigned
                                 if (monitorListData[i].tags.length >= 1) {
                                     for (let o = 0; o < monitorListData[i].tags.length; o++) {
