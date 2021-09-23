@@ -2,10 +2,12 @@
 /dist
 /node_modules
 /data
+/out
 /test
 /kubernetes
 /.do
 **/.dockerignore
+/private
 **/.git
 **/.gitignore
 **/docker-compose*

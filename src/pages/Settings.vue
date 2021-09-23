@@ -83,6 +83,24 @@
                                 </div>
                             </div>
 
+                            <div class="mb-3">
+                                <label class="form-label">{{ $t("Entry Page") }}</label>
+
+                                <div class="form-check">
+                                    <input id="entryPageYes" v-model="settings.entryPage" class="form-check-input" type="radio" name="statusPage" value="dashboard" required>
+                                    <label class="form-check-label" for="entryPageYes">
+                                        {{ $t("Dashboard") }}
+                                    </label>
+                                </div>
+
+                                <div class="form-check">
+                                    <input id="entryPageNo" v-model="settings.entryPage" class="form-check-input" type="radio" name="statusPage" value="statusPage" required>
+                                    <label class="form-check-label" for="entryPageNo">
+                                        {{ $t("Status Page") }}
+                                    </label>
+                                </div>
+                            </div>
+
                             <div>
                                 <button class="btn btn-primary" type="submit">
                                     {{ $t("Save") }}
@@ -207,17 +225,14 @@
                         <button class="btn btn-primary me-2" type="button" @click="$refs.notificationDialog.show()">
                             {{ $t("Setup Notification") }}
                         </button>
+
+                        <h2 class="mt-5">Info</h2>
+
+                        {{ $t("Version") }}: {{ $root.info.version }} <br />
+                        <a href="https://github.com/louislam/uptime-kuma/releases" target="_blank" rel="noopener">{{ $t("Check Update On GitHub") }}</a>
                     </div>
                 </div>
             </div>
-
-            <footer>
-                <div class="container-fluid">
-                    Uptime Kuma -
-                    {{ $t("Version") }}: {{ $root.info.version }} -
-                    <a href="https://github.com/louislam/uptime-kuma/releases" target="_blank" rel="noopener">{{ $t("Check Update On GitHub") }}</a>
-                </div>
-            </footer>
 
             <NotificationDialog ref="notificationDialog" />
             <TwoFADialog ref="TwoFADialog" />
@@ -261,8 +276,8 @@
 
                 <template v-else-if="$i18n.locale === 'tr-TR' ">
                     <p><strong>Şifreli girişi devre dışı bırakmak istediğinizden</strong>emin misiniz?</p>
-                     <p>Bu, Uptime Kuma'nın önünde Cloudflare Access gibi <strong>üçüncü taraf yetkilendirmesi olan</strong> kişiler içindir.</p>
-                     <p>Lütfen dikkatli kullanın.</p>
+                    <p>Bu, Uptime Kuma'nın önünde Cloudflare Access gibi <strong>üçüncü taraf yetkilendirmesi olan</strong> kişiler içindir.</p>
+                    <p>Lütfen dikkatli kullanın.</p>
                 </template>
 
                 <template v-else-if="$i18n.locale === 'ko-KR' ">
@@ -395,6 +410,10 @@ export default {
 
                 if (this.settings.searchEngineIndex === undefined) {
                     this.settings.searchEngineIndex = false;
+                }
+
+                if (this.settings.entryPage === undefined) {
+                    this.settings.entryPage = "dashboard";
                 }
 
                 this.loaded = true;

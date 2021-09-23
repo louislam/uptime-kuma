@@ -8,12 +8,12 @@ console.log("Node Env: " + process.env.NODE_ENV);
 
 const { sleep, debug, TimeLogger, getRandomInt } = require("../src/util");
 
-console.log("Importing Node libraries")
+console.log("Importing Node libraries");
 const fs = require("fs");
 const http = require("http");
 const https = require("https");
 
-console.log("Importing 3rd-party libraries")
+console.log("Importing 3rd-party libraries");
 debug("Importing express");
 const express = require("express");
 debug("Importing socket.io");
@@ -35,7 +35,7 @@ console.log("Importing this project modules");
 debug("Importing Monitor");
 const Monitor = require("./model/monitor");
 debug("Importing Settings");
-const { getSettings, setSettings, setting, initJWTSecret, genSecret } = require("./util-server");
+const { getSettings, setSettings, setting, initJWTSecret, genSecret, allowDevAllOrigin, checkLogin } = require("./util-server");
 
 debug("Importing Notification");
 const { Notification } = require("./notification");
@@ -62,14 +62,15 @@ const port = parseInt(process.env.PORT || args.port || 3001);
 const sslKey = process.env.SSL_KEY || args["ssl-key"] || undefined;
 const sslCert = process.env.SSL_CERT || args["ssl-cert"] || undefined;
 
-// Demo Mode?
-const demoMode = args["demo"] || false;
-
-if (demoMode) {
-    console.log("==== Demo Mode ====");
+// Data Directory (must be end with "/")
+Database.dataDir = process.env.DATA_DIR || args["data-dir"] || "./data/";
+Database.path = Database.dataDir + "kuma.db";
+if (! fs.existsSync(Database.dataDir)) {
+    fs.mkdirSync(Database.dataDir, { recursive: true });
 }
+console.log(`Data Dir: ${Database.dataDir}`);
 
-console.log("Creating express and socket.io instance")
+console.log("Creating express and socket.io instance");
 const app = express();
 
 let server;
@@ -90,6 +91,7 @@ module.exports.io = io;
 
 // Must be after io instantiation
 const { sendNotificationList, sendHeartbeatList, sendImportantHeartbeatList } = require("./client");
+const { statusPageSocketHandler } = require("./socket-handlers/status-page-socket-handler");
 
 app.use(express.json());
 
@@ -123,13 +125,19 @@ let needSetup = false;
  */
 let indexHTML = fs.readFileSync("./dist/index.html").toString();
 
+exports.entryPage = "dashboard";
+
 (async () => {
     Database.init(args);
     await initDatabase();
 
-    console.log("Adding route")
+    exports.entryPage = await setting("entryPage");
 
+    console.log("Adding route");
+
+    // ***************************
     // Normal Router here
+    // ***************************
 
     // Robots.txt
     app.get("/robots.txt", async (_request, response) => {
@@ -149,28 +157,39 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
 
     app.use("/", express.static("dist"));
 
+    // ./data/upload
+    app.use("/upload", express.static(Database.uploadDir));
+
     app.get("/.well-known/change-password", async (_, response) => {
         response.redirect("https://github.com/louislam/uptime-kuma/wiki/Reset-Password-via-CLI");
     });
 
-    // Universal Route Handler, must be at the end
+    // API Router
+    const apiRouter = require("./routers/api-router");
+    app.use(apiRouter);
+
+    // Universal Route Handler, must be at the end of all express route.
     app.get("*", async (_request, response) => {
-        response.send(indexHTML);
+        if (_request.originalUrl.startsWith("/upload/")) {
+            response.status(404).send("File not found.");
+        } else {
+            response.send(indexHTML);
+        }
     });
 
-    console.log("Adding socket handler")
+    console.log("Adding socket handler");
     io.on("connection", async (socket) => {
 
         socket.emit("info", {
             version: checkVersion.version,
             latestVersion: checkVersion.latestVersion,
-        })
+        });
 
         totalClient++;
 
         if (needSetup) {
-            console.log("Redirect to setup page")
-            socket.emit("setup")
+            console.log("Redirect to setup page");
+            socket.emit("setup");
         }
 
         socket.on("disconnect", () => {
@@ -178,7 +197,7 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
         });
 
         // ***************************
-        // Public API
+        // Public Socket API
         // ***************************
 
         socket.on("loginByToken", async (token, callback) => {
@@ -186,44 +205,44 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
             try {
                 let decoded = jwt.verify(token, jwtSecret);
 
-                console.log("Username from JWT: " + decoded.username)
+                console.log("Username from JWT: " + decoded.username);
 
                 let user = await R.findOne("user", " username = ? AND active = 1 ", [
                     decoded.username,
-                ])
+                ]);
 
                 if (user) {
-                    debug("afterLogin")
+                    debug("afterLogin");
 
-                    afterLogin(socket, user)
+                    afterLogin(socket, user);
 
-                    debug("afterLogin ok")
+                    debug("afterLogin ok");
 
                     callback({
                         ok: true,
-                    })
+                    });
                 } else {
                     callback({
                         ok: false,
                         msg: "The user is inactive or deleted.",
-                    })
+                    });
                 }
             } catch (error) {
                 callback({
                     ok: false,
                     msg: "Invalid token.",
-                })
+                });
             }
 
         });
 
         socket.on("login", async (data, callback) => {
-            console.log("Login")
+            console.log("Login");
 
-            let user = await login(data.username, data.password)
+            let user = await login(data.username, data.password);
 
             if (user) {
-                afterLogin(socket, user)
+                afterLogin(socket, user);
 
                 if (user.twofaStatus == 0) {
                     callback({
@@ -231,13 +250,13 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                         token: jwt.sign({
                             username: data.username,
                         }, jwtSecret),
-                    })
+                    });
                 }
 
                 if (user.twofaStatus == 1 && !data.token) {
                     callback({
                         tokenRequired: true,
-                    })
+                    });
                 }
 
                 if (data.token) {
@@ -249,39 +268,39 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                             token: jwt.sign({
                                 username: data.username,
                             }, jwtSecret),
-                        })
+                        });
                     } else {
                         callback({
                             ok: false,
                             msg: "Invalid Token!",
-                        })
+                        });
                     }
                 }
             } else {
                 callback({
                     ok: false,
                     msg: "Incorrect username or password.",
-                })
+                });
             }
 
         });
 
         socket.on("logout", async (callback) => {
-            socket.leave(socket.userID)
+            socket.leave(socket.userID);
             socket.userID = null;
             callback();
         });
 
         socket.on("prepare2FA", async (callback) => {
             try {
-                checkLogin(socket)
+                checkLogin(socket);
 
                 let user = await R.findOne("user", " id = ? AND active = 1 ", [
                     socket.userID,
-                ])
+                ]);
 
                 if (user.twofa_status == 0) {
-                    let newSecret = await genSecret()
+                    let newSecret = await genSecret();
                     let encodedSecret = base32.encode(newSecret);
                     let uri = `otpauth://totp/Uptime%20Kuma:${user.username}?secret=${encodedSecret}`;
 
@@ -293,24 +312,24 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                     callback({
                         ok: true,
                         uri: uri,
-                    })
+                    });
                 } else {
                     callback({
                         ok: false,
                         msg: "2FA is already enabled.",
-                    })
+                    });
                 }
             } catch (error) {
                 callback({
                     ok: false,
                     msg: "Error while trying to prepare 2FA.",
-                })
+                });
             }
         });
 
         socket.on("save2FA", async (callback) => {
             try {
-                checkLogin(socket)
+                checkLogin(socket);
 
                 await R.exec("UPDATE `user` SET twofa_status = 1 WHERE id = ? ", [
                     socket.userID,
@@ -319,18 +338,18 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                 callback({
                     ok: true,
                     msg: "2FA Enabled.",
-                })
+                });
             } catch (error) {
                 callback({
                     ok: false,
                     msg: "Error while trying to change 2FA.",
-                })
+                });
             }
         });
 
         socket.on("disable2FA", async (callback) => {
             try {
-                checkLogin(socket)
+                checkLogin(socket);
 
                 await R.exec("UPDATE `user` SET twofa_status = 0 WHERE id = ? ", [
                     socket.userID,
@@ -339,19 +358,19 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                 callback({
                     ok: true,
                     msg: "2FA Disabled.",
-                })
+                });
             } catch (error) {
                 callback({
                     ok: false,
                     msg: "Error while trying to change 2FA.",
-                })
+                });
             }
         });
 
         socket.on("verifyToken", async (token, callback) => {
             let user = await R.findOne("user", " id = ? AND active = 1 ", [
                 socket.userID,
-            ])
+            ]);
 
             let verify = notp.totp.verify(token, user.twofa_secret);
 
@@ -359,40 +378,40 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                 callback({
                     ok: true,
                     valid: true,
-                })
+                });
             } else {
                 callback({
                     ok: false,
                     msg: "Invalid Token.",
                     valid: false,
-                })
+                });
             }
         });
 
         socket.on("twoFAStatus", async (callback) => {
-            checkLogin(socket)
+            checkLogin(socket);
 
             try {
                 let user = await R.findOne("user", " id = ? AND active = 1 ", [
                     socket.userID,
-                ])
+                ]);
 
                 if (user.twofa_status == 1) {
                     callback({
                         ok: true,
                         status: true,
-                    })
+                    });
                 } else {
                     callback({
                         ok: true,
                         status: false,
-                    })
+                    });
                 }
             } catch (error) {
                 callback({
                     ok: false,
                     msg: "Error while trying to get 2FA status.",
-                })
+                });
             }
         });
 
@@ -403,13 +422,13 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
         socket.on("setup", async (username, password, callback) => {
             try {
                 if ((await R.count("user")) !== 0) {
-                    throw new Error("Uptime Kuma has been setup. If you want to setup again, please delete the database.")
+                    throw new Error("Uptime Kuma has been setup. If you want to setup again, please delete the database.");
                 }
 
-                let user = R.dispense("user")
+                let user = R.dispense("user");
                 user.username = username;
-                user.password = passwordHash.generate(password)
-                await R.store(user)
+                user.password = passwordHash.generate(password);
+                await R.store(user);
 
                 needSetup = false;
 
@@ -433,8 +452,8 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
         // Add a new monitor
         socket.on("add", async (monitor, callback) => {
             try {
-                checkLogin(socket)
-                let bean = R.dispense("monitor")
+                checkLogin(socket);
+                let bean = R.dispense("monitor");
 
                 let notificationIDList = monitor.notificationIDList;
                 delete monitor.notificationIDList;
@@ -442,11 +461,11 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                 monitor.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
                 delete monitor.accepted_statuscodes;
 
-                bean.import(monitor)
-                bean.user_id = socket.userID
-                await R.store(bean)
+                bean.import(monitor);
+                bean.user_id = socket.userID;
+                await R.store(bean);
 
-                await updateMonitorNotification(bean.id, notificationIDList)
+                await updateMonitorNotification(bean.id, notificationIDList);
 
                 await startMonitor(socket.userID, bean.id);
                 await sendMonitorList(socket);
@@ -468,18 +487,18 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
         // Edit a monitor
         socket.on("editMonitor", async (monitor, callback) => {
             try {
-                checkLogin(socket)
+                checkLogin(socket);
 
-                let bean = await R.findOne("monitor", " id = ? ", [ monitor.id ])
+                let bean = await R.findOne("monitor", " id = ? ", [ monitor.id ]);
 
                 if (bean.user_id !== socket.userID) {
-                    throw new Error("Permission denied.")
+                    throw new Error("Permission denied.");
                 }
 
-                bean.name = monitor.name
-                bean.type = monitor.type
-                bean.url = monitor.url
-                bean.interval = monitor.interval
+                bean.name = monitor.name;
+                bean.type = monitor.type;
+                bean.url = monitor.url;
+                bean.interval = monitor.interval;
                 bean.retryInterval = monitor.retryInterval;
                 bean.hostname = monitor.hostname;
                 bean.maxretries = monitor.maxretries;
@@ -492,12 +511,12 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                 bean.dns_resolve_type = monitor.dns_resolve_type;
                 bean.dns_resolve_server = monitor.dns_resolve_server;
 
-                await R.store(bean)
+                await R.store(bean);
 
-                await updateMonitorNotification(bean.id, monitor.notificationIDList)
+                await updateMonitorNotification(bean.id, monitor.notificationIDList);
 
                 if (bean.active) {
-                    await restartMonitor(socket.userID, bean.id)
+                    await restartMonitor(socket.userID, bean.id);
                 }
 
                 await sendMonitorList(socket);
@@ -509,7 +528,7 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                 });
 
             } catch (e) {
-                console.error(e)
+                console.error(e);
                 callback({
                     ok: false,
                     msg: e.message,
@@ -519,13 +538,13 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
 
         socket.on("getMonitorList", async (callback) => {
             try {
-                checkLogin(socket)
+                checkLogin(socket);
                 await sendMonitorList(socket);
                 callback({
                     ok: true,
                 });
             } catch (e) {
-                console.error(e)
+                console.error(e);
                 callback({
                     ok: false,
                     msg: e.message,
@@ -535,14 +554,14 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
 
         socket.on("getMonitor", async (monitorID, callback) => {
             try {
-                checkLogin(socket)
+                checkLogin(socket);
 
-                console.log(`Get Monitor: ${monitorID} User ID: ${socket.userID}`)
+                console.log(`Get Monitor: ${monitorID} User ID: ${socket.userID}`);
 
                 let bean = await R.findOne("monitor", " id = ? AND user_id = ? ", [
                     monitorID,
                     socket.userID,
-                ])
+                ]);
 
                 callback({
                     ok: true,
@@ -560,7 +579,7 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
         // Start or Resume the monitor
         socket.on("resumeMonitor", async (monitorID, callback) => {
             try {
-                checkLogin(socket)
+                checkLogin(socket);
                 await startMonitor(socket.userID, monitorID);
                 await sendMonitorList(socket);
 
@@ -579,8 +598,8 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
 
         socket.on("pauseMonitor", async (monitorID, callback) => {
             try {
-                checkLogin(socket)
-                await pauseMonitor(socket.userID, monitorID)
+                checkLogin(socket);
+                await pauseMonitor(socket.userID, monitorID);
                 await sendMonitorList(socket);
 
                 callback({
@@ -598,13 +617,13 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
 
         socket.on("deleteMonitor", async (monitorID, callback) => {
             try {
-                checkLogin(socket)
+                checkLogin(socket);
 
-                console.log(`Delete Monitor: ${monitorID} User ID: ${socket.userID}`)
+                console.log(`Delete Monitor: ${monitorID} User ID: ${socket.userID}`);
 
                 if (monitorID in monitorList) {
                     monitorList[monitorID].stop();
-                    delete monitorList[monitorID]
+                    delete monitorList[monitorID];
                 }
 
                 await R.exec("DELETE FROM monitor WHERE id = ? AND user_id = ? ", [
@@ -629,9 +648,9 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
 
         socket.on("getTags", async (callback) => {
             try {
-                checkLogin(socket)
+                checkLogin(socket);
 
-                const list = await R.findAll("tag")
+                const list = await R.findAll("tag");
 
                 callback({
                     ok: true,
@@ -648,12 +667,12 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
 
         socket.on("addTag", async (tag, callback) => {
             try {
-                checkLogin(socket)
+                checkLogin(socket);
 
-                let bean = R.dispense("tag")
-                bean.name = tag.name
-                bean.color = tag.color
-                await R.store(bean)
+                let bean = R.dispense("tag");
+                bean.name = tag.name;
+                bean.color = tag.color;
+                await R.store(bean);
 
                 callback({
                     ok: true,
@@ -670,12 +689,12 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
 
         socket.on("editTag", async (tag, callback) => {
             try {
-                checkLogin(socket)
+                checkLogin(socket);
 
-                let bean = await R.findOne("monitor", " id = ? ", [ tag.id ])
-                bean.name = tag.name
-                bean.color = tag.color
-                await R.store(bean)
+                let bean = await R.findOne("monitor", " id = ? ", [ tag.id ]);
+                bean.name = tag.name;
+                bean.color = tag.color;
+                await R.store(bean);
 
                 callback({
                     ok: true,
@@ -692,9 +711,9 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
 
         socket.on("deleteTag", async (tagID, callback) => {
             try {
-                checkLogin(socket)
+                checkLogin(socket);
 
-                await R.exec("DELETE FROM tag WHERE id = ? ", [ tagID ])
+                await R.exec("DELETE FROM tag WHERE id = ? ", [ tagID ]);
 
                 callback({
                     ok: true,
@@ -711,13 +730,13 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
 
         socket.on("addMonitorTag", async (tagID, monitorID, value, callback) => {
             try {
-                checkLogin(socket)
+                checkLogin(socket);
 
                 await R.exec("INSERT INTO monitor_tag (tag_id, monitor_id, value) VALUES (?, ?, ?)", [
                     tagID,
                     monitorID,
                     value,
-                ])
+                ]);
 
                 callback({
                     ok: true,
@@ -734,13 +753,13 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
 
         socket.on("editMonitorTag", async (tagID, monitorID, value, callback) => {
             try {
-                checkLogin(socket)
+                checkLogin(socket);
 
                 await R.exec("UPDATE monitor_tag SET value = ? WHERE tag_id = ? AND monitor_id = ?", [
                     value,
                     tagID,
                     monitorID,
-                ])
+                ]);
 
                 callback({
                     ok: true,
@@ -757,13 +776,13 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
 
         socket.on("deleteMonitorTag", async (tagID, monitorID, value, callback) => {
             try {
-                checkLogin(socket)
+                checkLogin(socket);
 
                 await R.exec("DELETE FROM monitor_tag WHERE tag_id = ? AND monitor_id = ? AND value = ?", [
                     tagID,
                     monitorID,
                     value,
-                ])
+                ]);
 
                 // Cleanup unused Tags
                 await R.exec("delete from tag where ( select count(*) from monitor_tag mt where tag.id = mt.tag_id ) = 0");
@@ -783,15 +802,15 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
 
         socket.on("changePassword", async (password, callback) => {
             try {
-                checkLogin(socket)
+                checkLogin(socket);
 
                 if (! password.currentPassword) {
-                    throw new Error("Invalid new password")
+                    throw new Error("Invalid new password");
                 }
 
                 let user = await R.findOne("user", " id = ? AND active = 1 ", [
                     socket.userID,
-                ])
+                ]);
 
                 if (user && passwordHash.verify(password.currentPassword, user.password)) {
 
@@ -800,9 +819,9 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                     callback({
                         ok: true,
                         msg: "Password has been updated successfully.",
-                    })
+                    });
                 } else {
-                    throw new Error("Incorrect current password")
+                    throw new Error("Incorrect current password");
                 }
 
             } catch (e) {
@@ -815,7 +834,7 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
 
         socket.on("getSettings", async (callback) => {
             try {
-                checkLogin(socket)
+                checkLogin(socket);
 
                 callback({
                     ok: true,
@@ -832,9 +851,10 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
 
         socket.on("setSettings", async (data, callback) => {
             try {
-                checkLogin(socket)
+                checkLogin(socket);
 
-                await setSettings("general", data)
+                await setSettings("general", data);
+                exports.entryPage = data.entryPage;
 
                 callback({
                     ok: true,
@@ -852,10 +872,10 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
         // Add or Edit
         socket.on("addNotification", async (notification, notificationID, callback) => {
             try {
-                checkLogin(socket)
+                checkLogin(socket);
 
-                let notificationBean = await Notification.save(notification, notificationID, socket.userID)
-                await sendNotificationList(socket)
+                let notificationBean = await Notification.save(notification, notificationID, socket.userID);
+                await sendNotificationList(socket);
 
                 callback({
                     ok: true,
@@ -873,10 +893,10 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
 
         socket.on("deleteNotification", async (notificationID, callback) => {
             try {
-                checkLogin(socket)
+                checkLogin(socket);
 
-                await Notification.delete(notificationID, socket.userID)
-                await sendNotificationList(socket)
+                await Notification.delete(notificationID, socket.userID);
+                await sendNotificationList(socket);
 
                 callback({
                     ok: true,
@@ -893,9 +913,9 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
 
         socket.on("testNotification", async (notification, callback) => {
             try {
-                checkLogin(socket)
+                checkLogin(socket);
 
-                let msg = await Notification.send(notification, notification.name + " Testing")
+                let msg = await Notification.send(notification, notification.name + " Testing");
 
                 callback({
                     ok: true,
@@ -903,7 +923,7 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                 });
 
             } catch (e) {
-                console.error(e)
+                console.error(e);
 
                 callback({
                     ok: false,
@@ -914,7 +934,7 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
 
         socket.on("checkApprise", async (callback) => {
             try {
-                checkLogin(socket)
+                checkLogin(socket);
                 callback(Notification.checkApprise());
             } catch (e) {
                 callback(false);
@@ -923,19 +943,19 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
 
         socket.on("uploadBackup", async (uploadedJSON, importHandle, callback) => {
             try {
-                checkLogin(socket)
+                checkLogin(socket);
 
                 let backupData = JSON.parse(uploadedJSON);
 
-                console.log(`Importing Backup, User ID: ${socket.userID}, Version: ${backupData.version}`)
+                console.log(`Importing Backup, User ID: ${socket.userID}, Version: ${backupData.version}`);
 
                 let notificationListData = backupData.notificationList;
                 let monitorListData = backupData.monitorList;
 
                 if (importHandle == "overwrite") {
                     for (let id in monitorList) {
-                        let monitor = monitorList[id]
-                        await monitor.stop()
+                        let monitor = monitorList[id];
+                        await monitor.stop();
                     }
                     await R.exec("DELETE FROM heartbeat");
                     await R.exec("DELETE FROM monitor_notification");
@@ -952,7 +972,7 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                         if ((importHandle == "skip" && notificationNameListString.includes(notificationListData[i].name) == false) || importHandle == "keep" || importHandle == "overwrite") {
 
                             let notification = JSON.parse(notificationListData[i].config);
-                            await Notification.save(notification, null, socket.userID)
+                            await Notification.save(notification, null, socket.userID);
 
                         }
                     }
@@ -981,9 +1001,9 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                                 dns_resolve_type: monitorListData[i].dns_resolve_type,
                                 dns_resolve_server: monitorListData[i].dns_resolve_server,
                                 notificationIDList: {},
-                            }
+                            };
 
-                            let bean = R.dispense("monitor")
+                            let bean = R.dispense("monitor");
 
                             let notificationIDList = monitor.notificationIDList;
                             delete monitor.notificationIDList;
@@ -991,11 +1011,11 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                             monitor.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
                             delete monitor.accepted_statuscodes;
 
-                            bean.import(monitor)
-                            bean.user_id = socket.userID
-                            await R.store(bean)
+                            bean.import(monitor);
+                            bean.user_id = socket.userID;
+                            await R.store(bean);
 
-                            await updateMonitorNotification(bean.id, notificationIDList)
+                            await updateMonitorNotification(bean.id, notificationIDList);
 
                             if (monitorListData[i].active == 1) {
                                 await startMonitor(socket.userID, bean.id);
@@ -1006,7 +1026,7 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
                         }
                     }
 
-                    await sendNotificationList(socket)
+                    await sendNotificationList(socket);
                     await sendMonitorList(socket);
                 }
 
@@ -1025,9 +1045,9 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
 
         socket.on("clearEvents", async (monitorID, callback) => {
             try {
-                checkLogin(socket)
+                checkLogin(socket);
 
-                console.log(`Clear Events Monitor: ${monitorID} User ID: ${socket.userID}`)
+                console.log(`Clear Events Monitor: ${monitorID} User ID: ${socket.userID}`);
 
                 await R.exec("UPDATE heartbeat SET msg = ?, important = ? WHERE monitor_id = ? ", [
                     "",
@@ -1051,9 +1071,9 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
 
         socket.on("clearHeartbeats", async (monitorID, callback) => {
             try {
-                checkLogin(socket)
+                checkLogin(socket);
 
-                console.log(`Clear Heartbeats Monitor: ${monitorID} User ID: ${socket.userID}`)
+                console.log(`Clear Heartbeats Monitor: ${monitorID} User ID: ${socket.userID}`);
 
                 await R.exec("DELETE FROM heartbeat WHERE monitor_id = ?", [
                     monitorID
@@ -1075,9 +1095,9 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
 
         socket.on("clearStatistics", async (callback) => {
             try {
-                checkLogin(socket)
+                checkLogin(socket);
 
-                console.log(`Clear Statistics User ID: ${socket.userID}`)
+                console.log(`Clear Statistics User ID: ${socket.userID}`);
 
                 await R.exec("DELETE FROM heartbeat");
 
@@ -1093,24 +1113,27 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
             }
         });
 
-        debug("added all socket handlers")
+        // Status Page Socket Handler for admin only
+        statusPageSocketHandler(socket);
+
+        debug("added all socket handlers");
 
         // ***************************
         // Better do anything after added all socket handlers here
         // ***************************
 
-        debug("check auto login")
+        debug("check auto login");
         if (await setting("disableAuth")) {
-            console.log("Disabled Auth: auto login to admin")
-            afterLogin(socket, await R.findOne("user"))
-            socket.emit("autoLogin")
+            console.log("Disabled Auth: auto login to admin");
+            afterLogin(socket, await R.findOne("user"));
+            socket.emit("autoLogin");
         } else {
-            debug("need auth")
+            debug("need auth");
         }
 
     });
 
-    console.log("Init the server")
+    console.log("Init the server");
 
     server.once("error", async (err) => {
         console.error("Cannot listen: " + err.message);
@@ -1132,14 +1155,14 @@ let indexHTML = fs.readFileSync("./dist/index.html").toString();
 async function updateMonitorNotification(monitorID, notificationIDList) {
     await R.exec("DELETE FROM monitor_notification WHERE monitor_id = ? ", [
         monitorID,
-    ])
+    ]);
 
     for (let notificationID in notificationIDList) {
         if (notificationIDList[notificationID]) {
             let relation = R.dispense("monitor_notification");
             relation.monitor_id = monitorID;
             relation.notification_id = notificationID;
-            await R.store(relation)
+            await R.store(relation);
         }
     }
 }
@@ -1148,7 +1171,7 @@ async function checkOwner(userID, monitorID) {
     let row = await R.getRow("SELECT id FROM monitor WHERE id = ? AND user_id = ? ", [
         monitorID,
         userID,
-    ])
+    ]);
 
     if (! row) {
         throw new Error("You do not own this monitor.");
@@ -1157,16 +1180,16 @@ async function checkOwner(userID, monitorID) {
 
 async function sendMonitorList(socket) {
     let list = await getMonitorJSONList(socket.userID);
-    io.to(socket.userID).emit("monitorList", list)
+    io.to(socket.userID).emit("monitorList", list);
     return list;
 }
 
 async function afterLogin(socket, user) {
     socket.userID = user.id;
-    socket.join(user.id)
+    socket.join(user.id);
 
-    let monitorList = await sendMonitorList(socket)
-    sendNotificationList(socket)
+    let monitorList = await sendMonitorList(socket);
+    sendNotificationList(socket);
 
     await sleep(500);
 
@@ -1179,7 +1202,7 @@ async function afterLogin(socket, user) {
     }
 
     for (let monitorID in monitorList) {
-        await Monitor.sendStats(io, monitorID, user.id)
+        await Monitor.sendStats(io, monitorID, user.id);
     }
 }
 
@@ -1188,7 +1211,7 @@ async function getMonitorJSONList(userID) {
 
     let monitorList = await R.find("monitor", " user_id = ? ORDER BY weight DESC, name", [
         userID,
-    ])
+    ]);
 
     for (let monitor of monitorList) {
         result[monitor.id] = await monitor.toJSON();
@@ -1197,24 +1220,18 @@ async function getMonitorJSONList(userID) {
     return result;
 }
 
-function checkLogin(socket) {
-    if (! socket.userID) {
-        throw new Error("You are not logged in.");
-    }
-}
-
 async function initDatabase() {
     if (! fs.existsSync(Database.path)) {
-        console.log("Copying Database")
+        console.log("Copying Database");
         fs.copyFileSync(Database.templatePath, Database.path);
     }
 
-    console.log("Connecting to Database")
+    console.log("Connecting to Database");
     await Database.connect();
-    console.log("Connected")
+    console.log("Connected");
 
     // Patch the database
-    await Database.patch()
+    await Database.patch();
 
     let jwtSecretBean = await R.findOne("setting", " `key` = ? ", [
         "jwtSecret",
@@ -1230,7 +1247,7 @@ async function initDatabase() {
 
     // If there is no record in user table, it is a new Uptime Kuma instance, need to setup
     if ((await R.count("user")) === 0) {
-        console.log("No user, need setup")
+        console.log("No user, need setup");
         needSetup = true;
     }
 
@@ -1238,9 +1255,9 @@ async function initDatabase() {
 }
 
 async function startMonitor(userID, monitorID) {
-    await checkOwner(userID, monitorID)
+    await checkOwner(userID, monitorID);
 
-    console.log(`Resume Monitor: ${monitorID} User ID: ${userID}`)
+    console.log(`Resume Monitor: ${monitorID} User ID: ${userID}`);
 
     await R.exec("UPDATE monitor SET active = 1 WHERE id = ? AND user_id = ? ", [
         monitorID,
@@ -1249,24 +1266,24 @@ async function startMonitor(userID, monitorID) {
 
     let monitor = await R.findOne("monitor", " id = ? ", [
         monitorID,
-    ])
+    ]);
 
     if (monitor.id in monitorList) {
         monitorList[monitor.id].stop();
     }
 
     monitorList[monitor.id] = monitor;
-    monitor.start(io)
+    monitor.start(io);
 }
 
 async function restartMonitor(userID, monitorID) {
-    return await startMonitor(userID, monitorID)
+    return await startMonitor(userID, monitorID);
 }
 
 async function pauseMonitor(userID, monitorID) {
-    await checkOwner(userID, monitorID)
+    await checkOwner(userID, monitorID);
 
-    console.log(`Pause Monitor: ${monitorID} User ID: ${userID}`)
+    console.log(`Pause Monitor: ${monitorID} User ID: ${userID}`);
 
     await R.exec("UPDATE monitor SET active = 0 WHERE id = ? AND user_id = ? ", [
         monitorID,
@@ -1282,7 +1299,7 @@ async function pauseMonitor(userID, monitorID) {
  * Resume active monitors
  */
 async function startMonitors() {
-    let list = await R.find("monitor", " active = 1 ")
+    let list = await R.find("monitor", " active = 1 ");
 
     for (let monitor of list) {
         monitorList[monitor.id] = monitor;
@@ -1299,10 +1316,10 @@ async function shutdownFunction(signal) {
     console.log("Shutdown requested");
     console.log("Called signal: " + signal);
 
-    console.log("Stopping all monitors")
+    console.log("Stopping all monitors");
     for (let id in monitorList) {
-        let monitor = monitorList[id]
-        monitor.stop()
+        let monitor = monitorList[id];
+        monitor.stop();
     }
     await sleep(2000);
     await Database.close();

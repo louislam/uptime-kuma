@@ -18,6 +18,11 @@
             </a>
 
             <ul class="nav nav-pills">
+                <li class="nav-item me-2">
+                    <a href="/status-page" class="nav-link status-page">
+                        <font-awesome-icon icon="stream" /> {{ $t("Status Page") }}
+                    </a>
+                </li>
                 <li class="nav-item">
                     <router-link to="/dashboard" class="nav-link">
                         <font-awesome-icon icon="tachometer-alt" /> {{ $t("Dashboard") }}
@@ -81,7 +86,7 @@ export default {
     },
 
     data() {
-        return {}
+        return {};
     },
 
     computed: {
@@ -105,28 +110,28 @@ export default {
     },
 
     watch: {
-        $route(to, from) {
-            this.init();
-        },
+
     },
 
     mounted() {
-        this.init();
+
     },
 
     methods: {
-        init() {
-            if (this.$route.name === "root") {
-                this.$router.push("/dashboard")
-            }
-        },
+
     },
 
-}
+};
 </script>
 
 <style lang="scss" scoped>
 @import "../assets/vars.scss";
+
+.nav-link {
+    &.status-page {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+}
 
 .bottom-nav {
     z-index: 1000;

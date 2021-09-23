@@ -1,7 +1,10 @@
 // Common Util for frontend and backend
+//
+// DOT NOT MODIFY util.js!
+// Need to run "tsc" to compile if there are any changes.
+//
 // Backend uses the compiled file util.js
 // Frontend uses util.ts
-// Need to run "tsc" to compile if there are any changes.
 
 import * as _dayjs from "dayjs";
 const dayjs = _dayjs;
@@ -11,6 +14,11 @@ export const appName = "Uptime Kuma";
 export const DOWN = 0;
 export const UP = 1;
 export const PENDING = 2;
+
+export const STATUS_PAGE_ALL_DOWN = 0;
+export const STATUS_PAGE_ALL_UP = 1;
+export const STATUS_PAGE_PARTIAL_DOWN = 2;
+
 
 export function flipStatus(s: number) {
     if (s === UP) {
