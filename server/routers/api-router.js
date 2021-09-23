@@ -83,6 +83,7 @@ router.get("/api/status-page/monitor-list", cache("5 minutes"), async (_request,
 // Can fetch only if published
 router.get("/api/status-page/heartbeat", cache("5 minutes"), async (_request, response) => {
     allowDevAllOrigin(response);
+
     try {
         await checkPublished();
 
