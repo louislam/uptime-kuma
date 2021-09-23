@@ -49,7 +49,7 @@
             <div class="shadow-box big-padding text-center stats">
                 <div class="row">
                     <div class="col">
-                        <h4>{{ pingTitle }}</h4>
+                        <h4>{{ pingTitle() }}</h4>
                         <p>({{ $t("Current") }})</p>
                         <span class="num">
                             <a href="#" @click.prevent="showPingChartBox = !showPingChartBox">
@@ -58,7 +58,7 @@
                         </span>
                     </div>
                     <div class="col">
-                        <h4>{{ $t("Avg.") }} {{ pingTitle }}</h4>
+                        <h4>{{ pingTitle(true) }}</h4>
                         <p>(24{{ $t("-hour") }})</p>
                         <span class="num"><CountUp :value="avgPing" /></span>
                     </div>
@@ -240,14 +240,6 @@ export default {
         }
     },
     computed: {
-
-        pingTitle() {
-            if (this.monitor.type === "http") {
-                return this.$t("Response");
-            }
-            return this.$t("Ping");
-        },
-
         monitor() {
             let id = this.$route.params.id
             return this.$root.monitorList[id];
@@ -377,6 +369,19 @@ export default {
                     toast.error(res.msg);
                 }
             })
+        },
+
+        pingTitle(average = false) {
+            let translationPrefix = ""
+            if (average) {
+                translationPrefix = "Avg. "
+            }
+
+            if (this.monitor.type === "http") {
+                return this.$t(translationPrefix + "Response");
+            }
+
+            return this.$t(translationPrefix + "Ping");
         },
     },
 }
