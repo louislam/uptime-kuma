@@ -26,6 +26,8 @@ debug("Importing http-graceful-shutdown");
 const gracefulShutdown = require("http-graceful-shutdown");
 debug("Importing prometheus-api-metrics");
 const prometheusAPIMetrics = require("prometheus-api-metrics");
+debug("Importing compare-versions");
+const compareVersions = require("compare-versions");
 
 debug("Importing 2FA Modules");
 const notp = require("notp");
@@ -944,9 +946,10 @@ exports.entryPage = "dashboard";
         socket.on("uploadBackup", async (uploadedJSON, importHandle, callback) => {
             try {
                 checkLogin(socket)
-                console.log(`Importing Backup, User ID: ${socket.userID}, Version: ${backupData.version}`)
 
                 let backupData = JSON.parse(uploadedJSON);
+
+                console.log(`Importing Backup, User ID: ${socket.userID}, Version: ${backupData.version}`)
 
                 let notificationListData = backupData.notificationList;
                 let monitorListData = backupData.monitorList;
