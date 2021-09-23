@@ -23,7 +23,7 @@
                         <font-awesome-icon icon="stream" /> {{ $t("Status Page") }}
                     </a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item me-2">
                     <router-link to="/dashboard" class="nav-link">
                         <font-awesome-icon icon="tachometer-alt" /> {{ $t("Dashboard") }}
                     </router-link>
