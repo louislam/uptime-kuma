@@ -244,6 +244,12 @@
                     <p>Por favor usar con cuidado.</p>
                 </template>
 
+                <template v-else-if="$i18n.locale === 'pt-BR' ">
+                    <p>Você tem certeza que deseja <strong>desativar a autenticação</strong>?</p>
+                    <p>Isso é para <strong>alguém que tem autenticação de terceiros</strong> na frente do 'UpTime Kuma' como o Cloudflare Access.</p>
+                    <p>Por favor, utilize isso com cautela.</p>
+                </template>
+
                 <template v-else-if="$i18n.locale === 'zh-HK' ">
                     <p>你是否確認<strong>取消登入認証</strong>？</p>
                     <p>這個功能是設計給已有<strong>第三方認証</strong>的用家，例如 Cloudflare Access。</p>
@@ -331,16 +337,16 @@
 <script>
 import Confirm from "../components/Confirm.vue";
 import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc"
-import timezone from "dayjs/plugin/timezone"
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
 import NotificationDialog from "../components/NotificationDialog.vue";
 import TwoFADialog from "../components/TwoFADialog.vue";
-dayjs.extend(utc)
-dayjs.extend(timezone)
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 import { timezoneList } from "../util-frontend";
-import { useToast } from "vue-toastification"
-const toast = useToast()
+import { useToast } from "vue-toastification";
+const toast = useToast();
 
 export default {
     components: {
@@ -366,7 +372,7 @@ export default {
             importAlert: null,
             importHandle: "skip",
             processing: false,
-        }
+        };
     },
     watch: {
         "password.repeatNewPassword"() {
@@ -394,13 +400,13 @@ export default {
                 this.invalidPassword = true;
             } else {
                 this.$root.getSocket().emit("changePassword", this.password, (res) => {
-                    this.$root.toastRes(res)
+                    this.$root.toastRes(res);
                     if (res.ok) {
-                        this.password.currentPassword = ""
-                        this.password.newPassword = ""
-                        this.password.repeatNewPassword = ""
+                        this.password.currentPassword = "";
+                        this.password.newPassword = "";
+                        this.password.repeatNewPassword = "";
                     }
-                })
+                });
             }
         },
 
@@ -417,14 +423,14 @@ export default {
                 }
 
                 this.loaded = true;
-            })
+            });
         },
 
         saveSettings() {
             this.$root.getSocket().emit("setSettings", this.settings, (res) => {
                 this.$root.toastRes(res);
                 this.loadSettings();
-            })
+            });
         },
 
         confirmDisableAuth() {
@@ -458,7 +464,7 @@ export default {
                 version: this.$root.info.version,
                 notificationList: this.$root.notificationList,
                 monitorList: monitorList,
-            }
+            };
             exportData = JSON.stringify(exportData, null, 4);
             let downloadItem = document.createElement("a");
             downloadItem.setAttribute("href", "data:application/json;charset=utf-8," + encodeURIComponent(exportData));
@@ -472,12 +478,12 @@ export default {
 
             if (uploadItem.length <= 0) {
                 this.processing = false;
-                return this.importAlert = this.$t("alertNoFile")
+                return this.importAlert = this.$t("alertNoFile");
             }
 
             if (uploadItem.item(0).type !== "application/json") {
                 this.processing = false;
-                return this.importAlert = this.$t("alertWrongFileType")
+                return this.importAlert = this.$t("alertWrongFileType");
             }
 
             let fileReader = new FileReader();
@@ -492,8 +498,8 @@ export default {
                     } else {
                         toast.error(res.msg);
                     }
-                })
-            }
+                });
+            };
         },
 
         clearStatistics() {
@@ -503,10 +509,10 @@ export default {
                 } else {
                     toast.error(res.msg);
                 }
-            })
+            });
         },
     },
-}
+};
 </script>
 
 <style lang="scss" scoped>
