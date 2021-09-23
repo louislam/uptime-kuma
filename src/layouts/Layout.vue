@@ -111,28 +111,15 @@ export default {
     },
 
     watch: {
-        $route(to, from) {
-            this.init();
-        },
+
     },
 
     mounted() {
-        this.init();
+
     },
 
     methods: {
-        async init() {
-            if (this.$route.name === "root") {
 
-                let entryPage = (await axios.get("/api/entry-page")).data;
-
-                if (entryPage === "statusPage") {
-                    this.$router.push("/status-page");
-                } else {
-                    this.$router.push("/dashboard");
-                }
-            }
-        },
     },
 
 };

@@ -6,6 +6,7 @@ let socket;
 
 const noSocketIOPages = [
     "/status-page",
+    "/"
 ];
 
 export default {

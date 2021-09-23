@@ -9,20 +9,24 @@ import List from "./pages/List.vue";
 import Settings from "./pages/Settings.vue";
 import Setup from "./pages/Setup.vue";
 import StatusPage from "./pages/StatusPage.vue";
+import Entry from "./pages/Entry.vue";
 
 const routes = [
     {
         path: "/",
+        component: Entry,
+    },
+    {
+        path: "/dashboard",
         component: Layout,
         children: [
             {
-                name: "root",
                 path: "",
                 component: Dashboard,
                 children: [
                     {
                         name: "DashboardHome",
-                        path: "/dashboard",
+                        path: "",
                         component: DashboardHome,
                         children: [
                             {

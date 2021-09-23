@@ -5,7 +5,7 @@ export default {
             system: (window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light",
             userTheme: localStorage.theme,
             userHeartbeatBar: localStorage.heartbeatBarTheme,
-            statusPageTheme: "dark",
+            statusPageTheme: "light",
             path: "",
         };
     },
@@ -27,6 +27,12 @@ export default {
 
     computed: {
         theme() {
+
+            // Entry no need dark
+            if (this.path === "") {
+                return "light";
+            }
+
             if (this.path === "/status-page") {
                 return this.statusPageTheme;
             } else {
@@ -72,5 +78,5 @@ export default {
             }
         }
     }
-}
+};
 
