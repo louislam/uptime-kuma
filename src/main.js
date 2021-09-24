@@ -1,6 +1,7 @@
 import "bootstrap";
 import { createApp, h } from "vue";
 import Toast from "vue-toastification";
+import contenteditable from "vue-contenteditable"
 import "vue-toastification/dist/index.css";
 import App from "./App.vue";
 import "./assets/app.scss";
@@ -10,6 +11,8 @@ import datetime from "./mixins/datetime";
 import mobile from "./mixins/mobile";
 import socket from "./mixins/socket";
 import theme from "./mixins/theme";
+import publicMixin from "./mixins/public";
+
 import { router } from "./router";
 import { appName } from "./util.ts";
 
@@ -18,7 +21,8 @@ const app = createApp({
         socket,
         theme,
         mobile,
-        datetime
+        datetime,
+        publicMixin,
     ],
     data() {
         return {
@@ -36,7 +40,7 @@ const options = {
 };
 
 app.use(Toast, options);
+app.component("Editable", contenteditable);
+app.component("FontAwesomeIcon", FontAwesomeIcon);
 
-app.component("FontAwesomeIcon", FontAwesomeIcon)
-
-app.mount("#app")
+app.mount("#app");

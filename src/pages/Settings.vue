@@ -83,6 +83,24 @@
                                 </div>
                             </div>
 
+                            <div class="mb-3">
+                                <label class="form-label">{{ $t("Entry Page") }}</label>
+
+                                <div class="form-check">
+                                    <input id="entryPageYes" v-model="settings.entryPage" class="form-check-input" type="radio" name="statusPage" value="dashboard" required>
+                                    <label class="form-check-label" for="entryPageYes">
+                                        {{ $t("Dashboard") }}
+                                    </label>
+                                </div>
+
+                                <div class="form-check">
+                                    <input id="entryPageNo" v-model="settings.entryPage" class="form-check-input" type="radio" name="statusPage" value="statusPage" required>
+                                    <label class="form-check-label" for="entryPageNo">
+                                        {{ $t("Status Page") }}
+                                    </label>
+                                </div>
+                            </div>
+
                             <div>
                                 <button class="btn btn-primary" type="submit">
                                     {{ $t("Save") }}
@@ -207,17 +225,14 @@
                         <button class="btn btn-primary me-2" type="button" @click="$refs.notificationDialog.show()">
                             {{ $t("Setup Notification") }}
                         </button>
+
+                        <h2 class="mt-5">Info</h2>
+
+                        {{ $t("Version") }}: {{ $root.info.version }} <br />
+                        <a href="https://github.com/louislam/uptime-kuma/releases" target="_blank" rel="noopener">{{ $t("Check Update On GitHub") }}</a>
                     </div>
                 </div>
             </div>
-
-            <footer>
-                <div class="container-fluid">
-                    Uptime Kuma -
-                    {{ $t("Version") }}: {{ $root.info.version }} -
-                    <a href="https://github.com/louislam/uptime-kuma/releases" target="_blank" rel="noopener">{{ $t("Check Update On GitHub") }}</a>
-                </div>
-            </footer>
 
             <NotificationDialog ref="notificationDialog" />
             <TwoFADialog ref="TwoFADialog" />
@@ -227,6 +242,12 @@
                     <p>Seguro que deseas <strong>deshabilitar la autenticación</strong>?</p>
                     <p>Es para <strong>quien implementa autenticación de terceros</strong> ante Uptime Kuma como por ejemplo Cloudflare Access.</p>
                     <p>Por favor usar con cuidado.</p>
+                </template>
+
+                <template v-else-if="$i18n.locale === 'pt-BR' ">
+                    <p>Você tem certeza que deseja <strong>desativar a autenticação</strong>?</p>
+                    <p>Isso é para <strong>alguém que tem autenticação de terceiros</strong> na frente do 'UpTime Kuma' como o Cloudflare Access.</p>
+                    <p>Por favor, utilize isso com cautela.</p>
                 </template>
 
                 <template v-else-if="$i18n.locale === 'zh-HK' ">
@@ -261,8 +282,8 @@
 
                 <template v-else-if="$i18n.locale === 'tr-TR' ">
                     <p><strong>Şifreli girişi devre dışı bırakmak istediğinizden</strong>emin misiniz?</p>
-                     <p>Bu, Uptime Kuma'nın önünde Cloudflare Access gibi <strong>üçüncü taraf yetkilendirmesi olan</strong> kişiler içindir.</p>
-                     <p>Lütfen dikkatli kullanın.</p>
+                    <p>Bu, Uptime Kuma'nın önünde Cloudflare Access gibi <strong>üçüncü taraf yetkilendirmesi olan</strong> kişiler içindir.</p>
+                    <p>Lütfen dikkatli kullanın.</p>
                 </template>
 
                 <template v-else-if="$i18n.locale === 'ko-KR' ">
@@ -316,16 +337,16 @@
 <script>
 import Confirm from "../components/Confirm.vue";
 import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc"
-import timezone from "dayjs/plugin/timezone"
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
 import NotificationDialog from "../components/NotificationDialog.vue";
 import TwoFADialog from "../components/TwoFADialog.vue";
-dayjs.extend(utc)
-dayjs.extend(timezone)
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 import { timezoneList } from "../util-frontend";
-import { useToast } from "vue-toastification"
-const toast = useToast()
+import { useToast } from "vue-toastification";
+const toast = useToast();
 
 export default {
     components: {
@@ -351,7 +372,7 @@ export default {
             importAlert: null,
             importHandle: "skip",
             processing: false,
-        }
+        };
     },
     watch: {
         "password.repeatNewPassword"() {
@@ -379,13 +400,13 @@ export default {
                 this.invalidPassword = true;
             } else {
                 this.$root.getSocket().emit("changePassword", this.password, (res) => {
-                    this.$root.toastRes(res)
+                    this.$root.toastRes(res);
                     if (res.ok) {
-                        this.password.currentPassword = ""
-                        this.password.newPassword = ""
-                        this.password.repeatNewPassword = ""
+                        this.password.currentPassword = "";
+                        this.password.newPassword = "";
+                        this.password.repeatNewPassword = "";
                     }
-                })
+                });
             }
         },
 
@@ -397,15 +418,19 @@ export default {
                     this.settings.searchEngineIndex = false;
                 }
 
+                if (this.settings.entryPage === undefined) {
+                    this.settings.entryPage = "dashboard";
+                }
+
                 this.loaded = true;
-            })
+            });
         },
 
         saveSettings() {
             this.$root.getSocket().emit("setSettings", this.settings, (res) => {
                 this.$root.toastRes(res);
                 this.loadSettings();
-            })
+            });
         },
 
         confirmDisableAuth() {
@@ -439,7 +464,7 @@ export default {
                 version: this.$root.info.version,
                 notificationList: this.$root.notificationList,
                 monitorList: monitorList,
-            }
+            };
             exportData = JSON.stringify(exportData, null, 4);
             let downloadItem = document.createElement("a");
             downloadItem.setAttribute("href", "data:application/json;charset=utf-8," + encodeURIComponent(exportData));
@@ -453,12 +478,12 @@ export default {
 
             if (uploadItem.length <= 0) {
                 this.processing = false;
-                return this.importAlert = this.$t("alertNoFile")
+                return this.importAlert = this.$t("alertNoFile");
             }
 
             if (uploadItem.item(0).type !== "application/json") {
                 this.processing = false;
-                return this.importAlert = this.$t("alertWrongFileType")
+                return this.importAlert = this.$t("alertWrongFileType");
             }
 
             let fileReader = new FileReader();
@@ -473,8 +498,8 @@ export default {
                     } else {
                         toast.error(res.msg);
                     }
-                })
-            }
+                });
+            };
         },
 
         clearStatistics() {
@@ -484,10 +509,10 @@ export default {
                 } else {
                     toast.error(res.msg);
                 }
-            })
+            });
         },
     },
-}
+};
 </script>
 
 <style lang="scss" scoped>

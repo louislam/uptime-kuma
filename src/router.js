@@ -8,14 +8,22 @@ import EditMonitor from "./pages/EditMonitor.vue";
 import List from "./pages/List.vue";
 import Settings from "./pages/Settings.vue";
 import Setup from "./pages/Setup.vue";
+import StatusPage from "./pages/StatusPage.vue";
+import Entry from "./pages/Entry.vue";
 
 const routes = [
     {
         path: "/",
+        component: Entry,
+    },
+    {
+        // If it is "/dashboard", the active link is not working
+        // If it is "", it overrides the "/" unexpectedly
+        // Give a random name to solve the problem.
+        path: "/empty",
         component: Layout,
         children: [
             {
-                name: "root",
                 path: "",
                 component: Dashboard,
                 children: [
@@ -54,15 +62,17 @@ const routes = [
                     },
                 ],
             },
-
         ],
-
     },
     {
         path: "/setup",
         component: Setup,
     },
-]
+    {
+        path: "/status-page",
+        component: StatusPage,
+    },
+];
 
 export const router = createRouter({
     linkActiveClass: "active",

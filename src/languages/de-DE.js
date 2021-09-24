@@ -168,4 +168,14 @@ export default {
     "Export Backup": "Export Backup",
     "Avg. Ping": "Avg. Ping",
     "Avg. Response": "Avg. Response",
-}
+    "Entry Page": "Entry Page",
+    "statusPageNothing": "Nothing here, please add a group or a monitor.",
+    "No Services": "No Services",
+    "All Systems Operational": "All Systems Operational",
+    "Partially Degraded Service": "Partially Degraded Service",
+    "Degraded Service": "Degraded Service",
+    "Add Group": "Add Group",
+    "Add a monitor": "Add a monitor",
+    "Edit Status Page": "Edit Status Page",
+    "Go to Dashboard": "Go to Dashboard",
+};

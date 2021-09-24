@@ -82,12 +82,10 @@ npm install --legacy-peer-deps --dev
 
 # Backend Dev
 
+(2021-09-23 Update)
+
 ```bash
-npm run start-server
-
-# Or
-
-node server/server.js
+npm run start-server-dev
 ```
 
 It binds to `0.0.0.0:3001` by default.
