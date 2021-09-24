@@ -1,8 +1,10 @@
-const basicAuth = require("express-basic-auth")
+const basicAuth = require("express-basic-auth");
 const passwordHash = require("./password-hash");
 const { R } = require("redbean-node");
 const { setting } = require("./util-server");
 const { debug } = require("../src/util");
+
+const remoteUserHeader = process.env.REMOTE_USER_HEADER;
 
 /**
  *
@@ -13,7 +15,7 @@ const { debug } = require("../src/util");
 exports.login = async function (username, password) {
     let user = await R.findOne("user", " username = ? AND active = 1 ", [
         username,
-    ])
+    ]);
 
     if (user && passwordHash.verify(password, user.password)) {
         // Upgrade the hash to bcrypt
@@ -27,25 +29,38 @@ exports.login = async function (username, password) {
     }
 
     return null;
-}
+};
 
-function myAuthorizer(username, password, callback) {
-
+function basicAuthHandler(username, password, callback) {
     setting("disableAuth").then((result) => {
-
         if (result) {
-            callback(null, true)
+            callback(null, true);
         } else {
             exports.login(username, password).then((user) => {
-                callback(null, user != null)
-            })
+                callback(null, user != null);
+            });
         }
-    })
-
+    });
 }
 
-exports.basicAuth = basicAuth({
-    authorizer: myAuthorizer,
-    authorizeAsync: true,
-    challenge: true,
-});
+async function authMiddleware(req, res, next) {
+    if (remoteUserHeader !== undefined) {
+        const remoteUser = req.headers[remoteUserHeader.toLowerCase()];
+        if (remoteUser !== undefined) {
+            let user = await R.findOne("user", " username = ? AND active = 1 ", [
+                remoteUser,
+            ]);
+            if (user) {
+                next();
+                return;
+            }
+        }
+    }
+    return basicAuth({
+        authorizer: basicAuthHandler,
+        authorizeAsync: true,
+        challenge: true,
+    })(req, res, next);
+}
+
+exports.basicAuth = authMiddleware;

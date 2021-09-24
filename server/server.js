@@ -64,6 +64,9 @@ const port = parseInt(process.env.PORT || args.port || 3001);
 const sslKey = process.env.SSL_KEY || args["ssl-key"] || undefined;
 const sslCert = process.env.SSL_CERT || args["ssl-cert"] || undefined;
 
+// Header AUTH
+const remoteUserHeader = process.env.REMOTE_USER_HEADER;
+
 // Demo Mode?
 const demoMode = args["demo"] || false;
 
@@ -180,7 +183,6 @@ exports.entryPage = "dashboard";
 
     console.log("Adding socket handler");
     io.on("connection", async (socket) => {
-
         socket.emit("info", {
             version: checkVersion.version,
             latestVersion: checkVersion.latestVersion,
@@ -1189,10 +1191,26 @@ exports.entryPage = "dashboard";
         // ***************************
 
         debug("check auto login");
+        console.log(socket.handshake.headers);
         if (await setting("disableAuth")) {
             console.log("Disabled Auth: auto login to admin");
             afterLogin(socket, await R.findOne("user"));
             socket.emit("autoLogin");
+        } else if (remoteUserHeader !== undefined) {
+            const remoteUser = socket.handshake.headers[remoteUserHeader.toLowerCase()];
+            if (remoteUser !== undefined) {
+                const user = await R.findOne("user", " username = ? AND active = 1 ", [
+                    remoteUser,
+                ]);
+                if (user) {
+                    afterLogin(socket, user);
+                    socket.emit("autoLogin");
+                } else {
+                    debug(`remote user ${remoteUser} doesnt exist`);
+                }
+            } else {
+                debug("remote user header set but not found in headers");
+            }
         } else {
             debug("need auth");
         }
@@ -1398,7 +1416,7 @@ function finalFunction() {
 gracefulShutdown(server, {
     signals: "SIGINT SIGTERM",
     timeout: 30000,                   // timeout: 30 secs
-    development: false,               // not in dev mode
+    development: true,               // not in dev mode
     forceExit: true,                  // triggers process.exit() at the end of shutdown process
     onShutdown: shutdownFunction,     // shutdown function (async) - e.g. for cleanup DB, ...
     finally: finalFunction,            // finally function (sync) - e.g. for logging
