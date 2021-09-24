@@ -185,7 +185,7 @@
         <div class="mb-4">
             <div v-if="$root.publicGroupList.length === 0 && loadedData" class="text-center">
                 <!-- 👀 Nothing here, please add a group or a monitor. -->
-                👀 {{ $t("Status Page Nothing") }}
+                👀 {{ $t("statusPageNothing") }}
             </div>
 
             <PublicGroupList :edit-mode="enableEditMode" />
@@ -377,7 +377,7 @@ export default {
 
     },
     async created() {
-        this.hasToken = ("token" in localStorage);
+        this.hasToken = ("token" in this.$root.storage());
 
         // Browser change page
         // https://stackoverflow.com/questions/7317273/warn-user-before-leaving-web-page-with-unsaved-changes
