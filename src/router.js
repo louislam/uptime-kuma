@@ -17,7 +17,10 @@ const routes = [
         component: Entry,
     },
     {
-        path: "/dashboard",
+        // If it is "/dashboard", the active link is not working
+        // If it is "", it overrides the "/" unexpectedly
+        // Give a random name to solve the problem.
+        path: "/empty",
         component: Layout,
         children: [
             {
@@ -26,7 +29,7 @@ const routes = [
                 children: [
                     {
                         name: "DashboardHome",
-                        path: "",
+                        path: "/dashboard",
                         component: DashboardHome,
                         children: [
                             {
