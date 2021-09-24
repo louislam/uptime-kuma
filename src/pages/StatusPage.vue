@@ -175,10 +175,15 @@
             </div>
 
             <div class="mt-3">
-                <label>{{ $t("Add a monitor") }}:</label>
-                <select v-model="selectedMonitor" class="form-control">
-                    <option v-for="monitor in allMonitorList" :key="monitor.id" :value="monitor">{{ monitor.name }}</option>
-                </select>
+                <div v-if="allMonitorList.length > 0 && loadedData">
+                    <label>{{ $t("Add a monitor") }}:</label>
+                    <select v-model="selectedMonitor" class="form-control">
+                        <option v-for="monitor in allMonitorList" :key="monitor.id" :value="monitor">{{ monitor.name }}</option>
+                    </select>
+                </div>
+                <div v-else class="text-center">
+                    {{ $t("No monitors available.") }}  <router-link to="/add">{{ $t("Add one") }}</router-link>
+                </div>
             </div>
         </div>
 
