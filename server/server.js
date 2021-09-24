@@ -1416,7 +1416,7 @@ function finalFunction() {
 gracefulShutdown(server, {
     signals: "SIGINT SIGTERM",
     timeout: 30000,                   // timeout: 30 secs
-    development: true,               // not in dev mode
+    development: false,               // not in dev mode
     forceExit: true,                  // triggers process.exit() at the end of shutdown process
     onShutdown: shutdownFunction,     // shutdown function (async) - e.g. for cleanup DB, ...
     finally: finalFunction,            // finally function (sync) - e.g. for logging
