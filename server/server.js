@@ -64,15 +64,14 @@ const port = parseInt(process.env.PORT || args.port || 3001);
 const sslKey = process.env.SSL_KEY || args["ssl-key"] || undefined;
 const sslCert = process.env.SSL_CERT || args["ssl-cert"] || undefined;
 
-// Data Directory (must be end with "/")
-Database.dataDir = process.env.DATA_DIR || args["data-dir"] || "./data/";
-Database.path = Database.dataDir + "kuma.db";
-if (! fs.existsSync(Database.dataDir)) {
-    fs.mkdirSync(Database.dataDir, { recursive: true });
-}
-console.log(`Data Dir: ${Database.dataDir}`);
+// Demo Mode?
+const demoMode = args["demo"] || false;
 
-console.log("Creating express and socket.io instance");
+if (demoMode) {
+    console.log("==== Demo Mode ====");
+}
+
+console.log("Creating express and socket.io instance")
 const app = express();
 
 let server;
