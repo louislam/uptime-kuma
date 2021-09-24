@@ -377,7 +377,7 @@ export default {
 
     },
     async created() {
-        this.hasToken = ("token" in localStorage);
+        this.hasToken = ("token" in this.$root.storage());
 
         // Browser change page
         // https://stackoverflow.com/questions/7317273/warn-user-before-leaving-web-page-with-unsaved-changes
