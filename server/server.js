@@ -945,17 +945,17 @@ exports.entryPage = "dashboard";
 
         socket.on("uploadBackup", async (uploadedJSON, importHandle, callback) => {
             try {
-                checkLogin(socket)
+                checkLogin(socket);
 
                 let backupData = JSON.parse(uploadedJSON);
 
-                console.log(`Importing Backup, User ID: ${socket.userID}, Version: ${backupData.version}`)
+                console.log(`Importing Backup, User ID: ${socket.userID}, Version: ${backupData.version}`);
 
                 let notificationListData = backupData.notificationList;
                 let monitorListData = backupData.monitorList;
 
-                let version17x = compareVersions.compare(backupData.version, '1.7.0', '>=')
-                
+                let version17x = compareVersions.compare(backupData.version, "1.7.0", ">=");
+
                 // If the import option is "overwrite" it'll clear most of the tables, except "settings" and "user"
                 if (importHandle == "overwrite") {
                     // Stops every monitor first, so it doesn't execute any heartbeat while importing
@@ -1050,38 +1050,38 @@ exports.entryPage = "dashboard";
                             // Only for backup files with the version 1.7.0 or higher, since there was the tag feature implemented
                             if (version17x) {
                                 // Only import if the specific monitor has tags assigned
-                                if (monitorListData[i].tags.length >= 1) {
-                                    for (let o = 0; o < monitorListData[i].tags.length; o++) {
+                                for (const oldTag of monitorListData[i].tags) {
 
-                                        // Check if tag already exists and get data ->
-                                        let tag = await R.findOne("tag", " name = ?", [
-                                            monitorListData[i].tags[o].name,
-                                        ])
+                                    // Check if tag already exists and get data ->
+                                    let tag = await R.findOne("tag", " name = ?", [
+                                        oldTag.name,
+                                    ]);
 
-                                        // Set tagId to vaule from database
-                                        let tagId = tag.id
+                                    let tagId;
+                                    if (! tag) {
+                                        // -> If it doesn't exist, create new tag from backup file
+                                        let beanTag = R.dispense("tag");
+                                        beanTag.name = oldTag.name;
+                                        beanTag.color = oldTag.color;
+                                        await R.store(beanTag);
 
-                                        // -> If it doesn't, create new tag from backup file
-                                        if (! tag) {
-                                            let beanTag = R.dispense("tag")
-                                            beanTag.name = monitorListData[i].tags[o].name
-                                            beanTag.color = monitorListData[i].tags[o].color
-                                            await R.store(beanTag)
-
-                                            tagId = beanTag.id
-                                        }
-
-                                        // Assign the new created tag to the monitor
-                                        await R.exec("INSERT INTO monitor_tag (tag_id, monitor_id, value) VALUES (?, ?, ?)", [
-                                            tagId,
-                                            bean.id,
-                                            monitorListData[i].tags[o].value,
-                                        ])
+                                        tagId = beanTag.id;
+                                    } else {
+                                        // -> If it already exist, set tagId to value from database
+                                        tagId = tag.id;
                                     }
+
+                                    // Assign the new created tag to the monitor
+                                    await R.exec("INSERT INTO monitor_tag (tag_id, monitor_id, value) VALUES (?, ?, ?)", [
+                                        tagId,
+                                        bean.id,
+                                        oldTag.value,
+                                    ]);
+
                                 }
                             }
 
-                            await updateMonitorNotification(bean.id, notificationIDList)
+                            await updateMonitorNotification(bean.id, notificationIDList);
 
                             // If monitor was active start it immediately, otherwise pause it
                             if (monitorListData[i].active == 1) {
