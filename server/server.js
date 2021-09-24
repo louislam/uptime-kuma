@@ -1191,7 +1191,6 @@ exports.entryPage = "dashboard";
         // ***************************
 
         debug("check auto login");
-
         if (await setting("disableAuth")) {
             console.log("Disabled Auth: auto login to admin");
             afterLogin(socket, await R.findOne("user"));
