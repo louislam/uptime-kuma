@@ -1205,10 +1205,10 @@ exports.entryPage = "dashboard";
                     afterLogin(socket, user);
                     socket.emit("autoLogin");
                 } else {
-                    debug(`remote user ${remoteUser} doesnt exist`);
+                    debug(`Remote user ${remoteUser} doesn't exist`);
                 }
             } else {
-                debug("remote user header set but not found in headers");
+                debug("Remote user header set but not found in headers");
             }
         } else {
             debug("need auth");
