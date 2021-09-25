@@ -10,7 +10,7 @@ RUN npm install --legacy-peer-deps && \
     chmod +x /app/extra/entrypoint.sh
 
 
-FROM node:14-buster-slim AS release
+FROM node:14-bullseye-slim AS release
 
 ARG BUILD_DATE
 
