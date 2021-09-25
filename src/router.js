@@ -72,6 +72,10 @@ const routes = [
         path: "/status-page",
         component: StatusPage,
     },
+    {
+        path: "/status",
+        component: StatusPage,
+    },
 ];
 
 export const router = createRouter({
