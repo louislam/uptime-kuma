@@ -2,6 +2,7 @@ import { createI18n } from "vue-i18n";
 import daDK from "./languages/da-DK";
 import deDE from "./languages/de-DE";
 import en from "./languages/en";
+import fa from "./languages/fa";
 import esEs from "./languages/es-ES";
 import etEE from "./languages/et-EE";
 import frFR from "./languages/fr-FR";
@@ -24,6 +25,7 @@ const languageList = {
     "de-DE": deDE,
     "nl-NL": nlNL,
     "es-ES": esEs,
+    "fa": fa,
     "fr-FR": frFR,
     "it-IT": itIT,
     "ja": ja,
@@ -39,10 +41,17 @@ const languageList = {
     "et-EE": etEE,
 };
 
+const rtlLangs = ["fa"];
+    
+const currentLocale = () => localStorage.locale || "en";
+
+export const localeDirection = () => {
+    return rtlLangs.includes(currentLocale()) ? "rtl" : "ltr"
+}
 export const i18n = createI18n({
-    locale: localStorage.locale || "en",
+    locale: currentLocale(),
     fallbackLocale: "en",
     silentFallbackWarn: true,
     silentTranslationWarn: false,
-    messages: languageList,
+    messages: languageList
 });
