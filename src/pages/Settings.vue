@@ -226,7 +226,7 @@
                             {{ $t("Setup Notification") }}
                         </button>
 
-                        <h2 class="mt-5">Info</h2>
+                        <h2 class="mt-5">{{ $t("Info") }}</h2>
 
                         {{ $t("Version") }}: {{ $root.info.version }} <br />
                         <a href="https://github.com/louislam/uptime-kuma/releases" target="_blank" rel="noopener">{{ $t("Check Update On GitHub") }}</a>
