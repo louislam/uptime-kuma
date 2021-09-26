@@ -17,6 +17,7 @@ module.exports = {
         requireConfigFile: false,
     },
     rules: {
+        "linebreak-style": ["error", "unix"],
         "camelcase": ["warn", {
             "properties": "never",
             "ignoreImports": true
@@ -33,11 +34,12 @@ module.exports = {
             },
         ],
         quotes: ["warn", "double"],
-        //semi: ['off', 'never'],
+        semi: "warn",
         "vue/html-indent": ["warn", 4], // default: 2
         "vue/max-attributes-per-line": "off",
         "vue/singleline-html-element-content-newline": "off",
         "vue/html-self-closing": "off",
+        "vue/attribute-hyphenation": "off",     // This change noNL to "no-n-l" unexpectedly
         "no-multi-spaces": ["error", {
             ignoreEOLComments: true,
         }],
@@ -85,10 +87,10 @@ module.exports = {
     },
     "overrides": [
         {
-            "files": [ "src/languages/*.js" ],
+            "files": [ "src/languages/*.js", "src/icon.js" ],
             "rules": {
                 "comma-dangle": ["error", "always-multiline"],
             }
         }
     ]
-}
+};
