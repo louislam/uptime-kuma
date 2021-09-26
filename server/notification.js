@@ -13,6 +13,7 @@ const RocketChat = require("./notification-providers/rocket-chat");
 const Signal = require("./notification-providers/signal");
 const Slack = require("./notification-providers/slack");
 const SMTP = require("./notification-providers/smtp");
+const Teams = require("./notification-providers/teams");
 const Telegram = require("./notification-providers/telegram");
 const Webhook = require("./notification-providers/webhook");
 
@@ -28,6 +29,7 @@ class Notification {
         const list = [
             new Apprise(),
             new Discord(),
+            new Teams(),
             new Gotify(),
             new Line(),
             new LunaSea(),

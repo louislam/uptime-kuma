@@ -83,6 +83,24 @@
                                 </div>
                             </div>
 
+                            <div class="mb-3">
+                                <label class="form-label">{{ $t("Entry Page") }}</label>
+
+                                <div class="form-check">
+                                    <input id="entryPageYes" v-model="settings.entryPage" class="form-check-input" type="radio" name="statusPage" value="dashboard" required>
+                                    <label class="form-check-label" for="entryPageYes">
+                                        {{ $t("Dashboard") }}
+                                    </label>
+                                </div>
+
+                                <div class="form-check">
+                                    <input id="entryPageNo" v-model="settings.entryPage" class="form-check-input" type="radio" name="statusPage" value="statusPage" required>
+                                    <label class="form-check-label" for="entryPageNo">
+                                        {{ $t("Status Page") }}
+                                    </label>
+                                </div>
+                            </div>
+
                             <div>
                                 <button class="btn btn-primary" type="submit">
                                     {{ $t("Save") }}
@@ -120,34 +138,68 @@
                                 </form>
                             </template>
 
-                            <h2 class="mt-5 mb-2">{{ $t("Import/Export Backup") }}</h2>
+                            <div v-if="! settings.disableAuth" class="mt-5 mb-3">
+                                <h2 class="mb-2">
+                                    {{ $t("Two Factor Authentication") }}
+                                </h2>
+                                <button class="btn btn-primary me-2" type="button" @click="$refs.TwoFADialog.show()">{{ $t("2FA Settings") }}</button>
+                            </div>
+
+                            <h2 class="mt-5 mb-2">{{ $t("Export Backup") }}</h2>
 
                             <p>
                                 {{ $t("backupDescription") }} <br />
                                 ({{ $t("backupDescription2") }}) <br />
                             </p>
 
-                            <div class="input-group mb-3">
-                                <button class="btn btn-outline-primary" @click="downloadBackup">{{ $t("Export") }}</button>
-                                <button type="button" class="btn btn-outline-primary" :disabled="processing" @click="importBackup">
-                                    <div v-if="processing" class="spinner-border spinner-border-sm me-1"></div>
-                                    {{ $t("Import") }}
-                                </button>
-                                <input id="importBackup" type="file" class="form-control" accept="application/json">
-                            </div>
-                            <div v-if="importAlert" class="alert alert-danger mt-3" style="padding: 6px 16px;">
-                                {{ importAlert }}
+                            <div class="mb-2">
+                                <button class="btn btn-primary" @click="downloadBackup">{{ $t("Export") }}</button>
                             </div>
 
                             <p><strong>{{ $t("backupDescription3") }}</strong></p>
 
+                            <h2 class="mt-5 mb-2">{{ $t("Import Backup") }}</h2>
+
+                            <label class="form-label">{{ $t("Options") }}:</label>
+                            <br>
+                            <div class="form-check form-check-inline">
+                                <input id="radioKeep" v-model="importHandle" class="form-check-input" type="radio" name="radioImportHandle" value="keep">
+                                <label class="form-check-label" for="radioKeep">{{ $t("Keep both") }}</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input id="radioSkip" v-model="importHandle" class="form-check-input" type="radio" name="radioImportHandle" value="skip">
+                                <label class="form-check-label" for="radioSkip">{{ $t("Skip existing") }}</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input id="radioOverwrite" v-model="importHandle" class="form-check-input" type="radio" name="radioImportHandle" value="overwrite">
+                                <label class="form-check-label" for="radioOverwrite">{{ $t("Overwrite") }}</label>
+                            </div>
+                            <div class="form-text mb-2">
+                                {{ $t("importHandleDescription") }}
+                            </div>
+
+                            <div class="mb-2">
+                                <input id="importBackup" type="file" class="form-control" accept="application/json">
+                            </div>
+
+                            <div class="input-group mb-2 justify-content-end">
+                                <button type="button" class="btn btn-outline-primary" :disabled="processing" @click="confirmImport">
+                                    <div v-if="processing" class="spinner-border spinner-border-sm me-1"></div>
+                                    {{ $t("Import") }}
+                                </button>
+                            </div>
+
+                            <div v-if="importAlert" class="alert alert-danger mt-3" style="padding: 6px 16px;">
+                                {{ importAlert }}
+                            </div>
+
                             <h2 class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
 
                             <div class="mb-3">
-                                <button v-if="settings.disableAuth" class="btn btn-outline-primary me-1" @click="enableAuth">{{ $t("Enable Auth") }}</button>
-                                <button v-if="! settings.disableAuth" class="btn btn-primary me-1" @click="confirmDisableAuth">{{ $t("Disable Auth") }}</button>
-                                <button v-if="! settings.disableAuth" class="btn btn-danger me-1" @click="$root.logout">{{ $t("Logout") }}</button>
-                                <button class="btn btn-outline-danger me-1" @click="confirmClearStatistics">{{ $t("Clear all Statistics") }}</button>
+                                <button v-if="settings.disableAuth" class="btn btn-outline-primary me-1 mb-1" @click="enableAuth">{{ $t("Enable Auth") }}</button>
+                                <button v-if="! settings.disableAuth" class="btn btn-primary me-1 mb-1" @click="confirmDisableAuth">{{ $t("Disable Auth") }}</button>
+                                <button v-if="! settings.disableAuth" class="btn btn-danger me-1 mb-1" @click="$root.logout">{{ $t("Logout") }}</button>
+                                <button class="btn btn-outline-danger me-1 mb-1" @click="confirmClearStatistics">{{ $t("Clear all statistics") }}</button>
                             </div>
                         </template>
                     </div>
@@ -173,25 +225,29 @@
                         <button class="btn btn-primary me-2" type="button" @click="$refs.notificationDialog.show()">
                             {{ $t("Setup Notification") }}
                         </button>
+
+                        <h2 class="mt-5">Info</h2>
+
+                        {{ $t("Version") }}: {{ $root.info.version }} <br />
+                        <a href="https://github.com/louislam/uptime-kuma/releases" target="_blank" rel="noopener">{{ $t("Check Update On GitHub") }}</a>
                     </div>
                 </div>
             </div>
 
-            <footer>
-                <div class="container-fluid">
-                    Uptime Kuma -
-                    {{ $t("Version") }}: {{ $root.info.version }} -
-                    <a href="https://github.com/louislam/uptime-kuma/releases" target="_blank" rel="noopener">{{ $t("Check Update On GitHub") }}</a>
-                </div>
-            </footer>
-
             <NotificationDialog ref="notificationDialog" />
+            <TwoFADialog ref="TwoFADialog" />
 
             <Confirm ref="confirmDisableAuth" btn-style="btn-danger" :yes-text="$t('I understand, please disable')" :no-text="$t('Leave')" @yes="disableAuth">
                 <template v-if="$i18n.locale === 'es-ES' ">
                     <p>Seguro que deseas <strong>deshabilitar la autenticación</strong>?</p>
                     <p>Es para <strong>quien implementa autenticación de terceros</strong> ante Uptime Kuma como por ejemplo Cloudflare Access.</p>
                     <p>Por favor usar con cuidado.</p>
+                </template>
+
+                <template v-else-if="$i18n.locale === 'pt-BR' ">
+                    <p>Você tem certeza que deseja <strong>desativar a autenticação</strong>?</p>
+                    <p>Isso é para <strong>alguém que tem autenticação de terceiros</strong> na frente do 'UpTime Kuma' como o Cloudflare Access.</p>
+                    <p>Por favor, utilize isso com cautela.</p>
                 </template>
 
                 <template v-else-if="$i18n.locale === 'zh-HK' ">
@@ -224,6 +280,12 @@
                     <p>Molim Vas koristite ovo sa pažnjom.</p>
                 </template>
 
+                <template v-else-if="$i18n.locale === 'tr-TR' ">
+                    <p><strong>Şifreli girişi devre dışı bırakmak istediğinizden</strong>emin misiniz?</p>
+                    <p>Bu, Uptime Kuma'nın önünde Cloudflare Access gibi <strong>üçüncü taraf yetkilendirmesi olan</strong> kişiler içindir.</p>
+                    <p>Lütfen dikkatli kullanın.</p>
+                </template>
+
                 <template v-else-if="$i18n.locale === 'ko-KR' ">
                     <p>정말로 <strong>인증 기능을 끌까요</strong>?</p>
                     <p>이 기능은 <strong>Cloudflare Access와 같은 서드파티 인증</strong>을 Uptime Kuma 앞에 둔 사용자를 위한 기능이에요.</p>
@@ -248,6 +310,12 @@
                     <p>Utilizzare con attenzione.</p>
                 </template>
 
+                <template v-else-if="$i18n.locale === 'ru-RU' ">
+                    <p>Вы уверены, что хотите <strong>отключить авторизацию</strong>?</p>
+                    <p>Это подходит для <strong>тех, у кого стоит другая авторизация</strong> перед открытием Uptime Kuma, например Cloudflare Access.</p>
+                    <p>Пожалуйста, используйте с осторожностью.</p>
+                </template>
+
                 <!-- English (en) -->
                 <template v-else>
                     <p>Are you sure want to <strong>disable auth</strong>?</p>
@@ -259,6 +327,9 @@
             <Confirm ref="confirmClearStatistics" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="clearStatistics">
                 {{ $t("confirmClearStatisticsMsg") }}
             </Confirm>
+            <Confirm ref="confirmImport" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="importBackup">
+                {{ $t("confirmImportMsg") }}
+            </Confirm>
         </div>
     </transition>
 </template>
@@ -266,19 +337,21 @@
 <script>
 import Confirm from "../components/Confirm.vue";
 import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc"
-import timezone from "dayjs/plugin/timezone"
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
 import NotificationDialog from "../components/NotificationDialog.vue";
-dayjs.extend(utc)
-dayjs.extend(timezone)
+import TwoFADialog from "../components/TwoFADialog.vue";
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 import { timezoneList } from "../util-frontend";
-import { useToast } from "vue-toastification"
-const toast = useToast()
+import { useToast } from "vue-toastification";
+const toast = useToast();
 
 export default {
     components: {
         NotificationDialog,
+        TwoFADialog,
         Confirm,
     },
     data() {
@@ -297,8 +370,9 @@ export default {
             },
             loaded: false,
             importAlert: null,
+            importHandle: "skip",
             processing: false,
-        }
+        };
     },
     watch: {
         "password.repeatNewPassword"() {
@@ -326,13 +400,13 @@ export default {
                 this.invalidPassword = true;
             } else {
                 this.$root.getSocket().emit("changePassword", this.password, (res) => {
-                    this.$root.toastRes(res)
+                    this.$root.toastRes(res);
                     if (res.ok) {
-                        this.password.currentPassword = ""
-                        this.password.newPassword = ""
-                        this.password.repeatNewPassword = ""
+                        this.password.currentPassword = "";
+                        this.password.newPassword = "";
+                        this.password.repeatNewPassword = "";
                     }
-                })
+                });
             }
         },
 
@@ -344,15 +418,19 @@ export default {
                     this.settings.searchEngineIndex = false;
                 }
 
+                if (this.settings.entryPage === undefined) {
+                    this.settings.entryPage = "dashboard";
+                }
+
                 this.loaded = true;
-            })
+            });
         },
 
         saveSettings() {
             this.$root.getSocket().emit("setSettings", this.settings, (res) => {
                 this.$root.toastRes(res);
                 this.loadSettings();
-            })
+            });
         },
 
         confirmDisableAuth() {
@@ -361,6 +439,10 @@ export default {
 
         confirmClearStatistics() {
             this.$refs.confirmClearStatistics.show();
+        },
+
+        confirmImport() {
+            this.$refs.confirmImport.show();
         },
 
         disableAuth() {
@@ -382,10 +464,10 @@ export default {
                 version: this.$root.info.version,
                 notificationList: this.$root.notificationList,
                 monitorList: monitorList,
-            }
-            exportData = JSON.stringify(exportData);
+            };
+            exportData = JSON.stringify(exportData, null, 4);
             let downloadItem = document.createElement("a");
-            downloadItem.setAttribute("href", "data:application/json;charset=utf-8," + encodeURI(exportData));
+            downloadItem.setAttribute("href", "data:application/json;charset=utf-8," + encodeURIComponent(exportData));
             downloadItem.setAttribute("download", fileName);
             downloadItem.click();
         },
@@ -396,19 +478,19 @@ export default {
 
             if (uploadItem.length <= 0) {
                 this.processing = false;
-                return this.importAlert = this.$t("alertNoFile")
+                return this.importAlert = this.$t("alertNoFile");
             }
 
             if (uploadItem.item(0).type !== "application/json") {
                 this.processing = false;
-                return this.importAlert = this.$t("alertWrongFileType")
+                return this.importAlert = this.$t("alertWrongFileType");
             }
 
             let fileReader = new FileReader();
             fileReader.readAsText(uploadItem.item(0));
 
             fileReader.onload = item => {
-                this.$root.uploadBackup(item.target.result, (res) => {
+                this.$root.uploadBackup(item.target.result, this.importHandle, (res) => {
                     this.processing = false;
 
                     if (res.ok) {
@@ -416,8 +498,8 @@ export default {
                     } else {
                         toast.error(res.msg);
                     }
-                })
-            }
+                });
+            };
         },
 
         clearStatistics() {
@@ -427,10 +509,10 @@ export default {
                 } else {
                     toast.error(res.msg);
                 }
-            })
+            });
         },
     },
-}
+};
 </script>
 
 <style lang="scss" scoped>

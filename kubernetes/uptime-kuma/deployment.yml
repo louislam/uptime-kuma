@@ -30,6 +30,9 @@ spec:
               command:
                 - node
                 - extra/healthcheck.js
+            initialDelaySeconds: 180
+            periodSeconds: 60
+            timeoutSeconds: 30
           readinessProbe:
             httpGet:
               path: /

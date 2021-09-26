@@ -12,6 +12,7 @@ Please search in Issues without filters: https://github.com/louislam/uptime-kuma
 **Info**
 Uptime Kuma Version:
 Using Docker?: Yes/No
+Docker Version:
+Node.js Version (Without Docker only):
 OS:
 Browser:
-
