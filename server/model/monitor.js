@@ -7,10 +7,11 @@ dayjs.extend(timezone);
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
 const { debug, UP, DOWN, PENDING, flipStatus, TimeLogger } = require("../../src/util");
-const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom } = require("../util-server");
+const { tcping, ping, dnsResolve, checkCertificate, getTotalClientInRoom } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
-const { Notification } = require("../notification");
+const { Notification } = require("../notification")
+const validateMonitorChecks = require("./validate-monitor-checks");
 const version = require("../../package.json").version;
 
 /**
@@ -61,15 +62,14 @@ class Monitor extends BeanModel {
             type: this.type,
             interval: this.interval,
             retryInterval: this.retryInterval,
-            keyword: this.keyword,
             ignoreTls: this.getIgnoreTls(),
             upsideDown: this.isUpsideDown(),
             maxredirects: this.maxredirects,
-            accepted_statuscodes: this.getAcceptedStatuscodes(),
             dns_resolve_type: this.dns_resolve_type,
             dns_resolve_server: this.dns_resolve_server,
             dns_last_result: this.dns_last_result,
             notificationIDList,
+            checks: this.checks,
             tags: tags,
         };
     }
@@ -88,10 +88,6 @@ class Monitor extends BeanModel {
      */
     isUpsideDown() {
         return Boolean(this.upsideDown);
-    }
-
-    getAcceptedStatuscodes() {
-        return JSON.parse(this.accepted_statuscodes_json);
     }
 
     start(io) {
@@ -131,7 +127,7 @@ class Monitor extends BeanModel {
             }
 
             try {
-                if (this.type === "http" || this.type === "keyword") {
+                if (this.type === "http") {
                     // Do not do any queries/high loading things before the "bean.ping"
                     let startTime = dayjs().valueOf();
 
@@ -146,9 +142,6 @@ class Monitor extends BeanModel {
                             rejectUnauthorized: ! this.getIgnoreTls(),
                         }),
                         maxRedirects: this.maxredirects,
-                        validateStatus: (status) => {
-                            return checkStatusCode(status, this.getAcceptedStatuscodes());
-                        },
                     });
                     bean.msg = `${res.status} - ${res.statusText}`;
                     bean.ping = dayjs().valueOf() - startTime;
@@ -167,6 +160,8 @@ class Monitor extends BeanModel {
 
                     debug("Cert Info Query Time: " + (dayjs().valueOf() - certInfoStartTime) + "ms");
 
+
+                    validateMonitorChecks(res, this.checks, bean);
                     if (this.type === "http") {
                         bean.status = UP;
                     } else {

@@ -63,6 +63,7 @@
         "form-data": "^4.0.0",
         "http-graceful-shutdown": "^3.1.4",
         "jsonwebtoken": "^8.5.1",
+        "lodash.get": "^4.4.2",
         "nodemailer": "^6.6.5",
         "notp": "^2.0.3",
         "password-hash": "^1.2.2",

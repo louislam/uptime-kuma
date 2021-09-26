@@ -6,7 +6,7 @@ if (! process.env.NODE_ENV) {
 
 console.log("Node Env: " + process.env.NODE_ENV);
 
-const { sleep, debug, TimeLogger, getRandomInt } = require("../src/util");
+const { sleep, debug, getRandomInt } = require("../src/util");
 
 console.log("Importing Node libraries");
 const fs = require("fs");
@@ -459,8 +459,8 @@ exports.entryPage = "dashboard";
                 let notificationIDList = monitor.notificationIDList;
                 delete monitor.notificationIDList;
 
-                monitor.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
-                delete monitor.accepted_statuscodes;
+                monitor.checks_json = JSON.stringify(monitor.checks);
+                delete monitor.checks;
 
                 bean.import(monitor);
                 bean.user_id = socket.userID;
@@ -504,13 +504,12 @@ exports.entryPage = "dashboard";
                 bean.hostname = monitor.hostname;
                 bean.maxretries = monitor.maxretries;
                 bean.port = monitor.port;
-                bean.keyword = monitor.keyword;
                 bean.ignoreTls = monitor.ignoreTls;
                 bean.upsideDown = monitor.upsideDown;
                 bean.maxredirects = monitor.maxredirects;
-                bean.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
                 bean.dns_resolve_type = monitor.dns_resolve_type;
                 bean.dns_resolve_server = monitor.dns_resolve_server;
+                bean.checks_json = JSON.stringify(monitor.checks);
 
                 await R.store(bean);
 
@@ -1015,22 +1014,19 @@ exports.entryPage = "dashboard";
                             // --- End ---
 
                             let monitor = {
-                                // Define the new variable from earlier here
-                                name: monitorListData[i].name,
-                                type: monitorListData[i].type,
-                                url: monitorListData[i].url,
-                                interval: monitorListData[i].interval,
-                                retryInterval: retryInterval,
-                                hostname: monitorListData[i].hostname,
-                                maxretries: monitorListData[i].maxretries,
-                                port: monitorListData[i].port,
-                                keyword: monitorListData[i].keyword,
-                                ignoreTls: monitorListData[i].ignoreTls,
-                                upsideDown: monitorListData[i].upsideDown,
-                                maxredirects: monitorListData[i].maxredirects,
-                                accepted_statuscodes: monitorListData[i].accepted_statuscodes,
-                                dns_resolve_type: monitorListData[i].dns_resolve_type,
-                                dns_resolve_server: monitorListData[i].dns_resolve_server,
+                                name: monitorList[i].name,
+                                type: monitorList[i].type,
+                                url: monitorList[i].url,
+                                interval: monitorList[i].interval,
+                                hostname: monitorList[i].hostname,
+                                maxretries: monitorList[i].maxretries,
+                                port: monitorList[i].port,
+                                ignoreTls: monitorList[i].ignoreTls,
+                                upsideDown: monitorList[i].upsideDown,
+                                maxredirects: monitorList[i].maxredirects,
+                                checks: monitorList[i].checks,
+                                dns_resolve_type: monitorList[i].dns_resolve_type,
+                                dns_resolve_server: monitorList[i].dns_resolve_server,
                                 notificationIDList: {},
                             };
 
@@ -1038,8 +1034,8 @@ exports.entryPage = "dashboard";
 
                             let notificationIDList = monitor.notificationIDList;
                             delete monitor.notificationIDList;
-
-                            monitor.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
+                            
+                            monitor.checks_json = JSON.stringify(monitor.checks);
                             delete monitor.accepted_statuscodes;
 
                             bean.import(monitor);
