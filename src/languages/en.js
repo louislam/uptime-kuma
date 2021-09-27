@@ -178,4 +178,5 @@ export default {
     "Add a monitor": "Add a monitor",
     "Edit Status Page": "Edit Status Page",
     "Go to Dashboard": "Go to Dashboard",
+    steamApiKeyDescription: "For monitoring a Steam Gameserver you need a steam Web-API key. You can register your api key here: https://steamcommunity.com/dev",
 };

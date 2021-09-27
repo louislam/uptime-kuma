@@ -504,6 +504,7 @@ exports.entryPage = "dashboard";
                 bean.hostname = monitor.hostname;
                 bean.maxretries = monitor.maxretries;
                 bean.port = monitor.port;
+                bean.apikey = monitor.apikey;
                 bean.keyword = monitor.keyword;
                 bean.ignoreTls = monitor.ignoreTls;
                 bean.upsideDown = monitor.upsideDown;

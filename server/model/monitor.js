@@ -59,6 +59,7 @@ class Monitor extends BeanModel {
             weight: this.weight,
             active: this.active,
             type: this.type,
+            apikey: this.apikey,
             interval: this.interval,
             retryInterval: this.retryInterval,
             keyword: this.keyword,
@@ -236,6 +237,46 @@ class Monitor extends BeanModel {
 
                     bean.msg = dnsMessage;
                     bean.status = UP;
+                } else if (this.type === "steam") {
+                    const steamApiUrl = "https://api.steampowered.com/IGameServersService/GetServerList/v1/";
+                    const filter = `addr\\${this.hostname}:${this.port}`;
+
+                    let res = await axios.get(steamApiUrl, {
+                        timeout: this.interval * 1000 * 0.8,
+                        headers: {
+                            "Accept": "*/*",
+                            "User-Agent": "Uptime-Kuma/" + version,
+                        },
+                        httpsAgent: new https.Agent({
+                            maxCachedSessions: 0,      // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
+                            rejectUnauthorized: ! this.getIgnoreTls(),
+                        }),
+                        maxRedirects: this.maxredirects,
+                        validateStatus: (status) => {
+                            return checkStatusCode(status, this.getAcceptedStatuscodes());
+                        },
+                        params: {
+                            filter: filter,
+                            key: this.apikey,
+                        }
+                    });
+
+                    bean.msg = `${res.status} - ${res.statusText}`;
+                    bean.ping = await ping(this.hostname);
+
+                    let data = res.data;
+
+                    // Convert to string for object/array
+                    if (typeof data !== "string") {
+                        data = JSON.stringify(data);
+                    }
+
+                    if (data.includes(`${this.hostname}:${this.port}`)) {
+                        bean.msg += ", server is found";
+                        bean.status = UP;
+                    } else {
+                        throw new Error(bean.msg + ", but server is not found");
+                    }
                 }
 
                 if (this.isUpsideDown()) {

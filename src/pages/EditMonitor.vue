@@ -26,6 +26,9 @@
                                     <option value="dns">
                                         DNS
                                     </option>
+                                    <option value="steam">
+                                        Steam Gameserver
+                                    </option>
                                 </select>
                             </div>
 
@@ -48,15 +51,21 @@
                             </div>
 
                             <!-- TCP Port / Ping / DNS only -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' " class="my-3">
+                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' " class="my-3">
                                 <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>
                                 <input id="hostname" v-model="monitor.hostname" type="text" class="form-control" :pattern="`${ipRegexPattern}|${hostnameRegexPattern}`" required>
                             </div>
 
                             <!-- For TCP Port Type -->
-                            <div v-if="monitor.type === 'port' " class="my-3">
+                            <div v-if="monitor.type === 'port'" class="my-3">
                                 <label for="port" class="form-label">{{ $t("Port") }}</label>
                                 <input id="port" v-model="monitor.port" type="number" class="form-control" required min="0" max="65535" step="1">
+                            </div>
+
+                            <!-- For Steam Query Port Type -->
+                            <div v-if="monitor.type === 'steam' " class="my-3">
+                                <label for="queryport" class="form-label">{{ $t("Query Port") }}</label>
+                                <input id="queryport" v-model="monitor.port" type="number" class="form-control" required min="0" max="65535" step="1">
                             </div>
 
                             <!-- For DNS Type -->
@@ -92,6 +101,15 @@
                                     </div>
                                 </div>
                             </template>
+
+                            <!-- For Steam Type -->
+                            <div class="my-3" v-if="monitor.type === 'steam'">
+                                <label for="steamApiKey" class="form-label">{{ $t("Steam Web-API Key") }}</label>
+                                <input id="steamApiKey" v-model="monitor.apikey" type="text" class="form-control" required>
+                                <div class="form-text">
+                                    {{ $t("steamApiKeyDescription") }}
+                                </div>
+                            </div>
 
                             <div class="my-3">
                                 <label for="interval" class="form-label">{{ $t("Heartbeat Interval") }} ({{ $t("checkEverySecond", [ monitor.interval ]) }})</label>
@@ -328,7 +346,7 @@ export default {
                     }
                 }
             } else if (this.isEdit) {
-                this.$root.getSocket().emit("getMonitor", this.$route.params.id, (res) => {
+                this.$root.getSocket().emit("getMonitor", this.$route.params.id, (res) => {                    
                     if (res.ok) {
                         this.monitor = res.monitor;
 
