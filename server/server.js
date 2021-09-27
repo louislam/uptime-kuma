@@ -71,7 +71,7 @@ if (demoMode) {
     console.log("==== Demo Mode ====");
 }
 
-console.log("Creating express and socket.io instance")
+console.log("Creating express and socket.io instance");
 const app = express();
 
 let server;
@@ -459,12 +459,22 @@ exports.entryPage = "dashboard";
                 let notificationIDList = monitor.notificationIDList;
                 delete monitor.notificationIDList;
 
-                monitor.checks_json = JSON.stringify(monitor.checks);
+                const checks = monitor.checks;
                 delete monitor.checks;
 
+                // Store monitor info
                 bean.import(monitor);
                 bean.user_id = socket.userID;
                 await R.store(bean);
+
+                // Store checks info
+                for (let i = 0; i < (checks || []).length; i++) {
+                    let checkBean = R.dispense("monitor_checks");
+                    checks[i].monitor_id = bean.id;
+                    checks[i].value = typeof checks[i].value === "object" ? JSON.stringify(checks[i].value) : checks[i].value;
+                    checkBean.import(checks[i]);
+                    await R.store(checkBean);
+                }
 
                 await updateMonitorNotification(bean.id, notificationIDList);
 
@@ -509,9 +519,20 @@ exports.entryPage = "dashboard";
                 bean.maxredirects = monitor.maxredirects;
                 bean.dns_resolve_type = monitor.dns_resolve_type;
                 bean.dns_resolve_server = monitor.dns_resolve_server;
-                bean.checks_json = JSON.stringify(monitor.checks);
+
+                const checks = monitor.checks;
+                delete monitor.checks;
 
                 await R.store(bean);
+
+                // Store checks info
+                for (let i = 0; i < (checks || []).length; i++) {
+                    let checkBean = R.dispense("monitor_checks");
+                    checks[i].monitor_id = bean.id;
+                    checks[i].value = typeof checks[i].value === "object" ? JSON.stringify(checks[i].value) : checks[i].value;
+                    checkBean.import(checks[i]);
+                    await R.store(checkBean);
+                }
 
                 await updateMonitorNotification(bean.id, monitor.notificationIDList);
 
@@ -1034,13 +1055,27 @@ exports.entryPage = "dashboard";
 
                             let notificationIDList = monitor.notificationIDList;
                             delete monitor.notificationIDList;
-                            
+
                             monitor.checks_json = JSON.stringify(monitor.checks);
-                            delete monitor.accepted_statuscodes;
+
+                            delete monitor.accepted_statuscodes; // TODO convert to check
+                            delete monitor.keyword; // TODO convert to check
+
+                            const checks = monitor.checks;
+                            delete monitor.checks;
 
                             bean.import(monitor);
                             bean.user_id = socket.userID;
                             await R.store(bean);
+
+                            // Store monitor checks
+                            for (let i = 0; i < (checks || []).length; i++) {
+                                let checkBean = R.dispense("monitor_checks");
+                                checks[i].monitor_id = bean.id;
+                                checks[i].value = typeof checks[i].value === "object" ? JSON.stringify(checks[i].value) : checks[i].value;
+                                checkBean.import(checks[i]);
+                                await R.store(checkBean);
+                            }
 
                             // Only for backup files with the version 1.7.0 or higher, since there was the tag feature implemented
                             if (version17x) {
@@ -1276,6 +1311,14 @@ async function getMonitorJSONList(userID) {
     ]);
 
     for (let monitor of monitorList) {
+        const monitorChecks = await R.find("monitor_checks", " monitor_id = ? ORDER BY id", [
+            monitor.id,
+        ]);
+        const monitorCheckObj = [];
+        for (let monitorCheck of monitorChecks) {
+            monitorCheckObj.push(await monitorCheck.toJSON());
+        }
+        monitor.checks = monitorCheckObj;
         result[monitor.id] = await monitor.toJSON();
     }
 

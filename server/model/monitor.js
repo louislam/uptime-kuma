@@ -10,7 +10,7 @@ const { debug, UP, DOWN, PENDING, flipStatus, TimeLogger } = require("../../src/
 const { tcping, ping, dnsResolve, checkCertificate, getTotalClientInRoom } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
-const { Notification } = require("../notification")
+const { Notification } = require("../notification");
 const validateMonitorChecks = require("./validate-monitor-checks");
 const version = require("../../package.json").version;
 
@@ -69,7 +69,6 @@ class Monitor extends BeanModel {
             dns_resolve_server: this.dns_resolve_server,
             dns_last_result: this.dns_last_result,
             notificationIDList,
-            checks: this.checks,
             tags: tags,
         };
     }

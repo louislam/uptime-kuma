@@ -122,7 +122,7 @@
                                 </div>
                             </div>
 
-                            <!-- HTTP only -->                            
+                            <!-- HTTP only -->
                             <template v-if="monitor.type === 'http'">
                                 <div class="my-3">
                                     <label for="maxRedirects" class="form-label">{{ $t("Max. Redirects") }}</label>
@@ -134,11 +134,11 @@
 
                                 <h2 class="mt-5 mb-2">{{ $t("Checks") }}</h2>
 
-                                <div class="my-3">
+                                <div class="my-3 mb-5">
                                     <div v-for="(monitorCheck, index) in monitor.checks" :key="index" class="mb-3">
-                                        <MonitorCheckEditor :monitorCheck="monitorCheck" :index="index" @delete="deleteMonitorCheck(index)"></MonitorCheckEditor>
+                                        <MonitorCheckEditor :monitorCheck="monitorCheck" @change="(newMonitorCheck) => updateMonitorCheck(newMonitorCheck, index)" @delete="() => deleteMonitorCheck(index)"></MonitorCheckEditor>
                                     </div>
-                                    <button class="btn btn-light" type="button" @click="addMonitorCheck()">{{ $t("Add check") }}</button>
+                                    <button class="btn btn-outline-secondary btn-add-check" type="button" @click="addMonitorCheck()">{{ $t("Add check") }}</button>
                                 </div>
                             </template>
 
@@ -187,10 +187,10 @@
 import NotificationDialog from "../components/NotificationDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
 import MonitorCheckEditor from "../components/MonitorCheckEditor.vue";
-import { useToast } from "vue-toastification"
-import VueMultiselect from "vue-multiselect"
+import { useToast } from "vue-toastification";
+import VueMultiselect from "vue-multiselect";
 import { isDev } from "../util.ts";
-const toast = useToast()
+const toast = useToast();
 
 export default {
     components: {
@@ -214,7 +214,7 @@ export default {
             ipRegexPattern: "((^\\s*((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\\s*$)|(^\\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:)))(%.+)?\\s*$))",
             // Source: https://stackoverflow.com/questions/106179/regular-expression-to-match-dns-hostname-or-ip-address
             hostnameRegexPattern: "^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$"
-        }
+        };
     },
 
     computed: {
@@ -298,7 +298,7 @@ export default {
                     accepted_statuscodes: ["200-299"],
                     dns_resolve_type: "A",
                     dns_resolve_server: "1.1.1.1",
-                }
+                };
 
                 for (let i = 0; i < this.$root.notificationList.length; i++) {
                     if (this.$root.notificationList[i].isDefault == true) {
@@ -315,17 +315,21 @@ export default {
                             this.monitor.retryInterval = this.monitor.interval;
                         }
                     } else {
-                        toast.error(res.msg)
+                        toast.error(res.msg);
                     }
-                })
+                });
             }
         },
 
         addMonitorCheck() {
             this.monitor.checks = [...(this.monitor.checks || []), {
                 type: null,
-                value: '',
+                value: "",
             }];
+        },
+
+        updateMonitorCheck(newMonitorCheck, index) {
+            this.monitor.checks[index] = newMonitorCheck;
         },
 
         deleteMonitorCheck(index) {
@@ -344,13 +348,13 @@ export default {
                         toast.success(res.msg);
                         this.processing = false;
                         this.$root.getMonitorList();
-                        this.$router.push("/dashboard/" + res.monitorID)
+                        this.$router.push("/dashboard/" + res.monitorID);
                     } else {
                         toast.error(res.msg);
                         this.processing = false;
                     }
 
-                })
+                });
             } else {
                 await this.$refs.tagsManager.submit(this.monitor.id);
 
@@ -358,7 +362,7 @@ export default {
                     this.processing = false;
                     this.$root.toastRes(res);
                     this.init();
-                })
+                });
             }
         },
 
@@ -368,7 +372,7 @@ export default {
             this.monitor.notificationIDList[id] = true;
         },
     },
-}
+};
 </script>
 
 <style src="vue-multiselect/dist/vue-multiselect.css"></style>
@@ -420,6 +424,10 @@ export default {
         .multiselect__tag {
             color: $dark-font-color2;
         }
+    }
+
+    .btn-add-check {
+        width: 100%;
     }
 </style>
 

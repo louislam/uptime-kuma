@@ -1,7 +1,7 @@
 <template>
     <div class="monitor-check mb-4">
         <div>
-            <select id="type" v-model="monitorCheck.type" :class="{'form-select': true, 'mb-1': !!monitorCheck.type}">
+            <select id="type" :value="monitorCheck.type" :class="{'form-select': true, 'mb-1': !!monitorCheck.type}" @input="changeType($event.target.value)">
                 <option value="HTTP_STATUS_CODE_SHOULD_EQUAL">
                     {{ $t("HTTP status code should equal") }}
                 </option>
@@ -33,7 +33,6 @@
             <div v-if="monitorCheck.type === 'HTTP_STATUS_CODE_SHOULD_EQUAL'">
                 <VueMultiselect
                     id="acceptedStatusCodes"
-                    v-model="monitorCheck.value"
                     :options="acceptedStatusCodeOptions"
                     :multiple="true"
                     :close-on-select="false"
@@ -43,27 +42,35 @@
                     :preselect-first="false"
                     :max-height="600"
                     :taggable="true"
+                    :modelValue="monitorCheck.value"
+                    @update:modelValue="changeValue($event.target.value)"
                 ></VueMultiselect>
             </div>
             <div v-if="monitorCheck.type === 'RESPONSE_SHOULD_CONTAIN_TEXT' || monitorCheck.type === 'RESPONSE_SHOULD_NOT_CONTAIN_TEXT'">
-                <input v-model="monitorCheck.value" type="text" class="form-control" required :placeholder="$t('Value')">
+                <input :value="monitorCheck.value" type="text" class="form-control" required :placeholder="$t('Value')" @input="changeValue($event.target.value)">
             </div>
             <div v-if="monitorCheck.type === 'RESPONSE_SHOULD_MATCH_REGEX' || monitorCheck.type === 'RESPONSE_SHOULD_NOT_MATCH_REGEX'">
-                <input v-model="monitorCheck.value" type="text" class="form-control" required
-                       :placeholder="$t('Regexp, Example: [a-z0-9.]+@gmail\.com')">
+                <input type="text" class="form-control" required :value="monitorCheck.value"
+                       :placeholder="$t('Regexp, Example: [a-z0-9.]+@gmail\.com')" @input="changeValue($event.target.value)"
+                >
             </div>
             <div
-                v-if="monitorCheck.type === 'RESPONSE_SELECTOR_SHOULD_EQUAL' || monitorCheck.type === 'RESPONSE_SELECTOR_SHOULD_NOT_EQUAL'">
-                <input v-model="monitorCheck.value.selector" type="text" class="form-control mb-1" required
-                       :placeholder="$t('Selector, Example: customer.address.street')">
-                <input v-model="monitorCheck.value.value" type="text" class="form-control" required :placeholder="$t('Value, Example: First street')">
+                v-if="monitorCheck.type === 'RESPONSE_SELECTOR_SHOULD_EQUAL' || monitorCheck.type === 'RESPONSE_SELECTOR_SHOULD_NOT_EQUAL'"
+            >
+                <input :value="monitorCheck?.value?.selectorPath || ''" type="text" class="form-control mb-1" required :placeholder="$t('Selector, Example: customer.address.street')"
+                       @input="changeSelectorPath($event.target.value)"
+                >
+                <input :value="monitorCheck?.value?.selectorValue || ''" type="text" class="form-control" required :placeholder="$t('Value, Example: First street')" @input="changeSelectorValue($event.target.value)">
             </div>
             <div
-                v-if="monitorCheck.type === 'RESPONSE_SELECTOR_SHOULD_MATCH_REGEX' || monitorCheck.type === 'RESPONSE_SELECTOR_SHOULD_NOT_MATCH_REGEX'">
-                <input v-model="monitorCheck.value.selector" type="text" class="form-control mb-1" required
-                       :placeholder="$t('Selector, Example: customer.contactInfo.email')">
-                <input v-model="monitorCheck.value.value" type="text" class="form-control" required
-                       :placeholder="$t('Regexp, Example: [a-z0-9.]+@gmail\.com')">
+                v-if="monitorCheck.type === 'RESPONSE_SELECTOR_SHOULD_MATCH_REGEX' || monitorCheck.type === 'RESPONSE_SELECTOR_SHOULD_NOT_MATCH_REGEX'"
+            >
+                <input :value="monitorCheck?.value?.selectorPath || ''" type="text" class="form-control mb-1" required :placeholder="$t('Selector, Example: customer.contactInfo.email')"
+                       @input="changeSelectorPath($event.target.value)"
+                >
+                <input :value="monitorCheck?.value?.selectorValue || ''" type="text" class="form-control" required :placeholder="$t('Regexp, Example: [a-z0-9.]+@gmail\.com')"
+                       @input="changeSelectorValue($event.target.value)"
+                >
             </div>
         </div>
         <button class="btn btn-outline-danger" type="button" @click="deleteMonitorCheck">
@@ -82,12 +89,17 @@ export default {
     props: {
         monitorCheck: {
             type: Object,
+            default: () => ({
+                type: undefined,
+                value: undefined,
+            }),
         },
     },
+    emits: ["change", "delete"],
     data() {
         return {
             acceptedStatusCodeOptions: [],
-        }
+        };
     },
     mounted() {
         let acceptedStatusCodeOptions = [
@@ -106,10 +118,51 @@ export default {
     },
     methods: {
         deleteMonitorCheck() {
-            this.$emit('delete');
+            this.$emit("delete");
+        },
+        changeType(type) {
+            const stringValueTypes = ["HTTP_STATUS_CODE_SHOULD_EQUAL", "RESPONSE_SHOULD_CONTAIN_TEXT", "RESPONSE_SHOULD_NOT_CONTAIN_TEXT", "RESPONSE_SHOULD_MATCH_REGEX", "RESPONSE_SHOULD_NOT_MATCH_REGEX"];
+            if (stringValueTypes.includes(type) && stringValueTypes.includes(this.monitorCheck.type) ||
+                !stringValueTypes.includes(type) && !stringValueTypes.includes(this.monitorCheck.type)) {
+                // Check value stays same type (string => string or object => object)
+                this.$emit("change", {
+                    ...this.monitorCheck,
+                    type,
+                });
+            } else {
+                // Check value switches (string => object or object => string)
+                this.$emit("change", {
+                    type,
+                    value: undefined
+                });
+            }
+        },
+        changeValue(value) {
+            this.$emit("change", {
+                ...this.monitorCheck,
+                value,
+            });
+        },
+        changeSelectorPath(selectorPath) {
+            this.$emit("change", {
+                ...this.monitorCheck,
+                value: {
+                    ...(this.monitorCheck.value || {}),
+                    selectorPath,
+                },
+            });
+        },
+        changeSelectorValue(selectorValue) {
+            this.$emit("change", {
+                ...this.monitorCheck,
+                value: {
+                    ...(this.monitorCheck.value || {}),
+                    selectorValue,
+                },
+            });
         },
     },
-}
+};
 </script>
 
 <style lang="scss" scoped>
@@ -122,7 +175,7 @@ export default {
     select {
         border-radius: 19px 0 0 19px;
     }
-    
+
     button {
         margin-left: 0.25rem;
         padding-left: 15px;
