@@ -316,6 +316,12 @@
                     <p>Пожалуйста, используйте с осторожностью.</p>
                 </template>
 
+		<template v-else-if="$i18n.locale === 'bg-BG' ">
+                    <p>Сигурни ли сте, че желаете да <strong>изключите удостоверяването</strong>?</p>
+                    <p>Използвайте в случаите, когато <strong>има настроен алтернативен метод за удостоверяване</strong> преди Uptime Kuma като Cloudflare Access.</p>
+                    <p>Моля, използвайте внимателно.</p>
+                </template>
+
                 <!-- English (en) -->
                 <template v-else>
                     <p>Are you sure want to <strong>disable auth</strong>?</p>
