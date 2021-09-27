@@ -87,7 +87,7 @@ export default {
     "Allow indexing": "Indexering toestaan",
     "Discourage search engines from indexing site": "Ontmoedig zoekmachines om de site te indexeren",
     "Change Password": "Verander wachtwoord",
-    "Current Password": "Huidig ​​wachtwoord",
+    "Current Password": "Huidig wachtwoord",
     "New Password": "Nieuw wachtwoord",
     "Repeat New Password": "Herhaal nieuw wachtwoord",
     "Update Password": "Vernieuw wachtwoord",
