@@ -169,7 +169,7 @@ export default {
     "Avg. Ping": "Durchsch. Ping",
     "Avg. Response": "Durchsch. Antwort",
     "Entry Page": "Einstiegsseite",
-    "statusPageNothing": "Nichts ist hier, bitte füge eine Gruppe oder Monitor hinzu.",
+    statusPageNothing: "Nichts ist hier, bitte füge eine Gruppe oder Monitor hinzu.",
     "No Services": "Keine Dienste",
     "All Systems Operational": "Alle Systeme Betriebsbereit",
     "Partially Degraded Service": "Teilweise beeinträchtigter Dienst",
@@ -178,4 +178,5 @@ export default {
     "Add a monitor": "Monitor hinzufügen",
     "Edit Status Page": "Bearbeite Statusseite",
     "Go to Dashboard": "Gehe zum Dashboard",
+    "Status Page": "Status Page",
 };

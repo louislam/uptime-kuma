@@ -143,7 +143,7 @@ export default {
     "Show URI": "Vis URI",
     "Clear all statistics": "Ryd alle Statistikker",
     retryCheckEverySecond: "Prøv igen hvert {0} sekund.",
-    importHandleDescription: "Vælg 'Spring over eksisterende', hvis du vil springe over hver overvåger eller underretning med samme navn. 'Overskriv' sletter alle eksisterende overvågere og underretninger.", 
+    importHandleDescription: "Vælg 'Spring over eksisterende', hvis du vil springe over hver overvåger eller underretning med samme navn. 'Overskriv' sletter alle eksisterende overvågere og underretninger.",
     confirmImportMsg: "Er du sikker på at importere sikkerhedskopien? Sørg for, at du har valgt den rigtige importindstilling.",
     "Heartbeat Retry Interval": "Heartbeat Gentagelsesinterval",
     "Import Backup": "Importer Backup",
@@ -170,7 +170,7 @@ export default {
     "Avg. Ping": "Gns. Ping",
     "Avg. Response": "Gns. Respons",
     "Entry Page": "Entry Side",
-    "statusPageNothing": "Intet her, tilføj venligst en Gruppe eller en Overvåger.",
+    statusPageNothing: "Intet her, tilføj venligst en Gruppe eller en Overvåger.",
     "No Services": "Ingen Tjenester",
     "All Systems Operational": "Alle Systemer i Drift",
     "Partially Degraded Service": "Delvist Forringet Service",
@@ -179,4 +179,5 @@ export default {
     "Add a monitor": "Tilføj en Overvåger",
     "Edit Status Page": "Rediger Statusside",
     "Go to Dashboard": "Gå til Dashboard",
+    "Status Page": "Status Page",
 };

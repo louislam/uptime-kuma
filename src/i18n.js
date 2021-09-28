@@ -3,7 +3,6 @@ import daDK from "./languages/da-DK";
 import deDE from "./languages/de-DE";
 import en from "./languages/en";
 import esEs from "./languages/es-ES";
-import ptBR from "./languages/pt-BR";
 import etEE from "./languages/et-EE";
 import frFR from "./languages/fr-FR";
 import itIT from "./languages/it-IT";
@@ -11,11 +10,12 @@ import ja from "./languages/ja";
 import koKR from "./languages/ko-KR";
 import nlNL from "./languages/nl-NL";
 import pl from "./languages/pl";
+import ptBR from "./languages/pt-BR";
 import ruRU from "./languages/ru-RU";
 import sr from "./languages/sr";
 import srLatn from "./languages/sr-latn";
-import trTR from "./languages/tr-TR";
 import svSE from "./languages/sv-SE";
+import trTR from "./languages/tr-TR";
 import zhCN from "./languages/zh-CN";
 import zhHK from "./languages/zh-HK";
 
@@ -45,6 +45,6 @@ export const i18n = createI18n({
     locale: localStorage.locale || "en",
     fallbackLocale: "en",
     silentFallbackWarn: true,
-    silentTranslationWarn: true,
+    silentTranslationWarn: false,
     messages: languageList,
 });
