@@ -176,7 +176,7 @@ export default {
     "Partially Degraded Service": "Częściowy błąd usługi",
     "Degraded Service": "Błąd usługi",
     "Add Group": "Dodaj grupę",
-    "Add a monitor": "Dodaj monitoe",
+    "Add a monitor": "Dodaj monitor",
     "Edit Status Page": "Edytuj stronę statusu",
     "Go to Dashboard": "Idź do panelu",
 };
