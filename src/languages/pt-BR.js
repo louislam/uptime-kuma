@@ -170,7 +170,7 @@ export default {
     "Avg. Response": "Resposta Média. ",
     "Status Page": "Página de Status",
     "Entry Page": "Página de entrada",
-    "statusPageNothing": "Nada aqui, por favor, adicione um grupo ou monitor.",
+    statusPageNothing: "Nada aqui, por favor, adicione um grupo ou monitor.",
     "No Services": "Nenhum Serviço",
     "All Systems Operational": "Todos os Serviços Operacionais",
     "Partially Degraded Service": "Serviço parcialmente degradado",
