@@ -45,6 +45,6 @@ export const i18n = createI18n({
     locale: localStorage.locale || "en",
     fallbackLocale: "en",
     silentFallbackWarn: true,
-    silentTranslationWarn: false,
+    silentTranslationWarn: process.env.NODE_ENV !== "development",
     messages: languageList,
 });
