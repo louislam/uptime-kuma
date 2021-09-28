@@ -1,7 +1,7 @@
 import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import timezone from "dayjs/plugin/timezone";
 import relativeTime from "dayjs/plugin/relativeTime";
+import timezone from "dayjs/plugin/timezone";
+import utc from "dayjs/plugin/utc";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.extend(relativeTime);
@@ -14,7 +14,7 @@ export default {
     data() {
         return {
             userTimezone: localStorage.timezone || "auto",
-        }
+        };
     },
 
     methods: {
@@ -47,11 +47,11 @@ export default {
     computed: {
         timezone() {
             if (this.userTimezone === "auto") {
-                return dayjs.tz.guess()
+                return dayjs.tz.guess();
             }
 
-            return this.userTimezone
+            return this.userTimezone;
         },
     }
 
-}
+};
