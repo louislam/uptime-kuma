@@ -50,10 +50,16 @@
                                 </div>
                             </div>
 
-                            <!-- TCP Port / Ping / DNS only -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' " class="my-3">
+                            <!-- Hostname Port / Ping / DNS only -->
+                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns'" class="my-3">
                                 <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>
                                 <input id="hostname" v-model="monitor.hostname" type="text" class="form-control" :pattern="`${ipRegexPattern}|${hostnameRegexPattern}`" required>
+                            </div>
+
+                            <!-- Hostname Steam only -->
+                            <div v-if="monitor.type === 'steam' " class="my-3">
+                                <label for="ipAddress" class="form-label">{{ $t("IP Address") }}</label>
+                                <input id="ipAddress" v-model="monitor.hostname" type="text" class="form-control" :pattern="`${ipRegexPattern}`" required>
                             </div>
 
                             <!-- For TCP Port Type -->
