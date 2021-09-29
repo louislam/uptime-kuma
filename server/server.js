@@ -638,6 +638,8 @@ exports.entryPage = "dashboard";
                 });
 
                 await sendMonitorList(socket);
+                // Clear heartbeat list on client
+                await sendImportantHeartbeatList(socket, monitorID, true, true);
 
             } catch (e) {
                 callback({
