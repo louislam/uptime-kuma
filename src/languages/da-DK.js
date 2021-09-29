@@ -143,7 +143,7 @@ export default {
     "Show URI": "Vis URI",
     "Clear all statistics": "Ryd alle Statistikker",
     retryCheckEverySecond: "Prøv igen hvert {0} sekund.",
-    importHandleDescription: "Vælg 'Spring over eksisterende', hvis du vil springe over hver overvåger eller underretning med samme navn. 'Overskriv' sletter alle eksisterende overvågere og underretninger.", 
+    importHandleDescription: "Vælg 'Spring over eksisterende', hvis du vil springe over hver overvåger eller underretning med samme navn. 'Overskriv' sletter alle eksisterende overvågere og underretninger.",
     confirmImportMsg: "Er du sikker på at importere sikkerhedskopien? Sørg for, at du har valgt den rigtige importindstilling.",
     "Heartbeat Retry Interval": "Heartbeat Gentagelsesinterval",
     "Import Backup": "Importer Backup",
