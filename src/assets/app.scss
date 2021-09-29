@@ -1,4 +1,5 @@
 @import "vars.scss";
+@import "multiselect.scss";
 @import "node_modules/bootstrap/scss/bootstrap";
 
 #app {
@@ -231,30 +232,6 @@ h2 {
         background-color: $dark-bg;
         border-color: $dark-border-color;
         color: $dark-font-color;
-    }
-
-    // Multiselect
-    .multiselect__tags {
-        background-color: $dark-bg2;
-        border-color: $dark-border-color;
-    }
-
-    .multiselect__input, .multiselect__single {
-        background-color: $dark-bg2;
-        color: $dark-font-color;
-    }
-
-    .multiselect__content-wrapper {
-        background-color: $dark-bg2;
-        border-color: $dark-border-color;
-    }
-
-    .multiselect--above .multiselect__content-wrapper {
-        border-color: $dark-border-color;
-    }
-
-    .multiselect__option--selected {
-        background-color: $dark-bg;
     }
 
     .monitor-list {
