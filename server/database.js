@@ -110,6 +110,7 @@ class Database {
         await R.autoloadModels("./server/model");
         R.modelList["monitor_checks"] = MonitorCheck;
 
+        await R.exec("PRAGMA foreign_keys = ON");
         // Change to WAL
         await R.exec("PRAGMA journal_mode = WAL");
         await R.exec("PRAGMA cache_size = -12000");
