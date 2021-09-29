@@ -298,3 +298,24 @@ exports.checkLogin = (socket) => {
         throw new Error("You are not logged in.");
     }
 };
+
+exports.updateMonitorChecks = async (monitorId, checks) => {
+    let trx = await R.begin();
+    try {
+        // delete existing checks for monitor
+        const existingMonitorChecks = await R.find("monitor_checks", " monitor_id = ?", [bean.id]);
+        await trx.trashAll(existingMonitorChecks);
+
+        // Replace them with new checks
+        for (let i = 0; i < (checks || []).length; i++) {
+            let checkBean = trx.dispense("monitor_checks");
+            checks[i].monitor_id = monitorId;
+            checks[i].value = typeof checks[i].value === "object" ? JSON.stringify(checks[i].value) : checks[i].value;
+            checkBean.import(checks[i]);
+            await trx.store(checkBean);
+        }
+    } catch (err) {
+        await trx.rollback();
+        throw err;
+    }
+};

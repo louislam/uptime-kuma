@@ -1,7 +1,7 @@
 <template>
     <div class="monitor-check mb-4">
         <div>
-            <select id="type" :value="monitorCheck.type" :class="{'form-select': true, 'mb-1': !!monitorCheck.type}" @input="changeType($event.target.value)">
+            <select id="type" :value="monitorCheck.type" :class="{'form-select': true, 'mb-1': !!monitorCheck.type}" @input="changeType($event.target.value)" required>
                 <option value="HTTP_STATUS_CODE_SHOULD_EQUAL">
                     {{ $t("HTTP status code should equal") }}
                 </option>
@@ -81,6 +81,7 @@
 
 <script>
 import VueMultiselect from "vue-multiselect";
+import { MONITOR_CHECK_SELECTOR_TYPES, MONITOR_CHECK_STRING_TYPES } from "../util.ts";
 
 export default {
     components: {
@@ -121,9 +122,8 @@ export default {
             this.$emit("delete");
         },
         changeType(type) {
-            const stringValueTypes = ["HTTP_STATUS_CODE_SHOULD_EQUAL", "RESPONSE_SHOULD_CONTAIN_TEXT", "RESPONSE_SHOULD_NOT_CONTAIN_TEXT", "RESPONSE_SHOULD_MATCH_REGEX", "RESPONSE_SHOULD_NOT_MATCH_REGEX"];
-            if (stringValueTypes.includes(type) && stringValueTypes.includes(this.monitorCheck.type) ||
-                !stringValueTypes.includes(type) && !stringValueTypes.includes(this.monitorCheck.type)) {
+            if (MONITOR_CHECK_STRING_TYPES.includes(type) && MONITOR_CHECK_STRING_TYPES.includes(this.monitorCheck.type) ||
+                MONITOR_CHECK_SELECTOR_TYPES.includes(type) && MONITOR_CHECK_SELECTOR_TYPES.includes(this.monitorCheck.type)) {
                 // Check value stays same type (string => string or object => object)
                 this.$emit("change", {
                     ...this.monitorCheck,

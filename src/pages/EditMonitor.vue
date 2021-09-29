@@ -333,7 +333,9 @@ export default {
         },
 
         deleteMonitorCheck(index) {
-            this.monitor.checks = this.monitor.checks.splice(index, 1);
+            const newList = [...this.monitor.checks];
+            newList.splice(index, 1);
+            this.monitor.checks = newList;
         },
 
         async submit() {

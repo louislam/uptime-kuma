@@ -7,7 +7,7 @@
 // Backend uses the compiled file util.js
 // Frontend uses util.ts
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isDev = void 0;
+exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.MONITOR_CHECK_SELECTOR_TYPES = exports.MONITOR_CHECK_STRING_TYPES = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isDev = void 0;
 const _dayjs = require("dayjs");
 const dayjs = _dayjs;
 exports.isDev = process.env.NODE_ENV === "development";
@@ -18,6 +18,8 @@ exports.PENDING = 2;
 exports.STATUS_PAGE_ALL_DOWN = 0;
 exports.STATUS_PAGE_ALL_UP = 1;
 exports.STATUS_PAGE_PARTIAL_DOWN = 2;
+exports.MONITOR_CHECK_STRING_TYPES = ["HTTP_STATUS_CODE_SHOULD_EQUAL", "RESPONSE_SHOULD_CONTAIN_TEXT", "RESPONSE_SHOULD_NOT_CONTAIN_TEXT", "RESPONSE_SHOULD_MATCH_REGEX", "RESPONSE_SHOULD_NOT_MATCH_REGEX"];
+exports.MONITOR_CHECK_SELECTOR_TYPES = ["RESPONSE_SELECTOR_SHOULD_EQUAL", "RESPONSE_SELECTOR_SHOULD_NOT_EQUAL", "RESPONSE_SELECTOR_SHOULD_MATCH_REGEX", "RESPONSE_SELECTOR_SHOULD_NOT_MATCH_REGEX"];
 function flipStatus(s) {
     if (s === exports.UP) {
         return exports.DOWN;

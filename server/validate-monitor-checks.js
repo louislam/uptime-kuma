@@ -1,5 +1,5 @@
-const { checkStatusCode } = require("../util-server");
-const { UP } = require("../../src/util");
+const { checkStatusCode } = require("./util-server");
+const { UP } = require("../src/util");
 const get = require("lodash.get");
 
 function validateMonitorChecks(res, checks, bean) {

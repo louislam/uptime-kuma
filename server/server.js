@@ -1,12 +1,16 @@
 console.log("Welcome to Uptime Kuma");
 
-if (! process.env.NODE_ENV) {
+if (!process.env.NODE_ENV) {
     process.env.NODE_ENV = "production";
 }
 
 console.log("Node Env: " + process.env.NODE_ENV);
 
-const { sleep, debug, getRandomInt } = require("../src/util");
+const {
+    sleep,
+    debug,
+    getRandomInt,
+} = require("../src/util");
 
 console.log("Importing Node libraries");
 const fs = require("fs");
@@ -37,7 +41,16 @@ console.log("Importing this project modules");
 debug("Importing Monitor");
 const Monitor = require("./model/monitor");
 debug("Importing Settings");
-const { getSettings, setSettings, setting, initJWTSecret, genSecret, allowDevAllOrigin, checkLogin } = require("./util-server");
+const {
+    getSettings,
+    setSettings,
+    setting,
+    initJWTSecret,
+    genSecret,
+    allowDevAllOrigin,
+    checkLogin,
+    updateMonitorChecks,
+} = require("./util-server");
 
 debug("Importing Notification");
 const { Notification } = require("./notification");
@@ -80,7 +93,7 @@ if (sslKey && sslCert) {
     console.log("Server Type: HTTPS");
     server = https.createServer({
         key: fs.readFileSync(sslKey),
-        cert: fs.readFileSync(sslCert)
+        cert: fs.readFileSync(sslCert),
     }, app);
 } else {
     console.log("Server Type: HTTP");
@@ -91,7 +104,11 @@ const io = new Server(server);
 module.exports.io = io;
 
 // Must be after io instantiation
-const { sendNotificationList, sendHeartbeatList, sendImportantHeartbeatList } = require("./client");
+const {
+    sendNotificationList,
+    sendHeartbeatList,
+    sendImportantHeartbeatList,
+} = require("./client");
 const { statusPageSocketHandler } = require("./socket-handlers/status-page-socket-handler");
 
 app.use(express.json());
@@ -143,7 +160,7 @@ exports.entryPage = "dashboard";
     // Robots.txt
     app.get("/robots.txt", async (_request, response) => {
         let txt = "User-agent: *\nDisallow:";
-        if (! await setting("searchEngineIndex")) {
+        if (!await setting("searchEngineIndex")) {
             txt += " /";
         }
         response.setHeader("Content-Type", "text/plain");
@@ -467,14 +484,7 @@ exports.entryPage = "dashboard";
                 bean.user_id = socket.userID;
                 await R.store(bean);
 
-                // Store checks info
-                for (let i = 0; i < (checks || []).length; i++) {
-                    let checkBean = R.dispense("monitor_checks");
-                    checks[i].monitor_id = bean.id;
-                    checks[i].value = typeof checks[i].value === "object" ? JSON.stringify(checks[i].value) : checks[i].value;
-                    checkBean.import(checks[i]);
-                    await R.store(checkBean);
-                }
+                await updateMonitorChecks(bean.id, checks);
 
                 await updateMonitorNotification(bean.id, notificationIDList);
 
@@ -500,7 +510,7 @@ exports.entryPage = "dashboard";
             try {
                 checkLogin(socket);
 
-                let bean = await R.findOne("monitor", " id = ? ", [ monitor.id ]);
+                let bean = await R.findOne("monitor", " id = ? ", [monitor.id]);
 
                 if (bean.user_id !== socket.userID) {
                     throw new Error("Permission denied.");
@@ -525,13 +535,24 @@ exports.entryPage = "dashboard";
 
                 await R.store(bean);
 
-                // Store checks info
-                for (let i = 0; i < (checks || []).length; i++) {
-                    let checkBean = R.dispense("monitor_checks");
-                    checks[i].monitor_id = bean.id;
-                    checks[i].value = typeof checks[i].value === "object" ? JSON.stringify(checks[i].value) : checks[i].value;
-                    checkBean.import(checks[i]);
-                    await R.store(checkBean);
+                // Store checks
+                let trx = await R.begin();
+                try {
+                    // delete existing checks for monitor
+                    const existingMonitorChecks = await R.find("monitor_checks", " monitor_id = ?", [bean.id]);
+                    await trx.trashAll(existingMonitorChecks);
+
+                    // Replace them with new checks
+                    for (let i = 0; i < (checks || []).length; i++) {
+                        let checkBean = trx.dispense("monitor_checks");
+                        checks[i].monitor_id = bean.id;
+                        checks[i].value = typeof checks[i].value === "object" ? JSON.stringify(checks[i].value) : checks[i].value;
+                        checkBean.import(checks[i]);
+                        await trx.store(checkBean);
+                    }
+                } catch (err) {
+                    await trx.rollback();
+                    throw err;
                 }
 
                 await updateMonitorNotification(bean.id, monitor.notificationIDList);
@@ -712,7 +733,7 @@ exports.entryPage = "dashboard";
             try {
                 checkLogin(socket);
 
-                let bean = await R.findOne("monitor", " id = ? ", [ tag.id ]);
+                let bean = await R.findOne("monitor", " id = ? ", [tag.id]);
                 bean.name = tag.name;
                 bean.color = tag.color;
                 await R.store(bean);
@@ -734,7 +755,7 @@ exports.entryPage = "dashboard";
             try {
                 checkLogin(socket);
 
-                await R.exec("DELETE FROM tag WHERE id = ? ", [ tagID ]);
+                await R.exec("DELETE FROM tag WHERE id = ? ", [tagID]);
 
                 callback({
                     ok: true,
@@ -825,7 +846,7 @@ exports.entryPage = "dashboard";
             try {
                 checkLogin(socket);
 
-                if (! password.currentPassword) {
+                if (!password.currentPassword) {
                     throw new Error("Invalid new password");
                 }
 
@@ -879,7 +900,7 @@ exports.entryPage = "dashboard";
 
                 callback({
                     ok: true,
-                    msg: "Saved"
+                    msg: "Saved",
                 });
 
             } catch (e) {
@@ -1068,14 +1089,7 @@ exports.entryPage = "dashboard";
                             bean.user_id = socket.userID;
                             await R.store(bean);
 
-                            // Store monitor checks
-                            for (let i = 0; i < (checks || []).length; i++) {
-                                let checkBean = R.dispense("monitor_checks");
-                                checks[i].monitor_id = bean.id;
-                                checks[i].value = typeof checks[i].value === "object" ? JSON.stringify(checks[i].value) : checks[i].value;
-                                checkBean.import(checks[i]);
-                                await R.store(checkBean);
-                            }
+                            await updateMonitorChecks(bean.id, checks);
 
                             // Only for backup files with the version 1.7.0 or higher, since there was the tag feature implemented
                             if (version17x) {
@@ -1088,7 +1102,7 @@ exports.entryPage = "dashboard";
                                     ]);
 
                                     let tagId;
-                                    if (! tag) {
+                                    if (!tag) {
                                         // -> If it doesn't exist, create new tag from backup file
                                         let beanTag = R.dispense("tag");
                                         beanTag.name = oldTag.name;
@@ -1173,7 +1187,7 @@ exports.entryPage = "dashboard";
                 console.log(`Clear Heartbeats Monitor: ${monitorID} User ID: ${socket.userID}`);
 
                 await R.exec("DELETE FROM heartbeat WHERE monitor_id = ?", [
-                    monitorID
+                    monitorID,
                 ]);
 
                 await sendHeartbeatList(socket, monitorID, true, true);
@@ -1270,7 +1284,7 @@ async function checkOwner(userID, monitorID) {
         userID,
     ]);
 
-    if (! row) {
+    if (!row) {
         throw new Error("You do not own this monitor.");
     }
 }
@@ -1311,14 +1325,6 @@ async function getMonitorJSONList(userID) {
     ]);
 
     for (let monitor of monitorList) {
-        const monitorChecks = await R.find("monitor_checks", " monitor_id = ? ORDER BY id", [
-            monitor.id,
-        ]);
-        const monitorCheckObj = [];
-        for (let monitorCheck of monitorChecks) {
-            monitorCheckObj.push(await monitorCheck.toJSON());
-        }
-        monitor.checks = monitorCheckObj;
         result[monitor.id] = await monitor.toJSON();
     }
 
@@ -1326,7 +1332,7 @@ async function getMonitorJSONList(userID) {
 }
 
 async function initDatabase() {
-    if (! fs.existsSync(Database.path)) {
+    if (!fs.existsSync(Database.path)) {
         console.log("Copying Database");
         fs.copyFileSync(Database.templatePath, Database.path);
     }
@@ -1342,7 +1348,7 @@ async function initDatabase() {
         "jwtSecret",
     ]);
 
-    if (! jwtSecretBean) {
+    if (!jwtSecretBean) {
         console.log("JWT secret is not found, generate one.");
         jwtSecretBean = await initJWTSecret();
         console.log("Stored JWT secret into database");

@@ -4,6 +4,7 @@ const { setSetting, setting } = require("./util-server");
 const { debug, sleep } = require("../src/util");
 const dayjs = require("dayjs");
 const knex = require("knex");
+const MonitorCheck = require("./model/monitor-check");
 
 /**
  * Database & App Data Folder
@@ -107,6 +108,7 @@ class Database {
         // Auto map the model to a bean object
         R.freeze(true);
         await R.autoloadModels("./server/model");
+        R.modelList["monitor_checks"] = MonitorCheck;
 
         // Change to WAL
         await R.exec("PRAGMA journal_mode = WAL");
