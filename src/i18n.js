@@ -1,4 +1,5 @@
 import { createI18n } from "vue-i18n";
+import bgBG from "./languages/bg-BG";
 import daDK from "./languages/da-DK";
 import deDE from "./languages/de-DE";
 import en from "./languages/en";
@@ -23,6 +24,7 @@ import zhHK from "./languages/zh-HK";
 const languageList = {
     en,
     "zh-HK": zhHK,
+    "bg-BG": bgBG,
     "de-DE": deDE,
     "nl-NL": nlNL,
     "es-ES": esEs,
@@ -45,7 +47,7 @@ const languageList = {
 
 const rtlLangs = ["fa"];
     
-const currentLocale = () => localStorage.locale || "en";
+export const currentLocale = () => localStorage.locale || "en";
 
 export const localeDirection = () => {
     return rtlLangs.includes(currentLocale()) ? "rtl" : "ltr"
