@@ -49,13 +49,7 @@ class Monitor extends BeanModel {
         }
 
         const tags = await R.getAll("SELECT mt.*, tag.name, tag.color FROM monitor_tag mt JOIN tag ON mt.tag_id = tag.id WHERE mt.monitor_id = ?", [this.id]);
-        const checks = await R.getAll("SELECT mc.* FROM monitor_checks mc WHERE mc.monitor_id = ?", [this.id]);
-
-        checks.forEach(check => {
-            if (MONITOR_CHECK_SELECTOR_TYPES.includes(check.type) && typeof check.value === "string" && check.value.startsWith("{")) {
-                check.value = JSON.parse(check.value);
-            }
-        });
+        const checks = await this.getMonitorChecks();
 
         return {
             id: this.id,
@@ -168,7 +162,7 @@ class Monitor extends BeanModel {
                     debug("Cert Info Query Time: " + (dayjs().valueOf() - certInfoStartTime) + "ms");
 
 
-                    validateMonitorChecks(res, this.checks, bean);
+                    validateMonitorChecks(res, await this.getMonitorChecks(), bean);
                     if (this.type === "http") {
                         bean.status = UP;
                     } else {
@@ -497,10 +491,28 @@ class Monitor extends BeanModel {
     /**
      * Send Uptime
      * @param duration : int Hours
+     * @param io
+     * @param monitorID
+     * @param userID
      */
     static async sendUptime(duration, io, monitorID, userID) {
         const uptime = await this.calcUptime(duration, monitorID);
         io.to(userID).emit("uptime", monitorID, duration, uptime);
+    }
+
+    async getMonitorChecks() {
+        const checks = await R.getAll("SELECT mc.* FROM monitor_checks mc WHERE mc.monitor_id = ?", [this.id]);
+
+        checks.forEach(check => {
+            if (MONITOR_CHECK_SELECTOR_TYPES.includes(check.type) && typeof check.value === "string" && check.value.startsWith("{")) {
+                check.value = JSON.parse(check.value);
+            }
+            if (check.type === "HTTP_STATUS_CODE_SHOULD_EQUAL" && typeof check.value === "string" && check.value.startsWith("[")) {
+                check.value = JSON.parse(check.value);
+            }
+        });
+
+        return checks;
     }
 }
 

@@ -43,7 +43,7 @@
                     :max-height="600"
                     :taggable="true"
                     :modelValue="monitorCheck.value"
-                    @update:modelValue="changeValue($event.target.value)"
+                    @update:model-value="changeValue"
                 ></VueMultiselect>
             </div>
             <div v-if="monitorCheck.type === 'RESPONSE_SHOULD_CONTAIN_TEXT' || monitorCheck.type === 'RESPONSE_SHOULD_NOT_CONTAIN_TEXT'">
