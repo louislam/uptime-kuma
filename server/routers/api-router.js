@@ -4,13 +4,54 @@ const { R } = require("redbean-node");
 const server = require("../server");
 const apicache = require("../modules/apicache");
 const Monitor = require("../model/monitor");
+const dayjs = require("dayjs");
+const { UP } = require("../../src/util");
 let router = express.Router();
 
 let cache = apicache.middleware;
+let io = server.io;
 
 router.get("/api/entry-page", async (_, response) => {
     allowDevAllOrigin(response);
     response.json(server.entryPage);
+});
+
+router.get("/api/push/:pushToken", async (request, response) => {
+    try {
+        let pushToken = request.params.pushToken;
+        let msg = request.query.msg || "OK";
+
+        let monitor = await R.findOne("monitor", " push_token = ? AND active = 1 ", [
+            pushToken
+        ]);
+
+        if (! monitor) {
+            throw new Error("Monitor not found or not active.");
+        }
+
+        let bean = R.dispense("heartbeat");
+        bean.monitor_id = monitor.id;
+        bean.time = R.isoDateTime(dayjs.utc());
+        bean.status = UP;
+        bean.msg = msg;
+
+        // TODO: HOW TO?
+        //bean.ping
+
+        await R.store(bean);
+
+        io.to(monitor.user_id).emit("heartbeat", bean.toJSON());
+        Monitor.sendStats(io, monitor.id, monitor.user_id);
+
+        response.json({
+            ok: true,
+        });
+    } catch (e) {
+        response.json({
+            ok: false,
+            msg: e.message
+        });
+    }
 });
 
 // Status Page Config

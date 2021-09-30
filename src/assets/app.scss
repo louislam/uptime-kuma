@@ -180,6 +180,11 @@ h2 {
         border-color: $dark-border-color;
     }
 
+    .form-control:disabled, .form-control[readonly] {
+        background-color: #232f3b;
+        opacity: 1;
+    }
+
     .table-hover > tbody > tr:hover {
         --bs-table-accent-bg: #070a10;
         color: $dark-font-color;
