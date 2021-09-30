@@ -35,6 +35,9 @@ router.get("/api/push/:pushToken", async (request, response) => {
         bean.status = UP;
         bean.msg = msg;
 
+        // TODO: HOW TO?
+        //bean.ping
+
         await R.store(bean);
 
         io.to(monitor.user_id).emit("heartbeat", bean.toJSON());
