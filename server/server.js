@@ -6,7 +6,7 @@ if (! process.env.NODE_ENV) {
 
 console.log("Node Env: " + process.env.NODE_ENV);
 
-const { sleep, debug, TimeLogger, getRandomInt } = require("../src/util");
+const { sleep, debug, getRandomInt, genSecret } = require("../src/util");
 
 console.log("Importing Node libraries");
 const fs = require("fs");
@@ -37,7 +37,7 @@ console.log("Importing this project modules");
 debug("Importing Monitor");
 const Monitor = require("./model/monitor");
 debug("Importing Settings");
-const { getSettings, setSettings, setting, initJWTSecret, genSecret, allowDevAllOrigin, checkLogin } = require("./util-server");
+const { getSettings, setSettings, setting, initJWTSecret, checkLogin } = require("./util-server");
 
 debug("Importing Notification");
 const { Notification } = require("./notification");
@@ -71,7 +71,7 @@ if (demoMode) {
     console.log("==== Demo Mode ====");
 }
 
-console.log("Creating express and socket.io instance")
+console.log("Creating express and socket.io instance");
 const app = express();
 
 let server;
@@ -511,6 +511,7 @@ exports.entryPage = "dashboard";
                 bean.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
                 bean.dns_resolve_type = monitor.dns_resolve_type;
                 bean.dns_resolve_server = monitor.dns_resolve_server;
+                bean.pushToken = monitor.pushToken;
 
                 await R.store(bean);
 

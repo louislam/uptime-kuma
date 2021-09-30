@@ -26,7 +26,10 @@ import {
     faArrowsAltV,
     faUnlink,
     faQuestionCircle,
-    faImages, faUpload,
+    faImages,
+    faUpload,
+    faCopy,
+    faCheck,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -54,6 +57,8 @@ library.add(
     faQuestionCircle,
     faImages,
     faUpload,
+    faCopy,
+    faCheck,
 );
 
 export { FontAwesomeIcon };

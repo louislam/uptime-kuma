@@ -48,6 +48,7 @@ class Database {
         "patch-add-retry-interval-monitor.sql": true,
         "patch-incident-table.sql": true,
         "patch-group-table.sql": true,
+        "patch-monitor-push_token.sql": true,
     }
 
     /**
