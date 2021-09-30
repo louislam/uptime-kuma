@@ -179,7 +179,7 @@ export default {
     "Edit Status Page": "Edit Status Page",
     "Go to Dashboard": "Go to Dashboard",
     // Start notification form
-    defaultNotificationName: "My {0} Alert ({1})",
+    defaultNotificationName: "My {notification} Alert ({number})",
     here: "here",
     "Required": "Required",
     "telegram": "Telegram",
@@ -194,7 +194,7 @@ export default {
     "Post URL": "Post URL",
     "Content Type": "Content Type",
     webhookJsonDesc: "{0} is good for any modern http servers such as express.js",
-    webhookFormDataDesc: "{0} is good for PHP, you just need to parse the json by {1}",
+    webhookFormDataDesc: "{multipart} is good for PHP, you just need to parse the json by {decodeFunction}",
     "smtp": "Email (SMTP)",
     secureOptionNone: "None / STARTTLS (25, 587)",
     secureOptionTLS: "TLS (465)",

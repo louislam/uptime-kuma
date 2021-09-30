@@ -18,8 +18,10 @@
         <div class="form-text">
             <p>"application/json" is good for any modern http servers such as express.js</p>
             <i18n-t tag="p" keypath="webhookFormDataDesc">
-                "multipart/form-data"
-                <strong>json_decode($_POST['data'])</strong>
+                <template #multipart>"multipart/form-data"</template>
+                <template #decodeFunction>
+                    <strong>json_decode($_POST['data'])</strong>
+                </template>
             </i18n-t>
         </div>
     </div>
