@@ -11,7 +11,7 @@
             <option value="sms_premium">{{ $t("octopushTypePremium") }}</option>
             <option value="sms_low_cost">{{ $t("octopushTypeLowCost") }}</option>
         </select>
-        <i18n-t keypath="Check octopush prices" tag="div" class="form-text">
+        <i18n-t tag="div" keypath="Check octopush prices" class="form-text">
             <a href="https://octopush.com/tarifs-sms-international/" target="_blank">https://octopush.com/tarifs-sms-international/</a>
         </i18n-t>
     </div>
@@ -24,7 +24,7 @@
         <input id="octopush-sender-name" v-model="$parent.notification.octopushSenderName" type="text" minlength="3" maxlength="11" class="form-control">
     </div>
 
-    <i18n-t keypath="More info on:" tag="p" style="margin-top: 8px;">
+    <i18n-t tag="p" keypath="More info on:" style="margin-top: 8px;">
         <a href="https://octopush.com/api-sms-documentation/envoi-de-sms/" target="_blank">https://octopush.com/api-sms-documentation/envoi-de-sms/</a>
     </i18n-t>
 </template>
@@ -36,5 +36,5 @@ export default {
     components: {
         HiddenInput,
     },
-}
+};
 </script>

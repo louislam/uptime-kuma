@@ -12,7 +12,7 @@
         <input id="rocket-button" v-model="$parent.notification.rocketbutton" type="text" class="form-control">
         <div class="form-text">
             <span style="color: red;"><sup>*</sup></span>{{ $t("Required") }}
-            <i18-t keypath="aboutWebhooks" tag="p" style="margin-top: 8px;">
+            <i18-t tag="p" keypath="aboutWebhooks" style="margin-top: 8px;">
                 <a href="https://docs.rocket.chat/guides/administration/administration/integrations" target="_blank">https://api.slack.com/messaging/webhooks</a>
             </i18-t>
             <p style="margin-top: 8px;">
@@ -21,7 +21,7 @@
             <p style="margin-top: 8px;">
                 {{ $t("aboutKumaURL") }}
             </p>
-            <i18n-t keypath="emojiCheatSheet" tag="p" style="margin-top: 8px;">
+            <i18n-t tag="p" keypath="emojiCheatSheet" style="margin-top: 8px;">
                 <a href="https://www.webfx.com/tools/emoji-cheat-sheet/" target="_blank">https://www.webfx.com/tools/emoji-cheat-sheet/</a>
             </i18n-t>
         </div>

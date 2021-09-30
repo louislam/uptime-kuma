@@ -8,7 +8,7 @@
             class="form-control"
             required
         />
-        <i18n-t keypath="wayToGetTeamsURL" class="form-text" tag="div">
+        <i18n-t tag="div" keypath="wayToGetTeamsURL" class="form-text">
             <a
                 href="https://docs.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook"
                 target="_blank"

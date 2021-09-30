@@ -4,15 +4,15 @@
         <input id="apprise-url" v-model="$parent.notification.appriseURL" type="text" class="form-control" required>
         <div class="form-text">
             <p>{{ $t("Example:", ["twilio://AccountSid:AuthToken@FromPhoneNo"]) }}</p>
-            <i18n-t keypath="Read more:" tag="p">
+            <i18n-t tag="p" keypath="Read more:">
                 <a href="https://github.com/caronc/apprise/wiki#notification-services" target="_blank">https://github.com/caronc/apprise/wiki#notification-services</a>
             </i18n-t>
         </div>
     </div>
     <div class="mb-3">
-        <i18n-t keypath="Status:" tag="p">
+        <i18n-t tag="p" keypath="Status:">
             <span v-if="appriseInstalled" class="text-primary">{{ $t("appriseInstalled") }}</span>
-            <i18n-t v-else keypath="appriseNotInstalled" tag="span" class="text-danger">
+            <i18n-t v-else tag="span" keypath="appriseNotInstalled" class="text-danger">
                 <a href="https://github.com/caronc/apprise" target="_blank">{{ $t("Read more") }}</a>
             </i18n-t>
         </i18n-t>
@@ -24,12 +24,12 @@ export default {
     data() {
         return {
             appriseInstalled: false
-        }
+        };
     },
     mounted() {
         this.$root.getSocket().emit("checkApprise", (installed) => {
             this.appriseInstalled = installed;
-        })
+        });
     },
-}
+};
 </script>

@@ -182,7 +182,6 @@ export default {
     defaultNotificationName: "My {0} Alert ({1})",
     here: "here",
     "Required": "Required",
-
     "telegram": "Telegram",
     "Bot Token": "Bot Token",
     "You can get a token from": "You can get a token from",
@@ -191,13 +190,11 @@ export default {
     wayToGetTelegramChatID: "You can get your chat id by sending message to the bot and go to this url to view the chat_id:",
     "YOUR BOT TOKEN HERE": "YOUR BOT TOKEN HERE",
     chatIDNotFound: "Chat ID is not found, please send a message to this bot first",
-
     "webhook": "Webhook",
     "Post URL": "Post URL",
     "Content Type": "Content Type",
     webhookJsonDesc: "{0} is good for any modern http servers such as express.js",
     webhookFormDataDesc: "{0} is good for PHP, you just need to parse the json by {1}",
-
     "smtp": "Email (SMTP)",
     secureOptionNone: "None / STARTTLS (25, 587)",
     secureOptionTLS: "TLS (465)",
@@ -206,30 +203,25 @@ export default {
     "To Email": "To Email",
     smtpCC: "CC",
     smtpBCC: "BCC",
-
     "discord": "Discord",
     "Discord Webhook URL": "Discord Webhook URL",
     wayToGetDiscordURL: "You can get this by going to Server Settings -> Integrations -> Create Webhook",
     "Bot Display Name": "Bot Display Name",
     "Prefix Custom Message": "Prefix Custom Message",
     "Hello @everyone is...": "Hello @everyone is...",
-
     "teams": "Microsoft Teams",
     "Webhook URL": "Webhook URL",
     wayToGetTeamsURL: "You can learn how to create a webhook url {0}.",
-
     "signal": "Signal",
     "Number": "Number",
     "Recipients": "Recipients",
     needSignalAPI: "You need to have a signal client with REST API.",
     wayToCheckSignalURL: "You can check this url to view how to setup one:",
     signalImportant: "IMPORTANT: You cannot mix groups and numbers in recipients!",
-
     "gotify": "Gotify",
     "Application Token": "Application Token",
     "Server URL": "Server URL",
     "Priority": "Priority",
-
     "slack": "Slack",
     "Icon Emoji": "Icon Emoji",
     "Channel Name": "Channel Name",
@@ -238,9 +230,7 @@ export default {
     aboutChannelName: "Enter the channel name on {0} Channel Name field if you want to bypass the webhook channel. Ex: #other-channel",
     aboutKumaURL: "If you leave the Uptime Kuma URL field blank, it will default to the Project Github page.",
     emojiCheatSheet: "Emoji cheat sheet: {0}",
-
     "rocket.chat": "Rocket.chat",
-
     "pushover": "Pushover",
     "User Key": "User Key",
     "Device": "Device",
@@ -249,9 +239,7 @@ export default {
     "More info on:": "More info on: {0}",
     pushoverDesc1: "Emergency priority (2) has default 30 second timeout between retries and will expire after 1 hour.",
     pushoverDesc2: "If you want to send notifications to different devices, fill out Device field.",
-
     "pushy": "Pushy",
-
     "octopush": "Octopush",
     "SMS Type": "SMS Type",
     octopushTypePremium: "Premium (Fast - recommended for alerting)",
@@ -259,10 +247,8 @@ export default {
     "Check octopush prices": "Check octopush prices {0}.",
     octopushPhoneNumber: "Phone number (intl format, eg : +33612345678) ",
     octopushSMSSender: "SMS Sender Name : 3-11 alphanumeric characters and space (a-zA-Z0-9)",
-
     "lunasea": "LunaSea",
     "LunaSea Device ID": "LunaSea Device ID",
-
     "apprise": "Apprise (Support 50+ Notification services)",
     "Apprise URL": "Apprise URL",
     "Example:": "Example: {0}",
@@ -271,10 +257,8 @@ export default {
     "Read more": "Read more",
     appriseInstalled: "Apprise is installed.",
     appriseNotInstalled: "Apprise is not installed. {0}",
-
     "pushbullet": "Pushbullet",
     "Access Token": "Access Token",
-
     "line": "Line Messenger",
     "Channel access token": "Channel access token",
     "Line Developers Console": "Line Developers Console",
@@ -283,7 +267,6 @@ export default {
     "User ID": "User ID",
     "Messaging API": "Messaging API",
     wayToGetLineChannelToken: "First access the {0}, create a provider and channel (Messaging API), then you can get the channel access token and user id from the above mentioned menu items.",
-
     "mattermost": "Mattermost",
     "Icon URL": "Icon URL",
     aboutIconURL: "You can provide a link to a picture in \"Icon URL\" to override the default profile picture. Will not be used if Icon Emoji is set.",

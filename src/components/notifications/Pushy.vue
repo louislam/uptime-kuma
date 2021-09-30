@@ -10,7 +10,7 @@
             <HiddenInput id="pushy-user-key" v-model="$parent.notification.pushyToken" :required="true" autocomplete="one-time-code"></HiddenInput>
         </div>
     </div>
-    <i18n-t keypath="More info on:" tag="p" style="margin-top: 8px;">
+    <i18n-t tag="p" keypath="More info on:" style="margin-top: 8px;">
         <a href="https://pushy.me/docs/api/send-notifications" target="_blank">https://pushy.me/docs/api/send-notifications</a>
     </i18n-t>
 </template>
@@ -22,5 +22,5 @@ export default {
     components: {
         HiddenInput,
     },
-}
+};
 </script>

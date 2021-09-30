@@ -43,7 +43,7 @@
         </select>
         <div class="form-text">
             <span style="color: red;"><sup>*</sup></span>{{ $t("Required") }}
-            <i18n-t keypath="More info on:" tag="p" style="margin-top: 8px;">
+            <i18n-t tag="p" keypath="More info on:" style="margin-top: 8px;">
                 <a href="https://pushover.net/api" target="_blank">https://pushover.net/api</a>
             </i18n-t>
             <p style="margin-top: 8px;">

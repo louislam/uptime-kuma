@@ -12,7 +12,7 @@
         <input id="mattermost-channel-name" v-model="$parent.notification.mattermostchannel" type="text" class="form-control">
         <div class="form-text">
             <span style="color:red;"><sup>*</sup></span>{{ $t("Required") }}
-            <i18n-t keypath="aboutWebhooks" tag="p" style="margin-top: 8px;">
+            <i18n-t tag="p" keypath="aboutWebhooks" style="margin-top: 8px;">
                 <a href="https://docs.mattermost.com/developer/webhooks-incoming.html" target="_blank">https://docs.mattermost.com/developer/webhooks-incoming.html</a>
             </i18n-t>
             <p style="margin-top: 8px;">
@@ -24,7 +24,7 @@
             <p style="margin-top: 8px;">
                 {{ $t("aboutIconURL") }}
             </p>
-            <i18n-t keypath="emojiCheatSheet" tag="p" style="margin-top: 8px;">
+            <i18n-t tag="p" keypath="emojiCheatSheet" style="margin-top: 8px;">
                 <a href="https://www.webfx.com/tools/emoji-cheat-sheet/" target="_blank">https://www.webfx.com/tools/emoji-cheat-sheet/</a>
             </i18n-t>
         </div>
