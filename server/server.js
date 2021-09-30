@@ -303,6 +303,12 @@ exports.entryPage = "dashboard";
                 if (user.twofa_status == 0) {
                     let newSecret = await genSecret();
                     let encodedSecret = base32.encode(newSecret);
+
+                    // Google authenticator doesn't like equal signs
+                    // The fix is found at https://github.com/guyht/notp
+                    // Related issue: https://github.com/louislam/uptime-kuma/issues/486
+                    encodedSecret = encodedSecret.toString().replace(/=/g, "");
+
                     let uri = `otpauth://totp/Uptime%20Kuma:${user.username}?secret=${encodedSecret}`;
 
                     await R.exec("UPDATE `user` SET twofa_secret = ? WHERE id = ? ", [
