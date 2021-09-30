@@ -12,7 +12,7 @@
                 <input v-model="searchText" class="form-control search-input" :placeholder="$t('Search...')" />
             </div>
         </div>
-        <div class="list" :class="{ scrollbar: scrollbar }">
+        <div class="monitor-list" :class="{ scrollbar: scrollbar }">
             <div v-if="Object.keys($root.monitorList).length === 0" class="text-center mt-3">
                 {{ $t("No Monitors, please") }} <router-link to="/add">{{ $t("add one") }}</router-link>
             </div>
@@ -161,56 +161,6 @@ export default {
 
 .search-input {
     max-width: 15em;
-}
-
-.list {
-    &.scrollbar {
-        min-height: calc(100vh - 240px);
-        max-height: calc(100vh - 30px);
-        overflow-y: auto;
-        position: sticky;
-        top: 10px;
-    }
-
-    .item {
-        display: block;
-        text-decoration: none;
-        padding: 13px 15px 10px 15px;
-        border-radius: 10px;
-        transition: all ease-in-out 0.15s;
-
-        &.disabled {
-            opacity: 0.3;
-        }
-
-        .info {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        &:hover {
-            background-color: $highlight-white;
-        }
-
-        &.active {
-            background-color: #cdf8f4;
-        }
-    }
-}
-
-.dark {
-    .list {
-        .item {
-            &:hover {
-                background-color: $dark-bg2;
-            }
-
-            &.active {
-                background-color: $dark-bg2;
-            }
-        }
-    }
 }
 
 .monitorItem {
