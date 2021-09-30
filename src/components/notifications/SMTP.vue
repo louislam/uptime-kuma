@@ -66,9 +66,9 @@ export default {
     components: {
         HiddenInput,
     },
-    data() {
-        return {
-            name: "smtp",
+    mounted() {
+        if (typeof this.$parent.notification.smtpSecure === "undefined") {
+            this.$parent.notification.smtpSecure = false;
         }
     },
 }
