@@ -383,58 +383,6 @@ export default {
 }
 </script>
 
-<style src="vue-multiselect/dist/vue-multiselect.css"></style>
-
-<style lang="scss">
-    @import "../assets/vars.scss";
-
-    .multiselect__tags {
-        border-radius: 1.5rem;
-        border: 1px solid #ced4da;
-        min-height: 38px;
-        padding: 6px 40px 0 8px;
-    }
-
-    .multiselect--active .multiselect__tags {
-        border-radius: 1rem;
-    }
-
-    .multiselect__option--highlight {
-        background: $primary !important;
-    }
-
-    .multiselect__option--highlight::after {
-        background: $primary !important;
-    }
-
-    .multiselect__tag {
-        border-radius: 50rem;
-        margin-bottom: 0;
-        padding: 6px 26px 6px 10px;
-        background: $primary !important;
-    }
-
-    .multiselect__placeholder {
-        font-size: 1rem;
-        padding-left: 6px;
-        padding-top: 0;
-        padding-bottom: 0;
-        margin-bottom: 0;
-        opacity: 0.67;
-    }
-
-    .multiselect__input, .multiselect__single {
-        line-height: 14px;
-        margin-bottom: 0;
-    }
-
-    .dark {
-        .multiselect__tag {
-            color: $dark-font-color2;
-        }
-    }
-</style>
-
 <style scoped>
     .shadow-box {
         padding: 20px;
