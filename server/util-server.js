@@ -293,17 +293,18 @@ exports.updateMonitorChecks = async (monitorId, checks) => {
     let trx = await R.begin();
     try {
         // delete existing checks for monitor
-        const existingMonitorChecks = await R.find("monitor_checks", " monitor_id = ?", [bean.id]);
-        await trx.trashAll(existingMonitorChecks);
+        await trx.exec("DELETE FROM monitor_checks WHERE monitor_id = ?", [monitorId]);
 
         // Replace them with new checks
         for (let i = 0; i < (checks || []).length; i++) {
             let checkBean = trx.dispense("monitor_checks");
-            checks[i].monitor_id = monitorId;
-            checks[i].value = typeof checks[i].value === "object" ? JSON.stringify(checks[i].value) : checks[i].value;
-            checkBean.import(checks[i]);
+            checkBean.monitor_id = monitorId;
+            checkBean.type = checks[i].type;
+            checkBean.value = typeof checks[i].value === "object" ? JSON.stringify(checks[i].value) : checks[i].value;
             await trx.store(checkBean);
         }
+
+        await trx.commit();
     } catch (err) {
         await trx.rollback();
         throw err;

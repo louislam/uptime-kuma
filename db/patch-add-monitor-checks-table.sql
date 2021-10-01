@@ -50,11 +50,12 @@ create table monitor_dg_tmp
     maxredirects       INTEGER  default 10 not null,
     dns_resolve_type   VARCHAR(5),
     dns_resolve_server VARCHAR(255),
-    dns_last_result    VARCHAR(255)
+    dns_last_result    VARCHAR(255),
+    retry_interval     INTEGER default 0 not null
 );
 
 insert into monitor_dg_tmp(id, name, active, user_id, interval, url, type, weight, hostname, port, created_date, maxretries, ignore_tls, upside_down,
-                           maxredirects, dns_resolve_type, dns_resolve_server, dns_last_result)
+                           maxredirects, dns_resolve_type, dns_resolve_server, dns_last_result, retry_interval)
 select id,
        name,
        active,
@@ -72,7 +73,8 @@ select id,
        maxredirects,
        dns_resolve_type,
        dns_resolve_server,
-       dns_last_result
+       dns_last_result,
+       retry_interval
 from monitor;
 
 drop table monitor;

@@ -6,10 +6,7 @@ if (!process.env.NODE_ENV) {
 
 console.log("Node Env: " + process.env.NODE_ENV);
 
-const { sleep, debug, getRandomInt, genSecret,
-    HTTP_STATUS_CODE_SHOULD_EQUAL,
-    RESPONSE_SHOULD_CONTAIN_TEXT
-} = require("../src/util");
+const { sleep, debug, getRandomInt, genSecret } = require("../src/util");
 
 console.log("Importing Node libraries");
 const fs = require("fs");
@@ -1062,19 +1059,19 @@ exports.entryPage = "dashboard";
                             // --- End ---
 
                             let monitor = {
-                                name: monitorList[i].name,
-                                type: monitorList[i].type,
-                                url: monitorList[i].url,
-                                interval: monitorList[i].interval,
-                                hostname: monitorList[i].hostname,
-                                maxretries: monitorList[i].maxretries,
-                                port: monitorList[i].port,
-                                ignoreTls: monitorList[i].ignoreTls,
-                                upsideDown: monitorList[i].upsideDown,
-                                maxredirects: monitorList[i].maxredirects,
-                                checks: monitorList[i].checks,
-                                dns_resolve_type: monitorList[i].dns_resolve_type,
-                                dns_resolve_server: monitorList[i].dns_resolve_server,
+                                name: monitorListData[i].name,
+                                type: monitorListData[i].type,
+                                url: monitorListData[i].url,
+                                interval: monitorListData[i].interval,
+                                hostname: monitorListData[i].hostname,
+                                maxretries: monitorListData[i].maxretries,
+                                port: monitorListData[i].port,
+                                ignoreTls: monitorListData[i].ignoreTls,
+                                upsideDown: monitorListData[i].upsideDown,
+                                maxredirects: monitorListData[i].maxredirects,
+                                checks: monitorListData[i].checks,
+                                dns_resolve_type: monitorListData[i].dns_resolve_type,
+                                dns_resolve_server: monitorListData[i].dns_resolve_server,
                                 notificationIDList: {},
                             };
 
@@ -1085,34 +1082,28 @@ exports.entryPage = "dashboard";
 
                             // TODO remove this if clause once we no longer expect export files to contain the old accepted_statuscodes and keyword format
                             if (monitor.type === "http" || monitor.type === "keyword") {
-                                if (monitor.accepted_statuscodes) {
+                                if (monitorListData[i].accepted_statuscodes) {
                                     // old format for checking http status codes
                                     // Convert to new format which uses separate monitor check
                                     monitor.checks = monitor.checks || [];
                                     monitor.checks.push({
-                                        monitor_id: monitor.id,
-                                        type: HTTP_STATUS_CODE_SHOULD_EQUAL,
-                                        value: monitor.accepted_statuscodes,
+                                        type: "HTTP_STATUS_CODE_SHOULD_EQUAL",
+                                        value: monitorListData[i].accepted_statuscodes,
                                     });
                                 }
 
-                                if (monitor.keyword) {
+                                if (monitorListData[i].keyword) {
                                     // old format for checking response contains keyword
                                     // Convert to new format which uses separate monitor check
                                     monitor.checks = monitor.checks || [];
                                     monitor.checks.push({
-                                        monitor_id: monitor.id,
-                                        type: RESPONSE_SHOULD_CONTAIN_TEXT,
-                                        value: monitor.keyword,
+                                        type: "RESPONSE_SHOULD_CONTAIN_TEXT",
+                                        value: monitorListData[i].keyword,
                                     });
                                 }
 
                                 monitor.type = "http";
-                                delete monitor.accepted_statuscodes;
-                                delete monitor.keyword;
                             }
-
-                            monitor.checks_json = JSON.stringify(monitor.checks);
 
                             const checks = monitor.checks;
                             delete monitor.checks;
