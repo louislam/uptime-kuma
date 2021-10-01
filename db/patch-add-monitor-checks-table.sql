@@ -28,62 +28,8 @@ from monitor
 WHERE monitor.type = 'keyword';
 
 -- Delete the http status and keyword columns from the monitor table
-create table monitor_dg_tmp
-(
-    id                 INTEGER not null
-        primary key autoincrement,
-    name               VARCHAR(150),
-    active             BOOLEAN  default 1 not null,
-    user_id            INTEGER
-                               references user
-                                   on update cascade on delete set null,
-    interval           INTEGER  default 20 not null,
-    url                TEXT,
-    type               VARCHAR(20),
-    weight             INTEGER  default 2000,
-    hostname           VARCHAR(255),
-    port               INTEGER,
-    created_date       DATETIME default (DATETIME('now')) not null,
-    maxretries         INTEGER  default 0 not null,
-    ignore_tls         BOOLEAN  default 0 not null,
-    upside_down        BOOLEAN  default 0 not null,
-    maxredirects       INTEGER  default 10 not null,
-    dns_resolve_type   VARCHAR(5),
-    dns_resolve_server VARCHAR(255),
-    dns_last_result    VARCHAR(255),
-    retry_interval     INTEGER default 0 not null
-);
-
-insert into monitor_dg_tmp(id, name, active, user_id, interval, url, type, weight, hostname, port, created_date, maxretries, ignore_tls, upside_down,
-                           maxredirects, dns_resolve_type, dns_resolve_server, dns_last_result, retry_interval)
-select id,
-       name,
-       active,
-       user_id,
-       interval,
-       url,
-       type,
-       weight,
-       hostname,
-       port,
-       created_date,
-       maxretries,
-       ignore_tls,
-       upside_down,
-       maxredirects,
-       dns_resolve_type,
-       dns_resolve_server,
-       dns_last_result,
-       retry_interval
-from monitor;
-
-drop table monitor;
-
-alter table monitor_dg_tmp
-    rename to monitor;
-
-create index user_id
-    on monitor (user_id);
+ALTER TABLE monitor DROP COLUMN accepted_statuscodes_json;
+ALTER TABLE monitor DROP COLUMN keyword;
 
 UPDATE monitor SET type = 'http' WHERE type = 'keyword';
 
