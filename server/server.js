@@ -536,26 +536,7 @@ exports.entryPage = "dashboard";
 
                 await R.store(bean);
 
-                // Store checks
-                let trx = await R.begin();
-                try {
-                    // delete existing checks for monitor
-                    await trx.exec("DELETE FROM `monitor_checks` WHERE monitor_id = ?", [bean.id]);
-
-                    // Replace them with new checks
-                    for (let i = 0; i < (checks || []).length; i++) {
-                        let checkBean = trx.dispense("monitor_checks");
-                        checkBean.type = checks[i].type;
-                        checkBean.value = typeof checks[i].value === "object" ? JSON.stringify(checks[i].value) : checks[i].value;
-                        checkBean.monitor_id = bean.id;
-                        await trx.store(checkBean);
-                    }
-                    await trx.commit();
-                } catch (err) {
-                    await trx.rollback();
-                    throw err;
-                }
-
+                await updateMonitorChecks(bean.id, checks);
                 await updateMonitorNotification(bean.id, monitor.notificationIDList);
 
                 if (bean.active) {
