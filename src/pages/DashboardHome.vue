@@ -57,6 +57,7 @@
                         v-model="page"
                         :records="importantHeartBeatList.length"
                         :per-page="perPage"
+                        :options="paginationConfig"
                     />
                 </div>
             </div>
@@ -81,6 +82,17 @@ export default {
             page: 1,
             perPage: 25,
             heartBeatList: [],
+            paginationConfig: {
+                texts:{
+                    count:`${this.$t("Showing {from} to {to} of {count} records")}|{count} ${this.$t("records")}|${this.$t("One record")}`,
+                    first:this.$t("First"),
+                    last:this.$t("Last"),
+                    nextPage:'>',
+                    nextChunk:'>>',
+                    prevPage:'<',
+                    prevChunk:'<<'
+                }
+            }
         }
     },
     computed: {
