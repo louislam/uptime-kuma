@@ -531,7 +531,7 @@ class Monitor extends BeanModel {
     }
 
     async getMonitorChecks() {
-        const checks = await R.getAll("SELECT mc.* FROM monitor_checks mc WHERE mc.monitor_id = ?", [this.id]);
+        const checks = await R.getAll("SELECT mc.type, mc.value FROM monitor_checks mc WHERE mc.monitor_id = ?", [this.id]);
 
         checks.forEach(check => {
             if (MONITOR_CHECK_SELECTOR_TYPES.includes(check.type) && typeof check.value === "string" && check.value.startsWith("{")) {
