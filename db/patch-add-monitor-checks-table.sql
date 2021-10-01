@@ -10,14 +10,7 @@ create table monitor_checks
     type       VARCHAR(50) not null,
     value      TEXT,
     monitor_id INTEGER     not null
-                    constraint monitor_checks_monitor_id_fk
-                        references monitor
-                        on update cascade on delete cascade
 );
-
-insert into monitor_checks(id, type, value, monitor_id)
-select id, type, value, monitor_id
-from monitor_checks;
 
 create unique index monitor_checks_id_uindex
     on monitor_checks (id);
@@ -30,8 +23,9 @@ from monitor;
 
 -- Copy over the keyword column from the monitor table to the new monitor_checks table as a separate check
 insert into monitor_checks(monitor_id, type, value)
-select id, 'RESPONSE_SHOULD_CONTAIN', keyword
-from monitor;
+select id, 'RESPONSE_SHOULD_CONTAIN_TEXT', keyword
+from monitor
+WHERE monitor.type = 'keyword';
 
 -- Delete the http status and keyword columns from the monitor table
 create table monitor_dg_tmp
@@ -88,4 +82,34 @@ alter table monitor_dg_tmp
 
 create index user_id
     on monitor (user_id);
+
+UPDATE monitor SET type = 'http' WHERE type = 'keyword';
+
+
+-- Add foreign key back to monitor_checks
+DROP INDEX "monitor_checks_id_uindex";
+
+ALTER TABLE "monitor_checks" RENAME TO "monitor_checks_dg_tmp";
+
+CREATE TABLE "monitor_checks" (
+     "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+     "type" VARCHAR(50) NOT NULL,
+     "value" TEXT,
+     "monitor_id" INTEGER NOT NULL,
+     CONSTRAINT "monitor_checks_monitor_id_fk"
+         FOREIGN KEY ("monitor_id")
+             REFERENCES "monitor" ("id")
+             ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+INSERT INTO "monitor_checks" ("id", "type", "value", "monitor_id")
+SELECT "id", "type", "value", "monitor_id" FROM "monitor_checks_dg_tmp";
+
+CREATE UNIQUE INDEX "monitor_checks_id_uindex"
+    ON "monitor_checks" (
+        "id" ASC
+    );
+
 COMMIT;
+
+
