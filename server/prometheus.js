@@ -59,7 +59,7 @@ class Prometheus {
             }
 
             try {
-                monitor_cert_days_remaining.set(this.monitorLabelValues, tlsInfo.daysRemaining)
+                monitor_cert_days_remaining.set(this.monitorLabelValues, tlsInfo.certInfo.daysRemaining)
             } catch (e) {
                 console.error(e)
             }
