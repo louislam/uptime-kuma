@@ -30,7 +30,8 @@ import {
     faUpload,
     faCopy,
     faCheck,
-    faFileContract,
+    faFile,
+    faAward,
     faLink,
 } from "@fortawesome/free-solid-svg-icons";
 
@@ -61,7 +62,8 @@ library.add(
     faUpload,
     faCopy,
     faCheck,
-    faFileContract,
+    faFile,
+    faAward,
     faLink,
 );
 

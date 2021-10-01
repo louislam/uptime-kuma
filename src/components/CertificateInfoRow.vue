@@ -2,7 +2,10 @@
     <div>
         <div class="d-flex flex-row align-items-center p-1 overflow-hidden">
             <div class="m-3 ps-3">
-                <font-awesome-icon class="cert-icon" icon="file-contract" />
+                <div class="cert-icon">
+                    <font-awesome-icon icon="file" />
+                    <font-awesome-icon class="award-icon" icon="award" />
+                </div>
             </div>
             <div class="m-3">
                 <table class="text-start">
@@ -82,6 +85,7 @@ table {
 }
 
 .cert-icon {
+    position: relative;
     font-size: 70px;
     color: $link-color;
     opacity: 0.5;
@@ -89,6 +93,18 @@ table {
     .dark & {
         color: $dark-font-color;
         opacity: 0.3;
+    }
+}
+
+.award-icon {
+    position: absolute;
+    font-size: 0.5em;
+    bottom: 20%;
+    left: 12%;
+    color: white;
+
+    .dark & {
+        color: $dark-bg;
     }
 }
 
