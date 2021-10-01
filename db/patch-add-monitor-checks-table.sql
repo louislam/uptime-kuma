@@ -4,12 +4,16 @@ BEGIN TRANSACTION;
 -- Create new monitor_checks table
 create table monitor_checks
 (
-    id         INTEGER
+    id           INTEGER
                     constraint monitor_checks_pk
                     primary key autoincrement,
-    type       VARCHAR(50) not null,
-    value      TEXT,
-    monitor_id INTEGER     not null
+    type         VARCHAR(50) not null,
+    value        TEXT,
+    monitor_id   INTEGER NOT NULL,
+                    CONSTRAINT "monitor_checks_monitor_id_fk"
+                        FOREIGN KEY ("monitor_id")
+                            REFERENCES "monitor" ("id")
+                            ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 create unique index monitor_checks_id_uindex
@@ -32,31 +36,6 @@ ALTER TABLE monitor DROP COLUMN accepted_statuscodes_json;
 ALTER TABLE monitor DROP COLUMN keyword;
 
 UPDATE monitor SET type = 'http' WHERE type = 'keyword';
-
-
--- Add foreign key back to monitor_checks
-DROP INDEX "monitor_checks_id_uindex";
-
-ALTER TABLE "monitor_checks" RENAME TO "monitor_checks_dg_tmp";
-
-CREATE TABLE "monitor_checks" (
-     "id" INTEGER PRIMARY KEY AUTOINCREMENT,
-     "type" VARCHAR(50) NOT NULL,
-     "value" TEXT,
-     "monitor_id" INTEGER NOT NULL,
-     CONSTRAINT "monitor_checks_monitor_id_fk"
-         FOREIGN KEY ("monitor_id")
-             REFERENCES "monitor" ("id")
-             ON DELETE CASCADE ON UPDATE CASCADE
-);
-
-INSERT INTO "monitor_checks" ("id", "type", "value", "monitor_id")
-SELECT "id", "type", "value", "monitor_id" FROM "monitor_checks_dg_tmp";
-
-CREATE UNIQUE INDEX "monitor_checks_id_uindex"
-    ON "monitor_checks" (
-        "id" ASC
-    );
 
 COMMIT;
 
