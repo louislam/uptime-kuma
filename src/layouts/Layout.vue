@@ -23,12 +23,12 @@
                         <font-awesome-icon icon="stream" /> {{ $t("Status Page") }}
                     </a>
                 </li>
-                <li class="nav-item me-2">
+                <li v-if="$root.loggedIn" class="nav-item me-2">
                     <router-link to="/dashboard" class="nav-link">
                         <font-awesome-icon icon="tachometer-alt" /> {{ $t("Dashboard") }}
                     </router-link>
                 </li>
-                <li class="nav-item">
+                <li v-if="$root.loggedIn" class="nav-item">
                     <router-link to="/settings" class="nav-link">
                         <font-awesome-icon icon="cog" /> {{ $t("Settings") }}
                     </router-link>
