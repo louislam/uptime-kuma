@@ -23,17 +23,37 @@
                                     <option value="dns">
                                         {{ $t("DNS") }}
                                     </option>
+                                    <option value="push">
+                                        Push
+                                    </option>
                                 </select>
                             </div>
 
+                            <!-- Friendly Name -->
                             <div class="my-3">
                                 <label for="name" class="form-label">{{ $t("Friendly Name") }}</label>
                                 <input id="name" v-model="monitor.name" type="text" class="form-control" required>
                             </div>
 
+                            <!-- URL -->
                             <div v-if="monitor.type === 'http'" class="my-3">
                                 <label for="url" class="form-label">{{ $t("URL") }}</label>
                                 <input id="url" v-model="monitor.url" type="url" class="form-control" pattern="https?://.+" required>
+                            </div>
+
+                            <!-- Push URL -->
+                            <div v-if="monitor.type === 'push' " class="my-3">
+                                <label for="push-url" class="form-label">{{ $t("Push URL") }}</label>
+                                <CopyableInput id="push-url" v-model="pushURL" type="url" disabled="disabled" />
+                            </div>
+
+                            <!-- Keyword -->
+                            <div v-if="monitor.type === 'keyword' " class="my-3">
+                                <label for="keyword" class="form-label">{{ $t("Keyword") }}</label>
+                                <input id="keyword" v-model="monitor.keyword" type="text" class="form-control" required>
+                                <div class="form-text">
+                                    {{ $t("keywordDescription") }}
+                                </div>
                             </div>
 
                             <!-- TCP Port / Ping / DNS only -->
@@ -186,14 +206,22 @@
 <script>
 import NotificationDialog from "../components/NotificationDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
+import CopyableInput from "../components/CopyableInput.vue";
 import MonitorCheckEditor from "../components/MonitorCheckEditor.vue";
 import { useToast } from "vue-toastification";
 import VueMultiselect from "vue-multiselect";
 import { isDev } from "../util.ts";
 const toast = useToast();
 
+import { useToast } from "vue-toastification";
+import VueMultiselect from "vue-multiselect";
+import { genSecret, isDev } from "../util.ts";
+
+const toast = useToast();
+
 export default {
     components: {
+        CopyableInput,
         NotificationDialog,
         TagsManager,
         MonitorCheckEditor,
@@ -231,23 +259,42 @@ export default {
         pageName() {
             return this.$t((this.isAdd) ? "Add New Monitor" : "Edit");
         },
+
         isAdd() {
             return this.$route.path === "/add";
         },
+
         isEdit() {
             return this.$route.path.startsWith("/edit");
         },
+
+        pushURL() {
+
+            return this.$root.baseURL + "/api/push/" + this.monitor.pushToken + "?msg=OK";
+        }
+
     },
     watch: {
+
         "$route.fullPath"() {
             this.init();
         },
+
         "monitor.interval"(value, oldValue) {
             // Link interval and retryInerval if they are the same value.
             if (this.monitor.retryInterval === oldValue) {
                 this.monitor.retryInterval = value;
             }
+        },
+
+        "monitor.type"() {
+            if (this.monitor.type === "push") {
+                if (! this.monitor.pushToken) {
+                    this.monitor.pushToken = genSecret(10);
+                }
+            }
         }
+
     },
     mounted() {
         this.init();

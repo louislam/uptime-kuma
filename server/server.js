@@ -6,11 +6,7 @@ if (!process.env.NODE_ENV) {
 
 console.log("Node Env: " + process.env.NODE_ENV);
 
-const {
-    sleep,
-    debug,
-    getRandomInt,
-} = require("../src/util");
+const { sleep, debug, getRandomInt, genSecret } = require("../src/util");
 
 console.log("Importing Node libraries");
 const fs = require("fs");
@@ -46,8 +42,6 @@ const {
     setSettings,
     setting,
     initJWTSecret,
-    genSecret,
-    allowDevAllOrigin,
     checkLogin,
     updateMonitorChecks,
 } = require("./util-server");
@@ -320,6 +314,12 @@ exports.entryPage = "dashboard";
                 if (user.twofa_status == 0) {
                     let newSecret = await genSecret();
                     let encodedSecret = base32.encode(newSecret);
+
+                    // Google authenticator doesn't like equal signs
+                    // The fix is found at https://github.com/guyht/notp
+                    // Related issue: https://github.com/louislam/uptime-kuma/issues/486
+                    encodedSecret = encodedSecret.toString().replace(/=/g, "");
+
                     let uri = `otpauth://totp/Uptime%20Kuma:${user.username}?secret=${encodedSecret}`;
 
                     await R.exec("UPDATE `user` SET twofa_secret = ? WHERE id = ? ", [
@@ -529,6 +529,7 @@ exports.entryPage = "dashboard";
                 bean.maxredirects = monitor.maxredirects;
                 bean.dns_resolve_type = monitor.dns_resolve_type;
                 bean.dns_resolve_server = monitor.dns_resolve_server;
+                bean.pushToken = monitor.pushToken;
 
                 const checks = monitor.checks;
                 delete monitor.checks;

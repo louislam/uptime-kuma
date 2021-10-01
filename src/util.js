@@ -7,7 +7,7 @@
 // Backend uses the compiled file util.js
 // Frontend uses util.ts
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.MONITOR_CHECK_SELECTOR_TYPES = exports.MONITOR_CHECK_STRING_TYPES = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isDev = void 0;
+exports.genSecret = exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isDev = void 0;
 const _dayjs = require("dayjs");
 const dayjs = _dayjs;
 exports.isDev = process.env.NODE_ENV === "development";
@@ -104,3 +104,13 @@ function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 exports.getRandomInt = getRandomInt;
+function genSecret(length = 64) {
+    let secret = "";
+    let chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let charsLength = chars.length;
+    for (let i = 0; i < length; i++) {
+        secret += chars.charAt(Math.floor(Math.random() * charsLength));
+    }
+    return secret;
+}
+exports.genSecret = genSecret;
