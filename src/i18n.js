@@ -3,6 +3,7 @@ import bgBG from "./languages/bg-BG";
 import daDK from "./languages/da-DK";
 import deDE from "./languages/de-DE";
 import en from "./languages/en";
+import fa from "./languages/fa";
 import esEs from "./languages/es-ES";
 import ptBR from "./languages/pt-BR";
 import etEE from "./languages/et-EE";
@@ -27,6 +28,7 @@ const languageList = {
     "de-DE": deDE,
     "nl-NL": nlNL,
     "es-ES": esEs,
+    "fa": fa,
     "pt-BR": ptBR,
     "fr-FR": frFR,
     "it-IT": itIT,
@@ -43,8 +45,15 @@ const languageList = {
     "et-EE": etEE,
 };
 
+const rtlLangs = ["fa"];
+    
+export const currentLocale = () => localStorage.locale || "en";
+
+export const localeDirection = () => {
+    return rtlLangs.includes(currentLocale()) ? "rtl" : "ltr"
+}
 export const i18n = createI18n({
-    locale: localStorage.locale || "en",
+    locale: currentLocale(),
     fallbackLocale: "en",
     silentFallbackWarn: true,
     silentTranslationWarn: true,

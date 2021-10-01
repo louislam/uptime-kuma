@@ -197,7 +197,7 @@
         </div>
 
         <footer class="mt-5 mb-4">
-            Powered by <a target="_blank" href="https://github.com/louislam/uptime-kuma">Uptime Kuma</a>
+            {{ $t("Powered By") }} <a target="_blank" href="https://github.com/louislam/uptime-kuma">{{ $t("Uptime Kuma" )}}</a>
         </footer>
     </div>
 </template>
