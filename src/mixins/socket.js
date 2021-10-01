@@ -293,6 +293,9 @@ export default {
         },
 
         getMonitorList(callback) {
+            if (! callback) {
+                callback = () => { };
+            }
             socket.emit("getMonitorList", callback);
         },
 

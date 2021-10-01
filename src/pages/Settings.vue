@@ -226,7 +226,7 @@
                             {{ $t("Setup Notification") }}
                         </button>
 
-                        <h2 class="mt-5">Info</h2>
+                        <h2 class="mt-5">{{ $t("Info") }}</h2>
 
                         {{ $t("Version") }}: {{ $root.info.version }} <br />
                         <a href="https://github.com/louislam/uptime-kuma/releases" target="_blank" rel="noopener">{{ $t("Check Update On GitHub") }}</a>
@@ -316,6 +316,12 @@
                     <p>Пожалуйста, используйте с осторожностью.</p>
                 </template>
 
+                <template v-else-if="$i18n.locale === 'fa' ">
+                    <p>آیا مطمئن هستید که میخواهید <strong>احراز هویت را غیر فعال کنید</strong>?</p>
+                    <p>این ویژگی برای کسانی است که <strong> لایه امنیتی شخص ثالث دیگر بر روی این آدرس فعال کرده‌اند</strong>، مانند Cloudflare Access.</p>
+                    <p>لطفا از این امکان با دقت استفاده کنید.</p>
+                </template>
+
                 <template v-else-if="$i18n.locale === 'bg-BG' ">
                     <p>Сигурни ли сте, че желаете да <strong>изключите удостоверяването</strong>?</p>
                     <p>Използва се в случаите, когато <strong>има настроен алтернативен метод за удостоверяване</strong> преди Uptime Kuma, например Cloudflare Access.</p>
@@ -350,8 +356,9 @@ import TwoFADialog from "../components/TwoFADialog.vue";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-import { timezoneList } from "../util-frontend";
+import { timezoneList, setPageLocale } from "../util-frontend";
 import { useToast } from "vue-toastification";
+
 const toast = useToast();
 
 export default {
@@ -387,6 +394,7 @@ export default {
 
         "$i18n.locale"() {
             localStorage.locale = this.$i18n.locale;
+            setPageLocale()
         },
     },
 

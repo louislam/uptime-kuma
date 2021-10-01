@@ -68,6 +68,8 @@
         "nodemailer": "^6.6.5",
         "notp": "^2.0.3",
         "password-hash": "^1.2.2",
+        "postcss-rtlcss": "^3.4.1",
+        "postcss-scss": "^4.0.0",
         "prom-client": "^13.2.0",
         "prometheus-api-metrics": "^3.2.0",
         "qrcode": "^1.4.4",
