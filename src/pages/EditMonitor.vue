@@ -45,6 +45,10 @@
                             <div v-if="monitor.type === 'push' " class="my-3">
                                 <label for="push-url" class="form-label">{{ $t("Push URL") }}</label>
                                 <CopyableInput id="push-url" v-model="pushURL" type="url" disabled="disabled" />
+                                <div class="form-text">
+                                    You should call this url every {{ monitor.interval }} seconds.<br />
+                                    Optional parameters: msg, ping
+                                </div>
                             </div>
 
                             <!-- Keyword -->
@@ -102,6 +106,7 @@
                                 </div>
                             </template>
 
+                            <!-- Interval -->
                             <div class="my-3">
                                 <label for="interval" class="form-label">{{ $t("Heartbeat Interval") }} ({{ $t("checkEverySecond", [ monitor.interval ]) }})</label>
                                 <input id="interval" v-model="monitor.interval" type="number" class="form-control" required min="20" step="1">
@@ -263,8 +268,7 @@ export default {
         },
 
         pushURL() {
-
-            return this.$root.baseURL + "/api/push/" + this.monitor.pushToken + "?msg=OK";
+            return this.$root.baseURL + "/api/push/" + this.monitor.pushToken + "?msg=OK&ping=";
         }
 
     },

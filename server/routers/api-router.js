@@ -20,6 +20,7 @@ router.get("/api/push/:pushToken", async (request, response) => {
     try {
         let pushToken = request.params.pushToken;
         let msg = request.query.msg || "OK";
+        let ping = request.query.ping;
 
         let monitor = await R.findOne("monitor", " push_token = ? AND active = 1 ", [
             pushToken
@@ -34,9 +35,7 @@ router.get("/api/push/:pushToken", async (request, response) => {
         bean.time = R.isoDateTime(dayjs.utc());
         bean.status = UP;
         bean.msg = msg;
-
-        // TODO: HOW TO?
-        //bean.ping
+        bean.ping = ping;
 
         await R.store(bean);
 
