@@ -2,8 +2,18 @@
     <div>
         <h4>{{ $t("Certificate Info") }}</h4>
         {{ $t("Certificate Chain") }}:
-        <div v-if="valid" class="rounded d-inline-flex ms-2 py-1 px-3 bg-success text-white">{{ $t("Valid") }}</div>
-        <div v-if="!valid" class="rounded d-inline-flex ms-2 py-1 px-3 bg-danger text-white">{{ $t("Invalid") }}</div>
+        <div
+            v-if="valid"
+            class="rounded d-inline-flex ms-2 text-white tag-valid"
+        >
+            {{ $t("Valid") }}
+        </div>
+        <div
+            v-if="!valid"
+            class="rounded d-inline-flex ms-2 text-white tag-invalid"
+        >
+            {{ $t("Invalid") }}
+        </div>
         <certificate-info-row :cert="certInfo" />
     </div>
 </template>
@@ -27,4 +37,16 @@ export default {
 };
 </script>
 
-<style></style>
+<style lang="scss" scoped>
+@import "../assets/vars.scss";
+
+.tag-valid {
+    padding: 2px 25px;
+    background-color: $primary;
+}
+
+.tag-invalid {
+    padding: 2px 25px;
+    background-color: $danger;
+}
+</style>
