@@ -210,13 +210,7 @@ import CopyableInput from "../components/CopyableInput.vue";
 import MonitorCheckEditor from "../components/MonitorCheckEditor.vue";
 import { useToast } from "vue-toastification";
 import VueMultiselect from "vue-multiselect";
-import { isDev } from "../util.ts";
-const toast = useToast();
-
-import { useToast } from "vue-toastification";
-import VueMultiselect from "vue-multiselect";
 import { genSecret, isDev } from "../util.ts";
-
 const toast = useToast();
 
 export default {
