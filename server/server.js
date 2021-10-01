@@ -6,7 +6,10 @@ if (!process.env.NODE_ENV) {
 
 console.log("Node Env: " + process.env.NODE_ENV);
 
-const { sleep, debug, getRandomInt, genSecret } = require("../src/util");
+const { sleep, debug, getRandomInt, genSecret,
+    HTTP_STATUS_CODE_SHOULD_EQUAL,
+    RESPONSE_SHOULD_CONTAIN_TEXT
+} = require("../src/util");
 
 console.log("Importing Node libraries");
 const fs = require("fs");
@@ -1080,10 +1083,36 @@ exports.entryPage = "dashboard";
                             let notificationIDList = monitor.notificationIDList;
                             delete monitor.notificationIDList;
 
-                            monitor.checks_json = JSON.stringify(monitor.checks);
+                            // TODO remove this if clause once we no longer expect export files to contain the old accepted_statuscodes and keyword format
+                            if (monitor.type === "http" || monitor.type === "keyword") {
+                                if (monitor.accepted_statuscodes) {
+                                    // old format for checking http status codes
+                                    // Convert to new format which uses separate monitor check
+                                    monitor.checks = monitor.checks || [];
+                                    monitor.checks.push({
+                                        monitor_id: monitor.id,
+                                        type: HTTP_STATUS_CODE_SHOULD_EQUAL,
+                                        value: monitor.accepted_statuscodes,
+                                    });
+                                }
 
-                            delete monitor.accepted_statuscodes; // TODO convert to check
-                            delete monitor.keyword; // TODO convert to check
+                                if (monitor.keyword) {
+                                    // old format for checking response contains keyword
+                                    // Convert to new format which uses separate monitor check
+                                    monitor.checks = monitor.checks || [];
+                                    monitor.checks.push({
+                                        monitor_id: monitor.id,
+                                        type: RESPONSE_SHOULD_CONTAIN_TEXT,
+                                        value: monitor.keyword,
+                                    });
+                                }
+
+                                monitor.type = "http";
+                                delete monitor.accepted_statuscodes;
+                                delete monitor.keyword;
+                            }
+
+                            monitor.checks_json = JSON.stringify(monitor.checks);
 
                             const checks = monitor.checks;
                             delete monitor.checks;
