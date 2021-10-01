@@ -23,6 +23,8 @@
         "tsc": "tsc",
         "vite-preview-dist": "vite preview --host",
         "build-docker": "npm run build-docker-debian && npm run build-docker-alpine",
+        "build-docker-alpine-base": "docker buildx build -f docker/alpine-base.dockerfile --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma:base-alpine . --push",
+        "build-docker-debian-base": "docker buildx build -f docker/debian-base.dockerfile --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma:base-debian . --push",
         "build-docker-alpine": "docker buildx build -f dockerfile-alpine --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma:alpine -t louislam/uptime-kuma:1-alpine -t louislam/uptime-kuma:1.7.3-alpine --target release . --push",
         "build-docker-debian": "docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma -t louislam/uptime-kuma:1 -t louislam/uptime-kuma:1.7.3 -t louislam/uptime-kuma:debian -t louislam/uptime-kuma:1-debian -t louislam/uptime-kuma:1.7.3-debian --target release . --push",
         "build-docker-nightly": "docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma:nightly --target nightly . --push",
