@@ -24,7 +24,7 @@ FROM release AS nightly
 RUN npm run mark-as-nightly
 
 # Upload the artifact to Github
-FROM node:14-buster-slim AS upload-artifact
+FROM louislam/uptime-kuma:base-debian AS upload-artifact
 WORKDIR /
 RUN apt update && \
     apt --yes install curl file
@@ -32,17 +32,18 @@ RUN apt update && \
 ARG GITHUB_TOKEN
 ARG TARGETARCH
 ARG PLATFORM=debian
-ARG VERSION=1.5.0
-
+ARG VERSION
+ARG FILE=$PLATFORM-$TARGETARCH-$VERSION.tar.gz
+ARG DIST=dist.tar.gz
 
 COPY --from=build /app /app
+RUN chmod +x /app/extra/upload-github-release-asset.sh
 
-RUN FILE=uptime-kuma.tar.gz
-RUN tar -czf $FILE app
+# Full Build
+# RUN tar -zcvf $FILE app
+# RUN /app/extra/upload-github-release-asset.sh github_api_token=$GITHUB_TOKEN owner=louislam repo=uptime-kuma tag=$VERSION filename=$FILE
 
-RUN curl \
-    -H "Authorization: token $GITHUB_TOKEN" \
-    -H "Content-Type: $(file -b --mime-type $FILE)" \
-    --data-binary @$FILE \
-    "https://uploads.github.com/repos/louislam/uptime-kuma/releases/$VERSION/assets?name=$(basename $FILE)"
+# Dist only
+RUN cd /app && tar -zcvf $DIST dist
+RUN /app/extra/upload-github-release-asset.sh github_api_token=$GITHUB_TOKEN owner=louislam repo=uptime-kuma tag=$VERSION filename=$DIST
 
