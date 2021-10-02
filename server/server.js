@@ -505,6 +505,9 @@ exports.entryPage = "dashboard";
                 bean.name = monitor.name;
                 bean.type = monitor.type;
                 bean.url = monitor.url;
+                bean.method = monitor.method;
+                bean.body = monitor.body;
+                bean.headers = monitor.headers;
                 bean.interval = monitor.interval;
                 bean.retryInterval = monitor.retryInterval;
                 bean.hostname = monitor.hostname;
@@ -1028,6 +1031,9 @@ exports.entryPage = "dashboard";
                                 name: monitorListData[i].name,
                                 type: monitorListData[i].type,
                                 url: monitorListData[i].url,
+                                method: monitorListData[i].method || "GET",
+                                body: monitorListData[i].body,
+                                headers: monitorListData[i].headers,
                                 interval: monitorListData[i].interval,
                                 retryInterval: retryInterval,
                                 hostname: monitorListData[i].hostname,

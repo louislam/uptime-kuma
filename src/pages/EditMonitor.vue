@@ -44,6 +44,46 @@
                                 <input id="url" v-model="monitor.url" type="url" class="form-control" pattern="https?://.+" required>
                             </div>
 
+                            <!-- Method -->
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' " class="my-3">
+                                <label for="method" class="form-label">{{ $t("Method") }}</label>
+                                <select id="method" v-model="monitor.method" class="form-select">
+                                    <option value="GET">
+                                        GET
+                                    </option>
+                                    <option value="POST">
+                                        POST
+                                    </option>
+                                    <option value="PUT">
+                                        PUT
+                                    </option>
+                                    <option value="PATCH">
+                                        PATCH
+                                    </option>
+                                    <option value="DELETE">
+                                        DELETE
+                                    </option>
+                                    <option value="HEAD">
+                                        HEAD
+                                    </option>
+                                    <option value="OPTIONS">
+                                        OPTIONS
+                                    </option>
+                                </select>
+                            </div>
+
+                            <!-- Body -->
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' " class="my-3">
+                                <label for="body" class="form-label">{{ $t("Body") }}</label>
+                                <textarea id="body" v-model="monitor.body" class="form-control" :placeholder="bodyPlaceholder"></textarea>
+                            </div>
+
+                            <!-- Headers -->
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' " class="my-3">
+                                <label for="headers" class="form-label">{{ $t("Headers") }}</label>
+                                <textarea id="headers" v-model="monitor.headers" class="form-control" :placeholder="headersPlaceholder"></textarea>
+                            </div>
+
                             <!-- Push URL -->
                             <div v-if="monitor.type === 'push' " class="my-3">
                                 <label for="push-url" class="form-label">{{ $t("Push URL") }}</label>
@@ -285,6 +325,18 @@ export default {
 
         pushURL() {
             return this.$root.baseURL + "/api/push/" + this.monitor.pushToken + "?msg=OK&ping=";
+        },
+
+        bodyPlaceholder() {
+            return `{
+    "id": 124357,
+    "username": "admin",
+    "password": "myAdminPassword"
+}`;
+        },
+
+        headersPlaceholder() {
+            return "Authorization: Bearer abc123\nContent-Type: application/json";
         }
 
     },
@@ -295,7 +347,7 @@ export default {
         },
 
         "monitor.interval"(value, oldValue) {
-            // Link interval and retryInerval if they are the same value.
+            // Link interval and retryInterval if they are the same value.
             if (this.monitor.retryInterval === oldValue) {
                 this.monitor.retryInterval = value;
             }
@@ -349,6 +401,7 @@ export default {
                     type: "http",
                     name: "",
                     url: "https://",
+                    method: "GET",
                     interval: 60,
                     retryInterval: this.interval,
                     maxretries: 0,
@@ -383,8 +436,31 @@ export default {
 
         },
 
+        isInputValid() {
+            if (this.monitor.body) {
+                try {
+                    JSON.parse(this.monitor.body);
+                } catch (err) {
+                    toast.error(this.$t("The request body is not valid json: ") + err.message);
+                    return false;
+                }
+            }
+            if (this.monitor.headers) {
+                if (!/^([^:]+:.*)([\s]+[^:]+:.*)+$/g.test(this.monitor.headers)) {
+                    toast.error(this.$t("Headers do not have a valid format: \"key: value<new line>key: value<new line>...\""));
+                    return false;
+                }
+            }
+            return true;
+        },
+
         async submit() {
             this.processing = true;
+
+            if (!this.isInputValid()) {
+                this.processing = false;
+                return;
+            }
 
             if (this.isAdd) {
                 this.$root.add(this.monitor, async (res) => {
@@ -422,8 +498,12 @@ export default {
 };
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
     .shadow-box {
         padding: 20px;
+    }
+
+    textarea {
+        min-height: 200px;
     }
 </style>

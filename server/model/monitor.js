@@ -53,6 +53,9 @@ class Monitor extends BeanModel {
             id: this.id,
             name: this.name,
             url: this.url,
+            method: this.method,
+            body: this.body,
+            headers: this.headers,
             hostname: this.hostname,
             port: this.port,
             maxretries: this.maxretries,
@@ -93,6 +96,31 @@ class Monitor extends BeanModel {
 
     getAcceptedStatuscodes() {
         return JSON.parse(this.accepted_statuscodes_json);
+    }
+
+    /**
+     * Convert header string into an object:
+     * eg:
+     *
+     * Authorization: Basic <credentials>
+     * Content-Type: application/json
+     *
+     * into
+     *
+     * {
+     *     "Authorization": "Basic <credentials>",
+     *     "Content-Type": "application/json"
+     * }
+     **/
+    getParsedHeaders() {
+        if (!this.headers || !this.headers.includes(":")) {
+            return {};
+        }
+        return Object.fromEntries(this.headers.split("\n").map(header => {
+            const trimmedHeader = header.trim();
+            const firstColonIndex = trimmedHeader.indexOf(":");
+            return [trimmedHeader.slice(0, firstColonIndex), trimmedHeader.slice(firstColonIndex + 1) || ""];
+        }).filter(arr => !!arr[0] && !!arr[1]));
     }
 
     start(io) {
@@ -136,11 +164,15 @@ class Monitor extends BeanModel {
                     // Do not do any queries/high loading things before the "bean.ping"
                     let startTime = dayjs().valueOf();
 
-                    let res = await axios.get(this.url, {
+                    const options = {
+                        url: this.url,
+                        method: (this.method || "get").toLowerCase(),
+                        ...(this.body ? { data: JSON.parse(this.body) } : {}),
                         timeout: this.interval * 1000 * 0.8,
                         headers: {
                             "Accept": "*/*",
                             "User-Agent": "Uptime-Kuma/" + version,
+                            ...this.getParsedHeaders(),
                         },
                         httpsAgent: new https.Agent({
                             maxCachedSessions: 0,      // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
@@ -150,7 +182,8 @@ class Monitor extends BeanModel {
                         validateStatus: (status) => {
                             return checkStatusCode(status, this.getAcceptedStatuscodes());
                         },
-                    });
+                    };
+                    let res = await axios.request(options);
                     bean.msg = `${res.status} - ${res.statusText}`;
                     bean.ping = dayjs().valueOf() - startTime;
 
