@@ -20,6 +20,8 @@
         "start-server": "node server/server.js",
         "start-server-dev": "cross-env NODE_ENV=development node server/server.js",
         "build": "vite build",
+        "prepare-test": "npm run build && node server/server.js --port=3002 --data-dir=./data/test",
+        "test": "jest",
         "tsc": "tsc",
         "vite-preview-dist": "vite preview --host",
         "build-docker": "npm run build-docker-debian && npm run build-docker-alpine",
@@ -104,10 +106,22 @@
         "dns2": "~2.0.1",
         "eslint": "~7.32.0",
         "eslint-plugin-vue": "~7.18.0",
+        "jest": "~27.2.4",
+        "jest-puppeteer": "~6.0.0",
+        "puppeteer": "~10.4.0",
         "sass": "~1.42.1",
         "stylelint": "~13.13.1",
         "stylelint-config-standard": "~22.0.0",
         "typescript": "~4.4.3",
         "vite": "~2.5.10"
+    },
+    "jest": {
+        "verbose": true,
+        "preset": "jest-puppeteer",
+        "globals": {
+            "__DEV__": true
+        },
+        "testRegex": "./test/*.spec.js",
+        "rootDir": "."
     }
 }
