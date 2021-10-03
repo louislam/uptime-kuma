@@ -20,7 +20,7 @@
         "start-server": "node server/server.js",
         "start-server-dev": "cross-env NODE_ENV=development node server/server.js",
         "build": "vite build",
-        "prepare-test": "npm run build && node server/server.js --port=3002 --data-dir=./data/test",
+        "prepare-test": "npm run build && node server/server.js --port=3002 --data-dir=./data/test/",
         "test": "jest",
         "tsc": "tsc",
         "vite-preview-dist": "vite preview --host",
