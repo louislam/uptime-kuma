@@ -180,7 +180,7 @@ export default {
     "Edit Status Page": "Редактировать",
     "Go to Dashboard": "Панель мониторов",
     "Status Page": "Статус сервисов",
-    Discard: "Отмена",
+    "Discard": "Отмена",
     "Create Incident": "Создать инцидент",
     "Switch to Dark Theme": "Тёмная тема",
     "Switch to Light Theme": "Светлая тема",
