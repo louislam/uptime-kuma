@@ -2,7 +2,7 @@ FROM louislam/uptime-kuma:base-debian AS build
 WORKDIR /app
 
 COPY . .
-RUN npm install --legacy-peer-deps && \
+RUN npm ci && \
     npm run build && \
     npm prune --production && \
     chmod +x /app/extra/entrypoint.sh
