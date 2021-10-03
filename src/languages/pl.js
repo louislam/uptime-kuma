@@ -170,7 +170,7 @@ export default {
     "Avg. Ping": "Średni ping",
     "Avg. Response": "Średnia odpowiedź",
     "Entry Page": "Wejdź na stronę",
-    "statusPageNothing": "Nic tu nie ma, dodaj monitor lub grupę.",
+    statusPageNothing: "Nic tu nie ma, dodaj monitor lub grupę.",
     "No Services": "Brak usług",
     "All Systems Operational": "Wszystkie systemy działają",
     "Partially Degraded Service": "Częściowy błąd usługi",

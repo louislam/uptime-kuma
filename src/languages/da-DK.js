@@ -170,7 +170,7 @@ export default {
     "Avg. Ping": "Gns. Ping",
     "Avg. Response": "Gns. Respons",
     "Entry Page": "Entry Side",
-    "statusPageNothing": "Intet her, tilføj venligst en Gruppe eller en Overvåger.",
+    statusPageNothing: "Intet her, tilføj venligst en Gruppe eller en Overvåger.",
     "No Services": "Ingen Tjenester",
     "All Systems Operational": "Alle Systemer i Drift",
     "Partially Degraded Service": "Delvist Forringet Service",

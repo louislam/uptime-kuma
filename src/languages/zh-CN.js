@@ -170,7 +170,7 @@ export default {
     "Avg. Ping": "平均Ping",
     "Avg. Response": "平均响应",
     "Entry Page": "入口页面",
-    "statusPageNothing": "这里什么也没有，请添加一个分组或一个监控项。",
+    statusPageNothing: "这里什么也没有，请添加一个分组或一个监控项。",
     "No Services": "无服务",
     "All Systems Operational": "所有服务运行正常",
     "Partially Degraded Service": "部分服务出现故障",
