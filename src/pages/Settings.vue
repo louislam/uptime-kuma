@@ -322,6 +322,12 @@
                     <p>Моля, използвайте внимателно.</p>
                 </template>
 
+                <template v-else-if="$i18n.locale === 'hu' ">
+                    <p>Biztos benne, hogy <strong>kikapcsolja a hitelesítést</strong>?</p>
+                    <p>Akkor érdemes, ha <strong>van 3rd-party hitelesítés</strong> az Uptime Kuma-t megelőzően mint a Cloudflare Access.</p>
+                    <p>Használja megfontoltan!</p>
+                </template>
+
                 <!-- English (en) -->
                 <template v-else>
                     <p>Are you sure want to <strong>disable auth</strong>?</p>

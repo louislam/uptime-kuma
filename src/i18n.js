@@ -7,6 +7,7 @@ import esEs from "./languages/es-ES";
 import ptBR from "./languages/pt-BR";
 import etEE from "./languages/et-EE";
 import frFR from "./languages/fr-FR";
+import hu from "./languages/hu";
 import itIT from "./languages/it-IT";
 import ja from "./languages/ja";
 import koKR from "./languages/ko-KR";
@@ -29,6 +30,7 @@ const languageList = {
     "es-ES": esEs,
     "pt-BR": ptBR,
     "fr-FR": frFR,
+    "hu": hu,
     "it-IT": itIT,
     "ja": ja,
     "da-DK": daDK,
