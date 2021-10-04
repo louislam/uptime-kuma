@@ -3,9 +3,9 @@ import bgBG from "./languages/bg-BG";
 import daDK from "./languages/da-DK";
 import deDE from "./languages/de-DE";
 import en from "./languages/en";
-import fa from "./languages/fa";
 import esEs from "./languages/es-ES";
 import etEE from "./languages/et-EE";
+import fa from "./languages/fa";
 import frFR from "./languages/fr-FR";
 import hu from "./languages/hu";
 import itIT from "./languages/it-IT";
@@ -48,16 +48,17 @@ const languageList = {
 };
 
 const rtlLangs = ["fa"];
-    
+
 export const currentLocale = () => localStorage.locale || "en";
 
 export const localeDirection = () => {
-    return rtlLangs.includes(currentLocale()) ? "rtl" : "ltr"
-}
+    return rtlLangs.includes(currentLocale()) ? "rtl" : "ltr";
+};
+
 export const i18n = createI18n({
     locale: currentLocale(),
     fallbackLocale: "en",
     silentFallbackWarn: true,
-    silentTranslationWarn: process.env.NODE_ENV !== "development",
+    silentTranslationWarn: true,
     messages: languageList,
 });
