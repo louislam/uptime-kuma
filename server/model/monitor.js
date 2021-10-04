@@ -69,6 +69,7 @@ class Monitor extends BeanModel {
             dns_resolve_type: this.dns_resolve_type,
             dns_resolve_server: this.dns_resolve_server,
             dns_last_result: this.dns_last_result,
+            pushToken: this.pushToken,
             notificationIDList,
             tags: tags,
         };
@@ -236,6 +237,28 @@ class Monitor extends BeanModel {
 
                     bean.msg = dnsMessage;
                     bean.status = UP;
+                } else if (this.type === "push") {      // Type: Push
+                    const time = R.isoDateTime(dayjs.utc().subtract(this.interval, "second"));
+
+                    let heartbeatCount = await R.count("heartbeat", " monitor_id = ? AND time > ? ", [
+                        this.id,
+                        time
+                    ]);
+
+                    debug("heartbeatCount" + heartbeatCount + " " + time);
+
+                    if (heartbeatCount <= 0) {
+                        throw new Error("No heartbeat in the time window");
+                    } else {
+                        // No need to insert successful heartbeat for push type, so end here
+                        retries = 0;
+                        this.heartbeatInterval = setTimeout(beat, this.interval * 1000);
+                        return;
+                    }
+
+                } else {
+                    bean.msg = "Unknown Monitor Type";
+                    bean.status = PENDING;
                 }
 
                 if (this.isUpsideDown()) {
@@ -262,6 +285,8 @@ class Monitor extends BeanModel {
                     bean.status = PENDING;
                 }
             }
+
+            let beatInterval = this.interval;
 
             // * ? -> ANY STATUS = important [isFirstBeat]
             // UP -> PENDING = not important
@@ -312,12 +337,10 @@ class Monitor extends BeanModel {
                 bean.important = false;
             }
 
-            let beatInterval = this.interval;
-
             if (bean.status === UP) {
                 console.info(`Monitor #${this.id} '${this.name}': Successful Response: ${bean.ping} ms | Interval: ${beatInterval} seconds | Type: ${this.type}`);
             } else if (bean.status === PENDING) {
-                if (this.retryInterval !== this.interval) {
+                if (this.retryInterval > 0) {
                     beatInterval = this.retryInterval;
                 }
                 console.warn(`Monitor #${this.id} '${this.name}': Pending: ${bean.msg} | Max retries: ${this.maxretries} | Retry: ${retries} | Retry Interval: ${beatInterval} seconds | Type: ${this.type}`);
@@ -339,7 +362,14 @@ class Monitor extends BeanModel {
 
         };
 
-        beat();
+        // Delay Push Type
+        if (this.type === "push") {
+            setTimeout(() => {
+                beat();
+            }, this.interval * 1000);
+        } else {
+            beat();
+        }
     }
 
     stop() {
