@@ -16,7 +16,7 @@ export default {
     rrtypeDescription: "Vali kirje tüüp, mida soovid jälgida.",
     pauseMonitorMsg: "Kas soovid peatada seire?",
     Settings: "Seaded",
-    "Status Page": "Status Page",
+    "Status Page": "Ülevaade",
     Dashboard: "Töölaud",
     "New Update": "Uuem tarkvara versioon on saadaval.",
     Language: "Keel",
