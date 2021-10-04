@@ -441,7 +441,7 @@ export default {
                 try {
                     JSON.parse(this.monitor.body);
                 } catch (err) {
-                    toast.error(this.$t("The request body is not valid json: ") + err.message);
+                    toast.error(this.$t("The request body is not valid JSON: ") + err.message);
                     return false;
                 }
             }
