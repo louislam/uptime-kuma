@@ -13,6 +13,10 @@ class Matrix extends NotificationProvider {
             .randomBytes(size)
             .toString('base64')
             .slice(0, size);    
+        const roomId = notification
+            .internalRoomId
+            .replaceALl(":", "%3A")
+            .replaceAll("!", "%21");
 
         try {
             let config = {
@@ -25,7 +29,7 @@ class Matrix extends NotificationProvider {
                 "body": msg
             };
 
-            await axios.put(`${notification.homeserverUrl}/_matrix/client/r0/rooms/${notification.internalRoomId}/send/m.room.message/${randomString}`, data, config)
+            await axios.put(`${notification.homeserverUrl}/_matrix/client/r0/rooms/${roomId}/send/m.room.message/${randomString}`, data, config)
             return okMsg;
         } catch (error) {
             this.throwGeneralAxiosError(error);
