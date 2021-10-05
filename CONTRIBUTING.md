@@ -151,3 +151,18 @@ The data and socket logic are in `src/mixins/socket.js`.
 # Unit Test
 
 Yes, no unit test for now. I know it is very important, but at the same time my spare time is very limited. I want to implement my ideas first. I will go back to this in some points.
+
+
+# Update Dependencies
+
+Install `ncu`
+https://github.com/raineorshine/npm-check-updates
+
+```bash
+ncu -u -t patch
+npm install
+```
+
+Since previously updating vite 2.5.10 to 2.6.0 broke the application completely, from now on, it should update patch release version only. 
+
+Patch release = the third digit
