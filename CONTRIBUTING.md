@@ -27,7 +27,7 @@ The frontend code build into "dist" directory. The server (express.js) exposes t
 
 # Can I create a pull request for Uptime Kuma?
 
-Generally, if the pull request is working fine and it do not affect any existing logic, workflow and perfomance, I will merge to the master branch once it is tested.
+Generally, if the pull request is working fine and it do not affect any existing logic, workflow and perfomance, I will merge into the master branch once it is tested.
 
 If you are not sure, feel free to create an empty pull request draft first.
 
@@ -118,7 +118,7 @@ express.js is just used for serving the frontend built files (index.html, .js an
 # How to start the Frontend Dev Server
 
 1. Set the env var `NODE_ENV` to "development".
-1. Start the frontend dev server by the following command.
+2. Start the frontend dev server by the following command.
    ```bash
    npm run dev
    ```
