@@ -309,6 +309,6 @@ exports.startUnitTest = async () => {
 
     child.on("close", function (code) {
         console.log("Jest exit code: " + code);
-        process.kill(process.pid, "SIGINT");
+        process.exit(code);
     });
 };
