@@ -3,10 +3,10 @@
         <div class="list-header">
             <div class="placeholder"></div>
             <div class="search-wrapper">
-                <a v-if="searchText == ''" class="search-icon">
+                <a v-if="!searchText" class="search-icon">
                     <font-awesome-icon icon="search" />
                 </a>
-                <a v-if="searchText != ''" class="search-icon" @click="clearSearchText">
+                <a v-if="searchText" class="search-icon" @click="clearSearchText">
                     <font-awesome-icon icon="times" />
                 </a>
                 <input v-model="searchText" class="form-control search-input" :placeholder="$t('Search...')" />
@@ -19,21 +19,21 @@
 
             <router-link v-for="(item, index) in sortedMonitorList" :key="index" :to="monitorURL(item.id)" class="item" :class="{ 'disabled': ! item.active }">
                 <div class="row">
-                    <div class="col-6 col-md-8 small-padding" :class="{ 'monitorItem': $root.userHeartbeatBar == 'bottom' || $root.userHeartbeatBar == 'none' }">
+                    <div class="col-6 col-md-8 small-padding" :class="{ 'monitorItem': $root.userHeartbeatBar === 'bottom' || $root.userHeartbeatBar === 'none' }">
                         <div class="info">
                             <Uptime :monitor="item" type="24" :pill="true" />
-                            {{ item.name }}
+                            <span class="ms-1">{{ item.name }}</span>
                         </div>
                         <div class="tags">
                             <Tag v-for="tag in item.tags" :key="tag" :item="tag" :size="'sm'" />
                         </div>
                     </div>
-                    <div v-show="$root.userHeartbeatBar == 'normal'" :key="$root.userHeartbeatBar" class="col-6 col-md-4">
+                    <div v-show="$root.userHeartbeatBar === 'normal'" :key="$root.userHeartbeatBar" class="col-6 col-md-4 small-padding">
                         <HeartbeatBar size="small" :monitor-id="item.id" />
                     </div>
                 </div>
 
-                <div v-if="$root.userHeartbeatBar == 'bottom'" class="row">
+                <div v-if="$root.userHeartbeatBar === 'bottom'" class="row">
                     <div class="col-12">
                         <HeartbeatBar size="small" :monitor-id="item.id" />
                     </div>
@@ -62,7 +62,7 @@ export default {
     data() {
         return {
             searchText: "",
-        }
+        };
     },
     computed: {
         sortedMonitorList() {
@@ -91,17 +91,17 @@ export default {
                 }
 
                 return m1.name.localeCompare(m2.name);
-            })
+            });
 
             // Simple filter by search text
             // finds monitor name, tag name or tag value
-            if (this.searchText != "") {
+            if (this.searchText) {
                 const loweredSearchText = this.searchText.toLowerCase();
                 result = result.filter(monitor => {
                     return monitor.name.toLowerCase().includes(loweredSearchText)
                     || monitor.tags.find(tag => tag.name.toLowerCase().includes(loweredSearchText)
-                    || tag.value?.toLowerCase().includes(loweredSearchText))
-                })
+                    || tag.value?.toLowerCase().includes(loweredSearchText));
+                });
             }
 
             return result;
@@ -115,7 +115,7 @@ export default {
             this.searchText = "";
         }
     },
-}
+};
 </script>
 
 <style lang="scss" scoped>
