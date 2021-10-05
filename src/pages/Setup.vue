@@ -16,7 +16,7 @@
                 <div class="form-floating">
                     <select id="language" v-model="$i18n.locale" class="form-select">
                         <option v-for="(lang, i) in $i18n.availableLocales" :key="`Lang${i}`" :value="lang">
-                            {{ $i18n.messages[lang].languageName }}
+                            {{ $i18n.messages[lang].LanguageName }}
                         </option>
                     </select>
                     <label for="language" class="form-label">{{ $t("Language") }}</label>
