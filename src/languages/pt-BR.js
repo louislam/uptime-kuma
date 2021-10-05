@@ -131,4 +131,5 @@ export default {
     PoweredBy: "Powered by",
     SwitchToLightTheme: "Switch to Light Theme",
     SwitchToDarkTheme: "Switch to Dark Theme",
+    StatusPage: "Página de Status",
 };

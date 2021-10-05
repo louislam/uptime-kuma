@@ -134,4 +134,6 @@ export default {
     PoweredBy: "نیرو گرفته از",
     SwitchToLightTheme: "Switch to Light Theme",
     SwitchToDarkTheme: "Switch to Dark Theme",
+    StatusPage: "صفحه وضعیت",
+    UptimeKuma: "آپتایم کوما",
 };

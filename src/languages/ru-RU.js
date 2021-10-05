@@ -1,8 +1,5 @@
 export default {
     Discard: "Отмена",
-    CreateIncident: "Создать инцидент",
-    SwitchToDarkTheme: "Тёмная тема",
-    SwitchToLightTheme: "Светлая тема",
     LanguageName: "Русский",
     CheckEverySecond: "проверять каждые {0} секунд",
     RetryCheckEverySecond: "повторять каждые {0} секунд",
@@ -133,4 +130,8 @@ export default {
     Records: "records",
     OneRecord: "One record",
     PoweredBy: "Powered by",
+    StatusPage: "Статус сервисов",
+    CreateIncident: "Создать инцидент",
+    SwitchToDarkTheme: "Тёмная тема",
+    SwitchToLightTheme: "Светлая тема",
 };
