@@ -195,4 +195,5 @@ export default {
     "pushbullet": "Pushbullet",
     "line": "Line Messenger",
     "mattermost": "Mattermost",
+    "matrix": "Matrix",
 };
