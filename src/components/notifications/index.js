@@ -40,7 +40,7 @@ const NotificationFormList = {
     "pushbullet": Pushbullet,
     "line": Line,
     "mattermost": Mattermost,
-    "matrix": Matrix
+    "matrix": Matrix,
 }
 
 export default NotificationFormList
