@@ -179,4 +179,12 @@ export default {
     "Add a monitor": "Add a monitor",
     "Edit Status Page": "Edit Status Page",
     "Go to Dashboard": "Go to Dashboard",
+    Method: "Methode",
+    Body: "Body",
+    Headers: "Headers",
+    PushUrl: "Push URL",
+    HeadersInvalidFormat: "Headers hebben een incorrect formaat: \"key: waarde <new line> key: waarde <new line>...\"",
+    BodyInvalidFormat: "De request body is geen geldige JSON: ",
+    BodyPlaceholder: "{\n\t\"id\": 124357,\n\t\"gebruikersnaam\": \"admin\",\n\t\"wachtwoord\": \"mijnAdminWachtwoord\"\n}",
+    HeadersPlaceholder: "Authorization: Bearer abc123\nContent-Type: application/json",
 };
