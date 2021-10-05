@@ -2,8 +2,12 @@
 /dist
 /node_modules
 /data
+/out
+/test
+/kubernetes
 /.do
 **/.dockerignore
+/private
 **/.git
 **/.gitignore
 **/docker-compose*
@@ -15,7 +19,6 @@ README.md
 .eslint*
 .stylelint*
 /.github
-package-lock.json
 yarn.lock
 app.json
 CODE_OF_CONDUCT.md

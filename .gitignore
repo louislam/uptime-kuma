@@ -8,3 +8,7 @@ dist-ssr
 /data
 !/data/.gitkeep
 .vscode
+
+/private
+/out
+/tmp

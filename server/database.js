@@ -3,11 +3,25 @@ const { R } = require("redbean-node");
 const { setSetting, setting } = require("./util-server");
 const { debug, sleep } = require("../src/util");
 const dayjs = require("dayjs");
+const knex = require("knex");
 
+/**
+ * Database & App Data Folder
+ */
 class Database {
 
     static templatePath = "./db/kuma.db";
+
+    /**
+     * Data Dir (Default: ./data)
+     */
     static dataDir;
+
+    /**
+     * User Upload Dir (Default: ./data/upload)
+     */
+    static uploadDir;
+
     static path;
 
     /**
@@ -31,39 +45,70 @@ class Database {
         "patch-setting-value-type.sql": true,
         "patch-improve-performance.sql": true,
         "patch-2fa.sql": true,
+        "patch-add-retry-interval-monitor.sql": true,
+        "patch-incident-table.sql": true,
+        "patch-group-table.sql": true,
+        "patch-monitor-push_token.sql": true,
     }
 
     /**
      * The finally version should be 10 after merged tag feature
      * @deprecated Use patchList for any new feature
      */
-    static latestVersion = 9;
+    static latestVersion = 10;
 
     static noReject = true;
+
+    static init(args) {
+        // Data Directory (must be end with "/")
+        Database.dataDir = process.env.DATA_DIR || args["data-dir"] || "./data/";
+        Database.path = Database.dataDir + "kuma.db";
+        if (! fs.existsSync(Database.dataDir)) {
+            fs.mkdirSync(Database.dataDir, { recursive: true });
+        }
+
+        Database.uploadDir = Database.dataDir + "upload/";
+
+        if (! fs.existsSync(Database.uploadDir)) {
+            fs.mkdirSync(Database.uploadDir, { recursive: true });
+        }
+
+        console.log(`Data Dir: ${Database.dataDir}`);
+    }
 
     static async connect() {
         const acquireConnectionTimeout = 120 * 1000;
 
-        R.setup("sqlite", {
-            filename: Database.path,
+        const Dialect = require("knex/lib/dialects/sqlite3/index.js");
+        Dialect.prototype._driver = () => require("@louislam/sqlite3");
+
+        const knexInstance = knex({
+            client: Dialect,
+            connection: {
+                filename: Database.path,
+                acquireConnectionTimeout: acquireConnectionTimeout,
+            },
             useNullAsDefault: true,
-            acquireConnectionTimeout: acquireConnectionTimeout,
-        }, {
-            min: 1,
-            max: 1,
-            idleTimeoutMillis: 120 * 1000,
-            propagateCreateError: false,
-            acquireTimeoutMillis: acquireConnectionTimeout,
+            pool: {
+                min: 1,
+                max: 1,
+                idleTimeoutMillis: 120 * 1000,
+                propagateCreateError: false,
+                acquireTimeoutMillis: acquireConnectionTimeout,
+            }
         });
+
+        R.setup(knexInstance);
 
         if (process.env.SQL_LOG === "1") {
             R.debug(true);
         }
 
         // Auto map the model to a bean object
-        R.freeze(true)
+        R.freeze(true);
         await R.autoloadModels("./server/model");
 
+        await R.exec("PRAGMA foreign_keys = ON");
         // Change to WAL
         await R.exec("PRAGMA journal_mode = WAL");
         await R.exec("PRAGMA cache_size = -12000");
@@ -71,6 +116,7 @@ class Database {
         console.log("SQLite config:");
         console.log(await R.getAll("PRAGMA journal_mode"));
         console.log(await R.getAll("PRAGMA cache_size"));
+        console.log("SQLite Version: " + await R.getCell("SELECT sqlite_version()"));
     }
 
     static async patch() {
@@ -88,7 +134,7 @@ class Database {
         } else if (version > this.latestVersion) {
             console.info("Warning: Database version is newer than expected");
         } else {
-            console.info("Database patch is needed")
+            console.info("Database patch is needed");
 
             this.backup(version);
 
@@ -103,11 +149,12 @@ class Database {
                 }
             } catch (ex) {
                 await Database.close();
-                this.restore();
 
-                console.error(ex)
-                console.error("Start Uptime-Kuma failed due to patch db failed")
-                console.error("Please submit the bug report if you still encounter the problem after restart: https://github.com/louislam/uptime-kuma/issues")
+                console.error(ex);
+                console.error("Start Uptime-Kuma failed due to patch db failed");
+                console.error("Please submit the bug report if you still encounter the problem after restart: https://github.com/louislam/uptime-kuma/issues");
+
+                this.restore();
                 process.exit(1);
             }
         }
@@ -132,7 +179,7 @@ class Database {
 
         try {
             for (let sqlFilename in this.patchList) {
-                await this.patch2Recursion(sqlFilename, databasePatchedFiles)
+                await this.patch2Recursion(sqlFilename, databasePatchedFiles);
             }
 
             if (this.patched) {
@@ -141,11 +188,13 @@ class Database {
 
         } catch (ex) {
             await Database.close();
-            this.restore();
 
-            console.error(ex)
+            console.error(ex);
             console.error("Start Uptime-Kuma failed due to patch db failed");
             console.error("Please submit the bug report if you still encounter the problem after restart: https://github.com/louislam/uptime-kuma/issues");
+
+            this.restore();
+
             process.exit(1);
         }
 
@@ -185,7 +234,7 @@ class Database {
             console.log(sqlFilename + " is patched successfully");
 
         } else {
-            console.log(sqlFilename + " is already patched, skip");
+            debug(sqlFilename + " is already patched, skip");
         }
     }
 
@@ -203,12 +252,12 @@ class Database {
         // Remove all comments (--)
         let lines = text.split("\n");
         lines = lines.filter((line) => {
-            return ! line.startsWith("--")
+            return ! line.startsWith("--");
         });
 
         // Split statements by semicolon
         // Filter out empty line
-        text = lines.join("\n")
+        text = lines.join("\n");
 
         let statements = text.split(";")
             .map((statement) => {
@@ -216,7 +265,7 @@ class Database {
             })
             .filter((statement) => {
                 return statement !== "";
-            })
+            });
 
         for (let statement of statements) {
             await R.exec(statement);
@@ -262,7 +311,7 @@ class Database {
      */
     static backup(version) {
         if (! this.backupPath) {
-            console.info("Backup the db")
+            console.info("Backup the db");
             this.backupPath = this.dataDir + "kuma.db.bak" + version;
             fs.copyFileSync(Database.path, this.backupPath);
 
