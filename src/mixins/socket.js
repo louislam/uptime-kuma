@@ -179,7 +179,7 @@ export default {
             });
 
             socket.on("connect", () => {
-                console.log("connect");
+                console.log("Connected to the socket server");
                 this.socket.connectCount++;
                 this.socket.connected = true;
 

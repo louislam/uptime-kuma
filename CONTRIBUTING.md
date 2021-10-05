@@ -150,8 +150,14 @@ The data and socket logic are in `src/mixins/socket.js`.
 
 # Unit Test
 
-Yes, no unit test for now. I know it is very important, but at the same time my spare time is very limited. I want to implement my ideas first. I will go back to this in some points.
+It is an end-to-end testing. It is using Jest and Puppeteer.
 
+```
+npm run build
+npm test
+```
+
+By default, the Chromium window will be shown up during the test. Specifying `HEADLESS_TEST=1` for terminal environments.
 
 # Update Dependencies
 

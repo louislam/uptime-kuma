@@ -1,6 +1,6 @@
 module.exports = {
     "launch": {
-        "headless": false,
+        "headless": process.env.HEADLESS_TEST || false,
         "userDataDir": "./data/test-chrome-profile",
     }
 };

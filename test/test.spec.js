@@ -1,5 +1,6 @@
 // eslint-disable-next-line no-unused-vars
 const { Page } = require("puppeteer");
+const { sleep } = require("../src/util");
 
 /**
  * Set back the correct data type for page object
@@ -15,11 +16,13 @@ afterAll(() => {
 
 });
 
+const baseURL = "http://127.0.0.1:3002";
+
 describe("Init", () => {
     const title = "Uptime Kuma";
 
     beforeAll(async () => {
-        await page.goto("http://127.0.0.1:3002");
+        await page.goto(baseURL);
     });
 
     it(`should be titled "${title}"`, async () => {
@@ -35,32 +38,56 @@ describe("Init", () => {
         await page.type("#floatingPassword", "admin123");
         await page.type("#repeat", "admin123");
         await page.click(".btn-primary[type=submit]");
-        await page.waitFor(3000);
+        await sleep(3000);
 
         // Go to /setup again
-        await page.goto("http://127.0.0.1:3002/setup");
-        await page.waitFor(3000);
+        await page.goto(baseURL + "/setup");
+        await sleep(3000);
         const pathname = await page.evaluate(() => location.pathname);
         expect(pathname).toEqual("/dashboard");
 
         // Go to /
-        await page.goto("http://127.0.0.1:3002");
+        await page.goto(baseURL);
         expect(pathname).toEqual("/dashboard");
-        expect(pathname).toEqual("/dashboard");
     });
 
-    describe("Init", () => {
+    describe("Settings", () => {
+        beforeAll(async () => {
+            await page.goto(baseURL + "/settings");
+        });
 
-    });
-});
+        it("Change Language", async () => {
+            await page.select("#language", "zh-HK");
+            let languageTitle = await page.evaluate(() => document.querySelector("[for=language]").innerText);
+            expect(languageTitle).toMatch("語言");
 
-describe("Status Page", () => {
-    const title = "Uptime Kuma";
-    beforeAll(async () => {
-        await page.goto("http://127.0.0.1:3002/status");
+            await page.select("#language", "en");
+            languageTitle = await page.evaluate(() => document.querySelector("[for=language]").innerText);
+            expect(languageTitle).toMatch("Language");
+        });
+
+        it("Change Theme", async () => {
+            // Light
+            await page.click(".btn[for=btncheck1]");
+            await page.waitForSelector("div.light", {
+                timeout: 2000
+            });
+
+            await page.click(".btn[for=btncheck2]");
+            await page.waitForSelector("div.dark", {
+                timeout: 2000
+            });
+        });
     });
-    it(`should be titled "${title}"`, async () => {
-        await expect(page.title()).resolves.toMatch(title);
+
+    describe("Status Page", () => {
+        const title = "Uptime Kuma";
+        beforeAll(async () => {
+            await page.goto(baseURL + "/status");
+        });
+        it(`should be titled "${title}"`, async () => {
+            await expect(page.title()).resolves.toMatch(title);
+        });
     });
 });
 
