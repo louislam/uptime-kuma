@@ -185,38 +185,42 @@ const getDaysRemaining = (validFrom, validTo) => {
     return daysRemaining;
 };
 
-exports.checkCertificate = function (res) {
-    const {
-        valid_from,
-        valid_to,
-        subjectaltname,
-        issuer,
-        fingerprint,
-    } = res.request.res.socket.getPeerCertificate(false);
+// Fix certificate Info for display
+// param: info -  the chain obtained from getPeerCertificate()
+const parseCertificateInfo = function (info) {
+    let link = info;
 
-    if (!valid_from || !valid_to || !subjectaltname) {
-        throw {
-            message: "No TLS certificate in response",
-        };
+    while (link) {
+        if (!link.valid_from || !link.valid_to) {
+            break;
+        }
+        link.validTo = new Date(link.valid_to);
+        link.validFor = link.subjectaltname?.replace(/DNS:|IP Address:/g, "").split(", ");
+        link.daysRemaining = getDaysRemaining(new Date(), link.validTo);
+
+        // Move up the chain until loop is encountered
+        if (link.issuerCertificate == null) {
+            break;
+        } else if (link.fingerprint == link.issuerCertificate.fingerprint) {
+            link.issuerCertificate = null;
+            break;
+        } else {
+            link = link.issuerCertificate;
+        }
     }
 
+    return info;
+};
+
+exports.checkCertificate = function (res) {
+    const info = res.request.res.socket.getPeerCertificate(true);
     const valid = res.request.res.socket.authorized || false;
 
-    const validTo = new Date(valid_to);
-
-    const validFor = subjectaltname
-        .replace(/DNS:|IP Address:/g, "")
-        .split(", ");
-
-    const daysRemaining = getDaysRemaining(new Date(), validTo);
+    const parsedInfo = parseCertificateInfo(info);
 
     return {
-        valid,
-        validFor,
-        validTo,
-        daysRemaining,
-        issuer,
-        fingerprint,
+        valid: valid,
+        certInfo: parsedInfo
     };
 };
 
