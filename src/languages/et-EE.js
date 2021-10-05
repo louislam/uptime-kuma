@@ -1,5 +1,4 @@
 export default {
-  Status Page: "Ülevaade",
   LanguageName: "eesti",
   CheckEverySecond: "Check every {0} seconds.",
   RetryCheckEverySecond: "Kontrolli {0} sekundilise vahega.",
@@ -125,5 +124,5 @@ export default {
   Apprise: "Apprise (Support 50+ Notification services)",
   Pushbullet: "Pushbullet",
   Line: "Line Messenger",
-  Mattermost: "Mattermost"
+  Mattermost: "Mattermost",
 };

@@ -124,5 +124,5 @@ export default {
   Apprise: "Apprise (Support 50+ Notification services)",
   Pushbullet: "Pushbullet",
   Line: "Line Messenger",
-  Mattermost: "Mattermost"
+  Mattermost: "Mattermost",
 };

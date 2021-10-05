@@ -70,12 +70,12 @@
                 <!-- Set theme -->
                 <button v-if="theme == 'dark'" class="btn btn-light me-2" @click="changeTheme('light')">
                     <font-awesome-icon icon="save" />
-                    {{ $t("Switch to Light Theme") }}
+                    {{ $t("SwitchToLightTheme") }}
                 </button>
 
                 <button v-if="theme == 'light'" class="btn btn-dark me-2" @click="changeTheme('dark')">
                     <font-awesome-icon icon="save" />
-                    {{ $t("Switch to Dark Theme") }}
+                    {{ $t("SwitchToDarkTheme") }}
                 </button>
             </div>
         </div>
@@ -197,7 +197,7 @@
         </div>
 
         <footer class="mt-5 mb-4">
-            {{ $t("Powered By") }} <a target="_blank" href="https://github.com/louislam/uptime-kuma">{{ $t("Uptime Kuma" )}}</a>
+            {{ $t("PoweredBy") }} <a target="_blank" href="https://github.com/louislam/uptime-kuma">{{ $t("Uptime Kuma" )}}</a>
         </footer>
     </div>
 </template>

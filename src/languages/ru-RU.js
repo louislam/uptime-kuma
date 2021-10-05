@@ -1,9 +1,8 @@
 export default {
-  Status Page: "Статус сервисов",
   Discard: "Отмена",
-  Create Incident: "Создать инцидент",
-  Switch to Dark Theme: "Тёмная тема",
-  Switch to Light Theme: "Светлая тема",
+  CreateIncident: "Создать инцидент",
+  SwitchToDarkTheme: "Тёмная тема",
+  SwitchToLightTheme: "Светлая тема",
   LanguageName: "Русский",
   CheckEverySecond: "проверять каждые {0} секунд",
   RetryCheckEverySecond: "повторять каждые {0} секунд",
@@ -129,5 +128,5 @@ export default {
   Apprise: "Apprise (Support 50+ Notification services)",
   Pushbullet: "Pushbullet",
   Line: "Line Messenger",
-  Mattermost: "Mattermost"
+  Mattermost: "Mattermost",
 };
