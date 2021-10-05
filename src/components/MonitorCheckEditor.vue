@@ -3,31 +3,31 @@
         <div>
             <select id="type" :value="monitorCheck.type" :class="{'form-select': true, 'mb-1': !!monitorCheck.type}" @input="changeType($event.target.value)" required>
                 <option value="HTTP_STATUS_CODE_SHOULD_EQUAL">
-                    {{ $t("HTTP status code should equal") }}
+                    {{ $t("MonitorCheckTypeHttpStatusCodeShouldEqual") }}
                 </option>
                 <option value="RESPONSE_SHOULD_CONTAIN_TEXT">
-                    {{ $t("Response should contain text") }}
+                    {{ $t("MonitorCheckTypeResponseShouldContainText") }}
                 </option>
                 <option value="RESPONSE_SHOULD_NOT_CONTAIN_TEXT">
-                    {{ $t("Response should not contain text") }}
+                    {{ $t("MonitorCheckTypeResponseShouldNotContainText") }}
                 </option>
                 <option value="RESPONSE_SHOULD_MATCH_REGEX">
-                    {{ $t("Response should match regex") }}
+                    {{ $t("MonitorCheckTypeResponseShouldMatchRegex") }}
                 </option>
                 <option value="RESPONSE_SHOULD_NOT_MATCH_REGEX">
-                    {{ $t("Response should not match regex") }}
+                    {{ $t("MonitorCheckTypeResponseShouldNotMatchRegex") }}
                 </option>
                 <option value="RESPONSE_SELECTOR_SHOULD_EQUAL">
-                    {{ $t("Response selector should equal") }}
+                    {{ $t("MonitorCheckTypeResponseSelectorShouldEqual") }}
                 </option>
                 <option value="RESPONSE_SELECTOR_SHOULD_NOT_EQUAL">
-                    {{ $t("Response selector should not equal") }}
+                    {{ $t("MonitorCheckTypeResponseSelectorShouldNotEqual") }}
                 </option>
                 <option value="RESPONSE_SELECTOR_SHOULD_MATCH_REGEX">
-                    {{ $t("Response selector should match regex") }}
+                    {{ $t("MonitorCheckTypeResponseSelectorShouldMatchRegex") }}
                 </option>
                 <option value="RESPONSE_SELECTOR_SHOULD_NOT_MATCH_REGEX">
-                    {{ $t("Response selector should not match regex") }}
+                    {{ $t("MonitorCheckTypeResponseSelectorShouldNotMatchRegex") }}
                 </option>
             </select>
             <div v-if="monitorCheck.type === 'HTTP_STATUS_CODE_SHOULD_EQUAL'">
@@ -47,7 +47,7 @@
                 ></VueMultiselect>
             </div>
             <div v-if="monitorCheck.type === 'RESPONSE_SHOULD_CONTAIN_TEXT' || monitorCheck.type === 'RESPONSE_SHOULD_NOT_CONTAIN_TEXT'">
-                <input :value="monitorCheck.value" type="text" class="form-control" required :placeholder="$t('Value')" @input="changeValue($event.target.value)">
+                <input :value="monitorCheck.value" type="text" class="form-control" required :placeholder="$t('MonitorCheckValuePlaceholder')" @input="changeValue($event.target.value)">
             </div>
             <div v-if="monitorCheck.type === 'RESPONSE_SHOULD_MATCH_REGEX' || monitorCheck.type === 'RESPONSE_SHOULD_NOT_MATCH_REGEX'">
                 <input type="text" class="form-control" required :value="monitorCheck.value"
