@@ -30,7 +30,7 @@ export default {
             importantHeartbeatList: { },
             avgPingList: { },
             uptimeList: { },
-            certInfoList: {},
+            tlsInfoList: {},
             notificationList: [],
             connectionErrorMsg: "Cannot connect to the socket server. Reconnecting...",
         };
@@ -154,7 +154,7 @@ export default {
             });
 
             socket.on("certInfo", (monitorID, data) => {
-                this.certInfoList[monitorID] = JSON.parse(data);
+                this.tlsInfoList[monitorID] = JSON.parse(data);
             });
 
             socket.on("importantHeartbeatList", (monitorID, data, overwrite) => {
