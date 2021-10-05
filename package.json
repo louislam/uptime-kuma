@@ -101,6 +101,8 @@
         "@vitejs/plugin-legacy": "~1.5.3",
         "@vitejs/plugin-vue": "~1.9.1",
         "@vue/compiler-sfc": "~3.2.16",
+        "@vue/test-utils": "next",
+        "@vue/vue3-jest": "^27.0.0-alpha.1",
         "core-js": "~3.18.0",
         "cross-env": "~7.0.3",
         "dns2": "~2.0.1",
