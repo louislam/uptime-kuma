@@ -96,7 +96,7 @@
                         <div class="mb-2">
                             <input v-model="newDraftTag.value" class="form-control"
                                    :class="{'is-invalid': validateDraftTag.valueInvalid}"
-                                   :placeholder="$t('value (optional)')"
+                                   :placeholder="$t('valueOptional')"
                                    @keydown.enter.prevent="onEnter"
                             />
                             <div class="invalid-feedback">

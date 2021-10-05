@@ -10,7 +10,7 @@
         <header v-if="! $root.isMobile" class="d-flex flex-wrap justify-content-center py-3 mb-3 border-bottom">
             <router-link to="/dashboard" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
                 <object class="bi me-2 ms-4" width="40" height="40" data="/icon.svg" />
-                <span class="fs-4 title">{{ $t("Uptime Kuma") }}</span>
+                <span class="fs-4 title">{{ $t("UptimeKuma") }}</span>
             </router-link>
 
             <a v-if="hasNewVersion" target="_blank" href="https://github.com/louislam/uptime-kuma/releases" class="btn btn-info me-3">
@@ -20,7 +20,7 @@
             <ul class="nav nav-pills">
                 <li class="nav-item me-2">
                     <a href="/status" class="nav-link status-page">
-                        <font-awesome-icon icon="stream" /> {{ $t("Status Page") }}
+                        <font-awesome-icon icon="stream" /> {{ $t("StatusPage") }}
                     </a>
                 </li>
                 <li v-if="$root.loggedIn" class="nav-item me-2">

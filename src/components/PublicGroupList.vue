@@ -17,7 +17,7 @@
 
                 <div class="shadow-box monitor-list mt-4 position-relative">
                     <div v-if="group.element.monitorList.length === 0" class="text-center no-monitor-msg">
-                        {{ $t("No Monitors") }}
+                        {{ $t("NoMonitors") }}
                     </div>
 
                     <!-- Monitor List -->

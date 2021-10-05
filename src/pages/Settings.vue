@@ -96,7 +96,7 @@
                                 <div class="form-check">
                                     <input id="entryPageNo" v-model="settings.entryPage" class="form-check-input" type="radio" name="statusPage" value="statusPage" required>
                                     <label class="form-check-label" for="entryPageNo">
-                                        {{ $t("Status Page") }}
+                                        {{ $t("StatusPage") }}
                                     </label>
                                 </div>
                             </div>

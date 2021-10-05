@@ -52,7 +52,7 @@
 
                 <button class="btn btn-primary btn-add-group me-2" @click="createIncident">
                     <font-awesome-icon icon="bullhorn" />
-                    {{ $t("Create Incident") }}
+                    {{ $t("CreateIncident") }}
                 </button>
 
                 <!--
@@ -182,7 +182,7 @@
                     </select>
                 </div>
                 <div v-else class="text-center">
-                    {{ $t("No monitors available.") }}  <router-link to="/add">{{ $t("Add one") }}</router-link>
+                    {{ $t("NoMonitorsAvailable.") }}  <router-link to="/add">{{ $t("AddOne") }}</router-link>
                 </div>
             </div>
         </div>

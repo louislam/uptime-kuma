@@ -208,7 +208,7 @@ export default {
             showPingChartBox: true,
             paginationConfig: {
                 texts: {
-                    count: `${this.$t("Showing {from} to {to} of {count} records")}|{count} ${this.$t("records")}|${this.$t("One record")}`,
+                    count: `${this.$t("ShowingFromToOfCountRecords")}|{count} ${this.$t("Records")}|${this.$t("OneRecord")}`,
                     first: this.$t("First"),
                     last: this.$t("Last"),
                     nextPage: ">",

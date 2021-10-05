@@ -1,7 +1,7 @@
 <template>
     <div>
         <h4>{{ $t("CertificateInfo") }}</h4>
-        {{ $t("Certificate Chain") }}:
+        {{ $t("CertificateChain") }}:
         <div
             v-if="valid"
             class="rounded d-inline-flex ms-2 text-white tag-valid"

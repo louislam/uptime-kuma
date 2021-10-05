@@ -46,7 +46,7 @@
 
                             <!-- Push URL -->
                             <div v-if="monitor.type === 'push' " class="my-3">
-                                <label for="push-url" class="form-label">{{ $t("Push URL") }}</label>
+                                <label for="push-url" class="form-label">{{ $t("PushUrl") }}</label>
                                 <CopyableInput id="push-url" v-model="pushURL" type="url" disabled="disabled" />
                                 <div class="form-text">
                                     You should call this url every {{ monitor.interval }} seconds.<br />
