@@ -20,8 +20,8 @@
         "start-server": "node server/server.js",
         "start-server-dev": "cross-env NODE_ENV=development node server/server.js",
         "build": "vite build",
-        "prepare-test": "npm run build && node server/server.js --port=3002 --data-dir=./data/test/",
-        "test": "jest",
+        "prepare-test-server": "node test/prepare-test-server.js && node server/server.js --port=3002 --data-dir=./data/test/",
+        "test": "node test/prepare-jest.js && jest",
         "tsc": "tsc",
         "vite-preview-dist": "vite preview --host",
         "build-docker": "npm run build-docker-debian && npm run build-docker-alpine",
@@ -101,8 +101,6 @@
         "@vitejs/plugin-legacy": "~1.5.3",
         "@vitejs/plugin-vue": "~1.9.1",
         "@vue/compiler-sfc": "~3.2.16",
-        "@vue/test-utils": "next",
-        "@vue/vue3-jest": "^27.0.0-alpha.1",
         "core-js": "~3.18.0",
         "cross-env": "~7.0.3",
         "dns2": "~2.0.1",
@@ -124,6 +122,7 @@
             "__DEV__": true
         },
         "testRegex": "./test/*.spec.js",
-        "rootDir": "."
+        "rootDir": ".",
+        "testTimeout": 15000
     }
 }
