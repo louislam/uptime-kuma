@@ -31,3 +31,4 @@ jobs:
     - run: npm test
       env:
         HEADLESS_TEST: 1
+        JUST_FOR_TEST: ${{ secrets.JUST_FOR_TEST }}
