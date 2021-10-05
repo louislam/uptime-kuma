@@ -86,7 +86,7 @@
 
                             <!-- Push URL -->
                             <div v-if="monitor.type === 'push' " class="my-3">
-                                <label for="push-url" class="form-label">{{ $t("Push URL") }}</label>
+                                <label for="push-url" class="form-label">{{ $t("PushUrl") }}</label>
                                 <CopyableInput id="push-url" v-model="pushURL" type="url" disabled="disabled" />
                                 <div class="form-text">
                                     You should call this url every {{ monitor.interval }} seconds.<br />
@@ -328,15 +328,11 @@ export default {
         },
 
         bodyPlaceholder() {
-            return `{
-    "id": 124357,
-    "username": "admin",
-    "password": "myAdminPassword"
-}`;
+            return this.$t("BodyPlaceholder");
         },
 
         headersPlaceholder() {
-            return "Authorization: Bearer abc123\nContent-Type: application/json";
+            return this.$t("HeadersPlaceholder");
         }
 
     },
@@ -441,13 +437,13 @@ export default {
                 try {
                     JSON.parse(this.monitor.body);
                 } catch (err) {
-                    toast.error(this.$t("The request body is not valid JSON: ") + err.message);
+                    toast.error(this.$t("BodyInvalidFormat") + err.message);
                     return false;
                 }
             }
             if (this.monitor.headers) {
                 if (!/^([^:]+:.*)([\s]+[^:]+:.*)+$/g.test(this.monitor.headers)) {
-                    toast.error(this.$t("Headers do not have a valid format: \"key: value<new line>key: value<new line>...\""));
+                    toast.error(this.$t("HeadersInvalidFormat"));
                     return false;
                 }
             }

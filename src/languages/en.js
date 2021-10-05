@@ -195,4 +195,12 @@ export default {
     "pushbullet": "Pushbullet",
     "line": "Line Messenger",
     "mattermost": "Mattermost",
+    Method: "Method",
+    Body: "Body",
+    Headers: "Headers",
+    PushUrl: "Push URL",
+    HeadersInvalidFormat: "Headers do not have a valid format: \"key: value <new line> key: value <new line>...\"",
+    BodyInvalidFormat: "The request body is not valid JSON: ",
+    BodyPlaceholder: "{\n\t\"id\": 124357,\n\t\"username\": \"admin\",\n\t\"password\": \"myAdminPassword\"\n}",
+    HeadersPlaceholder: "Authorization: Bearer abc123\nContent-Type: application/json",
 };
