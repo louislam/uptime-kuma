@@ -125,4 +125,10 @@ export default {
     Pushbullet: "Pushbullet",
     Line: "Line Messenger",
     Mattermost: "Mattermost",
+    ShowingFromToOfCountRecords: "Showing {from} to {to} of {count} records",
+    Records: "records",
+    OneRecord: "One record",
+    PoweredBy: "Powered by",
+    SwitchToLightTheme: "Switch to Light Theme",
+    SwitchToDarkTheme: "Switch to Dark Theme",
 };
