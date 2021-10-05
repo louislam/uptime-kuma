@@ -59,7 +59,7 @@
                                        @keydown.enter.prevent="onEnter"
                                 />
                                 <div class="invalid-feedback">
-                                    {{ $t("Tag with this name already exist.") }}
+                                    {{ $t("TagWithThisNameAlreadyExist") }}
                                 </div>
                             </div>
                             <div class="w-50 ps-2">
@@ -100,7 +100,7 @@
                                    @keydown.enter.prevent="onEnter"
                             />
                             <div class="invalid-feedback">
-                                {{ $t("Tag with this value already exist.") }}
+                                {{ $t("TagWithThisValueAlreadyExist") }}
                             </div>
                         </div>
                         <div class="mb-2">

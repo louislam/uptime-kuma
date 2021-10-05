@@ -10,7 +10,7 @@
                 </div>
 
                 <p class="mt-3">
-                    {{ $t("Create your admin account") }}
+                    {{ $t("CreateYourAdminAccount") }}
                 </p>
 
                 <div class="form-floating">
@@ -34,7 +34,7 @@
 
                 <div class="form-floating mt-3">
                     <input id="repeat" v-model="repeatPassword" type="password" class="form-control" placeholder="Repeat Password" required>
-                    <label for="repeat">{{ $t("Repeat Password") }}</label>
+                    <label for="repeat">{{ $t("RepeatPassword") }}</label>
                 </div>
 
                 <button class="w-100 btn btn-primary mt-3" type="submit" :disabled="processing">

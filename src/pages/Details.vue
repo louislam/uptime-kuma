@@ -15,7 +15,7 @@
                 </span>
                 <span v-if="monitor.type === 'dns'">[{{ monitor.dns_resolve_type }}] {{ monitor.hostname }}
                     <br>
-                    <span>{{ $t("Last Result") }}:</span> <span class="keyword">{{ monitor.dns_last_result }}</span>
+                    <span>{{ $t("LastResult") }}:</span> <span class="keyword">{{ monitor.dns_last_result }}</span>
                 </span>
             </p>
 
@@ -74,10 +74,10 @@
                     </div>
 
                     <div v-if="tlsInfo" class="col">
-                        <h4>{{ $t("Cert Exp.") }}</h4>
+                        <h4>{{ $t("CertExp") }}</h4>
                         <p>(<Datetime :value="tlsInfo.certInfo.validTo" date-only />)</p>
                         <span class="num">
-                            <a href="#" @click.prevent="toggleCertInfoBox = !toggleCertInfoBox">{{ tlsInfo.certInfo.daysRemaining }} {{ $t("days") }}</a>
+                            <a href="#" @click.prevent="toggleCertInfoBox = !toggleCertInfoBox">{{ tlsInfo.certInfo.daysRemaining }} {{ $t("Days") }}</a>
                         </span>
                     </div>
                 </div>
@@ -104,7 +104,7 @@
             <div class="shadow-box table-shadow-box">
                 <div class="dropdown dropdown-clear-data">
                     <button class="btn btn-sm btn-outline-danger dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                        <font-awesome-icon icon="trash" /> {{ $t("Clear Data") }}
+                        <font-awesome-icon icon="trash" /> {{ $t("ClearData") }}
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li>
@@ -136,7 +136,7 @@
 
                         <tr v-if="importantHeartBeatList.length === 0">
                             <td colspan="3">
-                                {{ $t("No important events") }}
+                                {{ $t("NoImportantEvents") }}
                             </td>
                         </tr>
                     </tbody>
@@ -153,19 +153,19 @@
             </div>
 
             <Confirm ref="confirmPause" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="pauseMonitor">
-                {{ $t("pauseMonitorMsg") }}
+                {{ $t("PauseMonitorMsg") }}
             </Confirm>
 
             <Confirm ref="confirmDelete" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="deleteMonitor">
-                {{ $t("deleteMonitorMsg") }}
+                {{ $t("DeleteMonitorMsg") }}
             </Confirm>
 
             <Confirm ref="confirmClearEvents" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="clearEvents">
-                {{ $t("clearEventsMsg") }}
+                {{ $t("ClearEventsMsg") }}
             </Confirm>
 
             <Confirm ref="confirmClearHeartbeats" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="clearHeartbeats">
-                {{ $t("clearHeartbeatsMsg") }}
+                {{ $t("ClearHeartbeatsMsg") }}
             </Confirm>
         </div>
     </transition>
@@ -240,7 +240,7 @@ export default {
                 return this.lastHeartBeat.ping;
             }
 
-            return this.$t("notAvailableShort");
+            return this.$t("NotAvailableShort");
         },
 
         avgPing() {
@@ -248,7 +248,7 @@ export default {
                 return this.$root.avgPingList[this.monitor.id];
             }
 
-            return this.$t("notAvailableShort");
+            return this.$t("NotAvailableShort");
         },
 
         importantHeartBeatList() {

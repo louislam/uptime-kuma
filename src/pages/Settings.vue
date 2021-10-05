@@ -37,7 +37,7 @@
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">{{ $t("Theme - Heartbeat Bar") }}</label>
+                            <label class="form-label">{{ $t("ThemeHeartbeatBar") }}</label>
                             <div>
                                 <div class="btn-group" role="group" aria-label="Basic checkbox toggle button group">
                                     <input id="btncheck4" v-model="$root.userHeartbeatBar" type="radio" class="btn-check" name="heartbeatBarTheme" autocomplete="off" value="normal">
@@ -67,24 +67,24 @@
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label">{{ $t("Search Engine Visibility") }}</label>
+                                <label class="form-label">{{ $t("SearchEngineVisibility") }}</label>
 
                                 <div class="form-check">
                                     <input id="searchEngineIndexYes" v-model="settings.searchEngineIndex" class="form-check-input" type="radio" name="flexRadioDefault" :value="true" required>
                                     <label class="form-check-label" for="searchEngineIndexYes">
-                                        {{ $t("Allow indexing") }}
+                                        {{ $t("AllowIndexing") }}
                                     </label>
                                 </div>
                                 <div class="form-check">
                                     <input id="searchEngineIndexNo" v-model="settings.searchEngineIndex" class="form-check-input" type="radio" name="flexRadioDefault" :value="false" required>
                                     <label class="form-check-label" for="searchEngineIndexNo">
-                                        {{ $t("Discourage search engines from indexing site") }}
+                                        {{ $t("DiscourageSearchEnginesFromIndexingSite") }}
                                     </label>
                                 </div>
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label">{{ $t("Entry Page") }}</label>
+                                <label class="form-label">{{ $t("EntryPage") }}</label>
 
                                 <div class="form-check">
                                     <input id="entryPageYes" v-model="settings.entryPage" class="form-check-input" type="radio" name="statusPage" value="dashboard" required>
@@ -110,29 +110,29 @@
 
                         <template v-if="loaded">
                             <template v-if="! settings.disableAuth">
-                                <h2 class="mt-5 mb-2">{{ $t("Change Password") }}</h2>
+                                <h2 class="mt-5 mb-2">{{ $t("ChangePassword") }}</h2>
                                 <form class="mb-3" @submit.prevent="savePassword">
                                     <div class="mb-3">
-                                        <label for="current-password" class="form-label">{{ $t("Current Password") }}</label>
+                                        <label for="current-password" class="form-label">{{ $t("CurrentPassword") }}</label>
                                         <input id="current-password" v-model="password.currentPassword" type="password" class="form-control" required>
                                     </div>
 
                                     <div class="mb-3">
-                                        <label for="new-password" class="form-label">{{ $t("New Password") }}</label>
+                                        <label for="new-password" class="form-label">{{ $t("NewPassword") }}</label>
                                         <input id="new-password" v-model="password.newPassword" type="password" class="form-control" required>
                                     </div>
 
                                     <div class="mb-3">
-                                        <label for="repeat-new-password" class="form-label">{{ $t("Repeat New Password") }}</label>
+                                        <label for="repeat-new-password" class="form-label">{{ $t("RepeatNewPassword") }}</label>
                                         <input id="repeat-new-password" v-model="password.repeatNewPassword" type="password" class="form-control" :class="{ 'is-invalid' : invalidPassword }" required>
                                         <div class="invalid-feedback">
-                                            {{ $t("passwordNotMatchMsg") }}
+                                            {{ $t("PasswordNotMatchMsg") }}
                                         </div>
                                     </div>
 
                                     <div>
                                         <button class="btn btn-primary" type="submit">
-                                            {{ $t("Update Password") }}
+                                            {{ $t("UpdatePassword") }}
                                         </button>
                                     </div>
                                 </form>
@@ -140,42 +140,42 @@
 
                             <div v-if="! settings.disableAuth" class="mt-5 mb-3">
                                 <h2 class="mb-2">
-                                    {{ $t("Two Factor Authentication") }}
+                                    {{ $t("TwoFactorAuthentication") }}
                                 </h2>
-                                <button class="btn btn-primary me-2" type="button" @click="$refs.TwoFADialog.show()">{{ $t("2FA Settings") }}</button>
+                                <button class="btn btn-primary me-2" type="button" @click="$refs.TwoFADialog.show()">{{ $t("TwoFaSettings") }}</button>
                             </div>
 
-                            <h2 class="mt-5 mb-2">{{ $t("Export Backup") }}</h2>
+                            <h2 class="mt-5 mb-2">{{ $t("ExportBackup") }}</h2>
 
                             <p>
-                                {{ $t("backupDescription") }} <br />
-                                ({{ $t("backupDescription2") }}) <br />
+                                {{ $t("BackupDescription") }} <br />
+                                ({{ $t("BackupDescription2") }}) <br />
                             </p>
 
                             <div class="mb-2">
                                 <button class="btn btn-primary" @click="downloadBackup">{{ $t("Export") }}</button>
                             </div>
 
-                            <p><strong>{{ $t("backupDescription3") }}</strong></p>
+                            <p><strong>{{ $t("BackupDescription3") }}</strong></p>
 
-                            <h2 class="mt-5 mb-2">{{ $t("Import Backup") }}</h2>
+                            <h2 class="mt-5 mb-2">{{ $t("ImportBackup") }}</h2>
 
                             <label class="form-label">{{ $t("Options") }}:</label>
                             <br>
                             <div class="form-check form-check-inline">
                                 <input id="radioKeep" v-model="importHandle" class="form-check-input" type="radio" name="radioImportHandle" value="keep">
-                                <label class="form-check-label" for="radioKeep">{{ $t("Keep both") }}</label>
+                                <label class="form-check-label" for="radioKeep">{{ $t("KeepBoth") }}</label>
                             </div>
                             <div class="form-check form-check-inline">
                                 <input id="radioSkip" v-model="importHandle" class="form-check-input" type="radio" name="radioImportHandle" value="skip">
-                                <label class="form-check-label" for="radioSkip">{{ $t("Skip existing") }}</label>
+                                <label class="form-check-label" for="radioSkip">{{ $t("SkipExisting") }}</label>
                             </div>
                             <div class="form-check form-check-inline">
                                 <input id="radioOverwrite" v-model="importHandle" class="form-check-input" type="radio" name="radioImportHandle" value="overwrite">
                                 <label class="form-check-label" for="radioOverwrite">{{ $t("Overwrite") }}</label>
                             </div>
                             <div class="form-text mb-2">
-                                {{ $t("importHandleDescription") }}
+                                {{ $t("ImportHandleDescription") }}
                             </div>
 
                             <div class="mb-2">
@@ -196,10 +196,10 @@
                             <h2 class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
 
                             <div class="mb-3">
-                                <button v-if="settings.disableAuth" class="btn btn-outline-primary me-1 mb-1" @click="enableAuth">{{ $t("Enable Auth") }}</button>
-                                <button v-if="! settings.disableAuth" class="btn btn-primary me-1 mb-1" @click="confirmDisableAuth">{{ $t("Disable Auth") }}</button>
+                                <button v-if="settings.disableAuth" class="btn btn-outline-primary me-1 mb-1" @click="enableAuth">{{ $t("EnableAuth") }}</button>
+                                <button v-if="! settings.disableAuth" class="btn btn-primary me-1 mb-1" @click="confirmDisableAuth">{{ $t("DisableAuth") }}</button>
                                 <button v-if="! settings.disableAuth" class="btn btn-danger me-1 mb-1" @click="$root.logout">{{ $t("Logout") }}</button>
-                                <button class="btn btn-outline-danger me-1 mb-1" @click="confirmClearStatistics">{{ $t("Clear all statistics") }}</button>
+                                <button class="btn btn-outline-danger me-1 mb-1" @click="confirmClearStatistics">{{ $t("ClearAllStatistics") }}</button>
                             </div>
                         </template>
                     </div>
@@ -209,10 +209,10 @@
 
                         <h2>{{ $t("Notifications") }}</h2>
                         <p v-if="$root.notificationList.length === 0">
-                            {{ $t("Not available, please setup.") }}
+                            {{ $t("NotAvailablePleaseSetup") }}
                         </p>
                         <p v-else>
-                            {{ $t("notificationDescription") }}
+                            {{ $t("NotificationDescription") }}
                         </p>
 
                         <ul class="list-group mb-3" style="border-radius: 1rem;">
@@ -223,13 +223,13 @@
                         </ul>
 
                         <button class="btn btn-primary me-2" type="button" @click="$refs.notificationDialog.show()">
-                            {{ $t("Setup Notification") }}
+                            {{ $t("SetupNotification") }}
                         </button>
 
                         <h2 class="mt-5">{{ $t("Info") }}</h2>
 
                         {{ $t("Version") }}: {{ $root.info.version }} <br />
-                        <a href="https://github.com/louislam/uptime-kuma/releases" target="_blank" rel="noopener">{{ $t("Check Update On GitHub") }}</a>
+                        <a href="https://github.com/louislam/uptime-kuma/releases" target="_blank" rel="noopener">{{ $t("CheckUpdateOnGitHub") }}</a>
                     </div>
                 </div>
             </div>
@@ -343,10 +343,10 @@
             </Confirm>
 
             <Confirm ref="confirmClearStatistics" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="clearStatistics">
-                {{ $t("confirmClearStatisticsMsg") }}
+                {{ $t("ConfirmClearStatisticsMsg") }}
             </Confirm>
             <Confirm ref="confirmImport" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="importBackup">
-                {{ $t("confirmImportMsg") }}
+                {{ $t("ConfirmImportMsg") }}
             </Confirm>
         </div>
     </transition>
@@ -498,12 +498,12 @@ export default {
 
             if (uploadItem.length <= 0) {
                 this.processing = false;
-                return this.importAlert = this.$t("alertNoFile");
+                return this.importAlert = this.$t("AlertNoFile");
             }
 
             if (uploadItem.item(0).type !== "application/json") {
                 this.processing = false;
-                return this.importAlert = this.$t("alertWrongFileType");
+                return this.importAlert = this.$t("AlertWrongFileType");
             }
 
             let fileReader = new FileReader();

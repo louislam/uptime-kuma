@@ -85,7 +85,7 @@ export default {
                     y: {
                         title: {
                             display: true,
-                            text: this.$t("respTime"),
+                            text: this.$t("RespTime"),
                         },
                         offset: false,
                         grid: {

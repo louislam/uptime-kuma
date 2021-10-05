@@ -13,7 +13,7 @@
         <div class="input-group mb-3">
             <input id="telegram-chat-id" v-model="$parent.notification.telegramChatID" type="text" class="form-control" required>
             <button v-if="$parent.notification.telegramBotToken" class="btn btn-outline-secondary" type="button" @click="autoGetTelegramChatID">
-                {{ $t("Auto Get") }}
+                {{ $t("AutoGet") }}
             </button>
         </div>
 

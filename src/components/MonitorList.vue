@@ -14,7 +14,7 @@
         </div>
         <div class="monitor-list" :class="{ scrollbar: scrollbar }">
             <div v-if="Object.keys($root.monitorList).length === 0" class="text-center mt-3">
-                {{ $t("No Monitors, please") }} <router-link to="/add">{{ $t("add one") }}</router-link>
+                {{ $t("NoMonitorsPlease") }} <router-link to="/add">{{ $t("AddOne") }}</router-link>
             </div>
 
             <router-link v-for="(item, index) in sortedMonitorList" :key="index" :to="monitorURL(item.id)" class="item" :class="{ 'disabled': ! item.active }">

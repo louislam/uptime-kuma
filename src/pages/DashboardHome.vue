@@ -2,7 +2,7 @@
     <transition name="slide-fade" appear>
         <div v-if="$route.name === 'DashboardHome'">
             <h1 class="mb-3">
-                {{ $t("Quick Stats") }}
+                {{ $t("QuickStats") }}
             </h1>
 
             <div class="shadow-box big-padding text-center mb-4">
@@ -20,7 +20,7 @@
                         <span class="num text-secondary">{{ stats.unknown }}</span>
                     </div>
                     <div class="col">
-                        <h3>{{ $t("pauseDashboardHome") }}</h3>
+                        <h3>{{ $t("PauseDashboardHome") }}</h3>
                         <span class="num text-secondary">{{ stats.pause }}</span>
                     </div>
                 </div>
@@ -46,7 +46,7 @@
 
                         <tr v-if="importantHeartBeatList.length === 0">
                             <td colspan="4">
-                                {{ $t("No important events") }}
+                                {{ $t("NoImportantEvents") }}
                             </td>
                         </tr>
                     </tbody>

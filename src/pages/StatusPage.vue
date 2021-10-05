@@ -30,12 +30,12 @@
             <div v-if="!enableEditMode">
                 <button class="btn btn-info me-2" @click="edit">
                     <font-awesome-icon icon="edit" />
-                    {{ $t("Edit Status Page") }}
+                    {{ $t("EditStatusPage") }}
                 </button>
 
                 <a href="/dashboard" class="btn btn-info">
                     <font-awesome-icon icon="tachometer-alt" />
-                    {{ $t("Go to Dashboard") }}
+                    {{ $t("GoToDashboard") }}
                 </a>
             </div>
 
@@ -137,23 +137,23 @@
         <div class="shadow-box list  p-4 overall-status mb-4">
             <div v-if="Object.keys($root.publicMonitorList).length === 0 && loadedData">
                 <font-awesome-icon icon="question-circle" class="ok" />
-                {{ $t("No Services") }}
+                {{ $t("NoServices") }}
             </div>
 
             <template v-else>
                 <div v-if="allUp">
                     <font-awesome-icon icon="check-circle" class="ok" />
-                    {{ $t("All Systems Operational") }}
+                    {{ $t("AllSystemsOperational") }}
                 </div>
 
                 <div v-else-if="partialDown">
                     <font-awesome-icon icon="exclamation-circle" class="warning" />
-                    {{ $t("Partially Degraded Service") }}
+                    {{ $t("PartiallyDegradedService") }}
                 </div>
 
                 <div v-else-if="allDown">
                     <font-awesome-icon icon="times-circle" class="danger" />
-                    {{ $t("Degraded Service") }}
+                    {{ $t("DegradedService") }}
                 </div>
 
                 <div v-else>
@@ -170,13 +170,13 @@
             <div>
                 <button class="btn btn-primary btn-add-group me-2" @click="addGroup">
                     <font-awesome-icon icon="plus" />
-                    {{ $t("Add Group") }}
+                    {{ $t("AddGroup") }}
                 </button>
             </div>
 
             <div class="mt-3">
                 <div v-if="allMonitorList.length > 0 && loadedData">
-                    <label>{{ $t("Add a monitor") }}:</label>
+                    <label>{{ $t("AddAMonitor") }}:</label>
                     <select v-model="selectedMonitor" class="form-control">
                         <option v-for="monitor in allMonitorList" :key="monitor.id" :value="monitor">{{ monitor.name }}</option>
                     </select>
@@ -190,7 +190,7 @@
         <div class="mb-4">
             <div v-if="$root.publicGroupList.length === 0 && loadedData" class="text-center">
                 <!-- 👀 Nothing here, please add a group or a monitor. -->
-                👀 {{ $t("statusPageNothing") }}
+                👀 {{ $t("StatusPageNothing") }}
             </div>
 
             <PublicGroupList :edit-mode="enableEditMode" />

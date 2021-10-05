@@ -9,7 +9,7 @@
                             <h2 class="mb-2">{{ $t("General") }}</h2>
 
                             <div class="my-3">
-                                <label for="type" class="form-label">{{ $t("Monitor Type") }}</label>
+                                <label for="type" class="form-label">{{ $t("MonitorType") }}</label>
                                 <select id="type" v-model="monitor.type" class="form-select">
                                     <option value="http">
                                         HTTP(s)
@@ -34,13 +34,13 @@
 
                             <!-- Friendly Name -->
                             <div class="my-3">
-                                <label for="name" class="form-label">{{ $t("Friendly Name") }}</label>
+                                <label for="name" class="form-label">{{ $t("FriendlyName") }}</label>
                                 <input id="name" v-model="monitor.name" type="text" class="form-control" required>
                             </div>
 
                             <!-- URL -->
                             <div v-if="monitor.type === 'http' || monitor.type === 'keyword' " class="my-3">
-                                <label for="url" class="form-label">{{ $t("URL") }}</label>
+                                <label for="url" class="form-label">{{ $t("Url") }}</label>
                                 <input id="url" v-model="monitor.url" type="url" class="form-control" pattern="https?://.+" required>
                             </div>
 
@@ -59,7 +59,7 @@
                                 <label for="keyword" class="form-label">{{ $t("Keyword") }}</label>
                                 <input id="keyword" v-model="monitor.keyword" type="text" class="form-control" required>
                                 <div class="form-text">
-                                    {{ $t("keywordDescription") }}
+                                    {{ $t("KeywordDescription") }}
                                 </div>
                             </div>
 
@@ -78,15 +78,15 @@
                             <!-- For DNS Type -->
                             <template v-if="monitor.type === 'dns'">
                                 <div class="my-3">
-                                    <label for="dns_resolve_server" class="form-label">{{ $t("Resolver Server") }}</label>
+                                    <label for="dns_resolve_server" class="form-label">{{ $t("ResolverServer") }}</label>
                                     <input id="dns_resolve_server" v-model="monitor.dns_resolve_server" type="text" class="form-control" :pattern="ipRegex" required>
                                     <div class="form-text">
-                                        {{ $t("resoverserverDescription") }}
+                                        {{ $t("ResoverserverDescription") }}
                                     </div>
                                 </div>
 
                                 <div class="my-3">
-                                    <label for="dns_resolve_type" class="form-label">{{ $t("Resource Record Type") }}</label>
+                                    <label for="dns_resolve_type" class="form-label">{{ $t("ResourceRecordType") }}</label>
 
                                     <!-- :allow-empty="false" is not working, set a default value instead https://github.com/shentao/vue-multiselect/issues/336   -->
                                     <VueMultiselect
@@ -104,14 +104,14 @@
                                     ></VueMultiselect>
 
                                     <div class="form-text">
-                                        {{ $t("rrtypeDescription") }}
+                                        {{ $t("RrtypeDescription") }}
                                     </div>
                                 </div>
                             </template>
 
                             <!-- Interval -->
                             <div class="my-3">
-                                <label for="interval" class="form-label">{{ $t("Heartbeat Interval") }} ({{ $t("checkEverySecond", [ monitor.interval ]) }})</label>
+                                <label for="interval" class="form-label">{{ $t("HeartbeatInterval") }} ({{ $t("checkEverySecond", [ monitor.interval ]) }})</label>
                                 <input id="interval" v-model="monitor.interval" type="number" class="form-control" required min="20" step="1">
                             </div>
 
@@ -119,13 +119,13 @@
                                 <label for="maxRetries" class="form-label">{{ $t("Retries") }}</label>
                                 <input id="maxRetries" v-model="monitor.maxretries" type="number" class="form-control" required min="0" step="1">
                                 <div class="form-text">
-                                    {{ $t("retriesDescription") }}
+                                    {{ $t("RetriesDescription") }}
                                 </div>
                             </div>
 
                             <div class="my-3">
                                 <label for="retry-interval" class="form-label">
-                                    {{ $t("Heartbeat Retry Interval") }}
+                                    {{ $t("HeartbeatRetryInterval") }}
                                     <span>({{ $t("retryCheckEverySecond", [ monitor.retryInterval ]) }})</span>
                                 </label>
                                 <input id="retry-interval" v-model="monitor.retryInterval" type="number" class="form-control" required min="20" step="1">
@@ -136,32 +136,32 @@
                             <div v-if="monitor.type === 'http' || monitor.type === 'keyword' " class="my-3 form-check">
                                 <input id="ignore-tls" v-model="monitor.ignoreTls" class="form-check-input" type="checkbox" value="">
                                 <label class="form-check-label" for="ignore-tls">
-                                    {{ $t("ignoreTLSError") }}
+                                    {{ $t("IgnoreTlsError") }}
                                 </label>
                             </div>
 
                             <div class="my-3 form-check">
                                 <input id="upside-down" v-model="monitor.upsideDown" class="form-check-input" type="checkbox">
                                 <label class="form-check-label" for="upside-down">
-                                    {{ $t("Upside Down Mode") }}
+                                    {{ $t("UpsideDownMode") }}
                                 </label>
                                 <div class="form-text">
-                                    {{ $t("upsideDownModeDescription") }}
+                                    {{ $t("UpsideDownModeDescription") }}
                                 </div>
                             </div>
 
                             <!-- HTTP / Keyword only -->
                             <template v-if="monitor.type === 'http' || monitor.type === 'keyword' ">
                                 <div class="my-3">
-                                    <label for="maxRedirects" class="form-label">{{ $t("Max. Redirects") }}</label>
+                                    <label for="maxRedirects" class="form-label">{{ $t("MaxRedirects") }}</label>
                                     <input id="maxRedirects" v-model="monitor.maxredirects" type="number" class="form-control" required min="0" step="1">
                                     <div class="form-text">
-                                        {{ $t("maxRedirectDescription") }}
+                                        {{ $t("MaxRedirectDescription") }}
                                     </div>
                                 </div>
 
                                 <div class="my-3">
-                                    <label for="acceptedStatusCodes" class="form-label">{{ $t("Accepted Status Codes") }}</label>
+                                    <label for="acceptedStatusCodes" class="form-label">{{ $t("AcceptedStatusCodes") }}</label>
 
                                     <VueMultiselect
                                         id="acceptedStatusCodes"
@@ -178,7 +178,7 @@
                                     ></VueMultiselect>
 
                                     <div class="form-text">
-                                        {{ $t("acceptedStatusCodesDescription") }}
+                                        {{ $t("AcceptedStatusCodesDescription") }}
                                     </div>
                                 </div>
                             </template>
@@ -197,7 +197,7 @@
 
                             <h2 class="mb-2">{{ $t("Notifications") }}</h2>
                             <p v-if="$root.notificationList.length === 0">
-                                {{ $t("Not available, please setup.") }}
+                                {{ $t("NotAvailablePleaseSetup") }}
                             </p>
 
                             <div v-for="notification in $root.notificationList" :key="notification.id" class="form-check form-switch my-3">
@@ -212,7 +212,7 @@
                             </div>
 
                             <button class="btn btn-primary me-2" type="button" @click="$refs.notificationDialog.show()">
-                                {{ $t("Setup Notification") }}
+                                {{ $t("SetupNotification") }}
                             </button>
                         </div>
                     </div>

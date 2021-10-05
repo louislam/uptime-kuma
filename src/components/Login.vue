@@ -26,7 +26,7 @@
                         <input id="remember" v-model="$root.remember" type="checkbox" value="remember-me" class="form-check-input">
 
                         <label class="form-check-label" for="remember">
-                            {{ $t("Remember me") }}
+                            {{ $t("RememberMe") }}
                         </label>
                     </div>
                 </div>

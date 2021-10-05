@@ -5,7 +5,7 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">
-                            {{ $t("Setup 2FA") }}
+                            {{ $t("Setup2Fa") }}
                             <span v-if="twoFAStatus == true" class="badge bg-primary">{{ $t("Active") }}</span>
                             <span v-if="twoFAStatus == false" class="badge bg-primary">{{ $t("Inactive") }}</span>
                         </h5>
@@ -15,25 +15,25 @@
                         <div class="mb-3">
                             <div v-if="uri && twoFAStatus == false" class="mx-auto text-center" style="width: 210px;">
                                 <vue-qrcode :key="uri" :value="uri" type="image/png" :quality="1" :color="{ light: '#ffffffff' }" />
-                                <button v-show="!showURI" type="button" class="btn btn-outline-primary btn-sm mt-2" @click="showURI = true">{{ $t("Show URI") }}</button>
+                                <button v-show="!showURI" type="button" class="btn btn-outline-primary btn-sm mt-2" @click="showURI = true">{{ $t("ShowUri") }}</button>
                             </div>
                             <p v-if="showURI && twoFAStatus == false" class="text-break mt-2">{{ uri }}</p>
 
                             <button v-if="uri == null && twoFAStatus == false" class="btn btn-primary" type="button" @click="prepare2FA()">
-                                {{ $t("Enable 2FA") }}
+                                {{ $t("Enable2Fa") }}
                             </button>
 
                             <button v-if="twoFAStatus == true" class="btn btn-danger" type="button" :disabled="processing" @click="confirmDisableTwoFA()">
-                                {{ $t("Disable 2FA") }}
+                                {{ $t("Disable2Fa") }}
                             </button>
 
                             <div v-if="uri && twoFAStatus == false" class="mt-3">
-                                <label for="basic-url" class="form-label">{{ $t("twoFAVerifyLabel") }}</label>
+                                <label for="basic-url" class="form-label">{{ $t("TwoFaVerifyLabel") }}</label>
                                 <div class="input-group">
                                     <input v-model="token" type="text" maxlength="6" class="form-control">
-                                    <button class="btn btn-outline-primary" type="button" @click="verifyToken()">{{ $t("Verify Token") }}</button>
+                                    <button class="btn btn-outline-primary" type="button" @click="verifyToken()">{{ $t("VerifyToken") }}</button>
                                 </div>
-                                <p v-show="tokenValid" class="mt-2" style="color: green">{{ $t("tokenValidSettingsMsg") }}</p>
+                                <p v-show="tokenValid" class="mt-2" style="color: green">{{ $t("TokenValidSettingsMsg") }}</p>
                             </div>
                         </div>
                     </div>
@@ -50,11 +50,11 @@
     </form>
 
     <Confirm ref="confirmEnableTwoFA" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="save2FA">
-        {{ $t("confirmEnableTwoFAMsg") }}
+        {{ $t("ConfirmEnableTwoFaMsg") }}
     </Confirm>
 
     <Confirm ref="confirmDisableTwoFA" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="disable2FA">
-        {{ $t("confirmDisableTwoFAMsg") }}
+        {{ $t("ConfirmDisableTwoFaMsg") }}
     </Confirm>
 </template>
 

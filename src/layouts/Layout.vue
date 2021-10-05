@@ -14,7 +14,7 @@
             </router-link>
 
             <a v-if="hasNewVersion" target="_blank" href="https://github.com/louislam/uptime-kuma/releases" class="btn btn-info me-3">
-                <font-awesome-icon icon="arrow-alt-circle-up" /> {{ $t("New Update") }}
+                <font-awesome-icon icon="arrow-alt-circle-up" /> {{ $t("NewUpdate") }}
             </a>
 
             <ul class="nav nav-pills">

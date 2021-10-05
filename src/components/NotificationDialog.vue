@@ -5,20 +5,20 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 id="exampleModalLabel" class="modal-title">
-                            {{ $t("Setup Notification") }}
+                            {{ $t("SetupNotification") }}
                         </h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" />
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label for="notification-type" class="form-label">{{ $t("Notification Type") }}</label>
+                            <label for="notification-type" class="form-label">{{ $t("NotificationType") }}</label>
                             <select id="notification-type" v-model="notification.type" class="form-select">
                                 <option v-for="type in notificationTypes" :key="type" :value="type">{{ $t(type) }}</option>
                             </select>
                         </div>
 
                         <div class="mb-3">
-                            <label for="notification-name" class="form-label">{{ $t("Friendly Name") }}</label>
+                            <label for="notification-name" class="form-label">{{ $t("FriendlyName") }}</label>
                             <input id="notification-name" v-model="notification.name" type="text" class="form-control" required>
                         </div>
 
@@ -30,17 +30,17 @@
 
                             <div class="form-check form-switch">
                                 <input v-model="notification.isDefault" class="form-check-input" type="checkbox">
-                                <label class="form-check-label">{{ $t("Default enabled") }}</label>
+                                <label class="form-check-label">{{ $t("DefaultEnabled") }}</label>
                             </div>
                             <div class="form-text">
-                                {{ $t("enableDefaultNotificationDescription") }}
+                                {{ $t("EnableDefaultNotificationDescription") }}
                             </div>
 
                             <br>
 
                             <div class="form-check form-switch">
                                 <input v-model="notification.applyExisting" class="form-check-input" type="checkbox">
-                                <label class="form-check-label">{{ $t("Apply on all existing monitors") }}</label>
+                                <label class="form-check-label">{{ $t("ApplyOnAllExistingMonitors") }}</label>
                             </div>
                         </div>
                     </div>
@@ -63,7 +63,7 @@
     </form>
 
     <Confirm ref="confirmDelete" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="deleteNotification">
-        {{ $t("deleteNotificationMsg") }}
+        {{ $t("DeleteNotificationMsg") }}
     </Confirm>
 </template>
 

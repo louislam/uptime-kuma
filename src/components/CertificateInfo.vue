@@ -1,6 +1,6 @@
 <template>
     <div>
-        <h4>{{ $t("Certificate Info") }}</h4>
+        <h4>{{ $t("CertificateInfo") }}</h4>
         {{ $t("Certificate Chain") }}:
         <div
             v-if="valid"

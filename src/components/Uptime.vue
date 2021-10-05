@@ -22,7 +22,7 @@ export default {
                 return Math.round(this.$root.uptimeList[key] * 10000) / 100 + "%";
             }
 
-            return this.$t("notAvailableShort");
+            return this.$t("NotAvailableShort");
         },
 
         color() {
