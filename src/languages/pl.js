@@ -135,7 +135,7 @@ export default {
     "Setup 2FA": "Konfiguracja 2FA",
     "Enable 2FA": "Włącz 2FA",
     "Disable 2FA": "Wyłącz 2FA",
-    "2FA Settings": "Ustawienia 2FA",
+    "TwoFaSettings": "Ustawienia 2FA",
     "Two Factor Authentication": "Uwierzytelnienie dwuskładnikowe",
     Active: "Włączone",
     Inactive: "Wyłączone",

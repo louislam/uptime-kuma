@@ -145,7 +145,7 @@ export default {
     "Setup 2FA": "تنظیمات احراز دو مرحله‌ای",
     "Enable 2FA": "فعال سازی احراز 2 مرحله‌ای",
     "Disable 2FA": "غیر فعال کردن احراز 2 مرحله‌ای",
-    "2FA Settings": "تنظیمات احراز 2 مرحله‌ای",
+    "TwoFaSettings": "تنظیمات احراز 2 مرحله‌ای",
     "Two Factor Authentication": "احراز هویت دومرحله‌ای",
     Active: "فعال",
     Inactive: "غیرفعال",

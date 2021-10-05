@@ -138,7 +138,7 @@ export default {
     "Setup 2FA": "2FA Einrichten",
     "Enable 2FA": "2FA Aktivieren",
     "Disable 2FA": "2FA deaktivieren",
-    "2FA Settings": "2FA Einstellungen",
+    "TwoFaSettings": "2FA Einstellungen",
     confirmEnableTwoFAMsg: "Bist du sicher das du 2FA aktivieren möchtest?",
     confirmDisableTwoFAMsg: "Bist du sicher das du 2FA deaktivieren möchtest?",
     tokenValidSettingsMsg: "Token gültig! Du kannst jetzt die 2FA Einstellungen speichern.",

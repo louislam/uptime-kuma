@@ -145,7 +145,7 @@ export default {
     "Setup 2FA": "2FA beállítása",
     "Enable 2FA": "2FA engedélyezése",
     "Disable 2FA": "2FA toltása",
-    "2FA Settings": "2FA beállítások",
+    "TwoFaSettings": "2FA beállítások",
     "Two Factor Authentication": "Two Factor Authentication",
     Active: "Aktív",
     Inactive: "Inaktív",

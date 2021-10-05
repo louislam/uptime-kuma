@@ -135,7 +135,7 @@ export default {
     "Setup 2FA": "设置2FA",
     "Enable 2FA": "启用2FA",
     "Disable 2FA": "禁用2FA",
-    "2FA Settings": "2FA设置",
+    "TwoFaSettings": "2FA设置",
     "Two Factor Authentication": "双因素认证",
     Active: "有效",
     Inactive: "无效",

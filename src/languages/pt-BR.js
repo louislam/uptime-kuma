@@ -145,7 +145,7 @@ export default {
     "Setup 2FA": "Configurar 2FA",
     "Enable 2FA": "Ativar 2FA",
     "Disable 2FA": "Desativar 2FA",
-    "2FA Settings": "Configurações do 2FA ",
+    "TwoFaSettings": "Configurações do 2FA ",
     "Two Factor Authentication": "Autenticação e Dois Fatores",
     Active: "Ativo",
     Inactive: "Inativo",

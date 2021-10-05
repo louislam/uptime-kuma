@@ -135,7 +135,7 @@ export default {
     "Setup 2FA": "Настройка 2FA",
     "Enable 2FA": "Включить 2FA",
     "Disable 2FA": "Выключить 2FA",
-    "2FA Settings": "Настройки 2FA",
+    "TwoFaSettings": "Настройки 2FA",
     "Two Factor Authentication": "Двухфакторная аутентификация",
     Active: "Активно",
     Inactive: "Неактивно",

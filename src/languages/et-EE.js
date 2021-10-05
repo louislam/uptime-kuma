@@ -136,7 +136,7 @@ export default {
     "Setup 2FA": "Kaksikautentimise seadistamine",
     "Enable 2FA": "Seadista 2FA",
     "Disable 2FA": "Lülita 2FA välja",
-    "2FA Settings": "2FA seaded",
+    "TwoFaSettings": "2FA seaded",
     "Two Factor Authentication": "Kaksikautentimine",
     Active: "kasutusel",
     Inactive: "seadistamata",
