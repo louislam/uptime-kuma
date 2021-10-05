@@ -21,14 +21,13 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - env: 
-        HEADLESS_TEST: 1
-
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v2
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
+      env: 
+        HEADLESS_TEST: 1
         
     - run: npm ci
     - run: npm run build
