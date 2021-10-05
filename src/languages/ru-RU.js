@@ -96,7 +96,7 @@ export default {
     TagWithThisValueAlreadyExist: "Тег с таким значением уже существует.",
     Color: "цвет",
     ValueOptional: "значение (опционально)",
-    Search: "Поиск...",
+    SearchPlaceholder: "Поиск...",
     AvgPing: "Средн. пинг",
     AvgResponse: "Средн. ответ",
     EntryPage: "Главная страница",

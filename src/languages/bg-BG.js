@@ -95,7 +95,7 @@ export default {
     TagWithThisValueAlreadyExist: "Етикет с тази стойност вече съществува.",
     Color: "цвят",
     ValueOptional: "стойност (по желание)",
-    Search: "Търси...",
+    SearchPlaceholder: "Търси...",
     AvgPing: "Ср. пинг",
     AvgResponse: "Ср. отговор",
     EntryPage: "Основна страница",

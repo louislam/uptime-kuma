@@ -9,7 +9,7 @@
                 <a v-if="searchText" class="search-icon" @click="clearSearchText">
                     <font-awesome-icon icon="times" />
                 </a>
-                <input v-model="searchText" class="form-control search-input" :placeholder="$t('Search...')" />
+                <input v-model="searchText" class="form-control search-input" :placeholder="$t('SearchPlaceholder')" />
             </div>
         </div>
         <div class="monitor-list" :class="{ scrollbar: scrollbar }">

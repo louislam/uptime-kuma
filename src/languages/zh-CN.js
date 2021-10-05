@@ -95,7 +95,7 @@ export default {
     TagWithThisValueAlreadyExist: "相同内容的标签已存在",
     Color: "颜色",
     ValueOptional: "值（可选）",
-    Search: "搜索...",
+    SearchPlaceholder: "搜索...",
     AvgPing: "平均Ping",
     AvgResponse: "平均响应",
     EntryPage: "入口页面",

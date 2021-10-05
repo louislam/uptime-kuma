@@ -29,7 +29,7 @@
                             :options="tagOptions"
                             :multiple="false"
                             :searchable="true"
-                            :placeholder="$t('Add New below or Select...')"
+                            :placeholder="$t('AddNewBelowOrSelect')"
                             track-by="id"
                             label="name"
                         >
@@ -68,7 +68,7 @@
                                     :options="colorOptions"
                                     :multiple="false"
                                     :searchable="true"
-                                    :placeholder="$t('color')"
+                                    :placeholder="$t('Color')"
                                     track-by="color"
                                     label="name"
                                     select-label=""
@@ -96,7 +96,7 @@
                         <div class="mb-2">
                             <input v-model="newDraftTag.value" class="form-control"
                                    :class="{'is-invalid': validateDraftTag.valueInvalid}"
-                                   :placeholder="$t('valueOptional')"
+                                   :placeholder="$t('ValueOptional')"
                                    @keydown.enter.prevent="onEnter"
                             />
                             <div class="invalid-feedback">

@@ -182,7 +182,7 @@
                     </select>
                 </div>
                 <div v-else class="text-center">
-                    {{ $t("NoMonitorsAvailable.") }}  <router-link to="/add">{{ $t("AddOne") }}</router-link>
+                    {{ $t("NoMonitorsAvailable") }}  <router-link to="/add">{{ $t("AddOne") }}</router-link>
                 </div>
             </div>
         </div>
@@ -197,7 +197,7 @@
         </div>
 
         <footer class="mt-5 mb-4">
-            {{ $t("PoweredBy") }} <a target="_blank" href="https://github.com/louislam/uptime-kuma">{{ $t("Uptime Kuma" )}}</a>
+            {{ $t("PoweredBy") }} <a target="_blank" href="https://github.com/louislam/uptime-kuma">{{ $t("UptimeKuma" )}}</a>
         </footer>
     </div>
 </template>

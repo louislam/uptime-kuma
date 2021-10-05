@@ -38,7 +38,7 @@
                 <div class="row">
                     <div class="col-md-8">
                         <HeartbeatBar :monitor-id="monitor.id" />
-                        <span class="word">{{ $t("checkEverySecond", [ monitor.interval ]) }}</span>
+                        <span class="word">{{ $t("CheckEverySecond", [ monitor.interval ]) }}</span>
                     </div>
                     <div class="col-md-4 text-center">
                         <span class="badge rounded-pill" :class=" 'bg-' + status.color " style="font-size: 30px;">{{ status.text }}</span>
@@ -59,17 +59,17 @@
                     </div>
                     <div class="col">
                         <h4>{{ pingTitle(true) }}</h4>
-                        <p>({{ $t("24-hour") }})</p>
+                        <p>({{ $t("HoursInADay") }})</p>
                         <span class="num"><CountUp :value="avgPing" /></span>
                     </div>
                     <div class="col">
                         <h4>{{ $t("Uptime") }}</h4>
-                        <p>({{ $t("24-hour") }})</p>
+                        <p>({{ $t("HoursInADay") }})</p>
                         <span class="num"><Uptime :monitor="monitor" type="24" /></span>
                     </div>
                     <div class="col">
                         <h4>{{ $t("Uptime") }}</h4>
-                        <p>({{ $t("30-day") }})</p>
+                        <p>({{ $t("DaysInAMonth") }})</p>
                         <span class="num"><Uptime :monitor="monitor" type="720" /></span>
                     </div>
 
@@ -354,7 +354,7 @@ export default {
         pingTitle(average = false) {
             let translationPrefix = "";
             if (average) {
-                translationPrefix = "Avg. ";
+                translationPrefix = "Avg";
             }
 
             if (this.monitor.type === "http") {

@@ -237,7 +237,7 @@
             <NotificationDialog ref="notificationDialog" />
             <TwoFADialog ref="TwoFADialog" />
 
-            <Confirm ref="confirmDisableAuth" btn-style="btn-danger" :yes-text="$t('I understand, please disable')" :no-text="$t('Leave')" @yes="disableAuth">
+            <Confirm ref="confirmDisableAuth" btn-style="btn-danger" :yes-text="$t('IUnderstandPleaseDisable')" :no-text="$t('Leave')" @yes="disableAuth">
                 <template v-if="$i18n.locale === 'es-ES' ">
                     <p>Seguro que deseas <strong>deshabilitar la autenticación</strong>?</p>
                     <p>Es para <strong>quien implementa autenticación de terceros</strong> ante Uptime Kuma como por ejemplo Cloudflare Access.</p>

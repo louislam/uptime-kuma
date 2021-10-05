@@ -95,7 +95,7 @@ export default {
     TagWithThisValueAlreadyExist: "Selle väärtusega silt on juba olemas.",
     Color: "värvus",
     ValueOptional: "väärtus (fakultatiivne)",
-    Search: "Otsi…",
+    SearchPlaceholder: "Otsi…",
     AvgPing: "Keskmine ping",
     AvgResponse: "Keskmine reaktsiooniaeg",
     EntryPage: "Avaleht",

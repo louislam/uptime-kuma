@@ -95,7 +95,7 @@ export default {
     TagWithThisValueAlreadyExist: "Ilyen értékű cimke már létezik.",
     Color: "szín",
     ValueOptional: "érték (opcionális)",
-    Search: "Keres...",
+    SearchPlaceholder: "Keres...",
     AvgPing: "Átl. ping",
     AvgResponse: "Átl. válasz",
     EntryPage: "Nyitólap",

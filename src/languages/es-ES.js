@@ -95,7 +95,7 @@ export default {
     TagWithThisValueAlreadyExist: "Tag with this value already exist.",
     Color: "color",
     ValueOptional: "value (optional)",
-    Search: "Search...",
+    SearchPlaceholder: "Search...",
     AvgPing: "Avg. Ping",
     AvgResponse: "Avg. Response",
     EntryPage: "Entry Page",

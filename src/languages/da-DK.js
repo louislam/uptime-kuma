@@ -95,7 +95,7 @@ export default {
     TagWithThisValueAlreadyExist: "Et Tag med denne værdi findes allerede.",
     Color: "farve",
     ValueOptional: "værdi (valgfri)",
-    Search: "Søg...",
+    SearchPlaceholder: "Søg...",
     AvgPing: "Gns. Ping",
     AvgResponse: "Gns. Respons",
     EntryPage: "Entry Side",

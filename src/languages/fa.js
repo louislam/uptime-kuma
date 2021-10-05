@@ -98,7 +98,7 @@ export default {
     TagWithThisValueAlreadyExist: "یک برچسب با این «مقدار» از قبل وجود دارد.",
     Color: "رنگ",
     ValueOptional: "مقدار (اختیاری)",
-    Search: "جستجو...",
+    SearchPlaceholder: "جستجو...",
     AvgPing: "متوسط پینگ",
     AvgResponse: "متوسط زمان پاسخ",
     EntryPage: "صفحه ورودی",
