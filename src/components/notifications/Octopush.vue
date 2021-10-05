@@ -1,5 +1,15 @@
 <template>
     <div class="mb-3">
+        <label for="octopush-version" class="form-label">Octopush API Version</label>
+        <select id="octopush-version" v-model="$parent.notification.octopushVersion" class="form-select">
+            <option value="2">V2</option>
+            <option value="1">V1 (Legacy Octopush-DM)</option>
+        </select>
+        <div class="form-text">
+            Do you use the legacy version of Octopush (2011-2020) or the new version ?
+        </div>
+    </div>
+    <div class="mb-3">
         <label for="octopush-key" class="form-label">API KEY</label>
         <HiddenInput id="octopush-key" v-model="$parent.notification.octopushAPIKey" :required="true" autocomplete="one-time-code"></HiddenInput>
         <label for="octopush-login" class="form-label">API LOGIN</label>
