@@ -15,7 +15,7 @@ class Matrix extends NotificationProvider {
             .slice(0, size);    
         const roomId = notification
             .internalRoomId
-            .replaceALl(":", "%3A")
+            .replaceAll(":", "%3A")
             .replaceAll("!", "%21");
 
         try {
