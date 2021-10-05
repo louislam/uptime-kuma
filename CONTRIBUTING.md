@@ -118,7 +118,7 @@ express.js is just used for serving the frontend built files (index.html, .js an
 # How to start the Frontend Dev Server
 
 1. Set the env var `NODE_ENV` to "development".
-1. Start the frontend dev server by the following command.
+2. Start the frontend dev server by the following command.
    ```bash
    npm run dev
    ```
