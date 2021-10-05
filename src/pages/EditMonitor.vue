@@ -51,15 +51,6 @@
                                 </div>
                             </div>
 
-                            <!-- Keyword -->
-                            <div v-if="monitor.type === 'keyword' " class="my-3">
-                                <label for="keyword" class="form-label">{{ $t("Keyword") }}</label>
-                                <input id="keyword" v-model="monitor.keyword" type="text" class="form-control" required>
-                                <div class="form-text">
-                                    {{ $t("keywordDescription") }}
-                                </div>
-                            </div>
-
                             <!-- TCP Port / Ping / DNS only -->
                             <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' " class="my-3">
                                 <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>
@@ -340,7 +331,7 @@ export default {
                     ignoreTls: false,
                     upsideDown: false,
                     maxredirects: 10,
-                    accepted_statuscodes: ["200-299"],
+                    checks: [],
                     dns_resolve_type: "A",
                     dns_resolve_server: "1.1.1.1",
                 };
