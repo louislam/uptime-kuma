@@ -3,7 +3,6 @@ const axios = require("axios");
 const Crypto = require('crypto')
 
 class Matrix extends NotificationProvider {
-
     name = "matrix";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
