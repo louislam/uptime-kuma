@@ -59,17 +59,17 @@
                     </div>
                     <div class="col">
                         <h4>{{ pingTitle(true) }}</h4>
-                        <p>(24{{ $t("-hour") }})</p>
+                        <p>({{ $t("24-hour") }})</p>
                         <span class="num"><CountUp :value="avgPing" /></span>
                     </div>
                     <div class="col">
                         <h4>{{ $t("Uptime") }}</h4>
-                        <p>(24{{ $t("-hour") }})</p>
+                        <p>({{ $t("24-hour") }})</p>
                         <span class="num"><Uptime :monitor="monitor" type="24" /></span>
                     </div>
                     <div class="col">
                         <h4>{{ $t("Uptime") }}</h4>
-                        <p>(30{{ $t("-day") }})</p>
+                        <p>({{ $t("30-day") }})</p>
                         <span class="num"><Uptime :monitor="monitor" type="720" /></span>
                     </div>
 
