@@ -1,16 +1,16 @@
 const https = require("https");
 const dayjs = require("dayjs");
-const utc = require("dayjs/plugin/utc")
-let timezone = require("dayjs/plugin/timezone")
-dayjs.extend(utc)
-dayjs.extend(timezone)
+const utc = require("dayjs/plugin/utc");
+let timezone = require("dayjs/plugin/timezone");
+dayjs.extend(utc);
+dayjs.extend(timezone);
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
 const { debug, UP, DOWN, PENDING, flipStatus, TimeLogger } = require("../../src/util");
 const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
-const { Notification } = require("../notification")
+const { Notification } = require("../notification");
 const version = require("../../package.json").version;
 
 /**
@@ -20,17 +20,34 @@ const version = require("../../package.json").version;
  *      2 = PENDING
  */
 class Monitor extends BeanModel {
+
+    /**
+     * Return a object that ready to parse to JSON for public
+     * Only show necessary data to public
+     */
+    async toPublicJSON() {
+        return {
+            id: this.id,
+            name: this.name,
+        };
+    }
+
+    /**
+     * Return a object that ready to parse to JSON
+     */
     async toJSON() {
 
         let notificationIDList = {};
 
         let list = await R.find("monitor_notification", " monitor_id = ? ", [
             this.id,
-        ])
+        ]);
 
         for (let bean of list) {
             notificationIDList[bean.notification_id] = true;
         }
+
+        const tags = await R.getAll("SELECT mt.*, tag.name, tag.color FROM monitor_tag mt JOIN tag ON mt.tag_id = tag.id WHERE mt.monitor_id = ?", [this.id]);
 
         return {
             id: this.id,
@@ -43,6 +60,7 @@ class Monitor extends BeanModel {
             active: this.active,
             type: this.type,
             interval: this.interval,
+            retryInterval: this.retryInterval,
             keyword: this.keyword,
             ignoreTls: this.getIgnoreTls(),
             upsideDown: this.isUpsideDown(),
@@ -51,7 +69,9 @@ class Monitor extends BeanModel {
             dns_resolve_type: this.dns_resolve_type,
             dns_resolve_server: this.dns_resolve_server,
             dns_last_result: this.dns_last_result,
+            pushToken: this.pushToken,
             notificationIDList,
+            tags: tags,
         };
     }
 
@@ -60,7 +80,7 @@ class Monitor extends BeanModel {
      * @returns {boolean}
      */
     getIgnoreTls() {
-        return Boolean(this.ignoreTls)
+        return Boolean(this.ignoreTls);
     }
 
     /**
@@ -90,12 +110,12 @@ class Monitor extends BeanModel {
             if (! previousBeat) {
                 previousBeat = await R.findOne("heartbeat", " monitor_id = ? ORDER BY time DESC", [
                     this.id,
-                ])
+                ]);
             }
 
             const isFirstBeat = !previousBeat;
 
-            let bean = R.dispense("heartbeat")
+            let bean = R.dispense("heartbeat");
             bean.monitor_id = this.id;
             bean.time = R.isoDateTime(dayjs.utc());
             bean.status = DOWN;
@@ -131,7 +151,7 @@ class Monitor extends BeanModel {
                             return checkStatusCode(status, this.getAcceptedStatuscodes());
                         },
                     });
-                    bean.msg = `${res.status} - ${res.statusText}`
+                    bean.msg = `${res.status} - ${res.statusText}`;
                     bean.ping = dayjs().valueOf() - startTime;
 
                     // Check certificate if https is used
@@ -141,12 +161,12 @@ class Monitor extends BeanModel {
                             tlsInfo = await this.updateTlsInfo(checkCertificate(res));
                         } catch (e) {
                             if (e.message !== "No TLS certificate in response") {
-                                console.error(e.message)
+                                console.error(e.message);
                             }
                         }
                     }
 
-                    debug("Cert Info Query Time: " + (dayjs().valueOf() - certInfoStartTime) + "ms")
+                    debug("Cert Info Query Time: " + (dayjs().valueOf() - certInfoStartTime) + "ms");
 
                     if (this.type === "http") {
                         bean.status = UP;
@@ -156,26 +176,26 @@ class Monitor extends BeanModel {
 
                         // Convert to string for object/array
                         if (typeof data !== "string") {
-                            data = JSON.stringify(data)
+                            data = JSON.stringify(data);
                         }
 
                         if (data.includes(this.keyword)) {
-                            bean.msg += ", keyword is found"
+                            bean.msg += ", keyword is found";
                             bean.status = UP;
                         } else {
-                            throw new Error(bean.msg + ", but keyword is not found")
+                            throw new Error(bean.msg + ", but keyword is not found");
                         }
 
                     }
 
                 } else if (this.type === "port") {
                     bean.ping = await tcping(this.hostname, this.port);
-                    bean.msg = ""
+                    bean.msg = "";
                     bean.status = UP;
 
                 } else if (this.type === "ping") {
                     bean.ping = await ping(this.hostname);
-                    bean.msg = ""
+                    bean.msg = "";
                     bean.status = UP;
                 } else if (this.type === "dns") {
                     let startTime = dayjs().valueOf();
@@ -195,7 +215,7 @@ class Monitor extends BeanModel {
                         dnsRes.forEach(record => {
                             dnsMessage += `Hostname: ${record.exchange} - Priority: ${record.priority} | `;
                         });
-                        dnsMessage = dnsMessage.slice(0, -2)
+                        dnsMessage = dnsMessage.slice(0, -2);
                     } else if (this.dns_resolve_type == "NS") {
                         dnsMessage += "Servers: ";
                         dnsMessage += dnsRes.join(" | ");
@@ -205,7 +225,7 @@ class Monitor extends BeanModel {
                         dnsRes.forEach(record => {
                             dnsMessage += `Name: ${record.name} | Port: ${record.port} | Priority: ${record.priority} | Weight: ${record.weight} | `;
                         });
-                        dnsMessage = dnsMessage.slice(0, -2)
+                        dnsMessage = dnsMessage.slice(0, -2);
                     }
 
                     if (this.dnsLastResult !== dnsMessage) {
@@ -217,6 +237,28 @@ class Monitor extends BeanModel {
 
                     bean.msg = dnsMessage;
                     bean.status = UP;
+                } else if (this.type === "push") {      // Type: Push
+                    const time = R.isoDateTime(dayjs.utc().subtract(this.interval, "second"));
+
+                    let heartbeatCount = await R.count("heartbeat", " monitor_id = ? AND time > ? ", [
+                        this.id,
+                        time
+                    ]);
+
+                    debug("heartbeatCount" + heartbeatCount + " " + time);
+
+                    if (heartbeatCount <= 0) {
+                        throw new Error("No heartbeat in the time window");
+                    } else {
+                        // No need to insert successful heartbeat for push type, so end here
+                        retries = 0;
+                        this.heartbeatInterval = setTimeout(beat, this.interval * 1000);
+                        return;
+                    }
+
+                } else {
+                    bean.msg = "Unknown Monitor Type";
+                    bean.status = PENDING;
                 }
 
                 if (this.isUpsideDown()) {
@@ -244,6 +286,8 @@ class Monitor extends BeanModel {
                 }
             }
 
+            let beatInterval = this.interval;
+
             // * ? -> ANY STATUS = important [isFirstBeat]
             // UP -> PENDING = not important
             // * UP -> DOWN = important
@@ -268,20 +312,20 @@ class Monitor extends BeanModel {
                 if (!isFirstBeat || bean.status === DOWN) {
                     let notificationList = await R.getAll("SELECT notification.* FROM notification, monitor_notification WHERE monitor_id = ? AND monitor_notification.notification_id = notification.id ", [
                         this.id,
-                    ])
+                    ]);
 
                     let text;
                     if (bean.status === UP) {
-                        text = "✅ Up"
+                        text = "✅ Up";
                     } else {
-                        text = "🔴 Down"
+                        text = "🔴 Down";
                     }
 
                     let msg = `[${this.name}] [${text}] ${bean.msg}`;
 
                     for (let notification of notificationList) {
                         try {
-                            await Notification.send(JSON.parse(notification.config), msg, await this.toJSON(), bean.toJSON())
+                            await Notification.send(JSON.parse(notification.config), msg, await this.toJSON(), bean.toJSON());
                         } catch (e) {
                             console.error("Cannot send notification to " + notification.name);
                             console.log(e);
@@ -294,15 +338,18 @@ class Monitor extends BeanModel {
             }
 
             if (bean.status === UP) {
-                console.info(`Monitor #${this.id} '${this.name}': Successful Response: ${bean.ping} ms | Interval: ${this.interval} seconds | Type: ${this.type}`)
+                console.info(`Monitor #${this.id} '${this.name}': Successful Response: ${bean.ping} ms | Interval: ${beatInterval} seconds | Type: ${this.type}`);
             } else if (bean.status === PENDING) {
-                console.warn(`Monitor #${this.id} '${this.name}': Pending: ${bean.msg} | Max retries: ${this.maxretries} | Type: ${this.type}`)
+                if (this.retryInterval > 0) {
+                    beatInterval = this.retryInterval;
+                }
+                console.warn(`Monitor #${this.id} '${this.name}': Pending: ${bean.msg} | Max retries: ${this.maxretries} | Retry: ${retries} | Retry Interval: ${beatInterval} seconds | Type: ${this.type}`);
             } else {
-                console.warn(`Monitor #${this.id} '${this.name}': Failing: ${bean.msg} | Type: ${this.type}`)
+                console.warn(`Monitor #${this.id} '${this.name}': Failing: ${bean.msg} | Interval: ${beatInterval} seconds | Type: ${this.type}`);
             }
 
             io.to(this.user_id).emit("heartbeat", bean.toJSON());
-            Monitor.sendStats(io, this.id, this.user_id)
+            Monitor.sendStats(io, this.id, this.user_id);
 
             await R.store(bean);
             prometheus.update(bean, tlsInfo);
@@ -310,12 +357,19 @@ class Monitor extends BeanModel {
             previousBeat = bean;
 
             if (! this.isStop) {
-                this.heartbeatInterval = setTimeout(beat, this.interval * 1000);
+                this.heartbeatInterval = setTimeout(beat, beatInterval * 1000);
             }
 
-        }
+        };
 
-        beat();
+        // Delay Push Type
+        if (this.type === "push") {
+            setTimeout(() => {
+                beat();
+            }, this.interval * 1000);
+        } else {
+            beat();
+        }
     }
 
     stop() {
@@ -406,7 +460,7 @@ class Monitor extends BeanModel {
      * https://www.uptrends.com/support/kb/reporting/calculation-of-uptime-and-downtime
      * @param duration : int Hours
      */
-    static async sendUptime(duration, io, monitorID, userID) {
+    static async calcUptime(duration, monitorID) {
         const timeLogger = new TimeLogger();
 
         const startTime = R.isoDateTime(dayjs.utc().subtract(duration, "hour"));
@@ -459,12 +513,21 @@ class Monitor extends BeanModel {
         } else {
             // Handle new monitor with only one beat, because the beat's duration = 0
             let status = parseInt(await R.getCell("SELECT `status` FROM heartbeat WHERE monitor_id = ?", [ monitorID ]));
-            console.log("here???" + status);
+
             if (status === UP) {
                 uptime = 1;
             }
         }
 
+        return uptime;
+    }
+
+    /**
+     * Send Uptime
+     * @param duration : int Hours
+     */
+    static async sendUptime(duration, io, monitorID, userID) {
+        const uptime = await this.calcUptime(duration, monitorID);
         io.to(userID).emit("uptime", monitorID, duration, uptime);
     }
 }

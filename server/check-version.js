@@ -18,11 +18,10 @@ exports.startInterval = () => {
 
             // For debug
             if (process.env.TEST_CHECK_VERSION === "1") {
-                res.data.version = "1000.0.0"
+                res.data.version = "1000.0.0";
             }
 
             exports.latestVersion = res.data.version;
-            console.log("Latest Version: " + exports.latestVersion);
         } catch (_) { }
 
     };
