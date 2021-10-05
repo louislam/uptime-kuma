@@ -6,7 +6,7 @@ class Octopush extends NotificationProvider {
     name = "octopush";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully. ";
+        let okMsg = "Sent Successfully.";
 
         try {
             let config = {

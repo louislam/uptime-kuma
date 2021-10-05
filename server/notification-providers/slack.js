@@ -6,7 +6,7 @@ class Slack extends NotificationProvider {
     name = "slack";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully. ";
+        let okMsg = "Sent Successfully.";
         try {
             if (heartbeatJSON == null) {
                 let data = {
