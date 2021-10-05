@@ -4,11 +4,30 @@ First of all, thank you everyone who made pull requests for Uptime Kuma, I never
 
 The project was created with vite.js (vue3). Then I created a sub-directory called "server" for server part. Both frontend and backend share the same package.json.
 
-The frontend code build into "dist" directory. The server uses "dist" as root. This is how production is working.
+The frontend code build into "dist" directory. The server (express.js) exposes the "dist" directory as root of the endpoint. This is how production is working.
+
+# Key Technical Skills
+
+- Node.js (You should know what are promise, async/await and arrow function etc.)
+- Socket.io
+- SCSS
+- Vue.js
+- Bootstrap
+- SQLite
+
+# Directories
+
+- data (App data)
+- dist (Frontend build)
+- extra (Extra useful scripts)
+- public (Frontend resources for dev only)
+- server (Server source code)
+- src (Frontend source code)
+- test (unit test)
 
 # Can I create a pull request for Uptime Kuma?
 
-Generally, if the pull request is working fine and it do not affect any existing logic, workflow and perfomance, I will merge to the master branch once it is tested.
+Generally, if the pull request is working fine and it do not affect any existing logic, workflow and perfomance, I will merge into the master branch once it is tested.
 
 If you are not sure, feel free to create an empty pull request draft first.
 
@@ -43,15 +62,14 @@ It changed my current workflow and require further studies.
 
 I personally do not like something need to learn so much and need to config so much before you can finally start the app.
 
-For example, recently, because I am not a python expert, I spent a 2 hours to resolve all problems in order to install and use the Apprise cli. Apprise requires so many hidden requirements, I have to figure out myself how to solve the problems by Google search for my OS. That is painful. I do not want Uptime Kuma to be like this way, so:
-
 - Easy to install for non-Docker users, no native build dependency is needed (at least for x86_64), no extra config, no extra effort to get it run
 - Single container for Docker users, no very complex docker-composer file. Just map the volume and expose the port, then good to go
-- All settings in frontend.
+- Settings should be configurable in the frontend. Env var is not encouraged.
 - Easy to use
 
 # Coding Styles
 
+- 4 spaces indentation
 - Follow `.editorconfig`
 - Follow ESLint
 
@@ -65,22 +83,16 @@ For example, recently, because I am not a python expert, I spent a 2 hours to re
 
 - Node.js >= 14
 - Git
-- IDE that supports EditorConfig and ESLint (I am using Intellji Idea)
-- A SQLite tool (I am using SQLite Expert Personal)
+- IDE that supports ESLint and EditorConfig (I am using Intellji Idea)
+- A SQLite tool (SQLite Expert Personal is suggested)
 
 # Install dependencies
 
 ```bash
-npm install --dev
+npm ci
 ```
 
-For npm@7, you need --legacy-peer-deps
-
-```bash
-npm install --legacy-peer-deps --dev
-```
-
-# Backend Dev
+# How to start the Backend Dev Server
 
 (2021-09-23 Update)
 
@@ -96,27 +108,23 @@ It is mainly a socket.io app + express.js.
 
 express.js is just used for serving the frontend built files (index.html, .js and .css etc.)
 
-# Frontend Dev
+- model/ (Object model, auto mapping to the database table name)
+- modules/ (Modified 3rd-party modules)
+- notification-providers/ (indivdual notification logic)
+- routers/ (Express Routers)
+- scoket-handler (Socket.io Handlers)
+- server.js (Server main logic)
 
-Start frontend dev server. Hot-reload enabled in this way. It binds to `0.0.0.0:3000` by default.
+# How to start the Frontend Dev Server
 
-```bash
-npm run dev
-```
-
-PS: You can ignore those scss warnings, those warnings are from Bootstrap that I cannot fix.
+1. Set the env var `NODE_ENV` to "development".
+2. Start the frontend dev server by the following command.
+   ```bash
+   npm run dev
+   ```
+   It binds to `0.0.0.0:3000` by default.
 
 You can use Vue.js devtools Chrome extension for debugging.
-
-After the frontend server started. It cannot connect to the websocket server even you have started the server. You need to tell the frontend that is a dev env by running this in DevTool console and refresh:
-
-```javascript
-localStorage.dev = "dev";
-```
-
-So that the frontend will try to connect websocket server in 3001.
-
-Alternately, you can specific `NODE_ENV` to "development".
 
 ## Build the frontend
 
@@ -134,10 +142,11 @@ As you can see, most data in frontend is stored in root level, even though you c
 
 The data and socket logic are in `src/mixins/socket.js`.
 
+
 # Database Migration
 
-1. Create `patch{num}.sql` in `./db/`
-2. Update `latestVersion` in `./server/database.js`
+1. Create `patch-{name}.sql` in `./db/`
+2. Add your patch filename in the `patchList` list in `./server/database.js`
 
 # Unit Test
 

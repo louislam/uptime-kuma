@@ -22,7 +22,6 @@ exports.startInterval = () => {
             }
 
             exports.latestVersion = res.data.version;
-            console.log("Latest Version: " + exports.latestVersion);
         } catch (_) { }
 
     };
