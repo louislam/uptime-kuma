@@ -2,8 +2,8 @@
     <div class="mb-3">
         <label for="octopush-version" class="form-label">Octopush API Version</label>
         <select id="octopush-version" v-model="$parent.notification.octopushVersion" class="form-select">
-            <option value="2">Octopush (endpoint : api.octopush.com)</option>
-            <option value="1">Legacy Octopush-DM (endpoint : www.octopush-dm.com)</option>
+            <option value="2">Octopush (endpoint: api.octopush.com)</option>
+            <option value="1">Legacy Octopush-DM (endpoint: www.octopush-dm.com)</option>
         </select>
         <div class="form-text">
             Do you use the legacy version of Octopush (2011-2020) or the new version?
