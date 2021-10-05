@@ -9,7 +9,13 @@ const { sleep } = require("../src/util");
 page;
 
 beforeAll(() => {
+    if (process.env.JUST_FOR_TEST) {
+        console.log(process.env.JUST_FOR_TEST);
 
+        if (process.env.JUST_FOR_TEST === "JUST_FOR_TEST_HELLO") {
+            console.log("secret ok");
+        }
+    }
 });
 
 afterAll(() => {
