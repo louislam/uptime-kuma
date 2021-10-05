@@ -1,5 +1,4 @@
 export default {
-  Also apply to existing monitors: "Also apply to existing monitors",
   LanguageName: "日本語",
   CheckEverySecond: "{0}秒ごとにチェックします。",
   RetryCheckEverySecond: "Retry every {0} seconds.",

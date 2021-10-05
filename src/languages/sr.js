@@ -1,5 +1,4 @@
 export default {
-  Also apply to existing monitors: "Also apply to existing monitors",
   LanguageName: "Српски",
   CheckEverySecond: "Провери сваких {0} секунди.",
   RetryCheckEverySecond: "Retry every {0} seconds.",

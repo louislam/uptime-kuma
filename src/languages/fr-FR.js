@@ -1,5 +1,4 @@
 export default {
-  Also apply to existing monitors: "S'applique également aux sondes existantes",
   LanguageName: "Français (France)",
   CheckEverySecond: "Vérifier toutes les {0} secondes",
   RetryCheckEverySecond: "Réessayer toutes les {0} secondes.",

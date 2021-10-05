@@ -1,5 +1,4 @@
 export default {
-  Also apply to existing monitors: "应用到所有监控项",
   LanguageName: "简体中文",
   CheckEverySecond: "检测频率 {0} 秒",
   RetryCheckEverySecond: "重试间隔 {0} 秒",

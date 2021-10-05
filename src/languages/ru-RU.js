@@ -1,5 +1,4 @@
 export default {
-  Also apply to existing monitors: "Применить к существующим мониторам",
   Status Page: "Статус сервисов",
   Discard: "Отмена",
   Create Incident: "Создать инцидент",

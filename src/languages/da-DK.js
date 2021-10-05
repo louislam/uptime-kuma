@@ -1,5 +1,4 @@
 export default {
-  Also apply to existing monitors: "Anvend også på eksisterende overvågere",
   LanguageName: "Danish",
   CheckEverySecond: "Tjek hvert {0} sekund",
   RetryCheckEverySecond: "Prøv igen hvert {0} sekund.",

@@ -1,5 +1,4 @@
 export default {
-  Also apply to existing monitors: "Również zastosuj do obecnych monitorów",
   LanguageName: "Polski",
   CheckEverySecond: "Sprawdzam co {0} sekund.",
   RetryCheckEverySecond: "Ponawiaj co {0} sekund.",

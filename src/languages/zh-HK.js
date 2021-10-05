@@ -1,5 +1,4 @@
 export default {
-  Also apply to existing monitors: "同時取用至目前所有監測器",
   LanguageName: "繁體中文 (香港)",
   CheckEverySecond: "每 {0} 秒檢查一次",
   RetryCheckEverySecond: "Retry every {0} seconds.",

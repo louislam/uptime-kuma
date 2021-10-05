@@ -1,5 +1,4 @@
 export default {
-  Also apply to existing monitors: "Also apply to existing monitors",
   LanguageName: "Svenska",
   CheckEverySecond: "Uppdatera var {0} sekund.",
   RetryCheckEverySecond: "Retry every {0} seconds.",
