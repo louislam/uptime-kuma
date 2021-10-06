@@ -153,8 +153,6 @@ class Monitor extends BeanModel {
                         maxRedirects: this.maxredirects,
                         validateStatus: undefined,
                     });
-                    bean.msg = `${res.status} - ${res.statusText}`;
-                    bean.ping = dayjs().valueOf() - startTime;
 
                     // Check certificate if https is used
                     let certInfoStartTime = dayjs().valueOf();
@@ -170,7 +168,11 @@ class Monitor extends BeanModel {
 
                     debug("Cert Info Query Time: " + (dayjs().valueOf() - certInfoStartTime) + "ms");
 
+                    bean.msg = `${res.status} - ${res.statusText}`;
+
                     validateMonitorChecks(res, await this.getMonitorChecks(), bean);
+
+                    bean.ping = dayjs().valueOf() - startTime;
                 } else if (this.type === "port") {
                     bean.ping = await tcping(this.hostname, this.port);
                     bean.msg = "";
