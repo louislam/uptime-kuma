@@ -43,7 +43,7 @@ export default {
     Delete: "Удалить",
     Current: "Текущий",
     Uptime: "Аптайм",
-    "Cert Exp.": "Сертификат просрочен",
+    "Cert Exp.": "Сертификат истекает",
     days: "дней",
     day: "день",
     "-day": " дней",
