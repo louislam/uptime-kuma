@@ -123,6 +123,6 @@
         },
         "testRegex": "./test/*.spec.js",
         "rootDir": ".",
-        "testTimeout": 15000
+        "testTimeout": 30000
     }
 }
