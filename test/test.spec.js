@@ -1,6 +1,7 @@
 // eslint-disable-next-line no-unused-vars
-const { Page } = require("puppeteer");
+const { Page, Browser } = require("puppeteer");
 const { sleep } = require("../src/util");
+const axios = require("axios");
 
 /**
  * Set back the correct data type for page object
@@ -8,14 +9,17 @@ const { sleep } = require("../src/util");
  */
 page;
 
-beforeAll(() => {
-    if (process.env.JUST_FOR_TEST) {
-        console.log(process.env.JUST_FOR_TEST);
+/**
+ * @type {Browser}
+ */
+browser;
 
-        if (process.env.JUST_FOR_TEST === "JUST_FOR_TEST_HELLO") {
-            console.log("secret ok");
-        }
-    }
+beforeAll(async () => {
+    await page.setViewport({
+        width: 1280,
+        height: 720,
+        deviceScaleFactor: 1,
+    });
 });
 
 afterAll(() => {
@@ -35,6 +39,7 @@ describe("Init", () => {
         await expect(page.title()).resolves.toMatch(title);
     });
 
+    // Setup Page
     it("Setup", async () => {
         // Create an Admin
         await page.waitForSelector("#floatingInput");
@@ -49,14 +54,17 @@ describe("Init", () => {
         // Go to /setup again
         await page.goto(baseURL + "/setup");
         await sleep(3000);
-        const pathname = await page.evaluate(() => location.pathname);
+        let pathname = await page.evaluate(() => location.pathname);
         expect(pathname).toEqual("/dashboard");
 
         // Go to /
         await page.goto(baseURL);
+        await sleep(3000);
+        pathname = await page.evaluate(() => location.pathname);
         expect(pathname).toEqual("/dashboard");
     });
 
+    // Settings Page
     describe("Settings", () => {
         beforeAll(async () => {
             await page.goto(baseURL + "/settings");
@@ -73,14 +81,127 @@ describe("Init", () => {
         });
 
         it("Change Theme", async () => {
-            // Light
-            await page.click(".btn[for=btncheck1]");
-            await page.waitForSelector("div.light");
+            await sleep(1000);
 
-            await page.click(".btn[for=btncheck2]");
+            // Dark
+            await click(page, ".btn[for=btncheck2]");
             await page.waitForSelector("div.dark");
+
+            await sleep(1000);
+
+            // Light
+            await click(page, ".btn[for=btncheck1]");
+            await page.waitForSelector("div.light");
         });
+
+        // TODO: Heartbeat Bar Style
+
+        // TODO: Timezone
+
+        it("Search Engine Visibility", async () => {
+            // Default
+            let res = await axios.get(baseURL + "/robots.txt");
+            expect(res.data).toMatch("Disallow: /");
+
+            // Yes
+            await click(page, "#searchEngineIndexYes");
+            await click(page, "form > div > .btn[type=submit]");
+            await sleep(2000);
+            res = await axios.get(baseURL + "/robots.txt");
+            expect(res.data).not.toMatch("Disallow: /");
+
+            // No
+            await click(page, "#searchEngineIndexNo");
+            await click(page, "form > div > .btn[type=submit]");
+            await sleep(2000);
+            res = await axios.get(baseURL + "/robots.txt");
+            expect(res.data).toMatch("Disallow: /");
+        });
+
+        it("Entry Page", async () => {
+            const newPage = await browser.newPage();
+
+            // Default
+            await newPage.goto(baseURL);
+            await sleep(3000);
+            let pathname = await newPage.evaluate(() => location.pathname);
+            expect(pathname).toEqual("/dashboard");
+
+            // Status Page
+            await click(page, "#entryPageNo");
+            await click(page, "form > div > .btn[type=submit]");
+            await sleep(2000);
+            await newPage.goto(baseURL);
+            await sleep(3000);
+            pathname = await newPage.evaluate(() => location.pathname);
+            expect(pathname).toEqual("/status");
+
+            // Back to Dashboard
+            await click(page, "#entryPageYes");
+            await click(page, "form > div > .btn[type=submit]");
+            await sleep(2000);
+            await newPage.goto(baseURL);
+            await sleep(3000);
+            pathname = await newPage.evaluate(() => location.pathname);
+            expect(pathname).toEqual("/dashboard");
+
+            await newPage.close();
+        });
+
+        it("Change Password (wrong current password)", async () => {
+            await page.type("#current-password", "wrong_passw$$d");
+            await page.type("#new-password", "new_password123");
+            await page.type("#repeat-new-password", "new_password123");
+            await click(page, "form > div > .btn[type=submit]", 1);
+            await sleep(3000);
+            await click(page, ".btn-danger.btn.me-1");
+            await sleep(2000);
+            await login("admin", "new_password123");
+            await sleep(2000);
+            let elementCount = await page.evaluate(() => document.querySelectorAll("#floatingPassword").length);
+            expect(elementCount).toEqual(1);
+
+            await login("admin", "admin123");
+            await sleep(3000);
+        });
+
+        it("Change Password (wrong repeat)", async () => {
+            await page.type("#current-password", "admin123");
+            await page.type("#new-password", "new_password123");
+            await page.type("#repeat-new-password", "new_password1234567898797898");
+            await click(page, "form > div > .btn[type=submit]", 1);
+            await sleep(3000);
+            await click(page, ".btn-danger.btn.me-1");
+            await sleep(2000);
+            await login("admin", "new_password123");
+            await sleep(2000);
+            let elementCount = await page.evaluate(() => document.querySelectorAll("#floatingPassword").length);
+            expect(elementCount).toEqual(1);
+
+            await login("admin", "admin123");
+            await sleep(3000);
+        });
+
+        // TODO: 2FA
+
+        // TODO: Export Backup
+
+        // TODO: Import Backup
+
+        // TODO: Disable Auth
+
+        // TODO: Clear Stats
     });
+
+    /*
+     * TODO
+     * Create Monitor - All type
+     * Edit Monitor
+     * Delete Monitor
+     *
+     * Create Notification (token problem, maybe hard to test)
+     *
+     */
 
     describe("Status Page", () => {
         const title = "Uptime Kuma";
@@ -93,3 +214,21 @@ describe("Init", () => {
     });
 });
 
+async function login(username, password) {
+    await input(page, "#floatingInput", username);
+    await input(page, "#floatingPassword", password);
+    await page.click(".btn-primary[type=submit]");
+}
+
+async function click(page, selector, elementIndex = 0) {
+    return await page.evaluate((s, i) => {
+        return document.querySelectorAll(s)[i].click();
+    }, selector, elementIndex);
+}
+
+async function input(page, selector, text) {
+    const element = await page.$(selector);
+    await element.click({ clickCount: 3 });
+    await page.keyboard.press("Backspace");
+    await page.type(selector, text);
+}
