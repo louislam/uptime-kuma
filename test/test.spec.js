@@ -75,14 +75,10 @@ describe("Init", () => {
         it("Change Theme", async () => {
             // Light
             await page.click(".btn[for=btncheck1]");
-            await page.waitForSelector("div.light", {
-                timeout: 2000
-            });
+            await page.waitForSelector("div.light");
 
             await page.click(".btn[for=btncheck2]");
-            await page.waitForSelector("div.dark", {
-                timeout: 2000
-            });
+            await page.waitForSelector("div.dark");
         });
     });
 
