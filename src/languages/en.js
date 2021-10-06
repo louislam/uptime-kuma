@@ -209,7 +209,7 @@ export default {
     wayToGetDiscordURL: "You can get this by going to Server Settings -> Integrations -> Create Webhook",
     "Bot Display Name": "Bot Display Name",
     "Prefix Custom Message": "Prefix Custom Message",
-    "Hello @everyone is...": "Hello @everyone is...",
+    "Hello @everyone is...": "Hello {'@'}everyone is...",
     "teams": "Microsoft Teams",
     "Webhook URL": "Webhook URL",
     wayToGetTeamsURL: "You can learn how to create a webhook url {0}.",
