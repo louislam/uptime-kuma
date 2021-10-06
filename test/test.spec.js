@@ -71,6 +71,8 @@ describe("Init", () => {
         });
 
         it("Change Language", async () => {
+            await page.waitForSelector("#language");
+
             await page.select("#language", "zh-HK");
             let languageTitle = await page.evaluate(() => document.querySelector("[for=language]").innerText);
             expect(languageTitle).toMatch("語言");
