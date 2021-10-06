@@ -16,6 +16,15 @@ function validateMonitorChecks(res, checks, bean) {
                 }
                 break;
 
+            case "HTTP_STATUS_CODE_SHOULD_NOT_EQUAL":
+                if (!checkStatusCode(res.status, check.value)) {
+                    bean.msg += `, status does not match '${check.value}'`;
+                    bean.status = UP;
+                } else {
+                    throw new Error(bean.msg + ", but status code does match " + check.value);
+                }
+                break;
+
             case "RESPONSE_SHOULD_CONTAIN_TEXT":
                 if (responseText.includes(check.value)) {
                     bean.msg += `, response contains '${check.value}'`;

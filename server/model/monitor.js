@@ -6,11 +6,25 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
-const { debug, UP, DOWN, PENDING, flipStatus, TimeLogger, MONITOR_CHECK_SELECTOR_TYPES,
+const {
+    debug,
+    UP,
+    DOWN,
+    PENDING,
+    flipStatus,
+    TimeLogger,
+    MONITOR_CHECK_HTTP_CODE_TYPES,
+    MONITOR_CHECK_SELECTOR_TYPES,
     HTTP_STATUS_CODE_SHOULD_EQUAL,
-    RESPONSE_SHOULD_CONTAIN_TEXT
+    RESPONSE_SHOULD_CONTAIN_TEXT,
 } = require("../../src/util");
-const { tcping, ping, dnsResolve, checkCertificate, getTotalClientInRoom } = require("../util-server");
+const {
+    tcping,
+    ping,
+    dnsResolve,
+    checkCertificate,
+    getTotalClientInRoom,
+} = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification");
@@ -111,7 +125,7 @@ class Monitor extends BeanModel {
             // undefined if not https
             let tlsInfo = undefined;
 
-            if (! previousBeat) {
+            if (!previousBeat) {
                 previousBeat = await R.findOne("heartbeat", " monitor_id = ? ORDER BY time DESC", [
                     this.id,
                 ]);
@@ -129,7 +143,7 @@ class Monitor extends BeanModel {
             }
 
             // Duration
-            if (! isFirstBeat) {
+            if (!isFirstBeat) {
                 bean.duration = dayjs(bean.time).diff(dayjs(previousBeat.time), "second");
             } else {
                 bean.duration = 0;
@@ -148,7 +162,7 @@ class Monitor extends BeanModel {
                         },
                         httpsAgent: new https.Agent({
                             maxCachedSessions: 0,      // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
-                            rejectUnauthorized: ! this.getIgnoreTls(),
+                            rejectUnauthorized: !this.getIgnoreTls(),
                         }),
                         maxRedirects: this.maxredirects,
                         validateStatus: undefined,
@@ -216,7 +230,7 @@ class Monitor extends BeanModel {
                     if (this.dnsLastResult !== dnsMessage) {
                         R.exec("UPDATE `monitor` SET dns_last_result = ? WHERE id = ? ", [
                             dnsMessage,
-                            this.id
+                            this.id,
                         ]);
                     }
 
@@ -227,7 +241,7 @@ class Monitor extends BeanModel {
 
                     let heartbeatCount = await R.count("heartbeat", " monitor_id = ? AND time > ? ", [
                         this.id,
-                        time
+                        time,
                     ]);
 
                     debug("heartbeatCount" + heartbeatCount + " " + time);
@@ -341,7 +355,7 @@ class Monitor extends BeanModel {
 
             previousBeat = bean;
 
-            if (! this.isStop) {
+            if (!this.isStop) {
                 this.heartbeatInterval = setTimeout(beat, beatInterval * 1000);
             }
 
@@ -418,9 +432,11 @@ class Monitor extends BeanModel {
         let avgPing = parseInt(await R.getCell(`
             SELECT AVG(ping)
             FROM heartbeat
-            WHERE time > DATETIME('now', ? || ' hours')
-            AND ping IS NOT NULL
-            AND monitor_id = ? `, [
+            WHERE time
+                > DATETIME('now'
+                , ? || ' hours')
+              AND ping IS NOT NULL
+              AND monitor_id = ? `, [
             -duration,
             monitorID,
         ]));
@@ -454,30 +470,31 @@ class Monitor extends BeanModel {
         // e.g. If the last beat's duration is bigger that the 24hrs window, it will use the duration between the (beat time - window margin) (THEN case in SQL)
         let result = await R.getRow(`
             SELECT
-               -- SUM all duration, also trim off the beat out of time window
+                -- SUM all duration, also trim off the beat out of time window
                 SUM(
                     CASE
                         WHEN (JULIANDAY(\`time\`) - JULIANDAY(?)) * 86400 < duration
-                        THEN (JULIANDAY(\`time\`) - JULIANDAY(?)) * 86400
+                            THEN (JULIANDAY(\`time\`) - JULIANDAY(?)) * 86400
                         ELSE duration
-                    END
-                ) AS total_duration,
+                        END
+                    ) AS total_duration,
 
-               -- SUM all uptime duration, also trim off the beat out of time window
+                -- SUM all uptime duration, also trim off the beat out of time window
                 SUM(
                     CASE
                         WHEN (status = 1)
-                        THEN
+                            THEN
                             CASE
                                 WHEN (JULIANDAY(\`time\`) - JULIANDAY(?)) * 86400 < duration
                                     THEN (JULIANDAY(\`time\`) - JULIANDAY(?)) * 86400
                                 ELSE duration
-                            END
+                                END
                         END
-                ) AS uptime_duration
+                    ) AS uptime_duration
             FROM heartbeat
-            WHERE time > ?
-            AND monitor_id = ?
+            WHERE time
+                > ?
+              AND monitor_id = ?
         `, [
             startTime, startTime, startTime, startTime, startTime,
             monitorID,
@@ -497,7 +514,7 @@ class Monitor extends BeanModel {
 
         } else {
             // Handle new monitor with only one beat, because the beat's duration = 0
-            let status = parseInt(await R.getCell("SELECT `status` FROM heartbeat WHERE monitor_id = ?", [ monitorID ]));
+            let status = parseInt(await R.getCell("SELECT `status` FROM heartbeat WHERE monitor_id = ?", [monitorID]));
 
             if (status === UP) {
                 uptime = 1;
@@ -523,10 +540,10 @@ class Monitor extends BeanModel {
         const checks = await R.getAll("SELECT mc.type, mc.value FROM monitor_checks mc WHERE mc.monitor_id = ?", [this.id]);
 
         checks.forEach(check => {
-            if (MONITOR_CHECK_SELECTOR_TYPES.includes(check.type) && typeof check.value === "string" && check.value.startsWith("{")) {
+            if (MONITOR_CHECK_HTTP_CODE_TYPES.includes(check.type) && typeof check.value === "string" && check.value.startsWith("[")) {
                 check.value = JSON.parse(check.value);
             }
-            if (check.type === "HTTP_STATUS_CODE_SHOULD_EQUAL" && typeof check.value === "string" && check.value.startsWith("[")) {
+            if (MONITOR_CHECK_SELECTOR_TYPES.includes(check.type) && typeof check.value === "string" && check.value.startsWith("{")) {
                 check.value = JSON.parse(check.value);
             }
         });
