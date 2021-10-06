@@ -6,7 +6,10 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
-const { debug, UP, DOWN, PENDING, flipStatus, TimeLogger, MONITOR_CHECK_SELECTOR_TYPES } = require("../../src/util");
+const { debug, UP, DOWN, PENDING, flipStatus, TimeLogger, MONITOR_CHECK_SELECTOR_TYPES,
+    HTTP_STATUS_CODE_SHOULD_EQUAL,
+    RESPONSE_SHOULD_CONTAIN_TEXT
+} = require("../../src/util");
 const { tcping, ping, dnsResolve, checkCertificate, getTotalClientInRoom } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
@@ -75,8 +78,8 @@ class Monitor extends BeanModel {
             tags: tags,
 
             // Deprecated: Use the values in the checks list instead
-            accepted_statuscodes: JSON.parse(this.accepted_statuscodes_json),
-            keyword: this.keyword,
+            accepted_statuscodes: ((this.checks || []).find(check => check.type === HTTP_STATUS_CODE_SHOULD_EQUAL) || {}).value,
+            keyword: ((this.checks || []).find(check => check.type === RESPONSE_SHOULD_CONTAIN_TEXT) || {}).value,
         };
     }
 
