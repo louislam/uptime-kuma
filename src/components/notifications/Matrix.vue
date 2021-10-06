@@ -18,7 +18,7 @@
             You can find the internal room ID by looking in the advanced section if your Matrix client. It should look like !QMdRCpUIfLwsfjxye6:home.server.
         </p>
         <p style="margin-top: 8px;">
-            It is highly recommended you create a new user and do not use your Matrix user's access token as it will allow full access to the matrix user. You can get the access token by running <code>curl -XPOST -d '{"type":"m.login.password", "identifier": {"user":"botusername", "type": "m.id.user"}, "password":"passwordforuser"}' "https://home.server/_matrix/client/r0/login"</code>.
+            It is highly recommended you create a new user and do not use your Matrix user's access token as it will allow full access to the matrix user. You can get the access token by running <code>curl -XPOST -d '{"type": "m.login.password", "identifier": {"user": "botusername", "type": "m.id.user"}, "password": "passwordforuser"}' "https://home.server/_matrix/client/r0/login"</code>.
         </p>
     </div>
 </template>
