@@ -12,9 +12,9 @@
         <input id="slack-button" v-model="$parent.notification.slackbutton" type="text" class="form-control">
         <div class="form-text">
             <span style="color: red;"><sup>*</sup></span>{{ $t("Required") }}
-            <i18-t tag="p" keypath="aboutWebhooks" style="margin-top: 8px;">
+            <i18n-t tag="p" keypath="aboutWebhooks" style="margin-top: 8px;">
                 <a href="https://api.slack.com/messaging/webhooks" target="_blank">https://api.slack.com/messaging/webhooks</a>
-            </i18-t>
+            </i18n-t>
             <p style="margin-top: 8px;">
                 {{ $t("aboutChannelName", [$t("slack")]) }}
             </p>
