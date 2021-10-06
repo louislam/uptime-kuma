@@ -60,7 +60,6 @@ export default {
 
             this.$root.login(this.username, this.password, this.token, (res) => {
                 this.processing = false;
-                console.log(res);
 
                 if (res.tokenRequired) {
                     this.tokenRequired = true;

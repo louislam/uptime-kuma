@@ -5,6 +5,7 @@ const { debug } = require("../src/util");
 const passwordHash = require("./password-hash");
 const dayjs = require("dayjs");
 const { Resolver } = require("dns");
+const child_process = require("child_process");
 
 /**
  * Init or reset JWT secret
@@ -313,4 +314,23 @@ exports.updateMonitorChecks = async (monitorId, checks) => {
         await trx.rollback();
         throw err;
     }
+};
+
+exports.startUnitTest = async () => {
+    console.log("Starting unit test...");
+    const npm = /^win/.test(process.platform) ? "npm.cmd" : "npm";
+    const child = child_process.spawn(npm, ["run", "jest"]);
+
+    child.stdout.on("data", (data) => {
+        console.log(data.toString());
+    });
+
+    child.stderr.on("data", (data) => {
+        console.log(data.toString());
+    });
+
+    child.on("close", function (code) {
+        console.log("Jest exit code: " + code);
+        process.exit(code);
+    });
 };

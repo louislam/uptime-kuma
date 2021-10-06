@@ -43,6 +43,7 @@ const {
     setting,
     initJWTSecret,
     checkLogin,
+    startUnitTest,
     updateMonitorChecks,
 } = require("./util-server");
 
@@ -71,12 +72,11 @@ const port = parseInt(process.env.PORT || args.port || 3001);
 const sslKey = process.env.SSL_KEY || args["ssl-key"] || undefined;
 const sslCert = process.env.SSL_CERT || args["ssl-cert"] || undefined;
 
-// Demo Mode?
-const demoMode = args["demo"] || false;
-
-if (demoMode) {
-    console.log("==== Demo Mode ====");
-}
+/**
+ * Run unit test after the server is ready
+ * @type {boolean}
+ */
+const testMode = !!args["test"] || false;
 
 console.log("Creating express and socket.io instance");
 const app = express();
@@ -1263,6 +1263,10 @@ exports.entryPage = "dashboard";
         }
         startMonitors();
         checkVersion.startInterval();
+
+        if (testMode) {
+            startUnitTest();
+        }
     });
 
 })();
