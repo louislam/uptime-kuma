@@ -73,6 +73,10 @@ class Monitor extends BeanModel {
             notificationIDList,
             checks: checks,
             tags: tags,
+
+            // Deprecated: Use the values in the checks list instead
+            accepted_statuscodes: JSON.parse(this.accepted_statuscodes_json),
+            keyword: this.keyword,
         };
     }
 
