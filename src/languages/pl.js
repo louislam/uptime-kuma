@@ -195,6 +195,6 @@ export default {
     lunasea: "LunaSea",
     apprise: "Apprise (obsługuje 50+ usług powiadamiania)",
     pushbullet: "Pushbullet",
-    line: "Line Messenger",
-    mattermost: "Mattermost",
+    line: "Czat Line",
+    mattermost: "Mattermost Czat",
 };
