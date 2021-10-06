@@ -10,7 +10,7 @@
 
                             <div class="my-3">
                                 <label for="type" class="form-label">{{ $t("Monitor Type") }}</label>
-                                <select id="type" v-model="monitor.type" class="form-select">
+                                <select id="type" :value="monitor.type" @input="changeMonitorType($event.target.value)" class="form-select">
                                     <option value="http">
                                         {{ $t("HTTP(s)") }}
                                     </option>
@@ -206,7 +206,7 @@ import CopyableInput from "../components/CopyableInput.vue";
 import MonitorCheckEditor from "../components/MonitorCheckEditor.vue";
 import { useToast } from "vue-toastification";
 import VueMultiselect from "vue-multiselect";
-import { genSecret, isDev } from "../util.ts";
+import { genSecret, HTTP_STATUS_CODE_SHOULD_EQUAL, isDev } from "../util.ts";
 const toast = useToast();
 
 export default {
@@ -331,7 +331,10 @@ export default {
                     ignoreTls: false,
                     upsideDown: false,
                     maxredirects: 10,
-                    checks: [],
+                    checks: [{
+                        type: HTTP_STATUS_CODE_SHOULD_EQUAL,
+                        value: ["200-299"],
+                    }],
                     dns_resolve_type: "A",
                     dns_resolve_server: "1.1.1.1",
                 };
@@ -354,6 +357,18 @@ export default {
                         toast.error(res.msg);
                     }
                 });
+            }
+        },
+
+        changeMonitorType(type) {
+            this.monitor.type = type;
+            if (type === 'http') {
+                this.monitor.checks = [{
+                    type: HTTP_STATUS_CODE_SHOULD_EQUAL,
+                    value: ["200-299"],
+                }];
+            } else {
+                delete this.monitor.checks;
             }
         },
 
