@@ -12,7 +12,7 @@ function validateMonitorChecks(res, checks, bean) {
                     bean.msg += `, status matches '${check.value}'`;
                     bean.status = UP;
                 } else {
-                    throw new Error(bean.msg + ", but status code dit not match " + check.value);
+                    throw new Error(bean.msg + ", but status code does not match " + check.value);
                 }
                 break;
 
