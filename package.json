@@ -87,7 +87,7 @@
         "vue-chart-3": "~0.5.8",
         "vue-confirm-dialog": "~1.0.2",
         "vue-contenteditable": "~3.0.4",
-        "vue-i18n": "~9.1.8",
+        "vue-i18n": "9.1.7",
         "vue-image-crop-upload": "~3.0.3",
         "vue-multiselect": "~3.0.0-alpha.2",
         "vue-qrcode": "~1.0.0",
