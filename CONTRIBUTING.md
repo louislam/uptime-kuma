@@ -38,6 +38,7 @@ If you are not sure, feel free to create an empty pull request draft first.
 - Add a new notification
 - Add a chart
 - Fix a bug
+- Translations
 
 ### *️⃣ Requires one more reviewer
 
@@ -150,4 +151,29 @@ The data and socket logic are in `src/mixins/socket.js`.
 
 # Unit Test
 
-Yes, no unit test for now. I know it is very important, but at the same time my spare time is very limited. I want to implement my ideas first. I will go back to this in some points.
+It is an end-to-end testing. It is using Jest and Puppeteer.
+
+```
+npm run build
+npm test
+```
+
+By default, the Chromium window will be shown up during the test. Specifying `HEADLESS_TEST=1` for terminal environments.
+
+# Update Dependencies
+
+Install `ncu`
+https://github.com/raineorshine/npm-check-updates
+
+```bash
+ncu -u -t patch
+npm install
+```
+
+Since previously updating vite 2.5.10 to 2.6.0 broke the application completely, from now on, it should update patch release version only. 
+
+Patch release = the third digit
+
+# Translations
+
+Please read: https://github.com/louislam/uptime-kuma/tree/master/src/languages

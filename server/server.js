@@ -37,7 +37,7 @@ console.log("Importing this project modules");
 debug("Importing Monitor");
 const Monitor = require("./model/monitor");
 debug("Importing Settings");
-const { getSettings, setSettings, setting, initJWTSecret, checkLogin } = require("./util-server");
+const { getSettings, setSettings, setting, initJWTSecret, checkLogin, startUnitTest } = require("./util-server");
 
 debug("Importing Notification");
 const { Notification } = require("./notification");
@@ -64,12 +64,11 @@ const port = parseInt(process.env.PORT || args.port || 3001);
 const sslKey = process.env.SSL_KEY || args["ssl-key"] || undefined;
 const sslCert = process.env.SSL_CERT || args["ssl-cert"] || undefined;
 
-// Demo Mode?
-const demoMode = args["demo"] || false;
-
-if (demoMode) {
-    console.log("==== Demo Mode ====");
-}
+/**
+ * Run unit test after the server is ready
+ * @type {boolean}
+ */
+const testMode = !!args["test"] || false;
 
 console.log("Creating express and socket.io instance");
 const app = express();
@@ -1229,6 +1228,10 @@ exports.entryPage = "dashboard";
         }
         startMonitors();
         checkVersion.startInterval();
+
+        if (testMode) {
+            startUnitTest();
+        }
     });
 
 })();
