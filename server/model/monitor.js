@@ -144,6 +144,7 @@ class Monitor extends BeanModel {
                             rejectUnauthorized: ! this.getIgnoreTls(),
                         }),
                         maxRedirects: this.maxredirects,
+                        validateStatus: undefined,
                     });
                     bean.msg = `${res.status} - ${res.statusText}`;
                     bean.ping = dayjs().valueOf() - startTime;
@@ -162,28 +163,7 @@ class Monitor extends BeanModel {
 
                     debug("Cert Info Query Time: " + (dayjs().valueOf() - certInfoStartTime) + "ms");
 
-
                     validateMonitorChecks(res, await this.getMonitorChecks(), bean);
-                    if (this.type === "http") {
-                        bean.status = UP;
-                    } else {
-
-                        let data = res.data;
-
-                        // Convert to string for object/array
-                        if (typeof data !== "string") {
-                            data = JSON.stringify(data);
-                        }
-
-                        if (data.includes(this.keyword)) {
-                            bean.msg += ", keyword is found";
-                            bean.status = UP;
-                        } else {
-                            throw new Error(bean.msg + ", but keyword is not found");
-                        }
-
-                    }
-
                 } else if (this.type === "port") {
                     bean.ping = await tcping(this.hostname, this.port);
                     bean.msg = "";
