@@ -30,6 +30,9 @@ import {
     faUpload,
     faCopy,
     faCheck,
+    faFile,
+    faAward,
+    faLink,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -59,6 +62,9 @@ library.add(
     faUpload,
     faCopy,
     faCheck,
+    faFile,
+    faAward,
+    faLink,
 );
 
 export { FontAwesomeIcon };

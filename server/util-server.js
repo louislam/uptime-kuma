@@ -5,6 +5,7 @@ const { debug } = require("../src/util");
 const passwordHash = require("./password-hash");
 const dayjs = require("dayjs");
 const { Resolver } = require("dns");
+const child_process = require("child_process");
 
 /**
  * Init or reset JWT secret
@@ -185,38 +186,42 @@ const getDaysRemaining = (validFrom, validTo) => {
     return daysRemaining;
 };
 
-exports.checkCertificate = function (res) {
-    const {
-        valid_from,
-        valid_to,
-        subjectaltname,
-        issuer,
-        fingerprint,
-    } = res.request.res.socket.getPeerCertificate(false);
+// Fix certificate Info for display
+// param: info -  the chain obtained from getPeerCertificate()
+const parseCertificateInfo = function (info) {
+    let link = info;
 
-    if (!valid_from || !valid_to || !subjectaltname) {
-        throw {
-            message: "No TLS certificate in response",
-        };
+    while (link) {
+        if (!link.valid_from || !link.valid_to) {
+            break;
+        }
+        link.validTo = new Date(link.valid_to);
+        link.validFor = link.subjectaltname?.replace(/DNS:|IP Address:/g, "").split(", ");
+        link.daysRemaining = getDaysRemaining(new Date(), link.validTo);
+
+        // Move up the chain until loop is encountered
+        if (link.issuerCertificate == null) {
+            break;
+        } else if (link.fingerprint == link.issuerCertificate.fingerprint) {
+            link.issuerCertificate = null;
+            break;
+        } else {
+            link = link.issuerCertificate;
+        }
     }
 
+    return info;
+};
+
+exports.checkCertificate = function (res) {
+    const info = res.request.res.socket.getPeerCertificate(true);
     const valid = res.request.res.socket.authorized || false;
 
-    const validTo = new Date(valid_to);
-
-    const validFor = subjectaltname
-        .replace(/DNS:|IP Address:/g, "")
-        .split(", ");
-
-    const daysRemaining = getDaysRemaining(new Date(), validTo);
+    const parsedInfo = parseCertificateInfo(info);
 
     return {
-        valid,
-        validFor,
-        validTo,
-        daysRemaining,
-        issuer,
-        fingerprint,
+        valid: valid,
+        certInfo: parsedInfo
     };
 };
 
@@ -287,4 +292,23 @@ exports.checkLogin = (socket) => {
     if (! socket.userID) {
         throw new Error("You are not logged in.");
     }
+};
+
+exports.startUnitTest = async () => {
+    console.log("Starting unit test...");
+    const npm = /^win/.test(process.platform) ? "npm.cmd" : "npm";
+    const child = child_process.spawn(npm, ["run", "jest"]);
+
+    child.stdout.on("data", (data) => {
+        console.log(data.toString());
+    });
+
+    child.stderr.on("data", (data) => {
+        console.log(data.toString());
+    });
+
+    child.on("close", function (code) {
+        console.log("Jest exit code: " + code);
+        process.exit(code);
+    });
 };

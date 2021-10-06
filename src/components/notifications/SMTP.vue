@@ -45,17 +45,17 @@
 
     <div class="mb-3">
         <label for="to-email" class="form-label">{{ $t("To Email") }}</label>
-        <input id="to-email" v-model="$parent.notification.smtpTo" type="text" class="form-control" required autocomplete="false" placeholder="example2@kuma.pet, example3@kuma.pet">
+        <input id="to-email" v-model="$parent.notification.smtpTo" type="text" class="form-control" autocomplete="false" placeholder="example2@kuma.pet, example3@kuma.pet" :required="!hasRecipient">
     </div>
 
     <div class="mb-3">
         <label for="to-cc" class="form-label">{{ $t("smtpCC") }}</label>
-        <input id="to-cc" v-model="$parent.notification.smtpCC" type="text" class="form-control" autocomplete="false">
+        <input id="to-cc" v-model="$parent.notification.smtpCC" type="text" class="form-control" autocomplete="false" :required="!hasRecipient">
     </div>
 
     <div class="mb-3">
         <label for="to-bcc" class="form-label">{{ $t("smtpBCC") }}</label>
-        <input id="to-bcc" v-model="$parent.notification.smtpBCC" type="text" class="form-control" autocomplete="false">
+        <input id="to-bcc" v-model="$parent.notification.smtpBCC" type="text" class="form-control" autocomplete="false" :required="!hasRecipient">
     </div>
 </template>
 
@@ -66,10 +66,19 @@ export default {
     components: {
         HiddenInput,
     },
+    computed: {
+        hasRecipient() {
+            if (this.$parent.notification.smtpTo || this.$parent.notification.smtpCC || this.$parent.notification.smtpBCC) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    },
     mounted() {
         if (typeof this.$parent.notification.smtpSecure === "undefined") {
             this.$parent.notification.smtpSecure = false;
         }
-    },
-}
+    }
+};
 </script>
