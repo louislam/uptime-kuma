@@ -1,6 +1,6 @@
 <template>
     <div class="mb-3">
-        <label for="teams-webhookurl" class="form-label">Webhook URL</label>
+        <label for="teams-webhookurl" class="form-label">{{ $t("Webhook URL") }}</label>
         <input
             id="teams-webhookurl"
             v-model="$parent.notification.webhookUrl"
@@ -8,12 +8,11 @@
             class="form-control"
             required
         />
-        <div class="form-text">
-            You can learn how to create a webhook url
+        <i18n-t tag="div" keypath="wayToGetTeamsURL" class="form-text">
             <a
                 href="https://docs.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook"
                 target="_blank"
-            >here</a>.
-        </div>
+            >{{ $t("here") }}</a>
+        </i18n-t>
     </div>
 </template>
