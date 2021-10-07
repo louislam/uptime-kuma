@@ -223,12 +223,14 @@ async function login(username, password) {
 }
 
 async function click(page, selector, elementIndex = 0) {
+    await page.waitForSelector(selector);
     return await page.evaluate((s, i) => {
         return document.querySelectorAll(s)[i].click();
     }, selector, elementIndex);
 }
 
 async function input(page, selector, text) {
+    await page.waitForSelector(selector);
     const element = await page.$(selector);
     await element.click({ clickCount: 3 });
     await page.keyboard.press("Backspace");
