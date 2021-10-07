@@ -7,7 +7,7 @@ class Line extends NotificationProvider {
     name = "line";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully. ";
+        let okMsg = "Sent Successfully.";
         try {
             let lineAPIUrl = "https://api.line.me/v2/bot/message/push";
             let config = {
