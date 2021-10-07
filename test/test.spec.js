@@ -162,7 +162,7 @@ describe("Init", () => {
             await click(page, "form > div > .btn[type=submit]", 1);
             await sleep(4000);
 
-            await click(page, ".btn-danger.btn.me-1");
+            await click(page, ".btn-danger.btn.me-2");
             await login("admin", "new_password123");
             let elementCount = await page.evaluate(() => document.querySelectorAll("#floatingPassword").length);
             expect(elementCount).toEqual(1);
@@ -181,7 +181,7 @@ describe("Init", () => {
             await click(page, "form > div > .btn[type=submit]", 1);
             await sleep(4000);
 
-            await click(page, ".btn-danger.btn.me-1");
+            await click(page, ".btn-danger.btn.me-2");
             await login("admin", "new_password123");
 
             let elementCount = await page.evaluate(() => document.querySelectorAll("#floatingPassword").length);
