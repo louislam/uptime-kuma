@@ -86,7 +86,7 @@ export class TimeLogger {
     }
 
     print(name: string) {
-        if (isDev) {
+        if (isDev && process && process.env.TIMELOGGER === "1") {
             console.log(name + ": " + (dayjs().valueOf() - this.startTime) + "ms")
         }
     }
@@ -122,4 +122,8 @@ export function genSecret(length = 64) {
         secret += chars.charAt(Math.floor(Math.random() * charsLength));
     }
     return secret;
+}
+
+export function getMonitorRelativeURL(id: string) {
+    return "/dashboard/" + id;
 }

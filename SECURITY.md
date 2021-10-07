@@ -7,7 +7,8 @@ currently being supported with security updates.
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 1.x.x  | :white_check_mark: |
+| 1.7.X  | :white_check_mark: |
+| < 1.7  | ❌ |
 
 ## Reporting a Vulnerability
 Please report security issues to uptime@kuma.pet.

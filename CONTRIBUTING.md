@@ -38,6 +38,7 @@ If you are not sure, feel free to create an empty pull request draft first.
 - Add a new notification
 - Add a chart
 - Fix a bug
+- Translations
 
 ### *️⃣ Requires one more reviewer
 
@@ -172,3 +173,7 @@ npm install
 Since previously updating vite 2.5.10 to 2.6.0 broke the application completely, from now on, it should update patch release version only. 
 
 Patch release = the third digit
+
+# Translations
+
+Please read: https://github.com/louislam/uptime-kuma/tree/master/src/languages
