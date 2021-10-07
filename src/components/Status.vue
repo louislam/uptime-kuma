@@ -1,5 +1,7 @@
 <template>
-    <span class="badge rounded-pill" :class=" 'bg-' + color ">{{ text }}</span>
+    <label class="badge badge-pill" :class=" 'bg-' + color ">
+        <span>{{ text }}</span>
+    </label>
 </template>
 
 <script>
