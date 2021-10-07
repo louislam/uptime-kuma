@@ -1,21 +1,21 @@
 <template>
     <div class="mb-3">
-        <label for="line-channel-access-token" class="form-label">Channel access token</label>
+        <label for="line-channel-access-token" class="form-label">{{ $t("Channel access token") }}</label>
         <HiddenInput id="line-channel-access-token" v-model="$parent.notification.lineChannelAccessToken" :required="true" autocomplete="one-time-code"></HiddenInput>
     </div>
-    <div class="form-text">
-        Line Developers Console - <b>Basic Settings</b>
-    </div>
+    <i18n-t tag="div" keypath="lineDevConsoleTo" class="form-text">
+        <b>{{ $t("Basic Settings") }}</b>
+    </i18n-t>
     <div class="mb-3" style="margin-top: 12px;">
         <label for="line-user-id" class="form-label">User ID</label>
         <input id="line-user-id" v-model="$parent.notification.lineUserID" type="text" class="form-control" required>
     </div>
-    <div class="form-text">
-        Line Developers Console - <b>Messaging API</b>
-    </div>
-    <div class="form-text" style="margin-top: 8px;">
-        First access the <a href="https://developers.line.biz/console/" target="_blank">Line Developers Console</a>, create a provider and channel (Messaging API), then you can get the channel access token and user id from the above mentioned menu items.
-    </div>
+    <i18n-t tag="div" keypath="lineDevConsoleTo" class="form-text">
+        <b>{{ $t("Messaging API") }}</b>
+    </i18n-t>
+    <i18n-t tag="div" keypath="wayToGetLineChannelToken" class="form-text" style="margin-top: 8px;">
+        <a href="https://developers.line.biz/console/" target="_blank">{{ $t("Line Developers Console") }}</a>
+    </i18n-t>
 </template>
 
 <script>
@@ -25,5 +25,5 @@ export default {
     components: {
         HiddenInput,
     },
-}
+};
 </script>
