@@ -184,7 +184,7 @@ export default {
     First: "اولین",
     Last: "آخرین",
     Info: "اطلاعات",
-    "Powered By": "نیرو گرفته از",
+    "Powered by": "نیرو گرفته از",
     telegram: "Telegram",
     webhook: "Webhook",
     smtp: "Email (SMTP)",

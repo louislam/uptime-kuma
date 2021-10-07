@@ -1,5 +1,8 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
+const Slack = require("./slack");
+const { setting } = require("../util-server");
+const { getMonitorRelativeURL, UP, DOWN } = require("../../src/util");
 
 class RocketChat extends NotificationProvider {
 
@@ -10,16 +13,17 @@ class RocketChat extends NotificationProvider {
         try {
             if (heartbeatJSON == null) {
                 let data = {
-                    "text": "Uptime Kuma Rocket.chat testing successful.",
+                    "text": msg,
                     "channel": notification.rocketchannel,
                     "username": notification.rocketusername,
                     "icon_emoji": notification.rocketiconemo,
-                }
-                await axios.post(notification.rocketwebhookURL, data)
+                };
+                await axios.post(notification.rocketwebhookURL, data);
                 return okMsg;
             }
 
             const time = heartbeatJSON["time"];
+
             let data = {
                 "text": "Uptime Kuma Alert",
                 "channel": notification.rocketchannel,
@@ -28,16 +32,32 @@ class RocketChat extends NotificationProvider {
                 "attachments": [
                     {
                         "title": "Uptime Kuma Alert *Time (UTC)*\n" + time,
-                        "title_link": notification.rocketbutton,
                         "text": "*Message*\n" + msg,
-                        "color": "#32cd32"
                     }
                 ]
+            };
+
+            // Color
+            if (heartbeatJSON.status === DOWN) {
+                data.attachments[0].color = "#ff0000";
+            } else {
+                data.attachments[0].color = "#32cd32";
             }
-            await axios.post(notification.rocketwebhookURL, data)
+
+            if (notification.rocketbutton) {
+                await Slack.deprecateURL(notification.rocketbutton);
+            }
+
+            const baseURL = await setting("primaryBaseURL");
+
+            if (baseURL) {
+                data.attachments[0].title_link = baseURL + getMonitorRelativeURL(monitorJSON.id);
+            }
+
+            await axios.post(notification.rocketwebhookURL, data);
             return okMsg;
         } catch (error) {
-            this.throwGeneralAxiosError(error)
+            this.throwGeneralAxiosError(error);
         }
 
     }

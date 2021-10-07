@@ -1,5 +1,5 @@
 export default {
-    languageName: "Danish",
+    languageName: "Danish (Danmark)",
     Settings: "Indstillinger",
     Dashboard: "Dashboard",
     "New Update": "Opdatering tilgængelig",

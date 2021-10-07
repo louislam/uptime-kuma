@@ -180,7 +180,9 @@ class Monitor extends BeanModel {
                         }
                     }
 
-                    debug("Cert Info Query Time: " + (dayjs().valueOf() - certInfoStartTime) + "ms");
+                    if (process.env.TIMELOGGER === "1") {
+                        debug("Cert Info Query Time: " + (dayjs().valueOf() - certInfoStartTime) + "ms");
+                    }
 
                     bean.msg = `${res.status} - ${res.statusText}`;
 

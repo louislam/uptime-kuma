@@ -7,7 +7,7 @@
 // Backend uses the compiled file util.js
 // Frontend uses util.ts
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.genSecret = exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.MONITOR_CHECK_MAP_INVERTED_TO_NORMAL = exports.MONITOR_CHECK_MAP_NORMAL_TO_INVERTED = exports.MONITOR_CHECK_INVERTED_TYPES = exports.MONITOR_CHECK_SELECTOR_TYPES = exports.MONITOR_CHECK_STRING_TYPES = exports.MONITOR_CHECK_HTTP_CODE_TYPES = exports.RESPONSE_SELECTOR_SHOULD_NOT_MATCH_REGEX = exports.RESPONSE_SELECTOR_SHOULD_MATCH_REGEX = exports.RESPONSE_SELECTOR_SHOULD_NOT_EQUAL = exports.RESPONSE_SELECTOR_SHOULD_EQUAL = exports.RESPONSE_SHOULD_NOT_MATCH_REGEX = exports.RESPONSE_SHOULD_MATCH_REGEX = exports.RESPONSE_SHOULD_NOT_CONTAIN_TEXT = exports.RESPONSE_SHOULD_CONTAIN_TEXT = exports.HTTP_STATUS_CODE_SHOULD_NOT_EQUAL = exports.HTTP_STATUS_CODE_SHOULD_EQUAL = exports.MONITOR_CHECK_SHOULD_NOT = exports.MONITOR_CHECK_SHOULD = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isDev = void 0;
+exports.getMonitorRelativeURL = exports.genSecret = exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.MONITOR_CHECK_MAP_INVERTED_TO_NORMAL = exports.MONITOR_CHECK_MAP_NORMAL_TO_INVERTED = exports.MONITOR_CHECK_INVERTED_TYPES = exports.MONITOR_CHECK_SELECTOR_TYPES = exports.MONITOR_CHECK_STRING_TYPES = exports.MONITOR_CHECK_HTTP_CODE_TYPES = exports.RESPONSE_SELECTOR_SHOULD_NOT_MATCH_REGEX = exports.RESPONSE_SELECTOR_SHOULD_MATCH_REGEX = exports.RESPONSE_SELECTOR_SHOULD_NOT_EQUAL = exports.RESPONSE_SELECTOR_SHOULD_EQUAL = exports.RESPONSE_SHOULD_NOT_MATCH_REGEX = exports.RESPONSE_SHOULD_MATCH_REGEX = exports.RESPONSE_SHOULD_NOT_CONTAIN_TEXT = exports.RESPONSE_SHOULD_CONTAIN_TEXT = exports.HTTP_STATUS_CODE_SHOULD_NOT_EQUAL = exports.HTTP_STATUS_CODE_SHOULD_EQUAL = exports.MONITOR_CHECK_SHOULD_NOT = exports.MONITOR_CHECK_SHOULD = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isDev = void 0;
 const _dayjs = require("dayjs");
 const dayjs = _dayjs;
 exports.isDev = process.env.NODE_ENV === "development";
@@ -105,7 +105,7 @@ class TimeLogger {
         this.startTime = dayjs().valueOf();
     }
     print(name) {
-        if (exports.isDev) {
+        if (exports.isDev && process && process.env.TIMELOGGER === "1") {
             console.log(name + ": " + (dayjs().valueOf() - this.startTime) + "ms");
         }
     }
@@ -143,3 +143,7 @@ function genSecret(length = 64) {
     return secret;
 }
 exports.genSecret = genSecret;
+function getMonitorRelativeURL(id) {
+    return "/dashboard/" + id;
+}
+exports.getMonitorRelativeURL = getMonitorRelativeURL;

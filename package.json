@@ -21,6 +21,7 @@
         "start-server-dev": "cross-env NODE_ENV=development node server/server.js",
         "build": "vite build",
         "test": "node test/prepare-test-server.js && node server/server.js --port=3002 --data-dir=./data/test/ --test",
+        "test-with-build": "npm run build && npm test",
         "jest": "node test/prepare-jest.js && jest",
         "tsc": "tsc",
         "vite-preview-dist": "vite preview --host",
@@ -98,7 +99,7 @@
     "devDependencies": {
         "@babel/eslint-parser": "~7.15.7",
         "@types/bootstrap": "~5.1.6",
-        "@vitejs/plugin-legacy": "~1.5.3",
+        "@vitejs/plugin-legacy": "~1.6.1",
         "@vitejs/plugin-vue": "~1.9.2",
         "@vue/compiler-sfc": "~3.2.19",
         "core-js": "~3.18.1",
@@ -113,7 +114,7 @@
         "stylelint": "~13.13.1",
         "stylelint-config-standard": "~22.0.0",
         "typescript": "~4.4.3",
-        "vite": "~2.5.10"
+        "vite": "~2.6.4"
     },
     "jest": {
         "verbose": true,

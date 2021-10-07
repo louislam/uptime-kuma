@@ -1,5 +1,5 @@
 export default {
-    languageName: "German",
+    languageName: "Deutsch (Deutschland)",
     Settings: "Einstellungen",
     Dashboard: "Dashboard",
     "New Update": "Update Verfügbar",
