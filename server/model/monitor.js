@@ -199,7 +199,9 @@ class Monitor extends BeanModel {
                         }
                     }
 
-                    debug("Cert Info Query Time: " + (dayjs().valueOf() - certInfoStartTime) + "ms");
+                    if (process.env.TIMELOGGER === "1") {
+                        debug("Cert Info Query Time: " + (dayjs().valueOf() - certInfoStartTime) + "ms");
+                    }
 
                     if (this.type === "http") {
                         bean.status = UP;
@@ -563,6 +565,7 @@ class Monitor extends BeanModel {
         const uptime = await this.calcUptime(duration, monitorID);
         io.to(userID).emit("uptime", monitorID, duration, uptime);
     }
+
 }
 
 module.exports = Monitor;

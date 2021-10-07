@@ -1,7 +1,7 @@
 <template>
     <div>
-        <h4 class="mb-3">{{ $t("Tags") }}</h4>
-        <div class="mb-3 p-1">
+        <h4 class="mt-5 mb-3">{{ $t("Tags") }}</h4>
+        <div v-if="selectedTags.length > 0" class="mb-2 p-1">
             <tag
                 v-for="item in selectedTags"
                 :key="item.id"
@@ -124,8 +124,8 @@
 import { Modal } from "bootstrap";
 import VueMultiselect from "vue-multiselect";
 import Tag from "../components/Tag.vue";
-import { useToast } from "vue-toastification"
-const toast = useToast()
+import { useToast } from "vue-toastification";
+const toast = useToast();
 
 export default {
     components: {
@@ -186,7 +186,7 @@ export default {
                     color: "#7C3AED" },
                 { name: this.$t("Pink"),
                     color: "#DB2777" },
-            ]
+            ];
         },
         validateDraftTag() {
             let nameInvalid = false;
@@ -227,7 +227,7 @@ export default {
                 invalid,
                 nameInvalid,
                 valueInvalid,
-            }
+            };
         },
     },
     mounted() {
@@ -243,7 +243,7 @@ export default {
                 if (res.ok) {
                     this.existingTags = res.tags;
                 } else {
-                    toast.error(res.msg)
+                    toast.error(res.msg);
                 }
             });
         },
@@ -277,7 +277,7 @@ export default {
                         name: this.newDraftTag.select.name,
                         value: this.newDraftTag.value,
                         new: true,
-                    })
+                    });
                 }
             } else {
                 // Add new Tag
@@ -286,7 +286,7 @@ export default {
                     name: this.newDraftTag.name.trim(),
                     value: this.newDraftTag.value,
                     new: true,
-                })
+                });
             }
             this.clearDraftTag();
         },
@@ -348,7 +348,7 @@ export default {
                         if (tag.name == newTag.name && tag.color == newTag.color) {
                             tag.id = newTagResult.id;
                         }
-                    })
+                    });
                 } else {
                     tagId = newTag.id;
                 }
