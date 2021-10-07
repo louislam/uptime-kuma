@@ -68,11 +68,11 @@
 </template>
 
 <script lang="ts">
-import { Modal } from "bootstrap"
-import { ucfirst } from "../util.ts"
+import { Modal } from "bootstrap";
+import { ucfirst } from "../util.ts";
 
 import Confirm from "./Confirm.vue";
-import NotificationFormList from "./notifications"
+import NotificationFormList from "./notifications";
 
 export default {
     components: {
@@ -93,41 +93,40 @@ export default {
                 isDefault: false,
                 // Do not set default value here, please scroll to show()
             }
-        }
+        };
     },
 
     computed: {
         currentForm() {
             if (!this.notification.type) {
-                return null
+                return null;
             }
-            return NotificationFormList[this.notification.type]
+            return NotificationFormList[this.notification.type];
         }
     },
 
     watch: {
         "notification.type"(to, from) {
             let oldName;
-
             if (from) {
-                oldName = `My ${ucfirst(from)} Alert (1)`;
+                oldName = this.getUniqueDefaultName(from);
             } else {
                 oldName = "";
             }
 
             if (! this.notification.name || this.notification.name === oldName) {
-                this.notification.name = `My ${ucfirst(to)} Alert (1)`
+                this.notification.name = this.getUniqueDefaultName(to);
             }
         },
     },
     mounted() {
-        this.modal = new Modal(this.$refs.modal)
+        this.modal = new Modal(this.$refs.modal);
     },
     methods: {
 
         deleteConfirm() {
             this.modal.hide();
-            this.$refs.confirmDelete.show()
+            this.$refs.confirmDelete.show();
         },
 
         show(notificationID) {
@@ -146,19 +145,19 @@ export default {
                     name: "",
                     type: null,
                     isDefault: false,
-                }
+                };
 
                 // Set Default value here
                 this.notification.type = this.notificationTypes[0];
             }
 
-            this.modal.show()
+            this.modal.show();
         },
 
         submit() {
             this.processing = true;
             this.$root.getSocket().emit("addNotification", this.notification, this.id, (res) => {
-                this.$root.toastRes(res)
+                this.$root.toastRes(res);
                 this.processing = false;
 
                 if (res.ok) {
@@ -170,30 +169,45 @@ export default {
                     }
 
                 }
-            })
+            });
         },
 
         test() {
             this.processing = true;
             this.$root.getSocket().emit("testNotification", this.notification, (res) => {
-                this.$root.toastRes(res)
+                this.$root.toastRes(res);
                 this.processing = false;
-            })
+            });
         },
 
         deleteNotification() {
             this.processing = true;
             this.$root.getSocket().emit("deleteNotification", this.id, (res) => {
-                this.$root.toastRes(res)
+                this.$root.toastRes(res);
                 this.processing = false;
 
                 if (res.ok) {
-                    this.modal.hide()
+                    this.modal.hide();
                 }
-            })
+            });
         },
+        /**
+         * @param {keyof NotificationFormList} notificationKey
+         * @return {string}
+         */
+        getUniqueDefaultName(notificationKey) {
+            let index = 1;
+            let name = "";
+            do {
+                name = this.$t("defaultNotificationName", {
+                    notification: this.$t(notificationKey).replace(/\(.+\)/, "").trim(),
+                    number: index++
+                });
+            } while (this.$root.notificationList.find(it => it.name === name));
+            return name;
+        }
     },
-}
+};
 </script>
 
 <style lang="scss" scoped>

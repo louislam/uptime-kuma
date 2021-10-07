@@ -27,7 +27,7 @@ CNAME
 install.sh
 SECURITY.md
 tsconfig.json
-
+.env
 
 ### .gitignore content (commented rules are duplicated)
 
