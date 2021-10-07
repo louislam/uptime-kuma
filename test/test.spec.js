@@ -132,18 +132,18 @@ describe("Init", () => {
             // Status Page
             await click(page, "#entryPageNo");
             await click(page, "form > div > .btn[type=submit]");
-            await sleep(2000);
+            await sleep(4000);
             await newPage.goto(baseURL);
-            await sleep(3000);
+            await sleep(4000);
             pathname = await newPage.evaluate(() => location.pathname);
             expect(pathname).toEqual("/status");
 
             // Back to Dashboard
             await click(page, "#entryPageYes");
             await click(page, "form > div > .btn[type=submit]");
-            await sleep(2000);
+            await sleep(4000);
             await newPage.goto(baseURL);
-            await sleep(3000);
+            await sleep(4000);
             pathname = await newPage.evaluate(() => location.pathname);
             expect(pathname).toEqual("/dashboard");
 
@@ -157,17 +157,17 @@ describe("Init", () => {
             await page.type("#current-password", "wrong_passw$$d");
             await page.type("#new-password", "new_password123");
             await page.type("#repeat-new-password", "new_password123");
+
+            // Save
             await click(page, "form > div > .btn[type=submit]", 1);
-            await sleep(3000);
+            await sleep(4000);
+
             await click(page, ".btn-danger.btn.me-1");
-            await sleep(2000);
             await login("admin", "new_password123");
-            await sleep(2000);
             let elementCount = await page.evaluate(() => document.querySelectorAll("#floatingPassword").length);
             expect(elementCount).toEqual(1);
 
             await login("admin", "admin123");
-            await sleep(3000);
         });
 
         it("Change Password (wrong repeat)", async () => {
@@ -177,12 +177,13 @@ describe("Init", () => {
             await page.type("#current-password", "admin123");
             await page.type("#new-password", "new_password123");
             await page.type("#repeat-new-password", "new_password1234567898797898");
+
             await click(page, "form > div > .btn[type=submit]", 1);
-            await sleep(3000);
+            await sleep(4000);
+
             await click(page, ".btn-danger.btn.me-1");
-            await sleep(2000);
             await login("admin", "new_password123");
-            await sleep(2000);
+
             let elementCount = await page.evaluate(() => document.querySelectorAll("#floatingPassword").length);
             expect(elementCount).toEqual(1);
 
@@ -226,17 +227,22 @@ async function login(username, password) {
     await input(page, "#floatingInput", username);
     await input(page, "#floatingPassword", password);
     await page.click(".btn-primary[type=submit]");
+    await sleep(5000);
 }
 
 async function click(page, selector, elementIndex = 0) {
-    await page.waitForSelector(selector);
+    await page.waitForSelector(selector, {
+        timeout: 5000,
+    });
     return await page.evaluate((s, i) => {
         return document.querySelectorAll(s)[i].click();
     }, selector, elementIndex);
 }
 
 async function input(page, selector, text) {
-    await page.waitForSelector(selector);
+    await page.waitForSelector(selector, {
+        timeout: 5000,
+    });
     const element = await page.$(selector);
     await element.click({ clickCount: 3 });
     await page.keyboard.press("Backspace");
