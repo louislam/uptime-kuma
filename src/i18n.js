@@ -1,5 +1,4 @@
 import { createI18n } from "vue-i18n";
-import bgBG from "./languages/bg-BG";
 import daDK from "./languages/da-DK";
 import deDE from "./languages/de-DE";
 import en from "./languages/en";
@@ -14,6 +13,7 @@ import koKR from "./languages/ko-KR";
 import nlNL from "./languages/nl-NL";
 import pl from "./languages/pl";
 import ptBR from "./languages/pt-BR";
+import bgBG from "./languages/bg-BG";
 import ruRU from "./languages/ru-RU";
 import sr from "./languages/sr";
 import srLatn from "./languages/sr-latn";
