@@ -8,8 +8,6 @@
         <input id="rocket-iconemo" v-model="$parent.notification.rocketiconemo" type="text" class="form-control">
         <label for="rocket-channel" class="form-label">{{ $t("Channel Name") }}</label>
         <input id="rocket-channel-name" v-model="$parent.notification.rocketchannel" type="text" class="form-control">
-        <label for="rocket-button-url" class="form-label">{{ $t("Uptime Kuma URL") }}</label>
-        <input id="rocket-button" v-model="$parent.notification.rocketbutton" type="text" class="form-control">
         <div class="form-text">
             <span style="color: red;"><sup>*</sup></span>{{ $t("Required") }}
             <i18n-t tag="p" keypath="aboutWebhooks" style="margin-top: 8px;">

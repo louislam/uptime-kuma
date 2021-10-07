@@ -47,6 +47,7 @@
 import HeartbeatBar from "../components/HeartbeatBar.vue";
 import Uptime from "../components/Uptime.vue";
 import Tag from "../components/Tag.vue";
+import { getMonitorRelativeURL } from "../util.ts";
 
 export default {
     components: {
@@ -109,7 +110,7 @@ export default {
     },
     methods: {
         monitorURL(id) {
-            return "/dashboard/" + id;
+            return getMonitorRelativeURL(id);
         },
         clearSearchText() {
             this.searchText = "";

@@ -111,7 +111,7 @@
                                 <label class="form-label" for="primaryBaseURL">Primary Base URL</label>
 
                                 <div class="input-group mb-3">
-                                    <input id="primaryBaseURL" v-model="settings.primaryBaseURL" class="form-control" name="primaryBaseURL" placeholder="https://">
+                                    <input id="primaryBaseURL" v-model="settings.primaryBaseURL" class="form-control" name="primaryBaseURL" placeholder="https://" pattern="https?://.+">
                                     <button class="btn btn-outline-primary" type="button" @click="autoGetPrimaryBaseURL">Auto Get</button>
                                 </div>
 
