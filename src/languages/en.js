@@ -240,7 +240,6 @@ export default {
     pushbullet: "Pushbullet",
     line: "Line Messenger",
     mattermost: "Mattermost",
-
     "User Key": "User Key",
     "Device": "Device",
     "Message Title": "Message Title",
@@ -273,5 +272,6 @@ export default {
     "Icon URL": "Icon URL",
     aboutIconURL: "You can provide a link to a picture in \"Icon URL\" to override the default profile picture. Will not be used if Icon Emoji is set.",
     aboutMattermostChannelName: "You can override the default channel that webhook posts to by entering the channel name into \"Channel Name\" field. This needs to be enabled in Mattermost webhook settings. Ex: #other-channel",
+    "matrix": "Matrix",
     // End notification form
 };
