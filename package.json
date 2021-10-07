@@ -46,7 +46,8 @@
         "test-nodejs16": "docker build --progress plain -f test/ubuntu-nodejs16.dockerfile .",
         "simple-dns-server": "node extra/simple-dns-server.js",
         "update-language-files-with-base-lang": "cd extra/update-language-files && node index.js %npm_config_base_lang% && eslint ../../src/languages/**.js --fix",
-        "update-language-files": "cd extra/update-language-files && node index.js && eslint ../../src/languages/**.js --fix"
+        "update-language-files": "cd extra/update-language-files && node index.js && eslint ../../src/languages/**.js --fix",
+        "extract-translations": "node extra/extract-translations.js"
     },
     "dependencies": {
         "@fortawesome/fontawesome-svg-core": "~1.2.36",
@@ -107,8 +108,11 @@
         "dns2": "~2.0.1",
         "eslint": "~7.32.0",
         "eslint-plugin-vue": "~7.18.0",
+        "find-in-files": "^0.5.0",
         "jest": "~27.2.4",
         "jest-puppeteer": "~6.0.0",
+        "json5": "^2.2.0",
+        "lodash": "^4.17.21",
         "puppeteer": "~10.4.0",
         "sass": "~1.42.1",
         "stylelint": "~13.13.1",

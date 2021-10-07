@@ -1,4 +1,4 @@
-import STMP from "./SMTP.vue"
+import STMP from "./SMTP.vue";
 import Telegram from "./Telegram.vue";
 import Discord from "./Discord.vue";
 import Webhook from "./Webhook.vue";
@@ -39,6 +39,6 @@ const NotificationFormList = {
     "pushbullet": Pushbullet,
     "line": Line,
     "mattermost": Mattermost
-}
+};
 
-export default NotificationFormList
+export default NotificationFormList;

@@ -272,7 +272,7 @@ export default {
         },
 
         pageName() {
-            return this.$t((this.isAdd) ? "Add New Monitor" : "Edit");
+            return this.isAdd ? this.$t("Add New Monitor") : this.$t("Edit");
         },
 
         isAdd() {

@@ -352,16 +352,11 @@ export default {
         },
 
         pingTitle(average = false) {
-            let translationPrefix = "";
-            if (average) {
-                translationPrefix = "Avg. ";
-            }
-
             if (this.monitor.type === "http") {
-                return this.$t(translationPrefix + "Response");
+                return average ? this.$t("Avg. Response") : this.$t("Response");
             }
 
-            return this.$t(translationPrefix + "Ping");
+            return average ? this.$t("Avg. Ping") : this.$t("Ping");
         },
     },
 };
