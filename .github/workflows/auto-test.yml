@@ -10,7 +10,7 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
+  auto-test:
     runs-on: ${{ matrix.os }}
 
     strategy:
