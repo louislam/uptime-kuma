@@ -235,6 +235,7 @@ export default {
     pushover: "Pushover",
     pushy: "Pushy",
     octopush: "Octopush",
+    promosms: "PromoSMS",
     lunasea: "LunaSea",
     apprise: "Apprise (Support 50+ Notification services)",
     pushbullet: "Pushbullet",
@@ -273,5 +274,11 @@ export default {
     aboutIconURL: "You can provide a link to a picture in \"Icon URL\" to override the default profile picture. Will not be used if Icon Emoji is set.",
     aboutMattermostChannelName: "You can override the default channel that webhook posts to by entering the channel name into \"Channel Name\" field. This needs to be enabled in Mattermost webhook settings. Ex: #other-channel",
     "matrix": "Matrix",
+    promosmsTypeEco: "SMS ECO - cheap but slow and often overloaded. Limited only to Polish recipients.",
+    promosmsTypeFlash: "SMS FLASH - Message will automatically show on recipient device. Limited only to Polish recipients.",
+    promosmsTypeFull: "SMS FULL - Premium tier of SMS, You can use Your Sender Name (You need to register name first). Reliable for alerts.",
+    promosmsTypeFull: "SMS SPEED - Highest priority in system. Very quick and reliable but costly (about twice of SMS FULL price).",
+    promosmsPhoneNumber: "Phone number (for Polish recipient You can skip area codes)",
+    promosmsSMSSender: "SMS Sender Name : Pre-registred name or one of defaults: InfoSMS, SMS Info, MaxSMS, INFO, SMS",
     // End notification form
 };
