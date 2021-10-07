@@ -183,9 +183,6 @@ export default {
 }
 
 .hp-bar-big {
-    display: flex;
-    justify-content: flex-end;
-
     .beat {
         display: inline-block;
         background-color: $primary;
