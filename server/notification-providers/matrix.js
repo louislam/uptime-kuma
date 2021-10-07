@@ -1,6 +1,7 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
-const Crypto = require('crypto')
+const Crypto = require("crypto");
+const { debug } = require("../../src/util");
 
 class Matrix extends NotificationProvider {
     name = "matrix";
@@ -9,14 +10,18 @@ class Matrix extends NotificationProvider {
         let okMsg = "Sent Successfully.";
 
         const size = 20;
-        const randomString = Crypto
-            .randomBytes(size)
-            .toString('base64')
-            .slice(0, size);    
-        const roomId = notification
-            .internalRoomId
-            .replaceAll(":", "%3A")
-            .replaceAll("!", "%21");
+        const randomString = encodeURIComponent(
+            Crypto
+                .randomBytes(size)
+                .toString("base64")
+                .slice(0, size)
+        );
+
+        debug("Random String: " + randomString);
+
+        const roomId = encodeURIComponent(notification.internalRoomId);
+
+        debug("Matrix Room ID: " + roomId);
 
         try {
             let config = {
@@ -29,7 +34,7 @@ class Matrix extends NotificationProvider {
                 "body": msg
             };
 
-            await axios.put(`${notification.homeserverUrl}/_matrix/client/r0/rooms/${roomId}/send/m.room.message/${randomString}`, data, config)
+            await axios.put(`${notification.homeserverUrl}/_matrix/client/r0/rooms/${roomId}/send/m.room.message/${randomString}`, data, config);
             return okMsg;
         } catch (error) {
             this.throwGeneralAxiosError(error);
