@@ -151,6 +151,9 @@ describe("Init", () => {
         });
 
         it("Change Password (wrong current password)", async () => {
+            await page.goto(baseURL + "/settings");
+            await page.waitForSelector("#current-password");
+
             await page.type("#current-password", "wrong_passw$$d");
             await page.type("#new-password", "new_password123");
             await page.type("#repeat-new-password", "new_password123");
@@ -168,6 +171,9 @@ describe("Init", () => {
         });
 
         it("Change Password (wrong repeat)", async () => {
+            await page.goto(baseURL + "/settings");
+            await page.waitForSelector("#current-password");
+
             await page.type("#current-password", "admin123");
             await page.type("#new-password", "new_password123");
             await page.type("#repeat-new-password", "new_password1234567898797898");
