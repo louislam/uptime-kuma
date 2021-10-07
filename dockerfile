@@ -1,6 +1,8 @@
 FROM louislam/uptime-kuma:base-debian AS build
 WORKDIR /app
 
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1
+
 COPY . .
 RUN npm install --legacy-peer-deps && \
     npm run build && \
