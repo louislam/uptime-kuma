@@ -52,9 +52,12 @@
                             </div>
                         </div>
 
+                        <!-- General Settings -->
                         <h2 class="mt-5 mb-2">{{ $t("General") }}</h2>
+
                         <form class="mb-3" @submit.prevent="saveGeneral">
-                            <div class="mb-3">
+                            <!-- Timezone -->
+                            <div class="mb-4">
                                 <label for="timezone" class="form-label">{{ $t("Timezone") }}</label>
                                 <select id="timezone" v-model="$root.userTimezone" class="form-select">
                                     <option value="auto">
@@ -66,7 +69,8 @@
                                 </select>
                             </div>
 
-                            <div class="mb-3">
+                            <!-- Search Engine -->
+                            <div class="mb-4">
                                 <label class="form-label">{{ $t("Search Engine Visibility") }}</label>
 
                                 <div class="form-check">
@@ -83,7 +87,8 @@
                                 </div>
                             </div>
 
-                            <div class="mb-3">
+                            <!-- Entry Page -->
+                            <div class="mb-4">
                                 <label class="form-label">{{ $t("Entry Page") }}</label>
 
                                 <div class="form-check">
@@ -101,6 +106,19 @@
                                 </div>
                             </div>
 
+                            <!-- Primary Base URL -->
+                            <div class="mb-4">
+                                <label class="form-label" for="primaryBaseURL">Primary Base URL</label>
+
+                                <div class="input-group mb-3">
+                                    <input id="primaryBaseURL" v-model="settings.primaryBaseURL" class="form-control" name="primaryBaseURL" placeholder="https://">
+                                    <button class="btn btn-outline-primary" type="button" @click="autoGetPrimaryBaseURL">Auto Get</button>
+                                </div>
+
+                                <div class="form-text">
+                                </div>
+                            </div>
+
                             <div>
                                 <button class="btn btn-primary" type="submit">
                                     {{ $t("Save") }}
@@ -109,6 +127,7 @@
                         </form>
 
                         <template v-if="loaded">
+                            <!-- Change Password -->
                             <template v-if="! settings.disableAuth">
                                 <h2 class="mt-5 mb-2">{{ $t("Change Password") }}</h2>
                                 <form class="mb-3" @submit.prevent="savePassword">
@@ -204,28 +223,32 @@
                         </template>
                     </div>
 
-                    <div class="notification-list col-md-6">
+                    <div class="col-md-6">
                         <div v-if="$root.isMobile" class="mt-3" />
 
-                        <h2>{{ $t("Notifications") }}</h2>
-                        <p v-if="$root.notificationList.length === 0">
-                            {{ $t("Not available, please setup.") }}
-                        </p>
-                        <p v-else>
-                            {{ $t("notificationDescription") }}
-                        </p>
+                        <!-- Notifications -->
+                        <div class="notification-list ">
+                            <h2>{{ $t("Notifications") }}</h2>
+                            <p v-if="$root.notificationList.length === 0">
+                                {{ $t("Not available, please setup.") }}
+                            </p>
+                            <p v-else>
+                                {{ $t("notificationDescription") }}
+                            </p>
 
-                        <ul class="list-group mb-3" style="border-radius: 1rem;">
-                            <li v-for="(notification, index) in $root.notificationList" :key="index" class="list-group-item">
-                                {{ notification.name }}<br>
-                                <a href="#" @click="$refs.notificationDialog.show(notification.id)">{{ $t("Edit") }}</a>
-                            </li>
-                        </ul>
+                            <ul class="list-group mb-3" style="border-radius: 1rem;">
+                                <li v-for="(notification, index) in $root.notificationList" :key="index" class="list-group-item">
+                                    {{ notification.name }}<br>
+                                    <a href="#" @click="$refs.notificationDialog.show(notification.id)">{{ $t("Edit") }}</a>
+                                </li>
+                            </ul>
 
-                        <button class="btn btn-primary me-2" type="button" @click="$refs.notificationDialog.show()">
-                            {{ $t("Setup Notification") }}
-                        </button>
+                            <button class="btn btn-primary me-2" type="button" @click="$refs.notificationDialog.show()">
+                                {{ $t("Setup Notification") }}
+                            </button>
+                        </div>
 
+                        <!-- Info -->
                         <h2 class="mt-5">{{ $t("Info") }}</h2>
 
                         {{ $t("Version") }}: {{ $root.info.version }} <br />
@@ -531,6 +554,10 @@ export default {
                 }
             });
         },
+
+        autoGetPrimaryBaseURL() {
+            this.settings.primaryBaseURL = location.protocol + "//" + location.host;
+        }
     },
 };
 </script>
