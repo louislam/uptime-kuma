@@ -52,7 +52,7 @@ async function extractTranslations() {
         }
     }
 
-    // Check for translations in other language files that are not in the english file and delete them
+    // Check for translations in other language files that are not in the English file and output warnings for them
     const englishKeys = Object.keys(en);
     for (let langName of Object.keys(languageList)) {
         if (langName !== "en") {
@@ -63,8 +63,6 @@ async function extractTranslations() {
             }
         }
     }
-
-    // console.log(languageList, warnings);
 
     for (let langName of Object.keys(languageList)) {
         const translationsString = JSON5.stringify(languageList[langName], {
