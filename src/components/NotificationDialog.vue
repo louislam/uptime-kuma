@@ -121,7 +121,8 @@ export default {
                 "apprise": $t("apprise"),
                 "pushbullet": $t("pushbullet"),
                 "line": $t("line"),
-                "mattermost": $t("mattermostt")
+                "mattermost": $t("mattermostt"),
+                "matrix": $t("matrix"),
             }[type];
         }
     },
