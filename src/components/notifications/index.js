@@ -10,6 +10,7 @@ import Teams from "./Teams.vue";
 import Pushover from "./Pushover.vue";
 import Pushy from "./Pushy.vue";
 import Octopush from "./Octopush.vue";
+import PromoSMS from "./PromoSMS.vue";
 import LunaSea from "./LunaSea.vue";
 import Apprise from "./Apprise.vue";
 import Pushbullet from "./Pushbullet.vue";
@@ -35,6 +36,7 @@ const NotificationFormList = {
     "pushover": Pushover,
     "pushy": Pushy,
     "octopush": Octopush,
+    "promosms": PromoSMS,
     "lunasea": LunaSea,
     "apprise": Apprise,
     "pushbullet": Pushbullet,
