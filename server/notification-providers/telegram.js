@@ -6,7 +6,7 @@ class Telegram extends NotificationProvider {
     name = "telegram";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully. ";
+        let okMsg = "Sent Successfully.";
 
         try {
             await axios.get(`https://api.telegram.org/bot${notification.telegramBotToken}/sendMessage`, {

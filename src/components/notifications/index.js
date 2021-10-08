@@ -15,6 +15,7 @@ import Apprise from "./Apprise.vue";
 import Pushbullet from "./Pushbullet.vue";
 import Line from "./Line.vue";
 import Mattermost from "./Mattermost.vue";
+import Matrix from "./Matrix.vue";
 
 /**
  * Manage all notification form.
@@ -38,7 +39,8 @@ const NotificationFormList = {
     "apprise": Apprise,
     "pushbullet": Pushbullet,
     "line": Line,
-    "mattermost": Mattermost
+    "mattermost": Mattermost,
+    "matrix": Matrix,
 }
 
 export default NotificationFormList
