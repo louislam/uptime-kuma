@@ -2,6 +2,7 @@
 const { Page, Browser } = require("puppeteer");
 const { sleep } = require("../src/util");
 const axios = require("axios");
+const { currentLocale } = require("../src/i18n");
 
 /**
  * Set back the correct data type for page object
@@ -221,6 +222,14 @@ describe("Init", () => {
             await expect(page.title()).resolves.toMatch(title);
         });
     });
+});
+
+describe("Test i18n.js", () => {
+
+    it("currentLocale()", () => {
+        expect(currentLocale()).toMatch("");
+    });
+
 });
 
 async function login(username, password) {
