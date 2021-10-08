@@ -24,12 +24,12 @@ class PromoSMS extends NotificationProvider {
                 "sender": notification.promosmsSenderName
             };
 
-            await axios.post("https://promosms.com/api/rest/v3_2/sms", data, config).then(resp => {
-                if (resp.data.response.status !== 0) {
-                    let error = "Something gone wrong. Api returned " + resp.data.response.status + ".";
-                    this.throwGeneralAxiosError(error);
-                }
-            });
+            let resp = await axios.post("https://promosms.com/api/rest/v3_2/sms", data, config);
+
+            if (resp.data.response.status !== 0) {
+                let error = "Something gone wrong. Api returned " + resp.data.response.status + ".";
+                this.throwGeneralAxiosError(error);
+            }
             
             return okMsg;
         } catch (error) {
