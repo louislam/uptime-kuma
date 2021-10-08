@@ -74,7 +74,7 @@ class TimeLogger {
         this.startTime = dayjs().valueOf();
     }
     print(name) {
-        if (exports.isDev && process && process.env.TIMELOGGER === "1") {
+        if (exports.isDev && process.env.TIMELOGGER === "1") {
             console.log(name + ": " + (dayjs().valueOf() - this.startTime) + "ms");
         }
     }
