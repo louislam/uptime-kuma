@@ -9,28 +9,28 @@ class PromoSMS extends NotificationProvider {
         let okMsg = "Sent Successfully.";
 
         try {
-            let buffer = new Buffer(notification.promosmsLogin + ":" + notification.promosmsPassword);
-            let promosmsAuth = buffer.toString('base64');
             let config = {
                 headers: {
-                    "Authorization": "Basic" + promosmsAuth,
-                    "Content-Type": "application/x-www-form-urlencoded",
-                    "Accept": "text/json"
+                    "Content-Type": "application/json",
+                    "Authorization": "Basic " + Buffer.from(notification.promosmsLogin + ":" + notification.promosmsPassword).toString('base64'),
+                    "Accept": "text/json",
                 }
             };
             let data = {
-                "recipients": [
-                    {
-                        "recipients": notification.promosmsPhoneNumber
-                    }
-                ],
+                "recipients": [ notification.promosmsPhoneNumber ],
                 //Lets remove non ascii char
                 "text": msg.replace(/[^\x00-\x7F]/g, ""),
-                "type": notification.promosmsSMSType,
+                "type": Number(notification.promosmsSMSType),
                 "sender": notification.promosmsSenderName
             };
-            await axios.post("https://promosms.com/api/rest/v3_2/sms", data, config)
 
+            await axios.post("https://promosms.com/api/rest/v3_2/sms", data, config).then(resp => {
+                if (resp.data.response.status !== 0) {
+                    let error = "Something gone wrong. Api returned " + resp.data.response.status + ".";
+                    this.throwGeneralAxiosError(error);
+                }
+            });
+            
             return okMsg;
         } catch (error) {
             this.throwGeneralAxiosError(error);
