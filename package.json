@@ -22,7 +22,8 @@
         "build": "vite build",
         "test": "node test/prepare-test-server.js && node server/server.js --port=3002 --data-dir=./data/test/ --test",
         "test-with-build": "npm run build && npm test",
-        "jest": "node test/prepare-jest.js && jest",
+        "jest": "node test/prepare-jest.js && npm run jest-frontend && jest ",
+        "jest-frontend": "cross-env TEST_FRONTEND=1 jest --config=./jest-frontend.config.js",
         "tsc": "tsc",
         "vite-preview-dist": "vite preview --host",
         "build-docker": "npm run build-docker-debian && npm run build-docker-alpine",
@@ -99,6 +100,7 @@
     },
     "devDependencies": {
         "@babel/eslint-parser": "~7.15.7",
+        "@babel/preset-env": "^7.15.8",
         "@types/bootstrap": "~5.1.6",
         "@vitejs/plugin-legacy": "~1.6.1",
         "@vitejs/plugin-vue": "~1.9.2",
@@ -119,15 +121,5 @@
         "stylelint-config-standard": "~22.0.0",
         "typescript": "~4.4.3",
         "vite": "~2.6.4"
-    },
-    "jest": {
-        "verbose": true,
-        "preset": "jest-puppeteer",
-        "globals": {
-            "__DEV__": true
-        },
-        "testRegex": "./test/*.spec.js",
-        "rootDir": ".",
-        "testTimeout": 30000
     }
 }

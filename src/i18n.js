@@ -49,7 +49,10 @@ const languageList = {
 
 const rtlLangs = ["fa"];
 
-export const currentLocale = () => localStorage.locale || "en";
+export const currentLocale = () => localStorage.locale
+    || languageList[navigator.language] && navigator.language
+    || languageList[navigator.language.substring(0, 2)] && navigator.language.substring(0, 2)
+    || "en";
 
 export const localeDirection = () => {
     return rtlLangs.includes(currentLocale()) ? "rtl" : "ltr";
