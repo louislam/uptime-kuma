@@ -4,12 +4,8 @@ module.exports = {
     "globals": {
         "__DEV__": true
     },
-    "testRegex": "./test/*.spec.js",
+    "testRegex": "./test/e2e.spec.js",
     "rootDir": ".",
     "testTimeout": 30000,
-    "transform": {
-        "^.+\\.js$": "babel-jest",
-        ".+\\.(css|styl|less|sass|scss|png|jpg|ttf|woff|woff2)$": "jest-transform-stub"
-    }
 };
 
