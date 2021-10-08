@@ -6,7 +6,7 @@ if (! process.env.NODE_ENV) {
 
 console.log("Node Env: " + process.env.NODE_ENV);
 
-const { sleep, debug, TimeLogger, getRandomInt } = require("../src/util");
+const { sleep, debug, getRandomInt, genSecret } = require("../src/util");
 
 console.log("Importing Node libraries");
 const fs = require("fs");
@@ -37,7 +37,7 @@ console.log("Importing this project modules");
 debug("Importing Monitor");
 const Monitor = require("./model/monitor");
 debug("Importing Settings");
-const { getSettings, setSettings, setting, initJWTSecret, genSecret, allowDevAllOrigin, checkLogin } = require("./util-server");
+const { getSettings, setSettings, setting, initJWTSecret, checkLogin, startUnitTest } = require("./util-server");
 
 debug("Importing Notification");
 const { Notification } = require("./notification");
@@ -64,14 +64,13 @@ const port = parseInt(process.env.PORT || args.port || 3001);
 const sslKey = process.env.SSL_KEY || args["ssl-key"] || undefined;
 const sslCert = process.env.SSL_CERT || args["ssl-cert"] || undefined;
 
-// Demo Mode?
-const demoMode = args["demo"] || false;
+/**
+ * Run unit test after the server is ready
+ * @type {boolean}
+ */
+const testMode = !!args["test"] || false;
 
-if (demoMode) {
-    console.log("==== Demo Mode ====");
-}
-
-console.log("Creating express and socket.io instance")
+console.log("Creating express and socket.io instance");
 const app = express();
 
 let server;
@@ -303,6 +302,12 @@ exports.entryPage = "dashboard";
                 if (user.twofa_status == 0) {
                     let newSecret = await genSecret();
                     let encodedSecret = base32.encode(newSecret);
+
+                    // Google authenticator doesn't like equal signs
+                    // The fix is found at https://github.com/guyht/notp
+                    // Related issue: https://github.com/louislam/uptime-kuma/issues/486
+                    encodedSecret = encodedSecret.toString().replace(/=/g, "");
+
                     let uri = `otpauth://totp/Uptime%20Kuma:${user.username}?secret=${encodedSecret}`;
 
                     await R.exec("UPDATE `user` SET twofa_secret = ? WHERE id = ? ", [
@@ -511,6 +516,7 @@ exports.entryPage = "dashboard";
                 bean.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
                 bean.dns_resolve_type = monitor.dns_resolve_type;
                 bean.dns_resolve_server = monitor.dns_resolve_server;
+                bean.pushToken = monitor.pushToken;
 
                 await R.store(bean);
 
@@ -638,6 +644,8 @@ exports.entryPage = "dashboard";
                 });
 
                 await sendMonitorList(socket);
+                // Clear heartbeat list on client
+                await sendImportantHeartbeatList(socket, monitorID, true, true);
 
             } catch (e) {
                 callback({
@@ -1214,6 +1222,10 @@ exports.entryPage = "dashboard";
         }
         startMonitors();
         checkVersion.startInterval();
+
+        if (testMode) {
+            startUnitTest();
+        }
     });
 
 })();

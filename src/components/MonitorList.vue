@@ -19,7 +19,7 @@
 
             <router-link v-for="(item, index) in sortedMonitorList" :key="index" :to="monitorURL(item.id)" class="item" :class="{ 'disabled': ! item.active }">
                 <div class="row">
-                    <div class="col-6 col-md-8 small-padding" :class="{ 'monitorItem': $root.userHeartbeatBar == 'bottom' || $root.userHeartbeatBar == 'none' }">
+                    <div class="col-9 col-md-8 small-padding" :class="{ 'monitorItem': $root.userHeartbeatBar == 'bottom' || $root.userHeartbeatBar == 'none' }">
                         <div class="info">
                             <Uptime :monitor="item" type="24" :pill="true" />
                             {{ item.name }}
@@ -28,7 +28,7 @@
                             <Tag v-for="tag in item.tags" :key="tag" :item="tag" :size="'sm'" />
                         </div>
                     </div>
-                    <div v-show="$root.userHeartbeatBar == 'normal'" :key="$root.userHeartbeatBar" class="col-6 col-md-4">
+                    <div v-show="$root.userHeartbeatBar == 'normal'" :key="$root.userHeartbeatBar" class="col-3 col-md-4">
                         <HeartbeatBar size="small" :monitor-id="item.id" />
                     </div>
                 </div>
@@ -47,6 +47,7 @@
 import HeartbeatBar from "../components/HeartbeatBar.vue";
 import Uptime from "../components/Uptime.vue";
 import Tag from "../components/Tag.vue";
+import { getMonitorRelativeURL } from "../util.ts";
 
 export default {
     components: {
@@ -62,7 +63,7 @@ export default {
     data() {
         return {
             searchText: "",
-        }
+        };
     },
     computed: {
         sortedMonitorList() {
@@ -91,7 +92,7 @@ export default {
                 }
 
                 return m1.name.localeCompare(m2.name);
-            })
+            });
 
             // Simple filter by search text
             // finds monitor name, tag name or tag value
@@ -100,8 +101,8 @@ export default {
                 result = result.filter(monitor => {
                     return monitor.name.toLowerCase().includes(loweredSearchText)
                     || monitor.tags.find(tag => tag.name.toLowerCase().includes(loweredSearchText)
-                    || tag.value?.toLowerCase().includes(loweredSearchText))
-                })
+                    || tag.value?.toLowerCase().includes(loweredSearchText));
+                });
             }
 
             return result;
@@ -109,13 +110,13 @@ export default {
     },
     methods: {
         monitorURL(id) {
-            return "/dashboard/" + id;
+            return getMonitorRelativeURL(id);
         },
         clearSearchText() {
             this.searchText = "";
         }
     },
-}
+};
 </script>
 
 <style lang="scss" scoped>

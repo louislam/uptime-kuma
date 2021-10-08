@@ -91,6 +91,23 @@ module.exports = {
             "rules": {
                 "comma-dangle": ["error", "always-multiline"],
             }
+        },
+
+        // Override for jest puppeteer
+        {
+            "files": [
+                "**/*.spec.js",
+                "**/*.spec.jsx"
+            ],
+            env: {
+                jest: true,
+            },
+            globals: {
+                page: true,
+                browser: true,
+                context: true,
+                jestPuppeteer: true,
+            },
         }
     ]
 };

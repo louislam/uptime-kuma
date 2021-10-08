@@ -52,7 +52,7 @@ export default {
             token: "",
             res: null,
             tokenRequired: false,
-        }
+        };
     },
     methods: {
         submit() {
@@ -60,21 +60,19 @@ export default {
 
             this.$root.login(this.username, this.password, this.token, (res) => {
                 this.processing = false;
-                console.log(res)
 
                 if (res.tokenRequired) {
                     this.tokenRequired = true;
                 } else {
                     this.res = res;
                 }
-            })
+            });
         },
     },
-}
+};
 </script>
 
-<style scoped>
-
+<style lang="scss" scoped>
 .form-container {
     display: flex;
     align-items: center;
@@ -82,8 +80,17 @@ export default {
     padding-bottom: 40px;
 }
 
-.form {
+.form-floating {
+    > label {
+        padding-left: 1.3rem;
+    }
 
+    > .form-control {
+        padding-left: 1.3rem;
+    }
+}
+
+.form {
     width: 100%;
     max-width: 330px;
     padding: 15px;

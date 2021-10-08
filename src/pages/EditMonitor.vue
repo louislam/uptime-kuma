@@ -26,19 +26,35 @@
                                     <option value="dns">
                                         DNS
                                     </option>
+                                    <option value="push">
+                                        Push
+                                    </option>
                                 </select>
                             </div>
 
+                            <!-- Friendly Name -->
                             <div class="my-3">
                                 <label for="name" class="form-label">{{ $t("Friendly Name") }}</label>
                                 <input id="name" v-model="monitor.name" type="text" class="form-control" required>
                             </div>
 
+                            <!-- URL -->
                             <div v-if="monitor.type === 'http' || monitor.type === 'keyword' " class="my-3">
                                 <label for="url" class="form-label">{{ $t("URL") }}</label>
                                 <input id="url" v-model="monitor.url" type="url" class="form-control" pattern="https?://.+" required>
                             </div>
 
+                            <!-- Push URL -->
+                            <div v-if="monitor.type === 'push' " class="my-3">
+                                <label for="push-url" class="form-label">{{ $t("Push URL") }}</label>
+                                <CopyableInput id="push-url" v-model="pushURL" type="url" disabled="disabled" />
+                                <div class="form-text">
+                                    You should call this url every {{ monitor.interval }} seconds.<br />
+                                    Optional parameters: msg, ping
+                                </div>
+                            </div>
+
+                            <!-- Keyword -->
                             <div v-if="monitor.type === 'keyword' " class="my-3">
                                 <label for="keyword" class="form-label">{{ $t("Keyword") }}</label>
                                 <input id="keyword" v-model="monitor.keyword" type="text" class="form-control" required>
@@ -93,6 +109,7 @@
                                 </div>
                             </template>
 
+                            <!-- Interval -->
                             <div class="my-3">
                                 <label for="interval" class="form-label">{{ $t("Heartbeat Interval") }} ({{ $t("checkEverySecond", [ monitor.interval ]) }})</label>
                                 <input id="interval" v-model="monitor.interval" type="number" class="form-control" required min="20" step="1">
@@ -210,13 +227,17 @@
 <script>
 import NotificationDialog from "../components/NotificationDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
-import { useToast } from "vue-toastification"
-import VueMultiselect from "vue-multiselect"
-import { isDev } from "../util.ts";
-const toast = useToast()
+import CopyableInput from "../components/CopyableInput.vue";
+
+import { useToast } from "vue-toastification";
+import VueMultiselect from "vue-multiselect";
+import { genSecret, isDev } from "../util.ts";
+
+const toast = useToast();
 
 export default {
     components: {
+        CopyableInput,
         NotificationDialog,
         TagsManager,
         VueMultiselect,
@@ -235,8 +256,8 @@ export default {
             // Source: https://digitalfortress.tech/tips/top-15-commonly-used-regex/
             ipRegexPattern: "((^\\s*((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\\s*$)|(^\\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:)))(%.+)?\\s*$))",
             // Source: https://stackoverflow.com/questions/106179/regular-expression-to-match-dns-hostname-or-ip-address
-            hostnameRegexPattern: "^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$"
-        }
+            hostnameRegexPattern: "^(([a-zA-Z0-9_]|[a-zA-Z0-9_][a-zA-Z0-9\\-_]*[a-zA-Z0-9_])\\.)*([A-Za-z0-9_]|[A-Za-z0-9_][A-Za-z0-9\\-_]*[A-Za-z0-9_])$"
+        };
     },
 
     computed: {
@@ -253,23 +274,41 @@ export default {
         pageName() {
             return this.$t((this.isAdd) ? "Add New Monitor" : "Edit");
         },
+
         isAdd() {
             return this.$route.path === "/add";
         },
+
         isEdit() {
             return this.$route.path.startsWith("/edit");
         },
+
+        pushURL() {
+            return this.$root.baseURL + "/api/push/" + this.monitor.pushToken + "?msg=OK&ping=";
+        }
+
     },
     watch: {
+
         "$route.fullPath"() {
             this.init();
         },
+
         "monitor.interval"(value, oldValue) {
             // Link interval and retryInerval if they are the same value.
             if (this.monitor.retryInterval === oldValue) {
                 this.monitor.retryInterval = value;
             }
+        },
+
+        "monitor.type"() {
+            if (this.monitor.type === "push") {
+                if (! this.monitor.pushToken) {
+                    this.monitor.pushToken = genSecret(10);
+                }
+            }
         }
+
     },
     mounted() {
         this.init();
@@ -320,7 +359,7 @@ export default {
                     accepted_statuscodes: ["200-299"],
                     dns_resolve_type: "A",
                     dns_resolve_server: "1.1.1.1",
-                }
+                };
 
                 for (let i = 0; i < this.$root.notificationList.length; i++) {
                     if (this.$root.notificationList[i].isDefault == true) {
@@ -337,9 +376,9 @@ export default {
                             this.monitor.retryInterval = this.monitor.interval;
                         }
                     } else {
-                        toast.error(res.msg)
+                        toast.error(res.msg);
                     }
-                })
+                });
             }
 
         },
@@ -356,13 +395,13 @@ export default {
                         toast.success(res.msg);
                         this.processing = false;
                         this.$root.getMonitorList();
-                        this.$router.push("/dashboard/" + res.monitorID)
+                        this.$router.push("/dashboard/" + res.monitorID);
                     } else {
                         toast.error(res.msg);
                         this.processing = false;
                     }
 
-                })
+                });
             } else {
                 await this.$refs.tagsManager.submit(this.monitor.id);
 
@@ -370,7 +409,7 @@ export default {
                     this.processing = false;
                     this.$root.toastRes(res);
                     this.init();
-                })
+                });
             }
         },
 
@@ -380,60 +419,8 @@ export default {
             this.monitor.notificationIDList[id] = true;
         },
     },
-}
+};
 </script>
-
-<style src="vue-multiselect/dist/vue-multiselect.css"></style>
-
-<style lang="scss">
-    @import "../assets/vars.scss";
-
-    .multiselect__tags {
-        border-radius: 1.5rem;
-        border: 1px solid #ced4da;
-        min-height: 38px;
-        padding: 6px 40px 0 8px;
-    }
-
-    .multiselect--active .multiselect__tags {
-        border-radius: 1rem;
-    }
-
-    .multiselect__option--highlight {
-        background: $primary !important;
-    }
-
-    .multiselect__option--highlight::after {
-        background: $primary !important;
-    }
-
-    .multiselect__tag {
-        border-radius: 50rem;
-        margin-bottom: 0;
-        padding: 6px 26px 6px 10px;
-        background: $primary !important;
-    }
-
-    .multiselect__placeholder {
-        font-size: 1rem;
-        padding-left: 6px;
-        padding-top: 0;
-        padding-bottom: 0;
-        margin-bottom: 0;
-        opacity: 0.67;
-    }
-
-    .multiselect__input, .multiselect__single {
-        line-height: 14px;
-        margin-bottom: 0;
-    }
-
-    .dark {
-        .multiselect__tag {
-            color: $dark-font-color2;
-        }
-    }
-</style>
 
 <style scoped>
     .shadow-box {

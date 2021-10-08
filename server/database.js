@@ -48,6 +48,7 @@ class Database {
         "patch-add-retry-interval-monitor.sql": true,
         "patch-incident-table.sql": true,
         "patch-group-table.sql": true,
+        "patch-monitor-push_token.sql": true,
     }
 
     /**
@@ -107,6 +108,7 @@ class Database {
         R.freeze(true);
         await R.autoloadModels("./server/model");
 
+        await R.exec("PRAGMA foreign_keys = ON");
         // Change to WAL
         await R.exec("PRAGMA journal_mode = WAL");
         await R.exec("PRAGMA cache_size = -12000");

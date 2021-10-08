@@ -90,9 +90,9 @@
 
             <!-- Incident Date -->
             <div class="date mt-3">
-                Created: {{ incident.createdDate }} ({{ createdDateFromNow }})<br />
+                Created: {{ $root.datetime(incident.createdDate) }} ({{ dateFromNow(incident.createdDate) }})<br />
                 <span v-if="incident.lastUpdatedDate">
-                    Last Updated: {{ incident.lastUpdatedDate }} ({{ lastUpdatedDateFromNow }})
+                    Last Updated: {{ $root.datetime(incident.lastUpdatedDate) }} ({{ dateFromNow(incident.lastUpdatedDate) }})
                 </span>
             </div>
 
@@ -157,7 +157,7 @@
                 </div>
 
                 <div v-else>
-                    <font-awesome-icon icon="question-circle" style="color: #efefef" />
+                    <font-awesome-icon icon="question-circle" style="color: #efefef;" />
                 </div>
             </template>
         </div>
@@ -197,7 +197,7 @@
         </div>
 
         <footer class="mt-5 mb-4">
-            Powered by <a target="_blank" href="https://github.com/louislam/uptime-kuma">Uptime Kuma</a>
+            {{ $t("Powered by") }} <a target="_blank" href="https://github.com/louislam/uptime-kuma">{{ $t("Uptime Kuma" ) }}</a>
         </footer>
     </div>
 </template>
@@ -342,14 +342,6 @@ export default {
         allDown() {
             return this.overallStatus === STATUS_PAGE_ALL_DOWN;
         },
-
-        createdDateFromNow() {
-            return dayjs.utc(this.incident.createdDate).fromNow();
-        },
-
-        lastUpdatedDateFromNow() {
-            return dayjs.utc(this.incident. lastUpdatedDate).fromNow();
-        }
 
     },
     watch: {
@@ -548,7 +540,12 @@ export default {
             this.$root.getSocket().emit("unpinIncident", () => {
                 this.incident = null;
             });
-        }
+        },
+
+        dateFromNow(date) {
+            return dayjs.utc(date).fromNow();
+        },
+
     }
 };
 </script>

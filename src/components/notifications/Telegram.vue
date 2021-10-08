@@ -1,14 +1,14 @@
 <template>
     <div class="mb-3">
-        <label for="telegram-bot-token" class="form-label">Bot Token</label>
+        <label for="telegram-bot-token" class="form-label">{{ $t("Bot Token") }}</label>
         <HiddenInput id="telegram-bot-token" v-model="$parent.notification.telegramBotToken" :required="true" autocomplete="one-time-code"></HiddenInput>
         <div class="form-text">
-            You can get a token from <a href="https://t.me/BotFather" target="_blank">https://t.me/BotFather</a>.
+            {{ $t("You can get a token from") }} <a href="https://t.me/BotFather" target="_blank">https://t.me/BotFather</a>.
         </div>
     </div>
 
     <div class="mb-3">
-        <label for="telegram-chat-id" class="form-label">Chat ID</label>
+        <label for="telegram-chat-id" class="form-label">{{ $t("Chat ID") }}</label>
 
         <div class="input-group mb-3">
             <input id="telegram-chat-id" v-model="$parent.notification.telegramChatID" type="text" class="form-control" required>
@@ -18,10 +18,10 @@
         </div>
 
         <div class="form-text">
-            Support Direct Chat / Group / Channel's Chat ID
+            {{ $t("supportTelegramChatID") }}
 
             <p style="margin-top: 8px;">
-                You can get your chat id by sending message to the bot and go to this url to view the chat_id:
+                {{ $t("wayToGetTelegramChatID") }}
             </p>
 
             <p style="margin-top: 8px;">
@@ -47,14 +47,9 @@ export default {
     components: {
         HiddenInput,
     },
-    data() {
-        return {
-            name: "telegram",
-        }
-    },
     computed: {
         telegramGetUpdatesURL() {
-            let token = "<YOUR BOT TOKEN HERE>"
+            let token = `<${this.$t("YOUR BOT TOKEN HERE")}>`
 
             if (this.$parent.notification.telegramBotToken) {
                 token = this.$parent.notification.telegramBotToken;
@@ -62,9 +57,6 @@ export default {
 
             return `https://api.telegram.org/bot${token}/getUpdates`;
         },
-    },
-    mounted() {
-
     },
     methods: {
         async autoGetTelegramChatID() {
@@ -79,11 +71,11 @@ export default {
                     } else if (update.message) {
                         this.notification.telegramChatID = update.message.chat.id;
                     } else {
-                        throw new Error("Chat ID is not found, please send a message to this bot first")
+                        throw new Error(this.$t("chatIDNotFound"))
                     }
 
                 } else {
-                    throw new Error("Chat ID is not found, please send a message to this bot first")
+                    throw new Error(this.$t("chatIDNotFound"))
                 }
 
             } catch (error) {

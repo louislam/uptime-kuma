@@ -1,6 +1,7 @@
 # Uptime Kuma
 
-<a target="_blank" href="https://github.com/louislam/uptime-kuma"><img src="https://img.shields.io/github/stars/louislam/uptime-kuma" /></a> <a target="_blank" href="https://hub.docker.com/r/louislam/uptime-kuma"><img src="https://img.shields.io/docker/pulls/louislam/uptime-kuma" /></a> <a target="_blank" href="https://hub.docker.com/r/louislam/uptime-kuma"><img src="https://img.shields.io/docker/v/louislam/uptime-kuma/latest?label=docker%20image%20ver." /></a> <a target="_blank" href="https://github.com/louislam/uptime-kuma"><img src="https://img.shields.io/github/last-commit/louislam/uptime-kuma" /></a>
+<a target="_blank" href="https://github.com/louislam/uptime-kuma"><img src="https://img.shields.io/github/stars/louislam/uptime-kuma" /></a> <a target="_blank" href="https://hub.docker.com/r/louislam/uptime-kuma"><img src="https://img.shields.io/docker/pulls/louislam/uptime-kuma" /></a> <a target="_blank" href="https://hub.docker.com/r/louislam/uptime-kuma"><img src="https://img.shields.io/docker/v/louislam/uptime-kuma/latest?label=docker%20image%20ver." /></a> <a target="_blank" href="https://github.com/louislam/uptime-kuma"><img src="https://img.shields.io/github/last-commit/louislam/uptime-kuma" /></a>  <a target="_blank" href="https://opencollective.com/uptime-kuma"><img src="https://opencollective.com/uptime-kuma/total/badge.svg?label=Backers&color=brightgreen" /></a>
+
 
 <div align="center" width="100%">
     <img src="./public/icon.svg" width="128" alt="" />
@@ -8,7 +9,7 @@
 
 It is a self-hosted monitoring tool like "Uptime Robot".
 
-<img src="https://louislam.net/uptimekuma/1.jpg" width="512" alt="" />
+<img src="https://uptime.kuma.pet/img/dark.jpg" width="700" alt="" />
 
 ## 🥔 Live Demo
 
@@ -85,9 +86,13 @@ https://github.com/louislam/uptime-kuma/projects/1
 
 ## 🖼 More Screenshots
 
-Dark Mode:
+Light Mode:
 
-<img src="https://user-images.githubusercontent.com/1336778/128710166-908f8d88-9256-43f3-9c49-bfc2c56011d2.png" width="400" alt="" />
+<img src="https://uptime.kuma.pet/img/light.jpg" width="512" alt="" />
+
+Status Page:
+
+<img src="https://user-images.githubusercontent.com/1336778/133384019-962e1120-6c3a-481f-9d07-d7df765e9ba4.png" width="512" alt="" />
 
 Settings Page:
 
