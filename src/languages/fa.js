@@ -199,6 +199,7 @@ export default {
     pushover: "Pushover",
     pushy: "Pushy",
     octopush: "Octopush",
+    promosms: "PromoSMS",
     lunasea: "LunaSea",
     apprise: "Apprise (Support 50+ Notification services)",
     pushbullet: "Pushbullet",
