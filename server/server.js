@@ -90,7 +90,7 @@ const io = new Server(server);
 module.exports.io = io;
 
 // Must be after io instantiation
-const { sendNotificationList, sendHeartbeatList, sendImportantHeartbeatList } = require("./client");
+const { sendNotificationList, sendHeartbeatList, sendImportantHeartbeatList, sendInfo } = require("./client");
 const { statusPageSocketHandler } = require("./socket-handlers/status-page-socket-handler");
 
 app.use(express.json());
@@ -180,10 +180,7 @@ exports.entryPage = "dashboard";
     console.log("Adding socket handler");
     io.on("connection", async (socket) => {
 
-        socket.emit("info", {
-            version: checkVersion.version,
-            latestVersion: checkVersion.latestVersion,
-        });
+        sendInfo(socket);
 
         totalClient++;
 
@@ -869,6 +866,8 @@ exports.entryPage = "dashboard";
                     ok: true,
                     msg: "Saved"
                 });
+
+                sendInfo(socket);
 
             } catch (e) {
                 callback({
