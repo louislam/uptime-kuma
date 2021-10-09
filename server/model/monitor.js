@@ -12,6 +12,7 @@ const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification");
 const version = require("../../package.json").version;
+const apicache = require("../modules/apicache");
 
 /**
  * status:
@@ -366,6 +367,9 @@ class Monitor extends BeanModel {
                             console.log(e);
                         }
                     }
+
+                    // Clear Status Page Cache
+                    apicache.clear();
                 }
 
             } else {

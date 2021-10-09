@@ -1047,6 +1047,10 @@ exports.entryPage = "dashboard";
                                 notificationIDList: {},
                             };
 
+                            if (monitorListData[i].pushToken) {
+                                monitor.pushToken = monitorListData[i].pushToken;
+                            }
+
                             let bean = R.dispense("monitor");
 
                             let notificationIDList = monitor.notificationIDList;
