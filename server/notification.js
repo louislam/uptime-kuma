@@ -5,7 +5,9 @@ const Gotify = require("./notification-providers/gotify");
 const Line = require("./notification-providers/line");
 const LunaSea = require("./notification-providers/lunasea");
 const Mattermost = require("./notification-providers/mattermost");
+const Matrix = require("./notification-providers/matrix");
 const Octopush = require("./notification-providers/octopush");
+const PromoSMS = require("./notification-providers/promosms");
 const Pushbullet = require("./notification-providers/pushbullet");
 const Pushover = require("./notification-providers/pushover");
 const Pushy = require("./notification-providers/pushy");
@@ -34,7 +36,9 @@ class Notification {
             new Line(),
             new LunaSea(),
             new Mattermost(),
+            new Matrix(),
             new Octopush(),
+            new PromoSMS(),
             new Pushbullet(),
             new Pushover(),
             new Pushy(),

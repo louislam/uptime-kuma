@@ -36,7 +36,7 @@ describe("Init", () => {
     });
 
     it(`should be titled "${title}"`, async () => {
-        await expect(page.title()).resolves.toMatch(title);
+        await expect(page.title()).resolves.toEqual(title);
     });
 
     // Setup Page
@@ -75,11 +75,11 @@ describe("Init", () => {
 
             await page.select("#language", "zh-HK");
             let languageTitle = await page.evaluate(() => document.querySelector("[for=language]").innerText);
-            expect(languageTitle).toMatch("語言");
+            expect(languageTitle).toEqual("語言");
 
             await page.select("#language", "en");
             languageTitle = await page.evaluate(() => document.querySelector("[for=language]").innerText);
-            expect(languageTitle).toMatch("Language");
+            expect(languageTitle).toEqual("Language");
         });
 
         it("Change Theme", async () => {
@@ -103,21 +103,21 @@ describe("Init", () => {
         it("Search Engine Visibility", async () => {
             // Default
             let res = await axios.get(baseURL + "/robots.txt");
-            expect(res.data).toMatch("Disallow: /");
+            expect(res.data).toContain("Disallow: /");
 
             // Yes
             await click(page, "#searchEngineIndexYes");
             await click(page, "form > div > .btn[type=submit]");
             await sleep(2000);
             res = await axios.get(baseURL + "/robots.txt");
-            expect(res.data).not.toMatch("Disallow: /");
+            expect(res.data).not.toContain("Disallow: /");
 
             // No
             await click(page, "#searchEngineIndexNo");
             await click(page, "form > div > .btn[type=submit]");
             await sleep(2000);
             res = await axios.get(baseURL + "/robots.txt");
-            expect(res.data).toMatch("Disallow: /");
+            expect(res.data).toContain("Disallow: /");
         });
 
         it("Entry Page", async () => {
@@ -218,7 +218,7 @@ describe("Init", () => {
             await page.goto(baseURL + "/status");
         });
         it(`should be titled "${title}"`, async () => {
-            await expect(page.title()).resolves.toMatch(title);
+            await expect(page.title()).resolves.toEqual(title);
         });
     });
 });

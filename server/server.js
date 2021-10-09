@@ -102,6 +102,7 @@ const {
     sendNotificationList,
     sendHeartbeatList,
     sendImportantHeartbeatList,
+    sendInfo,
 } = require("./client");
 const { statusPageSocketHandler } = require("./socket-handlers/status-page-socket-handler");
 
@@ -192,10 +193,7 @@ exports.entryPage = "dashboard";
     console.log("Adding socket handler");
     io.on("connection", async (socket) => {
 
-        socket.emit("info", {
-            version: checkVersion.version,
-            latestVersion: checkVersion.latestVersion,
-        });
+        sendInfo(socket);
 
         totalClient++;
 
@@ -886,6 +884,8 @@ exports.entryPage = "dashboard";
                     ok: true,
                     msg: "Saved",
                 });
+
+                sendInfo(socket);
 
             } catch (e) {
                 callback({

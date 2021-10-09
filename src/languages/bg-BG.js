@@ -188,6 +188,7 @@ export default {
     pushover: "Pushover",
     pushy: "Pushy",
     octopush: "Octopush",
+    promosms: "PromoSMS",
     lunasea: "LunaSea",
     apprise: "Apprise (Поддържа 50+ услуги за инвестяване)",
     pushbullet: "Pushbullet",

@@ -7,7 +7,7 @@ class LunaSea extends NotificationProvider {
     name = "lunasea";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully. ";
+        let okMsg = "Sent Successfully.";
         let lunaseadevice = "https://notify.lunasea.app/v1/custom/device/" + notification.lunaseaDevice
 
         try {

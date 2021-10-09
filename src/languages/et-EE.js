@@ -189,6 +189,7 @@ export default {
     pushover: "Pushover",
     pushy: "Pushy",
     octopush: "Octopush",
+    promosms: "PromoSMS",
     lunasea: "LunaSea",
     apprise: "Apprise (vahendab üle 65 teavitusteenust)",
     pushbullet: "Pushbullet",

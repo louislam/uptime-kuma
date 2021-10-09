@@ -190,6 +190,7 @@ export default {
     pushover: "Pushover",
     pushy: "Pushy",
     octopush: "Octopush",
+    promosms: "PromoSMS",
     lunasea: "LunaSea",
     apprise: "Apprise (支援 50 多種通知)",
     pushbullet: "Pushbullet",

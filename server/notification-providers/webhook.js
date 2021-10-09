@@ -7,7 +7,7 @@ class Webhook extends NotificationProvider {
     name = "webhook";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully. ";
+        let okMsg = "Sent Successfully.";
 
         try {
             let data = {
