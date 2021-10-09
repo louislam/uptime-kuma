@@ -281,6 +281,6 @@ export default {
     promosmsPhoneNumber: "Phone number (for Polish recipient You can skip area codes)",
     promosmsSMSSender: "SMS Sender Name : Pre-registred name or one of defaults: InfoSMS, SMS Info, MaxSMS, INFO, SMS",
     // End notification form
-    "Monitor History": "Monitor History",
-    clearDataOlderThan: "Remove monitor data older than {0} days",
+    "Monitor History": "Monitor History:",
+    clearDataOlderThan: "Keep monitor history data for {0} days.",
 };

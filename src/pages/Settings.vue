@@ -119,6 +119,15 @@
                                 </div>
                             </div>
 
+                            <!-- Monitor History -->
+                            <div class="mb-4">
+                                <h4 class="mt-4">{{ $t("Monitor History") }}</h4>
+                                <div class="mt-2">
+                                    <label for="keepDataPeriodDays" class="form-label">{{ $t("clearDataOlderThan", [ settings.keepDataPeriodDays ]) }}</label>
+                                    <input id="keepDataPeriodDays" v-model="settings.keepDataPeriodDays" type="number" class="form-control" required min="1" step="1">
+                                </div>
+                            </div>
+
                             <div>
                                 <button class="btn btn-primary" type="submit">
                                     {{ $t("Save") }}
@@ -210,14 +219,6 @@
 
                             <div v-if="importAlert" class="alert alert-danger mt-3" style="padding: 6px 16px;">
                                 {{ importAlert }}
-                            </div>
-
-                            <div class="mt-3 mb-3">
-                                <h2 class="mb-2">{{ $t("Monitor History") }}</h2>
-                                <div class="my-3">
-                                    <label for="keepDataPeriodDays" class="form-label">{{ $t("clearDataOlderThan", [ settings.keepDataPeriodDays ]) }}</label>
-                                    <input id="keepDataPeriodDays" v-model="settings.keepDataPeriodDays" type="number" class="form-control" required min="1" step="1">
-                                </div>
                             </div>
 
                             <h2 class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
