@@ -1,12 +1,18 @@
 console.log("Welcome to Uptime Kuma");
+const args = require("args-parser")(process.argv);
+const { sleep, debug, getRandomInt } = require("../src/util");
+
+debug(args);
 
 if (! process.env.NODE_ENV) {
     process.env.NODE_ENV = "production";
 }
 
-console.log("Node Env: " + process.env.NODE_ENV);
+// Demo Mode?
+const demoMode = args["demo"] || false;
+exports.demoMode = demoMode;
 
-const { sleep, debug, TimeLogger, getRandomInt } = require("../src/util");
+console.log("Node Env: " + process.env.NODE_ENV);
 
 console.log("Importing Node libraries");
 const fs = require("fs");
@@ -50,8 +56,6 @@ const { basicAuth } = require("./auth");
 const { login } = require("./auth");
 const passwordHash = require("./password-hash");
 
-const args = require("args-parser")(process.argv);
-
 const checkVersion = require("./check-version");
 console.info("Version: " + checkVersion.version);
 
@@ -63,10 +67,6 @@ const port = parseInt(process.env.PORT || args.port || 3001);
 // SSL
 const sslKey = process.env.SSL_KEY || args["ssl-key"] || undefined;
 const sslCert = process.env.SSL_CERT || args["ssl-cert"] || undefined;
-
-// Demo Mode?
-const demoMode = args["demo"] || false;
-exports.demoMode = demoMode;
 
 if (demoMode) {
     console.log("==== Demo Mode ====");

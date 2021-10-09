@@ -338,6 +338,7 @@ class Monitor extends BeanModel {
 
                 if (demoMode) {
                     if (beatInterval < 20) {
+                        console.log("beat interval too low, reset to 20s");
                         beatInterval = 20;
                     }
                 }
