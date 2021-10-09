@@ -328,11 +328,11 @@ export default {
         },
 
         bodyPlaceholder() {
-            return this.$t("BodyPlaceholder");
+            return this.decodeHtml(this.$t("BodyPlaceholder"));
         },
 
         headersPlaceholder() {
-            return this.$t("HeadersPlaceholder");
+            return this.decodeHtml(this.$t("HeadersPlaceholder"));
         }
 
     },
@@ -490,6 +490,12 @@ export default {
         addedNotification(id) {
             this.monitor.notificationIDList[id] = true;
         },
+
+        decodeHtml(html) {
+            const txt = document.createElement("textarea");
+            txt.innerHTML = html;
+            return txt.value;
+        }
     },
 };
 </script>
