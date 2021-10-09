@@ -22,10 +22,40 @@ class SMTP extends NotificationProvider {
         }
         // Lets start with default subject
         let subject = msg;
+
         // Our subject cannot end with whitespace it's often raise spam score
         let customsubject = notification.customsubject.trim()
+
         // If custom subject is not empty, change subject for notification
         if (customsubject !== "") {
+            
+             // Replace "MACROS" with coresponding variable
+            let replaceName = new RegExp("{NAME}", "g");
+            let replaceHostname = new RegExp("{HOSTNAME}", "g");
+            let replaceStatus = new RegExp("{STATUS}", "g");
+
+            let serviceStatus;
+
+            if (monitorJSON !== null) {
+                customsubject = customsubject.replace(replaceName,monitorJSON["name"]);
+                customsubject = customsubject.replace(replaceHostname,monitorJSON["hostname"]);
+            } else {
+                // Insert dummy values during test
+                customsubject = customsubject.replace(replaceName,"Test");
+                customsubject = customsubject.replace(replaceHostname,"example.com");
+            }
+            if (heartbeatJSON !== null) {
+                    if (heartbeatJSON["status"] === 0) {
+                        serviceStatus = "🔴 Down"
+                    } else {
+                        serviceStatus = "✅ Up"
+                    }
+                customsubject = customsubject.replace(replaceStatus,serviceStatus);
+            } else {
+                // Insert dummy values during test
+                customsubject = customsubject.replace(replaceStatus,"TEST");
+            }
+
             subject = customsubject
         }
 
