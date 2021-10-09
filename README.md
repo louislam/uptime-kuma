@@ -92,7 +92,7 @@ Light Mode:
 
 Status Page:
 
-<img src="https://user-images.githubusercontent.com/1336778/133384019-962e1120-6c3a-481f-9d07-d7df765e9ba4.png" width="512" alt="" />
+<img src="https://user-images.githubusercontent.com/1336778/134628766-a3fe0981-0926-4285-ab46-891a21c3e4cb.png" width="512" alt="" />
 
 Settings Page:
 
