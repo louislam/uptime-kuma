@@ -183,6 +183,8 @@ export default {
 }
 
 .hp-bar-big {
+    height: 20px;
+
     .beat {
         display: inline-block;
         background-color: $primary;

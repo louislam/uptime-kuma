@@ -28,7 +28,7 @@
                             <Tag v-for="tag in item.tags" :key="tag" :item="tag" :size="'sm'" />
                         </div>
                     </div>
-                    <div v-show="$root.userHeartbeatBar == 'normal'" :key="$root.userHeartbeatBar" class="col-3 col-md-4">
+                    <div v-show="$root.userHeartbeatBar == 'normal'" :key="$root.userHeartbeatBar" class="col-3 col-md-4 small-padding">
                         <HeartbeatBar size="small" :monitor-id="item.id" />
                     </div>
                 </div>
