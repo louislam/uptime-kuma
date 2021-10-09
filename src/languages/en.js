@@ -285,8 +285,8 @@ export default {
     Body: "Body",
     Headers: "Headers",
     PushUrl: "Push URL",
-    HeadersInvalidFormat: "Headers do not have a valid format: \"key: value <new line> key: value <new line>...\"",
+    HeadersInvalidFormat: "The request headers are not valid JSON: ",
     BodyInvalidFormat: "The request body is not valid JSON: ",
     BodyPlaceholder: "&lbrace;\n\t\"id\": 124357,\n\t\"username\": \"admin\",\n\t\"password\": \"myAdminPassword\"\n&rbrace;",
-    HeadersPlaceholder: "Authorization: Bearer abc123\nContent-Type: application/json",
+    HeadersPlaceholder: "&lbrace;\n\t\"Authorization\": \"Bearer abc123\",\n\t\"Content-Type\": \"application/json\"\n&rbrace;",
 };

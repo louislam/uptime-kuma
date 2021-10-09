@@ -202,8 +202,8 @@ export default {
     Body: "Body",
     Headers: "Headers",
     PushUrl: "Push URL",
-    HeadersInvalidFormat: "Headers hebben een incorrect formaat: \"key: waarde <new line> key: waarde <new line>...\"",
+    HeadersInvalidFormat: "The request headers is geen geldige JSON: ",
     BodyInvalidFormat: "De request body is geen geldige JSON: ",
     BodyPlaceholder: "&lbrace;\n\t\"id\": 124357,\n\t\"gebruikersnaam\": \"admin\",\n\t\"wachtwoord\": \"mijnAdminWachtwoord\"\n&rbrace;",
-    HeadersPlaceholder: "Authorization: Bearer abc123\nContent-Type: application/json",
+    HeadersPlaceholder: "&lbrace;\n\t\"Authorization\": \"Bearer abc123\",\n\t\"Content-Type\": \"application/json\"\n&rbrace;",
 };

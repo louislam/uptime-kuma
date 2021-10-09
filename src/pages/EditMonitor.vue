@@ -442,8 +442,10 @@ export default {
                 }
             }
             if (this.monitor.headers) {
-                if (!/^([^:]+:.*)([\s]+[^:]+:.*)*$/g.test(this.monitor.headers)) {
-                    toast.error(this.$t("HeadersInvalidFormat"));
+                try {
+                    JSON.parse(this.monitor.headers);
+                } catch (err) {
+                    toast.error(this.$t("HeadersInvalidFormat") + err.message);
                     return false;
                 }
             }

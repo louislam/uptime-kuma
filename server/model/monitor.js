@@ -99,31 +99,6 @@ class Monitor extends BeanModel {
         return JSON.parse(this.accepted_statuscodes_json);
     }
 
-    /**
-     * Convert header string into an object:
-     * eg:
-     *
-     * Authorization: Basic <credentials>
-     * Content-Type: application/json
-     *
-     * into
-     *
-     * {
-     *     "Authorization": "Basic <credentials>",
-     *     "Content-Type": "application/json"
-     * }
-     **/
-    getParsedHeaders() {
-        if (!this.headers || !this.headers.includes(":")) {
-            return {};
-        }
-        return Object.fromEntries(this.headers.split("\n").map(header => {
-            const trimmedHeader = header.trim();
-            const firstColonIndex = trimmedHeader.indexOf(":");
-            return [trimmedHeader.slice(0, firstColonIndex), trimmedHeader.slice(firstColonIndex + 1) || ""];
-        }).filter(arr => !!arr[0] && !!arr[1]));
-    }
-
     start(io) {
         let previousBeat = null;
         let retries = 0;
@@ -173,7 +148,7 @@ class Monitor extends BeanModel {
                         headers: {
                             "Accept": "*/*",
                             "User-Agent": "Uptime-Kuma/" + version,
-                            ...this.getParsedHeaders(),
+                            ...JSON.parse(this.headers),
                         },
                         httpsAgent: new https.Agent({
                             maxCachedSessions: 0,      // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
