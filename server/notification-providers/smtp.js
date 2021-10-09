@@ -20,6 +20,14 @@ class SMTP extends NotificationProvider {
                 pass: notification.smtpPassword,
             };
         }
+        // Lets start with default subject
+        let subject = msg;
+        // Our subject cannot end with whitespace it's often raise spam score
+        let customsubject = notification.customsubject.trim()
+        // If custom subject is not empty, change subject for notification
+        if (customsubject !== "") {
+            subject = customsubject
+        }
 
         let transporter = nodemailer.createTransport(config);
 
@@ -34,7 +42,7 @@ class SMTP extends NotificationProvider {
             cc: notification.smtpCC,
             bcc: notification.smtpBCC,
             to: notification.smtpTo,
-            subject: msg,
+            subject: subject,
             text: bodyTextContent,
             tls: {
                 rejectUnauthorized: notification.smtpIgnoreTLSError || false,

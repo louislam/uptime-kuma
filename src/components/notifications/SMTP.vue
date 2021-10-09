@@ -44,6 +44,11 @@
     </div>
 
     <div class="mb-3">
+        <label for="subject-email" class="form-label">{{ $t("Custom Email subject") }}</label>
+        <input id="subject-email" v-model="$parent.notification.customsubject" type="text" class="form-control" autocomplete="false" placeholder="[Uptime Kuma] Service status has changed">
+    </div>
+
+    <div class="mb-3">
         <label for="to-email" class="form-label">{{ $t("To Email") }}</label>
         <input id="to-email" v-model="$parent.notification.smtpTo" type="text" class="form-control" autocomplete="false" placeholder="example2@kuma.pet, example3@kuma.pet" :required="!hasRecipient">
     </div>
