@@ -11,7 +11,7 @@ const DEFAULT_KEEP_PERIOD = 30;
 
     // Set Default Period
     if (period == null) {
-        await setSetting("keepDataPeriodDays", DEFAULT_KEEP_PERIOD);
+        await setSetting("keepDataPeriodDays", DEFAULT_KEEP_PERIOD, "general");
         period = DEFAULT_KEEP_PERIOD;
     }
 
@@ -21,7 +21,7 @@ const DEFAULT_KEEP_PERIOD = 30;
         parsedPeriod = parseInt(period);
     } catch (_) {
         log("Failed to parse setting, resetting to default..");
-        await setSetting("keepDataPeriodDays", DEFAULT_KEEP_PERIOD);
+        await setSetting("keepDataPeriodDays", DEFAULT_KEEP_PERIOD, "general");
         parsedPeriod = DEFAULT_KEEP_PERIOD;
     }
 
