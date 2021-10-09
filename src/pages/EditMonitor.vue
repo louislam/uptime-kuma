@@ -131,7 +131,7 @@
                                 <input id="retry-interval" v-model="monitor.retryInterval" type="number" class="form-control" required min="20" step="1">
                             </div>
 
-                            <h2 class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
+                            <h2 v-if="monitor.type !== 'push'" class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
 
                             <div v-if="monitor.type === 'http' || monitor.type === 'keyword' " class="my-3 form-check">
                                 <input id="ignore-tls" v-model="monitor.ignoreTls" class="form-check-input" type="checkbox" value="">
@@ -140,7 +140,7 @@
                                 </label>
                             </div>
 
-                            <div class="my-3 form-check">
+                            <div v-if="monitor.type !== 'push'" class="my-3 form-check">
                                 <input id="upside-down" v-model="monitor.upsideDown" class="form-check-input" type="checkbox">
                                 <label class="form-check-label" for="upside-down">
                                     {{ $t("Upside Down Mode") }}
