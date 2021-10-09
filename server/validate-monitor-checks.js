@@ -101,6 +101,7 @@ function validateMonitorChecks(res, checks, bean) {
                 throw new Error(`${bean.msg}, encountered unknown monitor_check.type`);
         }
     });
+    bean.status = UP;
 }
 
 module.exports = validateMonitorChecks;

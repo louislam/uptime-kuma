@@ -273,7 +273,7 @@ class Monitor extends BeanModel {
                 retries = 0;
 
             } catch (error) {
-
+                bean.status = DOWN;
                 bean.msg = error.message;
 
                 // If UP come in here, it must be upside down mode
