@@ -5,7 +5,7 @@ const { SHARE_ENV } = require("worker_threads");
 const jobs = [
     {
         name: "clear-old-data",
-        interval: "every 1 day",
+        interval: "at 03:14",
     }
 ];
 
