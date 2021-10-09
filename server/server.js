@@ -66,12 +66,13 @@ const sslCert = process.env.SSL_CERT || args["ssl-cert"] || undefined;
 
 // Demo Mode?
 const demoMode = args["demo"] || false;
+exports.demoMode = demoMode;
 
 if (demoMode) {
     console.log("==== Demo Mode ====");
 }
 
-console.log("Creating express and socket.io instance")
+console.log("Creating express and socket.io instance");
 const app = express();
 
 let server;
