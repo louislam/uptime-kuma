@@ -212,6 +212,14 @@
                                 {{ importAlert }}
                             </div>
 
+                            <div class="mt-3 mb-3">
+                                <h2 class="mb-2">{{ $t("Monitor History") }}</h2>
+                                <div class="my-3">
+                                    <label for="keepDataPeriodDays" class="form-label">{{ $t("clearDataOlderThan", [ settings.keepDataPeriodDays ]) }}</label>
+                                    <input id="keepDataPeriodDays" v-model="settings.keepDataPeriodDays" type="number" class="form-control" required min="1" step="1">
+                                </div>
+                            </div>
+
                             <h2 class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
 
                             <div class="mb-3">
@@ -463,6 +471,10 @@ export default {
 
                 if (this.settings.entryPage === undefined) {
                     this.settings.entryPage = "dashboard";
+                }
+
+                if (this.settings.keepDataPeriodDays === undefined) {
+                    this.settings.keepDataPeriodDays = 30;
                 }
 
                 this.loaded = true;

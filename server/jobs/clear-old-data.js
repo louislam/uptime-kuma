@@ -1,24 +1,40 @@
-const path = require("path");
+const { log, exit, connectDb } = require("./util-worker");
 const { R } = require("redbean-node");
-const Database = require("../database");
+const { setSetting, setting } = require("../util-server");
 
-const dbPath = path.join(
-    process.env.DATA_DIR ||
-        require("worker_threads").workerData["data-dir"] ||
-        "./data/"
-);
-
-Database.init({
-    "data-dir": dbPath,
-});
+const DEFAULT_KEEP_PERIOD = 30;
 
 (async () => {
-    await Database.connect();
+    await connectDb();
 
-    console.log(await R.getAll("PRAGMA journal_mode"));
-    console.log(
-        await R.getAll("SELECT * from setting WHERE key = 'database_version'")
-    );
+    let period = await setting("keepDataPeriodDays");
 
-    process.exit(0);
+    // Set Default Period
+    if (period == null) {
+        await setSetting("keepDataPeriodDays", DEFAULT_KEEP_PERIOD);
+        period = DEFAULT_KEEP_PERIOD;
+    }
+
+    // Try parse setting
+    let parsedPeriod;
+    try {
+        parsedPeriod = parseInt(period);
+    } catch (_) {
+        log("Failed to parse setting, resetting to default..");
+        await setSetting("keepDataPeriodDays", DEFAULT_KEEP_PERIOD);
+        parsedPeriod = DEFAULT_KEEP_PERIOD;
+    }
+
+    log(`Clearing Data older than ${parsedPeriod} days...`);
+
+    try {
+        await R.exec(
+            "DELETE FROM heartbeat WHERE time < DATETIME('now', '-' || ? || ' days') ",
+            [parsedPeriod]
+        );
+    } catch (e) {
+        log(`Failed to clear old data: ${e.message}`);
+    }
+
+    exit();
 })();
