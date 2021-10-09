@@ -5,7 +5,7 @@ const JSON5 = require("json5");
 
 // Extract translations from $t() functions in the source code and add the missing translations to all language files in src/languages/*.js
 async function extractTranslations() {
-    // Load all es6 module translation files into a commonJS process
+    // Load all ES6 module translation files into a commonJS process
     const languageList = {};
     const filesNames = await fs.readdir("src/languages");
     for (let fileName of filesNames) {
@@ -18,17 +18,17 @@ async function extractTranslations() {
 
     const en = languageList.en;
 
-    // Search the source code for usages of $t()
-    const results = await findInFiles.find({
+    const englishExtracted = [];
+
+    // Search the source code for usages of $t(...)
+    const tFuncResults = await findInFiles.find({
         term: "\\$t\\(([^)]+?)\\)",
         flags: "g",
     }, "./src", "\\.(vue|js)");
 
-    const englishExtracted = [];
-
-    // Make a list of all the found strings
+    // Add the found strings to the englishExtracted list
     const warnings = [];
-    Object.values(results).map(result => {
+    Object.values(tFuncResults).map(result => {
         result.matches.map(match => {
             const functionParams = match.substring(3, match.length - 1).trim();
             const firstChar = functionParams[0];
@@ -40,6 +40,20 @@ async function extractTranslations() {
                 const content = _.trim(functionParams.split(firstChar)[1], "\"' ");
                 englishExtracted.push(content);
             }
+        });
+    });
+
+    // Search the source code for usages of <i18n-t tag="..." keypath="...">
+    const i18nTTagResults = await findInFiles.find({
+        term: "<i18n-t[^>]+keypath=\"([^\"]+)\"[^>]*>",
+        flags: "g",
+    }, "./src", "\\.vue");
+
+    // Add the found strings to the englishExtracted list
+    Object.values(i18nTTagResults).map(result => {
+        result.matches.map(match => {
+            const content = _.trim(match.split("keypath")[1].split("\"")[1], "\"' ");
+            englishExtracted.push(content);
         });
     });
 
