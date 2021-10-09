@@ -86,7 +86,7 @@ export class TimeLogger {
     }
 
     print(name: string) {
-        if (isDev && process && process.env.TIMELOGGER === "1") {
+        if (isDev && process.env.TIMELOGGER === "1") {
             console.log(name + ": " + (dayjs().valueOf() - this.startTime) + "ms")
         }
     }
