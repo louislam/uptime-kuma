@@ -277,7 +277,7 @@ export default {
     promosmsTypeEco: "SMS ECO - Tanie, lecz wolne. Dostępne tylko w Polsce",
     promosmsTypeFlash: "SMS FLASH - Wiadomość automatycznie wyświetli się na urządzeniu. Dostępne tylko w Polsce.",
     promosmsTypeFull: "SMS FULL - Szybkie i dostępne międzynarodowo. Wersja premium usługi, która pozwala min. ustawić własną nazwę nadawcy.",
-    promosmsTypeFull: "SMS SPEED - Wysyłka priorytetowa, posiada wszystkie zalety SMS FULL",
+    promosmsTypeSpeed: "SMS SPEED - Wysyłka priorytetowa, posiada wszystkie zalety SMS FULL",
     promosmsPhoneNumber: "Numer Odbiorcy",
     promosmsSMSSender: "Nadawca SMS (Wcześniej zatwierdzone nazwy z panelu PromoSMS)",
     // End notification form
