@@ -265,7 +265,7 @@ exports.entryPage = "dashboard";
                 }
 
                 if (data.token) {
-                    let verify = notp.totp.verify(data.token, user.twofa_secret);
+                    let verify = notp.totp.verify(data.token, user.twofa_secret, {"window": 1, "time": 30});
 
                     if (verify && verify.delta == 0) {
                         callback({
@@ -383,7 +383,7 @@ exports.entryPage = "dashboard";
                 socket.userID,
             ]);
 
-            let verify = notp.totp.verify(token, user.twofa_secret);
+            let verify = notp.totp.verify(token, user.twofa_secret, {"window": 1, "time": 30});
 
             if (verify && verify.delta == 0) {
                 callback({
