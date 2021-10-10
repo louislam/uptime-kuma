@@ -152,7 +152,7 @@ class Monitor extends BeanModel {
                             ...(this.headers ? JSON.parse(this.headers) : {}),
                         },
                         httpsAgent: new https.Agent({
-                            maxCachedSessions: 0,      // Use "{}"om agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
+                            maxCachedSessions: 0,      // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
                             rejectUnauthorized: ! this.getIgnoreTls(),
                         }),
                         maxRedirects: this.maxredirects,
