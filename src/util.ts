@@ -114,12 +114,21 @@ export function getRandomInt(min: number, max: number) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+export function getCryptoRandomInt(min, max) {
+    const randomBuffer = new Uint32Array(1);
+    crypto.getRandomValues(randomBuffer);
+    let randomNumber = randomBuffer[0] / (0xffffffff + 1);
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(randomNumber * (max - min + 1)) + min;
+}
+
 export function genSecret(length = 64) {
     let secret = "";
-    let chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    let charsLength = chars.length;
-    for ( let i = 0; i < length; i++ ) {
-        secret += chars.charAt(Math.floor(Math.random() * charsLength));
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    const charsLength = chars.length;
+    for ( let i = 0; i < 64; i++ ) {
+        secret += chars.charAt(getCryptoRandomInt(0, charsLength));
     }
     return secret;
 }
