@@ -357,6 +357,12 @@
                     <p>Használja megfontoltan!</p>
                 </template>
 
+                <template v-else-if="$i18n.locale === 'nb-NO' ">
+                    <p>Er du sikker på at du vil <strong>deaktiver autentisering</strong>?</p>
+                    <p>Dette er for <strong>de som har tredjepartsautorisering</strong> foran Uptime Kuma, for eksempel Cloudflare Access.</p>
+                    <p>Vennligst vær forsiktig.</p>
+                </template>
+
                 <!-- English (en) -->
                 <template v-else>
                     <p>Are you sure want to <strong>disable auth</strong>?</p>

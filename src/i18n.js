@@ -11,6 +11,7 @@ import itIT from "./languages/it-IT";
 import ja from "./languages/ja";
 import koKR from "./languages/ko-KR";
 import nlNL from "./languages/nl-NL";
+import nbNO from "./languages/nb-NO";
 import pl from "./languages/pl";
 import ptBR from "./languages/pt-BR";
 import bgBG from "./languages/bg-BG";
@@ -28,6 +29,7 @@ const languageList = {
     "bg-BG": bgBG,
     "de-DE": deDE,
     "nl-NL": nlNL,
+    "nb-NO": nbNO,
     "es-ES": esEs,
     "fa": fa,
     "pt-BR": ptBR,
