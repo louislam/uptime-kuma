@@ -6,7 +6,7 @@ const commonLabels = [
     "monitor_url",
     "monitor_hostname",
     "monitor_port",
-]
+];
 
 const monitor_cert_days_remaining = new PrometheusClient.Gauge({
     name: "monitor_cert_days_remaining",
@@ -41,45 +41,46 @@ class Prometheus {
             monitor_url: monitor.url,
             monitor_hostname: monitor.hostname,
             monitor_port: monitor.port
-        }
+        };
     }
 
     update(heartbeat, tlsInfo) {
+
         if (typeof tlsInfo !== "undefined") {
             try {
-                let is_valid = 0
+                let is_valid = 0;
                 if (tlsInfo.valid == true) {
-                    is_valid = 1
+                    is_valid = 1;
                 } else {
-                    is_valid = 0
+                    is_valid = 0;
                 }
-                monitor_cert_is_valid.set(this.monitorLabelValues, is_valid)
+                monitor_cert_is_valid.set(this.monitorLabelValues, is_valid);
             } catch (e) {
-                console.error(e)
+                console.error(e);
             }
 
             try {
-                monitor_cert_days_remaining.set(this.monitorLabelValues, tlsInfo.certInfo.daysRemaining)
+                monitor_cert_days_remaining.set(this.monitorLabelValues, tlsInfo.certInfo.daysRemaining);
             } catch (e) {
-                console.error(e)
+                console.error(e);
             }
         }
 
         try {
-            monitor_status.set(this.monitorLabelValues, heartbeat.status)
+            monitor_status.set(this.monitorLabelValues, heartbeat.status);
         } catch (e) {
-            console.error(e)
+            console.error(e);
         }
 
         try {
             if (typeof heartbeat.ping === "number") {
-                monitor_response_time.set(this.monitorLabelValues, heartbeat.ping)
+                monitor_response_time.set(this.monitorLabelValues, heartbeat.ping);
             } else {
                 // Is it good?
-                monitor_response_time.set(this.monitorLabelValues, -1)
+                monitor_response_time.set(this.monitorLabelValues, -1);
             }
         } catch (e) {
-            console.error(e)
+            console.error(e);
         }
     }
 
@@ -87,4 +88,4 @@ class Prometheus {
 
 module.exports = {
     Prometheus
-}
+};
