@@ -179,7 +179,7 @@ export default {
     "Add a monitor": "添加监控项",
     "Edit Status Page": "编辑状态页",
     "Go to Dashboard": "前往仪表盘",
-    "Status Page": "Status Page",
+    "Status Page": "状态页",
     telegram: "Telegram",
     webhook: "Webhook",
     smtp: "Email (SMTP)",
