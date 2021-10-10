@@ -127,7 +127,7 @@ export function genSecret(length = 64) {
     let secret = "";
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     const charsLength = chars.length;
-    for ( let i = 0; i < 64; i++ ) {
+    for ( let i = 0; i < length; i++ ) {
         secret += chars.charAt(getCryptoRandomInt(0, charsLength));
     }
     return secret;
