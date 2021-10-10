@@ -11,6 +11,7 @@ const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalCli
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification");
+const { demoMode } = require("../server");
 const version = require("../../package.json").version;
 const apicache = require("../modules/apicache");
 
@@ -363,6 +364,14 @@ class Monitor extends BeanModel {
             previousBeat = bean;
 
             if (! this.isStop) {
+
+                if (demoMode) {
+                    if (beatInterval < 20) {
+                        console.log("beat interval too low, reset to 20s");
+                        beatInterval = 20;
+                    }
+                }
+
                 this.heartbeatInterval = setTimeout(beat, beatInterval * 1000);
             }
 
