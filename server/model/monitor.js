@@ -28,8 +28,10 @@ const {
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification");
+const { demoMode } = require("../server");
 const validateMonitorChecks = require("../validate-monitor-checks");
 const version = require("../../package.json").version;
+const apicache = require("../modules/apicache");
 
 /**
  * status:
@@ -332,6 +334,9 @@ class Monitor extends BeanModel {
                             console.log(e);
                         }
                     }
+
+                    // Clear Status Page Cache
+                    apicache.clear();
                 }
 
             } else {
@@ -358,6 +363,14 @@ class Monitor extends BeanModel {
             previousBeat = bean;
 
             if (!this.isStop) {
+
+                if (demoMode) {
+                    if (beatInterval < 20) {
+                        console.log("beat interval too low, reset to 20s");
+                        beatInterval = 20;
+                    }
+                }
+
                 this.heartbeatInterval = setTimeout(beat, beatInterval * 1000);
             }
 

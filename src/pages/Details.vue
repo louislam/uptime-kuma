@@ -79,6 +79,7 @@
                 </div>
             </div>
 
+            <!-- Cert Info Box -->
             <transition name="slide-fade" appear>
                 <div v-if="showCertInfoBox" class="shadow-box big-padding text-center">
                     <div class="row">
@@ -89,6 +90,7 @@
                 </div>
             </transition>
 
+            <!-- Ping Chart -->
             <div v-if="showPingChartBox" class="shadow-box big-padding text-center ping-chart-wrapper">
                 <div class="row">
                     <div class="col">
@@ -266,7 +268,10 @@ export default {
         },
 
         tlsInfo() {
-            if (this.$root.tlsInfoList[this.monitor.id]) {
+            // Add: this.$root.tlsInfoList[this.monitor.id].certInfo
+            // Fix: TypeError: Cannot read properties of undefined (reading 'validTo')
+            // Reason: TLS Info object format is changed in 1.8.0, if for some reason, it cannot connect to the site after update to 1.8.0, the object is still in the old format.
+            if (this.$root.tlsInfoList[this.monitor.id] && this.$root.tlsInfoList[this.monitor.id].certInfo) {
                 return this.$root.tlsInfoList[this.monitor.id];
             }
 
