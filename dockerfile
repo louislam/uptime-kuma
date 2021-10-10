@@ -4,7 +4,7 @@ WORKDIR /app
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1
 
 COPY . .
-RUN npm install --legacy-peer-deps && \
+RUN npm ci && \
     npm run build && \
     npm prune --production && \
     chmod +x /app/extra/entrypoint.sh
