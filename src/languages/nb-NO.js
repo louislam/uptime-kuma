@@ -1,5 +1,5 @@
 export default {
-    languageName: "Norwegian",
+    languageName: "Norsk",
     checkEverySecond: "Sjekk hvert {0} sekund.",
     retryCheckEverySecond: "Prøv igjen hvert {0} sekund.",
     retriesDescription: "Maksimalt antall forsøk før tjenesten er merket som nede og et varsel sendes",
