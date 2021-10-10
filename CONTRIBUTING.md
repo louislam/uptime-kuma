@@ -64,7 +64,7 @@ It changed my current workflow and require further studies.
 I personally do not like something need to learn so much and need to config so much before you can finally start the app.
 
 - Easy to install for non-Docker users, no native build dependency is needed (at least for x86_64), no extra config, no extra effort to get it run
-- Single container for Docker users, no very complex docker-composer file. Just map the volume and expose the port, then good to go
+- Single container for Docker users, no very complex docker-compose file. Just map the volume and expose the port, then good to go
 - Settings should be configurable in the frontend. Env var is not encouraged.
 - Easy to use
 
@@ -74,7 +74,7 @@ I personally do not like something need to learn so much and need to config so m
 - Follow `.editorconfig`
 - Follow ESLint
 
-## Name convention
+# Name convention
 
 - Javascript/Typescript: camelCaseType
 - SQLite: underscore_type
