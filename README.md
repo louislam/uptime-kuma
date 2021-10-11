@@ -25,7 +25,7 @@ VPS is sponsored by Uptime Kuma sponsors on [Open Collective](https://opencollec
 
 * Monitoring uptime for HTTP(s) / TCP / Ping / DNS Record / Push.
 * Fancy, Reactive, Fast UI/UX.
-* Notifications via Telegram, Discord, Gotify, Slack, Pushover, Email (SMTP), and [70+ notification services, click here for the full list](https://github.com/louislam/uptime-kuma/issues/284).
+* Notifications via Telegram, Discord, Gotify, Slack, Pushover, Email (SMTP), and [70+ notification services, click here for the full list](https://github.com/louislam/uptime-kuma/tree/master/src/components/notifications).
 * 20 seconds interval.
 * [Multi Languages](https://github.com/louislam/uptime-kuma/tree/master/src/languages)
 * Simple Status Page
