@@ -280,5 +280,6 @@ export default {
     promosmsTypeSpeed: "SMS SPEED - Highest priority in system. Very quick and reliable but costly (about twice of SMS FULL price).",
     promosmsPhoneNumber: "Phone number (for Polish recipient You can skip area codes)",
     promosmsSMSSender: "SMS Sender Name : Pre-registred name or one of defaults: InfoSMS, SMS Info, MaxSMS, INFO, SMS",
+    "Feishu WebHookUrl": "Feishu WebHookUrl",
     // End notification form
 };

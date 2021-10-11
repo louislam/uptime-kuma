@@ -12,6 +12,7 @@ import Pushy from "./Pushy.vue";
 import Octopush from "./Octopush.vue";
 import PromoSMS from "./PromoSMS.vue";
 import LunaSea from "./LunaSea.vue";
+import Feishu from "./Feishu.vue";
 import Apprise from "./Apprise.vue";
 import Pushbullet from "./Pushbullet.vue";
 import Line from "./Line.vue";
@@ -38,6 +39,7 @@ const NotificationFormList = {
     "octopush": Octopush,
     "promosms": PromoSMS,
     "lunasea": LunaSea,
+    "Feishu": Feishu,
     "apprise": Apprise,
     "pushbullet": Pushbullet,
     "line": Line,
