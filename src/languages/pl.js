@@ -100,7 +100,7 @@ export default {
     Logout: "Wyloguj",
     Leave: "Zostaw",
     "I understand, please disable": "Rozumiem, proszę wyłączyć",
-    Confirm: "Potiwerdź",
+    Confirm: "Potwierdź",
     Yes: "Tak",
     No: "Nie",
     Username: "Nazwa użytkownika",
