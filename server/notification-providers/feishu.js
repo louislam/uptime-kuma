@@ -9,17 +9,15 @@ class Feishu extends NotificationProvider {
         let okMsg = "Sent Successfully.";
         let feishuWebHookUrl = notification.feishuWebHookUrl;
 
-        console.log(heartbeatJSON);
         try {
             if (heartbeatJSON == null) {
                 let testdata = {
                     msg_type: "text",
                     content: {
-                        text: "Testing Successful.",
+                        text: msg,
                     },
                 };
-                var t = await axios.post(feishuWebHookUrl, testdata);
-                console.log(t);
+                await axios.post(feishuWebHookUrl, testdata);
                 return okMsg;
             }
 
