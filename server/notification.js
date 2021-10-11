@@ -18,6 +18,7 @@ const SMTP = require("./notification-providers/smtp");
 const Teams = require("./notification-providers/teams");
 const Telegram = require("./notification-providers/telegram");
 const Webhook = require("./notification-providers/webhook");
+const Feishu = require("./notification-providers/feishu");
 
 class Notification {
 
@@ -35,6 +36,7 @@ class Notification {
             new Gotify(),
             new Line(),
             new LunaSea(),
+            new Feishu(),
             new Mattermost(),
             new Matrix(),
             new Octopush(),
