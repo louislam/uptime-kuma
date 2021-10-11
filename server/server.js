@@ -68,6 +68,12 @@ const port = parseInt(process.env.PORT || args.port || 3001);
 const sslKey = process.env.SSL_KEY || args["ssl-key"] || undefined;
 const sslCert = process.env.SSL_CERT || args["ssl-cert"] || undefined;
 
+// 2FA / notp verification defaults
+const twofa_verification_opts = {
+    "window": 1,
+    "time": 30
+}
+
 /**
  * Run unit test after the server is ready
  * @type {boolean}
@@ -265,8 +271,7 @@ exports.entryPage = "dashboard";
                 }
 
                 if (data.token) {
-                    let verify = notp.totp.verify(data.token, user.twofa_secret, { "window": 1,
-                        "time": 30 });
+                    let verify = notp.totp.verify(data.token, user.twofa_secret, twofa_verification_opts);
 
                     if (verify && verify.delta == 0) {
                         callback({
@@ -384,8 +389,7 @@ exports.entryPage = "dashboard";
                 socket.userID,
             ]);
 
-            let verify = notp.totp.verify(token, user.twofa_secret, { "window": 1,
-                "time": 30 });
+            let verify = notp.totp.verify(token, user.twofa_secret, twofa_verification_opts);
 
             if (verify && verify.delta == 0) {
                 callback({
