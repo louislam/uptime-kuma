@@ -10,7 +10,7 @@ export default {
     passwordNotMatchMsg: "Powtórzone hasło nie pasuje.",
     notificationDescription: "Proszę przypisać powiadomienie do monitora(ów), aby działało.",
     keywordDescription: "Wyszukiwanie słów kluczowych w zwykłym html lub odpowiedzi JSON. Wielkość liter ma znaczenie.",
-    pauseDashboardHome: "Wstrzymaj",
+    pauseDashboardHome: "Wstrzymane",
     deleteMonitorMsg: "Czy na pewno chcesz usunąć ten monitor?",
     deleteNotificationMsg: "Czy na pewno chcesz usunąć to powiadomienie dla wszystkich monitorów?",
     resoverserverDescription: "Cloudflare jest domyślnym serwerem, możesz zmienić serwer resolver w każdej chwili.",
