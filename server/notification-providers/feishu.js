@@ -27,8 +27,7 @@ class Feishu extends NotificationProvider {
                     content: {
                         post: {
                             zh_cn: {
-                                title:
-                                    "UptimeKuma Alert: " + monitorJSON["name"],
+                                title: "UptimeKuma Alert: " + monitorJSON["name"],
                                 content: [
                                     [
                                         {
