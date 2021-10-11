@@ -43,7 +43,7 @@ export default {
     Down: "Offline",
     Pending: "Oczekuje",
     Unknown: "Nieznane",
-    Pause: "Wstrzymane",
+    Pause: "Wstrzymaj",
     Name: "Nazwa",
     Status: "Status",
     DateTime: "Data i godzina",
