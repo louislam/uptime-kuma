@@ -8,3 +8,6 @@ This playbook comes with three roles
 
 To see more info see docker-compose, tasks and config files 
 I will try to make this readme better
+
+
+> Replace status.yoursite with your domain name
