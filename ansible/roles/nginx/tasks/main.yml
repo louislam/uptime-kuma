@@ -1,0 +1,29 @@
+- name: Ensure Volumes & Files directories exists
+  file:
+    dest: "{{item}}"
+    state: directory
+  loop:
+    - /compose
+    - /compose/nginx
+    - /compose/volumes
+    - /compose/volumes/nginx
+
+- name: Ensure docker-compose file has been updated
+  template:
+    src: "{{item}}"
+    dest: /compose/nginx/
+  loop:
+    - docker-compose.yml
+
+- name: Ensure nginx config directory exist
+  copy:
+    src: nginx
+    dest: /compose/volumes/nginx/
+    mode: 'preserve'
+    group: root
+    owner: root
+
+- name: Ensure config files are updated
+  template:
+    src: "nginx.conf"
+    dest: /compose/volumes/nginx/nginx.conf

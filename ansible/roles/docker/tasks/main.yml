@@ -1,0 +1,44 @@
+- name: Ensure docker and docker-compose and essentional libs are installed
+  package:
+    name: "{{item}}"
+    state: present
+  loop:
+    - docker.io
+    - docker-compose
+    - python-pip
+    - python3-docker
+    - python3-pip
+    - libssl-dev
+    - libffi-dev
+    - python-setuptools
+
+- name: Ensure docker-compose is installed via pip
+  pip:
+    name: "{{item}}"
+    executable: pip3
+  loop:
+    - docker
+    # - docker-compose
+
+### FIX a BUG: https://github.com/docker/docker-py/issues/1502#issuecomment-506544849
+- name: FIX a BUG Uninstall pip's backports.ssl-match-hostname
+  pip:
+    name: backports.ssl-match-hostname
+    executable: pip
+    state: absent
+- name: FIX a BUG install Debian's python-backports.ssl-match-hostname package
+  package:
+    name: python-backports.ssl-match-hostname
+    state: present
+
+- name: Ensure docker service is enabled and up
+  systemd: 
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Ensure docker socket is enabled and up
+  systemd: 
+    name: docker.socket
+    state: started
+    enabled: yes

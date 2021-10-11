@@ -1,0 +1,7 @@
+- name: install uptime kuma with nginx connected
+  hosts: all
+  roles:
+    - {role: docker,            tags: ["docker"]}
+    - {role: kuma,              tags: ["kuma"]}
+    - {role: nginx,             tags: ["nginx"]}
+    
