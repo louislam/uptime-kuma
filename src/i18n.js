@@ -37,7 +37,7 @@ const languageList = {
     "fr-FR": frFR,
     "hu": hu,
     "it-IT": itIT,
-    "id-ID" : idID
+    "id-ID" : idID,
     "ja": ja,
     "da-DK": daDK,
     "sr": sr,
