@@ -30,7 +30,7 @@ VPS is sponsored by Uptime Kuma sponsors on [Open Collective](https://opencollec
 * [Multi Languages](https://github.com/louislam/uptime-kuma/tree/master/src/languages)
 * Simple Status Page
 * Ping Chart
-* Certicate Info
+* Certificate Info
 
 ## 🔧 How to Install
 
