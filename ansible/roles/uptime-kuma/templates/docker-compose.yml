@@ -7,4 +7,4 @@ services:
         volumes:
             - '/compose/volumes/uptime-kuma:/app/data'
         container_name: uptime-kuma
-        image: 'louislam/uptime-kuma:latest'
+        image: 'louislam/uptime-kuma:alpine'
