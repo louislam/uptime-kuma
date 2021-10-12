@@ -475,7 +475,7 @@ export default {
                 }
 
                 if (this.settings.keepDataPeriodDays === undefined) {
-                    this.settings.keepDataPeriodDays = 30;
+                    this.settings.keepDataPeriodDays = 180;
                 }
 
                 this.loaded = true;

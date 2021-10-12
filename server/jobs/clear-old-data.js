@@ -2,7 +2,7 @@ const { log, exit, connectDb } = require("./util-worker");
 const { R } = require("redbean-node");
 const { setSetting, setting } = require("../util-server");
 
-const DEFAULT_KEEP_PERIOD = 30;
+const DEFAULT_KEEP_PERIOD = 180;
 
 (async () => {
     await connectDb();
