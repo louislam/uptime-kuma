@@ -1,5 +1,6 @@
 const nodemailer = require("nodemailer");
 const NotificationProvider = require("./notification-provider");
+const { DOWN, UP } = require("../../src/util");
 
 class SMTP extends NotificationProvider {
 
@@ -28,33 +29,29 @@ class SMTP extends NotificationProvider {
 
         // If custom subject is not empty, change subject for notification
         if (customsubject !== "") {
-            
-             // Replace "MACROS" with coresponding variable
+
+            // Replace "MACROS" with coresponding variable
             let replaceName = new RegExp("{NAME}", "g");
             let replaceHostname = new RegExp("{HOSTNAME}", "g");
             let replaceStatus = new RegExp("{STATUS}", "g");
 
-            let serviceStatus;
+            // Lets start with dummy values to simplify code
+            let monitorName = "Test"
+            let monitorHostname = "example.com"
+            let serviceStatus = "⚠️ Test";
 
             if (monitorJSON !== null) {
-                customsubject = customsubject.replace(replaceName,monitorJSON["name"]);
-                customsubject = customsubject.replace(replaceHostname,monitorJSON["hostname"]);
-            } else {
-                // Insert dummy values during test
-                customsubject = customsubject.replace(replaceName,"Test");
-                customsubject = customsubject.replace(replaceHostname,"example.com");
+                monitorName = monitorJSON["name"];
+                monitorHostname = monitorJSON["hostname"];
             }
+
             if (heartbeatJSON !== null) {
-                    if (heartbeatJSON["status"] === 0) {
-                        serviceStatus = "🔴 Down"
-                    } else {
-                        serviceStatus = "✅ Up"
-                    }
-                customsubject = customsubject.replace(replaceStatus,serviceStatus);
-            } else {
-                // Insert dummy values during test
-                customsubject = customsubject.replace(replaceStatus,"TEST");
+                serviceStatus = heartbeatJSON["status"] == DOWN ? "🔴 Down":"✅ Up";
             }
+            // Break replace to one by line for better readability
+            customsubject = customsubject.replace(replaceStatus,serviceStatus);
+            customsubject = customsubject.replace(replaceName,monitorName);
+            customsubject = customsubject.replace(replaceHostname,monitorHostname);
 
             subject = customsubject
         }
