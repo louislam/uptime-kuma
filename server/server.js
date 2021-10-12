@@ -61,7 +61,7 @@ console.info("Version: " + checkVersion.version);
 
 // If host is omitted, the server will accept connections on the unspecified IPv6 address (::) when IPv6 is available and the unspecified IPv4 address (0.0.0.0) otherwise.
 // Dual-stack support for (::)
-const hostname = process.env.HOST || args.host;
+const hostname = args.host || process.env.HOST;
 const port = parseInt(process.env.PORT || args.port || 3001);
 
 // SSL
