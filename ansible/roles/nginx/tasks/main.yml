@@ -27,3 +27,9 @@
   template:
     src: "nginx.conf"
     dest: /compose/volumes/nginx/nginx.conf
+
+- name: Ensure uptime-kuma is up
+  docker_compose:
+    state: present
+    project_src: /compose/kuma
+    pull: no
