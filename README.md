@@ -17,17 +17,20 @@ Try it!
 
 https://demo.uptime.kuma.pet
 
-It is a 5 minutes live demo, all data will be deleted after that. The server is located at Tokyo, if you live far away from here, it may affact your experience. I suggest that you should install to try it.
+It is a 10 minutes live demo, all data will be deleted after that. The server is located at Tokyo, if you live far away from here, it may affact your experience. I suggest that you should install to try it.
 
 VPS is sponsored by Uptime Kuma sponsors on [Open Collective](https://opencollective.com/uptime-kuma)! Thank you so much!
 
 ## ⭐ Features
 
-* Monitoring uptime for HTTP(s) / TCP / Ping / DNS Record.
+* Monitoring uptime for HTTP(s) / TCP / Ping / DNS Record / Push.
 * Fancy, Reactive, Fast UI/UX.
-* Notifications via Telegram, Discord, Gotify, Slack, Pushover, Email (SMTP), and [70+ notification services, click here for the full list](https://github.com/louislam/uptime-kuma/issues/284).
+* Notifications via Telegram, Discord, Gotify, Slack, Pushover, Email (SMTP), and [70+ notification services, click here for the full list](https://github.com/louislam/uptime-kuma/tree/master/src/components/notifications).
 * 20 seconds interval.
 * [Multi Languages](https://github.com/louislam/uptime-kuma/tree/master/src/languages)
+* Simple Status Page
+* Ping Chart
+* Certificate Info
 
 ## 🔧 How to Install
 
