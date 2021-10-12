@@ -109,6 +109,7 @@
         "@vitejs/plugin-vue": "~1.9.2",
         "@vue/compiler-sfc": "~3.2.19",
         "core-js": "~3.18.1",
+        "cross-env": "~7.0.3",
         "dns2": "~2.0.1",
         "eslint": "~7.32.0",
         "eslint-plugin-vue": "~7.18.0",
