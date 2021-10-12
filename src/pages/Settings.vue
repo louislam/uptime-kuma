@@ -333,6 +333,12 @@
                     <p>Utilizzare con attenzione.</p>
                 </template>
 
+                <template v-else-if="$i18n.locale === 'it-IT' ">
+                    <p> Apakah Anda yakin ingin <strong>menonaktifkan autentikasi</strong>? </p>
+                     <p> Ini untuk <strong>mereka yang memiliki otentikasi pihak ketiga</strong> diletakkan di depan Uptime Kuma, misalnya akses Cloudflare. </p>
+                     <p> Gunakan dengan hati-hati. </p>
+                </template>
+
                 <template v-else-if="$i18n.locale === 'ru-RU' ">
                     <p>Вы уверены, что хотите <strong>отключить авторизацию</strong>?</p>
                     <p>Это подходит для <strong>тех, у кого стоит другая авторизация</strong> перед открытием Uptime Kuma, например Cloudflare Access.</p>
