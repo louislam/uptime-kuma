@@ -265,7 +265,7 @@ export default {
     "Channel access token": "채널 엑세스 토큰",
     "Line Developers Console": "Line 개발자 콘솔",
     lineDevConsoleTo: "Line 개발자 콘솔 - {0}",
-    "Basic Settings": "Basic Settings 메뉴",
+    "Basic Settings": "기본 설정 메뉴",
     "User ID": "사용자 ID",
     "Messaging API": "Messaging API 메뉴",
     wayToGetLineChannelToken: "먼저 {0}에 엑세스하고, 공급자 및 채널 (Messaging API)을 만든 다음, 각 메뉴 밑에 언급된 메뉴에서 채널 액세스 토큰과 사용자 ID를 얻을 수 있어요.",
