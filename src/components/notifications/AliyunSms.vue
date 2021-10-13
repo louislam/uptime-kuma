@@ -16,6 +16,7 @@
         <input id="signName" v-model="$parent.notification.signName" type="text" class="form-control" required>
 
          <div class="form-text">
+            <p>Sms template must contain parameters: <br> <code>${name} ${time} ${status} ${msg}</code></p>
             <i18n-t tag="p" keypath="Read more:">
                 <a href="https://help.aliyun.com/document_detail/101414.html" target="_blank">https://help.aliyun.com/document_detail/101414.html</a>
             </i18n-t>

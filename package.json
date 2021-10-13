@@ -52,7 +52,6 @@
         "update-language-files": "cd extra/update-language-files && node index.js && eslint ../../src/languages/**.js --fix"
     },
     "dependencies": {
-        "@alicloud/pop-core": "^1.7.10",
         "@fortawesome/fontawesome-svg-core": "~1.2.36",
         "@fortawesome/free-regular-svg-icons": "~5.15.4",
         "@fortawesome/free-solid-svg-icons": "~5.15.4",
