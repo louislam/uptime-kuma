@@ -66,7 +66,7 @@ export default {
     "Accepted Status Codes": "有效状态码",
     "Push URL": "推送链接",
     needPushEvery: "你需要每 {0} 秒调用一次。",
-    pushOptionalParams: "可选参数：{'msg'}，{'ping'}",
+    pushOptionalParams: "可选参数：{0}",
     Save: "保存",
     Notifications: "消息通知",
     "Not available, please setup.": "无可用通道，请先设置",

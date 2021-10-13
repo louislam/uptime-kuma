@@ -50,7 +50,7 @@
                                 <CopyableInput id="push-url" v-model="pushURL" type="url" disabled="disabled" />
                                 <div class="form-text">
                                     {{ $t("needPushEvery", [monitor.interval]) }}<br />
-                                    {{ $t("pushOptionalParams") }}
+                                    {{ $t("pushOptionalParams", ["msg, ping"]) }}
                                 </div>
                             </div>
 

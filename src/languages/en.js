@@ -78,7 +78,7 @@ export default {
     "Accepted Status Codes": "Accepted Status Codes",
     "Push URL": "Push URL",
     needPushEvery: "You should call this url every {0} seconds.",
-    pushOptionalParams: "Optional parameters: {'msg'}, {'ping'}",
+    pushOptionalParams: "Optional parameters: {0}",
     Save: "Save",
     Notifications: "Notifications",
     "Not available, please setup.": "Not available, please setup.",
