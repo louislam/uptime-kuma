@@ -19,7 +19,7 @@ export default {
     enableDefaultNotificationDescription: "For every new monitor this notification will be enabled by default. You can still disable the notification separately for each monitor.",
     clearEventsMsg: "Are you sure want to delete all events for this monitor?",
     clearHeartbeatsMsg: "Are you sure want to delete all heartbeats for this monitor?",
-    confirmClearStatisticsMsg: "Are you sure want to delete ALL statistics?",
+    confirmClearStatisticsMsg: "Are you sure you want to delete ALL statistics?",
     importHandleDescription: "Choose 'Skip existing' if you want to skip every monitor or notification with the same name. 'Overwrite' will delete every existing monitor and notification.",
     confirmImportMsg: "Are you sure to import the backup? Please make sure you've selected the right import option.",
     twoFAVerifyLabel: "Please type in your token to verify that 2FA is working",
