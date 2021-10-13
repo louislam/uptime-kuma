@@ -45,7 +45,7 @@
 
     <div class="mb-3">
         <label for="subject-email" class="form-label">{{ $t("Email Subject") }}</label>
-        <input id="subject-email" v-model="$parent.notification.customsubject" type="text" class="form-control" autocomplete="false" placeholder="Service {NAME} on {HOSTNAME} has changed status to {STATUS}">
+        <input id="subject-email" v-model="$parent.notification.customSubject" type="text" class="form-control" autocomplete="false" placeholder="Service {{NAME}} on {{HOSTNAME}} has changed status to {{STATUS}}">
     </div>
 
     <div class="mb-3">

@@ -21,19 +21,23 @@ class SMTP extends NotificationProvider {
                 pass: notification.smtpPassword,
             };
         }
-        // Lets start with default subject
+        // Lets start with default subject and empty string for custom one
         let subject = msg;
+        let customSubject = "";
 
         // Our subject cannot end with whitespace it's often raise spam score
-        let customsubject = notification.customsubject.trim()
+        // Once I got "Cannot read property 'trim' of undefined", better be safe than sorry
+        if (notification.customSubject) {
+            customSubject = notification.customSubject.trim()
+        }
 
         // If custom subject is not empty, change subject for notification
-        if (customsubject !== "") {
+        if (customSubject !== "") {
 
             // Replace "MACROS" with coresponding variable
-            let replaceName = new RegExp("{NAME}", "g");
-            let replaceHostname = new RegExp("{HOSTNAME}", "g");
-            let replaceStatus = new RegExp("{STATUS}", "g");
+            let replaceName = new RegExp("{{NAME}}", "g");
+            let replaceHostname = new RegExp("{{HOSTNAME}}", "g");
+            let replaceStatus = new RegExp("{{STATUS}}", "g");
 
             // Lets start with dummy values to simplify code
             let monitorName = "Test"
@@ -50,11 +54,11 @@ class SMTP extends NotificationProvider {
             }
             
             // Break replace to one by line for better readability
-            customsubject = customsubject.replace(replaceStatus, serviceStatus);
-            customsubject = customsubject.replace(replaceName, monitorName);
-            customsubject = customsubject.replace(replaceHostname, monitorHostname);
+            customSubject = customSubject.replace(replaceStatus, serviceStatus);
+            customSubject = customSubject.replace(replaceName, monitorName);
+            customSubject = customSubject.replace(replaceHostname, monitorHostname);
 
-            subject = customsubject
+            subject = customSubject
         }
 
         let transporter = nodemailer.createTransport(config);
