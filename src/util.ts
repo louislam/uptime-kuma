@@ -8,6 +8,7 @@
 
 import * as _dayjs from "dayjs";
 const dayjs = _dayjs;
+const crypto = require("crypto").webcrypto;
 
 export const isDev = process.env.NODE_ENV === "development";
 export const appName = "Uptime Kuma";
