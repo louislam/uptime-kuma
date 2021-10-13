@@ -59,7 +59,7 @@ class DingDing extends NotificationProvider {
     /** DingDing sign */
     sign(timestamp,secretKey) {
         return Crypto
-            .createHmac("sha256",Buffer.from(secretKey, 'utf8'))
+            .createHmac("sha256", Buffer.from(secretKey, 'utf8'))
             .update(Buffer.from(`${timestamp}\n${secretKey}`, 'utf8'))
             .digest("base64");
     }
