@@ -18,6 +18,7 @@ import Pushbullet from "./Pushbullet.vue";
 import Line from "./Line.vue";
 import Mattermost from "./Mattermost.vue";
 import Matrix from "./Matrix.vue";
+import AliyunSMS from "./AliyunSms.vue";
 
 /**
  * Manage all notification form.
@@ -40,6 +41,7 @@ const NotificationFormList = {
     "promosms": PromoSMS,
     "lunasea": LunaSea,
     "Feishu": Feishu,
+    "AliyunSMS":AliyunSMS,
     "apprise": Apprise,
     "pushbullet": Pushbullet,
     "line": Line,
