@@ -23,8 +23,8 @@ class DingDing extends NotificationProvider {
                 }
             } else {
                 var params = {
-                    msgtype:"text",
-                    text:{
+                    msgtype: "text",
+                    text: {
                         content:msg
                     }
                 };
