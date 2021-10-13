@@ -12,8 +12,8 @@ class DingDing extends NotificationProvider {
         try {
             if (heartbeatJSON != null) {
                 var params = {
-                    msgtype:"markdown",
-                    markdown:{
+                    msgtype: "markdown",
+                    markdown: {
                         title: monitorJSON["name"],
                         text: `## [${this.statusToString(heartbeatJSON["status"])}] \n > ${heartbeatJSON["msg"]}  \n > Time(UTC):${heartbeatJSON["time"]}`,
                     }
