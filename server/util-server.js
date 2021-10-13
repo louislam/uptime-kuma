@@ -6,6 +6,8 @@ const passwordHash = require("./password-hash");
 const dayjs = require("dayjs");
 const { Resolver } = require("dns");
 const child_process = require("child_process");
+const iconv = require("iconv-lite");
+const chardet = require("chardet");
 
 /**
  * Init or reset JWT secret
@@ -311,4 +313,15 @@ exports.startUnitTest = async () => {
         console.log("Jest exit code: " + code);
         process.exit(code);
     });
+};
+
+/**
+ * @param body : Buffer
+ * @returns {string}
+ */
+exports.convertToUTF8 = (body) => {
+    const guessEncoding = chardet.detect(body);
+    debug("Guess Encoding: " + guessEncoding);
+    const str = iconv.decode(body, guessEncoding);
+    return str.toString();
 };
