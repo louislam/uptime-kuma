@@ -19,6 +19,7 @@ import Line from "./Line.vue";
 import Mattermost from "./Mattermost.vue";
 import Matrix from "./Matrix.vue";
 import AliyunSMS from "./AliyunSms.vue";
+import DingDing from "./DingDing.vue";
 
 /**
  * Manage all notification form.
@@ -47,6 +48,7 @@ const NotificationFormList = {
     "line": Line,
     "mattermost": Mattermost,
     "matrix": Matrix,
+    "DingDing":DingDing
 }
 
 export default NotificationFormList
