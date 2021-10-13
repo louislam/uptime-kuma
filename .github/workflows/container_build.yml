@@ -64,7 +64,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: ./
-          file: ./Dockerfile
+          file: ./docker/dockerfile
           push: true
           platforms: linux/amd64, linux/arm/v7, linux/arm/v6, linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
