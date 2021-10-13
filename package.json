@@ -67,6 +67,7 @@
         "chartjs-adapter-dayjs": "~1.0.0",
         "command-exists": "~1.2.9",
         "compare-versions": "~3.6.0",
+        "cross-env": "^7.0.3",
         "dayjs": "~1.10.7",
         "express": "~4.17.1",
         "express-basic-auth": "~1.2.0",
