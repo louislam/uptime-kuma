@@ -87,6 +87,31 @@ I personally do not like something need to learn so much and need to config so m
 - IDE that supports ESLint and EditorConfig (I am using Intellji Idea)
 - A SQLite tool (SQLite Expert Personal is suggested)
 
+# Start development environment
+
+### Install dependencies
+```bash
+npm ci
+```
+### Build frontend (necessary for dev server startup)
+```bash
+npm run build
+```
+
+### Start dev server
+```bash
+npm run start-server-dev
+```
+
+### Start Frontend Dev Server
+1. Set the env var `NODE_ENV` to "development".
+2. Start the frontend dev server by the following command.
+   ```bash
+   npm run dev
+   ```
+   It binds to `0.0.0.0:3000` by default.
+
+You can use Vue.js devtools Chrome extension for debugging.
 # Install dependencies
 
 ```bash
@@ -116,7 +141,7 @@ express.js is just used for serving the frontend built files (index.html, .js an
 - scoket-handler (Socket.io Handlers)
 - server.js (Server main logic)
 
-# How to start the Frontend Dev Server
+# Frontend Dev Server
 
 1. Set the env var `NODE_ENV` to "development".
 2. Start the frontend dev server by the following command.
