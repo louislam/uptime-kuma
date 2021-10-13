@@ -46,12 +46,13 @@ class SMTP extends NotificationProvider {
             }
 
             if (heartbeatJSON !== null) {
-                serviceStatus = heartbeatJSON["status"] == DOWN ? "🔴 Down":"✅ Up";
+                serviceStatus = heartbeatJSON["status"] == DOWN ? "🔴 Down" : "✅ Up";
             }
+            
             // Break replace to one by line for better readability
-            customsubject = customsubject.replace(replaceStatus,serviceStatus);
-            customsubject = customsubject.replace(replaceName,monitorName);
-            customsubject = customsubject.replace(replaceHostname,monitorHostname);
+            customsubject = customsubject.replace(replaceStatus, serviceStatus);
+            customsubject = customsubject.replace(replaceName, monitorName);
+            customsubject = customsubject.replace(replaceHostname, monitorHostname);
 
             subject = customsubject
         }
