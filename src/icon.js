@@ -1,10 +1,71 @@
-import { library } from "@fortawesome/fontawesome-svg-core"
-import { faCog, faEdit, faList, faPause, faPlay, faPlus, faTachometerAlt, faTrash } from "@fortawesome/free-solid-svg-icons"
-//import { fa } from '@fortawesome/free-regular-svg-icons'
-import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome"
+import { library } from "@fortawesome/fontawesome-svg-core";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
-// Add Free Font Awesome Icons here
+// Add Free Font Awesome Icons
 // https://fontawesome.com/v5.15/icons?d=gallery&p=2&s=solid&m=free
-library.add(faCog, faTachometerAlt, faEdit, faPlus, faPause, faPlay, faTrash, faList)
+import {
+    faArrowAltCircleUp,
+    faCog,
+    faEdit,
+    faEye,
+    faEyeSlash,
+    faList,
+    faPause,
+    faPlay,
+    faPlus,
+    faSearch,
+    faTachometerAlt,
+    faTimes,
+    faTimesCircle,
+    faTrash,
+    faCheckCircle,
+    faStream,
+    faSave,
+    faExclamationCircle,
+    faBullhorn,
+    faArrowsAltV,
+    faUnlink,
+    faQuestionCircle,
+    faImages,
+    faUpload,
+    faCopy,
+    faCheck,
+    faFile,
+    faAward,
+    faLink,
+} from "@fortawesome/free-solid-svg-icons";
 
-export { FontAwesomeIcon }
+library.add(
+    faArrowAltCircleUp,
+    faCog,
+    faEdit,
+    faEye,
+    faEyeSlash,
+    faList,
+    faPause,
+    faPlay,
+    faPlus,
+    faSearch,
+    faTachometerAlt,
+    faTimes,
+    faTimesCircle,
+    faTrash,
+    faCheckCircle,
+    faStream,
+    faSave,
+    faExclamationCircle,
+    faBullhorn,
+    faArrowsAltV,
+    faUnlink,
+    faQuestionCircle,
+    faImages,
+    faUpload,
+    faCopy,
+    faCheck,
+    faFile,
+    faAward,
+    faLink,
+);
+
+export { FontAwesomeIcon };
+

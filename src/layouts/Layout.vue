@@ -9,19 +9,28 @@
         <!-- Desktop header -->
         <header v-if="! $root.isMobile" class="d-flex flex-wrap justify-content-center py-3 mb-3 border-bottom">
             <router-link to="/dashboard" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
-                <object class="bi me-2 ms-4" width="40" height="40" data="/icon.svg" alt="Logo" />
-                <span class="fs-4 title">Uptime Kuma</span>
+                <object class="bi me-2 ms-4" width="40" height="40" data="/icon.svg" />
+                <span class="fs-4 title">{{ $t("Uptime Kuma") }}</span>
             </router-link>
 
+            <a v-if="hasNewVersion" target="_blank" href="https://github.com/louislam/uptime-kuma/releases" class="btn btn-info me-3">
+                <font-awesome-icon icon="arrow-alt-circle-up" /> {{ $t("New Update") }}
+            </a>
+
             <ul class="nav nav-pills">
-                <li class="nav-item">
+                <li class="nav-item me-2">
+                    <a href="/status" class="nav-link status-page">
+                        <font-awesome-icon icon="stream" /> {{ $t("Status Page") }}
+                    </a>
+                </li>
+                <li v-if="$root.loggedIn" class="nav-item me-2">
                     <router-link to="/dashboard" class="nav-link">
-                        <font-awesome-icon icon="tachometer-alt" /> Dashboard
+                        <font-awesome-icon icon="tachometer-alt" /> {{ $t("Dashboard") }}
                     </router-link>
                 </li>
-                <li class="nav-item">
+                <li v-if="$root.loggedIn" class="nav-item">
                     <router-link to="/settings" class="nav-link">
-                        <font-awesome-icon icon="cog" /> Settings
+                        <font-awesome-icon icon="cog" /> {{ $t("Settings") }}
                     </router-link>
                 </li>
             </ul>
@@ -36,40 +45,31 @@
         </header>
 
         <main>
-            <!-- Add :key to disable vue router re-use the same component -->
-            <router-view v-if="$root.loggedIn" :key="$route.fullPath" />
+            <router-view v-if="$root.loggedIn" />
             <Login v-if="! $root.loggedIn && $root.allowLoginDialog" />
         </main>
 
-        <footer>
-            <div class="container-fluid">
-                Uptime Kuma -
-                Version: {{ $root.info.version }} -
-                <a href="https://github.com/louislam/uptime-kuma/releases" target="_blank" rel="noopener">Check Update On GitHub</a>
-            </div>
-        </footer>
-
         <!-- Mobile Only -->
-        <div v-if="$root.isMobile" style="width: 100%;height: 60px;" />
+        <div v-if="$root.isMobile" style="width: 100%; height: 60px;" />
         <nav v-if="$root.isMobile" class="bottom-nav">
-            <router-link to="/dashboard" class="nav-link" @click="$root.cancelActiveList">
+            <router-link to="/dashboard" class="nav-link">
                 <div><font-awesome-icon icon="tachometer-alt" /></div>
-                Dashboard
+                {{ $t("Dashboard") }}
             </router-link>
 
-            <a href="#" :class=" { 'router-link-exact-active' : $root.showListMobile } " @click="$root.showListMobile = ! $root.showListMobile">
+            <router-link to="/list" class="nav-link">
                 <div><font-awesome-icon icon="list" /></div>
-                List
-            </a>
-
-            <router-link to="/add" class="nav-link" @click="$root.cancelActiveList">
-                <div><font-awesome-icon icon="plus" /></div>
-                Add
+                {{ $t("List") }}
             </router-link>
 
-            <router-link to="/settings" class="nav-link" @click="$root.cancelActiveList">
+            <router-link to="/add" class="nav-link">
+                <div><font-awesome-icon icon="plus" /></div>
+                {{ $t("Add") }}
+            </router-link>
+
+            <router-link to="/settings" class="nav-link">
                 <div><font-awesome-icon icon="cog" /></div>
-                Settings
+                {{ $t("Settings") }}
             </router-link>
         </nav>
     </div>
@@ -77,6 +77,7 @@
 
 <script>
 import Login from "../components/Login.vue";
+import compareVersions from "compare-versions";
 
 export default {
 
@@ -85,7 +86,7 @@ export default {
     },
 
     data() {
-        return {}
+        return {};
     },
 
     computed: {
@@ -96,33 +97,41 @@ export default {
             classes[this.$root.theme] = true;
             classes["mobile"] = this.$root.isMobile;
             return classes;
-        }
+        },
+
+        hasNewVersion() {
+            if (this.$root.info.latestVersion && this.$root.info.version) {
+                return compareVersions(this.$root.info.latestVersion, this.$root.info.version) >= 1;
+            } else {
+                return false;
+            }
+        },
 
     },
 
     watch: {
-        $route (to, from) {
-            this.init();
-        },
+
     },
 
     mounted() {
-        this.init();
+
     },
 
     methods: {
-        init() {
-            if (this.$route.name === "root") {
-                this.$router.push("/dashboard")
-            }
-        },
+
     },
 
-}
+};
 </script>
 
 <style lang="scss" scoped>
 @import "../assets/vars.scss";
+
+.nav-link {
+    &.status-page {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+}
 
 .bottom-nav {
     z-index: 1000;
@@ -160,7 +169,7 @@ export default {
 }
 
 main {
-    min-height: calc(100vh - 160px)
+    min-height: calc(100vh - 160px);
 }
 
 .title {
@@ -177,22 +186,13 @@ main {
     color: white;
 }
 
-footer {
-    color: #AAA;
-    font-size: 13px;
-    margin-top: 10px;
-    padding-bottom: 30px;
-    margin-left: 10px;
-    text-align: center;
-}
-
 .dark {
     header {
-        background-color: #161B22;
-        border-bottom-color: #161B22 !important;
+        background-color: #161b22;
+        border-bottom-color: #161b22 !important;
 
         span {
-            color: #F0F6FC;
+            color: #f0f6fc;
         }
     }
 

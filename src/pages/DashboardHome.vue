@@ -1,78 +1,68 @@
 <template>
-    <div v-if="$route.name === 'DashboardHome'">
-        <h1 class="mb-3">
-            Quick Stats
-        </h1>
+    <transition name="slide-fade" appear>
+        <div v-if="$route.name === 'DashboardHome'">
+            <h1 class="mb-3">
+                {{ $t("Quick Stats") }}
+            </h1>
 
-        <div class="shadow-box big-padding text-center">
-            <div class="row">
-                <div class="col">
-                    <h3>Up</h3>
-                    <span class="num">{{ stats.up }}</span>
-                </div>
-                <div class="col">
-                    <h3>Down</h3>
-                    <span class="num text-danger">{{ stats.down }}</span>
-                </div>
-                <div class="col">
-                    <h3>Unknown</h3>
-                    <span class="num text-secondary">{{ stats.unknown }}</span>
-                </div>
-                <div class="col">
-                    <h3>Pause</h3>
-                    <span class="num text-secondary">{{ stats.pause }}</span>
+            <div class="shadow-box big-padding text-center mb-4">
+                <div class="row">
+                    <div class="col">
+                        <h3>{{ $t("Up") }}</h3>
+                        <span class="num">{{ stats.up }}</span>
+                    </div>
+                    <div class="col">
+                        <h3>{{ $t("Down") }}</h3>
+                        <span class="num text-danger">{{ stats.down }}</span>
+                    </div>
+                    <div class="col">
+                        <h3>{{ $t("Unknown") }}</h3>
+                        <span class="num text-secondary">{{ stats.unknown }}</span>
+                    </div>
+                    <div class="col">
+                        <h3>{{ $t("pauseDashboardHome") }}</h3>
+                        <span class="num text-secondary">{{ stats.pause }}</span>
+                    </div>
                 </div>
             </div>
-            <div v-if="false" class="row">
-                <div class="col-3">
-                    <h3>Uptime</h3>
-                    <p>(24-hour)</p>
-                    <span class="num" />
+
+            <div class="shadow-box table-shadow-box" style="overflow-x: hidden;">
+                <table class="table table-borderless table-hover">
+                    <thead>
+                        <tr>
+                            <th>{{ $t("Name") }}</th>
+                            <th>{{ $t("Status") }}</th>
+                            <th>{{ $t("DateTime") }}</th>
+                            <th>{{ $t("Message") }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(beat, index) in displayedRecords" :key="index" :class="{ 'shadow-box': $root.windowWidth <= 550}">
+                            <td><router-link :to="`/dashboard/${beat.monitorID}`">{{ beat.name }}</router-link></td>
+                            <td><Status :status="beat.status" /></td>
+                            <td :class="{ 'border-0':! beat.msg}"><Datetime :value="beat.time" /></td>
+                            <td class="border-0">{{ beat.msg }}</td>
+                        </tr>
+
+                        <tr v-if="importantHeartBeatList.length === 0">
+                            <td colspan="4">
+                                {{ $t("No important events") }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="d-flex justify-content-center kuma_pagination">
+                    <pagination
+                        v-model="page"
+                        :records="importantHeartBeatList.length"
+                        :per-page="perPage"
+                        :options="paginationConfig"
+                    />
                 </div>
-                <div class="col-3">
-                    <h3>Uptime</h3>
-                    <p>(30-day)</p>
-                    <span class="num" />
-                </div>
-            </div>
-        </div>
-
-        <div class="shadow-box" style="margin-top: 25px;">
-            <table class="table table-borderless table-hover">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Status</th>
-                        <th>DateTime</th>
-                        <th>Message</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="(beat, index) in displayedRecords" :key="index">
-                        <td>{{ beat.name }}</td>
-                        <td><Status :status="beat.status" /></td>
-                        <td><Datetime :value="beat.time" /></td>
-                        <td>{{ beat.msg }}</td>
-                    </tr>
-
-                    <tr v-if="importantHeartBeatList.length === 0">
-                        <td colspan="4">
-                            No important events
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <div class="d-flex justify-content-center kuma_pagination">
-                <pagination
-                    v-model="page"
-                    :records="importantHeartBeatList.length"
-                    :per-page="perPage"
-                />
             </div>
         </div>
-    </div>
-
+    </transition>
     <router-view ref="child" />
 </template>
 
@@ -92,6 +82,17 @@ export default {
             page: 1,
             perPage: 25,
             heartBeatList: [],
+            paginationConfig: {
+                texts:{
+                    count:`${this.$t("Showing {from} to {to} of {count} records")}|{count} ${this.$t("records")}|${this.$t("One record")}`,
+                    first:this.$t("First"),
+                    last:this.$t("Last"),
+                    nextPage:'>',
+                    nextChunk:'>>',
+                    prevPage:'<',
+                    prevChunk:'<<'
+                }
+            }
         }
     },
     computed: {
@@ -188,6 +189,11 @@ table {
 
     tr {
         transition: all ease-in-out 0.2ms;
+    }
+
+    @media (max-width: 550px) {
+        table-layout: fixed;
+        overflow-wrap: break-word;
     }
 }
 </style>

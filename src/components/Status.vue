@@ -11,41 +11,41 @@ export default {
     computed: {
         color() {
             if (this.status === 0) {
-                return "danger"
+                return "danger";
             }
 
             if (this.status === 1) {
-                return "primary"
+                return "primary";
             }
 
             if (this.status === 2) {
-                return "warning"
+                return "warning";
             }
 
-            return "secondary"
+            return "secondary";
         },
 
         text() {
             if (this.status === 0) {
-                return "Down"
+                return this.$t("Down");
             }
 
             if (this.status === 1) {
-                return "Up"
+                return this.$t("Up");
             }
 
             if (this.status === 2) {
-                return "Pending"
+                return this.$t("Pending");
             }
 
-            return "Unknown"
+            return this.$t("Unknown");
         },
     },
-}
+};
 </script>
 
 <style scoped>
     span {
-        width: 64px;
+        min-width: 64px;
     }
 </style>

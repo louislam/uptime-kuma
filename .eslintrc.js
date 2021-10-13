@@ -1,4 +1,5 @@
 module.exports = {
+    root: true,
     env: {
         browser: true,
         commonjs: true,
@@ -16,6 +17,11 @@ module.exports = {
         requireConfigFile: false,
     },
     rules: {
+        "linebreak-style": ["error", "unix"],
+        "camelcase": ["warn", {
+            "properties": "never",
+            "ignoreImports": true
+        }],
         // override/add rules settings here, such as:
         // 'vue/no-unused-vars': 'error'
         "no-unused-vars": "warn",
@@ -28,11 +34,12 @@ module.exports = {
             },
         ],
         quotes: ["warn", "double"],
-        //semi: ['off', 'never'],
+        semi: "warn",
         "vue/html-indent": ["warn", 4], // default: 2
         "vue/max-attributes-per-line": "off",
         "vue/singleline-html-element-content-newline": "off",
         "vue/html-self-closing": "off",
+        "vue/attribute-hyphenation": "off",     // This change noNL to "no-n-l" unexpectedly
         "no-multi-spaces": ["error", {
             ignoreEOLComments: true,
         }],
@@ -71,5 +78,36 @@ module.exports = {
         "eol-last": ["error", "always"],
         //'prefer-template': 'error',
         "comma-dangle": ["warn", "only-multiline"],
+        "no-empty": ["error", {
+            "allowEmptyCatch": true
+        }],
+        "no-control-regex": "off",
+        "one-var": ["error", "never"],
+        "max-statements-per-line": ["error", { "max": 1 }]
     },
-}
+    "overrides": [
+        {
+            "files": [ "src/languages/*.js", "src/icon.js" ],
+            "rules": {
+                "comma-dangle": ["error", "always-multiline"],
+            }
+        },
+
+        // Override for jest puppeteer
+        {
+            "files": [
+                "**/*.spec.js",
+                "**/*.spec.jsx"
+            ],
+            env: {
+                jest: true,
+            },
+            globals: {
+                page: true,
+                browser: true,
+                context: true,
+                jestPuppeteer: true,
+            },
+        }
+    ]
+};

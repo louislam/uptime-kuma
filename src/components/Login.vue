@@ -4,14 +4,21 @@
             <form @submit.prevent="submit">
                 <h1 class="h3 mb-3 fw-normal" />
 
-                <div class="form-floating">
+                <div v-if="!tokenRequired" class="form-floating">
                     <input id="floatingInput" v-model="username" type="text" class="form-control" placeholder="Username">
-                    <label for="floatingInput">Username</label>
+                    <label for="floatingInput">{{ $t("Username") }}</label>
                 </div>
 
-                <div class="form-floating mt-3">
+                <div v-if="!tokenRequired" class="form-floating mt-3">
                     <input id="floatingPassword" v-model="password" type="password" class="form-control" placeholder="Password">
-                    <label for="floatingPassword">Password</label>
+                    <label for="floatingPassword">{{ $t("Password") }}</label>
+                </div>
+
+                <div v-if="tokenRequired">
+                    <div class="form-floating mt-3">
+                        <input id="floatingToken" v-model="token" type="text" maxlength="6" class="form-control" placeholder="123456">
+                        <label for="floatingToken">{{ $t("Token") }}</label>
+                    </div>
                 </div>
 
                 <div class="form-check mb-3 mt-3 d-flex justify-content-center pe-4">
@@ -19,12 +26,12 @@
                         <input id="remember" v-model="$root.remember" type="checkbox" value="remember-me" class="form-check-input">
 
                         <label class="form-check-label" for="remember">
-                            Remember me
+                            {{ $t("Remember me") }}
                         </label>
                     </div>
                 </div>
                 <button class="w-100 btn btn-primary" type="submit" :disabled="processing">
-                    Login
+                    {{ $t("Login") }}
                 </button>
 
                 <div v-if="res && !res.ok" class="alert alert-danger mt-3" role="alert">
@@ -42,24 +49,30 @@ export default {
             processing: false,
             username: "",
             password: "",
-
+            token: "",
             res: null,
-        }
+            tokenRequired: false,
+        };
     },
     methods: {
         submit() {
             this.processing = true;
-            this.$root.login(this.username, this.password, (res) => {
+
+            this.$root.login(this.username, this.password, this.token, (res) => {
                 this.processing = false;
-                this.res = res;
-            })
+
+                if (res.tokenRequired) {
+                    this.tokenRequired = true;
+                } else {
+                    this.res = res;
+                }
+            });
         },
     },
-}
+};
 </script>
 
-<style scoped>
-
+<style lang="scss" scoped>
 .form-container {
     display: flex;
     align-items: center;
@@ -67,8 +80,17 @@ export default {
     padding-bottom: 40px;
 }
 
-.form {
+.form-floating {
+    > label {
+        padding-left: 1.3rem;
+    }
 
+    > .form-control {
+        padding-left: 1.3rem;
+    }
+}
+
+.form {
     width: 100%;
     max-width: 330px;
     padding: 15px;

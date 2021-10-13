@@ -6,12 +6,14 @@ const Database = require("../server/database");
 const { R } = require("redbean-node");
 const readline = require("readline");
 const { initJWTSecret } = require("../server/util-server");
+const args = require("args-parser")(process.argv);
 const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
 });
 
 (async () => {
+    Database.init(args);
     await Database.connect();
 
     try {

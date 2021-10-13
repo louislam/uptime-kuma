@@ -4,13 +4,21 @@ export default {
         return {
             system: (window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light",
             userTheme: localStorage.theme,
+            userHeartbeatBar: localStorage.heartbeatBarTheme,
+            statusPageTheme: "light",
+            path: "",
         };
     },
 
     mounted() {
         // Default Light
         if (! this.userTheme) {
-            this.userTheme = "light";
+            this.userTheme = "auto";
+        }
+
+        // Default Heartbeat Bar
+        if (!this.userHeartbeatBar) {
+            this.userHeartbeatBar = "normal";
         }
 
         document.body.classList.add(this.theme);
@@ -19,14 +27,28 @@ export default {
 
     computed: {
         theme() {
-            if (this.userTheme === "auto") {
-                return this.system;
+
+            // Entry no need dark
+            if (this.path === "") {
+                return "light";
             }
-            return this.userTheme;
+
+            if (this.path === "/status-page" || this.path === "/status") {
+                return this.statusPageTheme;
+            } else {
+                if (this.userTheme === "auto") {
+                    return this.system;
+                }
+                return this.userTheme;
+            }
         }
     },
 
     watch: {
+        "$route.fullPath"(path) {
+            this.path = path;
+        },
+
         userTheme(to, from) {
             localStorage.theme = to;
         },
@@ -35,6 +57,15 @@ export default {
             document.body.classList.remove(from);
             document.body.classList.add(this.theme);
             this.updateThemeColorMeta();
+        },
+
+        userHeartbeatBar(to, from) {
+            localStorage.heartbeatBarTheme = to;
+        },
+
+        heartbeatBarTheme(to, from) {
+            document.body.classList.remove(from);
+            document.body.classList.add(this.heartbeatBarTheme);
         }
     },
 
@@ -47,5 +78,5 @@ export default {
             }
         }
     }
-}
+};
 

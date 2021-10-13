@@ -22,15 +22,11 @@ export default {
 
     computed: {
         displayText() {
-            if (this.value !== undefined && this.value !== "") {
-                let format = "YYYY-MM-DD HH:mm:ss";
-                if (this.dateOnly) {
-                    format = "YYYY-MM-DD";
-                }
-                return dayjs.utc(this.value).tz(this.$root.timezone).format(format);
+            if (this.dateOnly) {
+                return this.$root.date(this.value);
+            } else {
+                return this.$root.datetime(this.value);
             }
-
-            return "";
         },
     },
 }
