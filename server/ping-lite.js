@@ -4,12 +4,8 @@ const net = require("net");
 const spawn = require("child_process").spawn;
 const events = require("events");
 const fs = require("fs");
+const { MAC, FBSD, LIN, WIN } = require("./util-server");
 const util = require("./util-server");
-
-const WIN = /^win/.test(process.platform);
-const LIN = /^linux/.test(process.platform);
-const MAC = /^darwin/.test(process.platform);
-const FBSD = /^freebsd/.test(process.platform);
 
 module.exports = Ping;
 

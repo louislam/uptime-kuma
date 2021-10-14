@@ -9,6 +9,12 @@ const child_process = require("child_process");
 const iconv = require("iconv-lite");
 const chardet = require("chardet");
 
+// From ping-lite
+exports.WIN = /^win/.test(process.platform);
+exports.LIN = /^linux/.test(process.platform);
+exports.MAC = /^darwin/.test(process.platform);
+exports.FBSD = /^freebsd/.test(process.platform);
+
 /**
  * Init or reset JWT secret
  * @returns {Promise<Bean>}

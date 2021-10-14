@@ -43,7 +43,7 @@ console.log("Importing this project modules");
 debug("Importing Monitor");
 const Monitor = require("./model/monitor");
 debug("Importing Settings");
-const { getSettings, setSettings, setting, initJWTSecret, checkLogin, startUnitTest } = require("./util-server");
+const { getSettings, setSettings, setting, initJWTSecret, checkLogin, startUnitTest, FBSD } = require("./util-server");
 
 debug("Importing Notification");
 const { Notification } = require("./notification");
@@ -61,12 +61,22 @@ console.info("Version: " + checkVersion.version);
 
 // If host is omitted, the server will accept connections on the unspecified IPv6 address (::) when IPv6 is available and the unspecified IPv4 address (0.0.0.0) otherwise.
 // Dual-stack support for (::)
-const hostname = process.env.HOST || args.host;
-const port = parseInt(process.env.PORT || args.port || 3001);
+let hostname = process.env.UPTIME_KUMA_HOST || args.host;
+
+// Also read HOST if not FreeBSD, as HOST is a system environment variable in FreeBSD
+if (!hostname && !FBSD) {
+    hostname = process.env.HOST;
+}
+
+if (hostname) {
+    console.log("Custom hostname: " + hostname);
+}
+
+const port = parseInt(process.env.UPTIME_KUMA_PORT || process.env.PORT || args.port || 3001);
 
 // SSL
-const sslKey = process.env.SSL_KEY || args["ssl-key"] || undefined;
-const sslCert = process.env.SSL_CERT || args["ssl-cert"] || undefined;
+const sslKey = process.env.UPTIME_KUMA_SSL_KEY || process.env.SSL_KEY || args["ssl-key"] || undefined;
+const sslCert = process.env.UPTIME_KUMA_SSL_CERT || process.env.SSL_CERT || args["ssl-cert"] || undefined;
 
 /**
  * Run unit test after the server is ready
