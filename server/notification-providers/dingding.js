@@ -11,7 +11,7 @@ class DingDing extends NotificationProvider {
 
         try {
             if (heartbeatJSON != null) {
-                var params = {
+                let params = {
                     msgtype: "markdown",
                     markdown: {
                         title: monitorJSON["name"],
@@ -22,10 +22,10 @@ class DingDing extends NotificationProvider {
                     return okMsg;
                 }
             } else {
-                var params = {
+                let params = {
                     msgtype: "text",
                     text: {
-                        content:msg
+                        content: msg
                     }
                 };
                 if (this.sendToDingDing(notification, params)) {
@@ -38,9 +38,9 @@ class DingDing extends NotificationProvider {
     }
 
     async sendToDingDing(notification, params) {
-        var timestamp=Date.now()
+        let timestamp = Date.now();
 
-        var config = {
+        let config = {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -49,7 +49,7 @@ class DingDing extends NotificationProvider {
             data: JSON.stringify(params),
         };
 
-        var result = await axios(config);
+        let result = await axios(config);
         if (result.data.errmsg == "ok") {
             return true;
         }
@@ -57,10 +57,10 @@ class DingDing extends NotificationProvider {
     }
 
     /** DingDing sign */
-    sign(timestamp,secretKey) {
+    sign(timestamp, secretKey) {
         return Crypto
-            .createHmac("sha256", Buffer.from(secretKey, 'utf8'))
-            .update(Buffer.from(`${timestamp}\n${secretKey}`, 'utf8'))
+            .createHmac("sha256", Buffer.from(secretKey, "utf8"))
+            .update(Buffer.from(`${timestamp}\n${secretKey}`, "utf8"))
             .digest("base64");
     }
 

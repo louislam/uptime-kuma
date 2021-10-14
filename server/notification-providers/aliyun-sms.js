@@ -12,7 +12,7 @@ class AliyunSMS extends NotificationProvider {
 
         try {
             if (heartbeatJSON != null) {
-                var msgBody = JSON.stringify({
+                let msgBody = JSON.stringify({
                     name: monitorJSON["name"],
                     time: heartbeatJSON["time"],
                     status: this.statusToString(heartbeatJSON["status"]),
@@ -22,7 +22,7 @@ class AliyunSMS extends NotificationProvider {
                     return okMsg;
                 }
             } else {
-                var msgBody = JSON.stringify({
+                let msgBody = JSON.stringify({
                     name: "",
                     time: "",
                     status: "",
@@ -38,7 +38,7 @@ class AliyunSMS extends NotificationProvider {
     }
 
     async sendSms(notification, msgbody) {
-        var params = {
+        let params = {
             PhoneNumbers: notification.phonenumber,
             TemplateCode: notification.templateCode,
             SignName: notification.signName,
@@ -54,7 +54,7 @@ class AliyunSMS extends NotificationProvider {
         };
 
         params.Signature = this.sign(params, notification.secretAccessKey);
-        var config = {
+        let config = {
             method: "POST",
             url: "http://dysmsapi.aliyuncs.com/",
             headers: {
@@ -63,7 +63,7 @@ class AliyunSMS extends NotificationProvider {
             data: qs.stringify(params),
         };
 
-        var result = await axios(config);
+        let result = await axios(config);
         if (result.data.Message == "OK") {
             return true;
         }
@@ -72,21 +72,21 @@ class AliyunSMS extends NotificationProvider {
 
     /** Aliyun request sign */
     sign(param, AccessKeySecret) {
-        var param2 = {},
-            data = [];
+        let param2 = {};
+        let data = [];
 
-        var oa = Object.keys(param).sort();
+        let oa = Object.keys(param).sort();
 
-        for (var i = 0; i < oa.length; i++) {
-            var key = oa[i];
+        for (let i = 0; i < oa.length; i++) {
+            let key = oa[i];
             param2[key] = param[key];
         }
 
-        for (var key in param2) {
+        for (let key in param2) {
             data.push(`${encodeURIComponent(key)}=${encodeURIComponent(param2[key])}`);
         }
 
-        var StringToSign = `POST&${encodeURIComponent("/")}&${encodeURIComponent(data.join("&"))}`;
+        let StringToSign = `POST&${encodeURIComponent("/")}&${encodeURIComponent(data.join("&"))}`;
         return Crypto
             .createHmac("sha1", `${AccessKeySecret}&`)
             .update(Buffer.from(StringToSign))
