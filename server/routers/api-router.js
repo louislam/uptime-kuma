@@ -43,35 +43,36 @@ router.get("/api/push/:pushToken", async (request, response) => {
         const tagKeys = Object.keys(requestTags)
         if (tagKeys.length > 0) {
             // Request has additional tags. Fetch all tags for this monitor.
-            const dbTags = await trx.getAll("SELECT tag.id, tag.name FROM tag JOIN monitor_tag ON monitor_tag.tag_id = tag.id AND monitor_tag.monitor_id = ?", [monitor.id]);
+            //   For multiple tags with same name, get the oldest one.
+            const monitorTags = await trx.getAll("SELECT tag.name, MIN(monitor_tag.id) id FROM monitor_tag JOIN tag ON tag.id = monitor_tag.tag_id AND monitor_tag.monitor_id = ? GROUP BY tag.name ORDER BY 1", [monitor.id]);
 
             // Update monitor_tag, ignoring non-existing request tags.
-            dbTags
-                .filter(tag => tagKeys.includes(tag.name))
-                .forEach(async tag => {
-                    const tagValue = requestTags[tag.name];
+            monitorTags
+                .filter(mt => tagKeys.includes(mt.name))
+                .forEach(async mt => {
+                    const tagValue = requestTags[mt.name];
 
-                    await trx.exec("UPDATE monitor_tag SET value = ? WHERE tag_id = ? AND monitor_id = ?", [
+                    await trx.exec("UPDATE monitor_tag SET value = ? WHERE id = ?", [
                         tagValue,
-                        tag.id,
-                        monitor.id,
+                        mt.id
                     ]);
 
                     // FixMe: Not working. What to emit here?
-                    io.to(monitor.user_id).emit("addMonitorTag", tag.id, monitor.id, tagValue);
+                    io.to(monitor.user_id).emit("addMonitorTag", mt.id, monitor.id, tagValue);
                 });
         }
 
-        // FixMe: Bean returned by trx.dispense() has no .toJSON() method (!?).
         let status = UP;
-        if (monitor.isUpsideDown()) {
-            status = flipStatus(status);
-        }
+        // FixMe: monitor.isUpsideDown is not a function (?)
+        //if (monitor.isUpsideDown()) {
+        //    status = flipStatus(status);
+        //}
 
         let isFirstBeat = true;
         let previousStatus = status;
         let duration = 0;
 
+        // FixMe: Bean returned by trx.dispense() has no .toJSON() method (!?).
         let bean = R.dispense("heartbeat");         // Should be trx.dispense();
         bean.time = R.isoDateTime(dayjs.utc());
 
