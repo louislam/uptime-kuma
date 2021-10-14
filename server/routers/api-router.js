@@ -18,6 +18,7 @@ router.get("/api/entry-page", async (_, response) => {
 
 router.get("/api/push/:pushToken", async (request, response) => {
     try {
+
         let pushToken = request.params.pushToken;
         let msg = request.query.msg || "OK";
         let ping = request.query.ping;
@@ -30,12 +31,20 @@ router.get("/api/push/:pushToken", async (request, response) => {
             throw new Error("Monitor not found or not active.");
         }
 
+        const previousHeartbeatTime = await R.getCell(`
+            SELECT time FROM heartbeat
+            WHERE id = (select MAX(id) from heartbeat where monitor_id = ?)
+        `, [
+            monitor.id
+        ]);
+
         let bean = R.dispense("heartbeat");
         bean.monitor_id = monitor.id;
         bean.time = R.isoDateTime(dayjs.utc());
         bean.status = UP;
         bean.msg = msg;
         bean.ping = ping;
+        bean.duration = dayjs(bean.time).diff(dayjs(previousHeartbeatTime), "second");
 
         await R.store(bean);
 
