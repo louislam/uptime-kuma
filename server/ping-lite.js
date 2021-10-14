@@ -4,10 +4,8 @@ const net = require("net");
 const spawn = require("child_process").spawn;
 const events = require("events");
 const fs = require("fs");
-const WIN = /^win/.test(process.platform);
-const LIN = /^linux/.test(process.platform);
-const MAC = /^darwin/.test(process.platform);
-const FBSD = /^freebsd/.test(process.platform);
+const { MAC, FBSD, LIN, WIN } = require("./util-server");
+const util = require("./util-server");
 
 module.exports = Ping;
 
@@ -101,6 +99,9 @@ Ping.prototype.send = function (callback) {
     });
 
     this._ping.stdout.on("data", function (data) { // log stdout
+        if (WIN) {
+            data = convertOutput(data);
+        }
         this._stdout = (this._stdout || "") + data;
     });
 
@@ -112,6 +113,9 @@ Ping.prototype.send = function (callback) {
     });
 
     this._ping.stderr.on("data", function (data) { // log stderr
+        if (WIN) {
+            data = convertOutput(data);
+        }
         this._stderr = (this._stderr || "") + data;
     });
 
@@ -157,3 +161,19 @@ Ping.prototype.start = function (callback) {
 Ping.prototype.stop = function () {
     clearInterval(this._i);
 };
+
+/**
+ * Try to convert to UTF-8 for Windows, as the ping's output on Windows is not UTF-8 and could be in other languages
+ * Thank @pemassi
+ * https://github.com/louislam/uptime-kuma/issues/570#issuecomment-941984094
+ * @param data
+ * @returns {string}
+ */
+function convertOutput(data) {
+    if (WIN) {
+        if (data) {
+            return util.convertToUTF8(data);
+        }
+    }
+    return data;
+}
