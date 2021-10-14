@@ -4,7 +4,6 @@ const net = require("net");
 const spawn = require("child_process").spawn;
 const events = require("events");
 const fs = require("fs");
-const { MAC, FBSD, LIN, WIN } = require("./util-server");
 const util = require("./util-server");
 
 module.exports = Ping;
@@ -21,12 +20,12 @@ function Ping(host, options) {
 
     const timeout = 10;
 
-    if (WIN) {
+    if (util.WIN) {
         this._bin = "c:/windows/system32/ping.exe";
         this._args = (options.args) ? options.args : [ "-n", "1", "-w", timeout * 1000, host ];
         this._regmatch = /[><=]([0-9.]+?)ms/;
 
-    } else if (LIN) {
+    } else if (util.LIN) {
         this._bin = "/bin/ping";
 
         const defaultArgs = [ "-n", "-w", timeout, "-c", "1", host ];
@@ -38,7 +37,7 @@ function Ping(host, options) {
         this._args = (options.args) ? options.args : defaultArgs;
         this._regmatch = /=([0-9.]+?) ms/;
 
-    } else if (MAC) {
+    } else if (util.MAC) {
 
         if (net.isIPv6(host) || options.ipv6) {
             this._bin = "/sbin/ping6";
@@ -49,7 +48,7 @@ function Ping(host, options) {
         this._args = (options.args) ? options.args : [ "-n", "-t", timeout, "-c", "1", host ];
         this._regmatch = /=([0-9.]+?) ms/;
 
-    } else if (FBSD) {
+    } else if (util.FBSD) {
         this._bin = "/sbin/ping";
 
         const defaultArgs = [ "-n", "-t", timeout, "-c", "1", host ];
@@ -99,7 +98,7 @@ Ping.prototype.send = function (callback) {
     });
 
     this._ping.stdout.on("data", function (data) { // log stdout
-        if (WIN) {
+        if (util.WIN) {
             data = convertOutput(data);
         }
         this._stdout = (this._stdout || "") + data;
@@ -113,7 +112,7 @@ Ping.prototype.send = function (callback) {
     });
 
     this._ping.stderr.on("data", function (data) { // log stderr
-        if (WIN) {
+        if (util.WIN) {
             data = convertOutput(data);
         }
         this._stderr = (this._stderr || "") + data;
@@ -170,7 +169,7 @@ Ping.prototype.stop = function () {
  * @returns {string}
  */
 function convertOutput(data) {
-    if (WIN) {
+    if (util.WIN) {
         if (data) {
             return util.convertToUTF8(data);
         }
