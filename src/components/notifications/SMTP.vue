@@ -44,11 +44,6 @@
     </div>
 
     <div class="mb-3">
-        <label for="subject-email" class="form-label">{{ $t("Email Subject") }}</label>
-        <input id="subject-email" v-model="$parent.notification.customSubject" type="text" class="form-control" autocomplete="false" placeholder="Service {{NAME}} on {{HOSTNAME}} has changed status to {{STATUS}}">
-    </div>
-
-    <div class="mb-3">
         <label for="to-email" class="form-label">{{ $t("To Email") }}</label>
         <input id="to-email" v-model="$parent.notification.smtpTo" type="text" class="form-control" autocomplete="false" placeholder="example2@kuma.pet, example3@kuma.pet" :required="!hasRecipient">
     </div>
@@ -61,6 +56,18 @@
     <div class="mb-3">
         <label for="to-bcc" class="form-label">{{ $t("smtpBCC") }}</label>
         <input id="to-bcc" v-model="$parent.notification.smtpBCC" type="text" class="form-control" autocomplete="false" :required="!hasRecipient">
+    </div>
+
+    <div class="mb-3">
+        <label for="subject-email" class="form-label">{{ $t("emailCustomSubject") }}</label>
+        <input id="subject-email" v-model="$parent.notification.customSubject" type="text" class="form-control" autocomplete="false" placeholder="">
+        <div v-pre class="form-text">
+            (leave blank for default one)<br />
+            {{NAME}}: Service Name<br />
+            {{HOSTNAME_OR_URL}}: Hostname or URL<br />
+            {{URL}}: URL<br />
+            {{STATUS}}: Status<br />
+        </div>
     </div>
 </template>
 
