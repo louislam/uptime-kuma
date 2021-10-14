@@ -17,13 +17,15 @@ router.get("/api/entry-page", async (_, response) => {
 });
 
 router.get("/api/push/:pushToken", async (request, response) => {
+    const trx = await R.begin();
     try {
-
         let pushToken = request.params.pushToken;
-        let msg = request.query.msg || "OK";
-        let ping = request.query.ping || null;
 
-        let monitor = await R.findOne("monitor", " push_token = ? AND active = 1 ", [
+        let {msg, ping, ...requestTags} = request.query;
+        msg = msg || "OK";
+        ping = ping || null;
+
+        let monitor = await trx.findOne("monitor", " push_token = ? AND active = 1 ", [
             pushToken
         ]);
 
@@ -31,13 +33,36 @@ router.get("/api/push/:pushToken", async (request, response) => {
             throw new Error("Monitor not found or not active.");
         }
 
-        const previousHeartbeat = await R.getRow(`
+        const previousHeartbeat = await trx.getRow(`
             SELECT status, time FROM heartbeat
             WHERE id = (select MAX(id) from heartbeat where monitor_id = ?)
         `, [
             monitor.id
         ]);
 
+        const tagKeys = Object.keys(requestTags)
+        if (tagKeys.length > 0) {
+            // Request has additional tags. Fetch all tags for this monitor.
+            const dbTags = await trx.getAll("SELECT tag.id, tag.name FROM tag JOIN monitor_tag ON monitor_tag.tag_id = tag.id AND monitor_tag.monitor_id = ?", [monitor.id]);
+
+            // Update monitor_tag, ignoring non-existing request tags.
+            dbTags
+                .filter(tag => tagKeys.includes(tag.name))
+                .forEach(async tag => {
+                    const tagValue = requestTags[tag.name];
+
+                    await trx.exec("UPDATE monitor_tag SET value = ? WHERE tag_id = ? AND monitor_id = ?", [
+                        tagValue,
+                        tag.id,
+                        monitor.id,
+                    ]);
+
+                    // FixMe: Not working. What to emit here?
+                    io.to(monitor.user_id).emit("addMonitorTag", tag.id, monitor.id, tagValue);
+                });
+        }
+
+        // FixMe: Bean returned by trx.dispense() has no .toJSON() method (!?).
         let status = UP;
         if (monitor.isUpsideDown()) {
             status = flipStatus(status);
@@ -47,7 +72,7 @@ router.get("/api/push/:pushToken", async (request, response) => {
         let previousStatus = status;
         let duration = 0;
 
-        let bean = R.dispense("heartbeat");
+        let bean = R.dispense("heartbeat");         // Should be trx.dispense();
         bean.time = R.isoDateTime(dayjs.utc());
 
         if (previousHeartbeat) {
@@ -66,10 +91,12 @@ router.get("/api/push/:pushToken", async (request, response) => {
         bean.ping = ping;
         bean.duration = duration;
 
-        await R.store(bean);
+        await trx.store(bean);
 
         io.to(monitor.user_id).emit("heartbeat", bean.toJSON());
         Monitor.sendStats(io, monitor.id, monitor.user_id);
+
+        await trx.commit();
 
         response.json({
             ok: true,
@@ -80,6 +107,8 @@ router.get("/api/push/:pushToken", async (request, response) => {
         }
 
     } catch (e) {
+        await trx.rollback();
+
         response.json({
             ok: false,
             msg: e.message
