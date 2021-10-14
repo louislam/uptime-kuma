@@ -42,7 +42,7 @@ const NotificationFormList = {
     "promosms": PromoSMS,
     "lunasea": LunaSea,
     "Feishu": Feishu,
-    "AliyunSMS":AliyunSMS,
+    "AliyunSMS": AliyunSMS,
     "apprise": Apprise,
     "pushbullet": Pushbullet,
     "line": Line,
