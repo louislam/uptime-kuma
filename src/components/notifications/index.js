@@ -48,7 +48,7 @@ const NotificationFormList = {
     "line": Line,
     "mattermost": Mattermost,
     "matrix": Matrix,
-    "DingDing":DingDing
+    "DingDing": DingDing
 }
 
 export default NotificationFormList
