@@ -57,6 +57,18 @@
         <label for="to-bcc" class="form-label">{{ $t("smtpBCC") }}</label>
         <input id="to-bcc" v-model="$parent.notification.smtpBCC" type="text" class="form-control" autocomplete="false" :required="!hasRecipient">
     </div>
+
+    <div class="mb-3">
+        <label for="subject-email" class="form-label">{{ $t("emailCustomSubject") }}</label>
+        <input id="subject-email" v-model="$parent.notification.customSubject" type="text" class="form-control" autocomplete="false" placeholder="">
+        <div v-pre class="form-text">
+            (leave blank for default one)<br />
+            {{NAME}}: Service Name<br />
+            {{HOSTNAME_OR_URL}}: Hostname or URL<br />
+            {{URL}}: URL<br />
+            {{STATUS}}: Status<br />
+        </div>
+    </div>
 </template>
 
 <script>
