@@ -63,6 +63,7 @@
                                 </div>
                             </div>
 
+                            <!-- Hostname -->
                             <!-- TCP Port / Ping / DNS only -->
                             <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' " class="my-3">
                                 <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>

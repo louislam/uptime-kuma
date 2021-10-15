@@ -201,6 +201,7 @@ export default {
     secureOptionTLS: "TLS (465)",
     "Ignore TLS Error": "Ignore TLS Error",
     "From Email": "From Email",
+    emailCustomSubject: "Custom Subject",
     "To Email": "To Email",
     smtpCC: "CC",
     smtpBCC: "BCC",
