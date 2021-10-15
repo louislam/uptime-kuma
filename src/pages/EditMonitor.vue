@@ -466,6 +466,15 @@ export default {
                 return;
             }
 
+            // Beautiful the JSON format
+            if (this.monitor.body) {
+                this.monitor.body = JSON.stringify(JSON.parse(this.monitor.body), null, 4);
+            }
+
+            if (this.monitor.headers) {
+                this.monitor.headers = JSON.stringify(JSON.parse(this.monitor.headers), null, 4);
+            }
+
             if (this.isAdd) {
                 this.$root.add(this.monitor, async (res) => {
 
