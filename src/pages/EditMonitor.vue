@@ -44,46 +44,6 @@
                                 <input id="url" v-model="monitor.url" type="url" class="form-control" pattern="https?://.+" required>
                             </div>
 
-                            <!-- Method -->
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' " class="my-3">
-                                <label for="method" class="form-label">{{ $t("Method") }}</label>
-                                <select id="method" v-model="monitor.method" class="form-select">
-                                    <option value="GET">
-                                        GET
-                                    </option>
-                                    <option value="POST">
-                                        POST
-                                    </option>
-                                    <option value="PUT">
-                                        PUT
-                                    </option>
-                                    <option value="PATCH">
-                                        PATCH
-                                    </option>
-                                    <option value="DELETE">
-                                        DELETE
-                                    </option>
-                                    <option value="HEAD">
-                                        HEAD
-                                    </option>
-                                    <option value="OPTIONS">
-                                        OPTIONS
-                                    </option>
-                                </select>
-                            </div>
-
-                            <!-- Body -->
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' " class="my-3">
-                                <label for="body" class="form-label">{{ $t("Body") }}</label>
-                                <textarea id="body" v-model="monitor.body" class="form-control" :placeholder="bodyPlaceholder"></textarea>
-                            </div>
-
-                            <!-- Headers -->
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' " class="my-3">
-                                <label for="headers" class="form-label">{{ $t("Headers") }}</label>
-                                <textarea id="headers" v-model="monitor.headers" class="form-control" :placeholder="headersPlaceholder"></textarea>
-                            </div>
-
                             <!-- Push URL -->
                             <div v-if="monitor.type === 'push' " class="my-3">
                                 <label for="push-url" class="form-label">{{ $t("PushUrl") }}</label>
@@ -235,6 +195,7 @@
                         <div class="col-md-6">
                             <div v-if="$root.isMobile" class="mt-3" />
 
+                            <!-- Notifications -->
                             <h2 class="mb-2">{{ $t("Notifications") }}</h2>
                             <p v-if="$root.notificationList.length === 0">
                                 {{ $t("Not available, please setup.") }}
@@ -254,6 +215,51 @@
                             <button class="btn btn-primary me-2" type="button" @click="$refs.notificationDialog.show()">
                                 {{ $t("Setup Notification") }}
                             </button>
+
+                            <!-- HTTP Options -->
+                            <template v-if="monitor.type === 'http' || monitor.type === 'keyword' ">
+                                <h2 class="mt-5 mb-2">{{ $t("HTTP Options") }}</h2>
+
+                                <!-- Method -->
+                                <div class="my-3">
+                                    <label for="method" class="form-label">{{ $t("Method") }}</label>
+                                    <select id="method" v-model="monitor.method" class="form-select">
+                                        <option value="GET">
+                                            GET
+                                        </option>
+                                        <option value="POST">
+                                            POST
+                                        </option>
+                                        <option value="PUT">
+                                            PUT
+                                        </option>
+                                        <option value="PATCH">
+                                            PATCH
+                                        </option>
+                                        <option value="DELETE">
+                                            DELETE
+                                        </option>
+                                        <option value="HEAD">
+                                            HEAD
+                                        </option>
+                                        <option value="OPTIONS">
+                                            OPTIONS
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <!-- Body -->
+                                <div class="my-3">
+                                    <label for="body" class="form-label">{{ $t("Body") }}</label>
+                                    <textarea id="body" v-model="monitor.body" class="form-control" :placeholder="bodyPlaceholder"></textarea>
+                                </div>
+
+                                <!-- Headers -->
+                                <div class="my-3">
+                                    <label for="headers" class="form-label">{{ $t("Headers") }}</label>
+                                    <textarea id="headers" v-model="monitor.headers" class="form-control" :placeholder="headersPlaceholder"></textarea>
+                                </div>
+                            </template>
                         </div>
                     </div>
                 </div>
@@ -328,11 +334,11 @@ export default {
         },
 
         bodyPlaceholder() {
-            return this.decodeHtml(this.$t("BodyPlaceholder"));
+            return this.decodeHtml("&lbrace;\n\t\"id\": 124357,\n\t\"username\": \"admin\",\n\t\"password\": \"myAdminPassword\"\n&rbrace;");
         },
 
         headersPlaceholder() {
-            return this.decodeHtml(this.$t("HeadersPlaceholder"));
+            return this.decodeHtml("&lbrace;\n\t\"Authorization\": \"Bearer abc123\",\n\t\"Content-Type\": \"application/json\"\n&rbrace;");
         }
 
     },

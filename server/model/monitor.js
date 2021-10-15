@@ -180,6 +180,10 @@ class Monitor extends BeanModel {
                         debug("Cert Info Query Time: " + (dayjs().valueOf() - certInfoStartTime) + "ms");
                     }
 
+                    if (process.env.UPTIME_KUMA_LOG_RESPONSE_BODY_MONITOR_ID == this.id) {
+                        console.log(res.data);
+                    }
+
                     if (this.type === "http") {
                         bean.status = UP;
                     } else {

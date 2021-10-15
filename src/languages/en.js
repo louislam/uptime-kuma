@@ -288,6 +288,4 @@ export default {
     PushUrl: "Push URL",
     HeadersInvalidFormat: "The request headers are not valid JSON: ",
     BodyInvalidFormat: "The request body is not valid JSON: ",
-    BodyPlaceholder: "&lbrace;\n\t\"id\": 124357,\n\t\"username\": \"admin\",\n\t\"password\": \"myAdminPassword\"\n&rbrace;",
-    HeadersPlaceholder: "&lbrace;\n\t\"Authorization\": \"Bearer abc123\",\n\t\"Content-Type\": \"application/json\"\n&rbrace;",
 };

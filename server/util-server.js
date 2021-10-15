@@ -327,7 +327,7 @@ exports.startUnitTest = async () => {
  */
 exports.convertToUTF8 = (body) => {
     const guessEncoding = chardet.detect(body);
-    debug("Guess Encoding: " + guessEncoding);
+    //debug("Guess Encoding: " + guessEncoding);
     const str = iconv.decode(body, guessEncoding);
     return str.toString();
 };
