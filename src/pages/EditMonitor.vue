@@ -180,7 +180,7 @@
                                 </label>
                             </div>
 
-                            <div v-if="monitor.type !== 'push'" class="my-3 form-check">
+                            <div class="my-3 form-check">
                                 <input id="upside-down" v-model="monitor.upsideDown" class="form-check-input" type="checkbox">
                                 <label class="form-check-label" for="upside-down">
                                     {{ $t("Upside Down Mode") }}
