@@ -46,8 +46,8 @@
 </template>
 
 <script>
-import { useToast } from "vue-toastification"
-const toast = useToast()
+import { useToast } from "vue-toastification";
+const toast = useToast();
 
 export default {
     data() {
@@ -56,7 +56,7 @@ export default {
             username: "",
             password: "",
             repeatPassword: "",
-        }
+        };
     },
     watch: {
         "$i18n.locale"() {
@@ -66,7 +66,7 @@ export default {
     mounted() {
         this.$root.getSocket().emit("needSetup", (needSetup) => {
             if (! needSetup) {
-                this.$router.push("/")
+                this.$router.push("/");
             }
         });
     },
@@ -75,36 +75,55 @@ export default {
             this.processing = true;
 
             if (this.password !== this.repeatPassword) {
-                toast.error("Repeat password do not match.")
+                toast.error("Passwords do not match.");
                 this.processing = false;
                 return;
             }
 
             this.$root.getSocket().emit("setup", this.username, this.password, (res) => {
                 this.processing = false;
-                this.$root.toastRes(res)
+                this.$root.toastRes(res);
 
                 if (res.ok) {
                     this.processing = true;
 
-                    this.$root.login(this.username, this.password, "", (res) => {
+                    this.$root.login(this.username, this.password, "", () => {
                         this.processing = false;
-                        this.$router.push("/")
-                    })
+                        this.$router.push("/");
+                    });
                 }
-            })
+            });
         },
     },
-}
+};
 </script>
 
-<style scoped>
-
+<style lang="scss" scoped>
 .form-container {
     display: flex;
     align-items: center;
     padding-top: 40px;
     padding-bottom: 40px;
+}
+
+.form-floating {
+    > .form-select {
+        padding-left: 1.3rem;
+        padding-top: 1.525rem;
+        line-height: 1.35;
+
+        ~ label {
+            padding-left: 1.3rem;
+        }
+    }
+
+    > label {
+        padding-left: 1.3rem;
+    }
+
+    > .form-control {
+        padding-left: 1.3rem;
+    }
 }
 
 .form {
