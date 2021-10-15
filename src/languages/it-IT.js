@@ -246,7 +246,7 @@ export default {
     "Device": "Dispositivo",
     "Message Title": "Titolo Messaggio",
     "Notification Sound": "Suono di Notifica",
-    "More info on:": "Più informazioni su: {0}",
+    "More info on:": "Maggiori informazioni su: {0}",
     pushoverDesc1: "Emergency priority (2) has default 30 second timeout between retries and will expire after 1 hour.",
     pushoverDesc2: "If you want to send notifications to different devices, fill out Device field.",
     "SMS Type": "Tipo SMS",
