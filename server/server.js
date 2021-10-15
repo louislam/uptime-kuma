@@ -1,16 +1,13 @@
 console.log("Welcome to Uptime Kuma");
 const args = require("args-parser")(process.argv);
 const { sleep, debug, getRandomInt, genSecret } = require("../src/util");
+const config = require("./config");
 
 debug(args);
 
 if (! process.env.NODE_ENV) {
     process.env.NODE_ENV = "production";
 }
-
-// Demo Mode?
-const demoMode = args["demo"] || false;
-exports.demoMode = demoMode;
 
 console.log("Node Env: " + process.env.NODE_ENV);
 
@@ -84,7 +81,7 @@ const sslCert = process.env.UPTIME_KUMA_SSL_CERT || process.env.SSL_CERT || args
  */
 const testMode = !!args["test"] || false;
 
-if (demoMode) {
+if (config.demoMode) {
     console.log("==== Demo Mode ====");
 }
 
