@@ -21,7 +21,7 @@
 }
 
 .multiselect__tag {
-    border-radius: 50rem;
+    border-radius: $border-radius;
     margin-bottom: 0;
     padding: 6px 26px 6px 10px;
     background: $primary !important;

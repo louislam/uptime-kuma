@@ -1,10 +1,10 @@
-const { genSecret } = require("../src/util");
-
-beforeAll(() => {
-
-});
+const { genSecret, sleep } = require("../src/util");
 
 describe("Test genSecret", () => {
+
+    beforeAll(() => {
+
+    });
 
     it("should be correct length", () => {
         let secret = genSecret(-1);
@@ -34,4 +34,11 @@ describe("Test genSecret", () => {
         expect(secret).toContain("A");
         expect(secret).toContain("9");
     });
+
+});
+
+describe("Test reset-password", () => {
+    it("should able to run", async () => {
+        await require("../extra/reset-password").main();
+    }, 120000);
 });
