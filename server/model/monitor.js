@@ -304,7 +304,7 @@ class Monitor extends BeanModel {
 
             let beatInterval = this.interval;
 
-            let isImportant = Monitor.isImportantBeat(isFirstBeat, previousBeat.status, bean.status);
+            let isImportant = Monitor.isImportantBeat(isFirstBeat, previousBeat?.status, bean.status);
 
             // Mark as important if status changed, ignore pending pings,
             // Don't notify if disrupted changes to up
