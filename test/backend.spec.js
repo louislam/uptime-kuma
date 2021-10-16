@@ -39,7 +39,6 @@ describe("Test genSecret", () => {
 
 describe("Test reset-password", () => {
     it("should able to run", async () => {
-        jest.setTimeout(120000);
         await require("../extra/reset-password").main();
-    });
+    }, 120000);
 });
