@@ -291,4 +291,7 @@ export default {
     BodyInvalidFormat: "The request body is not valid JSON: ",
     "Monitor History": "Monitor History:",
     clearDataOlderThan: "Keep monitor history data for {0} days.",
+    records: "records",
+    "One record": "One record",
+    "Showing {from} to {to} of {count} records": "Showing {from} to {to} of {count} records",
 };
