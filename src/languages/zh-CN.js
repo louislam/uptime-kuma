@@ -179,7 +179,7 @@ export default {
     "Add a monitor": "添加监控项",
     "Edit Status Page": "编辑状态页",
     "Go to Dashboard": "前往仪表盘",
-    "Status Page": "Status Page",
+    "Status Page": "状态页",
     telegram: "Telegram",
     webhook: "Webhook",
     smtp: "Email (SMTP)",
@@ -198,4 +198,5 @@ export default {
     pushbullet: "Pushbullet",
     line: "Line Messenger",
     mattermost: "Mattermost",
+    "Feishu WebHookUrl": "飞书 WebHook 地址",
 };

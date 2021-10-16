@@ -2,7 +2,6 @@
 
 <a target="_blank" href="https://github.com/louislam/uptime-kuma"><img src="https://img.shields.io/github/stars/louislam/uptime-kuma" /></a> <a target="_blank" href="https://hub.docker.com/r/louislam/uptime-kuma"><img src="https://img.shields.io/docker/pulls/louislam/uptime-kuma" /></a> <a target="_blank" href="https://hub.docker.com/r/louislam/uptime-kuma"><img src="https://img.shields.io/docker/v/louislam/uptime-kuma/latest?label=docker%20image%20ver." /></a> <a target="_blank" href="https://github.com/louislam/uptime-kuma"><img src="https://img.shields.io/github/last-commit/louislam/uptime-kuma" /></a>  <a target="_blank" href="https://opencollective.com/uptime-kuma"><img src="https://opencollective.com/uptime-kuma/total/badge.svg?label=Backers&color=brightgreen" /></a>
 
-
 <div align="center" width="100%">
     <img src="./public/icon.svg" width="128" alt="" />
 </div>
@@ -17,17 +16,20 @@ Try it!
 
 https://demo.uptime.kuma.pet
 
-It is a 5 minutes live demo, all data will be deleted after that. The server is located at Tokyo, if you live far away from here, it may affact your experience. I suggest that you should install to try it.
+It is a 10 minutes live demo, all data will be deleted after that. The server is located at Tokyo, if you live far away from here, it may affact your experience. I suggest that you should install to try it.
 
 VPS is sponsored by Uptime Kuma sponsors on [Open Collective](https://opencollective.com/uptime-kuma)! Thank you so much!
 
 ## ⭐ Features
 
-* Monitoring uptime for HTTP(s) / TCP / Ping / DNS Record.
+* Monitoring uptime for HTTP(s) / TCP / Ping / DNS Record / Push.
 * Fancy, Reactive, Fast UI/UX.
-* Notifications via Telegram, Discord, Gotify, Slack, Pushover, Email (SMTP), and [70+ notification services, click here for the full list](https://github.com/louislam/uptime-kuma/issues/284).
+* Notifications via Telegram, Discord, Gotify, Slack, Pushover, Email (SMTP), and [70+ notification services, click here for the full list](https://github.com/louislam/uptime-kuma/tree/master/src/components/notifications).
 * 20 seconds interval.
 * [Multi Languages](https://github.com/louislam/uptime-kuma/tree/master/src/languages)
+* Simple Status Page
+* Ping Chart
+* Certificate Info
 
 ## 🔧 How to Install
 
@@ -116,9 +118,11 @@ If you love this project, please consider giving me a ⭐.
 ## 🗣️ Discussion
 
 ### Issues Page
+
 You can discuss or ask for help in [Issues](https://github.com/louislam/uptime-kuma/issues).
 
 ### Subreddit
+
 My Reddit account: louislamlam
 You can mention me if you ask question on Reddit.
 https://www.reddit.com/r/UptimeKuma/

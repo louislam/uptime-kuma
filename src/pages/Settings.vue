@@ -342,6 +342,12 @@
                     <p>Utilizzare con attenzione.</p>
                 </template>
 
+                <template v-else-if="$i18n.locale === 'id-ID' ">
+                    <p>Apakah Anda yakin ingin <strong>menonaktifkan autentikasi</strong>?</p>
+                    <p>Ini untuk <strong>mereka yang memiliki autentikasi pihak ketiga</strong> diletakkan di depan Uptime Kuma, misalnya akses Cloudflare.</p>
+                    <p>Gunakan dengan hati-hati.</p>
+                </template>
+
                 <template v-else-if="$i18n.locale === 'ru-RU' ">
                     <p>Вы уверены, что хотите <strong>отключить авторизацию</strong>?</p>
                     <p>Это подходит для <strong>тех, у кого стоит другая авторизация</strong> перед открытием Uptime Kuma, например Cloudflare Access.</p>
@@ -364,6 +370,12 @@
                     <p>Biztos benne, hogy <strong>kikapcsolja a hitelesítést</strong>?</p>
                     <p>Akkor érdemes, ha <strong>van 3rd-party hitelesítés</strong> az Uptime Kuma-t megelőzően mint a Cloudflare Access.</p>
                     <p>Használja megfontoltan!</p>
+                </template>
+
+                <template v-else-if="$i18n.locale === 'nb-NO' ">
+                    <p>Er du sikker på at du vil <strong>deaktiver autentisering</strong>?</p>
+                    <p>Dette er for <strong>de som har tredjepartsautorisering</strong> foran Uptime Kuma, for eksempel Cloudflare Access.</p>
+                    <p>Vennligst vær forsiktig.</p>
                 </template>
 
                 <!-- English (en) -->
