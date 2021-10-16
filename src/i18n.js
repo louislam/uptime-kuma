@@ -8,9 +8,11 @@ import fa from "./languages/fa";
 import frFR from "./languages/fr-FR";
 import hu from "./languages/hu";
 import itIT from "./languages/it-IT";
+import idID from "./languages/id-ID";
 import ja from "./languages/ja";
 import koKR from "./languages/ko-KR";
 import nlNL from "./languages/nl-NL";
+import nbNO from "./languages/nb-NO";
 import pl from "./languages/pl";
 import ptBR from "./languages/pt-BR";
 import bgBG from "./languages/bg-BG";
@@ -28,12 +30,14 @@ const languageList = {
     "bg-BG": bgBG,
     "de-DE": deDE,
     "nl-NL": nlNL,
+    "nb-NO": nbNO,
     "es-ES": esEs,
     "fa": fa,
     "pt-BR": ptBR,
     "fr-FR": frFR,
     "hu": hu,
     "it-IT": itIT,
+    "id-ID" : idID,
     "ja": ja,
     "da-DK": daDK,
     "sr": sr,

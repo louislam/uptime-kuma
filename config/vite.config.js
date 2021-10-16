@@ -1,9 +1,9 @@
-import legacy from "@vitejs/plugin-legacy"
-import vue from "@vitejs/plugin-vue"
-import { defineConfig } from "vite"
+import legacy from "@vitejs/plugin-legacy";
+import vue from "@vitejs/plugin-vue";
+import { defineConfig } from "vite";
 
-const postCssScss = require("postcss-scss")
-const postcssRTLCSS = require('postcss-rtlcss');
+const postCssScss = require("postcss-scss");
+const postcssRTLCSS = require("postcss-rtlcss");
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -20,5 +20,5 @@ export default defineConfig({
             "map": false,
             "plugins": [postcssRTLCSS]
         }
-      },
-})
+    },
+});
