@@ -189,7 +189,7 @@ export default {
     "Chat ID": "Chat ID",
     supportTelegramChatID: "Mendukung Obrolan Langsung / Grup / Channel Chat ID",
     wayToGetTelegramChatID: "Anda bisa mendapatkan chat id Anda dengan mengirim pesan ke bot dan pergi ke url ini untuk melihat chat_id:",
-    "YOUR BOT TOKEN HERE": "BOT TOKEN Anda DI SINI",
+    "YOUR BOT TOKEN HERE": "BOT TOKEN ANDA DI SINI",
     chatIDNotFound: "Chat ID tidak ditemukan, tolong kirim pesan ke bot ini dulu",
     "webhook": "Webhook",
     "Post URL": "Post URL",
