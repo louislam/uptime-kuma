@@ -1,11 +1,11 @@
 <template>
     <div class="mb-3">
-        <label for="webhook-url" class="form-label">Post URL</label>
+        <label for="webhook-url" class="form-label">{{ $t("Post URL") }}</label>
         <input id="webhook-url" v-model="$parent.notification.webhookURL" type="url" pattern="https?://.+" class="form-control" required>
     </div>
 
     <div class="mb-3">
-        <label for="webhook-content-type" class="form-label">Content Type</label>
+        <label for="webhook-content-type" class="form-label">{{ $t("Content Type") }}</label>
         <select id="webhook-content-type" v-model="$parent.notification.webhookContentType" class="form-select" required>
             <option value="json">
                 application/json
@@ -17,7 +17,12 @@
 
         <div class="form-text">
             <p>"application/json" is good for any modern http servers such as express.js</p>
-            <p>"multipart/form-data" is good for PHP, you just need to parse the json by <strong>json_decode($_POST['data'])</strong></p>
+            <i18n-t tag="p" keypath="webhookFormDataDesc">
+                <template #multipart>"multipart/form-data"</template>
+                <template #decodeFunction>
+                    <strong>json_decode($_POST['data'])</strong>
+                </template>
+            </i18n-t>
         </div>
     </div>
 </template>

@@ -3,7 +3,7 @@
 @import "node_modules/bootstrap/scss/bootstrap";
 
 #app {
-    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, segoe ui, Roboto, helvetica neue, Arial, noto sans, sans-serif, apple color emoji, segoe ui emoji, segoe ui symbol, noto color emoji;
+    font-family: BlinkMacSystemFont, segoe ui, Roboto, helvetica neue, Arial, noto sans, sans-serif, apple color emoji, segoe ui emoji, segoe ui symbol, noto color emoji;
 }
 
 h1 {
@@ -321,7 +321,7 @@ h2 {
     .item {
         display: block;
         text-decoration: none;
-        padding: 14px 15px;
+        padding: 13px 15px 10px 15px;
         border-radius: 10px;
         transition: all ease-in-out 0.15s;
 

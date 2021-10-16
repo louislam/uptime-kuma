@@ -1,12 +1,18 @@
 console.log("Welcome to Uptime Kuma");
+const args = require("args-parser")(process.argv);
+const { sleep, debug, getRandomInt, genSecret } = require("../src/util");
+
+debug(args);
 
 if (! process.env.NODE_ENV) {
     process.env.NODE_ENV = "production";
 }
 
-console.log("Node Env: " + process.env.NODE_ENV);
+// Demo Mode?
+const demoMode = args["demo"] || false;
+exports.demoMode = demoMode;
 
-const { sleep, debug, getRandomInt, genSecret } = require("../src/util");
+console.log("Node Env: " + process.env.NODE_ENV);
 
 console.log("Importing Node libraries");
 const fs = require("fs");
@@ -37,7 +43,7 @@ console.log("Importing this project modules");
 debug("Importing Monitor");
 const Monitor = require("./model/monitor");
 debug("Importing Settings");
-const { getSettings, setSettings, setting, initJWTSecret, checkLogin } = require("./util-server");
+const { getSettings, setSettings, setting, initJWTSecret, checkLogin, startUnitTest, FBSD } = require("./util-server");
 
 debug("Importing Notification");
 const { Notification } = require("./notification");
@@ -50,22 +56,33 @@ const { basicAuth } = require("./auth");
 const { login } = require("./auth");
 const passwordHash = require("./password-hash");
 
-const args = require("args-parser")(process.argv);
-
 const checkVersion = require("./check-version");
 console.info("Version: " + checkVersion.version);
 
 // If host is omitted, the server will accept connections on the unspecified IPv6 address (::) when IPv6 is available and the unspecified IPv4 address (0.0.0.0) otherwise.
 // Dual-stack support for (::)
-const hostname = process.env.HOST || args.host;
-const port = parseInt(process.env.PORT || args.port || 3001);
+let hostname = process.env.UPTIME_KUMA_HOST || args.host;
+
+// Also read HOST if not FreeBSD, as HOST is a system environment variable in FreeBSD
+if (!hostname && !FBSD) {
+    hostname = process.env.HOST;
+}
+
+if (hostname) {
+    console.log("Custom hostname: " + hostname);
+}
+
+const port = parseInt(process.env.UPTIME_KUMA_PORT || process.env.PORT || args.port || 3001);
 
 // SSL
-const sslKey = process.env.SSL_KEY || args["ssl-key"] || undefined;
-const sslCert = process.env.SSL_CERT || args["ssl-cert"] || undefined;
+const sslKey = process.env.UPTIME_KUMA_SSL_KEY || process.env.SSL_KEY || args["ssl-key"] || undefined;
+const sslCert = process.env.UPTIME_KUMA_SSL_CERT || process.env.SSL_CERT || args["ssl-cert"] || undefined;
 
-// Demo Mode?
-const demoMode = args["demo"] || false;
+/**
+ * Run unit test after the server is ready
+ * @type {boolean}
+ */
+const testMode = !!args["test"] || false;
 
 if (demoMode) {
     console.log("==== Demo Mode ====");
@@ -91,7 +108,7 @@ const io = new Server(server);
 module.exports.io = io;
 
 // Must be after io instantiation
-const { sendNotificationList, sendHeartbeatList, sendImportantHeartbeatList } = require("./client");
+const { sendNotificationList, sendHeartbeatList, sendImportantHeartbeatList, sendInfo } = require("./client");
 const { statusPageSocketHandler } = require("./socket-handlers/status-page-socket-handler");
 
 app.use(express.json());
@@ -181,10 +198,7 @@ exports.entryPage = "dashboard";
     console.log("Adding socket handler");
     io.on("connection", async (socket) => {
 
-        socket.emit("info", {
-            version: checkVersion.version,
-            latestVersion: checkVersion.latestVersion,
-        });
+        sendInfo(socket);
 
         totalClient++;
 
@@ -871,6 +885,8 @@ exports.entryPage = "dashboard";
                     msg: "Saved"
                 });
 
+                sendInfo(socket);
+
             } catch (e) {
                 callback({
                     ok: false,
@@ -1042,6 +1058,10 @@ exports.entryPage = "dashboard";
                                 dns_resolve_server: monitorListData[i].dns_resolve_server,
                                 notificationIDList: {},
                             };
+
+                            if (monitorListData[i].pushToken) {
+                                monitor.pushToken = monitorListData[i].pushToken;
+                            }
 
                             let bean = R.dispense("monitor");
 
@@ -1223,6 +1243,10 @@ exports.entryPage = "dashboard";
         }
         startMonitors();
         checkVersion.startInterval();
+
+        if (testMode) {
+            startUnitTest();
+        }
     });
 
 })();

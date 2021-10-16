@@ -6,7 +6,7 @@ class Signal extends NotificationProvider {
     name = "signal";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully. ";
+        let okMsg = "Sent Successfully.";
 
         try {
             let data = {
