@@ -1,13 +1,16 @@
 console.log("Welcome to Uptime Kuma");
 const args = require("args-parser")(process.argv);
 const { sleep, debug, getRandomInt, genSecret } = require("../src/util");
-const config = require("./config");
 
 debug(args);
 
 if (! process.env.NODE_ENV) {
     process.env.NODE_ENV = "production";
 }
+
+// Demo Mode?
+const demoMode = args["demo"] || false;
+exports.demoMode = demoMode;
 
 console.log("Node Env: " + process.env.NODE_ENV);
 
@@ -81,7 +84,7 @@ const sslCert = process.env.UPTIME_KUMA_SSL_CERT || process.env.SSL_CERT || args
  */
 const testMode = !!args["test"] || false;
 
-if (config.demoMode) {
+if (demoMode) {
     console.log("==== Demo Mode ====");
 }
 
@@ -440,7 +443,7 @@ exports.entryPage = "dashboard";
         socket.on("setup", async (username, password, callback) => {
             try {
                 if ((await R.count("user")) !== 0) {
-                    throw new Error("Uptime Kuma has been setup. If you want to setup again, please delete the database.");
+                    throw new Error("Uptime Kuma has been set up. If you want to setup again, please delete the database.");
                 }
 
                 let user = R.dispense("user");
@@ -1328,7 +1331,7 @@ async function initDatabase() {
         fs.copyFileSync(Database.templatePath, Database.path);
     }
 
-    console.log("Connecting to Database");
+    console.log("Connecting to the Database");
     await Database.connect();
     console.log("Connected");
 
@@ -1428,7 +1431,7 @@ async function shutdownFunction(signal) {
 }
 
 function finalFunction() {
-    console.log("Graceful shutdown successfully!");
+    console.log("Graceful shutdown successful!");
 }
 
 gracefulShutdown(server, {

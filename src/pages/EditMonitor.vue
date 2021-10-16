@@ -467,7 +467,7 @@ export default {
                 return;
             }
 
-            // Beautiful the JSON format
+            // Beautify the JSON format
             if (this.monitor.body) {
                 this.monitor.body = JSON.stringify(JSON.parse(this.monitor.body), null, 4);
             }
