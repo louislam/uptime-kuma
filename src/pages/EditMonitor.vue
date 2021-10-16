@@ -335,11 +335,11 @@ export default {
         },
 
         bodyPlaceholder() {
-            return this.decodeHtml("&lbrace;\n\t\"id\": 124357,\n\t\"username\": \"admin\",\n\t\"password\": \"myAdminPassword\"\n&rbrace;");
+            return "{\n\t\"id\": 124357,\n\t\"username\": \"admin\",\n\t\"password\": \"myAdminPassword\"\n}";
         },
 
         headersPlaceholder() {
-            return this.decodeHtml("&lbrace;\n\t\"Authorization\": \"Bearer abc123\",\n\t\"Content-Type\": \"application/json\"\n&rbrace;");
+            return "{\n\t\"Authorization\": \"Bearer abc123\",\n\t\"Content-Type\": \"application/json\"\n}";
         }
 
     },
@@ -508,12 +508,6 @@ export default {
         addedNotification(id) {
             this.monitor.notificationIDList[id] = true;
         },
-
-        decodeHtml(html) {
-            const txt = document.createElement("textarea");
-            txt.innerHTML = html;
-            return txt.value;
-        }
     },
 };
 </script>
