@@ -49,8 +49,8 @@
                                 <label for="push-url" class="form-label">{{ $t("PushUrl") }}</label>
                                 <CopyableInput id="push-url" v-model="pushURL" type="url" disabled="disabled" />
                                 <div class="form-text">
-                                    You should call this url every {{ monitor.interval }} seconds.<br />
-                                    Optional parameters: msg, ping
+                                    {{ $t("needPushEvery", [monitor.interval]) }}<br />
+                                    {{ $t("pushOptionalParams", ["msg, ping"]) }}
                                 </div>
                             </div>
 

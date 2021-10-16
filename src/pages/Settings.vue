@@ -108,7 +108,7 @@
 
                             <!-- Primary Base URL -->
                             <div class="mb-4">
-                                <label class="form-label" for="primaryBaseURL">Primary Base URL</label>
+                                <label class="form-label" for="primaryBaseURL">{{ $t("Primary Base URL") }}</label>
 
                                 <div class="input-group mb-3">
                                     <input id="primaryBaseURL" v-model="settings.primaryBaseURL" class="form-control" name="primaryBaseURL" placeholder="https://" pattern="https?://.+">

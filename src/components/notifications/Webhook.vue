@@ -16,7 +16,7 @@
         </select>
 
         <div class="form-text">
-            <p>"application/json" is good for any modern http servers such as express.js</p>
+            <p>{{ $t("webhookJsonDesc", ["\"application/json\""]) }}</p>
             <i18n-t tag="p" keypath="webhookFormDataDesc">
                 <template #multipart>"multipart/form-data"</template>
                 <template #decodeFunction>
