@@ -198,4 +198,6 @@ export default {
     pushbullet: "Pushbullet",
     line: "Line Messenger",
     mattermost: "Mattermost",
+    "Monitor History": "Historial de monitor:",
+    clearDataOlderThan: "Mantener los datos del historial del monitor durante {0} días.",
 };
