@@ -334,9 +334,9 @@
                 </template>
 
                 <template v-else-if="$i18n.locale === 'id-ID' ">
-                    <p> Apakah Anda yakin ingin <strong>menonaktifkan autentikasi</strong>? </p>
-                     <p> Ini untuk <strong>mereka yang memiliki otentikasi pihak ketiga</strong> diletakkan di depan Uptime Kuma, misalnya akses Cloudflare. </p>
-                     <p> Gunakan dengan hati-hati. </p>
+                    <p>Apakah Anda yakin ingin <strong>menonaktifkan autentikasi</strong>?</p>
+                    <p>Ini untuk <strong>mereka yang memiliki autentikasi pihak ketiga</strong> diletakkan di depan Uptime Kuma, misalnya akses Cloudflare.</p>
+                    <p>Gunakan dengan hati-hati.</p>
                 </template>
 
                 <template v-else-if="$i18n.locale === 'ru-RU' ">

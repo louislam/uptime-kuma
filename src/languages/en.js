@@ -283,4 +283,10 @@ export default {
     promosmsSMSSender: "SMS Sender Name : Pre-registred name or one of defaults: InfoSMS, SMS Info, MaxSMS, INFO, SMS",
     "Feishu WebHookUrl": "Feishu WebHookUrl",
     // End notification form
+    Method: "Method",
+    Body: "Body",
+    Headers: "Headers",
+    PushUrl: "Push URL",
+    HeadersInvalidFormat: "The request headers are not valid JSON: ",
+    BodyInvalidFormat: "The request body is not valid JSON: ",
 };

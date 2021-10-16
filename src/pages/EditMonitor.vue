@@ -46,7 +46,7 @@
 
                             <!-- Push URL -->
                             <div v-if="monitor.type === 'push' " class="my-3">
-                                <label for="push-url" class="form-label">{{ $t("Push URL") }}</label>
+                                <label for="push-url" class="form-label">{{ $t("PushUrl") }}</label>
                                 <CopyableInput id="push-url" v-model="pushURL" type="url" disabled="disabled" />
                                 <div class="form-text">
                                     You should call this url every {{ monitor.interval }} seconds.<br />
@@ -196,6 +196,7 @@
                         <div class="col-md-6">
                             <div v-if="$root.isMobile" class="mt-3" />
 
+                            <!-- Notifications -->
                             <h2 class="mb-2">{{ $t("Notifications") }}</h2>
                             <p v-if="$root.notificationList.length === 0">
                                 {{ $t("Not available, please setup.") }}
@@ -215,6 +216,51 @@
                             <button class="btn btn-primary me-2" type="button" @click="$refs.notificationDialog.show()">
                                 {{ $t("Setup Notification") }}
                             </button>
+
+                            <!-- HTTP Options -->
+                            <template v-if="monitor.type === 'http' || monitor.type === 'keyword' ">
+                                <h2 class="mt-5 mb-2">{{ $t("HTTP Options") }}</h2>
+
+                                <!-- Method -->
+                                <div class="my-3">
+                                    <label for="method" class="form-label">{{ $t("Method") }}</label>
+                                    <select id="method" v-model="monitor.method" class="form-select">
+                                        <option value="GET">
+                                            GET
+                                        </option>
+                                        <option value="POST">
+                                            POST
+                                        </option>
+                                        <option value="PUT">
+                                            PUT
+                                        </option>
+                                        <option value="PATCH">
+                                            PATCH
+                                        </option>
+                                        <option value="DELETE">
+                                            DELETE
+                                        </option>
+                                        <option value="HEAD">
+                                            HEAD
+                                        </option>
+                                        <option value="OPTIONS">
+                                            OPTIONS
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <!-- Body -->
+                                <div class="my-3">
+                                    <label for="body" class="form-label">{{ $t("Body") }}</label>
+                                    <textarea id="body" v-model="monitor.body" class="form-control" :placeholder="bodyPlaceholder"></textarea>
+                                </div>
+
+                                <!-- Headers -->
+                                <div class="my-3">
+                                    <label for="headers" class="form-label">{{ $t("Headers") }}</label>
+                                    <textarea id="headers" v-model="monitor.headers" class="form-control" :placeholder="headersPlaceholder"></textarea>
+                                </div>
+                            </template>
                         </div>
                     </div>
                 </div>
@@ -286,6 +332,14 @@ export default {
 
         pushURL() {
             return this.$root.baseURL + "/api/push/" + this.monitor.pushToken + "?msg=OK&ping=";
+        },
+
+        bodyPlaceholder() {
+            return this.decodeHtml("&lbrace;\n\t\"id\": 124357,\n\t\"username\": \"admin\",\n\t\"password\": \"myAdminPassword\"\n&rbrace;");
+        },
+
+        headersPlaceholder() {
+            return this.decodeHtml("&lbrace;\n\t\"Authorization\": \"Bearer abc123\",\n\t\"Content-Type\": \"application/json\"\n&rbrace;");
         }
 
     },
@@ -296,7 +350,7 @@ export default {
         },
 
         "monitor.interval"(value, oldValue) {
-            // Link interval and retryInerval if they are the same value.
+            // Link interval and retryInterval if they are the same value.
             if (this.monitor.retryInterval === oldValue) {
                 this.monitor.retryInterval = value;
             }
@@ -350,6 +404,7 @@ export default {
                     type: "http",
                     name: "",
                     url: "https://",
+                    method: "GET",
                     interval: 60,
                     retryInterval: this.interval,
                     maxretries: 0,
@@ -384,8 +439,42 @@ export default {
 
         },
 
+        isInputValid() {
+            if (this.monitor.body) {
+                try {
+                    JSON.parse(this.monitor.body);
+                } catch (err) {
+                    toast.error(this.$t("BodyInvalidFormat") + err.message);
+                    return false;
+                }
+            }
+            if (this.monitor.headers) {
+                try {
+                    JSON.parse(this.monitor.headers);
+                } catch (err) {
+                    toast.error(this.$t("HeadersInvalidFormat") + err.message);
+                    return false;
+                }
+            }
+            return true;
+        },
+
         async submit() {
             this.processing = true;
+
+            if (!this.isInputValid()) {
+                this.processing = false;
+                return;
+            }
+
+            // Beautiful the JSON format
+            if (this.monitor.body) {
+                this.monitor.body = JSON.stringify(JSON.parse(this.monitor.body), null, 4);
+            }
+
+            if (this.monitor.headers) {
+                this.monitor.headers = JSON.stringify(JSON.parse(this.monitor.headers), null, 4);
+            }
 
             if (this.isAdd) {
                 this.$root.add(this.monitor, async (res) => {
@@ -419,12 +508,22 @@ export default {
         addedNotification(id) {
             this.monitor.notificationIDList[id] = true;
         },
+
+        decodeHtml(html) {
+            const txt = document.createElement("textarea");
+            txt.innerHTML = html;
+            return txt.value;
+        }
     },
 };
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
     .shadow-box {
         padding: 20px;
+    }
+
+    textarea {
+        min-height: 200px;
     }
 </style>
