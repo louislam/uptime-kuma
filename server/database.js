@@ -50,6 +50,7 @@ class Database {
         "patch-incident-table.sql": true,
         "patch-group-table.sql": true,
         "patch-monitor-push_token.sql": true,
+        "patch-http-monitor-method-body-and-headers.sql": true,
         "patch-add-monitor-checks-table.sql": true,
     }
 

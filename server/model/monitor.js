@@ -28,7 +28,7 @@ const {
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification");
-const { demoMode } = require("../server");
+const { demoMode } = require("../config");
 const validateMonitorChecks = require("../validate-monitor-checks");
 const version = require("../../package.json").version;
 const apicache = require("../modules/apicache");
@@ -74,6 +74,9 @@ class Monitor extends BeanModel {
             id: this.id,
             name: this.name,
             url: this.url,
+            method: this.method,
+            body: this.body,
+            headers: this.headers,
             hostname: this.hostname,
             port: this.port,
             maxretries: this.maxretries,
@@ -156,11 +159,15 @@ class Monitor extends BeanModel {
                     // Do not do any queries/high loading things before the "bean.ping"
                     let startTime = dayjs().valueOf();
 
-                    let res = await axios.get(this.url, {
+                    const options = {
+                        url: this.url,
+                        method: (this.method || "get").toLowerCase(),
+                        ...(this.body ? { data: JSON.parse(this.body) } : {}),
                         timeout: this.interval * 1000 * 0.8,
                         headers: {
                             "Accept": "*/*",
                             "User-Agent": "Uptime-Kuma/" + version,
+                            ...(this.headers ? JSON.parse(this.headers) : {}),
                         },
                         httpsAgent: new https.Agent({
                             maxCachedSessions: 0,      // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
@@ -168,7 +175,10 @@ class Monitor extends BeanModel {
                         }),
                         maxRedirects: this.maxredirects,
                         validateStatus: undefined,
-                    });
+                    };
+                    let res = await axios.request(options);
+                    bean.msg = `${res.status} - ${res.statusText}`;
+                    bean.ping = dayjs().valueOf() - startTime;
 
                     // Check certificate if https is used
                     let certInfoStartTime = dayjs().valueOf();
@@ -186,7 +196,11 @@ class Monitor extends BeanModel {
                         debug("Cert Info Query Time: " + (dayjs().valueOf() - certInfoStartTime) + "ms");
                     }
 
-                    bean.msg = `${res.status} - ${res.statusText}`;
+                    if (process.env.UPTIME_KUMA_LOG_RESPONSE_BODY_MONITOR_ID == this.id) {
+                        console.log(res.data);
+                    }
+
+                    bean.status = UP;
 
                     validateMonitorChecks(res, await this.getMonitorChecks(), bean);
 
@@ -291,54 +305,13 @@ class Monitor extends BeanModel {
 
             let beatInterval = this.interval;
 
-            // * ? -> ANY STATUS = important [isFirstBeat]
-            // UP -> PENDING = not important
-            // * UP -> DOWN = important
-            // UP -> UP = not important
-            // PENDING -> PENDING = not important
-            // * PENDING -> DOWN = important
-            // PENDING -> UP = not important
-            // DOWN -> PENDING = this case not exists
-            // DOWN -> DOWN = not important
-            // * DOWN -> UP = important
-            let isImportant = isFirstBeat ||
-                (previousBeat.status === UP && bean.status === DOWN) ||
-                (previousBeat.status === DOWN && bean.status === UP) ||
-                (previousBeat.status === PENDING && bean.status === DOWN);
+            let isImportant = Monitor.isImportantBeat(isFirstBeat, previousBeat.status, bean.status);
 
             // Mark as important if status changed, ignore pending pings,
             // Don't notify if disrupted changes to up
             if (isImportant) {
                 bean.important = true;
-
-                // Send only if the first beat is DOWN
-                if (!isFirstBeat || bean.status === DOWN) {
-                    let notificationList = await R.getAll("SELECT notification.* FROM notification, monitor_notification WHERE monitor_id = ? AND monitor_notification.notification_id = notification.id ", [
-                        this.id,
-                    ]);
-
-                    let text;
-                    if (bean.status === UP) {
-                        text = "✅ Up";
-                    } else {
-                        text = "🔴 Down";
-                    }
-
-                    let msg = `[${this.name}] [${text}] ${bean.msg}`;
-
-                    for (let notification of notificationList) {
-                        try {
-                            await Notification.send(JSON.parse(notification.config), msg, await this.toJSON(), bean.toJSON());
-                        } catch (e) {
-                            console.error("Cannot send notification to " + notification.name);
-                            console.log(e);
-                        }
-                    }
-
-                    // Clear Status Page Cache
-                    apicache.clear();
-                }
-
+                await Monitor.sendNotification(isFirstBeat, this, bean);
             } else {
                 bean.important = false;
             }
@@ -549,6 +522,53 @@ class Monitor extends BeanModel {
     static async sendUptime(duration, io, monitorID, userID) {
         const uptime = await this.calcUptime(duration, monitorID);
         io.to(userID).emit("uptime", monitorID, duration, uptime);
+    }
+
+    static isImportantBeat(isFirstBeat, previousBeatStatus, currentBeatStatus) {
+        // * ? -> ANY STATUS = important [isFirstBeat]
+        // UP -> PENDING = not important
+        // * UP -> DOWN = important
+        // UP -> UP = not important
+        // PENDING -> PENDING = not important
+        // * PENDING -> DOWN = important
+        // PENDING -> UP = not important
+        // DOWN -> PENDING = this case not exists
+        // DOWN -> DOWN = not important
+        // * DOWN -> UP = important
+        let isImportant = isFirstBeat ||
+            (previousBeatStatus === UP && currentBeatStatus === DOWN) ||
+            (previousBeatStatus === DOWN && currentBeatStatus === UP) ||
+            (previousBeatStatus === PENDING && currentBeatStatus === DOWN);
+        return isImportant;
+    }
+
+    static async sendNotification(isFirstBeat, monitor, bean) {
+        if (!isFirstBeat || bean.status === DOWN) {
+            let notificationList = await R.getAll("SELECT notification.* FROM notification, monitor_notification WHERE monitor_id = ? AND monitor_notification.notification_id = notification.id ", [
+                monitor.id,
+            ]);
+
+            let text;
+            if (bean.status === UP) {
+                text = "✅ Up";
+            } else {
+                text = "🔴 Down";
+            }
+
+            let msg = `[${monitor.name}] [${text}] ${bean.msg}`;
+
+            for (let notification of notificationList) {
+                try {
+                    await Notification.send(JSON.parse(notification.config), msg, await monitor.toJSON(), bean.toJSON());
+                } catch (e) {
+                    console.error("Cannot send notification to " + notification.name);
+                    console.log(e);
+                }
+            }
+
+            // Clear Status Page Cache
+            apicache.clear();
+        }
     }
 
     async getMonitorChecks() {

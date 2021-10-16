@@ -5,13 +5,15 @@
 Use this section to tell people about which versions of your project are
 currently being supported with security updates.
 
-#### Uptime Kuma Versions:
+### Uptime Kuma Versions
+
 | Version | Supported          |
 | ------- | ------------------ |
-| 1.7.X  | :white_check_mark: |
-| < 1.7  | ❌ |
+| 1.8.X  | :white_check_mark: |
+| <= 1.7.X  | ❌ |
 
-#### Upgradable Docker Tags:
+### Upgradable Docker Tags
+
 | Tag | Supported          |
 | ------- | ------------------ |
 | 1 | :white_check_mark: |
@@ -23,6 +25,7 @@ currently being supported with security updates.
 | All other tags  | ❌ |
 
 ## Reporting a Vulnerability
+
 Please report security issues to uptime@kuma.pet.
 
 Do not use the issue tracker or discuss it in the public as it will cause more damage.

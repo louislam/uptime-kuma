@@ -47,5 +47,5 @@ RUN chmod +x /app/extra/upload-github-release-asset.sh
 
 # Dist only
 RUN cd /app && tar -zcvf $DIST dist
-RUN /app/extra/upload-github-release-asset.sh github_api_token=$GITHUB_TOKEN owner=louislam repo=uptime-kuma tag=$VERSION filename=$DIST
+RUN /app/extra/upload-github-release-asset.sh github_api_token=$GITHUB_TOKEN owner=louislam repo=uptime-kuma tag=$VERSION filename=/app/$DIST
 

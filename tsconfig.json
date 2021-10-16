@@ -1,6 +1,7 @@
 {
     "compileOnSave": true,
     "compilerOptions": {
+        "newLine": "LF",
         "target": "es2018",
         "module": "commonjs",
         "lib": [
