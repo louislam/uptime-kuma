@@ -75,6 +75,12 @@ const port = parseInt(process.env.UPTIME_KUMA_PORT || process.env.PORT || args.p
 const sslKey = process.env.UPTIME_KUMA_SSL_KEY || process.env.SSL_KEY || args["ssl-key"] || undefined;
 const sslCert = process.env.UPTIME_KUMA_SSL_CERT || process.env.SSL_CERT || args["ssl-cert"] || undefined;
 
+// 2FA / notp verification defaults
+const twofa_verification_opts = {
+    "window": 1,
+    "time": 30
+}
+
 /**
  * Run unit test after the server is ready
  * @type {boolean}
@@ -272,7 +278,7 @@ exports.entryPage = "dashboard";
                 }
 
                 if (data.token) {
-                    let verify = notp.totp.verify(data.token, user.twofa_secret);
+                    let verify = notp.totp.verify(data.token, user.twofa_secret, twofa_verification_opts);
 
                     if (verify && verify.delta == 0) {
                         callback({
@@ -390,7 +396,7 @@ exports.entryPage = "dashboard";
                 socket.userID,
             ]);
 
-            let verify = notp.totp.verify(token, user.twofa_secret);
+            let verify = notp.totp.verify(token, user.twofa_secret, twofa_verification_opts);
 
             if (verify && verify.delta == 0) {
                 callback({
