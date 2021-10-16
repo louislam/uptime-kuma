@@ -1,5 +1,5 @@
 module.exports = {
-    "rootDir": ".",
+    "rootDir": "..",
     "testRegex": "./test/frontend.spec.js",
 };
 
