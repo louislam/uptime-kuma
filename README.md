@@ -16,7 +16,7 @@ Try it!
 
 https://demo.uptime.kuma.pet
 
-It is a temporary live demo, all data will be deleted after 10 minutes. The server is located at Tokyo, so if you live far from there it may affact your experience. I suggest that you should install and try it out for the best demo experience.
+It is a temporary live demo, all data will be deleted after 10 minutes. The server is located at Tokyo, so if you live far from there it may affect your experience. I suggest that you should install and try it out for the best demo experience.
 
 VPS is sponsored by Uptime Kuma sponsors on [Open Collective](https://opencollective.com/uptime-kuma)! Thank you so much!
 
