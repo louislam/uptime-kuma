@@ -14,6 +14,7 @@ import socket from "./mixins/socket";
 import theme from "./mixins/theme";
 import { router } from "./router";
 import { appName } from "./util.ts";
+import "favico.js";
 
 const app = createApp({
     mixins: [
