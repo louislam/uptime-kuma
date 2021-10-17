@@ -18,6 +18,5 @@ jobs:
           days-before-close: 7
           exempt-issue-labels: 'News,Medium,High,discussion,bug,doc,'
           exempt-pr-labels: 'awaiting-approval,work-in-progress,enhancement,'
-          operations-per-run: 500
           exempt-issue-assignees: 'louislam'
           exempt-pr-assignees: 'louislam'
