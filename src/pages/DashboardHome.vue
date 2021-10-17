@@ -103,6 +103,9 @@ export default {
                 unknown: 0,
                 pause: 0,
             };
+            let favicon = new Favico({
+                animation:'pop'
+            });
 
             for (let monitorID in this.$root.monitorList) {
                 let beat = this.$root.lastHeartbeatList[monitorID];
@@ -125,6 +128,7 @@ export default {
                 }
             }
 
+            favicon.badge(result.down);
             return result;
         },
 
