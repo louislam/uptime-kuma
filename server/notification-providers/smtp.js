@@ -1,5 +1,6 @@
 const nodemailer = require("nodemailer");
 const NotificationProvider = require("./notification-provider");
+const { DOWN, UP } = require("../../src/util");
 
 class SMTP extends NotificationProvider {
 
@@ -20,6 +21,56 @@ class SMTP extends NotificationProvider {
                 pass: notification.smtpPassword,
             };
         }
+        // Lets start with default subject and empty string for custom one
+        let subject = msg;
+
+        // Change the subject if:
+        //     - The msg ends with "Testing" or
+        //     - Actual Up/Down Notification
+        if ((monitorJSON && heartbeatJSON) || msg.endsWith("Testing")) {
+            let customSubject = "";
+
+            // Our subject cannot end with whitespace it's often raise spam score
+            // Once I got "Cannot read property 'trim' of undefined", better be safe than sorry
+            if (notification.customSubject) {
+                customSubject = notification.customSubject.trim();
+            }
+
+            // If custom subject is not empty, change subject for notification
+            if (customSubject !== "") {
+
+                // Replace "MACROS" with corresponding variable
+                let replaceName = new RegExp("{{NAME}}", "g");
+                let replaceHostnameOrURL = new RegExp("{{HOSTNAME_OR_URL}}", "g");
+                let replaceStatus = new RegExp("{{STATUS}}", "g");
+
+                // Lets start with dummy values to simplify code
+                let monitorName = "Test";
+                let monitorHostnameOrURL = "testing.hostname";
+                let serviceStatus = "⚠️ Test";
+
+                if (monitorJSON !== null) {
+                    monitorName = monitorJSON["name"];
+
+                    if (monitorJSON["type"] === "http" || monitorJSON["type"] === "keyword") {
+                        monitorHostnameOrURL = monitorJSON["url"];
+                    } else {
+                        monitorHostnameOrURL = monitorJSON["hostname"];
+                    }
+                }
+
+                if (heartbeatJSON !== null) {
+                    serviceStatus = (heartbeatJSON["status"] === DOWN) ? "🔴 Down" : "✅ Up";
+                }
+
+                // Break replace to one by line for better readability
+                customSubject = customSubject.replace(replaceStatus, serviceStatus);
+                customSubject = customSubject.replace(replaceName, monitorName);
+                customSubject = customSubject.replace(replaceHostnameOrURL, monitorHostnameOrURL);
+
+                subject = customSubject;
+            }
+        }
 
         let transporter = nodemailer.createTransport(config);
 
@@ -34,7 +85,7 @@ class SMTP extends NotificationProvider {
             cc: notification.smtpCC,
             bcc: notification.smtpBCC,
             to: notification.smtpTo,
-            subject: msg,
+            subject: subject,
             text: bodyTextContent,
             tls: {
                 rejectUnauthorized: notification.smtpIgnoreTLSError || false,

@@ -29,7 +29,7 @@ function flipStatus(s) {
 }
 exports.flipStatus = flipStatus;
 function sleep(ms) {
-    return new Promise(function (resolve) { return setTimeout(resolve, ms); });
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 exports.sleep = sleep;
 /**
@@ -40,7 +40,7 @@ function ucfirst(str) {
     if (!str) {
         return str;
     }
-    var firstLetter = str.substr(0, 1);
+    const firstLetter = str.substr(0, 1);
     return firstLetter.toUpperCase() + str.substr(1);
 }
 exports.ucfirst = ucfirst;
@@ -69,17 +69,16 @@ function polyfill() {
     }
 }
 exports.polyfill = polyfill;
-var TimeLogger = /** @class */ (function () {
-    function TimeLogger() {
+class TimeLogger {
+    constructor() {
         this.startTime = dayjs().valueOf();
     }
-    TimeLogger.prototype.print = function (name) {
+    print(name) {
         if (exports.isDev && process.env.TIMELOGGER === "1") {
             console.log(name + ": " + (dayjs().valueOf() - this.startTime) + "ms");
         }
-    };
-    return TimeLogger;
-}());
+    }
+}
 exports.TimeLogger = TimeLogger;
 /**
  * Returns a random number between min (inclusive) and max (exclusive)

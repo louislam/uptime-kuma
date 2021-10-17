@@ -198,4 +198,10 @@ export default {
     pushbullet: "Pushbullet",
     line: "Line Messenger",
     mattermost: "Mattermost",
+    Method: "Methode",
+    Body: "Body",
+    Headers: "Headers",
+    PushUrl: "Push URL",
+    HeadersInvalidFormat: "The request headers is geen geldige JSON: ",
+    BodyInvalidFormat: "De request body is geen geldige JSON: "
 };

@@ -185,7 +185,7 @@ export default {
     "Required": "Obligatorisk",
     "telegram": "Telegram",
     "Bot Token": "Bot Token",
-    "You can get a token from": "Du kan få et token fra",
+    wayToGetTelegramToken: "Du kan få et token fra {0}.",
     "Chat ID": "Chat ID",
     supportTelegramChatID: "Support Direct Chat / Group / Channel's Chat ID",
     wayToGetTelegramChatID: "Du kan få chat-ID-en din ved å sende meldingen til boten og gå til denne nettadressen for å se chat_id:",

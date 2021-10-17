@@ -41,7 +41,7 @@
                         <span class="word">{{ $t("checkEverySecond", [ monitor.interval ]) }}</span>
                     </div>
                     <div class="col-md-4 text-center">
-                        <span class="badge rounded-pill" :class=" 'bg-' + status.color " style="font-size: 30px;">{{ status.text }}</span>
+                        <span class="badge rounded-pill" :class=" 'bg-' + status.color " style="font-size: 30px;">{{ $t(status.text) }}</span>
                     </div>
                 </div>
             </div>
