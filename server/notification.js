@@ -1,6 +1,7 @@
 const { R } = require("redbean-node");
 const { Liquid } = require( 'liquidjs');
 const { UP } = require("../src/util");
+const dayjs = require("dayjs");
 
 const engine = new Liquid();
 
@@ -77,7 +78,7 @@ class Notification {
         return {
             monitorID: 5,
             status: 1,
-            time: (new Date()).toLocaleString(),
+            time: R.isoDateTime(dayjs.utc()),
             msg: "TEST NOTIFICATION MESSAGE",
             ping: 278,
             important: true,
