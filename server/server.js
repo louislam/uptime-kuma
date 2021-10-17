@@ -970,7 +970,8 @@ exports.entryPage = "dashboard";
             try {
                 checkLogin(socket);
 
-                let msg = await Notification.send(notification, notification.name + " Testing");
+                let notificationText = `[Monitor Name] [Up/Down] Status Message (${notification.name} Testing)`;
+                let msg = await Notification.send(notification, notificationText, Notification.generateTestMonitor(),Notification.generateTestHeartbeat());
 
                 callback({
                     ok: true,

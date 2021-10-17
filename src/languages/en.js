@@ -306,4 +306,16 @@ export default {
     "One record": "One record",
     "Showing {from} to {to} of {count} records": "Showing {from} to {to} of {count} records",
     steamApiKeyDescription: "For monitoring a Steam Game Server you need a Steam Web-API key. You can register your API key here: ",
+    "Message Template":"Message Template",
+    "Default Template":"[{{monitor.name}}] [{{monitor.health}}] {{monitor.msg}}",
+    HealthyStatus:"✅ Healthy",
+    UnhealthyStatus:"❌ Unhealthy",
+    //template levels
+    "Notification Message Detail":"Notification Message Detail",
+
+    "Minimal Detail":"Minimal Detail",
+    "Low Detail":"Low Detail",
+    "Medium Detail":"Medium Detail",
+    "Full Detail":"Full Detail",
+    "Custom Template":"Custom Template",
 };

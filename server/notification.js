@@ -27,8 +27,92 @@ const Feishu = require("./notification-providers/feishu");
 const AliyunSms = require("./notification-providers/aliyun-sms");
 const DingDing = require("./notification-providers/dingding");
 
+
+const MinimalDetailTemplate = "{{monitor.name}}: {{monitor.health}}"
+const LowDetailTemplate = "[{{monitor.name}}] [{{monitor.health}}] {{heartbeat.msg}}"
+const MediumDetailTemplate = `Monitor: {{monitor.name}}
+Health: {{monitor.health}}
+Address: {{monitor.url}}
+
+{% if heartbeat.status == 1 and monitor.upsideDown -%}
+    Your Upside down {{monitor.type}} monitor is unexpectedly connected
+{%- elsif heartbeat.status == 1 and monitor.upsideDown==false -%}
+    Your {{monitor.type}} monitor is up
+{%- elsif heartbeat.status == 0 and monitor.upsideDown -%}
+    Your Upside down {{monitor.type}} monitor is no longer connected
+{%- elsif heartbeat.status == 0 and monitor.upsideDown == false -%}
+    Your {{monitor.type}} monitor is unexpectedly down.
+{%- endif %}
+Time: {{heartbeat.time}}
+Uptime Message: {{heartbeat.msg}}`
+
+const FullDetailTemplate = `Monitor: {{monitor.name}}
+Health: {{monitor.health}}
+Address: {{monitor.url}}
+
+{% if heartbeat.status == 1 and monitor.upsideDown -%}
+    Your Upside down {{monitor.type}} monitor is unexpectedly connected
+{%- elsif heartbeat.status == 1 and monitor.upsideDown==false -%}
+    Your {{monitor.type}} monitor is up
+{%- elsif heartbeat.status == 0 and monitor.upsideDown -%}
+    Your Upside down {{monitor.type}} monitor is no longer connected
+{%- elsif heartbeat.status == 0 and monitor.upsideDown == false -%}
+    Your {{monitor.type}} monitor is unexpectedly down.
+{%- endif %}
+Time: {{heartbeat.time}}
+Uptime Message: {{heartbeat.msg}}
+
+Tags
+----------------------------------------
+{% for tag in monitor.tags -%}
+  {{ tag.name }}
+  {%- if tag.value and tag.value != "" -%}
+    : {{tag.value}}
+  {%- endif %}
+{% endfor -%}`
+
 class Notification {
 
+    static generateTestHeartbeat(){
+        return {
+            monitorID: 5,
+            status: 1,
+            time: (new Date()).toLocaleString(),
+            msg: "TEST NOTIFICATION MESSAGE",
+            ping: 278,
+            important: true,
+            duration: 8,
+        };
+    }
+    static generateTestMonitor(){
+        return {
+            id: 5,
+            name: "Test Notification Monitor",
+            url: "https://www.example.com",
+            method: "Get",
+            body: "OK",
+            headers: null,
+            hostname: "www.example.com",
+            port: 443,
+            maxretries: 2,
+            weight: 2000,
+            active: 1,
+            type: "HTTP",
+            interval: 60,
+            retryInterval: this.retryInterval,
+            keyword: null,
+            ignoreTls: false,
+            upsideDown: false,
+            maxredirects: 10,
+            accepted_statuscodes: ["200-299"],
+            dns_resolve_type: "A",
+            dns_resolve_server: "1.1.1.1",
+            dns_last_result: null,
+            pushToken: null,
+            notificationIDList:{"1":true,"5":true},
+            tags: [{"id":21,"monitor_id":16,"tag_id":2,"value":"","name":"Internal","color":"#059669"}],
+        };
+    }
     providerList = {};
 
     static init() {
@@ -73,6 +157,7 @@ class Notification {
         }
     }
 
+
     /**
      *
      * @param notification : BeanModel
@@ -82,34 +167,22 @@ class Notification {
      * @returns {Promise<string>} Successful msg
      * Throw Error with fail msg
      */
-    static async send(
-        notification, 
-        msg, 
-        monitorJSON = {
-            id: "this.id",
-            name: "this.name",
-            url: "this.url",
-            hostname: "this.hostname",
-        }, 
-        heartbeatJSON = {
-            status: UP,
-            message: "new message",
-            ping: "1ms",
-            duration:"5 seconds",
-            monitor:"asd",
-
-        }) {
+    static async send(notification, msg, monitorJSON, heartbeatJSON) {
         if (this.providerList[notification.type]) {
-            //TODO need to check for errors.
             try {
+                monitorJSON.health = ((heartbeatJSON.status == 1) !== monitorJSON.upsideDown) ? "✅ Healthy": "❌ Unhealthy"
 
-                let newmsg = await engine.parseandrender("{{msg}}   {{monitor | json}}    {{heartbeat | json}}    {{notification | json}}", {
-                    notification: notification,
-                    msg: msg,
+                let parseData = {
+                    // I actually dont think that it is necessary to put the notification in the data sent to the template.
+                    // notification: notification,
                     monitor: monitorJSON,
                     heartbeat: heartbeatJSON,
-                })
-                return this.providerList[notification.type].send(notification, newmsg, monitorJSON, heartbeatJSON);
+                }
+                let template = this.getTemplateFromNotification(notification)
+                console.log(`Template: (${template})`)
+                let message = await engine.parseAndRender(template, parseData)
+
+                return this.providerList[notification.type].send(notification, message, monitorJSON, heartbeatJSON);
             } catch (e) {
                 throw e
             }
@@ -117,6 +190,29 @@ class Notification {
         } else {
             throw new Error("Notification type is not supported");
         }
+    }
+
+    static getTemplateFromNotification(notification){
+
+        let template = notification.template
+        let detail = notification.detail 
+        console.log(`Detail: (${detail}) Template: (${template})`)
+        switch (detail) {
+            case "Minimal Detail":
+                return MinimalDetailTemplate
+            case "Low Detail":
+                return LowDetailTemplate
+            case "Medium Detail":
+                return MediumDetailTemplate
+            case "Full Detail":
+                return FullDetailTemplate
+            case "Custom Template":
+                if (template) {
+                    return template
+                }
+                //returns low in the case of a template being empty string or undefined.
+        }
+        return LowDetailTemplate
     }
 
     static async save(notification, notificationID, userID) {

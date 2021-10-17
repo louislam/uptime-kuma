@@ -22,6 +22,19 @@
                             <input id="notification-name" v-model="notification.name" type="text" class="form-control" required>
                         </div>
 
+                        <div class="mb-3">
+                            <label for="notification-detail" class="form-label">{{ $t("Notification Message Detail") }}</label>
+                            <select id="notification-detail" v-model="notification.detail" class="form-select">
+                                <option v-for="detail in detailLevels" :key="detail" :value="detail">{{ $t(detail) }}</option>
+                            </select>
+                        </div>
+
+                        <!-- using show so that if the user toggels to a different template level, they dont loose what is in the field. -->
+                        <div class="mb-3" v-show="notification.detail === 'Custom Template'"> 
+                            <label for="notification-text" class="form-label">{{ $t("Custom Message Template") }}</label>
+                            <textarea id="notification-text" v-model="notification.template" type="text" class="form-control" ></textarea>
+                        </div>
+
                         <!-- form body -->
                         <component :is="currentForm" />
 
@@ -72,7 +85,9 @@ import { Modal } from "bootstrap";
 import { ucfirst } from "../util.ts";
 
 import Confirm from "./Confirm.vue";
-import NotificationFormList from "./notifications";
+import {NotificationFormList, NotificationDetailList} from "./notifications";
+// import  from "./notifications";
+
 
 export default {
     components: {
@@ -92,7 +107,9 @@ export default {
                 type: null,
                 isDefault: false,
                 // Do not set default value here, please scroll to show()
-            }
+            },
+            detailLevels: NotificationDetailList,
+            
         };
     },
 
@@ -118,6 +135,9 @@ export default {
                 this.notification.name = this.getUniqueDefaultName(to);
             }
         },
+        "notification.detail"(to,from){
+            this.notification.detail = to
+        }
     },
     mounted() {
         this.modal = new Modal(this.$refs.modal);
@@ -149,6 +169,9 @@ export default {
 
                 // Set Default value here
                 this.notification.type = this.notificationTypes[0];
+                this.notification.detail = this.detailLevels[0];
+                this.notification.template = "[{{monitor.name}}] [{{monitor.health}}] {{monitor.msg}}"
+
             }
 
             this.modal.show();
