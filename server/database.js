@@ -312,7 +312,7 @@ class Database {
      */
     static backup(version) {
         if (! this.backupPath) {
-            console.info("Backup the database");
+            console.info("Backing up the database");
             this.backupPath = this.dataDir + "kuma.db.bak" + version;
             fs.copyFileSync(Database.path, this.backupPath);
 

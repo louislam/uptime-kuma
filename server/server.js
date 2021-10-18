@@ -452,7 +452,7 @@ exports.entryPage = "dashboard";
         socket.on("setup", async (username, password, callback) => {
             try {
                 if ((await R.count("user")) !== 0) {
-                    throw new Error("Uptime Kuma has been set up. If you want to setup again, please delete the database.");
+                    throw new Error("Uptime Kuma has been initialized. If you want to run setup again, please delete the database.");
                 }
 
                 let user = R.dispense("user");
