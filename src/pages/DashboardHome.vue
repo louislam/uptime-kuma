@@ -104,7 +104,7 @@ export default {
                 pause: 0,
             };
             let favicon = new Favico({
-                animation:'pop'
+                animation: 'pop',
             });
 
             for (let monitorID in this.$root.monitorList) {
