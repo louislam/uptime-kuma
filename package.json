@@ -63,6 +63,7 @@
         "bcryptjs": "~2.4.3",
         "bootstrap": "~5.1.1",
         "chardet": "^1.3.0",
+        "bree": "~6.3.1",
         "chart.js": "~3.5.1",
         "chartjs-adapter-dayjs": "~1.0.0",
         "command-exists": "~1.2.9",

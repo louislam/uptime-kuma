@@ -49,6 +49,9 @@ Notification.init();
 debug("Importing Database");
 const Database = require("./database");
 
+debug("Importing Background Jobs");
+const { initBackgroundJobs } = require("./jobs");
+
 const { basicAuth } = require("./auth");
 const { login } = require("./auth");
 const passwordHash = require("./password-hash");
@@ -1257,6 +1260,8 @@ exports.entryPage = "dashboard";
             startUnitTest();
         }
     });
+
+    initBackgroundJobs(args);
 
 })();
 
