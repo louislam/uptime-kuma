@@ -1,6 +1,5 @@
 const { setSetting } = require("./util-server");
 const axios = require("axios");
-const { isDev } = require("../src/util");
 
 exports.version = require("../package.json").version;
 exports.latestVersion = null;
@@ -22,7 +21,6 @@ exports.startInterval = () => {
             }
 
             exports.latestVersion = res.data.version;
-            console.log("Latest Version: " + exports.latestVersion);
         } catch (_) { }
 
     };

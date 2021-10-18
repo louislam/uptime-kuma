@@ -6,9 +6,9 @@ import DashboardHome from "./pages/DashboardHome.vue";
 import Details from "./pages/Details.vue";
 import EditMonitor from "./pages/EditMonitor.vue";
 import List from "./pages/List.vue";
-import Settings from "./pages/Settings.vue";
+const Settings = () => import("./pages/Settings.vue");
 import Setup from "./pages/Setup.vue";
-import StatusPage from "./pages/StatusPage.vue";
+const StatusPage = () => import("./pages/StatusPage.vue");
 import Entry from "./pages/Entry.vue";
 
 const routes = [
@@ -70,6 +70,10 @@ const routes = [
     },
     {
         path: "/status-page",
+        component: StatusPage,
+    },
+    {
+        path: "/status",
         component: StatusPage,
     },
 ];

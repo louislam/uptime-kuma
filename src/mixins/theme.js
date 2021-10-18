@@ -33,7 +33,7 @@ export default {
                 return "light";
             }
 
-            if (this.path === "/status-page") {
+            if (this.path === "/status-page" || this.path === "/status") {
                 return this.statusPageTheme;
             } else {
                 if (this.userTheme === "auto") {

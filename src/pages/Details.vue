@@ -41,7 +41,7 @@
                         <span class="word">{{ $t("checkEverySecond", [ monitor.interval ]) }}</span>
                     </div>
                     <div class="col-md-4 text-center">
-                        <span class="badge rounded-pill" :class=" 'bg-' + status.color " style="font-size: 30px;">{{ status.text }}</span>
+                        <span class="badge rounded-pill" :class=" 'bg-' + status.color " style="font-size: 30px;">{{ $t(status.text) }}</span>
                     </div>
                 </div>
             </div>
@@ -73,60 +73,28 @@
                         <span class="num"><Uptime :monitor="monitor" type="720" /></span>
                     </div>
 
-                    <div v-if="certInfo" class="col">
+                    <div v-if="tlsInfo" class="col">
                         <h4>{{ $t("Cert Exp.") }}</h4>
-                        <p>(<Datetime :value="certInfo.validTo" date-only />)</p>
+                        <p>(<Datetime :value="tlsInfo.certInfo.validTo" date-only />)</p>
                         <span class="num">
-                            <a href="#" @click.prevent="toggleCertInfoBox = !toggleCertInfoBox">{{ certInfo.daysRemaining }} {{ $t("days") }}</a>
+                            <a href="#" @click.prevent="toggleCertInfoBox = !toggleCertInfoBox">{{ tlsInfo.certInfo.daysRemaining }} {{ $t("days") }}</a>
                         </span>
                     </div>
                 </div>
             </div>
 
+            <!-- Cert Info Box -->
             <transition name="slide-fade" appear>
                 <div v-if="showCertInfoBox" class="shadow-box big-padding text-center">
                     <div class="row">
                         <div class="col">
-                            <h4>{{ $t("Certificate Info") }}</h4>
-                            <table class="text-start">
-                                <tbody>
-                                    <tr class="my-3">
-                                        <td class="px-3">
-                                            Valid:
-                                        </td>
-                                        <td>{{ certInfo.valid }}</td>
-                                    </tr>
-                                    <tr class="my-3">
-                                        <td class="px-3">
-                                            Valid To:
-                                        </td>
-                                        <td><Datetime :value="certInfo.validTo" /></td>
-                                    </tr>
-                                    <tr class="my-3">
-                                        <td class="px-3">
-                                            Days Remaining:
-                                        </td>
-                                        <td>{{ certInfo.daysRemaining }}</td>
-                                    </tr>
-                                    <tr class="my-3">
-                                        <td class="px-3">
-                                            Issuer:
-                                        </td>
-                                        <td>{{ certInfo.issuer }}</td>
-                                    </tr>
-                                    <tr class="my-3">
-                                        <td class="px-3">
-                                            Fingerprint:
-                                        </td>
-                                        <td>{{ certInfo.fingerprint }}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                            <certificate-info :certInfo="tlsInfo.certInfo" :valid="tlsInfo.valid" />
                         </div>
                     </div>
                 </div>
             </transition>
 
+            <!-- Ping Chart -->
             <div v-if="showPingChartBox" class="shadow-box big-padding text-center ping-chart-wrapper">
                 <div class="row">
                     <div class="col">
@@ -181,6 +149,7 @@
                         v-model="page"
                         :records="importantHeartBeatList.length"
                         :per-page="perPage"
+                        :options="paginationConfig"
                     />
                 </div>
             </div>
@@ -206,8 +175,8 @@
 
 <script>
 import { defineAsyncComponent } from "vue";
-import { useToast } from "vue-toastification"
-const toast = useToast()
+import { useToast } from "vue-toastification";
+const toast = useToast();
 import Confirm from "../components/Confirm.vue";
 import HeartbeatBar from "../components/HeartbeatBar.vue";
 import Status from "../components/Status.vue";
@@ -217,6 +186,7 @@ import Uptime from "../components/Uptime.vue";
 import Pagination from "v-pagination-3";
 const PingChart = defineAsyncComponent(() => import("../components/PingChart.vue"));
 import Tag from "../components/Tag.vue";
+import CertificateInfo from "../components/CertificateInfo.vue";
 
 export default {
     components: {
@@ -229,6 +199,7 @@ export default {
         Pagination,
         PingChart,
         Tag,
+        CertificateInfo,
     },
     data() {
         return {
@@ -237,22 +208,33 @@ export default {
             heartBeatList: [],
             toggleCertInfoBox: false,
             showPingChartBox: true,
-        }
+            paginationConfig: {
+                texts: {
+                    count: `${this.$t("Showing {from} to {to} of {count} records")}|{count} ${this.$t("records")}|${this.$t("One record")}`,
+                    first: this.$t("First"),
+                    last: this.$t("Last"),
+                    nextPage: ">",
+                    nextChunk: ">>",
+                    prevPage: "<",
+                    prevChunk: "<<"
+                }
+            }
+        };
     },
     computed: {
         monitor() {
-            let id = this.$route.params.id
+            let id = this.$route.params.id;
             return this.$root.monitorList[id];
         },
 
         lastHeartBeat() {
             if (this.monitor.id in this.$root.lastHeartbeatList && this.$root.lastHeartbeatList[this.monitor.id]) {
-                return this.$root.lastHeartbeatList[this.monitor.id]
+                return this.$root.lastHeartbeatList[this.monitor.id];
             }
 
             return {
                 status: -1,
-            }
+            };
         },
 
         ping() {
@@ -260,7 +242,7 @@ export default {
                 return this.lastHeartBeat.ping;
             }
 
-            return this.$t("notAvailableShort")
+            return this.$t("notAvailableShort");
         },
 
         avgPing() {
@@ -268,14 +250,14 @@ export default {
                 return this.$root.avgPingList[this.monitor.id];
             }
 
-            return this.$t("notAvailableShort")
+            return this.$t("notAvailableShort");
         },
 
         importantHeartBeatList() {
             if (this.$root.importantHeartbeatList[this.monitor.id]) {
                 // eslint-disable-next-line vue/no-side-effects-in-computed-properties
                 this.heartBeatList = this.$root.importantHeartbeatList[this.monitor.id];
-                return this.$root.importantHeartbeatList[this.monitor.id]
+                return this.$root.importantHeartbeatList[this.monitor.id];
             }
 
             return [];
@@ -283,22 +265,25 @@ export default {
 
         status() {
             if (this.$root.statusList[this.monitor.id]) {
-                return this.$root.statusList[this.monitor.id]
+                return this.$root.statusList[this.monitor.id];
             }
 
-            return { }
+            return { };
         },
 
-        certInfo() {
-            if (this.$root.certInfoList[this.monitor.id]) {
-                return this.$root.certInfoList[this.monitor.id]
+        tlsInfo() {
+            // Add: this.$root.tlsInfoList[this.monitor.id].certInfo
+            // Fix: TypeError: Cannot read properties of undefined (reading 'validTo')
+            // Reason: TLS Info object format is changed in 1.8.0, if for some reason, it cannot connect to the site after update to 1.8.0, the object is still in the old format.
+            if (this.$root.tlsInfoList[this.monitor.id] && this.$root.tlsInfoList[this.monitor.id].certInfo) {
+                return this.$root.tlsInfoList[this.monitor.id];
             }
 
-            return null
+            return null;
         },
 
         showCertInfoBox() {
-            return this.certInfo != null && this.toggleCertInfoBox;
+            return this.tlsInfo != null && this.toggleCertInfoBox;
         },
 
         displayedRecords() {
@@ -312,8 +297,8 @@ export default {
     },
     methods: {
         testNotification() {
-            this.$root.getSocket().emit("testNotification", this.monitor.id)
-            toast.success("Test notification is requested.")
+            this.$root.getSocket().emit("testNotification", this.monitor.id);
+            toast.success("Test notification is requested.");
         },
 
         pauseDialog() {
@@ -322,14 +307,14 @@ export default {
 
         resumeMonitor() {
             this.$root.getSocket().emit("resumeMonitor", this.monitor.id, (res) => {
-                this.$root.toastRes(res)
-            })
+                this.$root.toastRes(res);
+            });
         },
 
         pauseMonitor() {
             this.$root.getSocket().emit("pauseMonitor", this.monitor.id, (res) => {
-                this.$root.toastRes(res)
-            })
+                this.$root.toastRes(res);
+            });
         },
 
         deleteDialog() {
@@ -348,11 +333,11 @@ export default {
             this.$root.deleteMonitor(this.monitor.id, (res) => {
                 if (res.ok) {
                     toast.success(res.msg);
-                    this.$router.push("/dashboard")
+                    this.$router.push("/dashboard");
                 } else {
                     toast.error(res.msg);
                 }
-            })
+            });
         },
 
         clearEvents() {
@@ -360,7 +345,7 @@ export default {
                 if (! res.ok) {
                     toast.error(res.msg);
                 }
-            })
+            });
         },
 
         clearHeartbeats() {
@@ -368,13 +353,13 @@ export default {
                 if (! res.ok) {
                     toast.error(res.msg);
                 }
-            })
+            });
         },
 
         pingTitle(average = false) {
-            let translationPrefix = ""
+            let translationPrefix = "";
             if (average) {
-                translationPrefix = "Avg. "
+                translationPrefix = "Avg. ";
             }
 
             if (this.monitor.type === "http") {
@@ -384,7 +369,7 @@ export default {
             return this.$t(translationPrefix + "Ping");
         },
     },
-}
+};
 </script>
 
 <style lang="scss" scoped>

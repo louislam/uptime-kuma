@@ -11,3 +11,5 @@ dist-ssr
 
 /private
 /out
+/tmp
+.env

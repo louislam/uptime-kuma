@@ -4,6 +4,8 @@
 const { TimeLogger } = require("../src/util");
 const { R } = require("redbean-node");
 const { io } = require("./server");
+const { setting } = require("./util-server");
+const checkVersion = require("./check-version");
 
 async function sendNotificationList(socket) {
     const timeLogger = new TimeLogger();
@@ -14,10 +16,10 @@ async function sendNotificationList(socket) {
     ]);
 
     for (let bean of list) {
-        result.push(bean.export())
+        result.push(bean.export());
     }
 
-    io.to(socket.userID).emit("notificationList", result)
+    io.to(socket.userID).emit("notificationList", result);
 
     timeLogger.print("Send Notification List");
 
@@ -39,7 +41,7 @@ async function sendHeartbeatList(socket, monitorID, toUser = false, overwrite = 
         LIMIT 100
     `, [
         monitorID,
-    ])
+    ]);
 
     let result = list.reverse();
 
@@ -69,7 +71,7 @@ async function sendImportantHeartbeatList(socket, monitorID, toUser = false, ove
         LIMIT 500
     `, [
         monitorID,
-    ])
+    ]);
 
     timeLogger.print(`[Monitor: ${monitorID}] sendImportantHeartbeatList`);
 
@@ -81,8 +83,18 @@ async function sendImportantHeartbeatList(socket, monitorID, toUser = false, ove
 
 }
 
+async function sendInfo(socket) {
+    socket.emit("info", {
+        version: checkVersion.version,
+        latestVersion: checkVersion.latestVersion,
+        primaryBaseURL: await setting("primaryBaseURL")
+    });
+}
+
 module.exports = {
     sendNotificationList,
     sendImportantHeartbeatList,
     sendHeartbeatList,
-}
+    sendInfo
+};
+

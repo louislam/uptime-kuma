@@ -7,11 +7,13 @@ dayjs.extend(timezone);
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
 const { debug, UP, DOWN, PENDING, flipStatus, TimeLogger } = require("../../src/util");
-const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom } = require("../util-server");
+const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification");
+const { demoMode } = require("../config");
 const version = require("../../package.json").version;
+const apicache = require("../modules/apicache");
 
 /**
  * status:
@@ -53,6 +55,9 @@ class Monitor extends BeanModel {
             id: this.id,
             name: this.name,
             url: this.url,
+            method: this.method,
+            body: this.body,
+            headers: this.headers,
             hostname: this.hostname,
             port: this.port,
             maxretries: this.maxretries,
@@ -69,6 +74,7 @@ class Monitor extends BeanModel {
             dns_resolve_type: this.dns_resolve_type,
             dns_resolve_server: this.dns_resolve_server,
             dns_last_result: this.dns_last_result,
+            pushToken: this.pushToken,
             notificationIDList,
             tags: tags,
         };
@@ -135,11 +141,15 @@ class Monitor extends BeanModel {
                     // Do not do any queries/high loading things before the "bean.ping"
                     let startTime = dayjs().valueOf();
 
-                    let res = await axios.get(this.url, {
+                    const options = {
+                        url: this.url,
+                        method: (this.method || "get").toLowerCase(),
+                        ...(this.body ? { data: JSON.parse(this.body) } : {}),
                         timeout: this.interval * 1000 * 0.8,
                         headers: {
                             "Accept": "*/*",
                             "User-Agent": "Uptime-Kuma/" + version,
+                            ...(this.headers ? JSON.parse(this.headers) : {}),
                         },
                         httpsAgent: new https.Agent({
                             maxCachedSessions: 0,      // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
@@ -149,7 +159,8 @@ class Monitor extends BeanModel {
                         validateStatus: (status) => {
                             return checkStatusCode(status, this.getAcceptedStatuscodes());
                         },
-                    });
+                    };
+                    let res = await axios.request(options);
                     bean.msg = `${res.status} - ${res.statusText}`;
                     bean.ping = dayjs().valueOf() - startTime;
 
@@ -165,7 +176,13 @@ class Monitor extends BeanModel {
                         }
                     }
 
-                    debug("Cert Info Query Time: " + (dayjs().valueOf() - certInfoStartTime) + "ms");
+                    if (process.env.TIMELOGGER === "1") {
+                        debug("Cert Info Query Time: " + (dayjs().valueOf() - certInfoStartTime) + "ms");
+                    }
+
+                    if (process.env.UPTIME_KUMA_LOG_RESPONSE_BODY_MONITOR_ID == this.id) {
+                        console.log(res.data);
+                    }
 
                     if (this.type === "http") {
                         bean.status = UP;
@@ -236,6 +253,68 @@ class Monitor extends BeanModel {
 
                     bean.msg = dnsMessage;
                     bean.status = UP;
+                } else if (this.type === "push") {      // Type: Push
+                    const time = R.isoDateTime(dayjs.utc().subtract(this.interval, "second"));
+
+                    let heartbeatCount = await R.count("heartbeat", " monitor_id = ? AND time > ? ", [
+                        this.id,
+                        time
+                    ]);
+
+                    debug("heartbeatCount" + heartbeatCount + " " + time);
+
+                    if (heartbeatCount <= 0) {
+                        throw new Error("No heartbeat in the time window");
+                    } else {
+                        // No need to insert successful heartbeat for push type, so end here
+                        retries = 0;
+                        this.heartbeatInterval = setTimeout(beat, this.interval * 1000);
+                        return;
+                    }
+
+                } else if (this.type === "steam") {
+                    const steamApiUrl = "https://api.steampowered.com/IGameServersService/GetServerList/v1/";
+                    const steamAPIKey = await setting("steamAPIKey");
+                    const filter = `addr\\${this.hostname}:${this.port}`;
+
+                    if (!steamAPIKey) {
+                        throw new Error("Steam API Key not found");
+                    }
+
+                    let res = await axios.get(steamApiUrl, {
+                        timeout: this.interval * 1000 * 0.8,
+                        headers: {
+                            "Accept": "*/*",
+                            "User-Agent": "Uptime-Kuma/" + version,
+                        },
+                        httpsAgent: new https.Agent({
+                            maxCachedSessions: 0,      // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
+                            rejectUnauthorized: ! this.getIgnoreTls(),
+                        }),
+                        maxRedirects: this.maxredirects,
+                        validateStatus: (status) => {
+                            return checkStatusCode(status, this.getAcceptedStatuscodes());
+                        },
+                        params: {
+                            filter: filter,
+                            key: steamAPIKey,
+                        }
+                    });
+
+                    if (res.data.response && res.data.response.servers && res.data.response.servers.length > 0) {
+                        bean.status = UP;
+                        bean.msg = res.data.response.servers[0].name;
+
+                        try {
+                            bean.ping = await ping(this.hostname);
+                        } catch (_) { }
+                    } else {
+                        throw new Error("Server not found on Steam");
+                    }
+
+                } else {
+                    bean.msg = "Unknown Monitor Type";
+                    bean.status = PENDING;
                 }
 
                 if (this.isUpsideDown()) {
@@ -263,61 +342,23 @@ class Monitor extends BeanModel {
                 }
             }
 
-            // * ? -> ANY STATUS = important [isFirstBeat]
-            // UP -> PENDING = not important
-            // * UP -> DOWN = important
-            // UP -> UP = not important
-            // PENDING -> PENDING = not important
-            // * PENDING -> DOWN = important
-            // PENDING -> UP = not important
-            // DOWN -> PENDING = this case not exists
-            // DOWN -> DOWN = not important
-            // * DOWN -> UP = important
-            let isImportant = isFirstBeat ||
-                (previousBeat.status === UP && bean.status === DOWN) ||
-                (previousBeat.status === DOWN && bean.status === UP) ||
-                (previousBeat.status === PENDING && bean.status === DOWN);
+            let beatInterval = this.interval;
+
+            let isImportant = Monitor.isImportantBeat(isFirstBeat, previousBeat?.status, bean.status);
 
             // Mark as important if status changed, ignore pending pings,
             // Don't notify if disrupted changes to up
             if (isImportant) {
                 bean.important = true;
-
-                // Send only if the first beat is DOWN
-                if (!isFirstBeat || bean.status === DOWN) {
-                    let notificationList = await R.getAll("SELECT notification.* FROM notification, monitor_notification WHERE monitor_id = ? AND monitor_notification.notification_id = notification.id ", [
-                        this.id,
-                    ]);
-
-                    let text;
-                    if (bean.status === UP) {
-                        text = "✅ Up";
-                    } else {
-                        text = "🔴 Down";
-                    }
-
-                    let msg = `[${this.name}] [${text}] ${bean.msg}`;
-
-                    for (let notification of notificationList) {
-                        try {
-                            await Notification.send(JSON.parse(notification.config), msg, await this.toJSON(), bean.toJSON());
-                        } catch (e) {
-                            console.error("Cannot send notification to " + notification.name);
-                            console.log(e);
-                        }
-                    }
-                }
-
+                await Monitor.sendNotification(isFirstBeat, this, bean);
             } else {
                 bean.important = false;
             }
 
-            let beatInterval = this.interval;
-
             if (bean.status === UP) {
                 console.info(`Monitor #${this.id} '${this.name}': Successful Response: ${bean.ping} ms | Interval: ${beatInterval} seconds | Type: ${this.type}`);
             } else if (bean.status === PENDING) {
-                if (this.retryInterval !== this.interval) {
+                if (this.retryInterval > 0) {
                     beatInterval = this.retryInterval;
                 }
                 console.warn(`Monitor #${this.id} '${this.name}': Pending: ${bean.msg} | Max retries: ${this.maxretries} | Retry: ${retries} | Retry Interval: ${beatInterval} seconds | Type: ${this.type}`);
@@ -334,12 +375,27 @@ class Monitor extends BeanModel {
             previousBeat = bean;
 
             if (! this.isStop) {
+
+                if (demoMode) {
+                    if (beatInterval < 20) {
+                        console.log("beat interval too low, reset to 20s");
+                        beatInterval = 20;
+                    }
+                }
+
                 this.heartbeatInterval = setTimeout(beat, beatInterval * 1000);
             }
 
         };
 
-        beat();
+        // Delay Push Type
+        if (this.type === "push") {
+            setTimeout(() => {
+                beat();
+            }, this.interval * 1000);
+        } else {
+            beat();
+        }
     }
 
     stop() {
@@ -500,6 +556,54 @@ class Monitor extends BeanModel {
         const uptime = await this.calcUptime(duration, monitorID);
         io.to(userID).emit("uptime", monitorID, duration, uptime);
     }
+
+    static isImportantBeat(isFirstBeat, previousBeatStatus, currentBeatStatus) {
+        // * ? -> ANY STATUS = important [isFirstBeat]
+        // UP -> PENDING = not important
+        // * UP -> DOWN = important
+        // UP -> UP = not important
+        // PENDING -> PENDING = not important
+        // * PENDING -> DOWN = important
+        // PENDING -> UP = not important
+        // DOWN -> PENDING = this case not exists
+        // DOWN -> DOWN = not important
+        // * DOWN -> UP = important
+        let isImportant = isFirstBeat ||
+            (previousBeatStatus === UP && currentBeatStatus === DOWN) ||
+            (previousBeatStatus === DOWN && currentBeatStatus === UP) ||
+            (previousBeatStatus === PENDING && currentBeatStatus === DOWN);
+        return isImportant;
+    }
+
+    static async sendNotification(isFirstBeat, monitor, bean) {
+        if (!isFirstBeat || bean.status === DOWN) {
+            let notificationList = await R.getAll("SELECT notification.* FROM notification, monitor_notification WHERE monitor_id = ? AND monitor_notification.notification_id = notification.id ", [
+                monitor.id,
+            ]);
+
+            let text;
+            if (bean.status === UP) {
+                text = "✅ Up";
+            } else {
+                text = "🔴 Down";
+            }
+
+            let msg = `[${monitor.name}] [${text}] ${bean.msg}`;
+
+            for (let notification of notificationList) {
+                try {
+                    await Notification.send(JSON.parse(notification.config), msg, await monitor.toJSON(), bean.toJSON());
+                } catch (e) {
+                    console.error("Cannot send notification to " + notification.name);
+                    console.log(e);
+                }
+            }
+
+            // Clear Status Page Cache
+            apicache.clear();
+        }
+    }
+
 }
 
 module.exports = Monitor;

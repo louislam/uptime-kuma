@@ -52,9 +52,12 @@
                             </div>
                         </div>
 
+                        <!-- General Settings -->
                         <h2 class="mt-5 mb-2">{{ $t("General") }}</h2>
+
                         <form class="mb-3" @submit.prevent="saveGeneral">
-                            <div class="mb-3">
+                            <!-- Timezone -->
+                            <div class="mb-4">
                                 <label for="timezone" class="form-label">{{ $t("Timezone") }}</label>
                                 <select id="timezone" v-model="$root.userTimezone" class="form-select">
                                     <option value="auto">
@@ -66,7 +69,8 @@
                                 </select>
                             </div>
 
-                            <div class="mb-3">
+                            <!-- Search Engine -->
+                            <div class="mb-4">
                                 <label class="form-label">{{ $t("Search Engine Visibility") }}</label>
 
                                 <div class="form-check">
@@ -83,7 +87,8 @@
                                 </div>
                             </div>
 
-                            <div class="mb-3">
+                            <!-- Entry Page -->
+                            <div class="mb-4">
                                 <label class="form-label">{{ $t("Entry Page") }}</label>
 
                                 <div class="form-check">
@@ -101,6 +106,38 @@
                                 </div>
                             </div>
 
+                            <!-- Primary Base URL -->
+                            <div class="mb-4">
+                                <label class="form-label" for="primaryBaseURL">{{ $t("Primary Base URL") }}</label>
+
+                                <div class="input-group mb-3">
+                                    <input id="primaryBaseURL" v-model="settings.primaryBaseURL" class="form-control" name="primaryBaseURL" placeholder="https://" pattern="https?://.+">
+                                    <button class="btn btn-outline-primary" type="button" @click="autoGetPrimaryBaseURL">Auto Get</button>
+                                </div>
+
+                                <div class="form-text">
+                                </div>
+                            </div>
+
+                            <!-- Steam API Key -->
+                            <div class="mb-4">
+                                <label class="form-label" for="steamAPIKey">{{ $t("Steam API Key") }}</label>
+                                <input id="steamAPIKey" v-model="settings.steamAPIKey" class="form-control" name="steamAPIKey">
+                                <div class="form-text">
+                                    {{ $t("steamApiKeyDescription") }}<a href="https://steamcommunity.com/dev" target="_blank">https://steamcommunity.com/dev</a>
+                                </div>
+                            </div>
+
+                            <!-- Monitor History -->
+                            <div class="mb-4">
+                                <h4 class="mt-4">{{ $t("Monitor History") }}</h4>
+                                <div class="mt-2">
+                                    <label for="keepDataPeriodDays" class="form-label">{{ $t("clearDataOlderThan", [ settings.keepDataPeriodDays ]) }}</label>
+                                    <input id="keepDataPeriodDays" v-model="settings.keepDataPeriodDays" type="number" class="form-control" required min="1" step="1">
+                                </div>
+                            </div>
+
+                            <!-- Save Button -->
                             <div>
                                 <button class="btn btn-primary" type="submit">
                                     {{ $t("Save") }}
@@ -109,6 +146,7 @@
                         </form>
 
                         <template v-if="loaded">
+                            <!-- Change Password -->
                             <template v-if="! settings.disableAuth">
                                 <h2 class="mt-5 mb-2">{{ $t("Change Password") }}</h2>
                                 <form class="mb-3" @submit.prevent="savePassword">
@@ -196,37 +234,41 @@
                             <h2 class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
 
                             <div class="mb-3">
-                                <button v-if="settings.disableAuth" class="btn btn-outline-primary me-1 mb-1" @click="enableAuth">{{ $t("Enable Auth") }}</button>
-                                <button v-if="! settings.disableAuth" class="btn btn-primary me-1 mb-1" @click="confirmDisableAuth">{{ $t("Disable Auth") }}</button>
-                                <button v-if="! settings.disableAuth" class="btn btn-danger me-1 mb-1" @click="$root.logout">{{ $t("Logout") }}</button>
+                                <button v-if="settings.disableAuth" class="btn btn-outline-primary me-2 mb-2" @click="enableAuth">{{ $t("Enable Auth") }}</button>
+                                <button v-if="! settings.disableAuth" class="btn btn-primary me-2 mb-2" @click="confirmDisableAuth">{{ $t("Disable Auth") }}</button>
+                                <button v-if="! settings.disableAuth" class="btn btn-danger me-2 mb-2" @click="$root.logout">{{ $t("Logout") }}</button>
                                 <button class="btn btn-outline-danger me-1 mb-1" @click="confirmClearStatistics">{{ $t("Clear all statistics") }}</button>
                             </div>
                         </template>
                     </div>
 
-                    <div class="notification-list col-md-6">
+                    <div class="col-md-6">
                         <div v-if="$root.isMobile" class="mt-3" />
 
-                        <h2>{{ $t("Notifications") }}</h2>
-                        <p v-if="$root.notificationList.length === 0">
-                            {{ $t("Not available, please setup.") }}
-                        </p>
-                        <p v-else>
-                            {{ $t("notificationDescription") }}
-                        </p>
+                        <!-- Notifications -->
+                        <div class="notification-list ">
+                            <h2>{{ $t("Notifications") }}</h2>
+                            <p v-if="$root.notificationList.length === 0">
+                                {{ $t("Not available, please setup.") }}
+                            </p>
+                            <p v-else>
+                                {{ $t("notificationDescription") }}
+                            </p>
 
-                        <ul class="list-group mb-3" style="border-radius: 1rem;">
-                            <li v-for="(notification, index) in $root.notificationList" :key="index" class="list-group-item">
-                                {{ notification.name }}<br>
-                                <a href="#" @click="$refs.notificationDialog.show(notification.id)">{{ $t("Edit") }}</a>
-                            </li>
-                        </ul>
+                            <ul class="list-group mb-3" style="border-radius: 1rem;">
+                                <li v-for="(notification, index) in $root.notificationList" :key="index" class="list-group-item">
+                                    {{ notification.name }}<br>
+                                    <a href="#" @click="$refs.notificationDialog.show(notification.id)">{{ $t("Edit") }}</a>
+                                </li>
+                            </ul>
 
-                        <button class="btn btn-primary me-2" type="button" @click="$refs.notificationDialog.show()">
-                            {{ $t("Setup Notification") }}
-                        </button>
+                            <button class="btn btn-primary me-2" type="button" @click="$refs.notificationDialog.show()">
+                                {{ $t("Setup Notification") }}
+                            </button>
+                        </div>
 
-                        <h2 class="mt-5">Info</h2>
+                        <!-- Info -->
+                        <h2 class="mt-5">{{ $t("Info") }}</h2>
 
                         {{ $t("Version") }}: {{ $root.info.version }} <br />
                         <a href="https://github.com/louislam/uptime-kuma/releases" target="_blank" rel="noopener">{{ $t("Check Update On GitHub") }}</a>
@@ -310,10 +352,40 @@
                     <p>Utilizzare con attenzione.</p>
                 </template>
 
+                <template v-else-if="$i18n.locale === 'id-ID' ">
+                    <p>Apakah Anda yakin ingin <strong>menonaktifkan autentikasi</strong>?</p>
+                    <p>Ini untuk <strong>mereka yang memiliki autentikasi pihak ketiga</strong> diletakkan di depan Uptime Kuma, misalnya akses Cloudflare.</p>
+                    <p>Gunakan dengan hati-hati.</p>
+                </template>
+
                 <template v-else-if="$i18n.locale === 'ru-RU' ">
                     <p>Вы уверены, что хотите <strong>отключить авторизацию</strong>?</p>
                     <p>Это подходит для <strong>тех, у кого стоит другая авторизация</strong> перед открытием Uptime Kuma, например Cloudflare Access.</p>
                     <p>Пожалуйста, используйте с осторожностью.</p>
+                </template>
+
+                <template v-else-if="$i18n.locale === 'fa' ">
+                    <p>آیا مطمئن هستید که میخواهید <strong>احراز هویت را غیر فعال کنید</strong>?</p>
+                    <p>این ویژگی برای کسانی است که <strong> لایه امنیتی شخص ثالث دیگر بر روی این آدرس فعال کرده‌اند</strong>، مانند Cloudflare Access.</p>
+                    <p>لطفا از این امکان با دقت استفاده کنید.</p>
+                </template>
+
+                <template v-else-if="$i18n.locale === 'bg-BG' ">
+                    <p>Сигурни ли сте, че желаете да <strong>изключите удостоверяването</strong>?</p>
+                    <p>Използва се в случаите, когато <strong>има настроен алтернативен метод за удостоверяване</strong> преди Uptime Kuma, например Cloudflare Access.</p>
+                    <p>Моля, използвайте с повишено внимание.</p>
+                </template>
+
+                <template v-else-if="$i18n.locale === 'hu' ">
+                    <p>Biztos benne, hogy <strong>kikapcsolja a hitelesítést</strong>?</p>
+                    <p>Akkor érdemes, ha <strong>van 3rd-party hitelesítés</strong> az Uptime Kuma-t megelőzően mint a Cloudflare Access.</p>
+                    <p>Használja megfontoltan!</p>
+                </template>
+
+                <template v-else-if="$i18n.locale === 'nb-NO' ">
+                    <p>Er du sikker på at du vil <strong>deaktiver autentisering</strong>?</p>
+                    <p>Dette er for <strong>de som har tredjepartsautorisering</strong> foran Uptime Kuma, for eksempel Cloudflare Access.</p>
+                    <p>Vennligst vær forsiktig.</p>
                 </template>
 
                 <!-- English (en) -->
@@ -344,8 +416,9 @@ import TwoFADialog from "../components/TwoFADialog.vue";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-import { timezoneList } from "../util-frontend";
+import { timezoneList, setPageLocale } from "../util-frontend";
 import { useToast } from "vue-toastification";
+
 const toast = useToast();
 
 export default {
@@ -381,6 +454,7 @@ export default {
 
         "$i18n.locale"() {
             localStorage.locale = this.$i18n.locale;
+            setPageLocale();
         },
     },
 
@@ -420,6 +494,10 @@ export default {
 
                 if (this.settings.entryPage === undefined) {
                     this.settings.entryPage = "dashboard";
+                }
+
+                if (this.settings.keepDataPeriodDays === undefined) {
+                    this.settings.keepDataPeriodDays = 180;
                 }
 
                 this.loaded = true;
@@ -511,6 +589,10 @@ export default {
                 }
             });
         },
+
+        autoGetPrimaryBaseURL() {
+            this.settings.primaryBaseURL = location.protocol + "//" + location.host;
+        }
     },
 };
 </script>

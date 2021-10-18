@@ -10,7 +10,7 @@ export default {
         let entryPage = (await axios.get("/api/entry-page")).data;
 
         if (entryPage === "statusPage") {
-            this.$router.push("/status-page");
+            this.$router.push("/status");
         } else {
             this.$router.push("/dashboard");
         }

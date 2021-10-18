@@ -36,5 +36,17 @@ export default {
 
             return result;
         },
+
+        baseURL() {
+            if (this.$root.info.primaryBaseURL) {
+                return this.$root.info.primaryBaseURL;
+            }
+
+            if (env === "development" || localStorage.dev === "dev") {
+                return axios.defaults.baseURL;
+            } else {
+                return location.protocol + "//" + location.host;
+            }
+        },
     }
 };

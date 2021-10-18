@@ -6,6 +6,7 @@ let socket;
 
 const noSocketIOPages = [
     "/status-page",
+    "/status",
     "/"
 ];
 
@@ -29,7 +30,7 @@ export default {
             importantHeartbeatList: { },
             avgPingList: { },
             uptimeList: { },
-            certInfoList: {},
+            tlsInfoList: {},
             notificationList: [],
             connectionErrorMsg: "Cannot connect to the socket server. Reconnecting...",
         };
@@ -153,7 +154,7 @@ export default {
             });
 
             socket.on("certInfo", (monitorID, data) => {
-                this.certInfoList[monitorID] = JSON.parse(data);
+                this.tlsInfoList[monitorID] = JSON.parse(data);
             });
 
             socket.on("importantHeartbeatList", (monitorID, data, overwrite) => {
@@ -178,7 +179,7 @@ export default {
             });
 
             socket.on("connect", () => {
-                console.log("connect");
+                console.log("Connected to the socket server");
                 this.socket.connectCount++;
                 this.socket.connected = true;
 
@@ -292,6 +293,9 @@ export default {
         },
 
         getMonitorList(callback) {
+            if (! callback) {
+                callback = () => { };
+            }
             socket.emit("getMonitorList", callback);
         },
 

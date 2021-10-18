@@ -1,12 +1,15 @@
 console.log("Welcome to Uptime Kuma");
+const args = require("args-parser")(process.argv);
+const { sleep, debug, getRandomInt, genSecret } = require("../src/util");
+const config = require("./config");
+
+debug(args);
 
 if (! process.env.NODE_ENV) {
     process.env.NODE_ENV = "production";
 }
 
 console.log("Node Env: " + process.env.NODE_ENV);
-
-const { sleep, debug, TimeLogger, getRandomInt } = require("../src/util");
 
 console.log("Importing Node libraries");
 const fs = require("fs");
@@ -37,7 +40,7 @@ console.log("Importing this project modules");
 debug("Importing Monitor");
 const Monitor = require("./model/monitor");
 debug("Importing Settings");
-const { getSettings, setSettings, setting, initJWTSecret, genSecret, allowDevAllOrigin, checkLogin } = require("./util-server");
+const { getSettings, setSettings, setting, initJWTSecret, checkLogin, startUnitTest, FBSD } = require("./util-server");
 
 debug("Importing Notification");
 const { Notification } = require("./notification");
@@ -46,35 +49,56 @@ Notification.init();
 debug("Importing Database");
 const Database = require("./database");
 
+debug("Importing Background Jobs");
+const { initBackgroundJobs } = require("./jobs");
+
 const { basicAuth } = require("./auth");
 const { login } = require("./auth");
 const passwordHash = require("./password-hash");
-
-const args = require("args-parser")(process.argv);
 
 const checkVersion = require("./check-version");
 console.info("Version: " + checkVersion.version);
 
 // If host is omitted, the server will accept connections on the unspecified IPv6 address (::) when IPv6 is available and the unspecified IPv4 address (0.0.0.0) otherwise.
 // Dual-stack support for (::)
-const hostname = process.env.HOST || args.host;
-const port = parseInt(process.env.PORT || args.port || 3001);
+let hostname = process.env.UPTIME_KUMA_HOST || args.host;
+
+// Also read HOST if not FreeBSD, as HOST is a system environment variable in FreeBSD
+if (!hostname && !FBSD) {
+    hostname = process.env.HOST;
+}
+
+if (hostname) {
+    console.log("Custom hostname: " + hostname);
+}
+
+const port = parseInt(process.env.UPTIME_KUMA_PORT || process.env.PORT || args.port || 3001);
 
 // SSL
-const sslKey = process.env.SSL_KEY || args["ssl-key"] || undefined;
-const sslCert = process.env.SSL_CERT || args["ssl-cert"] || undefined;
+const sslKey = process.env.UPTIME_KUMA_SSL_KEY || process.env.SSL_KEY || args["ssl-key"] || undefined;
+const sslCert = process.env.UPTIME_KUMA_SSL_CERT || process.env.SSL_CERT || args["ssl-cert"] || undefined;
 
 // Header AUTH
 const remoteUserHeader = process.env.REMOTE_USER_HEADER;
 
-// Demo Mode?
-const demoMode = args["demo"] || false;
+// 2FA / notp verification defaults
+const twofa_verification_opts = {
+    "window": 1,
+    "time": 30
+};
 
-if (demoMode) {
+
+/**
+ * Run unit test after the server is ready
+ * @type {boolean}
+ */
+const testMode = !!args["test"] || false;
+
+if (config.demoMode) {
     console.log("==== Demo Mode ====");
 }
 
-console.log("Creating express and socket.io instance")
+console.log("Creating express and socket.io instance");
 const app = express();
 
 let server;
@@ -94,7 +118,7 @@ const io = new Server(server);
 module.exports.io = io;
 
 // Must be after io instantiation
-const { sendNotificationList, sendHeartbeatList, sendImportantHeartbeatList } = require("./client");
+const { sendNotificationList, sendHeartbeatList, sendImportantHeartbeatList, sendInfo } = require("./client");
 const { statusPageSocketHandler } = require("./socket-handlers/status-page-socket-handler");
 
 app.use(express.json());
@@ -183,10 +207,7 @@ exports.entryPage = "dashboard";
 
     console.log("Adding socket handler");
     io.on("connection", async (socket) => {
-        socket.emit("info", {
-            version: checkVersion.version,
-            latestVersion: checkVersion.latestVersion,
-        });
+        sendInfo(socket);
 
         totalClient++;
 
@@ -263,7 +284,7 @@ exports.entryPage = "dashboard";
                 }
 
                 if (data.token) {
-                    let verify = notp.totp.verify(data.token, user.twofa_secret);
+                    let verify = notp.totp.verify(data.token, user.twofa_secret, twofa_verification_opts);
 
                     if (verify && verify.delta == 0) {
                         callback({
@@ -305,6 +326,12 @@ exports.entryPage = "dashboard";
                 if (user.twofa_status == 0) {
                     let newSecret = await genSecret();
                     let encodedSecret = base32.encode(newSecret);
+
+                    // Google authenticator doesn't like equal signs
+                    // The fix is found at https://github.com/guyht/notp
+                    // Related issue: https://github.com/louislam/uptime-kuma/issues/486
+                    encodedSecret = encodedSecret.toString().replace(/=/g, "");
+
                     let uri = `otpauth://totp/Uptime%20Kuma:${user.username}?secret=${encodedSecret}`;
 
                     await R.exec("UPDATE `user` SET twofa_secret = ? WHERE id = ? ", [
@@ -375,7 +402,7 @@ exports.entryPage = "dashboard";
                 socket.userID,
             ]);
 
-            let verify = notp.totp.verify(token, user.twofa_secret);
+            let verify = notp.totp.verify(token, user.twofa_secret, twofa_verification_opts);
 
             if (verify && verify.delta == 0) {
                 callback({
@@ -501,6 +528,9 @@ exports.entryPage = "dashboard";
                 bean.name = monitor.name;
                 bean.type = monitor.type;
                 bean.url = monitor.url;
+                bean.method = monitor.method;
+                bean.body = monitor.body;
+                bean.headers = monitor.headers;
                 bean.interval = monitor.interval;
                 bean.retryInterval = monitor.retryInterval;
                 bean.hostname = monitor.hostname;
@@ -513,6 +543,7 @@ exports.entryPage = "dashboard";
                 bean.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
                 bean.dns_resolve_type = monitor.dns_resolve_type;
                 bean.dns_resolve_server = monitor.dns_resolve_server;
+                bean.pushToken = monitor.pushToken;
 
                 await R.store(bean);
 
@@ -640,6 +671,8 @@ exports.entryPage = "dashboard";
                 });
 
                 await sendMonitorList(socket);
+                // Clear heartbeat list on client
+                await sendImportantHeartbeatList(socket, monitorID, true, true);
 
             } catch (e) {
                 callback({
@@ -864,6 +897,8 @@ exports.entryPage = "dashboard";
                     msg: "Saved"
                 });
 
+                sendInfo(socket);
+
             } catch (e) {
                 callback({
                     ok: false,
@@ -1021,6 +1056,9 @@ exports.entryPage = "dashboard";
                                 name: monitorListData[i].name,
                                 type: monitorListData[i].type,
                                 url: monitorListData[i].url,
+                                method: monitorListData[i].method || "GET",
+                                body: monitorListData[i].body,
+                                headers: monitorListData[i].headers,
                                 interval: monitorListData[i].interval,
                                 retryInterval: retryInterval,
                                 hostname: monitorListData[i].hostname,
@@ -1035,6 +1073,10 @@ exports.entryPage = "dashboard";
                                 dns_resolve_server: monitorListData[i].dns_resolve_server,
                                 notificationIDList: {},
                             };
+
+                            if (monitorListData[i].pushToken) {
+                                monitor.pushToken = monitorListData[i].pushToken;
+                            }
 
                             let bean = R.dispense("monitor");
 
@@ -1231,7 +1273,13 @@ exports.entryPage = "dashboard";
         }
         startMonitors();
         checkVersion.startInterval();
+
+        if (testMode) {
+            startUnitTest();
+        }
     });
+
+    initBackgroundJobs(args);
 
 })();
 
