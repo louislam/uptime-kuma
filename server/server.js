@@ -449,7 +449,7 @@ exports.entryPage = "dashboard";
         socket.on("setup", async (username, password, callback) => {
             try {
                 if ((await R.count("user")) !== 0) {
-                    throw new Error("Uptime Kuma has been setup. If you want to setup again, please delete the database.");
+                    throw new Error("Uptime Kuma has been initialized. If you want to run setup again, please delete the database.");
                 }
 
                 let user = R.dispense("user");
@@ -1339,7 +1339,7 @@ async function initDatabase() {
         fs.copyFileSync(Database.templatePath, Database.path);
     }
 
-    console.log("Connecting to Database");
+    console.log("Connecting to the Database");
     await Database.connect();
     console.log("Connected");
 
@@ -1439,7 +1439,7 @@ async function shutdownFunction(signal) {
 }
 
 function finalFunction() {
-    console.log("Graceful shutdown successfully!");
+    console.log("Graceful shutdown successful!");
 }
 
 gracefulShutdown(server, {
