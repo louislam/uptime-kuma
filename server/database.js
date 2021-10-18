@@ -49,10 +49,11 @@ class Database {
         "patch-incident-table.sql": true,
         "patch-group-table.sql": true,
         "patch-monitor-push_token.sql": true,
+        "patch-http-monitor-method-body-and-headers.sql": true,
     }
 
     /**
-     * The finally version should be 10 after merged tag feature
+     * The final version should be 10 after merged tag feature
      * @deprecated Use patchList for any new feature
      */
     static latestVersion = 10;

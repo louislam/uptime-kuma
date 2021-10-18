@@ -186,7 +186,7 @@ export default {
     .beat {
         display: inline-block;
         background-color: $primary;
-        border-radius: 50rem;
+        border-radius: $border-radius;
 
         &.empty {
             background-color: aliceblue;
