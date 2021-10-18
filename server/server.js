@@ -321,7 +321,7 @@ exports.entryPage = "dashboard";
                 ]);
 
                 if (user.twofa_status == 0) {
-                    let newSecret = await genSecret();
+                    let newSecret = genSecret();
                     let encodedSecret = base32.encode(newSecret);
 
                     // Google authenticator doesn't like equal signs
