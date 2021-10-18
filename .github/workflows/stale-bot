@@ -11,7 +11,7 @@ jobs:
       - uses: actions/stale@v4
         with:
           stale-issue-message: 'We are clearing up our old issues and your ticket has been open for 6 months with no activity. Remove stale label or comment or this will be closed in 7 days.'
-          stale-pr-message: ''We are clearing up our old Pull Requests and yours has been open for 6 months with no activity. Remove stale label or comment or this will be closed in 7 days.'
+          stale-pr-message: 'We are clearing up our old Pull Requests and yours has been open for 6 months with no activity. Remove stale label or comment or this will be closed in 7 days.'
           close-issue-message: 'This issue was closed because it has been stalled for 7 days with no activity.'
           close-pr-message: 'This PR was closed because it has been stalled for 7 days with no activity.'
           days-before-stale: 180
