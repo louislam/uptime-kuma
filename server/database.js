@@ -53,7 +53,7 @@ class Database {
     }
 
     /**
-     * The finally version should be 10 after merged tag feature
+     * The final version should be 10 after merged tag feature
      * @deprecated Use patchList for any new feature
      */
     static latestVersion = 10;

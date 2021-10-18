@@ -16,7 +16,7 @@ Try it!
 
 https://demo.uptime.kuma.pet
 
-It is a 10 minutes live demo, all data will be deleted after that. The server is located at Tokyo, if you live far away from here, it may affact your experience. I suggest that you should install to try it.
+It is a temporary live demo, all data will be deleted after 10 minutes. The server is located at Tokyo, so if you live far from there it may affect your experience. I suggest that you should install and try it out for the best demo experience.
 
 VPS is sponsored by Uptime Kuma sponsors on [Open Collective](https://opencollective.com/uptime-kuma)! Thank you so much!
 
@@ -25,7 +25,7 @@ VPS is sponsored by Uptime Kuma sponsors on [Open Collective](https://opencollec
 * Monitoring uptime for HTTP(s) / TCP / Ping / DNS Record / Push.
 * Fancy, Reactive, Fast UI/UX.
 * Notifications via Telegram, Discord, Gotify, Slack, Pushover, Email (SMTP), and [70+ notification services, click here for the full list](https://github.com/louislam/uptime-kuma/tree/master/src/components/notifications).
-* 20 seconds interval.
+* 20 second intervals.
 * [Multi Languages](https://github.com/louislam/uptime-kuma/tree/master/src/languages)
 * Simple Status Page
 * Ping Chart
@@ -40,7 +40,7 @@ docker volume create uptime-kuma
 docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name uptime-kuma louislam/uptime-kuma:1
 ```
 
-Browse to http://localhost:3001 after started.
+Browse to http://localhost:3001 after starting.
 
 ### 💪🏻 Without Docker
 
@@ -58,11 +58,11 @@ npm run setup
 node server/server.js
 
 # (Recommended) Option 2. Run in background using PM2
-# Install PM2 if you don't have: npm install pm2 -g
+# Install PM2 if you don't have it: npm install pm2 -g
 pm2 start server/server.js --name uptime-kuma
 ```
 
-Browse to http://localhost:3001 after started.
+Browse to http://localhost:3001 after starting.
 
 ### Advanced Installation
 
@@ -124,7 +124,7 @@ You can discuss or ask for help in [Issues](https://github.com/louislam/uptime-k
 ### Subreddit
 
 My Reddit account: louislamlam
-You can mention me if you ask question on Reddit.
+You can mention me if you ask a question on Reddit.
 https://www.reddit.com/r/UptimeKuma/
 
 ## Contribute

@@ -40,5 +40,5 @@ describe("Test genSecret", () => {
 describe("Test reset-password", () => {
     it("should able to run", async () => {
         await require("../extra/reset-password").main();
-    });
+    }, 120000);
 });
