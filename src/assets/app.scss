@@ -1,8 +1,9 @@
 @import "vars.scss";
+@import "multiselect.scss";
 @import "node_modules/bootstrap/scss/bootstrap";
 
 #app {
-    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, segoe ui, Roboto, helvetica neue, Arial, noto sans, sans-serif, apple color emoji, segoe ui emoji, segoe ui symbol, noto color emoji;
+    font-family: BlinkMacSystemFont, segoe ui, Roboto, helvetica neue, Arial, noto sans, sans-serif, apple color emoji, segoe ui emoji, segoe ui symbol, noto color emoji;
 }
 
 h1 {
@@ -11,6 +12,10 @@ h1 {
 
 h2 {
     font-size: 26px;
+}
+
+textarea.form-control {
+    border-radius: 19px;
 }
 
 ::-webkit-scrollbar {
@@ -179,6 +184,11 @@ h2 {
         border-color: $dark-border-color;
     }
 
+    .form-control:disabled, .form-control[readonly] {
+        background-color: #232f3b;
+        opacity: 1;
+    }
+
     .table-hover > tbody > tr:hover {
         --bs-table-accent-bg: #070a10;
         color: $dark-font-color;
@@ -231,30 +241,6 @@ h2 {
         background-color: $dark-bg;
         border-color: $dark-border-color;
         color: $dark-font-color;
-    }
-
-    // Multiselect
-    .multiselect__tags {
-        background-color: $dark-bg2;
-        border-color: $dark-border-color;
-    }
-
-    .multiselect__input, .multiselect__single {
-        background-color: $dark-bg2;
-        color: $dark-font-color;
-    }
-
-    .multiselect__content-wrapper {
-        background-color: $dark-bg2;
-        border-color: $dark-border-color;
-    }
-
-    .multiselect--above .multiselect__content-wrapper {
-        border-color: $dark-border-color;
-    }
-
-    .multiselect__option--selected {
-        background-color: $dark-bg;
     }
 
     .monitor-list {
@@ -428,3 +414,7 @@ h2 {
 .vue-image-crop-upload .vicp-wrap {
     border-radius: 10px !important;
 }
+
+// Localization
+
+@import "localization.scss";

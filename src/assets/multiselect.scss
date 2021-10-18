@@ -1,0 +1,73 @@
+@import "vars.scss";
+@import "node_modules/vue-multiselect/dist/vue-multiselect";
+
+.multiselect__tags {
+    border-radius: 1.5rem;
+    border: 1px solid #ced4da;
+    min-height: 38px;
+    padding: 6px 40px 0 8px;
+}
+
+.multiselect--active .multiselect__tags {
+    border-radius: 1rem;
+}
+
+.multiselect__option--highlight {
+    background: $primary !important;
+}
+
+.multiselect__option--highlight::after {
+    background: $primary !important;
+}
+
+.multiselect__tag {
+    border-radius: $border-radius;
+    margin-bottom: 0;
+    padding: 6px 26px 6px 10px;
+    background: $primary !important;
+}
+
+.multiselect__placeholder {
+    font-size: 1rem;
+    padding-left: 6px;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-bottom: 0;
+    opacity: 0.67;
+}
+
+.multiselect__input,
+.multiselect__single {
+    line-height: 14px;
+    margin-bottom: 0;
+}
+
+.dark {
+    .multiselect__tag {
+        color: $dark-font-color2;
+    }
+
+    .multiselect__tags {
+        background-color: $dark-bg2;
+        border-color: $dark-border-color;
+    }
+
+    .multiselect__input,
+    .multiselect__single {
+        background-color: $dark-bg2;
+        color: $dark-font-color;
+    }
+
+    .multiselect__content-wrapper {
+        background-color: $dark-bg2;
+        border-color: $dark-border-color;
+    }
+
+    .multiselect--above .multiselect__content-wrapper {
+        border-color: $dark-border-color;
+    }
+
+    .multiselect__option--selected {
+        background-color: $dark-bg;
+    }
+}

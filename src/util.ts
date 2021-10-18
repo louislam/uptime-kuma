@@ -86,7 +86,7 @@ export class TimeLogger {
     }
 
     print(name: string) {
-        if (isDev) {
+        if (isDev && process.env.TIMELOGGER === "1") {
             console.log(name + ": " + (dayjs().valueOf() - this.startTime) + "ms")
         }
     }
@@ -112,4 +112,18 @@ export function getRandomInt(min: number, max: number) {
     min = Math.ceil(min);
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+export function genSecret(length = 64) {
+    let secret = "";
+    let chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let charsLength = chars.length;
+    for ( let i = 0; i < length; i++ ) {
+        secret += chars.charAt(Math.floor(Math.random() * charsLength));
+    }
+    return secret;
+}
+
+export function getMonitorRelativeURL(id: string) {
+    return "/dashboard/" + id;
 }

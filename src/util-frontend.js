@@ -2,6 +2,7 @@ import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
 import timezones from "timezones-list";
+import { localeDirection, currentLocale } from "./i18n";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -30,7 +31,7 @@ export function timezoneList() {
                 time: getTimezoneOffset(timezone.tzCode),
             });
         } catch (e) {
-            console.log("Skip Timezone: " + timezone.tzCode);
+            // Skipping not supported timezone.tzCode by dayjs
         }
     }
 
@@ -48,3 +49,9 @@ export function timezoneList() {
 
     return result;
 }
+
+export function setPageLocale() {
+    const html = document.documentElement 
+    html.setAttribute('lang', currentLocale() )
+    html.setAttribute('dir', localeDirection() )
+  }

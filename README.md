@@ -1,6 +1,6 @@
 # Uptime Kuma
 
-<a target="_blank" href="https://github.com/louislam/uptime-kuma"><img src="https://img.shields.io/github/stars/louislam/uptime-kuma" /></a> <a target="_blank" href="https://hub.docker.com/r/louislam/uptime-kuma"><img src="https://img.shields.io/docker/pulls/louislam/uptime-kuma" /></a> <a target="_blank" href="https://hub.docker.com/r/louislam/uptime-kuma"><img src="https://img.shields.io/docker/v/louislam/uptime-kuma/latest?label=docker%20image%20ver." /></a> <a target="_blank" href="https://github.com/louislam/uptime-kuma"><img src="https://img.shields.io/github/last-commit/louislam/uptime-kuma" /></a>
+<a target="_blank" href="https://github.com/louislam/uptime-kuma"><img src="https://img.shields.io/github/stars/louislam/uptime-kuma" /></a> <a target="_blank" href="https://hub.docker.com/r/louislam/uptime-kuma"><img src="https://img.shields.io/docker/pulls/louislam/uptime-kuma" /></a> <a target="_blank" href="https://hub.docker.com/r/louislam/uptime-kuma"><img src="https://img.shields.io/docker/v/louislam/uptime-kuma/latest?label=docker%20image%20ver." /></a> <a target="_blank" href="https://github.com/louislam/uptime-kuma"><img src="https://img.shields.io/github/last-commit/louislam/uptime-kuma" /></a>  <a target="_blank" href="https://opencollective.com/uptime-kuma"><img src="https://opencollective.com/uptime-kuma/total/badge.svg?label=Backers&color=brightgreen" /></a>
 
 <div align="center" width="100%">
     <img src="./public/icon.svg" width="128" alt="" />
@@ -8,7 +8,7 @@
 
 It is a self-hosted monitoring tool like "Uptime Robot".
 
-<img src="https://louislam.net/uptimekuma/1.jpg" width="512" alt="" />
+<img src="https://uptime.kuma.pet/img/dark.jpg" width="700" alt="" />
 
 ## 🥔 Live Demo
 
@@ -16,17 +16,20 @@ Try it!
 
 https://demo.uptime.kuma.pet
 
-It is a 5 minutes live demo, all data will be deleted after that. The server is located at Tokyo, if you live far away from here, it may affact your experience. I suggest that you should install to try it.
+It is a temporary live demo, all data will be deleted after 10 minutes. The server is located at Tokyo, so if you live far from there it may affect your experience. I suggest that you should install and try it out for the best demo experience.
 
 VPS is sponsored by Uptime Kuma sponsors on [Open Collective](https://opencollective.com/uptime-kuma)! Thank you so much!
 
 ## ⭐ Features
 
-* Monitoring uptime for HTTP(s) / TCP / Ping / DNS Record.
+* Monitoring uptime for HTTP(s) / TCP / Ping / DNS Record / Push.
 * Fancy, Reactive, Fast UI/UX.
-* Notifications via Telegram, Discord, Gotify, Slack, Pushover, Email (SMTP), and [70+ notification services, click here for the full list](https://github.com/louislam/uptime-kuma/issues/284).
-* 20 seconds interval.
+* Notifications via Telegram, Discord, Gotify, Slack, Pushover, Email (SMTP), and [70+ notification services, click here for the full list](https://github.com/louislam/uptime-kuma/tree/master/src/components/notifications).
+* 20 second intervals.
 * [Multi Languages](https://github.com/louislam/uptime-kuma/tree/master/src/languages)
+* Simple Status Page
+* Ping Chart
+* Certificate Info
 
 ## 🔧 How to Install
 
@@ -37,7 +40,7 @@ docker volume create uptime-kuma
 docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name uptime-kuma louislam/uptime-kuma:1
 ```
 
-Browse to http://localhost:3001 after started.
+Browse to http://localhost:3001 after starting.
 
 ### 💪🏻 Without Docker
 
@@ -55,11 +58,11 @@ npm run setup
 node server/server.js
 
 # (Recommended) Option 2. Run in background using PM2
-# Install PM2 if you don't have: npm install pm2 -g
+# Install PM2 if you don't have it: npm install pm2 -g
 pm2 start server/server.js --name uptime-kuma
 ```
 
-Browse to http://localhost:3001 after started.
+Browse to http://localhost:3001 after starting.
 
 ### Advanced Installation
 
@@ -85,9 +88,13 @@ https://github.com/louislam/uptime-kuma/projects/1
 
 ## 🖼 More Screenshots
 
-Dark Mode:
+Light Mode:
 
-<img src="https://user-images.githubusercontent.com/1336778/128710166-908f8d88-9256-43f3-9c49-bfc2c56011d2.png" width="400" alt="" />
+<img src="https://uptime.kuma.pet/img/light.jpg" width="512" alt="" />
+
+Status Page:
+
+<img src="https://user-images.githubusercontent.com/1336778/134628766-a3fe0981-0926-4285-ab46-891a21c3e4cb.png" width="512" alt="" />
 
 Settings Page:
 
@@ -111,11 +118,13 @@ If you love this project, please consider giving me a ⭐.
 ## 🗣️ Discussion
 
 ### Issues Page
+
 You can discuss or ask for help in [Issues](https://github.com/louislam/uptime-kuma/issues).
 
 ### Subreddit
+
 My Reddit account: louislamlam
-You can mention me if you ask question on Reddit.
+You can mention me if you ask a question on Reddit.
 https://www.reddit.com/r/UptimeKuma/
 
 ## Contribute

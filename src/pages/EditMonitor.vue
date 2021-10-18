@@ -26,22 +26,38 @@
                                     <option value="dns">
                                         DNS
                                     </option>
+                                    <option value="push">
+                                        Push
+                                    </option>
                                     <option value="steam">
-                                        Steam Gameserver
+                                        Steam Game Server
                                     </option>
                                 </select>
                             </div>
 
+                            <!-- Friendly Name -->
                             <div class="my-3">
                                 <label for="name" class="form-label">{{ $t("Friendly Name") }}</label>
                                 <input id="name" v-model="monitor.name" type="text" class="form-control" required>
                             </div>
 
+                            <!-- URL -->
                             <div v-if="monitor.type === 'http' || monitor.type === 'keyword' " class="my-3">
                                 <label for="url" class="form-label">{{ $t("URL") }}</label>
                                 <input id="url" v-model="monitor.url" type="url" class="form-control" pattern="https?://.+" required>
                             </div>
 
+                            <!-- Push URL -->
+                            <div v-if="monitor.type === 'push' " class="my-3">
+                                <label for="push-url" class="form-label">{{ $t("PushUrl") }}</label>
+                                <CopyableInput id="push-url" v-model="pushURL" type="url" disabled="disabled" />
+                                <div class="form-text">
+                                    {{ $t("needPushEvery", [monitor.interval]) }}<br />
+                                    {{ $t("pushOptionalParams", ["msg, ping"]) }}
+                                </div>
+                            </div>
+
+                            <!-- Keyword -->
                             <div v-if="monitor.type === 'keyword' " class="my-3">
                                 <label for="keyword" class="form-label">{{ $t("Keyword") }}</label>
                                 <input id="keyword" v-model="monitor.keyword" type="text" class="form-control" required>
@@ -50,28 +66,17 @@
                                 </div>
                             </div>
 
-                            <!-- Hostname Port / Ping / DNS only -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns'" class="my-3">
+                            <!-- Hostname -->
+                            <!-- TCP Port / Ping / DNS only -->
+                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' " class="my-3">
                                 <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>
                                 <input id="hostname" v-model="monitor.hostname" type="text" class="form-control" :pattern="`${ipRegexPattern}|${hostnameRegexPattern}`" required>
-                            </div>
-
-                            <!-- Hostname Steam only -->
-                            <div v-if="monitor.type === 'steam' " class="my-3">
-                                <label for="ipAddress" class="form-label">{{ $t("IP Address") }}</label>
-                                <input id="ipAddress" v-model="monitor.hostname" type="text" class="form-control" :pattern="`${ipRegexPattern}`" required>
                             </div>
 
                             <!-- For TCP Port Type -->
                             <div v-if="monitor.type === 'port'" class="my-3">
                                 <label for="port" class="form-label">{{ $t("Port") }}</label>
                                 <input id="port" v-model="monitor.port" type="number" class="form-control" required min="0" max="65535" step="1">
-                            </div>
-
-                            <!-- For Steam Query Port Type -->
-                            <div v-if="monitor.type === 'steam' " class="my-3">
-                                <label for="queryport" class="form-label">{{ $t("Query Port") }}</label>
-                                <input id="queryport" v-model="monitor.port" type="number" class="form-control" required min="0" max="65535" step="1">
                             </div>
 
                             <!-- For DNS Type -->
@@ -108,15 +113,7 @@
                                 </div>
                             </template>
 
-                            <!-- For Steam Type -->
-                            <div class="my-3" v-if="monitor.type === 'steam'">
-                                <label for="steamApiKey" class="form-label">{{ $t("Steam Web-API Key") }}</label>
-                                <input id="steamApiKey" v-model="monitor.apikey" type="text" class="form-control" required>
-                                <div class="form-text">
-                                    {{ $t("steamApiKeyDescription") }}
-                                </div>
-                            </div>
-
+                            <!-- Interval -->
                             <div class="my-3">
                                 <label for="interval" class="form-label">{{ $t("Heartbeat Interval") }} ({{ $t("checkEverySecond", [ monitor.interval ]) }})</label>
                                 <input id="interval" v-model="monitor.interval" type="number" class="form-control" required min="20" step="1">
@@ -138,7 +135,7 @@
                                 <input id="retry-interval" v-model="monitor.retryInterval" type="number" class="form-control" required min="20" step="1">
                             </div>
 
-                            <h2 class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
+                            <h2 v-if="monitor.type !== 'push'" class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
 
                             <div v-if="monitor.type === 'http' || monitor.type === 'keyword' " class="my-3 form-check">
                                 <input id="ignore-tls" v-model="monitor.ignoreTls" class="form-check-input" type="checkbox" value="">
@@ -202,6 +199,7 @@
                         <div class="col-md-6">
                             <div v-if="$root.isMobile" class="mt-3" />
 
+                            <!-- Notifications -->
                             <h2 class="mb-2">{{ $t("Notifications") }}</h2>
                             <p v-if="$root.notificationList.length === 0">
                                 {{ $t("Not available, please setup.") }}
@@ -221,6 +219,51 @@
                             <button class="btn btn-primary me-2" type="button" @click="$refs.notificationDialog.show()">
                                 {{ $t("Setup Notification") }}
                             </button>
+
+                            <!-- HTTP Options -->
+                            <template v-if="monitor.type === 'http' || monitor.type === 'keyword' ">
+                                <h2 class="mt-5 mb-2">{{ $t("HTTP Options") }}</h2>
+
+                                <!-- Method -->
+                                <div class="my-3">
+                                    <label for="method" class="form-label">{{ $t("Method") }}</label>
+                                    <select id="method" v-model="monitor.method" class="form-select">
+                                        <option value="GET">
+                                            GET
+                                        </option>
+                                        <option value="POST">
+                                            POST
+                                        </option>
+                                        <option value="PUT">
+                                            PUT
+                                        </option>
+                                        <option value="PATCH">
+                                            PATCH
+                                        </option>
+                                        <option value="DELETE">
+                                            DELETE
+                                        </option>
+                                        <option value="HEAD">
+                                            HEAD
+                                        </option>
+                                        <option value="OPTIONS">
+                                            OPTIONS
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <!-- Body -->
+                                <div class="my-3">
+                                    <label for="body" class="form-label">{{ $t("Body") }}</label>
+                                    <textarea id="body" v-model="monitor.body" class="form-control" :placeholder="bodyPlaceholder"></textarea>
+                                </div>
+
+                                <!-- Headers -->
+                                <div class="my-3">
+                                    <label for="headers" class="form-label">{{ $t("Headers") }}</label>
+                                    <textarea id="headers" v-model="monitor.headers" class="form-control" :placeholder="headersPlaceholder"></textarea>
+                                </div>
+                            </template>
                         </div>
                     </div>
                 </div>
@@ -234,13 +277,17 @@
 <script>
 import NotificationDialog from "../components/NotificationDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
-import { useToast } from "vue-toastification"
-import VueMultiselect from "vue-multiselect"
-import { isDev } from "../util.ts";
-const toast = useToast()
+import CopyableInput from "../components/CopyableInput.vue";
+
+import { useToast } from "vue-toastification";
+import VueMultiselect from "vue-multiselect";
+import { genSecret, isDev } from "../util.ts";
+
+const toast = useToast();
 
 export default {
     components: {
+        CopyableInput,
         NotificationDialog,
         TagsManager,
         VueMultiselect,
@@ -259,8 +306,8 @@ export default {
             // Source: https://digitalfortress.tech/tips/top-15-commonly-used-regex/
             ipRegexPattern: "((^\\s*((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\\s*$)|(^\\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:)))(%.+)?\\s*$))",
             // Source: https://stackoverflow.com/questions/106179/regular-expression-to-match-dns-hostname-or-ip-address
-            hostnameRegexPattern: "^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$"
-        }
+            hostnameRegexPattern: "^(([a-zA-Z0-9_]|[a-zA-Z0-9_][a-zA-Z0-9\\-_]*[a-zA-Z0-9_])\\.)*([A-Za-z0-9_]|[A-Za-z0-9_][A-Za-z0-9\\-_]*[A-Za-z0-9_])$"
+        };
     },
 
     computed: {
@@ -277,23 +324,49 @@ export default {
         pageName() {
             return this.$t((this.isAdd) ? "Add New Monitor" : "Edit");
         },
+
         isAdd() {
             return this.$route.path === "/add";
         },
+
         isEdit() {
             return this.$route.path.startsWith("/edit");
         },
+
+        pushURL() {
+            return this.$root.baseURL + "/api/push/" + this.monitor.pushToken + "?msg=OK&ping=";
+        },
+
+        bodyPlaceholder() {
+            return "{\n\t\"id\": 124357,\n\t\"username\": \"admin\",\n\t\"password\": \"myAdminPassword\"\n}";
+        },
+
+        headersPlaceholder() {
+            return "{\n\t\"Authorization\": \"Bearer abc123\",\n\t\"Content-Type\": \"application/json\"\n}";
+        }
+
     },
     watch: {
+
         "$route.fullPath"() {
             this.init();
         },
+
         "monitor.interval"(value, oldValue) {
-            // Link interval and retryInerval if they are the same value.
+            // Link interval and retryInterval if they are the same value.
             if (this.monitor.retryInterval === oldValue) {
                 this.monitor.retryInterval = value;
             }
+        },
+
+        "monitor.type"() {
+            if (this.monitor.type === "push") {
+                if (! this.monitor.pushToken) {
+                    this.monitor.pushToken = genSecret(10);
+                }
+            }
         }
+
     },
     mounted() {
         this.init();
@@ -334,6 +407,7 @@ export default {
                     type: "http",
                     name: "",
                     url: "https://",
+                    method: "GET",
                     interval: 60,
                     retryInterval: this.interval,
                     maxretries: 0,
@@ -344,7 +418,7 @@ export default {
                     accepted_statuscodes: ["200-299"],
                     dns_resolve_type: "A",
                     dns_resolve_server: "1.1.1.1",
-                }
+                };
 
                 for (let i = 0; i < this.$root.notificationList.length; i++) {
                     if (this.$root.notificationList[i].isDefault == true) {
@@ -352,7 +426,7 @@ export default {
                     }
                 }
             } else if (this.isEdit) {
-                this.$root.getSocket().emit("getMonitor", this.$route.params.id, (res) => {                    
+                this.$root.getSocket().emit("getMonitor", this.$route.params.id, (res) => {
                     if (res.ok) {
                         this.monitor = res.monitor;
 
@@ -361,15 +435,49 @@ export default {
                             this.monitor.retryInterval = this.monitor.interval;
                         }
                     } else {
-                        toast.error(res.msg)
+                        toast.error(res.msg);
                     }
-                })
+                });
             }
 
         },
 
+        isInputValid() {
+            if (this.monitor.body) {
+                try {
+                    JSON.parse(this.monitor.body);
+                } catch (err) {
+                    toast.error(this.$t("BodyInvalidFormat") + err.message);
+                    return false;
+                }
+            }
+            if (this.monitor.headers) {
+                try {
+                    JSON.parse(this.monitor.headers);
+                } catch (err) {
+                    toast.error(this.$t("HeadersInvalidFormat") + err.message);
+                    return false;
+                }
+            }
+            return true;
+        },
+
         async submit() {
             this.processing = true;
+
+            if (!this.isInputValid()) {
+                this.processing = false;
+                return;
+            }
+
+            // Beautiful the JSON format
+            if (this.monitor.body) {
+                this.monitor.body = JSON.stringify(JSON.parse(this.monitor.body), null, 4);
+            }
+
+            if (this.monitor.headers) {
+                this.monitor.headers = JSON.stringify(JSON.parse(this.monitor.headers), null, 4);
+            }
 
             if (this.isAdd) {
                 this.$root.add(this.monitor, async (res) => {
@@ -380,13 +488,13 @@ export default {
                         toast.success(res.msg);
                         this.processing = false;
                         this.$root.getMonitorList();
-                        this.$router.push("/dashboard/" + res.monitorID)
+                        this.$router.push("/dashboard/" + res.monitorID);
                     } else {
                         toast.error(res.msg);
                         this.processing = false;
                     }
 
-                })
+                });
             } else {
                 await this.$refs.tagsManager.submit(this.monitor.id);
 
@@ -394,7 +502,7 @@ export default {
                     this.processing = false;
                     this.$root.toastRes(res);
                     this.init();
-                })
+                });
             }
         },
 
@@ -404,63 +512,15 @@ export default {
             this.monitor.notificationIDList[id] = true;
         },
     },
-}
+};
 </script>
 
-<style src="vue-multiselect/dist/vue-multiselect.css"></style>
-
-<style lang="scss">
-    @import "../assets/vars.scss";
-
-    .multiselect__tags {
-        border-radius: 1.5rem;
-        border: 1px solid #ced4da;
-        min-height: 38px;
-        padding: 6px 40px 0 8px;
-    }
-
-    .multiselect--active .multiselect__tags {
-        border-radius: 1rem;
-    }
-
-    .multiselect__option--highlight {
-        background: $primary !important;
-    }
-
-    .multiselect__option--highlight::after {
-        background: $primary !important;
-    }
-
-    .multiselect__tag {
-        border-radius: 50rem;
-        margin-bottom: 0;
-        padding: 6px 26px 6px 10px;
-        background: $primary !important;
-    }
-
-    .multiselect__placeholder {
-        font-size: 1rem;
-        padding-left: 6px;
-        padding-top: 0;
-        padding-bottom: 0;
-        margin-bottom: 0;
-        opacity: 0.67;
-    }
-
-    .multiselect__input, .multiselect__single {
-        line-height: 14px;
-        margin-bottom: 0;
-    }
-
-    .dark {
-        .multiselect__tag {
-            color: $dark-font-color2;
-        }
-    }
-</style>
-
-<style scoped>
+<style lang="scss" scoped>
     .shadow-box {
         padding: 20px;
+    }
+
+    textarea {
+        min-height: 200px;
     }
 </style>

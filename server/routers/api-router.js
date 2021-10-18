@@ -4,13 +4,87 @@ const { R } = require("redbean-node");
 const server = require("../server");
 const apicache = require("../modules/apicache");
 const Monitor = require("../model/monitor");
+const dayjs = require("dayjs");
+const { UP, flipStatus, debug } = require("../../src/util");
 let router = express.Router();
 
 let cache = apicache.middleware;
+let io = server.io;
 
 router.get("/api/entry-page", async (_, response) => {
     allowDevAllOrigin(response);
     response.json(server.entryPage);
+});
+
+router.get("/api/push/:pushToken", async (request, response) => {
+    try {
+
+        let pushToken = request.params.pushToken;
+        let msg = request.query.msg || "OK";
+        let ping = request.query.ping || null;
+
+        let monitor = await R.findOne("monitor", " push_token = ? AND active = 1 ", [
+            pushToken
+        ]);
+
+        if (! monitor) {
+            throw new Error("Monitor not found or not active.");
+        }
+
+        const previousHeartbeat = await R.getRow(`
+            SELECT status, time FROM heartbeat
+            WHERE id = (select MAX(id) from heartbeat where monitor_id = ?)
+        `, [
+            monitor.id
+        ]);
+
+        let status = UP;
+        if (monitor.isUpsideDown()) {
+            status = flipStatus(status);
+        }
+
+        let isFirstBeat = true;
+        let previousStatus = status;
+        let duration = 0;
+
+        let bean = R.dispense("heartbeat");
+        bean.time = R.isoDateTime(dayjs.utc());
+
+        if (previousHeartbeat) {
+            isFirstBeat = false;
+            previousStatus = previousHeartbeat.status;
+            duration = dayjs(bean.time).diff(dayjs(previousHeartbeat.time), "second");
+        }
+
+        debug("PreviousStatus: " + previousStatus);
+        debug("Current Status: " + status);
+
+        bean.important = Monitor.isImportantBeat(isFirstBeat, previousStatus, status);
+        bean.monitor_id = monitor.id;
+        bean.status = status;
+        bean.msg = msg;
+        bean.ping = ping;
+        bean.duration = duration;
+
+        await R.store(bean);
+
+        io.to(monitor.user_id).emit("heartbeat", bean.toJSON());
+        Monitor.sendStats(io, monitor.id, monitor.user_id);
+
+        response.json({
+            ok: true,
+        });
+
+        if (bean.important) {
+            await Monitor.sendNotification(isFirstBeat, monitor, bean);
+        }
+
+    } catch (e) {
+        response.json({
+            ok: false,
+            msg: e.message
+        });
+    }
 });
 
 // Status Page Config
