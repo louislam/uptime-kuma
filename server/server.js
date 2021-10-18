@@ -82,7 +82,7 @@ const sslCert = process.env.UPTIME_KUMA_SSL_CERT || process.env.SSL_CERT || args
 const twofa_verification_opts = {
     "window": 1,
     "time": 30
-}
+};
 
 /**
  * Run unit test after the server is ready
@@ -533,7 +533,6 @@ exports.entryPage = "dashboard";
                 bean.hostname = monitor.hostname;
                 bean.maxretries = monitor.maxretries;
                 bean.port = monitor.port;
-                bean.apikey = monitor.apikey;
                 bean.keyword = monitor.keyword;
                 bean.ignoreTls = monitor.ignoreTls;
                 bean.upsideDown = monitor.upsideDown;
