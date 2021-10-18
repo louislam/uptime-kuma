@@ -7,7 +7,7 @@ dayjs.extend(timezone);
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
 const { debug, UP, DOWN, PENDING, flipStatus, TimeLogger } = require("../../src/util");
-const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom } = require("../util-server");
+const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification");
@@ -292,26 +292,22 @@ class Monitor extends BeanModel {
                         },
                         params: {
                             filter: filter,
-                            key: this.apikey,
+                            key: await setting("steamAPIKey"),
                         }
                     });
 
-                    bean.msg = `${res.status} - ${res.statusText}`;
-                    bean.ping = await ping(this.hostname);
-
-                    let data = res.data;
-
-                    // Convert to string for object/array
-                    if (typeof data !== "string") {
-                        data = JSON.stringify(data);
-                    }
-
-                    if (data.includes(`${this.hostname}:${this.port}`)) {
-                        bean.msg += ", server is found";
+                    if (res.data.response && res.data.response.servers && res.data.response.servers.length > 0) {
                         bean.status = UP;
+                        bean.msg = res.data.response.servers[0].name;
+
+                        try {
+                            bean.ping = await ping(this.hostname);
+                        } catch (_) { }
+
                     } else {
-                        throw new Error(bean.msg + ", but server is not found");
+                        throw new Error("Server not found on Steam");
                     }
+
                 } else {
                     bean.msg = "Unknown Monitor Type";
                     bean.status = PENDING;

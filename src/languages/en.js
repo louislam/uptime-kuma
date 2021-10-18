@@ -304,5 +304,5 @@ export default {
     records: "records",
     "One record": "One record",
     "Showing {from} to {to} of {count} records": "Showing {from} to {to} of {count} records",
-    steamApiKeyDescription: "For monitoring a Steam Gameserver you need a steam Web-API key. You can register your api key here: https://steamcommunity.com/dev",
+    steamApiKeyDescription: "For monitoring a Steam Gameserver you need a steam Web-API key. You can register your api key here: ",
 };

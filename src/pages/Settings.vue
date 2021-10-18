@@ -119,6 +119,15 @@
                                 </div>
                             </div>
 
+                            <!-- Steam API Key -->
+                            <div class="mb-4">
+                                <label class="form-label" for="steamAPIKey">{{ $t("Steam API Key") }}</label>
+                                <input id="steamAPIKey" v-model="settings.steamAPIKey" class="form-control" name="steamAPIKey">
+                                <div class="form-text">
+                                    {{ $t("steamApiKeyDescription") }}<a href="https://steamcommunity.com/dev" target="_blank">https://steamcommunity.com/dev</a>
+                                </div>
+                            </div>
+
                             <!-- Monitor History -->
                             <div class="mb-4">
                                 <h4 class="mt-4">{{ $t("Monitor History") }}</h4>
@@ -128,6 +137,7 @@
                                 </div>
                             </div>
 
+                            <!-- Save Button -->
                             <div>
                                 <button class="btn btn-primary" type="submit">
                                     {{ $t("Save") }}

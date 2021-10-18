@@ -46,7 +46,6 @@ class Database {
         "patch-improve-performance.sql": true,
         "patch-2fa.sql": true,
         "patch-add-retry-interval-monitor.sql": true,
-        "patch-add-apikey-monitor.sql": true,
         "patch-incident-table.sql": true,
         "patch-group-table.sql": true,
         "patch-monitor-push_token.sql": true,
@@ -54,7 +53,7 @@ class Database {
     }
 
     /**
-     * The finally version should be 10 after merged tag feature
+     * The final version should be 10 after merged tag feature
      * @deprecated Use patchList for any new feature
      */
     static latestVersion = 10;
