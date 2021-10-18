@@ -274,7 +274,12 @@ class Monitor extends BeanModel {
 
                 } else if (this.type === "steam") {
                     const steamApiUrl = "https://api.steampowered.com/IGameServersService/GetServerList/v1/";
+                    const steamAPIKey = await setting("steamAPIKey");
                     const filter = `addr\\${this.hostname}:${this.port}`;
+
+                    if (!steamAPIKey) {
+                        throw new Error("Steam API Key not found");
+                    }
 
                     let res = await axios.get(steamApiUrl, {
                         timeout: this.interval * 1000 * 0.8,
@@ -292,7 +297,7 @@ class Monitor extends BeanModel {
                         },
                         params: {
                             filter: filter,
-                            key: await setting("steamAPIKey"),
+                            key: steamAPIKey,
                         }
                     });
 
@@ -303,7 +308,6 @@ class Monitor extends BeanModel {
                         try {
                             bean.ping = await ping(this.hostname);
                         } catch (_) { }
-
                     } else {
                         throw new Error("Server not found on Steam");
                     }
