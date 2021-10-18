@@ -328,6 +328,10 @@ export default {
         clearStatistics(callback) {
             socket.emit("clearStatistics", callback);
         },
+
+        getMonitorBeats(monitorID, period, callback) {
+            socket.emit("getMonitorBeats", monitorID, period, callback);
+        }
     },
 
     computed: {

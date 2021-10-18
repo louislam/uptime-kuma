@@ -644,6 +644,25 @@ exports.entryPage = "dashboard";
             }
         });
 
+        socket.on("getMonitorBeats", async (monitorID, period, callback) => {
+            try {
+                checkLogin(socket);
+
+                console.log(`Get Monitor Beats: ${monitorID} User ID: ${socket.userID}`);
+
+                await sendHeartbeatList(socket, monitorID, true, true, period);
+
+                callback({
+                    ok: true
+                });
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
         // Start or Resume the monitor
         socket.on("resumeMonitor", async (monitorID, callback) => {
             try {

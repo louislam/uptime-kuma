@@ -1,5 +1,18 @@
 <template>
-    <LineChart :chart-data="chartData" :options="chartOptions" />
+    <div>
+        <div class="period-options">
+            {{ $t("show") }}: <select id="chart-period-select" v-model="chartPeriodHrs" class="form-select form-select-sm ms-1">
+                <option value="0">{{ $t("recent") }}</option>
+                <option value="3">3h</option>
+                <option value="6">6h</option>
+                <option value="24">24h</option>
+                <option value="168">1w</option>
+            </select>
+        </div>
+        <div class="chart-wrapper">
+            <LineChart :chart-data="chartData" :options="chartOptions" />
+        </div>
+    </div>
 </template>
 
 <script>
@@ -9,8 +22,11 @@ import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import "chartjs-adapter-dayjs";
 import { LineChart } from "vue-chart-3";
+import { useToast } from "vue-toastification";
+
 dayjs.extend(utc);
 dayjs.extend(timezone);
+const toast = useToast();
 
 Chart.register(LineController, BarController, LineElement, PointElement, TimeScale, BarElement, LinearScale, Tooltip, Filler);
 
@@ -25,7 +41,12 @@ export default {
     data() {
         return {
             // Configurable filtering on top of the returned data
-            chartPeriodHrs: 6,
+            chartPeriodHrs: 0,
+
+            // Just Draft:
+            // A heartbeatList for 3h, 6h, 24h, 1w
+            // Set it to null, switch back to realtime (last 100 beats)
+            heartbeatList: null
         };
     },
     computed: {
@@ -117,7 +138,7 @@ export default {
                         },
                         callbacks: {
                             label: (context) => {
-                                return ` ${new Intl.NumberFormat().format(context.parsed.y)} ms`
+                                return ` ${new Intl.NumberFormat().format(context.parsed.y)} ms`;
                             },
                         }
                     },
@@ -125,7 +146,7 @@ export default {
                         display: false,
                     },
                 },
-            }
+            };
         },
         chartData() {
             let pingData = [];  // Ping Data for Line Chart, y-axis contains ping time
@@ -133,7 +154,7 @@ export default {
             if (this.monitorId in this.$root.heartbeatList) {
                 this.$root.heartbeatList[this.monitorId]
                     .filter(
-                        (beat) => dayjs.utc(beat.time).tz(this.$root.timezone).isAfter(dayjs().subtract(this.chartPeriodHrs, "hours")))
+                        (beat) => dayjs.utc(beat.time).tz(this.$root.timezone).isAfter(dayjs().subtract(Math.max(this.chartPeriodHrs, 6), "hours")))
                     .map((beat) => {
                         const x = this.$root.datetime(beat.time);
                         pingData.push({
@@ -143,7 +164,7 @@ export default {
                         downData.push({
                             x,
                             y: beat.status === 0 ? 1 : 0,
-                        })
+                        });
                     });
             }
             return {
@@ -172,5 +193,39 @@ export default {
             };
         },
     },
+    watch: {
+        chartPeriodHrs: function (newPeriod) {
+            if (newPeriod == "0") {
+                newPeriod = null;
+            }
+            this.$root.getMonitorBeats(this.monitorId, newPeriod, (res) => {
+                if (!res.ok) {
+                    toast.error(res.msg);
+                }
+            });
+        }
+    },
 };
 </script>
+
+<style lang="scss" scoped>
+@import "../assets/vars.scss";
+
+.form-select {
+    width: unset;
+    display: inline-flex;
+}
+
+.period-options {
+    padding: 0.3em 1.5em;
+    margin-bottom: -1.5em;
+    float: right;
+    position: relative;
+    z-index: 10;
+    font-size: 0.8em;
+}
+
+.chart-wrapper {
+    margin-bottom: 1.5em;
+}
+</style>
