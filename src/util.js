@@ -6,10 +6,10 @@
 //
 // Backend uses the compiled file util.js
 // Frontend uses util.ts
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 exports.getMonitorRelativeURL = exports.genSecret = exports.getCryptoRandomInt = exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isDev = void 0;
-var _dayjs = require("dayjs");
-var dayjs = _dayjs;
+const _dayjs = require("dayjs");
+const dayjs = _dayjs;
 exports.isDev = process.env.NODE_ENV === "development";
 exports.appName = "Uptime Kuma";
 exports.DOWN = 0;
@@ -106,12 +106,12 @@ exports.getRandomInt = getRandomInt;
  * Returns either the NodeJS crypto.randomBytes() function or its
  * browser equivalent implemented via window.crypto.getRandomValues()
  */
-var getRandomBytes = ((typeof window !== 'undefined' && window.crypto)
+let getRandomBytes = ((typeof window !== 'undefined' && window.crypto)
     // Browsers
     ? function () {
-        return function (numBytes) {
-            var randomBytes = new Uint8Array(numBytes);
-            for (var i = 0; i < numBytes; i += 65536) {
+        return (numBytes) => {
+            let randomBytes = new Uint8Array(numBytes);
+            for (let i = 0; i < numBytes; i += 65536) {
                 window.crypto.getRandomValues(randomBytes.subarray(i, i + Math.min(numBytes - i, 65536)));
             }
             return randomBytes;
@@ -123,13 +123,13 @@ var getRandomBytes = ((typeof window !== 'undefined' && window.crypto)
     })();
 function getCryptoRandomInt(min, max) {
     // synchronous version of: https://github.com/joepie91/node-random-number-csprng
-    var range = max - min;
+    const range = max - min;
     if (range >= Math.pow(2, 32))
         console.log("Warning! Range is too large.");
-    var tmpRange = range;
-    var bitsNeeded = 0;
-    var bytesNeeded = 0;
-    var mask = 1;
+    let tmpRange = range;
+    let bitsNeeded = 0;
+    let bytesNeeded = 0;
+    let mask = 1;
     while (tmpRange > 0) {
         if (bitsNeeded % 8 === 0)
             bytesNeeded += 1;
@@ -137,9 +137,9 @@ function getCryptoRandomInt(min, max) {
         mask = mask << 1 | 1;
         tmpRange = tmpRange >>> 1;
     }
-    var randomBytes = getRandomBytes(bytesNeeded);
-    var randomValue = 0;
-    for (var i = 0; i < bytesNeeded; i++) {
+    const randomBytes = getRandomBytes(bytesNeeded);
+    let randomValue = 0;
+    for (let i = 0; i < bytesNeeded; i++) {
         randomValue |= randomBytes[i] << 8 * i;
     }
     randomValue = randomValue & mask;
@@ -151,12 +151,11 @@ function getCryptoRandomInt(min, max) {
     }
 }
 exports.getCryptoRandomInt = getCryptoRandomInt;
-function genSecret(length) {
-    if (length === void 0) { length = 64; }
-    var secret = "";
-    var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    var charsLength = chars.length;
-    for (var i = 0; i < length; i++) {
+function genSecret(length = 64) {
+    let secret = "";
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    const charsLength = chars.length;
+    for (let i = 0; i < length; i++) {
         secret += chars.charAt(getCryptoRandomInt(0, charsLength - 1));
     }
     return secret;
