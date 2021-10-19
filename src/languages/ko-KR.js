@@ -184,7 +184,7 @@ export default {
     Required: "필수",
     telegram: "Telegram",
     "Bot Token": "봇 토큰",
-    "You can get a token from": "토큰은 여기서 얻을 수 있어요:",
+    wayToGetTelegramToken: "토큰은 여기서 얻을 수 있어요: {0}.",
     "Chat ID": "채팅 ID",
     supportTelegramChatID: "Direct Chat / Group / Channel's Chat ID를 지원해요.",
     wayToGetTelegramChatID: "봇에 메시지를 보내 채팅 ID를 얻고 밑에 URL로 이동해 chat_id를 볼 수 있어요.",

@@ -108,7 +108,7 @@
 
                             <!-- Primary Base URL -->
                             <div class="mb-4">
-                                <label class="form-label" for="primaryBaseURL">Primary Base URL</label>
+                                <label class="form-label" for="primaryBaseURL">{{ $t("Primary Base URL") }}</label>
 
                                 <div class="input-group mb-3">
                                     <input id="primaryBaseURL" v-model="settings.primaryBaseURL" class="form-control" name="primaryBaseURL" placeholder="https://" pattern="https?://.+">
@@ -119,6 +119,25 @@
                                 </div>
                             </div>
 
+                            <!-- Steam API Key -->
+                            <div class="mb-4">
+                                <label class="form-label" for="steamAPIKey">{{ $t("Steam API Key") }}</label>
+                                <input id="steamAPIKey" v-model="settings.steamAPIKey" class="form-control" name="steamAPIKey">
+                                <div class="form-text">
+                                    {{ $t("steamApiKeyDescription") }}<a href="https://steamcommunity.com/dev" target="_blank">https://steamcommunity.com/dev</a>
+                                </div>
+                            </div>
+
+                            <!-- Monitor History -->
+                            <div class="mb-4">
+                                <h4 class="mt-4">{{ $t("Monitor History") }}</h4>
+                                <div class="mt-2">
+                                    <label for="keepDataPeriodDays" class="form-label">{{ $t("clearDataOlderThan", [ settings.keepDataPeriodDays ]) }}</label>
+                                    <input id="keepDataPeriodDays" v-model="settings.keepDataPeriodDays" type="number" class="form-control" required min="1" step="1">
+                                </div>
+                            </div>
+
+                            <!-- Save Button -->
                             <div>
                                 <button class="btn btn-primary" type="submit">
                                     {{ $t("Save") }}
@@ -475,6 +494,10 @@ export default {
 
                 if (this.settings.entryPage === undefined) {
                     this.settings.entryPage = "dashboard";
+                }
+
+                if (this.settings.keepDataPeriodDays === undefined) {
+                    this.settings.keepDataPeriodDays = 180;
                 }
 
                 this.loaded = true;

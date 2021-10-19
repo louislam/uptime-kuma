@@ -10,12 +10,13 @@
         <select id="promosms-type-sms" v-model="$parent.notification.promosmsSMSType" class="form-select">
             <option value="0">{{ $t("promosmsTypeFlash") }}</option>
             <option value="1">{{ $t("promosmsTypeEco") }}</option>
-            <option value="2">{{ $t("promosmsTypeFull") }}</option>
-            <option value="3">{{ $t("promosmsTypeSpeed") }}</option>
+            <option value="3">{{ $t("promosmsTypeFull") }}</option>
+            <option value="4">{{ $t("promosmsTypeSpeed") }}</option>
         </select>
-        <i18n-t tag="div" keypath="Check PromoSMS prices" class="form-text">
+        <div class="form-text">
+            {{ $t("checkPrice", [$t("promosms")]) }}
             <a href="https://promosms.com/cennik/" target="_blank">https://promosms.com/cennik/</a>
-        </i18n-t>
+        </div>
     </div>
     <div class="mb-3">
         <label for="promosms-phone-number" class="form-label">{{ $t("promosmsPhoneNumber") }}</label>
@@ -25,7 +26,6 @@
         <label for="promosms-sender-name" class="form-label">{{ $t("promosmsSMSSender") }}</label>
         <input id="promosms-sender-name" v-model="$parent.notification.promosmsSenderName" type="text" minlength="3" maxlength="11" class="form-control">
     </div>
-
 </template>
 
 <script>

@@ -29,6 +29,9 @@
                                     <option value="push">
                                         Push
                                     </option>
+                                    <option value="steam">
+                                        Steam Game Server
+                                    </option>
                                 </select>
                             </div>
 
@@ -49,8 +52,8 @@
                                 <label for="push-url" class="form-label">{{ $t("PushUrl") }}</label>
                                 <CopyableInput id="push-url" v-model="pushURL" type="url" disabled="disabled" />
                                 <div class="form-text">
-                                    You should call this url every {{ monitor.interval }} seconds.<br />
-                                    Optional parameters: msg, ping
+                                    {{ $t("needPushEvery", [monitor.interval]) }}<br />
+                                    {{ $t("pushOptionalParams", ["msg, ping"]) }}
                                 </div>
                             </div>
 
@@ -64,18 +67,20 @@
                             </div>
 
                             <!-- Hostname -->
-                            <!-- TCP Port / Ping / DNS only -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' " class="my-3">
+                            <!-- TCP Port / Ping / DNS / Steam only -->
+                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam'" class="my-3">
                                 <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>
                                 <input id="hostname" v-model="monitor.hostname" type="text" class="form-control" :pattern="`${ipRegexPattern}|${hostnameRegexPattern}`" required>
                             </div>
 
-                            <!-- For TCP Port Type -->
-                            <div v-if="monitor.type === 'port' " class="my-3">
+                            <!-- Port -->
+                            <!-- For TCP Port / Steam Type -->
+                            <div v-if="monitor.type === 'port' || monitor.type === 'steam'" class="my-3">
                                 <label for="port" class="form-label">{{ $t("Port") }}</label>
                                 <input id="port" v-model="monitor.port" type="number" class="form-control" required min="0" max="65535" step="1">
                             </div>
 
+                            <!-- DNS Resolver Server -->
                             <!-- For DNS Type -->
                             <template v-if="monitor.type === 'dns'">
                                 <div class="my-3">
@@ -335,11 +340,11 @@ export default {
         },
 
         bodyPlaceholder() {
-            return this.decodeHtml("&lbrace;\n\t\"id\": 124357,\n\t\"username\": \"admin\",\n\t\"password\": \"myAdminPassword\"\n&rbrace;");
+            return "{\n\t\"id\": 124357,\n\t\"username\": \"admin\",\n\t\"password\": \"myAdminPassword\"\n}";
         },
 
         headersPlaceholder() {
-            return this.decodeHtml("&lbrace;\n\t\"Authorization\": \"Bearer abc123\",\n\t\"Content-Type\": \"application/json\"\n&rbrace;");
+            return "{\n\t\"Authorization\": \"Bearer abc123\",\n\t\"Content-Type\": \"application/json\"\n}";
         }
 
     },
@@ -467,7 +472,7 @@ export default {
                 return;
             }
 
-            // Beautiful the JSON format
+            // Beautify the JSON format
             if (this.monitor.body) {
                 this.monitor.body = JSON.stringify(JSON.parse(this.monitor.body), null, 4);
             }
@@ -508,12 +513,6 @@ export default {
         addedNotification(id) {
             this.monitor.notificationIDList[id] = true;
         },
-
-        decodeHtml(html) {
-            const txt = document.createElement("textarea");
-            txt.innerHTML = html;
-            return txt.value;
-        }
     },
 };
 </script>
