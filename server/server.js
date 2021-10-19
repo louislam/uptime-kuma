@@ -77,7 +77,7 @@ const port = parseInt(process.env.UPTIME_KUMA_PORT || process.env.PORT || args.p
 // SSL
 const sslKey = process.env.UPTIME_KUMA_SSL_KEY || process.env.SSL_KEY || args["ssl-key"] || undefined;
 const sslCert = process.env.UPTIME_KUMA_SSL_CERT || process.env.SSL_CERT || args["ssl-cert"] || undefined;
-const disableFrameSameOrigin = !!process.env.UPTIME_KUMA_DISABLE_FRAME_SAMEORIGIN || false;
+const disableFrameSameOrigin = !!process.env.UPTIME_KUMA_DISABLE_FRAME_SAMEORIGIN || args["disable-frame-sameorigin"] || false;
 
 // 2FA / notp verification defaults
 const twofa_verification_opts = {
@@ -122,7 +122,7 @@ app.use(express.json());
 
 // Global Middleware
 app.use(function (req, res, next) {
-    if (disableFrameSameOrigin) {
+    if (!disableFrameSameOrigin) {
         res.setHeader("X-Frame-Options", "SAMEORIGIN");
     }
     res.removeHeader("X-Powered-By");
