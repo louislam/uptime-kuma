@@ -119,6 +119,13 @@ const { statusPageSocketHandler } = require("./socket-handlers/status-page-socke
 
 app.use(express.json());
 
+// Global Middleware
+app.use(function (req, res, next) {
+    res.setHeader("X-Frame-Options", "SAMEORIGIN");
+    res.removeHeader("X-Powered-By");
+    next();
+});
+
 /**
  * Total WebSocket client connected to server currently, no actual use
  * @type {number}
@@ -192,7 +199,7 @@ exports.entryPage = "dashboard";
     const apiRouter = require("./routers/api-router");
     app.use(apiRouter);
 
-    // Universal Route Handler, must be at the end of all express route.
+    // Universal Route Handler, must be at the end of all express routes.
     app.get("*", async (_request, response) => {
         if (_request.originalUrl.startsWith("/upload/")) {
             response.status(404).send("File not found.");
