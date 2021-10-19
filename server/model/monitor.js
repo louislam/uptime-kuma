@@ -23,7 +23,9 @@ const {
     ping,
     dnsResolve,
     checkCertificate,
+    checkStatusCode,
     getTotalClientInRoom,
+    setting,
 } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
@@ -273,6 +275,46 @@ class Monitor extends BeanModel {
                         return;
                     }
 
+                } else if (this.type === "steam") {
+                    const steamApiUrl = "https://api.steampowered.com/IGameServersService/GetServerList/v1/";
+                    const steamAPIKey = await setting("steamAPIKey");
+                    const filter = `addr\\${this.hostname}:${this.port}`;
+
+                    if (!steamAPIKey) {
+                        throw new Error("Steam API Key not found");
+                    }
+
+                    let res = await axios.get(steamApiUrl, {
+                        timeout: this.interval * 1000 * 0.8,
+                        headers: {
+                            "Accept": "*/*",
+                            "User-Agent": "Uptime-Kuma/" + version,
+                        },
+                        httpsAgent: new https.Agent({
+                            maxCachedSessions: 0,      // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
+                            rejectUnauthorized: ! this.getIgnoreTls(),
+                        }),
+                        maxRedirects: this.maxredirects,
+                        validateStatus: (status) => {
+                            return checkStatusCode(status, this.getAcceptedStatuscodes());
+                        },
+                        params: {
+                            filter: filter,
+                            key: steamAPIKey,
+                        }
+                    });
+
+                    if (res.data.response && res.data.response.servers && res.data.response.servers.length > 0) {
+                        bean.status = UP;
+                        bean.msg = res.data.response.servers[0].name;
+
+                        try {
+                            bean.ping = await ping(this.hostname);
+                        } catch (_) { }
+                    } else {
+                        throw new Error("Server not found on Steam");
+                    }
+
                 } else {
                     bean.msg = "Unknown Monitor Type";
                     bean.status = PENDING;
@@ -305,7 +347,7 @@ class Monitor extends BeanModel {
 
             let beatInterval = this.interval;
 
-            let isImportant = Monitor.isImportantBeat(isFirstBeat, previousBeat.status, bean.status);
+            let isImportant = Monitor.isImportantBeat(isFirstBeat, previousBeat?.status, bean.status);
 
             // Mark as important if status changed, ignore pending pings,
             // Don't notify if disrupted changes to up

@@ -124,7 +124,7 @@ exports.setting = async function (key) {
     }
 };
 
-exports.setSetting = async function (key, value) {
+exports.setSetting = async function (key, value, type = null) {
     let bean = await R.findOne("setting", " `key` = ? ", [
         key,
     ]);
@@ -132,6 +132,7 @@ exports.setSetting = async function (key, value) {
         bean = R.dispense("setting");
         bean.key = key;
     }
+    bean.type = type;
     bean.value = JSON.stringify(value);
     await R.store(bean);
 };

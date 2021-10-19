@@ -31,14 +31,15 @@ WORKDIR /
 RUN apt update && \
     apt --yes install curl file
 
+COPY --from=build /app /app
+
+ARG VERSION=1.9.1
 ARG GITHUB_TOKEN
 ARG TARGETARCH
 ARG PLATFORM=debian
-ARG VERSION
 ARG FILE=$PLATFORM-$TARGETARCH-$VERSION.tar.gz
 ARG DIST=dist.tar.gz
 
-COPY --from=build /app /app
 RUN chmod +x /app/extra/upload-github-release-asset.sh
 
 # Full Build

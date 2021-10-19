@@ -185,7 +185,7 @@ export default {
     "Required": "Requis",
     "telegram": "Telegram",
     "Bot Token": "Bot Token",
-    "You can get a token from": "Vous pouvez obtenir un token depuis",
+    wayToGetTelegramToken: "Vous pouvez obtenir un token depuis {0}.",
     "Chat ID": "Chat ID",
     supportTelegramChatID: "Supporte les messages privés / en groupe / l'ID du salon",
     wayToGetTelegramChatID: "Vous pouvez obtenir l'ID du chat en envoyant un message avec le bot puis en récupérant l'URL pour voir l'ID du salon :",

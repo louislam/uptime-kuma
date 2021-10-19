@@ -7,7 +7,7 @@
 // Backend uses the compiled file util.js
 // Frontend uses util.ts
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getMonitorRelativeURL = exports.genSecret = exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.MONITOR_CHECK_MAP_INVERTED_TO_NORMAL = exports.MONITOR_CHECK_MAP_NORMAL_TO_INVERTED = exports.MONITOR_CHECK_INVERTED_TYPES = exports.MONITOR_CHECK_SELECTOR_TYPES = exports.MONITOR_CHECK_STRING_TYPES = exports.MONITOR_CHECK_HTTP_CODE_TYPES = exports.RESPONSE_SELECTOR_SHOULD_NOT_MATCH_REGEX = exports.RESPONSE_SELECTOR_SHOULD_MATCH_REGEX = exports.RESPONSE_SELECTOR_SHOULD_NOT_EQUAL = exports.RESPONSE_SELECTOR_SHOULD_EQUAL = exports.RESPONSE_SHOULD_NOT_MATCH_REGEX = exports.RESPONSE_SHOULD_MATCH_REGEX = exports.RESPONSE_SHOULD_NOT_CONTAIN_TEXT = exports.RESPONSE_SHOULD_CONTAIN_TEXT = exports.HTTP_STATUS_CODE_SHOULD_NOT_EQUAL = exports.HTTP_STATUS_CODE_SHOULD_EQUAL = exports.MONITOR_CHECK_SHOULD_NOT = exports.MONITOR_CHECK_SHOULD = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isDev = void 0;
+exports.getMonitorRelativeURL = exports.genSecret = exports.getCryptoRandomInt = exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isDev = void 0;
 const _dayjs = require("dayjs");
 const dayjs = _dayjs;
 exports.isDev = process.env.NODE_ENV === "development";
@@ -133,12 +133,61 @@ function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 exports.getRandomInt = getRandomInt;
+/**
+ * Returns either the NodeJS crypto.randomBytes() function or its
+ * browser equivalent implemented via window.crypto.getRandomValues()
+ */
+let getRandomBytes = ((typeof window !== 'undefined' && window.crypto)
+    // Browsers
+    ? function () {
+        return (numBytes) => {
+            let randomBytes = new Uint8Array(numBytes);
+            for (let i = 0; i < numBytes; i += 65536) {
+                window.crypto.getRandomValues(randomBytes.subarray(i, i + Math.min(numBytes - i, 65536)));
+            }
+            return randomBytes;
+        };
+    }
+    // Node
+    : function () {
+        return require("crypto").randomBytes;
+    })();
+function getCryptoRandomInt(min, max) {
+    // synchronous version of: https://github.com/joepie91/node-random-number-csprng
+    const range = max - min;
+    if (range >= Math.pow(2, 32))
+        console.log("Warning! Range is too large.");
+    let tmpRange = range;
+    let bitsNeeded = 0;
+    let bytesNeeded = 0;
+    let mask = 1;
+    while (tmpRange > 0) {
+        if (bitsNeeded % 8 === 0)
+            bytesNeeded += 1;
+        bitsNeeded += 1;
+        mask = mask << 1 | 1;
+        tmpRange = tmpRange >>> 1;
+    }
+    const randomBytes = getRandomBytes(bytesNeeded);
+    let randomValue = 0;
+    for (let i = 0; i < bytesNeeded; i++) {
+        randomValue |= randomBytes[i] << 8 * i;
+    }
+    randomValue = randomValue & mask;
+    if (randomValue <= range) {
+        return min + randomValue;
+    }
+    else {
+        return getCryptoRandomInt(min, max);
+    }
+}
+exports.getCryptoRandomInt = getCryptoRandomInt;
 function genSecret(length = 64) {
     let secret = "";
-    let chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    let charsLength = chars.length;
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    const charsLength = chars.length;
     for (let i = 0; i < length; i++) {
-        secret += chars.charAt(Math.floor(Math.random() * charsLength));
+        secret += chars.charAt(getCryptoRandomInt(0, charsLength - 1));
     }
     return secret;
 }
