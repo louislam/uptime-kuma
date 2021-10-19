@@ -77,12 +77,13 @@ const port = parseInt(process.env.UPTIME_KUMA_PORT || process.env.PORT || args.p
 // SSL
 const sslKey = process.env.UPTIME_KUMA_SSL_KEY || process.env.SSL_KEY || args["ssl-key"] || undefined;
 const sslCert = process.env.UPTIME_KUMA_SSL_CERT || process.env.SSL_CERT || args["ssl-cert"] || undefined;
+const disableFrameSameOrigin = !!process.env.UPTIME_KUMA_DISABLE_FRAME_SAMEORIGIN || args["disable-frame-sameorigin"] || false;
 
 // 2FA / notp verification defaults
 const twofa_verification_opts = {
     "window": 1,
     "time": 30
-}
+};
 
 /**
  * Run unit test after the server is ready
@@ -118,6 +119,15 @@ const { sendNotificationList, sendHeartbeatList, sendImportantHeartbeatList, sen
 const { statusPageSocketHandler } = require("./socket-handlers/status-page-socket-handler");
 
 app.use(express.json());
+
+// Global Middleware
+app.use(function (req, res, next) {
+    if (!disableFrameSameOrigin) {
+        res.setHeader("X-Frame-Options", "SAMEORIGIN");
+    }
+    res.removeHeader("X-Powered-By");
+    next();
+});
 
 /**
  * Total WebSocket client connected to server currently, no actual use
@@ -192,7 +202,7 @@ exports.entryPage = "dashboard";
     const apiRouter = require("./routers/api-router");
     app.use(apiRouter);
 
-    // Universal Route Handler, must be at the end of all express route.
+    // Universal Route Handler, must be at the end of all express routes.
     app.get("*", async (_request, response) => {
         if (_request.originalUrl.startsWith("/upload/")) {
             response.status(404).send("File not found.");
@@ -321,7 +331,7 @@ exports.entryPage = "dashboard";
                 ]);
 
                 if (user.twofa_status == 0) {
-                    let newSecret = await genSecret();
+                    let newSecret = genSecret();
                     let encodedSecret = base32.encode(newSecret);
 
                     // Google authenticator doesn't like equal signs
@@ -449,7 +459,7 @@ exports.entryPage = "dashboard";
         socket.on("setup", async (username, password, callback) => {
             try {
                 if ((await R.count("user")) !== 0) {
-                    throw new Error("Uptime Kuma has been setup. If you want to setup again, please delete the database.");
+                    throw new Error("Uptime Kuma has been initialized. If you want to run setup again, please delete the database.");
                 }
 
                 let user = R.dispense("user");
@@ -1339,7 +1349,7 @@ async function initDatabase() {
         fs.copyFileSync(Database.templatePath, Database.path);
     }
 
-    console.log("Connecting to Database");
+    console.log("Connecting to the Database");
     await Database.connect();
     console.log("Connected");
 
@@ -1439,7 +1449,7 @@ async function shutdownFunction(signal) {
 }
 
 function finalFunction() {
-    console.log("Graceful shutdown successfully!");
+    console.log("Graceful shutdown successful!");
 }
 
 gracefulShutdown(server, {
