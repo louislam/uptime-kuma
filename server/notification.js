@@ -1,4 +1,9 @@
 const { R } = require("redbean-node");
+const { Liquid } = require( 'liquidjs');
+const { UP } = require("../src/util");
+
+const engine = new Liquid();
+
 const Apprise = require("./notification-providers/apprise");
 const Discord = require("./notification-providers/discord");
 const Gotify = require("./notification-providers/gotify");
@@ -77,9 +82,38 @@ class Notification {
      * @returns {Promise<string>} Successful msg
      * Throw Error with fail msg
      */
-    static async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
+    static async send(
+        notification, 
+        msg, 
+        monitorJSON = {
+            id: "this.id",
+            name: "this.name",
+            url: "this.url",
+            hostname: "this.hostname",
+        }, 
+        heartbeatJSON = {
+            status: UP,
+            message: "new message",
+            ping: "1ms",
+            duration:"5 seconds",
+            monitor:"asd",
+
+        }) {
         if (this.providerList[notification.type]) {
-            return this.providerList[notification.type].send(notification, msg, monitorJSON, heartbeatJSON);
+            //TODO need to check for errors.
+            try {
+
+                let newmsg = await engine.parseAndRender("{{msg   {{monitor | json}}    {{heartbeat | json}}    {{notification | json}}", {
+                    notification: notification,
+                    msg: msg,
+                    monitor: monitorJSON,
+                    heartbeat: heartbeatJSON,
+                })
+                return this.providerList[notification.type].send(notification, newmsg, monitorJSON, heartbeatJSON);
+            } catch (e) {
+                throw e
+            }
+                
         } else {
             throw new Error("Notification type is not supported");
         }
