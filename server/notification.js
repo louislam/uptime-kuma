@@ -103,7 +103,7 @@ class Notification {
             //TODO need to check for errors.
             try {
 
-                let newmsg = await engine.parseAndRender("{{msg   {{monitor | json}}    {{heartbeat | json}}    {{notification | json}}", {
+                let newmsg = await engine.parseandrender("{{msg}}   {{monitor | json}}    {{heartbeat | json}}    {{notification | json}}", {
                     notification: notification,
                     msg: msg,
                     monitor: monitorJSON,
