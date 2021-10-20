@@ -188,8 +188,8 @@ main {
 
 .dark {
     header {
-        background-color: #161b22;
-        border-bottom-color: #161b22 !important;
+        background-color: $dark-header-bg;
+        border-bottom-color: $dark-header-bg !important;
 
         span {
             color: #f0f6fc;
