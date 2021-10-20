@@ -157,7 +157,17 @@ let needSetup = false;
  * Cache Index HTML
  * @type {string}
  */
-let indexHTML = fs.readFileSync("./dist/index.html").toString();
+let indexHTML = "";
+
+try {
+    indexHTML = fs.readFileSync("./dist/index.html").toString();
+} catch (e) {
+    // "dist/index.html" is not necessary for development
+    if (process.env.NODE_ENV !== "development") {
+        console.error("Error: Cannot find 'dist/index.html', did you install correctly?");
+        process.exit(1);
+    }
+}
 
 exports.entryPage = "dashboard";
 
