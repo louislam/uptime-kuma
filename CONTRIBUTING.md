@@ -182,7 +182,7 @@ Please read: https://github.com/louislam/uptime-kuma/tree/master/src/languages
 
 ## Maintainer 
 
-Check the latest issue and pull request:
+Check the latest issues and pull requests:
 https://github.com/louislam/uptime-kuma/issues?q=sort%3Aupdated-desc
 
 ### Release Procedures
@@ -193,6 +193,9 @@ https://github.com/louislam/uptime-kuma/issues?q=sort%3Aupdated-desc
 1. git push
 1. Publish the release note as 1.X.X 
 1. npm run upload-artifacts
-1. Try the Docker image with tag 1.X.X (Clean install / amd64 / arm64 / armv7)
-1. Try clean install with Node.js 
 1. SSH to demo site server and update to 1.X.X
+
+Checking:
+- Check all tags is fine on https://hub.docker.com/r/louislam/uptime-kuma/tags
+- Try the Docker image with tag 1.X.X (Clean install / amd64 / arm64 / armv7)
+- Try clean install with Node.js 
