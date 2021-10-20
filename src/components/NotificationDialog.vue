@@ -22,7 +22,7 @@
                             <input id="notification-name" v-model="notification.name" type="text" class="form-control" required>
                         </div>
 
-                        <div class="mb-3">
+                        <div class="mb-3" v-show="enableTemplateOptions" >
                             <label for="notification-detail" class="form-label">{{ $t("Notification Message Detail") }}</label>
                             <select id="notification-detail" v-model="notification.detail" class="form-select">
                                 <option v-for="detail in detailLevels" :key="detail" :value="detail">{{ $t(detail) }}</option>
@@ -30,9 +30,13 @@
                         </div>
 
                         <!-- using show so that if the user toggels to a different template level, they dont loose what is in the field. -->
-                        <div class="mb-3" v-show="notification.detail === 'Custom Template'"> 
+                        <div class="mb-3" v-show="notification.detail === 'Custom Template' && enableTemplateOptions"> 
                             <label for="notification-text" class="form-label">{{ $t("Custom Message Template") }}</label>
                             <textarea id="notification-text" v-model="notification.template" type="text" class="form-control" ></textarea>
+                            <div v-pre class="form-text">
+                                Uses Liquid templates Via LiquidJS.<br/>
+                                See <a href="https://github.com/louislam/uptime-kuma/wiki">the Uptime Kuma Wiki</a> for full detauls.<br/>
+                            </div>
                         </div>
 
                         <!-- form body -->
@@ -85,7 +89,7 @@ import { Modal } from "bootstrap";
 import { ucfirst } from "../util.ts";
 
 import Confirm from "./Confirm.vue";
-import {NotificationFormList, NotificationDetailList} from "./notifications";
+import {NotificationFormList, NotificationDetailList, TemplateEnabledList} from "./notifications";
 // import  from "./notifications";
 
 
@@ -119,6 +123,9 @@ export default {
                 return null;
             }
             return NotificationFormList[this.notification.type];
+        },
+        enableTemplateOptions(){
+            return (TemplateEnabledList.includes(this.notification.type))
         }
     },
 
@@ -169,7 +176,7 @@ export default {
 
                 // Set Default value here
                 this.notification.type = this.notificationTypes[0];
-                this.notification.detail = this.detailLevels[0];
+                this.notification.detail = this.detailLevels[1];
                 this.notification.template = "[{{monitor.name}}] [{{monitor.health}}] {{monitor.msg}}"
 
             }

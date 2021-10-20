@@ -51,6 +51,10 @@ export const NotificationFormList = {
     "DingDing": DingDing
 }
 
+export const TemplateEnabledList = [
+    "smtp"
+]
+
 export const NotificationDetailList = [
     "Minimal Detail",
     "Low Detail",
