@@ -13,7 +13,7 @@
                         <div class="mb-3">
                             <label for="notification-type" class="form-label">{{ $t("Notification Type") }}</label>
                             <select id="notification-type" v-model="notification.type" class="form-select">
-                                <option v-for="type in notificationTypes" :key="type" :value="type">{{ translatedType }}</option>
+                                <option v-for="type in notificationTypes" :key="type" :value="type">{{ $t(type) }}</option>
                             </select>
                         </div>
 
@@ -103,28 +103,6 @@ export default {
             }
             return NotificationFormList[this.notification.type];
         },
-        translatedType() {
-            return {
-                "telegram": $t("telegram"),
-                "webhook": $t("webhook"),
-                "smtp": $t("smtp"),
-                "discord": $t("discord"),
-                "teams": $t("teams"),
-                "signal": $t("signal"),
-                "gotify": $t("gotify"),
-                "slack": $t("slack"),
-                "rocket.chat": $t("rocket.chat"),
-                "pushover": $t("pushover"),
-                "pushy": $t("pushy"),
-                "octopush": $t("octopush"),
-                "lunasea": $t("lunasea"),
-                "apprise": $t("apprise"),
-                "pushbullet": $t("pushbullet"),
-                "line": $t("line"),
-                "mattermost": $t("mattermostt"),
-                "matrix": $t("matrix"),
-            }[type];
-        }
     },
 
     watch: {
