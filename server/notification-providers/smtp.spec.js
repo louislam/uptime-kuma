@@ -1,7 +1,7 @@
 jest.mock("nodemailer", () => ({
     createTransport: jest.fn(),
 }));
-const mockNodEmailer = require("nodemailer");
+const mockNodeMailer = require("nodemailer");
 
 const SMTP = require("./smtp");
 
@@ -18,7 +18,7 @@ describe("notification to act properly on send", () => {
             .mockResolvedValue(() => {
                 return;
             });
-        mockNodEmailer.createTransport.mockImplementationOnce(() => {
+        mockNodeMailer.createTransport.mockImplementationOnce(() => {
             return { sendMail: sender };
         });
 
@@ -31,12 +31,12 @@ describe("notification to act properly on send", () => {
             smtpPassword: "password",
             customSubject: "custom subject",
         };
-        let msg = "Message";
+        let msg = "PassedInMessage";
         let monitorConf = { };
         let heartbeatConf = { };
         let res = await notif.send(notificationConf, msg, monitorConf, heartbeatConf);
 
-        expect(mockNodEmailer.createTransport).toHaveBeenCalledWith({
+        expect(mockNodeMailer.createTransport).toHaveBeenCalledWith({
             auth: {
                 pass: "password",
                 user: "username",
@@ -46,5 +46,16 @@ describe("notification to act properly on send", () => {
             secure: "secure",
         });
         expect(res).toBe("Sent Successfully.");
+        expect(sender).toHaveBeenCalledWith({
+            bcc: undefined,
+            cc: undefined,
+            from: undefined,
+            subject: "custom subject",
+            text: "PassedInMessage\nTime (UTC): undefined",
+            tls: {
+                rejectUnauthorized: false,
+            },
+            to: undefined,
+        });
     });
 });
