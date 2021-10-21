@@ -6,7 +6,7 @@ labels: help
 assignees: ''
 
 ---
-**Is it a duplicate question?**
+**Is it a duplicated question?**
 Please search in Issues without filters: https://github.com/louislam/uptime-kuma/issues?q=
 
 **Describe your problem**

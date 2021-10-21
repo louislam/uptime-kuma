@@ -178,3 +178,24 @@ Patch release = the third digit ([Semantic Versioning](https://semver.org/))
 ## Translations
 
 Please read: https://github.com/louislam/uptime-kuma/tree/master/src/languages
+
+
+## Maintainer 
+
+Check the latest issues and pull requests:
+https://github.com/louislam/uptime-kuma/issues?q=sort%3Aupdated-desc
+
+### Release Procedures
+1. Draft a release note
+1. Make sure the repo is cleared
+1. `npm run update-version 1.X.X`
+1. `npm run build-docker`
+1. git push
+1. Publish the release note as 1.X.X 
+1. npm run upload-artifacts
+1. SSH to demo site server and update to 1.X.X
+
+Checking:
+- Check all tags is fine on https://hub.docker.com/r/louislam/uptime-kuma/tags
+- Try the Docker image with tag 1.X.X (Clean install / amd64 / arm64 / armv7)
+- Try clean install with Node.js 
