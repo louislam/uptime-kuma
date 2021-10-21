@@ -31,6 +31,7 @@ debug("Importing prometheus-api-metrics");
 const prometheusAPIMetrics = require("prometheus-api-metrics");
 debug("Importing compare-versions");
 const compareVersions = require("compare-versions");
+const { passwordStrength } = require("check-password-strength");
 
 debug("Importing 2FA Modules");
 const notp = require("notp");
@@ -468,6 +469,10 @@ exports.entryPage = "dashboard";
 
         socket.on("setup", async (username, password, callback) => {
             try {
+                if (passwordStrength(password).value === "Too weak") {
+                    throw new Error("Password is too weak. It should contain alphabetic and numeric characters. It must be at least 6 characters in length.");
+                }
+
                 if ((await R.count("user")) !== 0) {
                     throw new Error("Uptime Kuma has been initialized. If you want to run setup again, please delete the database.");
                 }
@@ -857,8 +862,12 @@ exports.entryPage = "dashboard";
             try {
                 checkLogin(socket);
 
-                if (! password.currentPassword) {
+                if (! password.newPassword) {
                     throw new Error("Invalid new password");
+                }
+
+                if (passwordStrength(password.newPassword).value === "Too weak") {
+                    throw new Error("Password is too weak. It should contain alphabetic and numeric characters. It must be at least 6 characters in length.");
                 }
 
                 let user = await R.findOne("user", " id = ? AND active = 1 ", [
