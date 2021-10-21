@@ -26,7 +26,7 @@ import DingDing from "./DingDing.vue";
  *
  * @type { Record<string, any> }
  */
-const NotificationFormList = {
+export const NotificationFormList = {
     "telegram": Telegram,
     "webhook": Webhook,
     "smtp": STMP,
@@ -51,4 +51,15 @@ const NotificationFormList = {
     "DingDing": DingDing
 }
 
-export default NotificationFormList
+export const TemplateEnabledList = [
+    "smtp"
+]
+
+export const NotificationDetailList = [
+    "Minimal Detail",
+    "Low Detail",
+    "Medium Detail",
+    "Full Detail",
+    "Custom Template",
+]
+
