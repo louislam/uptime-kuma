@@ -3,6 +3,7 @@ jest.mock("nodemailer", () => ({
 }));
 const mockNodeMailer = require("nodemailer");
 const { UP } = require("../../src/util");
+const NotificationSend = require("../notification");
 
 const SMTP = require("./smtp");
 
@@ -178,6 +179,69 @@ describe("notification to act properly on error from transport", () => {
         expect(mockNodeMailer.createTransport).toHaveBeenCalledTimes(1);
         expect(res).toBe("");
         expect(sender).toHaveBeenCalledTimes(1);
+    });
+
+});
+
+describe("notification to get proper data from Notification.send", () => {
+    it("should call sendMail with proper data", async () => {
+        let sender = jest.fn()
+            .mockResolvedValue(() => {
+                return;
+            });
+        mockNodeMailer.createTransport.mockImplementationOnce(() => {
+            return { sendMail: sender };
+        });
+
+        let notificationConf = {
+            type: "smtp",
+            smtpHost: "host",
+            smtpPort: "port",
+            smtpSecure: "secure",
+            smtpUsername: "username",
+            smtpPassword: "password",
+            customSubject: "",
+            smtpFrom: "From",
+            smtpCC: "CC",
+            smtpBCC: "BCC",
+            smtpTo: "To",
+        };
+        let monitorConf = {
+            type: "http",
+            url: "https://www.google.com",
+            name: "testing",
+        };
+        let heartbeatConf = {
+            status: UP,
+        };
+
+        NotificationSend.Notification.init();
+        let res = await NotificationSend.Notification.send(notificationConf, "simple message", monitorConf, heartbeatConf);
+
+        expect(res).toBe("Sent Successfully.");
+
+        expect(mockNodeMailer.createTransport).toHaveBeenCalledTimes(1);
+        expect(mockNodeMailer.createTransport).toHaveBeenCalledWith({
+            auth: {
+                pass: "password",
+                user: "username",
+            },
+            host: "host",
+            port: "port",
+            secure: "secure",
+        });
+        expect(sender).toHaveBeenCalledTimes(1);
+        expect(sender).toHaveBeenCalledWith({
+            bcc: "BCC",
+            cc: "CC",
+            from: "From",
+            subject: "simple message",
+            text: "simple message\nTime (UTC): undefined",
+            tls: {
+                rejectUnauthorized: false,
+            },
+            to: "To",
+        });
     });
 
 });
