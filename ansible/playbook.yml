@@ -1,7 +1,13 @@
 - name: install uptime kuma with nginx connected
   hosts: all
+
+  vars:
+    pip_install_packages:
+      - name: docker
+
   roles:
     - {role: geerlingguy.docker,      tags: ["docker"]}
+    - {role: geerlingguy.pip,         tags: ["docker"]}
     - {role: kuma,                    tags: ["kuma"]}
     - {role: nginx,                   tags: ["nginx"]}
-    
+
