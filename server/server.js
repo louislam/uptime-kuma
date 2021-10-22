@@ -31,6 +31,7 @@ debug("Importing prometheus-api-metrics");
 const prometheusAPIMetrics = require("prometheus-api-metrics");
 debug("Importing compare-versions");
 const compareVersions = require("compare-versions");
+const { passwordStrength } = require("check-password-strength");
 
 debug("Importing 2FA Modules");
 const notp = require("notp");
@@ -77,6 +78,7 @@ const port = parseInt(process.env.UPTIME_KUMA_PORT || process.env.PORT || args.p
 // SSL
 const sslKey = process.env.UPTIME_KUMA_SSL_KEY || process.env.SSL_KEY || args["ssl-key"] || undefined;
 const sslCert = process.env.UPTIME_KUMA_SSL_CERT || process.env.SSL_CERT || args["ssl-cert"] || undefined;
+const disableFrameSameOrigin = !!process.env.UPTIME_KUMA_DISABLE_FRAME_SAMEORIGIN || args["disable-frame-sameorigin"] || false;
 
 // 2FA / notp verification defaults
 const twofa_verification_opts = {
@@ -119,6 +121,15 @@ const { statusPageSocketHandler } = require("./socket-handlers/status-page-socke
 
 app.use(express.json());
 
+// Global Middleware
+app.use(function (req, res, next) {
+    if (!disableFrameSameOrigin) {
+        res.setHeader("X-Frame-Options", "SAMEORIGIN");
+    }
+    res.removeHeader("X-Powered-By");
+    next();
+});
+
 /**
  * Total WebSocket client connected to server currently, no actual use
  * @type {number}
@@ -147,7 +158,17 @@ let needSetup = false;
  * Cache Index HTML
  * @type {string}
  */
-let indexHTML = fs.readFileSync("./dist/index.html").toString();
+let indexHTML = "";
+
+try {
+    indexHTML = fs.readFileSync("./dist/index.html").toString();
+} catch (e) {
+    // "dist/index.html" is not necessary for development
+    if (process.env.NODE_ENV !== "development") {
+        console.error("Error: Cannot find 'dist/index.html', did you install correctly?");
+        process.exit(1);
+    }
+}
 
 exports.entryPage = "dashboard";
 
@@ -192,7 +213,7 @@ exports.entryPage = "dashboard";
     const apiRouter = require("./routers/api-router");
     app.use(apiRouter);
 
-    // Universal Route Handler, must be at the end of all express route.
+    // Universal Route Handler, must be at the end of all express routes.
     app.get("*", async (_request, response) => {
         if (_request.originalUrl.startsWith("/upload/")) {
             response.status(404).send("File not found.");
@@ -321,7 +342,7 @@ exports.entryPage = "dashboard";
                 ]);
 
                 if (user.twofa_status == 0) {
-                    let newSecret = await genSecret();
+                    let newSecret = genSecret();
                     let encodedSecret = base32.encode(newSecret);
 
                     // Google authenticator doesn't like equal signs
@@ -448,8 +469,12 @@ exports.entryPage = "dashboard";
 
         socket.on("setup", async (username, password, callback) => {
             try {
+                if (passwordStrength(password).value === "Too weak") {
+                    throw new Error("Password is too weak. It should contain alphabetic and numeric characters. It must be at least 6 characters in length.");
+                }
+
                 if ((await R.count("user")) !== 0) {
-                    throw new Error("Uptime Kuma has been setup. If you want to setup again, please delete the database.");
+                    throw new Error("Uptime Kuma has been initialized. If you want to run setup again, please delete the database.");
                 }
 
                 let user = R.dispense("user");
@@ -837,8 +862,12 @@ exports.entryPage = "dashboard";
             try {
                 checkLogin(socket);
 
-                if (! password.currentPassword) {
+                if (! password.newPassword) {
                     throw new Error("Invalid new password");
+                }
+
+                if (passwordStrength(password.newPassword).value === "Too weak") {
+                    throw new Error("Password is too weak. It should contain alphabetic and numeric characters. It must be at least 6 characters in length.");
                 }
 
                 let user = await R.findOne("user", " id = ? AND active = 1 ", [
@@ -1359,7 +1388,7 @@ async function initDatabase() {
         fs.copyFileSync(Database.templatePath, Database.path);
     }
 
-    console.log("Connecting to Database");
+    console.log("Connecting to the Database");
     await Database.connect();
     console.log("Connected");
 
@@ -1459,7 +1488,7 @@ async function shutdownFunction(signal) {
 }
 
 function finalFunction() {
-    console.log("Graceful shutdown successfully!");
+    console.log("Graceful shutdown successful!");
 }
 
 gracefulShutdown(server, {

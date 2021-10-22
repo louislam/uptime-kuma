@@ -21,8 +21,10 @@ import sr from "./languages/sr";
 import srLatn from "./languages/sr-latn";
 import svSE from "./languages/sv-SE";
 import trTR from "./languages/tr-TR";
+import vi from "./languages/vi";
 import zhCN from "./languages/zh-CN";
 import zhHK from "./languages/zh-HK";
+
 
 const languageList = {
     en,
@@ -49,6 +51,7 @@ const languageList = {
     "zh-CN": zhCN,
     "pl": pl,
     "et-EE": etEE,
+    "vi": vi,
 };
 
 const rtlLangs = ["fa"];

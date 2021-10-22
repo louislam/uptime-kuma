@@ -6,7 +6,7 @@ labels: enhancement
 assignees: ''
 
 ---
-**Is it a duplicate question?**
+**Is it a duplicated question?**
 Please search in Issues without filters: https://github.com/louislam/uptime-kuma/issues?q=
 
 **Is your feature request related to a problem? Please describe.**
