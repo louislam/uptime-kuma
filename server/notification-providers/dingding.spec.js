@@ -1,15 +1,7 @@
-// jest.mock("crypto", () => ({
-//     createTransport: jest.fn(),
-//     createHmac: jest.fn(),
-//     digest: jest.fn(),
-// }));
-
 jest.mock("axios");
 
 const { UP } = require("../../src/util");
 const NotificationSend = require("../notification");
-
-// const mockNodeMailer = require("nodemailer");
 
 const DingDing = require("./dingding");
 

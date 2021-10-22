@@ -8,7 +8,6 @@ class AliyunSMS extends NotificationProvider {
     name = "AliyunSMS";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
 
         try {
             if (heartbeatJSON != null) {
@@ -18,8 +17,9 @@ class AliyunSMS extends NotificationProvider {
                     status: this.statusToString(heartbeatJSON["status"]),
                     msg: heartbeatJSON["msg"],
                 });
-                if (this.sendSms(notification, msgBody)) {
-                    return okMsg;
+                if (await this.sendSms(notification, msgBody)) {
+                    return this.sendSuccess;
+                    //TODO account for cases where sendSMS returns false.
                 }
             } else {
                 let msgBody = JSON.stringify({
@@ -28,8 +28,8 @@ class AliyunSMS extends NotificationProvider {
                     status: "",
                     msg: msg,
                 });
-                if (this.sendSms(notification, msgBody)) {
-                    return okMsg;
+                if (await this.sendSms(notification, msgBody)) {
+                    return this.sendSuccess;
                 }
             }
         } catch (error) {
@@ -48,7 +48,7 @@ class AliyunSMS extends NotificationProvider {
             SignatureMethod: "HMAC-SHA1",
             SignatureVersion: "1.0",
             SignatureNonce: Math.random().toString(),
-            Timestamp: new Date().toISOString(),
+            Timestamp: new Date(Date.now()).toISOString(),
             Action: "SendSms",
             Version: "2017-05-25",
         };
