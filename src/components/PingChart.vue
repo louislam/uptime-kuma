@@ -230,7 +230,10 @@ export default {
         this.$watch(() => this.$root.heartbeatList[this.monitorId],
             (heartbeatList) => {
                 if (this.chartPeriodHrs != 0) {
-                    this.heartbeatList.push(heartbeatList.at(-1));
+                    const newBeat = heartbeatList.at(-1);
+                    if (newBeat && dayjs.utc(newBeat.time) > dayjs.utc(this.heartbeatList.at(-1)?.time)) {
+                        this.heartbeatList.push(heartbeatList.at(-1));
+                    }
                 }
             },
             { deep: true }
