@@ -19,6 +19,8 @@ const Teams = require("./notification-providers/teams");
 const Telegram = require("./notification-providers/telegram");
 const Webhook = require("./notification-providers/webhook");
 const Feishu = require("./notification-providers/feishu");
+const AliyunSms = require("./notification-providers/aliyun-sms");
+const DingDing = require("./notification-providers/dingding");
 
 class Notification {
 
@@ -31,6 +33,8 @@ class Notification {
 
         const list = [
             new Apprise(),
+            new AliyunSms(),
+            new DingDing(),
             new Discord(),
             new Teams(),
             new Gotify(),

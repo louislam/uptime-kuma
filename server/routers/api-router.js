@@ -5,7 +5,7 @@ const server = require("../server");
 const apicache = require("../modules/apicache");
 const Monitor = require("../model/monitor");
 const dayjs = require("dayjs");
-const { UP } = require("../../src/util");
+const { UP, flipStatus, debug } = require("../../src/util");
 let router = express.Router();
 
 let cache = apicache.middleware;
@@ -18,9 +18,10 @@ router.get("/api/entry-page", async (_, response) => {
 
 router.get("/api/push/:pushToken", async (request, response) => {
     try {
+
         let pushToken = request.params.pushToken;
         let msg = request.query.msg || "OK";
-        let ping = request.query.ping;
+        let ping = request.query.ping || null;
 
         let monitor = await R.findOne("monitor", " push_token = ? AND active = 1 ", [
             pushToken
@@ -30,12 +31,40 @@ router.get("/api/push/:pushToken", async (request, response) => {
             throw new Error("Monitor not found or not active.");
         }
 
+        const previousHeartbeat = await R.getRow(`
+            SELECT status, time FROM heartbeat
+            WHERE id = (select MAX(id) from heartbeat where monitor_id = ?)
+        `, [
+            monitor.id
+        ]);
+
+        let status = UP;
+        if (monitor.isUpsideDown()) {
+            status = flipStatus(status);
+        }
+
+        let isFirstBeat = true;
+        let previousStatus = status;
+        let duration = 0;
+
         let bean = R.dispense("heartbeat");
-        bean.monitor_id = monitor.id;
         bean.time = R.isoDateTime(dayjs.utc());
-        bean.status = UP;
+
+        if (previousHeartbeat) {
+            isFirstBeat = false;
+            previousStatus = previousHeartbeat.status;
+            duration = dayjs(bean.time).diff(dayjs(previousHeartbeat.time), "second");
+        }
+
+        debug("PreviousStatus: " + previousStatus);
+        debug("Current Status: " + status);
+
+        bean.important = Monitor.isImportantBeat(isFirstBeat, previousStatus, status);
+        bean.monitor_id = monitor.id;
+        bean.status = status;
         bean.msg = msg;
         bean.ping = ping;
+        bean.duration = duration;
 
         await R.store(bean);
 
@@ -45,6 +74,11 @@ router.get("/api/push/:pushToken", async (request, response) => {
         response.json({
             ok: true,
         });
+
+        if (bean.important) {
+            await Monitor.sendNotification(isFirstBeat, monitor, bean);
+        }
+
     } catch (e) {
         response.json({
             ok: false,

@@ -49,10 +49,11 @@ class Database {
         "patch-incident-table.sql": true,
         "patch-group-table.sql": true,
         "patch-monitor-push_token.sql": true,
+        "patch-http-monitor-method-body-and-headers.sql": true,
     }
 
     /**
-     * The finally version should be 10 after merged tag feature
+     * The final version should be 10 after merged tag feature
      * @deprecated Use patchList for any new feature
      */
     static latestVersion = 10;
@@ -130,7 +131,7 @@ class Database {
         console.info("Latest database version: " + this.latestVersion);
 
         if (version === this.latestVersion) {
-            console.info("Database no need to patch");
+            console.info("Database patch not needed");
         } else if (version > this.latestVersion) {
             console.info("Warning: Database version is newer than expected");
         } else {
@@ -151,8 +152,8 @@ class Database {
                 await Database.close();
 
                 console.error(ex);
-                console.error("Start Uptime-Kuma failed due to patch db failed");
-                console.error("Please submit the bug report if you still encounter the problem after restart: https://github.com/louislam/uptime-kuma/issues");
+                console.error("Start Uptime-Kuma failed due to issue patching the database");
+                console.error("Please submit a bug report if you still encounter the problem after restart: https://github.com/louislam/uptime-kuma/issues");
 
                 this.restore();
                 process.exit(1);
@@ -190,7 +191,7 @@ class Database {
             await Database.close();
 
             console.error(ex);
-            console.error("Start Uptime-Kuma failed due to patch db failed");
+            console.error("Start Uptime-Kuma failed due to issue patching the database");
             console.error("Please submit the bug report if you still encounter the problem after restart: https://github.com/louislam/uptime-kuma/issues");
 
             this.restore();
@@ -231,7 +232,7 @@ class Database {
             this.patched = true;
             await this.importSQLFile("./db/" + sqlFilename);
             databasePatchedFiles[sqlFilename] = true;
-            console.log(sqlFilename + " is patched successfully");
+            console.log(sqlFilename + " was patched successfully");
 
         } else {
             debug(sqlFilename + " is already patched, skip");
@@ -286,7 +287,7 @@ class Database {
         };
         process.addListener("unhandledRejection", listener);
 
-        console.log("Closing DB");
+        console.log("Closing the database");
 
         while (true) {
             Database.noReject = true;
@@ -296,7 +297,7 @@ class Database {
             if (Database.noReject) {
                 break;
             } else {
-                console.log("Waiting to close the db");
+                console.log("Waiting to close the database");
             }
         }
         console.log("SQLite closed");
@@ -311,7 +312,7 @@ class Database {
      */
     static backup(version) {
         if (! this.backupPath) {
-            console.info("Backup the db");
+            console.info("Backing up the database");
             this.backupPath = this.dataDir + "kuma.db.bak" + version;
             fs.copyFileSync(Database.path, this.backupPath);
 
@@ -334,7 +335,7 @@ class Database {
      */
     static restore() {
         if (this.backupPath) {
-            console.error("Patch db failed!!! Restoring the backup");
+            console.error("Patching the database failed!!! Restoring the backup");
 
             const shmPath = Database.path + "-shm";
             const walPath = Database.path + "-wal";
@@ -353,7 +354,7 @@ class Database {
                     fs.unlinkSync(walPath);
                 }
             } catch (e) {
-                console.log("Restore failed, you may need to restore the backup manually");
+                console.log("Restore failed; you may need to restore the backup manually");
                 process.exit(1);
             }
 

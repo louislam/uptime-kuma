@@ -185,7 +185,7 @@ export default {
     "Required": "Wymagane",
     "telegram": "Telegram",
     "Bot Token": "Token Bota",
-    "You can get a token from": "Token można uzyskać z",
+    wayToGetTelegramToken: "Token można uzyskać z {0}.",
     "Chat ID": "Identyfikator Czatu",
     supportTelegramChatID: "Czat wsprarcia technicznego / Bezpośrednia Rozmowa / Czat Grupowy",
     wayToGetTelegramChatID: "Możesz uzyskać swój identyfikator czatu, wysyłając wiadomość do bota i przechodząc pod ten adres URL, aby wyświetlić identyfikator czatu:",

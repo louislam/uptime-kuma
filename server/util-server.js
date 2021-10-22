@@ -6,6 +6,14 @@ const passwordHash = require("./password-hash");
 const dayjs = require("dayjs");
 const { Resolver } = require("dns");
 const child_process = require("child_process");
+const iconv = require("iconv-lite");
+const chardet = require("chardet");
+
+// From ping-lite
+exports.WIN = /^win/.test(process.platform);
+exports.LIN = /^linux/.test(process.platform);
+exports.MAC = /^darwin/.test(process.platform);
+exports.FBSD = /^freebsd/.test(process.platform);
 
 /**
  * Init or reset JWT secret
@@ -116,7 +124,7 @@ exports.setting = async function (key) {
     }
 };
 
-exports.setSetting = async function (key, value) {
+exports.setSetting = async function (key, value, type = null) {
     let bean = await R.findOne("setting", " `key` = ? ", [
         key,
     ]);
@@ -124,6 +132,7 @@ exports.setSetting = async function (key, value) {
         bean = R.dispense("setting");
         bean.key = key;
     }
+    bean.type = type;
     bean.value = JSON.stringify(value);
     await R.store(bean);
 };
@@ -311,4 +320,15 @@ exports.startUnitTest = async () => {
         console.log("Jest exit code: " + code);
         process.exit(code);
     });
+};
+
+/**
+ * @param body : Buffer
+ * @returns {string}
+ */
+exports.convertToUTF8 = (body) => {
+    const guessEncoding = chardet.detect(body);
+    //debug("Guess Encoding: " + guessEncoding);
+    const str = iconv.decode(body, guessEncoding);
+    return str.toString();
 };

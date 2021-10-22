@@ -1,16 +1,13 @@
 console.log("Welcome to Uptime Kuma");
 const args = require("args-parser")(process.argv);
 const { sleep, debug, getRandomInt, genSecret } = require("../src/util");
+const config = require("./config");
 
 debug(args);
 
 if (! process.env.NODE_ENV) {
     process.env.NODE_ENV = "production";
 }
-
-// Demo Mode?
-const demoMode = args["demo"] || false;
-exports.demoMode = demoMode;
 
 console.log("Node Env: " + process.env.NODE_ENV);
 
@@ -34,6 +31,7 @@ debug("Importing prometheus-api-metrics");
 const prometheusAPIMetrics = require("prometheus-api-metrics");
 debug("Importing compare-versions");
 const compareVersions = require("compare-versions");
+const { passwordStrength } = require("check-password-strength");
 
 debug("Importing 2FA Modules");
 const notp = require("notp");
@@ -43,7 +41,7 @@ console.log("Importing this project modules");
 debug("Importing Monitor");
 const Monitor = require("./model/monitor");
 debug("Importing Settings");
-const { getSettings, setSettings, setting, initJWTSecret, checkLogin, startUnitTest } = require("./util-server");
+const { getSettings, setSettings, setting, initJWTSecret, checkLogin, startUnitTest, FBSD } = require("./util-server");
 
 debug("Importing Notification");
 const { Notification } = require("./notification");
@@ -51,6 +49,9 @@ Notification.init();
 
 debug("Importing Database");
 const Database = require("./database");
+
+debug("Importing Background Jobs");
+const { initBackgroundJobs } = require("./jobs");
 
 const { basicAuth } = require("./auth");
 const { login } = require("./auth");
@@ -61,12 +62,29 @@ console.info("Version: " + checkVersion.version);
 
 // If host is omitted, the server will accept connections on the unspecified IPv6 address (::) when IPv6 is available and the unspecified IPv4 address (0.0.0.0) otherwise.
 // Dual-stack support for (::)
-const hostname = process.env.HOST || args.host;
-const port = parseInt(process.env.PORT || args.port || 3001);
+let hostname = process.env.UPTIME_KUMA_HOST || args.host;
+
+// Also read HOST if not FreeBSD, as HOST is a system environment variable in FreeBSD
+if (!hostname && !FBSD) {
+    hostname = process.env.HOST;
+}
+
+if (hostname) {
+    console.log("Custom hostname: " + hostname);
+}
+
+const port = parseInt(process.env.UPTIME_KUMA_PORT || process.env.PORT || args.port || 3001);
 
 // SSL
-const sslKey = process.env.SSL_KEY || args["ssl-key"] || undefined;
-const sslCert = process.env.SSL_CERT || args["ssl-cert"] || undefined;
+const sslKey = process.env.UPTIME_KUMA_SSL_KEY || process.env.SSL_KEY || args["ssl-key"] || undefined;
+const sslCert = process.env.UPTIME_KUMA_SSL_CERT || process.env.SSL_CERT || args["ssl-cert"] || undefined;
+const disableFrameSameOrigin = !!process.env.UPTIME_KUMA_DISABLE_FRAME_SAMEORIGIN || args["disable-frame-sameorigin"] || false;
+
+// 2FA / notp verification defaults
+const twofa_verification_opts = {
+    "window": 1,
+    "time": 30
+};
 
 /**
  * Run unit test after the server is ready
@@ -74,7 +92,7 @@ const sslCert = process.env.SSL_CERT || args["ssl-cert"] || undefined;
  */
 const testMode = !!args["test"] || false;
 
-if (demoMode) {
+if (config.demoMode) {
     console.log("==== Demo Mode ====");
 }
 
@@ -102,6 +120,15 @@ const { sendNotificationList, sendHeartbeatList, sendImportantHeartbeatList, sen
 const { statusPageSocketHandler } = require("./socket-handlers/status-page-socket-handler");
 
 app.use(express.json());
+
+// Global Middleware
+app.use(function (req, res, next) {
+    if (!disableFrameSameOrigin) {
+        res.setHeader("X-Frame-Options", "SAMEORIGIN");
+    }
+    res.removeHeader("X-Powered-By");
+    next();
+});
 
 /**
  * Total WebSocket client connected to server currently, no actual use
@@ -131,7 +158,17 @@ let needSetup = false;
  * Cache Index HTML
  * @type {string}
  */
-let indexHTML = fs.readFileSync("./dist/index.html").toString();
+let indexHTML = "";
+
+try {
+    indexHTML = fs.readFileSync("./dist/index.html").toString();
+} catch (e) {
+    // "dist/index.html" is not necessary for development
+    if (process.env.NODE_ENV !== "development") {
+        console.error("Error: Cannot find 'dist/index.html', did you install correctly?");
+        process.exit(1);
+    }
+}
 
 exports.entryPage = "dashboard";
 
@@ -176,7 +213,7 @@ exports.entryPage = "dashboard";
     const apiRouter = require("./routers/api-router");
     app.use(apiRouter);
 
-    // Universal Route Handler, must be at the end of all express route.
+    // Universal Route Handler, must be at the end of all express routes.
     app.get("*", async (_request, response) => {
         if (_request.originalUrl.startsWith("/upload/")) {
             response.status(404).send("File not found.");
@@ -265,7 +302,7 @@ exports.entryPage = "dashboard";
                 }
 
                 if (data.token) {
-                    let verify = notp.totp.verify(data.token, user.twofa_secret);
+                    let verify = notp.totp.verify(data.token, user.twofa_secret, twofa_verification_opts);
 
                     if (verify && verify.delta == 0) {
                         callback({
@@ -305,7 +342,7 @@ exports.entryPage = "dashboard";
                 ]);
 
                 if (user.twofa_status == 0) {
-                    let newSecret = await genSecret();
+                    let newSecret = genSecret();
                     let encodedSecret = base32.encode(newSecret);
 
                     // Google authenticator doesn't like equal signs
@@ -383,7 +420,7 @@ exports.entryPage = "dashboard";
                 socket.userID,
             ]);
 
-            let verify = notp.totp.verify(token, user.twofa_secret);
+            let verify = notp.totp.verify(token, user.twofa_secret, twofa_verification_opts);
 
             if (verify && verify.delta == 0) {
                 callback({
@@ -432,8 +469,12 @@ exports.entryPage = "dashboard";
 
         socket.on("setup", async (username, password, callback) => {
             try {
+                if (passwordStrength(password).value === "Too weak") {
+                    throw new Error("Password is too weak. It should contain alphabetic and numeric characters. It must be at least 6 characters in length.");
+                }
+
                 if ((await R.count("user")) !== 0) {
-                    throw new Error("Uptime Kuma has been setup. If you want to setup again, please delete the database.");
+                    throw new Error("Uptime Kuma has been initialized. If you want to run setup again, please delete the database.");
                 }
 
                 let user = R.dispense("user");
@@ -509,6 +550,9 @@ exports.entryPage = "dashboard";
                 bean.name = monitor.name;
                 bean.type = monitor.type;
                 bean.url = monitor.url;
+                bean.method = monitor.method;
+                bean.body = monitor.body;
+                bean.headers = monitor.headers;
                 bean.interval = monitor.interval;
                 bean.retryInterval = monitor.retryInterval;
                 bean.hostname = monitor.hostname;
@@ -818,8 +862,12 @@ exports.entryPage = "dashboard";
             try {
                 checkLogin(socket);
 
-                if (! password.currentPassword) {
+                if (! password.newPassword) {
                     throw new Error("Invalid new password");
+                }
+
+                if (passwordStrength(password.newPassword).value === "Too weak") {
+                    throw new Error("Password is too weak. It should contain alphabetic and numeric characters. It must be at least 6 characters in length.");
                 }
 
                 let user = await R.findOne("user", " id = ? AND active = 1 ", [
@@ -1034,6 +1082,9 @@ exports.entryPage = "dashboard";
                                 name: monitorListData[i].name,
                                 type: monitorListData[i].type,
                                 url: monitorListData[i].url,
+                                method: monitorListData[i].method || "GET",
+                                body: monitorListData[i].body,
+                                headers: monitorListData[i].headers,
                                 interval: monitorListData[i].interval,
                                 retryInterval: retryInterval,
                                 hostname: monitorListData[i].hostname,
@@ -1239,6 +1290,8 @@ exports.entryPage = "dashboard";
         }
     });
 
+    initBackgroundJobs(args);
+
 })();
 
 async function updateMonitorNotification(monitorID, notificationIDList) {
@@ -1315,7 +1368,7 @@ async function initDatabase() {
         fs.copyFileSync(Database.templatePath, Database.path);
     }
 
-    console.log("Connecting to Database");
+    console.log("Connecting to the Database");
     await Database.connect();
     console.log("Connected");
 
@@ -1415,7 +1468,7 @@ async function shutdownFunction(signal) {
 }
 
 function finalFunction() {
-    console.log("Graceful shutdown successfully!");
+    console.log("Graceful shutdown successful!");
 }
 
 gracefulShutdown(server, {

@@ -6,7 +6,7 @@
             <option value="1">Legacy Octopush-DM (endpoint: www.octopush-dm.com)</option>
         </select>
         <div class="form-text">
-            Do you use the legacy version of Octopush (2011-2020) or the new version?
+            {{ $t("octopushLegacyHint") }}
         </div>
     </div>
     <div class="mb-3">
