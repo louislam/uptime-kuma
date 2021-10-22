@@ -17,8 +17,8 @@
 
 - name: Ensure nginx config directory exist
   copy:
-    src: nginx
-    dest: /compose/volumes/nginx/
+    src: ssl
+    dest: /compose/volumes/nginx/ssl
     mode: 'preserve'
     group: root
     owner: root

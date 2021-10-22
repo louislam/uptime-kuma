@@ -12,8 +12,15 @@ I will try to make this readme better
 ## To run it
 1. run `ansible-galaxy install -r ansible-requirements.yml` to get requirements
 2. prepare inventory hosts
-3. to run playbook
+3. put your certificates in files section in nginx role with this structure below:
+```
+ansible -> roles -> nginx -> ssl -> <uptime kuma domain>.fullchain.pem
+ansible -> roles -> nginx -> ssl -> <uptime kuma domain>.privkey.pem
+```
+4. to run playbook
 ```bash
 ansible-playbook ./playbook.yml -i <your inventory path> --extra-vars "kuma_domain=<uptime kuma domain>"
 ```
 you can use other ansible playbook options too
+
+> Note: Replace `<uptime kuma domain>` with your desired domain for uptime kuma
