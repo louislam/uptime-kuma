@@ -877,7 +877,6 @@ exports.entryPage = "dashboard";
                     ok: true,
                     data: user.username,
                 });
-
             } catch (e) {
                 callback({
                     ok: false,
