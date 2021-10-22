@@ -7,7 +7,6 @@ class DingDing extends NotificationProvider {
     name = "DingDing";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
 
         try {
             if (heartbeatJSON != null) {
@@ -18,8 +17,8 @@ class DingDing extends NotificationProvider {
                         text: `## [${this.statusToString(heartbeatJSON["status"])}] \n > ${heartbeatJSON["msg"]}  \n > Time(UTC):${heartbeatJSON["time"]}`,
                     }
                 };
-                if (this.sendToDingDing(notification, params)) {
-                    return okMsg;
+                if (await this.sendToDingDing(notification, params)) {
+                    return this.sendSuccess;
                 }
             } else {
                 let params = {
@@ -28,8 +27,8 @@ class DingDing extends NotificationProvider {
                         content: msg
                     }
                 };
-                if (this.sendToDingDing(notification, params)) {
-                    return okMsg;
+                if (await this.sendToDingDing(notification, params)) {
+                    return this.sendSuccess;
                 }
             }
         } catch (error) {
