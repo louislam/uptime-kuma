@@ -28,8 +28,8 @@
     src: "nginx.conf"
     dest: /compose/volumes/nginx/nginx.conf
 
-- name: Ensure uptime-kuma is up
+- name: Ensure nginx is up
   community.docker.docker_compose:
     state: present
-    project_src: /compose/kuma
+    project_src: /compose/nginx
     pull: no
