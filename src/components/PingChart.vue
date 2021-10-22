@@ -15,7 +15,7 @@
     </div>
 </template>
 
-<script>
+<script lang="ts">
 import { BarController, BarElement, Chart, Filler, LinearScale, LineController, LineElement, PointElement, TimeScale, Tooltip } from "chart.js";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
@@ -23,6 +23,7 @@ import timezone from "dayjs/plugin/timezone";
 import "chartjs-adapter-dayjs";
 import { LineChart } from "vue-chart-3";
 import { useToast } from "vue-toastification";
+import { UP, DOWN, PENDING } from "../util.ts";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -151,22 +152,28 @@ export default {
         chartData() {
             let pingData = [];  // Ping Data for Line Chart, y-axis contains ping time
             let downData = [];  // Down Data for Bar Chart, y-axis is 1 if target is down, 0 if target is up
-            if (this.monitorId in this.$root.heartbeatList) {
-                this.$root.heartbeatList[this.monitorId]
-                    .filter(
-                        (beat) => dayjs.utc(beat.time).tz(this.$root.timezone).isAfter(dayjs().subtract(Math.max(this.chartPeriodHrs, 6), "hours")))
-                    .map((beat) => {
-                        const x = this.$root.datetime(beat.time);
-                        pingData.push({
-                            x,
-                            y: beat.ping,
-                        });
-                        downData.push({
-                            x,
-                            y: beat.status === 0 ? 1 : 0,
-                        });
+
+            let heartbeatList = this.heartbeatList ||
+             (this.monitorId in this.$root.heartbeatList && this.$root.heartbeatList[this.monitorId]) ||
+             [];
+
+            heartbeatList
+                .filter(
+                    // Filtering as data gets appended
+                    // not the most efficient, but works for now
+                    (beat) => dayjs.utc(beat.time).tz(this.$root.timezone).isAfter(dayjs().subtract(Math.max(this.chartPeriodHrs, 6), "hours")))
+                .map((beat) => {
+                    const x = this.$root.datetime(beat.time);
+                    pingData.push({
+                        x,
+                        y: beat.ping,
                     });
-            }
+                    downData.push({
+                        x,
+                        y: beat.status === DOWN ? 1 : 0,
+                    });
+                });
+
             return {
                 datasets: [
                     {
@@ -197,14 +204,27 @@ export default {
         chartPeriodHrs: function (newPeriod) {
             if (newPeriod == "0") {
                 newPeriod = null;
+                this.heartbeatList = null;
+            } else {
+                this.$root.getMonitorBeats(this.monitorId, newPeriod, (res) => {
+                    if (!res.ok) {
+                        toast.error(res.msg);
+                    } else {
+                        this.heartbeatList = res.data;
+                    }
+                });
             }
-            this.$root.getMonitorBeats(this.monitorId, newPeriod, (res) => {
-                if (!res.ok) {
-                    toast.error(res.msg);
-                }
-            });
         }
     },
+    created() {
+        // Setup Watcher on the root heartbeatList,
+        // And mirror latest change to this.heartbeatList
+        this.$watch(() => this.$root.heartbeatList[this.monitorId], (heartbeatList) => {
+            if (this.chartPeriodHrs != 0) {
+                this.heartbeatList.push(heartbeatList.at(-1));
+            }
+        }, { deep: true });
+    }
 };
 </script>
 
@@ -217,7 +237,7 @@ export default {
 }
 
 .period-options {
-    padding: 0.3em 1.5em;
+    padding: 0.3em 2.2em;
     margin-bottom: -1.5em;
     float: right;
     position: relative;

@@ -31,36 +31,19 @@ async function sendNotificationList(socket) {
  * @param toUser  True = send to all browsers with the same user id, False = send to the current browser only
  * @param overwrite Overwrite client-side's heartbeat list
  */
-async function sendHeartbeatList(socket, monitorID, toUser = false, overwrite = false, period = null) {
+async function sendHeartbeatList(socket, monitorID, toUser = false, overwrite = false) {
     const timeLogger = new TimeLogger();
 
-    let result;
+    let list = await R.getAll(`
+        SELECT * FROM heartbeat
+        WHERE monitor_id = ?
+        ORDER BY time DESC
+        LIMIT 100
+    `, [
+        monitorID,
+    ]);
 
-    if (period) {
-        let list = await R.getAll(`
-            SELECT * FROM heartbeat
-            WHERE monitor_id = ? AND
-            time > DATETIME('now', '-' || ? || ' hours')
-            ORDER BY time ASC
-        `, [
-            monitorID,
-            period,
-        ]);
-
-        result = list;
-
-    } else {
-        let list = await R.getAll(`
-            SELECT * FROM heartbeat
-            WHERE monitor_id = ?
-            ORDER BY time DESC
-            LIMIT 100
-        `, [
-            monitorID,
-        ]);
-
-        result = list.reverse();
-    }
+    let result = list.reverse();
 
     if (toUser) {
         io.to(socket.userID).emit("heartbeatList", monitorID, result, overwrite);

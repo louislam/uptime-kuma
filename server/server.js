@@ -650,10 +650,23 @@ exports.entryPage = "dashboard";
 
                 console.log(`Get Monitor Beats: ${monitorID} User ID: ${socket.userID}`);
 
-                await sendHeartbeatList(socket, monitorID, true, true, period);
+                if (period == null) {
+                    throw new Error("Invalid period.");
+                }
+
+                let list = await R.getAll(`
+                    SELECT * FROM heartbeat
+                    WHERE monitor_id = ? AND
+                    time > DATETIME('now', '-' || ? || ' hours')
+                    ORDER BY time ASC
+                `, [
+                    monitorID,
+                    period,
+                ]);
 
                 callback({
-                    ok: true
+                    ok: true,
+                    data: list,
                 });
             } catch (e) {
                 callback({
