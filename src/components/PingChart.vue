@@ -1,7 +1,12 @@
 <template>
     <div>
         <div class="period-options">
-            {{ $t("show") }}: <select id="chart-period-select" v-model="chartPeriodHrs" class="form-select form-select-sm ms-1">
+            {{ $t("show") }}:
+            <select
+                id="chart-period-select"
+                v-model="chartPeriodHrs"
+                class="form-select form-select-sm ms-1"
+            >
                 <option value="0">{{ $t("recent") }}</option>
                 <option value="3">3h</option>
                 <option value="6">6h</option>
@@ -44,9 +49,8 @@ export default {
             // Configurable filtering on top of the returned data
             chartPeriodHrs: 0,
 
-            // Just Draft:
             // A heartbeatList for 3h, 6h, 24h, 1w
-            // Set it to null, switch back to realtime (last 100 beats)
+            // Uses the $root.heartbeatList when value is null
             heartbeatList: null
         };
     },
@@ -161,7 +165,10 @@ export default {
                 .filter(
                     // Filtering as data gets appended
                     // not the most efficient, but works for now
-                    (beat) => dayjs.utc(beat.time).tz(this.$root.timezone).isAfter(dayjs().subtract(Math.max(this.chartPeriodHrs, 6), "hours")))
+                    (beat) => dayjs.utc(beat.time).tz(this.$root.timezone).isAfter(
+                        dayjs().subtract(Math.max(this.chartPeriodHrs, 6), "hours")
+                    )
+                )
                 .map((beat) => {
                     const x = this.$root.datetime(beat.time);
                     pingData.push({
@@ -201,6 +208,7 @@ export default {
         },
     },
     watch: {
+        // Update chart data when the selected chart period changes
         chartPeriodHrs: function (newPeriod) {
             if (newPeriod == "0") {
                 newPeriod = null;
@@ -219,11 +227,14 @@ export default {
     created() {
         // Setup Watcher on the root heartbeatList,
         // And mirror latest change to this.heartbeatList
-        this.$watch(() => this.$root.heartbeatList[this.monitorId], (heartbeatList) => {
-            if (this.chartPeriodHrs != 0) {
-                this.heartbeatList.push(heartbeatList.at(-1));
-            }
-        }, { deep: true });
+        this.$watch(() => this.$root.heartbeatList[this.monitorId],
+            (heartbeatList) => {
+                if (this.chartPeriodHrs != 0) {
+                    this.heartbeatList.push(heartbeatList.at(-1));
+                }
+            },
+            { deep: true }
+        );
     }
 };
 </script>
