@@ -16,7 +16,7 @@
     - docker-compose.yml
 
 - name: Ensure uptime-kuma is up
-  docker_compose:
+  community.docker.docker_compose:
     state: present
     project_src: /compose/kuma
     pull: yes
