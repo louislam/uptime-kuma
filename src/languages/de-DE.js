@@ -197,4 +197,5 @@ export default {
     pushbullet: "Pushbullet",
     line: "Line Messenger",
     mattermost: "Mattermost",
+    "Current User": "Aktueller Benutzer",
 };

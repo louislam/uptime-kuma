@@ -149,6 +149,7 @@
                             <!-- Change Password -->
                             <template v-if="! settings.disableAuth">
                                 <h2 class="mt-5 mb-2">{{ $t("Change Password") }}</h2>
+                                <p>{{ $t("Current User") }}: <strong>{{ this.username }}</strong></p>
                                 <form class="mb-3" @submit.prevent="savePassword">
                                     <div class="mb-3">
                                         <label for="current-password" class="form-label">{{ $t("Current Password") }}</label>
@@ -459,6 +460,7 @@ export default {
     },
 
     mounted() {
+        this.loadUsername();
         this.loadSettings();
     },
 
@@ -482,6 +484,12 @@ export default {
                     }
                 });
             }
+        },
+
+        loadUsername() {
+            this.$root.getSocket().emit("getUsername", (res) => {
+                this.username = res.data;
+            });
         },
 
         loadSettings() {
