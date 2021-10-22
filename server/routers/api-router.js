@@ -17,7 +17,6 @@ router.get("/api/entry-page", async (_, response) => {
 });
 
 router.get("/api/push/:pushToken", async (request, response) => {
-    const trx = await R.begin();
     try {
         let pushToken = request.params.pushToken;
 
@@ -25,7 +24,7 @@ router.get("/api/push/:pushToken", async (request, response) => {
         msg = msg || "OK";
         ping = ping || null;
 
-        let monitor = await trx.findOne("monitor", " push_token = ? AND active = 1 ", [
+        let monitor = await R.findOne("monitor", " push_token = ? AND active = 1 ", [
             pushToken
         ]);
 
@@ -33,7 +32,7 @@ router.get("/api/push/:pushToken", async (request, response) => {
             throw new Error("Monitor not found or not active.");
         }
 
-        const previousHeartbeat = await trx.getRow(`
+        const previousHeartbeat = await R.getRow(`
             SELECT status, time FROM heartbeat
             WHERE id = (select MAX(id) from heartbeat where monitor_id = ?)
         `, [
@@ -44,7 +43,7 @@ router.get("/api/push/:pushToken", async (request, response) => {
         if (tagKeys.length > 0) {
             // Request has additional tags. Fetch all tags for this monitor.
             //   For multiple tags with same name, get the oldest one.
-            const monitorTags = await trx.getAll("SELECT tag.name, MIN(monitor_tag.id) id FROM monitor_tag JOIN tag ON tag.id = monitor_tag.tag_id AND monitor_tag.monitor_id = ? GROUP BY tag.name ORDER BY 1", [monitor.id]);
+            const monitorTags = await R.getAll("SELECT tag.name, MIN(monitor_tag.id) id FROM monitor_tag JOIN tag ON tag.id = monitor_tag.tag_id AND monitor_tag.monitor_id = ? GROUP BY tag.name ORDER BY 1", [monitor.id]);
 
             // Update monitor_tag, ignoring non-existing request tags.
             monitorTags
@@ -52,7 +51,7 @@ router.get("/api/push/:pushToken", async (request, response) => {
                 .forEach(async mt => {
                     const tagValue = requestTags[mt.name];
 
-                    await trx.exec("UPDATE monitor_tag SET value = ? WHERE id = ?", [
+                    await R.exec("UPDATE monitor_tag SET value = ? WHERE id = ?", [
                         tagValue,
                         mt.id
                     ]);
@@ -63,17 +62,15 @@ router.get("/api/push/:pushToken", async (request, response) => {
         }
 
         let status = UP;
-        // FixMe: monitor.isUpsideDown is not a function (?)
-        //if (monitor.isUpsideDown()) {
-        //    status = flipStatus(status);
-        //}
+        if (monitor.isUpsideDown()) {
+            status = flipStatus(status);
+        }
 
         let isFirstBeat = true;
         let previousStatus = status;
         let duration = 0;
 
-        // FixMe: Bean returned by trx.dispense() has no .toJSON() method (!?).
-        let bean = R.dispense("heartbeat");         // Should be trx.dispense();
+        let bean = R.dispense("heartbeat");
         bean.time = R.isoDateTime(dayjs.utc());
 
         if (previousHeartbeat) {
