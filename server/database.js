@@ -50,6 +50,7 @@ class Database {
         "patch-group-table.sql": true,
         "patch-monitor-push_token.sql": true,
         "patch-http-monitor-method-body-and-headers.sql": true,
+        "patch-2fa-invalidate-used-token.sql": true,
     }
 
     /**

@@ -292,7 +292,7 @@ exports.entryPage = "dashboard";
             if (user) {
                 afterLogin(socket, user);
 
-                if (user.twofaStatus == 0) {
+                if (user.twofa_status == 0) {
                     callback({
                         ok: true,
                         token: jwt.sign({
@@ -301,7 +301,7 @@ exports.entryPage = "dashboard";
                     });
                 }
 
-                if (user.twofaStatus == 1 && !data.token) {
+                if (user.twofa_status == 1 && !data.token) {
                     callback({
                         tokenRequired: true,
                     });
@@ -310,7 +310,13 @@ exports.entryPage = "dashboard";
                 if (data.token) {
                     let verify = notp.totp.verify(data.token, user.twofa_secret, twofa_verification_opts);
 
-                    if (verify && verify.delta == 0) {
+                    if (user.twofa_last_token !== data.token && verify) {
+
+                        await R.exec("UPDATE `user` SET twofa_last_token = ? WHERE id = ? ", [
+                            data.token,
+                            socket.userID,
+                        ]);
+
                         callback({
                             ok: true,
                             token: jwt.sign({
@@ -428,7 +434,7 @@ exports.entryPage = "dashboard";
 
             let verify = notp.totp.verify(token, user.twofa_secret, twofa_verification_opts);
 
-            if (verify && verify.delta == 0) {
+            if (user.twofa_last_token !== token && verify) {
                 callback({
                     ok: true,
                     valid: true,
