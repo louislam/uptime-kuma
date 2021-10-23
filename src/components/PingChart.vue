@@ -1,18 +1,14 @@
 <template>
     <div>
         <div class="period-options">
-            {{ $t("show") }}:
-            <select
-                id="chart-period-select"
-                v-model="chartPeriodHrs"
-                class="form-select form-select-sm ms-1"
-            >
-                <option value="0">{{ $t("recent") }}</option>
-                <option value="3">3h</option>
-                <option value="6">6h</option>
-                <option value="24">24h</option>
-                <option value="168">1w</option>
-            </select>
+            <button type="button" class="btn btn-light dropdown-toggle btn-period-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                {{ chartPeriodOptions[chartPeriodHrs] }}&nbsp;
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li v-for="(item, key) in chartPeriodOptions" :key="key">
+                    <a class="dropdown-item" :class="{ active: chartPeriodHrs == key }" href="#" @click="chartPeriodHrs = key">{{ item }}</a>
+                </li>
+            </ul>
         </div>
         <div class="chart-wrapper">
             <LineChart :chart-data="chartData" :options="chartOptions" />
@@ -48,6 +44,14 @@ export default {
         return {
             // Configurable filtering on top of the returned data
             chartPeriodHrs: 0,
+
+            chartPeriodOptions: {
+                0: this.$t("recent"),
+                3: "3h",
+                6: "6h",
+                24: "24h",
+                168: "1w",
+            },
 
             // A heartbeatList for 3h, 6h, 24h, 1w
             // Uses the $root.heartbeatList when value is null
@@ -251,15 +255,59 @@ export default {
 }
 
 .period-options {
-    padding: 0.3em 2.2em;
-    margin-bottom: -1.5em;
+    padding: 0.1em 1.0em;
+    margin-bottom: -2em;
     float: right;
     position: relative;
     z-index: 10;
-    font-size: 0.8em;
+
+    .dropdown-menu {
+        padding: 0;
+        min-width: 50px;
+        font-size: 0.9em;
+
+        .dark & {
+            background: $dark-bg;
+        }
+
+        .dropdown-item {
+            border-radius: 0.3rem;
+            padding: 2px 16px 4px 16px;
+
+            .dark & {
+                background: $dark-bg;
+            }
+
+            .dark &:hover {
+                background: $dark-font-color;
+            }
+        }
+
+        .dark & .dropdown-item.active {
+            background: $primary;
+            color: $dark-font-color2;
+        }
+    }
+
+    .btn-period-toggle {
+        padding: 2px 15px;
+        background: transparent;
+        border: 0;
+        color: $link-color;
+        opacity: 0.7;
+        font-size: 0.9em;
+
+        &::after {
+            vertical-align: 0.155em;
+        }
+
+        .dark & {
+            color: $dark-font-color;
+        }
+    }
 }
 
 .chart-wrapper {
-    margin-bottom: 1.5em;
+    margin-bottom: 0.5em;
 }
 </style>
