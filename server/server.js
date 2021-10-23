@@ -52,6 +52,7 @@ const Database = require("./database");
 
 debug("Importing Background Jobs");
 const { initBackgroundJobs } = require("./jobs");
+const { loginRateLimiter } = require("./rate-limiter");
 
 const { basicAuth } = require("./auth");
 const { login } = require("./auth");
@@ -280,6 +281,11 @@ exports.entryPage = "dashboard";
 
         socket.on("login", async (data, callback) => {
             console.log("Login");
+
+            // Login Rate Limit
+            if (! await loginRateLimiter.pass(callback)) {
+                return;
+            }
 
             let user = await login(data.username, data.password);
 
