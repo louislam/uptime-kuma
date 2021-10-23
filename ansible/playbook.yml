@@ -4,6 +4,7 @@
   vars:
     pip_install_packages:
       - name: docker
+    docker_compose_version: "v2.0.1"
 
   roles:
     - {role: geerlingguy.docker,      tags: ["docker"]}
