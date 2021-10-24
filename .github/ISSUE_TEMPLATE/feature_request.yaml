@@ -1,6 +1,6 @@
 name: 🚀 Feature
 description: "Submit a proposal for a new feature"
-title: "🚀 Feature: "
+title: "[Feature]: "
 labels: [enhancement]
 body:
   - type: textarea

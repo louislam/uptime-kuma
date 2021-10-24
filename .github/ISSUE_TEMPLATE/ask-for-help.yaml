@@ -1,6 +1,6 @@
 name: "❓ Ask for help"
 description: "Submit any question related to Uptime Kuma"
-title: "❓ Ask for help: "
+title: "[Help]: "
 labels: [help]
 body:
   - type: textarea
