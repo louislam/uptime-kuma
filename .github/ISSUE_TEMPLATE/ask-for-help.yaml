@@ -1,0 +1,79 @@
+name: "❓ Ask for help"
+description: "Submit any question related to Uptime Kuma"
+title: "[Help]: "
+labels: [help]
+body:
+  - type: textarea
+    id: steps-to-reproduce
+    validations:
+      required: true
+    attributes:
+      label: "📝 Describe your problem"
+      description: "Please walk us through it step by step."
+      placeholder: "Describe what are you asking for..."
+  - type: dropdown
+    id: uptime-kuma-version
+    attributes:
+      label: "🐻 Uptime-Kuma version"
+      description: "What version of Uptime-Kuma are you running?"
+      options:
+        - latest
+        - nightly
+        - Version 1.9.x
+        - Version 1.8.x
+        - Version 1.7.x
+        - Different version
+    validations:
+      required: true
+  - type: dropdown
+    id: operating-system
+    attributes:
+      label: "💻 Operating System"
+      description: "What OS is your server / device running on?"
+      options:
+        - Linux
+        - MacOS
+        - Windows
+    validations:
+      required: true
+  - type: dropdown
+    id: browser-vendor
+    attributes:
+      label: "🌐 Browser"
+      description: "What browser are you running on?"
+      options:
+        - Firefox
+        - Chrome
+        - Edge
+        - Safari
+        - Other
+    validations:
+      required: true
+  - type: checkboxes
+    id: uses-docker
+    attributes:
+      label: "🐋 Docker"
+      options:
+        - label: "Currently running in Docker?"
+          required: false
+    validations:
+      required: true
+  - type: dropdown
+    id: nodejs-version
+    attributes:
+      label: "🟩 NodeJS Version"
+      description: "If running in the host, Which version of NodeJS are you running?"
+      options:
+        - 14
+        - 16
+        - 17
+    validations:
+      required: false
+  - type: checkboxes
+    id: no-duplicate-issues
+    attributes:
+      label: "👀 Have you spent some time to check if this question has been raised before?"
+      description: "Please search in the issues without filters [here](https://github.com/louislam/uptime-kuma/issues?q=)"
+      options:
+        - label: "I checked and didn't find similar question"
+          required: true

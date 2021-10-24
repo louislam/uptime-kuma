@@ -1,0 +1,107 @@
+name: "🐛 Bug Report"
+description: "Submit a bug report to help us improve"
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+  - type: textarea
+    id: steps-to-reproduce
+    validations:
+      required: true
+    attributes:
+      label: "👟 Reproduction steps"
+      description: "How do you trigger this bug? Please walk us through it step by step."
+      placeholder: "..."
+  - type: textarea
+    id: expected-behavior
+    validations:
+      required: true
+    attributes:
+      label: "👍 Expected behavior"
+      description: "What did you think would happen?"
+      placeholder: "..."
+  - type: textarea
+    id: actual-behavior
+    validations:
+      required: true
+    attributes:
+      label: "👎 Actual Behavior"
+      description: "What actually happen?"
+      placeholder: "..."
+  - type: dropdown
+    id: uptime-kuma-version
+    attributes:
+      label: "🐻 Uptime-Kuma version"
+      description: "What version of Uptime-Kuma are you running?"
+      options:
+        - latest
+        - nightly
+        - Version 1.9.x
+        - Version 1.8.x
+        - Version 1.7.x
+        - Different version
+    validations:
+      required: true
+  - type: dropdown
+    id: operating-system
+    attributes:
+      label: "💻 Operating System"
+      description: "What OS is your server / device running on?"
+      options:
+        - Linux
+        - MacOS
+        - Windows
+    validations:
+      required: true
+  - type: dropdown
+    id: browser-vendor
+    attributes:
+      label: "🌐 Browser"
+      description: "What browser are you running on?"
+      options:
+        - Firefox
+        - Chrome
+        - Edge
+        - Safari
+        - Other
+    validations:
+      required: true
+  - type: checkboxes
+    id: uses-docker
+    attributes:
+      label: "🐋 Docker"
+      options:
+        - label: "Currently running in Docker?"
+          required: false
+    validations:
+      required: true
+  - type: dropdown
+    id: nodejs-version
+    attributes:
+      label: "🟩 NodeJS Version"
+      description: "If running in the host, Which version of NodeJS are you running?"
+      options:
+        - 14
+        - 16
+        - 17
+    validations:
+      required: false
+  - type: textarea
+    id: logs
+    attributes:
+      label: "📝 Relevant log output"
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      render: shell
+    validations:
+      required: false
+  - type: checkboxes
+    id: no-duplicate-issues
+    attributes:
+      label: "👀 Have you spent some time to check if this issue has been raised before?"
+      description: "Please search in the issues without filters [here](https://github.com/louislam/uptime-kuma/issues?q=)"
+      options:
+        - label: "I checked and didn't find similar issue"
+          required: true
