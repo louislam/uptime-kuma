@@ -297,7 +297,7 @@ export default {
     PushUrl: "Push URL",
     HeadersInvalidFormat: "Die Header ist kein gültiges JSON: ",
     BodyInvalidFormat: "Der Body ist kein gültiges JSON: ",
-    "Monitor History": "Monitor Verlauf:",
+    "Monitor History": "Monitor Verlauf",
     clearDataOlderThan: "Bewahre die Monitor-Verlaufsdaten für {0} Tage auf.",
     PasswordsDoNotMatch: "Passwörter stimmen nicht überein.",
     records: "Einträge",

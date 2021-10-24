@@ -297,7 +297,7 @@ export default {
     PushUrl: "Push URL адрес",
     HeadersInvalidFormat: "Заявените хедъри не са валидни JSON: ",
     BodyInvalidFormat: "Заявеното съобщение не е валиден JSON: ",
-    "Monitor History": "История на мониторите:",
+    "Monitor History": "История на мониторите",
     clearDataOlderThan: "Ще се съхранява за {0} дни.",
     records: "записа",
     "One record": "Един запис",
