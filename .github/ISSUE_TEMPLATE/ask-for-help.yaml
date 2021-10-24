@@ -1,36 +1,16 @@
-name: "🐛 Bug Report"
-description: "Submit a bug report to help us improve"
-title: "🐛 Bug Report: "
-labels: [bug]
+name: "❓ Ask for help"
+description: "Submit any question related to Uptime Kuma"
+title: "❓ Ask for help: "
+labels: [help]
 body:
-  - type: markdown
-    attributes:
-      value: |
-        Thanks for taking the time to fill out this bug report!
   - type: textarea
     id: steps-to-reproduce
     validations:
       required: true
     attributes:
       label: "👟 Reproduction steps"
-      description: "How do you trigger this bug? Please walk us through it step by step."
-      placeholder: "..."
-  - type: textarea
-    id: expected-behavior
-    validations:
-      required: true
-    attributes:
-      label: "👍 Expected behavior"
-      description: "What did you think would happen?"
-      placeholder: "..."
-  - type: textarea
-    id: actual-behavior
-    validations:
-      required: true
-    attributes:
-      label: "👎 Actual Behavior"
-      description: "What actually happen?"
-      placeholder: "..."
+      description: "Please walk us through it step by step."
+      placeholder: "Describe what are you asking for..."
   - type: dropdown
     id: uptime-kuma-version
     attributes:
@@ -89,19 +69,11 @@ body:
         - 17
     validations:
       required: false
-  - type: textarea
-    id: logs
-    attributes:
-      label: "📝 Relevant log output"
-      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
-      render: shell
-    validations:
-      required: false
   - type: checkboxes
     id: no-duplicate-issues
     attributes:
-      label: "👀 Have you spent some time to check if this issue has been raised before?"
+      label: "👀 Have you spent some time to check if this question has been raised before?"
       description: "Please search in the issues without filters [here](https://github.com/louislam/uptime-kuma/issues?q=)"
       options:
-        - label: "I checked and didn't find similar issue"
+        - label: "I checked and didn't find similar question"
           required: true
