@@ -1,8 +1,22 @@
 name: 🚀 Feature Request
 description: "Submit a proposal for a new feature"
-title: "[Feature]: "
+title: "[Feature]: <title>"
 labels: [enhancement]
 body:
+  - type: dropdown
+    id: feature-area
+    attributes:
+      label: "🏷️ Feature Request Type"
+      description: "What kind of feature request is this?"
+      multiple: true
+      options:
+        - API
+        - New Notification
+        - New Monitor
+        - UI Feature
+        - Other
+    validations:
+      required: true
   - type: textarea
     id: feature-description
     validations:

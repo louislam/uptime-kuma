@@ -1,6 +1,6 @@
 name: "❓ Ask for help"
 description: "Submit any question related to Uptime Kuma"
-title: "[Help]: "
+title: "[Help]: <title>"
 labels: [help]
 body:
   - type: textarea
@@ -11,25 +11,19 @@ body:
       label: "📝 Describe your problem"
       description: "Please walk us through it step by step."
       placeholder: "Describe what are you asking for..."
-  - type: dropdown
+  - type: input
     id: uptime-kuma-version
     attributes:
       label: "🐻 Uptime-Kuma version"
       description: "What version of Uptime-Kuma are you running?"
-      options:
-        - latest
-        - nightly
-        - Version 1.9.x
-        - Version 1.8.x
-        - Version 1.7.x
-        - Different version
     validations:
       required: true
   - type: dropdown
     id: operating-system
     attributes:
       label: "💻 Operating System"
-      description: "What OS is your server / device running on?"
+      description: "What OS is your server/device running on?"
+      multiple: true
       options:
         - Linux
         - MacOS
@@ -41,6 +35,7 @@ body:
     attributes:
       label: "🌐 Browser"
       description: "What browser are you running on?"
+      multiple: true
       options:
         - Firefox
         - Chrome
@@ -58,15 +53,11 @@ body:
           required: false
     validations:
       required: true
-  - type: dropdown
+  - type: input
     id: nodejs-version
     attributes:
       label: "🟩 NodeJS Version"
-      description: "If running in the host, Which version of NodeJS are you running?"
-      options:
-        - 14
-        - 16
-        - 17
+      description: "If running in the host, which version of NodeJS are you running?"
     validations:
       required: false
   - type: checkboxes
@@ -76,4 +67,11 @@ body:
       description: "Please search in the issues without filters [here](https://github.com/louislam/uptime-kuma/issues?q=)"
       options:
         - label: "I checked and didn't find similar question"
+          required: true
+  - type: checkboxes
+    attributes:
+      label: "🛡️ Security Policy"
+      description: Please review the security policy before reporting security related issues/bugs.
+      options:
+        - label: I agree to have read this project [Security Policy](https://github.com/louislam/uptime-kuma/security/policy)
           required: true

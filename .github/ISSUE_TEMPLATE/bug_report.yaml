@@ -1,6 +1,6 @@
 name: "🐛 Bug Report"
 description: "Submit a bug report to help us improve"
-title: "[Bug]: "
+title: "[Bug]: <title>"
 labels: [bug]
 body:
   - type: markdown
@@ -31,25 +31,19 @@ body:
       label: "👎 Actual Behavior"
       description: "What actually happen?"
       placeholder: "..."
-  - type: dropdown
+  - type: input
     id: uptime-kuma-version
     attributes:
       label: "🐻 Uptime-Kuma version"
       description: "What version of Uptime-Kuma are you running?"
-      options:
-        - latest
-        - nightly
-        - Version 1.9.x
-        - Version 1.8.x
-        - Version 1.7.x
-        - Different version
     validations:
       required: true
   - type: dropdown
     id: operating-system
     attributes:
       label: "💻 Operating System"
-      description: "What OS is your server / device running on?"
+      description: "What OS is your server/device running on?"
+      multiple: true
       options:
         - Linux
         - MacOS
@@ -61,6 +55,7 @@ body:
     attributes:
       label: "🌐 Browser"
       description: "What browser are you running on?"
+      multiple: true
       options:
         - Firefox
         - Chrome
@@ -78,15 +73,11 @@ body:
           required: false
     validations:
       required: true
-  - type: dropdown
+  - type: input
     id: nodejs-version
     attributes:
       label: "🟩 NodeJS Version"
-      description: "If running in the host, Which version of NodeJS are you running?"
-      options:
-        - 14
-        - 16
-        - 17
+      description: "If running in the host, which version of NodeJS are you running?"
     validations:
       required: false
   - type: textarea
@@ -104,4 +95,11 @@ body:
       description: "Please search in the issues without filters [here](https://github.com/louislam/uptime-kuma/issues?q=)"
       options:
         - label: "I checked and didn't find similar issue"
+          required: true
+  - type: checkboxes
+    attributes:
+      label: "🛡️ Security Policy"
+      description: Please review the security policy before reporting security related issues/bugs.
+      options:
+        - label: I agree to have read this project [Security Policy](https://github.com/louislam/uptime-kuma/security/policy)
           required: true
