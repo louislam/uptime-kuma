@@ -8,7 +8,7 @@ body:
     validations:
       required: true
     attributes:
-      label: "👟 Reproduction steps"
+      label: "📝 Describe your problem"
       description: "Please walk us through it step by step."
       placeholder: "Describe what are you asking for..."
   - type: dropdown
