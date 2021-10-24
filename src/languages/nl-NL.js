@@ -193,6 +193,7 @@ export default {
     pushy: "Pushy",
     octopush: "Octopush",
     promosms: "PromoSMS",
+    clicksendsms: "ClickSend SMS",
     lunasea: "LunaSea",
     apprise: "Apprise (Support 50+ Notification services)",
     pushbullet: "Pushbullet",
@@ -203,5 +204,5 @@ export default {
     Headers: "Headers",
     PushUrl: "Push URL",
     HeadersInvalidFormat: "The request headers is geen geldige JSON: ",
-    BodyInvalidFormat: "De request body is geen geldige JSON: "
+    BodyInvalidFormat: "De request body is geen geldige JSON: ",
 };

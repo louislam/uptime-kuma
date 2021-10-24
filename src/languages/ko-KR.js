@@ -235,6 +235,7 @@ export default {
     pushy: "Pushy",
     octopush: "Octopush",
     promosms: "PromoSMS",
+    clicksendsms: "ClickSend SMS",
     lunasea: "LunaSea",
     apprise: "Apprise (50개 이상 알림 서비스)",
     pushbullet: "Pushbullet",

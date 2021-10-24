@@ -193,6 +193,7 @@ export default {
     pushy: "Pushy",
     octopush: "Octopush",
     promosms: "PromoSMS",
+    clicksendsms: "ClickSend SMS",
     lunasea: "LunaSea",
     apprise: "Apprise (Admite más de 50 servicios de notificación)",
     pushbullet: "Pushbullet",
