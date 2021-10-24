@@ -894,26 +894,6 @@ exports.entryPage = "dashboard";
             }
         });
 
-        socket.on("getUsername", async (callback) => {
-            try {
-                checkLogin(socket);
-
-                let user = await R.findOne("user", " id = ? AND active = 1 ", [
-                    socket.userID,
-                ]);
-
-                callback({
-                    ok: true,
-                    data: user.username,
-                });
-            } catch (e) {
-                callback({
-                    ok: false,
-                    msg: e.message,
-                });
-            }
-        });
-
         socket.on("getSettings", async (callback) => {
             try {
                 checkLogin(socket);
