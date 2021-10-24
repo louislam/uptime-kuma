@@ -7,7 +7,6 @@ class Matrix extends NotificationProvider {
     name = "matrix";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
 
         const size = 20;
         const randomString = encodeURIComponent(
@@ -35,7 +34,7 @@ class Matrix extends NotificationProvider {
             };
 
             await axios.put(`${notification.homeserverUrl}/_matrix/client/r0/rooms/${roomId}/send/m.room.message/${randomString}`, data, config);
-            return okMsg;
+            return this.sendSuccess;
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }
