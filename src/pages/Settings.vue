@@ -488,7 +488,7 @@ export default {
 
         loadUsername() {
             const jwtToken = localStorage.getItem("token");
-            const [match, headerBase64, payloadBase64, signatureBase64] = jwtToken.match(/^(\S+)\.(\S+)\.(\S+)$/i);
+            const [, payloadBase64] = jwtToken.match(/^\S+\.(\S+)\.\S+$/i);
             const payload = atob(payloadBase64);
             const oPayload = JSON.parse(payload);
             this.username = oPayload.username;
