@@ -340,11 +340,17 @@ export default {
         },
 
         bodyPlaceholder() {
-            return "{\n\t\"id\": 124357,\n\t\"username\": \"admin\",\n\t\"password\": \"myAdminPassword\"\n}";
+            return `Example:
+{
+    "key": "value"
+}`;
         },
 
         headersPlaceholder() {
-            return "{\n\t\"Authorization\": \"Bearer abc123\",\n\t\"Content-Type\": \"application/json\"\n}";
+            return `Example:
+{
+    "HeaderName": "HeaderValue"
+}`;
         }
 
     },
