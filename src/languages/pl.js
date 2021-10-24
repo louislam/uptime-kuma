@@ -284,7 +284,7 @@ export default {
     needPushEvery: "Powinieneś wywoływać ten URL co {0} sekund.",
     pushOptionalParams: "Parametry opcjonalne: {0}",
     emailCustomSubject: "Niestandardowy temat",
-    checkPrice: "Sprawdź {0} ceny:",
+    checkPrice: "Sprawdź ceny {0}:",
     octopushLegacyHint: "Czy używasz starszej wersji Octopush (2011-2020) czy nowej wersji?",
     "Feishu WebHookUrl": "Feishu WebHookURL",
     matrixHomeserverURL: "Adres URL serwera domowego (z http(s):// i opcjonalnie port)",
