@@ -25,3 +25,4 @@ ansible-playbook ./playbook.yml -i <your inventory path> --extra-vars "kuma_doma
 you can use other ansible playbook options too
 
 > Note: Replace `<uptime kuma domain>` with your desired domain for uptime kuma
+> If you are not using root user as your ansible_user use -bK option to become root
