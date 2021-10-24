@@ -1,8 +1,9 @@
-const basicAuth = require("express-basic-auth")
+const basicAuth = require("express-basic-auth");
 const passwordHash = require("./password-hash");
 const { R } = require("redbean-node");
 const { setting } = require("./util-server");
 const { debug } = require("../src/util");
+const { loginRateLimiter } = require("./rate-limiter");
 
 /**
  *
@@ -13,7 +14,7 @@ const { debug } = require("../src/util");
 exports.login = async function (username, password) {
     let user = await R.findOne("user", " username = ? AND active = 1 ", [
         username,
-    ])
+    ]);
 
     if (user && passwordHash.verify(password, user.password)) {
         // Upgrade the hash to bcrypt
@@ -27,21 +28,30 @@ exports.login = async function (username, password) {
     }
 
     return null;
-}
+};
 
 function myAuthorizer(username, password, callback) {
-
     setting("disableAuth").then((result) => {
-
         if (result) {
-            callback(null, true)
+            callback(null, true);
         } else {
-            exports.login(username, password).then((user) => {
-                callback(null, user != null)
-            })
-        }
-    })
+            // Login Rate Limit
+            loginRateLimiter.pass(null, 0).then((pass) => {
+                if (pass) {
+                    exports.login(username, password).then((user) => {
+                        callback(null, user != null);
 
+                        if (user == null) {
+                            loginRateLimiter.removeTokens(1);
+                        }
+                    });
+                } else {
+                    callback(null, false);
+                }
+            });
+
+        }
+    });
 }
 
 exports.basicAuth = basicAuth({
