@@ -35,14 +35,14 @@ body:
     id: uptime-kuma-version
     attributes:
       label: "🐻 Uptime-Kuma version"
-      description: "What version of Uptime-Kuma are you running?"
+      description: "Which version of Uptime-Kuma are you running?"
     validations:
       required: true
   - type: dropdown
     id: operating-system
     attributes:
       label: "💻 Operating System"
-      description: "What OS is your server/device running on?"
+      description: "Which OS is your server/device running on?"
       multiple: true
       options:
         - Linux
@@ -54,7 +54,7 @@ body:
     id: browser-vendor
     attributes:
       label: "🌐 Browser"
-      description: "What browser are you running on?"
+      description: "Which browser are you running on?"
       multiple: true
       options:
         - Firefox
