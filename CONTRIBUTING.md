@@ -63,7 +63,7 @@ I do not have such knowledge to test it.
 
 - Add k8s supports
 
-#### ⚠ Harsh Mode
+#### ⚠ Low Priority - Harsh Mode
 
 Some pull requests are required to modifiy the core. To be honest, I do not want anyone to try to do that, because it would spend a lot of your time and my time. I will review your pull request harshly. Also you may need to write a lot of unit tests to ensure that there is no breaking change.
 
