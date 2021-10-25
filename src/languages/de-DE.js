@@ -199,7 +199,7 @@ export default {
     mattermost: "Mattermost",
     "Primary Base URL": "Primär URL",
     "Push URL": "Push URL",
-    needPushEvery: "Du solltest diese URL alle {0} Sekunden aufrufen.",
+    needPushEvery: "Du solltest diese URL alle {0} Sekunden aufrufen",
     pushOptionalParams: "Optionale Parameter: {0}",
     defaultNotificationName: "Meine {notification} Alarm ({number})",
     here: "hier",

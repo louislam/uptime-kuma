@@ -281,7 +281,7 @@ export default {
     promosmsSMSSender: "Nadawca SMS (Wcześniej zatwierdzone nazwy z panelu PromoSMS)",
     "Primary Base URL": "Główny URL",
     "Push URL": "Push URL",
-    needPushEvery: "Powinieneś wywoływać ten URL co {0} sekund.",
+    needPushEvery: "Powinieneś wywoływać ten URL co {0} sekund",
     pushOptionalParams: "Parametry opcjonalne: {0}",
     emailCustomSubject: "Niestandardowy temat",
     checkPrice: "Sprawdź ceny {0}:",

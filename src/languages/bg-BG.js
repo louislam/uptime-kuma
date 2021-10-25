@@ -199,7 +199,7 @@ export default {
     "Status Page": "Статус страница",
     "Primary Base URL": "Основен базов URL адрес",
     "Push URL": "Генериран Push URL адрес",
-    needPushEvery: "Необходимо е да извършвате заявка към този URL адрес на всеки {0} секунди.",
+    needPushEvery: "Необходимо е да извършвате заявка към този URL адрес на всеки {0} секунди",
     pushOptionalParams: "Допълнителни, но незадължителни параметри: {0}",
     defaultNotificationName: "Моето {notification} известяване ({number})",
     here: "тук",
