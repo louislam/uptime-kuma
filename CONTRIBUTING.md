@@ -55,6 +55,7 @@ Easy to review, no breaking change and not touching the existing code
 - Add a chart
 - Fix a bug
 - Translations
+- Add a independent new feature
 
 #### *️⃣ Requires one more reviewer
 
