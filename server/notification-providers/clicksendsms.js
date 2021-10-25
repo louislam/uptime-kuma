@@ -20,16 +20,15 @@ class ClickSendSMS extends NotificationProvider {
                 messages: [
                     {
                         "body": msg.replace(/[^\x00-\x7F]/g, ""),
-                        // TODO: To phone number concept to be added
-                        "to": "+61411111111",
+                        "to": notification.clicksendsmsToNumber,
                         "source": "uptime-kuma",
                         "from": notification.clicksendsmsSenderName,
                     }
                 ]
             };
             let resp = await axios.post("https://rest.clicksend.com/v3/sms/send", data, config);
-            if (resp.data.http_code !== 200) {
-                let error = "Something gone wrong. Api returned " + resp.data.response.status + ".";
+            if (resp.data.data.messages[0].status !== "SUCCESS") {
+                let error = "Something gone wrong. Api returned " + resp.data.data.messages[0].status + ".";
                 this.throwGeneralAxiosError(error);
             }
 

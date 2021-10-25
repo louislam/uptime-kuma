@@ -12,8 +12,12 @@
     <div class="mb-3">
         <div class="form-text">
             {{ $t("checkPrice", [$t("clicksendsms")]) }}
-            <a href="https://www.clicksend.com/us/pricing" target="_blank">here</a>
+            <a href="https://www.clicksend.com/us/pricing" target="_blank">https://clicksend.com/us/pricing</a>
         </div>
+    </div>
+    <div class="mb-3">
+        <label for="clicksendsms-to-number" class="form-label">Recipient Number</label>
+        <input id="clicksendsms-to-number" v-model="$parent.notification.clicksendsmsToNumber" type="text" minlength="8" maxlength="14" class="form-control" required>
     </div>
     <div class="mb-3">
         <label for="clicksendsms-sender-name" class="form-label">From Name/Number -
@@ -23,7 +27,6 @@
         <div class="form-text">Leave blank to use a shared sender number.</div>
     </div>
 </template>
-
 <script>
 import HiddenInput from "../HiddenInput.vue";
 
