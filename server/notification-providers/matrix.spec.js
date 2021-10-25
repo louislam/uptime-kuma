@@ -33,7 +33,7 @@ describe("notification to act properly on send", () => {
             }
         };
         axios.put.mockResolvedValueOnce(response);
-        Crypto.randomBytes.mockReturnValueOnce(new Buffer("abcd"));
+        Crypto.randomBytes.mockReturnValueOnce(Buffer.from("abcd"));
 
         let notif = new Matrix();
 
@@ -68,7 +68,7 @@ describe("notification to act properly on send", () => {
             }
         };
         axios.put.mockResolvedValueOnce(response);
-        Crypto.randomBytes.mockReturnValueOnce(new Buffer("abcd"));
+        Crypto.randomBytes.mockReturnValueOnce(Buffer.from("abcd"));
 
         let notif = new Matrix();
         let notificationConf = {
@@ -100,7 +100,7 @@ describe("notification to act properly on error", () => {
         axios.put.mockImplementation(() => {
             throw new Error("Test Error");
         });
-        Crypto.randomBytes.mockReturnValueOnce(new Buffer("abcd"));
+        Crypto.randomBytes.mockReturnValueOnce(Buffer.from("abcd"));
 
         let notif = new Matrix();
         let notificationConf = {
@@ -142,7 +142,7 @@ describe("notification to get proper data from Notification.send", () => {
             }
         };
         axios.put.mockResolvedValueOnce(response);
-        Crypto.randomBytes.mockReturnValueOnce(new Buffer("abcd"));
+        Crypto.randomBytes.mockReturnValueOnce(Buffer.from("abcd"));
 
         let notificationConf = {
             type: "matrix",

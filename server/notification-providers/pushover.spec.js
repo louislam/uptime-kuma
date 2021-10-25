@@ -18,124 +18,160 @@ describe("notification default information", () => {
     });
 });
 
-// describe("notification to act properly on send", () => {
-//     it("should call axios with the proper default data", async () => {
+describe("notification to act properly on send", () => {
+    it("should call axios with the proper default data", async () => {
 
-//         let response = {
-//             data: {
-//                 Message: "OK"
-//             }
-//         };
-//         axios.post.mockResolvedValueOnce(response);
+        let response = {
+            data: {
+                Message: "OK"
+            }
+        };
+        axios.post.mockResolvedValueOnce(response);
 
-//         let notif = new Pushover();
-//         let notificationConf = {
-//             type: "octopush",
-//             pushoveruserkey: "123",
-//             pushoverapptoken: "token",
-//             pushoversounds: "ding",
-//             pushoverpriority: "6",
-//             pushovertitle: "Important Title!",
-//         };
-//         let monitorConf = {
-//         };
-//         let heartbeatConf = {
-//             time: "example time",
-//         };
-//         let msg = "PassedInMessage😀";
-//         let res = await notif.send(notificationConf, msg, monitorConf, heartbeatConf);
+        let notif = new Pushover();
+        let notificationConf = {
+            type: "octopush",
+            pushoveruserkey: "123",
+            pushoverapptoken: "token",
+            pushoversounds: "ding",
+            pushoverpriority: "6",
+            pushovertitle: "Important Title!",
+        };
+        let monitorConf = {
+        };
+        let heartbeatConf = {
+            time: "example time",
+        };
+        let msg = "PassedInMessage😀";
+        let res = await notif.send(notificationConf, msg, monitorConf, heartbeatConf);
 
-//         expect(axios.post).toHaveBeenCalledWith("", {
-//         });
-//         expect(res).toBe("Sent Successfully.");
-//     });
+        expect(axios.post).toHaveBeenCalledWith("https://api.pushover.net/1/messages.json", {
+            "expire": "3600",
+            "html": 1,
+            "message": "<b>Uptime Kuma Alert</b>\n\n<b>Message</b>:PassedInMessage😀\n<b>Time (UTC)</b>:example time",
+            "priority": "6",
+            "retry": "30",
+            "sound": "ding",
+            "title": "Important Title!",
+            "token": "token",
+            "user": "123",
+        });
+        expect(res).toBe("Sent Successfully.");
+    });
 
-//     it("should call axios with the proper data when monitor nil", async () => {
-//         let response = {
-//             data: {
-//                 Message: "OK"
-//             }
-//         };
-//         axios.post.mockResolvedValueOnce(response);
+    it("should call axios with the proper data when monitor nil", async () => {
+        let response = {
+            data: {
+                Message: "OK"
+            }
+        };
+        axios.post.mockResolvedValueOnce(response);
 
-//         let notif = new Pushover();
-//         let notificationConf = {
-//             type: "octopush",
-//             pushoveruserkey: "123",
-//             pushoverapptoken: "token",
-//             pushoversounds: "ding",
-//             pushoverpriority: "6",
-//             pushovertitle: "Important Title!",
-//         };
-//         let msg = "PassedInMessage😀";
+        let notif = new Pushover();
+        let notificationConf = {
+            type: "octopush",
+            pushoveruserkey: "123",
+            pushoverapptoken: "token",
+            pushoversounds: "ding",
+            pushoverpriority: "6",
+            pushovertitle: "Important Title!",
+        };
+        let msg = "PassedInMessage😀";
 
-//         let res = await notif.send(notificationConf, msg, null, null);
+        let res = await notif.send(notificationConf, msg, null, null);
 
-//         expect(axios.post).toHaveBeenCalledWith("", {
-//         });
-//         expect(res).toBe("Sent Successfully.");
-//     });
+        expect(axios.post).toHaveBeenCalledWith("https://api.pushover.net/1/messages.json", {
+            "expire": "3600",
+            "html": 1,
+            "message": "<b>Uptime Kuma Pushover testing successful.</b>",
+            "priority": "6",
+            "retry": "30",
+            "sound": "ding",
+            "title": "Important Title!",
+            "token": "token",
+            "user": "123",
+        });
+        expect(res).toBe("Sent Successfully.");
+    });
 
-// });
+});
 
-// describe("notification to act properly on error", () => {
-//     it("should respond with an axios error on error", async () => {
+describe("notification to act properly on error", () => {
+    it("should respond with an axios error on error", async () => {
 
-//         axios.post.mockImplementation(() => {
-//             throw new Error("Test Error");
-//         });
-//         let notif = new Pushover();
-//         let notificationConf = {
-//             type: "octopush",
-//             pushoveruserkey: "123",
-//             pushoverapptoken: "token",
-//             pushoversounds: "ding",
-//             pushoverpriority: "6",
-//             pushovertitle: "Important Title!",
-//         };
-//         let msg = "PassedInMessage😀";
+        axios.post.mockImplementation(() => {
+            throw new Error("Test Error");
+        });
+        let notif = new Pushover();
+        let notificationConf = {
+            type: "octopush",
+            pushoveruserkey: "123",
+            pushoverapptoken: "token",
+            pushoversounds: "ding",
+            pushoverpriority: "6",
+            pushovertitle: "Important Title!",
+        };
+        let msg = "PassedInMessage😀";
 
-//         try {
-//             await notif.send(notificationConf, msg, null, null);
-//             expect("Error thrown").toBe(false);
-//         } catch (e) {
-//             expect(e.message).toBe("Error: Error: Test Error ");
-//         }
+        try {
+            await notif.send(notificationConf, msg, null, null);
+            expect("Error thrown").toBe(false);
+        } catch (e) {
+            expect(e.message).toBe("Error: Error: Test Error ");
+        }
 
-//         expect(axios.post).toHaveBeenCalledWith("", {
-//         });
-//     });
+        expect(axios.post).toHaveBeenCalledWith("https://api.pushover.net/1/messages.json", {
+            "expire": "3600",
+            "html": 1,
+            "message": "<b>Uptime Kuma Pushover testing successful.</b>",
+            "priority": "6",
+            "retry": "30",
+            "sound": "ding",
+            "title": "Important Title!",
+            "token": "token",
+            "user": "123",
+        });
+    });
 
-// });
+});
 
-// describe("notification to get proper data from Notification.send", () => {
-//     it("should call axios with proper data", async () => {
-//         let response = {
-//             data: {
-//                 Message: "OK"
-//             }
-//         };
-//         axios.post.mockResolvedValueOnce(response);
-//         let notificationConf = {
-//             type: "octopush",
-//             pushoveruserkey: "123",
-//             pushoverapptoken: "token",
-//             pushoversounds: "ding",
-//             pushoverpriority: "6",
-//             pushovertitle: "Important Title!",
-//         };
-//         let monitorConf = {
-//         };
-//         let heartbeatConf = {
-//             time: "example time",
-//         };
-//         let msg = "PassedInMessage😀";
+describe("notification to get proper data from Notification.send", () => {
+    it("should call axios with proper data", async () => {
+        let response = {
+            data: {
+                Message: "OK"
+            }
+        };
+        axios.post.mockResolvedValueOnce(response);
+        let notificationConf = {
+            type: "pushover",
+            pushoveruserkey: "123",
+            pushoverapptoken: "token",
+            pushoversounds: "ding",
+            pushoverpriority: "6",
+            pushovertitle: "Important Title!",
+        };
+        let monitorConf = {
+        };
+        let heartbeatConf = {
+            time: "example time",
+        };
+        let msg = "PassedInMessage😀";
 
-//         NotificationSend.Notification.init();
-//         let res = await NotificationSend.Notification.send(notificationConf, msg, monitorConf, heartbeatConf);
-//         expect(axios.post).toHaveBeenCalledWith("", {
-//         });
-//         expect(res).toBe("Sent Successfully.");
-//     });
+        NotificationSend.Notification.init();
+        let res = await NotificationSend.Notification.send(notificationConf, msg, monitorConf, heartbeatConf);
+        expect(axios.post).toHaveBeenCalledWith("https://api.pushover.net/1/messages.json", {
+            "expire": "3600",
+            "html": 1,
+            "message": "<b>Uptime Kuma Alert</b>\n\n<b>Message</b>:PassedInMessage😀\n<b>Time (UTC)</b>:example time",
+            "priority": "6",
+            "retry": "30",
+            "sound": "ding",
+            "title": "Important Title!",
+            "token": "token",
+            "user": "123",
+        });
+        expect(res).toBe("Sent Successfully.");
+    });
 
-// });
+});
