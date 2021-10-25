@@ -6,8 +6,7 @@ class Pushover extends NotificationProvider {
     name = "pushover";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
-        let pushoverlink = "https://api.pushover.net/1/messages.json"
+        let pushoverlink = "https://api.pushover.net/1/messages.json";
 
         try {
             if (heartbeatJSON == null) {
@@ -21,9 +20,9 @@ class Pushover extends NotificationProvider {
                     "retry": "30",
                     "expire": "3600",
                     "html": 1,
-                }
-                await axios.post(pushoverlink, data)
-                return okMsg;
+                };
+                await axios.post(pushoverlink, data);
+                return this.sendSuccess;
             }
 
             let data = {
@@ -36,11 +35,11 @@ class Pushover extends NotificationProvider {
                 "retry": "30",
                 "expire": "3600",
                 "html": 1,
-            }
-            await axios.post(pushoverlink, data)
-            return okMsg;
+            };
+            await axios.post(pushoverlink, data);
+            return this.sendSuccess;
         } catch (error) {
-            this.throwGeneralAxiosError(error)
+            this.throwGeneralAxiosError(error);
         }
 
     }
