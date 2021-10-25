@@ -59,6 +59,8 @@ node server/server.js
 
 # (Recommended) Option 2. Run in background using PM2
 # Install PM2 if you don't have it: npm install pm2 -g
+# You can specify a custom Self Signed Certificate Authority to trust by adding: NODE_EXTRA_CA_CERTS=<Path to cert.crt>
+# before pm2
 pm2 start server/server.js --name uptime-kuma
 ```
 
