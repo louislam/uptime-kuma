@@ -197,7 +197,6 @@ export default {
     pushy: "Pushy",
     octopush: "Octopush",
     promosms: "PromoSMS",
-    clicksendsms: "ClickSend SMS",
     lunasea: "LunaSea",
     apprise: "Apprise (支持50+种通知服务)",
     pushbullet: "Pushbullet",
