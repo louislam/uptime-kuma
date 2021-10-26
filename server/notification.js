@@ -21,6 +21,7 @@ const Webhook = require("./notification-providers/webhook");
 const Feishu = require("./notification-providers/feishu");
 const AliyunSms = require("./notification-providers/aliyun-sms");
 const DingDing = require("./notification-providers/dingding");
+const Bark = require("./notification-providers/bark");
 
 class Notification {
 
@@ -54,6 +55,7 @@ class Notification {
             new SMTP(),
             new Telegram(),
             new Webhook(),
+            new Bark(),
         ];
 
         for (let item of list) {
