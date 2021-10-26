@@ -40,7 +40,8 @@ If you are not sure whether I will accept your pull request, feel free to create
 1. Create an empty commit
    `git commit -m "[empty commit] pull request for <YOUR TASK NAME>" --allow-empty`
 1. Push to your fork repo
-1. Create a pull request: https://github.com/louislam/uptime-kuma/compare   
+1. Create a pull request: https://github.com/louislam/uptime-kuma/compare
+1. Write a proper description   
 1. Click "Change to draft"
 
 ### Pull Request Examples
@@ -65,10 +66,12 @@ I do not have such knowledge to test it.
 
 #### ⚠ Low Priority - Harsh Mode
 
-Some pull requests are required to modifiy the core. To be honest, I do not want anyone to try to do that, because it would spend a lot of your time and my time. I will review your pull request harshly. Also you may need to write a lot of unit tests to ensure that there is no breaking change.
+Some pull requests are required to modifiy the core. To be honest, I do not want anyone to try to do that, because it would spend a lot of your time. I will review your pull request harshly. Also you may need to write a lot of unit tests to ensure that there is no breaking change.
 
-- Touch large parts of code of any very important features of Uptime Kuma  
+- Touch large parts of code of any very important features
+- Touch monitoring logic
 - Drop a table or drop a column for any reason
+- Touch the entry point of Docker or Node.js
 
 #### *️⃣ Low Priority
 
