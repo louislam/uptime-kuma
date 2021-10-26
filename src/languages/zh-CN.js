@@ -65,7 +65,7 @@ export default {
     "Max. Redirects": "重定向次数",
     "Accepted Status Codes": "有效状态码",
     "Push URL": "推送链接",
-    needPushEvery: "你需要每 {0} 秒调用一次。",
+    needPushEvery: "你需要每 {0} 秒调用一次",
     pushOptionalParams: "可选参数：{0}",
     Save: "保存",
     Notifications: "消息通知",

@@ -204,7 +204,7 @@ export default {
     mattermost: "Mattermost",
     "Primary Base URL": "Основной URL",
     "Push URL": "URL пуша",
-    needPushEvery: "К этому URL необходимо обращаться каждые {0} секунд.",
+    needPushEvery: "К этому URL необходимо обращаться каждые {0} секунд",
     pushOptionalParams: "Опциональные параметры: {0}",
     defaultNotificationName: "Моё уведомление {notification} ({number})",
     here: "здесь",

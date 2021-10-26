@@ -112,7 +112,7 @@
 
                                 <div class="input-group mb-3">
                                     <input id="primaryBaseURL" v-model="settings.primaryBaseURL" class="form-control" name="primaryBaseURL" placeholder="https://" pattern="https?://.+">
-                                    <button class="btn btn-outline-primary" type="button" @click="autoGetPrimaryBaseURL">Auto Get</button>
+                                    <button class="btn btn-outline-primary" type="button" @click="autoGetPrimaryBaseURL">{{ $t("Auto Get") }}</button>
                                 </div>
 
                                 <div class="form-text">
