@@ -16,3 +16,25 @@ describe("notification default information", () => {
         expect(notification.name).toBe(undefined);
     });
 });
+
+describe("notification to error if blank notification called", () => {
+    it("should respond with an error if just called.", async () => {
+
+        let notif = new NotificationProvider();
+        let notificationConf = {
+            type: "telegram",
+            telegramBotToken: "abc",
+            telegramChatID: "123",
+        };
+        let msg = "PassedInMessage😀";
+
+        try {
+            await notif.send(notificationConf, msg, null, null);
+            expect("Error thrown").toBe(false);
+        } catch (e) {
+            expect(e.message).toBe("Have to override Notification.send(...)");
+        }
+
+    });
+
+});
