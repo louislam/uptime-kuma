@@ -10,7 +10,7 @@
                 </li>
             </ul>
         </div>
-        <div class="chart-wrapper">
+        <div class="chart-wrapper" :class="{ loading : loading}">
             <LineChart :chart-data="chartData" :options="chartOptions" />
         </div>
     </div>
@@ -42,6 +42,9 @@ export default {
     },
     data() {
         return {
+
+            loading: false,
+
             // Configurable filtering on top of the returned data
             chartPeriodHrs: 0,
 
@@ -218,12 +221,15 @@ export default {
                 newPeriod = null;
                 this.heartbeatList = null;
             } else {
+                this.loading = true;
+
                 this.$root.getMonitorBeats(this.monitorId, newPeriod, (res) => {
                     if (!res.ok) {
                         toast.error(res.msg);
                     } else {
                         this.heartbeatList = res.data;
                     }
+                    this.loading = false;
                 });
             }
         }
@@ -309,5 +315,9 @@ export default {
 
 .chart-wrapper {
     margin-bottom: 0.5em;
+
+    &.loading {
+        filter: blur(10px);
+    }
 }
 </style>
