@@ -200,8 +200,5 @@ export default {
     mattermost: "Mattermost",
     "Monitor History": "Historial de monitor",
     clearDataOlderThan: "Mantener los datos del historial del monitor durante {0} días.",
-    records: "registros",
-    "One record": "Un registro",
-    "Showing {from} to {to} of {count} records": "Mostrando desde {from} a {to} de {count} registros",
     steamApiKeyDescription: "Para monitorear un servidor de juegos de Steam, necesita una clave Steam Web-API. Puede registrar su clave API aquí: ",
 };

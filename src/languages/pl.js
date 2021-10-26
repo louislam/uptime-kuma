@@ -300,8 +300,5 @@ export default {
     "Monitor History": "Historia monitorów",
     clearDataOlderThan: "Przechowuj dane dotyczące historii monitorowania {0} dni.",
     PasswordsDoNotMatch: "Hasła nie pasują.",
-    records: "rekordy",
-    "One record": "Jeden rekord",
-    "Showing {from} to {to} of {count} records": "Wyświetlanie {from} do {to} z {count} rekordów",
     steamApiKeyDescription: "Do monitorowania serwera gier Steam potrzebny jest klucz Steam Web-API. Możesz zarejestrować swój klucz API tutaj: ",
 };

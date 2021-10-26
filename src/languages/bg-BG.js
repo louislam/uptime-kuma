@@ -299,8 +299,5 @@ export default {
     BodyInvalidFormat: "Заявеното съобщение не е валиден JSON: ",
     "Monitor History": "История на мониторите",
     clearDataOlderThan: "Ще се съхранява за {0} дни.",
-    records: "записа",
-    "One record": "Един запис",
-    "Showing {from} to {to} of {count} records": "Показване на {from} до {to} от {count} записа",
     steamApiKeyDescription: "За да мониторирате Steam Gameserver се нуждаете от Steam Web-API ключ. Може да регистрирате Вашия API ключ тук: ",
 };
