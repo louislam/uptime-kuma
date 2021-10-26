@@ -210,6 +210,13 @@ Patch release = the third digit ([Semantic Versioning](https://semver.org/))
 Please read: https://github.com/louislam/uptime-kuma/tree/master/src/languages
 
 
+## Wiki
+
+Since there is no way to make a pull request to wiki's repo, I have setup another repo to do that.
+
+https://github.com/louislam/uptime-kuma-wiki.git
+
+
 ## Maintainer 
 
 Check the latest issues and pull requests:
@@ -229,3 +236,19 @@ Checking:
 - Check all tags is fine on https://hub.docker.com/r/louislam/uptime-kuma/tags
 - Try the Docker image with tag 1.X.X (Clean install / amd64 / arm64 / armv7)
 - Try clean install with Node.js 
+
+### Release Wiki
+
+#### Setup Repo
+```
+git clone https://github.com/louislam/uptime-kuma-wiki.git
+cd uptime-kuma-wiki
+git remote add production https://github.com/louislam/uptime-kuma.wiki.git
+```
+
+#### Push to Production Wiki
+```
+git pull
+git push production master
+```
+
