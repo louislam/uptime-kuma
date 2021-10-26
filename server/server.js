@@ -644,6 +644,38 @@ exports.entryPage = "dashboard";
             }
         });
 
+        socket.on("getMonitorBeats", async (monitorID, period, callback) => {
+            try {
+                checkLogin(socket);
+
+                console.log(`Get Monitor Beats: ${monitorID} User ID: ${socket.userID}`);
+
+                if (period == null) {
+                    throw new Error("Invalid period.");
+                }
+
+                let list = await R.getAll(`
+                    SELECT * FROM heartbeat
+                    WHERE monitor_id = ? AND
+                    time > DATETIME('now', '-' || ? || ' hours')
+                    ORDER BY time ASC
+                `, [
+                    monitorID,
+                    period,
+                ]);
+
+                callback({
+                    ok: true,
+                    data: list,
+                });
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
         // Start or Resume the monitor
         socket.on("resumeMonitor", async (monitorID, callback) => {
             try {

@@ -29,22 +29,51 @@ The frontend code build into "dist" directory. The server (express.js) exposes t
 
 Generally, if the pull request is working fine and it do not affect any existing logic, workflow and perfomance, I will merge into the master branch once it is tested.
 
-If you are not sure, feel free to create an empty pull request draft first.
+If you are not sure whether I will accept your pull request, feel free to create an empty pull request draft first.
+
+
+### Recommended Pull Request Guideline
+
+1. Fork the project
+1. Clone your fork repo to local
+1. Create a new branch
+1. Create an empty commit
+   `git commit -m "[empty commit] pull request for <YOUR TASK NAME>" --allow-empty`
+1. Push to your fork repo
+1. Create a pull request: https://github.com/louislam/uptime-kuma/compare
+1. Write a proper description   
+1. Click "Change to draft"
 
 ### Pull Request Examples
 
+Here are some example situations in the past.
+
 #### ✅ High - Medium Priority
+
+Easy to review, no breaking change and not touching the existing code
 
 - Add a new notification
 - Add a chart
 - Fix a bug
 - Translations
+- Add a independent new feature
 
 #### *️⃣ Requires one more reviewer
 
 I do not have such knowledge to test it.
 
 - Add k8s supports
+
+#### ⚠ Low Priority - Harsh Mode
+
+Some pull requests are required to modifiy the core. To be honest, I do not want anyone to try to do that, because it would spend a lot of your time. I will review your pull request harshly. Also you may need to write a lot of unit tests to ensure that there is no breaking change.
+
+- Touch large parts of code of any very important features
+- Touch monitoring logic
+- Drop a table or drop a column for any reason
+- Touch the entry point of Docker or Node.js
+- Modifiy auth
+
 
 #### *️⃣ Low Priority
 
@@ -54,6 +83,7 @@ It changed my current workflow and require further studies.
 
 #### ❌ Won't Merge
 
+- Any breaking changes
 - Duplicated pull request
 - Buggy
 - Existing logic is completely modified or deleted
