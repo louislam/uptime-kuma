@@ -72,6 +72,8 @@ Some pull requests are required to modifiy the core. To be honest, I do not want
 - Touch monitoring logic
 - Drop a table or drop a column for any reason
 - Touch the entry point of Docker or Node.js
+- Modifiy auth
+
 
 #### *️⃣ Low Priority
 
