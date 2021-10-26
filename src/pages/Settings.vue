@@ -414,10 +414,11 @@ import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import NotificationDialog from "../components/NotificationDialog.vue";
 import TwoFADialog from "../components/TwoFADialog.vue";
+import jwt_decode from "jwt-decode";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-import { timezoneList, setPageLocale, jwtDecrypt } from "../util-frontend";
+import { timezoneList, setPageLocale } from "../util-frontend";
 import { useToast } from "vue-toastification";
 
 const toast = useToast();
@@ -488,7 +489,7 @@ export default {
 
         loadUsername() {
             const jwtToken = this.$root.storage().token;
-            const jwtPayload = jwtDecrypt(jwtToken);
+            const jwtPayload = jwt_decode(jwtToken);
             this.username = jwtPayload.username;
         },
 
