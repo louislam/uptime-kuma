@@ -34,9 +34,11 @@ function download(url) {
             });
 
             tarStream.on("close", () => {
-                fs.rmdirSync("./dist-backup", {
-                    recursive: true
-                });
+                if (fs.existsSync("./dist-backup")) {
+                    fs.rmdirSync("./dist-backup", {
+                        recursive: true
+                    });
+                }
                 console.log("Done");
             });
 
@@ -44,7 +46,7 @@ function download(url) {
                 if (fs.existsSync("./dist-backup")) {
                     fs.renameSync("./dist-backup", "./dist");
                 }
-                console.log("Done");
+                console.error("Error from tarStream");
             });
 
             response.pipe(tarStream);
