@@ -9,7 +9,6 @@ class RocketChat extends NotificationProvider {
     name = "rocket.chat";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
         try {
             if (heartbeatJSON == null) {
                 let data = {
@@ -19,7 +18,7 @@ class RocketChat extends NotificationProvider {
                     "icon_emoji": notification.rocketiconemo,
                 };
                 await axios.post(notification.rocketwebhookURL, data);
-                return okMsg;
+                return this.sendSuccess;
             }
 
             const time = heartbeatJSON["time"];
@@ -55,7 +54,7 @@ class RocketChat extends NotificationProvider {
             }
 
             await axios.post(notification.rocketwebhookURL, data);
-            return okMsg;
+            return this.sendSuccess;
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }
