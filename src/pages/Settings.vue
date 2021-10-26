@@ -417,7 +417,7 @@ import TwoFADialog from "../components/TwoFADialog.vue";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-import { timezoneList, setPageLocale } from "../util-frontend";
+import { timezoneList, setPageLocale, jwtDecrypt } from "../util-frontend";
 import { useToast } from "vue-toastification";
 
 const toast = useToast();
@@ -487,11 +487,9 @@ export default {
         },
 
         loadUsername() {
-            const jwtToken = localStorage.getItem("token");
-            const [, payloadBase64] = jwtToken.match(/^\S+\.(\S+)\.\S+$/i);
-            const payload = atob(payloadBase64);
-            const oPayload = JSON.parse(payload);
-            this.username = oPayload.username;
+            const jwtToken = this.$root.storage().token;
+            const jwtPayload = jwtDecrypt(jwtToken);
+            this.username = jwtPayload.username;
         },
 
         loadSettings() {
