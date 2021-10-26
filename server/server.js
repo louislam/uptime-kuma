@@ -119,6 +119,7 @@ module.exports.io = io;
 // Must be after io instantiation
 const { sendNotificationList, sendHeartbeatList, sendImportantHeartbeatList, sendInfo } = require("./client");
 const { statusPageSocketHandler } = require("./socket-handlers/status-page-socket-handler");
+const databaseSocketHandler = require("./socket-handlers/database-socket-handler");
 
 app.use(express.json());
 
@@ -1295,6 +1296,7 @@ exports.entryPage = "dashboard";
 
         // Status Page Socket Handler for admin only
         statusPageSocketHandler(socket);
+        databaseSocketHandler(socket);
 
         debug("added all socket handlers");
 

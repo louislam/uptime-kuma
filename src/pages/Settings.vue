@@ -231,13 +231,15 @@
                                 {{ importAlert }}
                             </div>
 
+                            <!-- Advanced -->
                             <h2 class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
 
                             <div class="mb-3">
                                 <button v-if="settings.disableAuth" class="btn btn-outline-primary me-2 mb-2" @click="enableAuth">{{ $t("Enable Auth") }}</button>
                                 <button v-if="! settings.disableAuth" class="btn btn-primary me-2 mb-2" @click="confirmDisableAuth">{{ $t("Disable Auth") }}</button>
                                 <button v-if="! settings.disableAuth" class="btn btn-danger me-2 mb-2" @click="$root.logout">{{ $t("Logout") }}</button>
-                                <button class="btn btn-outline-danger me-1 mb-1" @click="confirmClearStatistics">{{ $t("Clear all statistics") }}</button>
+                                <button class="btn btn-outline-danger me-2 mb-2" @click="confirmClearStatistics">{{ $t("Clear all statistics") }}</button>
+                                <button class="btn btn-info me-2 mb-2" @click="shrinkDatabase">{{ $t("Shrink Database") }} ({{ databaseSizeDisplay }})</button>
                             </div>
                         </template>
                     </div>
@@ -418,6 +420,7 @@ dayjs.extend(timezone);
 
 import { timezoneList, setPageLocale } from "../util-frontend";
 import { useToast } from "vue-toastification";
+import { debug } from "../util.ts";
 
 const toast = useToast();
 
@@ -427,6 +430,7 @@ export default {
         TwoFADialog,
         Confirm,
     },
+
     data() {
         return {
             timezoneList: timezoneList(),
@@ -445,8 +449,16 @@ export default {
             importAlert: null,
             importHandle: "skip",
             processing: false,
+            databaseSize: 0,
         };
     },
+
+    computed: {
+        databaseSizeDisplay() {
+            return Math.round(this.databaseSize / 1024 / 1024 * 10) / 10 + " MB";
+        }
+    },
+
     watch: {
         "password.repeatNewPassword"() {
             this.invalidPassword = false;
@@ -460,6 +472,7 @@ export default {
 
     mounted() {
         this.loadSettings();
+        this.loadDatabaseSize();
     },
 
     methods: {
@@ -592,7 +605,33 @@ export default {
 
         autoGetPrimaryBaseURL() {
             this.settings.primaryBaseURL = location.protocol + "//" + location.host;
+        },
+
+        shrinkDatabase() {
+            this.$root.getSocket().emit("shrinkDatabase", (res) => {
+                if (res.ok) {
+                    this.loadDatabaseSize();
+                    toast.success("Done");
+                } else {
+                    debug(res);
+                }
+            });
+        },
+
+        loadDatabaseSize() {
+            debug("load database size");
+            this.$root.getSocket().emit("getDatabaseSize", (res) => {
+
+                if (res.ok) {
+                    this.databaseSize = res.size;
+                    debug("database size: " + res.size);
+                } else {
+                    debug(res);
+                }
+
+            });
         }
+
     },
 };
 </script>
