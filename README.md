@@ -42,7 +42,7 @@ docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name upti
 
 Browse to http://localhost:3001 after starting.
 
-### 💪🏻 Without Docker
+### 💪🏻 Non-Docker
 
 Required Tools: Node.js >= 14, git and pm2.
 
