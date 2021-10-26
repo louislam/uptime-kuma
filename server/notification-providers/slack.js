@@ -25,7 +25,6 @@ class Slack extends NotificationProvider {
     }
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
         try {
             if (heartbeatJSON == null) {
                 let data = {
@@ -35,7 +34,7 @@ class Slack extends NotificationProvider {
                     "icon_emoji": notification.slackiconemo,
                 };
                 await axios.post(notification.slackwebhookURL, data);
-                return okMsg;
+                return this.sendSuccess;
             }
 
             const time = heartbeatJSON["time"];
@@ -88,7 +87,7 @@ class Slack extends NotificationProvider {
             }
 
             await axios.post(notification.slackwebhookURL, data);
-            return okMsg;
+            return this.sendSuccess;
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }
