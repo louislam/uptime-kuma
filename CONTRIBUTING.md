@@ -214,7 +214,7 @@ Please read: https://github.com/louislam/uptime-kuma/tree/master/src/languages
 
 Since there is no way to make a pull request to wiki's repo, I have setup another repo to do that.
 
-https://github.com/louislam/uptime-kuma-wiki.git
+https://github.com/louislam/uptime-kuma-wiki
 
 
 ## Maintainer 
