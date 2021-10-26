@@ -255,8 +255,8 @@ export default {
 }
 
 .period-options {
-    padding: 0.1em 1.0em;
-    margin-bottom: -2em;
+    padding: 0.1em 1em;
+    margin-bottom: -1.2em;
     float: right;
     position: relative;
     z-index: 10;
