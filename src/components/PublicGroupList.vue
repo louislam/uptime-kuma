@@ -40,6 +40,7 @@
 
                                             <Uptime :monitor="monitor.element" type="24" :pill="true" />
                                             {{ monitor.element.name }}
+                                            <Tag v-for="tag in monitor.element.tags" :key="tag" :item="tag" :size="'sm'" />
                                         </div>
                                     </div>
                                     <div :key="$root.userHeartbeatBar" class="col-3 col-md-4">
@@ -59,12 +60,14 @@
 import Draggable from "vuedraggable";
 import HeartbeatBar from "./HeartbeatBar.vue";
 import Uptime from "./Uptime.vue";
+import Tag from "./Tag.vue";
 
 export default {
     components: {
         Draggable,
         HeartbeatBar,
         Uptime,
+        Tag,
     },
     props: {
         editMode: {
