@@ -32,6 +32,7 @@ body:
     attributes:
       label: "🐻 Uptime-Kuma version"
       description: "Which version of Uptime-Kuma are you running?"
+      placeholder: "Ex. 1.9.x"
     validations:
       required: true
   - type: input
@@ -39,6 +40,7 @@ body:
     attributes:
       label: "💻 Operating System"
       description: "Which OS is your server/device running on?"
+      placeholder: "Ex. Ubuntu 20.04"
     validations:
       required: true
   - type: input
@@ -46,6 +48,7 @@ body:
     attributes:
       label: "🌐 Browser"
       description: "Which browser are you running on?"
+      placeholder: "Ex. Firefox"
     validations:
       required: true
   - type: input
@@ -53,6 +56,7 @@ body:
     attributes:
       label: "🐋 Docker"
       description: "If running with Docker, which version are you running?"
+      placeholder: "Version can be found by running: docker version"
     validations:
       required: false
   - type: input
@@ -60,6 +64,7 @@ body:
     attributes:
       label: "🏷️ Docker Image Tag"
       description: "Which Docker image tag are you using? If running '1' or 'latest', please specify image hash."
+      placeholder: "1, latest, debian, alpine. Image hash can be obtained with: docker images --digests"
     validations:
       required: false
   - type: input
@@ -67,6 +72,7 @@ body:
     attributes:
       label: "🟩 NodeJS Version"
       description: "If running with Node.js? which version are you running?"
+      placeholder: "14.x"
     validations:
       required: false
   - type: textarea
