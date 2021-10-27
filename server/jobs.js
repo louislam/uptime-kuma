@@ -7,10 +7,6 @@ const jobs = [
         name: "clear-old-data",
         interval: "at 03:14",
     },
-    {
-        name: "certificate-notification",
-        interval: "60 seconds",         // TODO: Production should be larger
-    },
 ];
 
 const initBackgroundJobs = function (args) {

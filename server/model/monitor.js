@@ -168,7 +168,14 @@ class Monitor extends BeanModel {
                     let certInfoStartTime = dayjs().valueOf();
                     if (this.getUrl()?.protocol === "https:") {
                         try {
-                            tlsInfo = await this.updateTlsInfo(checkCertificate(res));
+                            let tlsInfoObject = checkCertificate(res);
+                            tlsInfo = await this.updateTlsInfo(tlsInfoObject);
+
+                            if (!this.getIgnoreTls()) {
+                                debug("call sendCertNotification");
+                                await this.sendCertNotification(tlsInfoObject);
+                            }
+
                         } catch (e) {
                             if (e.message !== "No TLS certificate in response") {
                                 console.error(e.message);
@@ -595,9 +602,7 @@ class Monitor extends BeanModel {
 
     static async sendNotification(isFirstBeat, monitor, bean) {
         if (!isFirstBeat || bean.status === DOWN) {
-            let notificationList = await R.getAll("SELECT notification.* FROM notification, monitor_notification WHERE monitor_id = ? AND monitor_notification.notification_id = notification.id ", [
-                monitor.id,
-            ]);
+            const notificationList = await Monitor.getNotificationList(monitor);
 
             let text;
             if (bean.status === UP) {
@@ -619,6 +624,70 @@ class Monitor extends BeanModel {
         }
     }
 
+    static async getNotificationList(monitor) {
+        let notificationList = await R.getAll("SELECT notification.* FROM notification, monitor_notification WHERE monitor_id = ? AND monitor_notification.notification_id = notification.id ", [
+            monitor.id,
+        ]);
+        return notificationList;
+    }
+
+    async sendCertNotification(tlsInfoObject) {
+        if (tlsInfoObject && tlsInfoObject.certInfo && tlsInfoObject.certInfo.daysRemaining) {
+            const notificationList = await Monitor.getNotificationList(this);
+
+            debug("call sendCertNotificationByTargetDays");
+            await this.sendCertNotificationByTargetDays(tlsInfoObject.certInfo.daysRemaining, 21, notificationList);
+            await this.sendCertNotificationByTargetDays(tlsInfoObject.certInfo.daysRemaining, 14, notificationList);
+            await this.sendCertNotificationByTargetDays(tlsInfoObject.certInfo.daysRemaining, 7, notificationList);
+        }
+    }
+
+    async sendCertNotificationByTargetDays(daysRemaining, targetDays, notificationList) {
+
+        if (daysRemaining > targetDays) {
+            debug(`No need to send cert notification. ${daysRemaining} > ${targetDays}`);
+            return;
+        }
+
+        if (notificationList.length > 0) {
+
+            let row = await R.getRow("SELECT * FROM notification_sent_history WHERE type = ? AND monitor_id = ? AND days = ?", [
+                "certificate",
+                this.id,
+                targetDays,
+            ]);
+
+            // Sent already, no need to send again
+            if (row) {
+                debug("Sent already, no need to send again");
+                return;
+            }
+
+            let sent = false;
+            debug("Send certificate notification");
+
+            for (let notification of notificationList) {
+                try {
+                    debug("Sending to " + notification.name);
+                    await Notification.send(JSON.parse(notification.config), `The certificate of ${this.url} will be expired in ${daysRemaining} days`);
+                    sent = true;
+                } catch (e) {
+                    console.error("Cannot send cert notification to " + notification.name);
+                    console.error(e);
+                }
+            }
+
+            if (sent) {
+                await R.exec("INSERT INTO notification_sent_history (type, monitor_id, days) VALUES(?, ?, ?)", [
+                    "certificate",
+                    this.id,
+                    targetDays,
+                ]);
+            }
+        } else {
+            debug("No notification, no need to send cert notification");
+        }
+    }
 }
 
 module.exports = Monitor;
