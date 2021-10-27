@@ -455,6 +455,27 @@ class Monitor extends BeanModel {
             tls_info_bean = R.dispense("monitor_tls_info");
             tls_info_bean.monitor_id = this.id;
         }
+
+        // Clear sent history if the cert changed.
+        let oldCertInfo = JSON.parse(tls_info_bean.info_json);
+
+        let isValidObjects = oldCertInfo && oldCertInfo.certInfo && checkCertificateResult && checkCertificateResult.certInfo;
+
+        if (isValidObjects) {
+            if (oldCertInfo.certInfo.fingerprint256 !== checkCertificateResult.certInfo.fingerprint256) {
+                debug("Resetting sent_history");
+                await R.exec("DELETE FROM notification_sent_history WHERE type = 'certificate' AND monitor_id = ?", [
+                    this.id
+                ]);
+            } else {
+                debug("No need to reset sent_history");
+                debug(oldCertInfo.certInfo.fingerprint256);
+                debug(checkCertificateResult.certInfo.fingerprint256);
+            }
+        } else {
+            debug("Not valid object");
+        }
+
         tls_info_bean.info_json = JSON.stringify(checkCertificateResult);
         await R.store(tls_info_bean);
 
