@@ -1,0 +1,76 @@
+name: "❓ Ask for help"
+description: "Submit any question related to Uptime Kuma"
+title: "[Help]: <title>"
+labels: [help]
+body:
+  - type: textarea
+    id: steps-to-reproduce
+    validations:
+      required: true
+    attributes:
+      label: "📝 Describe your problem"
+      description: "Please walk us through it step by step."
+      placeholder: "Describe what are you asking for..."
+  - type: input
+    id: uptime-kuma-version
+    attributes:
+      label: "🐻 Uptime-Kuma version"
+      description: "Which version of Uptime-Kuma are you running?"
+      placeholder: "Ex. 1.9.x"
+    validations:
+      required: true
+  - type: input
+    id: operating-system
+    attributes:
+      label: "💻 Operating System"
+      description: "Which OS is your server/device running on?"
+      placeholder: "Ex. Ubuntu 20.04"
+    validations:
+      required: true
+  - type: input
+    id: browser-vendor
+    attributes:
+      label: "🌐 Browser"
+      description: "Which browser are you running on?"
+      placeholder: "Ex. Firefox"
+    validations:
+      required: true
+  - type: input
+    id: docker-version
+    attributes:
+      label: "🐋 Docker"
+      description: "If running with Docker, which version are you running?"
+      placeholder: "Ex. 20.10.9"
+    validations:
+      required: false
+  - type: input
+    id: docker-image-tag
+    attributes:
+      label: "🏷️ Docker Image Tag"
+      description: "Which Docker image tag are you using? If running '1' or 'latest', please specify image hash."
+      placeholder: "Ex. 1.9.1"
+    validations:
+      required: false
+  - type: input
+    id: nodejs-version
+    attributes:
+      label: "🟩 NodeJS Version"
+      description: "If running with Node.js? which version are you running?"
+      placeholder: "14.x"
+    validations:
+      required: false
+  - type: checkboxes
+    id: no-duplicate-issues
+    attributes:
+      label: "👀 Have you spent some time to check if this question has been raised before?"
+      description: "Please search in the issues without filters [here](https://github.com/louislam/uptime-kuma/issues?q=)"
+      options:
+        - label: "I checked and didn't find similar question"
+          required: true
+  - type: checkboxes
+    attributes:
+      label: "🛡️ Security Policy"
+      description: Please review the security policy before reporting security related issues/bugs.
+      options:
+        - label: I agree to have read this project [Security Policy](https://github.com/louislam/uptime-kuma/security/policy)
+          required: true
