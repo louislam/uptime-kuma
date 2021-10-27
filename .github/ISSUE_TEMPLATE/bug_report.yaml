@@ -56,7 +56,7 @@ body:
     attributes:
       label: "🐋 Docker"
       description: "If running with Docker, which version are you running?"
-      placeholder: "Version can be found by running: docker version"
+      placeholder: "Ex. 20.10.9"
     validations:
       required: false
   - type: input
@@ -64,7 +64,7 @@ body:
     attributes:
       label: "🏷️ Docker Image Tag"
       description: "Which Docker image tag are you using? If running '1' or 'latest', please specify image hash."
-      placeholder: "1, latest, debian, alpine. Image hash can be obtained with: docker images --digests"
+      placeholder: "Ex. 1.9.1"
     validations:
       required: false
   - type: input
