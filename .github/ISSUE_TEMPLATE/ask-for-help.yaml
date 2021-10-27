@@ -33,17 +33,24 @@ body:
     validations:
       required: true
   - type: input
-    id: docker-tag
+    id: docker-version
     attributes:
       label: "🐋 Docker"
-      description: "Currently running in Docker? Specify the tag."
+      description: "If running with Docker, which version are you running?"
+    validations:
+      required: false
+  - type: input
+    id: docker-image-tag
+    attributes:
+      label: "🏷️ Docker Image Tag"
+      description: "Which Docker image tag are you using? If running '1' or 'latest', please specify image hash."
     validations:
       required: false
   - type: input
     id: nodejs-version
     attributes:
       label: "🟩 NodeJS Version"
-      description: "If running in the host, which version of NodeJS are you running?"
+      description: "If running with Node.js? which version are you running?"
     validations:
       required: false
   - type: checkboxes
