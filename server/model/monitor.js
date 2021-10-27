@@ -351,6 +351,10 @@ class Monitor extends BeanModel {
             if (isImportant) {
                 bean.important = true;
                 await Monitor.sendNotification(isFirstBeat, this, bean);
+
+                // Clear Status Page Cache
+                apicache.clear();
+
             } else {
                 bean.important = false;
             }
@@ -598,9 +602,6 @@ class Monitor extends BeanModel {
                     console.log(e);
                 }
             }
-
-            // Clear Status Page Cache
-            apicache.clear();
         }
     }
 
