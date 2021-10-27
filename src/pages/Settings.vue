@@ -122,7 +122,7 @@
                             <!-- Steam API Key -->
                             <div class="mb-4">
                                 <label class="form-label" for="steamAPIKey">{{ $t("Steam API Key") }}</label>
-                                <input id="steamAPIKey" v-model="settings.steamAPIKey" class="form-control" name="steamAPIKey">
+                                <HiddenInput id="steamAPIKey" v-model="settings.steamAPIKey" />
                                 <div class="form-text">
                                     {{ $t("steamApiKeyDescription") }}<a href="https://steamcommunity.com/dev" target="_blank">https://steamcommunity.com/dev</a>
                                 </div>
@@ -149,7 +149,7 @@
                             <!-- Change Password -->
                             <template v-if="! settings.disableAuth">
                                 <h2 class="mt-5 mb-2">{{ $t("Change Password") }}</h2>
-                                <p>{{ $t("Current User") }}: <strong>{{ this.username }}</strong></p>
+                                <p>{{ $t("Current User") }}: <strong>{{ username }}</strong></p>
                                 <form class="mb-3" @submit.prevent="savePassword">
                                     <div class="mb-3">
                                         <label for="current-password" class="form-label">{{ $t("Current Password") }}</label>
@@ -410,6 +410,7 @@
 </template>
 
 <script>
+import HiddenInput from "../components/HiddenInput.vue";
 import Confirm from "../components/Confirm.vue";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
@@ -431,6 +432,7 @@ export default {
         NotificationDialog,
         TwoFADialog,
         Confirm,
+        HiddenInput,
     },
 
     data() {
