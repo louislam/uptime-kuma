@@ -149,6 +149,7 @@
                             <!-- Change Password -->
                             <template v-if="! settings.disableAuth">
                                 <h2 class="mt-5 mb-2">{{ $t("Change Password") }}</h2>
+                                <p>{{ $t("Current User") }}: <strong>{{ this.username }}</strong></p>
                                 <form class="mb-3" @submit.prevent="savePassword">
                                     <div class="mb-3">
                                         <label for="current-password" class="form-label">{{ $t("Current Password") }}</label>
@@ -415,6 +416,7 @@ import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import NotificationDialog from "../components/NotificationDialog.vue";
 import TwoFADialog from "../components/TwoFADialog.vue";
+import jwt_decode from "jwt-decode";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
@@ -471,6 +473,7 @@ export default {
     },
 
     mounted() {
+        this.loadUsername();
         this.loadSettings();
         this.loadDatabaseSize();
     },
@@ -495,6 +498,12 @@ export default {
                     }
                 });
             }
+        },
+
+        loadUsername() {
+            const jwtToken = this.$root.storage().token;
+            const jwtPayload = jwt_decode(jwtToken);
+            this.username = jwtPayload.username;
         },
 
         loadSettings() {
