@@ -119,6 +119,7 @@ module.exports.io = io;
 // Must be after io instantiation
 const { sendNotificationList, sendHeartbeatList, sendImportantHeartbeatList, sendInfo } = require("./client");
 const { statusPageSocketHandler } = require("./socket-handlers/status-page-socket-handler");
+const databaseSocketHandler = require("./socket-handlers/database-socket-handler");
 
 app.use(express.json());
 
@@ -636,6 +637,38 @@ exports.entryPage = "dashboard";
                     monitor: await bean.toJSON(),
                 });
 
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("getMonitorBeats", async (monitorID, period, callback) => {
+            try {
+                checkLogin(socket);
+
+                console.log(`Get Monitor Beats: ${monitorID} User ID: ${socket.userID}`);
+
+                if (period == null) {
+                    throw new Error("Invalid period.");
+                }
+
+                let list = await R.getAll(`
+                    SELECT * FROM heartbeat
+                    WHERE monitor_id = ? AND
+                    time > DATETIME('now', '-' || ? || ' hours')
+                    ORDER BY time ASC
+                `, [
+                    monitorID,
+                    period,
+                ]);
+
+                callback({
+                    ok: true,
+                    data: list,
+                });
             } catch (e) {
                 callback({
                     ok: false,
@@ -1263,6 +1296,7 @@ exports.entryPage = "dashboard";
 
         // Status Page Socket Handler for admin only
         statusPageSocketHandler(socket);
+        databaseSocketHandler(socket);
 
         debug("added all socket handlers");
 

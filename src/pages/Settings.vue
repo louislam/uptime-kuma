@@ -112,7 +112,7 @@
 
                                 <div class="input-group mb-3">
                                     <input id="primaryBaseURL" v-model="settings.primaryBaseURL" class="form-control" name="primaryBaseURL" placeholder="https://" pattern="https?://.+">
-                                    <button class="btn btn-outline-primary" type="button" @click="autoGetPrimaryBaseURL">Auto Get</button>
+                                    <button class="btn btn-outline-primary" type="button" @click="autoGetPrimaryBaseURL">{{ $t("Auto Get") }}</button>
                                 </div>
 
                                 <div class="form-text">
@@ -149,6 +149,7 @@
                             <!-- Change Password -->
                             <template v-if="! settings.disableAuth">
                                 <h2 class="mt-5 mb-2">{{ $t("Change Password") }}</h2>
+                                <p>{{ $t("Current User") }}: <strong>{{ this.username }}</strong></p>
                                 <form class="mb-3" @submit.prevent="savePassword">
                                     <div class="mb-3">
                                         <label for="current-password" class="form-label">{{ $t("Current Password") }}</label>
@@ -231,13 +232,15 @@
                                 {{ importAlert }}
                             </div>
 
+                            <!-- Advanced -->
                             <h2 class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
 
                             <div class="mb-3">
                                 <button v-if="settings.disableAuth" class="btn btn-outline-primary me-2 mb-2" @click="enableAuth">{{ $t("Enable Auth") }}</button>
                                 <button v-if="! settings.disableAuth" class="btn btn-primary me-2 mb-2" @click="confirmDisableAuth">{{ $t("Disable Auth") }}</button>
                                 <button v-if="! settings.disableAuth" class="btn btn-danger me-2 mb-2" @click="$root.logout">{{ $t("Logout") }}</button>
-                                <button class="btn btn-outline-danger me-1 mb-1" @click="confirmClearStatistics">{{ $t("Clear all statistics") }}</button>
+                                <button class="btn btn-outline-danger me-2 mb-2" @click="confirmClearStatistics">{{ $t("Clear all statistics") }}</button>
+                                <button class="btn btn-info me-2 mb-2" @click="shrinkDatabase">{{ $t("Shrink Database") }} ({{ databaseSizeDisplay }})</button>
                             </div>
                         </template>
                     </div>
@@ -413,11 +416,13 @@ import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import NotificationDialog from "../components/NotificationDialog.vue";
 import TwoFADialog from "../components/TwoFADialog.vue";
+import jwt_decode from "jwt-decode";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
 import { timezoneList, setPageLocale } from "../util-frontend";
 import { useToast } from "vue-toastification";
+import { debug } from "../util.ts";
 
 const toast = useToast();
 
@@ -427,6 +432,7 @@ export default {
         TwoFADialog,
         Confirm,
     },
+
     data() {
         return {
             timezoneList: timezoneList(),
@@ -445,8 +451,16 @@ export default {
             importAlert: null,
             importHandle: "skip",
             processing: false,
+            databaseSize: 0,
         };
     },
+
+    computed: {
+        databaseSizeDisplay() {
+            return Math.round(this.databaseSize / 1024 / 1024 * 10) / 10 + " MB";
+        }
+    },
+
     watch: {
         "password.repeatNewPassword"() {
             this.invalidPassword = false;
@@ -459,7 +473,9 @@ export default {
     },
 
     mounted() {
+        this.loadUsername();
         this.loadSettings();
+        this.loadDatabaseSize();
     },
 
     methods: {
@@ -482,6 +498,12 @@ export default {
                     }
                 });
             }
+        },
+
+        loadUsername() {
+            const jwtToken = this.$root.storage().token;
+            const jwtPayload = jwt_decode(jwtToken);
+            this.username = jwtPayload.username;
         },
 
         loadSettings() {
@@ -592,7 +614,33 @@ export default {
 
         autoGetPrimaryBaseURL() {
             this.settings.primaryBaseURL = location.protocol + "//" + location.host;
+        },
+
+        shrinkDatabase() {
+            this.$root.getSocket().emit("shrinkDatabase", (res) => {
+                if (res.ok) {
+                    this.loadDatabaseSize();
+                    toast.success("Done");
+                } else {
+                    debug(res);
+                }
+            });
+        },
+
+        loadDatabaseSize() {
+            debug("load database size");
+            this.$root.getSocket().emit("getDatabaseSize", (res) => {
+
+                if (res.ok) {
+                    this.databaseSize = res.size;
+                    debug("database size: " + res.size);
+                } else {
+                    debug(res);
+                }
+
+            });
         }
+
     },
 };
 </script>

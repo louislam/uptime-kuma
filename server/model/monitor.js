@@ -351,6 +351,10 @@ class Monitor extends BeanModel {
             if (isImportant) {
                 bean.important = true;
                 await Monitor.sendNotification(isFirstBeat, this, bean);
+
+                // Clear Status Page Cache
+                apicache.clear();
+
             } else {
                 bean.important = false;
             }
@@ -383,18 +387,32 @@ class Monitor extends BeanModel {
                     }
                 }
 
-                this.heartbeatInterval = setTimeout(beat, beatInterval * 1000);
+                this.heartbeatInterval = setTimeout(safeBeat, beatInterval * 1000);
             }
 
+        };
+
+        const safeBeat = async () => {
+            try {
+                await beat();
+            } catch (e) {
+                console.trace(e);
+                console.error("Please report to https://github.com/louislam/uptime-kuma/issues");
+
+                if (! this.isStop) {
+                    console.log("Try to restart the monitor");
+                    this.heartbeatInterval = setTimeout(safeBeat, this.interval * 1000);
+                }
+            }
         };
 
         // Delay Push Type
         if (this.type === "push") {
             setTimeout(() => {
-                beat();
+                safeBeat();
             }, this.interval * 1000);
         } else {
-            beat();
+            safeBeat();
         }
     }
 
@@ -598,9 +616,6 @@ class Monitor extends BeanModel {
                     console.log(e);
                 }
             }
-
-            // Clear Status Page Cache
-            apicache.clear();
         }
     }
 
