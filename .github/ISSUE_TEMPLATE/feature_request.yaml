@@ -46,7 +46,7 @@ body:
     validations:
       required: false
     attributes:
-      label: "❓ Additional Context"
+      label: "📝 Additional Context"
       description: "Add any other context or screenshots about the feature request here."
       placeholder: "..."
   - type: checkboxes

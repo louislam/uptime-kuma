@@ -38,46 +38,32 @@ body:
       description: "Which version of Uptime-Kuma are you running?"
     validations:
       required: true
-  - type: dropdown
+  - type: input
     id: operating-system
     attributes:
       label: "💻 Operating System"
       description: "Which OS is your server/device running on?"
-      multiple: true
-      options:
-        - Linux
-        - MacOS
-        - Windows
     validations:
       required: true
-  - type: dropdown
+  - type: input
     id: browser-vendor
     attributes:
       label: "🌐 Browser"
       description: "Which browser are you running on?"
-      multiple: true
-      options:
-        - Firefox
-        - Chrome
-        - Edge
-        - Safari
-        - Other
     validations:
       required: true
-  - type: checkboxes
-    id: uses-docker
+  - type: input
+    id: docker-tag
     attributes:
       label: "🐋 Docker"
-      options:
-        - label: "Currently running in Docker?"
-          required: false
+      description: "Currently running with Docker? Which image tag are you using?"
     validations:
-      required: true
+      required: false
   - type: input
     id: nodejs-version
     attributes:
       label: "🟩 NodeJS Version"
-      description: "If running in the host, which version of NodeJS are you running?"
+      description: "Currently running with Node.js? which version of node.js are you running?"
     validations:
       required: false
   - type: textarea
