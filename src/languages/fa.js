@@ -180,6 +180,8 @@ export default {
     "Status Page": "صفحه وضعیت",
     "Go to Dashboard": "رفتن به پیشخوان",
     "Uptime Kuma": "آپتایم کوما",
+    records: "مورد",
+    "One record": "یک مورد",
     Info: "اطلاعات",
     "Powered by": "نیرو گرفته از",
     telegram: "Telegram",

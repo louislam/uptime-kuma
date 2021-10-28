@@ -300,5 +300,7 @@ export default {
     "Monitor History": "Monitor Verlauf",
     clearDataOlderThan: "Bewahre die Monitor-Verlaufsdaten für {0} Tage auf.",
     PasswordsDoNotMatch: "Passwörter stimmen nicht überein.",
+    records: "Einträge",
+    "One record": "Ein Eintrag",
     steamApiKeyDescription: "Um einen Steam Game Server zu überwachen, wird ein Steam Web-API-Schlüssel benötigt. Dieser kann hier registriert werden: ",
 };

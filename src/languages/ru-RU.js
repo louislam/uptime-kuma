@@ -305,5 +305,7 @@ export default {
     "Monitor History": "История мониторов",
     clearDataOlderThan: "Сохранять историю мониторов в течение {0} дней.",
     PasswordsDoNotMatch: "Пароли не совпадают.",
+    records: "записей",
+    "One record": "Одна запись",
     steamApiKeyDescription: "Для мониторинга игрового сервера Steam вам необходим Web-API ключ Steam. Зарегистрировать его можно здесь: ",
 };

@@ -302,5 +302,7 @@ export default {
     "Monitor History": "Monitor History",
     clearDataOlderThan: "Keep monitor history data for {0} days.",
     PasswordsDoNotMatch: "Passwords do not match.",
+    records: "records",
+    "One record": "One record",
     steamApiKeyDescription: "For monitoring a Steam Game Server you need a Steam Web-API key. You can register your API key here: ",
 };
