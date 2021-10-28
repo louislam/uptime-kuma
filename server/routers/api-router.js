@@ -142,12 +142,13 @@ router.get("/api/status-page/monitor-list", cache("5 minutes"), async (_request,
         const publicGroupList = [];
         let list = await R.find("group", " public = 1 ORDER BY weight ");
         for (let groupBean of list) {
-            let monitor_info = await groupBean.toPublicJSON()
-            monitor_info.monitorList = await Promise.all(monitor_info.monitorList.map( async (monitor)=>{
+            let monitorGroup = await groupBean.toPublicJSON()
+            monitorGroup.monitorList = await Promise.all(monitorGroup.monitorList.map( async (monitor)=>{
+                // Includes tags as an array in response, allows for tags to be displayed on public status page
                 let tags = await R.getAll("SELECT mt.monitor_id,mt.value, tag.name, tag.color FROM monitor_tag mt JOIN tag ON mt.tag_id = tag.id WHERE mt.monitor_id = ?", [monitor.id]);
                 return {...monitor,tags: tags}
             }))
-            publicGroupList.push(monitor_info);
+            publicGroupList.push(monitorGroup);
         }
 
         response.json(publicGroupList);
