@@ -307,6 +307,5 @@ export default {
     PasswordsDoNotMatch: "Пароли не совпадают.",
     records: "записей",
     "One record": "Одна запись",
-    "Showing {from} to {to} of {count} records": "Показывается от {from} до {to} из {count} записей",
     steamApiKeyDescription: "Для мониторинга игрового сервера Steam вам необходим Web-API ключ Steam. Зарегистрировать его можно здесь: ",
 };

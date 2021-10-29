@@ -302,7 +302,6 @@ export default {
     PasswordsDoNotMatch: "Passwörter stimmen nicht überein.",
     records: "Einträge",
     "One record": "Ein Eintrag",
-    "Showing {from} to {to} of {count} records": "Zeige {from} zu {to} von {count} Einträge",
     steamApiKeyDescription: "Um einen Steam Game Server zu überwachen, wird ein Steam Web-API-Schlüssel benötigt. Dieser kann hier registriert werden: ",
     "Current User": "Aktueller Benutzer",
 };
