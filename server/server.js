@@ -263,9 +263,8 @@ exports.entryPage = "dashboard";
             let user = await login(data.username, data.password);
 
             if (user) {
-                afterLogin(socket, user);
-
                 if (user.twofaStatus == 0) {
+                    afterLogin(socket, user);
                     callback({
                         ok: true,
                         token: jwt.sign({
@@ -284,6 +283,7 @@ exports.entryPage = "dashboard";
                     let verify = notp.totp.verify(data.token, user.twofa_secret, twofa_verification_opts);
 
                     if (verify && verify.delta == 0) {
+                        afterLogin(socket, user);
                         callback({
                             ok: true,
                             token: jwt.sign({
