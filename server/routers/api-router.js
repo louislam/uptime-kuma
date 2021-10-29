@@ -147,7 +147,6 @@ router.get("/api/status-page/monitor-list", cache("5 minutes"), async (_request,
         let list = await R.find("group", " public = 1 ORDER BY weight ");
         for (let groupBean of list) {
             let monitorGroup = await groupBean.toPublicJSON()
-            console.log("\n\nsettings", await getSettings("statusPage"))
             if ((await getSettings("statusPage")).statusPageTags=="visible") {
                 monitorGroup.monitorList = await Promise.all(monitorGroup.monitorList.map( async (monitor)=>{
                     // Includes tags as an array in response, allows for tags to be displayed on public status page
