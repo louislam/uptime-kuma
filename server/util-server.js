@@ -335,17 +335,23 @@ exports.convertToUTF8 = (body) => {
     return str.toString();
 };
 
-let logFile = fs.createWriteStream("./data/error.log", {
-    flags: "a"
-});
+let logFile;
+
+try {
+    logFile = fs.createWriteStream("./data/error.log", {
+        flags: "a"
+    });
+} catch (_) { }
 
 exports.errorLog = (error, outputToConsole = true) => {
     try {
-        const dateTime = R.isoDateTime();
-        logFile.write(`[${dateTime}] ` + nodeJsUtil.format(error) + "\n");
+        if (logFile) {
+            const dateTime = R.isoDateTime();
+            logFile.write(`[${dateTime}] ` + nodeJsUtil.format(error) + "\n");
 
-        if (outputToConsole) {
-            console.error(error);
+            if (outputToConsole) {
+                console.error(error);
+            }
         }
     } catch (_) { }
 };
