@@ -325,6 +325,12 @@
                     <p>Molim Vas koristite ovo sa pažnjom.</p>
                 </template>
 
+                <template v-if="$i18n.locale === 'hr-HR' ">
+                    <p>Jeste li sigurni da želite <strong>isključiti autentikaciju</strong>?</p>
+                    <p>To je za <strong>korisnike koji imaju vanjsku autentikaciju stranice</strong> ispred Uptime Kume, poput usluge Cloudflare Access.</p>
+                    <p>Pažljivo koristite ovu opciju.</p>
+                </template>
+
                 <template v-else-if="$i18n.locale === 'tr-TR' ">
                     <p><strong>Şifreli girişi devre dışı bırakmak istediğinizden</strong>emin misiniz?</p>
                     <p>Bu, Uptime Kuma'nın önünde Cloudflare Access gibi <strong>üçüncü taraf yetkilendirmesi olan</strong> kişiler içindir.</p>

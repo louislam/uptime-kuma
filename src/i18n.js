@@ -7,6 +7,7 @@ import etEE from "./languages/et-EE";
 import fa from "./languages/fa";
 import frFR from "./languages/fr-FR";
 import hu from "./languages/hu";
+import hrHR from "./languages/hr-HR";
 import itIT from "./languages/it-IT";
 import idID from "./languages/id-ID";
 import ja from "./languages/ja";
@@ -38,6 +39,7 @@ const languageList = {
     "pt-BR": ptBR,
     "fr-FR": frFR,
     "hu": hu,
+    "hr-HR": hrHR,
     "it-IT": itIT,
     "id-ID" : idID,
     "ja": ja,
