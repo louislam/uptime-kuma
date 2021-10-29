@@ -24,7 +24,7 @@ import trTR from "./languages/tr-TR";
 import vi from "./languages/vi";
 import zhCN from "./languages/zh-CN";
 import zhHK from "./languages/zh-HK";
-
+import zhTW from "./languages/zh-TW";
 
 const languageList = {
     en,
@@ -52,6 +52,7 @@ const languageList = {
     "pl": pl,
     "et-EE": etEE,
     "vi": vi,
+    "zh-TW": zhTW
 };
 
 const rtlLangs = ["fa"];
