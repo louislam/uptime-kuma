@@ -77,6 +77,16 @@
                     <font-awesome-icon icon="save" />
                     {{ $t("Switch to Dark Theme") }}
                 </button>
+
+                <button v-if="tagsVisible == 'hidden'" class="btn btn-secondary me-2" @click="changeTagsVisibilty('visible')">
+                    <font-awesome-icon icon="eye" />
+                    {{ $t("Show Tags") }}
+                </button>
+
+                <button v-if="tagsVisible == 'visible'" class="btn btn-secondary me-2" @click="changeTagsVisibilty('hidden')">
+                    <font-awesome-icon icon="eye-slash" />
+                    {{ $t("Hide Tags") }}
+                </button>
             </div>
         </div>
 
@@ -292,6 +302,10 @@ export default {
             return this.config.statusPageTheme;
         },
 
+        tagsVisible() {
+            return this.config.statusPageTags
+        },
+
         logoClass() {
             if (this.editMode) {
                 return {
@@ -471,6 +485,23 @@ export default {
 
         changeTheme(name) {
             this.config.statusPageTheme = name;
+        },
+        changeTagsVisibilty(newState) {
+            this.config.statusPageTags = newState;
+
+            // On load, if the status page will not include tags if it's not enabled for security reasons
+            // Which means if we enable tags, it won't show in the UI until saved
+            // So we have this to enhance UX and load in the tags from the authenticated source instantly
+            this.$root.publicGroupList = this.$root.publicGroupList.map((group)=>{
+                return {...group,
+                    monitorList: group.monitorList.map((monitor)=> {
+                        // We only include the tags if visible so we can reuse the logic to hide the tags on disable
+                        return {...monitor,
+                            tags: newState==="visible" ? this.$root.monitorList[monitor.id].tags : []
+                        }
+                    })
+                }
+            });
         },
 
         /**
