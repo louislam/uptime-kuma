@@ -306,4 +306,5 @@ export default {
     "One record": "One record",
     steamApiKeyDescription: "For monitoring a Steam Game Server you need a Steam Web-API key. You can register your API key here: ",
     "Current User": "Current User",
+    recent: "Recent",
 };

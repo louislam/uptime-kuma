@@ -303,4 +303,6 @@ export default {
     records: "rekordy",
     "One record": "Jeden rekord",
     steamApiKeyDescription: "Do monitorowania serwera gier Steam potrzebny jest klucz Steam Web-API. Możesz zarejestrować swój klucz API tutaj: ",
+    "Current User": "Aktualny użytkownik",
+    recent: "Ostatnie",
 };
