@@ -209,11 +209,17 @@ import ImageCropUpload from "vue-image-crop-upload";
 import { STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_PARTIAL_DOWN, UP } from "../util.ts";
 import { useToast } from "vue-toastification";
 import dayjs from "dayjs";
+import Favico from "favico.js";
+
 const toast = useToast();
 
 const leavePageMsg = "Do you really want to leave? you have unsaved changes!";
 
 let feedInterval;
+
+const favicon = new Favico({
+    animation: "none"
+});
 
 export default {
     components: {
@@ -424,8 +430,20 @@ export default {
             // If editMode, it will use the data from websocket.
             if (! this.editMode) {
                 axios.get("/api/status-page/heartbeat").then((res) => {
-                    this.$root.heartbeatList = res.data.heartbeatList;
-                    this.$root.uptimeList = res.data.uptimeList;
+                    const { heartbeatList, uptimeList } = res.data;
+                    const heartbeatIds = Object.keys(heartbeatList);
+
+                    const downMonitors = heartbeatIds.reduce((downMonitorsAmount, currentId) => {
+                        const monitorHeartbeats = heartbeatList[currentId];
+                        const lastHeartbeat = monitorHeartbeats.at(-1);
+
+                        return lastHeartbeat.status === 0 ? downMonitorsAmount + 1 : downMonitorsAmount;
+                    }, 0);
+
+                    favicon.badge(downMonitors);
+
+                    this.$root.heartbeatList = heartbeatList;
+                    this.$root.uptimeList = uptimeList;
                     this.loadedData = true;
                 });
             }
