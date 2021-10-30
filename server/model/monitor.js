@@ -1,4 +1,6 @@
 const https = require("https");
+const HttpProxyAgent = require("http-proxy-agent");
+const HttpsProxyAgent = require("https-proxy-agent");
 const dayjs = require("dayjs");
 const utc = require("dayjs/plugin/utc");
 let timezone = require("dayjs/plugin/timezone");
@@ -77,6 +79,7 @@ class Monitor extends BeanModel {
             dns_resolve_server: this.dns_resolve_server,
             dns_last_result: this.dns_last_result,
             pushToken: this.pushToken,
+            proxyId: this.proxy_id,
             notificationIDList,
             tags: tags,
         };
@@ -173,6 +176,11 @@ class Monitor extends BeanModel {
                         };
                     }
 
+                    const httpsAgentOptions = {
+                        maxCachedSessions: 0, // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
+                        rejectUnauthorized: !this.getIgnoreTls(),
+                    };
+
                     debug(`[${this.name}] Prepare Options for axios`);
 
                     const options = {
@@ -186,17 +194,51 @@ class Monitor extends BeanModel {
                             ...(this.headers ? JSON.parse(this.headers) : {}),
                             ...(basicAuthHeader),
                         },
-                        httpsAgent: new https.Agent({
-                            maxCachedSessions: 0,      // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
-                            rejectUnauthorized: ! this.getIgnoreTls(),
-                        }),
                         maxRedirects: this.maxredirects,
                         validateStatus: (status) => {
                             return checkStatusCode(status, this.getAcceptedStatuscodes());
                         },
                     };
 
+                    if (this.proxy_id) {
+                        const proxy = await R.load("proxy", this.proxy_id);
+
+                        if (proxy && proxy.active) {
+                            const httpProxyAgentOptions = {
+                                protocol: proxy.protocol,
+                                host: proxy.host,
+                                port: proxy.port,
+                            };
+                            const httpsProxyAgentOptions = {
+                                ...httpsAgentOptions,
+                                protocol: proxy.protocol,
+                                hostname: proxy.host,
+                                port: proxy.port,
+                            };
+
+                            if (proxy.auth) {
+                                httpProxyAgentOptions.auth = `${proxy.username}:${proxy.password}`;
+                                httpsProxyAgentOptions.auth = `${proxy.username}:${proxy.password}`;
+                            }
+
+                            debug(`[${this.name}] HTTP options: ${JSON.stringify({
+                                "http": httpProxyAgentOptions,
+                                "https": httpsProxyAgentOptions,
+                            })}`);
+
+                            options.proxy = false;
+                            options.httpAgent = new HttpProxyAgent(httpProxyAgentOptions);
+                            options.httpsAgent = new HttpsProxyAgent(httpsProxyAgentOptions);
+                        }
+                    }
+
+                    if (!options.httpsAgent) {
+                        options.httpsAgent = new https.Agent(httpsAgentOptions);
+                    }
+
+                    debug(`[${this.name}] Axios Options: ${JSON.stringify(options)}`);
                     debug(`[${this.name}] Axios Request`);
+
                     let res = await axios.request(options);
                     bean.msg = `${res.status} - ${res.statusText}`;
                     bean.ping = dayjs().valueOf() - startTime;

@@ -33,6 +33,7 @@ export default {
             uptimeList: { },
             tlsInfoList: {},
             notificationList: [],
+            proxyList: [],
             connectionErrorMsg: "Cannot connect to the socket server. Reconnecting...",
         };
     },
@@ -101,6 +102,16 @@ export default {
 
             socket.on("notificationList", (data) => {
                 this.notificationList = data;
+            });
+
+            socket.on("proxyList", (data) => {
+                this.proxyList = data.map(item => {
+                    item.auth = !!item.auth;
+                    item.active = !!item.active;
+                    item.default = !!item.default;
+
+                    return item;
+                });
             });
 
             socket.on("heartbeat", (data) => {
