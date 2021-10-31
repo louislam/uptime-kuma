@@ -226,10 +226,11 @@ https://github.com/louislam/uptime-kuma/issues?q=sort%3Aupdated-desc
 1. Draft a release note
 1. Make sure the repo is cleared
 1. `npm run update-version 1.X.X`
+1. `npm run build`
 1. `npm run build-docker`
-1. git push
+1. `git push`
 1. Publish the release note as 1.X.X 
-1. npm run upload-artifacts
+1. `npm run upload-artifacts`
 1. SSH to demo site server and update to 1.X.X
 
 Checking:

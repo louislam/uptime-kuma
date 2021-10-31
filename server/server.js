@@ -291,9 +291,8 @@ exports.entryPage = "dashboard";
             let user = await login(data.username, data.password);
 
             if (user) {
-                afterLogin(socket, user);
-
                 if (user.twofa_status == 0) {
+                    afterLogin(socket, user);
                     callback({
                         ok: true,
                         token: jwt.sign({
@@ -312,6 +311,7 @@ exports.entryPage = "dashboard";
                     let verify = notp.totp.verify(data.token, user.twofa_secret, twofa_verification_opts);
 
                     if (user.twofa_last_token !== data.token && verify) {
+                        afterLogin(socket, user);
 
                         await R.exec("UPDATE `user` SET twofa_last_token = ? WHERE id = ? ", [
                             data.token,
