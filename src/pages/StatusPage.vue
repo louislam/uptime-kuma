@@ -493,10 +493,12 @@ export default {
             // Which means if we enable tags, it won't show in the UI until saved
             // So we have this to enhance UX and load in the tags from the authenticated source instantly
             this.$root.publicGroupList = this.$root.publicGroupList.map((group)=>{
-                return {...group,
+                return {
+                    ...group,
                     monitorList: group.monitorList.map((monitor)=> {
                         // We only include the tags if visible so we can reuse the logic to hide the tags on disable
-                        return {...monitor,
+                        return {
+                            ...monitor,
                             tags: newState==="visible" ? this.$root.monitorList[monitor.id].tags : []
                         }
                     })
