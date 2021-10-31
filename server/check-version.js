@@ -9,18 +9,17 @@ let interval;
 exports.startInterval = () => {
     let check = async () => {
         try {
-            const res = await axios.get("https://raw.githubusercontent.com/louislam/uptime-kuma/master/package.json");
-
-            if (typeof res.data === "string") {
-                res.data = JSON.parse(res.data);
-            }
+            const res = await axios.get("https://uptime.kuma.pet/version");
 
             // For debug
             if (process.env.TEST_CHECK_VERSION === "1") {
-                res.data.version = "1000.0.0";
+                res.data.slow = "1000.0.0";
             }
 
-            exports.latestVersion = res.data.version;
+            if (res.data.slow) {
+                exports.latestVersion = res.data.slow;
+            }
+
         } catch (_) { }
 
     };
