@@ -11,7 +11,7 @@ exports.getMonitorRelativeURL = exports.genSecret = exports.getCryptoRandomInt =
 const _dayjs = require("dayjs");
 const dayjs = _dayjs;
 exports.isDev = process.env.NODE_ENV === "development";
-exports.appName = "Uptime Kuma";
+exports.appName = ((typeof(process.env.APP_NAME) !== 'undefined')? process.env.APP_NAME : "Uptime Kuma");
 exports.DOWN = 0;
 exports.UP = 1;
 exports.PENDING = 2;

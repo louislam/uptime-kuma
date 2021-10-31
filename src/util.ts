@@ -10,7 +10,7 @@ import * as _dayjs from "dayjs";
 const dayjs = _dayjs;
 
 export const isDev = process.env.NODE_ENV === "development";
-export const appName = "Uptime Kuma";
+export const appName = ((typeof(process.env.APP_NAME) !== 'undefined')? process.env.APP_NAME : "Uptime Kuma");
 export const DOWN = 0;
 export const UP = 1;
 export const PENDING = 2;
