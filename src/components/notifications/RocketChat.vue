@@ -11,7 +11,7 @@
         <div class="form-text">
             <span style="color: red;"><sup>*</sup></span>{{ $t("Required") }}
             <i18n-t tag="p" keypath="aboutWebhooks" style="margin-top: 8px;">
-                <a href="https://docs.rocket.chat/guides/administration/administration/integrations" target="_blank">https://api.slack.com/messaging/webhooks</a>
+                <a href="https://docs.rocket.chat/guides/administration/administration/integrations" target="_blank">https://docs.rocket.chat/guides/administration/administration/integrations</a>
             </i18n-t>
             <p style="margin-top: 8px;">
                 {{ $t("aboutChannelName", [$t("rocket.chat")]) }}

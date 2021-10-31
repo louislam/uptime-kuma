@@ -11,6 +11,7 @@ import Pushover from "./Pushover.vue";
 import Pushy from "./Pushy.vue";
 import Octopush from "./Octopush.vue";
 import PromoSMS from "./PromoSMS.vue";
+import ClickSendSMS from "./ClickSendSMS.vue";
 import LunaSea from "./LunaSea.vue";
 import Feishu from "./Feishu.vue";
 import Apprise from "./Apprise.vue";
@@ -20,6 +21,7 @@ import Mattermost from "./Mattermost.vue";
 import Matrix from "./Matrix.vue";
 import AliyunSMS from "./AliyunSms.vue";
 import DingDing from "./DingDing.vue";
+import Bark from "./Bark.vue";
 
 /**
  * Manage all notification form.
@@ -40,6 +42,7 @@ const NotificationFormList = {
     "pushy": Pushy,
     "octopush": Octopush,
     "promosms": PromoSMS,
+    "clicksendsms": ClickSendSMS,
     "lunasea": LunaSea,
     "Feishu": Feishu,
     "AliyunSMS": AliyunSMS,
@@ -48,7 +51,8 @@ const NotificationFormList = {
     "line": Line,
     "mattermost": Mattermost,
     "matrix": Matrix,
-    "DingDing": DingDing
+    "DingDing": DingDing,
+    "Bark": Bark
 }
 
 export default NotificationFormList

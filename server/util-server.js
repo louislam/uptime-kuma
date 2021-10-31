@@ -8,6 +8,8 @@ const { Resolver } = require("dns");
 const child_process = require("child_process");
 const iconv = require("iconv-lite");
 const chardet = require("chardet");
+const fs = require("fs");
+const nodeJsUtil = require("util");
 
 // From ping-lite
 exports.WIN = /^win/.test(process.platform);
@@ -353,4 +355,25 @@ exports.convertToUTF8 = (body) => {
     //debug("Guess Encoding: " + guessEncoding);
     const str = iconv.decode(body, guessEncoding);
     return str.toString();
+};
+
+let logFile;
+
+try {
+    logFile = fs.createWriteStream("./data/error.log", {
+        flags: "a"
+    });
+} catch (_) { }
+
+exports.errorLog = (error, outputToConsole = true) => {
+    try {
+        if (logFile) {
+            const dateTime = R.isoDateTime();
+            logFile.write(`[${dateTime}] ` + nodeJsUtil.format(error) + "\n");
+
+            if (outputToConsole) {
+                console.error(error);
+            }
+        }
+    } catch (_) { }
 };

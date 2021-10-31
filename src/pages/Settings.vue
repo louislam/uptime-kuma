@@ -112,7 +112,7 @@
 
                                 <div class="input-group mb-3">
                                     <input id="primaryBaseURL" v-model="settings.primaryBaseURL" class="form-control" name="primaryBaseURL" placeholder="https://" pattern="https?://.+">
-                                    <button class="btn btn-outline-primary" type="button" @click="autoGetPrimaryBaseURL">Auto Get</button>
+                                    <button class="btn btn-outline-primary" type="button" @click="autoGetPrimaryBaseURL">{{ $t("Auto Get") }}</button>
                                 </div>
 
                                 <div class="form-text">
@@ -122,7 +122,7 @@
                             <!-- Steam API Key -->
                             <div class="mb-4">
                                 <label class="form-label" for="steamAPIKey">{{ $t("Steam API Key") }}</label>
-                                <input id="steamAPIKey" v-model="settings.steamAPIKey" class="form-control" name="steamAPIKey">
+                                <HiddenInput id="steamAPIKey" v-model="settings.steamAPIKey" />
                                 <div class="form-text">
                                     {{ $t("steamApiKeyDescription") }}<a href="https://steamcommunity.com/dev" target="_blank">https://steamcommunity.com/dev</a>
                                 </div>
@@ -149,6 +149,7 @@
                             <!-- Change Password -->
                             <template v-if="! settings.disableAuth">
                                 <h2 class="mt-5 mb-2">{{ $t("Change Password") }}</h2>
+                                <p>{{ $t("Current User") }}: <strong>{{ username }}</strong></p>
                                 <form class="mb-3" @submit.prevent="savePassword">
                                     <div class="mb-3">
                                         <label for="current-password" class="form-label">{{ $t("Current Password") }}</label>
@@ -231,13 +232,15 @@
                                 {{ importAlert }}
                             </div>
 
+                            <!-- Advanced -->
                             <h2 class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
 
                             <div class="mb-3">
                                 <button v-if="settings.disableAuth" class="btn btn-outline-primary me-2 mb-2" @click="enableAuth">{{ $t("Enable Auth") }}</button>
                                 <button v-if="! settings.disableAuth" class="btn btn-primary me-2 mb-2" @click="confirmDisableAuth">{{ $t("Disable Auth") }}</button>
                                 <button v-if="! settings.disableAuth" class="btn btn-danger me-2 mb-2" @click="$root.logout">{{ $t("Logout") }}</button>
-                                <button class="btn btn-outline-danger me-1 mb-1" @click="confirmClearStatistics">{{ $t("Clear all statistics") }}</button>
+                                <button class="btn btn-outline-danger me-2 mb-2" @click="confirmClearStatistics">{{ $t("Clear all statistics") }}</button>
+                                <button class="btn btn-info me-2 mb-2" @click="shrinkDatabase">{{ $t("Shrink Database") }} ({{ databaseSizeDisplay }})</button>
                             </div>
                         </template>
                     </div>
@@ -303,6 +306,12 @@
                     <p>这是为 <strong>有第三方认证</strong> 的用户提供的功能，如 Cloudflare Access</p>
                     <p>请谨慎使用！</p>
                 </template>
+                
+                <template v-else-if="$i18n.locale === 'zh-TW' ">
+                    <p>你是否要<strong>取消登入驗證</strong>？</p>
+                    <p>此功能是設計給已有<strong>第三方認證</strong>的使用者，例如 Cloudflare Access。</p>
+                    <p>請謹慎使用。</p>
+                </template>
 
                 <template v-else-if="$i18n.locale === 'de-DE' ">
                     <p>Bist du sicher das du die <strong>Authentifizierung deaktivieren</strong> möchtest?</p>
@@ -320,6 +329,12 @@
                     <p>Da li ste sigurni da želite da <strong>isključite autentifikaciju</strong>?</p>
                     <p>To je za <strong>one koji imaju dodatu autentifikaciju</strong> ispred Uptime Kuma kao na primer Cloudflare Access.</p>
                     <p>Molim Vas koristite ovo sa pažnjom.</p>
+                </template>
+
+                <template v-if="$i18n.locale === 'hr-HR' ">
+                    <p>Jeste li sigurni da želite <strong>isključiti autentikaciju</strong>?</p>
+                    <p>To je za <strong>korisnike koji imaju vanjsku autentikaciju stranice</strong> ispred Uptime Kume, poput usluge Cloudflare Access.</p>
+                    <p>Pažljivo koristite ovu opciju.</p>
                 </template>
 
                 <template v-else-if="$i18n.locale === 'tr-TR' ">
@@ -407,17 +422,20 @@
 </template>
 
 <script>
+import HiddenInput from "../components/HiddenInput.vue";
 import Confirm from "../components/Confirm.vue";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import NotificationDialog from "../components/NotificationDialog.vue";
 import TwoFADialog from "../components/TwoFADialog.vue";
+import jwt_decode from "jwt-decode";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
 import { timezoneList, setPageLocale } from "../util-frontend";
 import { useToast } from "vue-toastification";
+import { debug } from "../util.ts";
 
 const toast = useToast();
 
@@ -426,7 +444,9 @@ export default {
         NotificationDialog,
         TwoFADialog,
         Confirm,
+        HiddenInput,
     },
+
     data() {
         return {
             timezoneList: timezoneList(),
@@ -445,8 +465,16 @@ export default {
             importAlert: null,
             importHandle: "skip",
             processing: false,
+            databaseSize: 0,
         };
     },
+
+    computed: {
+        databaseSizeDisplay() {
+            return Math.round(this.databaseSize / 1024 / 1024 * 10) / 10 + " MB";
+        }
+    },
+
     watch: {
         "password.repeatNewPassword"() {
             this.invalidPassword = false;
@@ -459,7 +487,9 @@ export default {
     },
 
     mounted() {
+        this.loadUsername();
         this.loadSettings();
+        this.loadDatabaseSize();
     },
 
     methods: {
@@ -482,6 +512,12 @@ export default {
                     }
                 });
             }
+        },
+
+        loadUsername() {
+            const jwtToken = this.$root.storage().token;
+            const jwtPayload = jwt_decode(jwtToken);
+            this.username = jwtPayload.username;
         },
 
         loadSettings() {
@@ -592,7 +628,33 @@ export default {
 
         autoGetPrimaryBaseURL() {
             this.settings.primaryBaseURL = location.protocol + "//" + location.host;
+        },
+
+        shrinkDatabase() {
+            this.$root.getSocket().emit("shrinkDatabase", (res) => {
+                if (res.ok) {
+                    this.loadDatabaseSize();
+                    toast.success("Done");
+                } else {
+                    debug(res);
+                }
+            });
+        },
+
+        loadDatabaseSize() {
+            debug("load database size");
+            this.$root.getSocket().emit("getDatabaseSize", (res) => {
+
+                if (res.ok) {
+                    this.databaseSize = res.size;
+                    debug("database size: " + res.size);
+                } else {
+                    debug(res);
+                }
+
+            });
         }
+
     },
 };
 </script>
