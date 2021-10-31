@@ -253,7 +253,7 @@ export default {
     "Check octopush prices": "Sprawdź ceny Octopush {0}.",
     octopushPhoneNumber: "Numer Telefonu (Format międzynarodowy np.: +33612345678)",
     octopushSMSSender: "Nadawca SMS : 3-11 znaków alfanumerycznych i spacji (a-zA-Z0-9)",
-    "LunaSea Device ID": "Idetyfikator urządzenia LunaSea",
+    "LunaSea Device ID": "Identyfikator urządzenia LunaSea",
     "Apprise URL": "URL Apprise",
     "Example:": "Przykład: {0}",
     "Read more:": "Czytaj dalej: {0}",
