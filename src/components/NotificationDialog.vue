@@ -13,7 +13,7 @@
                         <div class="mb-3">
                             <label for="notification-type" class="form-label">{{ $t("Notification Type") }}</label>
                             <select id="notification-type" v-model="notification.type" class="form-select">
-                                <option v-for="type in notificationTypes" :key="type" :value="type">{{ $t(type) }}</option>
+                                <option v-for="type in notificationTypes" :key="type" :value="type">{{ translatedType }}</option>
                             </select>
                         </div>
 
@@ -69,10 +69,9 @@
 
 <script lang="ts">
 import { Modal } from "bootstrap";
-import { ucfirst } from "../util.ts";
 
 import Confirm from "./Confirm.vue";
-import NotificationFormList from "./notifications";
+import getNotificationFormList from "./notifications";
 
 export default {
     components: {
@@ -81,14 +80,16 @@ export default {
     props: {},
     emits: ["added"],
     data() {
+        const notificationTypeObjects = getNotificationFormList(this.$t);
         return {
             model: null,
             processing: false,
             id: null,
-            notificationTypes: Object.keys(NotificationFormList),
+            notificationTypeObjects: notificationTypeObjects,
+            notificationTypes: Object.keys(notificationTypeObjects),
             notification: {
                 name: "",
-                /** @type { null | keyof NotificationFormList } */
+                /** @type { null | keyof getNotificationFormList() } */
                 type: null,
                 isDefault: false,
                 // Do not set default value here, please scroll to show()
@@ -101,8 +102,11 @@ export default {
             if (!this.notification.type) {
                 return null;
             }
-            return NotificationFormList[this.notification.type];
+            return this.notificationTypeObjects[this.notification.type].component;
         },
+        translatedType() {
+            return this.notificationTypeObjects[this.type].label;
+        }
     },
 
     watch: {
@@ -192,7 +196,7 @@ export default {
             });
         },
         /**
-         * @param {keyof NotificationFormList} notificationKey
+         * @param {keyof getNotificationFormList()} notificationKey
          * @return {string}
          */
         getUniqueDefaultName(notificationKey) {

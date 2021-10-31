@@ -2,7 +2,7 @@
 
 1. Fork this repo.
 2. Create a language file (e.g. `zh-TW.js`). The filename must be ISO language code: http://www.lingoes.net/en/translator/langcode.htm
-3. Run `npm run update-language-files`. You can also use this command to check if there are new strings to translate for your language.
+3. Run `npm run extract-translations`. This will add all translatable strings to your language file. Any untranslated keys will default to English.
 4. Your language file should be filled in. You can translate now.
 5. Translate `src/pages/Settings.vue` (search for a `Confirm` component with `rel="confirmDisableAuth"`).
 6. Import your language file in `src/i18n.js` and add it to `languageList` constant.

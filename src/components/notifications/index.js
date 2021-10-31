@@ -28,31 +28,103 @@ import Bark from "./Bark.vue";
  *
  * @type { Record<string, any> }
  */
-const NotificationFormList = {
-    "telegram": Telegram,
-    "webhook": Webhook,
-    "smtp": STMP,
-    "discord": Discord,
-    "teams": Teams,
-    "signal": Signal,
-    "gotify": Gotify,
-    "slack": Slack,
-    "rocket.chat": RocketChat,
-    "pushover": Pushover,
-    "pushy": Pushy,
-    "octopush": Octopush,
-    "promosms": PromoSMS,
-    "clicksendsms": ClickSendSMS,
-    "lunasea": LunaSea,
-    "Feishu": Feishu,
-    "AliyunSMS": AliyunSMS,
-    "apprise": Apprise,
-    "pushbullet": Pushbullet,
-    "line": Line,
-    "mattermost": Mattermost,
-    "matrix": Matrix,
-    "DingDing": DingDing,
-    "Bark": Bark
-};
+const getNotificationFormList = ($t) => ({
+    "telegram": {
+        component: Telegram,
+        label: $t("telegram")
+    },
+    "webhook": {
+        component: Webhook,
+        label: $t("webhook"),
+    },
+    "smtp": {
+        component: STMP,
+        label: $t("smtp"),
+    },
+    "discord": {
+        component: Discord,
+        label: $t("discord"),
+    },
+    "teams": {
+        component: Teams,
+        label: $t("teams"),
+    },
+    "signal": {
+        component: Signal,
+        label: $t("signal"),
+    },
+    "gotify": {
+        component: Gotify,
+        label: $t("gotify"),
+    },
+    "slack": {
+        component: Slack,
+        label: $t("slack"),
+    },
+    "rocket.chat": {
+        component: RocketChat,
+        label: $t("rocket.chat"),
+    },
+    "pushover": {
+        component: Pushover,
+        label: $t("pushover"),
+    },
+    "pushy": {
+        component: Pushy,
+        label: $t("pushy"),
+    },
+    "octopush": {
+        component: Octopush,
+        label: $t("octopush"),
+    },
+    "promosms": {
+        component: PromoSMS,
+        label: $t("promosms"),
+    },
+    "clicksendsms": {
+        component: ClickSendSMS,
+        label: $t("clicksendsms"),
+    },
+    "lunasea": {
+        component: LunaSea,
+        label: $t("lunasea"),
+    },
+    "Feishu": {
+        component: Feishu,
+        label: $t("Feishu"),
+    },
+    "AliyunSMS": {
+        component: AliyunSMS,
+        label: $t("AliyunSMS"),
+    },
+    "apprise": {
+        component: Apprise,
+        label: $t("apprise"),
+    },
+    "pushbullet": {
+        component: Pushbullet,
+        label: $t("pushbullet"),
+    },
+    "line": {
+        component: Line,
+        label: $t("line"),
+    },
+    "mattermost": {
+        component: Mattermost,
+        label: $t("mattermost"),
+    },
+    "matrix": {
+        component: Matrix,
+        label: $t("matrix"),
+    },
+    "DingDing": {
+        component: DingDing,
+        label: $t("DingDing"),
+    },
+    "Bark": {
+        component: Bark,
+        label: $t("Bark"),
+    }
+});
 
-export default NotificationFormList;
+export default getNotificationFormList;

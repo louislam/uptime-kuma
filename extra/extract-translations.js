@@ -61,7 +61,7 @@ async function extractTranslations() {
     for (let extractedTranslation of englishExtracted) {
         for (let langDict of Object.values(languageList)) {
             if (!Object.keys(langDict).includes(extractedTranslation)) {
-                langDict[extractedTranslation] = extractedTranslation;
+                langDict[extractedTranslation] = en[extractedTranslation] || extractedTranslation;
             }
         }
     }
@@ -78,6 +78,7 @@ async function extractTranslations() {
         }
     }
 
+    // Write the translation string json back to files
     for (let langName of Object.keys(languageList)) {
         const translationsString = JSON5.stringify(languageList[langName], {
             quote: "\"",
@@ -87,6 +88,7 @@ async function extractTranslations() {
         await fs.writeFile(`./src/languages/${_.kebabCase(langName)}.js`, `export default ${translationsString};\n`);
     }
 
+    // Output warnings if there are any
     if (warnings.length) {
         console.log("Extraction successful with warnings: \n\t" + warnings.join("\n\t"));
     } else {
