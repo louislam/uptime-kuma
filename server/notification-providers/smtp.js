@@ -12,6 +12,9 @@ class SMTP extends NotificationProvider {
             host: notification.smtpHost,
             port: notification.smtpPort,
             secure: notification.smtpSecure,
+            tls: {
+                rejectUnauthorized: notification.smtpIgnoreTLSError || false,
+            },
         };
 
         // Should fix the issue in https://github.com/louislam/uptime-kuma/issues/26#issuecomment-896373904
@@ -87,9 +90,6 @@ class SMTP extends NotificationProvider {
             to: notification.smtpTo,
             subject: subject,
             text: bodyTextContent,
-            tls: {
-                rejectUnauthorized: notification.smtpIgnoreTLSError || false,
-            },
         });
 
         return "Sent Successfully.";

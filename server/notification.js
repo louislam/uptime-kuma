@@ -8,6 +8,7 @@ const Mattermost = require("./notification-providers/mattermost");
 const Matrix = require("./notification-providers/matrix");
 const Octopush = require("./notification-providers/octopush");
 const PromoSMS = require("./notification-providers/promosms");
+const ClickSendSMS = require("./notification-providers/clicksendsms");
 const Pushbullet = require("./notification-providers/pushbullet");
 const Pushover = require("./notification-providers/pushover");
 const Pushy = require("./notification-providers/pushy");
@@ -21,6 +22,7 @@ const Webhook = require("./notification-providers/webhook");
 const Feishu = require("./notification-providers/feishu");
 const AliyunSms = require("./notification-providers/aliyun-sms");
 const DingDing = require("./notification-providers/dingding");
+const Bark = require("./notification-providers/bark");
 
 class Notification {
 
@@ -45,6 +47,7 @@ class Notification {
             new Matrix(),
             new Octopush(),
             new PromoSMS(),
+            new ClickSendSMS(),
             new Pushbullet(),
             new Pushover(),
             new Pushy(),
@@ -54,6 +57,7 @@ class Notification {
             new SMTP(),
             new Telegram(),
             new Webhook(),
+            new Bark(),
         ];
 
         for (let item of list) {

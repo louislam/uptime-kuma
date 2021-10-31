@@ -31,6 +31,7 @@ debug("Importing prometheus-api-metrics");
 const prometheusAPIMetrics = require("prometheus-api-metrics");
 debug("Importing compare-versions");
 const compareVersions = require("compare-versions");
+const { passwordStrength } = require("check-password-strength");
 
 debug("Importing 2FA Modules");
 const notp = require("notp");
@@ -40,7 +41,7 @@ console.log("Importing this project modules");
 debug("Importing Monitor");
 const Monitor = require("./model/monitor");
 debug("Importing Settings");
-const { getSettings, setSettings, setting, initJWTSecret, checkLogin, startUnitTest, FBSD } = require("./util-server");
+const { getSettings, setSettings, setting, initJWTSecret, checkLogin, startUnitTest, FBSD, errorLog } = require("./util-server");
 
 debug("Importing Notification");
 const { Notification } = require("./notification");
@@ -51,6 +52,7 @@ const Database = require("./database");
 
 debug("Importing Background Jobs");
 const { initBackgroundJobs } = require("./jobs");
+const { loginRateLimiter } = require("./rate-limiter");
 
 const { basicAuth } = require("./auth");
 const { login } = require("./auth");
@@ -117,6 +119,7 @@ module.exports.io = io;
 // Must be after io instantiation
 const { sendNotificationList, sendHeartbeatList, sendImportantHeartbeatList, sendInfo } = require("./client");
 const { statusPageSocketHandler } = require("./socket-handlers/status-page-socket-handler");
+const databaseSocketHandler = require("./socket-handlers/database-socket-handler");
 
 app.use(express.json());
 
@@ -280,12 +283,16 @@ exports.entryPage = "dashboard";
         socket.on("login", async (data, callback) => {
             console.log("Login");
 
+            // Login Rate Limit
+            if (! await loginRateLimiter.pass(callback)) {
+                return;
+            }
+
             let user = await login(data.username, data.password);
 
             if (user) {
-                afterLogin(socket, user);
-
-                if (user.twofaStatus == 0) {
+                if (user.twofa_status == 0) {
+                    afterLogin(socket, user);
                     callback({
                         ok: true,
                         token: jwt.sign({
@@ -294,7 +301,7 @@ exports.entryPage = "dashboard";
                     });
                 }
 
-                if (user.twofaStatus == 1 && !data.token) {
+                if (user.twofa_status == 1 && !data.token) {
                     callback({
                         tokenRequired: true,
                     });
@@ -303,7 +310,14 @@ exports.entryPage = "dashboard";
                 if (data.token) {
                     let verify = notp.totp.verify(data.token, user.twofa_secret, twofa_verification_opts);
 
-                    if (verify && verify.delta == 0) {
+                    if (user.twofa_last_token !== data.token && verify) {
+                        afterLogin(socket, user);
+
+                        await R.exec("UPDATE `user` SET twofa_last_token = ? WHERE id = ? ", [
+                            data.token,
+                            socket.userID,
+                        ]);
+
                         callback({
                             ok: true,
                             token: jwt.sign({
@@ -421,7 +435,7 @@ exports.entryPage = "dashboard";
 
             let verify = notp.totp.verify(token, user.twofa_secret, twofa_verification_opts);
 
-            if (verify && verify.delta == 0) {
+            if (user.twofa_last_token !== token && verify) {
                 callback({
                     ok: true,
                     valid: true,
@@ -468,6 +482,10 @@ exports.entryPage = "dashboard";
 
         socket.on("setup", async (username, password, callback) => {
             try {
+                if (passwordStrength(password).value === "Too weak") {
+                    throw new Error("Password is too weak. It should contain alphabetic and numeric characters. It must be at least 6 characters in length.");
+                }
+
                 if ((await R.count("user")) !== 0) {
                     throw new Error("Uptime Kuma has been initialized. If you want to run setup again, please delete the database.");
                 }
@@ -619,6 +637,38 @@ exports.entryPage = "dashboard";
                     monitor: await bean.toJSON(),
                 });
 
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("getMonitorBeats", async (monitorID, period, callback) => {
+            try {
+                checkLogin(socket);
+
+                console.log(`Get Monitor Beats: ${monitorID} User ID: ${socket.userID}`);
+
+                if (period == null) {
+                    throw new Error("Invalid period.");
+                }
+
+                let list = await R.getAll(`
+                    SELECT * FROM heartbeat
+                    WHERE monitor_id = ? AND
+                    time > DATETIME('now', '-' || ? || ' hours')
+                    ORDER BY time ASC
+                `, [
+                    monitorID,
+                    period,
+                ]);
+
+                callback({
+                    ok: true,
+                    data: list,
+                });
             } catch (e) {
                 callback({
                     ok: false,
@@ -857,8 +907,12 @@ exports.entryPage = "dashboard";
             try {
                 checkLogin(socket);
 
-                if (! password.currentPassword) {
+                if (! password.newPassword) {
                     throw new Error("Invalid new password");
+                }
+
+                if (passwordStrength(password.newPassword).value === "Too weak") {
+                    throw new Error("Password is too weak. It should contain alphabetic and numeric characters. It must be at least 6 characters in length.");
                 }
 
                 let user = await R.findOne("user", " id = ? AND active = 1 ", [
@@ -1242,6 +1296,7 @@ exports.entryPage = "dashboard";
 
         // Status Page Socket Handler for admin only
         statusPageSocketHandler(socket);
+        databaseSocketHandler(socket);
 
         debug("added all socket handlers");
 
@@ -1474,5 +1529,6 @@ gracefulShutdown(server, {
 // Catch unexpected errors here
 process.addListener("unhandledRejection", (error, promise) => {
     console.trace(error);
+    errorLog(error, false);
     console.error("If you keep encountering errors, please report to https://github.com/louislam/uptime-kuma/issues");
 });
