@@ -52,8 +52,8 @@ body:
   - type: checkboxes
     id: no-duplicate-issues
     attributes:
-      label: "👀 Have you spent some time to check if this feature request has been raised before?"
-      description: "Please search in the issues without filters [here](https://github.com/louislam/uptime-kuma/issues?q=)"
+      label: "⚠️ Please verify that this feature request has NOT been suggested before."
+      description: "Search in the issues sections by clicking [HERE](https://github.com/louislam/uptime-kuma/issues?q=)"
       options:
         - label: "I checked and didn't find similar feature request"
           required: true
