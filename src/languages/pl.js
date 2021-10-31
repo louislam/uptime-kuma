@@ -28,7 +28,7 @@ export default {
     confirmDisableTwoFAMsg: "Jesteś pewien, że chcesz wyłączyć 2FA?",
     Settings: "Ustawienia",
     Dashboard: "Panel",
-    "New Update": "Nowa Aktualizacja",
+    "New Update": "Nowa aktualizacja",
     Language: "Język",
     Appearance: "Wygląd",
     Theme: "Motyw",
@@ -305,4 +305,6 @@ export default {
     steamApiKeyDescription: "Do monitorowania serwera gier Steam potrzebny jest klucz Steam Web-API. Możesz zarejestrować swój klucz API tutaj: ",
     "Current User": "Aktualny użytkownik",
     recent: "Ostatnie",
+    clicksendsms: "ClickSend SMS",
+    apiCredentials: "Poświadczenia API",
 };
