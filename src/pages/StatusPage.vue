@@ -78,14 +78,15 @@
                     {{ $t("Switch to Dark Theme") }}
                 </button>
 
-                <button v-if="tagsVisible == 'hidden'" class="btn btn-secondary me-2" @click="changeTagsVisibilty('visible')">
-                    <font-awesome-icon icon="eye" />
-                    {{ $t("Show Tags") }}
-                </button>
-
-                <button v-if="tagsVisible == 'visible'" class="btn btn-secondary me-2" @click="changeTagsVisibilty('hidden')">
-                    <font-awesome-icon icon="eye-slash" />
-                    {{ $t("Hide Tags") }}
+                <button class="btn btn-secondary me-2" @click="changeTagsVisibilty(!tagsVisible)">
+                    <template v-if="tagsVisible">
+                        <font-awesome-icon icon="eye-slash" />
+                        {{ $t("Hide Tags") }}
+                    </template>
+                    <template v-else>
+                        <font-awesome-icon icon="eye" />
+                        {{ $t("Show Tags") }}
+                    </template>
                 </button>
             </div>
         </div>
@@ -499,7 +500,7 @@ export default {
                         // We only include the tags if visible so we can reuse the logic to hide the tags on disable
                         return {
                             ...monitor,
-                            tags: newState==="visible" ? this.$root.monitorList[monitor.id].tags : []
+                            tags: newState ? this.$root.monitorList[monitor.id].tags : []
                         }
                     })
                 }

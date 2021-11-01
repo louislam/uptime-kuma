@@ -102,7 +102,7 @@ router.get("/api/status-page/config", async (_request, response) => {
     }
 
     if (! config.statusPageTags) {
-        config.statusPageTags = "hidden";
+        config.statusPageTags = false;
     }
 
     if (! config.title) {
@@ -144,15 +144,22 @@ router.get("/api/status-page/monitor-list", cache("5 minutes"), async (_request,
     try {
         await checkPublished();
         const publicGroupList = [];
-        let list = await R.find("group", " public = 1 ORDER BY weight ");
+        const tagsVisible = (await getSettings("statusPage")).statusPageTags;
+        const list = await R.find("group", " public = 1 ORDER BY weight ");
         for (let groupBean of list) {
-            let monitorGroup = await groupBean.toPublicJSON()
-            if ((await getSettings("statusPage")).statusPageTags=="visible") {
+            let monitorGroup = await groupBean.toPublicJSON();
+            if (tagsVisible) {
                 monitorGroup.monitorList = await Promise.all(monitorGroup.monitorList.map( async (monitor)=>{
                     // Includes tags as an array in response, allows for tags to be displayed on public status page
-                    let tags = await R.getAll("SELECT mt.monitor_id,mt.value, tag.name, tag.color FROM monitor_tag mt JOIN tag ON mt.tag_id = tag.id WHERE mt.monitor_id = ?", [monitor.id]);
+                    const tags = await R.getAll(
+                            `SELECT monitor_tag.monitor_id, monitor_tag.value, tag.name, tag.color
+                            FROM monitor_tag
+                            JOIN tag
+                            ON monitor_tag.tag_id = tag.id
+                            WHERE monitor_tag.monitor_id = ?`, [monitor.id]
+                        );
                     return {...monitor,tags: tags}
-                }))
+                }));
             }
 
             publicGroupList.push(monitorGroup);
