@@ -490,7 +490,7 @@ export default {
         changeTagsVisibilty(newState) {
             this.config.statusPageTags = newState;
 
-            // On load, if the status page will not include tags if it's not enabled for security reasons
+            // On load, the status page will not include tags if it's not enabled for security reasons
             // Which means if we enable tags, it won't show in the UI until saved
             // So we have this to enhance UX and load in the tags from the authenticated source instantly
             this.$root.publicGroupList = this.$root.publicGroupList.map((group)=>{
