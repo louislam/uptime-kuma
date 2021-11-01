@@ -175,7 +175,7 @@ export default {
     "Entry Page": "Entry Page",
     statusPageNothing: "Không có gì, hãy thêm nhóm monitor hoặc monitor.",
     "No Services": "Không có dịch vụ",
-    "All Systems Operational": "Tất cả các hệ thống hoạt động",
+    "All Systems Operational": "Tất cả các hệ thống hoạt động bình thường",
     "Partially Degraded Service": "Dịch vụ xuống cấp một phần",
     "Degraded Service": "Degraded Service",
     "Add Group": "Thêm nhóm",
