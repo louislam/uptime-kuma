@@ -16,7 +16,7 @@ body:
     validations:
       required: true
     attributes:
-      label: "👍 Expected behavior"
+      label: "👀 Expected behavior"
       description: "What did you think would happen?"
       placeholder: "..."
   - type: textarea
@@ -24,13 +24,13 @@ body:
     validations:
       required: true
     attributes:
-      label: "👎 Actual Behavior"
+      label: "😓 Actual Behavior"
       description: "What actually happen?"
       placeholder: "..."
   - type: input
     id: uptime-kuma-version
     attributes:
-      label: "🐻 Uptime-Kuma version"
+      label: "🐻 Uptime-Kuma Version"
       description: "Which version of Uptime-Kuma are you running?"
       placeholder: "Ex. 1.9.x"
     validations:
@@ -38,9 +38,9 @@ body:
   - type: input
     id: operating-system
     attributes:
-      label: "💻 Operating System"
+      label: "💻 Operating System and Arch"
       description: "Which OS is your server/device running on?"
-      placeholder: "Ex. Ubuntu 20.04"
+      placeholder: "Ex. Ubuntu 20.04 x86"
     validations:
       required: true
   - type: input
@@ -54,17 +54,9 @@ body:
   - type: input
     id: docker-version
     attributes:
-      label: "🐋 Docker"
+      label: "🐋 Docker Version"
       description: "If running with Docker, which version are you running?"
-      placeholder: "Ex. 20.10.9"
-    validations:
-      required: false
-  - type: input
-    id: docker-image-tag
-    attributes:
-      label: "🏷️ Docker Image Tag"
-      description: "Which Docker image tag are you using? If running '1' or 'latest', please specify image hash."
-      placeholder: "Ex. 1.9.1"
+      placeholder: "Ex. 20.10.9 / K8S / Podman"
     validations:
       required: false
   - type: input
@@ -82,7 +74,7 @@ body:
       description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
       render: shell
     validations:
-      required: false
+      required: false 
   - type: checkboxes
     id: no-duplicate-issues
     attributes:
