@@ -149,7 +149,7 @@ router.get("/api/status-page/monitor-list", cache("5 minutes"), async (_request,
         for (let groupBean of list) {
             let monitorGroup = await groupBean.toPublicJSON();
             if (tagsVisible) {
-                monitorGroup.monitorList = await Promise.all(monitorGroup.monitorList.map( async (monitor)=>{
+                monitorGroup.monitorList = await Promise.all(monitorGroup.monitorList.map(async (monitor) => {
                     // Includes tags as an array in response, allows for tags to be displayed on public status page
                     const tags = await R.getAll(
                             `SELECT monitor_tag.monitor_id, monitor_tag.value, tag.name, tag.color
@@ -158,7 +158,7 @@ router.get("/api/status-page/monitor-list", cache("5 minutes"), async (_request,
                             ON monitor_tag.tag_id = tag.id
                             WHERE monitor_tag.monitor_id = ?`, [monitor.id]
                         );
-                    return {...monitor,tags: tags}
+                    return {...monitor, tags: tags}
                 }));
             }
 
