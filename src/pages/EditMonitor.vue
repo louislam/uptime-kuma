@@ -266,7 +266,7 @@
                                     <textarea id="headers" v-model="monitor.headers" class="form-control" :placeholder="headersPlaceholder"></textarea>
                                 </div>
 
-                                 <!-- HTTP Basic Auth -->
+                                <!-- HTTP Basic Auth -->
                                 <h4 class="mt-5 mb-2">{{ $t("HTTP Basic Auth") }}</h4>
                                 <div class="my-3">
                                     <label for="basicauth" class="form-label">{{ $t("Username") }}</label>
@@ -495,7 +495,6 @@ export default {
             if (this.monitor.headers) {
                 this.monitor.headers = JSON.stringify(JSON.parse(this.monitor.headers), null, 4);
             }
-
 
             if (this.isAdd) {
                 this.$root.add(this.monitor, async (res) => {
