@@ -265,10 +265,10 @@ export default {
         },
 
         logout() {
+            socket.emit("logout", () => { });
             this.storage().removeItem("token");
             this.socket.token = null;
             this.loggedIn = false;
-
             this.clearData();
         },
 
@@ -328,6 +328,10 @@ export default {
         clearStatistics(callback) {
             socket.emit("clearStatistics", callback);
         },
+
+        getMonitorBeats(monitorID, period, callback) {
+            socket.emit("getMonitorBeats", monitorID, period, callback);
+        }
     },
 
     computed: {
@@ -347,7 +351,7 @@ export default {
             let result = {};
 
             let unknown = {
-                text: "Unknown",
+                text: this.$t("Unknown"),
                 color: "secondary",
             };
 
@@ -358,17 +362,17 @@ export default {
                     result[monitorID] = unknown;
                 } else if (lastHeartBeat.status === 1) {
                     result[monitorID] = {
-                        text: "Up",
+                        text: this.$t("Up"),
                         color: "primary",
                     };
                 } else if (lastHeartBeat.status === 0) {
                     result[monitorID] = {
-                        text: "Down",
+                        text: this.$t("Down"),
                         color: "danger",
                     };
                 } else if (lastHeartBeat.status === 2) {
                     result[monitorID] = {
-                        text: "Pending",
+                        text: this.$t("Pending"),
                         color: "warning",
                     };
                 } else {

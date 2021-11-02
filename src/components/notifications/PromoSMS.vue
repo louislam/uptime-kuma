@@ -10,8 +10,8 @@
         <select id="promosms-type-sms" v-model="$parent.notification.promosmsSMSType" class="form-select">
             <option value="0">{{ $t("promosmsTypeFlash") }}</option>
             <option value="1">{{ $t("promosmsTypeEco") }}</option>
-            <option value="2">{{ $t("promosmsTypeFull") }}</option>
-            <option value="3">{{ $t("promosmsTypeSpeed") }}</option>
+            <option value="3">{{ $t("promosmsTypeFull") }}</option>
+            <option value="4">{{ $t("promosmsTypeSpeed") }}</option>
         </select>
         <div class="form-text">
             {{ $t("checkPrice", [$t("promosms")]) }}

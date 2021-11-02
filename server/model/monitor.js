@@ -7,7 +7,7 @@ dayjs.extend(timezone);
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
 const { debug, UP, DOWN, PENDING, flipStatus, TimeLogger } = require("../../src/util");
-const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom } = require("../util-server");
+const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, errorLog } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification");
@@ -168,7 +168,14 @@ class Monitor extends BeanModel {
                     let certInfoStartTime = dayjs().valueOf();
                     if (this.getUrl()?.protocol === "https:") {
                         try {
-                            tlsInfo = await this.updateTlsInfo(checkCertificate(res));
+                            let tlsInfoObject = checkCertificate(res);
+                            tlsInfo = await this.updateTlsInfo(tlsInfoObject);
+
+                            if (!this.getIgnoreTls()) {
+                                debug("call sendCertNotification");
+                                await this.sendCertNotification(tlsInfoObject);
+                            }
+
                         } catch (e) {
                             if (e.message !== "No TLS certificate in response") {
                                 console.error(e.message);
@@ -272,6 +279,46 @@ class Monitor extends BeanModel {
                         return;
                     }
 
+                } else if (this.type === "steam") {
+                    const steamApiUrl = "https://api.steampowered.com/IGameServersService/GetServerList/v1/";
+                    const steamAPIKey = await setting("steamAPIKey");
+                    const filter = `addr\\${this.hostname}:${this.port}`;
+
+                    if (!steamAPIKey) {
+                        throw new Error("Steam API Key not found");
+                    }
+
+                    let res = await axios.get(steamApiUrl, {
+                        timeout: this.interval * 1000 * 0.8,
+                        headers: {
+                            "Accept": "*/*",
+                            "User-Agent": "Uptime-Kuma/" + version,
+                        },
+                        httpsAgent: new https.Agent({
+                            maxCachedSessions: 0,      // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
+                            rejectUnauthorized: ! this.getIgnoreTls(),
+                        }),
+                        maxRedirects: this.maxredirects,
+                        validateStatus: (status) => {
+                            return checkStatusCode(status, this.getAcceptedStatuscodes());
+                        },
+                        params: {
+                            filter: filter,
+                            key: steamAPIKey,
+                        }
+                    });
+
+                    if (res.data.response && res.data.response.servers && res.data.response.servers.length > 0) {
+                        bean.status = UP;
+                        bean.msg = res.data.response.servers[0].name;
+
+                        try {
+                            bean.ping = await ping(this.hostname);
+                        } catch (_) { }
+                    } else {
+                        throw new Error("Server not found on Steam");
+                    }
+
                 } else {
                     bean.msg = "Unknown Monitor Type";
                     bean.status = PENDING;
@@ -311,6 +358,10 @@ class Monitor extends BeanModel {
             if (isImportant) {
                 bean.important = true;
                 await Monitor.sendNotification(isFirstBeat, this, bean);
+
+                // Clear Status Page Cache
+                apicache.clear();
+
             } else {
                 bean.important = false;
             }
@@ -343,18 +394,33 @@ class Monitor extends BeanModel {
                     }
                 }
 
-                this.heartbeatInterval = setTimeout(beat, beatInterval * 1000);
+                this.heartbeatInterval = setTimeout(safeBeat, beatInterval * 1000);
             }
 
+        };
+
+        const safeBeat = async () => {
+            try {
+                await beat();
+            } catch (e) {
+                console.trace(e);
+                errorLog(e, false);
+                console.error("Please report to https://github.com/louislam/uptime-kuma/issues");
+
+                if (! this.isStop) {
+                    console.log("Try to restart the monitor");
+                    this.heartbeatInterval = setTimeout(safeBeat, this.interval * 1000);
+                }
+            }
         };
 
         // Delay Push Type
         if (this.type === "push") {
             setTimeout(() => {
-                beat();
+                safeBeat();
             }, this.interval * 1000);
         } else {
-            beat();
+            safeBeat();
         }
     }
 
@@ -386,10 +452,36 @@ class Monitor extends BeanModel {
         let tls_info_bean = await R.findOne("monitor_tls_info", "monitor_id = ?", [
             this.id,
         ]);
+
         if (tls_info_bean == null) {
             tls_info_bean = R.dispense("monitor_tls_info");
             tls_info_bean.monitor_id = this.id;
+        } else {
+
+            // Clear sent history if the cert changed.
+            try {
+                let oldCertInfo = JSON.parse(tls_info_bean.info_json);
+
+                let isValidObjects = oldCertInfo && oldCertInfo.certInfo && checkCertificateResult && checkCertificateResult.certInfo;
+
+                if (isValidObjects) {
+                    if (oldCertInfo.certInfo.fingerprint256 !== checkCertificateResult.certInfo.fingerprint256) {
+                        debug("Resetting sent_history");
+                        await R.exec("DELETE FROM notification_sent_history WHERE type = 'certificate' AND monitor_id = ?", [
+                            this.id
+                        ]);
+                    } else {
+                        debug("No need to reset sent_history");
+                        debug(oldCertInfo.certInfo.fingerprint256);
+                        debug(checkCertificateResult.certInfo.fingerprint256);
+                    }
+                } else {
+                    debug("Not valid object");
+                }
+            } catch (e) { }
+
         }
+
         tls_info_bean.info_json = JSON.stringify(checkCertificateResult);
         await R.store(tls_info_bean);
 
@@ -537,9 +629,7 @@ class Monitor extends BeanModel {
 
     static async sendNotification(isFirstBeat, monitor, bean) {
         if (!isFirstBeat || bean.status === DOWN) {
-            let notificationList = await R.getAll("SELECT notification.* FROM notification, monitor_notification WHERE monitor_id = ? AND monitor_notification.notification_id = notification.id ", [
-                monitor.id,
-            ]);
+            const notificationList = await Monitor.getNotificationList(monitor);
 
             let text;
             if (bean.status === UP) {
@@ -558,12 +648,73 @@ class Monitor extends BeanModel {
                     console.log(e);
                 }
             }
-
-            // Clear Status Page Cache
-            apicache.clear();
         }
     }
 
+    static async getNotificationList(monitor) {
+        let notificationList = await R.getAll("SELECT notification.* FROM notification, monitor_notification WHERE monitor_id = ? AND monitor_notification.notification_id = notification.id ", [
+            monitor.id,
+        ]);
+        return notificationList;
+    }
+
+    async sendCertNotification(tlsInfoObject) {
+        if (tlsInfoObject && tlsInfoObject.certInfo && tlsInfoObject.certInfo.daysRemaining) {
+            const notificationList = await Monitor.getNotificationList(this);
+
+            debug("call sendCertNotificationByTargetDays");
+            await this.sendCertNotificationByTargetDays(tlsInfoObject.certInfo.daysRemaining, 21, notificationList);
+            await this.sendCertNotificationByTargetDays(tlsInfoObject.certInfo.daysRemaining, 14, notificationList);
+            await this.sendCertNotificationByTargetDays(tlsInfoObject.certInfo.daysRemaining, 7, notificationList);
+        }
+    }
+
+    async sendCertNotificationByTargetDays(daysRemaining, targetDays, notificationList) {
+
+        if (daysRemaining > targetDays) {
+            debug(`No need to send cert notification. ${daysRemaining} > ${targetDays}`);
+            return;
+        }
+
+        if (notificationList.length > 0) {
+
+            let row = await R.getRow("SELECT * FROM notification_sent_history WHERE type = ? AND monitor_id = ? AND days = ?", [
+                "certificate",
+                this.id,
+                targetDays,
+            ]);
+
+            // Sent already, no need to send again
+            if (row) {
+                debug("Sent already, no need to send again");
+                return;
+            }
+
+            let sent = false;
+            debug("Send certificate notification");
+
+            for (let notification of notificationList) {
+                try {
+                    debug("Sending to " + notification.name);
+                    await Notification.send(JSON.parse(notification.config), `[${this.name}][${this.url}] Certificate will be expired in ${daysRemaining} days`);
+                    sent = true;
+                } catch (e) {
+                    console.error("Cannot send cert notification to " + notification.name);
+                    console.error(e);
+                }
+            }
+
+            if (sent) {
+                await R.exec("INSERT INTO notification_sent_history (type, monitor_id, days) VALUES(?, ?, ?)", [
+                    "certificate",
+                    this.id,
+                    targetDays,
+                ]);
+            }
+        } else {
+            debug("No notification, no need to send cert notification");
+        }
+    }
 }
 
 module.exports = Monitor;

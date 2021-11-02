@@ -1,0 +1,22 @@
+name: 'Automatically close stale issues and PRs'
+on:
+  schedule:
+    - cron: '0 0 * * *'
+#Run once a day at midnight 
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v4
+        with:
+          stale-issue-message: 'We are clearing up our old issues and your ticket has been open for 6 months with no activity. Remove stale label or comment or this will be closed in 7 days.'
+          stale-pr-message: 'We are clearing up our old Pull Requests and yours has been open for 6 months with no activity. Remove stale label or comment or this will be closed in 7 days.'
+          close-issue-message: 'This issue was closed because it has been stalled for 7 days with no activity.'
+          close-pr-message: 'This PR was closed because it has been stalled for 7 days with no activity.'
+          days-before-stale: 180
+          days-before-close: 7
+          exempt-issue-labels: 'News,Medium,High,discussion,bug,doc,'
+          exempt-pr-labels: 'awaiting-approval,work-in-progress,enhancement,'
+          exempt-issue-assignees: 'louislam'
+          exempt-pr-assignees: 'louislam'
