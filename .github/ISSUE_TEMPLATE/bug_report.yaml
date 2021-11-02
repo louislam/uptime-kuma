@@ -25,7 +25,6 @@ body:
     attributes:
       label: "Description"
       description: "You could also upload screenshots"
-      placeholder: ""
   - type: textarea
     id: steps-to-reproduce
     validations:
