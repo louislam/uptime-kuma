@@ -86,7 +86,7 @@ body:
     attributes:
       label: "🟩 NodeJS Version"
       description: "If running with Node.js? which version are you running?"
-      placeholder: "14.x"
+      placeholder: "Ex. 14.18.0"
     validations:
       required: false
   - type: textarea
