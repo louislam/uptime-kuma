@@ -54,7 +54,7 @@ export default {
     Edit: "Uredi",
     Delete: "Obriši",
     Current: "Trenutno",
-    Uptime: "Uptime",
+    Uptime: "Dostupnost",
     "Cert Exp.": "Istek cert.",
     days: "dana",
     day: "dan",
