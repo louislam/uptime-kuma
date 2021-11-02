@@ -35,7 +35,7 @@ let options = {
 
 let request = client.request(options, (res) => {
     console.log(`Health Check OK [Res Code: ${res.statusCode}]`);
-    if (res.statusCode === 200) {
+    if (res.statusCode === 302) {
         process.exit(0);
     } else {
         process.exit(1);
