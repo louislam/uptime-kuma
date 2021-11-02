@@ -58,6 +58,8 @@ class Monitor extends BeanModel {
             method: this.method,
             body: this.body,
             headers: this.headers,
+            basicauth_user: this.basicauth_user,
+            basicauth_pass: this.basicauth_pass,
             hostname: this.hostname,
             port: this.port,
             maxretries: this.maxretries,
@@ -79,6 +81,15 @@ class Monitor extends BeanModel {
             tags: tags,
         };
     }
+
+    /**
+     * Encode user and password to Base64 encoding
+     * for HTTP "basic" auth, as per RFC-7617
+     * @returns {string}
+     */
+     encodeB64(user, pass) {
+        return btoa(user + ":" + pass);
+     }
 
     /**
      * Parse to boolean
@@ -141,6 +152,14 @@ class Monitor extends BeanModel {
                     // Do not do any queries/high loading things before the "bean.ping"
                     let startTime = dayjs().valueOf();
 
+                    // HTTP basic auth
+                    let basicauthHeader = {};
+                    if (this.basicauth_user) {
+                        basicauthHeader = {
+                            "Authorization": "Basic " + this.encodeB64(this.basicauth_user, this.basicauth_pass)
+                        }
+                    }
+
                     const options = {
                         url: this.url,
                         method: (this.method || "get").toLowerCase(),
@@ -150,6 +169,7 @@ class Monitor extends BeanModel {
                             "Accept": "*/*",
                             "User-Agent": "Uptime-Kuma/" + version,
                             ...(this.headers ? JSON.parse(this.headers) : {}),
+                            ...(basicauthHeader)
                         },
                         httpsAgent: new https.Agent({
                             maxCachedSessions: 0,      // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
