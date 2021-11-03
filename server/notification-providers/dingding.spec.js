@@ -53,7 +53,7 @@ describe("notification to act properly on send", () => {
         let res = await notif.send(notificationConf, msg, monitorConf, heartbeatConf);
 
         expect(axios).toHaveBeenCalledWith({
-            data: "{\"msgtype\":\"markdown\",\"markdown\":{\"title\":\"testing\",\"text\":\"## [UP] \\n > some message  \\n > Time(UTC):example time\"}}",
+            data: "{\"msgtype\":\"markdown\",\"markdown\":{\"title\":\"testing\",\"text\":\"## [UP] testing\\n > some message  \\n > Time(UTC):example time\"}}",
             headers: {
                 "Content-Type": "application/json",
             },
@@ -146,7 +146,7 @@ describe("notification to act properly on error", () => {
         }
 
         expect(axios).toHaveBeenCalledWith({
-            data: "{\"msgtype\":\"markdown\",\"markdown\":{\"title\":\"testing\",\"text\":\"## [UP] \\n > some message  \\n > Time(UTC):example time\"}}",
+            data: "{\"msgtype\":\"markdown\",\"markdown\":{\"title\":\"testing\",\"text\":\"## [UP] testing\\n > some message  \\n > Time(UTC):example time\"}}",
             headers: {
                 "Content-Type": "application/json",
             },
@@ -194,7 +194,7 @@ describe("notification to get proper data from Notification.send", () => {
         expect(res).toBe("Sent Successfully.");
 
         expect(axios).toHaveBeenCalledWith({
-            data: "{\"msgtype\":\"markdown\",\"markdown\":{\"title\":\"testing\",\"text\":\"## [UP] \\n > some message  \\n > Time(UTC):example time\"}}",
+            data: "{\"msgtype\":\"markdown\",\"markdown\":{\"title\":\"testing\",\"text\":\"## [UP] testing\\n > some message  \\n > Time(UTC):example time\"}}",
             headers: {
                 "Content-Type": "application/json",
             },
