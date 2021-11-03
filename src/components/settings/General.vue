@@ -163,13 +163,13 @@ export default {
 
     computed: {
         settings() {
-            return this.$parent.$parent.settings;
+            return this.$parent.$parent.$parent.settings;
         },
         saveSettings() {
-            return this.$parent.$parent.saveSettings;
+            return this.$parent.$parent.$parent.saveSettings;
         },
         settingsLoaded() {
-            return this.$parent.$parent.settingsLoaded;
+            return this.$parent.$parent.$parent.settingsLoaded;
         },
         guessTimezone() {
             return dayjs.tz.guess();

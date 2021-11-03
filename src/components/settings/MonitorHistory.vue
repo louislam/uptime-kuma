@@ -23,7 +23,7 @@
                 <button class="btn btn-outline-info me-2" @click="shrinkDatabase">
                     {{ $t("Shrink Database") }} ({{ databaseSizeDisplay }})
                 </button>
-                <div class="form-text ms-2">{{ $t("shrinkDatabaseDescription") }}</div>
+                <div class="form-text mt-2 mb-4 ms-2">{{ $t("shrinkDatabaseDescription") }}</div>
             </div>
             <button
                 class="btn btn-outline-danger me-2 mb-2"
@@ -64,13 +64,13 @@ export default {
 
     computed: {
         settings() {
-            return this.$parent.$parent.settings;
+            return this.$parent.$parent.$parent.settings;
         },
         saveSettings() {
-            return this.$parent.$parent.saveSettings;
+            return this.$parent.$parent.$parent.saveSettings;
         },
         settingsLoaded() {
-            return this.$parent.$parent.settingsLoaded;
+            return this.$parent.$parent.$parent.settingsLoaded;
         },
         databaseSizeDisplay() {
             return (

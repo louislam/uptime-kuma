@@ -8,21 +8,25 @@
             <div class="shadow-box">
                 <div class="row">
                     <div class="settings-menu">
-                        <div v-for="(item, key) in subMenus"
-                             :key="key"
-                             class="menu-item"
-                             :class="{ active: currentSubMenu == key }"
-                             @click="currentSubMenu = key"
+                        <router-link
+                            v-for="(item, key) in subMenus"
+                            :key="key"
+                            :to="`/settings/${item.path}`"
                         >
-                            {{ item.title }}
-                        </div>
+                            <div
+                                class="menu-item"
+                                :class="{ active: $route.name == `settings-${key}` }"
+                            >
+                                {{ item.title }}
+                            </div>
+                        </router-link>
                     </div>
                     <div class="settings-content">
                         <div class="settings-content-header">
-                            {{ subMenus[currentSubMenu].title }}
+                            {{ subMenus[$route.name.split("-")[1]].title }}
                         </div>
                         <div class="mx-3">
-                            <component :is="subMenus[currentSubMenu].component" />
+                            <router-view />
                         </div>
                     </div>
                 </div>
@@ -32,16 +36,6 @@
 </template>
 
 <script>
-import { markRaw } from "vue";
-
-import Appearance from "../components/settings/Appearance.vue";
-import General from "../components/settings/General.vue";
-import Notifications from "../components/settings/Notifications.vue";
-import MonitorHistory from "../components/settings/MonitorHistory.vue";
-import Security from "../components/settings/Security.vue";
-import Backup from "../components/settings/Backup.vue";
-import About from "../components/settings/About.vue";
-
 export default {
 
     data() {
@@ -55,34 +49,33 @@ export default {
             subMenus: {
                 general: {
                     title: this.$t("General"),
-                    component: markRaw(General),
+                    path: "general",
                 },
                 appearance: {
                     title: this.$t("Appearance"),
-                    component: markRaw(Appearance),
+                    path: "appearance",
                 },
                 notifications: {
                     title: this.$t("Notifications"),
-                    component: markRaw(Notifications),
+                    path: "notifications",
                 },
                 monitorHistory: {
                     title: this.$t("Monitor History"),
-                    component: markRaw(MonitorHistory),
+                    path: "monitor-history",
                 },
                 security: {
                     title: this.$t("Security"),
-                    component: markRaw(Security),
+                    path: "security",
                 },
                 backup: {
                     title: this.$t("Backup"),
-                    component: markRaw(Backup),
+                    path: "backup",
                 },
                 about: {
                     title: this.$t("About"),
-                    component: markRaw(About),
+                    path: "about",
                 }
             },
-            currentSubMenu: "general",
         };
     },
 
@@ -141,6 +134,10 @@ footer {
 .settings-menu {
     flex: 0 0 auto;
     width: 300px;
+
+    a {
+        text-decoration: none !important;
+    }
 
     .menu-item {
         border-radius: 10px;

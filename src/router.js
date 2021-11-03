@@ -11,6 +11,14 @@ import Setup from "./pages/Setup.vue";
 const StatusPage = () => import("./pages/StatusPage.vue");
 import Entry from "./pages/Entry.vue";
 
+import Appearance from "./components/settings/Appearance.vue";
+import General from "./components/settings/General.vue";
+import Notifications from "./components/settings/Notifications.vue";
+import MonitorHistory from "./components/settings/MonitorHistory.vue";
+import Security from "./components/settings/Security.vue";
+import Backup from "./components/settings/Backup.vue";
+import About from "./components/settings/About.vue";
+
 const routes = [
     {
         path: "/",
@@ -59,6 +67,44 @@ const routes = [
                     {
                         path: "/settings",
                         component: Settings,
+                        children: [
+                            {
+                                path: "general",
+                                alias: "",
+                                name: "settings-general",
+                                component: General,
+                            },
+                            {
+                                path: "appearance",
+                                name: "settings-appearance",
+                                component: Appearance,
+                            },
+                            {
+                                path: "notifications",
+                                name: "settings-notifications",
+                                component: Notifications,
+                            },
+                            {
+                                path: "monitor-history",
+                                name: "settings-monitorHistory",
+                                component: MonitorHistory,
+                            },
+                            {
+                                path: "security",
+                                name: "settings-security",
+                                component: Security,
+                            },
+                            {
+                                path: "backup",
+                                name: "settings-backup",
+                                component: Backup,
+                            },
+                            {
+                                path: "about",
+                                name: "settings-about",
+                                component: About,
+                            },
+                        ]
                     },
                 ],
             },

@@ -5,6 +5,7 @@
             <template v-if="!settings.disableAuth">
                 <p>
                     {{ $t("Current User") }}: <strong>{{ username }}</strong>
+                    <button v-if="! settings.disableAuth" class="btn btn-danger ms-4 me-2 mb-2" @click="$root.logout">{{ $t("Logout") }}</button>
                 </p>
 
                 <h5 class="my-4">{{ $t("Change Password") }}</h5>
@@ -60,7 +61,7 @@
                 </form>
             </template>
 
-            <div v-if="!$parent.$parent.settings.disableAuth" class="mt-5 mb-3">
+            <div v-if="! settings.disableAuth" class="mt-5 mb-3">
                 <h5 class="my-4">
                     {{ $t("Two Factor Authentication") }}
                 </h5>
@@ -82,7 +83,6 @@
                 <div class="mb-4">
                     <button v-if="settings.disableAuth" class="btn btn-outline-primary me-2 mb-2" @click="enableAuth">{{ $t("Enable Auth") }}</button>
                     <button v-if="! settings.disableAuth" class="btn btn-primary me-2 mb-2" @click="confirmDisableAuth">{{ $t("Disable Auth") }}</button>
-                    <button v-if="! settings.disableAuth" class="btn btn-danger me-2 mb-2" @click="$root.logout">{{ $t("Logout") }}</button>
                 </div>
             </div>
         </div>
@@ -244,13 +244,13 @@ export default {
 
     computed: {
         settings() {
-            return this.$parent.$parent.settings;
+            return this.$parent.$parent.$parent.settings;
         },
         saveSettings() {
-            return this.$parent.$parent.saveSettings;
+            return this.$parent.$parent.$parent.saveSettings;
         },
         settingsLoaded() {
-            return this.$parent.$parent.settingsLoaded;
+            return this.$parent.$parent.$parent.settingsLoaded;
         }
     },
 
