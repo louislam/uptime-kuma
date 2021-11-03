@@ -6,7 +6,7 @@ const jobs = [
     {
         name: "clear-old-data",
         interval: "at 03:14",
-    }
+    },
 ];
 
 const initBackgroundJobs = function (args) {

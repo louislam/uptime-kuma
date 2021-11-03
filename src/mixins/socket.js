@@ -265,10 +265,10 @@ export default {
         },
 
         logout() {
+            socket.emit("logout", () => { });
             this.storage().removeItem("token");
             this.socket.token = null;
             this.loggedIn = false;
-
             this.clearData();
         },
 
@@ -328,6 +328,10 @@ export default {
         clearStatistics(callback) {
             socket.emit("clearStatistics", callback);
         },
+
+        getMonitorBeats(monitorID, period, callback) {
+            socket.emit("getMonitorBeats", monitorID, period, callback);
+        }
     },
 
     computed: {

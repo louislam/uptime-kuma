@@ -50,6 +50,8 @@ class Database {
         "patch-group-table.sql": true,
         "patch-monitor-push_token.sql": true,
         "patch-http-monitor-method-body-and-headers.sql": true,
+        "patch-2fa-invalidate-used-token.sql": true,
+        "patch-notification_sent_history.sql": true,
     }
 
     /**
@@ -113,6 +115,7 @@ class Database {
         // Change to WAL
         await R.exec("PRAGMA journal_mode = WAL");
         await R.exec("PRAGMA cache_size = -12000");
+        await R.exec("PRAGMA auto_vacuum = FULL");
 
         console.log("SQLite config:");
         console.log(await R.getAll("PRAGMA journal_mode"));
@@ -372,6 +375,17 @@ class Database {
         } else {
             console.log("Nothing to restore");
         }
+    }
+
+    static getSize() {
+        debug("Database.getSize()");
+        let stats = fs.statSync(Database.path);
+        debug(stats);
+        return stats.size;
+    }
+
+    static async shrink() {
+        await R.exec("VACUUM");
     }
 }
 
