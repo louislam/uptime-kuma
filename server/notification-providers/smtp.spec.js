@@ -54,6 +54,9 @@ describe("notification to act properly on send", () => {
             host: "host",
             port: "port",
             secure: "secure",
+            tls: {
+                "rejectUnauthorized": false,
+            }
         });
         expect(res).toBe("Sent Successfully.");
         expect(sender).toHaveBeenCalledWith({
@@ -62,10 +65,9 @@ describe("notification to act properly on send", () => {
             from: "From",
             subject: "PassedInMessage",
             text: "PassedInMessage\nTime (UTC): undefined",
-            tls: {
-                rejectUnauthorized: false,
-            },
+
             to: "To",
+
         });
     });
 
@@ -111,6 +113,9 @@ describe("notification to act properly on send", () => {
             host: "host",
             port: "port",
             secure: "secure",
+            tls: {
+                "rejectUnauthorized": false,
+            }
         });
         expect(res).toBe("Sent Successfully.");
         expect(sender).toHaveBeenCalledWith({
@@ -119,9 +124,6 @@ describe("notification to act properly on send", () => {
             from: "From",
             subject: "Name: testing | Status: ✅ Up | Hostname: https://www.google.com",
             text: "PassedInMessage\nTime (UTC): undefined",
-            tls: {
-                rejectUnauthorized: false,
-            },
             to: "To",
         });
     });
@@ -205,6 +207,7 @@ describe("notification to get proper data from Notification.send", () => {
             smtpCC: "CC",
             smtpBCC: "BCC",
             smtpTo: "To",
+            smtpIgnoreTLSError: true,
         };
         let monitorConf = {
             type: "http",
@@ -229,6 +232,9 @@ describe("notification to get proper data from Notification.send", () => {
             host: "host",
             port: "port",
             secure: "secure",
+            tls: {
+                "rejectUnauthorized": true,
+            }
         });
         expect(sender).toHaveBeenCalledTimes(1);
         expect(sender).toHaveBeenCalledWith({
@@ -237,9 +243,6 @@ describe("notification to get proper data from Notification.send", () => {
             from: "From",
             subject: "simple message",
             text: "simple message\nTime (UTC): undefined",
-            tls: {
-                rejectUnauthorized: false,
-            },
             to: "To",
         });
     });
