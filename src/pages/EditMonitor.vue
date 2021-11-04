@@ -32,6 +32,9 @@
                                     <option value="steam">
                                         Steam Game Server
                                     </option>
+                                    <option value="mqtt">
+                                        MQTT
+                                    </option>
                                 </select>
                             </div>
 
@@ -111,6 +114,32 @@
 
                                     <div class="form-text">
                                         {{ $t("rrtypeDescription") }}
+                                    </div>
+                                </div>
+                            </template>
+
+
+                            <!-- MQTT -->
+                            <!-- For MQTT Type -->
+                            <template v-if="monitor.type === 'mqtt'">
+                                <div class="my-3">
+                                    <label for="url" class="form-label">{{ $t("url") }}</label>
+                                    <input id="url" v-model="monitor.url" type="text" class="form-control" pattern="https?://.+" required>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="topic" class="form-label">{{ $t("topic") }}</label>
+                                    <input id="topic" v-model="monitor.topic" type="text" class="form-control" required>
+                                    <div class="form-text">
+                                        {{ $t("topicExplanation") }}
+                                    </div>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="successMessage" class="form-label">{{ $t("successMessage") }}</label>
+                                    <input id="successMessage" v-model="monitor.successMessage" type="text" class="form-control" required>
+                                    <div class="form-text">
+                                        {{ $t("successMessageExplanation") }}
                                     </div>
                                 </div>
                             </template>
@@ -426,6 +455,8 @@ export default {
                     accepted_statuscodes: ["200-299"],
                     dns_resolve_type: "A",
                     dns_resolve_server: "1.1.1.1",
+                    topic: "",
+                    successMessage: "",
                 };
 
                 for (let i = 0; i < this.$root.notificationList.length; i++) {

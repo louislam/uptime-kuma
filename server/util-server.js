@@ -10,6 +10,8 @@ const iconv = require("iconv-lite");
 const chardet = require("chardet");
 const fs = require("fs");
 const nodeJsUtil = require("util");
+const mqtt = require("mqtt");
+
 
 // From ping-lite
 exports.WIN = /^win/.test(process.platform);
@@ -26,7 +28,7 @@ exports.initJWTSecret = async () => {
         "jwtSecret",
     ]);
 
-    if (! jwtSecretBean) {
+    if (!jwtSecretBean) {
         jwtSecretBean = R.dispense("setting");
         jwtSecretBean.key = "jwtSecret";
     }
@@ -85,6 +87,30 @@ exports.pingAsync = function (hostname, ipv6 = false) {
                 resolve(Math.round(ms));
             }
         });
+    });
+};
+
+exports.mqttAsync = function (hostname, topic, okMessage) {
+    return new Promise((resolve, reject) => {
+        try {
+            let client = mqtt.connect(hostname);
+            client.on("connect", () => {
+                client.subscribe(topic);
+            }
+            );
+            client.on("message", (messageTopic, message) => {
+                console.log(messageTopic);
+                if (messageTopic == topic && message.toString() !== okMessage) {
+                    client.end();
+                    reject(new Error(`Error; Topic: ${messageTopic}; Message: ${message.toString()}`));
+                } else {
+                    client.end();
+                    resolve(`Topic: ${messageTopic}; Message: ${message.toString()}`);
+                }
+            });
+        } catch (error) {
+            reject(new Error(error));
+        }
     });
 };
 
@@ -269,13 +295,13 @@ exports.getTotalClientInRoom = (io, roomName) => {
 
     const sockets = io.sockets;
 
-    if (! sockets) {
+    if (!sockets) {
         return 0;
     }
 
     const adapter = sockets.adapter;
 
-    if (! adapter) {
+    if (!adapter) {
         return 0;
     }
 
@@ -300,7 +326,7 @@ exports.allowAllOrigin = (res) => {
 };
 
 exports.checkLogin = (socket) => {
-    if (! socket.userID) {
+    if (!socket.userID) {
         throw new Error("You are not logged in.");
     }
 };
