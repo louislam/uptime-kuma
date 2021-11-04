@@ -29,7 +29,7 @@
                     </router-link>
                 </li>
                 <li v-if="$root.loggedIn" class="nav-item">
-                    <router-link to="/settings" class="nav-link">
+                    <router-link to="/settings" class="nav-link" :class="{ active: $route.path.includes('settings') }">
                         <font-awesome-icon icon="cog" /> {{ $t("Settings") }}
                     </router-link>
                 </li>
