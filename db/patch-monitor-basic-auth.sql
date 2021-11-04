@@ -2,9 +2,9 @@
 BEGIN TRANSACTION;
 
 ALTER TABLE monitor
-    ADD basicauth_user TEXT default null;
+    ADD basic_auth_user TEXT default null;
 
 ALTER TABLE monitor
-    ADD basicauth_pass TEXT default null;
+    ADD basic_auth_pass TEXT default null;
 
 COMMIT;
