@@ -1,46 +1,45 @@
 <template>
-    <transition name="slide-fade" appear>
-        <div>
-            <h1 v-show="show" class="mb-3">
-                {{ $t("Settings") }}
-            </h1>
+    <div>
+        <h1 v-show="show" class="mb-3">
+            {{ $t("Settings") }}
+        </h1>
 
-            <div class="shadow-box">
-                <div class="row">
-                    <div class="settings-menu">
-                        <router-link
-                            v-for="(item, key) in subMenus"
-                            :key="key"
-                            :to="`/settings/${item.path}`"
-                        >
-                            <div
-                                class="menu-item"
-                                :class="{ active: $route.name == `settings-${key}` }"
-                            >
-                                {{ item.title }}
-                            </div>
-                        </router-link>
+        <div class="shadow-box">
+            <div class="row">
+                <div class="settings-menu">
+                    <router-link
+                        v-for="(item, key) in subMenus"
+                        :key="key"
+                        :to="`/settings/${key}`"
+                    >
+                        <div class="menu-item">
+                            {{ item.title }}
+                        </div>
+                    </router-link>
+                </div>
+                <div class="settings-content">
+                    <div class="settings-content-header">
+                        {{ subMenus[currentPage].title }}
                     </div>
-                    <div class="settings-content">
-                        <div class="settings-content-header">
-                            {{ subMenus[$route.name.split("-")[1]].title }}
-                        </div>
-                        <div class="mx-3">
-                            <router-view />
-                        </div>
+                    <div class="mx-3">
+                        <router-view v-slot="{ Component }">
+                            <transition name="slide-fade" appear>
+                                <component :is="Component" />
+                            </transition>
+                        </router-view>
                     </div>
                 </div>
             </div>
         </div>
-    </transition>
+    </div>
 </template>
 
 <script>
-export default {
+import { useRoute } from "vue-router";
 
+export default {
     data() {
         return {
-
             show: true,
 
             settings: {},
@@ -49,34 +48,37 @@ export default {
             subMenus: {
                 general: {
                     title: this.$t("General"),
-                    path: "general",
                 },
                 appearance: {
                     title: this.$t("Appearance"),
-                    path: "appearance",
                 },
                 notifications: {
                     title: this.$t("Notifications"),
-                    path: "notifications",
                 },
-                monitorHistory: {
+                "monitor-history": {
                     title: this.$t("Monitor History"),
-                    path: "monitor-history",
                 },
                 security: {
                     title: this.$t("Security"),
-                    path: "security",
                 },
                 backup: {
                     title: this.$t("Backup"),
-                    path: "backup",
                 },
                 about: {
                     title: this.$t("About"),
-                    path: "about",
-                }
+                },
             },
         };
+    },
+
+    computed: {
+        currentPage() {
+            let pathEnd = useRoute().path.split("/").at(-1);
+            if (pathEnd == "settings" || pathEnd == null) {
+                return "general";
+            }
+            return pathEnd;
+        },
     },
 
     mounted() {
@@ -120,7 +122,6 @@ export default {
 .shadow-box {
     padding: 20px;
     min-height: calc(100vh - 155px);
-    max-height: calc(100vh - 30px);
 }
 
 footer {
@@ -154,7 +155,7 @@ footer {
         }
     }
 
-    .menu-item.active {
+    .active .menu-item {
         background: $highlight-white;
         border-left: 4px solid $primary;
         border-top-left-radius: 0;

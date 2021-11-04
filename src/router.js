@@ -71,37 +71,30 @@ const routes = [
                             {
                                 path: "general",
                                 alias: "",
-                                name: "settings-general",
                                 component: General,
                             },
                             {
                                 path: "appearance",
-                                name: "settings-appearance",
                                 component: Appearance,
                             },
                             {
                                 path: "notifications",
-                                name: "settings-notifications",
                                 component: Notifications,
                             },
                             {
                                 path: "monitor-history",
-                                name: "settings-monitorHistory",
                                 component: MonitorHistory,
                             },
                             {
                                 path: "security",
-                                name: "settings-security",
                                 component: Security,
                             },
                             {
                                 path: "backup",
-                                name: "settings-backup",
                                 component: Backup,
                             },
                             {
                                 path: "about",
-                                name: "settings-about",
                                 component: About,
                             },
                         ]
