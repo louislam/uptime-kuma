@@ -25,4 +25,4 @@ Please delete options that are not relevant.
 
 ## Screenshots (if any)
 
-Please do not use any external image service. Instead, just paste in the image here and it will be uploaded automatically.
+Please do not use any external image service. Instead, just paste in or drag and drop the image here and it will be uploaded automatically.
