@@ -11,7 +11,8 @@
 
             <ul class="list-group mb-3" style="border-radius: 1rem;">
                 <li v-for="(proxy, index) in $root.proxyList" :key="index" class="list-group-item">
-                    {{ proxy.host }}<span v-if="proxy.default === true" class="badge bg-primary ms-2">{{ $t("Default") }}</span><br>
+                    {{ proxy.host }}:{{ proxy.port }} ({{ proxy.protocol }})
+                    <span v-if="proxy.default === true" class="badge bg-primary ms-2">{{ $t("Default") }}</span><br>
                     <a href="#" @click="$refs.proxyDialog.show(proxy.id)">{{ $t("Edit") }}</a>
                 </li>
             </ul>

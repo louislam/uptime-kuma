@@ -237,7 +237,7 @@
                                 <input :id="`proxy-${proxy.id}`" v-model="monitor.proxyId" :value="proxy.id" name="proxy" class="form-check-input" type="radio">
 
                                 <label class="form-check-label" :for="`proxy-${proxy.id}`">
-                                    {{ proxy.host }}
+                                    {{ proxy.host }}:{{ proxy.port }} ({{ proxy.protocol }})
                                     <a href="#" @click="$refs.proxyDialog.show(proxy.id)">{{ $t("Edit") }}</a>
                                 </label>
 

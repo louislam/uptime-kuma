@@ -1,6 +1,12 @@
 const { R } = require("redbean-node");
+const HttpProxyAgent = require("http-proxy-agent");
+const HttpsProxyAgent = require("https-proxy-agent");
+const SocksProxyAgent = require("socks-proxy-agent");
+const { debug } = require("../src/util");
 
 class Proxy {
+
+    static SUPPORTED_PROXY_PROTOCOLS = ["http", "https", "socks", "socks5", "socks4"]
 
     /**
      * Saves and updates given proxy entity
@@ -25,8 +31,11 @@ class Proxy {
         }
 
         // Make sure given proxy protocol is supported
-        if (!["http", "https"].includes(proxy.protocol)) {
-            throw new Error(`Unsupported proxy protocol "${proxy.protocol}. Supported protocols are http and https."`);
+        if (!this.SUPPORTED_PROXY_PROTOCOLS.includes(proxy.protocol)) {
+            throw new Error(`
+                Unsupported proxy protocol "${proxy.protocol}.
+                Supported protocols are ${this.SUPPORTED_PROXY_PROTOCOLS.join(", ")}."`
+            );
         }
 
         // When proxy is default update deactivate old default proxy
@@ -72,6 +81,68 @@ class Proxy {
 
         // Delete proxy from list
         await R.trash(bean);
+    }
+
+    /**
+     * Create HTTP and HTTPS agents related with given proxy bean object
+     *
+     * @param proxy proxy bean object
+     * @param options http and https agent options
+     * @return {{httpAgent: Agent, httpsAgent: Agent}}
+     */
+    static createAgents(proxy, options) {
+        const { httpAgentOptions, httpsAgentOptions } = options || {};
+        let agent;
+        let httpAgent;
+        let httpsAgent;
+
+        const proxyOptions = {
+            protocol: proxy.protocol,
+            host: proxy.host,
+            port: proxy.port,
+        };
+
+        if (proxy.auth) {
+            proxyOptions.auth = `${proxy.username}:${proxy.password}`;
+        }
+
+        debug(`Proxy Options: ${JSON.stringify(proxyOptions)}`);
+        debug(`HTTP Agent Options: ${JSON.stringify(httpAgentOptions)}`);
+        debug(`HTTPS Agent Options: ${JSON.stringify(httpsAgentOptions)}`);
+
+        switch (proxy.protocol) {
+            case "http":
+            case "https":
+                httpAgent = new HttpProxyAgent({
+                    ...httpAgentOptions || {},
+                    ...proxyOptions
+                });
+
+                httpsAgent = new HttpsProxyAgent({
+                    ...httpsAgentOptions || {},
+                    ...proxyOptions,
+                });
+                break;
+            case "socks":
+            case "socks5":
+            case "socks4":
+                agent = new SocksProxyAgent({
+                    ...httpAgentOptions,
+                    ...httpsAgentOptions,
+                    ...proxyOptions,
+                });
+
+                httpAgent = agent;
+                httpsAgent = agent;
+                break;
+
+            default: throw new Error(`Unsupported proxy protocol provided. ${proxy.protocol}`);
+        }
+
+        return {
+            httpAgent,
+            httpsAgent
+        };
     }
 }
 

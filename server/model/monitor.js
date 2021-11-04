@@ -1,6 +1,4 @@
 const https = require("https");
-const HttpProxyAgent = require("http-proxy-agent");
-const HttpsProxyAgent = require("https-proxy-agent");
 const dayjs = require("dayjs");
 const utc = require("dayjs/plugin/utc");
 let timezone = require("dayjs/plugin/timezone");
@@ -13,6 +11,7 @@ const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalCli
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification");
+const { Proxy } = require("../proxy");
 const { demoMode } = require("../config");
 const version = require("../../package.json").version;
 const apicache = require("../modules/apicache");
@@ -204,31 +203,13 @@ class Monitor extends BeanModel {
                         const proxy = await R.load("proxy", this.proxy_id);
 
                         if (proxy && proxy.active) {
-                            const httpProxyAgentOptions = {
-                                protocol: proxy.protocol,
-                                host: proxy.host,
-                                port: proxy.port,
-                            };
-                            const httpsProxyAgentOptions = {
-                                ...httpsAgentOptions,
-                                protocol: proxy.protocol,
-                                hostname: proxy.host,
-                                port: proxy.port,
-                            };
-
-                            if (proxy.auth) {
-                                httpProxyAgentOptions.auth = `${proxy.username}:${proxy.password}`;
-                                httpsProxyAgentOptions.auth = `${proxy.username}:${proxy.password}`;
-                            }
-
-                            debug(`[${this.name}] HTTP options: ${JSON.stringify({
-                                "http": httpProxyAgentOptions,
-                                "https": httpsProxyAgentOptions,
-                            })}`);
+                            const { httpAgent, httpsAgent } = Proxy.createAgents(proxy, {
+                                httpsAgentOptions: httpsAgentOptions,
+                            });
 
                             options.proxy = false;
-                            options.httpAgent = new HttpProxyAgent(httpProxyAgentOptions);
-                            options.httpsAgent = new HttpsProxyAgent(httpsProxyAgentOptions);
+                            options.httpAgent = httpAgent;
+                            options.httpsAgent = httpsAgent;
                         }
                     }
 

@@ -15,6 +15,9 @@
                             <select id="proxy-protocol" v-model="proxy.protocol" class="form-select">
                                 <option value="https">HTTPS</option>
                                 <option value="http">HTTP</option>
+                                <option value="socks">SOCKS</option>
+                                <option value="socks5">SOCKS v5</option>
+                                <option value="socks4">SOCKS v4</option>
                             </select>
                         </div>
 
