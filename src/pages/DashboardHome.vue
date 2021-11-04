@@ -83,9 +83,7 @@ export default {
             perPage: 25,
             heartBeatList: [],
             paginationConfig: {
-                texts: {
-                    count: "",
-                },
+                hideCount: true,
                 chunksNavigation: "scroll",
             },
         };

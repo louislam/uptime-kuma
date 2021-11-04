@@ -311,4 +311,5 @@ export default {
     successMessage: "Success Message",
     successMessageExplanation: "MQTT message that will be considered as success",
     url: "Server URL",
+    recent: "Recent",
 };
