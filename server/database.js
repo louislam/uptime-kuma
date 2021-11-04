@@ -79,7 +79,7 @@ class Database {
         console.log(`Data Dir: ${Database.dataDir}`);
     }
 
-    static async connect() {
+    static async connect(testMode = false) {
         const acquireConnectionTimeout = 120 * 1000;
 
         const Dialect = require("knex/lib/dialects/sqlite3/index.js");
@@ -112,8 +112,13 @@ class Database {
         await R.autoloadModels("./server/model");
 
         await R.exec("PRAGMA foreign_keys = ON");
-        // Change to WAL
-        await R.exec("PRAGMA journal_mode = WAL");
+        if (testMode) {
+            // Change to MEMORY
+            await R.exec("PRAGMA journal_mode = MEMORY");
+        } else {
+            // Change to WAL
+            await R.exec("PRAGMA journal_mode = WAL");
+        }
         await R.exec("PRAGMA cache_size = -12000");
         await R.exec("PRAGMA auto_vacuum = FULL");
 

@@ -22,7 +22,7 @@
         "build": "vite build --config ./config/vite.config.js",
         "test": "node test/prepare-test-server.js && node server/server.js --port=3002 --data-dir=./data/test/ --test",
         "test-with-build": "npm run build && npm test",
-        "jest": "node test/prepare-jest.js && npm run jest-frontend && npm run jest-backend && jest --config=./config/jest.config.js",
+        "jest": "node test/prepare-jest.js && npm run jest-frontend && npm run jest-backend && jest --runInBand --config=./config/jest.config.js",
         "jest-frontend": "cross-env TEST_FRONTEND=1 jest --config=./config/jest-frontend.config.js",
         "jest-backend": "cross-env TEST_BACKEND=1 jest --config=./config/jest-backend.config.js",
         "tsc": "tsc",

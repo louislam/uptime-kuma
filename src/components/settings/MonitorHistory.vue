@@ -26,6 +26,7 @@
                 <div class="form-text mt-2 mb-4 ms-2">{{ $t("shrinkDatabaseDescription") }}</div>
             </div>
             <button
+                id="clearAllStats-btn"
                 class="btn btn-outline-danger me-2 mb-2"
                 @click="confirmClearStatistics"
             >
