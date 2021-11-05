@@ -319,7 +319,6 @@ class Monitor extends BeanModel {
                     } else {
                         throw new Error("Server not found on Steam");
                     }
-
                 } else if (this.type === "mqtt") {
                     try {
                         bean.msg = await mqttAsync(this.url, this.topic, this.successMessage);
