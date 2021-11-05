@@ -310,6 +310,6 @@ export default {
     topicExplanation: "MQTT topic to monitor",
     successMessage: "Success Message",
     successMessageExplanation: "MQTT message that will be considered as success",
-    url: "Server URL",
+    serverUrl: "Server URL",
     recent: "Recent",
 };
