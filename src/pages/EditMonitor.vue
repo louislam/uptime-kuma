@@ -118,7 +118,6 @@
                                 </div>
                             </template>
 
-
                             <!-- MQTT -->
                             <!-- For MQTT Type -->
                             <template v-if="monitor.type === 'mqtt'">
