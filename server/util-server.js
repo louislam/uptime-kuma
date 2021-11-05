@@ -96,8 +96,7 @@ exports.mqttAsync = function (hostname, topic, okMessage) {
             let client = mqtt.connect(hostname);
             client.on("connect", () => {
                 client.subscribe(topic);
-            }
-            );
+            });
             client.on("message", (messageTopic, message) => {
                 console.log(messageTopic);
                 if (messageTopic == topic && message.toString() !== okMessage) {
