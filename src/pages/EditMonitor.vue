@@ -351,6 +351,22 @@ export default {
 {
     "HeaderName": "HeaderValue"
 }`;
+        },
+
+        model() {
+            // parse monitor model eventually found in querystring
+            let model = null;
+            try {
+                model = JSON.parse(this.$route.query.monitor);
+                model.name = `${model.name} (duplicate)`;
+                delete model.id;
+                model.tags = model.tags.map(tag => {
+                    tag.new = true;
+                    delete tag.monitor_id;
+                    return tag;
+                });
+            } catch {}
+            return model;
         }
 
     },
@@ -410,8 +426,7 @@ export default {
     methods: {
         init() {
             if (this.isAdd) {
-
-                this.monitor = {
+                const monitorDefaults = {
                     type: "http",
                     name: "",
                     url: "https://",
@@ -428,15 +443,25 @@ export default {
                     dns_resolve_server: "1.1.1.1",
                 };
 
-                for (let i = 0; i < this.$root.notificationList.length; i++) {
-                    if (this.$root.notificationList[i].isDefault == true) {
-                        this.monitor.notificationIDList[this.$root.notificationList[i].id] = true;
+                if (this.model) {
+                    this.$refs.tagsManager.$data.newTags = this.model.tags;
+                }
+                this.monitor = Object.assign({}, monitorDefaults, this.model, { tags: undefined });
+
+                if (this.model && this.model.notificationIDList) {
+                    this.monitor.notificationIDList = this.model.notificationIDList;
+                } else {
+                    for (let i = 0; i < this.$root.notificationList.length; i++) {
+                        if (this.$root.notificationList[i].isDefault == true) {
+                            this.monitor.notificationIDList[this.$root.notificationList[i].id] = true;
+                        }
                     }
                 }
             } else if (this.isEdit) {
                 this.$root.getSocket().emit("getMonitor", this.$route.params.id, (res) => {
                     if (res.ok) {
                         this.monitor = res.monitor;
+                        this.preselectedTags = res.monitor.tags;
 
                         // Handling for monitors that are created before 1.7.0
                         if (this.monitor.retryInterval === 0) {

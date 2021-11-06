@@ -32,6 +32,9 @@
                 <button class="btn btn-danger" @click="deleteDialog">
                     <font-awesome-icon icon="trash" /> {{ $t("Delete") }}
                 </button>
+                <button class="btn btn-secondary" @click="duplicate">
+                    <font-awesome-icon icon="copy" /> {{ $t("Duplicate") }}
+                </button>
             </div>
 
             <div class="shadow-box">
@@ -312,6 +315,13 @@ export default {
 
         deleteDialog() {
             this.$refs.confirmDelete.show();
+        },
+
+        duplicate() {
+            this.$router.push({
+                path: "/add",
+                query: { monitor: JSON.stringify(Object.assign({}, this.monitor, { id: undefined })) }
+            });
         },
 
         clearEventsDialog() {
