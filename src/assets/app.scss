@@ -346,6 +346,10 @@ textarea.form-control {
         &.active {
             background-color: #cdf8f4;
         }
+        .tags {
+            // Removes margin to line up tags list with uptime percentage
+            margin-left: -0.25rem;
+        }
     }
 }
 
