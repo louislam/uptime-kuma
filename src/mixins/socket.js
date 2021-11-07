@@ -265,10 +265,10 @@ export default {
         },
 
         logout() {
+            socket.emit("logout", () => { });
             this.storage().removeItem("token");
             this.socket.token = null;
             this.loggedIn = false;
-
             this.clearData();
         },
 

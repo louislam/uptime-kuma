@@ -209,9 +209,7 @@ export default {
             toggleCertInfoBox: false,
             showPingChartBox: true,
             paginationConfig: {
-                texts: {
-                    count: "",
-                },
+                hideCount: true,
                 chunksNavigation: "scroll",
             },
         };
