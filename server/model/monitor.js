@@ -141,6 +141,7 @@ class Monitor extends BeanModel {
                     // Do not do any queries/high loading things before the "bean.ping"
                     let startTime = dayjs().valueOf();
 
+                    debug(`[${this.name}] Prepare Options for axios`);
                     const options = {
                         url: this.url,
                         method: (this.method || "get").toLowerCase(),
@@ -160,6 +161,8 @@ class Monitor extends BeanModel {
                             return checkStatusCode(status, this.getAcceptedStatuscodes());
                         },
                     };
+
+                    debug(`[${this.name}] Axios Request`);
                     let res = await axios.request(options);
                     bean.msg = `${res.status} - ${res.statusText}`;
                     bean.ping = dayjs().valueOf() - startTime;
@@ -167,12 +170,13 @@ class Monitor extends BeanModel {
                     // Check certificate if https is used
                     let certInfoStartTime = dayjs().valueOf();
                     if (this.getUrl()?.protocol === "https:") {
+                        debug(`[${this.name}] Check cert`);
                         try {
                             let tlsInfoObject = checkCertificate(res);
                             tlsInfo = await this.updateTlsInfo(tlsInfoObject);
 
                             if (!this.getIgnoreTls()) {
-                                debug("call sendCertNotification");
+                                debug(`[${this.name}] call sendCertNotification`);
                                 await this.sendCertNotification(tlsInfoObject);
                             }
 
@@ -351,15 +355,19 @@ class Monitor extends BeanModel {
 
             let beatInterval = this.interval;
 
+            debug(`[${this.name}] Check isImportant`);
             let isImportant = Monitor.isImportantBeat(isFirstBeat, previousBeat?.status, bean.status);
 
             // Mark as important if status changed, ignore pending pings,
             // Don't notify if disrupted changes to up
             if (isImportant) {
                 bean.important = true;
+
+                debug(`[${this.name}] sendNotification`);
                 await Monitor.sendNotification(isFirstBeat, this, bean);
 
                 // Clear Status Page Cache
+                debug(`[${this.name}] Check isImportant`);
                 apicache.clear();
 
             } else {
@@ -377,10 +385,14 @@ class Monitor extends BeanModel {
                 console.warn(`Monitor #${this.id} '${this.name}': Failing: ${bean.msg} | Interval: ${beatInterval} seconds | Type: ${this.type}`);
             }
 
+            debug(`[${this.name}] Send to socket`);
             io.to(this.user_id).emit("heartbeat", bean.toJSON());
             Monitor.sendStats(io, this.id, this.user_id);
 
+            debug(`[${this.name}] Store`);
             await R.store(bean);
+
+            debug(`[${this.name}] prometheus.update`);
             prometheus.update(bean, tlsInfo);
 
             previousBeat = bean;
@@ -394,7 +406,10 @@ class Monitor extends BeanModel {
                     }
                 }
 
+                debug(`[${this.name}] SetTimeout for next check.`);
                 this.heartbeatInterval = setTimeout(safeBeat, beatInterval * 1000);
+            } else {
+                console.log(`[${this.name}] isStop = true, no next check.`);
             }
 
         };
