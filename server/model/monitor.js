@@ -367,7 +367,7 @@ class Monitor extends BeanModel {
                 await Monitor.sendNotification(isFirstBeat, this, bean);
 
                 // Clear Status Page Cache
-                debug(`[${this.name}] Check isImportant`);
+                debug(`[${this.name}] apicache clear`);
                 apicache.clear();
 
             } else {
