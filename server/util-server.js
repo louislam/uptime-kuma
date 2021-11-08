@@ -242,7 +242,7 @@ exports.checkCertificate = function (res) {
     const info = res.request.res.socket.getPeerCertificate(true);
     const valid = res.request.res.socket.authorized || false;
 
-    console.log("Parsing Certificate Info");
+    debug("Parsing Certificate Info");
     const parsedInfo = parseCertificateInfo(info);
 
     return {
