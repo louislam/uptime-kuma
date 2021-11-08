@@ -4,16 +4,9 @@
     state: directory
   loop:
     - /compose
-    - /compose/nginx
     - /compose/volumes
     - /compose/volumes/nginx
-
-- name: Ensure docker-compose file has been updated
-  template:
-    src: "{{item}}"
-    dest: /compose/nginx/
-  loop:
-    - docker-compose.yml
+    - /compose/volumes/nginx/log/{{ kuma_domain }}
 
 - name: Ensure nginx config directory exist
   copy:
@@ -27,9 +20,3 @@
   template:
     src: "nginx.conf"
     dest: /compose/volumes/nginx/nginx.conf
-
-- name: Ensure nginx is up
-  community.docker.docker_compose:
-    state: present
-    project_src: /compose/nginx
-    pull: no

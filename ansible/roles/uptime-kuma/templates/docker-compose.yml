@@ -2,9 +2,18 @@ version: '3.3'
 services:
     uptime-kuma:
         restart: always
-        ports:
-            - '127.0.0.1:3001:3001'
+        expose:
+            - 3001
         volumes:
             - '/compose/volumes/uptime-kuma:/app/data'
         container_name: uptime-kuma
-        image: 'louislam/uptime-kuma:alpine'
+        image: 'louislam/uptime-kuma:{{kuma_image_version}}-{{kuma_image_os}}'
+
+    nginx:
+        depends_on:
+            - uptime-kuma
+        restart: always
+        image: nginx:stable-alpine
+        volumes:
+            - '/compose/volumes/nginx/:/etc/nginx/'
+            - '/compose/volumes/nginx/log/{{ kuma_domain }}:/var/log/nginx/{{ kuma_domain }}/'

@@ -20,9 +20,12 @@ ansible -> roles -> nginx -> ssl -> <uptime kuma domain>.privkey.pem
 ```
 5. to run playbook
 ```bash
-ansible-playbook ./playbook.yml -i <your inventory path> --extra-vars "kuma_domain=<uptime kuma domain>"
+ansible-playbook ./playbook.yml -i <your inventory path> -e "kuma_domain=<uptime kuma domain>" -e "kuma_image_os=<alpine or debian>" -e "kuma_image_version=<version>"
 ```
 you can use other ansible playbook options too
 
 > Note: Replace `<uptime kuma domain>` with your desired domain for uptime kuma
+> replace `<version>` with a version from https://github.com/louislam/uptime-kuma/releases
+> replace `<alpine or debian>` with one of options
+> `-e "kuma_image_os=<alpine or debian>" -e "kuma_image_version=<version>"` is not required and you can remove this part or change only one of them (kuma_image_os is debian & kuma_image_version is 1 by default)
 > If you are not using root user as your ansible_user use -bK option to become root

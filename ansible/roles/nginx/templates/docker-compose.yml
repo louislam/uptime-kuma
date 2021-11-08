@@ -1,8 +1,0 @@
-version: '3.3'
-services:
-    nginx:
-        network_mode: host
-        restart: always
-        image: nginx:stable-alpine
-        volumes:
-            - '/compose/volumes/nginx/:/etc/nginx/'
