@@ -186,6 +186,15 @@ exports.entryPage = "dashboard";
     // Normal Router here
     // ***************************
 
+    // Entry Page
+    app.get("/", async (_request, response) => {
+        if (exports.entryPage === "statusPage") {
+            response.redirect("/status");
+        } else {
+            response.redirect("/dashboard");
+        }
+    });
+
     // Robots.txt
     app.get("/robots.txt", async (_request, response) => {
         let txt = "User-agent: *\nDisallow:";

@@ -1,6 +1,6 @@
 name: "🐛 Bug Report"
 description: "Submit a bug report to help us improve"
-title: "[Bug] "
+#title: "[Bug] "
 labels: [bug]
 body:
   - type: checkboxes
