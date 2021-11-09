@@ -42,6 +42,9 @@ class Prometheus {
             monitor_hostname: monitor.hostname,
             monitor_port: monitor.port
         };
+        for (var t in monitor.tags) {
+            this.monitorLabelValues[k] = monitor.tags[k];
+        }
     }
 
     update(heartbeat, tlsInfo) {
