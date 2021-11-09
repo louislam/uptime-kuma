@@ -142,7 +142,7 @@ export default {
     Token: "Token",
     "Show URI": "Toon URI",
     "Clear all statistics": "Wis alle statistieken",
-    retryCheckEverySecond: "Probeer elke {0} seconds.",
+    retryCheckEverySecond: "Probeer elke {0} seconden.",
     importHandleDescription: "Kies 'Sla bestaande over' als je elke monitor of melding met dezelfde naam wilt overslaan. Kies 'Overschrijf' als je elke monitor of notificatie wilt verwijderen.",
     confirmImportMsg: "Weet je zeker dat je dit bestand wilt importeren?",
     "Heartbeat Retry Interval": "Heartbeat Retry Interval",
