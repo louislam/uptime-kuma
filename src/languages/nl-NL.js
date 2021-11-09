@@ -170,7 +170,7 @@ export default {
     "Avg. Ping": "Gemiddelde Ping",
     "Avg. Response": "Gemiddelde Response",
     "Entry Page": "Entry Page",
-    statusPageNothing: "Nothing here, please add a group or a monitor. Niets hier, voeg een groep of monitor toe.",
+    statusPageNothing: "Niets hier, voeg een groep of monitor toe.",
     "No Services": "No Services",
     "All Systems Operational": "Alle systemen operationeel",
     "Partially Degraded Service": "Gedeeltelijk verminderde prestaties",
