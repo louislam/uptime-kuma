@@ -127,16 +127,16 @@
                                 </div>
 
                                 <div class="my-3">
-                                    <label for="topic" class="form-label">{{ $t("topic") }}</label>
-                                    <input id="topic" v-model="monitor.topic" type="text" class="form-control" required>
+                                    <label for="mqttTopic" class="form-label">{{ $t("topic") }}</label>
+                                    <input id="mqttTopic" v-model="monitor.topic" type="text" class="form-control" required>
                                     <div class="form-text">
                                         {{ $t("topicExplanation") }}
                                     </div>
                                 </div>
 
                                 <div class="my-3">
-                                    <label for="successMessage" class="form-label">{{ $t("successMessage") }}</label>
-                                    <input id="successMessage" v-model="monitor.successMessage" type="text" class="form-control" required>
+                                    <label for="mqttSuccessMessage" class="form-label">{{ $t("successMessage") }}</label>
+                                    <input id="mqttSuccessMessage" v-model="monitor.successMessage" type="text" class="form-control" required>
                                     <div class="form-text">
                                         {{ $t("successMessageExplanation") }}
                                     </div>

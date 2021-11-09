@@ -2,9 +2,9 @@
 BEGIN TRANSACTION;
 
 ALTER TABLE monitor
-	ADD topic VARCHAR(50);
+	ADD mqtt_topic VARCHAR(50);
 
 ALTER TABLE monitor
-	ADD success_message VARCHAR(255);
+	ADD mqtt_success_message VARCHAR(255);
 
 COMMIT;
