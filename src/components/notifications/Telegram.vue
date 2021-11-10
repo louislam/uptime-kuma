@@ -25,7 +25,7 @@
             </p>
 
             <p style="margin-top: 8px;">
-                {{ telegramGetUpdatesURL() }}
+                <a :href="telegramGetUpdatesURL(true)" target="_blank" style="word-break: break-word;">{{ telegramGetUpdatesURL() }}</a>
             </p>
         </div>
     </div>
