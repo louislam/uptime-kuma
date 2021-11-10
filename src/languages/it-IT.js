@@ -252,7 +252,7 @@ export default {
     "Notification Sound": "Suono di Notifica",
     "More info on:": "Maggiori informazioni su: {0}",
     pushoverDesc1: "Emergency priority (2) has default 30 second timeout between retries and will expire after 1 hour.",
-    pushoverDesc2: "If you want to send notifications to different devices, fill out Device field.",
+    pushoverDesc2: "Se si vuole inviare la notifica a dispositivi differenti, riempire il campo Dispositivi.",
     "SMS Type": "SMS Type",
     octopushTypePremium: "Premium (Veloce - raccomandato per allertare)",
     octopushTypeLowCost: "A Basso Costo (Lento - talvolta bloccato dall'operatore)",
