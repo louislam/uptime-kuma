@@ -306,7 +306,7 @@
                     <p>这是为 <strong>有第三方认证</strong> 的用户提供的功能，如 Cloudflare Access</p>
                     <p>请谨慎使用！</p>
                 </template>
-                
+
                 <template v-else-if="$i18n.locale === 'zh-TW' ">
                     <p>你是否要<strong>取消登入驗證</strong>？</p>
                     <p>此功能是設計給已有<strong>第三方認證</strong>的使用者，例如 Cloudflare Access。</p>
@@ -515,9 +515,11 @@ export default {
         },
 
         loadUsername() {
-            const jwtToken = this.$root.storage().token;
-            const jwtPayload = jwt_decode(jwtToken);
-            this.username = jwtPayload.username;
+            const jwtPayload = this.$root.getJWTPayload();
+
+            if (jwtPayload) {
+                this.username = jwtPayload.username;
+            }
         },
 
         loadSettings() {
@@ -568,6 +570,7 @@ export default {
             this.settings.disableAuth = false;
             this.saveSettings();
             this.$root.storage().removeItem("token");
+            location.reload();
         },
 
         downloadBackup() {
