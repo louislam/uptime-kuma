@@ -304,4 +304,5 @@ export default {
     "One record": "Ein Eintrag",
     steamApiKeyDescription: "Um einen Steam Game Server zu überwachen, wird ein Steam Web-API-Schlüssel benötigt. Dieser kann hier registriert werden: ",
     "Current User": "Aktueller Benutzer",
+    "Reset Token": "Token zurücksetzen",
 };
