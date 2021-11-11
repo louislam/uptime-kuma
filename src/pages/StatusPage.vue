@@ -125,15 +125,15 @@
 
                 <div v-if="editIncidentMode" class="dropdown d-inline-block me-2">
                     <button id="dropdownMenuButton1" class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Style: {{ incident.style }}
+                        {{ $t("Style") }}: {{ incident.style }}
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                        <li><a class="dropdown-item" href="#" @click="incident.style = 'info'">info</a></li>
-                        <li><a class="dropdown-item" href="#" @click="incident.style = 'warning'">warning</a></li>
-                        <li><a class="dropdown-item" href="#" @click="incident.style = 'danger'">danger</a></li>
-                        <li><a class="dropdown-item" href="#" @click="incident.style = 'primary'">primary</a></li>
-                        <li><a class="dropdown-item" href="#" @click="incident.style = 'light'">light</a></li>
-                        <li><a class="dropdown-item" href="#" @click="incident.style = 'dark'">dark</a></li>
+                        <li><a class="dropdown-item" href="#" @click="incident.style = 'info'">{{ $t("info") }}</a></li>
+                        <li><a class="dropdown-item" href="#" @click="incident.style = 'warning'">{{ $t("warning") }}</a></li>
+                        <li><a class="dropdown-item" href="#" @click="incident.style = 'danger'">{{ $t("danger") }}</a></li>
+                        <li><a class="dropdown-item" href="#" @click="incident.style = 'primary'">{{ $t("primary") }}</a></li>
+                        <li><a class="dropdown-item" href="#" @click="incident.style = 'light'">{{ $t("light") }}</a></li>
+                        <li><a class="dropdown-item" href="#" @click="incident.style = 'dark'">{{ $t("dark") }}</a></li>
                     </ul>
                 </div>
 
