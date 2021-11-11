@@ -46,6 +46,7 @@ export default {
     Unknown: "Unknown",
     Pause: "Pause",
     Name: "Name",
+    Description: "Description",
     Status: "Status",
     DateTime: "DateTime",
     Message: "Message",
