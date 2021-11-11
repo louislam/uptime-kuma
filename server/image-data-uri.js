@@ -3,12 +3,13 @@
     Modified with 0 dependencies
  */
 let fs = require("fs");
+const { log } = require("../src/util");
 
 let ImageDataURI = (() => {
 
     function decode(dataURI) {
         if (!/data:image\//.test(dataURI)) {
-            console.log("ImageDataURI :: Error :: It seems that it is not an Image Data URI. Couldn't match \"data:image/\"");
+            log("image-data-uri", "It seems that it is not an Image Data URI. Couldn't match \"data:image/\"", "error");
             return null;
         }
 
@@ -22,7 +23,7 @@ let ImageDataURI = (() => {
 
     function encode(data, mediaType) {
         if (!data || !mediaType) {
-            console.log("ImageDataURI :: Error :: Missing some of the required params: data, mediaType ");
+            log("image-data-uri", "Missing some of the required params: data, mediaType", "error");
             return null;
         }
 

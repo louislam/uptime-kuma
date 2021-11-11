@@ -1,7 +1,7 @@
 const tcpp = require("tcp-ping");
 const Ping = require("./ping-lite");
 const { R } = require("redbean-node");
-const { debug } = require("../src/util");
+const { log } = require("../src/util");
 const passwordHash = require("./password-hash");
 const dayjs = require("dayjs");
 const { Resolver } = require("dns");
@@ -119,7 +119,7 @@ exports.setting = async function (key) {
 
     try {
         const v = JSON.parse(value);
-        debug(`Get Setting: ${key}: ${v}`);
+        log("util", `Get Setting: ${key}: ${v}`, "debug");
         return v;
     } catch (e) {
         return value;
@@ -206,7 +206,7 @@ const parseCertificateInfo = function (info) {
     const existingList = {};
 
     while (link) {
-        debug(`[${i}] ${link.fingerprint}`);
+        log("util", `[${i}] ${link.fingerprint}`, "debug");
 
         if (!link.valid_from || !link.valid_to) {
             break;
@@ -221,7 +221,7 @@ const parseCertificateInfo = function (info) {
         if (link.issuerCertificate == null) {
             break;
         } else if (link.issuerCertificate.fingerprint in existingList) {
-            debug(`[Last] ${link.issuerCertificate.fingerprint}`);
+            log("util", `[Last] ${link.issuerCertificate.fingerprint}`, "debug");
             link.issuerCertificate = null;
             break;
         } else {
@@ -242,7 +242,7 @@ exports.checkCertificate = function (res) {
     const info = res.request.res.socket.getPeerCertificate(true);
     const valid = res.request.res.socket.authorized || false;
 
-    debug("Parsing Certificate Info");
+    log("util", "Parsing Certificate Info", "debug");
     const parsedInfo = parseCertificateInfo(info);
 
     return {
@@ -345,7 +345,7 @@ exports.startUnitTest = async () => {
  */
 exports.convertToUTF8 = (body) => {
     const guessEncoding = chardet.detect(body);
-    //debug("Guess Encoding: " + guessEncoding);
+    //log("util", "Guess Encoding: " + guessEncoding, "debug");
     const str = iconv.decode(body, guessEncoding);
     return str.toString();
 };

@@ -1,7 +1,7 @@
 const { R } = require("redbean-node");
 const { checkLogin, setSettings } = require("../util-server");
 const dayjs = require("dayjs");
-const { debug } = require("../../src/util");
+const { log } = require("../../src/util");
 const ImageDataURI = require("../image-data-uri");
 const Database = require("../database");
 const apicache = require("../modules/apicache");
@@ -138,8 +138,8 @@ module.exports.statusPageSocketHandler = (socket) => {
                 group.id = groupBean.id;
             }
 
-            // Delete groups that not in the list
-            debug("Delete groups that not in the list");
+            // Delete groups that are not in the list
+            log("socket", "Delete groups that are not in the list", "debug");
             const slots = groupIDList.map(() => "?").join(",");
             await R.exec(`DELETE FROM \`group\` WHERE id NOT IN (${slots})`, groupIDList);
 

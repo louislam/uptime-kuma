@@ -49,9 +49,26 @@ export function ucfirst(str: string) {
     return firstLetter.toUpperCase() + str.substr(1);
 }
 
-export function debug(msg: any) {
-    if (isDev) {
-        console.log(msg);
+// log levels = info / warn / error / debug
+export function log(module: string, msg: any, level:string = "info") {
+    module = module.toUpperCase();
+    level = level.toUpperCase();
+
+    const now = new Date().toISOString();
+    const formattedMessage = (typeof msg === "string") ? `${now} [${module}] ${level}: ${msg}` : msg;
+
+    if (level === "INFO") {
+        console.log(formattedMessage);
+    } else if (level === "WARN") {
+        console.warn(formattedMessage);
+    } else if (level === "ERROR") {
+        console.error(formattedMessage);
+    } else if (level === "DEBUG") {
+        if (isDev) {
+            console.debug(formattedMessage);
+        }
+    } else {
+        console.log(formattedMessage);
     }
 }
 

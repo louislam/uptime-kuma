@@ -6,10 +6,10 @@
 //
 // Backend uses the compiled file util.js
 // Frontend uses util.ts
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.getMonitorRelativeURL = exports.genSecret = exports.getCryptoRandomInt = exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isDev = void 0;
-const _dayjs = require("dayjs");
-const dayjs = _dayjs;
+exports.__esModule = true;
+exports.getMonitorRelativeURL = exports.genSecret = exports.getCryptoRandomInt = exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.log = exports.ucfirst = exports.sleep = exports.flipStatus = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isDev = void 0;
+var _dayjs = require("dayjs");
+var dayjs = _dayjs;
 exports.isDev = process.env.NODE_ENV === "development";
 exports.appName = "Uptime Kuma";
 exports.DOWN = 0;
@@ -29,7 +29,7 @@ function flipStatus(s) {
 }
 exports.flipStatus = flipStatus;
 function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise(function (resolve) { return setTimeout(resolve, ms); });
 }
 exports.sleep = sleep;
 /**
@@ -40,16 +40,36 @@ function ucfirst(str) {
     if (!str) {
         return str;
     }
-    const firstLetter = str.substr(0, 1);
+    var firstLetter = str.substr(0, 1);
     return firstLetter.toUpperCase() + str.substr(1);
 }
 exports.ucfirst = ucfirst;
-function debug(msg) {
-    if (exports.isDev) {
-        console.log(msg);
+// log levels = info / warn / error / debug
+function log(module, msg, level) {
+    if (level === void 0) { level = "info"; }
+    module = module.toUpperCase();
+    level = level.toUpperCase();
+    var now = new Date().toISOString();
+    var formattedMessage = (typeof msg === "string") ? now + " [" + module + "] " + level + ": " + msg : msg;
+    if (level === "INFO") {
+        console.log(formattedMessage);
+    }
+    else if (level === "WARN") {
+        console.warn(formattedMessage);
+    }
+    else if (level === "ERROR") {
+        console.error(formattedMessage);
+    }
+    else if (level === "DEBUG") {
+        if (exports.isDev) {
+            console.debug(formattedMessage);
+        }
+    }
+    else {
+        console.log(formattedMessage);
     }
 }
-exports.debug = debug;
+exports.log = log;
 function polyfill() {
     /**
      * String.prototype.replaceAll() polyfill
@@ -69,16 +89,17 @@ function polyfill() {
     }
 }
 exports.polyfill = polyfill;
-class TimeLogger {
-    constructor() {
+var TimeLogger = /** @class */ (function () {
+    function TimeLogger() {
         this.startTime = dayjs().valueOf();
     }
-    print(name) {
+    TimeLogger.prototype.print = function (name) {
         if (exports.isDev && process.env.TIMELOGGER === "1") {
             console.log(name + ": " + (dayjs().valueOf() - this.startTime) + "ms");
         }
-    }
-}
+    };
+    return TimeLogger;
+}());
 exports.TimeLogger = TimeLogger;
 /**
  * Returns a random number between min (inclusive) and max (exclusive)
@@ -106,12 +127,12 @@ exports.getRandomInt = getRandomInt;
  * Returns either the NodeJS crypto.randomBytes() function or its
  * browser equivalent implemented via window.crypto.getRandomValues()
  */
-let getRandomBytes = ((typeof window !== 'undefined' && window.crypto)
+var getRandomBytes = ((typeof window !== 'undefined' && window.crypto)
     // Browsers
     ? function () {
-        return (numBytes) => {
-            let randomBytes = new Uint8Array(numBytes);
-            for (let i = 0; i < numBytes; i += 65536) {
+        return function (numBytes) {
+            var randomBytes = new Uint8Array(numBytes);
+            for (var i = 0; i < numBytes; i += 65536) {
                 window.crypto.getRandomValues(randomBytes.subarray(i, i + Math.min(numBytes - i, 65536)));
             }
             return randomBytes;
@@ -123,13 +144,13 @@ let getRandomBytes = ((typeof window !== 'undefined' && window.crypto)
     })();
 function getCryptoRandomInt(min, max) {
     // synchronous version of: https://github.com/joepie91/node-random-number-csprng
-    const range = max - min;
+    var range = max - min;
     if (range >= Math.pow(2, 32))
         console.log("Warning! Range is too large.");
-    let tmpRange = range;
-    let bitsNeeded = 0;
-    let bytesNeeded = 0;
-    let mask = 1;
+    var tmpRange = range;
+    var bitsNeeded = 0;
+    var bytesNeeded = 0;
+    var mask = 1;
     while (tmpRange > 0) {
         if (bitsNeeded % 8 === 0)
             bytesNeeded += 1;
@@ -137,9 +158,9 @@ function getCryptoRandomInt(min, max) {
         mask = mask << 1 | 1;
         tmpRange = tmpRange >>> 1;
     }
-    const randomBytes = getRandomBytes(bytesNeeded);
-    let randomValue = 0;
-    for (let i = 0; i < bytesNeeded; i++) {
+    var randomBytes = getRandomBytes(bytesNeeded);
+    var randomValue = 0;
+    for (var i = 0; i < bytesNeeded; i++) {
         randomValue |= randomBytes[i] << 8 * i;
     }
     randomValue = randomValue & mask;
@@ -151,11 +172,12 @@ function getCryptoRandomInt(min, max) {
     }
 }
 exports.getCryptoRandomInt = getCryptoRandomInt;
-function genSecret(length = 64) {
-    let secret = "";
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    const charsLength = chars.length;
-    for (let i = 0; i < length; i++) {
+function genSecret(length) {
+    if (length === void 0) { length = 64; }
+    var secret = "";
+    var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    var charsLength = chars.length;
+    for (var i = 0; i < length; i++) {
         secret += chars.charAt(getCryptoRandomInt(0, charsLength - 1));
     }
     return secret;
