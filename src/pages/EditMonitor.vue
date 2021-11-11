@@ -257,13 +257,13 @@
                                 <!-- Body -->
                                 <div class="my-3">
                                     <label for="body" class="form-label">{{ $t("Body") }}</label>
-                                    <textarea id="body" v-model="monitor.body" class="form-control" :placeholder="bodyPlaceholder"></textarea>
+                                    <textarea id="body" v-model="monitor.body" class="form-control" :placeholder="$t('bodyPlaceholder')"></textarea>
                                 </div>
 
                                 <!-- Headers -->
                                 <div class="my-3">
                                     <label for="headers" class="form-label">{{ $t("Headers") }}</label>
-                                    <textarea id="headers" v-model="monitor.headers" class="form-control" :placeholder="headersPlaceholder"></textarea>
+                                    <textarea id="headers" v-model="monitor.headers" class="form-control" :placeholder="$t('headersPlaceholder')"></textarea>
                                 </div>
                             </template>
                         </div>
@@ -338,20 +338,6 @@ export default {
         pushURL() {
             return this.$root.baseURL + "/api/push/" + this.monitor.pushToken + "?msg=OK&ping=";
         },
-
-        bodyPlaceholder() {
-            return `Example:
-{
-    "key": "value"
-}`;
-        },
-
-        headersPlaceholder() {
-            return `Example:
-{
-    "HeaderName": "HeaderValue"
-}`;
-        }
 
     },
     watch: {
