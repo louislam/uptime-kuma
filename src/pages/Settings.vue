@@ -435,7 +435,7 @@ dayjs.extend(timezone);
 
 import { timezoneList, setPageLocale } from "../util-frontend";
 import { useToast } from "vue-toastification";
-import { debug } from "../util.ts";
+import { log } from "../util.ts";
 
 const toast = useToast();
 
@@ -639,20 +639,20 @@ export default {
                     this.loadDatabaseSize();
                     toast.success("Done");
                 } else {
-                    debug(res);
+                    log("settings", res, "debug");
                 }
             });
         },
 
         loadDatabaseSize() {
-            debug("load database size");
+            log("settings", "load database size", "debug");
             this.$root.getSocket().emit("getDatabaseSize", (res) => {
 
                 if (res.ok) {
                     this.databaseSize = res.size;
-                    debug("database size: " + res.size);
+                    log("settings", "database size: " + res.size, "debug");
                 } else {
-                    debug(res);
+                    log("settings", res, "debug");
                 }
 
             });
