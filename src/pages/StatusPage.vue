@@ -468,10 +468,10 @@ export default {
         },
 
         addGroup() {
-            let groupName = "Untitled Group";
+            let groupName = this.$t("Untitled Group");
 
             if (this.$root.publicGroupList.length === 0) {
-                groupName = "Services";
+                groupName = this.$t("Services");
             }
 
             this.$root.publicGroupList.push({

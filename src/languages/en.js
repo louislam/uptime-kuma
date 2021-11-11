@@ -309,4 +309,7 @@ export default {
     recent: "Recent",
     headersPlaceholder: "Example:\n\{\n    \"HeaderName\": \"HeaderValue\"\n}",
     bodyPlaceholder: "Example:\n\{\n    \"key\": \"value\"\n}",
+    // Status page
+    "Untitled Group": "Untitled Group",
+    "Services": "Services",
 };
