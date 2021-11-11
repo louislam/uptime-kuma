@@ -215,7 +215,7 @@
                                     <a href="#" @click="$refs.notificationDialog.show(notification.id)">{{ $t("Edit") }}</a>
                                 </label>
 
-                                <span v-if="notification.isDefault == true" class="badge bg-primary ms-2">Default</span>
+                                <span v-if="notification.isDefault == true" class="badge bg-primary ms-2">{{ $t("Default") }}</span>
                             </div>
 
                             <button class="btn btn-primary me-2" type="button" @click="$refs.notificationDialog.show()">

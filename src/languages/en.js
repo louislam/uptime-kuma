@@ -307,6 +307,7 @@ export default {
     steamApiKeyDescription: "For monitoring a Steam Game Server you need a Steam Web-API key. You can register your API key here: ",
     "Current User": "Current User",
     recent: "Recent",
+    Default: "Default",
     headersPlaceholder: "Example:\n\{\n    \"HeaderName\": \"HeaderValue\"\n}",
     bodyPlaceholder: "Example:\n\{\n    \"key\": \"value\"\n}",
     // Status page
