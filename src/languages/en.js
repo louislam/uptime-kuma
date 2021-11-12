@@ -324,6 +324,7 @@ export default {
     light: "light",
     dark: "dark",
     Post: "Post",
+    "Please input title and content": "Please input title and content",
     Created: "Created",
     "Last Updated": "Last Updated",
     Unpin: "Unpin",
