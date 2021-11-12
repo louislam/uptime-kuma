@@ -125,7 +125,7 @@
 
                 <div v-if="editIncidentMode" class="dropdown d-inline-block me-2">
                     <button id="dropdownMenuButton1" class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        {{ $t("Style") }}: {{ incident.style }}
+                        {{ $t("Style") }}: {{ $t(incident.style) }}
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
                         <li><a class="dropdown-item" href="#" @click="incident.style = 'info'">{{ $t("info") }}</a></li>
