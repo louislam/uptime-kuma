@@ -307,6 +307,7 @@ export default {
     steamApiKeyDescription: "For monitoring a Steam Game Server you need a Steam Web-API key. You can register your API key here: ",
     "Current User": "Current User",
     recent: "Recent",
+    Done: "Done",
     Security: "Security",
     "Shrink Database": "Shrink Database",
     Default: "Default",

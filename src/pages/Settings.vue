@@ -637,7 +637,7 @@ export default {
             this.$root.getSocket().emit("shrinkDatabase", (res) => {
                 if (res.ok) {
                     this.loadDatabaseSize();
-                    toast.success("Done");
+                    toast.success(this.$t("Done"));
                 } else {
                     debug(res);
                 }
