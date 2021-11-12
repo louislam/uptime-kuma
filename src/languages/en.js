@@ -312,6 +312,8 @@ export default {
     Security: "Security",
     "Steam API Key": "Steam API Key",
     "Shrink Database": "Shrink Database",
+    "Pick a RR-Type...": "Pick a RR-Type...",
+    "Pick Accepted Status Codes...": "Pick Accepted Status Codes...",
     Default: "Default",
     headersPlaceholder: "Example:\n{\n    \"HeaderName\": \"HeaderValue\"\n}",
     bodyPlaceholder: "Example:\n{\n    \"key\": \"value\"\n}",

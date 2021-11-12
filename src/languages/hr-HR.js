@@ -312,6 +312,8 @@ export default {
     Info: "Informacije",
     Security: "Sigurnost",
     "Shrink Database": "Smanji bazu podataka",
+    "Pick a RR-Type...": "Odaberite vrstu DNS zapisa od navedenih...",
+    "Pick Accepted Status Codes...": "Odaberite HTTP statusne kodove koji će biti prihvaćeni...",
     "Steam API Key": "Steam API ključ",
     Default: "Zadano",
     headersPlaceholder: "Primjer:\n{\n    \"NazivZaglavlja\": \"VrijednostZaglavlja\"\n}",
