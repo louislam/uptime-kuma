@@ -309,6 +309,7 @@ export default {
     "Current User": "Trenutni korisnik",
     recent: "Nedavno",
     Done: "Gotovo",
+    Info: "Informacije",
     Security: "Sigurnost",
     "Shrink Database": "Smanji bazu podataka",
     Default: "Zadano",

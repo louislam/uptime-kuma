@@ -308,6 +308,7 @@ export default {
     "Current User": "Current User",
     recent: "Recent",
     Done: "Done",
+    Info: "Info",
     Security: "Security",
     "Shrink Database": "Shrink Database",
     Default: "Default",
