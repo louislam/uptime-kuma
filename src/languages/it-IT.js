@@ -172,7 +172,7 @@ export default {
     "Search...": "Cerca...",
     "Avg. Ping": "Tempo di risposta al ping medio",
     "Avg. Response": "Tempo di risposta medio",
-    "Entry Page": "Entry Page",
+    "Entry Page": "Pagina Principale",
     statusPageNothing: "Non c'è nulla qui, aggiungere un gruppo oppure un monitoraggio.",
     "No Services": "Nessun Servizio",
     "All Systems Operational": "Tutti i sistemi sono operativi",
