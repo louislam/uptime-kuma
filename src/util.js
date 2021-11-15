@@ -50,7 +50,7 @@ function log(module, msg, level) {
     var now = new Date().toISOString();
     var formattedMessage = (typeof msg === "string") ? now + " [" + module + "] " + level + ": " + msg : msg;
     if (level === "INFO") {
-        console.log(formattedMessage);
+        console.info(formattedMessage);
     }
     else if (level === "WARN") {
         console.warn(formattedMessage);

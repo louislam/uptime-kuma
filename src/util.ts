@@ -57,7 +57,7 @@ function log(module: string, msg: any, level:string) {
     const formattedMessage = (typeof msg === "string") ? `${now} [${module}] ${level}: ${msg}` : msg;
 
     if (level === "INFO") {
-        console.log(formattedMessage);
+        console.info(formattedMessage);
     } else if (level === "WARN") {
         console.warn(formattedMessage);
     } else if (level === "ERROR") {
