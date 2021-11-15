@@ -7,7 +7,7 @@
 // Backend uses the compiled file util.js
 // Frontend uses util.ts
 exports.__esModule = true;
-exports.getMonitorRelativeURL = exports.genSecret = exports.getCryptoRandomInt = exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.log = exports.ucfirst = exports.sleep = exports.flipStatus = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isDev = void 0;
+exports.getMonitorRelativeURL = exports.genSecret = exports.getCryptoRandomInt = exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.log_debug = exports.log_error = exports.log_warn = exports.log_info = exports.ucfirst = exports.sleep = exports.flipStatus = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isDev = void 0;
 var _dayjs = require("dayjs");
 var dayjs = _dayjs;
 exports.isDev = process.env.NODE_ENV === "development";
@@ -44,9 +44,7 @@ function ucfirst(str) {
     return firstLetter.toUpperCase() + str.substr(1);
 }
 exports.ucfirst = ucfirst;
-// log levels = info / warn / error / debug
 function log(module, msg, level) {
-    if (level === void 0) { level = "info"; }
     module = module.toUpperCase();
     level = level.toUpperCase();
     var now = new Date().toISOString();
@@ -69,7 +67,22 @@ function log(module, msg, level) {
         console.log(formattedMessage);
     }
 }
-exports.log = log;
+function log_info(module, msg) {
+    log(module, msg, "info");
+}
+exports.log_info = log_info;
+function log_warn(module, msg) {
+    log(module, msg, "warn");
+}
+exports.log_warn = log_warn;
+function log_error(module, msg) {
+    log(module, msg, "error");
+}
+exports.log_error = log_error;
+function log_debug(module, msg) {
+    log(module, msg, "debug");
+}
+exports.log_debug = log_debug;
 function polyfill() {
     /**
      * String.prototype.replaceAll() polyfill

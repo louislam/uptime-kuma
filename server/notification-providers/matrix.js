@@ -1,7 +1,7 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 const Crypto = require("crypto");
-const { log } = require("../../src/util");
+const { log_debug } = require("../../src/util");
 
 class Matrix extends NotificationProvider {
     name = "matrix";
@@ -17,11 +17,11 @@ class Matrix extends NotificationProvider {
                 .slice(0, size)
         );
 
-        log("notification", "Random String: " + randomString, "debug");
+        log_debug("notification", "Random String: " + randomString);
 
         const roomId = encodeURIComponent(notification.internalRoomId);
 
-        log("notification", "Matrix Room ID: " + roomId, "debug");
+        log_debug("notification", "Matrix Room ID: " + roomId);
 
         try {
             let config = {

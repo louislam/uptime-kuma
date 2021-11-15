@@ -23,14 +23,14 @@ const Feishu = require("./notification-providers/feishu");
 const AliyunSms = require("./notification-providers/aliyun-sms");
 const DingDing = require("./notification-providers/dingding");
 const Bark = require("./notification-providers/bark");
-const { log } = require("../src/util");
+const { log_info } = require("../src/util");
 
 class Notification {
 
     providerList = {};
 
     static init() {
-        log("notification", "Prepare Notification Providers");
+        log_info("notification", "Prepare Notification Providers");
 
         this.providerList = {};
 

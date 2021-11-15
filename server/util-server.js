@@ -1,7 +1,7 @@
 const tcpp = require("tcp-ping");
 const Ping = require("./ping-lite");
 const { R } = require("redbean-node");
-const { log } = require("../src/util");
+const { log_debug } = require("../src/util");
 const passwordHash = require("./password-hash");
 const dayjs = require("dayjs");
 const { Resolver } = require("dns");
@@ -119,7 +119,7 @@ exports.setting = async function (key) {
 
     try {
         const v = JSON.parse(value);
-        log("util", `Get Setting: ${key}: ${v}`, "debug");
+        log_debug("util", `Get Setting: ${key}: ${v}`);
         return v;
     } catch (e) {
         return value;
@@ -206,7 +206,7 @@ const parseCertificateInfo = function (info) {
     const existingList = {};
 
     while (link) {
-        log("util", `[${i}] ${link.fingerprint}`, "debug");
+        log_debug("util", `[${i}] ${link.fingerprint}`);
 
         if (!link.valid_from || !link.valid_to) {
             break;
@@ -221,7 +221,7 @@ const parseCertificateInfo = function (info) {
         if (link.issuerCertificate == null) {
             break;
         } else if (link.issuerCertificate.fingerprint in existingList) {
-            log("util", `[Last] ${link.issuerCertificate.fingerprint}`, "debug");
+            log_debug("util", `[Last] ${link.issuerCertificate.fingerprint}`);
             link.issuerCertificate = null;
             break;
         } else {
@@ -242,7 +242,7 @@ exports.checkCertificate = function (res) {
     const info = res.request.res.socket.getPeerCertificate(true);
     const valid = res.request.res.socket.authorized || false;
 
-    log("util", "Parsing Certificate Info", "debug");
+    log_debug("util", "Parsing Certificate Info");
     const parsedInfo = parseCertificateInfo(info);
 
     return {
@@ -345,7 +345,7 @@ exports.startUnitTest = async () => {
  */
 exports.convertToUTF8 = (body) => {
     const guessEncoding = chardet.detect(body);
-    //log("util", "Guess Encoding: " + guessEncoding, "debug");
+    //log_debug("util", "Guess Encoding: " + guessEncoding);
     const str = iconv.decode(body, guessEncoding);
     return str.toString();
 };

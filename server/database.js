@@ -1,7 +1,7 @@
 const fs = require("fs");
 const { R } = require("redbean-node");
 const { setSetting, setting } = require("./util-server");
-const { log, sleep } = require("../src/util");
+const { log_info, log_debug, log_error, sleep } = require("../src/util");
 const dayjs = require("dayjs");
 const knex = require("knex");
 
@@ -76,7 +76,7 @@ class Database {
             fs.mkdirSync(Database.uploadDir, { recursive: true });
         }
 
-        log("db", `Data Dir: ${Database.dataDir}`);
+        log_info("db", `Data Dir: ${Database.dataDir}`);
     }
 
     static async connect() {
@@ -117,10 +117,10 @@ class Database {
         await R.exec("PRAGMA cache_size = -12000");
         await R.exec("PRAGMA auto_vacuum = FULL");
 
-        log("db", "SQLite config:");
-        log("db", await R.getAll("PRAGMA journal_mode"));
-        log("db", await R.getAll("PRAGMA cache_size"));
-        log("db","SQLite Version: " + await R.getCell("SELECT sqlite_version()"));
+        log_info("db", "SQLite config:");
+        log_info("db", await R.getAll("PRAGMA journal_mode"));
+        log_info("db", await R.getAll("PRAGMA cache_size"));
+        log_info("db","SQLite Version: " + await R.getCell("SELECT sqlite_version()"));
     }
 
     static async patch() {
@@ -130,15 +130,15 @@ class Database {
             version = 0;
         }
 
-        log("db", "Your database version: " + version);
-        log("db", "Latest database version: " + this.latestVersion);
+        log_info("db", "Your database version: " + version);
+        log_info("db", "Latest database version: " + this.latestVersion);
 
         if (version === this.latestVersion) {
-            log("db", "Database patch not needed");
+            log_info("db", "Database patch not needed");
         } else if (version > this.latestVersion) {
-            log("db", "Warning: Database version is newer than expected");
+            log_info("db", "Warning: Database version is newer than expected");
         } else {
-            log("db", "Database patch is needed");
+            log_info("db", "Database patch is needed");
 
             this.backup(version);
 
@@ -146,17 +146,17 @@ class Database {
             try {
                 for (let i = version + 1; i <= this.latestVersion; i++) {
                     const sqlFile = `./db/patch${i}.sql`;
-                    log("db", `Patching ${sqlFile}`);
+                    log_info("db", `Patching ${sqlFile}`);
                     await Database.importSQLFile(sqlFile);
-                    log("db", `Patched ${sqlFile}`);
+                    log_info("db", `Patched ${sqlFile}`);
                     await setSetting("database_version", i);
                 }
             } catch (ex) {
                 await Database.close();
 
-                log("db", ex, "error");
-                log("db", "Start Uptime-Kuma failed due to issue patching the database", "error");
-                log("db", "Please submit a bug report if you still encounter the problem after restart: https://github.com/louislam/uptime-kuma/issues", "error");
+                log_error("db", ex);
+                log_error("db", "Start Uptime-Kuma failed due to issue patching the database");
+                log_error("db", "Please submit a bug report if you still encounter the problem after restart: https://github.com/louislam/uptime-kuma/issues");
 
                 this.restore();
                 process.exit(1);
@@ -171,15 +171,15 @@ class Database {
      * @returns {Promise<void>}
      */
     static async patch2() {
-        log("db", "Database Patch 2.0 Process");
+        log_info("db", "Database Patch 2.0 Process");
         let databasePatchedFiles = await setting("databasePatchedFiles");
 
         if (! databasePatchedFiles) {
             databasePatchedFiles = {};
         }
 
-        log("db", "Patched files:", "debug");
-        log("db", databasePatchedFiles, "debug");
+        log_debug("db", "Patched files:");
+        log_debug("db", databasePatchedFiles);
 
         try {
             for (let sqlFilename in this.patchList) {
@@ -187,15 +187,15 @@ class Database {
             }
 
             if (this.patched) {
-                log("db", "Database Patched Successfully");
+                log_info("db", "Database Patched Successfully");
             }
 
         } catch (ex) {
             await Database.close();
 
-            log("db", ex, "error");
-            log("db", "Start Uptime-Kuma failed due to issue patching the database", "error");
-            log("db", "Please submit the bug report if you still encounter the problem after restart: https://github.com/louislam/uptime-kuma/issues", "error");
+            log_error("db", ex);
+            log_error("db", "Start Uptime-Kuma failed due to issue patching the database");
+            log_error("db", "Please submit the bug report if you still encounter the problem after restart: https://github.com/louislam/uptime-kuma/issues");
 
             this.restore();
 
@@ -214,16 +214,16 @@ class Database {
         let value = this.patchList[sqlFilename];
 
         if (! value) {
-            log("db", sqlFilename + " skip");
+            log_info("db", sqlFilename + " skip");
             return;
         }
 
         // Check if patched
         if (! databasePatchedFiles[sqlFilename]) {
-            log("db", sqlFilename + " is not patched");
+            log_info("db", sqlFilename + " is not patched");
 
             if (value.parents) {
-                log("db", sqlFilename + " need parents");
+                log_info("db", sqlFilename + " need parents");
                 for (let parentSQLFilename of value.parents) {
                     await this.patch2Recursion(parentSQLFilename, databasePatchedFiles);
                 }
@@ -231,14 +231,14 @@ class Database {
 
             this.backup(dayjs().format("YYYYMMDDHHmmss"));
 
-            log("db", sqlFilename + " is patching");
+            log_info("db", sqlFilename + " is patching");
             this.patched = true;
             await this.importSQLFile("./db/" + sqlFilename);
             databasePatchedFiles[sqlFilename] = true;
-            log("db", sqlFilename + " was patched successfully");
+            log_info("db", sqlFilename + " was patched successfully");
 
         } else {
-            log("db", sqlFilename + " is already patched, skip", "debug");
+            log_debug("db", sqlFilename + " is already patched, skip");
         }
     }
 
@@ -290,7 +290,7 @@ class Database {
         };
         process.addListener("unhandledRejection", listener);
 
-        log("db", "Closing the database");
+        log_info("db", "Closing the database");
 
         while (true) {
             Database.noReject = true;
@@ -300,10 +300,10 @@ class Database {
             if (Database.noReject) {
                 break;
             } else {
-                log("db", "Waiting to close the database");
+                log_info("db", "Waiting to close the database");
             }
         }
-        log("db", "SQLite closed");
+        log_info("db", "SQLite closed");
 
         process.removeListener("unhandledRejection", listener);
     }
@@ -315,7 +315,7 @@ class Database {
      */
     static backup(version) {
         if (! this.backupPath) {
-            log("db", "Backing up the database");
+            log_info("db", "Backing up the database");
             this.backupPath = this.dataDir + "kuma.db.bak" + version;
             fs.copyFileSync(Database.path, this.backupPath);
 
@@ -338,7 +338,7 @@ class Database {
      */
     static restore() {
         if (this.backupPath) {
-            log("db", "Patching the database failed!!! Restoring the backup", "error");
+            log_error("db", "Patching the database failed!!! Restoring the backup");
 
             const shmPath = Database.path + "-shm";
             const walPath = Database.path + "-wal";
@@ -357,7 +357,7 @@ class Database {
                     fs.unlinkSync(walPath);
                 }
             } catch (e) {
-                log("db", "Restore failed; you may need to restore the backup manually", "error");
+                log_error("db", "Restore failed; you may need to restore the backup manually");
                 process.exit(1);
             }
 
@@ -373,14 +373,14 @@ class Database {
             }
 
         } else {
-            log("db", "Nothing to restore");
+            log_info("db", "Nothing to restore");
         }
     }
 
     static getSize() {
-        log("db", "Database.getSize()", "debug");
+        log_debug("db", "Database.getSize()");
         let stats = fs.statSync(Database.path);
-        log("db", stats, "debug");
+        log_debug("db", stats);
         return stats.size;
     }
 

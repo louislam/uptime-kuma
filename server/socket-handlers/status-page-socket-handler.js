@@ -1,7 +1,7 @@
 const { R } = require("redbean-node");
 const { checkLogin, setSettings } = require("../util-server");
 const dayjs = require("dayjs");
-const { log } = require("../../src/util");
+const { log, log_info, log_debug, log_error } = require("../../src/util");
 const ImageDataURI = require("../image-data-uri");
 const Database = require("../database");
 const apicache = require("../modules/apicache");
@@ -124,7 +124,7 @@ module.exports.statusPageSocketHandler = (socket) => {
                 ]);
 
                 let monitorOrder = 1;
-                console.log(group.monitorList);
+                log_info("socket", group.monitorList);
 
                 for (let monitor of group.monitorList) {
                     let relationBean = R.dispense("monitor_group");
@@ -139,7 +139,7 @@ module.exports.statusPageSocketHandler = (socket) => {
             }
 
             // Delete groups that are not in the list
-            log("socket", "Delete groups that are not in the list", "debug");
+            log_debug("socket", "Delete groups that are not in the list");
             const slots = groupIDList.map(() => "?").join(",");
             await R.exec(`DELETE FROM \`group\` WHERE id NOT IN (${slots})`, groupIDList);
 
@@ -149,7 +149,7 @@ module.exports.statusPageSocketHandler = (socket) => {
             });
 
         } catch (error) {
-            console.log(error);
+            log_error("socket", error);
 
             callback({
                 ok: false,

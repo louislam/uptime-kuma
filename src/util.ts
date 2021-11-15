@@ -49,8 +49,7 @@ export function ucfirst(str: string) {
     return firstLetter.toUpperCase() + str.substr(1);
 }
 
-// log levels = info / warn / error / debug
-export function log(module: string, msg: any, level:string = "info") {
+function log(module: string, msg: any, level:string) {
     module = module.toUpperCase();
     level = level.toUpperCase();
 
@@ -72,6 +71,21 @@ export function log(module: string, msg: any, level:string = "info") {
     }
 }
 
+export function log_info(module: string, msg: any) {
+    log(module, msg, "info");
+}
+
+export function log_warn(module: string, msg: any) {
+    log(module, msg, "warn");
+}
+
+export function log_error(module: string, msg: any) {
+    log(module, msg, "error");
+}
+
+export function log_debug(module: string, msg: any) {
+    log(module, msg, "debug");
+}
 
 declare global { interface String { replaceAll(str: string, newStr: string): string; } }
 
