@@ -256,7 +256,7 @@ export default {
     "SMS Type": "SMS Type",
     octopushTypePremium: "Premium (Nhanh - Khuyến nghị nên dùng cho cảnh báo)",
     octopushTypeLowCost: "Giá rẻ (Chậm, thỉnh thoảng bị chặn)",
-    checkPrice: "Check {0} prices:" "Kiểm tra giá {0}:",
+    checkPrice: "Kiểm tra giá {0}:",
     apiCredentials: "API credentials",
     octopushLegacyHint: "Bạn muốn sử dụng phiên bản cũ của Octopush (2011-2020) hay phiên bản mới?",
     "Check octopush prices": "Kiểm tra giá octopush {0}.",
