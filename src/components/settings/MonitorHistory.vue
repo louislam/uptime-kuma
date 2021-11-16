@@ -19,6 +19,11 @@
             />
         </div>
         <div class="my-4">
+            <button class="btn btn-primary" type="button" @click="saveSettings()">
+                {{ $t("Save") }}
+            </button>
+        </div>
+        <div class="my-4">
             <div class="my-3">
                 <button class="btn btn-outline-info me-2" @click="shrinkDatabase">
                     {{ $t("Shrink Database") }} ({{ databaseSizeDisplay }})
