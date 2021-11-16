@@ -541,8 +541,8 @@ exports.entryPage = "dashboard";
 
                 await updateMonitorNotification(bean.id, notificationIDList);
 
-                await startMonitor(socket.userID, bean.id);
                 await sendMonitorList(socket);
+                await startMonitor(socket.userID, bean.id);
 
                 callback({
                     ok: true,

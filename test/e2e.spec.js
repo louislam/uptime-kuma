@@ -74,6 +74,12 @@ describe("Init", () => {
         await page.click("#url", { clickCount: 3 });
         await page.keyboard.type(baseURL);
         await page.keyboard.press("Enter");
+
+        await page.waitForFunction(() => {
+            const badge = document.querySelector("span.badge");
+            return badge && badge.innerText == "100%";
+        }, { timeout: 5000 });
+
     });
 
     // Settings Page
