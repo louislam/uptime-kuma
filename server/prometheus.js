@@ -42,8 +42,9 @@ class Prometheus {
             monitor_hostname: monitor.hostname,
             monitor_port: monitor.port
         };
-        for (var t in monitor.tags) {
-            this.monitorLabelValues[k] = monitor.tags[k];
+
+        for (let tag in monitor.tags) {
+            this.monitorLabelValues[tag] = monitor.tags[tag];
         }
     }
 
