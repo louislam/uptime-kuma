@@ -127,8 +127,23 @@
                                 </div>
 
                                 <div class="my-3">
+                                    <label for="mqttPort" class="form-label">{{ $t("port") }}</label>
+                                    <input id="mqttPort" v-model="monitor.mqttPort" type="text" class="form-control">
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="mqttUsername" class="form-label">{{ $t("username") }}</label>
+                                    <input id="mqttUsername" v-model="monitor.mqttUsername" type="text" class="form-control">
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="mqttPassword" class="form-label">{{ $t("password") }}</label>
+                                    <input id="mqttPassword" v-model="monitor.mqttPassword" type="text" class="form-control">
+                                </div>
+
+                                <div class="my-3">
                                     <label for="mqttTopic" class="form-label">{{ $t("topic") }}</label>
-                                    <input id="mqttTopic" v-model="monitor.topic" type="text" class="form-control" required>
+                                    <input id="mqttTopic" v-model="monitor.mqttTopic" type="text" class="form-control" required>
                                     <div class="form-text">
                                         {{ $t("topicExplanation") }}
                                     </div>
@@ -136,7 +151,7 @@
 
                                 <div class="my-3">
                                     <label for="mqttSuccessMessage" class="form-label">{{ $t("successMessage") }}</label>
-                                    <input id="mqttSuccessMessage" v-model="monitor.successMessage" type="text" class="form-control" required>
+                                    <input id="mqttSuccessMessage" v-model="monitor.mqttSuccessMessage" type="text" class="form-control" required>
                                     <div class="form-text">
                                         {{ $t("successMessageExplanation") }}
                                     </div>

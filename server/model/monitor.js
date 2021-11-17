@@ -321,7 +321,7 @@ class Monitor extends BeanModel {
                     }
                 } else if (this.type === "mqtt") {
                     try {
-                        bean.msg = await mqttAsync(this.url, this.topic, this.successMessage);
+                        bean.msg = await mqttAsync(this.url, this.mqttPort, this.mqttUsername, this.mqttPassword, this.mqttTopic, this.mqttSuccessMessage);
                         bean.status = UP;
                     } catch (error) {
                         bean.status = DOWN;
