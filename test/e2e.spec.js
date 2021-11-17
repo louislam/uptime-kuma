@@ -251,15 +251,15 @@ describe("Init", () => {
             await page.waitForSelector("#disableAuth-btn", { timeout: 3000 });
         });
 
-        it("Should clear all statistics", async () => {
-            await page.goto(baseURL + "/settings/monitor-history");
-            await click(page, "#clearAllStats-btn");
-            await click(page, ".btn.btn-danger");
-            await page.waitForFunction(() => {
-                const badge = document.querySelector("span.badge");
-                return badge && badge.innerText == "0%";
-            }, { timeout: 3000 });
-        });
+        // it("Should clear all statistics", async () => {
+        //     await page.goto(baseURL + "/settings/monitor-history");
+        //     await click(page, "#clearAllStats-btn");
+        //     await click(page, ".btn.btn-danger");
+        //     await page.waitForFunction(() => {
+        //         const badge = document.querySelector("span.badge");
+        //         return badge && badge.innerText == "0%";
+        //     }, { timeout: 3000 });
+        // });
     });
 
     /*
