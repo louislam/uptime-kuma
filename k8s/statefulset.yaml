@@ -1,0 +1,120 @@
+---
+## ConfigMap
+#apiVersion: v1
+#kind: ConfigMap
+#metadata:
+#  name: uptime-kuma-config-map
+#data:
+#  xxx: 'xxx'
+---
+## StatefulSet
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: uptime-kuma
+spec:
+  replicas: 1
+  serviceName: uptime-kuma-service
+  selector:
+    matchLabels:
+      app: uptime-kuma
+  template:
+    metadata:
+      labels:
+        app: uptime-kuma
+    spec:
+      containers:
+      - name: uptime-kuma
+        # Choose your own mirror version
+        image: louislam/uptime-kuma:1.10.0-alpine
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: uptime-kuma
+          containerPort: 3001
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 1000Mi
+#        envFrom:
+#        - configMapRef:
+#            name: uptime-kuma-config-map
+        volumeMounts:
+        - name: uptime-kuma-data
+          mountPath: /app/data
+#      imagePullSecrets:
+#        - name: k8s-auth
+
+  volumeClaimTemplates:
+  - metadata:
+      name: uptime-kuma-data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      volumeMode: Filesystem
+      resources:
+        requests:
+          storage: 2Gi
+      # Here you need to fill in your own storage class name
+      storageClassName: <Your storage class name>
+
+---
+## Here the headless service is separated from the external service for easy switching
+## Headless service
+apiVersion: v1
+kind: Service
+metadata:
+  name: uptime-kuma-service
+spec:
+  selector:
+    app: uptime-kuma
+  ports:
+  - name: uptime-kuma
+    port: 3001
+  clusterIP: None
+
+---
+## Externally accessible services
+## When Ingress is unavailable, you can use Service and use IP+Port to access
+#apiVersion: v1
+#kind: Service
+#metadata:
+#  name: uptime-kuma-external-service
+#spec:
+#  selector:
+#    app: uptime-kuma
+#  ports:
+#  - name: uptime-kuma
+#    protocol: TCP
+#    port: 3001
+#    targetPort: 3001
+#    # Default port 30010
+#    nodePort: 30010
+#  type: NodePort
+
+---
+## You can configure Ingress according to your own environment or use external services to expose services. If you use Ingress, Https can directly proxy.
+## Use wildcard certificate managed by cert-manager, Ingress configuration, for reference only
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: uptime-kuma-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    kubernetes.io/tls-acme: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  rules:
+  - host: <Your domain name>
+    http:
+      paths:
+      - backend:
+          serviceName: uptime-kuma-service
+          servicePort: 3001
+        path: /
+  tls:
+  - secretName: <Your certificate>
+    hosts:
+    - "<Your domain name>"
