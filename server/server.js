@@ -120,6 +120,7 @@ module.exports.io = io;
 const { sendNotificationList, sendHeartbeatList, sendImportantHeartbeatList, sendInfo } = require("./client");
 const { statusPageSocketHandler } = require("./socket-handlers/status-page-socket-handler");
 const databaseSocketHandler = require("./socket-handlers/database-socket-handler");
+const TwoFA = require("./2fa");
 
 app.use(express.json());
 
@@ -420,10 +421,7 @@ exports.entryPage = "dashboard";
         socket.on("disable2FA", async (callback) => {
             try {
                 checkLogin(socket);
-
-                await R.exec("UPDATE `user` SET twofa_status = 0 WHERE id = ? ", [
-                    socket.userID,
-                ]);
+                await TwoFA.disable2FA(socket.userID);
 
                 callback({
                     ok: true,
