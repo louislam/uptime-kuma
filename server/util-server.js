@@ -93,19 +93,12 @@ exports.pingAsync = function (hostname, ipv6 = false) {
 exports.mqttAsync = function (hostname, port = undefined, username = undefined, password = undefined, topic, okMessage) {
     return new Promise((resolve, reject) => {
         try {
-            console.log({
-                hostname,
-                port,
-                username,
-                password
-            });
             let client = mqtt.connect(hostname, {
                 port,
                 username,
                 password
             });
             client.on("connect", () => {
-                console.log(`Connected to ${hostname}:${port}, ${username}, ${password}`);
                 client.subscribe(topic);
             });
             client.on("message", (messageTopic, message) => {
