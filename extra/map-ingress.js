@@ -50,10 +50,9 @@ const findIngresses = async () => {
         }, []);
     });
 };
-const addMissingIngressesToDatabase = async (ingresses) => {
-    let monitorList = await R.find("monitor");
+const addMissingIngressesToDatabase = async (ingresses, monitorList, ingressTag) => {
 
-    const domains = ingresses.reduce((domains, ingress) => {
+    let domains = ingresses.reduce((domains, ingress) => {
         const namespace = ingress.metadata.namespace;
 
         // Check TLS hosts and routes
@@ -89,16 +88,52 @@ const addMissingIngressesToDatabase = async (ingresses) => {
 
         return domains;
     }, []);
+    domains = domains.filter(d => !d.domain.startsWith("*"));
     debug("Found " + domains.length + " domains");
 
+    // Add missing domains
     const missingDomains = domains.filter(domain => !monitorList.find(monitor => monitor.url.toLowerCase() === "https://" + domain.domain));
     debug("Found " + missingDomains.length + " missing monitors");
-
     for (let domain of missingDomains) {
         const monitor = await addMonitor(domain.domain);
         await addMonitorToGroup(monitor, "All Ingresses");
         await addMonitorToGroup(monitor, domain.namespace);
+        await addMonitorTag(monitor, ingressTag);
     }
+
+    //Remove missing monitors
+    const missingMonitors = monitorList.filter(monitor => !domains.find(d => monitor.url.toLowerCase() === "https://" + d.domain));
+    debug("Found " + missingMonitors.length + " outdated ingresses to be removed");
+    for (let monitor of missingMonitors) {
+        await R.trash(monitor);
+    }
+};
+
+const addMonitorTag = async (monitor, tag) => {
+    let monitorTag = await R.findOne("monitor_tag", "tag_id = ? and monitor_id = ?", [tag.id, monitor.id]);
+    if (monitorTag) {
+        return monitorTag;
+    }
+
+    monitorTag = await R.dispense("monitor_tag");
+    monitorTag.tag_id = tag.id;
+    monitorTag.monitor_id = monitor.id;
+    monitorTag.value = "kubernetes";
+    await R.store(monitorTag);
+
+    return monitorTag;
+};
+
+const getIngressTag = async () => {
+    let tag = await R.findOne("tag", "name = ?", ["Ingress"]);
+    if (!tag) {
+        tag = await R.dispense("tag");
+        tag.name = "Ingress";
+        tag.color = "#0048ff";
+        await R.store(tag);
+    }
+
+    return tag;
 };
 
 const addMonitorToGroup = async (monitor, groupName) => {
@@ -150,6 +185,13 @@ const addMonitor = async (domain) => {
     return bean;
 };
 
+const findIngressList = async (ingressTag) => {
+    const monitorIds = await R.getCol("SELECT monitor_id FROM monitor_tag WHERE tag_id = ?", [ingressTag.id]);
+    let ids = monitorIds.join(",");
+    let monitorList = await R.find("monitor", "id in (" + ids + ")");
+    return monitorList;
+};
+
 const main = async () => {
     Database.init(args);
     await Database.connect();
@@ -157,7 +199,9 @@ const main = async () => {
     const ingresses = await findIngresses();
     debug("found " + ingresses.length + " ingresses!");
 
-    await addMissingIngressesToDatabase(ingresses);
+    let ingressTag = await getIngressTag();
+    let monitorList = await findIngressList(ingressTag);
+    await addMissingIngressesToDatabase(ingresses, monitorList, ingressTag);
 };
 main().then(() => {
     debug("Finished");
