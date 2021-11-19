@@ -26,7 +26,7 @@ spec:
       containers:
       - name: uptime-kuma
         # Choose your own mirror version
-        image: louislam/uptime-kuma:1.10.0-alpine
+        image: louislam/uptime-kuma:1.10.2-alpine
         imagePullPolicy: IfNotPresent
         ports:
         - name: uptime-kuma
