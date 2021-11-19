@@ -41,6 +41,7 @@
         "update-version": "node extra/update-version.js",
         "mark-as-nightly": "node extra/mark-as-nightly.js",
         "reset-password": "node extra/reset-password.js",
+        "remove-2fa": "node extra/remove-2fa.js",
         "compile-install-script": "@powershell -NoProfile -ExecutionPolicy Unrestricted -Command ./extra/compile-install-script.ps1",
         "test-install-script-centos7": "npm run compile-install-script && docker build --progress plain -f test/test_install_script/centos7.dockerfile .",
         "test-install-script-alpine3": "npm run compile-install-script && docker build --progress plain -f test/test_install_script/alpine3.dockerfile .",
