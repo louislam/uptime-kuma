@@ -32,13 +32,16 @@ spec:
         - name: uptime-kuma
           containerPort: 3001
           protocol: TCP
+        # Compute Resource Quota https://kubernetes.io/docs/concepts/policy/resource-quotas/#compute-resource-quota
         resources:
+          # The node running Pod must meet the most basic requirements to run Pod.
           requests:
-            cpu: 100m
-            memory: 256Mi
-          limits:
             cpu: 500m
-            memory: 1000Mi
+            memory: 1024Mi
+          # The maximum amount of memory and CPU that can be used during Pod operation
+          limits:
+            cpu: 1000m
+            memory: 2048Mi
 #        envFrom:
 #        - configMapRef:
 #            name: uptime-kuma-config-map
@@ -97,7 +100,7 @@ spec:
 ---
 ## You can configure Ingress according to your own environment or use external services to expose services. If you use Ingress, Https can directly proxy.
 ## Use wildcard certificate managed by cert-manager, Ingress configuration, for reference only
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: uptime-kuma-ingress
