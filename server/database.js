@@ -4,6 +4,7 @@ const { setSetting, setting } = require("./util-server");
 const { debug, sleep } = require("../src/util");
 const dayjs = require("dayjs");
 const knex = require("knex");
+const MonitorCheck = require("./model/monitor-check");
 
 /**
  * Database & App Data Folder
@@ -52,6 +53,7 @@ class Database {
         "patch-http-monitor-method-body-and-headers.sql": true,
         "patch-2fa-invalidate-used-token.sql": true,
         "patch-notification_sent_history.sql": true,
+        "patch-add-monitor-checks-table.sql": true,
     }
 
     /**
@@ -110,6 +112,7 @@ class Database {
         // Auto map the model to a bean object
         R.freeze(true);
         await R.autoloadModels("./server/model");
+        R.modelList["monitor_checks"] = MonitorCheck;
 
         await R.exec("PRAGMA foreign_keys = ON");
         // Change to WAL

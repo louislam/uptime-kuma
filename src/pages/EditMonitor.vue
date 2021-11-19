@@ -10,21 +10,18 @@
 
                             <div class="my-3">
                                 <label for="type" class="form-label">{{ $t("Monitor Type") }}</label>
-                                <select id="type" v-model="monitor.type" class="form-select">
+                                <select id="type" :value="monitor.type" @input="changeMonitorType($event.target.value)" class="form-select">
                                     <option value="http">
-                                        HTTP(s)
+                                        {{ $t("HTTP(s)") }}
                                     </option>
                                     <option value="port">
-                                        TCP Port
+                                        {{ $t("TCP Port") }}
                                     </option>
                                     <option value="ping">
-                                        Ping
-                                    </option>
-                                    <option value="keyword">
-                                        HTTP(s) - {{ $t("Keyword") }}
+                                        {{ $t("Ping") }}
                                     </option>
                                     <option value="dns">
-                                        DNS
+                                        {{ $t("DNS") }}
                                     </option>
                                     <option value="push">
                                         Push
@@ -42,7 +39,7 @@
                             </div>
 
                             <!-- URL -->
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' " class="my-3">
+                            <div v-if="monitor.type === 'http'" class="my-3">
                                 <label for="url" class="form-label">{{ $t("URL") }}</label>
                                 <input id="url" v-model="monitor.url" type="url" class="form-control" pattern="https?://.+" required>
                             </div>
@@ -57,17 +54,8 @@
                                 </div>
                             </div>
 
-                            <!-- Keyword -->
-                            <div v-if="monitor.type === 'keyword' " class="my-3">
-                                <label for="keyword" class="form-label">{{ $t("Keyword") }}</label>
-                                <input id="keyword" v-model="monitor.keyword" type="text" class="form-control" required>
-                                <div class="form-text">
-                                    {{ $t("keywordDescription") }}
-                                </div>
-                            </div>
-
                             <!-- Hostname -->
-                            <!-- TCP Port / Ping / DNS / Steam only -->
+                            <!-- TCP Port / Ping / DNS only -->
                             <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam'" class="my-3">
                                 <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>
                                 <input id="hostname" v-model="monitor.hostname" type="text" class="form-control" :pattern="`${ipRegexPattern}|${hostnameRegexPattern}`" required>
@@ -139,7 +127,7 @@
 
                             <h2 v-if="monitor.type !== 'push'" class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
 
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' " class="my-3 form-check">
+                            <div v-if="monitor.type === 'http'" class="my-3 form-check">
                                 <input id="ignore-tls" v-model="monitor.ignoreTls" class="form-check-input" type="checkbox" value="">
                                 <label class="form-check-label" for="ignore-tls">
                                     {{ $t("ignoreTLSError") }}
@@ -156,8 +144,8 @@
                                 </div>
                             </div>
 
-                            <!-- HTTP / Keyword only -->
-                            <template v-if="monitor.type === 'http' || monitor.type === 'keyword' ">
+                            <!-- HTTP only -->
+                            <template v-if="monitor.type === 'http'">
                                 <div class="my-3">
                                     <label for="maxRedirects" class="form-label">{{ $t("Max. Redirects") }}</label>
                                     <input id="maxRedirects" v-model="monitor.maxredirects" type="number" class="form-control" required min="0" step="1">
@@ -166,26 +154,13 @@
                                     </div>
                                 </div>
 
-                                <div class="my-3">
-                                    <label for="acceptedStatusCodes" class="form-label">{{ $t("Accepted Status Codes") }}</label>
+                                <h2 class="mt-5 mb-2">{{ $t("Checks") }}</h2>
 
-                                    <VueMultiselect
-                                        id="acceptedStatusCodes"
-                                        v-model="monitor.accepted_statuscodes"
-                                        :options="acceptedStatusCodeOptions"
-                                        :multiple="true"
-                                        :close-on-select="false"
-                                        :clear-on-select="false"
-                                        :preserve-search="true"
-                                        placeholder="Pick Accepted Status Codes..."
-                                        :preselect-first="false"
-                                        :max-height="600"
-                                        :taggable="true"
-                                    ></VueMultiselect>
-
-                                    <div class="form-text">
-                                        {{ $t("acceptedStatusCodesDescription") }}
+                                <div class="my-3 mb-5">
+                                    <div v-for="(monitorCheck, index) in monitor.checks" :key="index" class="mb-3">
+                                        <MonitorCheckEditor :monitorCheck="monitorCheck" @change="(newMonitorCheck) => updateMonitorCheck(newMonitorCheck, index)" @delete="() => deleteMonitorCheck(index)"></MonitorCheckEditor>
                                     </div>
+                                    <button class="btn btn-outline-secondary btn-add-check" type="button" @click="addMonitorCheck()">{{ $t("Add check") }}</button>
                                 </div>
                             </template>
 
@@ -280,11 +255,10 @@
 import NotificationDialog from "../components/NotificationDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
 import CopyableInput from "../components/CopyableInput.vue";
-
+import MonitorCheckEditor from "../components/MonitorCheckEditor.vue";
 import { useToast } from "vue-toastification";
 import VueMultiselect from "vue-multiselect";
-import { genSecret, isDev } from "../util.ts";
-
+import { genSecret, HTTP_STATUS_CODE_SHOULD_EQUAL, isDev } from "../util.ts";
 const toast = useToast();
 
 export default {
@@ -292,6 +266,7 @@ export default {
         CopyableInput,
         NotificationDialog,
         TagsManager,
+        MonitorCheckEditor,
         VueMultiselect,
     },
 
@@ -423,7 +398,10 @@ export default {
                     ignoreTls: false,
                     upsideDown: false,
                     maxredirects: 10,
-                    accepted_statuscodes: ["200-299"],
+                    checks: [{
+                        type: HTTP_STATUS_CODE_SHOULD_EQUAL,
+                        value: ["200-299"],
+                    }],
                     dns_resolve_type: "A",
                     dns_resolve_server: "1.1.1.1",
                 };
@@ -447,7 +425,35 @@ export default {
                     }
                 });
             }
+        },
 
+        changeMonitorType(type) {
+            this.monitor.type = type;
+            if (type === 'http') {
+                this.monitor.checks = [{
+                    type: HTTP_STATUS_CODE_SHOULD_EQUAL,
+                    value: ["200-299"],
+                }];
+            } else {
+                delete this.monitor.checks;
+            }
+        },
+
+        addMonitorCheck() {
+            this.monitor.checks = [...(this.monitor.checks || []), {
+                type: null,
+                value: "",
+            }];
+        },
+
+        updateMonitorCheck(newMonitorCheck, index) {
+            this.monitor.checks[index] = newMonitorCheck;
+        },
+
+        deleteMonitorCheck(index) {
+            const newList = [...this.monitor.checks];
+            newList.splice(index, 1);
+            this.monitor.checks = newList;
         },
 
         isInputValid() {

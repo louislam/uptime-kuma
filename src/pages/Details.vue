@@ -6,13 +6,9 @@
                 <Tag v-for="tag in monitor.tags" :key="tag.id" :item="tag" :size="'sm'" />
             </div>
             <p class="url">
-                <a v-if="monitor.type === 'http' || monitor.type === 'keyword' " :href="monitor.url" target="_blank">{{ monitor.url }}</a>
+                <a v-if="monitor.type === 'http'" :href="monitor.url" target="_blank">{{ monitor.url }}</a>
                 <span v-if="monitor.type === 'port'">TCP Ping {{ monitor.hostname }}:{{ monitor.port }}</span>
                 <span v-if="monitor.type === 'ping'">Ping: {{ monitor.hostname }}</span>
-                <span v-if="monitor.type === 'keyword'">
-                    <br>
-                    <span>{{ $t("Keyword") }}:</span> <span class="keyword">{{ monitor.keyword }}</span>
-                </span>
                 <span v-if="monitor.type === 'dns'">[{{ monitor.dns_resolve_type }}] {{ monitor.hostname }}
                     <br>
                     <span>{{ $t("Last Result") }}:</span> <span class="keyword">{{ monitor.dns_last_result }}</span>

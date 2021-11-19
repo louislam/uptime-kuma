@@ -5,7 +5,7 @@ const config = require("./config");
 
 debug(args);
 
-if (! process.env.NODE_ENV) {
+if (!process.env.NODE_ENV) {
     process.env.NODE_ENV = "production";
 }
 
@@ -41,7 +41,17 @@ console.log("Importing this project modules");
 debug("Importing Monitor");
 const Monitor = require("./model/monitor");
 debug("Importing Settings");
-const { getSettings, setSettings, setting, initJWTSecret, checkLogin, startUnitTest, FBSD, errorLog } = require("./util-server");
+const {
+    getSettings,
+    setSettings,
+    setting,
+    initJWTSecret,
+    checkLogin,
+    startUnitTest,
+    updateMonitorChecks,
+    FBSD,
+    errorLog
+} = require("./util-server");
 
 debug("Importing Notification");
 const { Notification } = require("./notification");
@@ -106,7 +116,7 @@ if (sslKey && sslCert) {
     console.log("Server Type: HTTPS");
     server = https.createServer({
         key: fs.readFileSync(sslKey),
-        cert: fs.readFileSync(sslCert)
+        cert: fs.readFileSync(sslCert),
     }, app);
 } else {
     console.log("Server Type: HTTP");
@@ -117,7 +127,12 @@ const io = new Server(server);
 module.exports.io = io;
 
 // Must be after io instantiation
-const { sendNotificationList, sendHeartbeatList, sendImportantHeartbeatList, sendInfo } = require("./client");
+const {
+    sendNotificationList,
+    sendHeartbeatList,
+    sendImportantHeartbeatList,
+    sendInfo,
+} = require("./client");
 const { statusPageSocketHandler } = require("./socket-handlers/status-page-socket-handler");
 const databaseSocketHandler = require("./socket-handlers/database-socket-handler");
 const TwoFA = require("./2fa");
@@ -199,7 +214,7 @@ exports.entryPage = "dashboard";
     // Robots.txt
     app.get("/robots.txt", async (_request, response) => {
         let txt = "User-agent: *\nDisallow:";
-        if (! await setting("searchEngineIndex")) {
+        if (!await setting("searchEngineIndex")) {
             txt += " /";
         }
         response.setHeader("Content-Type", "text/plain");
@@ -530,12 +545,15 @@ exports.entryPage = "dashboard";
                 let notificationIDList = monitor.notificationIDList;
                 delete monitor.notificationIDList;
 
-                monitor.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
-                delete monitor.accepted_statuscodes;
+                const checks = monitor.checks;
+                delete monitor.checks;
 
+                // Store monitor info
                 bean.import(monitor);
                 bean.user_id = socket.userID;
                 await R.store(bean);
+
+                await updateMonitorChecks(bean.id, checks);
 
                 await updateMonitorNotification(bean.id, notificationIDList);
 
@@ -561,7 +579,7 @@ exports.entryPage = "dashboard";
             try {
                 checkLogin(socket);
 
-                let bean = await R.findOne("monitor", " id = ? ", [ monitor.id ]);
+                let bean = await R.findOne("monitor", " id = ? ", [monitor.id]);
 
                 if (bean.user_id !== socket.userID) {
                     throw new Error("Permission denied.");
@@ -578,17 +596,19 @@ exports.entryPage = "dashboard";
                 bean.hostname = monitor.hostname;
                 bean.maxretries = monitor.maxretries;
                 bean.port = monitor.port;
-                bean.keyword = monitor.keyword;
                 bean.ignoreTls = monitor.ignoreTls;
                 bean.upsideDown = monitor.upsideDown;
                 bean.maxredirects = monitor.maxredirects;
-                bean.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
                 bean.dns_resolve_type = monitor.dns_resolve_type;
                 bean.dns_resolve_server = monitor.dns_resolve_server;
                 bean.pushToken = monitor.pushToken;
 
+                const checks = monitor.checks;
+                delete monitor.checks;
+
                 await R.store(bean);
 
+                await updateMonitorChecks(bean.id, checks);
                 await updateMonitorNotification(bean.id, monitor.notificationIDList);
 
                 if (bean.active) {
@@ -801,7 +821,7 @@ exports.entryPage = "dashboard";
             try {
                 checkLogin(socket);
 
-                let bean = await R.findOne("monitor", " id = ? ", [ tag.id ]);
+                let bean = await R.findOne("monitor", " id = ? ", [tag.id]);
                 bean.name = tag.name;
                 bean.color = tag.color;
                 await R.store(bean);
@@ -823,7 +843,7 @@ exports.entryPage = "dashboard";
             try {
                 checkLogin(socket);
 
-                await R.exec("DELETE FROM tag WHERE id = ? ", [ tagID ]);
+                await R.exec("DELETE FROM tag WHERE id = ? ", [tagID]);
 
                 callback({
                     ok: true,
@@ -914,7 +934,7 @@ exports.entryPage = "dashboard";
             try {
                 checkLogin(socket);
 
-                if (! password.newPassword) {
+                if (!password.newPassword) {
                     throw new Error("Invalid new password");
                 }
 
@@ -972,7 +992,7 @@ exports.entryPage = "dashboard";
 
                 callback({
                     ok: true,
-                    msg: "Saved"
+                    msg: "Saved",
                 });
 
                 sendInfo(socket);
@@ -1130,7 +1150,6 @@ exports.entryPage = "dashboard";
                             // --- End ---
 
                             let monitor = {
-                                // Define the new variable from earlier here
                                 name: monitorListData[i].name,
                                 type: monitorListData[i].type,
                                 url: monitorListData[i].url,
@@ -1138,15 +1157,13 @@ exports.entryPage = "dashboard";
                                 body: monitorListData[i].body,
                                 headers: monitorListData[i].headers,
                                 interval: monitorListData[i].interval,
-                                retryInterval: retryInterval,
                                 hostname: monitorListData[i].hostname,
                                 maxretries: monitorListData[i].maxretries,
                                 port: monitorListData[i].port,
-                                keyword: monitorListData[i].keyword,
                                 ignoreTls: monitorListData[i].ignoreTls,
                                 upsideDown: monitorListData[i].upsideDown,
                                 maxredirects: monitorListData[i].maxredirects,
-                                accepted_statuscodes: monitorListData[i].accepted_statuscodes,
+                                checks: monitorListData[i].checks,
                                 dns_resolve_type: monitorListData[i].dns_resolve_type,
                                 dns_resolve_server: monitorListData[i].dns_resolve_server,
                                 notificationIDList: {},
@@ -1161,12 +1178,39 @@ exports.entryPage = "dashboard";
                             let notificationIDList = monitor.notificationIDList;
                             delete monitor.notificationIDList;
 
-                            monitor.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
-                            delete monitor.accepted_statuscodes;
+                            // TODO remove this if clause once we no longer expect export files to contain the old accepted_statuscodes and keyword format
+                            if (monitor.type === "http" || monitor.type === "keyword") {
+                                if (monitorListData[i].accepted_statuscodes) {
+                                    // old format for checking http status codes
+                                    // Convert to new format which uses separate monitor check
+                                    monitor.checks = monitor.checks || [];
+                                    monitor.checks.push({
+                                        type: "HTTP_STATUS_CODE_SHOULD_EQUAL",
+                                        value: monitorListData[i].accepted_statuscodes,
+                                    });
+                                }
+
+                                if (monitorListData[i].keyword) {
+                                    // old format for checking response contains keyword
+                                    // Convert to new format which uses separate monitor check
+                                    monitor.checks = monitor.checks || [];
+                                    monitor.checks.push({
+                                        type: "RESPONSE_SHOULD_CONTAIN_TEXT",
+                                        value: monitorListData[i].keyword,
+                                    });
+                                }
+
+                                monitor.type = "http";
+                            }
+
+                            const checks = monitor.checks;
+                            delete monitor.checks;
 
                             bean.import(monitor);
                             bean.user_id = socket.userID;
                             await R.store(bean);
+
+                            await updateMonitorChecks(bean.id, checks);
 
                             // Only for backup files with the version 1.7.0 or higher, since there was the tag feature implemented
                             if (version17x) {
@@ -1179,7 +1223,7 @@ exports.entryPage = "dashboard";
                                     ]);
 
                                     let tagId;
-                                    if (! tag) {
+                                    if (!tag) {
                                         // -> If it doesn't exist, create new tag from backup file
                                         let beanTag = R.dispense("tag");
                                         beanTag.name = oldTag.name;
@@ -1264,7 +1308,7 @@ exports.entryPage = "dashboard";
                 console.log(`Clear Heartbeats Monitor: ${monitorID} User ID: ${socket.userID}`);
 
                 await R.exec("DELETE FROM heartbeat WHERE monitor_id = ?", [
-                    monitorID
+                    monitorID,
                 ]);
 
                 await sendHeartbeatList(socket, monitorID, true, true);
@@ -1368,7 +1412,7 @@ async function checkOwner(userID, monitorID) {
         userID,
     ]);
 
-    if (! row) {
+    if (!row) {
         throw new Error("You do not own this monitor.");
     }
 }
@@ -1416,7 +1460,7 @@ async function getMonitorJSONList(userID) {
 }
 
 async function initDatabase() {
-    if (! fs.existsSync(Database.path)) {
+    if (!fs.existsSync(Database.path)) {
         console.log("Copying Database");
         fs.copyFileSync(Database.templatePath, Database.path);
     }
@@ -1432,7 +1476,7 @@ async function initDatabase() {
         "jwtSecret",
     ]);
 
-    if (! jwtSecretBean) {
+    if (!jwtSecretBean) {
         console.log("JWT secret is not found, generate one.");
         jwtSecretBean = await initJWTSecret();
         console.log("Stored JWT secret into database");

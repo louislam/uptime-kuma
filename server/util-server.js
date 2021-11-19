@@ -320,6 +320,28 @@ exports.checkLogin = (socket) => {
     }
 };
 
+exports.updateMonitorChecks = async (monitorId, checks) => {
+    let trx = await R.begin();
+    try {
+        // delete existing checks for monitor
+        await trx.exec("DELETE FROM monitor_checks WHERE monitor_id = ?", [monitorId]);
+
+        // Replace them with new checks
+        for (let i = 0; i < (checks || []).length; i++) {
+            let checkBean = trx.dispense("monitor_checks");
+            checkBean.monitor_id = monitorId;
+            checkBean.type = checks[i].type;
+            checkBean.value = typeof checks[i].value === "object" ? JSON.stringify(checks[i].value) : checks[i].value;
+            await trx.store(checkBean);
+        }
+
+        await trx.commit();
+    } catch (err) {
+        await trx.rollback();
+        throw err;
+    }
+};
+
 exports.startUnitTest = async () => {
     console.log("Starting unit test...");
     const npm = /^win/.test(process.platform) ? "npm.cmd" : "npm";
