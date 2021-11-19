@@ -96,7 +96,6 @@ const addMissingIngressesToDatabase = async (ingresses, monitorList, ingressTag)
     debug("Found " + missingDomains.length + " missing monitors");
     for (let domain of missingDomains) {
         const monitor = await addMonitor(domain.domain);
-        await addMonitorToGroup(monitor, "All Ingresses");
         await addMonitorToGroup(monitor, domain.namespace);
         await addMonitorTag(monitor, ingressTag);
     }
