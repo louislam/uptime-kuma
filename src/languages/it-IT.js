@@ -175,7 +175,7 @@ export default {
     "Entry Page": "Pagina Principale",
     statusPageNothing: "Non c'è nulla qui, aggiungere un gruppo oppure un monitoraggio.",
     "No Services": "Nessun Servizio",
-    "All Systems Operational": "Tutti i sistemi sono operativi",
+    "All Systems Operational": "Tutti i sistemi sono funzionali",
     "Partially Degraded Service": "Servizio parzialmente degradato",
     "Degraded Service": "Servizio degradato",
     "Add Group": "Aggiungi Gruppo",
@@ -304,7 +304,7 @@ export default {
     PasswordsDoNotMatch: "Le password non corrispondono.",
     records: "records",
     "One record": "One record",
-    steamApiKeyDescription: "Per monitorare un server di gioco Steam si necessita della chiave Steam Web-API. È possibile registrare la propria chiave API qui: ",
+    steamApiKeyDescription: "Per monitorare un server di gioco Steam si necessita della chiave Web-API di Steam. È possibile registrare la propria chiave API qui: ",
     "Current User": "Utente corrente",
     recent: "Recenti",
 };
