@@ -90,8 +90,9 @@ exports.pingAsync = function (hostname, ipv6 = false) {
     });
 };
 
-exports.mqttAsync = function (hostname, port = undefined, username = undefined, password = undefined, topic, okMessage) {
+exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
     return new Promise((resolve, reject) => {
+        const { port, username, password, interval = 20 } = options;
         try {
             let client = mqtt.connect(hostname, {
                 port,
@@ -112,6 +113,9 @@ exports.mqttAsync = function (hostname, port = undefined, username = undefined, 
                     }
                 }
             });
+            setTimeout(() => {
+                client.end();
+            }, interval * 1000);
         } catch (error) {
             reject(new Error(error));
         }
