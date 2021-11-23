@@ -7,7 +7,6 @@ class Webhook extends NotificationProvider {
     name = "webhook";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
 
         try {
             let data = {
@@ -24,17 +23,16 @@ class Webhook extends NotificationProvider {
 
                 config = {
                     headers: finalData.getHeaders(),
-                }
+                };
 
             } else {
                 finalData = data;
             }
 
-            await axios.post(notification.webhookURL, finalData, config)
-            return okMsg;
-
+            await axios.post(notification.webhookURL, finalData, config);
+            return this.sendSuccess;
         } catch (error) {
-            this.throwGeneralAxiosError(error)
+            this.throwGeneralAxiosError(error);
         }
 
     }

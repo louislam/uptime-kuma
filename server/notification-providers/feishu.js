@@ -6,7 +6,6 @@ class Feishu extends NotificationProvider {
     name = "Feishu";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
         let feishuWebHookUrl = notification.feishuWebHookUrl;
 
         try {
@@ -18,7 +17,7 @@ class Feishu extends NotificationProvider {
                     },
                 };
                 await axios.post(feishuWebHookUrl, testdata);
-                return okMsg;
+                return this.sendSuccess;
             }
 
             if (heartbeatJSON["status"] == DOWN) {
@@ -45,7 +44,7 @@ class Feishu extends NotificationProvider {
                     },
                 };
                 await axios.post(feishuWebHookUrl, downdata);
-                return okMsg;
+                return this.sendSuccess;
             }
 
             if (heartbeatJSON["status"] == UP) {
@@ -72,7 +71,7 @@ class Feishu extends NotificationProvider {
                     },
                 };
                 await axios.post(feishuWebHookUrl, updata);
-                return okMsg;
+                return this.sendSuccess;
             }
         } catch (error) {
             this.throwGeneralAxiosError(error);

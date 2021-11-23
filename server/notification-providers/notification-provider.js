@@ -6,6 +6,8 @@ class NotificationProvider {
      */
     name = undefined;
 
+    sendSuccess = "Sent Successfully.";
+
     /**
      * @param notification : BeanModel
      * @param msg : string General Message
@@ -25,11 +27,11 @@ class NotificationProvider {
             if (typeof error.response.data === "string") {
                 msg += error.response.data;
             } else {
-                msg += JSON.stringify(error.response.data)
+                msg += JSON.stringify(error.response.data);
             }
         }
 
-        throw new Error(msg)
+        throw new Error(msg);
     }
 }
 

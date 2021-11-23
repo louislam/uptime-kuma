@@ -92,7 +92,7 @@ class SMTP extends NotificationProvider {
             text: bodyTextContent,
         });
 
-        return "Sent Successfully.";
+        return this.sendSuccess;
     }
 }
 

@@ -6,13 +6,12 @@ class PromoSMS extends NotificationProvider {
     name = "promosms";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
 
         try {
             let config = {
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": "Basic " + Buffer.from(notification.promosmsLogin + ":" + notification.promosmsPassword).toString('base64'),
+                    "Authorization": "Basic " + Buffer.from(notification.promosmsLogin + ":" + notification.promosmsPassword).toString("base64"),
                     "Accept": "text/json",
                 }
             };
@@ -30,8 +29,8 @@ class PromoSMS extends NotificationProvider {
                 let error = "Something gone wrong. Api returned " + resp.data.response.status + ".";
                 this.throwGeneralAxiosError(error);
             }
-            
-            return okMsg;
+
+            return this.sendSuccess;
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }

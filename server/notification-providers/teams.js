@@ -87,12 +87,11 @@ class Teams extends NotificationProvider {
     };
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
 
         try {
             if (heartbeatJSON == null) {
                 await this._handleGeneralNotification(notification.webhookUrl, msg);
-                return okMsg;
+                return this.sendSuccess;
             }
 
             let url;
@@ -114,7 +113,7 @@ class Teams extends NotificationProvider {
             });
 
             await this._sendNotification(notification.webhookUrl, payload);
-            return okMsg;
+            return this.sendSuccess;
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }

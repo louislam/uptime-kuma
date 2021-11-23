@@ -7,7 +7,6 @@ class Mattermost extends NotificationProvider {
     name = "mattermost";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
         try {
             const mattermostUserName = notification.mattermostusername || "Uptime Kuma";
             // If heartbeatJSON is null, assume we're testing.
@@ -15,9 +14,9 @@ class Mattermost extends NotificationProvider {
                 let mattermostTestData = {
                     username: mattermostUserName,
                     text: msg,
-                }
-                await axios.post(notification.mattermostWebhookUrl, mattermostTestData)
-                return okMsg;
+                };
+                await axios.post(notification.mattermostWebhookUrl, mattermostTestData);
+                return this.sendSuccess;
             }
 
             const mattermostChannel = notification.mattermostchannel;
@@ -36,12 +35,12 @@ class Mattermost extends NotificationProvider {
                             fallback:
                                 "Your " +
                                 monitorJSON["name"] +
-                                " service went down.",
+                                " service went down!",
                             color: "#FF0000",
                             title:
                                 "❌ " +
                                 monitorJSON["name"] +
-                                " service went down. ❌",
+                                " service went down! ❌",
                             title_link: monitorJSON["url"],
                             fields: [
                                 {
@@ -67,7 +66,7 @@ class Mattermost extends NotificationProvider {
                     notification.mattermostWebhookUrl,
                     mattermostdowndata
                 );
-                return okMsg;
+                return this.sendSuccess;
             } else if (heartbeatJSON["status"] == UP) {
                 let mattermostupdata = {
                     username: mattermostUserName,
@@ -111,7 +110,7 @@ class Mattermost extends NotificationProvider {
                     notification.mattermostWebhookUrl,
                     mattermostupdata
                 );
-                return okMsg;
+                return this.sendSuccess;
             }
         } catch (error) {
             this.throwGeneralAxiosError(error);
