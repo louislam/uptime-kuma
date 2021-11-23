@@ -1,6 +1,6 @@
 # Project Info
 
-First of all, thank you everyone who made pull requests for Uptime Kuma, I never thought GitHub Community can be that nice! And also because of this, I also never thought other people actually read my code and edit my code. It is not structed and commented so well, lol. Sorry about that.
+First of all, thank you everyone who made pull requests for Uptime Kuma, I never thought GitHub Community can be that nice! And also because of this, I also never thought other people actually read my code and edit my code. It is not structured and commented so well, lol. Sorry about that.
 
 The project was created with vite.js (vue3). Then I created a sub-directory called "server" for server part. Both frontend and backend share the same package.json.
 
@@ -27,7 +27,7 @@ The frontend code build into "dist" directory. The server (express.js) exposes t
 
 ## Can I create a pull request for Uptime Kuma?
 
-Generally, if the pull request is working fine and it do not affect any existing logic, workflow and perfomance, I will merge into the master branch once it is tested.
+Generally, if the pull request is working fine and it do not affect any existing logic, workflow and performance, I will merge into the master branch once it is tested.
 
 If you are not sure whether I will accept your pull request, feel free to create an empty pull request draft first.
 
@@ -66,13 +66,13 @@ I do not have such knowledge to test it.
 
 #### ⚠ Low Priority - Harsh Mode
 
-Some pull requests are required to modifiy the core. To be honest, I do not want anyone to try to do that, because it would spend a lot of your time. I will review your pull request harshly. Also you may need to write a lot of unit tests to ensure that there is no breaking change.
+Some pull requests are required to modify the core. To be honest, I do not want anyone to try to do that, because it would spend a lot of your time. I will review your pull request harshly. Also you may need to write a lot of unit tests to ensure that there is no breaking change.
 
 - Touch large parts of code of any very important features
 - Touch monitoring logic
 - Drop a table or drop a column for any reason
 - Touch the entry point of Docker or Node.js
-- Modifiy auth
+- Modify auth
 
 
 #### *️⃣ Low Priority
@@ -114,7 +114,7 @@ I personally do not like something need to learn so much and need to config so m
 
 - Node.js >= 14
 - Git
-- IDE that supports ESLint and EditorConfig (I am using Intellji Idea)
+- IDE that supports ESLint and EditorConfig (I am using IntelliJ IDEA)
 - A SQLite tool (SQLite Expert Personal is suggested)
 
 ## Install dependencies
@@ -141,7 +141,7 @@ express.js is just used for serving the frontend built files (index.html, .js an
 
 - model/ (Object model, auto mapping to the database table name)
 - modules/ (Modified 3rd-party modules)
-- notification-providers/ (indivdual notification logic)
+- notification-providers/ (individual notification logic)
 - routers/ (Express Routers)
 - scoket-handler (Socket.io Handlers)
 - server.js (Server main logic)
