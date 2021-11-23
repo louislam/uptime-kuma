@@ -176,8 +176,8 @@ export default {
     statusPageNothing: "Không có gì, hãy thêm nhóm monitor hoặc monitor.",
     "No Services": "Không có dịch vụ",
     "All Systems Operational": "Tất cả các hệ thống hoạt động bình thường",
-    "Partially Degraded Service": "Dịch vụ xuống cấp một phần",
-    "Degraded Service": "Degraded Service",
+    "Partially Degraded Service": "Có hệ thống down",
+    "Degraded Service": "Toàn bộ hệ thống down",
     "Add Group": "Thêm nhóm",
     "Add a monitor": "Thêm monitor",
     "Edit Status Page": "Sửa trang trạng thái",
@@ -307,4 +307,5 @@ export default {
     steamApiKeyDescription: "Để monitor các Steam Game Server bạn cần một Steam Web-API key. Bạn có thể đăng ký API key tại đây: ",
     "Current User": "User hiện tại",
     recent: "Gần đây",
+    shrinkDatabaseDescription: "Khởi chạy database VACCUM cho SQLite. Nếu database được tạo sau version 1.10.0, AUTO_VACCUM đã được bật sẵn, hành động này không cần thiết.",
 };
