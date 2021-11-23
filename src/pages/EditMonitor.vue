@@ -194,7 +194,7 @@
                             </div>
 
                             <div class="mt-5 mb-1">
-                                <button class="btn btn-primary" type="submit" :disabled="processing">{{ $t("Save") }}</button>
+                                <button id="monitor-submit-btn" class="btn btn-primary" type="submit" :disabled="processing">{{ $t("Save") }}</button>
                             </div>
                         </div>
 

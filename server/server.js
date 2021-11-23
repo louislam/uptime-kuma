@@ -177,7 +177,7 @@ exports.entryPage = "dashboard";
 
 (async () => {
     Database.init(args);
-    await initDatabase();
+    await initDatabase(testMode);
 
     exports.entryPage = await setting("entryPage");
 
@@ -539,8 +539,8 @@ exports.entryPage = "dashboard";
 
                 await updateMonitorNotification(bean.id, notificationIDList);
 
-                await startMonitor(socket.userID, bean.id);
                 await sendMonitorList(socket);
+                await startMonitor(socket.userID, bean.id);
 
                 callback({
                     ok: true,
@@ -1415,14 +1415,14 @@ async function getMonitorJSONList(userID) {
     return result;
 }
 
-async function initDatabase() {
+async function initDatabase(testMode = false) {
     if (! fs.existsSync(Database.path)) {
         console.log("Copying Database");
         fs.copyFileSync(Database.templatePath, Database.path);
     }
 
     console.log("Connecting to the Database");
-    await Database.connect();
+    await Database.connect(testMode);
     console.log("Connected");
 
     // Patch the database
