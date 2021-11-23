@@ -307,4 +307,5 @@ export default {
     steamApiKeyDescription: "Per monitorare un server di gioco Steam si necessita della chiave Web-API di Steam. È possibile registrare la propria chiave API qui: ",
     "Current User": "Utente corrente",
     recent: "Recenti",
+    shrinkDatabaseDescription: "Lancia il comando VACUUM sul database SQLite. Se il database è stato creato dopo la versione 1.10.0, AUTO_VACUUM è già abilitato e questa azione non è necessaria.",
 };
