@@ -87,8 +87,8 @@ class Monitor extends BeanModel {
      * for HTTP "basic" auth, as per RFC-7617
      * @returns {string}
      */
-    encodeB64(user, pass) {
-        return btoa(user + ":" + pass);
+    encodeBase64(user, pass) {
+        return Buffer.from(user + ":" + pass).toString("base64");
     }
 
     /**
@@ -156,7 +156,7 @@ class Monitor extends BeanModel {
                     let basicAuthHeader = {};
                     if (this.basic_auth_user) {
                         basicAuthHeader = {
-                            "Authorization": "Basic " + this.encodeB64(this.basic_auth_user, this.basic_auth_pass),
+                            "Authorization": "Basic " + this.encodeBase64(this.basic_auth_user, this.basic_auth_pass),
                         };
                     }
 
