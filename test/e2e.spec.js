@@ -14,6 +14,10 @@ page;
  */
 browser;
 
+function convertToValidFilename(string) {
+    return (string.replace(/[/|\\:*?"<>]/g, " "));
+}
+
 beforeAll(async () => {
     await page.setViewport({
         width: 1280,
@@ -24,6 +28,13 @@ beforeAll(async () => {
 
 afterAll(() => {
 
+});
+
+afterEach(async () => {
+    const testName = convertToValidFilename(expect.getState().currentTestName);
+    await page.screenshot({
+        path: `./test/screenshots/${testName}.png`,
+        type: "png" });
 });
 
 const baseURL = "http://127.0.0.1:3002";
@@ -69,10 +80,17 @@ describe("Init", () => {
         await page.goto(baseURL + "/add");
         await page.waitForSelector("#name");
 
+        await sleep(1000);
+
         await page.type("#name", "Myself");
         await page.waitForSelector("#url");
-        await page.click("#url", { clickCount: 3 });
-        await page.keyboard.type(baseURL);
+        await page.evaluate(() => {
+            const urlInput = document.querySelector("#url");
+            urlInput.value = "";
+        });
+        await page.type("#url", baseURL);
+
+        await page.focus("#url");
         await page.keyboard.press("Enter");
 
         await page.waitForFunction(() => {
@@ -247,6 +265,7 @@ describe("Init", () => {
             newPage.close();
 
             await click(page, "#enableAuth-btn");
+
             await login("admin", "admin123");
             await page.waitForSelector("#disableAuth-btn", { timeout: 3000 });
         });
