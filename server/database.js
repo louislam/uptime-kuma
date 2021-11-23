@@ -52,6 +52,7 @@ class Database {
         "patch-http-monitor-method-body-and-headers.sql": true,
         "patch-2fa-invalidate-used-token.sql": true,
         "patch-notification_sent_history.sql": true,
+        "patch-monitor-basic-auth.sql": true,
     }
 
     /**
