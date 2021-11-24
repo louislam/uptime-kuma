@@ -307,5 +307,5 @@ export default {
     steamApiKeyDescription: "For monitoring a Steam Game Server you need a Steam Web-API key. You can register your API key here: ",
     "Current User": "Current User",
     recent: "Recent",
-    shrinkDatabaseDescription: "Trigger database VACCUM for SQLite. If your database is created after 1.10.0, AUTO_VACCUM is already enabled and this action is not needed.",
+    shrinkDatabaseDescription: "Trigger database VACUUM for SQLite. If your database is created after 1.10.0, AUTO_VACUUM is already enabled and this action is not needed.",
 };
