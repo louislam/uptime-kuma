@@ -194,7 +194,7 @@
                             </div>
 
                             <div class="mt-5 mb-1">
-                                <button class="btn btn-primary" type="submit" :disabled="processing">{{ $t("Save") }}</button>
+                                <button id="monitor-submit-btn" class="btn btn-primary" type="submit" :disabled="processing">{{ $t("Save") }}</button>
                             </div>
                         </div>
 
@@ -264,6 +264,19 @@
                                 <div class="my-3">
                                     <label for="headers" class="form-label">{{ $t("Headers") }}</label>
                                     <textarea id="headers" v-model="monitor.headers" class="form-control" :placeholder="$t('headersPlaceholder')"></textarea>
+                                </div>
+
+                                <!-- HTTP Basic Auth -->
+                                <h4 class="mt-5 mb-2">{{ $t("HTTP Basic Auth") }}</h4>
+
+                                <div class="my-3">
+                                    <label for="basicauth" class="form-label">{{ $t("Username") }}</label>
+                                    <input id="basicauth-user" v-model="monitor.basic_auth_user" type="text" class="form-control" :placeholder="$t('Username')">
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="basicauth" class="form-label">{{ $t("Password") }}</label>
+                                    <input id="basicauth-pass" v-model="monitor.basic_auth_pass" type="password" class="form-control" :placeholder="$t('Password')">
                                 </div>
                             </template>
                         </div>
