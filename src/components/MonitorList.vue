@@ -23,7 +23,7 @@
                         <div class="info">
                             <Uptime :monitor="item" type="24" :pill="true" />
                             {{ item.name }}
-                            <span :title="item.description">
+                            <span v-if="item.description" :title="item.description">
                                 <font-awesome-icon icon="info-circle" />
                             </span>
                         </div>
