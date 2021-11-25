@@ -573,6 +573,8 @@ exports.entryPage = "dashboard";
                 bean.method = monitor.method;
                 bean.body = monitor.body;
                 bean.headers = monitor.headers;
+                bean.basic_auth_user = monitor.basic_auth_user;
+                bean.basic_auth_pass = monitor.basic_auth_pass;
                 bean.interval = monitor.interval;
                 bean.retryInterval = monitor.retryInterval;
                 bean.hostname = monitor.hostname;
@@ -1137,6 +1139,8 @@ exports.entryPage = "dashboard";
                                 method: monitorListData[i].method || "GET",
                                 body: monitorListData[i].body,
                                 headers: monitorListData[i].headers,
+                                basic_auth_user: monitorListData[i].basic_auth_user,
+                                basic_auth_pass: monitorListData[i].basic_auth_pass,
                                 interval: monitorListData[i].interval,
                                 retryInterval: retryInterval,
                                 hostname: monitorListData[i].hostname,
