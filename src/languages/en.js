@@ -308,4 +308,9 @@ export default {
     "Current User": "Current User",
     recent: "Recent",
     shrinkDatabaseDescription: "Trigger database VACUUM for SQLite. If your database is created after 1.10.0, AUTO_VACUUM is already enabled and this action is not needed.",
+    serwersms: "SerwerSMS.pl",
+    serwersmsAPIUser: "API Username (incl. webapi_ prefix)",
+    serwersmsAPIPassword: "API Password",
+    serwersmsPhoneNumber: "Phone number",
+    serwersmsSenderName: "SMS Sender Name (registered via customer portal)",
 };

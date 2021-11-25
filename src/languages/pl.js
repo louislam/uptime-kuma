@@ -307,4 +307,9 @@ export default {
     recent: "Ostatnie",
     clicksendsms: "ClickSend SMS",
     apiCredentials: "Poświadczenia API",
+    serwersms: "SerwerSMS.pl",
+    serwersmsAPIUser: "Nazwa Użytkownika API (z prefiksem webapi_)",
+    serwersmsAPIPassword: "Hasło API",
+    serwersmsPhoneNumber: "Numer Telefonu",
+    serwersmsSenderName: "Nazwa Nadawcy (zatwierdzona w panelu klienta)",
 };
