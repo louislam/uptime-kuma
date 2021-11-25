@@ -361,7 +361,11 @@ class Monitor extends BeanModel {
 
             } catch (error) {
 
-                bean.msg = error.message;
+                if (axios.isAxiosError(error)) {
+                    bean.msg = JSON.stringify(error.response.data)
+                } else {
+                    bean.msg = error.message;
+                }
 
                 // If UP come in here, it must be upside down mode
                 // Just reset the retries
