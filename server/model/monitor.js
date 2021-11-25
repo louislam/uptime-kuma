@@ -362,7 +362,7 @@ class Monitor extends BeanModel {
             } catch (error) {
 
                 if (axios.isAxiosError(error)) {
-                    bean.msg = JSON.stringify(error.response.data)
+                    bean.msg = JSON.stringify(error.response.data);
                 } else {
                     bean.msg = error.message;
                 }
