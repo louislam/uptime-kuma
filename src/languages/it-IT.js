@@ -166,7 +166,7 @@ export default {
     Orange: "Arancione",
     Green: "Verde",
     Blue: "Blu",
-    Indigo: "Indigo",
+    Indigo: "Indaco",
     Purple: "Viola",
     Pink: "Rosa",
     "Search...": "Cerca...",
