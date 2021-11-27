@@ -19,7 +19,7 @@ class SerwerSMS extends NotificationProvider {
                 "password": notification.serwersmsPassword,
                 "phone": notification.serwersmsPhoneNumber,
                 "text": msg.replace(/[^\x00-\x7F]/g, ""),
-                "sender": notification.serwersmsSenderName
+                "sender": notification.serwersmsSenderName,
             };
 
             let resp = await axios.post("https://api2.serwersms.pl/messages/send_sms", data, config);

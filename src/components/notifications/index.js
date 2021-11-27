@@ -54,7 +54,7 @@ const NotificationFormList = {
     "matrix": Matrix,
     "DingDing": DingDing,
     "Bark": Bark,
-    "serwersms": SerwerSMS
+    "serwersms": SerwerSMS,
 }
 
 export default NotificationFormList
