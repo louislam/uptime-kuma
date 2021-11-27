@@ -308,8 +308,8 @@ export default {
     clicksendsms: "ClickSend SMS",
     apiCredentials: "Poświadczenia API",
     serwersms: "SerwerSMS.pl",
-    serwersmsAPIUser: "Nazwa Użytkownika API (z prefiksem webapi_)",
+    serwersmsAPIUser: "Nazwa użytkownika API (z prefiksem webapi_)",
     serwersmsAPIPassword: "Hasło API",
-    serwersmsPhoneNumber: "Numer Telefonu",
-    serwersmsSenderName: "Nazwa Nadawcy (zatwierdzona w panelu klienta)",
+    serwersmsPhoneNumber: "Numer telefonu",
+    serwersmsSenderName: "Nazwa nadawcy (zatwierdzona w panelu klienta)",
 };
