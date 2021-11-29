@@ -9,6 +9,12 @@ export default {
         };
     },
 
+    async created() {
+        if (this.language !== "en") {
+            await this.changeLang(this.language);
+        }
+    },
+
     watch: {
         async language(lang) {
             await this.changeLang(lang);
