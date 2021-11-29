@@ -353,17 +353,17 @@ export default {
         },
 
         bodyPlaceholder() {
-            return `Example:
+            return this.$t("Example:", [`
 {
     "key": "value"
-}`;
+}`]);
         },
 
         headersPlaceholder() {
-            return `Example:
+            return this.$t("Example:", [`
 {
     "HeaderName": "HeaderValue"
-}`;
+}`]);
         }
 
     },
