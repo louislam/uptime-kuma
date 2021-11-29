@@ -178,7 +178,7 @@ exports.entryPage = "dashboard";
 
 (async () => {
     Database.init(args);
-    await initDatabase();
+    await initDatabase(testMode);
 
     exports.entryPage = await setting("entryPage");
 
@@ -572,8 +572,8 @@ exports.entryPage = "dashboard";
 
                 await updateMonitorNotification(bean.id, notificationIDList);
 
-                await startMonitor(socket.userID, bean.id);
                 await sendMonitorList(socket);
+                await startMonitor(socket.userID, bean.id);
 
                 log_info("monitor", `Added Monitor: ${monitorID} User ID: ${socket.userID}`);
 
@@ -611,6 +611,8 @@ exports.entryPage = "dashboard";
                 bean.method = monitor.method;
                 bean.body = monitor.body;
                 bean.headers = monitor.headers;
+                bean.basic_auth_user = monitor.basic_auth_user;
+                bean.basic_auth_pass = monitor.basic_auth_pass;
                 bean.interval = monitor.interval;
                 bean.retryInterval = monitor.retryInterval;
                 bean.hostname = monitor.hostname;
@@ -1175,6 +1177,8 @@ exports.entryPage = "dashboard";
                                 method: monitorListData[i].method || "GET",
                                 body: monitorListData[i].body,
                                 headers: monitorListData[i].headers,
+                                basic_auth_user: monitorListData[i].basic_auth_user,
+                                basic_auth_pass: monitorListData[i].basic_auth_pass,
                                 interval: monitorListData[i].interval,
                                 retryInterval: retryInterval,
                                 hostname: monitorListData[i].hostname,
@@ -1453,14 +1457,14 @@ async function getMonitorJSONList(userID) {
     return result;
 }
 
-async function initDatabase() {
+async function initDatabase(testMode = false) {
     if (! fs.existsSync(Database.path)) {
         log_info("server", "Copying Database");
         fs.copyFileSync(Database.templatePath, Database.path);
     }
 
     log_info("server", "Connecting to the Database");
-    await Database.connect();
+    await Database.connect(testMode);
     log_info("server", "Connected");
 
     // Patch the database

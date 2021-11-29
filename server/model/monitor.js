@@ -58,6 +58,8 @@ class Monitor extends BeanModel {
             method: this.method,
             body: this.body,
             headers: this.headers,
+            basic_auth_user: this.basic_auth_user,
+            basic_auth_pass: this.basic_auth_pass,
             hostname: this.hostname,
             port: this.port,
             maxretries: this.maxretries,
@@ -78,6 +80,15 @@ class Monitor extends BeanModel {
             notificationIDList,
             tags: tags,
         };
+    }
+
+    /**
+     * Encode user and password to Base64 encoding
+     * for HTTP "basic" auth, as per RFC-7617
+     * @returns {string}
+     */
+    encodeBase64(user, pass) {
+        return Buffer.from(user + ":" + pass).toString("base64");
     }
 
     /**
@@ -141,7 +152,16 @@ class Monitor extends BeanModel {
                     // Do not do any queries/high loading things before the "bean.ping"
                     let startTime = dayjs().valueOf();
 
+                    // HTTP basic auth
+                    let basicAuthHeader = {};
+                    if (this.basic_auth_user) {
+                        basicAuthHeader = {
+                            "Authorization": "Basic " + this.encodeBase64(this.basic_auth_user, this.basic_auth_pass),
+                        };
+                    }
+
                     log_debug("monitor", `[${this.name}] Prepare Options for axios`);
+
                     const options = {
                         url: this.url,
                         method: (this.method || "get").toLowerCase(),
@@ -151,6 +171,7 @@ class Monitor extends BeanModel {
                             "Accept": "*/*",
                             "User-Agent": "Uptime-Kuma/" + version,
                             ...(this.headers ? JSON.parse(this.headers) : {}),
+                            ...(basicAuthHeader),
                         },
                         httpsAgent: new https.Agent({
                             maxCachedSessions: 0,      // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)

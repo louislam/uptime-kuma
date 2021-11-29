@@ -24,6 +24,7 @@ const AliyunSms = require("./notification-providers/aliyun-sms");
 const DingDing = require("./notification-providers/dingding");
 const Bark = require("./notification-providers/bark");
 const { log_info } = require("../src/util");
+const SerwerSMS = require("./notification-providers/serwersms");
 
 class Notification {
 
@@ -59,6 +60,7 @@ class Notification {
             new Telegram(),
             new Webhook(),
             new Bark(),
+            new SerwerSMS(),
         ];
 
         for (let item of list) {

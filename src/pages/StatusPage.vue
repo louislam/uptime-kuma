@@ -474,7 +474,7 @@ export default {
                 groupName = "Services";
             }
 
-            this.$root.publicGroupList.push({
+            this.$root.publicGroupList.unshift({
                 name: groupName,
                 monitorList: [],
             });
