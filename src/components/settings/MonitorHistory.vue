@@ -52,7 +52,7 @@
 
 <script>
 import Confirm from "../../components/Confirm.vue";
-import { debug } from "../../util.ts";
+import { log_debug } from "../../util.ts";
 import { useToast } from "vue-toastification";
 
 const toast = useToast();
@@ -91,7 +91,7 @@ export default {
 
     methods: {
         loadDatabaseSize() {
-            debug("load database size");
+            log_debug("monitorhistory", "load database size");
             this.$root.getSocket().emit("getDatabaseSize", (res) => {
                 if (res.ok) {
                     this.databaseSize = res.size;
