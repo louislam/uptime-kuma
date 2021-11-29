@@ -4,7 +4,7 @@
             <label for="language" class="form-label">
                 {{ $t("Language") }}
             </label>
-            <select id="language" v-model="$i18n.locale" class="form-select">
+            <select id="language" v-model="$root.language" class="form-select">
                 <option
                     v-for="(lang, i) in $i18n.availableLocales"
                     :key="`Lang${i}`"
@@ -116,14 +116,8 @@
 </template>
 
 <script>
-import { setPageLocale } from "../../util-frontend";
 export default {
-    watch: {
-        "$i18n.locale"() {
-            localStorage.locale = this.$i18n.locale;
-            setPageLocale();
-        },
-    },
+
 };
 </script>
 

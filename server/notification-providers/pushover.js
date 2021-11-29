@@ -7,12 +7,12 @@ class Pushover extends NotificationProvider {
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
-        let pushoverlink = "https://api.pushover.net/1/messages.json"
+        let pushoverlink = "https://api.pushover.net/1/messages.json";
 
         try {
             if (heartbeatJSON == null) {
                 let data = {
-                    "message": "<b>Uptime Kuma Pushover testing successful.</b>",
+                    "message": msg,
                     "user": notification.pushoveruserkey,
                     "token": notification.pushoverapptoken,
                     "sound": notification.pushoversounds,
@@ -21,8 +21,8 @@ class Pushover extends NotificationProvider {
                     "retry": "30",
                     "expire": "3600",
                     "html": 1,
-                }
-                await axios.post(pushoverlink, data)
+                };
+                await axios.post(pushoverlink, data);
                 return okMsg;
             }
 
@@ -36,11 +36,11 @@ class Pushover extends NotificationProvider {
                 "retry": "30",
                 "expire": "3600",
                 "html": 1,
-            }
-            await axios.post(pushoverlink, data)
+            };
+            await axios.post(pushoverlink, data);
             return okMsg;
         } catch (error) {
-            this.throwGeneralAxiosError(error)
+            this.throwGeneralAxiosError(error);
         }
 
     }

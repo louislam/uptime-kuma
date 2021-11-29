@@ -89,7 +89,7 @@ export default {
     Timezone: "Часова зона",
     "Search Engine Visibility": "Видимост за търсачки",
     "Allow indexing": "Разреши индексиране",
-    "Discourage search engines from indexing site": "Обезкуражи индексирането на сайта от търсачките",
+    "Discourage search engines from indexing site": "Не позволявай на търсачките да индексират този сайт",
     "Change Password": "Промени парола",
     "Current Password": "Текуща парола",
     "New Password": "Нова парола",
@@ -307,4 +307,5 @@ export default {
     PasswordsDoNotMatch: "Паролите не съвпадат.",
     "Current User": "Текущ потребител",
     recent: "Скорошни",
+    shrinkDatabaseDescription: "Инициира \"VACUUM\" за \"SQLite\" база данни. Ако Вашата база данни е създадена след версия 1.10.0, \"AUTO_VACUUM\" функцията е активна и това действие не нужно.",
 };
