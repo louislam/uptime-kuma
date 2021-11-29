@@ -95,9 +95,9 @@ export default {
             this.$root.getSocket().emit("getDatabaseSize", (res) => {
                 if (res.ok) {
                     this.databaseSize = res.size;
-                    debug("database size: " + res.size);
+                    log_debug("monitorhistory", "database size: " + res.size);
                 } else {
-                    debug(res);
+                    log_debug("monitorhistory", res);
                 }
             });
         },
@@ -108,7 +108,7 @@ export default {
                     this.loadDatabaseSize();
                     toast.success("Done");
                 } else {
-                    debug(res);
+                    log_debug("monitorhistory", res);
                 }
             });
         },
