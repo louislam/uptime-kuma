@@ -12,6 +12,7 @@ import mobile from "./mixins/mobile";
 import publicMixin from "./mixins/public";
 import socket from "./mixins/socket";
 import theme from "./mixins/theme";
+import lang from "./mixins/lang";
 import { router } from "./router";
 import { appName } from "./util.ts";
 
@@ -22,6 +23,7 @@ const app = createApp({
         mobile,
         datetime,
         publicMixin,
+        lang,
     ],
     data() {
         return {

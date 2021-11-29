@@ -136,7 +136,7 @@ export default {
     Heartbeats: "Controlli",
     "Auto Get": "Auto Get",
     backupDescription: "È possibile fare il backup di tutti i monitoraggi e di tutte le notifiche in un file JSON.",
-    backupDescription2: "P.S.: lo storico e i dati relativi agli eventi non saranno inclusi.",
+    backupDescription2: "P.S.: lo storico e i dati relativi agli eventi non saranno inclusi",
     backupDescription3: "Dati sensibili come i token di autenticazione saranno inclusi nel backup, tenere quindi in un luogo sicuro.",
     alertNoFile: "Selezionare il file da importare.",
     alertWrongFileType: "Selezionare un file JSON.",
@@ -172,7 +172,7 @@ export default {
     "Search...": "Cerca...",
     "Avg. Ping": "Tempo di risposta al ping medio",
     "Avg. Response": "Tempo di risposta medio",
-    "Entry Page": "Entry Page",
+    "Entry Page": "Pagina Principale",
     statusPageNothing: "Non c'è nulla qui, aggiungere un gruppo oppure un monitoraggio.",
     "No Services": "Nessun Servizio",
     "All Systems Operational": "Tutti i sistemi sono funzionali",
@@ -307,4 +307,5 @@ export default {
     steamApiKeyDescription: "Per monitorare un server di gioco Steam si necessita della chiave Web-API di Steam. È possibile registrare la propria chiave API qui: ",
     "Current User": "Utente corrente",
     recent: "Recenti",
+    shrinkDatabaseDescription: "Lancia il comando VACUUM sul database SQLite. Se il database è stato creato dopo la versione 1.10.0, AUTO_VACUUM è già abilitato e questa azione non è necessaria.",
 };
