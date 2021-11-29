@@ -316,8 +316,6 @@ export default {
     "Pick Accepted Status Codes...": "Odaberite HTTP statusne kodove koji će biti prihvaćeni...",
     "Steam API Key": "Steam API ključ",
     Default: "Zadano",
-    headersPlaceholder: "Primjer:\n{\n    \"NazivZaglavlja\": \"VrijednostZaglavlja\"\n}",
-    bodyPlaceholder: "Primjer:\n{\n    \"ključ\": \"vrijednost\"\n}",
     "HTTP Options": "HTTP Postavke",
     "Create Incident": "Novi izvještaj o incidentu",
     Title: "Naslov",
