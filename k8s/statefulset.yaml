@@ -114,9 +114,12 @@ spec:
     http:
       paths:
       - backend:
-          serviceName: uptime-kuma-service
-          servicePort: 3001
+          service:
+            name: uptime-service
+            port:
+              number: 3001
         path: /
+        pathType: ImplementationSpecific
   tls:
   - secretName: <Your certificate>
     hosts:
