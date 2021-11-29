@@ -315,8 +315,6 @@ export default {
     "Pick a RR-Type...": "Pick a RR-Type...",
     "Pick Accepted Status Codes...": "Pick Accepted Status Codes...",
     Default: "Default",
-    headersPlaceholder: "Example:\n{\n    \"HeaderName\": \"HeaderValue\"\n}",
-    bodyPlaceholder: "Example:\n{\n    \"key\": \"value\"\n}",
     "HTTP Options": "HTTP Options",
     "Create Incident": "Create Incident",
     Title: "Title",
