@@ -44,8 +44,20 @@ export default {
 
             settings: {},
             settingsLoaded: false,
+        };
+    },
 
-            subMenus: {
+    computed: {
+        currentPage() {
+            let pathEnd = useRoute().path.split("/").at(-1);
+            if (pathEnd == "settings" || pathEnd == null) {
+                return "general";
+            }
+            return pathEnd;
+        },
+
+        subMenus() {
+            return {
                 general: {
                     title: this.$t("General"),
                 },
@@ -67,17 +79,7 @@ export default {
                 about: {
                     title: this.$t("About"),
                 },
-            },
-        };
-    },
-
-    computed: {
-        currentPage() {
-            let pathEnd = useRoute().path.split("/").at(-1);
-            if (pathEnd == "settings" || pathEnd == null) {
-                return "general";
-            }
-            return pathEnd;
+            };
         },
     },
 
