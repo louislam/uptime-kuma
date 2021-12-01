@@ -83,6 +83,7 @@ describe("Init", () => {
     });
 
     // Settings Page
+    /*
     describe("Settings", () => {
         beforeEach(async () => {
             await page.goto(baseURL + "/settings");
@@ -261,6 +262,7 @@ describe("Init", () => {
         //     }, { timeout: 3000 });
         // });
     });
+     */
 
     /*
      * TODO

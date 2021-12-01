@@ -122,6 +122,7 @@
                 <HiddenInput
                     id="steamAPIKey"
                     v-model="settings.steamAPIKey"
+                    autocomplete="one-time-code"
                 />
                 <div class="form-text">
                     {{ $t("steamApiKeyDescription") }}

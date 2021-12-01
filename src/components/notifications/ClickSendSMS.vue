@@ -3,7 +3,7 @@
         <label for="clicksendsms-login" class="form-label">API Username</label>
         <div class="form-text">
             {{ $t("apiCredentials") }}
-            <a href="http://dashboard.clicksend.com/account/subaccounts" target="_blank">here</a>
+            <a href="http://dashboard.clicksend.com/account/subaccounts" target="_blank">{{ $t("here") }}</a>
         </div>
         <input id="clicksendsms-login" v-model="$parent.notification.clicksendsmsLogin" type="text" class="form-control" required>
         <label for="clicksendsms-key" class="form-label">API Key</label>
