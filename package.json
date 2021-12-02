@@ -7,7 +7,7 @@
         "url": "https://github.com/louislam/uptime-kuma.git"
     },
     "engines": {
-        "node": "14.*"
+        "node": "14.* >=16.*"
     },
     "scripts": {
         "install-legacy": "npm install --legacy-peer-deps",
