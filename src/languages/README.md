@@ -8,4 +8,4 @@
 6. Add it into `languageList` constant.
 7. Make a [pull request](https://github.com/louislam/uptime-kuma/pulls) when you have done.
 
-If you do not have programming skills, let me know in [Issues section](https://github.com/louislam/uptime-kuma/issues). I will assist you. 😏
+If you do not have programming skills, let me know in [the issues section](https://github.com/louislam/uptime-kuma/issues). I will assist you. 😏
