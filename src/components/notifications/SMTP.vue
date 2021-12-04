@@ -10,7 +10,7 @@
     </div>
 
     <div class="mb-3">
-        <label for="secure" class="form-label">Secure</label>
+        <label for="secure" class="form-label">{{ $t("Security") }}</label>
         <select id="secure" v-model="$parent.notification.smtpSecure" class="form-select">
             <option :value="false">{{ $t("secureOptionNone") }}</option>
             <option :value="true">{{ $t("secureOptionTLS") }}</option>
