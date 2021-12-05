@@ -25,7 +25,7 @@
             </p>
 
             <p style="margin-top: 8px;">
-                <a :href="telegramGetUpdatesURL(true)" target="_blank" style="word-break: break-word;">{{ telegramGetUpdatesURL() }}</a>
+                <a :href="telegramGetUpdatesURL('withToken')" target="_blank" style="word-break: break-word;">{{ telegramGetUpdatesURL("masked") }}</a>
             </p>
         </div>
     </div>
@@ -42,18 +42,22 @@ export default {
         HiddenInput,
     },
     methods: {
-        telegramGetUpdatesURL(withToken = false) {
+        telegramGetUpdatesURL(mode = "masked") {
             let token = `<${this.$t("YOUR BOT TOKEN HERE")}>`;
 
-            if (this.$parent.notification.telegramBotToken && withToken) {
-                token = this.$parent.notification.telegramBotToken;
+            if (this.$parent.notification.telegramBotToken) {
+                if (mode === "withToken") {
+                    token = this.$parent.notification.telegramBotToken;
+                } else if (mode === "masked") {
+                    token = "*".repeat(this.$parent.notification.telegramBotToken.length);
+                }
             }
 
             return `https://api.telegram.org/bot${token}/getUpdates`;
         },
         async autoGetTelegramChatID() {
             try {
-                let res = await axios.get(this.telegramGetUpdatesURL(true));
+                let res = await axios.get(this.telegramGetUpdatesURL("withToken"));
 
                 if (res.data.result.length >= 1) {
                     let update = res.data.result[res.data.result.length - 1];
