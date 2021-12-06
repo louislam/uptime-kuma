@@ -103,7 +103,7 @@
                                         :close-on-select="true"
                                         :clear-on-select="false"
                                         :preserve-search="false"
-                                        placeholder="Pick a RR-Type..."
+                                        :placeholder="$t('Pick a RR-Type...')"
                                         :preselect-first="false"
                                         :max-height="500"
                                         :taggable="false"
@@ -177,7 +177,7 @@
                                         :close-on-select="false"
                                         :clear-on-select="false"
                                         :preserve-search="true"
-                                        placeholder="Pick Accepted Status Codes..."
+                                        :placeholder="$t('Pick Accepted Status Codes...')"
                                         :preselect-first="false"
                                         :max-height="600"
                                         :taggable="true"
@@ -215,7 +215,7 @@
                                     <a href="#" @click="$refs.notificationDialog.show(notification.id)">{{ $t("Edit") }}</a>
                                 </label>
 
-                                <span v-if="notification.isDefault == true" class="badge bg-primary ms-2">Default</span>
+                                <span v-if="notification.isDefault == true" class="badge bg-primary ms-2">{{ $t("Default") }}</span>
                             </div>
 
                             <button class="btn btn-primary me-2" type="button" @click="$refs.notificationDialog.show()">
@@ -353,17 +353,17 @@ export default {
         },
 
         bodyPlaceholder() {
-            return `Example:
+            return this.$t("Example:", [`
 {
     "key": "value"
-}`;
+}`]);
         },
 
         headersPlaceholder() {
-            return `Example:
+            return this.$t("Example:", [`
 {
     "HeaderName": "HeaderValue"
-}`;
+}`]);
         }
 
     },

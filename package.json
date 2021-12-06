@@ -7,7 +7,7 @@
         "url": "https://github.com/louislam/uptime-kuma.git"
     },
     "engines": {
-        "node": "14.*"
+        "node": "14.* || >=16.*"
     },
     "scripts": {
         "install-legacy": "npm install --legacy-peer-deps",
@@ -22,7 +22,7 @@
         "build": "vite build --config ./config/vite.config.js",
         "test": "node test/prepare-test-server.js && node server/server.js --port=3002 --data-dir=./data/test/ --test",
         "test-with-build": "npm run build && npm test",
-        "jest": "node test/prepare-jest.js && npm run jest-frontend && npm run jest-backend && jest --runInBand --config=./config/jest.config.js",
+        "jest": "node test/prepare-jest.js && npm run jest-frontend && npm run jest-backend",
         "jest-frontend": "cross-env TEST_FRONTEND=1 jest --config=./config/jest-frontend.config.js",
         "jest-backend": "cross-env TEST_BACKEND=1 jest --config=./config/jest-backend.config.js",
         "tsc": "tsc",
@@ -64,7 +64,7 @@
         "axios": "~0.21.4",
         "bcryptjs": "~2.4.3",
         "bootstrap": "5.1.3",
-        "bree": "~6.3.1",
+        "bree": "~7.1.0",
         "chardet": "^1.3.0",
         "chart.js": "~3.6.0",
         "chartjs-adapter-dayjs": "~1.0.0",
@@ -87,7 +87,7 @@
         "postcss-scss": "~4.0.2",
         "prom-client": "~13.2.0",
         "prometheus-api-metrics": "~3.2.0",
-        "qrcode": "~1.4.4",
+        "qrcode": "~1.5.0",
         "redbean-node": "0.1.3",
         "socket.io": "~4.2.0",
         "socket.io-client": "~4.2.0",
