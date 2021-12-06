@@ -228,6 +228,7 @@ export default {
                         toast.error(res.msg);
                     } else {
                         this.heartbeatList = res.data;
+                        this.$root.storage()[`chart-period-${this.monitorId}`] = newPeriod;
                     }
                     this.loading = false;
                 });
@@ -248,6 +249,12 @@ export default {
             },
             { deep: true }
         );
+
+        // Load chart period from storage if saved
+        let period = this.$root.storage()[`chart-period-${this.monitorId}`];
+        if (period != null) {
+            this.chartPeriodHrs = period;
+        }
     }
 };
 </script>
