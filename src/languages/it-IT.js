@@ -351,4 +351,5 @@ export default {
     serwersmsAPIPassword: "Password API",
     serwersmsPhoneNumber: "Numero di Telefono",
     serwersmsSenderName: "Nome del mittente SMS (registrato via portale cliente)",
+    "stackfield": "Stackfield",
 };
