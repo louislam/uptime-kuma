@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v1
       - name: Automatically close issues that don't follow the issue template
         uses: lucasbento/auto-close-issues@v1.0.2
         with:
