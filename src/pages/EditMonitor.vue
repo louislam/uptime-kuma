@@ -123,7 +123,7 @@
                             <template v-if="monitor.type === 'mqtt'">
                                 <div class="my-3">
                                     <label for="url" class="form-label">{{ $t("serverUrl") }}</label>
-                                    <input id="url" v-model="monitor.url" type="text" class="form-control" pattern="https?://.+" required>
+                                    <input id="url" v-model="monitor.url" type="text" class="form-control" required>
                                 </div>
 
                                 <div class="my-3">
