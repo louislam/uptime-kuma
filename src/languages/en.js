@@ -352,4 +352,5 @@ export default {
     serwersmsAPIPassword: "API Password",
     serwersmsPhoneNumber: "Phone number",
     serwersmsSenderName: "SMS Sender Name (registered via customer portal)",
+    "stackfield": "Stackfield",
 };
