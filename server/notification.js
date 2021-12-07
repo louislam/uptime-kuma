@@ -25,6 +25,7 @@ const DingDing = require("./notification-providers/dingding");
 const Bark = require("./notification-providers/bark");
 const { log_info } = require("../src/util");
 const SerwerSMS = require("./notification-providers/serwersms");
+const Stackfield = require("./notification-providers/stackfield");
 
 class Notification {
 
@@ -61,6 +62,7 @@ class Notification {
             new Webhook(),
             new Bark(),
             new SerwerSMS(),
+            new Stackfield(),
         ];
 
         for (let item of list) {
