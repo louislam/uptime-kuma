@@ -41,6 +41,8 @@ docker volume create uptime-kuma
 docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name uptime-kuma louislam/uptime-kuma:1
 ```
 
+⚠️ Please use a **local volume** only. Other types such as NFS are not supported.
+
 Browse to http://localhost:3001 after starting.
 
 ### 💪🏻 Non-Docker
