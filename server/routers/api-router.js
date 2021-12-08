@@ -31,12 +31,7 @@ router.get("/api/push/:pushToken", async (request, response) => {
             throw new Error("Monitor not found or not active.");
         }
 
-        const previousHeartbeat = await R.getRow(`
-            SELECT status, time FROM heartbeat
-            WHERE id = (select MAX(id) from heartbeat where monitor_id = ?)
-        `, [
-            monitor.id
-        ]);
+        const previousHeartbeat = await Monitor.getPreviousHeartbeat(monitor.id);
 
         let status = UP;
         if (monitor.isUpsideDown()) {
@@ -157,8 +152,9 @@ router.get("/api/status-page/monitor-list", cache("5 minutes"), async (_request,
                             JOIN tag
                             ON monitor_tag.tag_id = tag.id
                             WHERE monitor_tag.monitor_id = ?`, [monitor.id]
-                        );
-                    return {...monitor, tags: tags}
+                    );
+                    return { ...monitor,
+                        tags: tags };
                 }));
             }
 
