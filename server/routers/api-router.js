@@ -153,8 +153,10 @@ router.get("/api/status-page/monitor-list", cache("5 minutes"), async (_request,
                             ON monitor_tag.tag_id = tag.id
                             WHERE monitor_tag.monitor_id = ?`, [monitor.id]
                     );
-                    return { ...monitor,
-                        tags: tags };
+                    return {
+                        ...monitor,
+                        tags: tags
+                    };
                 }));
             }
 
