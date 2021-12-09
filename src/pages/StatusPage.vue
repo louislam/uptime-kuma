@@ -77,6 +77,17 @@
                     <font-awesome-icon icon="save" />
                     {{ $t("Switch to Dark Theme") }}
                 </button>
+
+                <button class="btn btn-secondary me-2" @click="changeTagsVisibilty(!tagsVisible)">
+                    <template v-if="tagsVisible">
+                        <font-awesome-icon icon="eye-slash" />
+                        {{ $t("Hide Tags") }}
+                    </template>
+                    <template v-else>
+                        <font-awesome-icon icon="eye" />
+                        {{ $t("Show Tags") }}
+                    </template>
+                </button>
             </div>
         </div>
 
@@ -90,9 +101,9 @@
 
             <!-- Incident Date -->
             <div class="date mt-3">
-                Created: {{ $root.datetime(incident.createdDate) }} ({{ dateFromNow(incident.createdDate) }})<br />
+                {{ $t("Created") }}: {{ $root.datetime(incident.createdDate) }} ({{ dateFromNow(incident.createdDate) }})<br />
                 <span v-if="incident.lastUpdatedDate">
-                    Last Updated: {{ $root.datetime(incident.lastUpdatedDate) }} ({{ dateFromNow(incident.lastUpdatedDate) }})
+                    {{ $t("Last Updated") }}: {{ $root.datetime(incident.lastUpdatedDate) }} ({{ dateFromNow(incident.lastUpdatedDate) }})
                 </span>
             </div>
 
@@ -114,15 +125,15 @@
 
                 <div v-if="editIncidentMode" class="dropdown d-inline-block me-2">
                     <button id="dropdownMenuButton1" class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Style: {{ incident.style }}
+                        {{ $t("Style") }}: {{ $t(incident.style) }}
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                        <li><a class="dropdown-item" href="#" @click="incident.style = 'info'">info</a></li>
-                        <li><a class="dropdown-item" href="#" @click="incident.style = 'warning'">warning</a></li>
-                        <li><a class="dropdown-item" href="#" @click="incident.style = 'danger'">danger</a></li>
-                        <li><a class="dropdown-item" href="#" @click="incident.style = 'primary'">primary</a></li>
-                        <li><a class="dropdown-item" href="#" @click="incident.style = 'light'">light</a></li>
-                        <li><a class="dropdown-item" href="#" @click="incident.style = 'dark'">dark</a></li>
+                        <li><a class="dropdown-item" href="#" @click="incident.style = 'info'">{{ $t("info") }}</a></li>
+                        <li><a class="dropdown-item" href="#" @click="incident.style = 'warning'">{{ $t("warning") }}</a></li>
+                        <li><a class="dropdown-item" href="#" @click="incident.style = 'danger'">{{ $t("danger") }}</a></li>
+                        <li><a class="dropdown-item" href="#" @click="incident.style = 'primary'">{{ $t("primary") }}</a></li>
+                        <li><a class="dropdown-item" href="#" @click="incident.style = 'light'">{{ $t("light") }}</a></li>
+                        <li><a class="dropdown-item" href="#" @click="incident.style = 'dark'">{{ $t("dark") }}</a></li>
                     </ul>
                 </div>
 
@@ -292,6 +303,10 @@ export default {
             return this.config.statusPageTheme;
         },
 
+        tagsVisible() {
+            return this.config.statusPageTags
+        },
+
         logoClass() {
             if (this.editMode) {
                 return {
@@ -453,13 +468,13 @@ export default {
         },
 
         addGroup() {
-            let groupName = "Untitled Group";
+            let groupName = this.$t("Untitled Group");
 
             if (this.$root.publicGroupList.length === 0) {
-                groupName = "Services";
+                groupName = this.$t("Services");
             }
 
-            this.$root.publicGroupList.push({
+            this.$root.publicGroupList.unshift({
                 name: groupName,
                 monitorList: [],
             });
@@ -471,6 +486,25 @@ export default {
 
         changeTheme(name) {
             this.config.statusPageTheme = name;
+        },
+        changeTagsVisibilty(newState) {
+            this.config.statusPageTags = newState;
+
+            // On load, the status page will not include tags if it's not enabled for security reasons
+            // Which means if we enable tags, it won't show in the UI until saved
+            // So we have this to enhance UX and load in the tags from the authenticated source instantly
+            this.$root.publicGroupList = this.$root.publicGroupList.map((group) => {
+                return {
+                    ...group,
+                    monitorList: group.monitorList.map((monitor) => {
+                        // We only include the tags if visible so we can reuse the logic to hide the tags on disable
+                        return {
+                            ...monitor,
+                            tags: newState ? this.$root.monitorList[monitor.id].tags : []
+                        }
+                    })
+                }
+            });
         },
 
         /**
@@ -502,7 +536,7 @@ export default {
 
         postIncident() {
             if (this.incident.title == "" || this.incident.content == "") {
-                toast.error("Please input title and content.");
+                toast.error(this.$t("Please input title and content"));
                 return;
             }
 

@@ -189,7 +189,7 @@ textarea.form-control {
         opacity: 1;
     }
 
-    .table-hover > tbody > tr:hover {
+    .table-hover > tbody > tr:hover > * {
         --bs-table-accent-bg: #070a10;
         color: $dark-font-color;
     }
@@ -345,6 +345,10 @@ textarea.form-control {
 
         &.active {
             background-color: #cdf8f4;
+        }
+        .tags {
+            // Removes margin to line up tags list with uptime percentage
+            margin-left: -0.25rem;
         }
     }
 }

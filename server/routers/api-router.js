@@ -31,12 +31,7 @@ router.get("/api/push/:pushToken", async (request, response) => {
             throw new Error("Monitor not found or not active.");
         }
 
-        const previousHeartbeat = await R.getRow(`
-            SELECT status, time FROM heartbeat
-            WHERE id = (select MAX(id) from heartbeat where monitor_id = ?)
-        `, [
-            monitor.id
-        ]);
+        const previousHeartbeat = await Monitor.getPreviousHeartbeat(monitor.id);
 
         let status = UP;
         if (monitor.isUpsideDown()) {
@@ -101,6 +96,10 @@ router.get("/api/status-page/config", async (_request, response) => {
         config.statusPagePublished = true;
     }
 
+    if (! config.statusPageTags) {
+        config.statusPageTags = false;
+    }
+
     if (! config.title) {
         config.title = "Uptime Kuma";
     }
@@ -140,10 +139,28 @@ router.get("/api/status-page/monitor-list", cache("5 minutes"), async (_request,
     try {
         await checkPublished();
         const publicGroupList = [];
-        let list = await R.find("group", " public = 1 ORDER BY weight ");
-
+        const tagsVisible = (await getSettings("statusPage")).statusPageTags;
+        const list = await R.find("group", " public = 1 ORDER BY weight ");
         for (let groupBean of list) {
-            publicGroupList.push(await groupBean.toPublicJSON());
+            let monitorGroup = await groupBean.toPublicJSON();
+            if (tagsVisible) {
+                monitorGroup.monitorList = await Promise.all(monitorGroup.monitorList.map(async (monitor) => {
+                    // Includes tags as an array in response, allows for tags to be displayed on public status page
+                    const tags = await R.getAll(
+                            `SELECT monitor_tag.monitor_id, monitor_tag.value, tag.name, tag.color
+                            FROM monitor_tag
+                            JOIN tag
+                            ON monitor_tag.tag_id = tag.id
+                            WHERE monitor_tag.monitor_id = ?`, [monitor.id]
+                    );
+                    return {
+                        ...monitor,
+                        tags: tags
+                    };
+                }));
+            }
+
+            publicGroupList.push(monitorGroup);
         }
 
         response.json(publicGroupList);

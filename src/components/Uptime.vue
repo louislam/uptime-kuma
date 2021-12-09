@@ -1,5 +1,5 @@
 <template>
-    <span :class="className">{{ uptime }}</span>
+    <span :class="className" :title="24 + $t('-hour')">{{ uptime }}</span>
 </template>
 
 <script>
