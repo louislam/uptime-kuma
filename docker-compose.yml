@@ -1,0 +1,13 @@
+# Simple docker-composer.yml
+# You can change container_name, port or volume location
+
+version: '3.3'
+
+services:
+  uptime-kuma:
+    image: louislam/uptime-kuma:1
+    container_name: uptime-kuma
+    volumes:
+      - ./data:/app/data
+    ports:
+      - 3001:3001
