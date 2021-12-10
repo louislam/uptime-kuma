@@ -296,6 +296,9 @@ class Monitor extends BeanModel {
                     debug("heartbeatCount" + heartbeatCount + " " + time);
 
                     if (heartbeatCount <= 0) {
+                        // Fix #922, since previous heartbeat could be inserted by api, it should get from database
+                        previousBeat = await Monitor.getPreviousHeartbeat(this.id);
+
                         throw new Error("No heartbeat in the time window");
                     } else {
                         // No need to insert successful heartbeat for push type, so end here
@@ -750,6 +753,15 @@ class Monitor extends BeanModel {
         } else {
             debug("No notification, no need to send cert notification");
         }
+    }
+
+    static async getPreviousHeartbeat(monitorID) {
+        return await R.getRow(`
+            SELECT status, time FROM heartbeat
+            WHERE id = (select MAX(id) from heartbeat where monitor_id = ?)
+        `, [
+            monitorID
+        ]);
     }
 }
 

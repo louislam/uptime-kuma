@@ -49,8 +49,9 @@ export default {
 
     computed: {
         currentPage() {
-            let pathEnd = useRoute().path.split("/").at(-1);
-            if (pathEnd == "settings" || pathEnd == null) {
+            let pathSplit = useRoute().path.split("/");
+            let pathEnd = pathSplit[pathSplit.length - 1];
+            if (!pathEnd || pathEnd === "settings") {
                 return "general";
             }
             return pathEnd;
