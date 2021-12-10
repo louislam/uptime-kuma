@@ -45,6 +45,44 @@ docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name upti
 
 Browse to http://localhost:3001 after starting.
 
+### 🐳 Docker-Compose
+
+Simple docker-composer.yml
+
+```bash
+
+# You can change container_name, port or volume location
+
+version: '3.3'
+
+services:
+  uptime-kuma:
+    image: louislam/uptime-kuma:1
+    container_name: uptime-kuma
+    volumes:
+      - ./data:/app/data
+    ports:
+      - 3001:3001
+```
+
+⚠️ Please use a **local volume** only. Other types such as NFS are not supported.
+
+Start with
+```bash
+sudo docker-compose up -d
+```
+
+Update container to latest version:
+```bash
+sudo docker-compose pull
+sudo docker-compose up -d
+```
+
+
+Browse to http://localhost:3001 after starting.
+
+
+
 ### 💪🏻 Non-Docker
 
 Required Tools: Node.js >= 14, git and pm2.
