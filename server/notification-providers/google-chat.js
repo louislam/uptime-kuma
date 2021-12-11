@@ -2,6 +2,7 @@ const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 const { setting } = require("../util-server");
 const { getMonitorRelativeURL } = require("../../src/util");
+const { UP } = require("../../src/util");
 
 class GoogleChat extends NotificationProvider {
 
