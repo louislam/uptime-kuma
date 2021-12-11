@@ -55,6 +55,9 @@
                                     {{ $t("needPushEvery", [monitor.interval]) }}<br />
                                     {{ $t("pushOptionalParams", ["msg, ping"]) }}
                                 </div>
+                                <button class="btn btn-primary" type="button" @click="resetToken">
+                                    {{ $t("Reset Token") }}
+                                </button>
                             </div>
 
                             <!-- Keyword -->
@@ -300,6 +303,8 @@ import { genSecret, isDev } from "../util.ts";
 
 const toast = useToast();
 
+const pushTokenLength = 32;
+
 export default {
     components: {
         CopyableInput,
@@ -383,7 +388,9 @@ export default {
         "monitor.type"() {
             if (this.monitor.type === "push") {
                 if (! this.monitor.pushToken) {
-                    this.monitor.pushToken = genSecret(10);
+                    // ideally this would require checking if the generated token is already used
+                    // it's very unlikely to get a collision though (62^32 ~ 2.27265788 * 10^57 unique tokens)
+                    this.monitor.pushToken = genSecret(pushTokenLength);
                 }
             }
         }
@@ -481,6 +488,10 @@ export default {
                 }
             }
             return true;
+        },
+
+        resetToken() {
+            this.monitor.pushToken = genSecret(pushTokenLength);
         },
 
         async submit() {
