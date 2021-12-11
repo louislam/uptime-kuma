@@ -129,7 +129,7 @@ export default {
     Create: "Créer",
     "Clear Data": "Effacer les données",
     Events: "Evénements",
-    Heartbeats: "Vérfications",
+    Heartbeats: "Vérifications",
     "Auto Get": "Récuperer automatiquement",
     backupDescription: "Vous pouvez sauvegarder toutes les sondes et toutes les notifications dans un fichier JSON.",
     backupDescription2: "PS : Les données relatives à l'historique et aux événements ne sont pas incluses.",
