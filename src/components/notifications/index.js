@@ -24,6 +24,7 @@ import DingDing from "./DingDing.vue";
 import Bark from "./Bark.vue";
 import SerwerSMS from "./SerwerSMS.vue";
 import Stackfield from './Stackfield.vue';
+import GoogleChat from './GoogleChat.vue';
 
 /**
  * Manage all notification form.
@@ -57,6 +58,7 @@ const NotificationFormList = {
     "Bark": Bark,
     "serwersms": SerwerSMS,
     "stackfield": Stackfield,
+    "Google Chat": GoogleChat
 }
 
 export default NotificationFormList
