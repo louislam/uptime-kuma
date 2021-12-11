@@ -109,6 +109,7 @@
         "vuedraggable": "~4.1.0"
     },
     "devDependencies": {
+        "@actions/github": "~5.0.0",
         "@babel/eslint-parser": "~7.15.8",
         "@babel/preset-env": "^7.15.8",
         "@types/bootstrap": "~5.1.6",
