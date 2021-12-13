@@ -8,10 +8,10 @@
     - /compose/volumes/nginx
     - /compose/volumes/nginx/log/{{ kuma_domain }}
 
-- name: Ensure nginx config directory exist
+- name: Ensure nginx SSL certificates exist
   copy:
     src: ssl
-    dest: /compose/volumes/nginx/ssl
+    dest: /compose/volumes/nginx
     mode: 'preserve'
     group: root
     owner: root

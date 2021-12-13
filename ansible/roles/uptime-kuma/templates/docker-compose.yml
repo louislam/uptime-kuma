@@ -9,7 +9,7 @@ services:
         volumes:
             - '/compose/volumes/uptime-kuma:/app/data'
         container_name: uptime-kuma
-        image: 'louislam/uptime-kuma:{{kuma_image_version}}-{{kuma_image_os}}'
+        image: 'louislam/uptime-kuma:{{kuma_tag}}'
 
     nginx:
         ports:
