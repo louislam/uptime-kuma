@@ -1,5 +1,0 @@
-resources:
-  - deployment.yml
-  - service.yml
-  - ingressroute.yml
-  - pvc.yml

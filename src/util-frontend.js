@@ -51,7 +51,7 @@ export function timezoneList() {
 }
 
 export function setPageLocale() {
-    const html = document.documentElement 
+    const html = document.documentElement
     html.setAttribute('lang', currentLocale() )
     html.setAttribute('dir', localeDirection() )
-  }
+}

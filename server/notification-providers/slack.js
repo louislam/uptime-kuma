@@ -39,8 +39,9 @@ class Slack extends NotificationProvider {
             }
 
             const time = heartbeatJSON["time"];
+            const textMsg = "Uptime Kuma Alert";
             let data = {
-                "text": "Uptime Kuma Alert",
+                "text": monitorJSON ? textMsg + `: ${monitorJSON.name}` : textMsg,
                 "channel": notification.slackchannel,
                 "username": notification.slackusername,
                 "icon_emoji": notification.slackiconemo,

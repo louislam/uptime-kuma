@@ -7,11 +7,11 @@ dayjs.extend(timezone);
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
 const { debug, UP, DOWN, PENDING, flipStatus, TimeLogger } = require("../../src/util");
-const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom } = require("../util-server");
+const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, errorLog } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification");
-const { demoMode } = require("../server");
+const { demoMode } = require("../config");
 const version = require("../../package.json").version;
 const apicache = require("../modules/apicache");
 
@@ -55,6 +55,11 @@ class Monitor extends BeanModel {
             id: this.id,
             name: this.name,
             url: this.url,
+            method: this.method,
+            body: this.body,
+            headers: this.headers,
+            basic_auth_user: this.basic_auth_user,
+            basic_auth_pass: this.basic_auth_pass,
             hostname: this.hostname,
             port: this.port,
             maxretries: this.maxretries,
@@ -75,6 +80,15 @@ class Monitor extends BeanModel {
             notificationIDList,
             tags: tags,
         };
+    }
+
+    /**
+     * Encode user and password to Base64 encoding
+     * for HTTP "basic" auth, as per RFC-7617
+     * @returns {string}
+     */
+    encodeBase64(user, pass) {
+        return Buffer.from(user + ":" + pass).toString("base64");
     }
 
     /**
@@ -138,11 +152,26 @@ class Monitor extends BeanModel {
                     // Do not do any queries/high loading things before the "bean.ping"
                     let startTime = dayjs().valueOf();
 
-                    let res = await axios.get(this.url, {
+                    // HTTP basic auth
+                    let basicAuthHeader = {};
+                    if (this.basic_auth_user) {
+                        basicAuthHeader = {
+                            "Authorization": "Basic " + this.encodeBase64(this.basic_auth_user, this.basic_auth_pass),
+                        };
+                    }
+
+                    debug(`[${this.name}] Prepare Options for axios`);
+
+                    const options = {
+                        url: this.url,
+                        method: (this.method || "get").toLowerCase(),
+                        ...(this.body ? { data: JSON.parse(this.body) } : {}),
                         timeout: this.interval * 1000 * 0.8,
                         headers: {
                             "Accept": "*/*",
                             "User-Agent": "Uptime-Kuma/" + version,
+                            ...(this.headers ? JSON.parse(this.headers) : {}),
+                            ...(basicAuthHeader),
                         },
                         httpsAgent: new https.Agent({
                             maxCachedSessions: 0,      // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
@@ -152,15 +181,26 @@ class Monitor extends BeanModel {
                         validateStatus: (status) => {
                             return checkStatusCode(status, this.getAcceptedStatuscodes());
                         },
-                    });
+                    };
+
+                    debug(`[${this.name}] Axios Request`);
+                    let res = await axios.request(options);
                     bean.msg = `${res.status} - ${res.statusText}`;
                     bean.ping = dayjs().valueOf() - startTime;
 
                     // Check certificate if https is used
                     let certInfoStartTime = dayjs().valueOf();
                     if (this.getUrl()?.protocol === "https:") {
+                        debug(`[${this.name}] Check cert`);
                         try {
-                            tlsInfo = await this.updateTlsInfo(checkCertificate(res));
+                            let tlsInfoObject = checkCertificate(res);
+                            tlsInfo = await this.updateTlsInfo(tlsInfoObject);
+
+                            if (!this.getIgnoreTls()) {
+                                debug(`[${this.name}] call sendCertNotification`);
+                                await this.sendCertNotification(tlsInfoObject);
+                            }
+
                         } catch (e) {
                             if (e.message !== "No TLS certificate in response") {
                                 console.error(e.message);
@@ -170,6 +210,10 @@ class Monitor extends BeanModel {
 
                     if (process.env.TIMELOGGER === "1") {
                         debug("Cert Info Query Time: " + (dayjs().valueOf() - certInfoStartTime) + "ms");
+                    }
+
+                    if (process.env.UPTIME_KUMA_LOG_RESPONSE_BODY_MONITOR_ID == this.id) {
+                        console.log(res.data);
                     }
 
                     if (this.type === "http") {
@@ -252,12 +296,55 @@ class Monitor extends BeanModel {
                     debug("heartbeatCount" + heartbeatCount + " " + time);
 
                     if (heartbeatCount <= 0) {
+                        // Fix #922, since previous heartbeat could be inserted by api, it should get from database
+                        previousBeat = await Monitor.getPreviousHeartbeat(this.id);
+
                         throw new Error("No heartbeat in the time window");
                     } else {
                         // No need to insert successful heartbeat for push type, so end here
                         retries = 0;
                         this.heartbeatInterval = setTimeout(beat, this.interval * 1000);
                         return;
+                    }
+
+                } else if (this.type === "steam") {
+                    const steamApiUrl = "https://api.steampowered.com/IGameServersService/GetServerList/v1/";
+                    const steamAPIKey = await setting("steamAPIKey");
+                    const filter = `addr\\${this.hostname}:${this.port}`;
+
+                    if (!steamAPIKey) {
+                        throw new Error("Steam API Key not found");
+                    }
+
+                    let res = await axios.get(steamApiUrl, {
+                        timeout: this.interval * 1000 * 0.8,
+                        headers: {
+                            "Accept": "*/*",
+                            "User-Agent": "Uptime-Kuma/" + version,
+                        },
+                        httpsAgent: new https.Agent({
+                            maxCachedSessions: 0,      // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
+                            rejectUnauthorized: ! this.getIgnoreTls(),
+                        }),
+                        maxRedirects: this.maxredirects,
+                        validateStatus: (status) => {
+                            return checkStatusCode(status, this.getAcceptedStatuscodes());
+                        },
+                        params: {
+                            filter: filter,
+                            key: steamAPIKey,
+                        }
+                    });
+
+                    if (res.data.response && res.data.response.servers && res.data.response.servers.length > 0) {
+                        bean.status = UP;
+                        bean.msg = res.data.response.servers[0].name;
+
+                        try {
+                            bean.ping = await ping(this.hostname);
+                        } catch (_) { }
+                    } else {
+                        throw new Error("Server not found on Steam");
                     }
 
                 } else {
@@ -292,53 +379,20 @@ class Monitor extends BeanModel {
 
             let beatInterval = this.interval;
 
-            // * ? -> ANY STATUS = important [isFirstBeat]
-            // UP -> PENDING = not important
-            // * UP -> DOWN = important
-            // UP -> UP = not important
-            // PENDING -> PENDING = not important
-            // * PENDING -> DOWN = important
-            // PENDING -> UP = not important
-            // DOWN -> PENDING = this case not exists
-            // DOWN -> DOWN = not important
-            // * DOWN -> UP = important
-            let isImportant = isFirstBeat ||
-                (previousBeat.status === UP && bean.status === DOWN) ||
-                (previousBeat.status === DOWN && bean.status === UP) ||
-                (previousBeat.status === PENDING && bean.status === DOWN);
+            debug(`[${this.name}] Check isImportant`);
+            let isImportant = Monitor.isImportantBeat(isFirstBeat, previousBeat?.status, bean.status);
 
             // Mark as important if status changed, ignore pending pings,
             // Don't notify if disrupted changes to up
             if (isImportant) {
                 bean.important = true;
 
-                // Send only if the first beat is DOWN
-                if (!isFirstBeat || bean.status === DOWN) {
-                    let notificationList = await R.getAll("SELECT notification.* FROM notification, monitor_notification WHERE monitor_id = ? AND monitor_notification.notification_id = notification.id ", [
-                        this.id,
-                    ]);
+                debug(`[${this.name}] sendNotification`);
+                await Monitor.sendNotification(isFirstBeat, this, bean);
 
-                    let text;
-                    if (bean.status === UP) {
-                        text = "✅ Up";
-                    } else {
-                        text = "🔴 Down";
-                    }
-
-                    let msg = `[${this.name}] [${text}] ${bean.msg}`;
-
-                    for (let notification of notificationList) {
-                        try {
-                            await Notification.send(JSON.parse(notification.config), msg, await this.toJSON(), bean.toJSON());
-                        } catch (e) {
-                            console.error("Cannot send notification to " + notification.name);
-                            console.log(e);
-                        }
-                    }
-
-                    // Clear Status Page Cache
-                    apicache.clear();
-                }
+                // Clear Status Page Cache
+                debug(`[${this.name}] apicache clear`);
+                apicache.clear();
 
             } else {
                 bean.important = false;
@@ -355,10 +409,14 @@ class Monitor extends BeanModel {
                 console.warn(`Monitor #${this.id} '${this.name}': Failing: ${bean.msg} | Interval: ${beatInterval} seconds | Type: ${this.type}`);
             }
 
+            debug(`[${this.name}] Send to socket`);
             io.to(this.user_id).emit("heartbeat", bean.toJSON());
             Monitor.sendStats(io, this.id, this.user_id);
 
+            debug(`[${this.name}] Store`);
             await R.store(bean);
+
+            debug(`[${this.name}] prometheus.update`);
             prometheus.update(bean, tlsInfo);
 
             previousBeat = bean;
@@ -372,18 +430,36 @@ class Monitor extends BeanModel {
                     }
                 }
 
-                this.heartbeatInterval = setTimeout(beat, beatInterval * 1000);
+                debug(`[${this.name}] SetTimeout for next check.`);
+                this.heartbeatInterval = setTimeout(safeBeat, beatInterval * 1000);
+            } else {
+                console.log(`[${this.name}] isStop = true, no next check.`);
             }
 
+        };
+
+        const safeBeat = async () => {
+            try {
+                await beat();
+            } catch (e) {
+                console.trace(e);
+                errorLog(e, false);
+                console.error("Please report to https://github.com/louislam/uptime-kuma/issues");
+
+                if (! this.isStop) {
+                    console.log("Try to restart the monitor");
+                    this.heartbeatInterval = setTimeout(safeBeat, this.interval * 1000);
+                }
+            }
         };
 
         // Delay Push Type
         if (this.type === "push") {
             setTimeout(() => {
-                beat();
+                safeBeat();
             }, this.interval * 1000);
         } else {
-            beat();
+            safeBeat();
         }
     }
 
@@ -415,10 +491,36 @@ class Monitor extends BeanModel {
         let tls_info_bean = await R.findOne("monitor_tls_info", "monitor_id = ?", [
             this.id,
         ]);
+
         if (tls_info_bean == null) {
             tls_info_bean = R.dispense("monitor_tls_info");
             tls_info_bean.monitor_id = this.id;
+        } else {
+
+            // Clear sent history if the cert changed.
+            try {
+                let oldCertInfo = JSON.parse(tls_info_bean.info_json);
+
+                let isValidObjects = oldCertInfo && oldCertInfo.certInfo && checkCertificateResult && checkCertificateResult.certInfo;
+
+                if (isValidObjects) {
+                    if (oldCertInfo.certInfo.fingerprint256 !== checkCertificateResult.certInfo.fingerprint256) {
+                        debug("Resetting sent_history");
+                        await R.exec("DELETE FROM notification_sent_history WHERE type = 'certificate' AND monitor_id = ?", [
+                            this.id
+                        ]);
+                    } else {
+                        debug("No need to reset sent_history");
+                        debug(oldCertInfo.certInfo.fingerprint256);
+                        debug(checkCertificateResult.certInfo.fingerprint256);
+                    }
+                } else {
+                    debug("Not valid object");
+                }
+            } catch (e) { }
+
         }
+
         tls_info_bean.info_json = JSON.stringify(checkCertificateResult);
         await R.store(tls_info_bean);
 
@@ -546,6 +648,121 @@ class Monitor extends BeanModel {
         io.to(userID).emit("uptime", monitorID, duration, uptime);
     }
 
+    static isImportantBeat(isFirstBeat, previousBeatStatus, currentBeatStatus) {
+        // * ? -> ANY STATUS = important [isFirstBeat]
+        // UP -> PENDING = not important
+        // * UP -> DOWN = important
+        // UP -> UP = not important
+        // PENDING -> PENDING = not important
+        // * PENDING -> DOWN = important
+        // PENDING -> UP = not important
+        // DOWN -> PENDING = this case not exists
+        // DOWN -> DOWN = not important
+        // * DOWN -> UP = important
+        let isImportant = isFirstBeat ||
+            (previousBeatStatus === UP && currentBeatStatus === DOWN) ||
+            (previousBeatStatus === DOWN && currentBeatStatus === UP) ||
+            (previousBeatStatus === PENDING && currentBeatStatus === DOWN);
+        return isImportant;
+    }
+
+    static async sendNotification(isFirstBeat, monitor, bean) {
+        if (!isFirstBeat || bean.status === DOWN) {
+            const notificationList = await Monitor.getNotificationList(monitor);
+
+            let text;
+            if (bean.status === UP) {
+                text = "✅ Up";
+            } else {
+                text = "🔴 Down";
+            }
+
+            let msg = `[${monitor.name}] [${text}] ${bean.msg}`;
+
+            for (let notification of notificationList) {
+                try {
+                    await Notification.send(JSON.parse(notification.config), msg, await monitor.toJSON(), bean.toJSON());
+                } catch (e) {
+                    console.error("Cannot send notification to " + notification.name);
+                    console.log(e);
+                }
+            }
+        }
+    }
+
+    static async getNotificationList(monitor) {
+        let notificationList = await R.getAll("SELECT notification.* FROM notification, monitor_notification WHERE monitor_id = ? AND monitor_notification.notification_id = notification.id ", [
+            monitor.id,
+        ]);
+        return notificationList;
+    }
+
+    async sendCertNotification(tlsInfoObject) {
+        if (tlsInfoObject && tlsInfoObject.certInfo && tlsInfoObject.certInfo.daysRemaining) {
+            const notificationList = await Monitor.getNotificationList(this);
+
+            debug("call sendCertNotificationByTargetDays");
+            await this.sendCertNotificationByTargetDays(tlsInfoObject.certInfo.daysRemaining, 21, notificationList);
+            await this.sendCertNotificationByTargetDays(tlsInfoObject.certInfo.daysRemaining, 14, notificationList);
+            await this.sendCertNotificationByTargetDays(tlsInfoObject.certInfo.daysRemaining, 7, notificationList);
+        }
+    }
+
+    async sendCertNotificationByTargetDays(daysRemaining, targetDays, notificationList) {
+
+        if (daysRemaining > targetDays) {
+            debug(`No need to send cert notification. ${daysRemaining} > ${targetDays}`);
+            return;
+        }
+
+        if (notificationList.length > 0) {
+
+            let row = await R.getRow("SELECT * FROM notification_sent_history WHERE type = ? AND monitor_id = ? AND days = ?", [
+                "certificate",
+                this.id,
+                targetDays,
+            ]);
+
+            // Sent already, no need to send again
+            if (row) {
+                debug("Sent already, no need to send again");
+                return;
+            }
+
+            let sent = false;
+            debug("Send certificate notification");
+
+            for (let notification of notificationList) {
+                try {
+                    debug("Sending to " + notification.name);
+                    await Notification.send(JSON.parse(notification.config), `[${this.name}][${this.url}] Certificate will be expired in ${daysRemaining} days`);
+                    sent = true;
+                } catch (e) {
+                    console.error("Cannot send cert notification to " + notification.name);
+                    console.error(e);
+                }
+            }
+
+            if (sent) {
+                await R.exec("INSERT INTO notification_sent_history (type, monitor_id, days) VALUES(?, ?, ?)", [
+                    "certificate",
+                    this.id,
+                    targetDays,
+                ]);
+            }
+        } else {
+            debug("No notification, no need to send cert notification");
+        }
+    }
+
+    static async getPreviousHeartbeat(monitorID) {
+        return await R.getRow(`
+            SELECT status, time FROM heartbeat
+            WHERE id = (select MAX(id) from heartbeat where monitor_id = ?)
+        `, [
+            monitorID
+        ]);
+    }
 }
 
 module.exports = Monitor;

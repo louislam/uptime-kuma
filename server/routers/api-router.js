@@ -5,7 +5,7 @@ const server = require("../server");
 const apicache = require("../modules/apicache");
 const Monitor = require("../model/monitor");
 const dayjs = require("dayjs");
-const { UP } = require("../../src/util");
+const { UP, flipStatus, debug } = require("../../src/util");
 let router = express.Router();
 
 let cache = apicache.middleware;
@@ -18,9 +18,10 @@ router.get("/api/entry-page", async (_, response) => {
 
 router.get("/api/push/:pushToken", async (request, response) => {
     try {
+
         let pushToken = request.params.pushToken;
         let msg = request.query.msg || "OK";
-        let ping = request.query.ping;
+        let ping = request.query.ping || null;
 
         let monitor = await R.findOne("monitor", " push_token = ? AND active = 1 ", [
             pushToken
@@ -30,12 +31,35 @@ router.get("/api/push/:pushToken", async (request, response) => {
             throw new Error("Monitor not found or not active.");
         }
 
+        const previousHeartbeat = await Monitor.getPreviousHeartbeat(monitor.id);
+
+        let status = UP;
+        if (monitor.isUpsideDown()) {
+            status = flipStatus(status);
+        }
+
+        let isFirstBeat = true;
+        let previousStatus = status;
+        let duration = 0;
+
         let bean = R.dispense("heartbeat");
-        bean.monitor_id = monitor.id;
         bean.time = R.isoDateTime(dayjs.utc());
-        bean.status = UP;
+
+        if (previousHeartbeat) {
+            isFirstBeat = false;
+            previousStatus = previousHeartbeat.status;
+            duration = dayjs(bean.time).diff(dayjs(previousHeartbeat.time), "second");
+        }
+
+        debug("PreviousStatus: " + previousStatus);
+        debug("Current Status: " + status);
+
+        bean.important = Monitor.isImportantBeat(isFirstBeat, previousStatus, status);
+        bean.monitor_id = monitor.id;
+        bean.status = status;
         bean.msg = msg;
         bean.ping = ping;
+        bean.duration = duration;
 
         await R.store(bean);
 
@@ -45,6 +69,11 @@ router.get("/api/push/:pushToken", async (request, response) => {
         response.json({
             ok: true,
         });
+
+        if (bean.important) {
+            await Monitor.sendNotification(isFirstBeat, monitor, bean);
+        }
+
     } catch (e) {
         response.json({
             ok: false,
@@ -65,6 +94,10 @@ router.get("/api/status-page/config", async (_request, response) => {
 
     if (! config.statusPagePublished) {
         config.statusPagePublished = true;
+    }
+
+    if (! config.statusPageTags) {
+        config.statusPageTags = false;
     }
 
     if (! config.title) {
@@ -106,10 +139,28 @@ router.get("/api/status-page/monitor-list", cache("5 minutes"), async (_request,
     try {
         await checkPublished();
         const publicGroupList = [];
-        let list = await R.find("group", " public = 1 ORDER BY weight ");
-
+        const tagsVisible = (await getSettings("statusPage")).statusPageTags;
+        const list = await R.find("group", " public = 1 ORDER BY weight ");
         for (let groupBean of list) {
-            publicGroupList.push(await groupBean.toPublicJSON());
+            let monitorGroup = await groupBean.toPublicJSON();
+            if (tagsVisible) {
+                monitorGroup.monitorList = await Promise.all(monitorGroup.monitorList.map(async (monitor) => {
+                    // Includes tags as an array in response, allows for tags to be displayed on public status page
+                    const tags = await R.getAll(
+                            `SELECT monitor_tag.monitor_id, monitor_tag.value, tag.name, tag.color
+                            FROM monitor_tag
+                            JOIN tag
+                            ON monitor_tag.tag_id = tag.id
+                            WHERE monitor_tag.monitor_id = ?`, [monitor.id]
+                    );
+                    return {
+                        ...monitor,
+                        tags: tags
+                    };
+                }));
+            }
+
+            publicGroupList.push(monitorGroup);
         }
 
         response.json(publicGroupList);

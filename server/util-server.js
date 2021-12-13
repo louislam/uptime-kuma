@@ -6,6 +6,16 @@ const passwordHash = require("./password-hash");
 const dayjs = require("dayjs");
 const { Resolver } = require("dns");
 const child_process = require("child_process");
+const iconv = require("iconv-lite");
+const chardet = require("chardet");
+const fs = require("fs");
+const nodeJsUtil = require("util");
+
+// From ping-lite
+exports.WIN = /^win/.test(process.platform);
+exports.LIN = /^linux/.test(process.platform);
+exports.MAC = /^darwin/.test(process.platform);
+exports.FBSD = /^freebsd/.test(process.platform);
 
 /**
  * Init or reset JWT secret
@@ -116,7 +126,7 @@ exports.setting = async function (key) {
     }
 };
 
-exports.setSetting = async function (key, value) {
+exports.setSetting = async function (key, value, type = null) {
     let bean = await R.findOne("setting", " `key` = ? ", [
         key,
     ]);
@@ -124,6 +134,7 @@ exports.setSetting = async function (key, value) {
         bean = R.dispense("setting");
         bean.key = key;
     }
+    bean.type = type;
     bean.value = JSON.stringify(value);
     await R.store(bean);
 };
@@ -190,8 +201,13 @@ const getDaysRemaining = (validFrom, validTo) => {
 // param: info -  the chain obtained from getPeerCertificate()
 const parseCertificateInfo = function (info) {
     let link = info;
+    let i = 0;
+
+    const existingList = {};
 
     while (link) {
+        debug(`[${i}] ${link.fingerprint}`);
+
         if (!link.valid_from || !link.valid_to) {
             break;
         }
@@ -199,15 +215,24 @@ const parseCertificateInfo = function (info) {
         link.validFor = link.subjectaltname?.replace(/DNS:|IP Address:/g, "").split(", ");
         link.daysRemaining = getDaysRemaining(new Date(), link.validTo);
 
+        existingList[link.fingerprint] = true;
+
         // Move up the chain until loop is encountered
         if (link.issuerCertificate == null) {
             break;
-        } else if (link.fingerprint == link.issuerCertificate.fingerprint) {
+        } else if (link.issuerCertificate.fingerprint in existingList) {
+            debug(`[Last] ${link.issuerCertificate.fingerprint}`);
             link.issuerCertificate = null;
             break;
         } else {
             link = link.issuerCertificate;
         }
+
+        // Should be no use, but just in case.
+        if (i > 500) {
+            throw new Error("Dead loop occurred in parseCertificateInfo");
+        }
+        i++;
     }
 
     return info;
@@ -217,6 +242,7 @@ exports.checkCertificate = function (res) {
     const info = res.request.res.socket.getPeerCertificate(true);
     const valid = res.request.res.socket.authorized || false;
 
+    debug("Parsing Certificate Info");
     const parsedInfo = parseCertificateInfo(info);
 
     return {
@@ -311,4 +337,36 @@ exports.startUnitTest = async () => {
         console.log("Jest exit code: " + code);
         process.exit(code);
     });
+};
+
+/**
+ * @param body : Buffer
+ * @returns {string}
+ */
+exports.convertToUTF8 = (body) => {
+    const guessEncoding = chardet.detect(body);
+    //debug("Guess Encoding: " + guessEncoding);
+    const str = iconv.decode(body, guessEncoding);
+    return str.toString();
+};
+
+let logFile;
+
+try {
+    logFile = fs.createWriteStream("./data/error.log", {
+        flags: "a"
+    });
+} catch (_) { }
+
+exports.errorLog = (error, outputToConsole = true) => {
+    try {
+        if (logFile) {
+            const dateTime = R.isoDateTime();
+            logFile.write(`[${dateTime}] ` + nodeJsUtil.format(error) + "\n");
+
+            if (outputToConsole) {
+                console.error(error);
+            }
+        }
+    } catch (_) { }
 };

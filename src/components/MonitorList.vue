@@ -137,7 +137,7 @@ export default {
     justify-content: space-between;
 
     .dark & {
-        background-color: #161b22;
+        background-color: $dark-header-bg;
         border-bottom: 0;
     }
 }

@@ -167,7 +167,7 @@ export default {
         },
 
         getBeatTitle(beat) {
-            return `${this.$root.datetime(beat.time)} - ${beat.msg}`;
+            return `${this.$root.datetime(beat.time)}` + ((beat.msg) ? ` - ${beat.msg}` : ``);
         }
     },
 }
@@ -186,7 +186,7 @@ export default {
     .beat {
         display: inline-block;
         background-color: $primary;
-        border-radius: 50rem;
+        border-radius: $border-radius;
 
         &.empty {
             background-color: aliceblue;

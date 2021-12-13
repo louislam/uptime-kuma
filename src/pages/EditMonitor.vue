@@ -29,6 +29,9 @@
                                     <option value="push">
                                         Push
                                     </option>
+                                    <option value="steam">
+                                        Steam Game Server
+                                    </option>
                                 </select>
                             </div>
 
@@ -46,11 +49,11 @@
 
                             <!-- Push URL -->
                             <div v-if="monitor.type === 'push' " class="my-3">
-                                <label for="push-url" class="form-label">{{ $t("Push URL") }}</label>
+                                <label for="push-url" class="form-label">{{ $t("PushUrl") }}</label>
                                 <CopyableInput id="push-url" v-model="pushURL" type="url" disabled="disabled" />
                                 <div class="form-text">
-                                    You should call this url every {{ monitor.interval }} seconds.<br />
-                                    Optional parameters: msg, ping
+                                    {{ $t("needPushEvery", [monitor.interval]) }}<br />
+                                    {{ $t("pushOptionalParams", ["msg, ping"]) }}
                                 </div>
                             </div>
 
@@ -63,18 +66,21 @@
                                 </div>
                             </div>
 
-                            <!-- TCP Port / Ping / DNS only -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' " class="my-3">
+                            <!-- Hostname -->
+                            <!-- TCP Port / Ping / DNS / Steam only -->
+                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam'" class="my-3">
                                 <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>
                                 <input id="hostname" v-model="monitor.hostname" type="text" class="form-control" :pattern="`${ipRegexPattern}|${hostnameRegexPattern}`" required>
                             </div>
 
-                            <!-- For TCP Port Type -->
-                            <div v-if="monitor.type === 'port' " class="my-3">
+                            <!-- Port -->
+                            <!-- For TCP Port / Steam Type -->
+                            <div v-if="monitor.type === 'port' || monitor.type === 'steam'" class="my-3">
                                 <label for="port" class="form-label">{{ $t("Port") }}</label>
                                 <input id="port" v-model="monitor.port" type="number" class="form-control" required min="0" max="65535" step="1">
                             </div>
 
+                            <!-- DNS Resolver Server -->
                             <!-- For DNS Type -->
                             <template v-if="monitor.type === 'dns'">
                                 <div class="my-3">
@@ -97,7 +103,7 @@
                                         :close-on-select="true"
                                         :clear-on-select="false"
                                         :preserve-search="false"
-                                        placeholder="Pick a RR-Type..."
+                                        :placeholder="$t('Pick a RR-Type...')"
                                         :preselect-first="false"
                                         :max-height="500"
                                         :taggable="false"
@@ -140,7 +146,7 @@
                                 </label>
                             </div>
 
-                            <div v-if="monitor.type !== 'push'" class="my-3 form-check">
+                            <div class="my-3 form-check">
                                 <input id="upside-down" v-model="monitor.upsideDown" class="form-check-input" type="checkbox">
                                 <label class="form-check-label" for="upside-down">
                                     {{ $t("Upside Down Mode") }}
@@ -171,7 +177,7 @@
                                         :close-on-select="false"
                                         :clear-on-select="false"
                                         :preserve-search="true"
-                                        placeholder="Pick Accepted Status Codes..."
+                                        :placeholder="$t('Pick Accepted Status Codes...')"
                                         :preselect-first="false"
                                         :max-height="600"
                                         :taggable="true"
@@ -188,13 +194,14 @@
                             </div>
 
                             <div class="mt-5 mb-1">
-                                <button class="btn btn-primary" type="submit" :disabled="processing">{{ $t("Save") }}</button>
+                                <button id="monitor-submit-btn" class="btn btn-primary" type="submit" :disabled="processing">{{ $t("Save") }}</button>
                             </div>
                         </div>
 
                         <div class="col-md-6">
                             <div v-if="$root.isMobile" class="mt-3" />
 
+                            <!-- Notifications -->
                             <h2 class="mb-2">{{ $t("Notifications") }}</h2>
                             <p v-if="$root.notificationList.length === 0">
                                 {{ $t("Not available, please setup.") }}
@@ -208,12 +215,70 @@
                                     <a href="#" @click="$refs.notificationDialog.show(notification.id)">{{ $t("Edit") }}</a>
                                 </label>
 
-                                <span v-if="notification.isDefault == true" class="badge bg-primary ms-2">Default</span>
+                                <span v-if="notification.isDefault == true" class="badge bg-primary ms-2">{{ $t("Default") }}</span>
                             </div>
 
                             <button class="btn btn-primary me-2" type="button" @click="$refs.notificationDialog.show()">
                                 {{ $t("Setup Notification") }}
                             </button>
+
+                            <!-- HTTP Options -->
+                            <template v-if="monitor.type === 'http' || monitor.type === 'keyword' ">
+                                <h2 class="mt-5 mb-2">{{ $t("HTTP Options") }}</h2>
+
+                                <!-- Method -->
+                                <div class="my-3">
+                                    <label for="method" class="form-label">{{ $t("Method") }}</label>
+                                    <select id="method" v-model="monitor.method" class="form-select">
+                                        <option value="GET">
+                                            GET
+                                        </option>
+                                        <option value="POST">
+                                            POST
+                                        </option>
+                                        <option value="PUT">
+                                            PUT
+                                        </option>
+                                        <option value="PATCH">
+                                            PATCH
+                                        </option>
+                                        <option value="DELETE">
+                                            DELETE
+                                        </option>
+                                        <option value="HEAD">
+                                            HEAD
+                                        </option>
+                                        <option value="OPTIONS">
+                                            OPTIONS
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <!-- Body -->
+                                <div class="my-3">
+                                    <label for="body" class="form-label">{{ $t("Body") }}</label>
+                                    <textarea id="body" v-model="monitor.body" class="form-control" :placeholder="bodyPlaceholder"></textarea>
+                                </div>
+
+                                <!-- Headers -->
+                                <div class="my-3">
+                                    <label for="headers" class="form-label">{{ $t("Headers") }}</label>
+                                    <textarea id="headers" v-model="monitor.headers" class="form-control" :placeholder="headersPlaceholder"></textarea>
+                                </div>
+
+                                <!-- HTTP Basic Auth -->
+                                <h4 class="mt-5 mb-2">{{ $t("HTTP Basic Auth") }}</h4>
+
+                                <div class="my-3">
+                                    <label for="basicauth" class="form-label">{{ $t("Username") }}</label>
+                                    <input id="basicauth-user" v-model="monitor.basic_auth_user" type="text" class="form-control" :placeholder="$t('Username')">
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="basicauth" class="form-label">{{ $t("Password") }}</label>
+                                    <input id="basicauth-pass" v-model="monitor.basic_auth_pass" type="password" class="form-control" :placeholder="$t('Password')">
+                                </div>
+                            </template>
                         </div>
                     </div>
                 </div>
@@ -285,6 +350,20 @@ export default {
 
         pushURL() {
             return this.$root.baseURL + "/api/push/" + this.monitor.pushToken + "?msg=OK&ping=";
+        },
+
+        bodyPlaceholder() {
+            return this.$t("Example:", [`
+{
+    "key": "value"
+}`]);
+        },
+
+        headersPlaceholder() {
+            return this.$t("Example:", [`
+{
+    "HeaderName": "HeaderValue"
+}`]);
         }
 
     },
@@ -295,7 +374,7 @@ export default {
         },
 
         "monitor.interval"(value, oldValue) {
-            // Link interval and retryInerval if they are the same value.
+            // Link interval and retryInterval if they are the same value.
             if (this.monitor.retryInterval === oldValue) {
                 this.monitor.retryInterval = value;
             }
@@ -349,6 +428,7 @@ export default {
                     type: "http",
                     name: "",
                     url: "https://",
+                    method: "GET",
                     interval: 60,
                     retryInterval: this.interval,
                     maxretries: 0,
@@ -383,8 +463,42 @@ export default {
 
         },
 
+        isInputValid() {
+            if (this.monitor.body) {
+                try {
+                    JSON.parse(this.monitor.body);
+                } catch (err) {
+                    toast.error(this.$t("BodyInvalidFormat") + err.message);
+                    return false;
+                }
+            }
+            if (this.monitor.headers) {
+                try {
+                    JSON.parse(this.monitor.headers);
+                } catch (err) {
+                    toast.error(this.$t("HeadersInvalidFormat") + err.message);
+                    return false;
+                }
+            }
+            return true;
+        },
+
         async submit() {
             this.processing = true;
+
+            if (!this.isInputValid()) {
+                this.processing = false;
+                return;
+            }
+
+            // Beautify the JSON format
+            if (this.monitor.body) {
+                this.monitor.body = JSON.stringify(JSON.parse(this.monitor.body), null, 4);
+            }
+
+            if (this.monitor.headers) {
+                this.monitor.headers = JSON.stringify(JSON.parse(this.monitor.headers), null, 4);
+            }
 
             if (this.isAdd) {
                 this.$root.add(this.monitor, async (res) => {
@@ -422,8 +536,12 @@ export default {
 };
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
     .shadow-box {
         padding: 20px;
+    }
+
+    textarea {
+        min-height: 200px;
     }
 </style>

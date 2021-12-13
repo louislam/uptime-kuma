@@ -1,16 +1,13 @@
 console.log("Welcome to Uptime Kuma");
 const args = require("args-parser")(process.argv);
 const { sleep, debug, getRandomInt, genSecret } = require("../src/util");
+const config = require("./config");
 
 debug(args);
 
 if (! process.env.NODE_ENV) {
     process.env.NODE_ENV = "production";
 }
-
-// Demo Mode?
-const demoMode = args["demo"] || false;
-exports.demoMode = demoMode;
 
 console.log("Node Env: " + process.env.NODE_ENV);
 
@@ -34,6 +31,7 @@ debug("Importing prometheus-api-metrics");
 const prometheusAPIMetrics = require("prometheus-api-metrics");
 debug("Importing compare-versions");
 const compareVersions = require("compare-versions");
+const { passwordStrength } = require("check-password-strength");
 
 debug("Importing 2FA Modules");
 const notp = require("notp");
@@ -43,7 +41,7 @@ console.log("Importing this project modules");
 debug("Importing Monitor");
 const Monitor = require("./model/monitor");
 debug("Importing Settings");
-const { getSettings, setSettings, setting, initJWTSecret, checkLogin, startUnitTest } = require("./util-server");
+const { getSettings, setSettings, setting, initJWTSecret, checkLogin, startUnitTest, FBSD, errorLog } = require("./util-server");
 
 debug("Importing Notification");
 const { Notification } = require("./notification");
@@ -51,6 +49,10 @@ Notification.init();
 
 debug("Importing Database");
 const Database = require("./database");
+
+debug("Importing Background Jobs");
+const { initBackgroundJobs } = require("./jobs");
+const { loginRateLimiter } = require("./rate-limiter");
 
 const { basicAuth } = require("./auth");
 const { login } = require("./auth");
@@ -61,12 +63,29 @@ console.info("Version: " + checkVersion.version);
 
 // If host is omitted, the server will accept connections on the unspecified IPv6 address (::) when IPv6 is available and the unspecified IPv4 address (0.0.0.0) otherwise.
 // Dual-stack support for (::)
-const hostname = process.env.HOST || args.host;
-const port = parseInt(process.env.PORT || args.port || 3001);
+let hostname = process.env.UPTIME_KUMA_HOST || args.host;
+
+// Also read HOST if not FreeBSD, as HOST is a system environment variable in FreeBSD
+if (!hostname && !FBSD) {
+    hostname = process.env.HOST;
+}
+
+if (hostname) {
+    console.log("Custom hostname: " + hostname);
+}
+
+const port = parseInt(process.env.UPTIME_KUMA_PORT || process.env.PORT || args.port || 3001);
 
 // SSL
-const sslKey = process.env.SSL_KEY || args["ssl-key"] || undefined;
-const sslCert = process.env.SSL_CERT || args["ssl-cert"] || undefined;
+const sslKey = process.env.UPTIME_KUMA_SSL_KEY || process.env.SSL_KEY || args["ssl-key"] || undefined;
+const sslCert = process.env.UPTIME_KUMA_SSL_CERT || process.env.SSL_CERT || args["ssl-cert"] || undefined;
+const disableFrameSameOrigin = !!process.env.UPTIME_KUMA_DISABLE_FRAME_SAMEORIGIN || args["disable-frame-sameorigin"] || false;
+
+// 2FA / notp verification defaults
+const twofa_verification_opts = {
+    "window": 1,
+    "time": 30
+};
 
 /**
  * Run unit test after the server is ready
@@ -74,7 +93,7 @@ const sslCert = process.env.SSL_CERT || args["ssl-cert"] || undefined;
  */
 const testMode = !!args["test"] || false;
 
-if (demoMode) {
+if (config.demoMode) {
     console.log("==== Demo Mode ====");
 }
 
@@ -100,8 +119,19 @@ module.exports.io = io;
 // Must be after io instantiation
 const { sendNotificationList, sendHeartbeatList, sendImportantHeartbeatList, sendInfo } = require("./client");
 const { statusPageSocketHandler } = require("./socket-handlers/status-page-socket-handler");
+const databaseSocketHandler = require("./socket-handlers/database-socket-handler");
+const TwoFA = require("./2fa");
 
 app.use(express.json());
+
+// Global Middleware
+app.use(function (req, res, next) {
+    if (!disableFrameSameOrigin) {
+        res.setHeader("X-Frame-Options", "SAMEORIGIN");
+    }
+    res.removeHeader("X-Powered-By");
+    next();
+});
 
 /**
  * Total WebSocket client connected to server currently, no actual use
@@ -131,13 +161,23 @@ let needSetup = false;
  * Cache Index HTML
  * @type {string}
  */
-let indexHTML = fs.readFileSync("./dist/index.html").toString();
+let indexHTML = "";
+
+try {
+    indexHTML = fs.readFileSync("./dist/index.html").toString();
+} catch (e) {
+    // "dist/index.html" is not necessary for development
+    if (process.env.NODE_ENV !== "development") {
+        console.error("Error: Cannot find 'dist/index.html', did you install correctly?");
+        process.exit(1);
+    }
+}
 
 exports.entryPage = "dashboard";
 
 (async () => {
     Database.init(args);
-    await initDatabase();
+    await initDatabase(testMode);
 
     exports.entryPage = await setting("entryPage");
 
@@ -146,6 +186,15 @@ exports.entryPage = "dashboard";
     // ***************************
     // Normal Router here
     // ***************************
+
+    // Entry Page
+    app.get("/", async (_request, response) => {
+        if (exports.entryPage === "statusPage") {
+            response.redirect("/status");
+        } else {
+            response.redirect("/dashboard");
+        }
+    });
 
     // Robots.txt
     app.get("/robots.txt", async (_request, response) => {
@@ -176,7 +225,7 @@ exports.entryPage = "dashboard";
     const apiRouter = require("./routers/api-router");
     app.use(apiRouter);
 
-    // Universal Route Handler, must be at the end of all express route.
+    // Universal Route Handler, must be at the end of all express routes.
     app.get("*", async (_request, response) => {
         if (_request.originalUrl.startsWith("/upload/")) {
             response.status(404).send("File not found.");
@@ -244,12 +293,16 @@ exports.entryPage = "dashboard";
         socket.on("login", async (data, callback) => {
             console.log("Login");
 
+            // Login Rate Limit
+            if (! await loginRateLimiter.pass(callback)) {
+                return;
+            }
+
             let user = await login(data.username, data.password);
 
             if (user) {
-                afterLogin(socket, user);
-
-                if (user.twofaStatus == 0) {
+                if (user.twofa_status == 0) {
+                    afterLogin(socket, user);
                     callback({
                         ok: true,
                         token: jwt.sign({
@@ -258,16 +311,23 @@ exports.entryPage = "dashboard";
                     });
                 }
 
-                if (user.twofaStatus == 1 && !data.token) {
+                if (user.twofa_status == 1 && !data.token) {
                     callback({
                         tokenRequired: true,
                     });
                 }
 
                 if (data.token) {
-                    let verify = notp.totp.verify(data.token, user.twofa_secret);
+                    let verify = notp.totp.verify(data.token, user.twofa_secret, twofa_verification_opts);
 
-                    if (verify && verify.delta == 0) {
+                    if (user.twofa_last_token !== data.token && verify) {
+                        afterLogin(socket, user);
+
+                        await R.exec("UPDATE `user` SET twofa_last_token = ? WHERE id = ? ", [
+                            data.token,
+                            socket.userID,
+                        ]);
+
                         callback({
                             ok: true,
                             token: jwt.sign({
@@ -305,7 +365,7 @@ exports.entryPage = "dashboard";
                 ]);
 
                 if (user.twofa_status == 0) {
-                    let newSecret = await genSecret();
+                    let newSecret = genSecret();
                     let encodedSecret = base32.encode(newSecret);
 
                     // Google authenticator doesn't like equal signs
@@ -361,10 +421,7 @@ exports.entryPage = "dashboard";
         socket.on("disable2FA", async (callback) => {
             try {
                 checkLogin(socket);
-
-                await R.exec("UPDATE `user` SET twofa_status = 0 WHERE id = ? ", [
-                    socket.userID,
-                ]);
+                await TwoFA.disable2FA(socket.userID);
 
                 callback({
                     ok: true,
@@ -383,9 +440,9 @@ exports.entryPage = "dashboard";
                 socket.userID,
             ]);
 
-            let verify = notp.totp.verify(token, user.twofa_secret);
+            let verify = notp.totp.verify(token, user.twofa_secret, twofa_verification_opts);
 
-            if (verify && verify.delta == 0) {
+            if (user.twofa_last_token !== token && verify) {
                 callback({
                     ok: true,
                     valid: true,
@@ -432,8 +489,12 @@ exports.entryPage = "dashboard";
 
         socket.on("setup", async (username, password, callback) => {
             try {
+                if (passwordStrength(password).value === "Too weak") {
+                    throw new Error("Password is too weak. It should contain alphabetic and numeric characters. It must be at least 6 characters in length.");
+                }
+
                 if ((await R.count("user")) !== 0) {
-                    throw new Error("Uptime Kuma has been setup. If you want to setup again, please delete the database.");
+                    throw new Error("Uptime Kuma has been initialized. If you want to run setup again, please delete the database.");
                 }
 
                 let user = R.dispense("user");
@@ -478,8 +539,8 @@ exports.entryPage = "dashboard";
 
                 await updateMonitorNotification(bean.id, notificationIDList);
 
-                await startMonitor(socket.userID, bean.id);
                 await sendMonitorList(socket);
+                await startMonitor(socket.userID, bean.id);
 
                 callback({
                     ok: true,
@@ -509,6 +570,11 @@ exports.entryPage = "dashboard";
                 bean.name = monitor.name;
                 bean.type = monitor.type;
                 bean.url = monitor.url;
+                bean.method = monitor.method;
+                bean.body = monitor.body;
+                bean.headers = monitor.headers;
+                bean.basic_auth_user = monitor.basic_auth_user;
+                bean.basic_auth_pass = monitor.basic_auth_pass;
                 bean.interval = monitor.interval;
                 bean.retryInterval = monitor.retryInterval;
                 bean.hostname = monitor.hostname;
@@ -580,6 +646,38 @@ exports.entryPage = "dashboard";
                     monitor: await bean.toJSON(),
                 });
 
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("getMonitorBeats", async (monitorID, period, callback) => {
+            try {
+                checkLogin(socket);
+
+                console.log(`Get Monitor Beats: ${monitorID} User ID: ${socket.userID}`);
+
+                if (period == null) {
+                    throw new Error("Invalid period.");
+                }
+
+                let list = await R.getAll(`
+                    SELECT * FROM heartbeat
+                    WHERE monitor_id = ? AND
+                    time > DATETIME('now', '-' || ? || ' hours')
+                    ORDER BY time ASC
+                `, [
+                    monitorID,
+                    period,
+                ]);
+
+                callback({
+                    ok: true,
+                    data: list,
+                });
             } catch (e) {
                 callback({
                     ok: false,
@@ -818,8 +916,12 @@ exports.entryPage = "dashboard";
             try {
                 checkLogin(socket);
 
-                if (! password.currentPassword) {
+                if (! password.newPassword) {
                     throw new Error("Invalid new password");
+                }
+
+                if (passwordStrength(password.newPassword).value === "Too weak") {
+                    throw new Error("Password is too weak. It should contain alphabetic and numeric characters. It must be at least 6 characters in length.");
                 }
 
                 let user = await R.findOne("user", " id = ? AND active = 1 ", [
@@ -1034,6 +1136,11 @@ exports.entryPage = "dashboard";
                                 name: monitorListData[i].name,
                                 type: monitorListData[i].type,
                                 url: monitorListData[i].url,
+                                method: monitorListData[i].method || "GET",
+                                body: monitorListData[i].body,
+                                headers: monitorListData[i].headers,
+                                basic_auth_user: monitorListData[i].basic_auth_user,
+                                basic_auth_pass: monitorListData[i].basic_auth_pass,
                                 interval: monitorListData[i].interval,
                                 retryInterval: retryInterval,
                                 hostname: monitorListData[i].hostname,
@@ -1200,6 +1307,7 @@ exports.entryPage = "dashboard";
 
         // Status Page Socket Handler for admin only
         statusPageSocketHandler(socket);
+        databaseSocketHandler(socket);
 
         debug("added all socket handlers");
 
@@ -1238,6 +1346,8 @@ exports.entryPage = "dashboard";
             startUnitTest();
         }
     });
+
+    initBackgroundJobs(args);
 
 })();
 
@@ -1309,14 +1419,14 @@ async function getMonitorJSONList(userID) {
     return result;
 }
 
-async function initDatabase() {
+async function initDatabase(testMode = false) {
     if (! fs.existsSync(Database.path)) {
         console.log("Copying Database");
         fs.copyFileSync(Database.templatePath, Database.path);
     }
 
-    console.log("Connecting to Database");
-    await Database.connect();
+    console.log("Connecting to the Database");
+    await Database.connect(testMode);
     console.log("Connected");
 
     // Patch the database
@@ -1415,7 +1525,7 @@ async function shutdownFunction(signal) {
 }
 
 function finalFunction() {
-    console.log("Graceful shutdown successfully!");
+    console.log("Graceful shutdown successful!");
 }
 
 gracefulShutdown(server, {
@@ -1430,5 +1540,6 @@ gracefulShutdown(server, {
 // Catch unexpected errors here
 process.addListener("unhandledRejection", (error, promise) => {
     console.trace(error);
+    errorLog(error, false);
     console.error("If you keep encountering errors, please report to https://github.com/louislam/uptime-kuma/issues");
 });

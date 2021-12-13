@@ -14,6 +14,10 @@ h2 {
     font-size: 26px;
 }
 
+textarea.form-control {
+    border-radius: 19px;
+}
+
 ::-webkit-scrollbar {
     width: 10px;
 }
@@ -185,7 +189,7 @@ h2 {
         opacity: 1;
     }
 
-    .table-hover > tbody > tr:hover {
+    .table-hover > tbody > tr:hover > * {
         --bs-table-accent-bg: #070a10;
         color: $dark-font-color;
     }
@@ -341,6 +345,10 @@ h2 {
 
         &.active {
             background-color: #cdf8f4;
+        }
+        .tags {
+            // Removes margin to line up tags list with uptime percentage
+            margin-left: -0.25rem;
         }
     }
 }

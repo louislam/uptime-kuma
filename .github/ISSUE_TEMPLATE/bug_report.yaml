@@ -1,0 +1,99 @@
+name: "🐛 Bug Report"
+description: "Submit a bug report to help us improve"
+#title: "[Bug] "
+labels: [bug]
+body:
+  - type: checkboxes
+    id: no-duplicate-issues
+    attributes:
+      label: "⚠️ Please verify that this bug has NOT been raised before."
+      description: "Search in the issues sections by clicking [HERE](https://github.com/louislam/uptime-kuma/issues?q=)"
+      options:
+        - label: "I checked and didn't find similar issue"
+          required: true
+  - type: checkboxes
+    attributes:
+      label: "🛡️ Security Policy"
+      description: Please review the security policy before reporting security related issues/bugs.
+      options:
+        - label: I agree to have read this project [Security Policy](https://github.com/louislam/uptime-kuma/security/policy)
+          required: true
+  - type: textarea
+    id: description
+    validations:
+      required: false
+    attributes:
+      label: "Description"
+      description: "You could also upload screenshots"
+  - type: textarea
+    id: steps-to-reproduce
+    validations:
+      required: true
+    attributes:
+      label: "👟 Reproduction steps"
+      description: "How do you trigger this bug? Please walk us through it step by step."
+      placeholder: "..."
+  - type: textarea
+    id: expected-behavior
+    validations:
+      required: true
+    attributes:
+      label: "👀 Expected behavior"
+      description: "What did you think would happen?"
+      placeholder: "..."
+  - type: textarea
+    id: actual-behavior
+    validations:
+      required: true
+    attributes:
+      label: "😓 Actual Behavior"
+      description: "What actually happen?"
+      placeholder: "..."
+  - type: input
+    id: uptime-kuma-version
+    attributes:
+      label: "🐻 Uptime-Kuma Version"
+      description: "Which version of Uptime-Kuma are you running? Please do NOT provide the docker tag such as latest or 1"
+      placeholder: "Ex. 1.10.0"
+    validations:
+      required: true
+  - type: input
+    id: operating-system
+    attributes:
+      label: "💻 Operating System and Arch"
+      description: "Which OS is your server/device running on?"
+      placeholder: "Ex. Ubuntu 20.04 x86"
+    validations:
+      required: true
+  - type: input
+    id: browser-vendor
+    attributes:
+      label: "🌐 Browser"
+      description: "Which browser are you running on?"
+      placeholder: "Ex. Google Chrome 95.0.4638.69"
+    validations:
+      required: true
+  - type: input
+    id: docker-version
+    attributes:
+      label: "🐋 Docker Version"
+      description: "If running with Docker, which version are you running?"
+      placeholder: "Ex. Docker 20.10.9 / K8S / Podman"
+    validations:
+      required: false
+  - type: input
+    id: nodejs-version
+    attributes:
+      label: "🟩 NodeJS Version"
+      description: "If running with Node.js? which version are you running?"
+      placeholder: "Ex. 14.18.0"
+    validations:
+      required: false
+  - type: textarea
+    id: logs
+    attributes:
+      label: "📝 Relevant log output"
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      render: shell
+    validations:
+      required: false

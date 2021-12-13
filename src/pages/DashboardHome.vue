@@ -83,17 +83,10 @@ export default {
             perPage: 25,
             heartBeatList: [],
             paginationConfig: {
-                texts:{
-                    count:`${this.$t("Showing {from} to {to} of {count} records")}|{count} ${this.$t("records")}|${this.$t("One record")}`,
-                    first:this.$t("First"),
-                    last:this.$t("Last"),
-                    nextPage:'>',
-                    nextChunk:'>>',
-                    prevPage:'<',
-                    prevChunk:'<<'
-                }
-            }
-        }
+                hideCount: true,
+                chunksNavigation: "scroll",
+            },
+        };
     },
     computed: {
         stats() {
@@ -106,7 +99,7 @@ export default {
 
             for (let monitorID in this.$root.monitorList) {
                 let beat = this.$root.lastHeartbeatList[monitorID];
-                let monitor = this.$root.monitorList[monitorID]
+                let monitor = this.$root.monitorList[monitorID];
 
                 if (monitor && ! monitor.active) {
                     result.pause++;
@@ -132,7 +125,7 @@ export default {
             let result = [];
 
             for (let monitorID in this.$root.importantHeartbeatList) {
-                let list = this.$root.importantHeartbeatList[monitorID]
+                let list = this.$root.importantHeartbeatList[monitorID];
                 result = result.concat(list);
             }
 
@@ -140,7 +133,7 @@ export default {
                 let monitor = this.$root.monitorList[beat.monitorID];
 
                 if (monitor) {
-                    beat.name = monitor.name
+                    beat.name = monitor.name;
                 }
             }
 
@@ -167,7 +160,7 @@ export default {
             return this.heartBeatList.slice(startIndex, endIndex);
         },
     },
-}
+};
 </script>
 
 <style lang="scss" scoped>

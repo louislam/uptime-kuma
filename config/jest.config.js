@@ -5,7 +5,8 @@ module.exports = {
         "__DEV__": true
     },
     "testRegex": "./test/e2e.spec.js",
-    "rootDir": ".",
+    "testEnvironment": "./config/jest-debug-env.js",
+    "rootDir": "..",
     "testTimeout": 30000,
 };
 
