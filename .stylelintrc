@@ -1,9 +1,0 @@
-{
-    "extends": "stylelint-config-standard",
-    "rules": {
-        "indentation": 4,
-        "no-descending-specificity": null,
-        "selector-list-comma-newline-after": null,
-        "declaration-empty-line-before": null
-    }
-}
