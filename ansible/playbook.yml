@@ -15,5 +15,5 @@
   roles:
     - {role: geerlingguy.docker,      tags: ["docker"]}
     - {role: geerlingguy.pip,         tags: ["docker"]}
-    - {role: uptime-kuma,                    tags: ["kuma"]}
     - {role: nginx,                   tags: ["nginx"]}
+    - {role: uptime-kuma,             tags: ["kuma"]}
