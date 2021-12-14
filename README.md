@@ -93,7 +93,7 @@ https://github.com/louislam/uptime-kuma/projects/1
 
 Thank you so much! (GitHub Sponsors will be updated manually. OpenCollective sponsors will be updated automatically, the list will be cached by GitHub though. It may need some time to be updated)
 
-<img src="https://uptime.kuma.pet/sponsors?v=2" alt />
+<img src="https://uptime.kuma.pet/sponsors?v=3" alt />
 
 ## 🖼 More Screenshots
 
