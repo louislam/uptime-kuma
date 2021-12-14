@@ -1,0 +1,4 @@
+---
+kuma_image_version: '1'
+kuma_image_os: 'debian'
+kuma_tag: "{{kuma_image_version}}-{{kuma_image_os}}"

@@ -1,0 +1,22 @@
+- name: Ensure Volumes & Files directories exists
+  file:
+    dest: "{{item}}"
+    state: directory
+  loop:
+    - /compose
+    - /compose/kuma
+    - /compose/volumes
+    - /compose/volumes/kuma
+
+- name: Ensure docker-compose file has been updated
+  template:
+    src: "{{item}}"
+    dest: /compose/kuma/
+  loop:
+    - docker-compose.yml
+
+- name: Ensure uptime-kuma is up
+  community.docker.docker_compose:
+    state: present
+    project_src: /compose/kuma
+    pull: yes

@@ -1,0 +1,19 @@
+- name: install uptime kuma with nginx connected
+  hosts: all
+
+  vars:
+    pip_install_packages:
+      - name: docker
+    docker_compose_version: "v2.0.1"
+
+  tasks:
+    - name: Ensure {{inventory_hostname}} is set as hostname
+      hostname:
+        name: "{{inventory_hostname}}"
+      tags: ["hostname"]
+
+  roles:
+    - {role: geerlingguy.docker,      tags: ["docker"]}
+    - {role: geerlingguy.pip,         tags: ["docker"]}
+    - {role: uptime-kuma,                    tags: ["kuma"]}
+    - {role: nginx,                   tags: ["nginx"]}

@@ -1,0 +1,22 @@
+- name: Ensure Volumes & Files directories exists
+  file:
+    dest: "{{item}}"
+    state: directory
+  loop:
+    - /compose
+    - /compose/volumes
+    - /compose/volumes/nginx
+    - /compose/volumes/nginx/log/{{ kuma_domain }}
+
+- name: Ensure nginx SSL certificates exist
+  copy:
+    src: ssl
+    dest: /compose/volumes/nginx
+    mode: 'preserve'
+    group: root
+    owner: root
+
+- name: Ensure config files are updated
+  template:
+    src: "nginx.conf"
+    dest: /compose/volumes/nginx/nginx.conf
