@@ -15,6 +15,8 @@ export default {
     resoverserverDescription: "Cloudflare es el servidor por defecto, puedes cambiar el servidor de resolución en cualquier momento.",
     rrtypeDescription: "Selecciona el tipo de registro que quieres monitorizar",
     pauseMonitorMsg: "¿Seguro que quieres pausar?",
+    duplicatedMonitorUrlWarningKey: "La url del monitor se encuentra duplicada. ¿Deseas agregarlo?",
+    duplicatedMonitorNameWarningKey: "El nombre del monitor se encuentra duplicado. ¿Deseas agregarlo?",
     Settings: "Ajustes",
     Dashboard: "Panel",
     "New Update": "Nueva actualización",

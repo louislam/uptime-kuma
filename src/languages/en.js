@@ -26,6 +26,8 @@ export default {
     tokenValidSettingsMsg: "Token is valid! You can now save the 2FA settings.",
     confirmEnableTwoFAMsg: "Are you sure you want to enable 2FA?",
     confirmDisableTwoFAMsg: "Are you sure you want to disable 2FA?",
+    duplicatedMonitorUrlWarningKey: "The monitor's url is duplicated. Are you sure you want to add it?",
+    duplicatedMonitorNameWarningKey: "The monitor's name is duplicated. Are you sure you want to add it?",
     Settings: "Settings",
     Dashboard: "Dashboard",
     "New Update": "New Update",

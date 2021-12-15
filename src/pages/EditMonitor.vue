@@ -2,7 +2,7 @@
     <transition name="slide-fade" appear>
         <div>
             <h1 class="mb-3">{{ pageName }}</h1>
-            <form @submit.prevent="submit">
+            <form @submit.prevent="isDuplicatedMonitor">
                 <div class="shadow-box">
                     <div class="row">
                         <div class="col-md-6">
@@ -283,6 +283,12 @@
                     </div>
                 </div>
             </form>
+            <Confirm ref="duplicatedMonitorUrlWarning" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="submit">
+                {{ $t('duplicatedMonitorUrlWarningKey') }}
+            </Confirm>
+            <Confirm ref="duplicatedMonitorNameWarning" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="submit">
+                {{ $t('duplicatedMonitorNameWarningKey') }}
+            </Confirm>
 
             <NotificationDialog ref="notificationDialog" @added="addedNotification" />
         </div>
@@ -293,6 +299,7 @@
 import NotificationDialog from "../components/NotificationDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
 import CopyableInput from "../components/CopyableInput.vue";
+import Confirm from "../components/Confirm.vue";
 
 import { useToast } from "vue-toastification";
 import VueMultiselect from "vue-multiselect";
@@ -306,6 +313,7 @@ export default {
         NotificationDialog,
         TagsManager,
         VueMultiselect,
+        Confirm,
     },
 
     data() {
@@ -481,6 +489,16 @@ export default {
                 }
             }
             return true;
+        },
+
+        isDuplicatedMonitor() {
+            this.$root.isDuplicatedMonitor(this.monitor, async (res) => {
+                if (res.ok) {
+                    this.submit();
+                } else {
+                    this.$refs[res.msg].show();
+                }
+            });
         },
 
         async submit() {

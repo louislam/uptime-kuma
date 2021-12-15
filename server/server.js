@@ -556,6 +556,30 @@ exports.entryPage = "dashboard";
             }
         });
 
+        // Verify if monitor is duplicated
+        socket.on("isDuplicatedMonitor", async (monitor, callback) => {
+            try {
+                let monitorList = await sendMonitorList(socket);
+                for (let monitorId in monitorList) {
+                    if (monitorList[monitorId].name === monitor.name) {
+                        throw new Error("duplicatedMonitorNameWarning");
+                    }
+                    if (monitorList[monitorId].url === monitor.url) {
+                        throw new Error("duplicatedMonitorUrlWarning");
+                    }
+                }
+                callback({
+                    ok: true,
+                    msg: "No duplicate for this monitor"
+                });
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message
+                });
+            }
+        });
+
         // Edit a monitor
         socket.on("editMonitor", async (monitor, callback) => {
             try {

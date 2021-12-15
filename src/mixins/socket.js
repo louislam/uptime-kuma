@@ -313,6 +313,10 @@ export default {
             socket.emit("add", monitor, callback);
         },
 
+        isDuplicatedMonitor(monitor, callback) {
+            socket.emit("isDuplicatedMonitor", monitor, callback);
+        },
+
         deleteMonitor(monitorID, callback) {
             socket.emit("deleteMonitor", monitorID, callback);
         },
