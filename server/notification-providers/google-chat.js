@@ -2,7 +2,7 @@ const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 const { setting } = require("../util-server");
 const { getMonitorRelativeURL } = require("../../src/util");
-const { UP } = require("../../src/util");
+const { DOWN, UP } = require("../../src/util");
 
 class GoogleChat extends NotificationProvider {
 
@@ -15,16 +15,16 @@ class GoogleChat extends NotificationProvider {
 
             let textMsg = ''
             if (heartbeatJSON && heartbeatJSON.status === UP) {
-                textMsg = `✅ Application is back online`;
-            } else {
-                textMsg = `🔴 Application went down`;
+                textMsg = `✅ Application is back online\n`;
+            } else if (heartbeatJSON && heartbeatJSON.status === DOWN) {
+                textMsg = `🔴 Application went down\n`;
             }
 
             if (monitorJSON && monitorJSON.name) {
-                textMsg += `\n*${monitorJSON.name}*`;
+                textMsg += `*${monitorJSON.name}*\n`;
             }
 
-            textMsg += `\n${msg}`;
+            textMsg += `${msg}`;
 
             const baseURL = await setting("primaryBaseURL");
             if (baseURL) {
