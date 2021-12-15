@@ -276,7 +276,7 @@
 
                                 <div class="my-3">
                                     <label for="basicauth" class="form-label">{{ $t("Password") }}</label>
-                                    <input id="basicauth-pass" v-model="monitor.basic_auth_pass" type="password" class="form-control" :placeholder="$t('Password')">
+                                    <input id="basicauth-pass" v-model="monitor.basic_auth_pass" type="password" autocomplete="new-password" class="form-control" :placeholder="$t('Password')">
                                 </div>
                             </template>
                         </div>
