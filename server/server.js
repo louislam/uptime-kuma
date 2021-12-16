@@ -561,12 +561,9 @@ exports.entryPage = "dashboard";
             try {
                 let monitorList = await sendMonitorList(socket);
                 for (let monitorId in monitorList) {
-                    if (monitorList[monitorId].name === monitor.name) {
-                        throw new Error("duplicatedMonitorNameWarning");
-                    }
-                    if (monitorList[monitorId].url === monitor.url) {
-                        throw new Error("duplicatedMonitorUrlWarning");
-                    }
+                    let monitorFromList = monitorList[monitorId];
+                    verifyPropertyAndThrowIfMatch(monitorFromList, monitor, "name");
+                    verifyPropertyAndThrowIfMatch(monitorFromList, monitor, "url");
                 }
                 callback({
                     ok: true,
@@ -1546,6 +1543,13 @@ async function shutdownFunction(signal) {
     }
     await sleep(2000);
     await Database.close();
+}
+
+function verifyPropertyAndThrowIfMatch(monitorFromList, incomingMonitor, property) {
+    let capitalizedProperty = property.charAt(0).toUpperCase() + property.slice(1);
+    if (monitorFromList.id !== incomingMonitor.id && monitorFromList[property] === incomingMonitor[property]) {
+        throw new Error(`duplicatedMonitor${capitalizedProperty}Warning`);
+    }
 }
 
 function finalFunction() {
