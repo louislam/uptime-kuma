@@ -90,7 +90,7 @@ module.exports.statusPageSocketHandler = (socket) => {
 
                 // Convert to file
                 await ImageDataURI.outputFile(imgDataUrl, Database.uploadDir + "logo.png");
-                config.logo = "/upload/logo.png?t=" + Date.now();
+                config.logo = "./upload/logo.png?t=" + Date.now();
 
             } else {
                 config.icon = imgDataUrl;

@@ -76,6 +76,8 @@ if (hostname) {
 
 const port = parseInt(process.env.UPTIME_KUMA_PORT || process.env.PORT || args.port || 3001);
 
+const basePath = process.env.UPTIME_KUMA_BASE_PATH || process.env.BASE_PATH || '/'
+
 // SSL
 const sslKey = process.env.UPTIME_KUMA_SSL_KEY || process.env.SSL_KEY || args["ssl-key"] || undefined;
 const sslCert = process.env.UPTIME_KUMA_SSL_CERT || process.env.SSL_CERT || args["ssl-cert"] || undefined;
@@ -113,7 +115,7 @@ if (sslKey && sslCert) {
     server = http.createServer(app);
 }
 
-const io = new Server(server);
+const io = new Server(server, {path: basePath + '/socket.io'});
 module.exports.io = io;
 
 // Must be after io instantiation
@@ -165,6 +167,7 @@ let indexHTML = "";
 
 try {
     indexHTML = fs.readFileSync("./dist/index.html").toString();
+    indexHTML = indexHTML.replace(/\<base href.*?\>/, `<base href="${basePath}">`);
 } catch (e) {
     // "dist/index.html" is not necessary for development
     if (process.env.NODE_ENV !== "development") {
@@ -180,6 +183,8 @@ exports.entryPage = "dashboard";
     await initDatabase(testMode);
 
     exports.entryPage = await setting("entryPage");
+    
+    const mainRouter = express.Router();
 
     console.log("Adding route");
 
@@ -188,16 +193,16 @@ exports.entryPage = "dashboard";
     // ***************************
 
     // Entry Page
-    app.get("/", async (_request, response) => {
+    mainRouter.get("/", async (_request, response) => {
         if (exports.entryPage === "statusPage") {
-            response.redirect("/status");
+            response.redirect("status");
         } else {
-            response.redirect("/dashboard");
+            response.redirect("dashboard");
         }
     });
 
     // Robots.txt
-    app.get("/robots.txt", async (_request, response) => {
+    mainRouter.get("/robots.txt", async (_request, response) => {
         let txt = "User-agent: *\nDisallow:";
         if (! await setting("searchEngineIndex")) {
             txt += " /";
@@ -210,29 +215,31 @@ exports.entryPage = "dashboard";
 
     // Prometheus API metrics  /metrics
     // With Basic Auth using the first user's username/password
-    app.get("/metrics", basicAuth, prometheusAPIMetrics());
+    mainRouter.get("/metrics", basicAuth, prometheusAPIMetrics());
 
-    app.use("/", express.static("dist"));
+    mainRouter.use("/", express.static("dist"));
 
     // ./data/upload
-    app.use("/upload", express.static(Database.uploadDir));
+    mainRouter.use("/upload", express.static(Database.uploadDir));
 
-    app.get("/.well-known/change-password", async (_, response) => {
+    mainRouter.get("/.well-known/change-password", async (_, response) => {
         response.redirect("https://github.com/louislam/uptime-kuma/wiki/Reset-Password-via-CLI");
     });
 
     // API Router
     const apiRouter = require("./routers/api-router");
-    app.use(apiRouter);
+    mainRouter.use(apiRouter);
 
     // Universal Route Handler, must be at the end of all express routes.
-    app.get("*", async (_request, response) => {
+    mainRouter.get("*", async (_request, response) => {
         if (_request.originalUrl.startsWith("/upload/")) {
             response.status(404).send("File not found.");
         } else {
             response.send(indexHTML);
         }
     });
+    
+    app.use(basePath, mainRouter);
 
     console.log("Adding socket handler");
     io.on("connection", async (socket) => {

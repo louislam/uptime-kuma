@@ -19,9 +19,9 @@
 
             <ul class="nav nav-pills">
                 <li class="nav-item me-2">
-                    <a href="/status" class="nav-link status-page">
+                    <router-link href="/status" class="nav-link status-page">
                         <font-awesome-icon icon="stream" /> {{ $t("Status Page") }}
-                    </a>
+                    </router-link>
                 </li>
                 <li v-if="$root.loggedIn" class="nav-item me-2">
                     <router-link to="/dashboard" class="nav-link">
