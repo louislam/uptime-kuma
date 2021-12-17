@@ -126,6 +126,12 @@
                 <p>Bitte mit Vorsicht nutzen.</p>
             </template>
 
+            <template v-else-if="$i18n.locale === 'sl-SI' ">
+                <p>Ali ste prepričani, da želite onemogočiti <strong>avtentikacijo</strong>?</p>
+                <p>Namenjen je <strong>nekomu, ki ima pred programom Uptime Kuma vklopljeno zunanje preverjanje pristnosti</strong>, na primer Cloudflare Access.</p>
+                <p>Uporabljajte previdno.</p>
+            </template>
+
             <template v-else-if="$i18n.locale === 'sr' ">
                 <p>Да ли сте сигурни да желите да <strong>искључите аутентификацију</strong>?</p>
                 <p>То је за <strong>оне који имају додату аутентификацију</strong> испред Uptime Kuma као на пример Cloudflare Access.</p>
