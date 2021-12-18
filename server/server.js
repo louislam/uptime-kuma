@@ -588,6 +588,10 @@ exports.entryPage = "dashboard";
                 bean.dns_resolve_type = monitor.dns_resolve_type;
                 bean.dns_resolve_server = monitor.dns_resolve_server;
                 bean.pushToken = monitor.pushToken;
+                bean.mqttPort = monitor.mqttPort;
+                bean.mqttUsername = monitor.mqttUsername;
+                bean.mqttTopic = monitor.mqttTopic;
+                bean.mqttSuccessMessage = monitor.mqttSuccessMessage;
 
                 await R.store(bean);
 

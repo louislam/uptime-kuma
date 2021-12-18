@@ -1,6 +1,5 @@
 const https = require("https");
 const dayjs = require("dayjs");
-const mqtt = require("mqtt");
 const utc = require("dayjs/plugin/utc");
 let timezone = require("dayjs/plugin/timezone");
 dayjs.extend(utc);
@@ -78,6 +77,11 @@ class Monitor extends BeanModel {
             pushToken: this.pushToken,
             notificationIDList,
             tags: tags,
+            mqttPort: this.mqttPort,
+            mqttUsername: this.mqttUsername,
+            mqttTopic: this.mqttTopic,
+            mqttSuccessMessage: this.mqttSuccessMessage
+
         };
     }
 

@@ -122,7 +122,7 @@
                             <!-- For MQTT Type -->
                             <template v-if="monitor.type === 'mqtt'">
                                 <div class="my-3">
-                                    <label for="url" class="form-label">{{ $t("serverUrl") }}</label>
+                                    <label for="url" class="form-label">{{ $t("hostname") }}</label>
                                     <input id="url" v-model="monitor.url" type="text" class="form-control" required>
                                 </div>
 
@@ -469,8 +469,11 @@ export default {
                     accepted_statuscodes: ["200-299"],
                     dns_resolve_type: "A",
                     dns_resolve_server: "1.1.1.1",
-                    topic: "",
-                    successMessage: "",
+                    mqttPort: "",
+                    mqttUsername: "",
+                    mqttPassword: "",
+                    mqttTopic: "",
+                    mqttSuccessMessage: "",
                 };
 
                 for (let i = 0; i < this.$root.notificationList.length; i++) {
