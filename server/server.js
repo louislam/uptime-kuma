@@ -1420,17 +1420,10 @@ async function getMonitorJSONList(userID) {
 }
 
 async function initDatabase(testMode = false) {
-    if (! fs.existsSync(Database.path)) {
-        console.log("Copying Database");
-        fs.copyFileSync(Database.templatePath, Database.path);
-    }
 
     console.log("Connecting to the Database");
     await Database.connect(testMode);
     console.log("Connected");
-
-    // Patch the database
-    await Database.patch();
 
     let jwtSecretBean = await R.findOne("setting", " `key` = ? ", [
         "jwtSecret",

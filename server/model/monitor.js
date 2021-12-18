@@ -546,16 +546,17 @@ class Monitor extends BeanModel {
      */
     static async sendAvgPing(duration, io, monitorID, userID) {
         const timeLogger = new TimeLogger();
-
-        let avgPing = parseInt(await R.getCell(`
-            SELECT AVG(ping)
-            FROM heartbeat
-            WHERE time > DATETIME('now', ? || ' hours')
-            AND ping IS NOT NULL
-            AND monitor_id = ? `, [
-            -duration,
-            monitorID,
-        ]));
+        
+        let startTime = dayjs.utc().subtract(duration, 'hours').toISOString();
+        
+        let results = await R._knex.avg('ping as avg_ping')
+            .from('heartbeat')
+            .where('time', '>', startTime)
+            .whereNotNull('ping')
+            .andWhere({monitor_id: monitorID})
+            .limit(1);
+        
+        let avgPing = results[0].avg_ping;
 
         timeLogger.print(`[Monitor: ${monitorID}] avgPing`);
 
@@ -580,46 +581,52 @@ class Monitor extends BeanModel {
     static async calcUptime(duration, monitorID) {
         const timeLogger = new TimeLogger();
 
-        const startTime = R.isoDateTime(dayjs.utc().subtract(duration, "hour"));
+        const startTimeRaw = dayjs.utc().subtract(duration, "hour");
+        const startTime = R.isoDateTime(startTimeRaw);
 
-        // Handle if heartbeat duration longer than the target duration
-        // e.g. If the last beat's duration is bigger that the 24hrs window, it will use the duration between the (beat time - window margin) (THEN case in SQL)
-        let result = await R.getRow(`
-            SELECT
-               -- SUM all duration, also trim off the beat out of time window
-                SUM(
-                    CASE
-                        WHEN (JULIANDAY(\`time\`) - JULIANDAY(?)) * 86400 < duration
-                        THEN (JULIANDAY(\`time\`) - JULIANDAY(?)) * 86400
-                        ELSE duration
-                    END
-                ) AS total_duration,
-
-               -- SUM all uptime duration, also trim off the beat out of time window
-                SUM(
-                    CASE
-                        WHEN (status = 1)
-                        THEN
-                            CASE
-                                WHEN (JULIANDAY(\`time\`) - JULIANDAY(?)) * 86400 < duration
-                                    THEN (JULIANDAY(\`time\`) - JULIANDAY(?)) * 86400
-                                ELSE duration
-                            END
-                        END
-                ) AS uptime_duration
-            FROM heartbeat
-            WHERE time > ?
-            AND monitor_id = ?
-        `, [
-            startTime, startTime, startTime, startTime, startTime,
-            monitorID,
-        ]);
-
+        // Handle when heartbeat duration is longer than the target duration
+        // e.g. If the first beat's duration is partially outside the 24hrs window,
+        // it will subtract this outlying part from the results
+        
+        // example timeline:
+        //   vvvvv-durationBefore
+        // --b1---s----b2------------b3--------b4------b5---------b6--n
+        //        ^-startTime        ^-beat                           ^-now
+        // first query total_duration includes duration between (b1 and n),
+        // including durationBefore (b1 to s), but we need only (s to n) so we have to subtract it
+        
+        let results = await R._knex.select({
+                first_status: 'time',
+                first_time: 'time',
+                first_duration: 'duration',
+                total_duration: R._knex.raw('sum(ping)'),
+                uptime_duration: R._knex.raw('sum(ping * (CASE WHEN status = 1 THEN 1 ELSE 0 END))')
+            }).from('heartbeat')
+            .where('time', '>', startTime)
+            .whereNotNull('ping')
+            .andWhere({monitor_id: monitorID})
+            .orderBy('time', 'asc')
+            .limit(1);
+        
+        let result = results[0];
+        
         timeLogger.print(`[Monitor: ${monitorID}][${duration}] sendUptime`);
 
         let totalDuration = result.total_duration;
         let uptimeDuration = result.uptime_duration;
         let uptime = 0;
+        
+        
+        // start of duration of the first beat (time of the previous beat):
+        let timeBefore = dayjs(result.first_time).subtract(result.first_duration, 'seconds');
+        // duration outside time window:
+        let durationBefore = timeBefore.diff(startTimeRaw, 'seconds');
+        
+        // subtract uptime_duration and total_duration which is outside the requested duration time window
+        totalDuration -= durationBefore;
+        if (result.first_status == 1)
+            uptimeDuration -= durationBefore;
+        
 
         if (totalDuration > 0) {
             uptime = uptimeDuration / totalDuration;

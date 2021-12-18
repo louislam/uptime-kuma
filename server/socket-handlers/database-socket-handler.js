@@ -22,7 +22,7 @@ module.exports = (socket) => {
     socket.on("shrinkDatabase", async (callback) => {
         try {
             checkLogin(socket);
-            Database.shrink();
+            await Database.shrink();
             callback({
                 ok: true,
             });
