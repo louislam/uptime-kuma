@@ -33,6 +33,7 @@ import {
     faFile,
     faAward,
     faLink,
+    faInfoCircle,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -65,6 +66,7 @@ library.add(
     faFile,
     faAward,
     faLink,
+    faInfoCircle,
 );
 
 export { FontAwesomeIcon };

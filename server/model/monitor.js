@@ -31,6 +31,7 @@ class Monitor extends BeanModel {
         return {
             id: this.id,
             name: this.name,
+            description: this.description,
         };
     }
 
@@ -54,6 +55,7 @@ class Monitor extends BeanModel {
         return {
             id: this.id,
             name: this.name,
+            description: this.description,
             url: this.url,
             method: this.method,
             body: this.body,

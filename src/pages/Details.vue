@@ -2,6 +2,7 @@
     <transition name="slide-fade" appear>
         <div v-if="monitor">
             <h1> {{ monitor.name }}</h1>
+            <p v-if="monitor.description">{{ monitor.description }}</p>
             <div class="tags">
                 <Tag v-for="tag in monitor.tags" :key="tag.id" :item="tag" :size="'sm'" />
             </div>
