@@ -348,5 +348,8 @@ export default {
     serwersmsAPIPassword: "API Passwort",
     serwersmsPhoneNumber: "Telefonnummer",
     serwersmsSenderName: "Name des SMS-Absenders (über Kundenportal registriert)",
-    "stackfield": "Stackfield",
+    stackfield: "Stackfield",
+    Customize: "Anpassen",
+    "Custom Footer": "Eigener Footer (Leerlassen für Standard)",
+    "Custom CSS": "Eigenes CSS",
 };
