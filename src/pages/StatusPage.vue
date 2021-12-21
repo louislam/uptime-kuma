@@ -88,6 +88,11 @@
                         {{ $t("Show Tags") }}
                     </template>
                 </button>
+
+                <button class="btn btn-primary me-2" @click="customizeStatusPage">
+                    <font-awesome-icon icon="cog" />
+                    {{ $t("Customize") }}
+                </button>
             </div>
         </div>
 
@@ -142,6 +147,15 @@
                     {{ $t("Unpin") }}
                 </button>
             </div>
+        </div>
+
+        <!-- Customize -->
+        <div v-if="editMode && enableEditCustomizeMode" class="mb-4 p-4 alert shadow-box customize" role="alert">
+            <strong v-if="enableEditCustomizeMode">{{ $t("Custom CSS") }}:</strong>
+            <Editable v-model="config.customCSS" tag="div" :contenteditable="enableEditCustomizeMode" class="content p-2" />
+            <br />
+            <strong v-if="enableEditCustomizeMode">{{ $t("Custom Footer") }}:</strong>
+            <Editable v-model="config.poweredBy" tag="h4" :contenteditable="enableEditCustomizeMode" :noNL="true" class="alert-heading p-2" />
         </div>
 
         <!-- Overall Status -->
@@ -208,9 +222,14 @@
         </div>
 
         <footer class="mt-5 mb-4">
-            {{ $t("Powered by") }} <a target="_blank" href="https://github.com/louislam/uptime-kuma">{{ $t("Uptime Kuma" ) }}</a>
+            <p v-if="config.poweredBy">{{ config.poweredBy }}</p>
+            <p v-else>{{ $t("Powered by") }} <a target="_blank" href="https://github.com/louislam/uptime-kuma">{{ $t("Uptime Kuma" ) }}</a></p>
         </footer>
     </div>
+
+    <component is="style" v-if="config.customCSS" type="text/css">
+        {{ config.customCSS }}
+    </component>
 </template>
 
 <script>
@@ -249,6 +268,7 @@ export default {
         return {
             enableEditMode: false,
             enableEditIncidentMode: false,
+            enableEditCustomizeMode: false,
             hasToken: false,
             config: {},
             selectedMonitor: null,
@@ -304,7 +324,7 @@ export default {
         },
 
         tagsVisible() {
-            return this.config.statusPageTags
+            return this.config.statusPageTags;
         },
 
         logoClass() {
@@ -501,9 +521,9 @@ export default {
                         return {
                             ...monitor,
                             tags: newState ? this.$root.monitorList[monitor.id].tags : []
-                        }
+                        };
                     })
-                }
+                };
             });
         },
 
@@ -578,6 +598,12 @@ export default {
 
         dateFromNow(date) {
             return dayjs.utc(date).fromNow();
+        },
+
+        /** customize status page */
+        customizeStatusPage() {
+            // toggle modal
+            this.enableEditCustomizeMode = !this.enableEditCustomizeMode;
         },
 
     }
@@ -659,7 +685,7 @@ footer {
     }
 }
 
-.incident {
+.incident, .customize {
     .content {
         &[contenteditable=true] {
             min-height: 60px;
