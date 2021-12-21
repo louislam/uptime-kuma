@@ -602,8 +602,10 @@ export default {
 
         /** customize status page */
         customizeStatusPage() {
-            // toggle modal
-            this.enableEditCustomizeMode = !this.enableEditCustomizeMode;
+            if (this.editMode) {
+                // toggle modal
+                this.enableEditCustomizeMode = !this.enableEditCustomizeMode;
+            }
         },
 
     }
