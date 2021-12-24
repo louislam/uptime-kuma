@@ -123,7 +123,7 @@ if (sslKey && sslCert) {
     server = http.createServer(app);
 }
 
-const io = new Server(server, {path: basePath + '/socket.io'});
+const io = new Server(server, {path: basePath + 'socket.io'});
 module.exports.io = io;
 
 // Must be after io instantiation
@@ -203,9 +203,9 @@ exports.entryPage = "dashboard";
     // Entry Page
     mainRouter.get("/", async (_request, response) => {
         if (exports.entryPage === "statusPage") {
-            response.redirect("status");
+            response.redirect(basePath + "status");
         } else {
-            response.redirect("dashboard");
+            response.redirect(basePath + "dashboard");
         }
     });
 

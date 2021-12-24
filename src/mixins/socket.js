@@ -67,11 +67,12 @@ export default {
                 wsHost = protocol + location.host;
             }
 
-            const urlBase = document.querySelector("head base").getAttribute("href");
+            // always starts and ends with '/'
+            const basePath = document.querySelector("head base").getAttribute("href");
 
             socket = io(wsHost, {
                 transports: ["websocket"],
-                path: urlBase + "/socket.io"
+                path: basePath + "socket.io"
             });
 
             socket.on("info", (info) => {
