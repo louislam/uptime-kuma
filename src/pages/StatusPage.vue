@@ -9,7 +9,7 @@
             </span>
 
             <!-- Uploader -->
-            <!--    url="/api/status-page/upload-logo" -->
+            <!--    url="./api/status-page/upload-logo" -->
             <ImageCropUpload v-model="showImageCropUpload"
                              field="img"
                              :width="128"
@@ -255,7 +255,7 @@ export default {
             incident: null,
             previousIncident: null,
             showImageCropUpload: false,
-            imgDataUrl: "/icon.svg",
+            imgDataUrl: "./icon.svg",
             loadedTheme: false,
             loadedData: false,
             baseURL: "",
@@ -409,7 +409,7 @@ export default {
         }
     },
     async mounted() {
-        axios.get("/api/status-page/config").then((res) => {
+        axios.get("./api/status-page/config").then((res) => {
             this.config = res.data;
 
             if (this.config.logo) {
@@ -417,13 +417,13 @@ export default {
             }
         });
 
-        axios.get("/api/status-page/incident").then((res) => {
+        axios.get("./api/status-page/incident").then((res) => {
             if (res.data.ok) {
                 this.incident = res.data.incident;
             }
         });
 
-        axios.get("/api/status-page/monitor-list").then((res) => {
+        axios.get("./api/status-page/monitor-list").then((res) => {
             this.$root.publicGroupList = res.data;
         });
 
@@ -438,7 +438,7 @@ export default {
         updateHeartbeatList() {
             // If editMode, it will use the data from websocket.
             if (! this.editMode) {
-                axios.get("/api/status-page/heartbeat").then((res) => {
+                axios.get("./api/status-page/heartbeat").then((res) => {
                     this.$root.heartbeatList = res.data.heartbeatList;
                     this.$root.uptimeList = res.data.uptimeList;
                     this.loadedData = true;
