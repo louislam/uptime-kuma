@@ -94,6 +94,10 @@ exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
     return new Promise((resolve, reject) => {
         const { port, username, password, interval = 20 } = options;
         try {
+            // Adds mqtt protocol to the hostname if not already present
+            if (!/^(?:http|mqtt)s?:\/\//.test(hostname)) {
+                hostname = "mqtt://" + hostname;
+            }
             let client = mqtt.connect(hostname, {
                 port,
                 username,
