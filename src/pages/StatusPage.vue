@@ -33,10 +33,10 @@
                     {{ $t("Edit Status Page") }}
                 </button>
 
-                <a href="/dashboard" class="btn btn-info">
+                <router-link to="/dashboard" class="btn btn-info">
                     <font-awesome-icon icon="tachometer-alt" />
                     {{ $t("Go to Dashboard") }}
-                </a>
+                </router-link>
             </div>
 
             <div v-else>

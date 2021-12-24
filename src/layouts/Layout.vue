@@ -19,7 +19,7 @@
 
             <ul class="nav nav-pills">
                 <li class="nav-item me-2">
-                    <router-link href="/status" class="nav-link status-page">
+                    <router-link to="/status" class="nav-link status-page">
                         <font-awesome-icon icon="stream" /> {{ $t("Status Page") }}
                     </router-link>
                 </li>
