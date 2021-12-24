@@ -76,13 +76,14 @@ if (hostname) {
 
 const port = parseInt(process.env.UPTIME_KUMA_PORT || process.env.PORT || args.port || 3001);
 
-let basePathEnv = process.env.UPTIME_KUMA_BASE_PATH || process.env.BASE_PATH || '/';
+let basePathEnv = process.env.UPTIME_KUMA_BASE_PATH || process.env.BASE_PATH || "/";
 
-if (!basePathEnv.startsWith('/'))
-    basePathEnv = '/' + basePathEnv;
-
-if (!basePathEnv.endsWith('/'))
-    basePathEnv = basePathEnv + '/';
+if (!basePathEnv.startsWith("/")) {
+    basePathEnv = "/" + basePathEnv;
+}
+if (!basePathEnv.endsWith("/")) {
+    basePathEnv = basePathEnv + "/";
+}
 
 const basePath = basePathEnv;
 
@@ -123,7 +124,7 @@ if (sslKey && sslCert) {
     server = http.createServer(app);
 }
 
-const io = new Server(server, {path: basePath + 'socket.io'});
+const io = new Server(server, {path: basePath + "socket.io"});
 module.exports.io = io;
 
 // Must be after io instantiation
@@ -175,7 +176,7 @@ let indexHTML = "";
 
 try {
     indexHTML = fs.readFileSync("./dist/index.html").toString();
-    indexHTML = indexHTML.replace(/\<base href.*?\>/, `<base href="${basePath}">`);
+    indexHTML = indexHTML.replace(/<base href.*?>/, `<base href="${basePath}">`);
 } catch (e) {
     // "dist/index.html" is not necessary for development
     if (process.env.NODE_ENV !== "development") {
