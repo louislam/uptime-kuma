@@ -76,7 +76,15 @@ if (hostname) {
 
 const port = parseInt(process.env.UPTIME_KUMA_PORT || process.env.PORT || args.port || 3001);
 
-const basePath = process.env.UPTIME_KUMA_BASE_PATH || process.env.BASE_PATH || '/'
+let basePathEnv = process.env.UPTIME_KUMA_BASE_PATH || process.env.BASE_PATH || '/';
+
+if (!basePathEnv.startsWith('/'))
+    basePathEnv = '/' + basePathEnv;
+
+if (!basePathEnv.endsWith('/'))
+    basePathEnv = basePathEnv + '/';
+
+const basePath = basePathEnv;
 
 // SSL
 const sslKey = process.env.UPTIME_KUMA_SSL_KEY || process.env.SSL_KEY || args["ssl-key"] || undefined;
