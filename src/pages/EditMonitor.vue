@@ -349,7 +349,7 @@ export default {
         },
 
         pushURL() {
-            return this.$root.baseURL + "/api/push/" + this.monitor.pushToken + "?msg=OK&ping=";
+            return this.$root.baseURL + "api/push/" + this.monitor.pushToken + "?msg=OK&ping=";
         },
 
         bodyPlaceholder() {

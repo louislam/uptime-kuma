@@ -176,7 +176,7 @@ let indexHTML = "";
 
 try {
     indexHTML = fs.readFileSync("./dist/index.html").toString();
-    indexHTML = indexHTML.replace(/<base href.*?>/, `<base href="${basePath}">`);
+    indexHTML = indexHTML.replace(/<base href.*?\>/, `<base href="${basePath}">`);
 } catch (e) {
     // "dist/index.html" is not necessary for development
     if (process.env.NODE_ENV !== "development") {
