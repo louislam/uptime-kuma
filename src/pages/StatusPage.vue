@@ -222,7 +222,7 @@
         </div>
 
         <footer class="mt-5 mb-4">
-            <p v-if="config.poweredBy">{{ config.poweredBy }}</p>
+            <p v-if="config.poweredBy" v-html="config.poweredBy"></p>
             <p v-else>{{ $t("Powered by") }} <a target="_blank" href="https://github.com/louislam/uptime-kuma">{{ $t("Uptime Kuma" ) }}</a></p>
         </footer>
     </div>
