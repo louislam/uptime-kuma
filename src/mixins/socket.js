@@ -72,7 +72,7 @@ export default {
 
             socket = io(wsHost, {
                 transports: ["websocket"],
-                path: basePath + "socket.io"
+                path: basePath + "socket.io",
             });
 
             socket.on("info", (info) => {
