@@ -33,6 +33,7 @@ import {
     faFile,
     faAward,
     faLink,
+    faChevronDown,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -65,6 +66,7 @@ library.add(
     faFile,
     faAward,
     faLink,
+    faChevronDown,
 );
 
 export { FontAwesomeIcon };

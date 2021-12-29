@@ -41,6 +41,8 @@ docker volume create uptime-kuma
 docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name uptime-kuma louislam/uptime-kuma:1
 ```
 
+⚠️ Please use a **local volume** only. Other types such as NFS are not supported.
+
 Browse to http://localhost:3001 after starting.
 
 ### 💪🏻 Non-Docker
@@ -86,6 +88,12 @@ https://github.com/louislam/uptime-kuma/milestones
 Project Plan:
 
 https://github.com/louislam/uptime-kuma/projects/1
+
+## ❤️ Sponsors
+
+Thank you so much! (GitHub Sponsors will be updated manually. OpenCollective sponsors will be updated automatically, the list will be cached by GitHub though. It may need some time to be updated)
+
+<img src="https://uptime.kuma.pet/sponsors?v=3" alt />
 
 ## 🖼 More Screenshots
 
