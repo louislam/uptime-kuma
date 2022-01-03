@@ -1,4 +1,4 @@
-import STMP from "./SMTP.vue"
+import STMP from "./SMTP.vue";
 import Telegram from "./Telegram.vue";
 import Discord from "./Discord.vue";
 import Webhook from "./Webhook.vue";
@@ -25,6 +25,7 @@ import Bark from "./Bark.vue";
 import SerwerSMS from "./SerwerSMS.vue";
 import Stackfield from './Stackfield.vue';
 import WeCom from "./WeCom.vue";
+import GoogleChat from "./GoogleChat.vue";
 
 /**
  * Manage all notification form.
@@ -59,6 +60,7 @@ const NotificationFormList = {
     "serwersms": SerwerSMS,
     "stackfield": Stackfield,
     "WeCom": WeCom,
-}
+    "Google Chat (Google Workspace only)": GoogleChat
+};
 
-export default NotificationFormList
+export default NotificationFormList;
