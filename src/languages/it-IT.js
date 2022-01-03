@@ -351,4 +351,13 @@ export default {
     serwersmsPhoneNumber: "Numero di Telefono",
     serwersmsSenderName: "Nome del mittente SMS (registrato via portale cliente)",
     stackfield: "Stackfield",
+    smtpDkimSettings: "Impostazioni DKIM",
+    smtpDkimDesc: "Fare riferimento a Nodemailer DKIM {0} per l'utilizzo.",
+    documentation: "documentazione",
+    smtpDkimDomain: "Dominio",
+    smtpDkimKeySelector: "Selettore Chiave",
+    smtpDkimPrivateKey: "Chiave Privata",
+    smtpDkimHashAlgo: "Algoritmo di hashing (opzionale)",
+    smtpDkimheaderFieldNames: "Campi Intestazione da firmare (opzionale)",
+    smtpDkimskipFields: "Campi Intestazione da non firmare (opzionale)",
 };
