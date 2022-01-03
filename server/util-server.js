@@ -372,6 +372,16 @@ exports.errorLog = (error, outputToConsole = true) => {
     } catch (_) { }
 };
 
+/**
+ * Returns a color code in hex format based on a given percentage:
+ * 0% => hue = 10 => red
+ * 100% => hue = 90 => green
+ *
+ * @param {number} percentage, float, 0 to 1
+ * @param {number} maxHue, int
+ * @param {number} minHue, int
+ * @returns {string}, hex value
+ */
 exports.percentageToColor = (percentage, maxHue = 90, minHue = 10) => {
     const hue = percentage * (maxHue - minHue) + minHue;
     try {

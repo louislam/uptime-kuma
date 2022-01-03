@@ -244,6 +244,8 @@ router.get("/api/badge/:id/:type", cache("5 minutes"), async (request, response)
         const badgeValues = {};
 
         if (!publicMonitor) {
+            // return a "n/a" badge in grey, if monitor is not public / not available / non exsitant
+
             badgeValues.message = "N/A";
             badgeValues.color = "#CCCCCC";
         } else {
@@ -261,9 +263,9 @@ router.get("/api/badge/:id/:type", cache("5 minutes"), async (request, response)
             badgeValues.message = [prefix, `${uptime * 100} %`, suffix]
                 .filter((part) => part ?? part !== "")
                 .join("");
-
         }
 
+        // build the svg based on given values
         const svg = makeBadge(badgeValues);
 
         response.type("image/svg+xml");
