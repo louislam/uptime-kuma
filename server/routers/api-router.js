@@ -1,11 +1,12 @@
 let express = require("express");
-const { allowDevAllOrigin, getSettings, setting } = require("../util-server");
+const { allowDevAllOrigin, getSettings, setting, percentageToColor } = require("../util-server");
 const { R } = require("redbean-node");
 const server = require("../server");
 const apicache = require("../modules/apicache");
 const Monitor = require("../model/monitor");
 const dayjs = require("dayjs");
 const { UP, flipStatus, debug } = require("../../src/util");
+const { makeBadge } = require("badge-maker");
 let router = express.Router();
 
 let cache = apicache.middleware;
@@ -213,6 +214,65 @@ router.get("/api/status-page/heartbeat", cache("5 minutes"), async (_request, re
         send403(response, error.message);
     }
 });
+
+router.get("/api/badge/:id/:type", cache("5 minutes"), async (request, response) => {
+    allowDevAllOrigin(response);
+
+    const {
+        label,
+        labelPrefix,
+        labelSuffix = "h",
+        prefix,
+        suffix,
+    } = request.query;
+
+    try {
+        await checkPublished();
+
+        const requestedMonitorId = parseInt(request.params.id, 10);
+        const requestedType = parseInt(request.params.type, 10) ?? 24;
+
+        let publicMonitor = await R.getRow(`
+                SELECT monitor_group.monitor_id FROM monitor_group, \`group\`
+                WHERE monitor_group.group_id = \`group\`.id
+                AND monitor_group.monitor_id = ?
+                AND public = 1
+            `,
+        [requestedMonitorId]
+        );
+
+        const badgeValues = {};
+
+        if (!publicMonitor) {
+            badgeValues.message = "N/A";
+            badgeValues.color = "#CCCCCC";
+        } else {
+            const uptime = await Monitor.calcUptime(
+                requestedType,
+                requestedMonitorId
+            );
+
+            badgeValues.color = percentageToColor(uptime);
+
+            badgeValues.label = [labelPrefix, label ?? requestedType, labelSuffix]
+                .filter((part) => part ?? part !== "")
+                .join("");
+
+            badgeValues.message = [prefix, `${uptime * 100} %`, suffix]
+                .filter((part) => part ?? part !== "")
+                .join("");
+
+        }
+
+        const svg = makeBadge(badgeValues);
+
+        response.type("image/svg+xml");
+        response.send(svg);
+    } catch (error) {
+        send403(response, error.message);
+    }
+}
+);
 
 async function checkPublished() {
     if (! await isPublished()) {

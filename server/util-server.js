@@ -10,6 +10,7 @@ const iconv = require("iconv-lite");
 const chardet = require("chardet");
 const fs = require("fs");
 const nodeJsUtil = require("util");
+const chroma = require("chroma-js");
 
 // From ping-lite
 exports.WIN = /^win/.test(process.platform);
@@ -369,4 +370,13 @@ exports.errorLog = (error, outputToConsole = true) => {
             }
         }
     } catch (_) { }
+};
+
+exports.percentageToColor = (percentage, maxHue = 90, minHue = 10) => {
+    const hue = percentage * (maxHue - minHue) + minHue;
+    try {
+        return chroma(`hsl(${hue}, 90%, 40%)`).hex();
+    } catch (err) {
+        return "grey";
+    }
 };
