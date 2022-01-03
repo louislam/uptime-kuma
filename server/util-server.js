@@ -387,6 +387,6 @@ exports.percentageToColor = (percentage, maxHue = 90, minHue = 10) => {
     try {
         return chroma(`hsl(${hue}, 90%, 40%)`).hex();
     } catch (err) {
-        return "grey";
+        return "#999";
     }
 };

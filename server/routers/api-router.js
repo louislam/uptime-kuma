@@ -247,7 +247,7 @@ router.get("/api/badge/:id/:type", cache("5 minutes"), async (request, response)
             // return a "n/a" badge in grey, if monitor is not public / not available / non exsitant
 
             badgeValues.message = "N/A";
-            badgeValues.color = "#CCCCCC";
+            badgeValues.color = "#999";
         } else {
             const uptime = await Monitor.calcUptime(
                 requestedType,
