@@ -164,3 +164,25 @@ describe("Test reset-password", () => {
     }, 120000);
 });
 
+describe("The function filterAndJoin", () => {
+    it("should join and array of strings to one string", () => {
+        const result = utilServerRewire.filterAndJoin(["one", "two", "three"]);
+        expect(result).toBe("onetwothree");
+    });
+
+    it("should join strings using a given connector", () => {
+        const result = utilServerRewire.filterAndJoin(["one", "two", "three"], "-");
+        expect(result).toBe("one-two-three");
+    });
+
+    it("should filter null, undefined and empty strings before joining", () => {
+        const result = utilServerRewire.filterAndJoin([undefined, "", "three"], "--");
+        expect(result).toBe("three");
+    });
+
+    it("should return an empty string if all parts are filtered out", () => {
+        const result = utilServerRewire.filterAndJoin([undefined, "", ""], "--");
+        expect(result).toBe("");
+    });
+});
+

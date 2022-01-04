@@ -391,3 +391,14 @@ exports.percentageToColor = (percentage, maxHue = 90, minHue = 10) => {
         return badgeConstants.naColor;
     }
 };
+
+/**
+ * Joins and array of string to one string after filtering out empty values
+ *
+ * @param {string[]} parts
+ * @param {string} connector
+ * @returns {string}
+ */
+exports.filterAndJoin = (parts, connector = "") => {
+    return parts.filter((part) => !!part && part !== "").join(connector);
+};

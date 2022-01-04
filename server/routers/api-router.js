@@ -1,5 +1,5 @@
 let express = require("express");
-const { allowDevAllOrigin, getSettings, setting, percentageToColor, allowAllOrigin } = require("../util-server");
+const { allowDevAllOrigin, getSettings, setting, percentageToColor, allowAllOrigin, filterAndJoin } = require("../util-server");
 const { R } = require("redbean-node");
 const server = require("../server");
 const apicache = require("../modules/apicache");
@@ -225,8 +225,8 @@ router.get("/api/badge/:id/status", cache("5 minutes"), async (request, response
         downLabel = "Down",
         upColor = badgeConstants.defaultUpColor,
         downColor = badgeConstants.defaultDownColor,
-        style = "flat",
-        value // for demo purpose only
+        style = badgeConstants.defaultStyle,
+        value, // for demo purpose only
     } = request.query;
 
     try {
@@ -275,13 +275,13 @@ router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (reques
     const {
         label,
         labelPrefix,
-        labelSuffix = "h",
+        labelSuffix = badgeConstants.defaultUptimeLabelSuffix,
         prefix,
-        suffix = "%",
+        suffix = badgeConstants.defaultUptimeValueSuffix,
         color,
         labelColor,
-        style = "flat",
-        value // for demo purpose only
+        style = badgeConstants.defaultStyle,
+        value, // for demo purpose only
     } = request.query;
 
     try {
@@ -305,7 +305,6 @@ router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (reques
 
         if (!publicMonitor) {
             // return a "N/A" badge in naColor (grey), if monitor is not public / not available / non exsitant
-
             badgeValues.message = "N/A";
             badgeValues.color = badgeConstants.naColor;
         } else {
@@ -314,16 +313,13 @@ router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (reques
                 requestedMonitorId
             );
 
+            // use a given, custom color or calculate one based on the uptime value
             badgeValues.color = color ?? percentageToColor(uptime);
+            // use a given, custom labelColor or use the default badge label color ( defined by badge-maker)
             badgeValues.labelColor = labelColor ?? "";
-
-            badgeValues.label = [labelPrefix, label ?? requestedDuration, labelSuffix]
-                .filter((part) => part ?? part !== "")
-                .join("");
-
-            badgeValues.message = [prefix, `${uptime * 100}`, suffix]
-                .filter((part) => part ?? part !== "")
-                .join("");
+            // build a lable string. If a custom label is given, override the default one ( requestedDuration )
+            badgeValues.label = filterAndJoin([labelPrefix, label ?? requestedDuration, labelSuffix]);
+            badgeValues.message = filterAndJoin([prefix, `${uptime * 100}`, suffix]);
         }
 
         // build the SVG based on given values
@@ -342,13 +338,13 @@ router.get("/api/badge/:id/ping/:duration?", cache("5 minutes"), async (request,
     const {
         label,
         labelPrefix,
-        labelSuffix = "h",
+        labelSuffix = badgeConstants.defaultPingLabelSuffix,
         prefix,
-        suffix = "ms",
+        suffix = badgeConstants.defaultPingValueSuffix,
         color = badgeConstants.defaultPingColor,
         labelColor,
-        style = "flat",
-        value // for demo purpose only
+        style = badgeConstants.defaultStyle,
+        value, // for demo purpose only
     } = request.query;
 
     try {
@@ -382,15 +378,11 @@ router.get("/api/badge/:id/ping/:duration?", cache("5 minutes"), async (request,
             const avgPing = parseInt(overrideValue ?? publicAvgPing);
 
             badgeValues.color = color;
+            // use a given, custom labelColor or use the default badge label color ( defined by badge-maker)
             badgeValues.labelColor = labelColor ?? "";
-
-            badgeValues.label = [labelPrefix, label ?? requestedDuration, labelSuffix]
-                .filter((part) => part ?? part !== "")
-                .join("");
-
-            badgeValues.message = [prefix, avgPing, suffix]
-                .filter((part) => part ?? part !== "")
-                .join("");
+            // build a lable string. If a custom label is given, override the default one ( requestedDuration )
+            badgeValues.label = filterAndJoin([labelPrefix, label ?? requestedDuration, labelSuffix]);
+            badgeValues.message = filterAndJoin([prefix, avgPing, suffix]);
         }
 
         // build the SVG based on given values
