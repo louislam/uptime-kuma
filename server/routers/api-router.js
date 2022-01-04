@@ -390,7 +390,7 @@ router.get("/api/badge/:id/ping/:duration?", cache("5 minutes"), async (request,
                 .join("");
         }
 
-        // build the svg based on given values
+        // build the SVG based on given values
         const svg = makeBadge(badgeValues);
 
         response.type("image/svg+xml");
