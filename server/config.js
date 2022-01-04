@@ -16,5 +16,5 @@ const badgeConstants = {
 module.exports = {
     args,
     demoMode,
-    badgeConstants
+    badgeConstants,
 };
