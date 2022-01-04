@@ -11,6 +11,7 @@ const chardet = require("chardet");
 const fs = require("fs");
 const nodeJsUtil = require("util");
 const chroma = require("chroma-js");
+const { badgeConstants } = require("./config");
 
 // From ping-lite
 exports.WIN = /^win/.test(process.platform);
@@ -387,6 +388,6 @@ exports.percentageToColor = (percentage, maxHue = 90, minHue = 10) => {
     try {
         return chroma(`hsl(${hue}, 90%, 40%)`).hex();
     } catch (err) {
-        return "#999";
+        return badgeConstants.naColor;
     }
 };

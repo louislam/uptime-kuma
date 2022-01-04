@@ -1,5 +1,5 @@
 let express = require("express");
-const { allowDevAllOrigin, getSettings, setting, percentageToColor } = require("../util-server");
+const { allowDevAllOrigin, getSettings, setting, percentageToColor, allowAllOrigin } = require("../util-server");
 const { R } = require("redbean-node");
 const server = require("../server");
 const apicache = require("../modules/apicache");
@@ -7,6 +7,7 @@ const Monitor = require("../model/monitor");
 const dayjs = require("dayjs");
 const { UP, flipStatus, debug } = require("../../src/util");
 const { makeBadge } = require("badge-maker");
+const { badgeConstants } = require("../config");
 let router = express.Router();
 
 let cache = apicache.middleware;
@@ -215,22 +216,23 @@ router.get("/api/status-page/heartbeat", cache("5 minutes"), async (_request, re
     }
 });
 
-router.get("/api/badge/:id/:type", cache("5 minutes"), async (request, response) => {
-    allowDevAllOrigin(response);
+router.get("/api/badge/:id/status", cache("5 minutes"), async (request, response) => {
+    allowAllOrigin(response);
 
     const {
         label,
-        labelPrefix,
-        labelSuffix = "h",
-        prefix,
-        suffix,
+        upLabel = "Up",
+        downLabel = "Down",
+        upColor = badgeConstants.defaultUpColor,
+        downColor = badgeConstants.defaultDownColor,
+        value // for demo purpose only
     } = request.query;
 
     try {
         await checkPublished();
 
         const requestedMonitorId = parseInt(request.params.id, 10);
-        const requestedType = parseInt(request.params.type, 10) ?? 24;
+        const overrideValue = value !== undefined ? parseInt(value) : undefined;
 
         let publicMonitor = await R.getRow(`
                 SELECT monitor_group.monitor_id FROM monitor_group, \`group\`
@@ -244,23 +246,146 @@ router.get("/api/badge/:id/:type", cache("5 minutes"), async (request, response)
         const badgeValues = {};
 
         if (!publicMonitor) {
-            // return a "n/a" badge in grey, if monitor is not public / not available / non exsitant
+            // return a "N/A" badge in naColor (grey), if monitor is not public / not available / non exsitant
 
             badgeValues.message = "N/A";
-            badgeValues.color = "#999";
+            badgeValues.color = badgeConstants.naColor;
         } else {
-            const uptime = await Monitor.calcUptime(
-                requestedType,
+            const heartbeat = await Monitor.getPreviousHeartbeat(requestedMonitorId);
+            const state = overrideValue !== undefined ? overrideValue : heartbeat.status === 1;
+
+            badgeValues.color = state ? upColor : downColor;
+            badgeValues.message = label ?? state ? upLabel : downLabel;
+        }
+
+        // build the svg based on given values
+        const svg = makeBadge(badgeValues);
+
+        response.type("image/svg+xml");
+        response.send(svg);
+    } catch (error) {
+        send403(response, error.message);
+    }
+});
+
+router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (request, response) => {
+    allowAllOrigin(response);
+
+    const {
+        label,
+        labelPrefix,
+        labelSuffix = "h",
+        prefix,
+        suffix = "%",
+        color,
+        labelColor,
+        value // for demo purpose only
+    } = request.query;
+
+    try {
+        await checkPublished();
+
+        const requestedMonitorId = parseInt(request.params.id, 10);
+        // if no duration is given, set value to 24 (h)
+        const requestedDuration = request.params.duration !== undefined ? parseInt(request.params.duration, 10) : 24;
+        const overrideValue = value && parseFloat(value);
+
+        let publicMonitor = await R.getRow(`
+                SELECT monitor_group.monitor_id FROM monitor_group, \`group\`
+                WHERE monitor_group.group_id = \`group\`.id
+                AND monitor_group.monitor_id = ?
+                AND public = 1
+            `,
+        [requestedMonitorId]
+        );
+
+        const badgeValues = {};
+
+        if (!publicMonitor) {
+            // return a "N/A" badge in naColor (grey), if monitor is not public / not available / non exsitant
+
+            badgeValues.message = "N/A";
+            badgeValues.color = badgeConstants.naColor;
+        } else {
+            const uptime = overrideValue ?? await Monitor.calcUptime(
+                requestedDuration,
                 requestedMonitorId
             );
 
-            badgeValues.color = percentageToColor(uptime);
+            badgeValues.color = color ?? percentageToColor(uptime);
+            badgeValues.labelColor = labelColor ?? "";
 
-            badgeValues.label = [labelPrefix, label ?? requestedType, labelSuffix]
+            badgeValues.label = [labelPrefix, label ?? requestedDuration, labelSuffix]
                 .filter((part) => part ?? part !== "")
                 .join("");
 
-            badgeValues.message = [prefix, `${uptime * 100} %`, suffix]
+            badgeValues.message = [prefix, `${uptime * 100}`, suffix]
+                .filter((part) => part ?? part !== "")
+                .join("");
+        }
+
+        // build the SVG based on given values
+        const svg = makeBadge(badgeValues);
+
+        response.type("image/svg+xml");
+        response.send(svg);
+    } catch (error) {
+        send403(response, error.message);
+    }
+});
+
+router.get("/api/badge/:id/ping/:duration?", cache("5 minutes"), async (request, response) => {
+    allowAllOrigin(response);
+
+    const {
+        label,
+        labelPrefix,
+        labelSuffix = "h",
+        prefix,
+        suffix = "ms",
+        color = badgeConstants.defaultPingColor,
+        labelColor,
+        value
+    } = request.query;
+
+    try {
+        await checkPublished();
+
+        const requestedMonitorId = parseInt(request.params.id, 10);
+
+        // Default duration is 24 (h) if not defined in queryParam, limited to 720h (30d)
+        const requestedDuration = Math.min(request.params.duration ? parseInt(request.params.duration, 10) : 24, 720);
+        const overrideValue = value && parseFloat(value);
+
+        const publicAvgPing = parseInt(await R.getCell(`
+                SELECT AVG(ping) FROM monitor_group, \`group\`, heartbeat
+                WHERE monitor_group.group_id = \`group\`.id
+                AND heartbeat.time > DATETIME('now', ? || ' hours')
+                AND heartbeat.ping IS NOT NULL
+                AND public = 1
+                AND heartbeat.monitor_id = ?
+            `,
+        [-requestedDuration, requestedMonitorId]
+        ));
+
+        const badgeValues = {};
+
+        if (!publicAvgPing) {
+            // return a "N/A" badge in naColor (grey), if monitor is not public / not available / non exsitant
+
+            badgeValues.message = "N/A";
+            badgeValues.color = badgeConstants.naColor;
+        } else {
+            const avgPing = parseInt(overrideValue ?? publicAvgPing);
+
+            badgeValues.color = color;
+            badgeValues.labelColor = labelColor ?? "";
+
+            badgeValues.label = [labelPrefix, label ?? requestedDuration, labelSuffix]
+                .filter((part) => part ?? part !== "")
+                .join("");
+
+            badgeValues.message = [prefix, avgPing, suffix]
                 .filter((part) => part ?? part !== "")
                 .join("");
         }
@@ -273,8 +398,7 @@ router.get("/api/badge/:id/:type", cache("5 minutes"), async (request, response)
     } catch (error) {
         send403(response, error.message);
     }
-}
-);
+});
 
 async function checkPublished() {
     if (! await isPublished()) {
