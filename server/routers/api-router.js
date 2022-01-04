@@ -225,6 +225,7 @@ router.get("/api/badge/:id/status", cache("5 minutes"), async (request, response
         downLabel = "Down",
         upColor = badgeConstants.defaultUpColor,
         downColor = badgeConstants.defaultDownColor,
+        style = "flat",
         value // for demo purpose only
     } = request.query;
 
@@ -243,7 +244,7 @@ router.get("/api/badge/:id/status", cache("5 minutes"), async (request, response
         [requestedMonitorId]
         );
 
-        const badgeValues = {};
+        const badgeValues = { style };
 
         if (!publicMonitor) {
             // return a "N/A" badge in naColor (grey), if monitor is not public / not available / non exsitant
@@ -279,6 +280,7 @@ router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (reques
         suffix = "%",
         color,
         labelColor,
+        style = "flat",
         value // for demo purpose only
     } = request.query;
 
@@ -299,7 +301,7 @@ router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (reques
         [requestedMonitorId]
         );
 
-        const badgeValues = {};
+        const badgeValues = { style };
 
         if (!publicMonitor) {
             // return a "N/A" badge in naColor (grey), if monitor is not public / not available / non exsitant
@@ -345,7 +347,8 @@ router.get("/api/badge/:id/ping/:duration?", cache("5 minutes"), async (request,
         suffix = "ms",
         color = badgeConstants.defaultPingColor,
         labelColor,
-        value
+        style = "flat",
+        value // for demo purpose only
     } = request.query;
 
     try {
@@ -368,7 +371,7 @@ router.get("/api/badge/:id/ping/:duration?", cache("5 minutes"), async (request,
         [-requestedDuration, requestedMonitorId]
         ));
 
-        const badgeValues = {};
+        const badgeValues = { style };
 
         if (!publicAvgPing) {
             // return a "N/A" badge in naColor (grey), if monitor is not public / not available / non exsitant
