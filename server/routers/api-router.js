@@ -313,13 +313,16 @@ router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (reques
                 requestedMonitorId
             );
 
+            // limit the displayed uptime percentage to four ( two, when displayed as percent ) decimal digits
+            const cleanUptime = parseFloat(uptime.toPrecision(4));
+
             // use a given, custom color or calculate one based on the uptime value
             badgeValues.color = color ?? percentageToColor(uptime);
             // use a given, custom labelColor or use the default badge label color ( defined by badge-maker)
             badgeValues.labelColor = labelColor ?? "";
             // build a lable string. If a custom label is given, override the default one ( requestedDuration )
             badgeValues.label = filterAndJoin([labelPrefix, label ?? requestedDuration, labelSuffix]);
-            badgeValues.message = filterAndJoin([prefix, `${uptime * 100}`, suffix]);
+            badgeValues.message = filterAndJoin([prefix, `${cleanUptime * 100}`, suffix]);
         }
 
         // build the SVG based on given values
