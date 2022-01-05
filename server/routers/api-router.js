@@ -318,7 +318,7 @@ router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (reques
 
             // use a given, custom color or calculate one based on the uptime value
             badgeValues.color = color ?? percentageToColor(uptime);
-            // use a given, custom labelColor or use the default badge label color ( defined by badge-maker)
+            // use a given, custom labelColor or use the default badge label color (defined by badge-maker)
             badgeValues.labelColor = labelColor ?? "";
             // build a lable string. If a custom label is given, override the default one ( requestedDuration )
             badgeValues.label = filterAndJoin([labelPrefix, label ?? requestedDuration, labelSuffix]);
