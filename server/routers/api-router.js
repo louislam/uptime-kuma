@@ -383,7 +383,7 @@ router.get("/api/badge/:id/ping/:duration?", cache("5 minutes"), async (request,
             badgeValues.color = color;
             // use a given, custom labelColor or use the default badge label color (defined by badge-maker)
             badgeValues.labelColor = labelColor ?? "";
-            // build a lable string. If a custom label is given, override the default one ( requestedDuration )
+            // build a lable string. If a custom label is given, override the default one (requestedDuration)
             badgeValues.label = filterAndJoin([labelPrefix, label ?? requestedDuration, labelSuffix]);
             badgeValues.message = filterAndJoin([prefix, avgPing, suffix]);
         }
