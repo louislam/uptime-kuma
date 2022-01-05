@@ -15,6 +15,14 @@ class SMTP extends NotificationProvider {
             tls: {
                 rejectUnauthorized: notification.smtpIgnoreTLSError || false,
             },
+            dkim: {
+                domainName: notification.smtpDkimDomain,
+                keySelector: notification.smtpDkimKeySelector,
+                privateKey: notification.smtpDkimPrivateKey,
+                hashAlgo: notification.smtpDkimHashAlgo,
+                headerFieldNames: notification.smtpDkimheaderFieldNames,
+                skipFields: notification.smtpDkimskipFields,
+            }
         };
 
         // Should fix the issue in https://github.com/louislam/uptime-kuma/issues/26#issuecomment-896373904

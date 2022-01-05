@@ -18,6 +18,7 @@ const languageList = {
     "ja": "日本語",
     "da-DK": "Danish (Danmark)",
     "sr": "Српски",
+    "sl-SI": "Slovenščina",
     "sr-latn": "Srpski",
     "sv-SE": "Svenska",
     "tr-TR": "Türkçe",
