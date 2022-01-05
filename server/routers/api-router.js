@@ -381,7 +381,7 @@ router.get("/api/badge/:id/ping/:duration?", cache("5 minutes"), async (request,
             const avgPing = parseInt(overrideValue ?? publicAvgPing);
 
             badgeValues.color = color;
-            // use a given, custom labelColor or use the default badge label color ( defined by badge-maker)
+            // use a given, custom labelColor or use the default badge label color (defined by badge-maker)
             badgeValues.labelColor = labelColor ?? "";
             // build a lable string. If a custom label is given, override the default one ( requestedDuration )
             badgeValues.label = filterAndJoin([labelPrefix, label ?? requestedDuration, labelSuffix]);
