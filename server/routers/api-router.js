@@ -313,7 +313,7 @@ router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (reques
                 requestedMonitorId
             );
 
-            // limit the displayed uptime percentage to four ( two, when displayed as percent ) decimal digits
+            // limit the displayed uptime percentage to four (two, when displayed as percent) decimal digits
             const cleanUptime = parseFloat(uptime.toPrecision(4));
 
             // use a given, custom color or calculate one based on the uptime value
