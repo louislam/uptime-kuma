@@ -194,6 +194,7 @@ export default {
     promosms: "PromoSMS",
     lunasea: "LunaSea",
     apprise: "Apprise (Unterstützung für 50+ Benachrichtigungsdienste)",
+    GoogleChat: "Google Chat (nur Google Workspace)",
     pushbullet: "Pushbullet",
     line: "Line Messenger",
     mattermost: "Mattermost",
