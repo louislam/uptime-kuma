@@ -27,7 +27,7 @@ class GoogleChat extends NotificationProvider {
             textMsg += `${msg}`;
 
             const baseURL = await setting("primaryBaseURL");
-            if (baseURL) {
+            if (baseURL && monitorJSON) {
                 textMsg += `\n${baseURL + getMonitorRelativeURL(monitorJSON.id)}`;
             }
 
