@@ -60,7 +60,7 @@ const NotificationFormList = {
     "serwersms": SerwerSMS,
     "stackfield": Stackfield,
     "WeCom": WeCom,
-    "Google Chat (Google Workspace only)": GoogleChat
+    "GoogleChat": GoogleChat
 };
 
 export default NotificationFormList;
