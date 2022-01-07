@@ -568,9 +568,7 @@ exports.entryPage = "dashboard";
                 }
 
                 // Reset Prometheus labels
-                if (monitorList[monitor.id] && monitorList[monitor.id].prometheus()) {
-                    monitorList[monitor.id].prometheus().remove();
-                }
+                monitorList[monitor.id]?.prometheus()?.remove();
 
                 bean.name = monitor.name;
                 bean.type = monitor.type;
