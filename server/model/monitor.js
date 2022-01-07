@@ -470,10 +470,6 @@ class Monitor extends BeanModel {
         this.prometheus().remove();
     }
 
-    onDelete() {
-        this.prometheus().remove();
-    }
-
     prometheus() {
         return new Prometheus(this);
     }

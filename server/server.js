@@ -738,7 +738,6 @@ exports.entryPage = "dashboard";
 
                 if (monitorID in monitorList) {
                     monitorList[monitorID].stop();
-                    monitorList[monitorID].onDelete();
                     delete monitorList[monitorID];
                 }
 
