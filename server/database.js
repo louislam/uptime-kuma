@@ -32,33 +32,6 @@ class Database {
      */
     static backupPath = null;
 
-    /**
-     * Add patch filename in key
-     * Values:
-     *      true: Add it regardless of order
-     *      false: Do nothing
-     *      { parents: []}: Need parents before add it
-     */
-    // static patchList = {
-    //     "patch-setting-value-type.sql": true,
-    //     "patch-improve-performance.sql": true,
-    //     "patch-2fa.sql": true,
-    //     "patch-add-retry-interval-monitor.sql": true,
-    //     "patch-incident-table.sql": true,
-    //     "patch-group-table.sql": true,
-    //     "patch-monitor-push_token.sql": true,
-    //     "patch-http-monitor-method-body-and-headers.sql": true,
-    //     "patch-2fa-invalidate-used-token.sql": true,
-    //     "patch-notification_sent_history.sql": true,
-    //     "patch-monitor-basic-auth.sql": true,
-    // }
-
-    /**
-     * The final version should be 10 after merged tag feature
-     * @deprecated Use patchList for any new feature
-     */
-    static latestVersion = 10;
-
     static noReject = true;
 
     static init(args) {
@@ -144,7 +117,7 @@ class Database {
                 console.log("Waiting to close the database");
             }
         }
-        console.log("SQLite closed");
+        console.log("Database closed");
 
         process.removeListener("unhandledRejection", listener);
     }

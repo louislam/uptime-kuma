@@ -596,7 +596,7 @@ class Monitor extends BeanModel {
         // including durationBefore (b1 to s), but we need only (s to n) so we have to subtract it
         
         let results = await R._knex.select({
-                first_status: 'time',
+                first_status: 'status',
                 first_time: 'time',
                 first_duration: 'duration',
                 total_duration: R._knex.raw('sum(ping)'),
@@ -624,7 +624,7 @@ class Monitor extends BeanModel {
         
         // subtract uptime_duration and total_duration which is outside the requested duration time window
         totalDuration -= durationBefore;
-        if (result.first_status == 1)
+        if (result.first_status == UP)
             uptimeDuration -= durationBefore;
         
 
