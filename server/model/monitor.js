@@ -468,6 +468,11 @@ class Monitor extends BeanModel {
         this.isStop = true;
     }
 
+    onDelete() {
+        let prometheus = new Prometheus(this);
+        prometheus.remove();
+    }
+
     /**
      * Helper Method:
      * returns URL object for further usage
