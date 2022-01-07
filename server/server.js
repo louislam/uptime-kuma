@@ -71,7 +71,9 @@ if (hostname) {
     console.log("Custom hostname: " + hostname);
 }
 
-const port = parseInt(process.env.UPTIME_KUMA_PORT || process.env.PORT || args.port || 3001);
+const port = [process.env.UPTIME_KUMA_PORT, process.env.PORT, args.port, 3001]
+    .map(portValue => parseInt(portValue))
+    .find(portValue => !isNaN(portValue));
 
 // SSL
 const sslKey = process.env.UPTIME_KUMA_SSL_KEY || process.env.SSL_KEY || args["ssl-key"] || undefined;
