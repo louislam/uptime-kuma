@@ -63,12 +63,9 @@ console.info("Version: " + checkVersion.version);
 
 // If host is omitted, the server will accept connections on the unspecified IPv6 address (::) when IPv6 is available and the unspecified IPv4 address (0.0.0.0) otherwise.
 // Dual-stack support for (::)
-let hostname = process.env.UPTIME_KUMA_HOST || args.host;
-
 // Also read HOST if not FreeBSD, as HOST is a system environment variable in FreeBSD
-if (!hostname && !FBSD) {
-    hostname = process.env.HOST;
-}
+let hostEnv = FBSD ? null : process.env.HOST;
+let hostname = process.env.UPTIME_KUMA_HOST || args.host || hostEnv;
 
 if (hostname) {
     console.log("Custom hostname: " + hostname);
