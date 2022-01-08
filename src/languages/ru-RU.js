@@ -308,4 +308,5 @@ export default {
     records: "записей",
     "One record": "Одна запись",
     steamApiKeyDescription: "Для мониторинга игрового сервера Steam вам необходим Web-API ключ Steam. Зарегистрировать его можно здесь: ",
+    "Show Tags": "Показать тэги",
 };
