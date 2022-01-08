@@ -65,20 +65,20 @@ console.info("Version: " + checkVersion.version);
 // Dual-stack support for (::)
 // Also read HOST if not FreeBSD, as HOST is a system environment variable in FreeBSD
 let hostEnv = FBSD ? null : process.env.HOST;
-let hostname = process.env.UPTIME_KUMA_HOST || args.host || hostEnv;
+let hostname = args.host || process.env.UPTIME_KUMA_HOST || hostEnv;
 
 if (hostname) {
     console.log("Custom hostname: " + hostname);
 }
 
-const port = [process.env.UPTIME_KUMA_PORT, process.env.PORT, args.port, 3001]
+const port = [args.port, process.env.UPTIME_KUMA_PORT, process.env.PORT, 3001]
     .map(portValue => parseInt(portValue))
     .find(portValue => !isNaN(portValue));
 
 // SSL
-const sslKey = process.env.UPTIME_KUMA_SSL_KEY || process.env.SSL_KEY || args["ssl-key"] || undefined;
-const sslCert = process.env.UPTIME_KUMA_SSL_CERT || process.env.SSL_CERT || args["ssl-cert"] || undefined;
-const disableFrameSameOrigin = !!process.env.UPTIME_KUMA_DISABLE_FRAME_SAMEORIGIN || args["disable-frame-sameorigin"] || false;
+const sslKey = args["ssl-key"] || process.env.UPTIME_KUMA_SSL_KEY || process.env.SSL_KEY || undefined;
+const sslCert = args["ssl-cert"] || process.env.UPTIME_KUMA_SSL_CERT || process.env.SSL_CERT || undefined;
+const disableFrameSameOrigin = args["disable-frame-sameorigin"] || !!process.env.UPTIME_KUMA_DISABLE_FRAME_SAMEORIGIN || false;
 
 // 2FA / notp verification defaults
 const twofa_verification_opts = {
