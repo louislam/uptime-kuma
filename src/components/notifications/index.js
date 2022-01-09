@@ -26,6 +26,7 @@ import SerwerSMS from "./SerwerSMS.vue";
 import Stackfield from './Stackfield.vue';
 import WeCom from "./WeCom.vue";
 import GoogleChat from "./GoogleChat.vue";
+import Gorush from "./Gorush.vue";
 
 /**
  * Manage all notification form.
@@ -60,7 +61,8 @@ const NotificationFormList = {
     "serwersms": SerwerSMS,
     "stackfield": Stackfield,
     "WeCom": WeCom,
-    "GoogleChat": GoogleChat
+    "GoogleChat": GoogleChat,
+    "gorush": Gorush
 };
 
 export default NotificationFormList;
