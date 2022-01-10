@@ -316,4 +316,5 @@ export default {
     "Post": "Опубликовать",
     "Cancel": "Отмена",
     "Created:": "Создано:",
+    "Show Tags": "Показать тэги",
 };

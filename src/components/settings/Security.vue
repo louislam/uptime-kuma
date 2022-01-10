@@ -175,9 +175,9 @@
             </template>
 
             <template v-else-if="$i18n.locale === 'it-IT' ">
-                <p>Si è certi di voler <strong>disabilitare l'autenticazione</strong>?</p>
-                <p>È per <strong>chi ha l'autenticazione gestita da terze parti</strong> messa davanti ad Uptime Kuma, ad esempio Cloudflare Access.</p>
-                <p>Utilizzare con attenzione.</p>
+                <p><strong>Disabilitare l'autenticazione?</strong></p>
+                <p><strong>Questa opzione è per chi un sistema di autenticazione gestito da terze parti</strong> messo davanti ad Uptime Kuma, ad esempio Cloudflare Access.</p>
+                <p>Utilizzare con attenzione!</p>
             </template>
 
             <template v-else-if="$i18n.locale === 'id-ID' ">
