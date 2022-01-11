@@ -66,7 +66,7 @@ console.info("Version: " + checkVersion.version);
 let hostname = process.env.UPTIME_KUMA_HOST || args.host;
 
 // Also read HOST if not *BSD, as HOST is a system environment variable in FreeBSD
-if (!hostname && !FBSD) {
+if (!hostname && !BSD) {
     hostname = process.env.HOST;
 }
 
