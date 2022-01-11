@@ -41,7 +41,7 @@ console.log("Importing this project modules");
 debug("Importing Monitor");
 const Monitor = require("./model/monitor");
 debug("Importing Settings");
-const { getSettings, setSettings, setting, initJWTSecret, checkLogin, startUnitTest, BSD, errorLog } = require("./util-server");
+const { getSettings, setSettings, setting, initJWTSecret, checkLogin, startUnitTest, FBSD, errorLog } = require("./util-server");
 
 debug("Importing Notification");
 const { Notification } = require("./notification");
@@ -65,8 +65,8 @@ console.info("Version: " + checkVersion.version);
 // Dual-stack support for (::)
 let hostname = process.env.UPTIME_KUMA_HOST || args.host;
 
-// Also read HOST if not *BSD, as HOST is a system environment variable in FreeBSD
-if (!hostname && !BSD) {
+// Also read HOST if not FreeBSD, as HOST is a system environment variable in FreeBSD
+if (!hostname && !FBSD) {
     hostname = process.env.HOST;
 }
 
