@@ -23,7 +23,8 @@ import AliyunSMS from "./AliyunSms.vue";
 import DingDing from "./DingDing.vue";
 import Bark from "./Bark.vue";
 import SerwerSMS from "./SerwerSMS.vue";
-import Stackfield from "./Stackfield.vue";
+import Stackfield from './Stackfield.vue';
+import WeCom from "./WeCom.vue";
 import GoogleChat from "./GoogleChat.vue";
 
 /**
@@ -58,7 +59,8 @@ const NotificationFormList = {
     "Bark": Bark,
     "serwersms": SerwerSMS,
     "stackfield": Stackfield,
-    "Google Chat (Google Workspace only)": GoogleChat
+    "WeCom": WeCom,
+    "GoogleChat": GoogleChat
 };
 
 export default NotificationFormList;
