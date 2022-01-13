@@ -243,6 +243,7 @@ export default {
     clicksendsms: "ClickSend SMS",
     lunasea: "LunaSea",
     apprise: "Apprise (Hỗ trợ 50+ dịch vụ thông báo)",
+    GoogleChat: "Google Chat (Google Workspace only)",
     pushbullet: "Pushbullet",
     line: "Line Messenger",
     mattermost: "Mattermost",
