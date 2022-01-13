@@ -32,6 +32,9 @@
                                     <option value="steam">
                                         Steam Game Server
                                     </option>
+                                    <option value="docker">
+                                        Docker Container
+                                    </option>
                                 </select>
                             </div>
 
@@ -114,6 +117,20 @@
                                     </div>
                                 </div>
                             </template>
+
+                            <!-- Docker Container Name / ID -->
+                            <!-- For Docker Type -->
+                            <div v-if="monitor.type === 'docker'" class="my-3">
+                                <label for="docker_container" class="form-label">{{ $t("Container Name / ID") }}</label>
+                                <input id="docker_container" v-model="monitor.docker_container" type="text" class="form-control" required>
+                            </div>
+
+                            <!-- Docker Daemon -->
+                            <!-- For Docker Type -->
+                            <div v-if="monitor.type === 'docker'" class="my-3">
+                                <label for="docker_daemon" class="form-label">{{ $t("Docker Daemon") }}</label>
+                                <input id="docker_daemon" v-model="monitor.docker_daemon" type="text" class="form-control" required>
+                            </div>
 
                             <!-- Interval -->
                             <div class="my-3">
@@ -439,6 +456,8 @@ export default {
                     accepted_statuscodes: ["200-299"],
                     dns_resolve_type: "A",
                     dns_resolve_server: "1.1.1.1",
+                    docker_container: "",
+                    docker_daemon: "/var/run/docker.sock"
                 };
 
                 for (let i = 0; i < this.$root.notificationList.length; i++) {

@@ -77,6 +77,8 @@ class Monitor extends BeanModel {
             dns_resolve_server: this.dns_resolve_server,
             dns_last_result: this.dns_last_result,
             pushToken: this.pushToken,
+            docker_container: this.docker_container,
+            docker_daemon: this.docker_daemon,
             notificationIDList,
             tags: tags,
         };
@@ -347,6 +349,27 @@ class Monitor extends BeanModel {
                         throw new Error("Server not found on Steam");
                     }
 
+                } else if (this.type === "docker") {
+                    debug(`[${this.name}] Prepare Options for axios`);
+
+                    const options = {
+                        url: `/containers/${this.docker_container}/json`,
+                        headers: {
+                            "Accept": "*/*",
+                            "User-Agent": "Uptime-Kuma/" + version,
+                        },
+                        socketPath: this.docker_daemon,
+                        httpsAgent: new https.Agent({
+                            maxCachedSessions: 0,      // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
+                            rejectUnauthorized: ! this.getIgnoreTls(),
+                        }),
+                    };
+
+                    debug(`[${this.name}] Axios Request`);
+                    let res = await axios.request(options);
+                    if (res.data.State.Running) {
+                        bean.status = UP;
+                    }
                 } else {
                     bean.msg = "Unknown Monitor Type";
                     bean.status = PENDING;
