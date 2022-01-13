@@ -70,15 +70,15 @@
                             </div>
 
                             <!-- Hostname -->
-                            <!-- TCP Port / Ping / DNS / Steam only -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam'" class="my-3">
+                            <!-- TCP Port / Ping / DNS / Steam / MQTT only -->
+                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'mqtt'" class="my-3">
                                 <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>
                                 <input id="hostname" v-model="monitor.hostname" type="text" class="form-control" :pattern="`${ipRegexPattern}|${hostnameRegexPattern}`" required>
                             </div>
 
                             <!-- Port -->
-                            <!-- For TCP Port / Steam Type -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'steam'" class="my-3">
+                            <!-- For TCP Port / Steam / MQTT Type -->
+                            <div v-if="monitor.type === 'port' || monitor.type === 'steam' || monitor.type === 'mqtt'" class="my-3">
                                 <label for="port" class="form-label">{{ $t("Port") }}</label>
                                 <input id="port" v-model="monitor.port" type="number" class="form-control" required min="0" max="65535" step="1">
                             </div>
@@ -122,27 +122,17 @@
                             <!-- For MQTT Type -->
                             <template v-if="monitor.type === 'mqtt'">
                                 <div class="my-3">
-                                    <label for="url" class="form-label">{{ $t("hostname") }}</label>
-                                    <input id="url" v-model="monitor.url" type="text" class="form-control" required>
-                                </div>
-
-                                <div class="my-3">
-                                    <label for="mqttPort" class="form-label">{{ $t("port") }}</label>
-                                    <input id="mqttPort" v-model="monitor.mqttPort" type="text" class="form-control">
-                                </div>
-
-                                <div class="my-3">
-                                    <label for="mqttUsername" class="form-label">{{ $t("username") }}</label>
+                                    <label for="mqttUsername" class="form-label">{{ $t("Username") }}</label>
                                     <input id="mqttUsername" v-model="monitor.mqttUsername" type="text" class="form-control">
                                 </div>
 
                                 <div class="my-3">
-                                    <label for="mqttPassword" class="form-label">{{ $t("password") }}</label>
+                                    <label for="mqttPassword" class="form-label">{{ $t("Password") }}</label>
                                     <input id="mqttPassword" v-model="monitor.mqttPassword" type="text" class="form-control">
                                 </div>
 
                                 <div class="my-3">
-                                    <label for="mqttTopic" class="form-label">{{ $t("topic") }}</label>
+                                    <label for="mqttTopic" class="form-label">{{ $t("Topic") }}</label>
                                     <input id="mqttTopic" v-model="monitor.mqttTopic" type="text" class="form-control" required>
                                     <div class="form-text">
                                         {{ $t("topicExplanation") }}
