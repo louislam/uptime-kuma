@@ -327,4 +327,5 @@ export default {
     "Backup": "Резервная копия",
     "Security": "Безопасность",
     "Current User:": "Текущий пользователь:",
+    "All Systems Operational": "Все системы работают",
 };
