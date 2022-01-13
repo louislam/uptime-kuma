@@ -79,11 +79,9 @@ class Monitor extends BeanModel {
             pushToken: this.pushToken,
             notificationIDList,
             tags: tags,
-            mqttPort: this.mqttPort,
             mqttUsername: this.mqttUsername,
             mqttTopic: this.mqttTopic,
             mqttSuccessMessage: this.mqttSuccessMessage
-
         };
     }
 
@@ -354,7 +352,7 @@ class Monitor extends BeanModel {
                 } else if (this.type === "mqtt") {
                     try {
                         bean.msg = await mqttAsync(this.url, this.mqttTopic, this.mqttSuccessMessage, {
-                            mqttPort: this.mqttPort,
+                            mqttPort: this.port,
                             mqttUsername: this.mqttUsername,
                             mqttPassword: this.mqttPassword,
                             interval: this.interval,

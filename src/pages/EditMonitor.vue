@@ -472,7 +472,6 @@ export default {
                     accepted_statuscodes: ["200-299"],
                     dns_resolve_type: "A",
                     dns_resolve_server: "1.1.1.1",
-                    mqttPort: "",
                     mqttUsername: "",
                     mqttPassword: "",
                     mqttTopic: "",
