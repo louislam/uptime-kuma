@@ -1,7 +1,7 @@
 name: 🚀 Feature Request
 description: "Submit a proposal for a new feature"
-title: "[Feature] "
-labels: [enhancement]
+#title: "[Feature] "
+labels: [feature-request]
 body:
   - type: checkboxes
     id: no-duplicate-issues

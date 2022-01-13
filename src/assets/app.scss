@@ -313,6 +313,20 @@ textarea.form-control {
     opacity: 0;
 }
 
+.slide-fade-up-enter-active {
+    transition: all 0.2s $easing-in;
+}
+
+.slide-fade-up-leave-active {
+    transition: all 0.2s $easing-in;
+}
+
+.slide-fade-up-enter-from,
+.slide-fade-up-leave-to {
+    transform: translateY(-50px);
+    opacity: 0;
+}
+
 .monitor-list {
     &.scrollbar {
         min-height: calc(100vh - 240px);
@@ -345,6 +359,10 @@ textarea.form-control {
 
         &.active {
             background-color: #cdf8f4;
+        }
+        .tags {
+            // Removes margin to line up tags list with uptime percentage
+            margin-left: -0.25rem;
         }
     }
 }
