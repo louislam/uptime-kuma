@@ -126,8 +126,8 @@
         "jest-puppeteer": "~6.0.0",
         "puppeteer": "~10.4.0",
         "sass": "~1.42.1",
-        "stylelint": "~13.13.1",
-        "stylelint-config-standard": "~22.0.0",
+        "stylelint": "~14.2.0",
+        "stylelint-config-standard": "~24.0.0",
         "typescript": "~4.4.4",
         "vite": "~2.6.14"
     }
