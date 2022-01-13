@@ -369,6 +369,7 @@ class Monitor extends BeanModel {
                     let res = await axios.request(options);
                     if (res.data.State.Running) {
                         bean.status = UP;
+                        bean.msg = "";
                     }
                 } else {
                     bean.msg = "Unknown Monitor Type";

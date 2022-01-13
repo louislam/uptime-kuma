@@ -588,6 +588,8 @@ exports.entryPage = "dashboard";
                 bean.dns_resolve_type = monitor.dns_resolve_type;
                 bean.dns_resolve_server = monitor.dns_resolve_server;
                 bean.pushToken = monitor.pushToken;
+                bean.docker_container = monitor.docker_container;
+                bean.docker_daemon = monitor.docker_daemon;
 
                 await R.store(bean);
 

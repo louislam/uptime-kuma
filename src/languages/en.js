@@ -351,7 +351,7 @@ export default {
     serwersmsAPIPassword: "API Password",
     serwersmsPhoneNumber: "Phone number",
     serwersmsSenderName: "SMS Sender Name (registered via customer portal)",
-    "stackfield": "Stackfield",
+    stackfield: "Stackfield",
     smtpDkimSettings: "DKIM Settings",
     smtpDkimDesc: "Please refer to the Nodemailer DKIM {0} for usage.",
     documentation: "documentation",
@@ -361,4 +361,6 @@ export default {
     smtpDkimHashAlgo: "Hash Algorithm (Optional)",
     smtpDkimheaderFieldNames: "Header Keys to sign (Optional)",
     smtpDkimskipFields: "Header Keys not to sign (Optional)",
+    "Container Name / ID": "Container Name / ID",
+    "Docker Daemon": "Docker Daemon",
 };
