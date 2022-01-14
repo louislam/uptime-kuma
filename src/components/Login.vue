@@ -17,7 +17,7 @@
                 <div v-if="tokenRequired">
                     <div class="form-floating mt-3">
                         <input id="otp" v-model="token" type="text" maxlength="6" class="form-control" placeholder="123456">
-                        <label for="otp">{{ $t("2FA Token") }}</label>
+                        <label for="otp">{{ $t("Token") }}</label>
                     </div>
                 </div>
 
