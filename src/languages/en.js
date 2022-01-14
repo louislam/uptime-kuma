@@ -363,4 +363,5 @@ export default {
     smtpDkimskipFields: "Header Keys not to sign (Optional)",
     "Container Name / ID": "Container Name / ID",
     "Docker Daemon": "Docker Daemon",
+    "Docker Container": "Docker Container",
 };

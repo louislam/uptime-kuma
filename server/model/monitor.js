@@ -350,7 +350,7 @@ class Monitor extends BeanModel {
                     }
 
                 } else if (this.type === "docker") {
-                    debug(`[${this.name}] Prepare Options for axios`);
+                    debug(`[${this.name}] Prepare Options for Axios`);
 
                     const options = {
                         url: `/containers/${this.docker_container}/json`,

@@ -33,7 +33,7 @@
                                         Steam Game Server
                                     </option>
                                     <option value="docker">
-                                        Docker Container
+                                        {{ $t("Docker Container") }}
                                     </option>
                                 </select>
                             </div>
@@ -457,7 +457,7 @@ export default {
                     dns_resolve_type: "A",
                     dns_resolve_server: "1.1.1.1",
                     docker_container: "",
-                    docker_daemon: "/var/run/docker.sock"
+                    docker_daemon: "/var/run/docker.sock",
                 };
 
                 for (let i = 0; i < this.$root.notificationList.length; i++) {
