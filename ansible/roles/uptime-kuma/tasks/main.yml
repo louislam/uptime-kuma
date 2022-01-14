@@ -20,3 +20,4 @@
     state: present
     project_src: /compose/kuma
     pull: yes
+    recreate: always
