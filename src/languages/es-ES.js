@@ -12,7 +12,7 @@ export default {
     pauseDashboardHome: "Pausado",
     deleteMonitorMsg: "¿Seguro que quieres eliminar este monitor?",
     deleteNotificationMsg: "¿Seguro que quieres eliminar esta notificación para todos los monitores?",
-    resoverserverDescription: "Cloudflare es el servidor por defecto, puedes cambiar el servidor de resolución en cualquier momento.",
+    resolverserverDescription: "Cloudflare es el servidor por defecto, puedes cambiar el servidor de resolución en cualquier momento.",
     rrtypeDescription: "Selecciona el tipo de registro que quieres monitorizar",
     pauseMonitorMsg: "¿Seguro que quieres pausar?",
     Settings: "Ajustes",

@@ -13,7 +13,7 @@ export default {
     pauseDashboardHome: "En pause",
     deleteMonitorMsg: "Êtes-vous sûr de vouloir supprimer cette sonde ?",
     deleteNotificationMsg: "Êtes-vous sûr de vouloir supprimer ce type de notifications ? Une fois désactivée, les services qui l'utilisent ne pourront plus envoyer de notifications.",
-    resoverserverDescription: "Le DNS de Cloudflare est utilisé par défaut, mais vous pouvez le changer si vous le souhaitez.",
+    resolverserverDescription: "Le DNS de Cloudflare est utilisé par défaut, mais vous pouvez le changer si vous le souhaitez.",
     rrtypeDescription: "Veuillez sélectionner un type d'enregistrement DNS",
     pauseMonitorMsg: "Êtes-vous sûr de vouloir mettre en pause cette sonde ?",
     enableDefaultNotificationDescription: "Pour chaque nouvelle sonde, cette notification sera activée par défaut. Vous pouvez toujours désactiver la notification séparément pour chaque sonde.",

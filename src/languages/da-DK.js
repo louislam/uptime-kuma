@@ -98,7 +98,7 @@ export default {
     keywordDescription: "Søg efter et søgeord i almindelig HTML- eller JSON -output. Bemærk, at der skelnes mellem store og små bogstaver.",
     deleteMonitorMsg: "Er du sikker på, at du vil slette overvågeren?",
     deleteNotificationMsg: "Er du sikker på, at du vil slette denne underretning for alle overvågere? ",
-    resoverserverDescription: "Cloudflare er standardserveren, den kan til enhver tid ændres.",
+    resolverserverDescription: "Cloudflare er standardserveren, den kan til enhver tid ændres.",
     "Resolver Server": "Navne-server",
     rrtypeDescription: "Vælg den type RR, du vil overvåge.",
     "Last Result": "Seneste resultat",

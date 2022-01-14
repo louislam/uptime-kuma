@@ -12,7 +12,7 @@ export default {
     pauseDashboardHome: "Seisatud",
     deleteMonitorMsg: "Kas soovid eemaldada seire?",
     deleteNotificationMsg: "Kas soovid eemaldada selle teavitusteenuse kõikidelt seiretelt?",
-    resoverserverDescription: "Cloudflare on vaikimisi pöördserver.",
+    resolverserverDescription: "Cloudflare on vaikimisi pöördserver.",
     rrtypeDescription: "Vali kirje tüüp, mida soovid jälgida.",
     pauseMonitorMsg: "Kas soovid peatada seire?",
     Settings: "Seaded",

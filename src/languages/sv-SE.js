@@ -12,7 +12,7 @@ export default {
     pauseDashboardHome: "Pausa",
     deleteMonitorMsg: "Är du säker på att du vill ta bort den här övervakningen?",
     deleteNotificationMsg: "Är du säker på att du vill ta bort den här notisen för alla övervakare?",
-    resoverserverDescription: "Cloudflare är den förvalda servern. Du kan byta resolver när som helst.",
+    resolverserverDescription: "Cloudflare är den förvalda servern. Du kan byta resolver när som helst.",
     rrtypeDescription: "Välj den RR-typ du vill övervaka",
     pauseMonitorMsg: "Är du säker på att du vill pausa?",
     Settings: "Inställningar",

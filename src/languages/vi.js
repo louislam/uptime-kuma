@@ -13,7 +13,7 @@ export default {
     pauseDashboardHome: "Tạm dừng",
     deleteMonitorMsg: "Bạn chắc chắn muốn xóa monitor này chứ?",
     deleteNotificationMsg: "Bạn có chắc chắn muốn xóa kênh thông báo này cho tất cả monitor?",
-    resoverserverDescription: "Cloudflare là máy chủ mặc định, bạn có thể thay đổi bất cứ lúc nào.",
+    resolverserverDescription: "Cloudflare là máy chủ mặc định, bạn có thể thay đổi bất cứ lúc nào.",
     rrtypeDescription: "Hãy chọn RR-Type mà bạn muốn giám sát",
     pauseMonitorMsg: "Bạn chắc chắn muốn tạm dừng chứ?",
     enableDefaultNotificationDescription: "Bật làm mặc định cho mọi monitor mới về sau. Bạn vẫn có thể tắt thông báo riêng cho từng monitor.",

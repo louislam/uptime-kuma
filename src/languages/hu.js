@@ -13,7 +13,7 @@ export default {
     pauseDashboardHome: "Szünetel",
     deleteMonitorMsg: "Biztos, hogy törölni akarja ezt a figyelőt?",
     deleteNotificationMsg: "Biztos, hogy törölni akarja ezt az értesítést az összes figyelőnél?",
-    resoverserverDescription: "A Cloudflare az alapértelmezett szerver, bármikor meg tudja változtatni a resolver server-t.",
+    resolverserverDescription: "A Cloudflare az alapértelmezett szerver, bármikor meg tudja változtatni a resolver server-t.",
     rrtypeDescription: "Válassza ki az RR-típust a figyelőhöz",
     pauseMonitorMsg: "Biztos, hogy szüneteltetni akarja?",
     enableDefaultNotificationDescription: "Minden új figyelőhöz ez az értesítés engedélyezett lesz alapértelmezetten. Kikapcsolhatja az értesítést külön minden figyelőnél.",

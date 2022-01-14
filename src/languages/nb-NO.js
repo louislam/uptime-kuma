@@ -13,7 +13,7 @@ export default {
     pauseDashboardHome: "Pause",
     deleteMonitorMsg: "Er du sikker på at du vil slette denne overvåkningen?",
     deleteNotificationMsg: "Er du sikker på at du vil slette dette varselet for alle overvåkningene?",
-    resoverserverDescription: "Cloudflare er standardserveren, kan du når som helst endre DNS-serveren.",
+    resolverserverDescription: "Cloudflare er standardserveren, kan du når som helst endre DNS-serveren.",
     rrtypeDescription: "Velg RR-typen du vil overvåke",
     pauseMonitorMsg: "Er du sikker på at du vil sette en pause?",
     enableDefaultNotificationDescription: "For hver ny overvåkning vil denne varslingen være aktivert som standard. Du kan fortsatt deaktivere varselet separat for hver overvåkning.",
