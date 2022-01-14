@@ -60,7 +60,7 @@ class Prometheus {
             }
 
             try {
-                if ( tlsInfo.certInfo != null ){
+                if (tlsInfo.certInfo != null) {
                     monitor_cert_days_remaining.set(this.monitorLabelValues, tlsInfo.certInfo.daysRemaining);
                 }
             } catch (e) {
