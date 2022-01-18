@@ -215,6 +215,12 @@
                 <p>Dette er for <strong>de som har tredjepartsautorisering</strong> foran Uptime Kuma, for eksempel Cloudflare Access.</p>
                 <p>Vennligst vær forsiktig.</p>
             </template>
+            
+            <template v-else-if="$i18n.locale === 'cs-CZ' ">
+                <p>Opravdu chcete <strong>deaktivovat autentifikaci</strong>?</p>
+                <p>Tato možnost je určena pro případy, kdy <strong>máte autentifikaci zajištěnou třetí stranou</strong> ještě před přístupem do Uptime Kuma, například prostřednictvím Cloudflare Access.</p>
+                <p>Používejte ji prosím s rozmyslem.</p>
+            </template>
 
             <!-- English (en) -->
             <template v-else>
