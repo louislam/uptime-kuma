@@ -99,6 +99,12 @@ exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
             hostname = "mqtt://" + hostname;
         }
 
+        const timeoutID = setTimeout(() => {
+            debug("MQTT timeout triggered");
+            client.end();
+            reject("Timeout");
+        }, interval * 1000);
+
         debug("MQTT connecting");
 
         let client = mqtt.connect(hostname, {
@@ -114,25 +120,21 @@ exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
 
         client.on("error", (error) => {
             client.end();
+            clearTimeout(timeoutID);
             reject(error);
         });
 
         client.on("message", (messageTopic, message) => {
             if (messageTopic == topic) {
+                client.end();
+                clearTimeout(timeoutID);
                 if (message.toString() === okMessage) {
-                    client.end();
                     resolve(`Topic: ${messageTopic}; Message: ${message.toString()}`);
                 } else {
-                    client.end();
                     reject(new Error(`Error; Topic: ${messageTopic}; Message: ${message.toString()}`));
                 }
             }
         });
-
-        setTimeout(() => {
-            client.end();
-            reject("Timeout");
-        }, interval * 1000);
 
     });
 };
