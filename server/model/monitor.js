@@ -359,8 +359,10 @@ class Monitor extends BeanModel {
                         });
                         bean.status = UP;
                     } catch (error) {
-                        bean.status = DOWN;
-                        bean.msg = error.message;
+                        if (error.message !== "Timeout") {
+                            bean.status = DOWN;
+                            bean.msg = error.message;
+                        }
                     }
                 } else {
                     bean.msg = "Unknown Monitor Type";

@@ -131,6 +131,7 @@ exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
 
         setTimeout(() => {
             client.end();
+            reject("Timeout");
         }, interval * 1000);
 
     });
