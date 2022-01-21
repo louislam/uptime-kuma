@@ -190,7 +190,7 @@ export default {
                 previous.classList.toggle("active-sibling");
             }
             // Check if Next Sibling is heartbar element and doesn't have the empty class
-            if (next.children && next.classList.contains("empty")) {
+            if (next.children && !next.classList.contains("empty")) {
                 next.classList.toggle("active-sibling");
             }
         }
