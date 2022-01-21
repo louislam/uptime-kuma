@@ -11,7 +11,7 @@ class TechulusPush extends NotificationProvider {
         try {
             await axios.post(`https://push.techulus.com/api/v1/notify/${notification.pushAPIKey}`, {
                 "title": "Uptime-Kuma",
-                "body": msg
+                "body": msg,
             })
             return okMsg;
         } catch (error) {
