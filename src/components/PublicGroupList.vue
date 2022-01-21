@@ -33,8 +33,8 @@
                         <template #item="monitor">
                             <div class="item">
                                 <div class="row">
-                                    <div class="col-9 col-md-8 small-padding">
-                                        <div class="info">
+                                    <div class="col-9 col-md-8 small-padding d-flex align-items-center flex-wrap">
+                                        <div class="info d-flex align-items-center gap-3 w-100">
                                             <font-awesome-icon v-if="editMode" icon="arrows-alt-v" class="action drag me-3" />
                                             <font-awesome-icon v-if="editMode" icon="times" class="action remove me-3" @click="removeMonitor(group.index, monitor.index)" />
 
@@ -45,7 +45,7 @@
                                             <Tag v-for="tag in monitor.element.tags" :key="tag" :item="tag" :size="'sm'" />
                                         </div>
                                     </div>
-                                    <div :key="$root.userHeartbeatBar" class="col-3 col-md-4">
+                                    <div :key="$root.userHeartbeatBar" class="col-3 col-md-4 d-flex align-items-center">
                                         <HeartbeatBar size="small" :monitor-id="monitor.element.id" />
                                     </div>
                                 </div>
