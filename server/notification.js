@@ -92,7 +92,6 @@ class Notification {
      * Throw Error with fail msg
      */
     static async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        console.log("this.providerList[notification.type]", this.providerList[notification.type])
         if (this.providerList[notification.type]) {
             return this.providerList[notification.type].send(notification, msg, monitorJSON, heartbeatJSON);
         } else {
