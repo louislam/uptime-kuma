@@ -9,6 +9,7 @@ import RocketChat from "./RocketChat.vue";
 import Teams from "./Teams.vue";
 import Pushover from "./Pushover.vue";
 import Pushy from "./Pushy.vue";
+import TechulusPush from "./TechulusPush.vue";
 import Octopush from "./Octopush.vue";
 import PromoSMS from "./PromoSMS.vue";
 import ClickSendSMS from "./ClickSendSMS.vue";
@@ -44,6 +45,7 @@ const NotificationFormList = {
     "rocket.chat": RocketChat,
     "pushover": Pushover,
     "pushy": Pushy,
+    "PushByTechulus": TechulusPush,
     "octopush": Octopush,
     "promosms": PromoSMS,
     "clicksendsms": ClickSendSMS,

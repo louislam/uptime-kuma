@@ -12,6 +12,7 @@ const ClickSendSMS = require("./notification-providers/clicksendsms");
 const Pushbullet = require("./notification-providers/pushbullet");
 const Pushover = require("./notification-providers/pushover");
 const Pushy = require("./notification-providers/pushy");
+const TechulusPush = require("./notification-providers/techulus-push");
 const RocketChat = require("./notification-providers/rocket-chat");
 const Signal = require("./notification-providers/signal");
 const Slack = require("./notification-providers/slack");
@@ -55,6 +56,7 @@ class Notification {
             new Pushbullet(),
             new Pushover(),
             new Pushy(),
+            new TechulusPush(),
             new RocketChat(),
             new Signal(),
             new Slack(),
@@ -90,6 +92,7 @@ class Notification {
      * Throw Error with fail msg
      */
     static async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
+        console.log("this.providerList[notification.type]", this.providerList[notification.type])
         if (this.providerList[notification.type]) {
             return this.providerList[notification.type].send(notification, msg, monitorJSON, heartbeatJSON);
         } else {
