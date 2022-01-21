@@ -1,6 +1,6 @@
 <template>
     <div ref="wrap" class="wrap" :style="wrapStyle">
-        <div class="hp-bar-big" :style="barStyle">
+        <div class="hp-bar-big d-flex" :style="barStyle">
             <div
                 v-for="(beat, index) in shortBeatList"
                 :key="index"
@@ -8,7 +8,11 @@
                 :class="{ 'empty' : (beat === 0), 'down' : (beat.status === 0), 'pending' : (beat.status === 2) }"
                 :style="beatStyle"
                 :title="getBeatTitle(beat)"
-            />
+                @mouseenter="toggleActivateSibling"
+                @mouseleave="toggleActivateSibling"
+            >
+                <div class="beat-inner" />
+            </div>
         </div>
     </div>
 </template>
@@ -168,9 +172,30 @@ export default {
 
         getBeatTitle(beat) {
             return `${this.$root.datetime(beat.time)}` + ((beat.msg) ? ` - ${beat.msg}` : ``);
+        },
+        // Toggling the activeSibling class on hover over the current hover item
+        toggleActivateSibling(e) {
+            // Variable definition
+            const element = e.target;
+            const previous = element.previousSibling;
+            const next = element.nextSibling;
+
+            // Return if the hovered element has empty class
+            if (element.classList.contains("empty")) {
+                return;
+            }
+
+            // Check if Previous Sibling is heartbar element and doesn't have the empty class
+            if (previous.children && !previous.classList.contains("empty")) {
+                previous.classList.toggle("active-sibling");
+            }
+            // Check if Next Sibling is heartbar element and doesn't have the empty class
+            if (next.children && next.classList.contains("empty")) {
+                next.classList.toggle("active-sibling");
+            }
         }
     },
-}
+};
 </script>
 
 <style lang="scss" scoped>
@@ -184,9 +209,10 @@ export default {
 
 .hp-bar-big {
     .beat {
-        display: inline-block;
         background-color: $primary;
         border-radius: $border-radius;
+        display: inline-block;
+        transition: all ease 0.6s;
 
         &.empty {
             background-color: aliceblue;
@@ -200,10 +226,21 @@ export default {
             background-color: $warning;
         }
 
+        .beat-inner {
+            border-radius: $border-radius;
+            display: inline-block;
+            height: 100%;
+            width: 5px;
+        }
+
         &:not(.empty):hover {
-            transition: all ease-in-out 0.15s;
+            transition: all ease 0.15s;
             opacity: 0.8;
             transform: scale(var(--hover-scale));
+        }
+        &.active-sibling {
+            transform: scale(1.3);
+            transition: all ease 0.15s;
         }
     }
 }
