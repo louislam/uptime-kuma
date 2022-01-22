@@ -173,6 +173,7 @@ export default {
         getBeatTitle(beat) {
             return `${this.$root.datetime(beat.time)}` + ((beat.msg) ? ` - ${beat.msg}` : ``);
         },
+
         // Toggling the activeSibling class on hover over the current hover item
         toggleActivateSibling(e) {
             // Variable definition
@@ -189,6 +190,7 @@ export default {
             if (previous.children && !previous.classList.contains("empty")) {
                 previous.classList.toggle("active-sibling");
             }
+
             // Check if Next Sibling is heartbar element and doesn't have the empty class
             if (next.children && !next.classList.contains("empty")) {
                 next.classList.toggle("active-sibling");
@@ -238,6 +240,7 @@ export default {
             opacity: 0.8;
             transform: scale(var(--hover-scale));
         }
+
         &.active-sibling {
             transform: scale(1.3);
             transition: all ease 0.15s;
