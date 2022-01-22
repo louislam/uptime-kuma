@@ -364,4 +364,7 @@ export default {
     "Container Name / ID": "Container Name / ID",
     "Docker Daemon": "Docker Daemon",
     "Docker Container": "Docker Container",
+    "Docker Type": "Connection Type",
+    docker_socket: "Socket",
+    docker_tcp: "TCP / HTTP",
 };

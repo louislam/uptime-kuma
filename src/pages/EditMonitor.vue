@@ -125,6 +125,20 @@
                                 <input id="docker_container" v-model="monitor.docker_container" type="text" class="form-control" required>
                             </div>
 
+                            <!-- Docker Connection Type -->
+                            <!-- For Docker Type -->
+                            <div v-if="monitor.type === 'docker'" class="my-3">
+                                <label for="docker_type" class="form-label">{{ $t("Docker Type") }}</label>
+                                <select id="docker_type" v-model="monitor.docker_type" class="form-select">
+                                    <option value="socket">
+                                        {{ $t("docker_socket") }}
+                                    </option>
+                                    <option value="tcp">
+                                        {{ $t("docker_tcp") }}
+                                    </option>
+                                </select>
+                            </div>
+
                             <!-- Docker Daemon -->
                             <!-- For Docker Type -->
                             <div v-if="monitor.type === 'docker'" class="my-3">
@@ -458,6 +472,7 @@ export default {
                     dns_resolve_server: "1.1.1.1",
                     docker_container: "",
                     docker_daemon: "/var/run/docker.sock",
+                    docker_type: "socket",
                 };
 
                 for (let i = 0; i < this.$root.notificationList.length; i++) {

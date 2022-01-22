@@ -590,6 +590,7 @@ exports.entryPage = "dashboard";
                 bean.pushToken = monitor.pushToken;
                 bean.docker_container = monitor.docker_container;
                 bean.docker_daemon = monitor.docker_daemon;
+                bean.docker_type = monitor.docker_type;
 
                 await R.store(bean);
 

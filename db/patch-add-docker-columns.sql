@@ -7,4 +7,7 @@ ALTER TABLE monitor
 ALTER TABLE monitor
 	ADD docker_container VARCHAR(255);
 
+ALTER TABLE monitor
+	ADD docker_type VARCHAR(255);
+
 COMMIT;

@@ -79,6 +79,7 @@ class Monitor extends BeanModel {
             pushToken: this.pushToken,
             docker_container: this.docker_container,
             docker_daemon: this.docker_daemon,
+            docker_type: this.docker_type,
             notificationIDList,
             tags: tags,
         };
@@ -358,12 +359,17 @@ class Monitor extends BeanModel {
                             "Accept": "*/*",
                             "User-Agent": "Uptime-Kuma/" + version,
                         },
-                        socketPath: this.docker_daemon,
                         httpsAgent: new https.Agent({
                             maxCachedSessions: 0,      // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
                             rejectUnauthorized: ! this.getIgnoreTls(),
                         }),
                     };
+
+                    if (this.docker_type === "socket") {
+                        options.socketPath = this.docker_daemon;
+                    } else if (this.docker_type === "tcp") {
+                        options.baseURL = this.docker_daemon;
+                    }
 
                     debug(`[${this.name}] Axios Request`);
                     let res = await axios.request(options);
