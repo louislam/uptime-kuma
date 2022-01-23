@@ -403,7 +403,7 @@ class Monitor extends BeanModel {
                 bean.important = false;
 
                 if (bean.status === DOWN && this.resendInterval > 0) {
-                    timeSinceLastNotified = dayjs().valueOf() - (bean.lastNotifiedTime || 0);
+                    timeSinceLastNotified = (dayjs().valueOf() - (bean.lastNotifiedTime || 0)) / 60; // divide by 60 to convert from seconds to minutes
                     if (timeSinceLastNotified >= this.resendInterval) {
                         // Send notification again, because we are still DOWN
                         debug(`[${this.name}] sendNotification`);

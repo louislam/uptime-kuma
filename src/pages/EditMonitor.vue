@@ -140,7 +140,7 @@
                             <div class="my-3">
                                 <label for="resend-interval" class="form-label">
                                     {{ $t("Notification resend Interval if Down") }}
-                                    <span>({{ $t("resendEverySecond", [ monitor.resendInterval ]) }})</span>
+                                    <span>({{ $t("resendEveryMinute", [ monitor.resendInterval ]) }})</span>
                                 </label>
                                 <input id="resend-interval" v-model="monitor.resendInterval" type="number" class="form-control" required min="20" step="1">
                             </div>
@@ -439,6 +439,7 @@ export default {
                     method: "GET",
                     interval: 60,
                     retryInterval: this.interval,
+                    resendInterval: 0,
                     maxretries: 0,
                     notificationIDList: {},
                     ignoreTls: false,
