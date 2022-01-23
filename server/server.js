@@ -1142,6 +1142,7 @@ exports.entryPage = "dashboard";
                             if (version17x) {
                                 retryInterval = monitorListData[i].retryInterval;
                             }
+
                             if (version1114) {
                                 resendInterval = monitorListData[i].resendInterval;
                             }
