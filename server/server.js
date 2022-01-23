@@ -588,6 +588,7 @@ exports.entryPage = "dashboard";
                 bean.basic_auth_pass = monitor.basic_auth_pass;
                 bean.interval = monitor.interval;
                 bean.retryInterval = monitor.retryInterval;
+                bean.resendInterval = monitor.resendInterval;
                 bean.hostname = monitor.hostname;
                 bean.maxretries = monitor.maxretries;
                 bean.port = monitor.port;
@@ -1082,6 +1083,7 @@ exports.entryPage = "dashboard";
                 let monitorListData = backupData.monitorList;
 
                 let version17x = compareVersions.compare(backupData.version, "1.7.0", ">=");
+                let version1114 = compareVersions.compare(backupData.version, "1.11.4", ">=");
 
                 // If the import option is "overwrite" it'll clear most of the tables, except "settings" and "user"
                 if (importHandle == "overwrite") {
@@ -1131,6 +1133,7 @@ exports.entryPage = "dashboard";
 
                             // Define default values
                             let retryInterval = 0;
+                            let resendInterval = 0;
 
                             /*
                             Only replace the default value with the backup file data for the specific version, where it appears the first time
@@ -1138,6 +1141,9 @@ exports.entryPage = "dashboard";
                             */
                             if (version17x) {
                                 retryInterval = monitorListData[i].retryInterval;
+                            }
+                            if (version1114) {
+                                resendInterval = monitorListData[i].resendInterval;
                             }
 
                             // --- End ---
@@ -1154,6 +1160,7 @@ exports.entryPage = "dashboard";
                                 basic_auth_pass: monitorListData[i].basic_auth_pass,
                                 interval: monitorListData[i].interval,
                                 retryInterval: retryInterval,
+                                resendInterval: resendInterval,
                                 hostname: monitorListData[i].hostname,
                                 maxretries: monitorListData[i].maxretries,
                                 port: monitorListData[i].port,

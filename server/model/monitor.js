@@ -68,6 +68,7 @@ class Monitor extends BeanModel {
             type: this.type,
             interval: this.interval,
             retryInterval: this.retryInterval,
+            resendInterval: this.resendInterval,
             keyword: this.keyword,
             ignoreTls: this.getIgnoreTls(),
             upsideDown: this.isUpsideDown(),
@@ -135,6 +136,7 @@ class Monitor extends BeanModel {
             bean.monitor_id = this.id;
             bean.time = R.isoDateTime(dayjs.utc());
             bean.status = DOWN;
+            bean.lastNotifiedTime = previousBeat?.lastNotifiedTime || null; // after first update lastNotifiedTime will be undefined
 
             if (this.isUpsideDown()) {
                 bean.status = flipStatus(bean.status);
@@ -390,12 +392,27 @@ class Monitor extends BeanModel {
                 debug(`[${this.name}] sendNotification`);
                 await Monitor.sendNotification(isFirstBeat, this, bean);
 
+                // Set last notified time to now
+                bean.lastNotifiedTime = dayjs().valueOf();
+
                 // Clear Status Page Cache
                 debug(`[${this.name}] apicache clear`);
                 apicache.clear();
 
             } else {
                 bean.important = false;
+
+                if (bean.status === DOWN && this.resendInterval > 0) {
+                    timeSinceLastNotified = dayjs().valueOf() - (bean.lastNotifiedTime || 0);
+                    if (timeSinceLastNotified >= this.resendInterval) {
+                        // Send notification again, because we are still DOWN
+                        debug(`[${this.name}] sendNotification`);
+                        await Monitor.sendNotification(isFirstBeat, this, bean);
+
+                        // Set last notified time to now
+                        bean.lastNotifiedTime = dayjs().valueOf();
+                    }
+                }
             }
 
             if (bean.status === UP) {
