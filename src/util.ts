@@ -14,10 +14,12 @@ export const appName = "Uptime Kuma";
 export const DOWN = 0;
 export const UP = 1;
 export const PENDING = 2;
+export const MAINTENANCE = 3;
 
 export const STATUS_PAGE_ALL_DOWN = 0;
 export const STATUS_PAGE_ALL_UP = 1;
 export const STATUS_PAGE_PARTIAL_DOWN = 2;
+export const STATUS_PAGE_MAINTENANCE = 3;
 
 
 export function flipStatus(s: number) {
@@ -185,5 +187,9 @@ export function genSecret(length = 64) {
 }
 
 export function getMonitorRelativeURL(id: string) {
-    return "/dashboard/" + id;
+    return "/dashboard/monitor/" + id;
+}
+
+export function getMaintenanceRelativeURL(id: string) {
+    return "/dashboard/maintenance/" + id;
 }

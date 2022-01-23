@@ -144,6 +144,18 @@
             </div>
         </div>
 
+        <!-- Maintenance -->
+        <div v-if="maintenance.length !== 0" v-for="maintenanceItem in maintenance" class="shadow-box alert mb-4 p-4 maintenance" role="alert" :class="maintenanceClass">
+            <h4 v-text="maintenanceItem.title" class="alert-heading" />
+
+            <div v-text="maintenanceItem.description" class="content" />
+
+            <!-- Incident Date -->
+            <div class="date mt-3">
+                {{ $t("End") }}: {{ $root.datetimeMaintenance(maintenanceItem.end_date) }} ({{ dateFromNowMaintenance(maintenanceItem.start_date) }})<br />
+            </div>
+        </div>
+
         <!-- Overall Status -->
         <div class="shadow-box list  p-4 overall-status mb-4">
             <div v-if="Object.keys($root.publicMonitorList).length === 0 && loadedData">
@@ -165,6 +177,11 @@
                 <div v-else-if="allDown">
                     <font-awesome-icon icon="times-circle" class="danger" />
                     {{ $t("Degraded Service") }}
+                </div>
+
+                <div v-else-if="isMaintenance">
+                    <font-awesome-icon icon="wrench" class="statusMaintenance" />
+                    {{ $t("Maintenance") }}
                 </div>
 
                 <div v-else>
@@ -217,7 +234,14 @@
 import axios from "axios";
 import PublicGroupList from "../components/PublicGroupList.vue";
 import ImageCropUpload from "vue-image-crop-upload";
-import { STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_PARTIAL_DOWN, UP } from "../util.ts";
+import {
+    STATUS_PAGE_ALL_DOWN,
+    STATUS_PAGE_ALL_UP,
+    STATUS_PAGE_MAINTENANCE,
+    STATUS_PAGE_PARTIAL_DOWN,
+    UP,
+    MAINTENANCE
+} from "../util.ts";
 import { useToast } from "vue-toastification";
 import dayjs from "dayjs";
 const toast = useToast();
@@ -259,6 +283,7 @@ export default {
             loadedTheme: false,
             loadedData: false,
             baseURL: "",
+            maintenance: [],
         };
     },
     computed: {
@@ -320,6 +345,10 @@ export default {
             return "bg-" + this.incident.style;
         },
 
+        maintenanceClass() {
+            return "bg-maintenance";
+        },
+
         overallStatus() {
 
             if (Object.keys(this.$root.publicLastHeartbeatList).length === 0) {
@@ -332,7 +361,10 @@ export default {
             for (let id in this.$root.publicLastHeartbeatList) {
                 let beat = this.$root.publicLastHeartbeatList[id];
 
-                if (beat.status === UP) {
+                if (beat.status === MAINTENANCE) {
+                    return STATUS_PAGE_MAINTENANCE;
+                }
+                else if (beat.status === UP) {
                     hasUp = true;
                 } else {
                     status = STATUS_PAGE_PARTIAL_DOWN;
@@ -356,6 +388,10 @@ export default {
 
         allDown() {
             return this.overallStatus === STATUS_PAGE_ALL_DOWN;
+        },
+
+        isMaintenance() {
+            return this.overallStatus === STATUS_PAGE_MAINTENANCE;
         },
 
     },
@@ -421,6 +457,10 @@ export default {
             if (res.data.ok) {
                 this.incident = res.data.incident;
             }
+        });
+
+        axios.get("/api/status-page/maintenance-list").then((res) => {
+            this.maintenance = res.data;
         });
 
         axios.get("/api/status-page/monitor-list").then((res) => {
@@ -580,6 +620,10 @@ export default {
             return dayjs.utc(date).fromNow();
         },
 
+        dateFromNowMaintenance(date) {
+            return dayjs(date).fromNow();
+        },
+
     }
 };
 </script>
@@ -669,6 +713,22 @@ footer {
     .date {
         font-size: 12px;
     }
+}
+
+.maintenance {
+    color: white;
+
+    .date {
+        font-size: 12px;
+    }
+}
+
+.bg-maintenance {
+    background-color: $maintenance;
+}
+
+.statusMaintenance {
+    color: $maintenance;
 }
 
 .mobile {

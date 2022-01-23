@@ -22,6 +22,16 @@ export default {
             return this.datetimeFormat(value, "YYYY-MM-DD HH:mm:ss");
         },
 
+        datetimeMaintenance(value) {
+            const inputDate = new Date(value);
+            const now = new Date(Date.now());
+
+            if (inputDate.getFullYear() === now.getFullYear() && inputDate.getMonth() === now.getMonth() && inputDate.getDay() === now.getDay())
+                return this.datetimeMaintenanceFormat(value, "HH:mm");
+            else
+                return this.datetimeMaintenanceFormat(value, "YYYY-MM-DD HH:mm");
+        },
+
         date(value) {
             return this.datetimeFormat(value, "YYYY-MM-DD");
         },
@@ -39,6 +49,13 @@ export default {
         datetimeFormat(value, format) {
             if (value !== undefined && value !== "") {
                 return dayjs.utc(value).tz(this.timezone).format(format);
+            }
+            return "";
+        },
+
+        datetimeMaintenanceFormat(value, format) {
+            if (value !== undefined && value !== "") {
+                return dayjs(value).format(format);
             }
             return "";
         }

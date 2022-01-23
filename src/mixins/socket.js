@@ -27,6 +27,7 @@ export default {
             allowLoginDialog: false,        // Allowed to show login dialog, but "loggedIn" have to be true too. This exists because prevent the login dialog show 0.1s in first before the socket server auth-ed.
             loggedIn: false,
             monitorList: { },
+            maintenanceList: { },
             heartbeatList: { },
             importantHeartbeatList: { },
             avgPingList: { },
@@ -97,6 +98,10 @@ export default {
                     };
                 });
                 this.monitorList = data;
+            });
+
+            socket.on("maintenanceList", (data) => {
+                this.maintenanceList = data;
             });
 
             socket.on("notificationList", (data) => {
@@ -309,12 +314,35 @@ export default {
             socket.emit("getMonitorList", callback);
         },
 
+        getMaintenanceList(callback) {
+            if (! callback) {
+                callback = () => { };
+            }
+            socket.emit("getMaintenanceList", callback);
+        },
+
         add(monitor, callback) {
             socket.emit("add", monitor, callback);
         },
 
+        addMaintenance(maintenance, callback) {
+            socket.emit("addMaintenance", maintenance, callback);
+        },
+
+        addMonitorMaintenance(maintenanceID, monitors, callback) {
+            socket.emit("addMonitorMaintenance", maintenanceID, monitors, callback);
+        },
+
+        getMonitorMaintenance(maintenanceID, callback) {
+            socket.emit("getMonitorMaintenance", maintenanceID, callback);
+        },
+
         deleteMonitor(monitorID, callback) {
             socket.emit("deleteMonitor", monitorID, callback);
+        },
+
+        deleteMaintenance(maintenanceID, callback) {
+            socket.emit("deleteMaintenance", maintenanceID, callback);
         },
 
         clearData() {
@@ -368,7 +396,13 @@ export default {
             for (let monitorID in this.lastHeartbeatList) {
                 let lastHeartBeat = this.lastHeartbeatList[monitorID];
 
-                if (! lastHeartBeat) {
+                if (this.monitorList[monitorID].maintenance) {
+                    result[monitorID] = {
+                        text: this.$t("Maintenance"),
+                        color: "maintenance",
+                    };
+                }
+                else if (! lastHeartBeat) {
                     result[monitorID] = unknown;
                 } else if (lastHeartBeat.status === 1) {
                     result[monitorID] = {

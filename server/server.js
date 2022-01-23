@@ -132,6 +132,7 @@ const { sendNotificationList, sendHeartbeatList, sendImportantHeartbeatList, sen
 const { statusPageSocketHandler } = require("./socket-handlers/status-page-socket-handler");
 const databaseSocketHandler = require("./socket-handlers/database-socket-handler");
 const TwoFA = require("./2fa");
+const apicache = require("./modules/apicache");
 
 app.use(express.json());
 
@@ -161,6 +162,12 @@ let jwtSecret = null;
  * @type {{}}
  */
 let monitorList = {};
+
+/**
+* Main maintenance list
+* @type {{}}
+*/
+let maintenanceList = {};
 
 /**
  * Show Setup Page
@@ -625,10 +632,121 @@ exports.entryPage = "dashboard";
             }
         });
 
+        // Add a new maintenance
+        socket.on("addMaintenance", async (maintenance, callback) => {
+            try {
+                checkLogin(socket);
+                let bean = R.dispense("maintenance");
+
+                bean.import(maintenance);
+                bean.user_id = socket.userID;
+                let maintenanceID = await R.store(bean);
+
+                await sendMaintenanceList(socket);
+
+                callback({
+                    ok: true,
+                    msg: "Added Successfully.",
+                    maintenanceID,
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        // Edit a maintenance
+        socket.on("editMaintenance", async (maintenance, callback) => {
+            try {
+                checkLogin(socket);
+
+                let bean = await R.findOne("maintenance", " id = ? ", [ maintenance.id ]);
+
+                if (bean.user_id !== socket.userID) {
+                    throw new Error("Permission denied.");
+                }
+
+                bean.title = maintenance.title;
+                bean.description = maintenance.description;
+                bean.start_date = maintenance.start_date;
+                bean.end_date = maintenance.end_date;
+
+                await R.store(bean);
+
+                await sendMaintenanceList(socket);
+
+                callback({
+                    ok: true,
+                    msg: "Saved.",
+                    maintenanceID: bean.id,
+                });
+
+            } catch (e) {
+                console.error(e);
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        // Add a new monitor_maintenance
+        socket.on("addMonitorMaintenance", async (maintenanceID, monitors, callback) => {
+            try {
+                checkLogin(socket);
+
+                await R.exec("DELETE FROM monitor_maintenance WHERE maintenance_id = ?", [
+                    maintenanceID
+                ]);
+
+                for await (const monitor of monitors) {
+                    let bean = R.dispense("monitor_maintenance");
+
+                    bean.import({
+                        monitor_id: monitor.id,
+                        maintenance_id: maintenanceID
+                    });
+                    await R.store(bean);
+                }
+
+                apicache.clear();
+
+                callback({
+                    ok: true,
+                    msg: "Added Successfully.",
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
         socket.on("getMonitorList", async (callback) => {
             try {
                 checkLogin(socket);
                 await sendMonitorList(socket);
+                callback({
+                    ok: true,
+                });
+            } catch (e) {
+                console.error(e);
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("getMaintenanceList", async (callback) => {
+            try {
+                checkLogin(socket);
+                await sendMaintenanceList(socket);
                 callback({
                     ok: true,
                 });
@@ -658,6 +776,54 @@ exports.entryPage = "dashboard";
                 });
 
             } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("getMaintenance", async (maintenanceID, callback) => {
+            try {
+                checkLogin(socket);
+
+                console.log(`Get Maintenance: ${maintenanceID} User ID: ${socket.userID}`);
+
+                let bean = await R.findOne("maintenance", " id = ? AND user_id = ? ", [
+                    maintenanceID,
+                    socket.userID,
+                ]);
+
+                callback({
+                    ok: true,
+                    maintenance: await bean.toJSON(),
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("getMonitorMaintenance", async (maintenanceID, callback) => {
+            try {
+                checkLogin(socket);
+
+                console.log(`Get Monitors for Maintenance: ${maintenanceID} User ID: ${socket.userID}`);
+
+                let monitors = await R.getAll("SELECT monitor.id, monitor.name FROM monitor_maintenance mm JOIN monitor ON mm.monitor_id = monitor.id WHERE mm.maintenance_id = ? ", [
+                    maintenanceID,
+                ]);
+
+                callback({
+                    ok: true,
+                    monitors,
+                });
+
+            } catch (e) {
+                console.error(e);
                 callback({
                     ok: false,
                     msg: e.message,
@@ -760,6 +926,36 @@ exports.entryPage = "dashboard";
                 await sendMonitorList(socket);
                 // Clear heartbeat list on client
                 await sendImportantHeartbeatList(socket, monitorID, true, true);
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("deleteMaintenance", async (maintenanceID, callback) => {
+            try {
+                checkLogin(socket);
+
+                console.log(`Delete Maintenance: ${maintenanceID} User ID: ${socket.userID}`);
+
+                if (maintenanceID in maintenanceList) {
+                    delete maintenanceList[maintenanceID];
+                }
+
+                await R.exec("DELETE FROM maintenance WHERE id = ? AND user_id = ? ", [
+                    maintenanceID,
+                    socket.userID,
+                ]);
+
+                callback({
+                    ok: true,
+                    msg: "Deleted Successfully.",
+                });
+
+                await sendMaintenanceList(socket);
 
             } catch (e) {
                 callback({
@@ -1394,11 +1590,18 @@ async function sendMonitorList(socket) {
     return list;
 }
 
+async function sendMaintenanceList(socket) {
+    let list = await getMaintenanceJSONList(socket.userID);
+    io.to(socket.userID).emit("maintenanceList", list);
+    return list;
+}
+
 async function afterLogin(socket, user) {
     socket.userID = user.id;
     socket.join(user.id);
 
     let monitorList = await sendMonitorList(socket);
+    sendMaintenanceList(socket);
     sendNotificationList(socket);
 
     await sleep(500);
@@ -1425,6 +1628,20 @@ async function getMonitorJSONList(userID) {
 
     for (let monitor of monitorList) {
         result[monitor.id] = await monitor.toJSON();
+    }
+
+    return result;
+}
+
+async function getMaintenanceJSONList(userID) {
+    let result = {};
+
+    let maintenanceList = await R.find("maintenance", " user_id = ? ORDER BY end_date DESC, title", [
+        userID,
+    ]);
+
+    for (let maintenance of maintenanceList) {
+        result[maintenance.id] = await maintenance.toJSON();
     }
 
     return result;

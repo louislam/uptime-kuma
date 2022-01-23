@@ -340,7 +340,6 @@ export default {
     "No monitors available.": "沒有可用的監測器。",
     "Add one": "新增一個",
     "No Monitors": "無監測器",
-    "Add one": "新增一個",
     "Untitled Group": "未命名群組",
     Services: "服務",
     Discard: "捨棄",

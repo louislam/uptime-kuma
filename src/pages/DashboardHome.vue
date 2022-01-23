@@ -16,6 +16,10 @@
                         <span class="num text-danger">{{ stats.down }}</span>
                     </div>
                     <div class="col">
+                        <h3>{{ $t("Maintenance") }}</h3>
+                        <span class="num text-maintenance">{{ stats.maintenance }}</span>
+                    </div>
+                    <div class="col">
                         <h3>{{ $t("Unknown") }}</h3>
                         <span class="num text-secondary">{{ stats.unknown }}</span>
                     </div>
@@ -38,7 +42,7 @@
                     </thead>
                     <tbody>
                         <tr v-for="(beat, index) in displayedRecords" :key="index" :class="{ 'shadow-box': $root.windowWidth <= 550}">
-                            <td><router-link :to="`/dashboard/${beat.monitorID}`">{{ beat.name }}</router-link></td>
+                            <td><router-link :to="`/dashboard/monitor/${beat.monitorID}`">{{ beat.name }}</router-link></td>
                             <td><Status :status="beat.status" /></td>
                             <td :class="{ 'border-0':! beat.msg}"><Datetime :value="beat.time" /></td>
                             <td class="border-0">{{ beat.msg }}</td>
@@ -93,6 +97,7 @@ export default {
             let result = {
                 up: 0,
                 down: 0,
+                maintenance: 0,
                 unknown: 0,
                 pause: 0,
             };
@@ -100,8 +105,11 @@ export default {
             for (let monitorID in this.$root.monitorList) {
                 let beat = this.$root.lastHeartbeatList[monitorID];
                 let monitor = this.$root.monitorList[monitorID];
-
-                if (monitor && ! monitor.active) {
+                
+                if (monitor && monitor.maintenance) {
+                    result.maintenance++;
+                }
+                else if (monitor && !monitor.active) {
                     result.pause++;
                 } else if (beat) {
                     if (beat.status === 1) {
@@ -171,6 +179,14 @@ export default {
     color: $primary;
     font-weight: bold;
     display: block;
+}
+
+.text-maintenance {
+    color: $maintenance;
+}
+
+.bg-maintenance {
+    background-color: $maintenance;
 }
 
 .shadow-box {

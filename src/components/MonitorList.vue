@@ -1,7 +1,12 @@
 <template>
     <div class="shadow-box mb-3">
         <div class="list-header">
-            <div class="placeholder"></div>
+            <div class="search-wrapper float-start">
+                <select v-model="selectedList" class="form-control">
+                    <option value="monitor" selected>{{$t('Monitor List')}}</option>
+                    <option value="maintenance">{{$t('Maintenance List')}}</option>
+                </select>
+            </div>
             <div class="search-wrapper">
                 <a v-if="searchText == ''" class="search-icon">
                     <font-awesome-icon icon="search" />
@@ -13,11 +18,25 @@
             </div>
         </div>
         <div class="monitor-list" :class="{ scrollbar: scrollbar }">
-            <div v-if="Object.keys($root.monitorList).length === 0" class="text-center mt-3">
+            <div v-if="Object.keys($root.monitorList).length === 0 && selectedList === 'monitor'" class="text-center mt-3">
                 {{ $t("No Monitors, please") }} <router-link to="/add">{{ $t("add one") }}</router-link>
             </div>
+            <div v-if="Object.keys($root.maintenanceList).length === 0 && selectedList === 'maintenance'" class="text-center mt-3">
+                {{ $t("No Maintenance, please") }} <router-link to="/addMaintenance">{{ $t("add one") }}</router-link>
+            </div>
 
-            <router-link v-for="(item, index) in sortedMonitorList" :key="index" :to="monitorURL(item.id)" class="item" :class="{ 'disabled': ! item.active }">
+            <router-link v-if="selectedList === 'maintenance'" v-for="(item, index) in sortedMaintenanceList" :key="index" :to="maintenanceURL(item.id)" class="item" :class="{ 'disabled': (Date.parse(item.end_date) < Date.now()) }">
+                <div class="row">
+                    <div class="col-9 col-md-8 small-padding">
+                        <div class="info">
+                            <Uptime :monitor="null" type="maintenance" :pill="true" />
+                            {{ item.title }}
+                        </div>
+                    </div>
+                </div>
+            </router-link>
+
+            <router-link v-if="selectedList === 'monitor'" v-for="(item, index) in sortedMonitorList" :key="index" :to="monitorURL(item.id)" class="item" :class="{ 'disabled': ! item.active }">
                 <div class="row">
                     <div class="col-9 col-md-8 small-padding" :class="{ 'monitorItem': $root.userHeartbeatBar == 'bottom' || $root.userHeartbeatBar == 'none' }">
                         <div class="info">
@@ -47,7 +66,7 @@
 import HeartbeatBar from "../components/HeartbeatBar.vue";
 import Uptime from "../components/Uptime.vue";
 import Tag from "../components/Tag.vue";
-import { getMonitorRelativeURL } from "../util.ts";
+import {getMaintenanceRelativeURL, getMonitorRelativeURL} from "../util.ts";
 
 export default {
     components: {
@@ -63,9 +82,60 @@ export default {
     data() {
         return {
             searchText: "",
+            selectedList: "monitor"
         };
     },
     computed: {
+        sortedMaintenanceList() {
+            let result = Object.values(this.$root.maintenanceList);
+
+            result.sort((m1, m2) => {
+                const now = Date.now();
+
+                if (Date.parse(m1.end_date) >= now !== Date.parse(m2.end_date) >= now) {
+                    if (Date.parse(m2.end_date) < now) {
+                        return -1;
+                    }
+                    if (Date.parse(m1.end_date) < now) {
+                        return 1;
+                    }
+                }
+
+                if (Date.parse(m1.end_date) >= now && Date.parse(m2.end_date) >= now) {
+                    if (Date.parse(m1.end_date) < Date.parse(m2.end_date)) {
+                        return -1;
+                    }
+
+                    if (Date.parse(m2.end_date) < Date.parse(m1.end_date)) {
+                        return 1;
+                    }
+                }
+
+                if (Date.parse(m1.end_date) < now && Date.parse(m2.end_date) < now) {
+                    if (Date.parse(m1.end_date) < Date.parse(m2.end_date)) {
+                        return 1;
+                    }
+
+                    if (Date.parse(m2.end_date) < Date.parse(m1.end_date)) {
+                        return -1;
+                    }
+                }
+
+                return m1.title.localeCompare(m2.title);
+            });
+
+            // Simple filter by search text
+            // finds maintenance name
+            if (this.searchText !== "") {
+                const loweredSearchText = this.searchText.toLowerCase();
+                result = result.filter(maintenance => {
+                    return maintenance.title.toLowerCase().includes(loweredSearchText)
+                    || maintenance.description.toLowerCase().includes(loweredSearchText);
+                });
+            }
+
+            return result;
+        },
         sortedMonitorList() {
             let result = Object.values(this.$root.monitorList);
 
@@ -96,7 +166,7 @@ export default {
 
             // Simple filter by search text
             // finds monitor name, tag name or tag value
-            if (this.searchText != "") {
+            if (this.searchText !== "") {
                 const loweredSearchText = this.searchText.toLowerCase();
                 result = result.filter(monitor => {
                     return monitor.name.toLowerCase().includes(loweredSearchText)
@@ -111,6 +181,9 @@ export default {
     methods: {
         monitorURL(id) {
             return getMonitorRelativeURL(id);
+        },
+        maintenanceURL(id) {
+            return getMaintenanceRelativeURL(id);
         },
         clearSearchText() {
             this.searchText = "";
@@ -173,5 +246,13 @@ export default {
     display: flex;
     flex-wrap: wrap;
     gap: 0;
+}
+
+.bg-maintenance {
+    background-color: $maintenance;
+}
+
+select {
+    text-align: center;
 }
 </style>

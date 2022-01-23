@@ -5,6 +5,7 @@ import Dashboard from "./pages/Dashboard.vue";
 import DashboardHome from "./pages/DashboardHome.vue";
 import Details from "./pages/Details.vue";
 import EditMonitor from "./pages/EditMonitor.vue";
+import EditMaintenance from "./pages/EditMaintenance.vue";
 import List from "./pages/List.vue";
 const Settings = () => import("./pages/Settings.vue");
 import Setup from "./pages/Setup.vue";
@@ -18,6 +19,7 @@ import MonitorHistory from "./components/settings/MonitorHistory.vue";
 import Security from "./components/settings/Security.vue";
 import Backup from "./components/settings/Backup.vue";
 import About from "./components/settings/About.vue";
+import MaintenanceDetails from "./pages/MaintenanceDetails.vue";
 
 const routes = [
     {
@@ -41,7 +43,7 @@ const routes = [
                         component: DashboardHome,
                         children: [
                             {
-                                path: "/dashboard/:id",
+                                path: "/dashboard/monitor/:id",
                                 component: EmptyLayout,
                                 children: [
                                     {
@@ -55,8 +57,26 @@ const routes = [
                                 ],
                             },
                             {
+                                path: "/dashboard/maintenance/:id",
+                                component: EmptyLayout,
+                                children: [
+                                    {
+                                        path: "",
+                                        component: MaintenanceDetails,
+                                    },
+                                    {
+                                        path: "/editMaintenance/:id",
+                                        component: EditMaintenance,
+                                    },
+                                ],
+                            },
+                            {
                                 path: "/add",
                                 component: EditMonitor,
+                            },
+                            {
+                                path: "/addMaintenance",
+                                component: EditMaintenance,
                             },
                             {
                                 path: "/list",

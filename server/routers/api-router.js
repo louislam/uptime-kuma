@@ -5,7 +5,7 @@ const server = require("../server");
 const apicache = require("../modules/apicache");
 const Monitor = require("../model/monitor");
 const dayjs = require("dayjs");
-const { UP, flipStatus, debug } = require("../../src/util");
+const { UP, MAINTENANCE, flipStatus, debug} = require("../../src/util");
 let router = express.Router();
 
 let cache = apicache.middleware;
@@ -51,6 +51,12 @@ router.get("/api/push/:pushToken", async (request, response) => {
             duration = dayjs(bean.time).diff(dayjs(previousHeartbeat.time), "second");
         }
 
+        const maintenance = await R.getAll("SELECT mm.*, maintenance.start_date, maintenance.end_date FROM monitor_maintenance mm JOIN maintenance ON mm.maintenance_id = maintenance.id WHERE mm.monitor_id = ? AND datetime(maintenance.start_date) <= datetime('now', 'localtime') AND datetime(maintenance.end_date) >= datetime('now', 'localtime')", [monitor.id]);
+        if (maintenance.length !== 0) {
+            msg = "Monitor under maintenance";
+            status = MAINTENANCE;
+        }
+
         debug("PreviousStatus: " + previousStatus);
         debug("Current Status: " + status);
 
@@ -70,7 +76,7 @@ router.get("/api/push/:pushToken", async (request, response) => {
             ok: true,
         });
 
-        if (bean.important) {
+        if (Monitor.isImportantForNotification(isFirstBeat, previousStatus, status)) {
             await Monitor.sendNotification(isFirstBeat, monitor, bean);
         }
 
@@ -125,6 +131,34 @@ router.get("/api/status-page/incident", async (_, response) => {
             ok: true,
             incident,
         });
+
+    } catch (error) {
+        send403(response, error.message);
+    }
+});
+
+// Status Page - Maintenance List
+// Can fetch only if published
+router.get("/api/status-page/maintenance-list", async (_request, response) => {
+    allowDevAllOrigin(response);
+
+    try {
+        await checkPublished();
+        const publicMaintenanceList = [];
+
+        let maintenanceBeanList = R.convertToBeans("maintenance", await R.getAll(`
+            SELECT maintenance.*
+            FROM maintenance
+            WHERE datetime(maintenance.start_date) <= datetime('now', 'localtime')
+              AND datetime(maintenance.end_date) >= datetime('now', 'localtime')
+            ORDER BY maintenance.end_date
+        `));
+
+        for (const bean of maintenanceBeanList) {
+            publicMaintenanceList.push(await bean.toPublicJSON());
+        }
+
+        response.json(publicMaintenanceList);
 
     } catch (error) {
         send403(response, error.message);

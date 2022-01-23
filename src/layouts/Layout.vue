@@ -51,7 +51,7 @@
 
         <!-- Mobile Only -->
         <div v-if="$root.isMobile" style="width: 100%; height: 60px;" />
-        <nav v-if="$root.isMobile" class="bottom-nav">
+        <nav v-if="$root.isMobile" class="bottom-nav scroll">
             <router-link to="/dashboard" class="nav-link">
                 <div><font-awesome-icon icon="tachometer-alt" /></div>
                 {{ $t("Dashboard") }}
@@ -64,7 +64,12 @@
 
             <router-link to="/add" class="nav-link">
                 <div><font-awesome-icon icon="plus" /></div>
-                {{ $t("Add") }}
+                {{ $t("Add Monitor") }}
+            </router-link>
+
+            <router-link to="/addMaintenance" class="nav-link">
+                <div><font-awesome-icon icon="wrench" /></div>
+                {{ $t("Add Maintenance") }}
             </router-link>
 
             <router-link to="/settings" class="nav-link">
@@ -199,6 +204,23 @@ main {
     .bottom-nav {
         background-color: $dark-bg;
     }
+}
+
+.scroll {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    -ms-overflow-style: -ms-autohiding-scrollbar;
+}
+
+.scroll::-webkit-scrollbar {
+    display: none;
+}
+
+.scroll a {
+    flex: 0 0 auto;
+    min-width: fit-content;
 }
 
 </style>

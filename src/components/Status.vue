@@ -22,6 +22,10 @@ export default {
                 return "warning";
             }
 
+            if (this.status === 3) {
+                return "maintenance";
+            }
+
             return "secondary";
         },
 
@@ -36,6 +40,10 @@ export default {
 
             if (this.status === 2) {
                 return this.$t("Pending");
+            }
+
+            if (this.status === 3) {
+                return this.$t("Maintenance");
             }
 
             return this.$t("Unknown");
