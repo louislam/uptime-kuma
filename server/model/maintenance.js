@@ -17,7 +17,7 @@ class Maintenance extends BeanModel {
             title: this.title,
             description: this.description,
             start_date: this.start_date,
-            end_date: this.end_date
+            end_date: this.end_date,
         };
     }
 
@@ -30,7 +30,7 @@ class Maintenance extends BeanModel {
             title: this.title,
             description: this.description,
             start_date: this.start_date,
-            end_date: this.end_date
+            end_date: this.end_date,
         };
     }
 }

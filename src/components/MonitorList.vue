@@ -66,7 +66,7 @@
 import HeartbeatBar from "../components/HeartbeatBar.vue";
 import Uptime from "../components/Uptime.vue";
 import Tag from "../components/Tag.vue";
-import {getMaintenanceRelativeURL, getMonitorRelativeURL} from "../util.ts";
+import {getMaintenanceRelativeURL, getMonitorRelativeURL } from "../util.ts";
 
 export default {
     components: {
@@ -82,7 +82,7 @@ export default {
     data() {
         return {
             searchText: "",
-            selectedList: "monitor"
+            selectedList: "monitor",
         };
     },
     computed: {

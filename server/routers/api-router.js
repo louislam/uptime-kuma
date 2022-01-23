@@ -5,7 +5,7 @@ const server = require("../server");
 const apicache = require("../modules/apicache");
 const Monitor = require("../model/monitor");
 const dayjs = require("dayjs");
-const { UP, MAINTENANCE, flipStatus, debug} = require("../../src/util");
+const { UP, MAINTENANCE, flipStatus, debug } = require("../../src/util");
 let router = express.Router();
 
 let cache = apicache.middleware;

@@ -114,16 +114,15 @@ export default {
         },
 
         titlePlaceholder() {
-            return this.$t("Network infrastructure maintenance");
+            return this.$t("maintenanceTitleExample");
         },
 
         descriptionPlaceholder() {
-            return this.$t("Example: Network infrastructure maintenance is underway which will affect some of our services.");
+            return this.$t("maintenanceDescriptionExample");
         }
 
     },
     watch: {
-
         "$route.fullPath"() {
             this.init();
         }
@@ -137,7 +136,7 @@ export default {
                 Object.values(this.$root.monitorList).map(monitor => {
                     this.affectedMonitorsOptions.push({
                         id: monitor.id,
-                        name: monitor.name
+                        name: monitor.name,
                     });
                 });
             }
@@ -173,14 +172,13 @@ export default {
                     }
                 });
             }
-
         },
 
         async submit() {
             this.processing = true;
 
             if (this.affectedMonitors.length === 0) {
-                toast.error(this.$t("Select at least one affected monitor"));
+                toast.error(this.$t("atLeastOneMonitor"));
                 return this.processing = false;
             }
 

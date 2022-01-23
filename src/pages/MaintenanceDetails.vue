@@ -3,9 +3,9 @@
         <div v-if="maintenance">
             <h1> {{ maintenance.title }}</h1>
             <p class="url">
-                <span>Start: {{ $root.datetimeMaintenance(maintenance.start_date) }}</span>
+                <span>{{$t("Start")}}: {{ $root.datetimeMaintenance(maintenance.start_date) }}</span>
                 <br>
-                <span>End: {{ $root.datetimeMaintenance(maintenance.end_date) }}</span>
+                <span>{{$t("End")}}: {{ $root.datetimeMaintenance(maintenance.end_date) }}</span>
             </p>
 
             <div class="functions" style="margin-top: 10px">
