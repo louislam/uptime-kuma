@@ -164,6 +164,8 @@ export default {
     "Search...": "Suchen...",
     "Heartbeat Retry Interval": "Heartbeat-Wiederholungsintervall",
     retryCheckEverySecond: "Versuche alle {0} Sekunden",
+    resendEveryMinute: "Erneut versenden alle {0} Minuten",
+    resendDisabled: "Erneut versenden deaktiviert",
     "Import Backup": "Backup importieren",
     "Export Backup": "Backup exportieren",
     "Avg. Ping": "Durchschn. Ping",
