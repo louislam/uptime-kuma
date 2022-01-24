@@ -152,7 +152,7 @@
 
             <!-- Incident Date -->
             <div class="date mt-3">
-                {{ $t("End") }}: {{ $root.datetimeMaintenance(maintenanceItem.end_date) }} ({{ dateFromNowMaintenance(maintenanceItem.start_date) }})<br />
+                {{ $t("End") }}: {{ $root.datetimeMaintenance(maintenanceItem.end_date) }} ({{ dateFromNow(maintenanceItem.start_date) }})<br />
             </div>
         </div>
 
@@ -618,10 +618,6 @@ export default {
 
         dateFromNow(date) {
             return dayjs.utc(date).fromNow();
-        },
-
-        dateFromNowMaintenance(date) {
-            return dayjs(date).fromNow();
         },
 
     }

@@ -25,7 +25,7 @@
                 {{ $t("No Maintenance, please") }} <router-link to="/addMaintenance">{{ $t("add one") }}</router-link>
             </div>
 
-            <router-link v-if="selectedList === 'maintenance'" v-for="(item, index) in sortedMaintenanceList" :key="index" :to="maintenanceURL(item.id)" class="item" :class="{ 'disabled': (Date.parse(item.end_date) < Date.now()) }">
+            <router-link v-if="selectedList === 'maintenance'" v-for="(item, index) in sortedMaintenanceList" :key="index" :to="maintenanceURL(item.id)" class="item" :class="{ 'disabled': !this.$root.isActiveMaintenance(item.end_date) }">
                 <div class="row">
                     <div class="col-9 col-md-8 small-padding">
                         <div class="info">
@@ -66,7 +66,7 @@
 import HeartbeatBar from "../components/HeartbeatBar.vue";
 import Uptime from "../components/Uptime.vue";
 import Tag from "../components/Tag.vue";
-import {getMaintenanceRelativeURL, getMonitorRelativeURL } from "../util.ts";
+import { getMaintenanceRelativeURL, getMonitorRelativeURL } from "../util.ts";
 
 export default {
     components: {
@@ -90,18 +90,17 @@ export default {
             let result = Object.values(this.$root.maintenanceList);
 
             result.sort((m1, m2) => {
-                const now = Date.now();
 
-                if (Date.parse(m1.end_date) >= now !== Date.parse(m2.end_date) >= now) {
-                    if (Date.parse(m2.end_date) < now) {
+                if (this.$root.isActiveMaintenance(m1.end_date) !== this.$root.isActiveMaintenance(m2.end_date)) {
+                    if (!this.$root.isActiveMaintenance(m2.end_date)) {
                         return -1;
                     }
-                    if (Date.parse(m1.end_date) < now) {
+                    if (!this.$root.isActiveMaintenance(m1.end_date)) {
                         return 1;
                     }
                 }
 
-                if (Date.parse(m1.end_date) >= now && Date.parse(m2.end_date) >= now) {
+                if (this.$root.isActiveMaintenance(m1.end_date) && this.$root.isActiveMaintenance(m2.end_date)) {
                     if (Date.parse(m1.end_date) < Date.parse(m2.end_date)) {
                         return -1;
                     }
@@ -111,7 +110,7 @@ export default {
                     }
                 }
 
-                if (Date.parse(m1.end_date) < now && Date.parse(m2.end_date) < now) {
+                if (!this.$root.isActiveMaintenance(m1.end_date) && !this.$root.isActiveMaintenance(m2.end_date)) {
                     if (Date.parse(m1.end_date) < Date.parse(m2.end_date)) {
                         return 1;
                     }

@@ -51,7 +51,7 @@ router.get("/api/push/:pushToken", async (request, response) => {
             duration = dayjs(bean.time).diff(dayjs(previousHeartbeat.time), "second");
         }
 
-        const maintenance = await R.getAll("SELECT mm.*, maintenance.start_date, maintenance.end_date FROM monitor_maintenance mm JOIN maintenance ON mm.maintenance_id = maintenance.id WHERE mm.monitor_id = ? AND datetime(maintenance.start_date) <= datetime('now', 'localtime') AND datetime(maintenance.end_date) >= datetime('now', 'localtime')", [monitor.id]);
+        const maintenance = await R.getAll("SELECT mm.*, maintenance.start_date, maintenance.end_date FROM monitor_maintenance mm JOIN maintenance ON mm.maintenance_id = maintenance.id WHERE mm.monitor_id = ? AND datetime(maintenance.start_date) <= datetime('now') AND datetime(maintenance.end_date) >= datetime('now')", [monitor.id]);
         if (maintenance.length !== 0) {
             msg = "Monitor under maintenance";
             status = MAINTENANCE;
@@ -149,8 +149,8 @@ router.get("/api/status-page/maintenance-list", async (_request, response) => {
         let maintenanceBeanList = R.convertToBeans("maintenance", await R.getAll(`
             SELECT maintenance.*
             FROM maintenance
-            WHERE datetime(maintenance.start_date) <= datetime('now', 'localtime')
-              AND datetime(maintenance.end_date) >= datetime('now', 'localtime')
+            WHERE datetime(maintenance.start_date) <= datetime('now')
+              AND datetime(maintenance.end_date) >= datetime('now')
             ORDER BY maintenance.end_date
         `));
 

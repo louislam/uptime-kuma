@@ -18,6 +18,14 @@ export default {
     },
 
     methods: {
+        isActiveMaintenance(endDate) {
+            return (dayjs.utc(endDate).unix() >= dayjs.utc().unix());
+        },
+
+        toUTC(value) {
+            return dayjs.tz(value, this.timezone).utc().format();
+        },
+
         datetime(value) {
             return this.datetimeFormat(value, "YYYY-MM-DD HH:mm:ss");
         },
@@ -26,10 +34,10 @@ export default {
             const inputDate = new Date(value);
             const now = new Date(Date.now());
 
-            if (inputDate.getFullYear() === now.getFullYear() && inputDate.getMonth() === now.getMonth() && inputDate.getDay() === now.getDay())
-                return this.datetimeMaintenanceFormat(value, "HH:mm");
+            if (inputDate.getFullYear() === now.getUTCFullYear() && inputDate.getMonth() === now.getUTCMonth() && inputDate.getDay() === now.getUTCDay())
+                return this.datetimeFormat(value, "HH:mm");
             else
-                return this.datetimeMaintenanceFormat(value, "YYYY-MM-DD HH:mm");
+                return this.datetimeFormat(value, "YYYY-MM-DD HH:mm");
         },
 
         date(value) {
@@ -52,13 +60,6 @@ export default {
             }
             return "";
         },
-
-        datetimeMaintenanceFormat(value, format) {
-            if (value !== undefined && value !== "") {
-                return dayjs(value).format(format);
-            }
-            return "";
-        }
     },
 
     computed: {

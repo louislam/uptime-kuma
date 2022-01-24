@@ -50,14 +50,14 @@
 
                             <!-- Start Date Time -->
                             <div class="my-3">
-                                <label for="start_date" class="form-label">{{ $t("Start of maintenance") }}</label>
+                                <label for="start_date" class="form-label">{{ $t("Start of maintenance") }} ({{this.$root.timezone}})</label>
                                 <input :type="'datetime-local'" id="start_date" v-model="maintenance.start_date"
                                        class="form-control" :class="{'darkCalendar': dark }" required>
                             </div>
 
                             <!-- End Date Time -->
                             <div class="my-3">
-                                <label for="end_date" class="form-label">{{ $t("Expected end of maintenance") }}</label>
+                                <label for="end_date" class="form-label">{{ $t("Expected end of maintenance") }} ({{this.$root.timezone}})</label>
                                 <input :type="'datetime-local'" id="end_date" v-model="maintenance.end_date"
                                        class="form-control" :class="{'darkCalendar': dark }" required>
                             </div>
@@ -156,6 +156,8 @@ export default {
             } else if (this.isEdit) {
                 this.$root.getSocket().emit("getMaintenance", this.$route.params.id, (res) => {
                     if (res.ok) {
+                        res.maintenance.start_date = this.$root.datetimeFormat(res.maintenance.start_date, "YYYY-MM-DDTHH:mm");
+                        res.maintenance.end_date = this.$root.datetimeFormat(res.maintenance.end_date, "YYYY-MM-DDTHH:mm");
                         this.maintenance = res.maintenance;
 
                         this.$root.getSocket().emit("getMonitorMaintenance", this.$route.params.id, (res) => {
@@ -182,9 +184,11 @@ export default {
                 return this.processing = false;
             }
 
+            this.maintenance.start_date = this.$root.toUTC(this.maintenance.start_date);
+            this.maintenance.end_date = this.$root.toUTC(this.maintenance.end_date);
+
             if (this.isAdd) {
                 this.$root.addMaintenance(this.maintenance, async (res) => {
-
                     if (res.ok) {
                         await this.addMonitorMaintenance(res.maintenanceID, () => {
                             toast.success(res.msg);
@@ -206,8 +210,7 @@ export default {
                             this.$root.toastRes(res);
                             this.init();
                         });
-                    }
-                    else {
+                    } else {
                         this.processing = false;
                         toast.error(res.msg);
                     }

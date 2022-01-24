@@ -29,7 +29,7 @@ class Monitor extends BeanModel {
      * Only show necessary data to public
      */
     async toPublicJSON() {
-        const maintenance = await R.getAll("SELECT mm.*, maintenance.start_date, maintenance.end_date FROM monitor_maintenance mm JOIN maintenance ON mm.maintenance_id = maintenance.id WHERE mm.monitor_id = ? AND datetime(maintenance.start_date) <= datetime('now', 'localtime') AND datetime(maintenance.end_date) >= datetime('now', 'localtime')", [this.id]);
+        const maintenance = await R.getAll("SELECT mm.*, maintenance.start_date, maintenance.end_date FROM monitor_maintenance mm JOIN maintenance ON mm.maintenance_id = maintenance.id WHERE mm.monitor_id = ? AND datetime(maintenance.start_date) <= datetime('now') AND datetime(maintenance.end_date) >= datetime('now')", [this.id]);
 
         return {
             id: this.id,
@@ -54,7 +54,7 @@ class Monitor extends BeanModel {
         }
 
         const tags = await R.getAll("SELECT mt.*, tag.name, tag.color FROM monitor_tag mt JOIN tag ON mt.tag_id = tag.id WHERE mt.monitor_id = ?", [this.id]);
-        const maintenance = await R.getAll("SELECT mm.*, maintenance.start_date, maintenance.end_date FROM monitor_maintenance mm JOIN maintenance ON mm.maintenance_id = maintenance.id WHERE mm.monitor_id = ? AND datetime(maintenance.start_date) <= datetime('now', 'localtime') AND datetime(maintenance.end_date) >= datetime('now', 'localtime')", [this.id]);
+        const maintenance = await R.getAll("SELECT mm.*, maintenance.start_date, maintenance.end_date FROM monitor_maintenance mm JOIN maintenance ON mm.maintenance_id = maintenance.id WHERE mm.monitor_id = ? AND datetime(maintenance.start_date) <= datetime('now') AND datetime(maintenance.end_date) >= datetime('now')", [this.id]);
 
         return {
             id: this.id,
@@ -142,7 +142,7 @@ class Monitor extends BeanModel {
             bean.time = R.isoDateTime(dayjs.utc());
             bean.status = DOWN;
 
-            const maintenance = await R.getAll("SELECT mm.*, maintenance.start_date, maintenance.end_date FROM monitor_maintenance mm JOIN maintenance ON mm.maintenance_id = maintenance.id WHERE mm.monitor_id = ? AND datetime(maintenance.start_date) <= datetime('now', 'localtime') AND datetime(maintenance.end_date) >= datetime('now', 'localtime')", [this.id]);
+            const maintenance = await R.getAll("SELECT mm.*, maintenance.start_date, maintenance.end_date FROM monitor_maintenance mm JOIN maintenance ON mm.maintenance_id = maintenance.id WHERE mm.monitor_id = ? AND datetime(maintenance.start_date) <= datetime('now') AND datetime(maintenance.end_date) >= datetime('now')", [this.id]);
 
             if (this.isUpsideDown()) {
                 bean.status = flipStatus(bean.status);
