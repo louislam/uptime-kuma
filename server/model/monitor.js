@@ -136,7 +136,7 @@ class Monitor extends BeanModel {
             bean.monitor_id = this.id;
             bean.time = R.isoDateTime(dayjs.utc());
             bean.status = DOWN;
-            bean.lastNotifiedTime = previousBeat?.lastNotifiedTime || null; // after first update lastNotifiedTime will be undefined
+            bean.lastNotifiedTime = previousBeat?.lastNotifiedTime;
 
             if (this.isUpsideDown()) {
                 bean.status = flipStatus(bean.status);
@@ -393,7 +393,7 @@ class Monitor extends BeanModel {
                 await Monitor.sendNotification(isFirstBeat, this, bean);
 
                 // Set last notified time to now
-                bean.lastNotifiedTime = dayjs().valueOf();
+                bean.lastNotifiedTime = R.isoDateTime(dayjs.utc());
 
                 // Clear Status Page Cache
                 debug(`[${this.name}] apicache clear`);
@@ -403,14 +403,14 @@ class Monitor extends BeanModel {
                 bean.important = false;
 
                 if (bean.status === DOWN && this.resendInterval > 0) {
-                    timeSinceLastNotified = (dayjs().valueOf() - (bean.lastNotifiedTime || 0)) / 60; // divide by 60 to convert from seconds to minutes
+                    let timeSinceLastNotified = (dayjs.utc().valueOf() - (bean.lastNotifiedTime == null ? 0 : dayjs.utc(bean.lastNotifiedTime).valueOf())) / 1000 / 60; // divide by 1000 to convert from milliseconds to seconds and divide by 60 to convert from seconds to minutes
                     if (timeSinceLastNotified >= this.resendInterval) {
                         // Send notification again, because we are still DOWN
-                        debug(`[${this.name}] sendNotification`);
+                        debug(`[${this.name}] sendNotification again: lastNotifiedTime: ${bean.lastNotifiedTime} | current time: ${R.isoDateTime(dayjs.utc())}`);
                         await Monitor.sendNotification(isFirstBeat, this, bean);
 
                         // Set last notified time to now
-                        bean.lastNotifiedTime = dayjs().valueOf();
+                        bean.lastNotifiedTime = R.isoDateTime(dayjs.utc());
                     }
                 }
             }

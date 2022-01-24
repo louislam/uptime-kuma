@@ -54,6 +54,7 @@ class Database {
         "patch-notification_sent_history.sql": true,
         "patch-monitor-basic-auth.sql": true,
         "patch-monitor-add-resend-interval.sql": true,
+        "patch-heartbeat-add-last-notified-time.sql": true,
     }
 
     /**
