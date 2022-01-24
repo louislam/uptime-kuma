@@ -140,7 +140,8 @@
                             <div class="my-3">
                                 <label for="resend-interval" class="form-label">
                                     {{ $t("Notification resend Interval if Down") }}
-                                    <span>({{ $t("resendEveryMinute", [ monitor.resendInterval ]) }})</span>
+                                    <span v-if="monitor.resendInterval > 0">({{ $t("resendEveryMinute", [ monitor.resendInterval ]) }})</span>
+                                    <span v-else>({{ $t("resendDisabled") }})</span>
                                 </label>
                                 <input id="resend-interval" v-model="monitor.resendInterval" type="number" class="form-control" required min="0" step="1">
                             </div>
