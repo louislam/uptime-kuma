@@ -53,6 +53,7 @@ class Database {
         "patch-2fa-invalidate-used-token.sql": true,
         "patch-notification_sent_history.sql": true,
         "patch-monitor-basic-auth.sql": true,
+        "patch-monitor-add-resend-interval.sql": true,
     }
 
     /**
