@@ -231,7 +231,11 @@ class Monitor extends BeanModel {
                             bean.msg += ", keyword is found";
                             bean.status = UP;
                         } else {
-                            throw new Error(bean.msg + ", but keyword is not found");
+                            data = data.replace(/<[^>]*>?|[\n\r]|\s+/gm, " ");
+                            if ( data.length > 50 ) {
+                                data = data.substring(0, 47) + "...";
+                            }
+                            throw new Error(bean.msg + ", but keyword is not in [ " + data + " ]");
                         }
 
                     }
