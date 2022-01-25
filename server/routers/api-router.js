@@ -51,8 +51,7 @@ router.get("/api/push/:pushToken", async (request, response) => {
             duration = dayjs(bean.time).diff(dayjs(previousHeartbeat.time), "second");
         }
 
-        const maintenance = await R.getAll("SELECT mm.*, maintenance.start_date, maintenance.end_date FROM monitor_maintenance mm JOIN maintenance ON mm.maintenance_id = maintenance.id WHERE mm.monitor_id = ? AND datetime(maintenance.start_date) <= datetime('now') AND datetime(maintenance.end_date) >= datetime('now')", [monitor.id]);
-        if (maintenance.length !== 0) {
+        if (await Monitor.isUnderMaintenance(monitor.id)) {
             msg = "Monitor under maintenance";
             status = MAINTENANCE;
         }

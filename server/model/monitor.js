@@ -29,12 +29,10 @@ class Monitor extends BeanModel {
      * Only show necessary data to public
      */
     async toPublicJSON() {
-        const maintenance = await R.getAll("SELECT mm.*, maintenance.start_date, maintenance.end_date FROM monitor_maintenance mm JOIN maintenance ON mm.maintenance_id = maintenance.id WHERE mm.monitor_id = ? AND datetime(maintenance.start_date) <= datetime('now') AND datetime(maintenance.end_date) >= datetime('now')", [this.id]);
-
         return {
             id: this.id,
             name: this.name,
-            maintenance: (maintenance.length !== 0),
+            maintenance: await Monitor.isUnderMaintenance(this.id),
         };
     }
 
@@ -54,7 +52,6 @@ class Monitor extends BeanModel {
         }
 
         const tags = await R.getAll("SELECT mt.*, tag.name, tag.color FROM monitor_tag mt JOIN tag ON mt.tag_id = tag.id WHERE mt.monitor_id = ?", [this.id]);
-        const maintenance = await R.getAll("SELECT mm.*, maintenance.start_date, maintenance.end_date FROM monitor_maintenance mm JOIN maintenance ON mm.maintenance_id = maintenance.id WHERE mm.monitor_id = ? AND datetime(maintenance.start_date) <= datetime('now') AND datetime(maintenance.end_date) >= datetime('now')", [this.id]);
 
         return {
             id: this.id,
@@ -84,7 +81,7 @@ class Monitor extends BeanModel {
             pushToken: this.pushToken,
             notificationIDList,
             tags: tags,
-            maintenance: (maintenance.length !== 0),
+            maintenance: await Monitor.isUnderMaintenance(this.id),
         };
     }
 
@@ -142,8 +139,6 @@ class Monitor extends BeanModel {
             bean.time = R.isoDateTime(dayjs.utc());
             bean.status = DOWN;
 
-            const maintenance = await R.getAll("SELECT mm.*, maintenance.start_date, maintenance.end_date FROM monitor_maintenance mm JOIN maintenance ON mm.maintenance_id = maintenance.id WHERE mm.monitor_id = ? AND datetime(maintenance.start_date) <= datetime('now') AND datetime(maintenance.end_date) >= datetime('now')", [this.id]);
-
             if (this.isUpsideDown()) {
                 bean.status = flipStatus(bean.status);
             }
@@ -156,7 +151,7 @@ class Monitor extends BeanModel {
             }
 
             try {
-                if (maintenance.length !== 0) {
+                if (await Monitor.isUnderMaintenance(this.id)) {
                     bean.msg = "Monitor under maintenance";
                     bean.status = MAINTENANCE;
                 }
@@ -812,6 +807,11 @@ class Monitor extends BeanModel {
         `, [
             monitorID
         ]);
+    }
+
+    static async isUnderMaintenance(monitorID) {
+        const maintenance = await R.getRow("SELECT COUNT(*) AS count FROM monitor_maintenance mm JOIN maintenance ON mm.maintenance_id = maintenance.id WHERE mm.monitor_id = ? AND datetime(maintenance.start_date) <= datetime('now') AND datetime(maintenance.end_date) >= datetime('now') LIMIT 1", [monitorID]);
+        return maintenance.count !== 0;
     }
 }
 
