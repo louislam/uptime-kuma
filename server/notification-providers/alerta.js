@@ -1,0 +1,67 @@
+const NotificationProvider = require("./notification-provider");
+const { DOWN, UP } = require("../../src/util");
+const axios = require("axios");
+
+class Alerta extends NotificationProvider {
+
+    name = "alerta";
+
+    async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
+        let okMsg = "Sent Successfully.";
+
+        try {
+            let alertaUrl = `${notification.alertaApiEndpoint}`;
+            let config = {
+                headers: {
+                    "Content-Type": "application/json;charset=UTF-8",
+                    "Authorization": "Key " + notification.alertaapiKey,
+                }
+            };
+            let data = {
+                environment: notification.alertaEnvironment,
+                severity: "critical",
+                correlate: [],
+                service: [ "UptimeKuma" ],
+                value: "Timeout",
+                tags: [ "uptimekuma" ],
+                attributes: {},
+                origin: "uptimekuma",
+                type: "exceptionAlert",
+            };
+
+            if (heartbeatJSON == null) {
+                let testdata = Object.assign( {
+                    event: "test",
+                    text: "Testing Successful.",
+                    group: "uptimekuma-test",
+                    resource: "Test",
+                }, data );
+                await axios.post(alertaUrl, testdata, config);
+            } else {
+                let datadup = Object.assign( {
+                    correlate: ["service_up", "service_down"],
+                    group: "uptimekuma-" + monitorJSON["type"],
+                    resource: monitorJSON["name"],
+                }, data );
+
+                if (heartbeatJSON["status"] == DOWN) {
+                    datadup.severity = notification.alertaAlertState; // critical
+                    datadup.event = "service_state";
+                    datadup.text = "Service is down.";
+                    await axios.post(alertaUrl, datadup, config);
+                } else if (heartbeatJSON["status"] == UP) {
+                    datadup.severity = notification.alertaRecoverState; // cleaner
+                    datadup.event = "service_state";
+                    datadup.text = "Service is up.";
+                    await axios.post(alertaUrl, datadup, config);
+                }
+            }
+            return okMsg;
+        } catch (error) {
+            this.throwGeneralAxiosError(error);
+        }
+
+    }
+}
+
+module.exports = Alerta;

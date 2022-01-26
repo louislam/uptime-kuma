@@ -361,4 +361,10 @@ export default {
     smtpDkimHashAlgo: "Hash Algorithm (Optional)",
     smtpDkimheaderFieldNames: "Header Keys to sign (Optional)",
     smtpDkimskipFields: "Header Keys not to sign (Optional)",
+    alerta: 'Alerta',
+    alertaApiEndpoint: 'API Endpoint',
+    alertaEnvironment: 'Environment',
+    alertaApiKey: 'API Key',
+    alertaAlertState: 'Alert State',
+    alertaRecoverState: 'Recover State',
 };
