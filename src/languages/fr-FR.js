@@ -304,4 +304,5 @@ export default {
     steamApiKeyDescription: "Pour surveiller un serveur Steam, vous avez besoin  d'une clé Steam Web-API. Vous pouvez enregistrer votre clé ici : ",
     "Current User": "Utilisateur actuel",
     recent: "Récent",
+    alerta: "Alerta",
 };

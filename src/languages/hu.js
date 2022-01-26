@@ -350,4 +350,5 @@ export default {
     serwersmsAPIPassword: "API jelszó",
     serwersmsPhoneNumber: "Telefonszám",
     serwersmsSenderName: "SMS feladó neve (regisztrált név az oldalon)",
+    alerta: "Alerta",
 };

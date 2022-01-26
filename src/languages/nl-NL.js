@@ -204,4 +204,5 @@ export default {
     PushUrl: "Push URL",
     HeadersInvalidFormat: "The request headers is geen geldige JSON: ",
     BodyInvalidFormat: "De request body is geen geldige JSON: ",
+    alerta: "Alerta",
 };

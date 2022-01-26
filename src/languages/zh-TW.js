@@ -353,4 +353,5 @@ export default {
     serwersmsPhoneNumber: "電話號碼",
     serwersmsSenderName: "SMS 寄件人名稱 (由客戶入口網站註冊)",
     "stackfield": "Stackfield",
+    alerta: "Alerta",
 };

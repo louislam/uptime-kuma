@@ -351,4 +351,5 @@ export default {
     serwersmsPhoneNumber: "휴대전화 번호",
     serwersmsSenderName: "보내는 사람 이름 (registered via customer portal)",
     stackfield: "Stackfield",
+    alerta: "Alerta",
 };

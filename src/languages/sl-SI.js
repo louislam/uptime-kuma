@@ -352,4 +352,5 @@ export default {
     serwersmsPhoneNumber: "Telefonska številka",
     serwersmsSenderName: "Ime SMS pošiljatelja (registrirani prek portala za stranke)",
     "stackfield": "Stackfield",
+    alerta: "Alerta",
 };

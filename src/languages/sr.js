@@ -198,4 +198,5 @@ export default {
     pushbullet: "Pushbullet",
     line: "Line Messenger",
     mattermost: "Mattermost",
+    alerta: "Alerta",
 };

@@ -317,4 +317,5 @@ export default {
     "Cancel": "Отмена",
     "Created:": "Создано:",
     "Show Tags": "Показать тэги",
+    alerta: "Alerta",
 };

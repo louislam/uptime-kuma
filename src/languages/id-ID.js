@@ -280,4 +280,5 @@ export default {
     promosmsPhoneNumber: "Nomor telepon (untuk penerima Polandia Anda dapat melewati kode area)",
     promosmsSMSSender: "Nama Pengirim SMS : Nama pra-registrasi atau salah satu bawaan: InfoSMS, Info SMS, MaxSMS, INFO, SMS",
     "Feishu WebHookUrl": "Feishu WebHookUrl",
+    alerta: "Alerta",
 };

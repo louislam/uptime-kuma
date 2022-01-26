@@ -291,4 +291,5 @@ export default {
     "Internal Room Id": "Internal Room Id",
     matrixDesc1: "你可以在 Matrix 客户端房间设置的高级选项找到 Internal Room Id。格式类似于 !QMdRCpUIfLwsfjxye6:home.server。",
     matrixDesc2: "请不要使用你自己的 Access Token，这将开放你所有的账户权限和你加入的房间权限。你可以创建一个新的用户并邀请它至你允许的的房间中。你可以运行以下命令来获取 Access Token：{0}",
+    alerta: "Alerta",
 };

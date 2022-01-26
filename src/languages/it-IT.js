@@ -361,4 +361,5 @@ export default {
     smtpDkimheaderFieldNames: "Campi Intestazione da firmare (opzionale)",
     smtpDkimskipFields: "Campi Intestazione da non firmare (opzionale)",
     GoogleChat: "Google Chat (solo per Google Workspace)",
+    alerta: "Alerta",
 };

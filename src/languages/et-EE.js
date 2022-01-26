@@ -197,4 +197,5 @@ export default {
     pushbullet: "Pushbullet",
     line: "LINE",
     mattermost: "Mattermost",
+    alerta: "Alerta",
 };

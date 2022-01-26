@@ -360,4 +360,5 @@ export default {
     smtpDkimHashAlgo: "Хеш алгоритъм (по желание)",
     smtpDkimheaderFieldNames: "Хедър ключове за подписване (по желание)",
     smtpDkimskipFields: "Хедър ключове, които да не се подписват (по желание)",
+    alerta: "Alerta",
 };

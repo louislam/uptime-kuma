@@ -361,4 +361,5 @@ export default {
     smtpDkimHashAlgo: "Algorytm Hashowania (Opcjonalne)",
     smtpDkimheaderFieldNames: "Klucze nagłówka do podpisu (Opcjonalne)",
     smtpDkimskipFields: "Klucze nagłówka do pominięcia (Opcjonalne)",
+    alerta: "Alerta",
 };

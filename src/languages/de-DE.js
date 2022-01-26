@@ -350,4 +350,5 @@ export default {
     serwersmsPhoneNumber: "Telefonnummer",
     serwersmsSenderName: "Name des SMS-Absenders (über Kundenportal registriert)",
     "stackfield": "Stackfield",
+    alerta: "Alerta",
 };

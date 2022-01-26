@@ -347,4 +347,5 @@ export default {
     Cancel: "Otkaži",
     "Powered by": "Pokreće",
     Saved: "Spremljeno",
+    alerta: "Alerta",
 };

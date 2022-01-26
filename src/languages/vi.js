@@ -307,4 +307,5 @@ export default {
     steamApiKeyDescription: "Để monitor các Steam Game Server bạn cần một Steam Web-API key. Bạn có thể đăng ký API key tại đây: ",
     "Current User": "User hiện tại",
     recent: "Gần đây",
+    alerta: "Alerta",
 };
