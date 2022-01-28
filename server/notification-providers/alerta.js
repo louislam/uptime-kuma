@@ -50,7 +50,7 @@ class Alerta extends NotificationProvider {
                     datadup.text = "Service " + monitorJSON["type"] + " is down.";
                     await axios.post(alertaUrl, datadup, config);
                 } else if (heartbeatJSON["status"] == UP) {
-                    datadup.severity = notification.alertaRecoverState; // cleaner
+                    datadup.severity = notification.alertaRecoverState; // cleaned
                     datadup.text = "Service " + monitorJSON["type"] + " is up.";
                     await axios.post(alertaUrl, datadup, config);
                 }
