@@ -29,6 +29,7 @@ import WeCom from "./WeCom.vue";
 import GoogleChat from "./GoogleChat.vue";
 import Gorush from "./Gorush.vue";
 import Alerta from "./Alerta.vue";
+import OneBot from "./OneBot.vue";
 
 /**
  * Manage all notification form.
@@ -67,6 +68,7 @@ const NotificationFormList = {
     "GoogleChat": GoogleChat,
     "gorush": Gorush,
     "alerta": Alerta,
+    "OneBot": OneBot,
 };
 
 export default NotificationFormList;

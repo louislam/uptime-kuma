@@ -452,4 +452,10 @@ export default {
     "Domain Name Expiry Notification": "域名到期时通知",
     "Proxy": "代理",
     "Date Created": "创建于",
+    onebotHttpAddress: "OneBot HTTP 地址",
+    onebotMessageType: "OneBot 消息类型",
+    onebotGroupMessage: "群聊",
+    onebotPrivateMessage: "私聊",
+    onebotUserOrGroupId: "群组/用户ID",
+    onebotSafetyTips: "出于安全原因，请务必设置AccessToken",
 };
