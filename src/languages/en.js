@@ -445,4 +445,10 @@ export default {
     "Domain Name Expiry Notification": "Domain Name Expiry Notification",
     "Proxy": "Proxy",
     "Date Created": "Date Created",
+    onebotHttpAddress: "OneBot HTTP Address",
+    onebotMessageType: "OneBot Message Type",
+    onebotGroupMessage: "Group",
+    onebotPrivateMessage: "Private",
+    onebotUserOrGroupId: "Group/User ID",
+    onebotSafetyTips: "For safety, must set access token",
 };
