@@ -40,19 +40,18 @@ class Alerta extends NotificationProvider {
             } else {
                 let datadup = Object.assign( {
                     correlate: ["service_up", "service_down"],
+                    event: monitorJSON["type"],
                     group: "uptimekuma-" + monitorJSON["type"],
                     resource: monitorJSON["name"],
                 }, data );
 
                 if (heartbeatJSON["status"] == DOWN) {
                     datadup.severity = notification.alertaAlertState; // critical
-                    datadup.event = "service_state";
-                    datadup.text = "Service is down.";
+                    datadup.text = "Service " + monitorJSON["type"] + " is down.";
                     await axios.post(alertaUrl, datadup, config);
                 } else if (heartbeatJSON["status"] == UP) {
                     datadup.severity = notification.alertaRecoverState; // cleaner
-                    datadup.event = "service_state";
-                    datadup.text = "Service is up.";
+                    datadup.text = "Service " + monitorJSON["type"] + " is up.";
                     await axios.post(alertaUrl, datadup, config);
                 }
             }
