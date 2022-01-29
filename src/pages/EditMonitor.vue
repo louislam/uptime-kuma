@@ -552,11 +552,7 @@ export default {
          * @returns {boolean}
          */
         friendlyNameRequired() {
-            if (this.friendlyNameRequiredOptions.includes(this.monitor.type)) {
-                return true;
-            } else {
-                return false;
-            }
+            return this.friendlyNameRequiredOptions.includes(this.monitor.type);
         }
     },
 };
