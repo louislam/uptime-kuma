@@ -497,13 +497,7 @@ export default {
 
             // Check if friendly name has been supplied. If not, use URL
             // or hostname
-            if (this.monitor.name === "") {
-                if (this.monitor.hostname === null || this.monitor.hostname === "") {
-                    this.monitor.name = this.monitor.url;
-                } else {
-                    this.monitor.name = this.monitor.hostname;
-                }
-            }
+            this.monitor.name = this.monitor.name || this.monitor.hostname || this.monitor.url;
 
             if (!this.isInputValid()) {
                 this.processing = false;
@@ -554,14 +548,14 @@ export default {
 
         /**
          * Is the friendly name required for the selected option.
-         * Returns true if it is else null
-         * @returns {null|true}
+         * Returns true if it is else false
+         * @returns {boolean}
          */
         friendlyNameRequired() {
             if (this.friendlyNameRequiredOptions.includes(this.monitor.type)) {
                 return true;
             } else {
-                return null;
+                return false;
             }
         }
     },
