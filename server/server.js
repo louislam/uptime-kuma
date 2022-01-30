@@ -594,6 +594,7 @@ exports.entryPage = "dashboard";
                 bean.keyword = monitor.keyword;
                 bean.ignoreTls = monitor.ignoreTls;
                 bean.upsideDown = monitor.upsideDown;
+                bean.noNotificationIfMasterDown = monitor.noNotificationIfMasterDown;
                 bean.maxredirects = monitor.maxredirects;
                 bean.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
                 bean.dns_resolve_type = monitor.dns_resolve_type;

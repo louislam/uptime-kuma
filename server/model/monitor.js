@@ -72,6 +72,7 @@ class Monitor extends BeanModel {
             keyword: this.keyword,
             ignoreTls: this.getIgnoreTls(),
             upsideDown: this.isUpsideDown(),
+            noNotificationIfMasterDown: this.getNoNotificationIfMasterDown(),
             maxredirects: this.maxredirects,
             accepted_statuscodes: this.getAcceptedStatuscodes(),
             dns_resolve_type: this.dns_resolve_type,
@@ -106,6 +107,14 @@ class Monitor extends BeanModel {
      */
     isUpsideDown() {
         return Boolean(this.upsideDown);
+    }
+
+    /**
+     * Parse to boolean
+     * @returns {boolean}
+     */
+    getNoNotificationIfMasterDown() {
+        return Boolean(this.noNotificationIfMasterDown);
     }
 
     getAcceptedStatuscodes() {
@@ -148,7 +157,10 @@ class Monitor extends BeanModel {
                 bean.duration = 0;
             }
 
+            let isDegraded = false;
+
             try {
+                isDegraded = await Monitor.isDegraded(this.id);
                 if (this.type === "http" || this.type === "keyword") {
                     // Do not do any queries/high loading things before the "bean.ping"
                     let startTime = dayjs().valueOf();
@@ -363,8 +375,8 @@ class Monitor extends BeanModel {
 
                 retries = 0;
 
-                if (bean.status === UP && await Monitor.isDegraded(this.id)) {
-                    bean.msg = "Monitor is degraded, because at least one dependent monitor is DOWN";
+                if (bean.status === UP && isDegraded) {
+                    bean.msg = "Monitor is degraded, because at least one master monitor is pending, down or degraded";
                     bean.status = DEGRADED;
                 }
 
@@ -381,6 +393,12 @@ class Monitor extends BeanModel {
                     retries++;
                     bean.status = PENDING;
                 }
+
+                // Do not change this text!
+                // Condition below and in api-router depends on it
+                if (isDegraded && bean.status === DOWN) {
+                    bean.msg = "Monitor is down and degraded";
+                }
             }
 
             let beatInterval = this.interval;
@@ -393,7 +411,10 @@ class Monitor extends BeanModel {
             if (isImportant) {
                 bean.important = true;
 
-                if (Monitor.isImportantForNotification(isFirstBeat, previousBeat?.status, bean.status)) {
+                if (this.noNotificationIfMasterDown && isDegraded || previousBeat.msg === "Monitor is down and degraded") {
+                    debug(`[${this.name}] will not sendNotification because it is/was degraded`);
+                }
+                else if (Monitor.isImportantForNotification(isFirstBeat, previousBeat?.status, bean.status)) {
                     debug(`[${this.name}] sendNotification`);
                     await Monitor.sendNotification(isFirstBeat, this, bean);
                 }
@@ -801,7 +822,7 @@ class Monitor extends BeanModel {
 
     static async getPreviousHeartbeat(monitorID) {
         return await R.getRow(`
-            SELECT status, time FROM heartbeat
+            SELECT msg, status, time FROM heartbeat
             WHERE id = (select MAX(id) from heartbeat where monitor_id = ?)
         `, [
             monitorID
@@ -811,7 +832,7 @@ class Monitor extends BeanModel {
     static async isDegraded(monitorID) {
         const monitors = await R.getAll(`
             SELECT hb.id FROM heartbeat hb JOIN dependent_monitors dm on hb.monitor_id = dm.depends_on JOIN (SELECT MAX(id) AS id FROM heartbeat GROUP BY monitor_id) USING (id)
-            WHERE dm.monitor_id = ? AND hb.status = 0
+            WHERE dm.monitor_id = ? AND (hb.status = 0 OR hb.status = 2 OR hb.status = 4)
         `, [
             monitorID
         ]);

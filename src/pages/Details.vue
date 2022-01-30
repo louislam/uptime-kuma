@@ -104,6 +104,14 @@
             </div>
 
             <div class="shadow-box table-shadow-box">
+                <label for="dependent-monitors" class="form-label" style="margin-top: 20px; font-weight: bold">{{ $t("monitorDependsOn") }}:</label>
+                <br>
+                <button v-for="monitor in this.dependentMonitors" class="btn btn-monitor" style="margin: 5px; cursor: auto; color: white; font-weight: 500">
+                    {{ monitor }}
+                </button>
+            </div>
+
+            <div class="shadow-box table-shadow-box">
                 <div class="dropdown dropdown-clear-data">
                     <button class="btn btn-sm btn-outline-danger dropdown-toggle" type="button" data-bs-toggle="dropdown">
                         <font-awesome-icon icon="trash" /> {{ $t("Clear Data") }}
@@ -152,14 +160,6 @@
                         :options="paginationConfig"
                     />
                 </div>
-            </div>
-
-            <div class="shadow-box table-shadow-box">
-                <label for="dependent-monitors" class="form-label" style="margin-top: 20px">{{ $t("Dependent Monitors") }}</label>
-                <br>
-                <button v-for="monitor in this.dependentMonitors" class="btn btn-monitor" style="margin: 5px; cursor: auto; color: white; font-weight: bold">
-                    {{ monitor }}
-                </button>
             </div>
 
             <Confirm ref="confirmPause" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="pauseMonitor">

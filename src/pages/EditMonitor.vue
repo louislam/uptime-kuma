@@ -156,6 +156,16 @@
                                 </div>
                             </div>
 
+                            <div v-if="dependentMonitors.length !== 0" class="my-3 form-check">
+                                <input id="send-notification" v-model="monitor.noNotificationIfMasterDown" class="form-check-input" type="checkbox">
+                                <label class="form-check-label" for="send-notification">
+                                    {{ $t("sendNotificationTitle") }}
+                                </label>
+                                <div class="form-text">
+                                    {{ $t("sendNotificationDescription") }}
+                                </div>
+                            </div>
+
                             <!-- HTTP / Keyword only -->
                             <template v-if="monitor.type === 'http' || monitor.type === 'keyword' ">
                                 <div class="my-3">
@@ -200,14 +210,13 @@
                                     track-by="id"
                                     label="name"
                                     :multiple="true"
-                                    :allow-empty="false"
                                     :close-on-select="false"
                                     :clear-on-select="false"
                                     :preserve-search="true"
                                     :placeholder="$t('Pick Dependent Monitors...')"
                                     :preselect-first="false"
                                     :max-height="600"
-                                    :taggable="false"
+                                    :taggable="true"
                                 ></VueMultiselect>
 
                                 <div class="form-text">
@@ -476,6 +485,7 @@ export default {
                     notificationIDList: {},
                     ignoreTls: false,
                     upsideDown: false,
+                    noNotificationIfMasterDown: false,
                     maxredirects: 10,
                     accepted_statuscodes: ["200-299"],
                     dns_resolve_type: "A",

@@ -1,6 +1,9 @@
 -- You should not modify if this have pushed to Github, unless it does serious wrong with the db.
 BEGIN TRANSACTION;
 
+ALTER TABLE monitor
+    ADD no_notification_if_master_down BOOLEAN default 0 NOT NULL;
+
 CREATE TABLE dependent_monitors
 (
     id             INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
