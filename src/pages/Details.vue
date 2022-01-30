@@ -154,6 +154,14 @@
                 </div>
             </div>
 
+            <div class="shadow-box table-shadow-box">
+                <label for="dependent-monitors" class="form-label" style="margin-top: 20px">{{ $t("Dependent Monitors") }}</label>
+                <br>
+                <button v-for="monitor in this.dependentMonitors" class="btn btn-monitor" style="margin: 5px; cursor: auto; color: white; font-weight: bold">
+                    {{ monitor }}
+                </button>
+            </div>
+
             <Confirm ref="confirmPause" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="pauseMonitor">
                 {{ $t("pauseMonitorMsg") }}
             </Confirm>
@@ -212,6 +220,7 @@ export default {
                 hideCount: true,
                 chunksNavigation: "scroll",
             },
+            dependentMonitors: [],
         };
     },
     computed: {
@@ -286,9 +295,19 @@ export default {
         },
     },
     mounted() {
-
+        this.init();
     },
     methods: {
+        init() {
+            this.$root.getSocket().emit("getDependentMonitors", this.$route.params.id, (res) => {
+                if (res.ok) {
+                    this.dependentMonitors = Object.values(res.monitors).map(monitor => monitor.name);
+                } else {
+                    toast.error(res.msg);
+                }
+            });
+        },
+        
         testNotification() {
             this.$root.getSocket().emit("testNotification", this.monitor.id);
             toast.success("Test notification is requested.");
@@ -497,6 +516,10 @@ table {
 
 .tags > div:first-child {
     margin-left: 0 !important;
+}
+
+.btn-monitor {
+    background-color: #5cdd8b;
 }
 
 </style>

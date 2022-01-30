@@ -34,7 +34,7 @@ export default {
                 return "primary"
             }
 
-            if (this.lastHeartBeat.status === 2) {
+            if (this.lastHeartBeat.status === 2 || this.lastHeartBeat.status === 4) {
                 return "warning"
             }
 

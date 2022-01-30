@@ -189,6 +189,32 @@
                                 </div>
                             </template>
 
+                            <!-- Dependent Monitors -->
+                            <div class="my-3">
+                                <label for="dependent-monitors" class="form-label">{{ $t("Dependent Monitors") }}</label>
+
+                                <VueMultiselect
+                                    id="dependent-monitors"
+                                    v-model="dependentMonitors"
+                                    :options="dependentMonitorsOptions"
+                                    track-by="id"
+                                    label="name"
+                                    :multiple="true"
+                                    :allow-empty="false"
+                                    :close-on-select="false"
+                                    :clear-on-select="false"
+                                    :preserve-search="true"
+                                    :placeholder="$t('Pick Dependent Monitors...')"
+                                    :preselect-first="false"
+                                    :max-height="600"
+                                    :taggable="false"
+                                ></VueMultiselect>
+
+                                <div class="form-text">
+                                    {{ $t("dependentMonitorsDescription") }}
+                                </div>
+                            </div>
+
                             <div class="my-3">
                                 <tags-manager ref="tagsManager" :pre-selected-tags="monitor.tags"></tags-manager>
                             </div>
@@ -317,6 +343,8 @@ export default {
             },
             acceptedStatusCodeOptions: [],
             dnsresolvetypeOptions: [],
+            dependentMonitors: [],
+            dependentMonitorsOptions: [],
 
             // Source: https://digitalfortress.tech/tips/top-15-commonly-used-regex/
             ipRegexPattern: "((^\\s*((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\\s*$)|(^\\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:)))(%.+)?\\s*$))",
@@ -392,6 +420,17 @@ export default {
     mounted() {
         this.init();
 
+        this.$root.getMonitorList((res) => {
+            if (res.ok) {
+                Object.values(this.$root.monitorList).filter(monitor => monitor.id != this.$route.params.id).map(monitor => {
+                    this.dependentMonitorsOptions.push({
+                        id: monitor.id,
+                        name: monitor.name,
+                    });
+                });
+            }
+        });
+
         let acceptedStatusCodeOptions = [
             "100-199",
             "200-299",
@@ -422,6 +461,8 @@ export default {
     },
     methods: {
         init() {
+            this.dependentMonitors = [];
+            
             if (this.isAdd) {
 
                 this.monitor = {
@@ -450,6 +491,16 @@ export default {
                 this.$root.getSocket().emit("getMonitor", this.$route.params.id, (res) => {
                     if (res.ok) {
                         this.monitor = res.monitor;
+
+                        this.$root.getSocket().emit("getDependentMonitors", this.$route.params.id, (res) => {
+                            if (res.ok) {
+                                Object.values(res.monitors).map(monitor => {
+                                    this.dependentMonitors.push(monitor);
+                                });
+                            } else {
+                                toast.error(res.msg);
+                            }
+                        });
 
                         // Handling for monitors that are created before 1.7.0
                         if (this.monitor.retryInterval === 0) {
@@ -506,10 +557,12 @@ export default {
                     if (res.ok) {
                         await this.$refs.tagsManager.submit(res.monitorID);
 
-                        toast.success(res.msg);
-                        this.processing = false;
-                        this.$root.getMonitorList();
-                        this.$router.push("/dashboard/" + res.monitorID);
+                        await this.addDependentMonitors(res.monitorID, () => {
+                            toast.success(res.msg);
+                            this.processing = false;
+                            this.$root.getMonitorList();
+                            this.$router.push("/dashboard/" + res.monitorID);
+                        });
                     } else {
                         toast.error(res.msg);
                         this.processing = false;
@@ -519,12 +572,25 @@ export default {
             } else {
                 await this.$refs.tagsManager.submit(this.monitor.id);
 
-                this.$root.getSocket().emit("editMonitor", this.monitor, (res) => {
-                    this.processing = false;
-                    this.$root.toastRes(res);
-                    this.init();
+                this.$root.getSocket().emit("editMonitor", this.monitor, async (res) => {
+                    await this.addDependentMonitors(this.monitor.id, () => {
+                        this.processing = false;
+                        this.$root.toastRes(res);
+                        this.init();
+                    });
                 });
             }
+        },
+
+        async addDependentMonitors(monitorID, callback) {
+            await this.$root.addDependentMonitors(monitorID, this.dependentMonitors, async (res) => {
+                if (!res.ok) {
+                    toast.error(res.msg);
+                } else {
+                    this.$root.getMonitorList();
+                }
+                callback();
+            });
         },
 
         // Added a Notification Event

@@ -5,7 +5,7 @@ const server = require("../server");
 const apicache = require("../modules/apicache");
 const Monitor = require("../model/monitor");
 const dayjs = require("dayjs");
-const { UP, flipStatus, debug } = require("../../src/util");
+const { UP, flipStatus, debug, DEGRADED } = require("../../src/util");
 let router = express.Router();
 
 let cache = apicache.middleware;
@@ -51,6 +51,11 @@ router.get("/api/push/:pushToken", async (request, response) => {
             duration = dayjs(bean.time).diff(dayjs(previousHeartbeat.time), "second");
         }
 
+        if (status === UP && await Monitor.isDegraded(monitor.id)) {
+            msg = "Monitor is degraded, because at least one dependent monitor is DOWN";
+            status = DEGRADED;
+        }
+
         debug("PreviousStatus: " + previousStatus);
         debug("Current Status: " + status);
 
@@ -70,7 +75,7 @@ router.get("/api/push/:pushToken", async (request, response) => {
             ok: true,
         });
 
-        if (bean.important) {
+        if (Monitor.isImportantForNotification(isFirstBeat, previousStatus, status)) {
             await Monitor.sendNotification(isFirstBeat, monitor, bean);
         }
 

@@ -625,6 +625,38 @@ exports.entryPage = "dashboard";
             }
         });
 
+        // Add a new dependent_monitors
+        socket.on("addDependentMonitors", async (monitorID, monitors, callback) => {
+            try {
+                checkLogin(socket);
+
+                await R.exec("DELETE FROM dependent_monitors WHERE monitor_id = ?", [
+                    monitorID
+                ]);
+
+                for await (const monitor of monitors) {
+                    let bean = R.dispense("dependent_monitors");
+
+                    bean.import({
+                        monitor_id: monitorID,
+                        depends_on: monitor.id
+                    });
+                    await R.store(bean);
+                }
+
+                callback({
+                    ok: true,
+                    msg: "Added Successfully.",
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
         socket.on("getMonitorList", async (callback) => {
             try {
                 checkLogin(socket);
@@ -655,6 +687,29 @@ exports.entryPage = "dashboard";
                 callback({
                     ok: true,
                     monitor: await bean.toJSON(),
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("getDependentMonitors", async (monitorID, callback) => {
+            try {
+                checkLogin(socket);
+
+                console.log(`Get dependent Monitors for Monitor: ${monitorID} User ID: ${socket.userID}`);
+
+                let monitors = await R.getAll("SELECT monitor.id, monitor.name FROM dependent_monitors dm JOIN monitor ON dm.depends_on = monitor.id WHERE dm.monitor_id = ? ", [
+                    monitorID,
+                ]);
+
+                callback({
+                    ok: true,
+                    monitors,
                 });
 
             } catch (e) {

@@ -6,7 +6,7 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
-const { debug, UP, DOWN, PENDING, flipStatus, TimeLogger } = require("../../src/util");
+const { debug, UP, DOWN, PENDING, DEGRADED, flipStatus, TimeLogger } = require("../../src/util");
 const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, errorLog } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
@@ -20,6 +20,7 @@ const apicache = require("../modules/apicache");
  *      0 = DOWN
  *      1 = UP
  *      2 = PENDING
+ *      4 = DEGRADED
  */
 class Monitor extends BeanModel {
 
@@ -362,6 +363,11 @@ class Monitor extends BeanModel {
 
                 retries = 0;
 
+                if (bean.status === UP && await Monitor.isDegraded(this.id)) {
+                    bean.msg = "Monitor is degraded, because at least one dependent monitor is DOWN";
+                    bean.status = DEGRADED;
+                }
+
             } catch (error) {
 
                 bean.msg = error.message;
@@ -387,8 +393,13 @@ class Monitor extends BeanModel {
             if (isImportant) {
                 bean.important = true;
 
-                debug(`[${this.name}] sendNotification`);
-                await Monitor.sendNotification(isFirstBeat, this, bean);
+                if (Monitor.isImportantForNotification(isFirstBeat, previousBeat?.status, bean.status)) {
+                    debug(`[${this.name}] sendNotification`);
+                    await Monitor.sendNotification(isFirstBeat, this, bean);
+                }
+                else {
+                    debug(`[${this.name}] will not sendNotification because it is not required`);
+                }
 
                 // Clear Status Page Cache
                 debug(`[${this.name}] apicache clear`);
@@ -405,6 +416,8 @@ class Monitor extends BeanModel {
                     beatInterval = this.retryInterval;
                 }
                 console.warn(`Monitor #${this.id} '${this.name}': Pending: ${bean.msg} | Max retries: ${this.maxretries} | Retry: ${retries} | Retry Interval: ${beatInterval} seconds | Type: ${this.type}`);
+            } else if (bean.status === DEGRADED) {
+                console.warn(`Monitor #${this.id} '${this.name}': Degraded: ${bean.msg} | Type: ${this.type}`);
             } else {
                 console.warn(`Monitor #${this.id} '${this.name}': Failing: ${bean.msg} | Interval: ${beatInterval} seconds | Type: ${this.type}`);
             }
@@ -659,11 +672,42 @@ class Monitor extends BeanModel {
         // DOWN -> PENDING = this case not exists
         // DOWN -> DOWN = not important
         // * DOWN -> UP = important
-        let isImportant = isFirstBeat ||
+        // * DEGRADED -> DOWN = important
+        // * DEGRADED -> UP = important
+        // * DOWN -> DEGRADED = important
+        // * UP -> DEGRADED = important
+        // DEGRADED -> PENDING = not important
+        return isFirstBeat ||
+            (previousBeatStatus === DEGRADED && currentBeatStatus === DOWN) ||
+            (previousBeatStatus === DEGRADED && currentBeatStatus === UP) ||
+            (previousBeatStatus === DOWN && currentBeatStatus === DEGRADED) ||
+            (previousBeatStatus === UP && currentBeatStatus === DEGRADED) ||
             (previousBeatStatus === UP && currentBeatStatus === DOWN) ||
             (previousBeatStatus === DOWN && currentBeatStatus === UP) ||
             (previousBeatStatus === PENDING && currentBeatStatus === DOWN);
-        return isImportant;
+    }
+
+    static isImportantForNotification(isFirstBeat, previousBeatStatus, currentBeatStatus) {
+        // * ? -> ANY STATUS = important [isFirstBeat]
+        // UP -> PENDING = not important
+        // * UP -> DOWN = important
+        // UP -> UP = not important
+        // PENDING -> PENDING = not important
+        // * PENDING -> DOWN = important
+        // PENDING -> UP = not important
+        // DOWN -> PENDING = this case not exists
+        // DOWN -> DOWN = not important
+        // * DOWN -> UP = important
+        // * DEGRADED -> DOWN = important
+        // DEGRADED -> UP = not important
+        // DOWN -> DEGRADED = not important
+        // UP -> DEGRADED = not important
+        // DEGRADED -> PENDING = not important
+        return isFirstBeat ||
+            (previousBeatStatus === DEGRADED && currentBeatStatus === DOWN) ||
+            (previousBeatStatus === UP && currentBeatStatus === DOWN) ||
+            (previousBeatStatus === DOWN && currentBeatStatus === UP) ||
+            (previousBeatStatus === PENDING && currentBeatStatus === DOWN);
     }
 
     static async sendNotification(isFirstBeat, monitor, bean) {
@@ -762,6 +806,17 @@ class Monitor extends BeanModel {
         `, [
             monitorID
         ]);
+    }
+
+    static async isDegraded(monitorID) {
+        const monitors = await R.getAll(`
+            SELECT hb.id FROM heartbeat hb JOIN dependent_monitors dm on hb.monitor_id = dm.depends_on JOIN (SELECT MAX(id) AS id FROM heartbeat GROUP BY monitor_id) USING (id)
+            WHERE dm.monitor_id = ? AND hb.status = 0
+        `, [
+            monitorID
+        ]);
+
+        return monitors.length !== 0;
     }
 }
 

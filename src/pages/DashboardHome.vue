@@ -16,6 +16,10 @@
                         <span class="num text-danger">{{ stats.down }}</span>
                     </div>
                     <div class="col">
+                        <h3>{{ $t("Degraded") }}</h3>
+                        <span class="num text-warning">{{ stats.degraded }}</span>
+                    </div>
+                    <div class="col">
                         <h3>{{ $t("Unknown") }}</h3>
                         <span class="num text-secondary">{{ stats.unknown }}</span>
                     </div>
@@ -93,6 +97,7 @@ export default {
             let result = {
                 up: 0,
                 down: 0,
+                degraded: 0,
                 unknown: 0,
                 pause: 0,
             };
@@ -110,6 +115,8 @@ export default {
                         result.down++;
                     } else if (beat.status === 2) {
                         result.up++;
+                    } else if (beat.status === 4) {
+                        result.degraded++;
                     } else {
                         result.unknown++;
                     }

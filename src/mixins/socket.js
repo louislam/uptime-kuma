@@ -317,6 +317,14 @@ export default {
             socket.emit("deleteMonitor", monitorID, callback);
         },
 
+        addDependentMonitors(monitorID, monitors, callback) {
+            socket.emit("addDependentMonitors", monitorID, monitors, callback);
+        },
+
+        getDependentMonitors(monitorID, callback) {
+            socket.emit("getDependentMonitors", monitorID, callback);
+        },
+
         clearData() {
             console.log("reset heartbeat list");
             this.heartbeatList = {};
@@ -383,6 +391,11 @@ export default {
                 } else if (lastHeartBeat.status === 2) {
                     result[monitorID] = {
                         text: this.$t("Pending"),
+                        color: "warning",
+                    };
+                } else if (lastHeartBeat.status === 4) {
+                    result[monitorID] = {
+                        text: this.$t("Degraded"),
                         color: "warning",
                     };
                 } else {
