@@ -54,7 +54,7 @@ export default {
     "Max. Redirects": "Max. Weiterleitungen",
     maxRedirectDescription: "Maximale Anzahl von Weiterleitungen, denen gefolgt werden soll. Auf 0 setzen, um Weiterleitungen zu deaktivieren.",
     "Accepted Status Codes": "Erlaubte HTTP-Statuscodes",
-    acceptedStatusCodesDescription: "Wähle die Statuscodes aus, welche trotzdem als erfolgreich gelten sollen.",
+    acceptedStatusCodesDescription: "Statuscodes auswählen, die als erfolgreiche Verbindung gelten sollen.",
     Save: "Speichern",
     Notifications: "Benachrichtigungen",
     "Not available, please setup.": "Nicht verfügbar, bitte einrichten.",
