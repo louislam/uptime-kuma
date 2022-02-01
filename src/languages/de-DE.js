@@ -163,7 +163,7 @@ export default {
     Pink: "Pink",
     "Search...": "Suchen...",
     "Heartbeat Retry Interval": "Prüfzeitpunkt-Wiederholungsintervall",
-    retryCheckEverySecond: "Versuche alle {0} Sekunden",
+    retryCheckEverySecond: "Alle {0} Sekunden neu versuchen",
     "Import Backup": "Backup importieren",
     "Export Backup": "Backup exportieren",
     "Avg. Ping": "Durchschn. Ping",
