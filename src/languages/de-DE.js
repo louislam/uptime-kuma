@@ -214,7 +214,7 @@ export default {
     chatIDNotFound: "Chat-ID wurde nicht gefunden: bitte sende zuerst eine Nachricht an diesen Bot",
     "Post URL": "Post URL",
     "Content Type": "Content Type",
-    webhookJsonDesc: "{0} ist gut für alle modernen HTTP-Server sowie Express.js",
+    webhookJsonDesc: "{0} ist gut für alle modernen HTTP-Server, wie z.B. Express.js, geeignet",
     webhookFormDataDesc: "{multipart} ist gut für PHP. Die JSON muss mit {decodeFunction} verarbeitet werden",
     secureOptionNone: "Keine / STARTTLS (25, 587)",
     secureOptionTLS: "TLS (465)",
