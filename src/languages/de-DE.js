@@ -62,7 +62,7 @@ export default {
     Light: "Hell",
     Dark: "Dunkel",
     Auto: "Auto",
-    "Theme - Heartbeat Bar": "Thema - Zeitleiste",
+    "Theme - Heartbeat Bar": "Erscheinungsbild - Zeitleiste",
     Normal: "Normal",
     Bottom: "Unten",
     None: "Keine",
