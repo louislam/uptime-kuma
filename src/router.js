@@ -4,11 +4,15 @@ import Layout from "./layouts/Layout.vue";
 import Dashboard from "./pages/Dashboard.vue";
 import DashboardHome from "./pages/DashboardHome.vue";
 import Details from "./pages/Details.vue";
+import IncidentDetails from "./pages/IncidentDetails.vue";
 import EditMonitor from "./pages/EditMonitor.vue";
+import EditIncident from "./pages/EditIncident.vue";
 import List from "./pages/List.vue";
 const Settings = () => import("./pages/Settings.vue");
 import Setup from "./pages/Setup.vue";
 const StatusPage = () => import("./pages/StatusPage.vue");
+const IncidentPage = () => import("./pages/IncidentPage.vue");
+const IncidentsPage = () => import("./pages/IncidentsPage.vue");
 import Entry from "./pages/Entry.vue";
 
 import Appearance from "./components/settings/Appearance.vue";
@@ -41,7 +45,7 @@ const routes = [
                         component: DashboardHome,
                         children: [
                             {
-                                path: "/dashboard/:id",
+                                path: "/dashboard/monitor/:id",
                                 component: EmptyLayout,
                                 children: [
                                     {
@@ -49,14 +53,32 @@ const routes = [
                                         component: Details,
                                     },
                                     {
-                                        path: "/edit/:id",
+                                        path: "/editMonitor/:id",
                                         component: EditMonitor,
                                     },
                                 ],
                             },
                             {
-                                path: "/add",
+                                path: "/dashboard/incident/:id",
+                                component: EmptyLayout,
+                                children: [
+                                    {
+                                        path: "",
+                                        component: IncidentDetails,
+                                    },
+                                    {
+                                        path: "/editIncident/:id",
+                                        component: EditIncident,
+                                    },
+                                ],
+                            },
+                            {
+                                path: "/addMonitor",
                                 component: EditMonitor,
+                            },
+                            {
+                                path: "/addIncident",
+                                component: EditIncident,
                             },
                             {
                                 path: "/list",
@@ -113,7 +135,21 @@ const routes = [
     },
     {
         path: "/status",
-        component: StatusPage,
+        component: EmptyLayout,
+        children: [
+            {
+                path: "",
+                component: StatusPage,
+            },
+            {
+                path: "/incident/:id",
+                component: IncidentPage,
+            },
+            {
+                path: "/incidents",
+                component: IncidentsPage,
+            },
+        ],
     },
 ];
 

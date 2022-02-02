@@ -50,11 +50,6 @@
                     {{ $t("Discard") }}
                 </button>
 
-                <button class="btn btn-primary btn-add-group me-2" @click="createIncident">
-                    <font-awesome-icon icon="bullhorn" />
-                    {{ $t("Create Incident") }}
-                </button>
-
                 <!--
                 <button v-if="isPublished" class="btn btn-light me-2" @click="">
                     <font-awesome-icon icon="save" />
@@ -91,58 +86,36 @@
             </div>
         </div>
 
-        <!-- Incident -->
-        <div v-if="incident !== null" class="shadow-box alert mb-4 p-4 incident" role="alert" :class="incidentClass">
-            <strong v-if="editIncidentMode">{{ $t("Title") }}:</strong>
-            <Editable v-model="incident.title" tag="h4" :contenteditable="editIncidentMode" :noNL="true" class="alert-heading" />
+        <!-- Incidents -->
+        <template v-if="incidents.length">
+        <div v-for="incident in sortedIncidentsList" class="shadow-box alert mb-4 p-4 incident mt-4 position-relative" role="alert">
+            <div class="item">
+                <div class="row">
+                    <div class="col-1 col-md-1 d-flex justify-content-center align-items-center">
+                        <font-awesome-icon v-if="incident.style === 'info'" icon="info-circle"
+                                           class="incident-icon incident-bg-info"/>
+                        <font-awesome-icon v-if="incident.style === 'warning'" icon="exclamation-triangle"
+                                           class="incident-icon incident-bg-warning"/>
+                        <font-awesome-icon v-if="incident.style === 'critical'" icon="exclamation-circle"
+                                           class="incident-icon incident-bg-danger"/>
+                    </div>
+                    <div class="col-11 col-md-11">
+                        <router-link :to="'/incident/' + incident.id">
+                            <h4 class="alert-heading">{{ incident.title }}</h4>
+                        </router-link>
+                        <div class="content">{{ incident.description }}</div>
 
-            <strong v-if="editIncidentMode">{{ $t("Content") }}:</strong>
-            <Editable v-model="incident.content" tag="div" :contenteditable="editIncidentMode" class="content" />
-
-            <!-- Incident Date -->
-            <div class="date mt-3">
-                {{ $t("Created") }}: {{ $root.datetime(incident.createdDate) }} ({{ dateFromNow(incident.createdDate) }})<br />
-                <span v-if="incident.lastUpdatedDate">
-                    {{ $t("Last Updated") }}: {{ $root.datetime(incident.lastUpdatedDate) }} ({{ dateFromNow(incident.lastUpdatedDate) }})
-                </span>
-            </div>
-
-            <div v-if="editMode" class="mt-3">
-                <button v-if="editIncidentMode" class="btn btn-light me-2" @click="postIncident">
-                    <font-awesome-icon icon="bullhorn" />
-                    {{ $t("Post") }}
-                </button>
-
-                <button v-if="!editIncidentMode && incident.id" class="btn btn-light me-2" @click="editIncident">
-                    <font-awesome-icon icon="edit" />
-                    {{ $t("Edit") }}
-                </button>
-
-                <button v-if="editIncidentMode" class="btn btn-light me-2" @click="cancelIncident">
-                    <font-awesome-icon icon="times" />
-                    {{ $t("Cancel") }}
-                </button>
-
-                <div v-if="editIncidentMode" class="dropdown d-inline-block me-2">
-                    <button id="dropdownMenuButton1" class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        {{ $t("Style") }}: {{ $t(incident.style) }}
-                    </button>
-                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                        <li><a class="dropdown-item" href="#" @click="incident.style = 'info'">{{ $t("info") }}</a></li>
-                        <li><a class="dropdown-item" href="#" @click="incident.style = 'warning'">{{ $t("warning") }}</a></li>
-                        <li><a class="dropdown-item" href="#" @click="incident.style = 'danger'">{{ $t("danger") }}</a></li>
-                        <li><a class="dropdown-item" href="#" @click="incident.style = 'primary'">{{ $t("primary") }}</a></li>
-                        <li><a class="dropdown-item" href="#" @click="incident.style = 'light'">{{ $t("light") }}</a></li>
-                        <li><a class="dropdown-item" href="#" @click="incident.style = 'dark'">{{ $t("dark") }}</a></li>
-                    </ul>
+                        <!-- Incident Date -->
+                        <div class="date mt-3">
+                            {{ $t("Opened") }}: {{ $root.datetime(incident.createdDate) }} ({{
+                                dateFromNow(incident.createdDate)
+                            }})<br/>
+                        </div>
+                    </div>
                 </div>
-
-                <button v-if="!editIncidentMode && incident.id" class="btn btn-light me-2" @click="unpinIncident">
-                    <font-awesome-icon icon="unlink" />
-                    {{ $t("Unpin") }}
-                </button>
             </div>
         </div>
+        </template>
 
         <!-- Overall Status -->
         <div class="shadow-box list  p-4 overall-status mb-4">
@@ -152,9 +125,9 @@
             </div>
 
             <template v-else>
-                <div v-if="allUp">
-                    <font-awesome-icon icon="check-circle" class="ok" />
-                    {{ $t("All Systems Operational") }}
+                <div v-if="allDown">
+                    <font-awesome-icon icon="times-circle" class="danger" />
+                    {{ $t("Degraded Service") }}
                 </div>
 
                 <div v-else-if="partialDown">
@@ -162,9 +135,9 @@
                     {{ $t("Partially Degraded Service") }}
                 </div>
 
-                <div v-else-if="allDown">
-                    <font-awesome-icon icon="times-circle" class="danger" />
-                    {{ $t("Degraded Service") }}
+                <div v-else-if="allUp">
+                    <font-awesome-icon icon="check-circle" class="ok" />
+                    {{ $t("All Systems Operational") }}
                 </div>
 
                 <div v-else>
@@ -193,7 +166,7 @@
                     </select>
                 </div>
                 <div v-else class="text-center">
-                    {{ $t("No monitors available.") }}  <router-link to="/add">{{ $t("Add one") }}</router-link>
+                    {{ $t("No monitors available.") }}  <router-link to="/addMonitor">{{ $t("Add one") }}</router-link>
                 </div>
             </div>
         </div>
@@ -207,6 +180,10 @@
             <PublicGroupList :edit-mode="enableEditMode" />
         </div>
 
+        <div class="mb-4">
+            <PublicIncidentsList />
+        </div>
+
         <footer class="mt-5 mb-4">
             {{ $t("Powered by") }} <a target="_blank" href="https://github.com/louislam/uptime-kuma">{{ $t("Uptime Kuma" ) }}</a>
         </footer>
@@ -216,6 +193,7 @@
 <script>
 import axios from "axios";
 import PublicGroupList from "../components/PublicGroupList.vue";
+import PublicIncidentsList from "../components/PublicIncidentsList.vue";
 import ImageCropUpload from "vue-image-crop-upload";
 import { STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_PARTIAL_DOWN, UP } from "../util.ts";
 import { useToast } from "vue-toastification";
@@ -229,7 +207,8 @@ let feedInterval;
 export default {
     components: {
         PublicGroupList,
-        ImageCropUpload
+        PublicIncidentsList,
+        ImageCropUpload,
     },
 
     // Leave Page for vue route change
@@ -248,20 +227,56 @@ export default {
     data() {
         return {
             enableEditMode: false,
-            enableEditIncidentMode: false,
             hasToken: false,
             config: {},
             selectedMonitor: null,
-            incident: null,
-            previousIncident: null,
             showImageCropUpload: false,
             imgDataUrl: "/icon.svg",
             loadedTheme: false,
             loadedData: false,
             baseURL: "",
+            incidents: [],
+            overrideStatus: {},
         };
     },
     computed: {
+        sortedIncidentsList() {
+            let result = Object.values(this.incidents).filter((incident) => !incident.resolved);
+            
+            result.sort((i1, i2) => {
+
+                if (i1.style !== i2.style) {
+                    if (i1.style === "critical") {
+                        return -1;
+                    }
+
+                    if (i2.style === "critical") {
+                        return 1;
+                    }
+
+                    if (i1.style === "warning") {
+                        return -1;
+                    }
+
+                    if (i2.style === "warning") {
+                        return 1;
+                    }
+                }
+                else {
+                    if (Date.parse(i1.createdDate) > Date.parse(i2.createdDate)) {
+                        return -1;
+                    }
+
+                    if (Date.parse(i2.createdDate) < Date.parse(i1.createdDate)) {
+                        return 1;
+                    }
+                }
+
+                return i1.title.localeCompare(i2.title);
+            });
+
+            return result;
+        },
 
         logoURL() {
             if (this.imgDataUrl.startsWith("data:")) {
@@ -289,10 +304,6 @@ export default {
 
         editMode() {
             return this.enableEditMode && this.$root.socket.connected;
-        },
-
-        editIncidentMode() {
-            return this.enableEditIncidentMode;
         },
 
         isPublished() {
@@ -347,15 +358,27 @@ export default {
         },
 
         allUp() {
-            return this.overallStatus === STATUS_PAGE_ALL_UP;
+            if (this.overrideStatus.override) {
+                return this.overrideStatus.allUp;
+            } else {
+                return this.overallStatus === STATUS_PAGE_ALL_UP;
+            }
         },
 
         partialDown() {
-            return this.overallStatus === STATUS_PAGE_PARTIAL_DOWN;
+            if (this.overrideStatus.override) {
+                return this.overrideStatus.partialDown;
+            } else {
+                return this.overallStatus === STATUS_PAGE_PARTIAL_DOWN;
+            }
         },
 
         allDown() {
-            return this.overallStatus === STATUS_PAGE_ALL_DOWN;
+            if (this.overrideStatus.override) {
+                return this.overrideStatus.allDown;
+            } else {
+                return this.overallStatus === STATUS_PAGE_ALL_DOWN;
+            }
         },
 
     },
@@ -417,9 +440,17 @@ export default {
             }
         });
 
-        axios.get("/api/status-page/incident").then((res) => {
+        axios.get("/api/status-page/incidents").then((res) => {
             if (res.data.ok) {
-                this.incident = res.data.incident;
+                this.incidents = res.data.incidents;
+                this.$root.publicIncidentsList = res.data.incidents;
+
+                this.overrideStatus = {
+                    override: Object.values(this.incidents).filter((incident) => !incident.resolved && incident.overrideStatus).length !== 0,
+                    allUp: Object.values(this.incidents).filter((incident) => !incident.resolved && incident.overrideStatus && incident.status === "operational").length !== 0,
+                    partialDown: Object.values(this.incidents).filter((incident) => !incident.resolved && incident.overrideStatus && incident.status === "partial-outage").length !== 0,
+                    allDown: Object.values(this.incidents).filter((incident) => !incident.resolved && incident.overrideStatus && incident.status === "full-outage").length !== 0,
+                };
             }
         });
 
@@ -520,62 +551,9 @@ export default {
             }
         },
 
-        createIncident() {
-            this.enableEditIncidentMode = true;
-
-            if (this.incident) {
-                this.previousIncident = this.incident;
-            }
-
-            this.incident = {
-                title: "",
-                content: "",
-                style: "primary",
-            };
-        },
-
-        postIncident() {
-            if (this.incident.title == "" || this.incident.content == "") {
-                toast.error(this.$t("Please input title and content"));
-                return;
-            }
-
-            this.$root.getSocket().emit("postIncident", this.incident, (res) => {
-
-                if (res.ok) {
-                    this.enableEditIncidentMode = false;
-                    this.incident = res.incident;
-                } else {
-                    toast.error(res.msg);
-                }
-
-            });
-
-        },
-
         /**
          * Click Edit Button
          */
-        editIncident() {
-            this.enableEditIncidentMode = true;
-            this.previousIncident = Object.assign({}, this.incident);
-        },
-
-        cancelIncident() {
-            this.enableEditIncidentMode = false;
-
-            if (this.previousIncident) {
-                this.incident = this.previousIncident;
-                this.previousIncident = null;
-            }
-        },
-
-        unpinIncident() {
-            this.$root.getSocket().emit("unpinIncident", () => {
-                this.incident = null;
-            });
-        },
-
         dateFromNow(date) {
             return dayjs.utc(date).fromNow();
         },
@@ -586,6 +564,7 @@ export default {
 
 <style lang="scss" scoped>
 @import "../assets/vars.scss";
+@import "../assets/timeline.scss";
 
 .overall-status {
     font-weight: bold;
@@ -659,18 +638,6 @@ footer {
     }
 }
 
-.incident {
-    .content {
-        &[contenteditable=true] {
-            min-height: 60px;
-        }
-    }
-
-    .date {
-        font-size: 12px;
-    }
-}
-
 .mobile {
     h1 {
         font-size: 22px;
@@ -679,6 +646,35 @@ footer {
     .overall-status {
         font-size: 20px;
     }
+}
+
+.incident.info {
+    background-color: #0c4128;
+}
+
+.incident-bg-info {
+    color: rgba(53, 162, 220, 0.52);
+}
+
+.incident-bg-warning {
+    color: rgba(255, 165, 0, 0.52);
+}
+
+.incident-bg-danger {
+    color: #dc354585;
+}
+
+.incident a {
+    text-decoration: none;
+}
+
+.incident-icon {
+    font-size: 30px;
+    vertical-align: middle;
+}
+
+.dark .shadow-box {
+    background-color: #0d1117;
 }
 
 </style>

@@ -132,6 +132,7 @@ const { sendNotificationList, sendHeartbeatList, sendImportantHeartbeatList, sen
 const { statusPageSocketHandler } = require("./socket-handlers/status-page-socket-handler");
 const databaseSocketHandler = require("./socket-handlers/database-socket-handler");
 const TwoFA = require("./2fa");
+const apicache = require("./modules/apicache");
 
 app.use(express.json());
 
@@ -161,6 +162,12 @@ let jwtSecret = null;
  * @type {{}}
  */
 let monitorList = {};
+
+/**
+ * Main incident list
+ * @type {{}}
+ */
+let incidentList = {};
 
 /**
  * Show Setup Page
@@ -533,7 +540,7 @@ exports.entryPage = "dashboard";
         // ***************************
 
         // Add a new monitor
-        socket.on("add", async (monitor, callback) => {
+        socket.on("addMonitor", async (monitor, callback) => {
             try {
                 checkLogin(socket);
                 let bean = R.dispense("monitor");
@@ -625,6 +632,215 @@ exports.entryPage = "dashboard";
             }
         });
 
+        // Add a new incident
+        socket.on("addIncident", async (incident, callback) => {
+            try {
+                checkLogin(socket);
+                let bean = R.dispense("incident");
+
+                bean.import(incident);
+                bean.user_id = socket.userID;
+                await R.store(bean);
+
+                await sendIncidentList(socket);
+
+                callback({
+                    ok: true,
+                    msg: "Added Successfully.",
+                    incidentID: bean.id,
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("editIncident", async (incident, callback) => {
+            try {
+                checkLogin(socket);
+
+                let bean = await R.findOne("incident", " id = ? ", [ incident.id ]);
+
+                if (bean.user_id !== socket.userID) {
+                    throw new Error("Permission denied.");
+                }
+
+                bean.type = incident.type;
+                bean.style = incident.style;
+                bean.title = incident.title;
+                bean.description = incident.description;
+                bean.overrideStatus = incident.overrideStatus;
+                bean.status = incident.status;
+
+                await R.store(bean);
+
+                await sendIncidentList(socket);
+
+                callback({
+                    ok: true,
+                    msg: "Saved.",
+                    incidentID: bean.id,
+                });
+
+            } catch (e) {
+                console.error(e);
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        // Add a new monitor_incident
+        socket.on("addMonitorIncident", async (incidentID, monitors, callback) => {
+            try {
+                checkLogin(socket);
+
+                await R.exec("DELETE FROM monitor_incident WHERE incident_id = ?", [
+                    incidentID
+                ]);
+
+                for await (const monitor of monitors) {
+                    let bean = R.dispense("monitor_incident");
+
+                    bean.import({
+                        monitor_id: monitor.id,
+                        incident_id: incidentID
+                    });
+                    await R.store(bean);
+                }
+
+                apicache.clear();
+
+                callback({
+                    ok: true,
+                    msg: "Added Successfully.",
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("resolveIncident", async (incidentID, description, callback) => {
+            try {
+                checkLogin(socket);
+                await checkIncidentOwner(socket.userID, incidentID);
+
+                console.log(`Resolve Incident: ${incidentID} User ID: ${socket.userID}`);
+
+                await R.exec("UPDATE incident SET resolved = 1, resolved_date = DATETIME('now') WHERE id = ? AND user_id = ? ", [
+                    incidentID,
+                    socket.userID,
+                ]);
+
+                // Add new incident update
+                let bean = R.dispense("incident");
+
+                let incident = {
+                    type: "resolved",
+                    description,
+                    parentIncident: incidentID,
+                };
+
+                bean.import(incident);
+                bean.user_id = socket.userID;
+                await R.store(bean);
+
+                await sendIncidentList(socket);
+
+                callback({
+                    ok: true,
+                    msg: "Resolved Successfully.",
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("postIncidentUpdate", async (incidentID, description, callback) => {
+            try {
+                checkLogin(socket);
+                await checkIncidentOwner(socket.userID, incidentID);
+
+                console.log(`Post update for Incident: ${incidentID} User ID: ${socket.userID}`);
+
+                // Add new incident update
+                let bean = R.dispense("incident");
+
+                let incident = {
+                    type: "update",
+                    description,
+                    parentIncident: incidentID,
+                };
+
+                bean.import(incident);
+                bean.user_id = socket.userID;
+                await R.store(bean);
+
+                callback({
+                    ok: true,
+                    msg: "Update Posted Successfully.",
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("reopenIncident", async (incidentID, description, callback) => {
+            try {
+                checkLogin(socket);
+                await checkIncidentOwner(socket.userID, incidentID);
+
+                console.log(`Reopen Incident: ${incidentID} User ID: ${socket.userID}`);
+
+                await R.exec("UPDATE incident SET resolved = 0, resolved_date = NULL WHERE id = ? AND user_id = ? ", [
+                    incidentID,
+                    socket.userID,
+                ]);
+
+                // Add new incident update
+                let bean = R.dispense("incident");
+
+                let incident = {
+                    type: "reopened",
+                    description,
+                    parentIncident: incidentID,
+                };
+
+                bean.import(incident);
+                bean.user_id = socket.userID;
+                await R.store(bean);
+
+                await sendIncidentList(socket);
+
+                callback({
+                    ok: true,
+                    msg: "Reopened Successfully.",
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
         socket.on("getMonitorList", async (callback) => {
             try {
                 checkLogin(socket);
@@ -658,6 +874,70 @@ exports.entryPage = "dashboard";
                 });
 
             } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("getIncidentList", async (callback) => {
+            try {
+                checkLogin(socket);
+                await sendIncidentList(socket);
+                callback({
+                    ok: true,
+                });
+            } catch (e) {
+                console.error(e);
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("getIncident", async (incidentID, callback) => {
+            try {
+                checkLogin(socket);
+
+                console.log(`Get Incident: ${incidentID} User ID: ${socket.userID}`);
+
+                let bean = await R.findOne("incident", " id = ? AND user_id = ? ", [
+                    incidentID,
+                    socket.userID,
+                ]);
+
+                callback({
+                    ok: true,
+                    incident: await bean.toJSON(),
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("getMonitorIncident", async (incidentID, callback) => {
+            try {
+                checkLogin(socket);
+
+                console.log(`Get Monitors for Incident: ${incidentID} User ID: ${socket.userID}`);
+
+                let monitors = await R.getAll("SELECT monitor.id, monitor.name FROM monitor_incident mi JOIN monitor ON mi.monitor_id = monitor.id WHERE mi.incident_id = ? ", [
+                    incidentID,
+                ]);
+
+                callback({
+                    ok: true,
+                    monitors,
+                });
+
+            } catch (e) {
+                console.error(e);
                 callback({
                     ok: false,
                     msg: e.message,
@@ -760,6 +1040,36 @@ exports.entryPage = "dashboard";
                 await sendMonitorList(socket);
                 // Clear heartbeat list on client
                 await sendImportantHeartbeatList(socket, monitorID, true, true);
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("deleteIncident", async (incidentID, callback) => {
+            try {
+                checkLogin(socket);
+
+                console.log(`Delete Incident: ${incidentID} User ID: ${socket.userID}`);
+
+                if (incidentID in incidentList) {
+                    delete incidentList[incidentID];
+                }
+
+                await R.exec("DELETE FROM incident WHERE id = ? AND user_id = ? ", [
+                    incidentID,
+                    socket.userID,
+                ]);
+
+                callback({
+                    ok: true,
+                    msg: "Deleted Successfully.",
+                });
+
+                await sendIncidentList(socket);
 
             } catch (e) {
                 callback({
@@ -1388,9 +1698,26 @@ async function checkOwner(userID, monitorID) {
     }
 }
 
+async function checkIncidentOwner(userID, incidentID) {
+    let row = await R.getRow("SELECT id FROM incident WHERE id = ? AND user_id = ? ", [
+        incidentID,
+        userID,
+    ]);
+
+    if (! row) {
+        throw new Error("You do not own this incident.");
+    }
+}
+
 async function sendMonitorList(socket) {
     let list = await getMonitorJSONList(socket.userID);
     io.to(socket.userID).emit("monitorList", list);
+    return list;
+}
+
+async function sendIncidentList(socket) {
+    let list = await getIncidentJSONList(socket.userID);
+    io.to(socket.userID).emit("incidentList", list);
     return list;
 }
 
@@ -1399,6 +1726,7 @@ async function afterLogin(socket, user) {
     socket.join(user.id);
 
     let monitorList = await sendMonitorList(socket);
+    sendIncidentList(socket);
     sendNotificationList(socket);
 
     await sleep(500);
@@ -1425,6 +1753,20 @@ async function getMonitorJSONList(userID) {
 
     for (let monitor of monitorList) {
         result[monitor.id] = await monitor.toJSON();
+    }
+
+    return result;
+}
+
+async function getIncidentJSONList(userID) {
+    let result = {};
+
+    let incidentList = await R.find("incident", " parent_incident IS NULL AND user_id = ? ORDER BY title", [
+        userID,
+    ]);
+
+    for (let incident of incidentList) {
+        result[incident.id] = await incident.toJSON();
     }
 
     return result;

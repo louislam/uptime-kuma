@@ -27,6 +27,7 @@ export default {
             allowLoginDialog: false,        // Allowed to show login dialog, but "loggedIn" have to be true too. This exists because prevent the login dialog show 0.1s in first before the socket server auth-ed.
             loggedIn: false,
             monitorList: { },
+            incidentList: { },
             heartbeatList: { },
             importantHeartbeatList: { },
             avgPingList: { },
@@ -97,6 +98,10 @@ export default {
                     };
                 });
                 this.monitorList = data;
+            });
+
+            socket.on("incidentList", (data) => {
+                this.incidentList = data;
             });
 
             socket.on("notificationList", (data) => {
@@ -309,12 +314,31 @@ export default {
             socket.emit("getMonitorList", callback);
         },
 
-        add(monitor, callback) {
-            socket.emit("add", monitor, callback);
+        addMonitor(monitor, callback) {
+            socket.emit("addMonitor", monitor, callback);
         },
 
         deleteMonitor(monitorID, callback) {
             socket.emit("deleteMonitor", monitorID, callback);
+        },
+
+        getIncidentList(callback) {
+            if (! callback) {
+                callback = () => { };
+            }
+            socket.emit("getIncidentList", callback);
+        },
+
+        addIncident(incident, callback) {
+            socket.emit("addIncident", incident, callback);
+        },
+
+        deleteIncident(incidentID, callback) {
+            socket.emit("deleteIncident", incidentID, callback);
+        },
+
+        addMonitorIncident(incidentID, monitors, callback) {
+            socket.emit("addMonitorIncident", incidentID, monitors, callback);
         },
 
         clearData() {

@@ -66,7 +66,7 @@ describe("Init", () => {
 
     it("should create monitor", async () => {
         // Create monitor
-        await page.goto(baseURL + "/add");
+        await page.goto(baseURL + "/addMonitor");
         await page.waitForSelector("#name");
 
         await page.type("#name", "Myself");

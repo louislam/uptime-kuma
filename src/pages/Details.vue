@@ -26,7 +26,7 @@
                 <button v-if="! monitor.active" class="btn btn-primary" @click="resumeMonitor">
                     <font-awesome-icon icon="play" /> {{ $t("Resume") }}
                 </button>
-                <router-link :to=" '/edit/' + monitor.id " class="btn btn-secondary">
+                <router-link :to=" '/editMonitor/' + monitor.id " class="btn btn-secondary">
                     <font-awesome-icon icon="edit" /> {{ $t("Edit") }}
                 </router-link>
                 <button class="btn btn-danger" @click="deleteDialog">

@@ -38,7 +38,7 @@
                     </thead>
                     <tbody>
                         <tr v-for="(beat, index) in displayedRecords" :key="index" :class="{ 'shadow-box': $root.windowWidth <= 550}">
-                            <td><router-link :to="`/dashboard/${beat.monitorID}`">{{ beat.name }}</router-link></td>
+                            <td><router-link :to="`/dashboard/monitor/${beat.monitorID}`">{{ beat.name }}</router-link></td>
                             <td><Status :status="beat.status" /></td>
                             <td :class="{ 'border-0':! beat.msg}"><Datetime :value="beat.time" /></td>
                             <td class="border-0">{{ beat.msg }}</td>
