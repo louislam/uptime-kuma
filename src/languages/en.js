@@ -38,6 +38,8 @@ export default {
     "Check Update On GitHub": "Check Update On GitHub",
     List: "List",
     Add: "Add",
+    "Add Monitor": "Add Monitor",
+    "Add Incident": "Add Incident",
     Monitor: "Monitor",
     Incident: "Incident",
     Monitors: "Monitors",
