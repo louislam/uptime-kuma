@@ -640,7 +640,7 @@ exports.entryPage = "dashboard";
 
                     bean.import({
                         monitor_id: monitorID,
-                        depends_on: monitor.id
+                        depends_on: monitor.id,
                     });
                     await R.store(bean);
                 }
