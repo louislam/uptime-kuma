@@ -19,13 +19,13 @@ class OneBot extends NotificationProvider {
             let config = {
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": "Bearer " + notification.accessToken
+                    "Authorization": "Bearer " + notification.accessToken,
                 }
             };
             let psuhText = "UptimeKuma Alert: " + msg;
             let data = {
                 "auto_escape": true,
-                "message": psuhText
+                "message": psuhText,
             };
             if (notification.msgType == "group") {
                 data["message_type"] = "group";
