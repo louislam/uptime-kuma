@@ -162,7 +162,7 @@ export default {
     Purple: "Lila",
     Pink: "Pink",
     "Search...": "Suchen...",
-    "Heartbeat Retry Interval": "Prüfzeitpunkt-Wiederholungsintervall",
+    "Heartbeat Retry Interval": "Intervall der Statusabfrage",
     retryCheckEverySecond: "Alle {0} Sekunden neu versuchen",
     "Import Backup": "Backup importieren",
     "Export Backup": "Backup exportieren",
