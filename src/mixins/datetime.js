@@ -2,6 +2,7 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
+
 dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.extend(relativeTime);
@@ -41,6 +42,30 @@ export default {
                 return dayjs.utc(value).tz(this.timezone).format(format);
             }
             return "";
+        },
+
+        groupTimesBy(list, timeParamName = 'createdDate') {
+            let toReturn = {};
+
+            for (let listItem of list) {
+                const year = dayjs.utc(listItem[timeParamName]).tz(this.timezone).format("YYYY");
+                const month = dayjs.utc(listItem[timeParamName]).tz(this.timezone).format("MM");
+
+                if (toReturn[year] == null) {
+                    toReturn[year] = {};
+                }
+                if (toReturn[year][month] == null) {
+                    toReturn[year][month] = [];
+                }
+
+                toReturn[year][month].push(listItem);
+            }
+
+            return toReturn;
+        },
+
+        getMonthName(month) {
+            return dayjs().month(month - 1).format("MMMM");
         }
     },
 

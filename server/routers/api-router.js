@@ -107,23 +107,53 @@ router.get("/api/status-page/config", async (_request, response) => {
     response.json(config);
 });
 
-// Status Page - Get the current Incident
+// Status Page - Incidents List
 // Can fetch only if published
-router.get("/api/status-page/incident", async (_, response) => {
+router.get("/api/status-page/incidents", async (_, response) => {
     allowDevAllOrigin(response);
 
     try {
         await checkPublished();
 
-        let incident = await R.findOne("incident", " pin = 1 AND active = 1");
+        let incidentList = [];
+        let incidents = await R.find("incident", " parent_incident IS NULL");
 
-        if (incident) {
-            incident = incident.toPublicJSON();
+        for (let incident of incidents) {
+            incidentList.push(await incident.toPublicJSON());
         }
 
         response.json({
             ok: true,
-            incident,
+            incidents: incidentList
+        });
+
+    } catch (error) {
+        send403(response, error.message);
+    }
+});
+
+// Status Page - Single Incident
+// Can fetch only if published
+router.get("/api/status-page/incident/:incident", async (request, response) => {
+    allowDevAllOrigin(response);
+
+    try {
+        await checkPublished();
+
+        let incidentID = request.params.incident;
+
+        let incidents = await R.find("incident", " id = ? OR parent_incident = ?", [
+            incidentID,
+            incidentID
+        ]);
+        let monitors = await R.getAll("SELECT monitor.name FROM monitor_incident mi JOIN monitor ON mi.monitor_id = monitor.id WHERE mi.incident_id = ? ", [
+            incidentID
+        ]);
+
+        response.json({
+            ok: true,
+            incidents,
+            monitors
         });
 
     } catch (error) {

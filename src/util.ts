@@ -185,5 +185,9 @@ export function genSecret(length = 64) {
 }
 
 export function getMonitorRelativeURL(id: string) {
-    return "/dashboard/" + id;
+    return "/dashboard/monitor/" + id;
+}
+
+export function getIncidentRelativeURL(id: string) {
+    return "/dashboard/incident/" + id;
 }

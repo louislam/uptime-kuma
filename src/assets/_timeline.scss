@@ -1,0 +1,95 @@
+.incident-timeline {
+    /* Variables */
+
+    $outline: #00b277;
+    $background: #00b277;
+
+    $color-primary: rgba(153, 160, 164, 0.59);
+    $color-light: white;
+    $spacing: 50px;
+    $radius: 4px;
+
+    $date: 120px;
+    $dotBorder: 3px;
+    $dot: 15px;
+    $line: 4px;
+
+    /* Base */
+    #timeline-content {
+        margin-top: $spacing;
+        text-align: center;
+    }
+
+    /* Timeline */
+
+    @media (max-width: 500px) {
+        .timeline {
+            max-width: 40% !important;
+        }
+    }
+
+    .timeline {
+        border-left: $line solid $color-primary;
+        border-bottom-right-radius: $radius;
+        border-top-right-radius: $radius;
+        background: fade($color-light, 3%);
+        margin: $spacing auto;
+        letter-spacing: 0.5px;
+        position: relative;
+        line-height: 1.4em;
+        font-size: 1.03em;
+        padding: $spacing;
+        list-style: none;
+        text-align: left;
+        max-width: 60%;
+
+        .event {
+            border-bottom: 1px dashed fade($color-light, 10%);
+            padding-bottom: ($spacing * 0.5);
+            margin-bottom: $spacing;
+            position: relative;
+
+            &:last-of-type {
+                padding-bottom: 0;
+                margin-bottom: 0;
+                border: none;
+            }
+
+            &:before, &:after {
+                position: absolute;
+                display: block;
+                top: 0;
+            }
+
+            &:before {
+                left: ((($date * 0.6) + $spacing + $line + $dot + ($dotBorder * 2)) * 1.5) * -1;
+                color: fade($color-light, 40%);
+                content: attr(data-date);
+                text-align: right;
+                font-weight: bolder;
+                font-size: 1em;
+                min-width: $date;
+            }
+
+            &:after {
+                box-shadow: 0 0 0 $dotBorder fade($color-primary, 100%);
+                left: ($spacing + $line + ($dot * 0.35)) * -1;
+                border: $dotBorder solid lighten($background, 5%);
+                background: $color-light;
+                border-radius: 50%;
+                height: $dot;
+                width: $dot;
+                content: "";
+                top: 5px;
+            }
+        }
+    }
+
+    .date {
+        font-size: 12px;
+    }
+}
+
+.dark .incident-timeline .timeline .event:after {
+    background: #0d1117 !important;
+}

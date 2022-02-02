@@ -6,7 +6,7 @@
                     <h5 id="exampleModalLabel" class="modal-title">
                         {{ $t("Confirm") }}
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" />
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click="no" />
                 </div>
                 <div class="modal-body">
                     <slot />
@@ -15,7 +15,7 @@
                     <button type="button" class="btn" :class="btnStyle" data-bs-dismiss="modal" @click="yes">
                         {{ yesText }}
                     </button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="no">
                         {{ noText }}
                     </button>
                 </div>
@@ -54,6 +54,9 @@ export default {
         },
         yes() {
             this.$emit("yes");
+        },
+        no() {
+            this.$emit("no");
         },
     },
 }

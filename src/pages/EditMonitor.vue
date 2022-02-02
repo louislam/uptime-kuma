@@ -337,15 +337,15 @@ export default {
         },
 
         pageName() {
-            return this.$t((this.isAdd) ? "Add New Monitor" : "Edit");
+            return this.$t((this.isAdd) ? "Add New Monitor" : "Edit Monitor");
         },
 
         isAdd() {
-            return this.$route.path === "/add";
+            return this.$route.path === "/addMonitor";
         },
 
         isEdit() {
-            return this.$route.path.startsWith("/edit");
+            return this.$route.path.startsWith("/editMonitor");
         },
 
         pushURL() {
@@ -501,7 +501,7 @@ export default {
             }
 
             if (this.isAdd) {
-                this.$root.add(this.monitor, async (res) => {
+                this.$root.addMonitor(this.monitor, async (res) => {
 
                     if (res.ok) {
                         await this.$refs.tagsManager.submit(res.monitorID);
@@ -509,7 +509,7 @@ export default {
                         toast.success(res.msg);
                         this.processing = false;
                         this.$root.getMonitorList();
-                        this.$router.push("/dashboard/" + res.monitorID);
+                        this.$router.push("/dashboard/monitor/" + res.monitorID);
                     } else {
                         toast.error(res.msg);
                         this.processing = false;

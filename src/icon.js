@@ -34,6 +34,14 @@ import {
     faAward,
     faLink,
     faChevronDown,
+    faHeartbeat,
+    faFilter,
+    faCircle,
+    faInfoCircle,
+    faExclamationTriangle,
+    faChevronLeft,
+    faChevronRight,
+    faExclamation,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -67,6 +75,14 @@ library.add(
     faAward,
     faLink,
     faChevronDown,
+    faHeartbeat,
+    faFilter,
+    faCircle,
+    faInfoCircle,
+    faExclamationTriangle,
+    faChevronLeft,
+    faChevronRight,
+    faExclamation,
 );
 
 export { FontAwesomeIcon };
