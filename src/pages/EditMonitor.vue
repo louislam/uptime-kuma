@@ -456,10 +456,12 @@ export default {
                 this.$root.getSocket().emit("getMonitor", this.$route.params.id, (res) => {
                     if (res.ok) {
                         this.monitor = res.monitor;
+
                         // Handling for when friendly name isn't set
                         if (this.monitor.name === this.monitor.url || this.monitor.name === this.monitor.hostname) {
                             this.monitor.name = "";
                         }
+                        
                         // Handling for monitors that are created before 1.7.0
                         if (this.monitor.retryInterval === 0) {
                             this.monitor.retryInterval = this.monitor.interval;
