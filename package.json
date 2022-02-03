@@ -97,7 +97,7 @@
         "timezones-list": "~3.0.1",
         "v-pagination-3": "~0.1.7",
         "vue": "next",
-        "vue-chart-3": "~0.5.11",
+        "vue-chart-3": "3.0.9",
         "vue-confirm-dialog": "~1.0.2",
         "vue-contenteditable": "~3.0.4",
         "vue-i18n": "~9.1.9",
