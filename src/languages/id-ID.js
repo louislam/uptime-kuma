@@ -7,7 +7,7 @@ export default {
     upsideDownModeDescription: "Balikkan statusnya. Jika layanan dapat dijangkau, TIDAK AKTIF.",
     maxRedirectDescription: "Jumlah maksimum pengalihan untuk diikuti. Setel ke 0 untuk menonaktifkan pengalihan.",
     acceptedStatusCodesDescription: "Pilih kode status yang dianggap sebagai tanggapan yang berhasil.",
-    passwordNotMatchMsg: "Sandi kedua tidak cocok.",
+    passwordNotMatchMsg: "Kata sandi kedua tidak cocok.",
     notificationDescription: "Harap atur notifikasi ke monitor agar berfungsi.",
     keywordDescription: "Cari kata kunci dalam code html atau JSON huruf besar-kecil berpengaruh",
     pauseDashboardHome: "Jeda",
