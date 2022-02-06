@@ -27,7 +27,7 @@ const languageList = {
     "zh-CN": "简体中文",
     "pl": "Polski",
     "et-EE": "eesti",
-    "vi": "Vietnamese",
+    "vi-VN": "Tiếng Việt",
     "zh-TW": "繁體中文 (台灣)"
 };
 

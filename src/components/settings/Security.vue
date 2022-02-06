@@ -216,6 +216,12 @@
                 <p>Vennligst vær forsiktig.</p>
             </template>
 
+			<template v-else-if="$i18n.locale === 'vi-VN' ">
+                <p>Bạn có muốn <strong>TẮT XÁC THỰC</strong> không?</p>
+                <p>Điều này rất nguy hiểm<strong>BẤT KỲ AI</strong> cũng có thể truy cập và cướp quyền điều khiển.</p>
+                <p>Vui lòng <strong>cẩn thận</strong>.</p>
+            </template>
+
             <!-- English (en) -->
             <template v-else>
                 <p>Are you sure want to <strong>disable auth</strong>?</p>
