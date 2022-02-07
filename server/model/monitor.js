@@ -235,7 +235,7 @@ class Monitor extends BeanModel {
                             if ( data.length > 50 ) {
                                 data = data.substring(0, 47) + "...";
                             }
-                            throw new Error(bean.msg + ", but keyword is not in [ " + data + " ]");
+                            throw new Error(bean.msg + ", but keyword is not in [" + data + "]");
                         }
 
                     }
