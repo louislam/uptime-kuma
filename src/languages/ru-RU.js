@@ -328,4 +328,5 @@ export default {
     "Security": "Безопасность",
     "Current User:": "Текущий пользователь:",
     "All Systems Operational": "Все системы работают",
+    "Powered by": "Работает на основе скрипта от",
 };
