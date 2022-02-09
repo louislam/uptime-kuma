@@ -328,4 +328,6 @@ export default {
     "Security": "Безопасность",
     "Current User:": "Текущий пользователь:",
     "All Systems Operational": "Все системы работают",
+    "About": "О программе",
+    "Description:": "Описание:",
 };
