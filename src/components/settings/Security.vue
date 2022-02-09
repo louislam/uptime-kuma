@@ -218,9 +218,9 @@
 
             <!-- English (en) -->
             <template v-else>
-                <p>Are you sure want to <strong>disable auth</strong>?</p>
-                <p>It is for <strong>someone who have 3rd-party auth</strong> in front of Uptime Kuma such as Cloudflare Access.</p>
-                <p>Please use it carefully.</p>
+                <p>Are you sure want to <strong>disable authentication</strong>?</p>
+                <p>It is designed for scenarios <strong>where you intend to implement third-party authentication</strong> in front of Uptime Kuma such as Cloudflare Access, Authelia or other authentication mechanisms.</p>
+                <p>Please use this option carefully!</p>
             </template>
         </Confirm>
     </div>
