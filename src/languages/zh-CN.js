@@ -364,4 +364,13 @@ export default {
     smtpDkimHashAlgo: "哈希算法（可选）",
     smtpDkimheaderFieldNames: "明确包含在哈希计算对象内的 Header 列表（可选）",
     smtpDkimskipFields: "不包含在哈希计算对象内的 Header 列表（可选）",
+    Feishu: "飞书",
+    AliyunSMS: "阿里云短信服务",
+    "Sms template must contain parameters: ": "短信模板必须包含以下变量：",
+    DingDing: "钉钉自定义机器人",
+    WebHookUrl: "钉钉自定义机器人 Webhook 地址",
+    SecretKey: "钉钉自定义机器人加签密钥",
+    "For safety, must use secret key": "出于安全考虑，必须使用加签密钥",
+    WeCom: "企业微信群机器人",
+    "WeCom Bot Key": "企业微信群机器人 key",
 };
