@@ -198,4 +198,6 @@ export default {
     pushbullet: "Pushbullet",
     line: "Line Messenger",
     mattermost: "Mattermost",
+    Cron: "Cron 時間表",
+    cronDescription: "用cron表達式設定監測器時間表,覆載間距",
 };

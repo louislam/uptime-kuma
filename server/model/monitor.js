@@ -14,6 +14,7 @@ const { Notification } = require("../notification");
 const { demoMode } = require("../config");
 const version = require("../../package.json").version;
 const apicache = require("../modules/apicache");
+const later = require("@breejs/later");
 
 /**
  * status:
@@ -79,6 +80,7 @@ class Monitor extends BeanModel {
             pushToken: this.pushToken,
             notificationIDList,
             tags: tags,
+            cron: this.cron,
         };
     }
 
@@ -377,7 +379,7 @@ class Monitor extends BeanModel {
                 }
             }
 
-            let beatInterval = this.interval;
+            let beatInterval = this.getNextInterval();
 
             debug(`[${this.name}] Check isImportant`);
             let isImportant = Monitor.isImportantBeat(isFirstBeat, previousBeat?.status, bean.status);
@@ -457,10 +459,26 @@ class Monitor extends BeanModel {
         if (this.type === "push") {
             setTimeout(() => {
                 safeBeat();
-            }, this.interval * 1000);
+            }, this.getNextInterval() * 1000);
         } else {
             safeBeat();
         }
+    }
+
+    getNextInterval() {
+        if (!this.cron || /^\s*$/.test(this.cron)) {
+            return this.interval;
+        }
+        const laterCron = later.parse.cron(this.cron);
+        const nextOccurences = later.schedule(laterCron).next(2);
+
+        let calculatedInterval = Math.floor((nextOccurences[0].getTime() - Date.now()) / 1000);
+        if (calculatedInterval < 20) { //beat interval too low,  using next interval
+            calculatedInterval = Math.floor((nextOccurences[1].getTime() - Date.now()) / 1000);
+        }
+
+        console.log(`Monitor #${this.id} '${this.name}': getNextInterval - calculatedInterval: ${calculatedInterval} `);
+        return calculatedInterval;
     }
 
     stop() {
