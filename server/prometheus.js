@@ -7,6 +7,15 @@ const commonLabels = [
     "monitor_url",
     "monitor_hostname",
     "monitor_port",
+    "location",
+    "region",
+    "datacenter",
+    "cloud_provider",
+    "az",
+    "rack",
+    "shelf",
+    "room",
+    "floor"
 ];
 
 const monitor_cert_days_remaining = new PrometheusClient.Gauge({
@@ -55,7 +64,7 @@ class Prometheus {
             monitor_port: monitor.port
         };
 
-        let tags = this.get_tags(monitor);
+        this.get_tags(monitor).then(tags => {
         for (let tag in tags) {
             let tag_detail = tags[tag];
             let name = tag_detail.name;
@@ -63,6 +72,8 @@ class Prometheus {
             console.log("New tag created: {" + name + ": " + value + "}");
             this.monitorLabelValues[name] = value;
         }
+        }
+        );
     }
 
     update(heartbeat, tlsInfo) {
