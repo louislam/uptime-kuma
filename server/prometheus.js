@@ -15,7 +15,7 @@ const commonLabels = [
     "rack",
     "shelf",
     "room",
-    "floor"
+    "floor",
 ];
 
 const monitor_cert_days_remaining = new PrometheusClient.Gauge({
@@ -49,9 +49,6 @@ class Prometheus {
 
         const tags = await R.getAll("SELECT mt.*, tag.name, tag.color FROM monitor_tag mt JOIN tag ON mt.tag_id = tag.id WHERE mt.monitor_id = ?", [monitor.id]);
 
-        console.log("Found the following tags for " + monitor.id +" :");
-        console.log(tags);
-
         return tags;
     }
 
@@ -65,13 +62,13 @@ class Prometheus {
         };
 
         this.get_tags(monitor).then(tags => {
-        for (let tag in tags) {
-            let tag_detail = tags[tag];
-            let name = tag_detail.name;
-            let value = tag_detail.value;
-            console.log("New tag created: {" + name + ": " + value + "}");
-            this.monitorLabelValues[name] = value;
-        }
+            for (let tag in tags) {
+                let tag_detail = tags[tag];
+                let name = tag_detail.name;
+                let value = tag_detail.value;
+                console.log("New tag created: {" + name + ": " + value + "}");
+                this.monitorLabelValues[name] = value;
+            }
         }
         );
     }
