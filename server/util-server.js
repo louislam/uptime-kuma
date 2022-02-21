@@ -16,6 +16,7 @@ exports.WIN = /^win/.test(process.platform);
 exports.LIN = /^linux/.test(process.platform);
 exports.MAC = /^darwin/.test(process.platform);
 exports.FBSD = /^freebsd/.test(process.platform);
+exports.BSD = /bsd$/.test(process.platform);
 
 /**
  * Init or reset JWT secret

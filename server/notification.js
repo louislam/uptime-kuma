@@ -23,6 +23,10 @@ const Feishu = require("./notification-providers/feishu");
 const AliyunSms = require("./notification-providers/aliyun-sms");
 const DingDing = require("./notification-providers/dingding");
 const Bark = require("./notification-providers/bark");
+const SerwerSMS = require("./notification-providers/serwersms");
+const Stackfield = require("./notification-providers/stackfield");
+const WeCom = require("./notification-providers/wecom");
+const GoogleChat = require("./notification-providers/google-chat");
 
 class Notification {
 
@@ -58,6 +62,10 @@ class Notification {
             new Telegram(),
             new Webhook(),
             new Bark(),
+            new SerwerSMS(),
+            new Stackfield(),
+            new WeCom(),
+            new GoogleChat()
         ];
 
         for (let item of list) {

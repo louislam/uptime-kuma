@@ -59,18 +59,38 @@ describe("Init", () => {
 
         // Go to /
         await page.goto(baseURL);
-        await sleep(3000);
+        await page.waitForSelector("h1.mb-3");
         pathname = await page.evaluate(() => location.pathname);
         expect(pathname).toEqual("/dashboard");
     });
 
+    it("should create monitor", async () => {
+        // Create monitor
+        await page.goto(baseURL + "/add");
+        await page.waitForSelector("#name");
+
+        await page.type("#name", "Myself");
+        await page.waitForSelector("#url");
+        await page.click("#url", { clickCount: 3 });
+        await page.keyboard.type(baseURL);
+        await page.keyboard.press("Enter");
+
+        await page.waitForFunction(() => {
+            const badge = document.querySelector("span.badge");
+            return badge && badge.innerText == "100%";
+        }, { timeout: 5000 });
+
+    });
+
     // Settings Page
+    /*
     describe("Settings", () => {
-        beforeAll(async () => {
+        beforeEach(async () => {
             await page.goto(baseURL + "/settings");
         });
 
         it("Change Language", async () => {
+            await page.goto(baseURL + "/settings/appearance");
             await page.waitForSelector("#language");
 
             await page.select("#language", "zh-HK");
@@ -83,20 +103,33 @@ describe("Init", () => {
         });
 
         it("Change Theme", async () => {
-            await sleep(1000);
+            await page.goto(baseURL + "/settings/appearance");
 
             // Dark
             await click(page, ".btn[for=btncheck2]");
             await page.waitForSelector("div.dark");
 
-            await sleep(1000);
+            await page.waitForSelector(".btn[for=btncheck1]");
 
             // Light
             await click(page, ".btn[for=btncheck1]");
             await page.waitForSelector("div.light");
         });
 
-        // TODO: Heartbeat Bar Style
+        it("Change Heartbeat Bar Style", async () => {
+            await page.goto(baseURL + "/settings/appearance");
+
+            // Bottom
+            await click(page, ".btn[for=btncheck5]");
+            await page.waitForSelector("div.hp-bar-big");
+
+            // None
+            await click(page, ".btn[for=btncheck6]");
+            await page.waitForSelector("div.hp-bar-big", {
+                hidden: true,
+                timeout: 1000
+            });
+        });
 
         // TODO: Timezone
 
@@ -108,14 +141,14 @@ describe("Init", () => {
             // Yes
             await click(page, "#searchEngineIndexYes");
             await click(page, "form > div > .btn[type=submit]");
-            await sleep(2000);
+            await sleep(1000);
             res = await axios.get(baseURL + "/robots.txt");
             expect(res.data).not.toContain("Disallow: /");
 
             // No
             await click(page, "#searchEngineIndexNo");
             await click(page, "form > div > .btn[type=submit]");
-            await sleep(2000);
+            await sleep(1000);
             res = await axios.get(baseURL + "/robots.txt");
             expect(res.data).toContain("Disallow: /");
         });
@@ -125,25 +158,25 @@ describe("Init", () => {
 
             // Default
             await newPage.goto(baseURL);
-            await sleep(3000);
+            await newPage.waitForSelector("h1.mb-3", { timeout: 3000 });
             let pathname = await newPage.evaluate(() => location.pathname);
             expect(pathname).toEqual("/dashboard");
 
             // Status Page
             await click(page, "#entryPageNo");
             await click(page, "form > div > .btn[type=submit]");
-            await sleep(4000);
+            await sleep(1000);
             await newPage.goto(baseURL);
-            await sleep(4000);
+            await newPage.waitForSelector("img.logo", { timeout: 3000 });
             pathname = await newPage.evaluate(() => location.pathname);
             expect(pathname).toEqual("/status");
 
             // Back to Dashboard
             await click(page, "#entryPageYes");
             await click(page, "form > div > .btn[type=submit]");
-            await sleep(4000);
+            await sleep(1000);
             await newPage.goto(baseURL);
-            await sleep(4000);
+            await newPage.waitForSelector("h1.mb-3", { timeout: 3000 });
             pathname = await newPage.evaluate(() => location.pathname);
             expect(pathname).toEqual("/dashboard");
 
@@ -151,7 +184,7 @@ describe("Init", () => {
         });
 
         it("Change Password (wrong current password)", async () => {
-            await page.goto(baseURL + "/settings");
+            await page.goto(baseURL + "/settings/security");
             await page.waitForSelector("#current-password");
 
             await page.type("#current-password", "wrong_passw$$d");
@@ -159,10 +192,10 @@ describe("Init", () => {
             await page.type("#repeat-new-password", "new_password123");
 
             // Save
-            await click(page, "form > div > .btn[type=submit]", 1);
-            await sleep(4000);
+            await click(page, "form > div > .btn[type=submit]", 0);
+            await sleep(1000);
 
-            await click(page, ".btn-danger.btn.me-2");
+            await click(page, "#logout-btn");
             await login("admin", "new_password123");
             let elementCount = await page.evaluate(() => document.querySelectorAll("#floatingPassword").length);
             expect(elementCount).toEqual(1);
@@ -171,24 +204,26 @@ describe("Init", () => {
         });
 
         it("Change Password (wrong repeat)", async () => {
-            await page.goto(baseURL + "/settings");
+            await page.goto(baseURL + "/settings/security");
             await page.waitForSelector("#current-password");
 
             await page.type("#current-password", "admin123");
             await page.type("#new-password", "new_password123");
             await page.type("#repeat-new-password", "new_password1234567898797898");
 
-            await click(page, "form > div > .btn[type=submit]", 1);
-            await sleep(4000);
+            await click(page, "form > div > .btn[type=submit]", 0);
+            await sleep(1000);
 
-            await click(page, ".btn-danger.btn.me-2");
+            await click(page, "#logout-btn");
             await login("admin", "new_password123");
 
             let elementCount = await page.evaluate(() => document.querySelectorAll("#floatingPassword").length);
             expect(elementCount).toEqual(1);
 
             await login("admin", "admin123");
-            await sleep(3000);
+            await page.waitForSelector("#current-password");
+            let pathname = await page.evaluate(() => location.pathname);
+            expect(pathname).toEqual("/settings/security");
         });
 
         // TODO: 2FA
@@ -197,10 +232,37 @@ describe("Init", () => {
 
         // TODO: Import Backup
 
-        // TODO: Disable Auth
+        it("Should disable & enable auth", async () => {
+            await page.goto(baseURL + "/settings/security");
+            await click(page, "#disableAuth-btn");
+            await click(page, ".btn.btn-danger[data-bs-dismiss='modal']", 2); // Not a good way to do it
+            await page.waitForSelector("#enableAuth-btn", { timeout: 3000 });
+            await page.waitForSelector("#logout-btn", {
+                hidden: true,
+                timeout: 3000
+            });
 
-        // TODO: Clear Stats
+            const newPage = await browser.newPage();
+            await newPage.goto(baseURL);
+            await newPage.waitForSelector("span.badge", { timeout: 3000 });
+            newPage.close();
+
+            await click(page, "#enableAuth-btn");
+            await login("admin", "admin123");
+            await page.waitForSelector("#disableAuth-btn", { timeout: 3000 });
+        });
+
+        // it("Should clear all statistics", async () => {
+        //     await page.goto(baseURL + "/settings/monitor-history");
+        //     await click(page, "#clearAllStats-btn");
+        //     await click(page, ".btn.btn-danger");
+        //     await page.waitForFunction(() => {
+        //         const badge = document.querySelector("span.badge");
+        //         return badge && badge.innerText == "0%";
+        //     }, { timeout: 3000 });
+        // });
     });
+     */
 
     /*
      * TODO

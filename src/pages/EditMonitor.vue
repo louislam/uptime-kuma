@@ -103,7 +103,7 @@
                                         :close-on-select="true"
                                         :clear-on-select="false"
                                         :preserve-search="false"
-                                        placeholder="Pick a RR-Type..."
+                                        :placeholder="$t('Pick a RR-Type...')"
                                         :preselect-first="false"
                                         :max-height="500"
                                         :taggable="false"
@@ -177,7 +177,7 @@
                                         :close-on-select="false"
                                         :clear-on-select="false"
                                         :preserve-search="true"
-                                        placeholder="Pick Accepted Status Codes..."
+                                        :placeholder="$t('Pick Accepted Status Codes...')"
                                         :preselect-first="false"
                                         :max-height="600"
                                         :taggable="true"
@@ -194,7 +194,7 @@
                             </div>
 
                             <div class="mt-5 mb-1">
-                                <button class="btn btn-primary" type="submit" :disabled="processing">{{ $t("Save") }}</button>
+                                <button id="monitor-submit-btn" class="btn btn-primary" type="submit" :disabled="processing">{{ $t("Save") }}</button>
                             </div>
                         </div>
 
@@ -215,7 +215,7 @@
                                     <a href="#" @click="$refs.notificationDialog.show(notification.id)">{{ $t("Edit") }}</a>
                                 </label>
 
-                                <span v-if="notification.isDefault == true" class="badge bg-primary ms-2">Default</span>
+                                <span v-if="notification.isDefault == true" class="badge bg-primary ms-2">{{ $t("Default") }}</span>
                             </div>
 
                             <button class="btn btn-primary me-2" type="button" @click="$refs.notificationDialog.show()">
@@ -264,6 +264,19 @@
                                 <div class="my-3">
                                     <label for="headers" class="form-label">{{ $t("Headers") }}</label>
                                     <textarea id="headers" v-model="monitor.headers" class="form-control" :placeholder="headersPlaceholder"></textarea>
+                                </div>
+
+                                <!-- HTTP Basic Auth -->
+                                <h4 class="mt-5 mb-2">{{ $t("HTTP Basic Auth") }}</h4>
+
+                                <div class="my-3">
+                                    <label for="basicauth" class="form-label">{{ $t("Username") }}</label>
+                                    <input id="basicauth-user" v-model="monitor.basic_auth_user" type="text" class="form-control" :placeholder="$t('Username')">
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="basicauth" class="form-label">{{ $t("Password") }}</label>
+                                    <input id="basicauth-pass" v-model="monitor.basic_auth_pass" type="password" autocomplete="new-password" class="form-control" :placeholder="$t('Password')">
                                 </div>
                             </template>
                         </div>
@@ -340,17 +353,17 @@ export default {
         },
 
         bodyPlaceholder() {
-            return `Example:
+            return this.$t("Example:", [`
 {
     "key": "value"
-}`;
+}`]);
         },
 
         headersPlaceholder() {
-            return `Example:
+            return this.$t("Example:", [`
 {
     "HeaderName": "HeaderValue"
-}`;
+}`]);
         }
 
     },
