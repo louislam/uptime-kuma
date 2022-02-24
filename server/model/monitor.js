@@ -119,6 +119,19 @@ class Monitor extends BeanModel {
 
         const beat = async () => {
 
+            let beatInterval = this.interval;
+
+            if (! beatInterval) {
+                beatInterval = 1;
+            }
+
+            if (demoMode) {
+                if (beatInterval < 20) {
+                    console.log("beat interval too low, reset to 20s");
+                    beatInterval = 20;
+                }
+            }
+
             // Expose here for prometheus update
             // undefined if not https
             let tlsInfo = undefined;
@@ -303,7 +316,7 @@ class Monitor extends BeanModel {
                     } else {
                         // No need to insert successful heartbeat for push type, so end here
                         retries = 0;
-                        this.heartbeatInterval = setTimeout(beat, this.interval * 1000);
+                        this.heartbeatInterval = setTimeout(beat, beatInterval * 1000);
                         return;
                     }
 
@@ -377,8 +390,6 @@ class Monitor extends BeanModel {
                 }
             }
 
-            let beatInterval = this.interval;
-
             debug(`[${this.name}] Check isImportant`);
             let isImportant = Monitor.isImportantBeat(isFirstBeat, previousBeat?.status, bean.status);
 
@@ -422,14 +433,6 @@ class Monitor extends BeanModel {
             previousBeat = bean;
 
             if (! this.isStop) {
-
-                if (demoMode) {
-                    if (beatInterval < 20) {
-                        console.log("beat interval too low, reset to 20s");
-                        beatInterval = 20;
-                    }
-                }
-
                 debug(`[${this.name}] SetTimeout for next check.`);
                 this.heartbeatInterval = setTimeout(safeBeat, beatInterval * 1000);
             } else {
