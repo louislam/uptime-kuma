@@ -599,6 +599,7 @@ exports.entryPage = "dashboard";
                 bean.dns_resolve_type = monitor.dns_resolve_type;
                 bean.dns_resolve_server = monitor.dns_resolve_server;
                 bean.pushToken = monitor.pushToken;
+                bean.cron = monitor.cron;
 
                 await R.store(bean);
 
@@ -1165,6 +1166,7 @@ exports.entryPage = "dashboard";
                                 dns_resolve_type: monitorListData[i].dns_resolve_type,
                                 dns_resolve_server: monitorListData[i].dns_resolve_server,
                                 notificationIDList: {},
+                                cron: monitorListData[i].cron,
                             };
 
                             if (monitorListData[i].pushToken) {

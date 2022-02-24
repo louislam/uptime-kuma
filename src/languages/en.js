@@ -361,4 +361,6 @@ export default {
     smtpDkimHashAlgo: "Hash Algorithm (Optional)",
     smtpDkimheaderFieldNames: "Header Keys to sign (Optional)",
     smtpDkimskipFields: "Header Keys not to sign (Optional)",
+    Cron: "Cron scheduler",
+    cronDescription: "Schedule the monitor using a cron expression, overrides Heartbeat Interval",
 };
