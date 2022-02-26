@@ -227,7 +227,7 @@ https://github.com/louislam/uptime-kuma/issues?q=sort%3Aupdated-desc
 1. `npm run build-docker`
 1. `git push`
 1. Publish the release note as 1.X.X 
-1. `npm run upload-artifacts`
+1. `npm run upload-artifacts` with env vars VERSION=1.X.X;GITHUB_TOKEN=XXXX
 1. SSH to demo site server and update to 1.X.X
 
 Checking:
