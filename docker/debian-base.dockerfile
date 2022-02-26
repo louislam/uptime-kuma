@@ -8,5 +8,5 @@ WORKDIR /app
 RUN apt update && \
     apt --yes --no-install-recommends install python3 python3-pip python3-cryptography python3-six python3-yaml python3-click python3-markdown python3-requests python3-requests-oauthlib \
         sqlite3 iputils-ping util-linux dumb-init && \
-    pip3 --no-cache-dir install apprise==0.9.6 && \
+    pip3 --no-cache-dir install apprise==0.9.7 && \
     rm -rf /var/lib/apt/lists/*
