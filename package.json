@@ -61,7 +61,7 @@
         "@louislam/sqlite3": "~6.0.1",
         "@popperjs/core": "~2.10.2",
         "args-parser": "~1.3.0",
-        "axios": "~0.21.4",
+        "axios": "~0.26.0",
         "bcryptjs": "~2.4.3",
         "bootstrap": "5.1.3",
         "bree": "~7.1.0",
