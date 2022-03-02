@@ -1,5 +1,6 @@
 const pkg = require("../package.json");
 const fs = require("fs");
+const rmSync = require("./fs-rmSync.js");
 const child_process = require("child_process");
 const util = require("../src/util");
 
@@ -11,14 +12,14 @@ const newVersion = process.argv[2];
 console.log("Old Version: " + oldVersion);
 console.log("New Version: " + newVersion);
 
-if (! newVersion) {
+if (!newVersion) {
     console.error("invalid version");
     process.exit(1);
 }
 
 const exists = tagExists(newVersion);
 
-if (! exists) {
+if (!exists) {
 
     // Process package.json
     pkg.version = newVersion;
@@ -55,7 +56,7 @@ function tag(version) {
 }
 
 function tagExists(version) {
-    if (! version) {
+    if (!version) {
         throw new Error("invalid version");
     }
 
@@ -93,7 +94,7 @@ function updateWiki(oldVersion, newVersion) {
 
 function safeDelete(dir) {
     if (fs.existsSync(dir)) {
-        fs.rmdirSync(dir, {
+        rmSync(dir, {
             recursive: true,
         });
     }
