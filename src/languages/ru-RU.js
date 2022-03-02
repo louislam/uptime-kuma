@@ -12,7 +12,7 @@ export default {
     pauseDashboardHome: "Пауза",
     deleteMonitorMsg: "Вы действительно хотите удалить данный монитор?",
     deleteNotificationMsg: "Вы действительно хотите удалить это уведомление для всех мониторов?",
-    resoverserverDescription: "Cloudflare является сервером по умолчанию. Вы всегда можете сменить данный сервер.",
+    resolverserverDescription: "Cloudflare является сервером по умолчанию. Вы всегда можете сменить данный сервер.",
     rrtypeDescription: "Выберите тип ресурсной записи, который вы хотите отслеживать",
     pauseMonitorMsg: "Вы действительно хотите поставить на паузу?",
     Settings: "Настройки",

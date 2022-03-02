@@ -12,7 +12,7 @@ export default {
     pauseDashboardHome: "暂停",
     deleteMonitorMsg: "确定要删除此监控吗？",
     deleteNotificationMsg: "确定要删除此消息通知吗？这将对所有监控生效。",
-    resoverserverDescription: "可自定义要使用的DNS服务器",
+    resolverserverDescription: "可自定义要使用的DNS服务器",
     rrtypeDescription: "选择要监控的资源记录类型",
     pauseMonitorMsg: "确定要暂停吗？",
     Settings: "设置",

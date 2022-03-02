@@ -13,7 +13,7 @@ export default {
     pauseDashboardHome: "Pozastavit",
     deleteMonitorMsg: "Opravdu chcete odstranit tento dohled?",
     deleteNotificationMsg: "Opravdu chcete odstranit toto oznámení pro všechny dohledy?",
-    resoverserverDescription: "Cloudflare je výchozí server. Resolver server můžete kdykoli změnit.",
+    resolverserverDescription: "Cloudflare je výchozí server. Resolver server můžete kdykoli změnit.",
     rrtypeDescription: "Vyberte typ záznamu o prostředku, který chcete monitorovat",
     pauseMonitorMsg: "Opravdu chcete dohled pozastavit?",
     enableDefaultNotificationDescription: "Toto oznámení bude standardně aktivní pro nové dohledy. V případě potřeby můžete oznámení stále zakázat na úrovni jednotlivých dohledů.",

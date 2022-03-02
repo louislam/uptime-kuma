@@ -13,7 +13,7 @@ export default {
     pauseDashboardHome: "Pause",
     deleteMonitorMsg: "Are you sure want to delete this monitor?",
     deleteNotificationMsg: "Are you sure want to delete this notification for all monitors?",
-    resoverserverDescription: "Cloudflare is the default server. You can change the resolver server anytime.",
+    resolverserverDescription: "Cloudflare is the default server. You can change the resolver server anytime.",
     rrtypeDescription: "Select the RR type you want to monitor",
     pauseMonitorMsg: "Are you sure want to pause?",
     enableDefaultNotificationDescription: "This notification will be enabled by default for new monitors. You can still disable the notification separately for each monitor.",

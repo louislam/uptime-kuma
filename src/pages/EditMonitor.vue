@@ -87,7 +87,7 @@
                                     <label for="dns_resolve_server" class="form-label">{{ $t("Resolver Server") }}</label>
                                     <input id="dns_resolve_server" v-model="monitor.dns_resolve_server" type="text" class="form-control" :pattern="ipRegex" required>
                                     <div class="form-text">
-                                        {{ $t("resoverserverDescription") }}
+                                        {{ $t("resolverserverDescription") }}
                                     </div>
                                 </div>
 

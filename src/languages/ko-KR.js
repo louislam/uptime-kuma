@@ -13,7 +13,7 @@ export default {
     pauseDashboardHome: "일시 정지",
     deleteMonitorMsg: "정말 이 모니터링을 삭제할까요?",
     deleteNotificationMsg: "정말 이 알림을 모든 모니터링에서 삭제할까요?",
-    resoverserverDescription: "Cloudflare가 기본 서버예요, 원한다면 언제나 다른 Resolver 서버로 변경할 수 있어요.",
+    resolverserverDescription: "Cloudflare가 기본 서버예요, 원한다면 언제나 다른 Resolver 서버로 변경할 수 있어요.",
     rrtypeDescription: "모니터링할 RR-Type을 선택해요.",
     pauseMonitorMsg: "정말 이 모니터링을 일시 정지할까요?",
     enableDefaultNotificationDescription: "새로 추가하는 모든 모니터링에 이 알림을 기본적으로 활성화해요. 각 모니터에 대해 별도로 알림을 비활성화할 수 있어요.",

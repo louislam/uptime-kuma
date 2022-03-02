@@ -13,7 +13,7 @@ export default {
     pauseDashboardHome: "Wstrzymane",
     deleteMonitorMsg: "Czy na pewno chcesz usunąć ten monitor?",
     deleteNotificationMsg: "Czy na pewno chcesz usunąć to powiadomienie dla wszystkich monitorów?",
-    resoverserverDescription: "Cloudflare jest domyślnym serwerem, możesz zmienić serwer resolver w każdej chwili.",
+    resolverserverDescription: "Cloudflare jest domyślnym serwerem, możesz zmienić serwer resolver w każdej chwili.",
     rrtypeDescription: "Wybierz rodzaj rekordu, który chcesz monitorować.",
     pauseMonitorMsg: "Czy na pewno chcesz wstrzymać monitorowanie?",
     enableDefaultNotificationDescription: "Dla każdego nowego monitora to powiadomienie będzie domyślnie włączone. Nadal możesz wyłączyć powiadomienia osobno dla każdego monitora.",

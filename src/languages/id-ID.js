@@ -13,7 +13,7 @@ export default {
     pauseDashboardHome: "Jeda",
     deleteMonitorMsg: "Apakah Anda mau menghapus monitor ini?",
     deleteNotificationMsg: "Apakah Anda mau menghapus notifikasi untuk semua monitor?",
-    resoverserverDescription: "Cloudflare adalah server bawaan, Anda dapat mengubah server resolver kapan saja.",
+    resolverserverDescription: "Cloudflare adalah server bawaan, Anda dapat mengubah server resolver kapan saja.",
     rrtypeDescription: "Pilih RR-Type yang mau Anda monitor",
     pauseMonitorMsg: "Apakah Anda yakin mau menjeda?",
     enableDefaultNotificationDescription: "Untuk setiap monitor baru, notifikasi ini akan diaktifkan secara bawaan. Anda masih dapat menonaktifkan notifikasi secara terpisah untuk setiap monitor.",

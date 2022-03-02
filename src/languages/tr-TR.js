@@ -12,7 +12,7 @@ export default {
     pauseDashboardHome: "Durdur",
     deleteMonitorMsg: "Servisi silmek istediğinden emin misin?",
     deleteNotificationMsg: "Bu bildirimi tüm servisler için silmek istediğinden emin misin?",
-    resoverserverDescription: "Cloudflare varsayılan sunucudur, çözümleyici sunucusunu istediğiniz zaman değiştirebilirsiniz.",
+    resolverserverDescription: "Cloudflare varsayılan sunucudur, çözümleyici sunucusunu istediğiniz zaman değiştirebilirsiniz.",
     rrtypeDescription: "İzlemek istediğiniz servisin RR-Tipini seçin",
     pauseMonitorMsg: "Durdurmak istediğinden emin misin?",
     clearEventsMsg: "Bu servisin bütün kayıtlarını silmek istediğinden emin misin?",
