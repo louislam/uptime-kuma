@@ -27,9 +27,20 @@ The frontend code build into "dist" directory. The server (express.js) exposes t
 
 ## Can I create a pull request for Uptime Kuma?
 
-Generally, if the pull request is working fine, and it does not affect any existing logic, workflow and performance, I will merge into the master branch once it is tested.
+⚠️ 2022-03-02 Update:
 
-If you are not sure whether I will accept your pull request, feel free to create an empty pull request draft first.
+Since I found that merging pull requests is a pretty heavy task for me, I try to rearrange it.
+
+✅ Accept:
+- Bug/Security fix
+- Translations
+- Adding notification providers
+
+❌ Avoid:
+- Large pull requests
+- New big features
+
+My long story here: https://www.reddit.com/r/UptimeKuma/comments/t1t6or/comment/hynyijx/
 
 ### Recommended Pull Request Guideline
 
@@ -42,42 +53,6 @@ If you are not sure whether I will accept your pull request, feel free to create
 1. Create a pull request: https://github.com/louislam/uptime-kuma/compare
 1. Write a proper description
 1. Click "Change to draft"
-
-### Pull Request Examples
-
-Here are some example situations in the past.
-
-#### ✅ High - Medium Priority
-
-Easy to review, no breaking change and not touching the existing code
-
-- Add a new notification
-- Add a chart
-- Fix a bug
-- Translations
-- Add a independent new feature
-
-#### *️⃣ Requires one more reviewer
-
-I do not have such knowledge to test it.
-
-- Add k8s supports
-
-#### ⚠ Low Priority - Harsh Mode
-
-Some pull requests are required to modify the core. To be honest, I do not want anyone to try to do that, because it would spend a lot of your time. I will review your pull request harshly. Also, you may need to write a lot of unit tests to ensure that there is no breaking change.
-
-- Touch large parts of code of any very important features
-- Touch monitoring logic
-- Drop a table or drop a column for any reason
-- Touch the entry point of Docker or Node.js
-- Modify auth
-
-#### *️⃣ Low Priority
-
-It changed my current workflow and require further studies.
-
-- Change my release approach
 
 #### ❌ Won't Merge
 
