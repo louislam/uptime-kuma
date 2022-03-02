@@ -329,4 +329,5 @@ export default {
     "Current User:": "Текущий пользователь:",
     "About": "О программе",
     "Description:": "Описание:",
+    "Powered by": "Работает на основе скрипта от",
 };
