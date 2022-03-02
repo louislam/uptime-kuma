@@ -1,7 +1,7 @@
 const fs = require("fs");
 /**
  * Detect if `fs.rmSync` is available
- * to avoid the runtime warning triggered for using `fs.rmdirSync` with `{ recursive: true }` in Node.js v16,
+ * to avoid the runtime deprecation warning triggered for using `fs.rmdirSync` with `{ recursive: true }` in Node.js v16,
  * or the `recursive` property removing completely in the future Node.js version.
  * See the link below.
  * @link https://nodejs.org/docs/latest-v16.x/api/deprecations.html#dep0147-fsrmdirpath--recursive-true-
