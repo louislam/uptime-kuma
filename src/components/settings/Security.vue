@@ -126,6 +126,12 @@
                 <p>Bitte mit Vorsicht nutzen.</p>
             </template>
 
+            <template v-else-if="$i18n.locale === 'sl-SI' ">
+                <p>Ali ste prepričani, da želite onemogočiti <strong>avtentikacijo</strong>?</p>
+                <p>Namenjen je <strong>nekomu, ki ima pred programom Uptime Kuma vklopljeno zunanje preverjanje pristnosti</strong>, na primer Cloudflare Access.</p>
+                <p>Uporabljajte previdno.</p>
+            </template>
+
             <template v-else-if="$i18n.locale === 'sr' ">
                 <p>Да ли сте сигурни да желите да <strong>искључите аутентификацију</strong>?</p>
                 <p>То је за <strong>оне који имају додату аутентификацију</strong> испред Uptime Kuma као на пример Cloudflare Access.</p>
@@ -169,9 +175,9 @@
             </template>
 
             <template v-else-if="$i18n.locale === 'it-IT' ">
-                <p>Si è certi di voler <strong>disabilitare l'autenticazione</strong>?</p>
-                <p>È per <strong>chi ha l'autenticazione gestita da terze parti</strong> messa davanti ad Uptime Kuma, ad esempio Cloudflare Access.</p>
-                <p>Utilizzare con attenzione.</p>
+                <p><strong>Disabilitare l'autenticazione?</strong></p>
+                <p><strong>Questa opzione è per chi un sistema di autenticazione gestito da terze parti</strong> messo davanti ad Uptime Kuma, ad esempio Cloudflare Access.</p>
+                <p>Utilizzare con attenzione!</p>
             </template>
 
             <template v-else-if="$i18n.locale === 'id-ID' ">
@@ -209,12 +215,24 @@
                 <p>Dette er for <strong>de som har tredjepartsautorisering</strong> foran Uptime Kuma, for eksempel Cloudflare Access.</p>
                 <p>Vennligst vær forsiktig.</p>
             </template>
+            
+            <template v-else-if="$i18n.locale === 'cs-CZ' ">
+                <p>Opravdu chcete <strong>deaktivovat autentifikaci</strong>?</p>
+                <p>Tato možnost je určena pro případy, kdy <strong>máte autentifikaci zajištěnou třetí stranou</strong> ještě před přístupem do Uptime Kuma, například prostřednictvím Cloudflare Access.</p>
+                <p>Používejte ji prosím s rozmyslem.</p>
+            </template>
+
+			<template v-else-if="$i18n.locale === 'vi-VN' ">
+                <p>Bạn có muốn <strong>TẮT XÁC THỰC</strong> không?</p>
+                <p>Điều này rất nguy hiểm<strong>BẤT KỲ AI</strong> cũng có thể truy cập và cướp quyền điều khiển.</p>
+                <p>Vui lòng <strong>cẩn thận</strong>.</p>
+            </template>
 
             <!-- English (en) -->
             <template v-else>
-                <p>Are you sure want to <strong>disable auth</strong>?</p>
-                <p>It is for <strong>someone who have 3rd-party auth</strong> in front of Uptime Kuma such as Cloudflare Access.</p>
-                <p>Please use it carefully.</p>
+                <p>Are you sure want to <strong>disable authentication</strong>?</p>
+                <p>It is designed for scenarios <strong>where you intend to implement third-party authentication</strong> in front of Uptime Kuma such as Cloudflare Access, Authelia or other authentication mechanisms.</p>
+                <p>Please use this option carefully!</p>
             </template>
         </Confirm>
     </div>

@@ -20,7 +20,7 @@ if (sslKey && sslCert) {
 // Dual-stack support for (::)
 let hostname = process.env.UPTIME_KUMA_HOST;
 
-// Also read HOST if not FreeBSD, as HOST is a system environment variable in FreeBSD
+// Also read HOST if not *BSD, as HOST is a system environment variable in FreeBSD
 if (!hostname && !FBSD) {
     hostname = process.env.HOST;
 }

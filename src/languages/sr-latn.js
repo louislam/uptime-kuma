@@ -12,7 +12,7 @@ export default {
     pauseDashboardHome: "Pauziraj",
     deleteMonitorMsg: "Da li ste sigurni da želite da obrišete ovog posmatrača?",
     deleteNotificationMsg: "Da li ste sigurni d aželite da uklonite ovo obaveštenje za sve posmatrače?",
-    resoverserverDescription: "Cloudflare je podrazumevani server. Možete promeniti server za raszrešavanje u bilo kom trenutku.",
+    resolverserverDescription: "Cloudflare je podrazumevani server. Možete promeniti server za raszrešavanje u bilo kom trenutku.",
     rrtypeDescription: "Odaberite RR-Type koji želite da posmatrate",
     pauseMonitorMsg: "Da li ste sigurni da želite da pauzirate?",
     Settings: "Podešavanja",

@@ -12,7 +12,7 @@ export default {
     pauseDashboardHome: "一時停止",
     deleteMonitorMsg: "この監視を削除してよろしいですか？",
     deleteNotificationMsg: "全ての監視のこの通知を削除してよろしいですか？",
-    resoverserverDescription: "Cloudflareがデフォルトのサーバーですが、いつでもリゾルバサーバーを変更できます。",
+    resolverserverDescription: "Cloudflareがデフォルトのサーバーですが、いつでもリゾルバサーバーを変更できます。",
     rrtypeDescription: "監視するRRタイプを選択します",
     pauseMonitorMsg: "一時停止しますか？",
     Settings: "設定",
