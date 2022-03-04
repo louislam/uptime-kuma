@@ -12,7 +12,7 @@ export default {
     pauseDashboardHome: "Gepauzeerd",
     deleteMonitorMsg: "Weet u zeker dat u deze monitor wilt verwijderen?",
     deleteNotificationMsg: "Weet u zeker dat u deze melding voor alle monitoren wilt verwijderen?",
-    resoverserverDescription: "Cloudflare is de standaardserver, u kunt de resolver server op elk moment wijzigen.",
+    resolverserverDescription: "Cloudflare is de standaardserver, u kunt de resolver server op elk moment wijzigen.",
     rrtypeDescription: "Selecteer het RR-type dat u wilt monitoren",
     pauseMonitorMsg: "Weet je zeker dat je wilt pauzeren?",
     enableDefaultNotificationDescription: "Voor elke nieuwe monitor wordt deze melding standaard ingeschakeld. U kunt de melding nog steeds afzonderlijk uitschakelen voor elke monitor.",

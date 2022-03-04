@@ -115,7 +115,7 @@ Telegram Notification Sample:
 
 ## Motivation
 
-* I was looking for a self-hosted monitoring tool like "Uptime Robot", but it is hard to find a suitable one. One of the close ones is statping. Unfortunately, it is not stable and unmaintained.
+* I was looking for a self-hosted monitoring tool like "Uptime Robot", but it is hard to find a suitable one. One of the close ones is statping. Unfortunately, it is not stable and no longer maintained.
 * Want to build a fancy UI.
 * Learn Vue 3 and vite.js.
 * Show the power of Bootstrap 5.
@@ -144,4 +144,4 @@ If you want to translate Uptime Kuma into your language, please read: https://gi
 
 If you want to modify Uptime Kuma, this guideline may be useful for you: https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md
 
-English proofreading is needed too because my grammar is not that great, sadly. Feel free to correct my grammar in this README, source code, or wiki.
+Unfortunately, English proofreading is needed too because my grammar is not that great. Feel free to correct my grammar in this README, source code, or wiki.

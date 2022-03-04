@@ -13,7 +13,7 @@ export default {
     pauseDashboardHome: "Пауза",
     deleteMonitorMsg: "Наистина ли желаете да изтриете този монитор?",
     deleteNotificationMsg: "Наистина ли желаете да изтриете това известяване за всички монитори?",
-    resoverserverDescription: "Cloudflare е сървърът по подразбиране, но можете да го промените по всяко време.",
+    resolverserverDescription: "Cloudflare е сървърът по подразбиране, но можете да го промените по всяко време.",
     rrtypeDescription: "Изберете ресурсния запис, който желаете да наблюдавате",
     pauseMonitorMsg: "Наистина ли желаете да поставите в режим пауза?",
     enableDefaultNotificationDescription: "За всеки нов монитор това известяване ще бъде активирано по подразбиране. Можете да го изключите за всеки отделен монитор.",

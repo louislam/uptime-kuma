@@ -85,7 +85,7 @@ export default {
             model: null,
             processing: false,
             id: null,
-            notificationTypes: Object.keys(NotificationFormList),
+            notificationTypes: Object.keys(NotificationFormList).sort(),
             notification: {
                 name: "",
                 /** @type { null | keyof NotificationFormList } */
