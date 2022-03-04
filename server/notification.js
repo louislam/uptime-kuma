@@ -28,6 +28,7 @@ const Stackfield = require("./notification-providers/stackfield");
 const WeCom = require("./notification-providers/wecom");
 const GoogleChat = require("./notification-providers/google-chat");
 const Gorush = require("./notification-providers/gorush");
+const Alerta = require("./notification-providers/alerta");
 
 class Notification {
 
@@ -67,7 +68,8 @@ class Notification {
             new Stackfield(),
             new WeCom(),
             new GoogleChat(),
-            new Gorush()
+            new Gorush(),
+            new Alerta(),
         ];
 
         for (let item of list) {

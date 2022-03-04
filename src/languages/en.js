@@ -362,4 +362,10 @@ export default {
     smtpDkimheaderFieldNames: "Header Keys to sign (Optional)",
     smtpDkimskipFields: "Header Keys not to sign (Optional)",
     gorush: "Gorush",
+    alerta: 'Alerta',
+    alertaApiEndpoint: 'API Endpoint',
+    alertaEnvironment: 'Environment',
+    alertaApiKey: 'API Key',
+    alertaAlertState: 'Alert State',
+    alertaRecoverState: 'Recover State',
 };

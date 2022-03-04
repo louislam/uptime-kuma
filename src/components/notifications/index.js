@@ -27,6 +27,7 @@ import Stackfield from './Stackfield.vue';
 import WeCom from "./WeCom.vue";
 import GoogleChat from "./GoogleChat.vue";
 import Gorush from "./Gorush.vue";
+import Alerta from "./Alerta.vue";
 
 /**
  * Manage all notification form.
@@ -62,7 +63,8 @@ const NotificationFormList = {
     "stackfield": Stackfield,
     "WeCom": WeCom,
     "GoogleChat": GoogleChat,
-    "gorush": Gorush
+    "gorush": Gorush,
+    "alerta": Alerta,
 };
 
 export default NotificationFormList;
