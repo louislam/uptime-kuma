@@ -30,13 +30,14 @@ class Alerta extends NotificationProvider {
             };
 
             if (heartbeatJSON == null) {
-                let testdata = Object.assign( {
-                    event: "test",
-                    text: "Testing Successful.",
-                    group: "uptimekuma-test",
-                    resource: "Test",
-                }, data );
-                await axios.post(alertaUrl, testdata, config);
+                let postData = Object.assign({
+                    event: "msg",
+                    text: msg,
+                    group: "uptimekuma-msg",
+                    resource: "Message",
+                }, data);
+
+                await axios.post(alertaUrl, postData, config);
             } else {
                 let datadup = Object.assign( {
                     correlate: ["service_up", "service_down"],
