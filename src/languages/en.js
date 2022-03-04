@@ -238,6 +238,7 @@ export default {
     "rocket.chat": "Rocket.Chat",
     pushover: "Pushover",
     pushy: "Pushy",
+    PushByTechulus: "Push by Techulus",
     octopush: "Octopush",
     promosms: "PromoSMS",
     clicksendsms: "ClickSend SMS",

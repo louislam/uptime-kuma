@@ -12,6 +12,7 @@ const ClickSendSMS = require("./notification-providers/clicksendsms");
 const Pushbullet = require("./notification-providers/pushbullet");
 const Pushover = require("./notification-providers/pushover");
 const Pushy = require("./notification-providers/pushy");
+const TechulusPush = require("./notification-providers/techulus-push");
 const RocketChat = require("./notification-providers/rocket-chat");
 const Signal = require("./notification-providers/signal");
 const Slack = require("./notification-providers/slack");
@@ -57,6 +58,7 @@ class Notification {
             new Pushbullet(),
             new Pushover(),
             new Pushy(),
+            new TechulusPush(),
             new RocketChat(),
             new Signal(),
             new Slack(),
