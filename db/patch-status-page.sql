@@ -9,7 +9,7 @@ CREATE TABLE [status_page](
     [theme] VARCHAR(30) NOT NULL,
     [published] BOOLEAN NOT NULL DEFAULT 1,
     [search_engine_index] BOOLEAN NOT NULL DEFAULT 1,
-    [public] BOOLEAN NOT NULL DEFAULT 1,
+    [show_tags] BOOLEAN NOT NULL DEFAULT 0,
     [password] VARCHAR
 );
 

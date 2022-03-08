@@ -171,6 +171,7 @@ class Database {
         }
 
         await this.patch2();
+        await this.migrateNewStatusPage();
     }
 
     /**
@@ -210,6 +211,39 @@ class Database {
         }
 
         await setSetting("databasePatchedFiles", databasePatchedFiles);
+    }
+
+    /**
+     * Migrate status page value in setting to "status_page" table
+     * @returns {Promise<void>}
+     */
+    static async migrateNewStatusPage() {
+        let title = await setting("title");
+
+        if (title) {
+            console.log("Migrating Status Page");
+
+            let statusPageCheck = await R.findOne("status_page", " slug = '' ");
+
+            if (statusPageCheck !== null) {
+                console.log("Migrating Status Page - Fail, empty slug record is already existing");
+                return;
+            }
+
+            let statusPage = R.dispense("status_page");
+            statusPage.slug = "";
+            statusPage.title = title;
+            statusPage.icon = await setting("icon");
+            statusPage.theme = await setting("statusPageTheme");
+            statusPage.published = await setting("statusPagePublished");
+            statusPage.search_engine_index = await setting("searchEngineIndex");
+            statusPage.show_tags = await setting("statusPageTags");
+            statusPage.password = null;
+            await R.store(statusPage);
+            await R.exec("DELETE FROM setting WHERE type = 'statusPage'");
+            console.log("Migrating Status Page - Done");
+        }
+
     }
 
     /**
