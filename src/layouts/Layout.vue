@@ -157,7 +157,7 @@ export default {
         overflow: hidden;
         text-decoration: none;
 
-        &.router-link-exact-active {
+        &.router-link-exact-active, &.active {
             color: $primary;
             font-weight: bold;
         }

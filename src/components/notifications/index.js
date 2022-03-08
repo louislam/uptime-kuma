@@ -9,6 +9,7 @@ import RocketChat from "./RocketChat.vue";
 import Teams from "./Teams.vue";
 import Pushover from "./Pushover.vue";
 import Pushy from "./Pushy.vue";
+import TechulusPush from "./TechulusPush.vue";
 import Octopush from "./Octopush.vue";
 import PromoSMS from "./PromoSMS.vue";
 import ClickSendSMS from "./ClickSendSMS.vue";
@@ -26,6 +27,8 @@ import SerwerSMS from "./SerwerSMS.vue";
 import Stackfield from './Stackfield.vue';
 import WeCom from "./WeCom.vue";
 import GoogleChat from "./GoogleChat.vue";
+import Gorush from "./Gorush.vue";
+import Alerta from "./Alerta.vue";
 
 /**
  * Manage all notification form.
@@ -44,6 +47,7 @@ const NotificationFormList = {
     "rocket.chat": RocketChat,
     "pushover": Pushover,
     "pushy": Pushy,
+    "PushByTechulus": TechulusPush,
     "octopush": Octopush,
     "promosms": PromoSMS,
     "clicksendsms": ClickSendSMS,
@@ -60,7 +64,9 @@ const NotificationFormList = {
     "serwersms": SerwerSMS,
     "stackfield": Stackfield,
     "WeCom": WeCom,
-    "GoogleChat": GoogleChat
+    "GoogleChat": GoogleChat,
+    "gorush": Gorush,
+    "alerta": Alerta,
 };
 
 export default NotificationFormList;

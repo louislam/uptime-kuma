@@ -13,7 +13,7 @@ export default {
     pauseDashboardHome: "暂停",
     deleteMonitorMsg: "确定要删除此监控项吗？",
     deleteNotificationMsg: "确定要为所有监控项删除此通知吗？",
-    resoverserverDescription: "默认服务器是 Cloudflare。您随时可以修改解析服务器。",
+    resolverserverDescription: "默认服务器是 Cloudflare。您随时可以修改解析服务器。",
     rrtypeDescription: "选择要监控的资源记录类型",
     pauseMonitorMsg: "确定要暂停吗？",
     enableDefaultNotificationDescription: "新的监控项将默认启用此通知，您仍然为每个监控项单独禁用。",

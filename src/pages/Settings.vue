@@ -6,7 +6,7 @@
 
         <div class="shadow-box">
             <div class="row">
-                <div class="settings-menu">
+                <div v-if="showSubMenu" class="settings-menu col-lg-3 col-md-5">
                     <router-link
                         v-for="(item, key) in subMenus"
                         :key="key"
@@ -17,8 +17,8 @@
                         </div>
                     </router-link>
                 </div>
-                <div class="settings-content">
-                    <div class="settings-content-header">
+                <div class="settings-content col-lg-9 col-md-7">
+                    <div v-if="currentPage" class="settings-content-header">
                         {{ subMenus[currentPage].title }}
                     </div>
                     <div class="mx-3">
@@ -41,7 +41,6 @@ export default {
     data() {
         return {
             show: true,
-
             settings: {},
             settingsLoaded: false,
         };
@@ -52,9 +51,17 @@ export default {
             let pathSplit = useRoute().path.split("/");
             let pathEnd = pathSplit[pathSplit.length - 1];
             if (!pathEnd || pathEnd === "settings") {
-                return "general";
+                return null;
             }
             return pathEnd;
+        },
+
+        showSubMenu() {
+            if (this.$root.isMobile) {
+                return !this.currentPage;
+            } else {
+                return true;
+            }
         },
 
         subMenus() {
@@ -84,11 +91,26 @@ export default {
         },
     },
 
+    watch: {
+        "$root.isMobile"() {
+            this.loadGeneralPage();
+        }
+    },
+
     mounted() {
         this.loadSettings();
+        this.loadGeneralPage();
     },
 
     methods: {
+
+        // For desktop only, mobile do nothing
+        loadGeneralPage() {
+            if (!this.currentPage && !this.$root.isMobile) {
+                this.$router.push("/settings/general");
+            }
+        },
+
         loadSettings() {
             this.$root.getSocket().emit("getSettings", (res) => {
                 this.settings = res.data;
@@ -115,7 +137,7 @@ export default {
                 this.loadSettings();
             });
         },
-    },
+    }
 };
 </script>
 
@@ -136,9 +158,6 @@ footer {
 }
 
 .settings-menu {
-    flex: 0 0 auto;
-    width: 300px;
-
     a {
         text-decoration: none !important;
     }
@@ -171,9 +190,6 @@ footer {
 }
 
 .settings-content {
-    flex: 0 0 auto;
-    width: calc(100% - 300px);
-
     .settings-content-header {
         width: calc(100% + 20px);
         border-bottom: 1px solid #dee2e6;
@@ -186,6 +202,14 @@ footer {
         .dark & {
             background: $dark-header-bg;
             border-bottom: 0;
+        }
+
+        .mobile & {
+            padding: 15px 0 0 0;
+
+            .dark & {
+                background-color: transparent;
+            }
         }
     }
 }

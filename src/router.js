@@ -70,7 +70,6 @@ const routes = [
                         children: [
                             {
                                 path: "general",
-                                alias: "",
                                 component: General,
                             },
                             {

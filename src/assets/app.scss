@@ -156,8 +156,13 @@ textarea.form-control {
 
     .form-check-input {
         background-color: $dark-bg2;
+        border-color: $dark-border-color;
     }
 
+    .form-check-input:checked {
+        border-color: $primary; // Re-apply bootstrap border
+    }
+    
     .form-switch .form-check-input {
         background-color: #232f3b;
     }
