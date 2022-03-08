@@ -361,7 +361,7 @@ export default {
     smtpDkimheaderFieldNames: "Хедър ключове за подписване (по желание)",
     smtpDkimskipFields: "Хедър ключове, които да не се подписват (по желание)",
     PushByTechulus: "Push от Techulus",
-    GoogleChat: "Google Chat (Google Workspace only)",
+    GoogleChat: "Google Chat (Само за работното пространство на Google)",
     gorush: "Gorush",
     alerta: "Alerta",
     alertaApiEndpoint: "Крайна точка на API",
