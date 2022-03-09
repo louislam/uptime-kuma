@@ -178,6 +178,7 @@ export default {
     "Add a monitor": "اضافه کردن مانیتور",
     "Edit Status Page": "ویرایش صفحه وضعیت",
     "Status Page": "صفحه وضعیت",
+    "Status Pages": "صفحه وضعیت",
     "Go to Dashboard": "رفتن به پیشخوان",
     "Uptime Kuma": "آپتایم کوما",
     records: "مورد",

@@ -169,6 +169,7 @@ export default {
     "Avg. Ping": "Ping Médio.",
     "Avg. Response": "Resposta Média. ",
     "Status Page": "Página de Status",
+    "Status Pages": "Página de Status",
     "Entry Page": "Página de entrada",
     statusPageNothing: "Nada aqui, por favor, adicione um grupo ou monitor.",
     "No Services": "Nenhum Serviço",

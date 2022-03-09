@@ -17,6 +17,7 @@ export default {
     pauseMonitorMsg: "Kas soovid peatada seire?",
     Settings: "Seaded",
     "Status Page": "Ülevaade",
+    "Status Pages": "Ülevaade",
     Dashboard: "Töölaud",
     "New Update": "Uuem tarkvara versioon on saadaval.",
     Language: "Keel",

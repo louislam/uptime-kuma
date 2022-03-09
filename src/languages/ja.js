@@ -180,6 +180,7 @@ export default {
     "Edit Status Page": "ステータスページ編集",
     "Go to Dashboard": "ダッシュボード",
     "Status Page": "ステータスページ",
+    "Status Pages": "ステータスページ",
     telegram: "Telegram",
     webhook: "Webhook",
     smtp: "Email (SMTP)",

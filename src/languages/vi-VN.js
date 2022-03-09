@@ -183,6 +183,7 @@ export default {
     "Edit Status Page": "Sửa trang trạng thái",
     "Go to Dashboard": "Đi tới Dashboard",
     "Status Page": "Trang trạng thái",
+    "Status Pages": "Trang trạng thái",
     defaultNotificationName: "My {notification} Alerts ({number})",
     here: "tại đây",
     Required: "Bắt buộc",

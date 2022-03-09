@@ -180,6 +180,7 @@ export default {
     "Edit Status Page": "編輯 Status Page",
     "Go to Dashboard": "前往主控台",
     "Status Page": "Status Page",
+    "Status Pages": "Status Pages",
     telegram: "Telegram",
     webhook: "Webhook",
     smtp: "電郵 (SMTP)",

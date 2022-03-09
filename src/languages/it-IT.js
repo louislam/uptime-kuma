@@ -183,6 +183,7 @@ export default {
     "Edit Status Page": "Modifica pagina di stato",
     "Go to Dashboard": "Vai alla dashboard",
     "Status Page": "Pagina di stato",
+    "Status Pages": "Pagina di stato",
     defaultNotificationName: "Notifica {notification} ({number})",
     here: "qui",
     Required: "Obbligatorio",
