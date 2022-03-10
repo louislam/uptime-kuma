@@ -34,6 +34,8 @@ import {
     faAward,
     faLink,
     faChevronDown,
+    faPen,
+    faExternalLinkSquareAlt,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -67,6 +69,8 @@ library.add(
     faAward,
     faLink,
     faChevronDown,
+    faPen,
+    faExternalLinkSquareAlt,
 );
 
 export { FontAwesomeIcon };

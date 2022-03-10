@@ -83,33 +83,28 @@ router.get("/api/push/:pushToken", async (request, response) => {
 });
 
 // Status Page Config
-router.get("/api/status-page/config", async (_request, response) => {
+router.get("/api/status-page/config/:slug", async (request, response) => {
     allowDevAllOrigin(response);
+    let slug = request.params.slug;
 
-    let config = await getSettings("statusPage");
+    let statusPage = await R.findOne("status_page", " slug = ? ", [
+        slug
+    ]);
 
-    if (! config.statusPageTheme) {
-        config.statusPageTheme = "light";
+    if (!statusPage) {
+        response.statusCode = 404;
+        response.json({
+            msg: "Not Found"
+        });
+        return;
     }
 
-    if (! config.statusPagePublished) {
-        config.statusPagePublished = true;
-    }
-
-    if (! config.statusPageTags) {
-        config.statusPageTags = false;
-    }
-
-    if (! config.title) {
-        config.title = "Uptime Kuma";
-    }
-
-    response.json(config);
+    response.json(await statusPage.toPublicJSON());
 });
 
 // Status Page - Get the current Incident
 // Can fetch only if published
-router.get("/api/status-page/incident", async (_, response) => {
+router.get("/api/status-page/incident/:slug", async (_, response) => {
     allowDevAllOrigin(response);
 
     try {
@@ -133,7 +128,7 @@ router.get("/api/status-page/incident", async (_, response) => {
 
 // Status Page - Monitor List
 // Can fetch only if published
-router.get("/api/status-page/monitor-list", cache("5 minutes"), async (_request, response) => {
+router.get("/api/status-page/monitor-list/:slug", cache("5 minutes"), async (_request, response) => {
     allowDevAllOrigin(response);
 
     try {
@@ -172,7 +167,7 @@ router.get("/api/status-page/monitor-list", cache("5 minutes"), async (_request,
 
 // Status Page Polling Data
 // Can fetch only if published
-router.get("/api/status-page/heartbeat", cache("5 minutes"), async (_request, response) => {
+router.get("/api/status-page/heartbeat/:slug", cache("5 minutes"), async (_request, response) => {
     allowDevAllOrigin(response);
 
     try {

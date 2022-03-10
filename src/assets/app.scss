@@ -92,6 +92,10 @@ textarea.form-control {
     }
 }
 
+.btn-dark {
+    background-color: #161B22;
+}
+
 @media (max-width: 550px) {
     .table-shadow-box {
         padding: 10px !important;
@@ -162,12 +166,12 @@ textarea.form-control {
     .form-check-input:checked {
         border-color: $primary; // Re-apply bootstrap border
     }
-    
+
     .form-switch .form-check-input {
         background-color: #232f3b;
     }
 
-    a,
+    a:not(.btn),
     .table,
     .nav-link {
         color: $dark-font-color;

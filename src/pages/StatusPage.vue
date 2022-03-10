@@ -247,6 +247,7 @@ export default {
 
     data() {
         return {
+            slug: null,
             enableEditMode: false,
             enableEditIncidentMode: false,
             hasToken: false,
@@ -296,15 +297,15 @@ export default {
         },
 
         isPublished() {
-            return this.config.statusPagePublished;
+            return this.config.published;
         },
 
         theme() {
-            return this.config.statusPageTheme;
+            return this.config.theme;
         },
 
         tagsVisible() {
-            return this.config.statusPageTags
+            return this.config.showTags;
         },
 
         logoClass() {
@@ -378,8 +379,8 @@ export default {
         },
 
         // Set Theme
-        "config.statusPageTheme"() {
-            this.$root.statusPageTheme = this.config.statusPageTheme;
+        "config.theme"() {
+            this.$root.statusPageTheme = this.config.theme;
             this.loadedTheme = true;
         },
 
@@ -409,7 +410,13 @@ export default {
         }
     },
     async mounted() {
-        axios.get("/api/status-page/config").then((res) => {
+        this.slug = this.$route.params.slug;
+
+        if (!this.slug) {
+            this.slug = "default";
+        }
+
+        axios.get("/api/status-page/config/" + this.slug).then((res) => {
             this.config = res.data;
 
             if (this.config.logo) {
@@ -417,13 +424,13 @@ export default {
             }
         });
 
-        axios.get("/api/status-page/incident").then((res) => {
+        axios.get("/api/status-page/incident/" + this.slug).then((res) => {
             if (res.data.ok) {
                 this.incident = res.data.incident;
             }
         });
 
-        axios.get("/api/status-page/monitor-list").then((res) => {
+        axios.get("/api/status-page/monitor-list/" + this.slug).then((res) => {
             this.$root.publicGroupList = res.data;
         });
 
@@ -438,7 +445,7 @@ export default {
         updateHeartbeatList() {
             // If editMode, it will use the data from websocket.
             if (! this.editMode) {
-                axios.get("/api/status-page/heartbeat").then((res) => {
+                axios.get("/api/status-page/heartbeat/" + this.slug).then((res) => {
                     this.$root.heartbeatList = res.data.heartbeatList;
                     this.$root.uptimeList = res.data.uptimeList;
                     this.loadedData = true;
@@ -485,10 +492,10 @@ export default {
         },
 
         changeTheme(name) {
-            this.config.statusPageTheme = name;
+            this.config.theme = name;
         },
         changeTagsVisibilty(newState) {
-            this.config.statusPageTags = newState;
+            this.config.showTags = newState;
 
             // On load, the status page will not include tags if it's not enabled for security reasons
             // Which means if we enable tags, it won't show in the UI until saved
@@ -501,9 +508,9 @@ export default {
                         return {
                             ...monitor,
                             tags: newState ? this.$root.monitorList[monitor.id].tags : []
-                        }
+                        };
                     })
-                }
+                };
             });
         },
 

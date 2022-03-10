@@ -167,6 +167,8 @@ footer {
         margin: 0.5em;
         padding: 0.7em 1em;
         cursor: pointer;
+        border-left-width: 0;
+        transition: all ease-in-out 0.1s;
     }
 
     .menu-item:hover {

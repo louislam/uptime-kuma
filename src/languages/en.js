@@ -183,7 +183,7 @@ export default {
     "Edit Status Page": "Edit Status Page",
     "Go to Dashboard": "Go to Dashboard",
     "Status Page": "Status Page",
-    "Status Pages": "Status Page",
+    "Status Pages": "Status Pages",
     defaultNotificationName: "My {notification} Alert ({number})",
     here: "here",
     Required: "Required",

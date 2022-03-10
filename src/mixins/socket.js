@@ -33,6 +33,7 @@ export default {
             uptimeList: { },
             tlsInfoList: {},
             notificationList: [],
+            statusPageList: [],
             connectionErrorMsg: "Cannot connect to the socket server. Reconnecting...",
         };
     },
@@ -101,6 +102,11 @@ export default {
 
             socket.on("notificationList", (data) => {
                 this.notificationList = data;
+            });
+
+            socket.on("statusPageList", (data) => {
+                console.log(data);
+                this.statusPageList = data;
             });
 
             socket.on("heartbeat", (data) => {

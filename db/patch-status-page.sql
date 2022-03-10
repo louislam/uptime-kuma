@@ -10,7 +10,9 @@ CREATE TABLE [status_page](
     [published] BOOLEAN NOT NULL DEFAULT 1,
     [search_engine_index] BOOLEAN NOT NULL DEFAULT 1,
     [show_tags] BOOLEAN NOT NULL DEFAULT 0,
-    [password] VARCHAR
+    [password] VARCHAR,
+    [date_created] DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    [date_modified] DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE UNIQUE INDEX [slug] ON [status_page]([slug]);
