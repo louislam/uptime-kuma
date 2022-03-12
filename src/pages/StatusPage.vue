@@ -310,7 +310,7 @@ export default {
         },
 
         tagsVisible() {
-            return this.config.statusPageTags
+            return this.config.statusPageTags;
         },
 
         logoClass() {
@@ -452,7 +452,11 @@ export default {
                         const monitorHeartbeats = heartbeatList[currentId];
                         const lastHeartbeat = monitorHeartbeats.at(-1);
 
-                        return lastHeartbeat.status === 0 ? downMonitorsAmount + 1 : downMonitorsAmount;
+                        if (lastHeartbeat) {
+                            return lastHeartbeat.status === 0 ? downMonitorsAmount + 1 : downMonitorsAmount;
+                        } else {
+                            return downMonitorsAmount;
+                        }
                     }, 0);
 
                     favicon.badge(downMonitors);
@@ -519,9 +523,9 @@ export default {
                         return {
                             ...monitor,
                             tags: newState ? this.$root.monitorList[monitor.id].tags : []
-                        }
+                        };
                     })
-                }
+                };
             });
         },
 
