@@ -68,7 +68,7 @@
         "chardet": "^1.3.0",
         "chart.js": "~3.6.0",
         "chartjs-adapter-dayjs": "~1.0.0",
-        "check-password-strength": "^2.0.3",
+        "check-password-strength": "^2.0.5",
         "command-exists": "~1.2.9",
         "compare-versions": "~3.6.0",
         "dayjs": "~1.10.7",
