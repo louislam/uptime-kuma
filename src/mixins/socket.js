@@ -1,6 +1,7 @@
 import { io } from "socket.io-client";
 import { useToast } from "vue-toastification";
 import jwt_decode from "jwt-decode";
+import Favico from "favico.js";
 const toast = useToast();
 
 let socket;
@@ -10,6 +11,10 @@ const noSocketIOPages = [
     "/status",
     "/"
 ];
+
+const favicon = new Favico({
+    animation: "none"
+});
 
 export default {
 
@@ -398,9 +403,49 @@ export default {
 
             return result;
         },
+
+        stats() {
+            let result = {
+                up: 0,
+                down: 0,
+                unknown: 0,
+                pause: 0,
+            };
+
+            for (let monitorID in this.$root.monitorList) {
+                let beat = this.$root.lastHeartbeatList[monitorID];
+                let monitor = this.$root.monitorList[monitorID];
+
+                if (monitor && ! monitor.active) {
+                    result.pause++;
+                } else if (beat) {
+                    if (beat.status === 1) {
+                        result.up++;
+                    } else if (beat.status === 0) {
+                        result.down++;
+                    } else if (beat.status === 2) {
+                        result.up++;
+                    } else {
+                        result.unknown++;
+                    }
+                } else {
+                    result.unknown++;
+                }
+            }
+
+            return result;
+        },
     },
 
     watch: {
+
+        // Update Badge
+        "stats.down"(to, from) {
+            if (to !== from) {
+                favicon.badge(to);
+                console.log(to);
+            }
+        },
 
         // Reload the SPA if the server version is changed.
         "info.version"(to, from) {

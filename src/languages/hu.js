@@ -362,4 +362,12 @@ export default {
     smtpDkimHashAlgo: "Hash algoritmus (nem kötelező)",
     smtpDkimheaderFieldNames: "Fejléc kulcsok a bejelentkezéshez (nem kötelező)",
     smtpDkimskipFields: "Fejléc kulcsok egyéb esetben (nem kötelező)",
+    PushByTechulus: "Techulus push",
+    gorush: "Gorush",
+    alerta: "Alerta",
+    alertaApiEndpoint: "API végpont",
+    alertaEnvironment: "Környezet",
+    alertaApiKey: "API kulcs",
+    alertaAlertState: "Figyelmeztetési állapot",
+    alertaRecoverState: "Visszaállási állapot",
 };

@@ -361,4 +361,13 @@ export default {
     smtpDkimHashAlgo: "Хеш алгоритъм (по желание)",
     smtpDkimheaderFieldNames: "Хедър ключове за подписване (по желание)",
     smtpDkimskipFields: "Хедър ключове, които да не се подписват (по желание)",
+    PushByTechulus: "Push от Techulus",
+    GoogleChat: "Google Chat (Само за работното пространство на Google)",
+    gorush: "Gorush",
+    alerta: "Alerta",
+    alertaApiEndpoint: "Крайна точка на API",
+    alertaEnvironment: "Среда",
+    alertaApiKey: "API Ключ",
+    alertaAlertState: "Състояние на тревога",
+    alertaRecoverState: "Състояние на възстановяване",
 };
