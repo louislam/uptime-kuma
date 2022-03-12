@@ -16,8 +16,6 @@ const favicon = new Favico({
     animation: "none"
 });
 
-let downMonitors = [];
-
 export default {
 
     data() {
@@ -126,14 +124,10 @@ export default {
                 if (data.important) {
 
                     if (data.status === 0) {
-                        downMonitors.push(data.monitorID);
-                        favicon.badge(downMonitors.length);
                         toast.error(`[${this.monitorList[data.monitorID].name}] [DOWN] ${data.msg}`, {
                             timeout: false,
                         });
                     } else if (data.status === 1) {
-                        downMonitors = downMonitors.filter(monitor => monitor !== data.monitorID);
-                        favicon.badge(downMonitors.length);
                         toast.success(`[${this.monitorList[data.monitorID].name}] [Up] ${data.msg}`, {
                             timeout: 20000,
                         });
@@ -150,11 +144,6 @@ export default {
             });
 
             socket.on("heartbeatList", (monitorID, data, overwrite = false) => {
-                const lastElement = data.at(-1);
-                if (lastElement.status === 0) {
-                    downMonitors.push(monitorID);
-                    favicon.badge(downMonitors.length);
-                }
                 if (! (monitorID in this.heartbeatList) || overwrite) {
                     this.heartbeatList[monitorID] = data;
                 } else {
@@ -330,15 +319,11 @@ export default {
         },
 
         deleteMonitor(monitorID, callback) {
-            downMonitors = downMonitors.filter(monitor => monitor !== monitorID);
-            favicon.badge(downMonitors.length);
             socket.emit("deleteMonitor", monitorID, callback);
         },
 
         clearData() {
             console.log("reset heartbeat list");
-            downMonitors = [];
-            favicon.badge(0);
             this.heartbeatList = {};
             this.importantHeartbeatList = {};
         },
@@ -412,9 +397,49 @@ export default {
 
             return result;
         },
+
+        stats() {
+            let result = {
+                up: 0,
+                down: 0,
+                unknown: 0,
+                pause: 0,
+            };
+
+            for (let monitorID in this.$root.monitorList) {
+                let beat = this.$root.lastHeartbeatList[monitorID];
+                let monitor = this.$root.monitorList[monitorID];
+
+                if (monitor && ! monitor.active) {
+                    result.pause++;
+                } else if (beat) {
+                    if (beat.status === 1) {
+                        result.up++;
+                    } else if (beat.status === 0) {
+                        result.down++;
+                    } else if (beat.status === 2) {
+                        result.up++;
+                    } else {
+                        result.unknown++;
+                    }
+                } else {
+                    result.unknown++;
+                }
+            }
+
+            return result;
+        },
     },
 
     watch: {
+
+        // Update Badge
+        "stats.down"(to, from) {
+            if (to !== from) {
+                favicon.badge(to);
+                console.log(to);
+            }
+        },
 
         // Reload the SPA if the server version is changed.
         "info.version"(to, from) {
