@@ -1,82 +1,117 @@
 <template>
-    <div class="mb-3">
-        <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>
-        <input id="hostname" v-model="$parent.notification.smtpHost" type="text" class="form-control" required>
-    </div>
-
-    <div class="mb-3">
-        <label for="port" class="form-label">{{ $t("Port") }}</label>
-        <input id="port" v-model="$parent.notification.smtpPort" type="number" class="form-control" required min="0" max="65535" step="1">
-    </div>
-
-    <div class="mb-3">
-        <label for="secure" class="form-label">Secure</label>
-        <select id="secure" v-model="$parent.notification.smtpSecure" class="form-select">
-            <option :value="false">{{ $t("secureOptionNone") }}</option>
-            <option :value="true">{{ $t("secureOptionTLS") }}</option>
-        </select>
-    </div>
-
-    <div class="mb-3">
-        <div class="form-check">
-            <input id="ignore-tls-error" v-model="$parent.notification.smtpIgnoreTLSError" class="form-check-input" type="checkbox" value="">
-            <label class="form-check-label" for="ignore-tls-error">
-                {{ $t("Ignore TLS Error") }}
-            </label>
+    <div>
+        <div class="mb-3">
+            <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>
+            <input id="hostname" v-model="$parent.notification.smtpHost" type="text" class="form-control" required>
         </div>
-    </div>
 
-    <div class="mb-3">
-        <label for="username" class="form-label">{{ $t("Username") }}</label>
-        <input id="username" v-model="$parent.notification.smtpUsername" type="text" class="form-control" autocomplete="false">
-    </div>
-
-    <div class="mb-3">
-        <label for="password" class="form-label">{{ $t("Password") }}</label>
-        <HiddenInput id="password" v-model="$parent.notification.smtpPassword" :required="false" autocomplete="one-time-code"></HiddenInput>
-    </div>
-
-    <div class="mb-3">
-        <label for="from-email" class="form-label">{{ $t("From Email") }}</label>
-        <input id="from-email" v-model="$parent.notification.smtpFrom" type="text" class="form-control" required autocomplete="false" placeholder="&quot;Uptime Kuma&quot; &lt;example@kuma.pet&gt;">
-        <div class="form-text">
+        <div class="mb-3">
+            <label for="port" class="form-label">{{ $t("Port") }}</label>
+            <input id="port" v-model="$parent.notification.smtpPort" type="number" class="form-control" required min="0" max="65535" step="1">
         </div>
-    </div>
 
-    <div class="mb-3">
-        <label for="to-email" class="form-label">{{ $t("To Email") }}</label>
-        <input id="to-email" v-model="$parent.notification.smtpTo" type="text" class="form-control" autocomplete="false" placeholder="example2@kuma.pet, example3@kuma.pet" :required="!hasRecipient">
-    </div>
+        <div class="mb-3">
+            <label for="secure" class="form-label">{{ $t("Security") }}</label>
+            <select id="secure" v-model="$parent.notification.smtpSecure" class="form-select">
+                <option :value="false">{{ $t("secureOptionNone") }}</option>
+                <option :value="true">{{ $t("secureOptionTLS") }}</option>
+            </select>
+        </div>
 
-    <div class="mb-3">
-        <label for="to-cc" class="form-label">{{ $t("smtpCC") }}</label>
-        <input id="to-cc" v-model="$parent.notification.smtpCC" type="text" class="form-control" autocomplete="false" :required="!hasRecipient">
-    </div>
+        <div class="mb-3">
+            <div class="form-check">
+                <input id="ignore-tls-error" v-model="$parent.notification.smtpIgnoreTLSError" class="form-check-input" type="checkbox" value="">
+                <label class="form-check-label" for="ignore-tls-error">
+                    {{ $t("Ignore TLS Error") }}
+                </label>
+            </div>
+        </div>
 
-    <div class="mb-3">
-        <label for="to-bcc" class="form-label">{{ $t("smtpBCC") }}</label>
-        <input id="to-bcc" v-model="$parent.notification.smtpBCC" type="text" class="form-control" autocomplete="false" :required="!hasRecipient">
-    </div>
+        <div class="mb-3">
+            <label for="username" class="form-label">{{ $t("Username") }}</label>
+            <input id="username" v-model="$parent.notification.smtpUsername" type="text" class="form-control" autocomplete="false">
+        </div>
 
-    <div class="mb-3">
-        <label for="subject-email" class="form-label">{{ $t("emailCustomSubject") }}</label>
-        <input id="subject-email" v-model="$parent.notification.customSubject" type="text" class="form-control" autocomplete="false" placeholder="">
-        <div v-pre class="form-text">
-            (leave blank for default one)<br />
-            {{NAME}}: Service Name<br />
-            {{HOSTNAME_OR_URL}}: Hostname or URL<br />
-            {{URL}}: URL<br />
-            {{STATUS}}: Status<br />
+        <div class="mb-3">
+            <label for="password" class="form-label">{{ $t("Password") }}</label>
+            <HiddenInput id="password" v-model="$parent.notification.smtpPassword" :required="false" autocomplete="one-time-code"></HiddenInput>
+        </div>
+
+        <div class="mb-3">
+            <label for="from-email" class="form-label">{{ $t("From Email") }}</label>
+            <input id="from-email" v-model="$parent.notification.smtpFrom" type="text" class="form-control" required autocomplete="false" placeholder="&quot;Uptime Kuma&quot; &lt;example@kuma.pet&gt;">
+            <div class="form-text">
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label for="to-email" class="form-label">{{ $t("To Email") }}</label>
+            <input id="to-email" v-model="$parent.notification.smtpTo" type="text" class="form-control" autocomplete="false" placeholder="example2@kuma.pet, example3@kuma.pet" :required="!hasRecipient">
+        </div>
+
+        <div class="mb-3">
+            <label for="to-cc" class="form-label">{{ $t("smtpCC") }}</label>
+            <input id="to-cc" v-model="$parent.notification.smtpCC" type="text" class="form-control" autocomplete="false" :required="!hasRecipient">
+        </div>
+
+        <div class="mb-3">
+            <label for="to-bcc" class="form-label">{{ $t("smtpBCC") }}</label>
+            <input id="to-bcc" v-model="$parent.notification.smtpBCC" type="text" class="form-control" autocomplete="false" :required="!hasRecipient">
+        </div>
+
+        <ToggleSection :heading="$t('smtpDkimSettings')">
+            <i18n-t tag="div" keypath="smtpDkimDesc" class="form-text mb-3">
+                <a href="https://nodemailer.com/dkim/" target="_blank">{{ $t("documentation") }}</a>
+            </i18n-t>
+
+            <div class="mb-3">
+                <label for="dkim-domain" class="form-label">{{ $t("smtpDkimDomain") }}</label>
+                <input id="dkim-domain" v-model="$parent.notification.smtpDkimDomain" type="text" class="form-control" autocomplete="false" placeholder="example.com">
+            </div>
+            <div class="mb-3">
+                <label for="dkim-key-selector" class="form-label">{{ $t("smtpDkimKeySelector") }}</label>
+                <input id="dkim-key-selector" v-model="$parent.notification.smtpDkimKeySelector" type="text" class="form-control" autocomplete="false" placeholder="2017">
+            </div>
+            <div class="mb-3">
+                <label for="dkim-private-key" class="form-label">{{ $t("smtpDkimPrivateKey") }}</label>
+                <textarea id="dkim-private-key" v-model="$parent.notification.smtpDkimPrivateKey" rows="5" type="text" class="form-control" autocomplete="false" placeholder="-----BEGIN PRIVATE KEY-----"></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="dkim-hash-algo" class="form-label">{{ $t("smtpDkimHashAlgo") }}</label>
+                <input id="dkim-hash-algo" v-model="$parent.notification.smtpDkimHashAlgo" type="text" class="form-control" autocomplete="false" placeholder="sha256">
+            </div>
+            <div class="mb-3">
+                <label for="dkim-header-fields" class="form-label">{{ $t("smtpDkimheaderFieldNames") }}</label>
+                <input id="dkim-header-fields" v-model="$parent.notification.smtpDkimheaderFieldNames" type="text" class="form-control" autocomplete="false" placeholder="message-id:date:from:to">
+            </div>
+            <div class="mb-3">
+                <label for="dkim-skip-fields" class="form-label">{{ $t("smtpDkimskipFields") }}</label>
+                <input id="dkim-skip-fields" v-model="$parent.notification.smtpDkimskipFields" type="text" class="form-control" autocomplete="false" placeholder="message-id:date">
+            </div>
+        </ToggleSection>
+
+        <div class="mb-3">
+            <label for="subject-email" class="form-label">{{ $t("emailCustomSubject") }}</label>
+            <input id="subject-email" v-model="$parent.notification.customSubject" type="text" class="form-control" autocomplete="false" placeholder="">
+            <div v-pre class="form-text">
+                (leave blank for default one)<br />
+                {{NAME}}: Service Name<br />
+                {{HOSTNAME_OR_URL}}: Hostname or URL<br />
+                {{URL}}: URL<br />
+                {{STATUS}}: Status<br />
+            </div>
         </div>
     </div>
 </template>
 
 <script>
 import HiddenInput from "../HiddenInput.vue";
+import ToggleSection from "../ToggleSection.vue";
 
 export default {
     components: {
         HiddenInput,
+        ToggleSection,
     },
     computed: {
         hasRecipient() {

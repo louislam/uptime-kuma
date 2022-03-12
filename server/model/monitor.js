@@ -58,6 +58,8 @@ class Monitor extends BeanModel {
             method: this.method,
             body: this.body,
             headers: this.headers,
+            basic_auth_user: this.basic_auth_user,
+            basic_auth_pass: this.basic_auth_pass,
             hostname: this.hostname,
             port: this.port,
             maxretries: this.maxretries,
@@ -78,6 +80,15 @@ class Monitor extends BeanModel {
             notificationIDList,
             tags: tags,
         };
+    }
+
+    /**
+     * Encode user and password to Base64 encoding
+     * for HTTP "basic" auth, as per RFC-7617
+     * @returns {string}
+     */
+    encodeBase64(user, pass) {
+        return Buffer.from(user + ":" + pass).toString("base64");
     }
 
     /**
@@ -107,6 +118,19 @@ class Monitor extends BeanModel {
         let prometheus = new Prometheus(this);
 
         const beat = async () => {
+
+            let beatInterval = this.interval;
+
+            if (! beatInterval) {
+                beatInterval = 1;
+            }
+
+            if (demoMode) {
+                if (beatInterval < 20) {
+                    console.log("beat interval too low, reset to 20s");
+                    beatInterval = 20;
+                }
+            }
 
             // Expose here for prometheus update
             // undefined if not https
@@ -141,15 +165,26 @@ class Monitor extends BeanModel {
                     // Do not do any queries/high loading things before the "bean.ping"
                     let startTime = dayjs().valueOf();
 
+                    // HTTP basic auth
+                    let basicAuthHeader = {};
+                    if (this.basic_auth_user) {
+                        basicAuthHeader = {
+                            "Authorization": "Basic " + this.encodeBase64(this.basic_auth_user, this.basic_auth_pass),
+                        };
+                    }
+
+                    debug(`[${this.name}] Prepare Options for axios`);
+
                     const options = {
                         url: this.url,
                         method: (this.method || "get").toLowerCase(),
                         ...(this.body ? { data: JSON.parse(this.body) } : {}),
                         timeout: this.interval * 1000 * 0.8,
                         headers: {
-                            "Accept": "*/*",
+                            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
                             "User-Agent": "Uptime-Kuma/" + version,
                             ...(this.headers ? JSON.parse(this.headers) : {}),
+                            ...(basicAuthHeader),
                         },
                         httpsAgent: new https.Agent({
                             maxCachedSessions: 0,      // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
@@ -160,6 +195,8 @@ class Monitor extends BeanModel {
                             return checkStatusCode(status, this.getAcceptedStatuscodes());
                         },
                     };
+
+                    debug(`[${this.name}] Axios Request`);
                     let res = await axios.request(options);
                     bean.msg = `${res.status} - ${res.statusText}`;
                     bean.ping = dayjs().valueOf() - startTime;
@@ -167,12 +204,13 @@ class Monitor extends BeanModel {
                     // Check certificate if https is used
                     let certInfoStartTime = dayjs().valueOf();
                     if (this.getUrl()?.protocol === "https:") {
+                        debug(`[${this.name}] Check cert`);
                         try {
                             let tlsInfoObject = checkCertificate(res);
                             tlsInfo = await this.updateTlsInfo(tlsInfoObject);
 
                             if (!this.getIgnoreTls()) {
-                                debug("call sendCertNotification");
+                                debug(`[${this.name}] call sendCertNotification`);
                                 await this.sendCertNotification(tlsInfoObject);
                             }
 
@@ -271,11 +309,14 @@ class Monitor extends BeanModel {
                     debug("heartbeatCount" + heartbeatCount + " " + time);
 
                     if (heartbeatCount <= 0) {
+                        // Fix #922, since previous heartbeat could be inserted by api, it should get from database
+                        previousBeat = await Monitor.getPreviousHeartbeat(this.id);
+
                         throw new Error("No heartbeat in the time window");
                     } else {
                         // No need to insert successful heartbeat for push type, so end here
                         retries = 0;
-                        this.heartbeatInterval = setTimeout(beat, this.interval * 1000);
+                        this.heartbeatInterval = setTimeout(beat, beatInterval * 1000);
                         return;
                     }
 
@@ -349,17 +390,19 @@ class Monitor extends BeanModel {
                 }
             }
 
-            let beatInterval = this.interval;
-
+            debug(`[${this.name}] Check isImportant`);
             let isImportant = Monitor.isImportantBeat(isFirstBeat, previousBeat?.status, bean.status);
 
             // Mark as important if status changed, ignore pending pings,
             // Don't notify if disrupted changes to up
             if (isImportant) {
                 bean.important = true;
+
+                debug(`[${this.name}] sendNotification`);
                 await Monitor.sendNotification(isFirstBeat, this, bean);
 
                 // Clear Status Page Cache
+                debug(`[${this.name}] apicache clear`);
                 apicache.clear();
 
             } else {
@@ -377,24 +420,23 @@ class Monitor extends BeanModel {
                 console.warn(`Monitor #${this.id} '${this.name}': Failing: ${bean.msg} | Interval: ${beatInterval} seconds | Type: ${this.type}`);
             }
 
+            debug(`[${this.name}] Send to socket`);
             io.to(this.user_id).emit("heartbeat", bean.toJSON());
             Monitor.sendStats(io, this.id, this.user_id);
 
+            debug(`[${this.name}] Store`);
             await R.store(bean);
+
+            debug(`[${this.name}] prometheus.update`);
             prometheus.update(bean, tlsInfo);
 
             previousBeat = bean;
 
             if (! this.isStop) {
-
-                if (demoMode) {
-                    if (beatInterval < 20) {
-                        console.log("beat interval too low, reset to 20s");
-                        beatInterval = 20;
-                    }
-                }
-
+                debug(`[${this.name}] SetTimeout for next check.`);
                 this.heartbeatInterval = setTimeout(safeBeat, beatInterval * 1000);
+            } else {
+                console.log(`[${this.name}] isStop = true, no next check.`);
             }
 
         };
@@ -714,6 +756,15 @@ class Monitor extends BeanModel {
         } else {
             debug("No notification, no need to send cert notification");
         }
+    }
+
+    static async getPreviousHeartbeat(monitorID) {
+        return await R.getRow(`
+            SELECT status, time FROM heartbeat
+            WHERE id = (select MAX(id) from heartbeat where monitor_id = ?)
+        `, [
+            monitorID
+        ]);
     }
 }
 

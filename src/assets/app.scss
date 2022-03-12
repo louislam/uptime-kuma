@@ -156,8 +156,13 @@ textarea.form-control {
 
     .form-check-input {
         background-color: $dark-bg2;
+        border-color: $dark-border-color;
     }
 
+    .form-check-input:checked {
+        border-color: $primary; // Re-apply bootstrap border
+    }
+    
     .form-switch .form-check-input {
         background-color: #232f3b;
     }
@@ -189,7 +194,7 @@ textarea.form-control {
         opacity: 1;
     }
 
-    .table-hover > tbody > tr:hover {
+    .table-hover > tbody > tr:hover > * {
         --bs-table-accent-bg: #070a10;
         color: $dark-font-color;
     }
@@ -313,6 +318,20 @@ textarea.form-control {
     opacity: 0;
 }
 
+.slide-fade-up-enter-active {
+    transition: all 0.2s $easing-in;
+}
+
+.slide-fade-up-leave-active {
+    transition: all 0.2s $easing-in;
+}
+
+.slide-fade-up-enter-from,
+.slide-fade-up-leave-to {
+    transform: translateY(-50px);
+    opacity: 0;
+}
+
 .monitor-list {
     &.scrollbar {
         min-height: calc(100vh - 240px);
@@ -345,6 +364,10 @@ textarea.form-control {
 
         &.active {
             background-color: #cdf8f4;
+        }
+        .tags {
+            // Removes margin to line up tags list with uptime percentage
+            margin-left: -0.25rem;
         }
     }
 }

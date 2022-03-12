@@ -48,7 +48,7 @@ function Ping(host, options) {
         this._args = (options.args) ? options.args : [ "-n", "-t", timeout, "-c", "1", host ];
         this._regmatch = /=([0-9.]+?) ms/;
 
-    } else if (util.FBSD) {
+    } else if (util.BSD) {
         this._bin = "/sbin/ping";
 
         const defaultArgs = [ "-n", "-t", timeout, "-c", "1", host ];

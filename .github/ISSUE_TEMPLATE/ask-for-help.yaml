@@ -1,8 +1,23 @@
 name: "❓ Ask for help"
 description: "Submit any question related to Uptime Kuma"
-title: "[Help]: <title>"
+#title: "[Help] "
 labels: [help]
 body:
+  - type: checkboxes
+    id: no-duplicate-issues
+    attributes:
+      label: "⚠️ Please verify that this bug has NOT been raised before."
+      description: "Search in the issues sections by clicking [HERE](https://github.com/louislam/uptime-kuma/issues?q=)"
+      options:
+        - label: "I checked and didn't find similar issue"
+          required: true
+  - type: checkboxes
+    attributes:
+      label: "🛡️ Security Policy"
+      description: Please review the security policy before reporting security related issues/bugs.
+      options:
+        - label: I agree to have read this project [Security Policy](https://github.com/louislam/uptime-kuma/security/policy)
+          required: true
   - type: textarea
     id: steps-to-reproduce
     validations:
@@ -14,17 +29,17 @@ body:
   - type: input
     id: uptime-kuma-version
     attributes:
-      label: "🐻 Uptime-Kuma version"
-      description: "Which version of Uptime-Kuma are you running?"
-      placeholder: "Ex. 1.9.x"
+      label: "🐻 Uptime-Kuma Version"
+      description: "Which version of Uptime-Kuma are you running? Please do NOT provide the docker tag such as latest or 1"
+      placeholder: "Ex. 1.10.0"
     validations:
       required: true
   - type: input
     id: operating-system
     attributes:
-      label: "💻 Operating System"
+      label: "💻 Operating System and Arch"
       description: "Which OS is your server/device running on?"
-      placeholder: "Ex. Ubuntu 20.04"
+      placeholder: "Ex. Ubuntu 20.04 x86"
     validations:
       required: true
   - type: input
@@ -32,23 +47,15 @@ body:
     attributes:
       label: "🌐 Browser"
       description: "Which browser are you running on?"
-      placeholder: "Ex. Firefox"
+      placeholder: "Ex. Google Chrome 95.0.4638.69"
     validations:
       required: true
   - type: input
     id: docker-version
     attributes:
-      label: "🐋 Docker"
+      label: "🐋 Docker Version"
       description: "If running with Docker, which version are you running?"
-      placeholder: "Ex. 20.10.9"
-    validations:
-      required: false
-  - type: input
-    id: docker-image-tag
-    attributes:
-      label: "🏷️ Docker Image Tag"
-      description: "Which Docker image tag are you using? If running '1' or 'latest', please specify image hash."
-      placeholder: "Ex. 1.9.1"
+      placeholder: "Ex. Docker 20.10.9 / K8S / Podman"
     validations:
       required: false
   - type: input
@@ -56,21 +63,6 @@ body:
     attributes:
       label: "🟩 NodeJS Version"
       description: "If running with Node.js? which version are you running?"
-      placeholder: "14.x"
+      placeholder: "Ex. 14.18.0"
     validations:
       required: false
-  - type: checkboxes
-    id: no-duplicate-issues
-    attributes:
-      label: "👀 Have you spent some time to check if this question has been raised before?"
-      description: "Please search in the issues without filters [here](https://github.com/louislam/uptime-kuma/issues?q=)"
-      options:
-        - label: "I checked and didn't find similar question"
-          required: true
-  - type: checkboxes
-    attributes:
-      label: "🛡️ Security Policy"
-      description: Please review the security policy before reporting security related issues/bugs.
-      options:
-        - label: I agree to have read this project [Security Policy](https://github.com/louislam/uptime-kuma/security/policy)
-          required: true

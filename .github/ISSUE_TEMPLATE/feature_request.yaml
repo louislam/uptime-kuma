@@ -1,8 +1,16 @@
 name: 🚀 Feature Request
 description: "Submit a proposal for a new feature"
-title: "[Feature]: <title>"
-labels: [enhancement]
+#title: "[Feature] "
+labels: [feature-request]
 body:
+  - type: checkboxes
+    id: no-duplicate-issues
+    attributes:
+      label: "⚠️ Please verify that this feature request has NOT been suggested before."
+      description: "Search in the issues sections by clicking [HERE](https://github.com/louislam/uptime-kuma/issues?q=)"
+      options:
+        - label: "I checked and didn't find similar feature request"
+          required: true
   - type: dropdown
     id: feature-area
     attributes:
@@ -49,11 +57,3 @@ body:
       label: "📝 Additional Context"
       description: "Add any other context or screenshots about the feature request here."
       placeholder: "..."
-  - type: checkboxes
-    id: no-duplicate-issues
-    attributes:
-      label: "👀 Have you spent some time to check if this feature request has been raised before?"
-      description: "Please search in the issues without filters [here](https://github.com/louislam/uptime-kuma/issues?q=)"
-      options:
-        - label: "I checked and didn't find similar feature request"
-          required: true
