@@ -446,8 +446,11 @@ export default {
             if (! this.editMode) {
                 axios.get("/api/status-page/heartbeat").then((res) => {
                     const { heartbeatList, uptimeList } = res.data;
-                    const heartbeatIds = Object.keys(heartbeatList);
 
+                    this.$root.heartbeatList = heartbeatList;
+                    this.$root.uptimeList = uptimeList;
+
+                    const heartbeatIds = Object.keys(heartbeatList);
                     const downMonitors = heartbeatIds.reduce((downMonitorsAmount, currentId) => {
                         const monitorHeartbeats = heartbeatList[currentId];
                         const lastHeartbeat = monitorHeartbeats.at(-1);
@@ -461,8 +464,6 @@ export default {
 
                     favicon.badge(downMonitors);
 
-                    this.$root.heartbeatList = heartbeatList;
-                    this.$root.uptimeList = uptimeList;
                     this.loadedData = true;
                 });
             }
