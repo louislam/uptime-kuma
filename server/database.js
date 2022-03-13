@@ -10,8 +10,6 @@ const knex = require("knex");
  */
 class Database {
 
-    static templatePath = "./db/kuma.db";
-
     /**
      * Data Dir (Default: ./data)
      */
@@ -34,33 +32,6 @@ class Database {
      */
     static backupPath = null;
 
-    /**
-     * Add patch filename in key
-     * Values:
-     *      true: Add it regardless of order
-     *      false: Do nothing
-     *      { parents: []}: Need parents before add it
-     */
-    static patchList = {
-        "patch-setting-value-type.sql": true,
-        "patch-improve-performance.sql": true,
-        "patch-2fa.sql": true,
-        "patch-add-retry-interval-monitor.sql": true,
-        "patch-incident-table.sql": true,
-        "patch-group-table.sql": true,
-        "patch-monitor-push_token.sql": true,
-        "patch-http-monitor-method-body-and-headers.sql": true,
-        "patch-2fa-invalidate-used-token.sql": true,
-        "patch-notification_sent_history.sql": true,
-        "patch-monitor-basic-auth.sql": true,
-    }
-
-    /**
-     * The final version should be 10 after merged tag feature
-     * @deprecated Use patchList for any new feature
-     */
-    static latestVersion = 10;
-
     static noReject = true;
 
     static init(args) {
@@ -81,26 +52,14 @@ class Database {
     }
 
     static async connect(testMode = false) {
-        const acquireConnectionTimeout = 120 * 1000;
+        const knexConfig = require('../knexfile.js');
+        knexConfig.setPath(Database.path);
+        
+        Database.dialect = knexConfig.getDialect();
 
-        const Dialect = require("knex/lib/dialects/sqlite3/index.js");
-        Dialect.prototype._driver = () => require("@louislam/sqlite3");
-
-        const knexInstance = knex({
-            client: Dialect,
-            connection: {
-                filename: Database.path,
-                acquireConnectionTimeout: acquireConnectionTimeout,
-            },
-            useNullAsDefault: true,
-            pool: {
-                min: 1,
-                max: 1,
-                idleTimeoutMillis: 120 * 1000,
-                propagateCreateError: false,
-                acquireTimeoutMillis: acquireConnectionTimeout,
-            }
-        });
+        const knexInstance = knex(knexConfig['development']);
+        
+        await knexInstance.migrate.latest();
 
         R.setup(knexInstance);
 
@@ -112,173 +71,22 @@ class Database {
         R.freeze(true);
         await R.autoloadModels("./server/model");
 
-        await R.exec("PRAGMA foreign_keys = ON");
-        if (testMode) {
-            // Change to MEMORY
-            await R.exec("PRAGMA journal_mode = MEMORY");
-        } else {
-            // Change to WAL
-            await R.exec("PRAGMA journal_mode = WAL");
-        }
-        await R.exec("PRAGMA cache_size = -12000");
-        await R.exec("PRAGMA auto_vacuum = FULL");
-
-        console.log("SQLite config:");
-        console.log(await R.getAll("PRAGMA journal_mode"));
-        console.log(await R.getAll("PRAGMA cache_size"));
-        console.log("SQLite Version: " + await R.getCell("SELECT sqlite_version()"));
-    }
-
-    static async patch() {
-        let version = parseInt(await setting("database_version"));
-
-        if (! version) {
-            version = 0;
-        }
-
-        console.info("Your database version: " + version);
-        console.info("Latest database version: " + this.latestVersion);
-
-        if (version === this.latestVersion) {
-            console.info("Database patch not needed");
-        } else if (version > this.latestVersion) {
-            console.info("Warning: Database version is newer than expected");
-        } else {
-            console.info("Database patch is needed");
-
-            this.backup(version);
-
-            // Try catch anything here, if gone wrong, restore the backup
-            try {
-                for (let i = version + 1; i <= this.latestVersion; i++) {
-                    const sqlFile = `./db/patch${i}.sql`;
-                    console.info(`Patching ${sqlFile}`);
-                    await Database.importSQLFile(sqlFile);
-                    console.info(`Patched ${sqlFile}`);
-                    await setSetting("database_version", i);
-                }
-            } catch (ex) {
-                await Database.close();
-
-                console.error(ex);
-                console.error("Start Uptime-Kuma failed due to issue patching the database");
-                console.error("Please submit a bug report if you still encounter the problem after restart: https://github.com/louislam/uptime-kuma/issues");
-
-                this.restore();
-                process.exit(1);
+        if (Database.dialect == "sqlite3") {
+            await R.exec("PRAGMA foreign_keys = ON");
+            if (testMode) {
+                // Change to MEMORY
+                await R.exec("PRAGMA journal_mode = MEMORY");
+            } else {
+                // Change to WAL
+                await R.exec("PRAGMA journal_mode = WAL");
             }
-        }
+            await R.exec("PRAGMA cache_size = -12000");
+            await R.exec("PRAGMA auto_vacuum = FULL");
 
-        await this.patch2();
-    }
-
-    /**
-     * Call it from patch() only
-     * @returns {Promise<void>}
-     */
-    static async patch2() {
-        console.log("Database Patch 2.0 Process");
-        let databasePatchedFiles = await setting("databasePatchedFiles");
-
-        if (! databasePatchedFiles) {
-            databasePatchedFiles = {};
-        }
-
-        debug("Patched files:");
-        debug(databasePatchedFiles);
-
-        try {
-            for (let sqlFilename in this.patchList) {
-                await this.patch2Recursion(sqlFilename, databasePatchedFiles);
-            }
-
-            if (this.patched) {
-                console.log("Database Patched Successfully");
-            }
-
-        } catch (ex) {
-            await Database.close();
-
-            console.error(ex);
-            console.error("Start Uptime-Kuma failed due to issue patching the database");
-            console.error("Please submit the bug report if you still encounter the problem after restart: https://github.com/louislam/uptime-kuma/issues");
-
-            this.restore();
-
-            process.exit(1);
-        }
-
-        await setSetting("databasePatchedFiles", databasePatchedFiles);
-    }
-
-    /**
-     * Used it patch2() only
-     * @param sqlFilename
-     * @param databasePatchedFiles
-     */
-    static async patch2Recursion(sqlFilename, databasePatchedFiles) {
-        let value = this.patchList[sqlFilename];
-
-        if (! value) {
-            console.log(sqlFilename + " skip");
-            return;
-        }
-
-        // Check if patched
-        if (! databasePatchedFiles[sqlFilename]) {
-            console.log(sqlFilename + " is not patched");
-
-            if (value.parents) {
-                console.log(sqlFilename + " need parents");
-                for (let parentSQLFilename of value.parents) {
-                    await this.patch2Recursion(parentSQLFilename, databasePatchedFiles);
-                }
-            }
-
-            this.backup(dayjs().format("YYYYMMDDHHmmss"));
-
-            console.log(sqlFilename + " is patching");
-            this.patched = true;
-            await this.importSQLFile("./db/" + sqlFilename);
-            databasePatchedFiles[sqlFilename] = true;
-            console.log(sqlFilename + " was patched successfully");
-
-        } else {
-            debug(sqlFilename + " is already patched, skip");
-        }
-    }
-
-    /**
-     * Sadly, multi sql statements is not supported by many sqlite libraries, I have to implement it myself
-     * @param filename
-     * @returns {Promise<void>}
-     */
-    static async importSQLFile(filename) {
-
-        await R.getCell("SELECT 1");
-
-        let text = fs.readFileSync(filename).toString();
-
-        // Remove all comments (--)
-        let lines = text.split("\n");
-        lines = lines.filter((line) => {
-            return ! line.startsWith("--");
-        });
-
-        // Split statements by semicolon
-        // Filter out empty line
-        text = lines.join("\n");
-
-        let statements = text.split(";")
-            .map((statement) => {
-                return statement.trim();
-            })
-            .filter((statement) => {
-                return statement !== "";
-            });
-
-        for (let statement of statements) {
-            await R.exec(statement);
+            console.log("SQLite config:");
+            console.log(await R.getAll("PRAGMA journal_mode"));
+            console.log(await R.getAll("PRAGMA cache_size"));
+            console.log("SQLite Version: " + await R.getCell("SELECT sqlite_version()"));
         }
     }
 
@@ -309,7 +117,7 @@ class Database {
                 console.log("Waiting to close the database");
             }
         }
-        console.log("SQLite closed");
+        console.log("Database closed");
 
         process.removeListener("unhandledRejection", listener);
     }
@@ -320,6 +128,9 @@ class Database {
      * @param version
      */
     static backup(version) {
+        if (Database.dialect !== 'sqlite3')
+            return;
+        
         if (! this.backupPath) {
             console.info("Backing up the database");
             this.backupPath = this.dataDir + "kuma.db.bak" + version;
@@ -343,6 +154,9 @@ class Database {
      *
      */
     static restore() {
+        if (Database.dialect !== 'sqlite3')
+            return;
+        
         if (this.backupPath) {
             console.error("Patching the database failed!!! Restoring the backup");
 
@@ -384,6 +198,9 @@ class Database {
     }
 
     static getSize() {
+        if (Database.dialect !== 'sqlite3')
+            throw {message: "DB size is only supported on SQLite"};
+        
         debug("Database.getSize()");
         let stats = fs.statSync(Database.path);
         debug(stats);
@@ -391,7 +208,10 @@ class Database {
     }
 
     static async shrink() {
-        await R.exec("VACUUM");
+        if (Database.dialect !== 'sqlite3')
+            throw {message: "VACUUM is only supported on SQLite"};
+        
+        return R.exec("VACUUM");
     }
 }
 
