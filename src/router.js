@@ -19,6 +19,7 @@ import Security from "./components/settings/Security.vue";
 import Backup from "./components/settings/Backup.vue";
 import About from "./components/settings/About.vue";
 import ManageStatusPage from "./pages/ManageStatusPage.vue";
+import AddStatusPage from "./pages/AddStatusPage.vue";
 
 const routes = [
     {
@@ -102,6 +103,10 @@ const routes = [
                     {
                         path: "/manage-status-page",
                         component: ManageStatusPage,
+                    },
+                    {
+                        path: "/add-status-page",
+                        component: AddStatusPage,
                     },
                 ],
             },

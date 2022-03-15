@@ -223,10 +223,10 @@ class Database {
         if (title) {
             console.log("Migrating Status Page");
 
-            let statusPageCheck = await R.findOne("status_page", " slug = '' ");
+            let statusPageCheck = await R.findOne("status_page", " slug = 'default' ");
 
             if (statusPageCheck !== null) {
-                console.log("Migrating Status Page - Fail, empty slug record is already existing");
+                console.log("Migrating Status Page - Skip, default slug record is already existing");
                 return;
             }
 

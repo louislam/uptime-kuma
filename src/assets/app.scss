@@ -163,6 +163,12 @@ textarea.form-control {
         border-color: $dark-border-color;
     }
 
+    .input-group-text {
+        background-color: #282f39;
+        border-color: $dark-border-color;
+        color: $dark-font-color;
+    }
+
     .form-check-input:checked {
         border-color: $primary; // Re-apply bootstrap border
     }

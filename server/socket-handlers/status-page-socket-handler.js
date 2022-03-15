@@ -71,7 +71,7 @@ module.exports.statusPageSocketHandler = (socket) => {
 
     // Save Status Page
     // imgDataUrl Only Accept PNG!
-    socket.on("saveStatusPage", async (config, imgDataUrl, publicGroupList, callback) => {
+    socket.on("saveStatusPage", async (slug, config, imgDataUrl, publicGroupList, callback) => {
 
         try {
             checkLogin(socket);
@@ -97,7 +97,24 @@ module.exports.statusPageSocketHandler = (socket) => {
             }
 
             // Save Config
-            await setSettings("statusPage", config);
+            let statusPage = await R.findOne("status_page", " slug = ? ", [
+                slug
+            ]);
+
+            if (!statusPage) {
+                throw new Error("No slug?");
+            }
+
+            statusPage.slug = config.slug;
+            statusPage.title = config.title;
+            statusPage.icon = config.logo;
+            statusPage.theme = config.theme;
+            //statusPage.published = ;
+            //statusPage.search_engine_index = ;
+            statusPage.show_tags = config.showTags;
+            //statusPage.password = null;
+
+            await R.store(statusPage);
 
             // Save Public Group List
             const groupIDList = [];

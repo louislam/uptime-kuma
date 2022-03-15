@@ -18,9 +18,14 @@
                         </div>
                         <div class="col-lg-6 col-xl-5">
                             <div class="btn-group">
-                                <a target="_blank" :href="'/status/' + statusPage.slug" class="btn btn-dark">
+                                <a :href="'/status/' + statusPage.slug" class="btn btn-dark">
                                     <font-awesome-icon icon="external-link-square-alt" /><br />
-                                    {{ $t("Manage") }}
+                                    {{ $t("View") }}
+                                </a>
+
+                                <a :href="'/status/' + statusPage.slug +'?edit'" class="btn btn-dark">
+                                    <font-awesome-icon icon="pen" /><br />
+                                    {{ $t("Edit") }}
                                 </a>
 
                                 <router-link to="/" class="btn btn-danger">

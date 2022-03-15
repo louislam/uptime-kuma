@@ -7,9 +7,9 @@ const toast = useToast();
 let socket;
 
 const noSocketIOPages = [
-    "/status-page",
-    "/status",
-    "/"
+    /^\/status-page$/,  //  /status-page
+    /^\/status/,    // /status**
+    /^\/$/      //  /
 ];
 
 const favicon = new Favico({
@@ -57,8 +57,12 @@ export default {
             }
 
             // No need to connect to the socket.io for status page
-            if (! bypass && noSocketIOPages.includes(location.pathname)) {
-                return;
+            if (! bypass && location.pathname) {
+                for (let page of noSocketIOPages) {
+                    if (location.pathname.match(page)) {
+                        return;
+                    }
+                }
             }
 
             this.socket.initedSocketIO = true;
@@ -110,7 +114,6 @@ export default {
             });
 
             socket.on("statusPageList", (data) => {
-                console.log(data);
                 this.statusPageList = data;
             });
 
@@ -443,7 +446,6 @@ export default {
         "stats.down"(to, from) {
             if (to !== from) {
                 favicon.badge(to);
-                console.log(to);
             }
         },
 
@@ -460,9 +462,15 @@ export default {
 
         // Reconnect the socket io, if status-page to dashboard
         "$route.fullPath"(newValue, oldValue) {
-            if (noSocketIOPages.includes(newValue)) {
-                return;
+
+            if (newValue) {
+                for (let page of noSocketIOPages) {
+                    if (newValue.match(page)) {
+                        return;
+                    }
+                }
             }
+
             this.initSocketIO();
         },
 
