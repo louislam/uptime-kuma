@@ -25,4 +25,7 @@ CREATE TABLE [status_page_cname](
     [domain] VARCHAR NOT NULL UNIQUE
 );
 
+ALTER TABLE incident ADD status_page_id INTEGER;
+ALTER TABLE [group] ADD status_page_id INTEGER;
+
 COMMIT;

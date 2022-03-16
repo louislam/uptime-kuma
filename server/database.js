@@ -240,8 +240,18 @@ class Database {
             statusPage.search_engine_index = await setting("searchEngineIndex");
             statusPage.show_tags = await setting("statusPageTags");
             statusPage.password = null;
-            await R.store(statusPage);
+            let id = await R.store(statusPage);
+
+            await R.exec("UPDATE incident SET status_page_id = ? WHERE status_page_id IS NULL", [
+                id
+            ]);
+
+            await R.exec("UPDATE [group] SET status_page_id = ? WHERE status_page_id IS NULL", [
+                id
+            ]);
+
             await R.exec("DELETE FROM setting WHERE type = 'statusPage'");
+
             console.log("Migrating Status Page - Done");
         }
 

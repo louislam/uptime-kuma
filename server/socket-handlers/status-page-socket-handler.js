@@ -5,21 +5,31 @@ const { debug } = require("../../src/util");
 const ImageDataURI = require("../image-data-uri");
 const Database = require("../database");
 const apicache = require("../modules/apicache");
+const StatusPage = require("../model/status_page");
 
 module.exports.statusPageSocketHandler = (socket) => {
 
     // Post or edit incident
-    socket.on("postIncident", async (incident, callback) => {
+    socket.on("postIncident", async (slug, incident, callback) => {
         try {
             checkLogin(socket);
 
-            await R.exec("UPDATE incident SET pin = 0 ");
+            let statusPageID = await StatusPage.slugToID(slug);
+
+            if (!statusPageID) {
+                throw new Error("slug is not found");
+            }
+
+            await R.exec("UPDATE incident SET pin = 0 WHERE status_page_id = ? ", [
+                statusPageID
+            ]);
 
             let incidentBean;
 
             if (incident.id) {
-                incidentBean = await R.findOne("incident", " id = ?", [
-                    incident.id
+                incidentBean = await R.findOne("incident", " id = ? AND status_page_id = ? ", [
+                    incident.id,
+                    statusPageID
                 ]);
             }
 
@@ -31,6 +41,7 @@ module.exports.statusPageSocketHandler = (socket) => {
             incidentBean.content = incident.content;
             incidentBean.style = incident.style;
             incidentBean.pin = true;
+            incidentBean.status_page_id = statusPageID;
 
             if (incident.id) {
                 incidentBean.lastUpdatedDate = R.isoDateTime(dayjs.utc());
@@ -52,11 +63,15 @@ module.exports.statusPageSocketHandler = (socket) => {
         }
     });
 
-    socket.on("unpinIncident", async (callback) => {
+    socket.on("unpinIncident", async (slug, callback) => {
         try {
             checkLogin(socket);
 
-            await R.exec("UPDATE incident SET pin = 0 WHERE pin = 1");
+            let statusPageID = await StatusPage.slugToID(slug);
+
+            await R.exec("UPDATE incident SET pin = 0 WHERE pin = 1 AND status_page_id = ? ", [
+                statusPageID
+            ]);
 
             callback({
                 ok: true,
@@ -125,13 +140,15 @@ module.exports.statusPageSocketHandler = (socket) => {
             for (let group of publicGroupList) {
                 let groupBean;
                 if (group.id) {
-                    groupBean = await R.findOne("group", " id = ? AND public = 1 ", [
-                        group.id
+                    groupBean = await R.findOne("group", " id = ? AND public = 1 AND status_page_id = ? ", [
+                        group.id,
+                        statusPage.id
                     ]);
                 } else {
                     groupBean = R.dispense("group");
                 }
 
+                groupBean.status_page_id = statusPage.id;
                 groupBean.name = group.name;
                 groupBean.public = true;
                 groupBean.weight = groupOrder++;
@@ -143,7 +160,6 @@ module.exports.statusPageSocketHandler = (socket) => {
                 ]);
 
                 let monitorOrder = 1;
-                console.log(group.monitorList);
 
                 for (let monitor of group.monitorList) {
                     let relationBean = R.dispense("monitor_group");

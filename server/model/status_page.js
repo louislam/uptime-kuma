@@ -41,6 +41,12 @@ class StatusPage extends BeanModel {
         };
     }
 
+    static async slugToID(slug) {
+        return await R.getCell("SELECT id FROM status_page WHERE slug = ? ", [
+            slug
+        ]);
+    }
+
 }
 
 module.exports = StatusPage;

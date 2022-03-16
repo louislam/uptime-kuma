@@ -404,9 +404,12 @@ export default {
         },
 
         "config.showTags"(value) {
-            console.log("here???");
             this.changeTagsVisibility(value);
-        }
+        },
+
+        "$root.monitorList"() {
+            this.changeTagsVisibility(this.config.showTags);
+        },
 
     },
     async created() {
@@ -437,29 +440,14 @@ export default {
         }
 
         axios.get("/api/status-page/" + this.slug).then((res) => {
-            this.config = res.data;
+            this.config = res.data.config;
 
             if (this.config.logo) {
                 this.imgDataUrl = this.config.logo;
             }
-        });
 
-        axios.get("/api/status-page/config/" + this.slug).then((res) => {
-            this.config = res.data;
-
-            if (this.config.logo) {
-                this.imgDataUrl = this.config.logo;
-            }
-        });
-
-        axios.get("/api/status-page/incident/" + this.slug).then((res) => {
-            if (res.data.ok) {
-                this.incident = res.data.incident;
-            }
-        });
-
-        axios.get("/api/status-page/monitor-list/" + this.slug).then((res) => {
-            this.$root.publicGroupList = res.data;
+            this.incident = res.data.incident;
+            this.$root.publicGroupList = res.data.publicGroupList;
         });
 
         // 5mins a loop
@@ -560,21 +548,27 @@ export default {
 
         changeTagsVisibility(show) {
 
-            // On load, the status page will not include tags if it's not enabled for security reasons
-            // Which means if we enable tags, it won't show in the UI until saved
-            // So we have this to enhance UX and load in the tags from the authenticated source instantly
-            this.$root.publicGroupList = this.$root.publicGroupList.map((group) => {
-                return {
-                    ...group,
-                    monitorList: group.monitorList.map((monitor) => {
-                        // We only include the tags if visible so we can reuse the logic to hide the tags on disable
-                        return {
-                            ...monitor,
-                            tags: show ? this.$root.monitorList[monitor.id].tags : []
-                        };
-                    })
-                };
-            });
+            // If Edit Mode
+            if (Object.keys(this.$root.monitorList).length > 0) {
+                // On load, the status page will not include tags if it's not enabled for security reasons
+                // Which means if we enable tags, it won't show in the UI until saved
+                // So we have this to enhance UX and load in the tags from the authenticated source instantly
+                this.$root.publicGroupList = this.$root.publicGroupList.map((group) => {
+                    return {
+                        ...group,
+                        monitorList: group.monitorList.map((monitor) => {
+                            // We only include the tags if visible so we can reuse the logic to hide the tags on disable
+                            return {
+                                ...monitor,
+                                tags: show ? this.$root.monitorList[monitor.id].tags : []
+                            };
+                        })
+                    };
+                });
+            } else {
+
+            }
+
         },
 
         /**
@@ -610,7 +604,7 @@ export default {
                 return;
             }
 
-            this.$root.getSocket().emit("postIncident", this.incident, (res) => {
+            this.$root.getSocket().emit("postIncident", this.slug, this.incident, (res) => {
 
                 if (res.ok) {
                     this.enableEditIncidentMode = false;
