@@ -436,6 +436,14 @@ export default {
             this.slug = "default";
         }
 
+        axios.get("/api/status-page/" + this.slug).then((res) => {
+            this.config = res.data;
+
+            if (this.config.logo) {
+                this.imgDataUrl = this.config.logo;
+            }
+        });
+
         axios.get("/api/status-page/config/" + this.slug).then((res) => {
             this.config = res.data;
 

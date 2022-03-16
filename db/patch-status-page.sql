@@ -5,14 +5,15 @@ CREATE TABLE [status_page](
     [id] INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
     [slug] VARCHAR(255) NOT NULL UNIQUE,
     [title] VARCHAR(255) NOT NULL,
+    [description] TEXT,
     [icon] VARCHAR(255) NOT NULL,
     [theme] VARCHAR(30) NOT NULL,
     [published] BOOLEAN NOT NULL DEFAULT 1,
     [search_engine_index] BOOLEAN NOT NULL DEFAULT 1,
     [show_tags] BOOLEAN NOT NULL DEFAULT 0,
     [password] VARCHAR,
-    [date_created] DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    [date_modified] DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    [created_date] DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    [modified_date] DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE UNIQUE INDEX [slug] ON [status_page]([slug]);

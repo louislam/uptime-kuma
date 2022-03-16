@@ -21,6 +21,7 @@ class StatusPage extends BeanModel {
             id: this.id,
             slug: this.slug,
             title: this.title,
+            description: this.description,
             icon: this.icon,
             theme: this.theme,
             published: !!this.published,
@@ -32,6 +33,7 @@ class StatusPage extends BeanModel {
         return {
             slug: this.slug,
             title: this.title,
+            description: this.description,
             icon: this.icon,
             theme: this.theme,
             published: !!this.published,

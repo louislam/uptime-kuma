@@ -220,11 +220,7 @@ async function checkPublished() {
  * @returns {Promise<boolean>}
  */
 async function isPublished() {
-    const value = await setting("statusPagePublished");
-    if (value === null) {
-        return true;
-    }
-    return value;
+    return true;
 }
 
 function send403(res, msg = "") {

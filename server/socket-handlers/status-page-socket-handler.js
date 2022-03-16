@@ -107,12 +107,14 @@ module.exports.statusPageSocketHandler = (socket) => {
 
             statusPage.slug = config.slug;
             statusPage.title = config.title;
+            statusPage.description = config.description;
             statusPage.icon = config.logo;
             statusPage.theme = config.theme;
             //statusPage.published = ;
             //statusPage.search_engine_index = ;
             statusPage.show_tags = config.showTags;
             //statusPage.password = null;
+            statusPage.modified_date = R.isoDateTime();
 
             await R.store(statusPage);
 

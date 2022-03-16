@@ -233,6 +233,7 @@ class Database {
             let statusPage = R.dispense("status_page");
             statusPage.slug = "";
             statusPage.title = title;
+            statusPage.description = await setting("description");
             statusPage.icon = await setting("icon");
             statusPage.theme = await setting("statusPageTheme");
             statusPage.published = await setting("statusPagePublished");
