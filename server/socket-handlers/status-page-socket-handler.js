@@ -185,8 +185,56 @@ module.exports.statusPageSocketHandler = (socket) => {
             });
 
         } catch (error) {
-            console.log(error);
+            console.error(error);
 
+            callback({
+                ok: false,
+                msg: error.message,
+            });
+        }
+    });
+
+    // Add a new status page
+    socket.on("addStatusPage", async (title, slug, callback) => {
+        try {
+            checkLogin(socket);
+
+            title = title?.trim();
+            slug = slug?.trim();
+
+            // Check empty
+            if (!title || !slug) {
+                throw new Error("Please input all fields");
+            }
+
+            // Make sure slug is string
+            if (typeof slug !== "string") {
+                throw new Error("Slug -Accept string only");
+            }
+
+            // lower case only
+            slug = slug.toLowerCase();
+
+            // Check slug a-z, 0-9, - only
+            // Regex from: https://stackoverflow.com/questions/22454258/js-regex-string-validation-for-slug
+            if (!slug.match(/^[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*$/)) {
+                throw new Error("Invalid Slug");
+            }
+
+            let statusPage = R.dispense("status_page");
+            statusPage.slug = slug;
+            statusPage.title = title;
+            statusPage.theme = "light";
+            statusPage.icon = "";
+            await R.store(statusPage);
+
+            callback({
+                ok: true,
+                msg: "OK!"
+            });
+
+        } catch (error) {
+            console.error(error);
             callback({
                 ok: false,
                 msg: error.message,

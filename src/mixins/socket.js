@@ -255,6 +255,14 @@ export default {
             }
         },
 
+        toastSuccess(msg) {
+            toast.success(msg);
+        },
+
+        toastError(msg) {
+            toast.error(msg);
+        },
+
         login(username, password, token, callback) {
             socket.emit("login", {
                 username,
