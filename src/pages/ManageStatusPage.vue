@@ -11,7 +11,9 @@
 
             <div class="shadow-box">
                 <template v-if="$root.statusPageListLoaded">
-                    <span v-if="$root.statusPageList.length === 0">No status pages</span>
+                    <span v-if="$root.statusPageList.length === 0" class="d-flex align-items-center justify-content-center my-3 spinner">
+                        No status pages
+                    </span>
 
                     <router-link v-for="statusPage in $root.statusPageList" :key="statusPage.slug" :to="'/status/' + statusPage.slug" class="item">
                         <img :src="icon(statusPage.icon)" alt class="logo me-2" />
