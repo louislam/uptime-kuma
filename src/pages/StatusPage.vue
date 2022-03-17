@@ -62,7 +62,7 @@
         <!-- Main Status Page -->
         <div :class="{ edit: enableEditMode}" class="main">
             <!-- Logo & Title -->
-            <h1 class="mb-4">
+            <h1 class="mb-4 title-flex">
                 <!-- Logo -->
                 <span class="logo-wrapper" @click="showImageCropUploadMethod">
                     <img :src="logoURL" alt class="logo me-2" :class="logoClass" />
@@ -719,6 +719,12 @@ footer {
 
 .description span {
     min-width: 50px;
+}
+
+.title-flex {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .logo-wrapper {
