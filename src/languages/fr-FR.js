@@ -179,7 +179,7 @@ export default {
     "Edit Status Page": "Modifier la page de statut",
     "Go to Dashboard": "Accéder au tableau de bord",
     "Status Page": "Status Page",
-    "Status Pages": "Status Page",
+    "Status Pages": "Status Pages",
     defaultNotificationName: "Ma notification {notification} numéro ({number})",
     here: "ici",
     Required: "Requis",
