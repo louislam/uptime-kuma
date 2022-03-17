@@ -460,6 +460,12 @@ export default {
         feedInterval = setInterval(() => {
             this.updateHeartbeatList();
         }, (300 + 10) * 1000);
+
+        // Go to edit page if ?edit present
+        // null means ?edit present, but no value
+        if (this.$route.query.edit || this.$route.query.edit === null) {
+            this.edit();
+        }
     },
     methods: {
 
@@ -516,12 +522,7 @@ export default {
                     console.log(time);
 
                     setTimeout(() => {
-                        // If the slug was changed, go to the new slug
-                        if (this.slug !== this.config.slug) {
-                            location.href = "/status/" + this.config.slug;
-                        } else {
-                            location.reload();
-                        }
+                        location.href = "/status/" + this.config.slug;
                     }, time);
 
                 } else {
@@ -548,7 +549,7 @@ export default {
         },
 
         discard() {
-            location.reload();
+            location.href = "/status/" + this.slug;
         },
 
         changeTagsVisibility(show) {
