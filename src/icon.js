@@ -36,6 +36,7 @@ import {
     faChevronDown,
     faPen,
     faExternalLinkSquareAlt,
+    faSpinner,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -71,6 +72,7 @@ library.add(
     faChevronDown,
     faPen,
     faExternalLinkSquareAlt,
+    faSpinner,
 );
 
 export { FontAwesomeIcon };

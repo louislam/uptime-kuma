@@ -38,6 +38,7 @@ export default {
             uptimeList: { },
             tlsInfoList: {},
             notificationList: [],
+            statusPageListLoaded: false,
             statusPageList: [],
             connectionErrorMsg: "Cannot connect to the socket server. Reconnecting...",
         };
@@ -114,6 +115,7 @@ export default {
             });
 
             socket.on("statusPageList", (data) => {
+                this.statusPageListLoaded = true;
                 this.statusPageList = data;
             });
 

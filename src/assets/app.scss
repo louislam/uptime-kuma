@@ -448,6 +448,10 @@ textarea.form-control {
     border-radius: 10px !important;
 }
 
+.spinner {
+    color: $primary;
+}
+
 // Localization
 
 @import "localization.scss";
