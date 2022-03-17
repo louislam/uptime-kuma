@@ -40,6 +40,11 @@
                 <textarea id="cname" v-model="config.domanNames" rows="3" disabled class="form-control" :placeholder="domainNamesPlaceholder"></textarea>
             </div>
 
+            <button class="btn btn-danger me-2" @click="discard">
+                <font-awesome-icon icon="trash" />
+                {{ $t("Delete") }}
+            </button>
+
             <!-- Sidebar Footer -->
             <div class="sidebar-footer">
                 <button class="btn btn-success me-2" @click="save">
@@ -53,6 +58,8 @@
                 </button>
             </div>
         </div>
+
+        <!-- Main Status Page -->
         <div :class="{ edit: enableEditMode}" class="main">
             <!-- Logo & Title -->
             <h1 class="mb-4">
@@ -232,6 +239,7 @@ import { STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_PARTIAL_DOWN, UP 
 import { useToast } from "vue-toastification";
 import dayjs from "dayjs";
 import Favico from "favico.js";
+import { getResBaseURL } from "../util-frontend";
 
 const toast = useToast();
 
@@ -427,10 +435,7 @@ export default {
         });
 
         // Special handle for dev
-        const env = process.env.NODE_ENV;
-        if (env === "development" || localStorage.dev === "dev") {
-            this.baseURL = location.protocol + "//" + location.hostname + ":3001";
-        }
+        this.baseURL = getResBaseURL();
     },
     async mounted() {
         this.slug = this.$route.params.slug;
@@ -442,8 +447,8 @@ export default {
         axios.get("/api/status-page/" + this.slug).then((res) => {
             this.config = res.data.config;
 
-            if (this.config.logo) {
-                this.imgDataUrl = this.config.logo;
+            if (this.config.icon) {
+                this.imgDataUrl = this.config.icon;
             }
 
             this.incident = res.data.incident;

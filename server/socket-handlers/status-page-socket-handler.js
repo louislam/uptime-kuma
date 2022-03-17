@@ -90,8 +90,16 @@ module.exports.statusPageSocketHandler = (socket) => {
 
         try {
             checkLogin(socket);
-
             apicache.clear();
+
+            // Save Config
+            let statusPage = await R.findOne("status_page", " slug = ? ", [
+                slug
+            ]);
+
+            if (!statusPage) {
+                throw new Error("No slug?");
+            }
 
             const header = "data:image/png;base64,";
 
@@ -103,21 +111,14 @@ module.exports.statusPageSocketHandler = (socket) => {
                     throw new Error("Only allowed PNG logo.");
                 }
 
+                const filename = `logo${statusPage.id}.png`;
+
                 // Convert to file
-                await ImageDataURI.outputFile(imgDataUrl, Database.uploadDir + "logo.png");
-                config.logo = "/upload/logo.png?t=" + Date.now();
+                await ImageDataURI.outputFile(imgDataUrl, Database.uploadDir + filename);
+                config.logo = `/upload/${filename}?t=` + Date.now();
 
             } else {
                 config.icon = imgDataUrl;
-            }
-
-            // Save Config
-            let statusPage = await R.findOne("status_page", " slug = ? ", [
-                slug
-            ]);
-
-            if (!statusPage) {
-                throw new Error("No slug?");
             }
 
             statusPage.slug = config.slug;

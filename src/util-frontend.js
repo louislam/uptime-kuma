@@ -51,7 +51,19 @@ export function timezoneList() {
 }
 
 export function setPageLocale() {
-    const html = document.documentElement
-    html.setAttribute('lang', currentLocale() )
-    html.setAttribute('dir', localeDirection() )
+    const html = document.documentElement;
+    html.setAttribute("lang", currentLocale() );
+    html.setAttribute("dir", localeDirection() );
+}
+
+/**
+ * Mainly used for dev, because the backend and the frontend are in different ports.
+ */
+export function getResBaseURL() {
+    const env = process.env.NODE_ENV;
+    if (env === "development" || localStorage.dev === "dev") {
+        return location.protocol + "//" + location.hostname + ":3001";
+    } else {
+        return "";
+    }
 }
