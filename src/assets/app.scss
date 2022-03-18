@@ -148,6 +148,10 @@ textarea.form-control {
     background-color: #090c10;
     color: $dark-font-color;
 
+    mark, .mark {
+        background-color: #b6ad86;
+    }
+
     &::-webkit-scrollbar-thumb, ::-webkit-scrollbar-thumb {
         background: $dark-border-color;
     }

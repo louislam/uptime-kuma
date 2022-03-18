@@ -498,9 +498,11 @@ export default {
         },
 
         edit() {
-            this.$root.initSocketIO(true);
-            this.enableEditMode = true;
-            this.clickedEditButton = true;
+            if (this.hasToken) {
+                this.$root.initSocketIO(true);
+                this.enableEditMode = true;
+                this.clickedEditButton = true;
+            }
         },
 
         save() {
