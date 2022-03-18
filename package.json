@@ -105,7 +105,7 @@
         "vue-image-crop-upload": "~3.0.3",
         "vue-multiselect": "~3.0.0-alpha.2",
         "vue-qrcode": "~1.0.0",
-        "vue-router": "~4.0.14",
+        "vue-router": "~4.0.12",
         "vue-toastification": "~2.0.0-rc.5",
         "vuedraggable": "~4.1.0"
     },
@@ -114,9 +114,9 @@
         "@babel/eslint-parser": "~7.15.8",
         "@babel/preset-env": "^7.15.8",
         "@types/bootstrap": "~5.1.6",
-        "@vitejs/plugin-legacy": "~1.7.1",
-        "@vitejs/plugin-vue": "~2.2.4",
-        "@vue/compiler-sfc": "~3.2.31",
+        "@vitejs/plugin-legacy": "~1.6.3",
+        "@vitejs/plugin-vue": "~1.9.4",
+        "@vue/compiler-sfc": "~3.2.22",
         "babel-plugin-rewire": "~1.2.0",
         "core-js": "~3.18.3",
         "cross-env": "~7.0.3",
@@ -130,6 +130,6 @@
         "stylelint": "~14.2.0",
         "stylelint-config-standard": "~24.0.0",
         "typescript": "~4.4.4",
-        "vite": "~2.8.6"
+        "vite": "~2.6.14"
     }
 }
