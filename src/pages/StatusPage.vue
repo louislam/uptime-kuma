@@ -403,7 +403,7 @@ export default {
 
         // Set Theme
         "config.theme"() {
-            this.$root.userTheme = this.config.theme;
+            this.$root.statusPageTheme = this.config.theme;
             this.loadedTheme = true;
         },
 
