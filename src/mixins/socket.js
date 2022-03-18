@@ -7,9 +7,9 @@ const toast = useToast();
 let socket;
 
 const noSocketIOPages = [
-    "/status-page",
-    "/status",
-    "/"
+    /^\/status-page$/,  //  /status-page
+    /^\/status/,    // /status**
+    /^\/$/      //  /
 ];
 
 const favicon = new Favico({
@@ -38,6 +38,8 @@ export default {
             uptimeList: { },
             tlsInfoList: {},
             notificationList: [],
+            statusPageListLoaded: false,
+            statusPageList: [],
             connectionErrorMsg: "Cannot connect to the socket server. Reconnecting...",
         };
     },
@@ -56,8 +58,12 @@ export default {
             }
 
             // No need to connect to the socket.io for status page
-            if (! bypass && noSocketIOPages.includes(location.pathname)) {
-                return;
+            if (! bypass && location.pathname) {
+                for (let page of noSocketIOPages) {
+                    if (location.pathname.match(page)) {
+                        return;
+                    }
+                }
             }
 
             this.socket.initedSocketIO = true;
@@ -106,6 +112,11 @@ export default {
 
             socket.on("notificationList", (data) => {
                 this.notificationList = data;
+            });
+
+            socket.on("statusPageList", (data) => {
+                this.statusPageListLoaded = true;
+                this.statusPageList = data;
             });
 
             socket.on("heartbeat", (data) => {
@@ -242,6 +253,14 @@ export default {
             } else {
                 toast.error(res.msg);
             }
+        },
+
+        toastSuccess(msg) {
+            toast.success(msg);
+        },
+
+        toastError(msg) {
+            toast.error(msg);
         },
 
         login(username, password, token, callback) {
@@ -437,7 +456,6 @@ export default {
         "stats.down"(to, from) {
             if (to !== from) {
                 favicon.badge(to);
-                console.log(to);
             }
         },
 
@@ -454,9 +472,15 @@ export default {
 
         // Reconnect the socket io, if status-page to dashboard
         "$route.fullPath"(newValue, oldValue) {
-            if (noSocketIOPages.includes(newValue)) {
-                return;
+
+            if (newValue) {
+                for (let page of noSocketIOPages) {
+                    if (newValue.match(page)) {
+                        return;
+                    }
+                }
             }
+
             this.initSocketIO();
         },
 

@@ -185,6 +185,7 @@ export default {
     "Edit Status Page": "编辑状态页面",
     "Go to Dashboard": "前往仪表盘",
     "Status Page": "状态页面",
+    "Status Pages": "状态页面",
     defaultNotificationName: "{notification} 通知（{number}）",
     here: "这里",
     Required: "必填",

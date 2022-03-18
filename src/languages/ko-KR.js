@@ -179,6 +179,7 @@ export default {
     "Edit Status Page": "상태 페이지 수정",
     "Go to Dashboard": "대시보드로 가기",
     "Status Page": "상태 페이지",
+    "Status Pages": "상태 페이지",
     defaultNotificationName: "내 {notification} 알림 ({number})",
     here: "여기",
     Required: "필수",

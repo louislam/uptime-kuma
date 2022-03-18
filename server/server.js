@@ -132,6 +132,7 @@ const { sendNotificationList, sendHeartbeatList, sendImportantHeartbeatList, sen
 const { statusPageSocketHandler } = require("./socket-handlers/status-page-socket-handler");
 const databaseSocketHandler = require("./socket-handlers/database-socket-handler");
 const TwoFA = require("./2fa");
+const StatusPage = require("./model/status_page");
 
 app.use(express.json());
 
@@ -200,8 +201,8 @@ exports.entryPage = "dashboard";
 
     // Entry Page
     app.get("/", async (_request, response) => {
-        if (exports.entryPage === "statusPage") {
-            response.redirect("/status");
+        if (exports.entryPage && exports.entryPage.startsWith("statusPage-")) {
+            response.redirect("/status/" + exports.entryPage.replace("statusPage-", ""));
         } else {
             response.redirect("/dashboard");
         }
@@ -1414,6 +1415,8 @@ async function afterLogin(socket, user) {
     for (let monitorID in monitorList) {
         await Monitor.sendStats(io, monitorID, user.id);
     }
+
+    await StatusPage.sendStatusPageList(io, socket);
 }
 
 async function getMonitorJSONList(userID) {

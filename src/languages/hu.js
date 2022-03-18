@@ -197,6 +197,7 @@ export default {
     line: "Line Messenger",
     mattermost: "Mattermost",
     "Status Page": "Státusz oldal",
+    "Status Pages": "Státusz oldal",
     "Primary Base URL": "Elsődleges URL",
     "Push URL": "Meghívandó URL",
     needPushEvery: "Ezt az URL-t kell meghívni minden {0} másodpercben.",

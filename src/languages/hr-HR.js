@@ -183,6 +183,7 @@ export default {
     "Edit Status Page": "Uredi Statusnu stranicu",
     "Go to Dashboard": "Na Kontrolnu ploču",
     "Status Page": "Statusna stranica",
+    "Status Pages": "Statusna stranica",
     defaultNotificationName: "Moja {number}. {notification} obavijest",
     here: "ovdje",
     Required: "Potrebno",

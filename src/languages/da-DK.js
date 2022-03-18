@@ -180,6 +180,7 @@ export default {
     "Edit Status Page": "Rediger Statusside",
     "Go to Dashboard": "Gå til Betjeningspanel",
     "Status Page": "Statusside",
+    "Status Pages": "Statusside",
     telegram: "Telegram",
     webhook: "Webhook",
     smtp: "Email (SMTP)",
