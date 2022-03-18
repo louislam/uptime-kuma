@@ -205,4 +205,3 @@ export default {
     alertaAlertState: "Häireseisund",
     alertaRecoverState: "Taasta algolek",
 };
-};
