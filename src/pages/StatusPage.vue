@@ -223,7 +223,7 @@
                     👀 {{ $t("statusPageNothing") }}
                 </div>
 
-                <PublicGroupList :edit-mode="enableEditMode" />
+                <PublicGroupList :edit-mode="enableEditMode" :show-tags="config.showTags" />
             </div>
 
             <footer class="mt-5 mb-4">
@@ -335,10 +335,6 @@ export default {
             return this.config.published;
         },
 
-        tagsVisible() {
-            return this.config.showTags;
-        },
-
         logoClass() {
             if (this.editMode) {
                 return {
@@ -419,13 +415,20 @@ export default {
             document.title = title;
         },
 
-        "config.showTags"(value) {
-            this.changeTagsVisibility(value);
-        },
-
         "$root.monitorList"() {
-            this.changeTagsVisibility(this.config.showTags);
-        },
+            let count = Object.keys(this.$root.monitorList).length;
+
+            // Since publicGroupList is getting from public rest api, monitors' tags may not present if showTags = false
+            if (count > 0) {
+                for (let group of this.$root.publicGroupList) {
+                    for (let monitor of group.monitorList) {
+                        if (monitor.tags === undefined && this.$root.monitorList[monitor.id]) {
+                            monitor.tags = this.$root.monitorList[monitor.id].tags;
+                        }
+                    }
+                }
+            }
+        }
 
     },
     async created() {
@@ -529,8 +532,6 @@ export default {
                         time = 0;
                     }
 
-                    console.log(time);
-
                     setTimeout(() => {
                         location.href = "/status/" + this.config.slug;
                     }, time);
@@ -575,29 +576,6 @@ export default {
 
         discard() {
             location.href = "/status/" + this.slug;
-        },
-
-        changeTagsVisibility(show) {
-
-            // If Edit Mode
-            if (Object.keys(this.$root.monitorList).length > 0) {
-                // On load, the status page will not include tags if it's not enabled for security reasons
-                // Which means if we enable tags, it won't show in the UI until saved
-                // So we have this to enhance UX and load in the tags from the authenticated source instantly
-                this.$root.publicGroupList = this.$root.publicGroupList.map((group) => {
-                    return {
-                        ...group,
-                        monitorList: group.monitorList.map((monitor) => {
-                            // We only include the tags if visible so we can reuse the logic to hide the tags on disable
-                            return {
-                                ...monitor,
-                                tags: show ? this.$root.monitorList[monitor.id].tags : []
-                            };
-                        })
-                    };
-                });
-            }
-
         },
 
         /**
