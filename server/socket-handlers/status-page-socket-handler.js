@@ -1,5 +1,5 @@
 const { R } = require("redbean-node");
-const { checkLogin, setSettings } = require("../util-server");
+const { checkLogin, setSettings, setSetting } = require("../util-server");
 const dayjs = require("dayjs");
 const { debug } = require("../../src/util");
 const ImageDataURI = require("../image-data-uri");
@@ -180,6 +180,12 @@ module.exports.statusPageSocketHandler = (socket) => {
             const slots = groupIDList.map(() => "?").join(",");
             await R.exec(`DELETE FROM \`group\` WHERE id NOT IN (${slots})`, groupIDList);
 
+            // Also change entry page to new slug if it is the default one, and slug is changed.
+            if (server.entryPage === "statusPage-" + slug && statusPage.slug !== slug) {
+                server.entryPage = "statusPage-" + statusPage.slug;
+                await setSetting("entryPage", server.entryPage, "general");
+            }
+
             callback({
                 ok: true,
                 publicGroupList,
@@ -255,7 +261,7 @@ module.exports.statusPageSocketHandler = (socket) => {
                 // Reset entry page if it is the default one.
                 if (server.entryPage === "statusPage-" + slug) {
                     server.entryPage = "dashboard";
-                    await setSettings("entryPage", server.entryPage, "general");
+                    await setSetting("entryPage", server.entryPage, "general");
                 }
 
                 // No need to delete records from `status_page_cname`, because it has cascade foreign key.
