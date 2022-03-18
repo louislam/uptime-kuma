@@ -18,7 +18,7 @@
             </a>
 
             <ul class="nav nav-pills">
-                <li class="nav-item me-2">
+                <li v-if="$root.loggedIn" class="nav-item me-2">
                     <router-link to="/manage-status-page" class="nav-link">
                         <font-awesome-icon icon="stream" /> {{ $t("Status Pages") }}
                     </router-link>

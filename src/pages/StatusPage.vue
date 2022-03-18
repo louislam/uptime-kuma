@@ -643,7 +643,7 @@ export default {
         },
 
         unpinIncident() {
-            this.$root.getSocket().emit("unpinIncident", () => {
+            this.$root.getSocket().emit("unpinIncident", this.slug, () => {
                 this.incident = null;
             });
         },

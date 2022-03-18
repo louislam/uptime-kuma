@@ -231,15 +231,28 @@ class Database {
             }
 
             let statusPage = R.dispense("status_page");
-            statusPage.slug = "";
+            statusPage.slug = "default";
             statusPage.title = title;
             statusPage.description = await setting("description");
             statusPage.icon = await setting("icon");
             statusPage.theme = await setting("statusPageTheme");
-            statusPage.published = await setting("statusPagePublished");
-            statusPage.search_engine_index = await setting("searchEngineIndex");
-            statusPage.show_tags = await setting("statusPageTags");
+            statusPage.published = !!await setting("statusPagePublished");
+            statusPage.search_engine_index = !!await setting("searchEngineIndex");
+            statusPage.show_tags = !!await setting("statusPageTags");
             statusPage.password = null;
+
+            if (!statusPage.title) {
+                statusPage.title = "My Status Page";
+            }
+
+            if (!statusPage.icon) {
+                statusPage.icon = "";
+            }
+
+            if (!statusPage.theme) {
+                statusPage.theme = "light";
+            }
+
             let id = await R.store(statusPage);
 
             await R.exec("UPDATE incident SET status_page_id = ? WHERE status_page_id IS NULL", [
@@ -251,6 +264,13 @@ class Database {
             ]);
 
             await R.exec("DELETE FROM setting WHERE type = 'statusPage'");
+
+            // Migrate Entry Page if it is status page
+            let entryPage = await setting("entryPage");
+
+            if (entryPage === "statusPage") {
+                await setSetting("entryPage", "statusPage-default", "general");
+            }
 
             console.log("Migrating Status Page - Done");
         }
