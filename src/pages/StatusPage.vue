@@ -40,10 +40,12 @@
                 <textarea id="cname" v-model="config.domanNames" rows="3" disabled class="form-control" :placeholder="domainNamesPlaceholder"></textarea>
             </div>
 
-            <button class="btn btn-danger me-2" @click="discard">
-                <font-awesome-icon icon="trash" />
-                {{ $t("Delete") }}
-            </button>
+            <div class="danger-zone">
+                <button class="btn btn-danger me-2" @click="deleteDialog">
+                    <font-awesome-icon icon="trash" />
+                    {{ $t("Delete") }}
+                </button>
+            </div>
 
             <!-- Sidebar Footer -->
             <div class="sidebar-footer">
@@ -228,6 +230,10 @@
                 {{ $t("Powered by") }} <a target="_blank" href="https://github.com/louislam/uptime-kuma">{{ $t("Uptime Kuma" ) }}</a>
             </footer>
         </div>
+
+        <Confirm ref="confirmDelete" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="deleteStatusPage">
+            {{ $t("deleteStatusPageMsg") }}
+        </Confirm>
     </div>
 </template>
 
@@ -240,6 +246,7 @@ import { useToast } from "vue-toastification";
 import dayjs from "dayjs";
 import Favico from "favico.js";
 import { getResBaseURL } from "../util-frontend";
+import Confirm from "../components/Confirm.vue";
 
 const toast = useToast();
 
@@ -254,7 +261,8 @@ const favicon = new Favico({
 export default {
     components: {
         PublicGroupList,
-        ImageCropUpload
+        ImageCropUpload,
+        Confirm,
     },
 
     // Leave Page for vue route change
@@ -533,6 +541,21 @@ export default {
             });
         },
 
+        deleteDialog() {
+            this.$refs.confirmDelete.show();
+        },
+
+        deleteStatusPage() {
+            this.$root.getSocket().emit("deleteStatusPage", this.slug, (res) => {
+                if (res.ok) {
+                    this.enableEditMode = false;
+                    location.href = "/manage-status-page";
+                } else {
+                    toast.error(res.msg);
+                }
+            });
+        },
+
         monitorSelectorLabel(monitor) {
             return `${monitor.name}`;
         },
@@ -573,8 +596,6 @@ export default {
                         })
                     };
                 });
-            } else {
-
             }
 
         },
@@ -705,6 +726,11 @@ h1 {
     overflow-y: auto;
     border-right: 1px solid #ededed;
 
+    .danger-zone {
+        border-top: 1px solid #ededed;
+        padding-top: 15px;
+    }
+
     .sidebar-footer {
         width: 100%;
         bottom: 0;
@@ -792,6 +818,10 @@ footer {
     .sidebar {
         background-color: $dark-header-bg;
         border-right-color: $dark-border-color;
+
+        .danger-zone {
+            border-top-color: $dark-border-color;
+        }
 
         .sidebar-footer {
             border-top-color: $dark-border-color;

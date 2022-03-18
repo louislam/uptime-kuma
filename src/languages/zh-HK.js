@@ -96,7 +96,7 @@ export default {
     Test: "測試",
     keywordDescription: "搜索 HTML 或 JSON 裡是否有出現關鍵字（注意英文大細階）",
     "Certificate Info": "憑證詳細資料",
-    deleteMonitorMsg: "是否確定刪除這個監測器",
+    deleteMonitorMsg: "是否確定刪除這個監測器？",
     deleteNotificationMsg: "是否確定刪除這個通知設定？如監測器啟用了這個通知，將會收不到通知。",
     "Resolver Server": "DNS 伺服器",
     "Resource Record Type": "DNS 記錄類型",
@@ -199,4 +199,5 @@ export default {
     pushbullet: "Pushbullet",
     line: "Line Messenger",
     mattermost: "Mattermost",
+    deleteStatusPageMsg: "是否確定刪除這個 Status Page？",
 };
