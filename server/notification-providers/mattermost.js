@@ -20,7 +20,7 @@ class Mattermost extends NotificationProvider {
                 return okMsg;
             }
 
-            const mattermostChannel = notification.mattermostchannel;
+            const mattermostChannel = notification.mattermostchannel.toLowerCase();
             const mattermostIconEmoji = notification.mattermosticonemo;
             const mattermostIconUrl = notification.mattermosticonurl;
 

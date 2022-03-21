@@ -1,15 +1,20 @@
 import { io } from "socket.io-client";
 import { useToast } from "vue-toastification";
 import jwt_decode from "jwt-decode";
+import Favico from "favico.js";
 const toast = useToast();
 
 let socket;
 
 const noSocketIOPages = [
-    "/status-page",
-    "/status",
-    "/"
+    /^\/status-page$/,  //  /status-page
+    /^\/status/,    // /status**
+    /^\/$/      //  /
 ];
+
+const favicon = new Favico({
+    animation: "none"
+});
 
 export default {
 
@@ -33,6 +38,8 @@ export default {
             uptimeList: { },
             tlsInfoList: {},
             notificationList: [],
+            statusPageListLoaded: false,
+            statusPageList: [],
             connectionErrorMsg: "Cannot connect to the socket server. Reconnecting...",
         };
     },
@@ -51,8 +58,12 @@ export default {
             }
 
             // No need to connect to the socket.io for status page
-            if (! bypass && noSocketIOPages.includes(location.pathname)) {
-                return;
+            if (! bypass && location.pathname) {
+                for (let page of noSocketIOPages) {
+                    if (location.pathname.match(page)) {
+                        return;
+                    }
+                }
             }
 
             this.socket.initedSocketIO = true;
@@ -101,6 +112,11 @@ export default {
 
             socket.on("notificationList", (data) => {
                 this.notificationList = data;
+            });
+
+            socket.on("statusPageList", (data) => {
+                this.statusPageListLoaded = true;
+                this.statusPageList = data;
             });
 
             socket.on("heartbeat", (data) => {
@@ -237,6 +253,14 @@ export default {
             } else {
                 toast.error(res.msg);
             }
+        },
+
+        toastSuccess(msg) {
+            toast.success(msg);
+        },
+
+        toastError(msg) {
+            toast.error(msg);
         },
 
         login(username, password, token, callback) {
@@ -392,9 +416,48 @@ export default {
 
             return result;
         },
+
+        stats() {
+            let result = {
+                up: 0,
+                down: 0,
+                unknown: 0,
+                pause: 0,
+            };
+
+            for (let monitorID in this.$root.monitorList) {
+                let beat = this.$root.lastHeartbeatList[monitorID];
+                let monitor = this.$root.monitorList[monitorID];
+
+                if (monitor && ! monitor.active) {
+                    result.pause++;
+                } else if (beat) {
+                    if (beat.status === 1) {
+                        result.up++;
+                    } else if (beat.status === 0) {
+                        result.down++;
+                    } else if (beat.status === 2) {
+                        result.up++;
+                    } else {
+                        result.unknown++;
+                    }
+                } else {
+                    result.unknown++;
+                }
+            }
+
+            return result;
+        },
     },
 
     watch: {
+
+        // Update Badge
+        "stats.down"(to, from) {
+            if (to !== from) {
+                favicon.badge(to);
+            }
+        },
 
         // Reload the SPA if the server version is changed.
         "info.version"(to, from) {
@@ -409,9 +472,15 @@ export default {
 
         // Reconnect the socket io, if status-page to dashboard
         "$route.fullPath"(newValue, oldValue) {
-            if (noSocketIOPages.includes(newValue)) {
-                return;
+
+            if (newValue) {
+                for (let page of noSocketIOPages) {
+                    if (newValue.match(page)) {
+                        return;
+                    }
+                }
             }
+
             this.initSocketIO();
         },
 
