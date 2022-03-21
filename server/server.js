@@ -1404,6 +1404,8 @@ async function afterLogin(socket, user) {
 
     await sleep(500);
 
+    await StatusPage.sendStatusPageList(io, socket);
+
     for (let monitorID in monitorList) {
         await sendHeartbeatList(socket, monitorID);
     }
@@ -1415,8 +1417,6 @@ async function afterLogin(socket, user) {
     for (let monitorID in monitorList) {
         await Monitor.sendStats(io, monitorID, user.id);
     }
-
-    await StatusPage.sendStatusPageList(io, socket);
 }
 
 async function getMonitorJSONList(userID) {
