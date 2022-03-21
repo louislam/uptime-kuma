@@ -124,7 +124,7 @@ export default {
     tokenValidSettingsMsg: "Token geçerli! Şimdi 2FA ayarlarını kaydedebilirsiniz. ",
     confirmEnableTwoFAMsg: "2FA'ı etkinleştirmek istediğinizden emin misiniz?",
     confirmDisableTwoFAMsg: "2FA'ı devre dışı bırakmak istediğinize emin misiniz?",
-    "Heartbeat Retry Interval": "Sağlık Dırımları Tekrar Deneme Sıklığı",
+    "Heartbeat Retry Interval": "Sağlık Durumları Tekrar Deneme Sıklığı",
     "Import Backup": "Yedeği içe aktar",
     "Export Backup": "Yedeği dışa aktar",
     Export: "Dışa aktar",
