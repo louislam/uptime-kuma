@@ -178,7 +178,12 @@ module.exports.statusPageSocketHandler = (socket) => {
             // Delete groups that not in the list
             debug("Delete groups that not in the list");
             const slots = groupIDList.map(() => "?").join(",");
-            await R.exec(`DELETE FROM \`group\` WHERE id NOT IN (${slots})`, groupIDList);
+
+            const data = [
+                ...groupIDList,
+                statusPage.id
+            ];
+            await R.exec(`DELETE FROM \`group\` WHERE id NOT IN (${slots}) AND status_page_id = ?`, data);
 
             // Also change entry page to new slug if it is the default one, and slug is changed.
             if (server.entryPage === "statusPage-" + slug && statusPage.slug !== slug) {
