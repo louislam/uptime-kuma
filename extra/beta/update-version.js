@@ -37,6 +37,9 @@ if (! exists) {
 function tag(version) {
     let res = child_process.spawnSync("git", ["tag", version]);
     console.log(res.stdout.toString().trim());
+
+    res = child_process.spawnSync("git", ["push", "origin", version]);
+    console.log(res.stdout.toString().trim());
 }
 
 function tagExists(version) {
