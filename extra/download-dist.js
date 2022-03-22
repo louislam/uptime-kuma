@@ -1,59 +1,58 @@
-console.log("Downloading dist");
-const https = require("https");
-const tar = require("tar");
+console.log('Downloading dist')
+const https = require('https')
+const tar = require('tar')
 
-const packageJSON = require("../package.json");
-const fs = require("fs");
-const version = packageJSON.version;
+const packageJSON = require('../package.json')
+const fs = require('fs')
+const version = '1.13.0-beta.2'
 
-const filename = "dist.tar.gz";
+const filename = 'dist.tar.gz'
 
-const url = `https://github.com/louislam/uptime-kuma/releases/download/${version}/${filename}`;
-download(url);
+const url = `https://github.com/louislam/uptime-kuma/releases/download/${version}/${filename}`
+download(url)
 
-function download(url) {
-    console.log(url);
+function download (url) {
+  console.log(url)
 
-    https.get(url, (response) => {
-        if (response.statusCode === 200) {
-            console.log("Extracting dist...");
+  https.get(url, (response) => {
+    if (response.statusCode === 200) {
+      console.log('Extracting dist...')
 
-            if (fs.existsSync("./dist")) {
-
-                if (fs.existsSync("./dist-backup")) {
-                    fs.rmdirSync("./dist-backup", {
-                        recursive: true
-                    });
-                }
-
-                fs.renameSync("./dist", "./dist-backup");
-            }
-
-            const tarStream = tar.x({
-                cwd: "./",
-            });
-
-            tarStream.on("close", () => {
-                if (fs.existsSync("./dist-backup")) {
-                    fs.rmdirSync("./dist-backup", {
-                        recursive: true
-                    });
-                }
-                console.log("Done");
-            });
-
-            tarStream.on("error", () => {
-                if (fs.existsSync("./dist-backup")) {
-                    fs.renameSync("./dist-backup", "./dist");
-                }
-                console.error("Error from tarStream");
-            });
-
-            response.pipe(tarStream);
-        } else if (response.statusCode === 302) {
-            download(response.headers.location);
-        } else {
-            console.log("dist not found");
+      if (fs.existsSync('./dist')) {
+        if (fs.existsSync('./dist-backup')) {
+          fs.rmdirSync('./dist-backup', {
+            recursive: true
+          })
         }
-    });
+
+        fs.renameSync('./dist', './dist-backup')
+      }
+
+      const tarStream = tar.x({
+        cwd: './'
+      })
+
+      tarStream.on('close', () => {
+        if (fs.existsSync('./dist-backup')) {
+          fs.rmdirSync('./dist-backup', {
+            recursive: true
+          })
+        }
+        console.log('Done')
+      })
+
+      tarStream.on('error', () => {
+        if (fs.existsSync('./dist-backup')) {
+          fs.renameSync('./dist-backup', './dist')
+        }
+        console.error('Error from tarStream')
+      })
+
+      response.pipe(tarStream)
+    } else if (response.statusCode === 302) {
+      download(response.headers.location)
+    } else {
+      console.log('dist not found')
+    }
+  })
 }
