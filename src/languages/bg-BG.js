@@ -370,4 +370,5 @@ export default {
     alertaApiKey: "API Ключ",
     alertaAlertState: "Състояние на тревога",
     alertaRecoverState: "Състояние на възстановяване",
+    deleteStatusPageMsg: "Сигурни ли сте, че желаете да изтриете тази статус страница?",
 };
