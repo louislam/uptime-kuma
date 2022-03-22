@@ -38,7 +38,7 @@ if (! exists) {
 }
 
 function commit(version) {
-    let msg = "update to " + version;
+    let msg = "Update to " + version;
 
     let res = child_process.spawnSync("git", ["commit", "-m", msg, "-a"]);
     let stdout = res.stdout.toString().trim();

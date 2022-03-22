@@ -52,9 +52,8 @@
         "update-language-files-with-base-lang": "cd extra/update-language-files && node index.js %npm_config_base_lang% && eslint ../../src/languages/**.js --fix",
         "update-language-files": "cd extra/update-language-files && node index.js && eslint ../../src/languages/**.js --fix",
         "ncu-patch": "npm-check-updates -u -t patch",
-        "release-beta": "node extra/beta/update-version.js && npm run build && node ./extra/env2arg.js docker buildx build -f docker/dockerfile --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma:$VERSION -t louislam/uptime-kuma:beta .  --target release --push && node ./extra/press-any-key.js && npm run upload-artifacts && npm run reset-version",
-        "git-remove-tag": "git tag -d",
-        "reset-version": "node extra/beta/reset-version.js"
+        "release-beta": "node extra/beta/update-version.js && npm run build && node ./extra/env2arg.js docker buildx build -f docker/dockerfile --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma:$VERSION -t louislam/uptime-kuma:beta .  --target release --push && node ./extra/press-any-key.js && npm run upload-artifacts",
+        "git-remove-tag": "git tag -d"
     },
     "dependencies": {
         "@fortawesome/fontawesome-svg-core": "~1.2.36",

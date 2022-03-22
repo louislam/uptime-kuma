@@ -24,14 +24,26 @@ const exists = tagExists(version);
 
 if (! exists) {
     // Process package.json
-    pkg.oldVersion = oldVersion;
     pkg.version = version;
     fs.writeFileSync("package.json", JSON.stringify(pkg, null, 4) + "\n");
+    commit(version);
     tag(version);
 
 } else {
     console.log("version tag exists, please delete the tag or use another tag");
     process.exit(1);
+}
+
+function commit(version) {
+    let msg = "Update to " + version;
+
+    let res = child_process.spawnSync("git", ["commit", "-m", msg, "-a"]);
+    let stdout = res.stdout.toString().trim();
+    console.log(stdout);
+
+    if (stdout.includes("no changes added to commit")) {
+        throw new Error("commit error");
+    }
 }
 
 function tag(version) {
