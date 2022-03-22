@@ -86,7 +86,13 @@ class Slack extends NotificationProvider {
                     }],
                 });
             }
-
+            // overide slack message
+            data = {
+                "channel": notification.slackchannel,
+                "icon_emoji": notification.slackiconemo,
+                "username": notification.slackusername,
+                text: msg
+            }
             await axios.post(notification.slackwebhookURL, data);
             return okMsg;
         } catch (error) {

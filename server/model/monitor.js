@@ -14,6 +14,7 @@ const { Notification } = require('../notification')
 const { demoMode } = require('../config')
 const version = require('../../package.json').version
 const apicache = require('../modules/apicache')
+const moment = require('moment')
 
 /**
  * status:
@@ -664,17 +665,24 @@ class Monitor extends BeanModel {
       const notificationList = await Monitor.getNotificationList(monitor)
 
       let text
+      let message
       if (bean.status === UP) {
         text = '✅ Up'
+        const heartbeat = await Monitor.getPreviousHeartbeatByStatus(monitor, DOWN)
+        message = `${text}: ${monitor.name} ( ${monitor.url} ).`
+        if (heartbeat) {
+          const diff = moment(bean.time).diff(moment(heartbeat.time))
+          const duration = moment.utc(diff).format('HH:mm:ss.SSS')
+          message += ` It was down for ${duration}.`
+        }
       } else {
         text = '🔴 Down'
+        message = `${text}: ${monitor.name} ( ${monitor.url} ). Reason: ${bean.msg}.`
       }
-
-      const msg = `[${monitor.name}] [${text}] ${bean.msg}`
 
       for (const notification of notificationList) {
         try {
-          await Notification.send(JSON.parse(notification.config), msg, await monitor.toJSON(), bean.toJSON())
+          await Notification.send(JSON.parse(notification.config), message, await monitor.toJSON(), bean.toJSON())
         } catch (e) {
           console.error('Cannot send notification to ' + notification.name)
           console.log(e)
@@ -752,6 +760,15 @@ class Monitor extends BeanModel {
             WHERE id = (select MAX(id) from heartbeat where monitor_id = ?)
         `, [
       monitorID
+    ])
+  }
+
+  static async getPreviousHeartbeatByStatus (monitorID, status = 0) {
+    return await R.getRow(`
+            SELECT status, time FROM heartbeat
+            WHERE id = (select MAX(id) from heartbeat where monitor_id = ? and status = ?)
+        `, [
+      monitorID, status
     ])
   }
 }
