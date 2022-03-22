@@ -41,6 +41,7 @@ export default {
             statusPageListLoaded: false,
             statusPageList: [],
             connectionErrorMsg: "Cannot connect to the socket server. Reconnecting...",
+            showReverseProxyGuide: true,
         };
     },
 
@@ -185,6 +186,7 @@ export default {
             socket.on("connect_error", (err) => {
                 console.error(`Failed to connect to the backend. Socket.io connect_error: ${err.message}`);
                 this.connectionErrorMsg = `Cannot connect to the socket server. [${err}] Reconnecting...`;
+                this.showReverseProxyGuide = true;
                 this.socket.connected = false;
                 this.socket.firstConnect = false;
             });
@@ -199,6 +201,7 @@ export default {
                 console.log("Connected to the socket server");
                 this.socket.connectCount++;
                 this.socket.connected = true;
+                this.showReverseProxyGuide = false;
 
                 // Reset Heartbeat list if it is re-connect
                 if (this.socket.connectCount >= 2) {
