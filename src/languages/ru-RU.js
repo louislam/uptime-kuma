@@ -335,4 +335,12 @@ export default {
     "Description": "Описание",
     "Powered by": "Работает на основе скрипта от",
     shrinkDatabaseDescription: "Включает VACUUM для базы данных SQLite. Если ваша база данных была создана на версии 1.10.0 и более, AUTO_VACUUM уже включен и это действие не требуется.",
+    deleteStatusPageMsg: "Вы действительно хотите удалить эту страницу статуса сервисов?",
+    Style: "Стиль",
+    info: "ИНФО",
+    warning: "ВНИМАНИЕ",
+    danger: "ОШИБКА",
+    primary: "ОСНОВНОЙ",
+    light: "СВЕТЛЫЙ",
+    dark: "ТЕМНЫЙ",
 };
