@@ -44,6 +44,9 @@ function commit(version) {
     if (stdout.includes("no changes added to commit")) {
         throw new Error("commit error");
     }
+
+    res = child_process.spawnSync("git", ["push", "origin", "master"]);
+    console.log(res.stdout.toString().trim());
 }
 
 function tag(version) {
