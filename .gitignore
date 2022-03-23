@@ -13,3 +13,4 @@ dist-ssr
 /out
 /tmp
 .env
+kuma/

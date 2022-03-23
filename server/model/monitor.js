@@ -15,7 +15,8 @@ const { demoMode } = require('../config')
 const version = require('../../package.json').version
 const apicache = require('../modules/apicache')
 const moment = require('moment')
-
+const momentDurationFormatSetup = require('moment-duration-format')
+momentDurationFormatSetup(moment)
 /**
  * status:
  *      0 = DOWN
@@ -386,7 +387,7 @@ class Monitor extends BeanModel {
         }
       }
 
-      debug(`[${this.name}] Check isImportant`)
+      debug(`[${this.name}] Check isImportant`, { isFirstBeat, previousBeat: previousBeat?.status, currentStatus: bean.status })
       const isImportant = Monitor.isImportantBeat(isFirstBeat, previousBeat?.status, bean.status)
 
       // Mark as important if status changed, ignore pending pings,
@@ -654,9 +655,9 @@ class Monitor extends BeanModel {
     // DOWN -> DOWN = not important
     // * DOWN -> UP = important
     const isImportant = isFirstBeat ||
-            (previousBeatStatus === UP && currentBeatStatus === DOWN) ||
-            (previousBeatStatus === DOWN && currentBeatStatus === UP) ||
-            (previousBeatStatus === PENDING && currentBeatStatus === DOWN)
+      (previousBeatStatus === UP && currentBeatStatus === DOWN) ||
+      (previousBeatStatus === DOWN && currentBeatStatus === UP) ||
+      (previousBeatStatus === PENDING && currentBeatStatus === DOWN)
     return isImportant
   }
 
@@ -668,11 +669,15 @@ class Monitor extends BeanModel {
       let message
       if (bean.status === UP) {
         text = '✅ Up'
-        const heartbeat = await Monitor.getPreviousHeartbeatByStatus(monitor, DOWN)
         message = `${text}: ${monitor.name} ( ${monitor.url} ).`
+        const heartbeat = await Monitor.getPreviousHeartbeatByStatus(monitor.id, DOWN)
         if (heartbeat) {
           const diff = moment(bean.time).diff(moment(heartbeat.time))
-          const duration = moment.utc(diff).format('HH:mm:ss.SSS')
+          // const duration = moment.utc(diff).format('HH:mm:ss.SSS')
+          console.log({ diff, beanTime: bean.time, heartbeatTime: heartbeat.time })
+          const duration = moment.duration(diff, 'milliseconds').format('w [weeks], d [days], h [hours], m [minutes], s [seconds]', {
+            trim: 'both mid'
+          })
           message += ` It was down for ${duration}.`
         }
       } else {
@@ -765,10 +770,12 @@ class Monitor extends BeanModel {
 
   static async getPreviousHeartbeatByStatus (monitorID, status = 0) {
     return await R.getRow(`
-            SELECT status, time FROM heartbeat
-            WHERE id = (select MAX(id) from heartbeat where monitor_id = ? and status = ?)
+    SELECT status, time FROM heartbeat
+      WHERE id = (
+        SELECT MIN(id) FROM heartbeat WHERE monitor_id = ? and status = ? and id > (
+          SELECT MAX(id) FROM heartbeat WHERE monitor_id = ? and status = ?))
         `, [
-      monitorID, status
+      monitorID, status, monitorID, status ? 0 : 1
     ])
   }
 }
