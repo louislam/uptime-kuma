@@ -47,13 +47,6 @@ function myAuthorizer(username, password, callback) {
     });
 }
 
-/**
- * If disabled auth, it does not call `next`.
- */
-exports.checkBasicAuth = async (req, res, next) => {
-
-};
-
 exports.basicAuth = async function (req, res, next) {
     const middleware = basicAuth({
         authorizer: myAuthorizer,
