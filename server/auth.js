@@ -31,31 +31,41 @@ exports.login = async function (username, password) {
 };
 
 function myAuthorizer(username, password, callback) {
-    setting("disableAuth").then((result) => {
-        if (result) {
-            callback(null, true);
-        } else {
-            // Login Rate Limit
-            loginRateLimiter.pass(null, 0).then((pass) => {
-                if (pass) {
-                    exports.login(username, password).then((user) => {
-                        callback(null, user != null);
+    // Login Rate Limit
+    loginRateLimiter.pass(null, 0).then((pass) => {
+        if (pass) {
+            exports.login(username, password).then((user) => {
+                callback(null, user != null);
 
-                        if (user == null) {
-                            loginRateLimiter.removeTokens(1);
-                        }
-                    });
-                } else {
-                    callback(null, false);
+                if (user == null) {
+                    loginRateLimiter.removeTokens(1);
                 }
             });
-
+        } else {
+            callback(null, false);
         }
     });
 }
 
-exports.basicAuth = basicAuth({
-    authorizer: myAuthorizer,
-    authorizeAsync: true,
-    challenge: true,
-});
+/**
+ * If disabled auth, it does not call `next`.
+ */
+exports.checkBasicAuth = async (req, res, next) => {
+
+};
+
+exports.basicAuth = async function (req, res, next) {
+    const middleware = basicAuth({
+        authorizer: myAuthorizer,
+        authorizeAsync: true,
+        challenge: true,
+    });
+
+    const disabledAuth = await setting("disableAuth");
+
+    if (!disabledAuth) {
+        middleware(req, res, next);
+    } else {
+        next();
+    }
+};
