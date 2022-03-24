@@ -1,7 +1,12 @@
-import child_process from "child_process";
-import fs from "fs";
+const child_process = require("child_process");
+const fs = require("fs");
 
 const newVersion = process.env.VERSION;
+
+if (!newVersion) {
+    console.log("Missing version");
+    process.exit(1);
+}
 
 updateWiki(newVersion);
 
