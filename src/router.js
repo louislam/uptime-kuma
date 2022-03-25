@@ -20,6 +20,7 @@ import Backup from "./components/settings/Backup.vue";
 import About from "./components/settings/About.vue";
 import ManageStatusPage from "./pages/ManageStatusPage.vue";
 import AddStatusPage from "./pages/AddStatusPage.vue";
+import NotFound from "./pages/NotFound.vue";
 
 const routes = [
     {
@@ -127,6 +128,10 @@ const routes = [
     {
         path: "/status/:slug",
         component: StatusPage,
+    },
+    {
+        path: "/:pathMatch(.*)*",
+        component: NotFound,
     },
 ];
 

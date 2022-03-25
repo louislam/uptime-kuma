@@ -48,7 +48,7 @@
         </header>
 
         <main>
-            <router-view v-if="$root.loggedIn" />
+            <router-view v-if="$root.loggedIn || forceShowContent" />
             <Login v-if="! $root.loggedIn && $root.allowLoginDialog" />
         </main>
 
