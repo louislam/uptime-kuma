@@ -1,5 +1,9 @@
 <template>
-    <div></div>
+    <div>
+        <!--
+            TODO: If the domain name matched, directly render the <StatusPage> component.
+        -->
+    </div>
 </template>
 
 <script>
