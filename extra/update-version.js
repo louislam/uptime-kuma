@@ -59,38 +59,3 @@ function tagExists(version) {
 
     return res.stdout.toString().trim() === version;
 }
-
-function updateWiki(oldVersion, newVersion) {
-    const wikiDir = "./tmp/wiki";
-    const howToUpdateFilename = "./tmp/wiki/🆙-How-to-Update.md";
-
-    safeDelete(wikiDir);
-
-    child_process.spawnSync("git", ["clone", "https://github.com/louislam/uptime-kuma.wiki.git", wikiDir]);
-    let content = fs.readFileSync(howToUpdateFilename).toString();
-    content = content.replaceAll(`git checkout ${oldVersion}`, `git checkout ${newVersion}`);
-    fs.writeFileSync(howToUpdateFilename, content);
-
-    child_process.spawnSync("git", ["add", "-A"], {
-        cwd: wikiDir,
-    });
-
-    child_process.spawnSync("git", ["commit", "-m", `Update to ${newVersion} from ${oldVersion}`], {
-        cwd: wikiDir,
-    });
-
-    console.log("Pushing to Github");
-    child_process.spawnSync("git", ["push"], {
-        cwd: wikiDir,
-    });
-
-    safeDelete(wikiDir);
-}
-
-function safeDelete(dir) {
-    if (fs.existsSync(dir)) {
-        rmSync(dir, {
-            recursive: true,
-        });
-    }
-}
