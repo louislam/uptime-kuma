@@ -1,5 +1,6 @@
-const { setSetting } = require("./util-server");
+const { setSetting, setting } = require("./util-server");
 const axios = require("axios");
+const compareVersions = require("compare-versions");
 
 exports.version = require("../package.json").version;
 exports.latestVersion = null;
@@ -14,6 +15,19 @@ exports.startInterval = () => {
             // For debug
             if (process.env.TEST_CHECK_VERSION === "1") {
                 res.data.slow = "1000.0.0";
+            }
+
+            if (!await setting("checkUpdate")) {
+                return;
+            }
+
+            let checkBeta = await setting("checkBeta");
+
+            if (checkBeta && res.data.beta) {
+                if (compareVersions.compare(res.data.beta, res.data.beta, ">")) {
+                    exports.latestVersion = res.data.beta;
+                    return;
+                }
             }
 
             if (res.data.slow) {
