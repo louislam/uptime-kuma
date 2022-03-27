@@ -41,7 +41,7 @@ const files = fs.readdirSync("./languages");
 console.log("Files:", files);
 
 for (const file of files) {
-    if (!file.endsWith(".js")) {
+    if (! file.endsWith(".js")) {
         console.log("Skipping " + file);
         continue;
     }
@@ -62,7 +62,7 @@ for (const file of files) {
 
     // En first
     for (const key in en) {
-        if (!obj[key]) {
+        if (! obj[key]) {
             obj[key] = en[key];
         }
     }
@@ -70,7 +70,7 @@ for (const file of files) {
     if (baseLang !== en) {
         // Base second
         for (const key in baseLang) {
-            if (!obj[key]) {
+            if (! obj[key]) {
                 obj[key] = key;
             }
         }
