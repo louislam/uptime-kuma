@@ -24,18 +24,22 @@ const apicache = require("../modules/apicache");
 class Monitor extends BeanModel {
 
     /**
-     * Return a object that ready to parse to JSON for public
+     * Return an object that ready to parse to JSON for public
      * Only show necessary data to public
      */
-    async toPublicJSON() {
-        return {
+    async toPublicJSON(showTags = false) {
+        let obj = {
             id: this.id,
             name: this.name,
         };
+        if (showTags) {
+            obj.tags = await this.getTags();
+        }
+        return obj;
     }
 
     /**
-     * Return a object that ready to parse to JSON
+     * Return an object that ready to parse to JSON
      */
     async toJSON() {
 
@@ -49,7 +53,7 @@ class Monitor extends BeanModel {
             notificationIDList[bean.notification_id] = true;
         }
 
-        const tags = await R.getAll("SELECT mt.*, tag.name, tag.color FROM monitor_tag mt JOIN tag ON mt.tag_id = tag.id WHERE mt.monitor_id = ?", [this.id]);
+        const tags = await this.getTags();
 
         return {
             id: this.id,
@@ -80,6 +84,10 @@ class Monitor extends BeanModel {
             notificationIDList,
             tags: tags,
         };
+    }
+
+    async getTags() {
+        return await R.getAll("SELECT mt.*, tag.name, tag.color FROM monitor_tag mt JOIN tag ON mt.tag_id = tag.id WHERE mt.monitor_id = ?", [this.id]);
     }
 
     /**
@@ -469,6 +477,12 @@ class Monitor extends BeanModel {
     stop() {
         clearTimeout(this.heartbeatInterval);
         this.isStop = true;
+
+        this.prometheus().remove();
+    }
+
+    prometheus() {
+        return new Prometheus(this);
     }
 
     /**

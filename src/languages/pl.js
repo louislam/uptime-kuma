@@ -179,6 +179,7 @@ export default {
     "Edit Status Page": "Edytuj stronę statusu",
     "Go to Dashboard": "Idź do panelu",
     "Status Page": "Strona statusu",
+    "Status Pages": "Strona statusu",
     defaultNotificationName: "Moje powiadomienie {notification} ({number})",
     here: "tutaj",
     Required: "Wymagane",

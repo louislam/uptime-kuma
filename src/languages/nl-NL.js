@@ -180,6 +180,7 @@ export default {
     "Edit Status Page": "Wijzig status pagina",
     "Go to Dashboard": "Ga naar Dashboard",
     "Status Page": "Status Pagina",
+    "Status Pages": "Status Pagina",
     telegram: "Telegram",
     webhook: "Webhook",
     smtp: "Email (SMTP)",

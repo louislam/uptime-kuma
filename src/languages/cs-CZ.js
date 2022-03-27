@@ -183,6 +183,7 @@ export default {
     "Edit Status Page": "Upravit stavovou stránku",
     "Go to Dashboard": "Přejít na nástěnku",
     "Status Page": "Stavová stránka",
+    "Status Pages": "Stavová stránka",
     defaultNotificationName: "Moje {notification} upozornění ({číslo})",
     here: "sem",
     Required: "Vyžadováno",

@@ -3,6 +3,9 @@
         <div v-if="! $root.socket.connected && ! $root.socket.firstConnect" class="lost-connection">
             <div class="container-fluid">
                 {{ $root.connectionErrorMsg }}
+                <div v-if="$root.showReverseProxyGuide">
+                    Using a Reverse Proxy? <a href="https://github.com/louislam/uptime-kuma/wiki/Reverse-Proxy" target="_blank">Check how to config it for WebSocket</a>
+                </div>
             </div>
         </div>
 
@@ -18,10 +21,10 @@
             </a>
 
             <ul class="nav nav-pills">
-                <li class="nav-item me-2">
-                    <a href="/status" class="nav-link status-page">
-                        <font-awesome-icon icon="stream" /> {{ $t("Status Page") }}
-                    </a>
+                <li v-if="$root.loggedIn" class="nav-item me-2">
+                    <router-link to="/manage-status-page" class="nav-link">
+                        <font-awesome-icon icon="stream" /> {{ $t("Status Pages") }}
+                    </router-link>
                 </li>
                 <li v-if="$root.loggedIn" class="nav-item me-2">
                     <router-link to="/dashboard" class="nav-link">
@@ -45,7 +48,7 @@
         </header>
 
         <main>
-            <router-view v-if="$root.loggedIn" />
+            <router-view v-if="$root.loggedIn || forceShowContent" />
             <Login v-if="! $root.loggedIn && $root.allowLoginDialog" />
         </main>
 
@@ -157,7 +160,7 @@ export default {
         overflow: hidden;
         text-decoration: none;
 
-        &.router-link-exact-active {
+        &.router-link-exact-active, &.active {
             color: $primary;
             font-weight: bold;
         }
@@ -184,6 +187,8 @@ main {
     padding: 5px;
     background-color: crimson;
     color: white;
+    position: fixed;
+    width: 100%;
 }
 
 .dark {

@@ -6,10 +6,8 @@ const util = require("../src/util");
 
 util.polyfill();
 
-const oldVersion = pkg.version;
-const newVersion = process.argv[2];
+const newVersion = process.env.VERSION;
 
-console.log("Old Version: " + oldVersion);
 console.log("New Version: " + newVersion);
 
 if (!newVersion) {
@@ -23,23 +21,20 @@ if (!exists) {
 
     // Process package.json
     pkg.version = newVersion;
-    pkg.scripts.setup = pkg.scripts.setup.replaceAll(oldVersion, newVersion);
-    pkg.scripts["build-docker"] = pkg.scripts["build-docker"].replaceAll(oldVersion, newVersion);
-    pkg.scripts["build-docker-alpine"] = pkg.scripts["build-docker-alpine"].replaceAll(oldVersion, newVersion);
-    pkg.scripts["build-docker-debian"] = pkg.scripts["build-docker-debian"].replaceAll(oldVersion, newVersion);
+
+    // Replace the version: https://regex101.com/r/hmj2Bc/1
+    pkg.scripts.setup = pkg.scripts.setup.replace(/(git checkout )([^\s]+)/, `$1${newVersion}`);
     fs.writeFileSync("package.json", JSON.stringify(pkg, null, 4) + "\n");
 
     commit(newVersion);
     tag(newVersion);
-
-    updateWiki(oldVersion, newVersion);
 
 } else {
     console.log("version exists");
 }
 
 function commit(version) {
-    let msg = "update to " + version;
+    let msg = "Update to " + version;
 
     let res = child_process.spawnSync("git", ["commit", "-m", msg, "-a"]);
     let stdout = res.stdout.toString().trim();

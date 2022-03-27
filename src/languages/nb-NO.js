@@ -179,6 +179,7 @@ export default {
     "Edit Status Page": "Rediger statusside",
     "Go to Dashboard": "Gå til Dashboard",
     "Status Page": "Statusside",
+    "Status Pages": "Statusside",
     defaultNotificationName: "Min {notification} varsling ({number})",
     here: "her",
     Required: "Obligatorisk",

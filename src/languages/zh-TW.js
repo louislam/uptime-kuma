@@ -183,6 +183,7 @@ export default {
     "Edit Status Page": "編輯狀態頁",
     "Go to Dashboard": "前往儀表板",
     "Status Page": "狀態頁",
+    "Status Pages": "狀態頁",
     defaultNotificationName: "我的 {notification} 通知 ({number})",
     here: "此處",
     Required: "必填",
