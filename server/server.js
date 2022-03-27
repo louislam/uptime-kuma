@@ -1087,7 +1087,7 @@ exports.entryPage = "dashboard";
                 let monitorListData = backupData.monitorList;
 
                 let version17x = compareVersions.compare(backupData.version, "1.7.0", ">=");
-                let version1114 = compareVersions.compare(backupData.version, "1.11.4", ">=");
+                let version1132 = compareVersions.compare(backupData.version, "1.13.2", ">=");
 
                 // If the import option is "overwrite" it'll clear most of the tables, except "settings" and "user"
                 if (importHandle == "overwrite") {
@@ -1147,7 +1147,7 @@ exports.entryPage = "dashboard";
                                 retryInterval = monitorListData[i].retryInterval;
                             }
 
-                            if (version1114) {
+                            if (version1132) {
                                 resendInterval = monitorListData[i].resendInterval;
                             }
 
