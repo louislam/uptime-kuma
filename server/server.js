@@ -132,6 +132,7 @@ const { sendNotificationList, sendHeartbeatList, sendImportantHeartbeatList, sen
 const { statusPageSocketHandler } = require("./socket-handlers/status-page-socket-handler");
 const databaseSocketHandler = require("./socket-handlers/database-socket-handler");
 const TwoFA = require("./2fa");
+const StatusPage = require("./model/status_page");
 
 app.use(express.json());
 
@@ -200,8 +201,8 @@ exports.entryPage = "dashboard";
 
     // Entry Page
     app.get("/", async (_request, response) => {
-        if (exports.entryPage === "statusPage") {
-            response.redirect("/status");
+        if (exports.entryPage && exports.entryPage.startsWith("statusPage-")) {
+            response.redirect("/status/" + exports.entryPage.replace("statusPage-", ""));
         } else {
             response.redirect("/dashboard");
         }
@@ -577,6 +578,9 @@ exports.entryPage = "dashboard";
                 if (bean.user_id !== socket.userID) {
                     throw new Error("Permission denied.");
                 }
+
+                // Reset Prometheus labels
+                monitorList[monitor.id]?.prometheus()?.remove();
 
                 bean.name = monitor.name;
                 bean.type = monitor.type;
@@ -1410,6 +1414,8 @@ async function afterLogin(socket, user) {
     sendNotificationList(socket);
 
     await sleep(500);
+
+    await StatusPage.sendStatusPageList(io, socket);
 
     for (let monitorID in monitorList) {
         await sendHeartbeatList(socket, monitorID);
