@@ -10,14 +10,14 @@ const newVersion = process.env.VERSION;
 
 console.log("New Version: " + newVersion);
 
-if (!newVersion) {
+if (! newVersion) {
     console.error("invalid version");
     process.exit(1);
 }
 
 const exists = tagExists(newVersion);
 
-if (!exists) {
+if (! exists) {
 
     // Process package.json
     pkg.version = newVersion;
@@ -51,7 +51,7 @@ function tag(version) {
 }
 
 function tagExists(version) {
-    if (!version) {
+    if (! version) {
         throw new Error("invalid version");
     }
 
