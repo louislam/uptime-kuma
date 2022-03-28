@@ -161,7 +161,7 @@ class Monitor extends BeanModel {
 
             let bean = R.dispense("heartbeat");
             bean.monitor_id = this.id;
-            bean.time = R.isoDateTime(dayjs.utc());
+            bean.time = R.isoDateTimeMillis(dayjs.utc());
             bean.status = DOWN;
 
             if (this.isUpsideDown()) {
@@ -335,25 +335,30 @@ class Monitor extends BeanModel {
                     bean.msg = dnsMessage;
                     bean.status = UP;
                 } else if (this.type === "push") {      // Type: Push
-                    const time = R.isoDateTime(dayjs.utc().subtract(this.interval, "second"));
-
-                    let heartbeatCount = await R.count("heartbeat", " monitor_id = ? AND time > ? ", [
-                        this.id,
-                        time
-                    ]);
-
-                    debug("heartbeatCount" + heartbeatCount + " " + time);
-
-                    if (heartbeatCount <= 0) {
-                        // Fix #922, since previous heartbeat could be inserted by api, it should get from database
-                        previousBeat = await Monitor.getPreviousHeartbeat(this.id);
-
-                        throw new Error("No heartbeat in the time window");
-                    } else {
-                        // No need to insert successful heartbeat for push type, so end here
-                        retries = 0;
-                        this.heartbeatInterval = setTimeout(beat, beatInterval * 1000);
-                        return;
+                    debug(`[${this.name}] Checking monitor at ${dayjs().format('YYYY-MM-DD HH:mm:ss.SSS')}`)
+                    const bufferTime = 1000 // 1s buffer to accommodate clock differences
+                    // Fix #922, since previous heartbeat could be inserted by api, it should get from database
+                    previousBeat = await Monitor.getPreviousHeartbeat(this.id);
+                    //If the previous beat was nonexistent, down or pending we use the regular
+                    // beatInterval/retryInterval in the setTimeout further below
+                    if (previousBeat) {
+                        const msSinceLastBeat = dayjs.utc().valueOf() - dayjs.utc(previousBeat.time).valueOf()
+                        debug(`[${this.name}] msSinceLastBeat = ${msSinceLastBeat}`);
+                        if (previousBeat.status !== UP || msSinceLastBeat > beatInterval * 1000 + bufferTime) {
+                            throw new Error("No heartbeat in the time window");
+                        } else {
+                            let timeout = beatInterval * 1000 - msSinceLastBeat
+                            if (timeout < 0) {
+                                timeout = bufferTime
+                            } else {
+                                timeout += bufferTime
+                            }
+                            // No need to insert successful heartbeat for push type, so end here
+                            retries = 0;
+                            debug(`[${this.name}] timeout = ${timeout}`)
+                            this.heartbeatInterval = setTimeout(beat, timeout);
+                            return;
+                        }
                     }
 
                 } else if (this.type === "steam") {
