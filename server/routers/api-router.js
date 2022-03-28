@@ -55,7 +55,7 @@ router.get("/api/push/:pushToken", async (request, response) => {
         let duration = 0;
 
         let bean = R.dispense("heartbeat");
-        bean.time = R.isoDateTime(dayjs.utc());
+        bean.time = R.isoDateTimeMillis(dayjs.utc());
 
         if (previousHeartbeat) {
             isFirstBeat = false;
@@ -63,8 +63,9 @@ router.get("/api/push/:pushToken", async (request, response) => {
             duration = dayjs(bean.time).diff(dayjs(previousHeartbeat.time), "second");
         }
 
-        log.debug("router", "PreviousStatus: " + previousStatus);
-        log.debug("router", "Current Status: " + status);
+        log.debug(`/api/push/ called at ${dayjs().format("YYYY-MM-DD HH:mm:ss.SSS")}`);
+        log.debug("PreviousStatus: " + previousStatus);
+        log.debug("Current Status: " + status);
 
         bean.important = Monitor.isImportantBeat(isFirstBeat, previousStatus, status);
         bean.monitor_id = monitor.id;
