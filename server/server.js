@@ -52,7 +52,7 @@ console.log("Importing this project modules");
 debug("Importing Monitor");
 const Monitor = require("./model/monitor");
 debug("Importing Settings");
-const { getSettings, setSettings, setting, initJWTSecret, checkLogin, startUnitTest, FBSD, errorLog } = require("./util-server");
+const { getSettings, setSettings, setting, initJWTSecret, checkLogin, startUnitTest, FBSD, errorLog, doubleCheckPassword } = require("./util-server");
 
 debug("Importing Notification");
 const { Notification } = require("./notification");
@@ -63,7 +63,7 @@ const Database = require("./database");
 
 debug("Importing Background Jobs");
 const { initBackgroundJobs } = require("./jobs");
-const { loginRateLimiter } = require("./rate-limiter");
+const { loginRateLimiter, twoFaRateLimiter } = require("./rate-limiter");
 
 const { basicAuth } = require("./auth");
 const { login } = require("./auth");
@@ -305,6 +305,15 @@ exports.entryPage = "dashboard";
         socket.on("login", async (data, callback) => {
             console.log("Login");
 
+            // Checking
+            if (typeof callback !== "function") {
+                return;
+            }
+
+            if (!data) {
+                return;
+            }
+
             // Login Rate Limit
             if (! await loginRateLimiter.pass(callback)) {
                 return;
@@ -363,14 +372,27 @@ exports.entryPage = "dashboard";
         });
 
         socket.on("logout", async (callback) => {
+            // Rate Limit
+            if (! await loginRateLimiter.pass(callback)) {
+                return;
+            }
+
             socket.leave(socket.userID);
             socket.userID = null;
-            callback();
+
+            if (typeof callback === "function") {
+                callback();
+            }
         });
 
-        socket.on("prepare2FA", async (callback) => {
+        socket.on("prepare2FA", async (currentPassword, callback) => {
             try {
+                if (! await twoFaRateLimiter.pass(callback)) {
+                    return;
+                }
+
                 checkLogin(socket);
+                await doubleCheckPassword(socket, currentPassword);
 
                 let user = await R.findOne("user", " id = ? AND active = 1 ", [
                     socket.userID,
@@ -405,14 +427,19 @@ exports.entryPage = "dashboard";
             } catch (error) {
                 callback({
                     ok: false,
-                    msg: "Error while trying to prepare 2FA.",
+                    msg: error.message,
                 });
             }
         });
 
-        socket.on("save2FA", async (callback) => {
+        socket.on("save2FA", async (currentPassword, callback) => {
             try {
+                if (! await twoFaRateLimiter.pass(callback)) {
+                    return;
+                }
+
                 checkLogin(socket);
+                await doubleCheckPassword(socket, currentPassword);
 
                 await R.exec("UPDATE `user` SET twofa_status = 1 WHERE id = ? ", [
                     socket.userID,
@@ -425,14 +452,19 @@ exports.entryPage = "dashboard";
             } catch (error) {
                 callback({
                     ok: false,
-                    msg: "Error while trying to change 2FA.",
+                    msg: error.message,
                 });
             }
         });
 
-        socket.on("disable2FA", async (callback) => {
+        socket.on("disable2FA", async (currentPassword, callback) => {
             try {
+                if (! await twoFaRateLimiter.pass(callback)) {
+                    return;
+                }
+
                 checkLogin(socket);
+                await doubleCheckPassword(socket, currentPassword);
                 await TwoFA.disable2FA(socket.userID);
 
                 callback({
@@ -442,36 +474,47 @@ exports.entryPage = "dashboard";
             } catch (error) {
                 callback({
                     ok: false,
-                    msg: "Error while trying to change 2FA.",
+                    msg: error.message,
                 });
             }
         });
 
-        socket.on("verifyToken", async (token, callback) => {
-            let user = await R.findOne("user", " id = ? AND active = 1 ", [
-                socket.userID,
-            ]);
+        socket.on("verifyToken", async (token, currentPassword, callback) => {
+            try {
+                checkLogin(socket);
+                await doubleCheckPassword(socket, currentPassword);
 
-            let verify = notp.totp.verify(token, user.twofa_secret, twofa_verification_opts);
+                let user = await R.findOne("user", " id = ? AND active = 1 ", [
+                    socket.userID,
+                ]);
 
-            if (user.twofa_last_token !== token && verify) {
-                callback({
-                    ok: true,
-                    valid: true,
-                });
-            } else {
+                let verify = notp.totp.verify(token, user.twofa_secret, twofa_verification_opts);
+
+                if (user.twofa_last_token !== token && verify) {
+                    callback({
+                        ok: true,
+                        valid: true,
+                    });
+                } else {
+                    callback({
+                        ok: false,
+                        msg: "Invalid Token.",
+                        valid: false,
+                    });
+                }
+
+            } catch (error) {
                 callback({
                     ok: false,
-                    msg: "Invalid Token.",
-                    valid: false,
+                    msg: error.message,
                 });
             }
         });
 
         socket.on("twoFAStatus", async (callback) => {
-            checkLogin(socket);
-
             try {
+                checkLogin(socket);
+
                 let user = await R.findOne("user", " id = ? AND active = 1 ", [
                     socket.userID,
                 ]);
@@ -488,9 +531,10 @@ exports.entryPage = "dashboard";
                     });
                 }
             } catch (error) {
+                console.log(error);
                 callback({
                     ok: false,
-                    msg: "Error while trying to get 2FA status.",
+                    msg: error.message,
                 });
             }
         });
@@ -936,21 +980,13 @@ exports.entryPage = "dashboard";
                     throw new Error("Password is too weak. It should contain alphabetic and numeric characters. It must be at least 6 characters in length.");
                 }
 
-                let user = await R.findOne("user", " id = ? AND active = 1 ", [
-                    socket.userID,
-                ]);
+                let user = await doubleCheckPassword(socket, password.currentPassword);
+                await user.resetPassword(password.newPassword);
 
-                if (user && passwordHash.verify(password.currentPassword, user.password)) {
-
-                    user.resetPassword(password.newPassword);
-
-                    callback({
-                        ok: true,
-                        msg: "Password has been updated successfully.",
-                    });
-                } else {
-                    throw new Error("Incorrect current password");
-                }
+                callback({
+                    ok: true,
+                    msg: "Password has been updated successfully.",
+                });
 
             } catch (e) {
                 callback({
@@ -977,9 +1013,13 @@ exports.entryPage = "dashboard";
             }
         });
 
-        socket.on("setSettings", async (data, callback) => {
+        socket.on("setSettings", async (data, currentPassword, callback) => {
             try {
                 checkLogin(socket);
+
+                if (data.disableAuth) {
+                    await doubleCheckPassword(socket, currentPassword);
+                }
 
                 await setSettings("general", data);
                 exports.entryPage = data.entryPage;
