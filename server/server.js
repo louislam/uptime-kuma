@@ -133,6 +133,7 @@ const { statusPageSocketHandler } = require("./socket-handlers/status-page-socke
 const databaseSocketHandler = require("./socket-handlers/database-socket-handler");
 const TwoFA = require("./2fa");
 const StatusPage = require("./model/status_page");
+const { cloudflaredSocketHandler } = require("./socket-handlers/cloudflared-socket-handler");
 
 app.use(express.json());
 
@@ -1319,6 +1320,7 @@ exports.entryPage = "dashboard";
 
         // Status Page Socket Handler for admin only
         statusPageSocketHandler(socket);
+        cloudflaredSocketHandler(socket);
         databaseSocketHandler(socket);
 
         debug("added all socket handlers");
