@@ -86,6 +86,16 @@ class Prometheus {
         }
     }
 
+    remove() {
+        try {
+            monitor_cert_days_remaining.remove(this.monitorLabelValues);
+            monitor_cert_is_valid.remove(this.monitorLabelValues);
+            monitor_response_time.remove(this.monitorLabelValues);
+            monitor_status.remove(this.monitorLabelValues);
+        } catch (e) {
+            console.error(e);
+        }
+    }
 }
 
 module.exports = {

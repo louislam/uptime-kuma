@@ -477,6 +477,12 @@ class Monitor extends BeanModel {
     stop() {
         clearTimeout(this.heartbeatInterval);
         this.isStop = true;
+
+        this.prometheus().remove();
+    }
+
+    prometheus() {
+        return new Prometheus(this);
     }
 
     /**

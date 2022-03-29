@@ -623,6 +623,9 @@ exports.entryPage = "dashboard";
                     throw new Error("Permission denied.");
                 }
 
+                // Reset Prometheus labels
+                monitorList[monitor.id]?.prometheus()?.remove();
+
                 bean.name = monitor.name;
                 bean.type = monitor.type;
                 bean.url = monitor.url;
