@@ -371,7 +371,7 @@ export default {
     serwersmsAPIUser: "API Користувач (включаючи префікс webapi_)",
     serwersmsAPIPassword: "API Пароль",
     serwersmsPhoneNumber: "Номер телефону",
-    serwersmsSenderName: "SMS ім'я відправника (реєстрований через портал користувача"),
+    serwersmsSenderName: "SMS ім'я відправника (реєстрований через портал користувача)",
     stackfield: "Stackfield",
     smtpDkimSettings: "DKIM Налаштування",
     smtpDkimDesc: "Повернутися до Nodemailer DKIM {0} для використання.",
@@ -389,4 +389,5 @@ export default {
     alertaApiKey: "Ключ API",
     alertaAlertState: "Стан алерту",
     alertaRecoverState: "Стан відновлення",
+	deleteStatusPageMsg: "Дійсно хочете видалити цю сторінку статусів?",
 };
