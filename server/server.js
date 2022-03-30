@@ -91,6 +91,7 @@ const port = parseInt(process.env.UPTIME_KUMA_PORT || process.env.PORT || args.p
 const sslKey = process.env.UPTIME_KUMA_SSL_KEY || process.env.SSL_KEY || args["ssl-key"] || undefined;
 const sslCert = process.env.UPTIME_KUMA_SSL_CERT || process.env.SSL_CERT || args["ssl-cert"] || undefined;
 const disableFrameSameOrigin = !!process.env.UPTIME_KUMA_DISABLE_FRAME_SAMEORIGIN || args["disable-frame-sameorigin"] || false;
+const cloudflaredToken = args["cloudflared-token"] || process.env.UPTIME_KUMA_CLOUDFLARED_TOKEN || undefined;
 
 // 2FA / notp verification defaults
 const twofa_verification_opts = {
@@ -133,6 +134,7 @@ const { statusPageSocketHandler } = require("./socket-handlers/status-page-socke
 const databaseSocketHandler = require("./socket-handlers/database-socket-handler");
 const TwoFA = require("./2fa");
 const StatusPage = require("./model/status_page");
+const { cloudflaredSocketHandler, autoStart: cloudflaredAutoStart } = require("./socket-handlers/cloudflared-socket-handler");
 
 app.use(express.json());
 
@@ -1362,6 +1364,7 @@ exports.entryPage = "dashboard";
 
         // Status Page Socket Handler for admin only
         statusPageSocketHandler(socket);
+        cloudflaredSocketHandler(socket);
         databaseSocketHandler(socket);
 
         debug("added all socket handlers");
@@ -1403,6 +1406,9 @@ exports.entryPage = "dashboard";
     });
 
     initBackgroundJobs(args);
+
+    // Start cloudflared at the end if configured
+    await cloudflaredAutoStart(cloudflaredToken);
 
 })();
 

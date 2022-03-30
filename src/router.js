@@ -14,6 +14,7 @@ import Entry from "./pages/Entry.vue";
 import Appearance from "./components/settings/Appearance.vue";
 import General from "./components/settings/General.vue";
 import Notifications from "./components/settings/Notifications.vue";
+import ReverseProxy from "./components/settings/ReverseProxy.vue";
 import MonitorHistory from "./components/settings/MonitorHistory.vue";
 import Security from "./components/settings/Security.vue";
 import Backup from "./components/settings/Backup.vue";
@@ -82,6 +83,10 @@ const routes = [
                             {
                                 path: "notifications",
                                 component: Notifications,
+                            },
+                            {
+                                path: "reverse-proxy",
+                                component: ReverseProxy,
                             },
                             {
                                 path: "monitor-history",

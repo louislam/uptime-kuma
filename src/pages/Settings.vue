@@ -75,6 +75,9 @@ export default {
                 notifications: {
                     title: this.$t("Notifications"),
                 },
+                "reverse-proxy": {
+                    title: this.$t("Reverse Proxy"),
+                },
                 "monitor-history": {
                     title: this.$t("Monitor History"),
                 },
