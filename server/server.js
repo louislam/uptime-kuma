@@ -91,6 +91,7 @@ const port = parseInt(process.env.UPTIME_KUMA_PORT || process.env.PORT || args.p
 const sslKey = process.env.UPTIME_KUMA_SSL_KEY || process.env.SSL_KEY || args["ssl-key"] || undefined;
 const sslCert = process.env.UPTIME_KUMA_SSL_CERT || process.env.SSL_CERT || args["ssl-cert"] || undefined;
 const disableFrameSameOrigin = !!process.env.UPTIME_KUMA_DISABLE_FRAME_SAMEORIGIN || args["disable-frame-sameorigin"] || false;
+const cloudflaredToken = args["cloudflared-token"] || process.env.UPTIME_KUMA_CLOUDFLARED_TOKEN || undefined;
 
 // 2FA / notp verification defaults
 const twofa_verification_opts = {
@@ -1407,7 +1408,7 @@ exports.entryPage = "dashboard";
     initBackgroundJobs(args);
 
     // Start cloudflared at the end if configured
-    await cloudflaredAutoStart();
+    await cloudflaredAutoStart(cloudflaredToken);
 
 })();
 

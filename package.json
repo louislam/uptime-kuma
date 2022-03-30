@@ -83,7 +83,7 @@
         "jsonwebtoken": "~8.5.1",
         "jwt-decode": "^3.1.2",
         "limiter": "^2.1.0",
-        "node-cloudflared-tunnel": "~1.0.7",
+        "node-cloudflared-tunnel": "~1.0.9",
         "nodemailer": "~6.6.5",
         "notp": "~2.0.3",
         "password-hash": "~1.2.2",

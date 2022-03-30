@@ -37,19 +37,6 @@ module.exports.cloudflaredSocketHandler = (socket) => {
         try {
             checkLogin(socket);
             if (token && typeof token === "string") {
-                token = token.trim();
-
-                // try to strip out "cloudflared.exe service install"
-                let array = token.split(" ");
-                if (array.length > 1) {
-                    for (let i = 0; i < array.length - 1; i++) {
-                        if (array[i] === "install") {
-                            token = array[i + 1];
-                        }
-                    }
-                }
-
-                await setSetting("cloudflaredTunnelToken", token);
                 cloudflared.token = token;
             } else {
                 cloudflared.token = null;
@@ -80,8 +67,14 @@ module.exports.cloudflaredSocketHandler = (socket) => {
 
 };
 
-module.exports.autoStart = async () => {
-    let token = await setting("cloudflaredTunnelToken");
+module.exports.autoStart = async (token) => {
+    if (!token) {
+        token = await setting("cloudflaredTunnelToken");
+    } else {
+        // Override the current token via args or env var
+        await setSetting("cloudflaredTunnelToken", token);
+        console.log("Use cloudflared token from args or env var");
+    }
 
     if (token) {
         console.log("Start cloudflared");
