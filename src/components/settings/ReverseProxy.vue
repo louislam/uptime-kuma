@@ -61,7 +61,7 @@
                 </button>
 
                 <Confirm ref="confirmStop" btn-style="btn-danger" :yes-text="$t('Stop') + ' cloudflared'" :no-text="$t('Cancel')" @yes="stop">
-                    The current connection may be lost if you are connecting Cloudflare Tunnel. Are you sure want to stop it? Type your password to confirm it.
+                    The current connection may be lost if you are currently connecting via Cloudflare Tunnel. Are you sure want to stop it? Type your current password to confirm it.
 
                     <div class="mt-3">
                         <label for="current-password2" class="form-label">
