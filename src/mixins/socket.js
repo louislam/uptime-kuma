@@ -48,6 +48,7 @@ export default {
                 running: false,
                 message: "",
                 errorMessage: "",
+                currentPassword: "",
             }
         };
     },

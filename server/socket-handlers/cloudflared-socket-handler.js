@@ -1,17 +1,13 @@
-const { checkLogin, setSetting, setting } = require("../util-server");
+const { checkLogin, setSetting, setting, doubleCheckPassword } = require("../util-server");
 const { CloudflaredTunnel } = require("node-cloudflared-tunnel");
 const { io } = require("../server");
 
 const prefix = "cloudflared_";
 const cloudflared = new CloudflaredTunnel();
 
-let isRunning;
-
 cloudflared.change = (running, message) => {
     io.to("cloudflared").emit(prefix + "running", running);
     io.to("cloudflared").emit(prefix + "message", message);
-    isRunning = running;
-
 };
 
 cloudflared.error = (errorMessage) => {
@@ -25,7 +21,7 @@ module.exports.cloudflaredSocketHandler = (socket) => {
             checkLogin(socket);
             socket.join("cloudflared");
             io.to(socket.userID).emit(prefix + "installed", cloudflared.checkInstalled());
-            io.to(socket.userID).emit(prefix + "running", isRunning);
+            io.to(socket.userID).emit(prefix + "running", cloudflared.running);
             io.to(socket.userID).emit(prefix + "token", await setting("cloudflaredTunnelToken"));
         } catch (error) { }
     });
@@ -62,11 +58,34 @@ module.exports.cloudflaredSocketHandler = (socket) => {
         } catch (error) { }
     });
 
-    socket.on(prefix + "stop", async () => {
+    socket.on(prefix + "stop", async (currentPassword, callback) => {
         try {
             checkLogin(socket);
+            await doubleCheckPassword(socket, currentPassword);
             cloudflared.stop();
+        } catch (error) {
+            callback({
+                ok: false,
+                msg: error.message,
+            });
+        }
+    });
+
+    socket.on(prefix + "removeToken", async () => {
+        try {
+            checkLogin(socket);
+            await setSetting("cloudflaredTunnelToken", "");
         } catch (error) { }
     });
 
+};
+
+module.exports.autoStart = async () => {
+    let token = await setting("cloudflaredTunnelToken");
+
+    if (token) {
+        console.log("Start cloudflared");
+        cloudflared.token = token;
+        cloudflared.start();
+    }
 };

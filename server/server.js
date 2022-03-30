@@ -133,7 +133,7 @@ const { statusPageSocketHandler } = require("./socket-handlers/status-page-socke
 const databaseSocketHandler = require("./socket-handlers/database-socket-handler");
 const TwoFA = require("./2fa");
 const StatusPage = require("./model/status_page");
-const { cloudflaredSocketHandler } = require("./socket-handlers/cloudflared-socket-handler");
+const { cloudflaredSocketHandler, autoStart: cloudflaredAutoStart } = require("./socket-handlers/cloudflared-socket-handler");
 
 app.use(express.json());
 
@@ -1405,6 +1405,9 @@ exports.entryPage = "dashboard";
     });
 
     initBackgroundJobs(args);
+
+    // Start cloudflared at the end if configured
+    await cloudflaredAutoStart();
 
 })();
 

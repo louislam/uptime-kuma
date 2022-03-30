@@ -19,7 +19,7 @@
                 {{ message }}
             </div>
 
-            <div class="mt-3">
+            <div v-if="errorMessage" class="mt-3">
                 Message:
                 <textarea v-model="errorMessage" class="form-control" readonly></textarea>
             </div>
@@ -37,8 +37,13 @@
                     id="cloudflareTunnelToken"
                     v-model="cloudflareTunnelToken"
                     autocomplete="one-time-code"
+                    :readonly="running"
                 />
                 <div class="form-text">
+                    <div v-if="cloudflareTunnelToken" class="mb-3">
+                        <span v-if="!running" class="remove-token" @click="removeToken">{{ $t("Remove Token") }}</span>
+                    </div>
+
                     Don't know how to get the token? Please read the guide:<br />
                     <a href="https://github.com/louislam/uptime-kuma/wiki/Reverse-Proxy-with-Cloudflare-Tunnel" target="_blank">
                         https://github.com/louislam/uptime-kuma/wiki/Reverse-Proxy-with-Cloudflare-Tunnel
@@ -46,15 +51,31 @@
                 </div>
             </div>
 
-            <!-- Save Button -->
             <div>
                 <button v-if="!running" class="btn btn-primary" type="submit" @click="start">
                     {{ $t("Start") }} cloudflared
                 </button>
 
-                <button v-if="running" class="btn btn-danger" type="submit" @click="stop">
+                <button v-if="running" class="btn btn-danger" type="submit" @click="$refs.confirmStop.show();">
                     {{ $t("Stop") }} cloudflared
                 </button>
+
+                <Confirm ref="confirmStop" btn-style="btn-danger" :yes-text="$t('Stop') + ' cloudflared'" :no-text="$t('Cancel')" @yes="stop">
+                    The current connection may be lost if you are connecting Cloudflare Tunnel. Are you sure want to stop it? Type your password to confirm it.
+
+                    <div class="mt-3">
+                        <label for="current-password2" class="form-label">
+                            {{ $t("Current Password") }}
+                        </label>
+                        <input
+                            id="current-password2"
+                            v-model="currentPassword"
+                            type="password"
+                            class="form-control"
+                            required
+                        />
+                    </div>
+                </Confirm>
             </div>
         </div>
 
@@ -68,14 +89,17 @@
 
 <script>
 import HiddenInput from "../../components/HiddenInput.vue";
+import Confirm from "../Confirm.vue";
 
 const prefix = "cloudflared_";
 
 export default {
     components: {
         HiddenInput,
+        Confirm
     },
     data() {
+        // See /src/mixins/socket.js
         return this.$root.cloudflared;
     },
     computed: {
@@ -84,7 +108,7 @@ export default {
     watch: {
 
     },
-    mounted() {
+    created() {
         this.$root.getSocket().emit(prefix + "join");
     },
     unmounted() {
@@ -95,17 +119,21 @@ export default {
             this.$root.getSocket().emit(prefix + "start", this.cloudflareTunnelToken);
         },
         stop() {
-            this.$root.getSocket().emit(prefix + "stop");
+            this.$root.getSocket().emit(prefix + "stop", this.currentPassword, (res) => {
+                this.$root.toastRes(res);
+            });
         },
+        removeToken() {
+            this.$root.getSocket().emit(prefix + "removeToken");
+            this.cloudflareTunnelToken = "";
+        }
     }
 };
 </script>
 
 <style lang="scss" scoped>
-.logo {
-    margin: 4em 1em;
-}
-.update-link {
-    font-size: 0.9em;
+.remove-token {
+    text-decoration: underline;
+    cursor: pointer;
 }
 </style>
