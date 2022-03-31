@@ -191,8 +191,8 @@
                 <p>Это подходит для <strong>тех, у кого стоит другая авторизация</strong> перед открытием Uptime Kuma, например Cloudflare Access.</p>
                 <p>Пожалуйста, используйте с осторожностью.</p>
             </template>
-			
-			<template v-else-if="$i18n.locale === 'ru-RU' ">
+
+            <template v-else-if="$i18n.locale === 'uk-UA' ">
                 <p>Ви впевнені, що бажаєте <strong>вимкнути авторизацію</strong>?</p>
                 <p>Це підходить для <strong>тих, у кого встановлена інша авторизація</strong> пееред відкриттям Uptime Kuma, наприклад Cloudflare Access.</p>
                 <p>Будь ласка, використовуйте з обережністю.</p>

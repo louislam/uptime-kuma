@@ -335,7 +335,6 @@ export default {
     Description: "Опис",
     "Powered by": "Працює на основі скрипту від",
     shrinkDatabaseDescription: "Включає VACUUM для бази даних SQLite. Якщо база даних була створена на версії 1.10.0 і більше, AUTO_VACUUM вже включений і ця дія не потрібна.",
-    deleteStatusPageMsg: "Ви дійсно хочете видалити цю сторінку статусу сервісів?",
     Style: "Стиль",
     info: "ІНФО",
     warning: "УВАГА",
@@ -389,5 +388,5 @@ export default {
     alertaApiKey: "Ключ API",
     alertaAlertState: "Стан алерту",
     alertaRecoverState: "Стан відновлення",
-	deleteStatusPageMsg: "Дійсно хочете видалити цю сторінку статусів?",
+    deleteStatusPageMsg: "Дійсно хочете видалити цю сторінку статусів?",
 };
