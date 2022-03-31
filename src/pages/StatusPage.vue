@@ -518,6 +518,7 @@ export default {
 
         save() {
             let startTime = new Date();
+            this.config.slug = this.config.slug.trim().toLowerCase();
 
             this.$root.getSocket().emit("saveStatusPage", this.slug, this.config, this.imgDataUrl, this.$root.publicGroupList, (res) => {
                 if (res.ok) {

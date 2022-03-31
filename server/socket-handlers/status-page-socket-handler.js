@@ -90,6 +90,8 @@ module.exports.statusPageSocketHandler = (socket) => {
     socket.on("saveStatusPage", async (slug, config, imgDataUrl, publicGroupList, callback) => {
 
         try {
+            checkSlug(config.slug);
+
             checkLogin(socket);
             apicache.clear();
 
@@ -178,7 +180,12 @@ module.exports.statusPageSocketHandler = (socket) => {
             // Delete groups that not in the list
             debug("Delete groups that not in the list");
             const slots = groupIDList.map(() => "?").join(",");
-            await R.exec(`DELETE FROM \`group\` WHERE id NOT IN (${slots})`, groupIDList);
+
+            const data = [
+                ...groupIDList,
+                statusPage.id
+            ];
+            await R.exec(`DELETE FROM \`group\` WHERE id NOT IN (${slots}) AND status_page_id = ?`, data);
 
             // Also change entry page to new slug if it is the default one, and slug is changed.
             if (server.entryPage === "statusPage-" + slug && statusPage.slug !== slug) {
@@ -222,11 +229,7 @@ module.exports.statusPageSocketHandler = (socket) => {
             // lower case only
             slug = slug.toLowerCase();
 
-            // Check slug a-z, 0-9, - only
-            // Regex from: https://stackoverflow.com/questions/22454258/js-regex-string-validation-for-slug
-            if (!slug.match(/^[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*$/)) {
-                throw new Error("Invalid Slug");
-            }
+            checkSlug(slug);
 
             let statusPage = R.dispense("status_page");
             statusPage.slug = slug;
@@ -297,3 +300,23 @@ module.exports.statusPageSocketHandler = (socket) => {
         }
     });
 };
+
+/**
+ * Check slug a-z, 0-9, - only
+ * Regex from: https://stackoverflow.com/questions/22454258/js-regex-string-validation-for-slug
+ */
+function checkSlug(slug) {
+    if (typeof slug !== "string") {
+        throw new Error("Slug must be string");
+    }
+
+    slug = slug.trim();
+
+    if (!slug) {
+        throw new Error("Slug cannot be empty");
+    }
+
+    if (!slug.match(/^[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*$/)) {
+        throw new Error("Invalid Slug");
+    }
+}

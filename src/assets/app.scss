@@ -348,11 +348,8 @@ textarea.form-control {
 
 .monitor-list {
     &.scrollbar {
-        min-height: calc(100vh - 240px);
-        max-height: calc(100vh - 30px);
         overflow-y: auto;
-        position: sticky;
-        top: 10px;
+        height: calc(100% - 65px);
     }
 
     .item {

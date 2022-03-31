@@ -75,6 +75,9 @@ export default {
                 notifications: {
                     title: this.$t("Notifications"),
                 },
+                "reverse-proxy": {
+                    title: this.$t("Reverse Proxy"),
+                },
                 "monitor-history": {
                     title: this.$t("Monitor History"),
                 },
@@ -131,10 +134,18 @@ export default {
             });
         },
 
-        saveSettings() {
-            this.$root.getSocket().emit("setSettings", this.settings, (res) => {
+        /**
+         * Save Settings
+         * @param currentPassword (Optional) Only need for disableAuth to true
+         */
+        saveSettings(callback, currentPassword) {
+            this.$root.getSocket().emit("setSettings", this.settings, currentPassword, (res) => {
                 this.$root.toastRes(res);
                 this.loadSettings();
+
+                if (callback) {
+                    callback();
+                }
             });
         },
     }

@@ -215,14 +215,14 @@
                 <p>Dette er for <strong>de som har tredjepartsautorisering</strong> foran Uptime Kuma, for eksempel Cloudflare Access.</p>
                 <p>Vennligst vær forsiktig.</p>
             </template>
-            
+
             <template v-else-if="$i18n.locale === 'cs-CZ' ">
                 <p>Opravdu chcete <strong>deaktivovat autentifikaci</strong>?</p>
                 <p>Tato možnost je určena pro případy, kdy <strong>máte autentifikaci zajištěnou třetí stranou</strong> ještě před přístupem do Uptime Kuma, například prostřednictvím Cloudflare Access.</p>
                 <p>Používejte ji prosím s rozmyslem.</p>
             </template>
 
-			<template v-else-if="$i18n.locale === 'vi-VN' ">
+            <template v-else-if="$i18n.locale === 'vi-VN' ">
                 <p>Bạn có muốn <strong>TẮT XÁC THỰC</strong> không?</p>
                 <p>Điều này rất nguy hiểm<strong>BẤT KỲ AI</strong> cũng có thể truy cập và cướp quyền điều khiển.</p>
                 <p>Vui lòng <strong>cẩn thận</strong>.</p>
@@ -234,6 +234,19 @@
                 <p>It is designed for scenarios <strong>where you intend to implement third-party authentication</strong> in front of Uptime Kuma such as Cloudflare Access, Authelia or other authentication mechanisms.</p>
                 <p>Please use this option carefully!</p>
             </template>
+
+            <div class="mb-3">
+                <label for="current-password2" class="form-label">
+                    {{ $t("Current Password") }}
+                </label>
+                <input
+                    id="current-password2"
+                    v-model="password.currentPassword"
+                    type="password"
+                    class="form-control"
+                    required
+                />
+            </div>
         </Confirm>
     </div>
 </template>
@@ -310,7 +323,12 @@ export default {
 
         disableAuth() {
             this.settings.disableAuth = true;
-            this.saveSettings();
+
+            // Need current password to disable auth
+            // Set it to empty if done
+            this.saveSettings(() => {
+                this.password.currentPassword = "";
+            }, this.password.currentPassword);
         },
 
         enableAuth() {

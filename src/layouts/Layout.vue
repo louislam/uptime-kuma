@@ -3,6 +3,9 @@
         <div v-if="! $root.socket.connected && ! $root.socket.firstConnect" class="lost-connection">
             <div class="container-fluid">
                 {{ $root.connectionErrorMsg }}
+                <div v-if="$root.showReverseProxyGuide">
+                    Using a Reverse Proxy? <a href="https://github.com/louislam/uptime-kuma/wiki/Reverse-Proxy" target="_blank">Check how to config it for WebSocket</a>
+                </div>
             </div>
         </div>
 
@@ -45,7 +48,7 @@
         </header>
 
         <main>
-            <router-view v-if="$root.loggedIn" />
+            <router-view v-if="$root.loggedIn || forceShowContent" />
             <Login v-if="! $root.loggedIn && $root.allowLoginDialog" />
         </main>
 
@@ -184,6 +187,8 @@ main {
     padding: 5px;
     background-color: crimson;
     color: white;
+    position: fixed;
+    width: 100%;
 }
 
 .dark {

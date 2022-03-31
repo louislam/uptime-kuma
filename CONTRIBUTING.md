@@ -196,20 +196,28 @@ https://github.com/louislam/uptime-kuma/issues?q=sort%3Aupdated-desc
 ### Release Procedures
 
 1. Draft a release note
-1. Make sure the repo is cleared
-1. `npm run update-version 1.X.X`
-1. `npm run build`
-1. `npm run build-docker`
-1. `git push`
-1. Publish the release note as 1.X.X 
-1. `npm run upload-artifacts` with env vars VERSION=1.X.X;GITHUB_TOKEN=XXXX
-1. SSH to demo site server and update to 1.X.X
+2. Make sure the repo is cleared
+3. `npm run release-final with env vars: `VERSION` and `GITHUB_TOKEN`
+4. Wait until the `Press any key to continue`
+5. `git push`
+6. Publish the release note as 1.X.X 
+7. Press any key to continue
+8. SSH to demo site server and update to 1.X.X
 
 Checking:
 
 - Check all tags is fine on https://hub.docker.com/r/louislam/uptime-kuma/tags
 - Try the Docker image with tag 1.X.X (Clean install / amd64 / arm64 / armv7)
 - Try clean installation with Node.js
+
+### Release Beta Procedures
+
+1. Draft a release note, check "This is a pre-release"
+2. Make sure the repo is cleared
+3. `npm run release-beta` with env vars: `VERSION` and `GITHUB_TOKEN`
+4. Wait until the `Press any key to continue`
+5. Publish the release note as 1.X.X-beta.X
+6. Press any key to continue
 
 ### Release Wiki
 
