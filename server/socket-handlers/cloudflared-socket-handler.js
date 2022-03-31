@@ -37,6 +37,7 @@ module.exports.cloudflaredSocketHandler = (socket) => {
         try {
             checkLogin(socket);
             if (token && typeof token === "string") {
+                await setSetting("cloudflaredTunnelToken", token);
                 cloudflared.token = token;
             } else {
                 cloudflared.token = null;
