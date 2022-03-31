@@ -593,6 +593,7 @@ export default {
         },
 
         statusPageLogoLoaded(eventPayload) {
+            // Remark: may not work in dev, due to cros
             favicon.image(eventPayload.target);
         },
 
