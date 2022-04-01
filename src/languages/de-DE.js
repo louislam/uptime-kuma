@@ -179,6 +179,7 @@ export default {
     "Edit Status Page": "Bearbeite Status-Seite",
     "Go to Dashboard": "Gehe zum Dashboard",
     "Status Page": "Status-Seite",
+    "Status Pages": "Status-Seite",
     telegram: "Telegram",
     webhook: "Webhook",
     smtp: "E-Mail (SMTP)",

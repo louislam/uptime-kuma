@@ -179,6 +179,7 @@ export default {
     "Edit Status Page": "Edit Halaman Status",
     "Go to Dashboard": "Pergi ke Dasbor",
     "Status Page": "Halaman Status",
+    "Status Pages": "Halaman Status",
     defaultNotificationName: "{notification} saya Peringatan ({number})",
     here: "di sini",
     Required: "Dibutuhkan",

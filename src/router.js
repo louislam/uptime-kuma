@@ -14,11 +14,15 @@ import Entry from "./pages/Entry.vue";
 import Appearance from "./components/settings/Appearance.vue";
 import General from "./components/settings/General.vue";
 import Notifications from "./components/settings/Notifications.vue";
+import ReverseProxy from "./components/settings/ReverseProxy.vue";
 import MonitorHistory from "./components/settings/MonitorHistory.vue";
 import Security from "./components/settings/Security.vue";
 import Proxies from "./components/settings/Proxies.vue";
 import Backup from "./components/settings/Backup.vue";
 import About from "./components/settings/About.vue";
+import ManageStatusPage from "./pages/ManageStatusPage.vue";
+import AddStatusPage from "./pages/AddStatusPage.vue";
+import NotFound from "./pages/NotFound.vue";
 
 const routes = [
     {
@@ -82,6 +86,10 @@ const routes = [
                                 component: Notifications,
                             },
                             {
+                                path: "reverse-proxy",
+                                component: ReverseProxy,
+                            },
+                            {
                                 path: "monitor-history",
                                 component: MonitorHistory,
                             },
@@ -103,6 +111,14 @@ const routes = [
                             },
                         ]
                     },
+                    {
+                        path: "/manage-status-page",
+                        component: ManageStatusPage,
+                    },
+                    {
+                        path: "/add-status-page",
+                        component: AddStatusPage,
+                    },
                 ],
             },
         ],
@@ -118,6 +134,14 @@ const routes = [
     {
         path: "/status",
         component: StatusPage,
+    },
+    {
+        path: "/status/:slug",
+        component: StatusPage,
+    },
+    {
+        path: "/:pathMatch(.*)*",
+        component: NotFound,
     },
 ];
 

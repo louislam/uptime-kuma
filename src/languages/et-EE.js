@@ -17,6 +17,7 @@ export default {
     pauseMonitorMsg: "Kas soovid peatada seire?",
     Settings: "Seaded",
     "Status Page": "Ülevaade",
+    "Status Pages": "Ülevaated",
     Dashboard: "Töölaud",
     "New Update": "Uuem tarkvara versioon on saadaval.",
     Language: "Keel",
@@ -197,4 +198,10 @@ export default {
     pushbullet: "Pushbullet",
     line: "LINE",
     mattermost: "Mattermost",
+    alerta: "Alerta",
+    alertaApiEndpoint: "API otsik",
+    alertaEnvironment: "Keskkond",
+    alertaApiKey: "API võti",
+    alertaAlertState: "Häireseisund",
+    alertaRecoverState: "Taasta algolek",
 };

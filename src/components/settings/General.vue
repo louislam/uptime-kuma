@@ -62,31 +62,31 @@
 
                 <div class="form-check">
                     <input
-                        id="entryPageYes"
+                        id="entryPageDashboard"
                         v-model="settings.entryPage"
                         class="form-check-input"
                         type="radio"
-                        name="statusPage"
+                        name="entryPage"
                         value="dashboard"
                         required
                     />
-                    <label class="form-check-label" for="entryPageYes">
+                    <label class="form-check-label" for="entryPageDashboard">
                         {{ $t("Dashboard") }}
                     </label>
                 </div>
 
-                <div class="form-check">
+                <div v-for="statusPage in $root.statusPageList" :key="statusPage.id" class="form-check">
                     <input
-                        id="entryPageNo"
+                        :id="'status-page-' + statusPage.id"
                         v-model="settings.entryPage"
                         class="form-check-input"
                         type="radio"
-                        name="statusPage"
-                        value="statusPage"
+                        name="entryPage"
+                        :value="'statusPage-' + statusPage.slug"
                         required
                     />
-                    <label class="form-check-label" for="entryPageNo">
-                        {{ $t("Status Page") }}
+                    <label class="form-check-label" :for="'status-page-' + statusPage.id">
+                        {{ $t("Status Page") }} - {{ statusPage.title }}
                     </label>
                 </div>
             </div>
