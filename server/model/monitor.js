@@ -232,7 +232,7 @@ class Monitor extends BeanModel {
                             bean.status = UP;
                         } else {
                             data = data.replace(/<[^>]*>?|[\n\r]|\s+/gm, " ");
-                            if ( data.length > 50 ) {
+                            if (data.length > 50) {
                                 data = data.substring(0, 47) + "...";
                             }
                             throw new Error(bean.msg + ", but keyword is not in [" + data + "]");
