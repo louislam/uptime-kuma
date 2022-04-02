@@ -2,23 +2,23 @@
 
 # set -e Exit the script if an error happens
 set -e
-
+DATADIR=/app/data
 
 files_ownership () {
-    # Check if the /app/data folder is owned by the user invoking the container
-    if [ $(stat -c%u /app/data) !=  $(id -u) ]; then
+    # Check if the $DATADIR folder is owned by the user invoking the container
+    if [ $(stat -c%u "$DATADIR") !=  $(id -u) ]; then
         echo "File ownership incorrect, attempting to fix."
-        chown -hRc "$(id -u)":"$(id -g)" /app/data || echo "ERROR: Failed to set file ownership. Please run 'sudo chown -R $(id -u):$(id -g) /path/to/container/volume' to resolve."; exit 1
+        chown -hRc "$(id -u)":"$(id -g)" $DATADIR || echo "ERROR: Failed to set file ownership. Please run 'sudo chown -R $(id -u):$(id -g) /path/to/container/volume' to resolve."; exit 1
         echo "File ownership fix succesful! Continuing."
     fi
 
    # Checks for R/W permissions
-   if [ $(stat -c%a /app/data) -ne 770 ]; then
+   if [ $(stat -c%a "$DATADIR") -ne 770 ]; then
         echo "Directory permissions incorrect, attempting to fix."
-        find /app/data -type d -exec chmod 770 {} \;
+        find $DATADIR -type d -exec chmod 770 {} \;
 
         # Re-run the check
-        if [ $(stat -c%a /app/data) -ne 770 ]; then
+        if [ $(stat -c%a "$DATADIR") -ne 770 ]; then
                 echo "ERROR: Failed to set file permissions. Please run 'sudo find /path/to/container/volume -type d chmod 770 {} \;' to resolve."
                 exit 1
         fi
@@ -26,12 +26,12 @@ files_ownership () {
    fi
 
    # Check the R/W permissions on the files
-   if [ $(stat -c%a /app/data/* | head -n 1) != 640 ]; then
+   if [ $(stat -c%a "$DATADIR"/* | head -n 1) != 640 ]; then
         echo "File permissions incorrect. Attempting to fix."
-        find /app/data -type f -exec chmod 640 {} \;
+        find $DATADIR -type f -exec chmod 640 {} \;
 
         # Re-run the check
-        if [ $(stat -c%a /app/data/* | head -n 1) != 640 ]; then
+        if [ $(stat -c%a "$DATADIR"/* | head -n 1) != 640 ]; then
                 echo "ERROR: Failed to set file permissions. Please run 'sudo find /path/to/container/volume -type f chmod 640 {} \;' to resolve."
                 exit 1
         fi
