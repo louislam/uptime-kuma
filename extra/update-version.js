@@ -1,5 +1,6 @@
 const pkg = require("../package.json");
 const fs = require("fs");
+const rmSync = require("./fs-rmSync.js");
 const child_process = require("child_process");
 const util = require("../src/util");
 
@@ -58,4 +59,3 @@ function tagExists(version) {
 
     return res.stdout.toString().trim() === version;
 }
-
