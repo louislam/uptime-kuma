@@ -43,7 +43,7 @@
 
                         <div v-if="proxy.auth" class="mb-3">
                             <label for="proxy-password" class="form-label">{{ $t("Password") }}</label>
-                            <input id="proxy-password" v-model="proxy.password" type="text" class="form-control" required>
+                            <input id="proxy-password" v-model="proxy.password" type="password" class="form-control" required>
                         </div>
 
                         <div class="mb-3 mt-4">
