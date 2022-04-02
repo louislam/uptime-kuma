@@ -29,7 +29,7 @@ files_ownership () {
         echo "File permissions incorrect. Attempting to fix."
         find /app/data -type f -exec chmod 640 {} \;
 
-        #Re-run the check
+        # Re-run the check
         if [ $(stat -c%a /app/data/* | head -n 1) != 640 ]; then
                 echo "ERROR: Failed to set file permissions. Please run 'sudo find /path/to/container/volume -type f chmod 640 {} \;' to resolve."
                 exit 1
