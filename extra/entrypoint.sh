@@ -24,7 +24,7 @@ files_ownership () {
         echo "Directory permission fix succesful! Continuing."
    fi
 
-   #Check the R/W permissions on the files
+   # Check the R/W permissions on the files
    if [ $(stat -c%a /app/data/* | head -n 1) != 640 ]; then
         echo "File permissions incorrect. Attempting to fix."
         find /app/data -type f -exec chmod 640 {} \;
