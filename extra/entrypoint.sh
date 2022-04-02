@@ -9,6 +9,7 @@ files_ownership () {
     if [ $(stat -c%u /app/data) !=  $(id -u) ]; then
         echo "File ownership incorrect, attempting to fix."
         chown -hRc "$(id -u)":"$(id -g)" /app/data || echo "ERROR: Failed to set file ownership. Please run 'sudo chown -R $(id -u):$(id -g) /path/to/container/volume' to resolve."; exit 1
+        echo "File ownership fix succesful! Continuing."
     fi
 
    # Checks for R/W permissions
