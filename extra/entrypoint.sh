@@ -16,7 +16,7 @@ files_ownership () {
         echo "Directory permissions incorrect, attempting to fix."
         find /app/data -type d -exec chmod 770 {} \;
 
-        #Re-run the check
+        # Re-run the check
         if [ $(stat -c%a /app/data) -ne 770 ]; then
                 echo "ERROR: Failed to set file permissions. Please run 'sudo find /path/to/container/volume -type d chmod 770 {} \;' to resolve."
                 exit 1
