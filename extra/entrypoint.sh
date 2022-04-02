@@ -50,6 +50,6 @@ then
         # We're running as root, so we can use setpriv without problems.
         exec setpriv --reuid "$PUID" --regid "$PGID" --clear-groups "$@"
 else
-        #We're running as a regular user, so we'll launch the app as one.
+        # We're running as a regular user, so we'll launch the app as one.
         exec "$@"
 fi
