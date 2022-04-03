@@ -10,11 +10,6 @@ const version = process.env.VERSION;
 
 console.log("Beta Version: " + version);
 
-if (!oldVersion || oldVersion.includes("-beta.")) {
-    console.error("Error: old version should not be a beta version?");
-    process.exit(1);
-}
-
 if (!version || !version.includes("-beta.")) {
     console.error("invalid version, beta version only");
     process.exit(1);
