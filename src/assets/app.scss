@@ -92,6 +92,10 @@ textarea.form-control {
     }
 }
 
+.btn-dark {
+    background-color: #161B22;
+}
+
 @media (max-width: 550px) {
     .table-shadow-box {
         padding: 10px !important;
@@ -144,6 +148,10 @@ textarea.form-control {
     background-color: #090c10;
     color: $dark-font-color;
 
+    mark, .mark {
+        background-color: #b6ad86;
+    }
+
     &::-webkit-scrollbar-thumb, ::-webkit-scrollbar-thumb {
         background: $dark-border-color;
     }
@@ -156,13 +164,24 @@ textarea.form-control {
 
     .form-check-input {
         background-color: $dark-bg2;
+        border-color: $dark-border-color;
+    }
+
+    .input-group-text {
+        background-color: #282f39;
+        border-color: $dark-border-color;
+        color: $dark-font-color;
+    }
+
+    .form-check-input:checked {
+        border-color: $primary; // Re-apply bootstrap border
     }
 
     .form-switch .form-check-input {
         background-color: #232f3b;
     }
 
-    a,
+    a:not(.btn),
     .table,
     .nav-link {
         color: $dark-font-color;
@@ -329,11 +348,8 @@ textarea.form-control {
 
 .monitor-list {
     &.scrollbar {
-        min-height: calc(100vh - 240px);
-        max-height: calc(100vh - 30px);
         overflow-y: auto;
-        position: sticky;
-        top: 10px;
+        height: calc(100% - 65px);
     }
 
     .item {
@@ -431,6 +447,10 @@ textarea.form-control {
 
 .vue-image-crop-upload .vicp-wrap {
     border-radius: 10px !important;
+}
+
+.spinner {
+    color: $primary;
 }
 
 // Localization

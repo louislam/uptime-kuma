@@ -41,7 +41,7 @@
                                             <Uptime :monitor="monitor.element" type="24" :pill="true" />
                                             {{ monitor.element.name }}
                                         </div>
-                                        <div class="tags">
+                                        <div v-if="showTags" class="tags">
                                             <Tag v-for="tag in monitor.element.tags" :key="tag" :item="tag" :size="'sm'" />
                                         </div>
                                     </div>
@@ -76,6 +76,9 @@ export default {
             type: Boolean,
             required: true,
         },
+        showTags: {
+            type: Boolean,
+        }
     },
     data() {
         return {
