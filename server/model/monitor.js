@@ -377,6 +377,7 @@ class Monitor extends BeanModel {
                         bean.status = UP;
                         bean.msg = "";
                     }
+                    
                 } else {
                     bean.msg = "Unknown Monitor Type";
                     bean.status = PENDING;
