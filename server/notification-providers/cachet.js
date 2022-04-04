@@ -39,7 +39,7 @@ class Cachet extends NotificationProvider {
 
             const body = this._bodyFactory(heartbeatJSON.status, notification.cachetFatalState);
 
-            await this._sendNotification(notification.cachetUrl+"/api/v1/components/"+notification.cachetComponentId, notification.cachetToken, body);
+            await this._sendNotification(notification.cachetUrl + "/api/v1/components/" + notification.cachetComponentId, notification.cachetToken, body);
             return okMsg;
         } catch (error) {
             this.throwGeneralAxiosError(error);
