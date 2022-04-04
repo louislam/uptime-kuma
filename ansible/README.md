@@ -1,10 +1,11 @@
 # Ansible Playbook to install uptime kuma using docker
 
-This playbook comes with three roles
+This playbook comes with three tags
 
-1. docker (to install docker)
-2. nginx (to install nginx using docker with ssl)
-3. uptime kuma (to install uptime kuma using docker)
+1. requirements (will install anything needed to make next parts working)
+2. docker (to install docker)
+3. nginx (to install nginx using docker with ssl)
+4. uptime kuma (to install uptime kuma using docker)
 
 To see more info see docker-compose, tasks and config files 
 I will try to make this readme better
