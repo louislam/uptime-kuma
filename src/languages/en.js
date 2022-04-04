@@ -430,7 +430,7 @@ export default {
     About: "About",
     wayToGetCloudflaredURL: "(Download cloudflared from {0})",
     cloudflareWebsite: "Cloudflare Website",
-    "Error Message:": "Error Message:",
+    "Message:": "Message:",
     "Don't know how to get the token? Please read the guide:": "Don't know how to get the token? Please read the guide:",
     "The current connection may be lost if you are currently connecting via Cloudflare Tunnel. Are you sure want to stop it? Type your current password to confirm it.": "The current connection may be lost if you are currently connecting via Cloudflare Tunnel. Are you sure want to stop it? Type your current password to confirm it.",
     "Other Software": "Other Software",

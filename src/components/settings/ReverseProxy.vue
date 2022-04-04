@@ -20,7 +20,7 @@
             </div>
 
             <div v-if="errorMessage" class="mt-3">
-                {{ $t("Error Message:") }}
+                {{ $t("Message:") }}
                 <textarea v-model="errorMessage" class="form-control" readonly></textarea>
             </div>
 
