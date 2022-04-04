@@ -8,7 +8,7 @@ class Cachet extends NotificationProvider {
 
     _bodyFactory = (status, cachetFatalState) => {
         if (status === DOWN) {
-            return `{"status":"`+cachetFatalState+`"}`;
+            return `{"status":"` + cachetFatalState + `"}`;
         } else if (status === UP) {
             return `{"status":"1"}`;
         } else {
