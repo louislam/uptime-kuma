@@ -24,7 +24,7 @@ class Cachet extends NotificationProvider {
                 headers: {
                     'Content-Type': 'application/json',
                     'X-Cachet-Token': token,
-                }
+                },
             }
         );
     };
