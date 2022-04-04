@@ -1,0 +1,9 @@
+- name: Ensure packages for some requirements are installed
+  apt:
+    pkg:
+      - libffi-dev
+      - libzbar-dev
+      - libzbar0
+      - python3-docopt
+    update_cache: yes
+    state: present

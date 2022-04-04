@@ -1,0 +1,9 @@
+- name: Ensure packages for some requirements are installed
+  dnf:
+    name:
+      - libffi-devel
+      - zbar-devel
+      - zbar
+      - python3-docopt
+    update_cache: yes
+    state: present

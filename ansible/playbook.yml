@@ -3,16 +3,17 @@
 
   vars:
     pip_install_packages:
+      - name: wheel
+      - name: pip
+        state: latest
+      - name: setuptools
+      - name: cffi
       - name: docker
+      - name: dockerpty
     docker_compose_version: "v2.0.1"
 
-  tasks:
-    - name: Ensure {{inventory_hostname}} is set as hostname
-      hostname:
-        name: "{{inventory_hostname}}"
-      tags: ["hostname"]
-
   roles:
+    - {role: requirements,            tags: ["docker", "requirements"]}
     - {role: geerlingguy.docker,      tags: ["docker"]}
     - {role: geerlingguy.pip,         tags: ["docker"]}
     - {role: nginx,                   tags: ["nginx"]}

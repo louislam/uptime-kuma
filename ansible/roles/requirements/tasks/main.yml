@@ -1,0 +1,11 @@
+---
+- name: Ensure {{inventory_hostname}} is set as hostname
+  hostname:
+    name: "{{inventory_hostname}}"
+  tags: ["hostname"]
+
+- include_tasks: setup-RedHat.yml
+  when: ansible_os_family == 'RedHat'
+
+- include_tasks: setup-Debian.yml
+  when: ansible_os_family == 'Debian'
