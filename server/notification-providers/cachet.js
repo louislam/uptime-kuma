@@ -34,7 +34,17 @@ class Cachet extends NotificationProvider {
 
         try {
             if (heartbeatJSON == null) {
-                return "Sent Successfully.";
+                await axios.put(
+                    notification.cachetUrl + "/api/v1/components/" + notification.cachetComponentId,
+                    null,
+                    {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Cachet-Token': notification.cachetToken,
+                        }
+                    }
+                );
+                return okMsg;
             }
 
             const body = this._bodyFactory(heartbeatJSON.status, notification.cachetFatalState);
