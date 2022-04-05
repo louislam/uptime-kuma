@@ -646,6 +646,7 @@ exports.entryPage = "dashboard";
                 bean.port = monitor.port;
                 bean.keyword = monitor.keyword;
                 bean.ignoreTls = monitor.ignoreTls;
+                bean.expiryNotification = monitor.expiryNotification;
                 bean.upsideDown = monitor.upsideDown;
                 bean.maxredirects = monitor.maxredirects;
                 bean.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);

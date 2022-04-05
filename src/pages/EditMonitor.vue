@@ -139,6 +139,15 @@
 
                             <h2 v-if="monitor.type !== 'push'" class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
 
+                            <div class="my-3 form-check">
+                                <input id="expiry-notification" v-model="monitor.expiryNotification" class="form-check-input" type="checkbox">
+                                <label class="form-check-label" for="expiry-notification">
+                                    {{ $t("Domain Name Expiry Notification") }}
+                                </label>
+                                <div class="form-text">
+                                </div>
+                            </div>
+
                             <div v-if="monitor.type === 'http' || monitor.type === 'keyword' " class="my-3 form-check">
                                 <input id="ignore-tls" v-model="monitor.ignoreTls" class="form-check-input" type="checkbox" value="">
                                 <label class="form-check-label" for="ignore-tls">
@@ -475,6 +484,7 @@ export default {
                     notificationIDList: {},
                     ignoreTls: false,
                     upsideDown: false,
+                    expiryNotification: false,
                     maxredirects: 10,
                     accepted_statuscodes: ["200-299"],
                     dns_resolve_type: "A",
