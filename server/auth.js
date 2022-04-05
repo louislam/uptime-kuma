@@ -12,6 +12,10 @@ const { loginRateLimiter } = require("./rate-limiter");
  * @returns {Promise<Bean|null>}
  */
 exports.login = async function (username, password) {
+    if (typeof username !== "string" || typeof password !== "string") {
+        return null;
+    }
+
     let user = await R.findOne("user", " username = ? AND active = 1 ", [
         username,
     ]);

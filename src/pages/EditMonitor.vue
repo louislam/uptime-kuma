@@ -139,6 +139,15 @@
 
                             <h2 v-if="monitor.type !== 'push'" class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
 
+                            <div class="my-3 form-check">
+                                <input id="expiry-notification" v-model="monitor.expiryNotification" class="form-check-input" type="checkbox">
+                                <label class="form-check-label" for="expiry-notification">
+                                    {{ $t("Domain Name Expiry Notification") }}
+                                </label>
+                                <div class="form-text">
+                                </div>
+                            </div>
+
                             <div v-if="monitor.type === 'http' || monitor.type === 'keyword' " class="my-3 form-check">
                                 <input id="ignore-tls" v-model="monitor.ignoreTls" class="form-check-input" type="checkbox" value="">
                                 <label class="form-check-label" for="ignore-tls">
@@ -222,6 +231,32 @@
                                 {{ $t("Setup Notification") }}
                             </button>
 
+                            <!-- Proxies -->
+                            <h2 class="mt-5 mb-2">{{ $t("Proxies") }}</h2>
+                            <p v-if="$root.proxyList.length === 0">
+                                {{ $t("Not available, please setup.") }}
+                            </p>
+
+                            <div v-if="$root.proxyList.length > 0" class="form-check form-switch my-3">
+                                <input id="proxy-disable" v-model="monitor.proxyId" :value="null" name="proxy" class="form-check-input" type="radio">
+                                <label class="form-check-label" for="proxy-disable">{{ $t("No Proxy") }}</label>
+                            </div>
+
+                            <div v-for="proxy in $root.proxyList" :key="proxy.id" class="form-check form-switch my-3">
+                                <input :id="`proxy-${proxy.id}`" v-model="monitor.proxyId" :value="proxy.id" name="proxy" class="form-check-input" type="radio">
+
+                                <label class="form-check-label" :for="`proxy-${proxy.id}`">
+                                    {{ proxy.host }}:{{ proxy.port }} ({{ proxy.protocol }})
+                                    <a href="#" @click="$refs.proxyDialog.show(proxy.id)">{{ $t("Edit") }}</a>
+                                </label>
+
+                                <span v-if="proxy.default === true" class="badge bg-primary ms-2">{{ $t("default") }}</span>
+                            </div>
+
+                            <button class="btn btn-primary me-2" type="button" @click="$refs.proxyDialog.show()">
+                                {{ $t("Setup Proxy") }}
+                            </button>
+
                             <!-- HTTP Options -->
                             <template v-if="monitor.type === 'http' || monitor.type === 'keyword' ">
                                 <h2 class="mt-5 mb-2">{{ $t("HTTP Options") }}</h2>
@@ -285,12 +320,14 @@
             </form>
 
             <NotificationDialog ref="notificationDialog" @added="addedNotification" />
+            <ProxyDialog ref="proxyDialog" @added="addedProxy" />
         </div>
     </transition>
 </template>
 
 <script>
 import NotificationDialog from "../components/NotificationDialog.vue";
+import ProxyDialog from "../components/ProxyDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
 import CopyableInput from "../components/CopyableInput.vue";
 
@@ -302,6 +339,7 @@ const toast = useToast();
 
 export default {
     components: {
+        ProxyDialog,
         CopyableInput,
         NotificationDialog,
         TagsManager,
@@ -368,6 +406,17 @@ export default {
 
     },
     watch: {
+        "$root.proxyList"() {
+            if (this.isAdd) {
+                if (this.$root.proxyList && !this.monitor.proxyId) {
+                    const proxy = this.$root.proxyList.find(proxy => proxy.default);
+
+                    if (proxy) {
+                        this.monitor.proxyId = proxy.id;
+                    }
+                }
+            }
+        },
 
         "$route.fullPath"() {
             this.init();
@@ -435,11 +484,21 @@ export default {
                     notificationIDList: {},
                     ignoreTls: false,
                     upsideDown: false,
+                    expiryNotification: false,
                     maxredirects: 10,
                     accepted_statuscodes: ["200-299"],
                     dns_resolve_type: "A",
                     dns_resolve_server: "1.1.1.1",
+                    proxyId: null,
                 };
+
+                if (this.$root.proxyList && !this.monitor.proxyId) {
+                    const proxy = this.$root.proxyList.find(proxy => proxy.default);
+
+                    if (proxy) {
+                        this.monitor.proxyId = proxy.id;
+                    }
+                }
 
                 for (let i = 0; i < this.$root.notificationList.length; i++) {
                     if (this.$root.notificationList[i].isDefault == true) {
@@ -531,6 +590,12 @@ export default {
         // Enable it if the notification is added in EditMonitor.vue
         addedNotification(id) {
             this.monitor.notificationIDList[id] = true;
+        },
+
+        // Added a Proxy Event
+        // Enable it if the proxy is added in EditMonitor.vue
+        addedProxy(id) {
+            this.monitor.proxyId = id;
         },
     },
 };

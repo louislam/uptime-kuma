@@ -54,6 +54,8 @@ class Database {
         "patch-notification_sent_history.sql": true,
         "patch-monitor-basic-auth.sql": true,
         "patch-status-page.sql": true,
+        "patch-proxy.sql": true,
+        "patch-monitor-expiry-notification.sql": true,
     }
 
     /**

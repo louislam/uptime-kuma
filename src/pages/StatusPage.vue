@@ -67,7 +67,7 @@
             <h1 class="mb-4 title-flex">
                 <!-- Logo -->
                 <span class="logo-wrapper" @click="showImageCropUploadMethod">
-                    <img :src="logoURL" alt class="logo me-2" :class="logoClass" />
+                    <img :src="logoURL" alt class="logo me-2" :class="logoClass" @load="statusPageLogoLoaded" />
                     <font-awesome-icon v-if="enableEditMode" class="icon-upload" icon="upload" />
                 </span>
 
@@ -590,6 +590,11 @@ export default {
             if (this.editMode) {
                 this.showImageCropUpload = true;
             }
+        },
+
+        statusPageLogoLoaded(eventPayload) {
+            // Remark: may not work in dev, due to cros
+            favicon.image(eventPayload.target);
         },
 
         createIncident() {

@@ -75,11 +75,17 @@ export default {
                 notifications: {
                     title: this.$t("Notifications"),
                 },
+                "reverse-proxy": {
+                    title: this.$t("Reverse Proxy"),
+                },
                 "monitor-history": {
                     title: this.$t("Monitor History"),
                 },
                 security: {
                     title: this.$t("Security"),
+                },
+                proxies: {
+                    title: this.$t("Proxies"),
                 },
                 backup: {
                     title: this.$t("Backup"),
@@ -115,6 +121,10 @@ export default {
             this.$root.getSocket().emit("getSettings", (res) => {
                 this.settings = res.data;
 
+                if (this.settings.checkUpdate === undefined) {
+                    this.settings.checkUpdate = true;
+                }
+
                 if (this.settings.searchEngineIndex === undefined) {
                     this.settings.searchEngineIndex = false;
                 }
@@ -131,10 +141,18 @@ export default {
             });
         },
 
-        saveSettings() {
-            this.$root.getSocket().emit("setSettings", this.settings, (res) => {
+        /**
+         * Save Settings
+         * @param currentPassword (Optional) Only need for disableAuth to true
+         */
+        saveSettings(callback, currentPassword) {
+            this.$root.getSocket().emit("setSettings", this.settings, currentPassword, (res) => {
                 this.$root.toastRes(res);
                 this.loadSettings();
+
+                if (callback) {
+                    callback();
+                }
             });
         },
     }

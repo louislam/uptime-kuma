@@ -40,8 +40,17 @@ export default {
             notificationList: [],
             statusPageListLoaded: false,
             statusPageList: [],
+            proxyList: [],
             connectionErrorMsg: "Cannot connect to the socket server. Reconnecting...",
             showReverseProxyGuide: true,
+            cloudflared: {
+                cloudflareTunnelToken: "",
+                installed: null,
+                running: false,
+                message: "",
+                errorMessage: "",
+                currentPassword: "",
+            }
         };
     },
 
@@ -118,6 +127,16 @@ export default {
             socket.on("statusPageList", (data) => {
                 this.statusPageListLoaded = true;
                 this.statusPageList = data;
+            });
+
+            socket.on("proxyList", (data) => {
+                this.proxyList = data.map(item => {
+                    item.auth = !!item.auth;
+                    item.active = !!item.active;
+                    item.default = !!item.default;
+
+                    return item;
+                });
             });
 
             socket.on("heartbeat", (data) => {
@@ -231,6 +250,12 @@ export default {
                 this.socket.firstConnect = false;
             });
 
+            // cloudflared
+            socket.on("cloudflared_installed", (res) => this.cloudflared.installed = res);
+            socket.on("cloudflared_running", (res) => this.cloudflared.running = res);
+            socket.on("cloudflared_message", (res) => this.cloudflared.message = res);
+            socket.on("cloudflared_errorMessage", (res) => this.cloudflared.errorMessage = res);
+            socket.on("cloudflared_token", (res) => this.cloudflared.cloudflareTunnelToken = res);
         },
 
         storage() {

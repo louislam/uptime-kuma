@@ -371,4 +371,12 @@ export default {
     alertaAlertState: "Alert State",
     alertaRecoverState: "Recover State",
     deleteStatusPageMsg: "Are you sure want to delete this status page?",
+    Proxies: "Proxies",
+    default: "Default",
+    enabled: "Enabled",
+    setAsDefault: "Set As Default",
+    deleteProxyMsg: "Are you sure want to delete this proxy for all monitors?",
+    proxyDescription: "Proxies must be assigned to a monitor to function.",
+    enableProxyDescription: "This proxy will not effect on monitor requests until it is activated. You can control temporarily disable the proxy from all monitors by activation status.",
+    setAsDefaultProxyDescription: "This proxy will be enabled by default for new monitors. You can still disable the proxy separately for each monitor.",
 };

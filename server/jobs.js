@@ -1,7 +1,7 @@
 const path = require("path");
 const Bree = require("bree");
 const { SHARE_ENV } = require("worker_threads");
-
+let bree;
 const jobs = [
     {
         name: "clear-old-data",
@@ -10,7 +10,7 @@ const jobs = [
 ];
 
 const initBackgroundJobs = function (args) {
-    const bree = new Bree({
+    bree = new Bree({
         root: path.resolve("server", "jobs"),
         jobs,
         worker: {
@@ -26,6 +26,13 @@ const initBackgroundJobs = function (args) {
     return bree;
 };
 
+const stopBackgroundJobs = function () {
+    if (bree) {
+        bree.stop();
+    }
+};
+
 module.exports = {
-    initBackgroundJobs
+    initBackgroundJobs,
+    stopBackgroundJobs
 };
