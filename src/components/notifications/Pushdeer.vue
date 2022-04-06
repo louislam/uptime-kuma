@@ -1,11 +1,11 @@
 <template>
     <div class="mb-3">
-        <label for="pushdeer-key" class="form-label">Pushdeer Key</label>
+        <label for="pushdeer-key" class="form-label">{{ $t("Pushdeer Key") }}</label>
         <HiddenInput id="pushdeer-key" v-model="$parent.notification.pushdeerKey" :required="true" autocomplete="one-time-code" placeholder="PDUxxxx"></HiddenInput>
     </div>
 
     <i18n-t tag="p" keypath="More info on:" style="margin-top: 8px;">
-        <a href="http://www.pushdeer.com/" target="_blank">http://www.pushdeer.com/</a>
+        <a href="http://www.pushdeer.com/" rel="noopener noreferrer" target="_blank">http://www.pushdeer.com/</a>
     </i18n-t>
 </template>
 
