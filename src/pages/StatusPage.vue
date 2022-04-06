@@ -35,9 +35,9 @@
                 <input id="password" v-model="config.password" disabled type="password" autocomplete="new-password" class="form-control">
             </div>
 
-            <div v-if="false" class="my-3">
-                <label for="cname" class="form-label">Domain Names <sup>Coming Soon</sup></label>
-                <textarea id="cname" v-model="config.domanNames" rows="3" disabled class="form-control" :placeholder="domainNamesPlaceholder"></textarea>
+            <div class="my-3">
+                <label for="cname" class="form-label">Domain Names</label>
+                <textarea id="cname" v-model="config.domanNames" rows="3" class="form-control" :placeholder="domainNamesPlaceholder"></textarea>
             </div>
 
             <div class="danger-zone">
@@ -55,7 +55,7 @@
                 </button>
 
                 <button class="btn btn-danger me-2" @click="discard">
-                    <font-awesome-icon icon="save" />
+                    <font-awesome-icon icon="undo" />
                     {{ $t("Discard") }}
                 </button>
             </div>
@@ -259,6 +259,7 @@ const favicon = new Favico({
 });
 
 export default {
+
     components: {
         PublicGroupList,
         ImageCropUpload,
@@ -278,6 +279,14 @@ export default {
         next();
     },
 
+    props: {
+        overrideSlug: {
+            type: String,
+            required: false,
+            default: null,
+        },
+    },
+
     data() {
         return {
             slug: null,
@@ -294,7 +303,7 @@ export default {
             loadedData: false,
             baseURL: "",
             clickedEditButton: false,
-            domainNamesPlaceholder: "domain1.com\ndomain2.com\n..."
+            domainNamesPlaceholder: "example1.com\nexample2.com\n..."
         };
     },
     computed: {
@@ -449,7 +458,7 @@ export default {
         this.baseURL = getResBaseURL();
     },
     async mounted() {
-        this.slug = this.$route.params.slug;
+        this.slug = this.overrideSlug || this.$route.params.slug;
 
         if (!this.slug) {
             this.slug = "default";

@@ -197,6 +197,7 @@ exports.entryPage = "dashboard";
     await initDatabase(testMode);
 
     exports.entryPage = await setting("entryPage");
+    await StatusPage.loadDomainMappingList();
 
     console.log("Adding route");
 
@@ -205,8 +206,13 @@ exports.entryPage = "dashboard";
     // ***************************
 
     // Entry Page
-    app.get("/", async (_request, response) => {
-        if (exports.entryPage && exports.entryPage.startsWith("statusPage-")) {
+    app.get("/", async (request, response) => {
+        debug(`Request Domain: ${request.hostname}`);
+
+        if (request.hostname in StatusPage.domainMappingList) {
+            debug("This is a status page domain");
+            response.send(indexHTML);
+        } else if (exports.entryPage && exports.entryPage.startsWith("statusPage-")) {
             response.redirect("/status/" + exports.entryPage.replace("statusPage-", ""));
         } else {
             response.redirect("/dashboard");

@@ -3,6 +3,20 @@ const { R } = require("redbean-node");
 
 class StatusPage extends BeanModel {
 
+    static domainMappingList = { };
+
+    /**
+     * Return object like this: { "test-uptime.kuma.pet": "default" }
+     * @returns {Promise<void>}
+     */
+    static async loadDomainMappingList() {
+        this.domainMappingList = await R.getAssoc(`
+            SELECT domain, slug
+            FROM status_page, status_page_cname
+            WHERE status_page.id = status_page_cname.status_page_id
+        `);
+    }
+
     static async sendStatusPageList(io, socket) {
         let result = {};
 
@@ -16,6 +30,18 @@ class StatusPage extends BeanModel {
         return list;
     }
 
+    getDomainList() {
+        let domainList = [];
+        for (let domain in StatusPage.domainMappingList) {
+            let s = StatusPage.domainMappingList[domain];
+
+            if (this.slug === s) {
+                domainList.push(domain);
+            }
+        }
+        return domainList;
+    }
+
     async toJSON() {
         return {
             id: this.id,
@@ -26,6 +52,7 @@ class StatusPage extends BeanModel {
             theme: this.theme,
             published: !!this.published,
             showTags: !!this.show_tags,
+            domainList: this.getDomainList(),
         };
     }
 
