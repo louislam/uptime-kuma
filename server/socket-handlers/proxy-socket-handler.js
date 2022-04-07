@@ -1,6 +1,7 @@
 const { checkLogin } = require("../util-server");
 const { Proxy } = require("../proxy");
 const { sendProxyList } = require("../client");
+const server = require("../server");
 
 module.exports.proxySocketHandler = (socket) => {
     socket.on("addProxy", async (proxy, proxyID, callback) => {
@@ -11,7 +12,8 @@ module.exports.proxySocketHandler = (socket) => {
             await sendProxyList(socket);
 
             if (proxy.applyExisting) {
-                // TODO: await restartMonitors(socket.userID);
+                await Proxy.reloadProxy();
+                await server.sendMonitorList(socket);
             }
 
             callback({
@@ -34,7 +36,7 @@ module.exports.proxySocketHandler = (socket) => {
 
             await Proxy.delete(proxyID, socket.userID);
             await sendProxyList(socket);
-            // TODO: await restartMonitors(socket.userID);
+            await Proxy.reloadProxy();
 
             callback({
                 ok: true,
