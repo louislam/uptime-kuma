@@ -83,7 +83,7 @@ class Database {
         console.log(`Data Dir: ${Database.dataDir}`);
     }
 
-    static async connect(testMode = false) {
+    static async connect(testMode = false, autoloadModels = true, noLog = false) {
         const acquireConnectionTimeout = 120 * 1000;
 
         const Dialect = require("knex/lib/dialects/sqlite3/index.js");
@@ -113,7 +113,10 @@ class Database {
 
         // Auto map the model to a bean object
         R.freeze(true);
-        await R.autoloadModels("./server/model");
+
+        if (autoloadModels) {
+            await R.autoloadModels("./server/model");
+        }
 
         await R.exec("PRAGMA foreign_keys = ON");
         if (testMode) {
@@ -126,10 +129,12 @@ class Database {
         await R.exec("PRAGMA cache_size = -12000");
         await R.exec("PRAGMA auto_vacuum = FULL");
 
-        console.log("SQLite config:");
-        console.log(await R.getAll("PRAGMA journal_mode"));
-        console.log(await R.getAll("PRAGMA cache_size"));
-        console.log("SQLite Version: " + await R.getCell("SELECT sqlite_version()"));
+        if (!noLog) {
+            console.log("SQLite config:");
+            console.log(await R.getAll("PRAGMA journal_mode"));
+            console.log(await R.getAll("PRAGMA cache_size"));
+            console.log("SQLite Version: " + await R.getCell("SELECT sqlite_version()"));
+        }
     }
 
     static async patch() {
