@@ -1,8 +1,5 @@
 console.log("Welcome to Uptime Kuma");
 
-// Alias
-const server = module.exports;
-
 // Check Node.js Version
 const nodeVersion = parseInt(process.versions.node.split(".")[0]);
 const requiredVersion = 14;
@@ -52,12 +49,25 @@ const notp = require("notp");
 const base32 = require("thirty-two");
 
 /**
- * Main monitor list
- * @type {{}}
+ * `module.exports` (alias: `server`) should be inside this class, in order to avoid circular dependency issue.
+ * @type {UptimeKumaServer}
  */
-server.monitorList = {};
+class UptimeKumaServer {
+    /**
+     * Main monitor list
+     * @type {{}}
+     */
+    monitorList = {};
+    entryPage = "dashboard";
 
-// `module.exports` (alias: `server`) should be before this line, to avoid circular dependency issue
+    async sendMonitorList(socket) {
+        let list = await getMonitorJSONList(socket.userID);
+        io.to(socket.userID).emit("monitorList", list);
+        return list;
+    }
+}
+
+const server = module.exports = new UptimeKumaServer();
 
 console.log("Importing this project modules");
 debug("Importing Monitor");
@@ -195,8 +205,6 @@ try {
         process.exit(1);
     }
 }
-
-exports.entryPage = "dashboard";
 
 (async () => {
     Database.init(args);
@@ -606,7 +614,7 @@ exports.entryPage = "dashboard";
 
                 await updateMonitorNotification(bean.id, notificationIDList);
 
-                await sendMonitorList(socket);
+                await server.sendMonitorList(socket);
                 await startMonitor(socket.userID, bean.id);
 
                 callback({
@@ -669,7 +677,7 @@ exports.entryPage = "dashboard";
                     await restartMonitor(socket.userID, bean.id);
                 }
 
-                await sendMonitorList(socket);
+                await server.sendMonitorList(socket);
 
                 callback({
                     ok: true,
@@ -689,7 +697,7 @@ exports.entryPage = "dashboard";
         socket.on("getMonitorList", async (callback) => {
             try {
                 checkLogin(socket);
-                await sendMonitorList(socket);
+                await server.sendMonitorList(socket);
                 callback({
                     ok: true,
                 });
@@ -763,7 +771,7 @@ exports.entryPage = "dashboard";
             try {
                 checkLogin(socket);
                 await startMonitor(socket.userID, monitorID);
-                await sendMonitorList(socket);
+                await server.sendMonitorList(socket);
 
                 callback({
                     ok: true,
@@ -782,7 +790,7 @@ exports.entryPage = "dashboard";
             try {
                 checkLogin(socket);
                 await pauseMonitor(socket.userID, monitorID);
-                await sendMonitorList(socket);
+                await server.sendMonitorList(socket);
 
                 callback({
                     ok: true,
@@ -818,7 +826,7 @@ exports.entryPage = "dashboard";
                     msg: "Deleted Successfully.",
                 });
 
-                await sendMonitorList(socket);
+                await server.sendMonitorList(socket);
                 // Clear heartbeat list on client
                 await sendImportantHeartbeatList(socket, monitorID, true, true);
 
@@ -1308,7 +1316,7 @@ exports.entryPage = "dashboard";
                     }
 
                     await sendNotificationList(socket);
-                    await sendMonitorList(socket);
+                    await server.sendMonitorList(socket);
                 }
 
                 callback({
@@ -1471,17 +1479,11 @@ async function checkOwner(userID, monitorID) {
     }
 }
 
-async function sendMonitorList(socket) {
-    let list = await getMonitorJSONList(socket.userID);
-    io.to(socket.userID).emit("monitorList", list);
-    return list;
-}
-
 async function afterLogin(socket, user) {
     socket.userID = user.id;
     socket.join(user.id);
 
-    let monitorList = await sendMonitorList(socket);
+    let monitorList = await server.sendMonitorList(socket);
     sendNotificationList(socket);
     sendProxyList(socket);
 
