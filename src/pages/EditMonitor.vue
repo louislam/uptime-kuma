@@ -238,12 +238,12 @@
                                     {{ $t("Not available, please setup.") }}
                                 </p>
 
-                                <div v-if="$root.proxyList.length > 0" class="form-check form-switch my-3">
+                                <div v-if="$root.proxyList.length > 0" class="form-check my-3">
                                     <input id="proxy-disable" v-model="monitor.proxyId" :value="null" name="proxy" class="form-check-input" type="radio">
                                     <label class="form-check-label" for="proxy-disable">{{ $t("No Proxy") }}</label>
                                 </div>
 
-                                <div v-for="proxy in $root.proxyList" :key="proxy.id" class="form-check form-switch my-3">
+                                <div v-for="proxy in $root.proxyList" :key="proxy.id" class="form-check my-3">
                                     <input :id="`proxy-${proxy.id}`" v-model="monitor.proxyId" :value="proxy.id" name="proxy" class="form-check-input" type="radio">
 
                                     <label class="form-check-label" :for="`proxy-${proxy.id}`">
