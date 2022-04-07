@@ -138,6 +138,7 @@ const databaseSocketHandler = require("./socket-handlers/database-socket-handler
 const TwoFA = require("./2fa");
 const StatusPage = require("./model/status_page");
 const { cloudflaredSocketHandler, autoStart: cloudflaredAutoStart, stop: cloudflaredStop } = require("./socket-handlers/cloudflared-socket-handler");
+const { proxySocketHandler } = require("./socket-handlers/proxy-socket-handler");
 
 app.use(express.json());
 
@@ -1112,52 +1113,6 @@ exports.entryPage = "dashboard";
             }
         });
 
-        socket.on("addProxy", async (proxy, proxyID, callback) => {
-            try {
-                checkLogin(socket);
-
-                const proxyBean = await Proxy.save(proxy, proxyID, socket.userID);
-                await sendProxyList(socket);
-
-                if (proxy.applyExisting) {
-                    await restartMonitors(socket.userID);
-                }
-
-                callback({
-                    ok: true,
-                    msg: "Saved",
-                    id: proxyBean.id,
-                });
-
-            } catch (e) {
-                callback({
-                    ok: false,
-                    msg: e.message,
-                });
-            }
-        });
-
-        socket.on("deleteProxy", async (proxyID, callback) => {
-            try {
-                checkLogin(socket);
-
-                await Proxy.delete(proxyID, socket.userID);
-                await sendProxyList(socket);
-                await restartMonitors(socket.userID);
-
-                callback({
-                    ok: true,
-                    msg: "Deleted",
-                });
-
-            } catch (e) {
-                callback({
-                    ok: false,
-                    msg: e.message,
-                });
-            }
-        });
-
         socket.on("checkApprise", async (callback) => {
             try {
                 checkLogin(socket);
@@ -1438,6 +1393,7 @@ exports.entryPage = "dashboard";
         statusPageSocketHandler(socket);
         cloudflaredSocketHandler(socket);
         databaseSocketHandler(socket);
+        proxySocketHandler(socket);
 
         debug("added all socket handlers");
 
@@ -1613,19 +1569,6 @@ async function startMonitor(userID, monitorID) {
 
 async function restartMonitor(userID, monitorID) {
     return await startMonitor(userID, monitorID);
-}
-
-async function restartMonitors(userID) {
-    // Fetch all active monitors for user
-    const monitors = await R.getAll("SELECT id FROM monitor WHERE active = 1 AND user_id = ?", [userID]);
-
-    for (const monitor of monitors) {
-        // Start updated monitor
-        await startMonitor(userID, monitor.id);
-
-        // Give some delays, so all monitors won't make request at the same moment when just start the server.
-        await sleep(getRandomInt(300, 1000));
-    }
 }
 
 async function pauseMonitor(userID, monitorID) {
