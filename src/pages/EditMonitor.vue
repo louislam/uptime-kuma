@@ -614,7 +614,7 @@ export default {
          */
         friendlyNameRequired() {
             return this.friendlyNameRequiredOptions.includes(this.monitor.type);
-        }
+        },
         
         // Added a Proxy Event
         // Enable it if the proxy is added in EditMonitor.vue
