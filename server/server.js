@@ -1,5 +1,8 @@
 console.log("Welcome to Uptime Kuma");
 
+// Alias
+const server = module.exports;
+
 // Check Node.js Version
 const nodeVersion = parseInt(process.versions.node.split(".")[0]);
 const requiredVersion = 14;
@@ -47,6 +50,14 @@ const { passwordStrength } = require("check-password-strength");
 debug("Importing 2FA Modules");
 const notp = require("notp");
 const base32 = require("thirty-two");
+
+/**
+ * Main monitor list
+ * @type {{}}
+ */
+server.monitorList = {};
+
+// `module.exports` (alias: `server`) should be before this line, to avoid circular dependency issue
 
 console.log("Importing this project modules");
 debug("Importing Monitor");
@@ -115,20 +126,20 @@ if (config.demoMode) {
 console.log("Creating express and socket.io instance");
 const app = express();
 
-let server;
+let httpServer;
 
 if (sslKey && sslCert) {
     console.log("Server Type: HTTPS");
-    server = https.createServer({
+    httpServer = https.createServer({
         key: fs.readFileSync(sslKey),
         cert: fs.readFileSync(sslCert)
     }, app);
 } else {
     console.log("Server Type: HTTP");
-    server = http.createServer(app);
+    httpServer = http.createServer(app);
 }
 
-const io = new Server(server);
+const io = new Server(httpServer);
 module.exports.io = io;
 
 // Must be after io instantiation
@@ -162,12 +173,6 @@ let totalClient = 0;
  * @type {null}
  */
 let jwtSecret = null;
-
-/**
- * Main monitor list
- * @type {{}}
- */
-let monitorList = {};
 
 /**
  * Show Setup Page
@@ -630,7 +635,7 @@ exports.entryPage = "dashboard";
                 }
 
                 // Reset Prometheus labels
-                monitorList[monitor.id]?.prometheus()?.remove();
+                server.monitorList[monitor.id]?.prometheus()?.remove();
 
                 bean.name = monitor.name;
                 bean.type = monitor.type;
@@ -798,9 +803,9 @@ exports.entryPage = "dashboard";
 
                 console.log(`Delete Monitor: ${monitorID} User ID: ${socket.userID}`);
 
-                if (monitorID in monitorList) {
-                    monitorList[monitorID].stop();
-                    delete monitorList[monitorID];
+                if (monitorID in server.monitorList) {
+                    server.monitorList[monitorID].stop();
+                    delete server.monitorList[monitorID];
                 }
 
                 await R.exec("DELETE FROM monitor WHERE id = ? AND user_id = ? ", [
@@ -1139,8 +1144,8 @@ exports.entryPage = "dashboard";
                 // If the import option is "overwrite" it'll clear most of the tables, except "settings" and "user"
                 if (importHandle == "overwrite") {
                     // Stops every monitor first, so it doesn't execute any heartbeat while importing
-                    for (let id in monitorList) {
-                        let monitor = monitorList[id];
+                    for (let id in server.monitorList) {
+                        let monitor = server.monitorList[id];
                         await monitor.stop();
                     }
                     await R.exec("DELETE FROM heartbeat");
@@ -1414,12 +1419,12 @@ exports.entryPage = "dashboard";
 
     console.log("Init the server");
 
-    server.once("error", async (err) => {
+    httpServer.once("error", async (err) => {
         console.error("Cannot listen: " + err.message);
         await shutdownFunction();
     });
 
-    server.listen(port, hostname, () => {
+    httpServer.listen(port, hostname, () => {
         if (hostname) {
             console.log(`Listening on ${hostname}:${port}`);
         } else {
@@ -1559,11 +1564,11 @@ async function startMonitor(userID, monitorID) {
         monitorID,
     ]);
 
-    if (monitor.id in monitorList) {
-        monitorList[monitor.id].stop();
+    if (monitor.id in server.monitorList) {
+        server.monitorList[monitor.id].stop();
     }
 
-    monitorList[monitor.id] = monitor;
+    server.monitorList[monitor.id] = monitor;
     monitor.start(io);
 }
 
@@ -1581,8 +1586,8 @@ async function pauseMonitor(userID, monitorID) {
         userID,
     ]);
 
-    if (monitorID in monitorList) {
-        monitorList[monitorID].stop();
+    if (monitorID in server.monitorList) {
+        server.monitorList[monitorID].stop();
     }
 }
 
@@ -1593,7 +1598,7 @@ async function startMonitors() {
     let list = await R.find("monitor", " active = 1 ");
 
     for (let monitor of list) {
-        monitorList[monitor.id] = monitor;
+        server.monitorList[monitor.id] = monitor;
     }
 
     for (let monitor of list) {
@@ -1608,8 +1613,8 @@ async function shutdownFunction(signal) {
     console.log("Called signal: " + signal);
 
     console.log("Stopping all monitors");
-    for (let id in monitorList) {
-        let monitor = monitorList[id];
+    for (let id in server.monitorList) {
+        let monitor = server.monitorList[id];
         monitor.stop();
     }
     await sleep(2000);
@@ -1623,7 +1628,7 @@ function finalFunction() {
     console.log("Graceful shutdown successful!");
 }
 
-gracefulShutdown(server, {
+gracefulShutdown(httpServer, {
     signals: "SIGINT SIGTERM",
     timeout: 30000,                   // timeout: 30 secs
     development: false,               // not in dev mode
