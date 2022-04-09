@@ -2,49 +2,51 @@
     <div v-if="loadedTheme" class="container mt-3">
         <!-- Sidebar for edit mode -->
         <div v-if="enableEditMode" class="sidebar">
-            <div class="my-3">
-                <label for="slug" class="form-label">{{ $t("Slug") }}</label>
-                <div class="input-group">
-                    <span id="basic-addon3" class="input-group-text">/status/</span>
-                    <input id="slug" v-model="config.slug" type="text" class="form-control">
+            <div class="sidebar-body">
+                <div class="my-3">
+                    <label for="slug" class="form-label">{{ $t("Slug") }}</label>
+                    <div class="input-group">
+                        <span id="basic-addon3" class="input-group-text">/status/</span>
+                        <input id="slug" v-model="config.slug" type="text" class="form-control">
+                    </div>
                 </div>
-            </div>
 
-            <div class="my-3">
-                <label for="title" class="form-label">{{ $t("Title") }}</label>
-                <input id="title" v-model="config.title" type="text" class="form-control">
-            </div>
+                <div class="my-3">
+                    <label for="title" class="form-label">{{ $t("Title") }}</label>
+                    <input id="title" v-model="config.title" type="text" class="form-control">
+                </div>
 
-            <div class="my-3">
-                <label for="description" class="form-label">{{ $t("Description") }}</label>
-                <textarea id="description" v-model="config.description" class="form-control"></textarea>
-            </div>
+                <div class="my-3">
+                    <label for="description" class="form-label">{{ $t("Description") }}</label>
+                    <textarea id="description" v-model="config.description" class="form-control"></textarea>
+                </div>
 
-            <div class="my-3 form-check form-switch">
-                <input id="switch-theme" v-model="config.theme" class="form-check-input" type="checkbox" true-value="dark" false-value="light">
-                <label class="form-check-label" for="switch-theme">{{ $t("Switch to Dark Theme") }}</label>
-            </div>
+                <div class="my-3 form-check form-switch">
+                    <input id="switch-theme" v-model="config.theme" class="form-check-input" type="checkbox" true-value="dark" false-value="light">
+                    <label class="form-check-label" for="switch-theme">{{ $t("Switch to Dark Theme") }}</label>
+                </div>
 
-            <div class="my-3 form-check form-switch">
-                <input id="showTags" v-model="config.showTags" class="form-check-input" type="checkbox">
-                <label class="form-check-label" for="showTags">{{ $t("Show Tags") }}</label>
-            </div>
+                <div class="my-3 form-check form-switch">
+                    <input id="showTags" v-model="config.showTags" class="form-check-input" type="checkbox">
+                    <label class="form-check-label" for="showTags">{{ $t("Show Tags") }}</label>
+                </div>
 
-            <div v-if="false" class="my-3">
-                <label for="password" class="form-label">{{ $t("Password") }} <sup>Coming Soon</sup></label>
-                <input id="password" v-model="config.password" disabled type="password" autocomplete="new-password" class="form-control">
-            </div>
+                <div v-if="false" class="my-3">
+                    <label for="password" class="form-label">{{ $t("Password") }} <sup>Coming Soon</sup></label>
+                    <input id="password" v-model="config.password" disabled type="password" autocomplete="new-password" class="form-control">
+                </div>
 
-            <div class="my-3">
-                <label for="cname" class="form-label">Domain Names</label>
-                <textarea id="cname" v-model="config.domanNames" rows="3" class="form-control" :placeholder="domainNamesPlaceholder"></textarea>
-            </div>
+                <div class="my-3">
+                    <label for="cname" class="form-label">Domain Names</label>
+                    <textarea id="cname" v-model="config.domanNames" rows="3" class="form-control" :placeholder="domainNamesPlaceholder"></textarea>
+                </div>
 
-            <div class="danger-zone">
-                <button class="btn btn-danger me-2" @click="deleteDialog">
-                    <font-awesome-icon icon="trash" />
-                    {{ $t("Delete") }}
-                </button>
+                <div class="danger-zone">
+                    <button class="btn btn-danger me-2" @click="deleteDialog">
+                        <font-awesome-icon icon="trash" />
+                        {{ $t("Delete") }}
+                    </button>
+                </div>
             </div>
 
             <!-- Sidebar Footer -->
@@ -120,7 +122,7 @@
 
                 <!-- Incident Date -->
                 <div class="date mt-3">
-                    {{ $t("Created") }}: {{ $root.datetime(incident.createdDate) }} ({{ dateFromNow(incident.createdDate) }})<br />
+                    {{ $t("Date Created") }}: {{ $root.datetime(incident.createdDate) }} ({{ dateFromNow(incident.createdDate) }})<br />
                     <span v-if="incident.lastUpdatedDate">
                         {{ $t("Last Updated") }}: {{ $root.datetime(incident.lastUpdatedDate) }} ({{ dateFromNow(incident.lastUpdatedDate) }})
                     </span>
@@ -714,9 +716,7 @@ h1 {
     top: 0;
     width: 300px;
     height: 100vh;
-    padding: 15px 15px 68px 15px;
-    overflow-x: hidden;
-    overflow-y: auto;
+
     border-right: 1px solid #ededed;
 
     .danger-zone {
@@ -724,13 +724,22 @@ h1 {
         padding-top: 15px;
     }
 
+    .sidebar-body {
+        padding: 15px 15px 68px 15px;
+        overflow-x: hidden;
+        overflow-y: auto;
+        height: calc(100% - 70px);
+    }
+
     .sidebar-footer {
-        width: 100%;
-        bottom: 0;
-        left: 0;
-        padding: 15px;
-        position: absolute;
         border-top: 1px solid #ededed;
+        padding: 15px;
+        width: 300px;
+        height: 70px;
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        background-color: white;
     }
 }
 
@@ -818,6 +827,7 @@ footer {
 
         .sidebar-footer {
             border-top-color: $dark-border-color;
+            background-color: $dark-header-bg;
         }
     }
 }
