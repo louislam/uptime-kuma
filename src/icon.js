@@ -38,6 +38,7 @@ import {
     faExternalLinkSquareAlt,
     faSpinner,
     faUndo,
+    faPlusCircle,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -75,6 +76,7 @@ library.add(
     faExternalLinkSquareAlt,
     faSpinner,
     faUndo,
+    faPlusCircle,
 );
 
 export { FontAwesomeIcon };

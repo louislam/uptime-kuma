@@ -1,6 +1,6 @@
 <template>
     <div>
-        <StatusPage v-if="statusPageSlug" override-slug="statusPageSlug" />
+        <StatusPage v-if="statusPageSlug" :override-slug="statusPageSlug" />
     </div>
 </template>
 
@@ -27,7 +27,7 @@ export default {
         if (res.type === "statusPageMatchedDomain") {
             this.statusPageSlug = res.statusPageSlug;
 
-        } else if (res.type === "entryPage") {          // Dev only
+        } else if (res.type === "entryPage") {          // Dev only. For production, the logic is in the server side
             const entryPage = res.entryPage;
 
             if (entryPage === "statusPage") {

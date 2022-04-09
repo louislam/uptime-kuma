@@ -10,7 +10,7 @@ class StatusPage extends BeanModel {
      * @returns {Promise<void>}
      */
     static async loadDomainMappingList() {
-        this.domainMappingList = await R.getAssoc(`
+        StatusPage.domainMappingList = await R.getAssoc(`
             SELECT domain, slug
             FROM status_page, status_page_cname
             WHERE status_page.id = status_page_cname.status_page_id
@@ -30,7 +30,46 @@ class StatusPage extends BeanModel {
         return list;
     }
 
-    getDomainList() {
+    async updateDomainNameList(domainNameList) {
+
+        if (!Array.isArray(domainNameList)) {
+            throw new Error("Invalid array");
+        }
+
+        let trx = await R.begin();
+
+        await trx.exec("DELETE FROM status_page_cname WHERE status_page_id = ?", [
+            this.id,
+        ]);
+
+        try {
+            for (let domain of domainNameList) {
+                if (typeof domain !== "string") {
+                    throw new Error("Invalid domain");
+                }
+
+                if (domain.trim() === "") {
+                    continue;
+                }
+
+                // If the domain name is used in another status page, delete it
+                await trx.exec("DELETE FROM status_page_cname WHERE domain = ?", [
+                    domain,
+                ]);
+
+                let mapping = trx.dispense("status_page_cname");
+                mapping.status_page_id = this.id;
+                mapping.domain = domain;
+                await trx.store(mapping);
+            }
+            await trx.commit();
+        } catch (error) {
+            await trx.rollback();
+            throw error;
+        }
+    }
+
+    getDomainNameList() {
         let domainList = [];
         for (let domain in StatusPage.domainMappingList) {
             let s = StatusPage.domainMappingList[domain];
@@ -52,7 +91,7 @@ class StatusPage extends BeanModel {
             theme: this.theme,
             published: !!this.published,
             showTags: !!this.show_tags,
-            domainList: this.getDomainList(),
+            domainNameList: this.getDomainNameList(),
         };
     }
 

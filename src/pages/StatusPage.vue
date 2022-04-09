@@ -36,9 +36,19 @@
                     <input id="password" v-model="config.password" disabled type="password" autocomplete="new-password" class="form-control">
                 </div>
 
+                <!-- Domain Name List -->
                 <div class="my-3">
-                    <label for="cname" class="form-label">Domain Names</label>
-                    <textarea id="cname" v-model="config.domanNames" rows="3" class="form-control" :placeholder="domainNamesPlaceholder"></textarea>
+                    <label class="form-label">
+                        Domain Names
+                        <font-awesome-icon icon="plus-circle" class="btn-add-domain action text-primary" @click="addDomainField" />
+                    </label>
+
+                    <ul class="list-group domain-name-list">
+                        <li v-for="(domain, index) in config.domainNameList" :key="index" class="list-group-item">
+                            <input v-model="config.domainNameList[index]" type="text" class="no-bg domain-input" placeholder="example.com" />
+                            <font-awesome-icon icon="times" class="action remove ms-2 me-3 text-danger" @click="removeDomain(index)" />
+                        </li>
+                    </ul>
                 </div>
 
                 <div class="danger-zone">
@@ -305,7 +315,6 @@ export default {
             loadedData: false,
             baseURL: "",
             clickedEditButton: false,
-            domainNamesPlaceholder: "example1.com\nexample2.com\n..."
         };
     },
     computed: {
@@ -401,6 +410,22 @@ export default {
     watch: {
 
         /**
+         * If connected to the socket and logged in, request private data of this statusPage
+         * @param connected
+         */
+        "$root.loggedIn"(loggedIn) {
+            if (loggedIn) {
+                this.$root.getSocket().emit("getStatusPage", this.slug, (res) => {
+                    if (res.ok) {
+                        this.config = res.config;
+                    } else {
+                        toast.error(res.msg);
+                    }
+                });
+            }
+        },
+
+        /**
          * Selected a monitor and add to the list.
          */
         selectedMonitor(monitor) {
@@ -468,6 +493,10 @@ export default {
 
         axios.get("/api/status-page/" + this.slug).then((res) => {
             this.config = res.data.config;
+
+            if (!this.config.domainNameList) {
+                this.config.domainNameList = [];
+            }
 
             if (this.config.icon) {
                 this.imgDataUrl = this.config.icon;
@@ -586,6 +615,10 @@ export default {
             });
         },
 
+        addDomainField() {
+            this.config.domainNameList.push("");
+        },
+
         discard() {
             location.href = "/status/" + this.slug;
         },
@@ -668,6 +701,10 @@ export default {
             return dayjs.utc(date).fromNow();
         },
 
+        removeDomain(index) {
+            this.config.domainNameList.splice(index, 1);
+        },
+
     }
 };
 </script>
@@ -733,6 +770,7 @@ h1 {
 
     .sidebar-footer {
         border-top: 1px solid #ededed;
+        border-right: 1px solid #ededed;
         padding: 10px;
         width: 300px;
         height: 70px;
@@ -740,6 +778,8 @@ h1 {
         left: 0;
         bottom: 0;
         background-color: white;
+        display: flex;
+        align-items: center;
     }
 }
 
@@ -826,8 +866,29 @@ footer {
         }
 
         .sidebar-footer {
+            border-right-color: $dark-border-color;
             border-top-color: $dark-border-color;
             background-color: $dark-header-bg;
+        }
+    }
+}
+
+.domain-name-list {
+    li {
+        display: flex;
+        align-items: center;
+        padding: 10px 0 10px 10px;
+
+        .domain-input {
+            flex-grow: 1;
+            background-color: transparent;
+            border: none;
+            color: $dark-font-color;
+            outline: none;
+
+            &::placeholder {
+                color: #1d2634;
+            }
         }
     }
 }
