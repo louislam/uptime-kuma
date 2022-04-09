@@ -725,7 +725,7 @@ h1 {
     }
 
     .sidebar-body {
-        padding: 15px 15px 68px 15px;
+        padding: 0 10px 10px 10px;
         overflow-x: hidden;
         overflow-y: auto;
         height: calc(100% - 70px);
@@ -733,7 +733,7 @@ h1 {
 
     .sidebar-footer {
         border-top: 1px solid #ededed;
-        padding: 15px;
+        padding: 10px;
         width: 300px;
         height: 70px;
         position: fixed;
