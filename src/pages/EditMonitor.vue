@@ -232,30 +232,32 @@
                             </button>
 
                             <!-- Proxies -->
-                            <h2 class="mt-5 mb-2">{{ $t("Proxies") }}</h2>
-                            <p v-if="$root.proxyList.length === 0">
-                                {{ $t("Not available, please setup.") }}
-                            </p>
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword'">
+                                <h2 class="mt-5 mb-2">{{ $t("Proxy") }}</h2>
+                                <p v-if="$root.proxyList.length === 0">
+                                    {{ $t("Not available, please setup.") }}
+                                </p>
 
-                            <div v-if="$root.proxyList.length > 0" class="form-check form-switch my-3">
-                                <input id="proxy-disable" v-model="monitor.proxyId" :value="null" name="proxy" class="form-check-input" type="radio">
-                                <label class="form-check-label" for="proxy-disable">{{ $t("No Proxy") }}</label>
+                                <div v-if="$root.proxyList.length > 0" class="form-check my-3">
+                                    <input id="proxy-disable" v-model="monitor.proxyId" :value="null" name="proxy" class="form-check-input" type="radio">
+                                    <label class="form-check-label" for="proxy-disable">{{ $t("No Proxy") }}</label>
+                                </div>
+
+                                <div v-for="proxy in $root.proxyList" :key="proxy.id" class="form-check my-3">
+                                    <input :id="`proxy-${proxy.id}`" v-model="monitor.proxyId" :value="proxy.id" name="proxy" class="form-check-input" type="radio">
+
+                                    <label class="form-check-label" :for="`proxy-${proxy.id}`">
+                                        {{ proxy.host }}:{{ proxy.port }} ({{ proxy.protocol }})
+                                        <a href="#" @click="$refs.proxyDialog.show(proxy.id)">{{ $t("Edit") }}</a>
+                                    </label>
+
+                                    <span v-if="proxy.default === true" class="badge bg-primary ms-2">{{ $t("default") }}</span>
+                                </div>
+
+                                <button class="btn btn-primary me-2" type="button" @click="$refs.proxyDialog.show()">
+                                    {{ $t("Setup Proxy") }}
+                                </button>
                             </div>
-
-                            <div v-for="proxy in $root.proxyList" :key="proxy.id" class="form-check form-switch my-3">
-                                <input :id="`proxy-${proxy.id}`" v-model="monitor.proxyId" :value="proxy.id" name="proxy" class="form-check-input" type="radio">
-
-                                <label class="form-check-label" :for="`proxy-${proxy.id}`">
-                                    {{ proxy.host }}:{{ proxy.port }} ({{ proxy.protocol }})
-                                    <a href="#" @click="$refs.proxyDialog.show(proxy.id)">{{ $t("Edit") }}</a>
-                                </label>
-
-                                <span v-if="proxy.default === true" class="badge bg-primary ms-2">{{ $t("default") }}</span>
-                            </div>
-
-                            <button class="btn btn-primary me-2" type="button" @click="$refs.proxyDialog.show()">
-                                {{ $t("Setup Proxy") }}
-                            </button>
 
                             <!-- HTTP Options -->
                             <template v-if="monitor.type === 'http' || monitor.type === 'keyword' ">
