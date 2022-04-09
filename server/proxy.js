@@ -3,6 +3,7 @@ const HttpProxyAgent = require("http-proxy-agent");
 const HttpsProxyAgent = require("https-proxy-agent");
 const SocksProxyAgent = require("socks-proxy-agent");
 const { debug } = require("../src/util");
+const server = require("./server");
 
 class Proxy {
 
@@ -143,6 +144,22 @@ class Proxy {
             httpAgent,
             httpsAgent
         };
+    }
+
+    /**
+     * Reload proxy settings for current monitors
+     * @returns {Promise<void>}
+     */
+    static async reloadProxy() {
+        let updatedList = await R.getAssoc("SELECT id, proxy_id FROM monitor");
+
+        for (let monitorID in server.monitorList) {
+            let monitor = server.monitorList[monitorID];
+
+            if (updatedList[monitorID]) {
+                monitor.proxy_id = updatedList[monitorID].proxy_id;
+            }
+        }
     }
 }
 

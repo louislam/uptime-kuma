@@ -48,6 +48,27 @@ debug("Importing 2FA Modules");
 const notp = require("notp");
 const base32 = require("thirty-two");
 
+/**
+ * `module.exports` (alias: `server`) should be inside this class, in order to avoid circular dependency issue.
+ * @type {UptimeKumaServer}
+ */
+class UptimeKumaServer {
+    /**
+     * Main monitor list
+     * @type {{}}
+     */
+    monitorList = {};
+    entryPage = "dashboard";
+
+    async sendMonitorList(socket) {
+        let list = await getMonitorJSONList(socket.userID);
+        io.to(socket.userID).emit("monitorList", list);
+        return list;
+    }
+}
+
+const server = module.exports = new UptimeKumaServer();
+
 console.log("Importing this project modules");
 debug("Importing Monitor");
 const Monitor = require("./model/monitor");
@@ -115,20 +136,20 @@ if (config.demoMode) {
 console.log("Creating express and socket.io instance");
 const app = express();
 
-let server;
+let httpServer;
 
 if (sslKey && sslCert) {
     console.log("Server Type: HTTPS");
-    server = https.createServer({
+    httpServer = https.createServer({
         key: fs.readFileSync(sslKey),
         cert: fs.readFileSync(sslCert)
     }, app);
 } else {
     console.log("Server Type: HTTP");
-    server = http.createServer(app);
+    httpServer = http.createServer(app);
 }
 
-const io = new Server(server);
+const io = new Server(httpServer);
 module.exports.io = io;
 
 // Must be after io instantiation
@@ -138,6 +159,7 @@ const databaseSocketHandler = require("./socket-handlers/database-socket-handler
 const TwoFA = require("./2fa");
 const StatusPage = require("./model/status_page");
 const { cloudflaredSocketHandler, autoStart: cloudflaredAutoStart, stop: cloudflaredStop } = require("./socket-handlers/cloudflared-socket-handler");
+const { proxySocketHandler } = require("./socket-handlers/proxy-socket-handler");
 
 app.use(express.json());
 
@@ -163,12 +185,6 @@ let totalClient = 0;
 let jwtSecret = null;
 
 /**
- * Main monitor list
- * @type {{}}
- */
-let monitorList = {};
-
-/**
  * Show Setup Page
  * @type {boolean}
  */
@@ -189,8 +205,6 @@ try {
         process.exit(1);
     }
 }
-
-exports.entryPage = "dashboard";
 
 (async () => {
     Database.init(args);
@@ -606,7 +620,7 @@ exports.entryPage = "dashboard";
 
                 await updateMonitorNotification(bean.id, notificationIDList);
 
-                await sendMonitorList(socket);
+                await server.sendMonitorList(socket);
                 await startMonitor(socket.userID, bean.id);
 
                 callback({
@@ -635,7 +649,7 @@ exports.entryPage = "dashboard";
                 }
 
                 // Reset Prometheus labels
-                monitorList[monitor.id]?.prometheus()?.remove();
+                server.monitorList[monitor.id]?.prometheus()?.remove();
 
                 bean.name = monitor.name;
                 bean.type = monitor.type;
@@ -669,7 +683,7 @@ exports.entryPage = "dashboard";
                     await restartMonitor(socket.userID, bean.id);
                 }
 
-                await sendMonitorList(socket);
+                await server.sendMonitorList(socket);
 
                 callback({
                     ok: true,
@@ -689,7 +703,7 @@ exports.entryPage = "dashboard";
         socket.on("getMonitorList", async (callback) => {
             try {
                 checkLogin(socket);
-                await sendMonitorList(socket);
+                await server.sendMonitorList(socket);
                 callback({
                     ok: true,
                 });
@@ -763,7 +777,7 @@ exports.entryPage = "dashboard";
             try {
                 checkLogin(socket);
                 await startMonitor(socket.userID, monitorID);
-                await sendMonitorList(socket);
+                await server.sendMonitorList(socket);
 
                 callback({
                     ok: true,
@@ -782,7 +796,7 @@ exports.entryPage = "dashboard";
             try {
                 checkLogin(socket);
                 await pauseMonitor(socket.userID, monitorID);
-                await sendMonitorList(socket);
+                await server.sendMonitorList(socket);
 
                 callback({
                     ok: true,
@@ -803,9 +817,9 @@ exports.entryPage = "dashboard";
 
                 console.log(`Delete Monitor: ${monitorID} User ID: ${socket.userID}`);
 
-                if (monitorID in monitorList) {
-                    monitorList[monitorID].stop();
-                    delete monitorList[monitorID];
+                if (monitorID in server.monitorList) {
+                    server.monitorList[monitorID].stop();
+                    delete server.monitorList[monitorID];
                 }
 
                 await R.exec("DELETE FROM monitor WHERE id = ? AND user_id = ? ", [
@@ -818,7 +832,7 @@ exports.entryPage = "dashboard";
                     msg: "Deleted Successfully.",
                 });
 
-                await sendMonitorList(socket);
+                await server.sendMonitorList(socket);
                 // Clear heartbeat list on client
                 await sendImportantHeartbeatList(socket, monitorID, true, true);
 
@@ -1118,52 +1132,6 @@ exports.entryPage = "dashboard";
             }
         });
 
-        socket.on("addProxy", async (proxy, proxyID, callback) => {
-            try {
-                checkLogin(socket);
-
-                const proxyBean = await Proxy.save(proxy, proxyID, socket.userID);
-                await sendProxyList(socket);
-
-                if (proxy.applyExisting) {
-                    await restartMonitors(socket.userID);
-                }
-
-                callback({
-                    ok: true,
-                    msg: "Saved",
-                    id: proxyBean.id,
-                });
-
-            } catch (e) {
-                callback({
-                    ok: false,
-                    msg: e.message,
-                });
-            }
-        });
-
-        socket.on("deleteProxy", async (proxyID, callback) => {
-            try {
-                checkLogin(socket);
-
-                await Proxy.delete(proxyID, socket.userID);
-                await sendProxyList(socket);
-                await restartMonitors(socket.userID);
-
-                callback({
-                    ok: true,
-                    msg: "Deleted",
-                });
-
-            } catch (e) {
-                callback({
-                    ok: false,
-                    msg: e.message,
-                });
-            }
-        });
-
         socket.on("checkApprise", async (callback) => {
             try {
                 checkLogin(socket);
@@ -1190,8 +1158,8 @@ exports.entryPage = "dashboard";
                 // If the import option is "overwrite" it'll clear most of the tables, except "settings" and "user"
                 if (importHandle == "overwrite") {
                     // Stops every monitor first, so it doesn't execute any heartbeat while importing
-                    for (let id in monitorList) {
-                        let monitor = monitorList[id];
+                    for (let id in server.monitorList) {
+                        let monitor = server.monitorList[id];
                         await monitor.stop();
                     }
                     await R.exec("DELETE FROM heartbeat");
@@ -1354,7 +1322,7 @@ exports.entryPage = "dashboard";
                     }
 
                     await sendNotificationList(socket);
-                    await sendMonitorList(socket);
+                    await server.sendMonitorList(socket);
                 }
 
                 callback({
@@ -1444,6 +1412,7 @@ exports.entryPage = "dashboard";
         statusPageSocketHandler(socket);
         cloudflaredSocketHandler(socket);
         databaseSocketHandler(socket);
+        proxySocketHandler(socket);
 
         debug("added all socket handlers");
 
@@ -1464,12 +1433,12 @@ exports.entryPage = "dashboard";
 
     console.log("Init the server");
 
-    server.once("error", async (err) => {
+    httpServer.once("error", async (err) => {
         console.error("Cannot listen: " + err.message);
         await shutdownFunction();
     });
 
-    server.listen(port, hostname, () => {
+    httpServer.listen(port, hostname, () => {
         if (hostname) {
             console.log(`Listening on ${hostname}:${port}`);
         } else {
@@ -1516,17 +1485,11 @@ async function checkOwner(userID, monitorID) {
     }
 }
 
-async function sendMonitorList(socket) {
-    let list = await getMonitorJSONList(socket.userID);
-    io.to(socket.userID).emit("monitorList", list);
-    return list;
-}
-
 async function afterLogin(socket, user) {
     socket.userID = user.id;
     socket.join(user.id);
 
-    let monitorList = await sendMonitorList(socket);
+    let monitorList = await server.sendMonitorList(socket);
     sendNotificationList(socket);
     sendProxyList(socket);
 
@@ -1609,29 +1572,16 @@ async function startMonitor(userID, monitorID) {
         monitorID,
     ]);
 
-    if (monitor.id in monitorList) {
-        monitorList[monitor.id].stop();
+    if (monitor.id in server.monitorList) {
+        server.monitorList[monitor.id].stop();
     }
 
-    monitorList[monitor.id] = monitor;
+    server.monitorList[monitor.id] = monitor;
     monitor.start(io);
 }
 
 async function restartMonitor(userID, monitorID) {
     return await startMonitor(userID, monitorID);
-}
-
-async function restartMonitors(userID) {
-    // Fetch all active monitors for user
-    const monitors = await R.getAll("SELECT id FROM monitor WHERE active = 1 AND user_id = ?", [userID]);
-
-    for (const monitor of monitors) {
-        // Start updated monitor
-        await startMonitor(userID, monitor.id);
-
-        // Give some delays, so all monitors won't make request at the same moment when just start the server.
-        await sleep(getRandomInt(300, 1000));
-    }
 }
 
 async function pauseMonitor(userID, monitorID) {
@@ -1644,8 +1594,8 @@ async function pauseMonitor(userID, monitorID) {
         userID,
     ]);
 
-    if (monitorID in monitorList) {
-        monitorList[monitorID].stop();
+    if (monitorID in server.monitorList) {
+        server.monitorList[monitorID].stop();
     }
 }
 
@@ -1656,7 +1606,7 @@ async function startMonitors() {
     let list = await R.find("monitor", " active = 1 ");
 
     for (let monitor of list) {
-        monitorList[monitor.id] = monitor;
+        server.monitorList[monitor.id] = monitor;
     }
 
     for (let monitor of list) {
@@ -1671,8 +1621,8 @@ async function shutdownFunction(signal) {
     console.log("Called signal: " + signal);
 
     console.log("Stopping all monitors");
-    for (let id in monitorList) {
-        let monitor = monitorList[id];
+    for (let id in server.monitorList) {
+        let monitor = server.monitorList[id];
         monitor.stop();
     }
     await sleep(2000);
@@ -1686,7 +1636,7 @@ function finalFunction() {
     console.log("Graceful shutdown successful!");
 }
 
-gracefulShutdown(server, {
+gracefulShutdown(httpServer, {
     signals: "SIGINT SIGTERM",
     timeout: 30000,                   // timeout: 30 secs
     development: false,               // not in dev mode

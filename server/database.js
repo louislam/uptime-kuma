@@ -55,6 +55,7 @@ class Database {
         "patch-monitor-basic-auth.sql": true,
         "patch-status-page.sql": true,
         "patch-proxy.sql": true,
+        "patch-monitor-expiry-notification.sql": true,
     }
 
     /**
@@ -82,7 +83,7 @@ class Database {
         console.log(`Data Dir: ${Database.dataDir}`);
     }
 
-    static async connect(testMode = false) {
+    static async connect(testMode = false, autoloadModels = true, noLog = false) {
         const acquireConnectionTimeout = 120 * 1000;
 
         const Dialect = require("knex/lib/dialects/sqlite3/index.js");
@@ -112,7 +113,10 @@ class Database {
 
         // Auto map the model to a bean object
         R.freeze(true);
-        await R.autoloadModels("./server/model");
+
+        if (autoloadModels) {
+            await R.autoloadModels("./server/model");
+        }
 
         await R.exec("PRAGMA foreign_keys = ON");
         if (testMode) {
@@ -130,10 +134,12 @@ class Database {
         // Read more: https://sqlite.org/pragma.html#pragma_synchronous
         await R.exec("PRAGMA synchronous = FULL");
 
-        console.log("SQLite config:");
-        console.log(await R.getAll("PRAGMA journal_mode"));
-        console.log(await R.getAll("PRAGMA cache_size"));
-        console.log("SQLite Version: " + await R.getCell("SELECT sqlite_version()"));
+        if (!noLog) {
+            console.log("SQLite config:");
+            console.log(await R.getAll("PRAGMA journal_mode"));
+            console.log(await R.getAll("PRAGMA cache_size"));
+            console.log("SQLite Version: " + await R.getCell("SELECT sqlite_version()"));
+        }
     }
 
     static async patch() {
