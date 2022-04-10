@@ -24,14 +24,17 @@ class Discord extends NotificationProvider {
 
             let url;
 
-            if (monitorJSON["type"] === "port") {
-                url = monitorJSON["hostname"];
-                if (monitorJSON["port"]) {
-                    url += ":" + monitorJSON["port"];
-                }
-
-            } else {
-                url = monitorJSON["url"];
+            switch (monitorJSON["type"]) {
+                case "port":
+                case "ping":
+                    url = monitorJSON["hostname"];
+                    if (monitorJSON["port"]) {
+                        url += ":" + monitorJSON["port"];
+                    }
+                    break;
+                default:
+                    url = monitorJSON["url"];
+                    break;
             }
 
             // If heartbeatJSON is not null, we go into the normal alerting loop.
