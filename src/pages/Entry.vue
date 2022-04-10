@@ -26,6 +26,7 @@ export default {
 
         if (res.type === "statusPageMatchedDomain") {
             this.statusPageSlug = res.statusPageSlug;
+            this.$root.forceStatusPageTheme = true;
 
         } else if (res.type === "entryPage") {          // Dev only. For production, the logic is in the server side
             const entryPage = res.entryPage;
