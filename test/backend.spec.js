@@ -1,5 +1,9 @@
-const { genSecret, sleep } = require("../src/util");
+const { genSecret, sleep, DOWN } = require("../src/util");
 const utilServerRewire = require("../server/util-server");
+const Discord = require("../server/notification-providers/discord");
+const axios = require("axios");
+
+jest.mock("axios");
 
 describe("Test parseCertificateInfo", () => {
     it("should handle undefined", async () => {
@@ -164,3 +168,41 @@ describe("Test reset-password", () => {
     }, 120000);
 });
 
+describe("Test Discord Notification Provider", () => {
+    const sendNotification = async (type) => {
+        const discordProvider = new Discord();
+
+        axios.post.mockResolvedValue({});
+
+        await discordProvider.send(
+            {
+                discordUsername: "Uptime Kuma",
+                discordWebhookUrl: "https://discord.com",
+            },
+            "test message",
+            {
+                type,
+                hostname: "discord.com" + (type === "port" ? ":1337" : ""),
+            },
+            {
+                status: DOWN,
+            }
+        );
+    };
+
+    it("should send hostname for ping monitors", async () => {
+        await sendNotification("ping");
+
+        expect(axios.post.mock.lastCall[1].embeds[0].fields[1].value).toBe(
+            "discord.com"
+        );
+    });
+
+    it("should send hostname for port monitors", async () => {
+        await sendNotification("port");
+
+        expect(axios.post.mock.lastCall[1].embeds[0].fields[1].value).toBe(
+            "discord.com:1337"
+        );
+    });
+});
