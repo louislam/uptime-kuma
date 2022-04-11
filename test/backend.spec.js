@@ -169,7 +169,7 @@ describe("Test reset-password", () => {
 });
 
 describe("Test Discord Notification Provider", () => {
-    const sendNotification = async (type) => {
+    const sendNotification = async (hostname, port, type) => {
         const discordProvider = new Discord();
 
         axios.post.mockResolvedValue({});
@@ -182,7 +182,8 @@ describe("Test Discord Notification Provider", () => {
             "test message",
             {
                 type,
-                hostname: "discord.com" + (type === "port" ? ":1337" : ""),
+                hostname,
+                port,
             },
             {
                 status: DOWN,
@@ -190,19 +191,41 @@ describe("Test Discord Notification Provider", () => {
         );
     };
 
-    it("should send hostname for ping monitors", async () => {
-        await sendNotification("ping");
+    it("should send hostname for dns monitors", async () => {
+        const hostname = "discord.com";
+        await sendNotification(hostname, null, "dns");
 
         expect(axios.post.mock.lastCall[1].embeds[0].fields[1].value).toBe(
-            "discord.com"
+            hostname
+        );
+    });
+
+    it("should send hostname for ping monitors", async () => {
+        const hostname = "discord.com";
+        await sendNotification(hostname, null, "ping");
+
+        expect(axios.post.mock.lastCall[1].embeds[0].fields[1].value).toBe(
+            hostname
         );
     });
 
     it("should send hostname for port monitors", async () => {
-        await sendNotification("port");
+        const hostname = "discord.com";
+        const port = 1337;
+        await sendNotification(hostname, port, "port");
 
         expect(axios.post.mock.lastCall[1].embeds[0].fields[1].value).toBe(
-            "discord.com:1337"
+            `${hostname}:${port}`
+        );
+    });
+
+    it("should send hostname for steam monitors", async () => {
+        const hostname = "discord.com";
+        const port = 1337;
+        await sendNotification(hostname, port, "steam");
+
+        expect(axios.post.mock.lastCall[1].embeds[0].fields[1].value).toBe(
+            `${hostname}:${port}`
         );
     });
 });
