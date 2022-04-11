@@ -25,8 +25,10 @@ class Discord extends NotificationProvider {
             let url;
 
             switch (monitorJSON["type"]) {
-                case "port":
+                case "dns":
                 case "ping":
+                case "port":
+                case "steam":
                     url = monitorJSON["hostname"];
                     if (monitorJSON["port"]) {
                         url += ":" + monitorJSON["port"];
