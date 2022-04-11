@@ -36,7 +36,7 @@
                 </div>
 
                 <div v-if="$root.userHeartbeatBar == 'bottom'" class="row">
-                    <div class="col-12">
+                    <div class="col-12 bottom-style">
                         <HeartbeatBar size="small" :monitor-id="item.id" />
                     </div>
                 </div>
@@ -203,9 +203,16 @@ export default {
 }
 
 .tags {
-    padding-left: 62px;
+    margin-top: 4px;
+    padding-left: 67px;
     display: flex;
     flex-wrap: wrap;
     gap: 0;
 }
+
+.bottom-style {
+    padding-left: 67px;
+    margin-top: 5px;
+}
+
 </style>
