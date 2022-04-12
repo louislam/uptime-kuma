@@ -1,9 +1,8 @@
 const tcpp = require("tcp-ping");
 const Ping = require("./ping-lite");
 const { R } = require("redbean-node");
-const { log_debug } = require("../src/util");
+const { log_debug, genSecret } = require("../src/util");
 const passwordHash = require("./password-hash");
-const dayjs = require("dayjs");
 const { Resolver } = require("dns");
 const child_process = require("child_process");
 const iconv = require("iconv-lite");
@@ -16,6 +15,7 @@ exports.WIN = /^win/.test(process.platform);
 exports.LIN = /^linux/.test(process.platform);
 exports.MAC = /^darwin/.test(process.platform);
 exports.FBSD = /^freebsd/.test(process.platform);
+exports.BSD = /bsd$/.test(process.platform);
 
 /**
  * Init or reset JWT secret
@@ -31,7 +31,7 @@ exports.initJWTSecret = async () => {
         jwtSecretBean.key = "jwtSecret";
     }
 
-    jwtSecretBean.value = passwordHash.generate(dayjs() + "");
+    jwtSecretBean.value = passwordHash.generate(genSecret());
     await R.store(jwtSecretBean);
     return jwtSecretBean;
 };
@@ -318,6 +318,28 @@ exports.checkLogin = (socket) => {
     if (! socket.userID) {
         throw new Error("You are not logged in.");
     }
+};
+
+/**
+ * For logged-in users, double-check the password
+ * @param socket
+ * @param currentPassword
+ * @returns {Promise<Bean>}
+ */
+exports.doubleCheckPassword = async (socket, currentPassword) => {
+    if (typeof currentPassword !== "string") {
+        throw new Error("Wrong data type?");
+    }
+
+    let user = await R.findOne("user", " id = ? AND active = 1 ", [
+        socket.userID,
+    ]);
+
+    if (!user || !passwordHash.verify(currentPassword, user.password)) {
+        throw new Error("Incorrect current password");
+    }
+
+    return user;
 };
 
 exports.startUnitTest = async () => {

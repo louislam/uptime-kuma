@@ -1,5 +1,5 @@
 <template>
-    <div class="shadow-box mb-3">
+    <div class="shadow-box mb-3" :style="boxStyle">
         <div class="list-header">
             <div class="placeholder"></div>
             <div class="search-wrapper">
@@ -9,7 +9,9 @@
                 <a v-if="searchText != ''" class="search-icon" @click="clearSearchText">
                     <font-awesome-icon icon="times" />
                 </a>
-                <input v-model="searchText" class="form-control search-input" :placeholder="$t('Search...')" />
+                <form>
+                    <input v-model="searchText" class="form-control search-input" :placeholder="$t('Search...')" autocomplete="off" />
+                </form>
             </div>
         </div>
         <div class="monitor-list" :class="{ scrollbar: scrollbar }">
@@ -34,7 +36,7 @@
                 </div>
 
                 <div v-if="$root.userHeartbeatBar == 'bottom'" class="row">
-                    <div class="col-12">
+                    <div class="col-12 bottom-style">
                         <HeartbeatBar size="small" :monitor-id="item.id" />
                     </div>
                 </div>
@@ -63,9 +65,16 @@ export default {
     data() {
         return {
             searchText: "",
+            windowTop: 0,
         };
     },
     computed: {
+        boxStyle() {
+            return {
+                height: `calc(100vh - 160px + ${this.windowTop}px)`,
+            };
+        },
+
         sortedMonitorList() {
             let result = Object.values(this.$root.monitorList);
 
@@ -108,7 +117,20 @@ export default {
             return result;
         },
     },
+    mounted() {
+        window.addEventListener("scroll", this.onScroll);
+    },
+    beforeUnmount() {
+        window.removeEventListener("scroll", this.onScroll);
+    },
     methods: {
+        onScroll() {
+            if (window.top.scrollY <= 133) {
+                this.windowTop = window.top.scrollY;
+            } else {
+                this.windowTop = 133;
+            }
+        },
         monitorURL(id) {
             return getMonitorRelativeURL(id);
         },
@@ -121,6 +143,12 @@ export default {
 
 <style lang="scss" scoped>
 @import "../assets/vars.scss";
+
+.shadow-box {
+    height: calc(100vh - 150px);
+    position: sticky;
+    top: 10px;
+}
 
 .small-padding {
     padding-left: 5px !important;
@@ -139,6 +167,12 @@ export default {
     .dark & {
         background-color: $dark-header-bg;
         border-bottom: 0;
+    }
+}
+
+.dark {
+    .footer {
+      //  background-color: $dark-bg;
     }
 }
 
@@ -169,9 +203,16 @@ export default {
 }
 
 .tags {
-    padding-left: 62px;
+    margin-top: 4px;
+    padding-left: 67px;
     display: flex;
     flex-wrap: wrap;
     gap: 0;
 }
+
+.bottom-style {
+    padding-left: 67px;
+    margin-top: 5px;
+}
+
 </style>
