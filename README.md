@@ -17,13 +17,13 @@ Try it!
 
 https://demo.uptime.kuma.pet
 
-It is a temporary live demo, all data will be deleted after 10 minutes. The server is located at Tokyo, so if you live far from there it may affect your experience. I suggest that you should install and try it out for the best demo experience.
+It is a temporary live demo, all data will be deleted after 10 minutes. The server is located in Tokyo, so if you live far from there, it may affect your experience. I suggest that you should install and try it out for the best demo experience.
 
 VPS is sponsored by Uptime Kuma sponsors on [Open Collective](https://opencollective.com/uptime-kuma)! Thank you so much!
 
 ## ⭐ Features
 
-* Monitoring uptime for HTTP(s) / TCP / Ping / DNS Record / Push.
+* Monitoring uptime for HTTP(s) / TCP / HTTP(s) Keyword / Ping / DNS Record / Push / Steam Game Server.
 * Fancy, Reactive, Fast UI/UX.
 * Notifications via Telegram, Discord, Gotify, Slack, Pushover, Email (SMTP), and [70+ notification services, click here for the full list](https://github.com/louislam/uptime-kuma/tree/master/src/components/notifications).
 * 20 second intervals.
@@ -37,15 +37,19 @@ VPS is sponsored by Uptime Kuma sponsors on [Open Collective](https://opencollec
 ### 🐳 Docker
 
 ```bash
-docker volume create uptime-kuma
 docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name uptime-kuma louislam/uptime-kuma:1
 ```
+
+⚠️ Please use a **local volume** only. Other types such as NFS are not supported.
 
 Browse to http://localhost:3001 after starting.
 
 ### 💪🏻 Non-Docker
 
-Required Tools: Node.js >= 14, git and pm2.
+Required Tools: 
+- [Node.js](https://nodejs.org/en/download/) >= 14
+- [Git](https://git-scm.com/downloads) 
+- [pm2](https://pm2.keymetrics.io/) - For run in background
 
 ```bash
 # Update your npm to the latest version
@@ -59,15 +63,29 @@ npm run setup
 node server/server.js
 
 # (Recommended) Option 2. Run in background using PM2
-# Install PM2 if you don't have it: npm install pm2 -g
-pm2 start server/server.js --name uptime-kuma
-```
+# Install PM2 if you don't have it: 
+npm install pm2 -g && pm2 install pm2-logrotate
 
+# Start Server
+pm2 start server/server.js --name uptime-kuma
+
+
+```
 Browse to http://localhost:3001 after starting.
+
+More useful PM2 Commands
+
+```bash
+# If you want to see the current console output
+pm2 monit
+
+# If you want to add it to startup
+pm2 save && pm2 startup
+```
 
 ### Advanced Installation
 
-If you need more options or need to browse via a reserve proxy, please read:
+If you need more options or need to browse via a reverse proxy, please read:
 
 https://github.com/louislam/uptime-kuma/wiki/%F0%9F%94%A7-How-to-Install
 
@@ -86,6 +104,12 @@ https://github.com/louislam/uptime-kuma/milestones
 Project Plan:
 
 https://github.com/louislam/uptime-kuma/projects/1
+
+## ❤️ Sponsors
+
+Thank you so much! (GitHub Sponsors will be updated manually. OpenCollective sponsors will be updated automatically, the list will be cached by GitHub though. It may need some time to be updated)
+
+<img src="https://uptime.kuma.pet/sponsors?v=6" alt />
 
 ## 🖼 More Screenshots
 
@@ -107,7 +131,7 @@ Telegram Notification Sample:
 
 ## Motivation
 
-* I was looking for a self-hosted monitoring tool like "Uptime Robot", but it is hard to find a suitable one. One of the close ones is statping. Unfortunately, it is not stable and unmaintained.
+* I was looking for a self-hosted monitoring tool like "Uptime Robot", but it is hard to find a suitable one. One of the close ones is statping. Unfortunately, it is not stable and no longer maintained.
 * Want to build a fancy UI.
 * Learn Vue 3 and vite.js.
 * Show the power of Bootstrap 5.
@@ -120,7 +144,7 @@ If you love this project, please consider giving me a ⭐.
 
 ### Issues Page
 
-You can discuss or ask for help in [Issues](https://github.com/louislam/uptime-kuma/issues).
+You can discuss or ask for help in [issues](https://github.com/louislam/uptime-kuma/issues).
 
 ### Subreddit
 
@@ -132,8 +156,8 @@ https://www.reddit.com/r/UptimeKuma/
 
 If you want to report a bug or request a new feature. Free feel to open a [new issue](https://github.com/louislam/uptime-kuma/issues).
 
-If you want to translate Uptime Kuma into your langauge, please read: https://github.com/louislam/uptime-kuma/tree/master/src/languages
+If you want to translate Uptime Kuma into your language, please read: https://github.com/louislam/uptime-kuma/tree/master/src/languages
 
 If you want to modify Uptime Kuma, this guideline may be useful for you: https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md
 
-English proofreading is needed too because my grammar is not that great sadly. Feel free to correct my grammar in this readme, source code, or wiki.
+Unfortunately, English proofreading is needed too because my grammar is not that great. Feel free to correct my grammar in this README, source code, or wiki.

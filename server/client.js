@@ -90,6 +90,23 @@ async function sendImportantHeartbeatList(socket, monitorID, toUser = false, ove
 }
 
 /**
+ * Delivers proxy list
+ *
+ * @param socket
+ * @return {Promise<Bean[]>}
+ */
+async function sendProxyList(socket) {
+    const timeLogger = new TimeLogger();
+
+    const list = await R.find("proxy", " user_id = ? ", [socket.userID]);
+    io.to(socket.userID).emit("proxyList", list.map(bean => bean.export()));
+
+    timeLogger.print("Send Proxy List");
+
+    return list;
+}
+
+/**
  * Emits the version information to the client.
  * @param {Socket} socket The socket object that is connected to the client.
  *
@@ -107,6 +124,6 @@ module.exports = {
     sendNotificationList,
     sendImportantHeartbeatList,
     sendHeartbeatList,
-    sendInfo
+    sendProxyList,
+    sendInfo,
 };
-

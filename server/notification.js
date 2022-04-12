@@ -12,6 +12,7 @@ const ClickSendSMS = require("./notification-providers/clicksendsms");
 const Pushbullet = require("./notification-providers/pushbullet");
 const Pushover = require("./notification-providers/pushover");
 const Pushy = require("./notification-providers/pushy");
+const TechulusPush = require("./notification-providers/techulus-push");
 const RocketChat = require("./notification-providers/rocket-chat");
 const Signal = require("./notification-providers/signal");
 const Slack = require("./notification-providers/slack");
@@ -23,6 +24,12 @@ const Feishu = require("./notification-providers/feishu");
 const AliyunSms = require("./notification-providers/aliyun-sms");
 const DingDing = require("./notification-providers/dingding");
 const Bark = require("./notification-providers/bark");
+const SerwerSMS = require("./notification-providers/serwersms");
+const Stackfield = require("./notification-providers/stackfield");
+const WeCom = require("./notification-providers/wecom");
+const GoogleChat = require("./notification-providers/google-chat");
+const Gorush = require("./notification-providers/gorush");
+const Alerta = require("./notification-providers/alerta");
 
 class Notification {
 
@@ -51,6 +58,7 @@ class Notification {
             new Pushbullet(),
             new Pushover(),
             new Pushy(),
+            new TechulusPush(),
             new RocketChat(),
             new Signal(),
             new Slack(),
@@ -58,6 +66,12 @@ class Notification {
             new Telegram(),
             new Webhook(),
             new Bark(),
+            new SerwerSMS(),
+            new Stackfield(),
+            new WeCom(),
+            new GoogleChat(),
+            new Gorush(),
+            new Alerta(),
         ];
 
         for (let item of list) {

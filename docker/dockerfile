@@ -33,7 +33,7 @@ RUN apt update && \
 
 COPY --from=build /app /app
 
-ARG VERSION=1.9.1
+ARG VERSION
 ARG GITHUB_TOKEN
 ARG TARGETARCH
 ARG PLATFORM=debian

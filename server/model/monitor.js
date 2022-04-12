@@ -11,6 +11,7 @@ const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalCli
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification");
+const { Proxy } = require("../proxy");
 const { demoMode } = require("../config");
 const version = require("../../package.json").version;
 const apicache = require("../modules/apicache");
@@ -24,18 +25,22 @@ const apicache = require("../modules/apicache");
 class Monitor extends BeanModel {
 
     /**
-     * Return a object that ready to parse to JSON for public
+     * Return an object that ready to parse to JSON for public
      * Only show necessary data to public
      */
-    async toPublicJSON() {
-        return {
+    async toPublicJSON(showTags = false) {
+        let obj = {
             id: this.id,
             name: this.name,
         };
+        if (showTags) {
+            obj.tags = await this.getTags();
+        }
+        return obj;
     }
 
     /**
-     * Return a object that ready to parse to JSON
+     * Return an object that ready to parse to JSON
      */
     async toJSON() {
 
@@ -49,7 +54,7 @@ class Monitor extends BeanModel {
             notificationIDList[bean.notification_id] = true;
         }
 
-        const tags = await R.getAll("SELECT mt.*, tag.name, tag.color FROM monitor_tag mt JOIN tag ON mt.tag_id = tag.id WHERE mt.monitor_id = ?", [this.id]);
+        const tags = await this.getTags();
 
         return {
             id: this.id,
@@ -69,6 +74,7 @@ class Monitor extends BeanModel {
             interval: this.interval,
             retryInterval: this.retryInterval,
             keyword: this.keyword,
+            expiryNotification: this.isEnabledExpiryNotification(),
             ignoreTls: this.getIgnoreTls(),
             upsideDown: this.isUpsideDown(),
             maxredirects: this.maxredirects,
@@ -77,9 +83,14 @@ class Monitor extends BeanModel {
             dns_resolve_server: this.dns_resolve_server,
             dns_last_result: this.dns_last_result,
             pushToken: this.pushToken,
+            proxyId: this.proxy_id,
             notificationIDList,
             tags: tags,
         };
+    }
+
+    async getTags() {
+        return await R.getAll("SELECT mt.*, tag.name, tag.color FROM monitor_tag mt JOIN tag ON mt.tag_id = tag.id WHERE mt.monitor_id = ?", [this.id]);
     }
 
     /**
@@ -89,6 +100,10 @@ class Monitor extends BeanModel {
      */
     encodeBase64(user, pass) {
         return Buffer.from(user + ":" + pass).toString("base64");
+    }
+
+    isEnabledExpiryNotification() {
+        return Boolean(this.expiryNotification);
     }
 
     /**
@@ -118,6 +133,19 @@ class Monitor extends BeanModel {
         let prometheus = new Prometheus(this);
 
         const beat = async () => {
+
+            let beatInterval = this.interval;
+
+            if (! beatInterval) {
+                beatInterval = 1;
+            }
+
+            if (demoMode) {
+                if (beatInterval < 20) {
+                    console.log("beat interval too low, reset to 20s");
+                    beatInterval = 20;
+                }
+            }
 
             // Expose here for prometheus update
             // undefined if not https
@@ -160,6 +188,11 @@ class Monitor extends BeanModel {
                         };
                     }
 
+                    const httpsAgentOptions = {
+                        maxCachedSessions: 0, // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
+                        rejectUnauthorized: !this.getIgnoreTls(),
+                    };
+
                     debug(`[${this.name}] Prepare Options for axios`);
 
                     const options = {
@@ -168,22 +201,38 @@ class Monitor extends BeanModel {
                         ...(this.body ? { data: JSON.parse(this.body) } : {}),
                         timeout: this.interval * 1000 * 0.8,
                         headers: {
-                            "Accept": "*/*",
+                            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
                             "User-Agent": "Uptime-Kuma/" + version,
                             ...(this.headers ? JSON.parse(this.headers) : {}),
                             ...(basicAuthHeader),
                         },
-                        httpsAgent: new https.Agent({
-                            maxCachedSessions: 0,      // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
-                            rejectUnauthorized: ! this.getIgnoreTls(),
-                        }),
                         maxRedirects: this.maxredirects,
                         validateStatus: (status) => {
                             return checkStatusCode(status, this.getAcceptedStatuscodes());
                         },
                     };
 
+                    if (this.proxy_id) {
+                        const proxy = await R.load("proxy", this.proxy_id);
+
+                        if (proxy && proxy.active) {
+                            const { httpAgent, httpsAgent } = Proxy.createAgents(proxy, {
+                                httpsAgentOptions: httpsAgentOptions,
+                            });
+
+                            options.proxy = false;
+                            options.httpAgent = httpAgent;
+                            options.httpsAgent = httpsAgent;
+                        }
+                    }
+
+                    if (!options.httpsAgent) {
+                        options.httpsAgent = new https.Agent(httpsAgentOptions);
+                    }
+
+                    debug(`[${this.name}] Axios Options: ${JSON.stringify(options)}`);
                     debug(`[${this.name}] Axios Request`);
+
                     let res = await axios.request(options);
                     bean.msg = `${res.status} - ${res.statusText}`;
                     bean.ping = dayjs().valueOf() - startTime;
@@ -196,7 +245,7 @@ class Monitor extends BeanModel {
                             let tlsInfoObject = checkCertificate(res);
                             tlsInfo = await this.updateTlsInfo(tlsInfoObject);
 
-                            if (!this.getIgnoreTls()) {
+                            if (!this.getIgnoreTls() && this.isEnabledExpiryNotification()) {
                                 debug(`[${this.name}] call sendCertNotification`);
                                 await this.sendCertNotification(tlsInfoObject);
                             }
@@ -296,11 +345,14 @@ class Monitor extends BeanModel {
                     debug("heartbeatCount" + heartbeatCount + " " + time);
 
                     if (heartbeatCount <= 0) {
+                        // Fix #922, since previous heartbeat could be inserted by api, it should get from database
+                        previousBeat = await Monitor.getPreviousHeartbeat(this.id);
+
                         throw new Error("No heartbeat in the time window");
                     } else {
                         // No need to insert successful heartbeat for push type, so end here
                         retries = 0;
-                        this.heartbeatInterval = setTimeout(beat, this.interval * 1000);
+                        this.heartbeatInterval = setTimeout(beat, beatInterval * 1000);
                         return;
                     }
 
@@ -374,8 +426,6 @@ class Monitor extends BeanModel {
                 }
             }
 
-            let beatInterval = this.interval;
-
             debug(`[${this.name}] Check isImportant`);
             let isImportant = Monitor.isImportantBeat(isFirstBeat, previousBeat?.status, bean.status);
 
@@ -419,14 +469,6 @@ class Monitor extends BeanModel {
             previousBeat = bean;
 
             if (! this.isStop) {
-
-                if (demoMode) {
-                    if (beatInterval < 20) {
-                        console.log("beat interval too low, reset to 20s");
-                        beatInterval = 20;
-                    }
-                }
-
                 debug(`[${this.name}] SetTimeout for next check.`);
                 this.heartbeatInterval = setTimeout(safeBeat, beatInterval * 1000);
             } else {
@@ -463,6 +505,12 @@ class Monitor extends BeanModel {
     stop() {
         clearTimeout(this.heartbeatInterval);
         this.isStop = true;
+
+        this.prometheus().remove();
+    }
+
+    prometheus() {
+        return new Prometheus(this);
     }
 
     /**
@@ -750,6 +798,15 @@ class Monitor extends BeanModel {
         } else {
             debug("No notification, no need to send cert notification");
         }
+    }
+
+    static async getPreviousHeartbeat(monitorID) {
+        return await R.getRow(`
+            SELECT status, time FROM heartbeat
+            WHERE id = (select MAX(id) from heartbeat where monitor_id = ?)
+        `, [
+            monitorID
+        ]);
     }
 }
 
