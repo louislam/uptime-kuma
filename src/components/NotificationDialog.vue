@@ -42,6 +42,12 @@
                                 <input v-model="notification.applyExisting" class="form-check-input" type="checkbox">
                                 <label class="form-check-label">{{ $t("Apply on all existing monitors") }}</label>
                             </div>
+                            
+                            <br>
+                            <div class="form-check form-switch">
+                                <input v-model="notification.incidents" class="form-check-input" type="checkbox">
+                                <label class="form-check-label">{{ $t("Include incidents") }}</label>
+                            </div>
                         </div>
                     </div>
 
@@ -147,6 +153,7 @@ export default {
                     name: "",
                     type: "telegram",
                     isDefault: false,
+                    incidents: true,
                 };
             }
 
