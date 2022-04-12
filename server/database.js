@@ -53,6 +53,9 @@ class Database {
         "patch-2fa-invalidate-used-token.sql": true,
         "patch-notification_sent_history.sql": true,
         "patch-monitor-basic-auth.sql": true,
+        "patch-status-page.sql": true,
+        "patch-proxy.sql": true,
+        "patch-monitor-expiry-notification.sql": true,
     }
 
     /**
@@ -80,7 +83,7 @@ class Database {
         console.log(`Data Dir: ${Database.dataDir}`);
     }
 
-    static async connect(testMode = false) {
+    static async connect(testMode = false, autoloadModels = true, noLog = false) {
         const acquireConnectionTimeout = 120 * 1000;
 
         const Dialect = require("knex/lib/dialects/sqlite3/index.js");
@@ -110,7 +113,10 @@ class Database {
 
         // Auto map the model to a bean object
         R.freeze(true);
-        await R.autoloadModels("./server/model");
+
+        if (autoloadModels) {
+            await R.autoloadModels("./server/model");
+        }
 
         await R.exec("PRAGMA foreign_keys = ON");
         if (testMode) {
@@ -123,10 +129,17 @@ class Database {
         await R.exec("PRAGMA cache_size = -12000");
         await R.exec("PRAGMA auto_vacuum = FULL");
 
-        console.log("SQLite config:");
-        console.log(await R.getAll("PRAGMA journal_mode"));
-        console.log(await R.getAll("PRAGMA cache_size"));
-        console.log("SQLite Version: " + await R.getCell("SELECT sqlite_version()"));
+        // This ensures that an operating system crash or power failure will not corrupt the database.
+        // FULL synchronous is very safe, but it is also slower.
+        // Read more: https://sqlite.org/pragma.html#pragma_synchronous
+        await R.exec("PRAGMA synchronous = FULL");
+
+        if (!noLog) {
+            console.log("SQLite config:");
+            console.log(await R.getAll("PRAGMA journal_mode"));
+            console.log(await R.getAll("PRAGMA cache_size"));
+            console.log("SQLite Version: " + await R.getCell("SELECT sqlite_version()"));
+        }
     }
 
     static async patch() {
@@ -170,6 +183,7 @@ class Database {
         }
 
         await this.patch2();
+        await this.migrateNewStatusPage();
     }
 
     /**
@@ -209,6 +223,74 @@ class Database {
         }
 
         await setSetting("databasePatchedFiles", databasePatchedFiles);
+    }
+
+    /**
+     * Migrate status page value in setting to "status_page" table
+     * @returns {Promise<void>}
+     */
+    static async migrateNewStatusPage() {
+
+        // Fix 1.13.0 empty slug bug
+        await R.exec("UPDATE status_page SET slug = 'empty-slug-recover' WHERE TRIM(slug) = ''");
+
+        let title = await setting("title");
+
+        if (title) {
+            console.log("Migrating Status Page");
+
+            let statusPageCheck = await R.findOne("status_page", " slug = 'default' ");
+
+            if (statusPageCheck !== null) {
+                console.log("Migrating Status Page - Skip, default slug record is already existing");
+                return;
+            }
+
+            let statusPage = R.dispense("status_page");
+            statusPage.slug = "default";
+            statusPage.title = title;
+            statusPage.description = await setting("description");
+            statusPage.icon = await setting("icon");
+            statusPage.theme = await setting("statusPageTheme");
+            statusPage.published = !!await setting("statusPagePublished");
+            statusPage.search_engine_index = !!await setting("searchEngineIndex");
+            statusPage.show_tags = !!await setting("statusPageTags");
+            statusPage.password = null;
+
+            if (!statusPage.title) {
+                statusPage.title = "My Status Page";
+            }
+
+            if (!statusPage.icon) {
+                statusPage.icon = "";
+            }
+
+            if (!statusPage.theme) {
+                statusPage.theme = "light";
+            }
+
+            let id = await R.store(statusPage);
+
+            await R.exec("UPDATE incident SET status_page_id = ? WHERE status_page_id IS NULL", [
+                id
+            ]);
+
+            await R.exec("UPDATE [group] SET status_page_id = ? WHERE status_page_id IS NULL", [
+                id
+            ]);
+
+            await R.exec("DELETE FROM setting WHERE type = 'statusPage'");
+
+            // Migrate Entry Page if it is status page
+            let entryPage = await setting("entryPage");
+
+            if (entryPage === "statusPage") {
+                await setSetting("entryPage", "statusPage-default", "general");
+            }
+
+            console.log("Migrating Status Page - Done");
+        }
+
     }
 
     /**

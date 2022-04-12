@@ -175,9 +175,9 @@
             </template>
 
             <template v-else-if="$i18n.locale === 'it-IT' ">
-                <p>Si è certi di voler <strong>disabilitare l'autenticazione</strong>?</p>
-                <p>È per <strong>chi ha l'autenticazione gestita da terze parti</strong> messa davanti ad Uptime Kuma, ad esempio Cloudflare Access.</p>
-                <p>Utilizzare con attenzione.</p>
+                <p><strong>Disabilitare l'autenticazione?</strong></p>
+                <p><strong>Questa opzione è per chi un sistema di autenticazione gestito da terze parti</strong> messo davanti ad Uptime Kuma, ad esempio Cloudflare Access.</p>
+                <p>Utilizzare con attenzione!</p>
             </template>
 
             <template v-else-if="$i18n.locale === 'id-ID' ">
@@ -190,6 +190,12 @@
                 <p>Вы уверены, что хотите <strong>отключить авторизацию</strong>?</p>
                 <p>Это подходит для <strong>тех, у кого стоит другая авторизация</strong> перед открытием Uptime Kuma, например Cloudflare Access.</p>
                 <p>Пожалуйста, используйте с осторожностью.</p>
+            </template>
+
+            <template v-else-if="$i18n.locale === 'uk-UA' ">
+                <p>Ви впевнені, що бажаєте <strong>вимкнути авторизацію</strong>?</p>
+                <p>Це підходить для <strong>тих, у кого встановлена інша авторизація</strong> пееред відкриттям Uptime Kuma, наприклад Cloudflare Access.</p>
+                <p>Будь ласка, використовуйте з обережністю.</p>
             </template>
 
             <template v-else-if="$i18n.locale === 'fa' ">
@@ -216,12 +222,37 @@
                 <p>Vennligst vær forsiktig.</p>
             </template>
 
+            <template v-else-if="$i18n.locale === 'cs-CZ' ">
+                <p>Opravdu chcete <strong>deaktivovat autentifikaci</strong>?</p>
+                <p>Tato možnost je určena pro případy, kdy <strong>máte autentifikaci zajištěnou třetí stranou</strong> ještě před přístupem do Uptime Kuma, například prostřednictvím Cloudflare Access.</p>
+                <p>Používejte ji prosím s rozmyslem.</p>
+            </template>
+
+            <template v-else-if="$i18n.locale === 'vi-VN' ">
+                <p>Bạn có muốn <strong>TẮT XÁC THỰC</strong> không?</p>
+                <p>Điều này rất nguy hiểm<strong>BẤT KỲ AI</strong> cũng có thể truy cập và cướp quyền điều khiển.</p>
+                <p>Vui lòng <strong>cẩn thận</strong>.</p>
+            </template>
+
             <!-- English (en) -->
             <template v-else>
-                <p>Are you sure want to <strong>disable auth</strong>?</p>
-                <p>It is for <strong>someone who have 3rd-party auth</strong> in front of Uptime Kuma such as Cloudflare Access.</p>
-                <p>Please use it carefully.</p>
+                <p>Are you sure want to <strong>disable authentication</strong>?</p>
+                <p>It is designed for scenarios <strong>where you intend to implement third-party authentication</strong> in front of Uptime Kuma such as Cloudflare Access, Authelia or other authentication mechanisms.</p>
+                <p>Please use this option carefully!</p>
             </template>
+
+            <div class="mb-3">
+                <label for="current-password2" class="form-label">
+                    {{ $t("Current Password") }}
+                </label>
+                <input
+                    id="current-password2"
+                    v-model="password.currentPassword"
+                    type="password"
+                    class="form-control"
+                    required
+                />
+            </div>
         </Confirm>
     </div>
 </template>
@@ -298,7 +329,12 @@ export default {
 
         disableAuth() {
             this.settings.disableAuth = true;
-            this.saveSettings();
+
+            // Need current password to disable auth
+            // Set it to empty if done
+            this.saveSettings(() => {
+                this.password.currentPassword = "";
+            }, this.password.currentPassword);
         },
 
         enableAuth() {

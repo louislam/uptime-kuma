@@ -1,4 +1,15 @@
 console.log("Welcome to Uptime Kuma");
+
+// Check Node.js Version
+const nodeVersion = parseInt(process.versions.node.split(".")[0]);
+const requiredVersion = 14;
+console.log(`Your Node.js version: ${nodeVersion}`);
+
+if (nodeVersion < requiredVersion) {
+    console.error(`Error: Your Node.js version is not supported, please upgrade to Node.js >= ${requiredVersion}.`);
+    process.exit(-1);
+}
+
 const args = require("args-parser")(process.argv);
 const { sleep, debug, getRandomInt, genSecret } = require("../src/util");
 const config = require("./config");
@@ -37,22 +48,46 @@ debug("Importing 2FA Modules");
 const notp = require("notp");
 const base32 = require("thirty-two");
 
+/**
+ * `module.exports` (alias: `server`) should be inside this class, in order to avoid circular dependency issue.
+ * @type {UptimeKumaServer}
+ */
+class UptimeKumaServer {
+    /**
+     * Main monitor list
+     * @type {{}}
+     */
+    monitorList = {};
+    entryPage = "dashboard";
+
+    async sendMonitorList(socket) {
+        let list = await getMonitorJSONList(socket.userID);
+        io.to(socket.userID).emit("monitorList", list);
+        return list;
+    }
+}
+
+const server = module.exports = new UptimeKumaServer();
+
 console.log("Importing this project modules");
 debug("Importing Monitor");
 const Monitor = require("./model/monitor");
 debug("Importing Settings");
-const { getSettings, setSettings, setting, initJWTSecret, checkLogin, startUnitTest, FBSD, errorLog } = require("./util-server");
+const { getSettings, setSettings, setting, initJWTSecret, checkLogin, startUnitTest, FBSD, errorLog, doubleCheckPassword } = require("./util-server");
 
 debug("Importing Notification");
 const { Notification } = require("./notification");
 Notification.init();
 
+debug("Importing Proxy");
+const { Proxy } = require("./proxy");
+
 debug("Importing Database");
 const Database = require("./database");
 
 debug("Importing Background Jobs");
-const { initBackgroundJobs } = require("./jobs");
-const { loginRateLimiter } = require("./rate-limiter");
+const { initBackgroundJobs, stopBackgroundJobs } = require("./jobs");
+const { loginRateLimiter, twoFaRateLimiter } = require("./rate-limiter");
 
 const { basicAuth } = require("./auth");
 const { login } = require("./auth");
@@ -79,6 +114,7 @@ const port = [args.port, process.env.UPTIME_KUMA_PORT, process.env.PORT, 3001]
 const sslKey = args["ssl-key"] || process.env.UPTIME_KUMA_SSL_KEY || process.env.SSL_KEY || undefined;
 const sslCert = args["ssl-cert"] || process.env.UPTIME_KUMA_SSL_CERT || process.env.SSL_CERT || undefined;
 const disableFrameSameOrigin = args["disable-frame-sameorigin"] || !!process.env.UPTIME_KUMA_DISABLE_FRAME_SAMEORIGIN || false;
+const cloudflaredToken = args["cloudflared-token"] || process.env.UPTIME_KUMA_CLOUDFLARED_TOKEN || undefined;
 
 // 2FA / notp verification defaults
 const twofa_verification_opts = {
@@ -99,27 +135,30 @@ if (config.demoMode) {
 console.log("Creating express and socket.io instance");
 const app = express();
 
-let server;
+let httpServer;
 
 if (sslKey && sslCert) {
     console.log("Server Type: HTTPS");
-    server = https.createServer({
+    httpServer = https.createServer({
         key: fs.readFileSync(sslKey),
         cert: fs.readFileSync(sslCert)
     }, app);
 } else {
     console.log("Server Type: HTTP");
-    server = http.createServer(app);
+    httpServer = http.createServer(app);
 }
 
-const io = new Server(server);
+const io = new Server(httpServer);
 module.exports.io = io;
 
 // Must be after io instantiation
-const { sendNotificationList, sendHeartbeatList, sendImportantHeartbeatList, sendInfo } = require("./client");
+const { sendNotificationList, sendHeartbeatList, sendImportantHeartbeatList, sendInfo, sendProxyList } = require("./client");
 const { statusPageSocketHandler } = require("./socket-handlers/status-page-socket-handler");
 const databaseSocketHandler = require("./socket-handlers/database-socket-handler");
 const TwoFA = require("./2fa");
+const StatusPage = require("./model/status_page");
+const { cloudflaredSocketHandler, autoStart: cloudflaredAutoStart, stop: cloudflaredStop } = require("./socket-handlers/cloudflared-socket-handler");
+const { proxySocketHandler } = require("./socket-handlers/proxy-socket-handler");
 
 app.use(express.json());
 
@@ -145,12 +184,6 @@ let totalClient = 0;
 let jwtSecret = null;
 
 /**
- * Main monitor list
- * @type {{}}
- */
-let monitorList = {};
-
-/**
  * Show Setup Page
  * @type {boolean}
  */
@@ -172,13 +205,12 @@ try {
     }
 }
 
-exports.entryPage = "dashboard";
-
 (async () => {
     Database.init(args);
     await initDatabase(testMode);
 
     exports.entryPage = await setting("entryPage");
+    await StatusPage.loadDomainMappingList();
 
     console.log("Adding route");
 
@@ -187,9 +219,14 @@ exports.entryPage = "dashboard";
     // ***************************
 
     // Entry Page
-    app.get("/", async (_request, response) => {
-        if (exports.entryPage === "statusPage") {
-            response.redirect("/status");
+    app.get("/", async (request, response) => {
+        debug(`Request Domain: ${request.hostname}`);
+
+        if (request.hostname in StatusPage.domainMappingList) {
+            debug("This is a status page domain");
+            response.send(indexHTML);
+        } else if (exports.entryPage && exports.entryPage.startsWith("statusPage-")) {
+            response.redirect("/status/" + exports.entryPage.replace("statusPage-", ""));
         } else {
             response.redirect("/dashboard");
         }
@@ -292,6 +329,15 @@ exports.entryPage = "dashboard";
         socket.on("login", async (data, callback) => {
             console.log("Login");
 
+            // Checking
+            if (typeof callback !== "function") {
+                return;
+            }
+
+            if (!data) {
+                return;
+            }
+
             // Login Rate Limit
             if (! await loginRateLimiter.pass(callback)) {
                 return;
@@ -350,14 +396,27 @@ exports.entryPage = "dashboard";
         });
 
         socket.on("logout", async (callback) => {
+            // Rate Limit
+            if (! await loginRateLimiter.pass(callback)) {
+                return;
+            }
+
             socket.leave(socket.userID);
             socket.userID = null;
-            callback();
+
+            if (typeof callback === "function") {
+                callback();
+            }
         });
 
-        socket.on("prepare2FA", async (callback) => {
+        socket.on("prepare2FA", async (currentPassword, callback) => {
             try {
+                if (! await twoFaRateLimiter.pass(callback)) {
+                    return;
+                }
+
                 checkLogin(socket);
+                await doubleCheckPassword(socket, currentPassword);
 
                 let user = await R.findOne("user", " id = ? AND active = 1 ", [
                     socket.userID,
@@ -392,14 +451,19 @@ exports.entryPage = "dashboard";
             } catch (error) {
                 callback({
                     ok: false,
-                    msg: "Error while trying to prepare 2FA.",
+                    msg: error.message,
                 });
             }
         });
 
-        socket.on("save2FA", async (callback) => {
+        socket.on("save2FA", async (currentPassword, callback) => {
             try {
+                if (! await twoFaRateLimiter.pass(callback)) {
+                    return;
+                }
+
                 checkLogin(socket);
+                await doubleCheckPassword(socket, currentPassword);
 
                 await R.exec("UPDATE `user` SET twofa_status = 1 WHERE id = ? ", [
                     socket.userID,
@@ -412,14 +476,19 @@ exports.entryPage = "dashboard";
             } catch (error) {
                 callback({
                     ok: false,
-                    msg: "Error while trying to change 2FA.",
+                    msg: error.message,
                 });
             }
         });
 
-        socket.on("disable2FA", async (callback) => {
+        socket.on("disable2FA", async (currentPassword, callback) => {
             try {
+                if (! await twoFaRateLimiter.pass(callback)) {
+                    return;
+                }
+
                 checkLogin(socket);
+                await doubleCheckPassword(socket, currentPassword);
                 await TwoFA.disable2FA(socket.userID);
 
                 callback({
@@ -429,36 +498,47 @@ exports.entryPage = "dashboard";
             } catch (error) {
                 callback({
                     ok: false,
-                    msg: "Error while trying to change 2FA.",
+                    msg: error.message,
                 });
             }
         });
 
-        socket.on("verifyToken", async (token, callback) => {
-            let user = await R.findOne("user", " id = ? AND active = 1 ", [
-                socket.userID,
-            ]);
+        socket.on("verifyToken", async (token, currentPassword, callback) => {
+            try {
+                checkLogin(socket);
+                await doubleCheckPassword(socket, currentPassword);
 
-            let verify = notp.totp.verify(token, user.twofa_secret, twofa_verification_opts);
+                let user = await R.findOne("user", " id = ? AND active = 1 ", [
+                    socket.userID,
+                ]);
 
-            if (user.twofa_last_token !== token && verify) {
-                callback({
-                    ok: true,
-                    valid: true,
-                });
-            } else {
+                let verify = notp.totp.verify(token, user.twofa_secret, twofa_verification_opts);
+
+                if (user.twofa_last_token !== token && verify) {
+                    callback({
+                        ok: true,
+                        valid: true,
+                    });
+                } else {
+                    callback({
+                        ok: false,
+                        msg: "Invalid Token.",
+                        valid: false,
+                    });
+                }
+
+            } catch (error) {
                 callback({
                     ok: false,
-                    msg: "Invalid Token.",
-                    valid: false,
+                    msg: error.message,
                 });
             }
         });
 
         socket.on("twoFAStatus", async (callback) => {
-            checkLogin(socket);
-
             try {
+                checkLogin(socket);
+
                 let user = await R.findOne("user", " id = ? AND active = 1 ", [
                     socket.userID,
                 ]);
@@ -475,9 +555,10 @@ exports.entryPage = "dashboard";
                     });
                 }
             } catch (error) {
+                console.log(error);
                 callback({
                     ok: false,
-                    msg: "Error while trying to get 2FA status.",
+                    msg: error.message,
                 });
             }
         });
@@ -538,7 +619,7 @@ exports.entryPage = "dashboard";
 
                 await updateMonitorNotification(bean.id, notificationIDList);
 
-                await sendMonitorList(socket);
+                await server.sendMonitorList(socket);
                 await startMonitor(socket.userID, bean.id);
 
                 callback({
@@ -566,6 +647,9 @@ exports.entryPage = "dashboard";
                     throw new Error("Permission denied.");
                 }
 
+                // Reset Prometheus labels
+                server.monitorList[monitor.id]?.prometheus()?.remove();
+
                 bean.name = monitor.name;
                 bean.type = monitor.type;
                 bean.url = monitor.url;
@@ -581,12 +665,14 @@ exports.entryPage = "dashboard";
                 bean.port = monitor.port;
                 bean.keyword = monitor.keyword;
                 bean.ignoreTls = monitor.ignoreTls;
+                bean.expiryNotification = monitor.expiryNotification;
                 bean.upsideDown = monitor.upsideDown;
                 bean.maxredirects = monitor.maxredirects;
                 bean.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
                 bean.dns_resolve_type = monitor.dns_resolve_type;
                 bean.dns_resolve_server = monitor.dns_resolve_server;
                 bean.pushToken = monitor.pushToken;
+                bean.proxyId = Number.isInteger(monitor.proxyId) ? monitor.proxyId : null;
 
                 await R.store(bean);
 
@@ -596,7 +682,7 @@ exports.entryPage = "dashboard";
                     await restartMonitor(socket.userID, bean.id);
                 }
 
-                await sendMonitorList(socket);
+                await server.sendMonitorList(socket);
 
                 callback({
                     ok: true,
@@ -616,7 +702,7 @@ exports.entryPage = "dashboard";
         socket.on("getMonitorList", async (callback) => {
             try {
                 checkLogin(socket);
-                await sendMonitorList(socket);
+                await server.sendMonitorList(socket);
                 callback({
                     ok: true,
                 });
@@ -690,7 +776,7 @@ exports.entryPage = "dashboard";
             try {
                 checkLogin(socket);
                 await startMonitor(socket.userID, monitorID);
-                await sendMonitorList(socket);
+                await server.sendMonitorList(socket);
 
                 callback({
                     ok: true,
@@ -709,7 +795,7 @@ exports.entryPage = "dashboard";
             try {
                 checkLogin(socket);
                 await pauseMonitor(socket.userID, monitorID);
-                await sendMonitorList(socket);
+                await server.sendMonitorList(socket);
 
                 callback({
                     ok: true,
@@ -730,9 +816,9 @@ exports.entryPage = "dashboard";
 
                 console.log(`Delete Monitor: ${monitorID} User ID: ${socket.userID}`);
 
-                if (monitorID in monitorList) {
-                    monitorList[monitorID].stop();
-                    delete monitorList[monitorID];
+                if (monitorID in server.monitorList) {
+                    server.monitorList[monitorID].stop();
+                    delete server.monitorList[monitorID];
                 }
 
                 await R.exec("DELETE FROM monitor WHERE id = ? AND user_id = ? ", [
@@ -745,7 +831,7 @@ exports.entryPage = "dashboard";
                     msg: "Deleted Successfully.",
                 });
 
-                await sendMonitorList(socket);
+                await server.sendMonitorList(socket);
                 // Clear heartbeat list on client
                 await sendImportantHeartbeatList(socket, monitorID, true, true);
 
@@ -923,21 +1009,13 @@ exports.entryPage = "dashboard";
                     throw new Error("Password is too weak. It should contain alphabetic and numeric characters. It must be at least 6 characters in length.");
                 }
 
-                let user = await R.findOne("user", " id = ? AND active = 1 ", [
-                    socket.userID,
-                ]);
+                let user = await doubleCheckPassword(socket, password.currentPassword);
+                await user.resetPassword(password.newPassword);
 
-                if (user && passwordHash.verify(password.currentPassword, user.password)) {
-
-                    user.resetPassword(password.newPassword);
-
-                    callback({
-                        ok: true,
-                        msg: "Password has been updated successfully.",
-                    });
-                } else {
-                    throw new Error("Incorrect current password");
-                }
+                callback({
+                    ok: true,
+                    msg: "Password has been updated successfully.",
+                });
 
             } catch (e) {
                 callback({
@@ -964,9 +1042,13 @@ exports.entryPage = "dashboard";
             }
         });
 
-        socket.on("setSettings", async (data, callback) => {
+        socket.on("setSettings", async (data, currentPassword, callback) => {
             try {
                 checkLogin(socket);
+
+                if (data.disableAuth) {
+                    await doubleCheckPassword(socket, currentPassword);
+                }
 
                 await setSettings("general", data);
                 exports.entryPage = data.entryPage;
@@ -1067,6 +1149,7 @@ exports.entryPage = "dashboard";
                 console.log(`Importing Backup, User ID: ${socket.userID}, Version: ${backupData.version}`);
 
                 let notificationListData = backupData.notificationList;
+                let proxyListData = backupData.proxyList;
                 let monitorListData = backupData.monitorList;
 
                 let version17x = compareVersions.compare(backupData.version, "1.7.0", ">=");
@@ -1074,8 +1157,8 @@ exports.entryPage = "dashboard";
                 // If the import option is "overwrite" it'll clear most of the tables, except "settings" and "user"
                 if (importHandle == "overwrite") {
                     // Stops every monitor first, so it doesn't execute any heartbeat while importing
-                    for (let id in monitorList) {
-                        let monitor = monitorList[id];
+                    for (let id in server.monitorList) {
+                        let monitor = server.monitorList[id];
                         await monitor.stop();
                     }
                     await R.exec("DELETE FROM heartbeat");
@@ -1085,6 +1168,7 @@ exports.entryPage = "dashboard";
                     await R.exec("DELETE FROM monitor_tag");
                     await R.exec("DELETE FROM tag");
                     await R.exec("DELETE FROM monitor");
+                    await R.exec("DELETE FROM proxy");
                 }
 
                 // Only starts importing if the backup file contains at least one notification
@@ -1101,6 +1185,24 @@ exports.entryPage = "dashboard";
                             await Notification.save(notification, null, socket.userID);
 
                         }
+                    }
+                }
+
+                // Only starts importing if the backup file contains at least one proxy
+                if (proxyListData.length >= 1) {
+                    const proxies = await R.findAll("proxy");
+
+                    // Loop over proxy list and save proxies
+                    for (const proxy of proxyListData) {
+                        const exists = proxies.find(item => item.id === proxy.id);
+
+                        // Do not process when proxy already exists in import handle is skip and keep
+                        if (["skip", "keep"].includes(importHandle) && !exists) {
+                            return;
+                        }
+
+                        // Save proxy as new entry if exists update exists one
+                        await Proxy.save(proxy, exists ? proxy.id : undefined, proxy.userId);
                     }
                 }
 
@@ -1153,6 +1255,7 @@ exports.entryPage = "dashboard";
                                 dns_resolve_type: monitorListData[i].dns_resolve_type,
                                 dns_resolve_server: monitorListData[i].dns_resolve_server,
                                 notificationIDList: {},
+                                proxy_id: monitorListData[i].proxy_id || null,
                             };
 
                             if (monitorListData[i].pushToken) {
@@ -1218,7 +1321,7 @@ exports.entryPage = "dashboard";
                     }
 
                     await sendNotificationList(socket);
-                    await sendMonitorList(socket);
+                    await server.sendMonitorList(socket);
                 }
 
                 callback({
@@ -1306,7 +1409,9 @@ exports.entryPage = "dashboard";
 
         // Status Page Socket Handler for admin only
         statusPageSocketHandler(socket);
+        cloudflaredSocketHandler(socket);
         databaseSocketHandler(socket);
+        proxySocketHandler(socket);
 
         debug("added all socket handlers");
 
@@ -1327,12 +1432,12 @@ exports.entryPage = "dashboard";
 
     console.log("Init the server");
 
-    server.once("error", async (err) => {
+    httpServer.once("error", async (err) => {
         console.error("Cannot listen: " + err.message);
-        await Database.close();
+        await shutdownFunction();
     });
 
-    server.listen(port, hostname, () => {
+    httpServer.listen(port, hostname, () => {
         if (hostname) {
             console.log(`Listening on ${hostname}:${port}`);
         } else {
@@ -1347,6 +1452,9 @@ exports.entryPage = "dashboard";
     });
 
     initBackgroundJobs(args);
+
+    // Start cloudflared at the end if configured
+    await cloudflaredAutoStart(cloudflaredToken);
 
 })();
 
@@ -1376,20 +1484,17 @@ async function checkOwner(userID, monitorID) {
     }
 }
 
-async function sendMonitorList(socket) {
-    let list = await getMonitorJSONList(socket.userID);
-    io.to(socket.userID).emit("monitorList", list);
-    return list;
-}
-
 async function afterLogin(socket, user) {
     socket.userID = user.id;
     socket.join(user.id);
 
-    let monitorList = await sendMonitorList(socket);
+    let monitorList = await server.sendMonitorList(socket);
     sendNotificationList(socket);
+    sendProxyList(socket);
 
     await sleep(500);
+
+    await StatusPage.sendStatusPageList(io, socket);
 
     for (let monitorID in monitorList) {
         await sendHeartbeatList(socket, monitorID);
@@ -1466,11 +1571,11 @@ async function startMonitor(userID, monitorID) {
         monitorID,
     ]);
 
-    if (monitor.id in monitorList) {
-        monitorList[monitor.id].stop();
+    if (monitor.id in server.monitorList) {
+        server.monitorList[monitor.id].stop();
     }
 
-    monitorList[monitor.id] = monitor;
+    server.monitorList[monitor.id] = monitor;
     monitor.start(io);
 }
 
@@ -1488,8 +1593,8 @@ async function pauseMonitor(userID, monitorID) {
         userID,
     ]);
 
-    if (monitorID in monitorList) {
-        monitorList[monitorID].stop();
+    if (monitorID in server.monitorList) {
+        server.monitorList[monitorID].stop();
     }
 }
 
@@ -1500,7 +1605,7 @@ async function startMonitors() {
     let list = await R.find("monitor", " active = 1 ");
 
     for (let monitor of list) {
-        monitorList[monitor.id] = monitor;
+        server.monitorList[monitor.id] = monitor;
     }
 
     for (let monitor of list) {
@@ -1515,19 +1620,22 @@ async function shutdownFunction(signal) {
     console.log("Called signal: " + signal);
 
     console.log("Stopping all monitors");
-    for (let id in monitorList) {
-        let monitor = monitorList[id];
+    for (let id in server.monitorList) {
+        let monitor = server.monitorList[id];
         monitor.stop();
     }
     await sleep(2000);
     await Database.close();
+
+    stopBackgroundJobs();
+    await cloudflaredStop();
 }
 
 function finalFunction() {
     console.log("Graceful shutdown successful!");
 }
 
-gracefulShutdown(server, {
+gracefulShutdown(httpServer, {
     signals: "SIGINT SIGTERM",
     timeout: 30000,                   // timeout: 30 secs
     development: false,               // not in dev mode
