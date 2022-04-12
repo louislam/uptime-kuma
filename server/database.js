@@ -54,6 +54,8 @@ class Database {
         "patch-notification_sent_history.sql": true,
         "patch-monitor-basic-auth.sql": true,
         "patch-status-page.sql": true,
+        "patch-proxy.sql": true,
+        "patch-monitor-expiry-notification.sql": true,
     }
 
     /**
@@ -81,7 +83,7 @@ class Database {
         console.log(`Data Dir: ${Database.dataDir}`);
     }
 
-    static async connect(testMode = false) {
+    static async connect(testMode = false, autoloadModels = true, noLog = false) {
         const acquireConnectionTimeout = 120 * 1000;
 
         const Dialect = require("knex/lib/dialects/sqlite3/index.js");
@@ -111,7 +113,10 @@ class Database {
 
         // Auto map the model to a bean object
         R.freeze(true);
-        await R.autoloadModels("./server/model");
+
+        if (autoloadModels) {
+            await R.autoloadModels("./server/model");
+        }
 
         await R.exec("PRAGMA foreign_keys = ON");
         if (testMode) {
@@ -124,10 +129,17 @@ class Database {
         await R.exec("PRAGMA cache_size = -12000");
         await R.exec("PRAGMA auto_vacuum = FULL");
 
-        console.log("SQLite config:");
-        console.log(await R.getAll("PRAGMA journal_mode"));
-        console.log(await R.getAll("PRAGMA cache_size"));
-        console.log("SQLite Version: " + await R.getCell("SELECT sqlite_version()"));
+        // This ensures that an operating system crash or power failure will not corrupt the database.
+        // FULL synchronous is very safe, but it is also slower.
+        // Read more: https://sqlite.org/pragma.html#pragma_synchronous
+        await R.exec("PRAGMA synchronous = FULL");
+
+        if (!noLog) {
+            console.log("SQLite config:");
+            console.log(await R.getAll("PRAGMA journal_mode"));
+            console.log(await R.getAll("PRAGMA cache_size"));
+            console.log("SQLite Version: " + await R.getCell("SELECT sqlite_version()"));
+        }
     }
 
     static async patch() {

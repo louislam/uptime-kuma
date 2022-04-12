@@ -11,6 +11,7 @@ const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalCli
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification");
+const { Proxy } = require("../proxy");
 const { demoMode } = require("../config");
 const version = require("../../package.json").version;
 const apicache = require("../modules/apicache");
@@ -73,6 +74,7 @@ class Monitor extends BeanModel {
             interval: this.interval,
             retryInterval: this.retryInterval,
             keyword: this.keyword,
+            expiryNotification: this.isEnabledExpiryNotification(),
             ignoreTls: this.getIgnoreTls(),
             upsideDown: this.isUpsideDown(),
             maxredirects: this.maxredirects,
@@ -81,6 +83,7 @@ class Monitor extends BeanModel {
             dns_resolve_server: this.dns_resolve_server,
             dns_last_result: this.dns_last_result,
             pushToken: this.pushToken,
+            proxyId: this.proxy_id,
             notificationIDList,
             tags: tags,
         };
@@ -97,6 +100,10 @@ class Monitor extends BeanModel {
      */
     encodeBase64(user, pass) {
         return Buffer.from(user + ":" + pass).toString("base64");
+    }
+
+    isEnabledExpiryNotification() {
+        return Boolean(this.expiryNotification);
     }
 
     /**
@@ -181,6 +188,11 @@ class Monitor extends BeanModel {
                         };
                     }
 
+                    const httpsAgentOptions = {
+                        maxCachedSessions: 0, // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
+                        rejectUnauthorized: !this.getIgnoreTls(),
+                    };
+
                     debug(`[${this.name}] Prepare Options for axios`);
 
                     const options = {
@@ -194,17 +206,33 @@ class Monitor extends BeanModel {
                             ...(this.headers ? JSON.parse(this.headers) : {}),
                             ...(basicAuthHeader),
                         },
-                        httpsAgent: new https.Agent({
-                            maxCachedSessions: 0,      // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
-                            rejectUnauthorized: ! this.getIgnoreTls(),
-                        }),
                         maxRedirects: this.maxredirects,
                         validateStatus: (status) => {
                             return checkStatusCode(status, this.getAcceptedStatuscodes());
                         },
                     };
 
+                    if (this.proxy_id) {
+                        const proxy = await R.load("proxy", this.proxy_id);
+
+                        if (proxy && proxy.active) {
+                            const { httpAgent, httpsAgent } = Proxy.createAgents(proxy, {
+                                httpsAgentOptions: httpsAgentOptions,
+                            });
+
+                            options.proxy = false;
+                            options.httpAgent = httpAgent;
+                            options.httpsAgent = httpsAgent;
+                        }
+                    }
+
+                    if (!options.httpsAgent) {
+                        options.httpsAgent = new https.Agent(httpsAgentOptions);
+                    }
+
+                    debug(`[${this.name}] Axios Options: ${JSON.stringify(options)}`);
                     debug(`[${this.name}] Axios Request`);
+
                     let res = await axios.request(options);
                     bean.msg = `${res.status} - ${res.statusText}`;
                     bean.ping = dayjs().valueOf() - startTime;
@@ -217,7 +245,7 @@ class Monitor extends BeanModel {
                             let tlsInfoObject = checkCertificate(res);
                             tlsInfo = await this.updateTlsInfo(tlsInfoObject);
 
-                            if (!this.getIgnoreTls()) {
+                            if (!this.getIgnoreTls() && this.isEnabledExpiryNotification()) {
                                 debug(`[${this.name}] call sendCertNotification`);
                                 await this.sendCertNotification(tlsInfoObject);
                             }
@@ -477,6 +505,12 @@ class Monitor extends BeanModel {
     stop() {
         clearTimeout(this.heartbeatInterval);
         this.isStop = true;
+
+        this.prometheus().remove();
+    }
+
+    prometheus() {
+        return new Prometheus(this);
     }
 
     /**

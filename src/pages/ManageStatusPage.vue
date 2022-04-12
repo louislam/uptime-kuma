@@ -12,7 +12,7 @@
             <div class="shadow-box">
                 <template v-if="$root.statusPageListLoaded">
                     <span v-if="Object.keys($root.statusPageList).length === 0" class="d-flex align-items-center justify-content-center my-3">
-                        No status pages
+                        {{ $t("No status pages") }}
                     </span>
 
                     <!-- use <a> instead of <router-link>, because the heartbeat won't load. -->

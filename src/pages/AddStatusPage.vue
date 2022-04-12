@@ -21,7 +21,9 @@
                         <div class="form-text">
                             <ul>
                                 <li>{{ $t("Accept characters:") }} <mark>a-z</mark> <mark>0-9</mark> <mark>-</mark></li>
-                                <li>{{ $t("Start or end with") }} <mark>a-z</mark> <mark>0-9</mark> only</li>
+                                <i18n-t tag="li" keypath="startOrEndWithOnly">
+                                    <mark>a-z</mark> <mark>0-9</mark>
+                                </i18n-t>
                                 <li>{{ $t("No consecutive dashes") }} <mark>--</mark></li>
                             </ul>
                         </div>

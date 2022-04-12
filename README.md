@@ -37,7 +37,6 @@ VPS is sponsored by Uptime Kuma sponsors on [Open Collective](https://opencollec
 ### 🐳 Docker
 
 ```bash
-docker volume create uptime-kuma
 docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name uptime-kuma louislam/uptime-kuma:1
 ```
 
@@ -47,7 +46,10 @@ Browse to http://localhost:3001 after starting.
 
 ### 💪🏻 Non-Docker
 
-Required Tools: Node.js >= 14, git and pm2.
+Required Tools: 
+- [Node.js](https://nodejs.org/en/download/) >= 14
+- [Git](https://git-scm.com/downloads) 
+- [pm2](https://pm2.keymetrics.io/) - For run in background
 
 ```bash
 # Update your npm to the latest version
@@ -67,11 +69,19 @@ npm install pm2 -g && pm2 install pm2-logrotate
 # Start Server
 pm2 start server/server.js --name uptime-kuma
 
+
+```
+Browse to http://localhost:3001 after starting.
+
+More useful PM2 Commands
+
+```bash
 # If you want to see the current console output
 pm2 monit
-```
 
-Browse to http://localhost:3001 after starting.
+# If you want to add it to startup
+pm2 save && pm2 startup
+```
 
 ### Advanced Installation
 
@@ -99,7 +109,7 @@ https://github.com/louislam/uptime-kuma/projects/1
 
 Thank you so much! (GitHub Sponsors will be updated manually. OpenCollective sponsors will be updated automatically, the list will be cached by GitHub though. It may need some time to be updated)
 
-<img src="https://uptime.kuma.pet/sponsors?v=3" alt />
+<img src="https://uptime.kuma.pet/sponsors?v=6" alt />
 
 ## 🖼 More Screenshots
 

@@ -85,15 +85,35 @@ module.exports.statusPageSocketHandler = (socket) => {
         }
     });
 
+    socket.on("getStatusPage", async (slug, callback) => {
+        try {
+            checkLogin(socket);
+
+            let statusPage = await R.findOne("status_page", " slug = ? ", [
+                slug
+            ]);
+
+            if (!statusPage) {
+                throw new Error("No slug?");
+            }
+
+            callback({
+                ok: true,
+                config: await statusPage.toJSON(),
+            });
+        } catch (error) {
+            callback({
+                ok: false,
+                msg: error.message,
+            });
+        }
+    });
+
     // Save Status Page
     // imgDataUrl Only Accept PNG!
     socket.on("saveStatusPage", async (slug, config, imgDataUrl, publicGroupList, callback) => {
-
         try {
-            checkSlug(config.slug);
-
             checkLogin(socket);
-            apicache.clear();
 
             // Save Config
             let statusPage = await R.findOne("status_page", " slug = ? ", [
@@ -103,6 +123,8 @@ module.exports.statusPageSocketHandler = (socket) => {
             if (!statusPage) {
                 throw new Error("No slug?");
             }
+
+            checkSlug(config.slug);
 
             const header = "data:image/png;base64,";
 
@@ -136,6 +158,9 @@ module.exports.statusPageSocketHandler = (socket) => {
             statusPage.modified_date = R.isoDateTime();
 
             await R.store(statusPage);
+
+            await statusPage.updateDomainNameList(config.domainNameList);
+            await StatusPage.loadDomainMappingList();
 
             // Save Public Group List
             const groupIDList = [];
@@ -192,6 +217,8 @@ module.exports.statusPageSocketHandler = (socket) => {
                 server.entryPage = "statusPage-" + statusPage.slug;
                 await setSetting("entryPage", server.entryPage, "general");
             }
+
+            apicache.clear();
 
             callback({
                 ok: true,
