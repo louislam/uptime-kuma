@@ -49,6 +49,14 @@ export function ucfirst(str: string) {
     return firstLetter.toUpperCase() + str.substr(1);
 }
 
+/**
+ * @deprecated Use log_debug
+ * @param msg
+ */
+export function debug(msg: any) {
+    log("", msg, "debug");
+}
+
 function log(module: string, msg: any, level:string) {
     module = module.toUpperCase();
     level = level.toUpperCase();
