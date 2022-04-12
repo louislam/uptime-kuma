@@ -261,11 +261,11 @@
         <Confirm ref="confirmDelete" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="deleteStatusPage">
             {{ $t("deleteStatusPageMsg") }}
         </Confirm>
-    </div>
 
-    <component is="style" v-if="config.customCSS" type="text/css">
-        {{ config.customCSS }}
-    </component>
+        <component is="style" v-if="config.customCSS" type="text/css">
+            {{ config.customCSS }}
+        </component>
+    </div>
 </template>
 
 <script>
