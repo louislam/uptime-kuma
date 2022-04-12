@@ -124,7 +124,7 @@ router.get("/api/status-page/:slug", cache("5 minutes"), async (request, respons
         // Public Group List
         const publicGroupList = [];
         const showTags = !!statusPage.show_tags;
-        debug("Show Tags???" + showTags);
+
         const list = await R.find("group", " public = 1 AND status_page_id = ? ORDER BY weight ", [
             statusPage.id
         ]);

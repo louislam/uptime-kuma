@@ -11,7 +11,7 @@ if (nodeVersion < requiredVersion) {
 }
 
 const args = require("args-parser")(process.argv);
-const { sleep, log_info, log_debug, log_error, log_warn, getRandomInt, genSecret } = require("../src/util");
+const { sleep, log_info, log_debug, log_error, log_warn, getRandomInt, genSecret, debug } = require("../src/util");
 const config = require("./config");
 
 log_info("server", "Welcome to Uptime Kuma");
@@ -84,7 +84,7 @@ Notification.init();
 log_debug("server", "Importing Proxy");
 const { Proxy } = require("./proxy");
 
-debug("Importing Database");
+log_debug("server", "Importing Database");
 const Database = require("./database");
 
 log_debug("server", "Importing Background Jobs");
@@ -326,7 +326,7 @@ try {
                 }
             } catch (error) {
 
-                log_error("auth", `Invalid token for user ${decoded.username}. IP=${getClientIp(socket)}`);
+                log_error("auth", `Invalid token. IP=${getClientIp(socket)}`);
 
                 callback({
                     ok: false,
@@ -494,7 +494,7 @@ try {
                     socket.userID,
                 ]);
 
-                log_info("auth", `Saved 2FA token for user ${data.username}. IP=${getClientIp(socket)}`);
+                log_info("auth", `Saved 2FA token. IP=${getClientIp(socket)}`);
 
                 callback({
                     ok: true,
@@ -502,7 +502,7 @@ try {
                 });
             } catch (error) {
 
-                log_error("auth", `Error changing 2FA token for user ${data.username}. IP=${getClientIp(socket)}`);
+                log_error("auth", `Error changing 2FA token. IP=${getClientIp(socket)}`);
 
                 callback({
                     ok: false,
@@ -521,7 +521,7 @@ try {
                 await doubleCheckPassword(socket, currentPassword);
                 await TwoFA.disable2FA(socket.userID);
 
-                log_info("auth", `Disabled 2FA token for user ${data.username}. IP=${getClientIp(socket)}`);
+                log_info("auth", `Disabled 2FA token. IP=${getClientIp(socket)}`);
 
                 callback({
                     ok: true,
@@ -529,7 +529,7 @@ try {
                 });
             } catch (error) {
 
-                log_error("auth", `Error disabling 2FA token for user ${data.username}. IP=${getClientIp(socket)}`);
+                log_error("auth", `Error disabling 2FA token. IP=${getClientIp(socket)}`);
 
                 callback({
                     ok: false,
@@ -657,7 +657,7 @@ try {
                 await server.sendMonitorList(socket);
                 await startMonitor(socket.userID, bean.id);
 
-                log_info("monitor", `Added Monitor: ${monitorID} User ID: ${socket.userID}`);
+                log_info("monitor", `Added Monitor: ${monitor.id} User ID: ${socket.userID}`);
 
                 callback({
                     ok: true,
@@ -667,7 +667,7 @@ try {
 
             } catch (e) {
 
-                log_error("monitor", `Error adding Monitor: ${monitorID} User ID: ${socket.userID}`);
+                log_error("monitor", `Error adding Monitor: ${monitor.id} User ID: ${socket.userID}`);
 
                 callback({
                     ok: false,
@@ -1672,7 +1672,7 @@ async function shutdownFunction(signal) {
 }
 
 function getClientIp(socket) {
-    return socket.client.conn.remoteAddress.replace(/^.*:/, "")
+    return socket.client.conn.remoteAddress.replace(/^.*:/, "");
 }
 
 function finalFunction() {
