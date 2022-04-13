@@ -5,7 +5,7 @@ const server = require("../server");
 const apicache = require("../modules/apicache");
 const Monitor = require("../model/monitor");
 const dayjs = require("dayjs");
-const { UP, flipStatus, log_debug } = require("../../src/util");
+const { UP, flipStatus, log } = require("../../src/util");
 const StatusPage = require("../model/status_page");
 let router = express.Router();
 
@@ -62,8 +62,8 @@ router.get("/api/push/:pushToken", async (request, response) => {
             duration = dayjs(bean.time).diff(dayjs(previousHeartbeat.time), "second");
         }
 
-        log_debug("router", "PreviousStatus: " + previousStatus);
-        log_debug("router", "Current Status: " + status);
+        log.debug("router", "PreviousStatus: " + previousStatus);
+        log.debug("router", "Current Status: " + status);
 
         bean.important = Monitor.isImportantBeat(isFirstBeat, previousStatus, status);
         bean.monitor_id = monitor.id;

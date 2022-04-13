@@ -1,5 +1,5 @@
 const PrometheusClient = require("prom-client");
-const { log_error } = require("../src/util");
+const { log } = require("../src/util");
 
 const commonLabels = [
     "monitor_name",
@@ -57,8 +57,8 @@ class Prometheus {
                 }
                 monitor_cert_is_valid.set(this.monitorLabelValues, is_valid);
             } catch (e) {
-                log_error("prometheus", "Caught error");
-                log_error("prometheus", e);
+                log.error("prometheus", "Caught error");
+                log.error("prometheus", e);
             }
 
             try {
@@ -66,16 +66,16 @@ class Prometheus {
                     monitor_cert_days_remaining.set(this.monitorLabelValues, tlsInfo.certInfo.daysRemaining);
                 }
             } catch (e) {
-                log_error("prometheus", "Caught error");
-                log_error("prometheus", e);
+                log.error("prometheus", "Caught error");
+                log.error("prometheus", e);
             }
         }
 
         try {
             monitor_status.set(this.monitorLabelValues, heartbeat.status);
         } catch (e) {
-            log_error("prometheus", "Caught error");
-            log_error("prometheus", e);
+            log.error("prometheus", "Caught error");
+            log.error("prometheus", e);
         }
 
         try {
@@ -86,8 +86,8 @@ class Prometheus {
                 monitor_response_time.set(this.monitorLabelValues, -1);
             }
         } catch (e) {
-            log_error("prometheus", "Caught error");
-            log_error("prometheus", e);
+            log.error("prometheus", "Caught error");
+            log.error("prometheus", e);
         }
     }
 

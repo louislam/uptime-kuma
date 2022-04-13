@@ -11,42 +11,42 @@ if (nodeVersion < requiredVersion) {
 }
 
 const args = require("args-parser")(process.argv);
-const { sleep, log_info, log_debug, log_error, log_warn, getRandomInt, genSecret, debug } = require("../src/util");
+const { sleep, log, getRandomInt, genSecret, debug } = require("../src/util");
 const config = require("./config");
 
-log_info("server", "Welcome to Uptime Kuma");
-log_debug("server", "Arguments");
-log_debug("server", args);
+log.info("server", "Welcome to Uptime Kuma");
+log.debug("server", "Arguments");
+log.debug("server", args);
 
 if (! process.env.NODE_ENV) {
     process.env.NODE_ENV = "production";
 }
 
-log_info("server", "Node Env: " + process.env.NODE_ENV);
+log.info("server", "Node Env: " + process.env.NODE_ENV);
 
-log_info("server", "Importing Node libraries");
+log.info("server", "Importing Node libraries");
 const fs = require("fs");
 const http = require("http");
 const https = require("https");
 
-log_info("server", "Importing 3rd-party libraries");
-log_debug("server", "Importing express");
+log.info("server", "Importing 3rd-party libraries");
+log.debug("server", "Importing express");
 const express = require("express");
-log_debug("server", "Importing socket.io");
+log.debug("server", "Importing socket.io");
 const { Server } = require("socket.io");
-log_debug("server", "Importing redbean-node");
+log.debug("server", "Importing redbean-node");
 const { R } = require("redbean-node");
-log_debug("server", "Importing jsonwebtoken");
+log.debug("server", "Importing jsonwebtoken");
 const jwt = require("jsonwebtoken");
-log_debug("server", "Importing http-graceful-shutdown");
+log.debug("server", "Importing http-graceful-shutdown");
 const gracefulShutdown = require("http-graceful-shutdown");
-log_debug("server", "Importing prometheus-api-metrics");
+log.debug("server", "Importing prometheus-api-metrics");
 const prometheusAPIMetrics = require("prometheus-api-metrics");
-log_debug("server", "Importing compare-versions");
+log.debug("server", "Importing compare-versions");
 const compareVersions = require("compare-versions");
 const { passwordStrength } = require("check-password-strength");
 
-log_debug("server", "Importing 2FA Modules");
+log.debug("server", "Importing 2FA Modules");
 const notp = require("notp");
 const base32 = require("thirty-two");
 
@@ -71,23 +71,23 @@ class UptimeKumaServer {
 
 const server = module.exports = new UptimeKumaServer();
 
-log_info("server", "Importing this project modules");
-log_debug("server", "Importing Monitor");
+log.info("server", "Importing this project modules");
+log.debug("server", "Importing Monitor");
 const Monitor = require("./model/monitor");
-log_debug("server", "Importing Settings");
+log.debug("server", "Importing Settings");
 const { getSettings, setSettings, setting, initJWTSecret, checkLogin, startUnitTest, FBSD, errorLog, doubleCheckPassword } = require("./util-server");
 
-log_debug("server", "Importing Notification");
+log.debug("server", "Importing Notification");
 const { Notification } = require("./notification");
 Notification.init();
 
-log_debug("server", "Importing Proxy");
+log.debug("server", "Importing Proxy");
 const { Proxy } = require("./proxy");
 
-log_debug("server", "Importing Database");
+log.debug("server", "Importing Database");
 const Database = require("./database");
 
-log_debug("server", "Importing Background Jobs");
+log.debug("server", "Importing Background Jobs");
 const { initBackgroundJobs, stopBackgroundJobs } = require("./jobs");
 const { loginRateLimiter, twoFaRateLimiter } = require("./rate-limiter");
 
@@ -96,7 +96,7 @@ const { login } = require("./auth");
 const passwordHash = require("./password-hash");
 
 const checkVersion = require("./check-version");
-log_info("server", "Version: " + checkVersion.version);
+log.info("server", "Version: " + checkVersion.version);
 
 // If host is omitted, the server will accept connections on the unspecified IPv6 address (::) when IPv6 is available and the unspecified IPv4 address (0.0.0.0) otherwise.
 // Dual-stack support for (::)
@@ -108,7 +108,7 @@ if (!hostname && !FBSD) {
 }
 
 if (hostname) {
-    log_info("server", "Custom hostname: " + hostname);
+    log.info("server", "Custom hostname: " + hostname);
 }
 
 const port = parseInt(process.env.UPTIME_KUMA_PORT || process.env.PORT || args.port || 3001);
@@ -132,22 +132,22 @@ const twofa_verification_opts = {
 const testMode = !!args["test"] || false;
 
 if (config.demoMode) {
-    log_info("server", "==== Demo Mode ====");
+    log.info("server", "==== Demo Mode ====");
 }
 
-log_info("server", "Creating express and socket.io instance");
+log.info("server", "Creating express and socket.io instance");
 const app = express();
 
 let httpServer;
 
 if (sslKey && sslCert) {
-    log_info("server", "Server Type: HTTPS");
+    log.info("server", "Server Type: HTTPS");
     httpServer = https.createServer({
         key: fs.readFileSync(sslKey),
         cert: fs.readFileSync(sslCert)
     }, app);
 } else {
-    log_info("server", "Server Type: HTTP");
+    log.info("server", "Server Type: HTTP");
     httpServer = http.createServer(app);
 }
 
@@ -203,7 +203,7 @@ try {
 } catch (e) {
     // "dist/index.html" is not necessary for development
     if (process.env.NODE_ENV !== "development") {
-        log_error("server", "Error: Cannot find 'dist/index.html', did you install correctly?");
+        log.error("server", "Error: Cannot find 'dist/index.html', did you install correctly?");
         process.exit(1);
     }
 }
@@ -215,7 +215,7 @@ try {
     exports.entryPage = await setting("entryPage");
     await StatusPage.loadDomainMappingList();
 
-    log_info("server", "Adding route");
+    log.info("server", "Adding route");
 
     // ***************************
     // Normal Router here
@@ -273,7 +273,7 @@ try {
         }
     });
 
-    log_info("server", "Adding socket handler");
+    log.info("server", "Adding socket handler");
     io.on("connection", async (socket) => {
 
         sendInfo(socket);
@@ -281,7 +281,7 @@ try {
         totalClient++;
 
         if (needSetup) {
-            log_info("server", "Redirect to setup page");
+            log.info("server", "Redirect to setup page");
             socket.emit("setup");
         }
 
@@ -294,30 +294,30 @@ try {
         // ***************************
 
         socket.on("loginByToken", async (token, callback) => {
-            log_info("auth", `Login by token. IP=${getClientIp(socket)}`);
+            log.info("auth", `Login by token. IP=${getClientIp(socket)}`);
 
             try {
                 let decoded = jwt.verify(token, jwtSecret);
 
-                log_info("auth", "Username from JWT: " + decoded.username);
+                log.info("auth", "Username from JWT: " + decoded.username);
 
                 let user = await R.findOne("user", " username = ? AND active = 1 ", [
                     decoded.username,
                 ]);
 
                 if (user) {
-                    log_debug("auth", "afterLogin");
+                    log.debug("auth", "afterLogin");
                     afterLogin(socket, user);
-                    log_debug("auth", "afterLogin ok");
+                    log.debug("auth", "afterLogin ok");
 
-                    log_info("auth", `Successfully logged in user ${decoded.username}. IP=${getClientIp(socket)}`);
+                    log.info("auth", `Successfully logged in user ${decoded.username}. IP=${getClientIp(socket)}`);
 
                     callback({
                         ok: true,
                     });
                 } else {
 
-                    log_info("auth", `Inactive or deleted user ${decoded.username}. IP=${getClientIp(socket)}`);
+                    log.info("auth", `Inactive or deleted user ${decoded.username}. IP=${getClientIp(socket)}`);
 
                     callback({
                         ok: false,
@@ -326,7 +326,7 @@ try {
                 }
             } catch (error) {
 
-                log_error("auth", `Invalid token. IP=${getClientIp(socket)}`);
+                log.error("auth", `Invalid token. IP=${getClientIp(socket)}`);
 
                 callback({
                     ok: false,
@@ -337,7 +337,7 @@ try {
         });
 
         socket.on("login", async (data, callback) => {
-            log_info("auth", `Login by username + password. IP=${getClientIp(socket)}`);
+            log.info("auth", `Login by username + password. IP=${getClientIp(socket)}`);
 
             // Checking
             if (typeof callback !== "function") {
@@ -350,7 +350,7 @@ try {
 
             // Login Rate Limit
             if (! await loginRateLimiter.pass(callback)) {
-                log_info("auth", `Too many failed requests for user ${data.username}. IP=${getClientIp(socket)}`);
+                log.info("auth", `Too many failed requests for user ${data.username}. IP=${getClientIp(socket)}`);
                 return;
             }
 
@@ -360,7 +360,7 @@ try {
                 if (user.twofa_status == 0) {
                     afterLogin(socket, user);
 
-                    log_info("auth", `Successfully logged in user ${data.username}. IP=${getClientIp(socket)}`);
+                    log.info("auth", `Successfully logged in user ${data.username}. IP=${getClientIp(socket)}`);
 
                     callback({
                         ok: true,
@@ -372,7 +372,7 @@ try {
 
                 if (user.twofa_status == 1 && !data.token) {
 
-                    log_info("auth", `2FA token required for user ${data.username}. IP=${getClientIp(socket)}`);
+                    log.info("auth", `2FA token required for user ${data.username}. IP=${getClientIp(socket)}`);
 
                     callback({
                         tokenRequired: true,
@@ -390,7 +390,7 @@ try {
                             socket.userID,
                         ]);
 
-                        log_info("auth", `Successfully logged in user ${data.username}. IP=${getClientIp(socket)}`);
+                        log.info("auth", `Successfully logged in user ${data.username}. IP=${getClientIp(socket)}`);
 
                         callback({
                             ok: true,
@@ -400,7 +400,7 @@ try {
                         });
                     } else {
 
-                        log_warn("auth", `Invalid token provided for user ${data.username}. IP=${getClientIp(socket)}`);
+                        log.warn("auth", `Invalid token provided for user ${data.username}. IP=${getClientIp(socket)}`);
 
                         callback({
                             ok: false,
@@ -410,7 +410,7 @@ try {
                 }
             } else {
 
-                log_warn("auth", `Incorrect username or password for user ${data.username}. IP=${getClientIp(socket)}`);
+                log.warn("auth", `Incorrect username or password for user ${data.username}. IP=${getClientIp(socket)}`);
 
                 callback({
                     ok: false,
@@ -494,7 +494,7 @@ try {
                     socket.userID,
                 ]);
 
-                log_info("auth", `Saved 2FA token. IP=${getClientIp(socket)}`);
+                log.info("auth", `Saved 2FA token. IP=${getClientIp(socket)}`);
 
                 callback({
                     ok: true,
@@ -502,7 +502,7 @@ try {
                 });
             } catch (error) {
 
-                log_error("auth", `Error changing 2FA token. IP=${getClientIp(socket)}`);
+                log.error("auth", `Error changing 2FA token. IP=${getClientIp(socket)}`);
 
                 callback({
                     ok: false,
@@ -521,7 +521,7 @@ try {
                 await doubleCheckPassword(socket, currentPassword);
                 await TwoFA.disable2FA(socket.userID);
 
-                log_info("auth", `Disabled 2FA token. IP=${getClientIp(socket)}`);
+                log.info("auth", `Disabled 2FA token. IP=${getClientIp(socket)}`);
 
                 callback({
                     ok: true,
@@ -529,7 +529,7 @@ try {
                 });
             } catch (error) {
 
-                log_error("auth", `Error disabling 2FA token. IP=${getClientIp(socket)}`);
+                log.error("auth", `Error disabling 2FA token. IP=${getClientIp(socket)}`);
 
                 callback({
                     ok: false,
@@ -657,7 +657,7 @@ try {
                 await server.sendMonitorList(socket);
                 await startMonitor(socket.userID, bean.id);
 
-                log_info("monitor", `Added Monitor: ${monitor.id} User ID: ${socket.userID}`);
+                log.info("monitor", `Added Monitor: ${monitor.id} User ID: ${socket.userID}`);
 
                 callback({
                     ok: true,
@@ -667,7 +667,7 @@ try {
 
             } catch (e) {
 
-                log_error("monitor", `Error adding Monitor: ${monitor.id} User ID: ${socket.userID}`);
+                log.error("monitor", `Error adding Monitor: ${monitor.id} User ID: ${socket.userID}`);
 
                 callback({
                     ok: false,
@@ -731,7 +731,7 @@ try {
                 });
 
             } catch (e) {
-                log_error("monitor", e);
+                log.error("monitor", e);
                 callback({
                     ok: false,
                     msg: e.message,
@@ -747,7 +747,7 @@ try {
                     ok: true,
                 });
             } catch (e) {
-                log_error("monitor", e);
+                log.error("monitor", e);
                 callback({
                     ok: false,
                     msg: e.message,
@@ -759,7 +759,7 @@ try {
             try {
                 checkLogin(socket);
 
-                log_info("monitor", `Get Monitor: ${monitorID} User ID: ${socket.userID}`);
+                log.info("monitor", `Get Monitor: ${monitorID} User ID: ${socket.userID}`);
 
                 let bean = await R.findOne("monitor", " id = ? AND user_id = ? ", [
                     monitorID,
@@ -783,7 +783,7 @@ try {
             try {
                 checkLogin(socket);
 
-                log_info("monitor", `Get Monitor Beats: ${monitorID} User ID: ${socket.userID}`);
+                log.info("monitor", `Get Monitor Beats: ${monitorID} User ID: ${socket.userID}`);
 
                 if (period == null) {
                     throw new Error("Invalid period.");
@@ -854,7 +854,7 @@ try {
             try {
                 checkLogin(socket);
 
-                log_info("manage", `Delete Monitor: ${monitorID} User ID: ${socket.userID}`);
+                log.info("manage", `Delete Monitor: ${monitorID} User ID: ${socket.userID}`);
 
                 if (monitorID in server.monitorList) {
                     server.monitorList[monitorID].stop();
@@ -1186,7 +1186,7 @@ try {
 
                 let backupData = JSON.parse(uploadedJSON);
 
-                log_info("manage", `Importing Backup, User ID: ${socket.userID}, Version: ${backupData.version}`);
+                log.info("manage", `Importing Backup, User ID: ${socket.userID}, Version: ${backupData.version}`);
 
                 let notificationListData = backupData.notificationList;
                 let proxyListData = backupData.proxyList;
@@ -1381,7 +1381,7 @@ try {
             try {
                 checkLogin(socket);
 
-                log_info("manage", `Clear Events Monitor: ${monitorID} User ID: ${socket.userID}`);
+                log.info("manage", `Clear Events Monitor: ${monitorID} User ID: ${socket.userID}`);
 
                 await R.exec("UPDATE heartbeat SET msg = ?, important = ? WHERE monitor_id = ? ", [
                     "",
@@ -1407,7 +1407,7 @@ try {
             try {
                 checkLogin(socket);
 
-                log_info("manage", `Clear Heartbeats Monitor: ${monitorID} User ID: ${socket.userID}`);
+                log.info("manage", `Clear Heartbeats Monitor: ${monitorID} User ID: ${socket.userID}`);
 
                 await R.exec("DELETE FROM heartbeat WHERE monitor_id = ?", [
                     monitorID
@@ -1431,7 +1431,7 @@ try {
             try {
                 checkLogin(socket);
 
-                log_info("manage", `Clear Statistics User ID: ${socket.userID}`);
+                log.info("manage", `Clear Statistics User ID: ${socket.userID}`);
 
                 await R.exec("DELETE FROM heartbeat");
 
@@ -1453,24 +1453,24 @@ try {
         databaseSocketHandler(socket);
         proxySocketHandler(socket);
 
-        log_debug("server", "added all socket handlers");
+        log.debug("server", "added all socket handlers");
 
         // ***************************
         // Better do anything after added all socket handlers here
         // ***************************
 
-        log_debug("auth", "check auto login");
+        log.debug("auth", "check auto login");
         if (await setting("disableAuth")) {
-            log_info("auth", "Disabled Auth: auto login to admin");
+            log.info("auth", "Disabled Auth: auto login to admin");
             afterLogin(socket, await R.findOne("user"));
             socket.emit("autoLogin");
         } else {
-            log_debug("auth", "need auth");
+            log.debug("auth", "need auth");
         }
 
     });
 
-    log_info("server", "Init the server");
+    log.info("server", "Init the server");
 
     httpServer.once("error", async (err) => {
         console.error("Cannot listen: " + err.message);
@@ -1479,9 +1479,9 @@ try {
 
     httpServer.listen(port, hostname, () => {
         if (hostname) {
-            log_info("server", `Listening on ${hostname}:${port}`);
+            log.info("server", `Listening on ${hostname}:${port}`);
         } else {
-            log_info("server", `Listening on ${port}`);
+            log.info("server", `Listening on ${port}`);
         }
         startMonitors();
         checkVersion.startInterval();
@@ -1565,13 +1565,13 @@ async function getMonitorJSONList(userID) {
 
 async function initDatabase(testMode = false) {
     if (! fs.existsSync(Database.path)) {
-        log_info("server", "Copying Database");
+        log.info("server", "Copying Database");
         fs.copyFileSync(Database.templatePath, Database.path);
     }
 
-    log_info("server", "Connecting to the Database");
+    log.info("server", "Connecting to the Database");
     await Database.connect(testMode);
-    log_info("server", "Connected");
+    log.info("server", "Connected");
 
     // Patch the database
     await Database.patch();
@@ -1581,16 +1581,16 @@ async function initDatabase(testMode = false) {
     ]);
 
     if (! jwtSecretBean) {
-        log_info("server", "JWT secret is not found, generate one.");
+        log.info("server", "JWT secret is not found, generate one.");
         jwtSecretBean = await initJWTSecret();
-        log_info("server", "Stored JWT secret into database");
+        log.info("server", "Stored JWT secret into database");
     } else {
-        log_info("server", "Load JWT secret from database.");
+        log.info("server", "Load JWT secret from database.");
     }
 
     // If there is no record in user table, it is a new Uptime Kuma instance, need to setup
     if ((await R.count("user")) === 0) {
-        log_info("server", "No user, need setup");
+        log.info("server", "No user, need setup");
         needSetup = true;
     }
 
@@ -1600,7 +1600,7 @@ async function initDatabase(testMode = false) {
 async function startMonitor(userID, monitorID) {
     await checkOwner(userID, monitorID);
 
-    log_info("manage", `Resume Monitor: ${monitorID} User ID: ${userID}`);
+    log.info("manage", `Resume Monitor: ${monitorID} User ID: ${userID}`);
 
     await R.exec("UPDATE monitor SET active = 1 WHERE id = ? AND user_id = ? ", [
         monitorID,
@@ -1626,7 +1626,7 @@ async function restartMonitor(userID, monitorID) {
 async function pauseMonitor(userID, monitorID) {
     await checkOwner(userID, monitorID);
 
-    log_info("manage", `Pause Monitor: ${monitorID} User ID: ${userID}`);
+    log.info("manage", `Pause Monitor: ${monitorID} User ID: ${userID}`);
 
     await R.exec("UPDATE monitor SET active = 0 WHERE id = ? AND user_id = ? ", [
         monitorID,
@@ -1656,10 +1656,10 @@ async function startMonitors() {
 }
 
 async function shutdownFunction(signal) {
-    log_info("server", "Shutdown requested");
-    log_info("server", "Called signal: " + signal);
+    log.info("server", "Shutdown requested");
+    log.info("server", "Called signal: " + signal);
 
-    log_info("server", "Stopping all monitors");
+    log.info("server", "Stopping all monitors");
     for (let id in server.monitorList) {
         let monitor = server.monitorList[id];
         monitor.stop();
@@ -1676,7 +1676,7 @@ function getClientIp(socket) {
 }
 
 function finalFunction() {
-    log_info("server", "Graceful shutdown successful!");
+    log.info("server", "Graceful shutdown successful!");
 }
 
 gracefulShutdown(httpServer, {

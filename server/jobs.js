@@ -1,7 +1,7 @@
 const path = require("path");
 const Bree = require("bree");
 const { SHARE_ENV } = require("worker_threads");
-const { log_info } = require("../src/util");
+const { log } = require("../src/util");
 let bree;
 const jobs = [
     {
@@ -19,7 +19,7 @@ const initBackgroundJobs = function (args) {
             workerData: args,
         },
         workerMessageHandler: (message) => {
-            log_info("jobs", message);
+            log.info("jobs", message);
         }
     });
 

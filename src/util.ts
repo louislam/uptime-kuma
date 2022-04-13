@@ -50,50 +50,65 @@ export function ucfirst(str: string) {
 }
 
 /**
- * @deprecated Use log_debug
+ * @deprecated Use log.debug
+ * @since https://github.com/louislam/uptime-kuma/pull/910
  * @param msg
  */
 export function debug(msg: any) {
-    log("", msg, "debug");
+    log.log("", msg, "debug");
 }
 
-function log(module: string, msg: any, level:string) {
-    module = module.toUpperCase();
-    level = level.toUpperCase();
+class Logger {
+    log(module: string, msg: any, level: string) {
+        module = module.toUpperCase();
+        level = level.toUpperCase();
 
-    const now = new Date().toISOString();
-    const formattedMessage = (typeof msg === "string") ? `${now} [${module}] ${level}: ${msg}` : msg;
+        const now = new Date().toISOString();
+        const formattedMessage = (typeof msg === "string") ? `${now} [${module}] ${level}: ${msg}` : msg;
 
-    if (level === "INFO") {
-        console.info(formattedMessage);
-    } else if (level === "WARN") {
-        console.warn(formattedMessage);
-    } else if (level === "ERROR") {
-        console.error(formattedMessage);
-    } else if (level === "DEBUG") {
-        if (isDev) {
-            console.debug(formattedMessage);
+        if (level === "INFO") {
+            console.info(formattedMessage);
+        } else if (level === "WARN") {
+            console.warn(formattedMessage);
+        } else if (level === "ERROR") {
+            console.error(formattedMessage);
+        } else if (level === "DEBUG") {
+            if (isDev) {
+                console.debug(formattedMessage);
+            }
+        } else {
+            console.log(formattedMessage);
         }
-    } else {
-        console.log(formattedMessage);
+    }
+
+    info(module: string, msg: any) {
+        this.log(module, msg, "info");
+    }
+
+    warn(module: string, msg: any) {
+        this.log(module, msg, "warn");
+    }
+
+   error(module: string, msg: any) {
+       this.log(module, msg, "error");
+    }
+
+   debug(module: string, msg: any) {
+       this.log(module, msg, "debug");
+    }
+
+    exception(module: string, exception: any, msg: any) {
+        let finalMessage = exception
+
+        if (msg) {
+            finalMessage = `${msg}: ${exception}`
+        }
+
+        this.log(module, finalMessage , "error");
     }
 }
 
-export function log_info(module: string, msg: any) {
-    log(module, msg, "info");
-}
-
-export function log_warn(module: string, msg: any) {
-    log(module, msg, "warn");
-}
-
-export function log_error(module: string, msg: any) {
-    log(module, msg, "error");
-}
-
-export function log_debug(module: string, msg: any) {
-    log(module, msg, "debug");
-}
+export const log = new Logger();
 
 declare global { interface String { replaceAll(str: string, newStr: string): string; } }
 

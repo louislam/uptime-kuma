@@ -7,7 +7,7 @@
 // Backend uses the compiled file util.js
 // Frontend uses util.ts
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getMonitorRelativeURL = exports.genSecret = exports.getCryptoRandomInt = exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.log_debug = exports.log_error = exports.log_warn = exports.log_info = exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isDev = void 0;
+exports.getMonitorRelativeURL = exports.genSecret = exports.getCryptoRandomInt = exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.log = exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isDev = void 0;
 const _dayjs = require("dayjs");
 const dayjs = _dayjs;
 exports.isDev = process.env.NODE_ENV === "development";
@@ -45,52 +45,59 @@ function ucfirst(str) {
 }
 exports.ucfirst = ucfirst;
 /**
- * @deprecated Use log_debug
+ * @deprecated Use log.debug
+ * @since https://github.com/louislam/uptime-kuma/pull/910
  * @param msg
  */
 function debug(msg) {
-    log("", msg, "debug");
+    exports.log.log("", msg, "debug");
 }
 exports.debug = debug;
-function log(module, msg, level) {
-    module = module.toUpperCase();
-    level = level.toUpperCase();
-    const now = new Date().toISOString();
-    const formattedMessage = (typeof msg === "string") ? `${now} [${module}] ${level}: ${msg}` : msg;
-    if (level === "INFO") {
-        console.info(formattedMessage);
-    }
-    else if (level === "WARN") {
-        console.warn(formattedMessage);
-    }
-    else if (level === "ERROR") {
-        console.error(formattedMessage);
-    }
-    else if (level === "DEBUG") {
-        if (exports.isDev) {
-            console.debug(formattedMessage);
+class Logger {
+    log(module, msg, level) {
+        module = module.toUpperCase();
+        level = level.toUpperCase();
+        const now = new Date().toISOString();
+        const formattedMessage = (typeof msg === "string") ? `${now} [${module}] ${level}: ${msg}` : msg;
+        if (level === "INFO") {
+            console.info(formattedMessage);
+        }
+        else if (level === "WARN") {
+            console.warn(formattedMessage);
+        }
+        else if (level === "ERROR") {
+            console.error(formattedMessage);
+        }
+        else if (level === "DEBUG") {
+            if (exports.isDev) {
+                console.debug(formattedMessage);
+            }
+        }
+        else {
+            console.log(formattedMessage);
         }
     }
-    else {
-        console.log(formattedMessage);
+    info(module, msg) {
+        this.log(module, msg, "info");
+    }
+    warn(module, msg) {
+        this.log(module, msg, "warn");
+    }
+    error(module, msg) {
+        this.log(module, msg, "error");
+    }
+    debug(module, msg) {
+        this.log(module, msg, "debug");
+    }
+    exception(module, exception, msg) {
+        let finalMessage = exception;
+        if (msg) {
+            finalMessage = `${msg}: ${exception}`;
+        }
+        this.log(module, finalMessage, "error");
     }
 }
-function log_info(module, msg) {
-    log(module, msg, "info");
-}
-exports.log_info = log_info;
-function log_warn(module, msg) {
-    log(module, msg, "warn");
-}
-exports.log_warn = log_warn;
-function log_error(module, msg) {
-    log(module, msg, "error");
-}
-exports.log_error = log_error;
-function log_debug(module, msg) {
-    log(module, msg, "debug");
-}
-exports.log_debug = log_debug;
+exports.log = new Logger();
 function polyfill() {
     /**
      * String.prototype.replaceAll() polyfill

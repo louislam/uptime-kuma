@@ -1,5 +1,5 @@
 const { RateLimiter } = require("limiter");
-const { log_info } = require("../src/util");
+const { log } = require("../src/util");
 
 class KumaRateLimiter {
     constructor(config) {
@@ -9,7 +9,7 @@ class KumaRateLimiter {
 
     async pass(callback, num = 1) {
         const remainingRequests = await this.removeTokens(num);
-        log_info("rate-limit", "remaining requests: " + remainingRequests);
+        log.info("rate-limit", "remaining requests: " + remainingRequests);
         if (remainingRequests < 0) {
             if (callback) {
                 callback({
