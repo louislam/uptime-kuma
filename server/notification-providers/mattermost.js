@@ -15,12 +15,17 @@ class Mattermost extends NotificationProvider {
                 let mattermostTestData = {
                     username: mattermostUserName,
                     text: msg,
-                }
-                await axios.post(notification.mattermostWebhookUrl, mattermostTestData)
+                };
+                await axios.post(notification.mattermostWebhookUrl, mattermostTestData);
                 return okMsg;
             }
 
-            const mattermostChannel = notification.mattermostchannel.toLowerCase();
+            let mattermostChannel;
+
+            if (typeof notification.mattermostchannel === "string") {
+                mattermostChannel = notification.mattermostchannel.toLowerCase();
+            }
+
             const mattermostIconEmoji = notification.mattermosticonemo;
             const mattermostIconUrl = notification.mattermosticonurl;
 

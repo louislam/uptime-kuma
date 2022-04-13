@@ -17,7 +17,7 @@ exports.startInterval = () => {
                 res.data.slow = "1000.0.0";
             }
 
-            if (!await setting("checkUpdate")) {
+            if (await setting("checkUpdate") === false) {
                 return;
             }
 

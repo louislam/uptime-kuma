@@ -40,7 +40,17 @@ export default {
             notificationList: [],
             statusPageListLoaded: false,
             statusPageList: [],
+            proxyList: [],
             connectionErrorMsg: "Cannot connect to the socket server. Reconnecting...",
+            showReverseProxyGuide: true,
+            cloudflared: {
+                cloudflareTunnelToken: "",
+                installed: null,
+                running: false,
+                message: "",
+                errorMessage: "",
+                currentPassword: "",
+            }
         };
     },
 
@@ -119,6 +129,16 @@ export default {
                 this.statusPageList = data;
             });
 
+            socket.on("proxyList", (data) => {
+                this.proxyList = data.map(item => {
+                    item.auth = !!item.auth;
+                    item.active = !!item.active;
+                    item.default = !!item.default;
+
+                    return item;
+                });
+            });
+
             socket.on("heartbeat", (data) => {
                 if (! (data.monitorID in this.heartbeatList)) {
                     this.heartbeatList[data.monitorID] = [];
@@ -185,6 +205,7 @@ export default {
             socket.on("connect_error", (err) => {
                 console.error(`Failed to connect to the backend. Socket.io connect_error: ${err.message}`);
                 this.connectionErrorMsg = `Cannot connect to the socket server. [${err}] Reconnecting...`;
+                this.showReverseProxyGuide = true;
                 this.socket.connected = false;
                 this.socket.firstConnect = false;
             });
@@ -199,6 +220,7 @@ export default {
                 console.log("Connected to the socket server");
                 this.socket.connectCount++;
                 this.socket.connected = true;
+                this.showReverseProxyGuide = false;
 
                 // Reset Heartbeat list if it is re-connect
                 if (this.socket.connectCount >= 2) {
@@ -228,6 +250,12 @@ export default {
                 this.socket.firstConnect = false;
             });
 
+            // cloudflared
+            socket.on("cloudflared_installed", (res) => this.cloudflared.installed = res);
+            socket.on("cloudflared_running", (res) => this.cloudflared.running = res);
+            socket.on("cloudflared_message", (res) => this.cloudflared.message = res);
+            socket.on("cloudflared_errorMessage", (res) => this.cloudflared.errorMessage = res);
+            socket.on("cloudflared_token", (res) => this.cloudflared.cloudflareTunnelToken = res);
         },
 
         storage() {

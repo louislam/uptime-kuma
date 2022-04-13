@@ -4,7 +4,7 @@ const tar = require('tar')
 
 const packageJSON = require('../package.json')
 const fs = require('fs')
-const version = '1.13.0-beta.2'
+const version = '1.14.0-beta.0'
 
 const filename = 'dist.tar.gz'
 

@@ -1,7 +1,7 @@
 const https = require('https')
 const dayjs = require('dayjs')
 const utc = require('dayjs/plugin/utc')
-const timezone = require('dayjs/plugin/timezone')
+let timezone = require('dayjs/plugin/timezone')
 dayjs.extend(utc)
 dayjs.extend(timezone)
 const axios = require('axios')
@@ -11,6 +11,7 @@ const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalCli
 const { R } = require('redbean-node')
 const { BeanModel } = require('redbean-node/dist/bean-model')
 const { Notification } = require('../notification')
+const { Proxy } = require('../proxy')
 const { demoMode } = require('../config')
 const version = require('../../package.json').version
 const apicache = require('../modules/apicache')
@@ -73,6 +74,7 @@ class Monitor extends BeanModel {
       interval: this.interval,
       retryInterval: this.retryInterval,
       keyword: this.keyword,
+      expiryNotification: this.isEnabledExpiryNotification(),
       ignoreTls: this.getIgnoreTls(),
       upsideDown: this.isUpsideDown(),
       maxredirects: this.maxredirects,
@@ -81,6 +83,7 @@ class Monitor extends BeanModel {
       dns_resolve_server: this.dns_resolve_server,
       dns_last_result: this.dns_last_result,
       pushToken: this.pushToken,
+      proxyId: this.proxy_id,
       notificationIDList,
       tags: tags
     }
@@ -99,10 +102,14 @@ class Monitor extends BeanModel {
     return Buffer.from(user + ':' + pass).toString('base64')
   }
 
+  isEnabledExpiryNotification () {
+    return Boolean(this.expiryNotification)
+  }
+
   /**
-     * Parse to boolean
-     * @returns {boolean}
-     */
+   * Parse to boolean
+   * @returns {boolean}
+   */
   getIgnoreTls () {
     return Boolean(this.ignoreTls)
   }
@@ -180,6 +187,11 @@ class Monitor extends BeanModel {
             }
           }
 
+          const httpsAgentOptions = {
+            maxCachedSessions: 0, // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
+            rejectUnauthorized: !this.getIgnoreTls()
+          }
+
           debug(`[${this.name}] Prepare Options for axios`)
 
           const options = {
@@ -193,16 +205,31 @@ class Monitor extends BeanModel {
               ...(this.headers ? JSON.parse(this.headers) : {}),
               ...(basicAuthHeader)
             },
-            httpsAgent: new https.Agent({
-              maxCachedSessions: 0, // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
-              rejectUnauthorized: !this.getIgnoreTls()
-            }),
             maxRedirects: this.maxredirects,
             validateStatus: (status) => {
               return checkStatusCode(status, this.getAcceptedStatuscodes())
             }
           }
 
+          if (this.proxy_id) {
+            const proxy = await R.load('proxy', this.proxy_id)
+
+            if (proxy && proxy.active) {
+              const { httpAgent, httpsAgent } = Proxy.createAgents(proxy, {
+                httpsAgentOptions: httpsAgentOptions
+              })
+
+              options.proxy = false
+              options.httpAgent = httpAgent
+              options.httpsAgent = httpsAgent
+            }
+          }
+
+          if (!options.httpsAgent) {
+            options.httpsAgent = new https.Agent(httpsAgentOptions)
+          }
+
+          debug(`[${this.name}] Axios Options: ${JSON.stringify(options)}`)
           debug(`[${this.name}] Axios Request`)
           const res = await axios.request(options)
           bean.msg = `${res.status} - ${res.statusText}`
@@ -216,7 +243,7 @@ class Monitor extends BeanModel {
               const tlsInfoObject = checkCertificate(res)
               tlsInfo = await this.updateTlsInfo(tlsInfoObject)
 
-              if (!this.getIgnoreTls()) {
+              if (!this.getIgnoreTls() && this.isEnabledExpiryNotification()) {
                 debug(`[${this.name}] call sendCertNotification`)
                 await this.sendCertNotification(tlsInfoObject)
               }
@@ -254,21 +281,22 @@ class Monitor extends BeanModel {
           }
         } else if (this.type === 'port') {
           bean.ping = await tcping(this.hostname, this.port)
-          bean.msg = ''
+          bean.msg = '';
           bean.status = UP
+
         } else if (this.type === 'ping') {
           bean.ping = await ping(this.hostname)
-          bean.msg = ''
+          bean.msg = '';
           bean.status = UP
         } else if (this.type === 'dns') {
           const startTime = dayjs().valueOf()
-          let dnsMessage = ''
+          let dnsMessage = '';
 
           const dnsRes = await dnsResolve(this.hostname, this.dns_resolve_server, this.dns_resolve_type)
           bean.ping = dayjs().valueOf() - startTime
 
           if (this.dns_resolve_type == 'A' || this.dns_resolve_type == 'AAAA' || this.dns_resolve_type == 'TXT') {
-            dnsMessage += 'Records: '
+            dnsMessage += 'Records: ';
             dnsMessage += dnsRes.join(' | ')
           } else if (this.dns_resolve_type == 'CNAME' || this.dns_resolve_type == 'PTR') {
             dnsMessage = dnsRes[0]
@@ -280,7 +308,7 @@ class Monitor extends BeanModel {
             })
             dnsMessage = dnsMessage.slice(0, -2)
           } else if (this.dns_resolve_type == 'NS') {
-            dnsMessage += 'Servers: '
+            dnsMessage += 'Servers: ';
             dnsMessage += dnsRes.join(' | ')
           } else if (this.dns_resolve_type == 'SOA') {
             dnsMessage += `NS-Name: ${dnsRes.nsname} | Hostmaster: ${dnsRes.hostmaster} | Serial: ${dnsRes.serial} | Refresh: ${dnsRes.refresh} | Retry: ${dnsRes.retry} | Expire: ${dnsRes.expire} | MinTTL: ${dnsRes.minttl}`
@@ -303,7 +331,7 @@ class Monitor extends BeanModel {
         } else if (this.type === 'push') { // Type: Push
           const time = R.isoDateTime(dayjs.utc().subtract(this.interval, 'second'))
 
-          const heartbeatCount = await R.count('heartbeat', ' monitor_id = ? AND time > ? ', [
+          let heartbeatCount = await R.count('heartbeat', ' monitor_id = ? AND time > ? ', [
             this.id,
             time
           ])
@@ -319,7 +347,7 @@ class Monitor extends BeanModel {
             // No need to insert successful heartbeat for push type, so end here
             retries = 0
             this.heartbeatInterval = setTimeout(beat, beatInterval * 1000)
-            return
+            return;
           }
         } else if (this.type === 'steam') {
           const steamApiUrl = 'https://api.steampowered.com/IGameServersService/GetServerList/v1/'
@@ -464,6 +492,13 @@ class Monitor extends BeanModel {
   stop () {
     clearTimeout(this.heartbeatInterval)
     this.isStop = true
+
+    this.prometheus().remove()
+
+  }
+
+  prometheus () {
+    return new Prometheus(this)
   }
 
   /**

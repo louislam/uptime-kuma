@@ -85,13 +85,35 @@ module.exports.statusPageSocketHandler = (socket) => {
         }
     });
 
+    socket.on("getStatusPage", async (slug, callback) => {
+        try {
+            checkLogin(socket);
+
+            let statusPage = await R.findOne("status_page", " slug = ? ", [
+                slug
+            ]);
+
+            if (!statusPage) {
+                throw new Error("No slug?");
+            }
+
+            callback({
+                ok: true,
+                config: await statusPage.toJSON(),
+            });
+        } catch (error) {
+            callback({
+                ok: false,
+                msg: error.message,
+            });
+        }
+    });
+
     // Save Status Page
     // imgDataUrl Only Accept PNG!
     socket.on("saveStatusPage", async (slug, config, imgDataUrl, publicGroupList, callback) => {
-
         try {
             checkLogin(socket);
-            apicache.clear();
 
             // Save Config
             let statusPage = await R.findOne("status_page", " slug = ? ", [
@@ -101,6 +123,8 @@ module.exports.statusPageSocketHandler = (socket) => {
             if (!statusPage) {
                 throw new Error("No slug?");
             }
+
+            checkSlug(config.slug);
 
             const header = "data:image/png;base64,";
 
@@ -134,6 +158,9 @@ module.exports.statusPageSocketHandler = (socket) => {
             statusPage.modified_date = R.isoDateTime();
 
             await R.store(statusPage);
+
+            await statusPage.updateDomainNameList(config.domainNameList);
+            await StatusPage.loadDomainMappingList();
 
             // Save Public Group List
             const groupIDList = [];
@@ -191,6 +218,8 @@ module.exports.statusPageSocketHandler = (socket) => {
                 await setSetting("entryPage", server.entryPage, "general");
             }
 
+            apicache.clear();
+
             callback({
                 ok: true,
                 publicGroupList,
@@ -227,11 +256,7 @@ module.exports.statusPageSocketHandler = (socket) => {
             // lower case only
             slug = slug.toLowerCase();
 
-            // Check slug a-z, 0-9, - only
-            // Regex from: https://stackoverflow.com/questions/22454258/js-regex-string-validation-for-slug
-            if (!slug.match(/^[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*$/)) {
-                throw new Error("Invalid Slug");
-            }
+            checkSlug(slug);
 
             let statusPage = R.dispense("status_page");
             statusPage.slug = slug;
@@ -302,3 +327,23 @@ module.exports.statusPageSocketHandler = (socket) => {
         }
     });
 };
+
+/**
+ * Check slug a-z, 0-9, - only
+ * Regex from: https://stackoverflow.com/questions/22454258/js-regex-string-validation-for-slug
+ */
+function checkSlug(slug) {
+    if (typeof slug !== "string") {
+        throw new Error("Slug must be string");
+    }
+
+    slug = slug.trim();
+
+    if (!slug) {
+        throw new Error("Slug cannot be empty");
+    }
+
+    if (!slug.match(/^[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*$/)) {
+        throw new Error("Invalid Slug");
+    }
+}
