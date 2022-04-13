@@ -28,5 +28,5 @@ export default {
             this.$parent.notification.gotifyPriority = 8;
         }
     },
-}
+};
 </script>
