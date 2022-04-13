@@ -14,6 +14,7 @@ export default {
     deleteMonitorMsg: "Are you sure want to delete this monitor?",
     deleteNotificationMsg: "Are you sure want to delete this notification for all monitors?",
     resoverserverDescription: "Cloudflare is the default server. You can change the resolver server anytime.",
+    dnsPortDescription: "DNS server port. Defaults to 53. You can change the port at any time.",
     rrtypeDescription: "Select the RR type you want to monitor",
     pauseMonitorMsg: "Are you sure want to pause?",
     enableDefaultNotificationDescription: "This notification will be enabled by default for new monitors. You can still disable the notification separately for each monitor.",
