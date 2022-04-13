@@ -1,7 +1,6 @@
 // eslint-disable-next-line no-unused-vars
 const { Page, Browser } = require("puppeteer");
 const { sleep } = require("../src/util");
-const axios = require("axios");
 
 /**
  * Set back the correct data type for page object
