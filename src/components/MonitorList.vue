@@ -21,7 +21,7 @@
 
             <router-link v-for="(item, index) in sortedMonitorList" :key="index" :to="monitorURL(item.id)" class="item" :class="{ 'disabled': ! item.active }">
                 <div class="row">
-                    <div class="col-9 col-md-8 small-padding" :class="{ 'monitorItem': $root.userHeartbeatBar == 'bottom' || $root.userHeartbeatBar == 'none' }">
+                    <div class="col-9 col-md-8 small-padding" :class="{ 'monitor-item': $root.userHeartbeatBar == 'bottom' || $root.userHeartbeatBar == 'none' }">
                         <div class="info">
                             <Uptime :monitor="item" type="24" :pill="true" />
                             {{ item.name }}
@@ -172,7 +172,7 @@ export default {
 
 .dark {
     .footer {
-      //  background-color: $dark-bg;
+        //  background-color: $dark-bg;
     }
 }
 
@@ -198,7 +198,7 @@ export default {
     max-width: 15em;
 }
 
-.monitorItem {
+.monitor-item {
     width: 100%;
 }
 
