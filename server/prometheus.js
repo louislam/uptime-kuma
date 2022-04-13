@@ -1,4 +1,5 @@
 const PrometheusClient = require("prom-client");
+const { log } = require("../src/util");
 
 const commonLabels = [
     "monitor_name",
@@ -48,15 +49,16 @@ class Prometheus {
 
         if (typeof tlsInfo !== "undefined") {
             try {
-                let is_valid = 0;
+                let isValid = 0;
                 if (tlsInfo.valid == true) {
-                    is_valid = 1;
+                    isValid = 1;
                 } else {
-                    is_valid = 0;
+                    isValid = 0;
                 }
-                monitor_cert_is_valid.set(this.monitorLabelValues, is_valid);
+                monitor_cert_is_valid.set(this.monitorLabelValues, isValid);
             } catch (e) {
-                console.error(e);
+                log.error("prometheus", "Caught error");
+                log.error("prometheus", e);
             }
 
             try {
@@ -64,14 +66,16 @@ class Prometheus {
                     monitor_cert_days_remaining.set(this.monitorLabelValues, tlsInfo.certInfo.daysRemaining);
                 }
             } catch (e) {
-                console.error(e);
+                log.error("prometheus", "Caught error");
+                log.error("prometheus", e);
             }
         }
 
         try {
             monitor_status.set(this.monitorLabelValues, heartbeat.status);
         } catch (e) {
-            console.error(e);
+            log.error("prometheus", "Caught error");
+            log.error("prometheus", e);
         }
 
         try {
@@ -82,10 +86,21 @@ class Prometheus {
                 monitor_response_time.set(this.monitorLabelValues, -1);
             }
         } catch (e) {
-            console.error(e);
+            log.error("prometheus", "Caught error");
+            log.error("prometheus", e);
         }
     }
 
+    remove() {
+        try {
+            monitor_cert_days_remaining.remove(this.monitorLabelValues);
+            monitor_cert_is_valid.remove(this.monitorLabelValues);
+            monitor_response_time.remove(this.monitorLabelValues);
+            monitor_status.remove(this.monitorLabelValues);
+        } catch (e) {
+            console.error(e);
+        }
+    }
 }
 
 module.exports = {

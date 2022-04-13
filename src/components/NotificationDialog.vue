@@ -69,7 +69,6 @@
 
 <script lang="ts">
 import { Modal } from "bootstrap";
-import { ucfirst } from "../util.ts";
 
 import Confirm from "./Confirm.vue";
 import NotificationFormList from "./notifications";
@@ -85,7 +84,9 @@ export default {
             model: null,
             processing: false,
             id: null,
-            notificationTypes: Object.keys(NotificationFormList),
+            notificationTypes: Object.keys(NotificationFormList).sort((a, b) => {
+                return a.toLowerCase().localeCompare(b.toLowerCase());
+            }),
             notification: {
                 name: "",
                 /** @type { null | keyof NotificationFormList } */
@@ -143,12 +144,9 @@ export default {
                 this.id = null;
                 this.notification = {
                     name: "",
-                    type: null,
+                    type: "telegram",
                     isDefault: false,
                 };
-
-                // Set Default value here
-                this.notification.type = this.notificationTypes[0];
             }
 
             this.modal.show();

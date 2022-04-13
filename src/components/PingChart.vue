@@ -24,7 +24,7 @@ import timezone from "dayjs/plugin/timezone";
 import "chartjs-adapter-dayjs";
 import { LineChart } from "vue-chart-3";
 import { useToast } from "vue-toastification";
-import { UP, DOWN, PENDING } from "../util.ts";
+import { DOWN } from "../util.ts";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -278,7 +278,7 @@ export default {
 
         .dropdown-item {
             border-radius: 0.3rem;
-            padding: 2px 16px 4px 16px;
+            padding: 2px 16px 4px;
 
             .dark & {
                 background: $dark-bg;

@@ -25,7 +25,7 @@
 </template>
 
 <script>
-import { Modal } from "bootstrap"
+import { Modal } from "bootstrap";
 
 export default {
     props: {
@@ -46,15 +46,15 @@ export default {
         modal: null,
     }),
     mounted() {
-        this.modal = new Modal(this.$refs.modal)
+        this.modal = new Modal(this.$refs.modal);
     },
     methods: {
         show() {
-            this.modal.show()
+            this.modal.show();
         },
         yes() {
             this.$emit("yes");
         },
     },
-}
+};
 </script>

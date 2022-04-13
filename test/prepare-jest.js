@@ -1,9 +1,10 @@
 const fs = require("fs");
+const rmSync = require("../extra/fs-rmSync.js");
 
 const path = "./data/test-chrome-profile";
 
 if (fs.existsSync(path)) {
-    fs.rmdirSync(path, {
+    rmSync(path, {
         recursive: true,
     });
 }
