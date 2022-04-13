@@ -83,3 +83,8 @@ module.exports.autoStart = async (token) => {
         cloudflared.start();
     }
 };
+
+module.exports.stop = async () => {
+    console.log("Stop cloudflared");
+    cloudflared.stop();
+};

@@ -1,7 +1,5 @@
 console.log("== Uptime Kuma Reset Password Tool ==");
 
-console.log("Loading the database");
-
 const Database = require("../server/database");
 const { R } = require("redbean-node");
 const readline = require("readline");
@@ -13,8 +11,9 @@ const rl = readline.createInterface({
 });
 
 const main = async () => {
+    console.log("Connecting the database");
     Database.init(args);
-    await Database.connect();
+    await Database.connect(false, false, true);
 
     try {
         // No need to actually reset the password for testing, just make sure no connection problem. It is ok for now.

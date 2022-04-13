@@ -74,6 +74,7 @@ class Monitor extends BeanModel {
             interval: this.interval,
             retryInterval: this.retryInterval,
             keyword: this.keyword,
+            expiryNotification: this.isEnabledExpiryNotification(),
             ignoreTls: this.getIgnoreTls(),
             upsideDown: this.isUpsideDown(),
             maxredirects: this.maxredirects,
@@ -102,6 +103,10 @@ class Monitor extends BeanModel {
      */
     encodeBase64(user, pass) {
         return Buffer.from(user + ":" + pass).toString("base64");
+    }
+
+    isEnabledExpiryNotification() {
+        return Boolean(this.expiryNotification);
     }
 
     /**
@@ -243,7 +248,7 @@ class Monitor extends BeanModel {
                             let tlsInfoObject = checkCertificate(res);
                             tlsInfo = await this.updateTlsInfo(tlsInfoObject);
 
-                            if (!this.getIgnoreTls()) {
+                            if (!this.getIgnoreTls() && this.isEnabledExpiryNotification()) {
                                 debug(`[${this.name}] call sendCertNotification`);
                                 await this.sendCertNotification(tlsInfoObject);
                             }

@@ -12,9 +12,19 @@ let router = express.Router();
 let cache = apicache.middleware;
 let io = server.io;
 
-router.get("/api/entry-page", async (_, response) => {
+router.get("/api/entry-page", async (request, response) => {
     allowDevAllOrigin(response);
-    response.json(server.entryPage);
+
+    let result = { };
+
+    if (request.hostname in StatusPage.domainMappingList) {
+        result.type = "statusPageMatchedDomain";
+        result.statusPageSlug = StatusPage.domainMappingList[request.hostname];
+    } else {
+        result.type = "entryPage";
+        result.entryPage = server.entryPage;
+    }
+    response.json(result);
 });
 
 router.get("/api/push/:pushToken", async (request, response) => {

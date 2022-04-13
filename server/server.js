@@ -48,6 +48,27 @@ debug("Importing 2FA Modules");
 const notp = require("notp");
 const base32 = require("thirty-two");
 
+/**
+ * `module.exports` (alias: `server`) should be inside this class, in order to avoid circular dependency issue.
+ * @type {UptimeKumaServer}
+ */
+class UptimeKumaServer {
+    /**
+     * Main monitor list
+     * @type {{}}
+     */
+    monitorList = {};
+    entryPage = "dashboard";
+
+    async sendMonitorList(socket) {
+        let list = await getMonitorJSONList(socket.userID);
+        io.to(socket.userID).emit("monitorList", list);
+        return list;
+    }
+}
+
+const server = module.exports = new UptimeKumaServer();
+
 console.log("Importing this project modules");
 debug("Importing Monitor");
 const Monitor = require("./model/monitor");
@@ -65,7 +86,7 @@ debug("Importing Database");
 const Database = require("./database");
 
 debug("Importing Background Jobs");
-const { initBackgroundJobs } = require("./jobs");
+const { initBackgroundJobs, stopBackgroundJobs } = require("./jobs");
 const { loginRateLimiter, twoFaRateLimiter } = require("./rate-limiter");
 
 const { basicAuth } = require("./auth");
@@ -77,23 +98,22 @@ console.info("Version: " + checkVersion.version);
 
 // If host is omitted, the server will accept connections on the unspecified IPv6 address (::) when IPv6 is available and the unspecified IPv4 address (0.0.0.0) otherwise.
 // Dual-stack support for (::)
-let hostname = process.env.UPTIME_KUMA_HOST || args.host;
-
 // Also read HOST if not FreeBSD, as HOST is a system environment variable in FreeBSD
-if (!hostname && !FBSD) {
-    hostname = process.env.HOST;
-}
+let hostEnv = FBSD ? null : process.env.HOST;
+let hostname = args.host || process.env.UPTIME_KUMA_HOST || hostEnv;
 
 if (hostname) {
     console.log("Custom hostname: " + hostname);
 }
 
-const port = parseInt(process.env.UPTIME_KUMA_PORT || process.env.PORT || args.port || 3001);
+const port = [args.port, process.env.UPTIME_KUMA_PORT, process.env.PORT, 3001]
+    .map(portValue => parseInt(portValue))
+    .find(portValue => !isNaN(portValue));
 
 // SSL
-const sslKey = process.env.UPTIME_KUMA_SSL_KEY || process.env.SSL_KEY || args["ssl-key"] || undefined;
-const sslCert = process.env.UPTIME_KUMA_SSL_CERT || process.env.SSL_CERT || args["ssl-cert"] || undefined;
-const disableFrameSameOrigin = !!process.env.UPTIME_KUMA_DISABLE_FRAME_SAMEORIGIN || args["disable-frame-sameorigin"] || false;
+const sslKey = args["ssl-key"] || process.env.UPTIME_KUMA_SSL_KEY || process.env.SSL_KEY || undefined;
+const sslCert = args["ssl-cert"] || process.env.UPTIME_KUMA_SSL_CERT || process.env.SSL_CERT || undefined;
+const disableFrameSameOrigin = args["disable-frame-sameorigin"] || !!process.env.UPTIME_KUMA_DISABLE_FRAME_SAMEORIGIN || false;
 const cloudflaredToken = args["cloudflared-token"] || process.env.UPTIME_KUMA_CLOUDFLARED_TOKEN || undefined;
 
 // 2FA / notp verification defaults
@@ -115,20 +135,20 @@ if (config.demoMode) {
 console.log("Creating express and socket.io instance");
 const app = express();
 
-let server;
+let httpServer;
 
 if (sslKey && sslCert) {
     console.log("Server Type: HTTPS");
-    server = https.createServer({
+    httpServer = https.createServer({
         key: fs.readFileSync(sslKey),
         cert: fs.readFileSync(sslCert)
     }, app);
 } else {
     console.log("Server Type: HTTP");
-    server = http.createServer(app);
+    httpServer = http.createServer(app);
 }
 
-const io = new Server(server);
+const io = new Server(httpServer);
 module.exports.io = io;
 
 // Must be after io instantiation
@@ -137,7 +157,8 @@ const { statusPageSocketHandler } = require("./socket-handlers/status-page-socke
 const databaseSocketHandler = require("./socket-handlers/database-socket-handler");
 const TwoFA = require("./2fa");
 const StatusPage = require("./model/status_page");
-const { cloudflaredSocketHandler, autoStart: cloudflaredAutoStart } = require("./socket-handlers/cloudflared-socket-handler");
+const { cloudflaredSocketHandler, autoStart: cloudflaredAutoStart, stop: cloudflaredStop } = require("./socket-handlers/cloudflared-socket-handler");
+const { proxySocketHandler } = require("./socket-handlers/proxy-socket-handler");
 
 app.use(express.json());
 
@@ -163,12 +184,6 @@ let totalClient = 0;
 let jwtSecret = null;
 
 /**
- * Main monitor list
- * @type {{}}
- */
-let monitorList = {};
-
-/**
  * Show Setup Page
  * @type {boolean}
  */
@@ -190,13 +205,12 @@ try {
     }
 }
 
-exports.entryPage = "dashboard";
-
 (async () => {
     Database.init(args);
     await initDatabase(testMode);
 
     exports.entryPage = await setting("entryPage");
+    await StatusPage.loadDomainMappingList();
 
     console.log("Adding route");
 
@@ -205,8 +219,13 @@ exports.entryPage = "dashboard";
     // ***************************
 
     // Entry Page
-    app.get("/", async (_request, response) => {
-        if (exports.entryPage && exports.entryPage.startsWith("statusPage-")) {
+    app.get("/", async (request, response) => {
+        debug(`Request Domain: ${request.hostname}`);
+
+        if (request.hostname in StatusPage.domainMappingList) {
+            debug("This is a status page domain");
+            response.send(indexHTML);
+        } else if (exports.entryPage && exports.entryPage.startsWith("statusPage-")) {
             response.redirect("/status/" + exports.entryPage.replace("statusPage-", ""));
         } else {
             response.redirect("/dashboard");
@@ -600,7 +619,7 @@ exports.entryPage = "dashboard";
 
                 await updateMonitorNotification(bean.id, notificationIDList);
 
-                await sendMonitorList(socket);
+                await server.sendMonitorList(socket);
                 await startMonitor(socket.userID, bean.id);
 
                 callback({
@@ -629,7 +648,7 @@ exports.entryPage = "dashboard";
                 }
 
                 // Reset Prometheus labels
-                monitorList[monitor.id]?.prometheus()?.remove();
+                server.monitorList[monitor.id]?.prometheus()?.remove();
 
                 bean.name = monitor.name;
                 bean.type = monitor.type;
@@ -646,6 +665,7 @@ exports.entryPage = "dashboard";
                 bean.port = monitor.port;
                 bean.keyword = monitor.keyword;
                 bean.ignoreTls = monitor.ignoreTls;
+                bean.expiryNotification = monitor.expiryNotification;
                 bean.upsideDown = monitor.upsideDown;
                 bean.maxredirects = monitor.maxredirects;
                 bean.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
@@ -665,7 +685,7 @@ exports.entryPage = "dashboard";
                     await restartMonitor(socket.userID, bean.id);
                 }
 
-                await sendMonitorList(socket);
+                await server.sendMonitorList(socket);
 
                 callback({
                     ok: true,
@@ -685,7 +705,7 @@ exports.entryPage = "dashboard";
         socket.on("getMonitorList", async (callback) => {
             try {
                 checkLogin(socket);
-                await sendMonitorList(socket);
+                await server.sendMonitorList(socket);
                 callback({
                     ok: true,
                 });
@@ -759,7 +779,7 @@ exports.entryPage = "dashboard";
             try {
                 checkLogin(socket);
                 await startMonitor(socket.userID, monitorID);
-                await sendMonitorList(socket);
+                await server.sendMonitorList(socket);
 
                 callback({
                     ok: true,
@@ -778,7 +798,7 @@ exports.entryPage = "dashboard";
             try {
                 checkLogin(socket);
                 await pauseMonitor(socket.userID, monitorID);
-                await sendMonitorList(socket);
+                await server.sendMonitorList(socket);
 
                 callback({
                     ok: true,
@@ -799,9 +819,9 @@ exports.entryPage = "dashboard";
 
                 console.log(`Delete Monitor: ${monitorID} User ID: ${socket.userID}`);
 
-                if (monitorID in monitorList) {
-                    monitorList[monitorID].stop();
-                    delete monitorList[monitorID];
+                if (monitorID in server.monitorList) {
+                    server.monitorList[monitorID].stop();
+                    delete server.monitorList[monitorID];
                 }
 
                 await R.exec("DELETE FROM monitor WHERE id = ? AND user_id = ? ", [
@@ -814,7 +834,7 @@ exports.entryPage = "dashboard";
                     msg: "Deleted Successfully.",
                 });
 
-                await sendMonitorList(socket);
+                await server.sendMonitorList(socket);
                 // Clear heartbeat list on client
                 await sendImportantHeartbeatList(socket, monitorID, true, true);
 
@@ -1114,52 +1134,6 @@ exports.entryPage = "dashboard";
             }
         });
 
-        socket.on("addProxy", async (proxy, proxyID, callback) => {
-            try {
-                checkLogin(socket);
-
-                const proxyBean = await Proxy.save(proxy, proxyID, socket.userID);
-                await sendProxyList(socket);
-
-                if (proxy.applyExisting) {
-                    await restartMonitors(socket.userID);
-                }
-
-                callback({
-                    ok: true,
-                    msg: "Saved",
-                    id: proxyBean.id,
-                });
-
-            } catch (e) {
-                callback({
-                    ok: false,
-                    msg: e.message,
-                });
-            }
-        });
-
-        socket.on("deleteProxy", async (proxyID, callback) => {
-            try {
-                checkLogin(socket);
-
-                await Proxy.delete(proxyID, socket.userID);
-                await sendProxyList(socket);
-                await restartMonitors(socket.userID);
-
-                callback({
-                    ok: true,
-                    msg: "Deleted",
-                });
-
-            } catch (e) {
-                callback({
-                    ok: false,
-                    msg: e.message,
-                });
-            }
-        });
-
         socket.on("checkApprise", async (callback) => {
             try {
                 checkLogin(socket);
@@ -1186,8 +1160,8 @@ exports.entryPage = "dashboard";
                 // If the import option is "overwrite" it'll clear most of the tables, except "settings" and "user"
                 if (importHandle == "overwrite") {
                     // Stops every monitor first, so it doesn't execute any heartbeat while importing
-                    for (let id in monitorList) {
-                        let monitor = monitorList[id];
+                    for (let id in server.monitorList) {
+                        let monitor = server.monitorList[id];
                         await monitor.stop();
                     }
                     await R.exec("DELETE FROM heartbeat");
@@ -1350,7 +1324,7 @@ exports.entryPage = "dashboard";
                     }
 
                     await sendNotificationList(socket);
-                    await sendMonitorList(socket);
+                    await server.sendMonitorList(socket);
                 }
 
                 callback({
@@ -1440,6 +1414,7 @@ exports.entryPage = "dashboard";
         statusPageSocketHandler(socket);
         cloudflaredSocketHandler(socket);
         databaseSocketHandler(socket);
+        proxySocketHandler(socket);
 
         debug("added all socket handlers");
 
@@ -1460,12 +1435,12 @@ exports.entryPage = "dashboard";
 
     console.log("Init the server");
 
-    server.once("error", async (err) => {
+    httpServer.once("error", async (err) => {
         console.error("Cannot listen: " + err.message);
-        await Database.close();
+        await shutdownFunction();
     });
 
-    server.listen(port, hostname, () => {
+    httpServer.listen(port, hostname, () => {
         if (hostname) {
             console.log(`Listening on ${hostname}:${port}`);
         } else {
@@ -1486,6 +1461,13 @@ exports.entryPage = "dashboard";
 
 })();
 
+/**
+ * Adds or removes notifications from a monitor.
+ * @param {number} monitorID The ID of the monitor to add/remove notifications from.
+ * @param {Array.<number>} notificationIDList An array of IDs for the notifications to add/remove.
+ *
+ * Generated by Trelent
+ */
 async function updateMonitorNotification(monitorID, notificationIDList) {
     await R.exec("DELETE FROM monitor_notification WHERE monitor_id = ? ", [
         monitorID,
@@ -1501,6 +1483,13 @@ async function updateMonitorNotification(monitorID, notificationIDList) {
     }
 }
 
+/**
+ * This function checks if the user owns a monitor with the given ID.
+ * @param {number} monitorID - The ID of the monitor to check ownership for.
+ * @param {number} userID - The ID of the user who is trying to access this data.
+ *
+ * Generated by Trelent
+ */
 async function checkOwner(userID, monitorID) {
     let row = await R.getRow("SELECT id FROM monitor WHERE id = ? AND user_id = ? ", [
         monitorID,
@@ -1512,17 +1501,15 @@ async function checkOwner(userID, monitorID) {
     }
 }
 
-async function sendMonitorList(socket) {
-    let list = await getMonitorJSONList(socket.userID);
-    io.to(socket.userID).emit("monitorList", list);
-    return list;
-}
-
+/**
+ * This function is used to send the heartbeat list of a monitor.
+ * @param {Socket} socket - The socket object that will be used to send the data.
+ */
 async function afterLogin(socket, user) {
     socket.userID = user.id;
     socket.join(user.id);
 
-    let monitorList = await sendMonitorList(socket);
+    let monitorList = await server.sendMonitorList(socket);
     sendNotificationList(socket);
     sendProxyList(socket);
 
@@ -1543,6 +1530,13 @@ async function afterLogin(socket, user) {
     }
 }
 
+/**
+ * Get a list of monitors for the given user.
+ * @param {string} userID - The ID of the user to get monitors for.
+ * @returns {Promise<Object>} A promise that resolves to an object with monitor IDs as keys and monitor objects as values.
+ *
+ * Generated by Trelent
+ */
 async function getMonitorJSONList(userID) {
     let result = {};
 
@@ -1557,6 +1551,11 @@ async function getMonitorJSONList(userID) {
     return result;
 }
 
+/**
+ * Connect to the database and patch it if necessary.
+ *
+ * Generated by Trelent
+ */
 async function initDatabase(testMode = false) {
     if (! fs.existsSync(Database.path)) {
         console.log("Copying Database");
@@ -1591,6 +1590,13 @@ async function initDatabase(testMode = false) {
     jwtSecret = jwtSecretBean.value;
 }
 
+/**
+ * Resume a monitor.
+ * @param {string} userID - The ID of the user who owns the monitor.
+ * @param {string} monitorID - The ID of the monitor to resume.
+ *
+ * Generated by Trelent
+ */
 async function startMonitor(userID, monitorID) {
     await checkOwner(userID, monitorID);
 
@@ -1605,11 +1611,11 @@ async function startMonitor(userID, monitorID) {
         monitorID,
     ]);
 
-    if (monitor.id in monitorList) {
-        monitorList[monitor.id].stop();
+    if (monitor.id in server.monitorList) {
+        server.monitorList[monitor.id].stop();
     }
 
-    monitorList[monitor.id] = monitor;
+    server.monitorList[monitor.id] = monitor;
     monitor.start(io);
 }
 
@@ -1617,19 +1623,13 @@ async function restartMonitor(userID, monitorID) {
     return await startMonitor(userID, monitorID);
 }
 
-async function restartMonitors(userID) {
-    // Fetch all active monitors for user
-    const monitors = await R.getAll("SELECT id FROM monitor WHERE active = 1 AND user_id = ?", [userID]);
-
-    for (const monitor of monitors) {
-        // Start updated monitor
-        await startMonitor(userID, monitor.id);
-
-        // Give some delays, so all monitors won't make request at the same moment when just start the server.
-        await sleep(getRandomInt(300, 1000));
-    }
-}
-
+/**
+ * Pause a monitor.
+ * @param {string} userID - The ID of the user who owns the monitor.
+ * @param {string} monitorID - The ID of the monitor to pause.
+ *
+ * Generated by Trelent
+ */
 async function pauseMonitor(userID, monitorID) {
     await checkOwner(userID, monitorID);
 
@@ -1640,8 +1640,8 @@ async function pauseMonitor(userID, monitorID) {
         userID,
     ]);
 
-    if (monitorID in monitorList) {
-        monitorList[monitorID].stop();
+    if (monitorID in server.monitorList) {
+        server.monitorList[monitorID].stop();
     }
 }
 
@@ -1652,7 +1652,7 @@ async function startMonitors() {
     let list = await R.find("monitor", " active = 1 ");
 
     for (let monitor of list) {
-        monitorList[monitor.id] = monitor;
+        server.monitorList[monitor.id] = monitor;
     }
 
     for (let monitor of list) {
@@ -1662,24 +1662,33 @@ async function startMonitors() {
     }
 }
 
+/**
+ * Stops all monitors and closes the database connection.
+ * @param {string} signal The signal that triggered this function to be called.
+ *
+ * Generated by Trelent
+ */
 async function shutdownFunction(signal) {
     console.log("Shutdown requested");
     console.log("Called signal: " + signal);
 
     console.log("Stopping all monitors");
-    for (let id in monitorList) {
-        let monitor = monitorList[id];
+    for (let id in server.monitorList) {
+        let monitor = server.monitorList[id];
         monitor.stop();
     }
     await sleep(2000);
     await Database.close();
+
+    stopBackgroundJobs();
+    await cloudflaredStop();
 }
 
 function finalFunction() {
     console.log("Graceful shutdown successful!");
 }
 
-gracefulShutdown(server, {
+gracefulShutdown(httpServer, {
     signals: "SIGINT SIGTERM",
     timeout: 30000,                   // timeout: 30 secs
     development: false,               // not in dev mode

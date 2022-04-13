@@ -121,6 +121,10 @@ export default {
             this.$root.getSocket().emit("getSettings", (res) => {
                 this.settings = res.data;
 
+                if (this.settings.checkUpdate === undefined) {
+                    this.settings.checkUpdate = true;
+                }
+
                 if (this.settings.searchEngineIndex === undefined) {
                     this.settings.searchEngineIndex = false;
                 }

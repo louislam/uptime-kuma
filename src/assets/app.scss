@@ -22,6 +22,18 @@ textarea.form-control {
     width: 10px;
 }
 
+.list-group {
+    border-radius: 0.75rem;
+
+    .dark & {
+        .list-group-item {
+            background-color: $dark-bg;
+            color: $dark-font-color;
+            border-color: $dark-border-color;
+        }
+    }
+}
+
 ::-webkit-scrollbar-thumb {
     background: #ccc;
     border-radius: 20px;
@@ -411,6 +423,10 @@ textarea.form-control {
     transition: all $easing-in 0.2s;
     background-color: rgba(239, 239, 239, 0.7);
     border-radius: 8px;
+
+    &.no-bg {
+        background-color: transparent !important;
+    }
 
     &:focus {
         outline: 0 solid #eee;
