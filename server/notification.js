@@ -24,6 +24,7 @@ const Feishu = require("./notification-providers/feishu");
 const AliyunSms = require("./notification-providers/aliyun-sms");
 const DingDing = require("./notification-providers/dingding");
 const Bark = require("./notification-providers/bark");
+const { log } = require("../src/util");
 const SerwerSMS = require("./notification-providers/serwersms");
 const Stackfield = require("./notification-providers/stackfield");
 const WeCom = require("./notification-providers/wecom");
@@ -36,7 +37,7 @@ class Notification {
     providerList = {};
 
     static init() {
-        console.log("Prepare Notification Providers");
+        log.info("notification", "Prepare Notification Providers");
 
         this.providerList = {};
 
