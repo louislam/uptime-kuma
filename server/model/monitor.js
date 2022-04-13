@@ -534,18 +534,18 @@ class Monitor extends BeanModel {
      * @returns {Promise<object>}
      */
     async updateTlsInfo(checkCertificateResult) {
-        let tls_info_bean = await R.findOne("monitor_tls_info", "monitor_id = ?", [
+        let tlsInfoBean = await R.findOne("monitor_tls_info", "monitor_id = ?", [
             this.id,
         ]);
 
-        if (tls_info_bean == null) {
-            tls_info_bean = R.dispense("monitor_tls_info");
-            tls_info_bean.monitor_id = this.id;
+        if (tlsInfoBean == null) {
+            tlsInfoBean = R.dispense("monitor_tls_info");
+            tlsInfoBean.monitor_id = this.id;
         } else {
 
             // Clear sent history if the cert changed.
             try {
-                let oldCertInfo = JSON.parse(tls_info_bean.info_json);
+                let oldCertInfo = JSON.parse(tlsInfoBean.info_json);
 
                 let isValidObjects = oldCertInfo && oldCertInfo.certInfo && checkCertificateResult && checkCertificateResult.certInfo;
 
@@ -567,8 +567,8 @@ class Monitor extends BeanModel {
 
         }
 
-        tls_info_bean.info_json = JSON.stringify(checkCertificateResult);
-        await R.store(tls_info_bean);
+        tlsInfoBean.info_json = JSON.stringify(checkCertificateResult);
+        await R.store(tlsInfoBean);
 
         return checkCertificateResult;
     }

@@ -49,13 +49,13 @@ class Prometheus {
 
         if (typeof tlsInfo !== "undefined") {
             try {
-                let is_valid = 0;
+                let isValid = 0;
                 if (tlsInfo.valid == true) {
-                    is_valid = 1;
+                    isValid = 1;
                 } else {
-                    is_valid = 0;
+                    isValid = 0;
                 }
-                monitor_cert_is_valid.set(this.monitorLabelValues, is_valid);
+                monitor_cert_is_valid.set(this.monitorLabelValues, isValid);
             } catch (e) {
                 log.error("prometheus", "Caught error");
                 log.error("prometheus", e);

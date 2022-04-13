@@ -105,27 +105,27 @@ class Notification {
     }
 
     static async save(notification, notificationID, userID) {
-        let bean
+        let bean;
 
         if (notificationID) {
             bean = await R.findOne("notification", " id = ? AND user_id = ? ", [
                 notificationID,
                 userID,
-            ])
+            ]);
 
             if (! bean) {
-                throw new Error("notification not found")
+                throw new Error("notification not found");
             }
 
         } else {
-            bean = R.dispense("notification")
+            bean = R.dispense("notification");
         }
 
         bean.name = notification.name;
         bean.user_id = userID;
         bean.config = JSON.stringify(notification);
         bean.is_default = notification.isDefault || false;
-        await R.store(bean)
+        await R.store(bean);
 
         if (notification.applyExisting) {
             await applyNotificationEveryMonitor(bean.id, userID);
@@ -138,13 +138,13 @@ class Notification {
         let bean = await R.findOne("notification", " id = ? AND user_id = ? ", [
             notificationID,
             userID,
-        ])
+        ]);
 
         if (! bean) {
-            throw new Error("notification not found")
+            throw new Error("notification not found");
         }
 
-        await R.trash(bean)
+        await R.trash(bean);
     }
 
     static checkApprise() {
@@ -171,17 +171,17 @@ async function applyNotificationEveryMonitor(notificationID, userID) {
         let checkNotification = await R.findOne("monitor_notification", " monitor_id = ? AND notification_id = ? ", [
             monitors[i].id,
             notificationID,
-        ])
+        ]);
 
         if (! checkNotification) {
             let relation = R.dispense("monitor_notification");
             relation.monitor_id = monitors[i].id;
             relation.notification_id = notificationID;
-            await R.store(relation)
+            await R.store(relation);
         }
     }
 }
 
 module.exports = {
     Notification,
-}
+};
