@@ -442,4 +442,7 @@ export default {
     "Issuer:": "Issuer:",
     "Fingerprint:": "Fingerprint:",
     "No status pages": "No status pages",
+    "Domain Name Expiry Notification": "Domain Name Expiry Notification",
+    "Proxy": "Proxy",
+    "Date Created": "Date Created",
 };
