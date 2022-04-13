@@ -44,6 +44,7 @@ export default {
 .logo {
     margin: 4em 1em;
 }
+
 .update-link {
     font-size: 0.9em;
 }
