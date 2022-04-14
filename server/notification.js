@@ -32,6 +32,7 @@ const GoogleChat = require("./notification-providers/google-chat");
 const Gorush = require("./notification-providers/gorush");
 const Alerta = require("./notification-providers/alerta");
 const OneBot = require("./notification-providers/onebot");
+const Cachet = require("./notification-providers/cachet");
 
 class Notification {
 
@@ -75,6 +76,7 @@ class Notification {
             new Gorush(),
             new Alerta(),
             new OneBot(),
+            new Cachet(),
         ];
 
         for (let item of list) {

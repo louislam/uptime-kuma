@@ -30,6 +30,7 @@ import GoogleChat from "./GoogleChat.vue";
 import Gorush from "./Gorush.vue";
 import Alerta from "./Alerta.vue";
 import OneBot from "./OneBot.vue";
+import Cachet from "./Cachet.vue";
 
 /**
  * Manage all notification form.
@@ -69,6 +70,7 @@ const NotificationFormList = {
     "gorush": Gorush,
     "alerta": Alerta,
     "OneBot": OneBot,
+    "Cachet": Cachet,
 };
 
 export default NotificationFormList;
