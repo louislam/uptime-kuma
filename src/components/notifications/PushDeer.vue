@@ -1,6 +1,6 @@
 <template>
     <div class="mb-3">
-        <label for="pushdeer-key" class="form-label">{{ $t("Pushdeer Key") }}</label>
+        <label for="pushdeer-key" class="form-label">{{ $t("PushDeer Key") }}</label>
         <HiddenInput id="pushdeer-key" v-model="$parent.notification.pushdeerKey" :required="true" autocomplete="one-time-code" placeholder="PDUxxxx"></HiddenInput>
     </div>
 
