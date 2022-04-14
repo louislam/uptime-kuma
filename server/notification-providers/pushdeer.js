@@ -2,9 +2,9 @@ const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 const { DOWN, UP } = require("../../src/util");
 
-class Pushdeer extends NotificationProvider {
+class PushDeer extends NotificationProvider {
 
-    name = "Pushdeer";
+    name = "PushDeer";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
@@ -36,7 +36,7 @@ class Pushdeer extends NotificationProvider {
                 this.throwGeneralAxiosError(error);
             }
             if (res.data.content.result.length === 0) {
-                let error = "Invalid Pushdeer key";
+                let error = "Invalid PushDeer key";
                 this.throwGeneralAxiosError(error);
             } else if (JSON.parse(res.data.content.result[0]).success != "ok") {
                 let error = "Unknown error";
@@ -49,4 +49,4 @@ class Pushdeer extends NotificationProvider {
     }
 }
 
-module.exports = Pushdeer;
+module.exports = PushDeer;

@@ -451,5 +451,5 @@ export default {
     onebotPrivateMessage: "Private",
     onebotUserOrGroupId: "Group/User ID",
     onebotSafetyTips: "For safety, must set access token",
-    "Pushdeer Key": "Pushdeer Key",
+    "PushDeer Key": "PushDeer Key",
 };
