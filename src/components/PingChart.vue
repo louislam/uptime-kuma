@@ -220,6 +220,7 @@ export default {
             if (newPeriod == "0") {
                 newPeriod = null;
                 this.heartbeatList = null;
+                this.$root.storage().removeItem(`chart-period-${this.monitorId}`);
             } else {
                 this.loading = true;
 
@@ -253,7 +254,7 @@ export default {
         // Load chart period from storage if saved
         let period = this.$root.storage()[`chart-period-${this.monitorId}`];
         if (period != null) {
-            this.chartPeriodHrs = period;
+            this.chartPeriodHrs = Math.min(period, 6);
         }
     }
 };
