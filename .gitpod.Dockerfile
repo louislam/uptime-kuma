@@ -2,11 +2,6 @@ FROM gitpod/workspace-node
 
 USER root
 
-# Update APT Database
-### base ###
-RUN sudo apt-get update -q \
-    && sudo apt-get install -y php-dev
-
 # Install Curl
 # Install Apprise, add sqlite3 cli for debugging in the future, iputils-ping for ping, util-linux for setpriv
 RUN apt update && \
@@ -23,9 +18,3 @@ RUN curl -L --output cloudflared.deb https://github.com/cloudflare/cloudflared/r
     rm -f cloudflared.deb
 
 USER gitpod
-
-# Install Changelogger
-RUN COMPOSER_ALLOW_SUPERUSER=1 composer global require churchtools/changelogger
-
-# Add Workspace/Project composer bin folder to $PATH
-ENV PATH="$PATH:$HOME/.config/composer/vendor/bin"
