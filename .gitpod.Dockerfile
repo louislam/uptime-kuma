@@ -16,9 +16,7 @@ RUN apt update && \
     rm -rf /var/lib/apt/lists/*
 
 # Install cloudflared
-COPY extra/download-cloudflared.js ./extra/download-cloudflared.js
-RUN node ./extra/download-cloudflared.js $TARGETPLATFORM && \
-    dpkg --add-architecture arm && \
+RUN curl -L --output cloudflared.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb && \
     apt update && \
     apt --yes --no-install-recommends install ./cloudflared.deb && \
     rm -rf /var/lib/apt/lists/* && \
