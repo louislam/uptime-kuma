@@ -22,10 +22,10 @@ class OneBot extends NotificationProvider {
                     "Authorization": "Bearer " + notification.accessToken,
                 }
             };
-            let psuhText = "UptimeKuma Alert: " + msg;
+            let pushText = "UptimeKuma Alert: " + msg;
             let data = {
                 "auto_escape": true,
-                "message": psuhText,
+                "message": pushText,
             };
             if (notification.msgType == "group") {
                 data["message_type"] = "group";

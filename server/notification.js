@@ -74,7 +74,6 @@ class Notification {
             new GoogleChat(),
             new Gorush(),
             new Alerta(),
-            new GoogleChat(),
             new OneBot(),
         ];
 
