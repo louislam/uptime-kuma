@@ -1,0 +1,19 @@
+# Please adjust to your needs (see https://www.gitpod.io/docs/config-gitpod-file)
+# and commit this file to your remote git repository to share the goodness with others.
+
+image:
+  file: .gitpod.Dockerfile
+
+ports:
+  - port: 3001
+    onOpen: open-browser
+
+tasks:
+  - before: bash .gp/bash/before-tasks.sh
+    init: |
+      npm install npm pm2 -g && npm run setup && pm2 install pm2-logrotate
+    name: Main Terminal
+  - openMode: split-right
+    command: |
+      pm2 start server/server.js --name uptime-kuma
+    name: Kuma Server
