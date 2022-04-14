@@ -1228,7 +1228,7 @@ try {
                 }
 
                 // Only starts importing if the backup file contains at least one proxy
-                if (proxyListData.length >= 1) {
+                if (proxyListData && proxyListData.length >= 1) {
                     const proxies = await R.findAll("proxy");
 
                     // Loop over proxy list and save proxies
