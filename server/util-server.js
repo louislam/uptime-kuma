@@ -88,17 +88,12 @@ exports.pingAsync = function (hostname, ipv6 = false) {
     });
 };
 
-/**
- * Resolves a given record using the specified DNS server
- * @param {string} hostname The hostname of the record to lookup
- * @param {string} resolver_server The DNS server to use
- * @param {string} resolver_port The port the DNS server is listening on
- * @param {string} rrtype The type of record to request
- * @returns {Promise} Promise object represents DNS lookup result
- */
 exports.dnsResolve = function (hostname, resolver_server, resolver_port, rrtype) {
     const resolver = new Resolver();
-    resolver.setServers([`${resolver_server}:${resolver_port}`]);
+    // Remove brackets from IPv6 addresses so we can re-add them to
+    // prevent issues with ::1:5300 (::1 port 5300)
+    resolver_server = resolver_server.replace("[", "").replace("]", "");
+    resolver.setServers([`[${resolver_server}]:${resolver_port}`]);
     return new Promise((resolve, reject) => {
         if (rrtype == "PTR") {
             resolver.reverse(hostname, (err, records) => {
