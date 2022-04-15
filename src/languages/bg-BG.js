@@ -197,7 +197,7 @@ export default {
     line: "Line Messenger",
     mattermost: "Mattermost",
     "Status Page": "Статус страница",
-    "Status Pages": "Статус страница",
+    "Status Pages": "Статус страници",
     "Primary Base URL": "Основен базов URL адрес",
     "Push URL": "Генериран Push URL адрес",
     needPushEvery: "Необходимо е да извършвате заявка към този URL адрес на всеки {0} секунди",
