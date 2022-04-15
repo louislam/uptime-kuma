@@ -1,4 +1,9 @@
 module.exports = {
+    ignorePatterns: [
+        "test/*",
+        "server/modules/apicache/*",
+        "src/util.js"
+    ],
     root: true,
     env: {
         browser: true,
@@ -34,7 +39,7 @@ module.exports = {
             },
         ],
         quotes: ["warn", "double"],
-        semi: "warn",
+        semi: "error",
         "vue/html-indent": ["warn", 4], // default: 2
         "vue/max-attributes-per-line": "off",
         "vue/singleline-html-element-content-newline": "off",

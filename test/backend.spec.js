@@ -1,4 +1,4 @@
-const { genSecret, sleep, DOWN } = require("../src/util");
+const { genSecret, DOWN } = require("../src/util");
 const utilServerRewire = require("../server/util-server");
 const Discord = require("../server/notification-providers/discord");
 const axios = require("axios");

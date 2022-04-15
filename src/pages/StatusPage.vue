@@ -836,7 +836,7 @@ footer {
 
 .incident {
     .content {
-        &[contenteditable=true] {
+        &[contenteditable="true"] {
             min-height: 60px;
         }
     }
