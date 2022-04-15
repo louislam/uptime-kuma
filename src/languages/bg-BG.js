@@ -432,7 +432,7 @@ export default {
     cloudflareWebsite: "Cloudflare уебсайт",
     "Message:": "Съобщение:",
     "Don't know how to get the token? Please read the guide:": "Не знаете как да вземете токен? Моля, прочетете ръководството:",
-    "The current connection may be lost if you are currently connecting via Cloudflare Tunnel. Are you sure want to stop it? Type your current password to confirm it.": "Текущата връзка може да прекъсне ако в момента сте свързани чрез "\Cloudflare Tunnel\". Сигурни ли сте, че желаете да го спрете? Въведете Вашата текуща парола за да потвърдите.",
+    "The current connection may be lost if you are currently connecting via Cloudflare Tunnel. Are you sure want to stop it? Type your current password to confirm it.": "Текущата връзка може да прекъсне ако в момента сте свързани чрез \"Cloudflare Tunnel\". Сигурни ли сте, че желаете да го спрете? Въведете Вашата текуща парола за да потвърдите.",
     "Other Software": "Друг софтуер",
     "For example: nginx, Apache and Traefik.": "Например: Nginx, Apache и Traefik.",
     "Please read": "Моля, прочетете",
