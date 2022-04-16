@@ -1,11 +1,10 @@
 const tcpp = require("tcp-ping");
 const Ping = require("./ping-lite");
 const { R } = require("redbean-node");
-const { debug } = require("../src/util");
+const { log, genSecret } = require("../src/util");
 const passwordHash = require("./password-hash");
-const dayjs = require("dayjs");
 const { Resolver } = require("dns");
-const child_process = require("child_process");
+const childProcess = require("child_process");
 const iconv = require("iconv-lite");
 const chardet = require("chardet");
 const fs = require("fs");
@@ -33,7 +32,7 @@ exports.initJWTSecret = async () => {
         jwtSecretBean.key = "jwtSecret";
     }
 
-    jwtSecretBean.value = passwordHash.generate(dayjs() + "");
+    jwtSecretBean.value = passwordHash.generate(genSecret());
     await R.store(jwtSecretBean);
     return jwtSecretBean;
 };
@@ -170,7 +169,7 @@ exports.setting = async function (key) {
 
     try {
         const v = JSON.parse(value);
-        debug(`Get Setting: ${key}: ${v}`);
+        log.debug("util", `Get Setting: ${key}: ${v}`);
         return v;
     } catch (e) {
         return value;
@@ -257,7 +256,7 @@ const parseCertificateInfo = function (info) {
     const existingList = {};
 
     while (link) {
-        debug(`[${i}] ${link.fingerprint}`);
+        log.debug("util", `[${i}] ${link.fingerprint}`);
 
         if (!link.valid_from || !link.valid_to) {
             break;
@@ -272,7 +271,7 @@ const parseCertificateInfo = function (info) {
         if (link.issuerCertificate == null) {
             break;
         } else if (link.issuerCertificate.fingerprint in existingList) {
-            debug(`[Last] ${link.issuerCertificate.fingerprint}`);
+            log.debug("util", `[Last] ${link.issuerCertificate.fingerprint}`);
             link.issuerCertificate = null;
             break;
         } else {
@@ -293,7 +292,7 @@ exports.checkCertificate = function (res) {
     const info = res.request.res.socket.getPeerCertificate(true);
     const valid = res.request.res.socket.authorized || false;
 
-    debug("Parsing Certificate Info");
+    log.debug("util", "Parsing Certificate Info");
     const parsedInfo = parseCertificateInfo(info);
 
     return {
@@ -371,10 +370,32 @@ exports.checkLogin = (socket) => {
     }
 };
 
+/**
+ * For logged-in users, double-check the password
+ * @param socket
+ * @param currentPassword
+ * @returns {Promise<Bean>}
+ */
+exports.doubleCheckPassword = async (socket, currentPassword) => {
+    if (typeof currentPassword !== "string") {
+        throw new Error("Wrong data type?");
+    }
+
+    let user = await R.findOne("user", " id = ? AND active = 1 ", [
+        socket.userID,
+    ]);
+
+    if (!user || !passwordHash.verify(currentPassword, user.password)) {
+        throw new Error("Incorrect current password");
+    }
+
+    return user;
+};
+
 exports.startUnitTest = async () => {
     console.log("Starting unit test...");
     const npm = /^win/.test(process.platform) ? "npm.cmd" : "npm";
-    const child = child_process.spawn(npm, ["run", "jest"]);
+    const child = childProcess.spawn(npm, ["run", "jest"]);
 
     child.stdout.on("data", (data) => {
         console.log(data.toString());
@@ -396,7 +417,6 @@ exports.startUnitTest = async () => {
  */
 exports.convertToUTF8 = (body) => {
     const guessEncoding = chardet.detect(body);
-    //debug("Guess Encoding: " + guessEncoding);
     const str = iconv.decode(body, guessEncoding);
     return str.toString();
 };

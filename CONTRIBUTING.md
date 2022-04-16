@@ -27,11 +27,24 @@ The frontend code build into "dist" directory. The server (express.js) exposes t
 
 ## Can I create a pull request for Uptime Kuma?
 
-Generally, if the pull request is working fine, and it does not affect any existing logic, workflow and performance, I will merge into the master branch once it is tested.
+⚠️ 2022-03-02 Update:
 
-If you are not sure whether I will accept your pull request, feel free to create an empty pull request draft first.
+Since I found that merging pull requests is a pretty heavy task for me, I try to rearrange it.
+
+✅ Accept:
+- Bug/Security fix
+- Translations
+- Adding notification providers
+
+❌ Avoid:
+- Large pull requests
+- New big features
+
+My long story here: https://www.reddit.com/r/UptimeKuma/comments/t1t6or/comment/hynyijx/
 
 ### Recommended Pull Request Guideline
+
+Before deep into coding, disscussion first is preferred. Creating an empty pull request for disscussion would be recommended.
 
 1. Fork the project
 1. Clone your fork repo to local
@@ -42,42 +55,7 @@ If you are not sure whether I will accept your pull request, feel free to create
 1. Create a pull request: https://github.com/louislam/uptime-kuma/compare
 1. Write a proper description
 1. Click "Change to draft"
-
-### Pull Request Examples
-
-Here are some example situations in the past.
-
-#### ✅ High - Medium Priority
-
-Easy to review, no breaking change and not touching the existing code
-
-- Add a new notification
-- Add a chart
-- Fix a bug
-- Translations
-- Add a independent new feature
-
-#### *️⃣ Requires one more reviewer
-
-I do not have such knowledge to test it.
-
-- Add k8s supports
-
-#### ⚠ Low Priority - Harsh Mode
-
-Some pull requests are required to modify the core. To be honest, I do not want anyone to try to do that, because it would spend a lot of your time. I will review your pull request harshly. Also, you may need to write a lot of unit tests to ensure that there is no breaking change.
-
-- Touch large parts of code of any very important features
-- Touch monitoring logic
-- Drop a table or drop a column for any reason
-- Touch the entry point of Docker or Node.js
-- Modify auth
-
-#### *️⃣ Low Priority
-
-It changed my current workflow and require further studies.
-
-- Change my release approach
+1. Discussion
 
 #### ❌ Won't Merge
 
@@ -221,20 +199,28 @@ https://github.com/louislam/uptime-kuma/issues?q=sort%3Aupdated-desc
 ### Release Procedures
 
 1. Draft a release note
-1. Make sure the repo is cleared
-1. `npm run update-version 1.X.X`
-1. `npm run build`
-1. `npm run build-docker`
-1. `git push`
-1. Publish the release note as 1.X.X 
-1. `npm run upload-artifacts`
-1. SSH to demo site server and update to 1.X.X
+2. Make sure the repo is cleared
+3. `npm run release-final with env vars: `VERSION` and `GITHUB_TOKEN`
+4. Wait until the `Press any key to continue`
+5. `git push`
+6. Publish the release note as 1.X.X 
+7. Press any key to continue
+8. SSH to demo site server and update to 1.X.X
 
 Checking:
 
 - Check all tags is fine on https://hub.docker.com/r/louislam/uptime-kuma/tags
 - Try the Docker image with tag 1.X.X (Clean install / amd64 / arm64 / armv7)
 - Try clean installation with Node.js
+
+### Release Beta Procedures
+
+1. Draft a release note, check "This is a pre-release"
+2. Make sure the repo is cleared
+3. `npm run release-beta` with env vars: `VERSION` and `GITHUB_TOKEN`
+4. Wait until the `Press any key to continue`
+5. Publish the release note as 1.X.X-beta.X
+6. Press any key to continue
 
 ### Release Wiki
 
