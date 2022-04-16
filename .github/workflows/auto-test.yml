@@ -32,3 +32,11 @@ jobs:
       env:
         HEADLESS_TEST: 1
         JUST_FOR_TEST: ${{ secrets.JUST_FOR_TEST }}
+    - name: Upload test artifacts
+      uses: actions/upload-artifact@v2
+      if: always()
+      with:
+        name: test-screenshots ${{ matrix.os }} ${{ matrix.node-version }}
+        path: |
+          test/screenshots
+          !test/screenshots/.gitkeep
