@@ -105,7 +105,7 @@ exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
             log.debug("mqtt", "MQTT timeout triggered");
             client.end();
             reject("Timeout");
-        }, interval * 1000);
+        }, interval * 1000 * 0.8);
 
         log.debug("mqtt", "MQTT connecting");
 
@@ -121,6 +121,8 @@ exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
             try {
                 client.subscribe(topic);
             } catch (e) {
+                client.end();
+                clearTimeout(timeoutID);
                 reject(new Error("Cannot subscribe topic"));
             }
         });
