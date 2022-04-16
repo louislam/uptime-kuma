@@ -32,6 +32,9 @@
                                     <option value="steam">
                                         Steam Game Server
                                     </option>
+                                    <option value="mqtt">
+                                        MQTT
+                                    </option>
                                 </select>
                             </div>
 
@@ -67,15 +70,15 @@
                             </div>
 
                             <!-- Hostname -->
-                            <!-- TCP Port / Ping / DNS / Steam only -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam'" class="my-3">
+                            <!-- TCP Port / Ping / DNS / Steam / MQTT only -->
+                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'mqtt'" class="my-3">
                                 <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>
                                 <input id="hostname" v-model="monitor.hostname" type="text" class="form-control" :pattern="`${ipRegexPattern}|${hostnameRegexPattern}`" required>
                             </div>
 
                             <!-- Port -->
-                            <!-- For TCP Port / Steam Type -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'steam'" class="my-3">
+                            <!-- For TCP Port / Steam / MQTT Type -->
+                            <div v-if="monitor.type === 'port' || monitor.type === 'steam' || monitor.type === 'mqtt'" class="my-3">
                                 <label for="port" class="form-label">{{ $t("Port") }}</label>
                                 <input id="port" v-model="monitor.port" type="number" class="form-control" required min="0" max="65535" step="1">
                             </div>
@@ -111,6 +114,36 @@
 
                                     <div class="form-text">
                                         {{ $t("rrtypeDescription") }}
+                                    </div>
+                                </div>
+                            </template>
+
+                            <!-- MQTT -->
+                            <!-- For MQTT Type -->
+                            <template v-if="monitor.type === 'mqtt'">
+                                <div class="my-3">
+                                    <label for="mqttUsername" class="form-label">{{ $t("Username") }}</label>
+                                    <input id="mqttUsername" v-model="monitor.mqttUsername" type="text" class="form-control">
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="mqttPassword" class="form-label">{{ $t("Password") }}</label>
+                                    <input id="mqttPassword" v-model="monitor.mqttPassword" type="text" class="form-control">
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="mqttTopic" class="form-label">{{ $t("Topic") }}</label>
+                                    <input id="mqttTopic" v-model="monitor.mqttTopic" type="text" class="form-control" required>
+                                    <div class="form-text">
+                                        {{ $t("topicExplanation") }}
+                                    </div>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="mqttSuccessMessage" class="form-label">{{ $t("successMessage") }}</label>
+                                    <input id="mqttSuccessMessage" v-model="monitor.mqttSuccessMessage" type="text" class="form-control" required>
+                                    <div class="form-text">
+                                        {{ $t("successMessageExplanation") }}
                                     </div>
                                 </div>
                             </template>
@@ -498,6 +531,10 @@ export default {
                     dns_resolve_type: "A",
                     dns_resolve_server: "1.1.1.1",
                     proxyId: null,
+                    mqttUsername: "",
+                    mqttPassword: "",
+                    mqttTopic: "",
+                    mqttSuccessMessage: "",
                 };
 
                 if (this.$root.proxyList && !this.monitor.proxyId) {
