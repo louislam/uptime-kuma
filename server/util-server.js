@@ -99,12 +99,12 @@ exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
         }
 
         const timeoutID = setTimeout(() => {
-            debug("MQTT timeout triggered");
+            log.debug("mqtt", "MQTT timeout triggered");
             client.end();
             reject("Timeout");
         }, interval * 1000);
 
-        debug("MQTT connecting");
+        log.debug("mqtt", "MQTT connecting");
 
         let client = mqtt.connect(hostname, {
             port,
@@ -113,7 +113,7 @@ exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
         });
 
         client.on("connect", () => {
-            debug("MQTT subscribe topic");
+            log.debug("mqtt", "MQTT subscribe topic");
             client.subscribe(topic);
         });
 
