@@ -7,17 +7,23 @@ class NotificationProvider {
     name = undefined;
 
     /**
-     * @param notification : BeanModel
-     * @param msg : string General Message
-     * @param monitorJSON : object Monitor details (For Up/Down only)
-     * @param heartbeatJSON : object Heartbeat details (For Up/Down only)
+     * Send a notification
+     * @param {BeanModel} notification
+     * @param {string} msg General Message
+     * @param {?Object} monitorJSON Monitor details (For Up/Down only)
+     * @param {?Object} heartbeatJSON Heartbeat details (For Up/Down only)
      * @returns {Promise<string>} Return Successful Message
-     * Throw Error with fail msg
+     * @throws Error with fail msg
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         throw new Error("Have to override Notification.send(...)");
     }
 
+    /**
+     * Throws an error
+     * @param {any} error The error to throw
+     * @throws {any} The error specified
+     */
     throwGeneralAxiosError(error) {
         let msg = "Error: " + error + " ";
 

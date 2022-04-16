@@ -37,6 +37,12 @@ class DingDing extends NotificationProvider {
         }
     }
 
+    /**
+     * Send message to DingDing
+     * @param {BeanModel} notification
+     * @param {Object} params Parameters of message
+     * @returns {boolean} True if successful else false
+     */
     async sendToDingDing(notification, params) {
         let timestamp = Date.now();
 
@@ -56,7 +62,12 @@ class DingDing extends NotificationProvider {
         return false;
     }
 
-    /** DingDing sign */
+    /**
+     * DingDing sign
+     * @param {Date} timestamp Timestamp of message
+     * @param {string} secretKey Secret key to sign data with
+     * @returns {string}
+     */
     sign(timestamp, secretKey) {
         return Crypto
             .createHmac("sha256", Buffer.from(secretKey, "utf8"))
@@ -64,7 +75,13 @@ class DingDing extends NotificationProvider {
             .digest("base64");
     }
 
+    /**
+     * Convert status constant to string
+     * @param {const} status The status constant
+     * @returns {string}
+     */
     statusToString(status) {
+        // TODO: Move to notification-provider.js to avoid repetition in classes
         switch (status) {
             case DOWN:
                 return "DOWN";
