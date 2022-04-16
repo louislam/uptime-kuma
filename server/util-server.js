@@ -90,9 +90,6 @@ exports.pingAsync = function (hostname, ipv6 = false) {
 };
 
 exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
-
-    log.debug("mqtt", `Topic: ${topic}`);
-
     return new Promise((resolve, reject) => {
         const { port, username, password, interval = 20 } = options;
 
@@ -104,7 +101,7 @@ exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
         const timeoutID = setTimeout(() => {
             log.debug("mqtt", "MQTT timeout triggered");
             client.end();
-            reject("Timeout");
+            reject(new Error("Timeout"));
         }, interval * 1000 * 0.8);
 
         log.debug("mqtt", "MQTT connecting");
@@ -116,9 +113,10 @@ exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
         });
 
         client.on("connect", () => {
-            log.debug("mqtt", "MQTT subscribe topic");
+            log.debug("mqtt", "MQTT connected");
 
             try {
+                log.debug("mqtt", "MQTT subscribe topic");
                 client.subscribe(topic);
             } catch (e) {
                 client.end();

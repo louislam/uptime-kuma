@@ -87,6 +87,7 @@ class Monitor extends BeanModel {
             notificationIDList,
             tags: tags,
             mqttUsername: this.mqttUsername,
+            mqttPassword: this.mqttPassword,
             mqttTopic: this.mqttTopic,
             mqttSuccessMessage: this.mqttSuccessMessage
         };
@@ -400,20 +401,13 @@ class Monitor extends BeanModel {
                         throw new Error("Server not found on Steam");
                     }
                 } else if (this.type === "mqtt") {
-                    try {
-                        bean.msg = await mqttAsync(this.hostname, this.mqttTopic, this.mqttSuccessMessage, {
-                            mqttPort: this.port,
-                            mqttUsername: this.mqttUsername,
-                            mqttPassword: this.mqttPassword,
-                            interval: this.interval,
-                        });
-                        bean.status = UP;
-                    } catch (error) {
-                        if (error.message !== "Timeout") {
-                            bean.status = DOWN;
-                            bean.msg = error.message;
-                        }
-                    }
+                    bean.msg = await mqttAsync(this.hostname, this.mqttTopic, this.mqttSuccessMessage, {
+                        port: this.port,
+                        username: this.mqttUsername,
+                        password: this.mqttPassword,
+                        interval: this.interval,
+                    });
+                    bean.status = UP;
                 } else {
                     bean.msg = "Unknown Monitor Type";
                     bean.status = PENDING;
