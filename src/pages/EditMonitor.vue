@@ -38,7 +38,7 @@
                             <!-- Friendly Name -->
                             <div class="my-3">
                                 <label for="name" class="form-label">{{ $t("Friendly Name") }}</label>
-                                <input id="name" v-model="monitor.name" type="text" class="form-control" required>
+                                <input id="name" v-model="monitor.name" type="text" class="form-control" :required="friendlyNameRequired()">
                             </div>
 
                             <!-- URL -->
@@ -357,6 +357,7 @@ export default {
             },
             acceptedStatusCodeOptions: [],
             dnsresolvetypeOptions: [],
+            friendlyNameRequiredOptions: [],
 
             // Source: https://digitalfortress.tech/tips/top-15-commonly-used-regex/
             ipRegexPattern: "((^\\s*((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\\s*$)|(^\\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:)))(%.+)?\\s*$))",
@@ -464,12 +465,17 @@ export default {
             "TXT",
         ];
 
+        let friendlyNameRequiredOptions = [
+            "push",
+        ];
+
         for (let i = 100; i <= 999; i++) {
             acceptedStatusCodeOptions.push(i.toString());
         }
 
         this.acceptedStatusCodeOptions = acceptedStatusCodeOptions;
         this.dnsresolvetypeOptions = dnsresolvetypeOptions;
+        this.friendlyNameRequiredOptions = friendlyNameRequiredOptions;
     },
     methods: {
         init() {
@@ -512,6 +518,11 @@ export default {
                     if (res.ok) {
                         this.monitor = res.monitor;
 
+                        // Handling for when friendly name isn't set
+                        if (this.monitor.name === this.monitor.url || this.monitor.name === this.monitor.hostname) {
+                            this.monitor.name = "";
+                        }
+                        
                         // Handling for monitors that are created before 1.7.0
                         if (this.monitor.retryInterval === 0) {
                             this.monitor.retryInterval = this.monitor.interval;
@@ -546,6 +557,10 @@ export default {
 
         async submit() {
             this.processing = true;
+
+            // Check if friendly name has been supplied. If not, use URL
+            // or hostname
+            this.monitor.name = this.monitor.name || this.monitor.hostname || this.monitor.url;
 
             if (!this.isInputValid()) {
                 this.processing = false;
@@ -594,6 +609,15 @@ export default {
             this.monitor.notificationIDList[id] = true;
         },
 
+        /**
+         * Is the friendly name required for the selected option.
+         * Returns true if it is else false
+         * @returns {boolean}
+         */
+        friendlyNameRequired() {
+            return this.friendlyNameRequiredOptions.includes(this.monitor.type);
+        },
+        
         // Added a Proxy Event
         // Enable it if the proxy is added in EditMonitor.vue
         addedProxy(id) {
