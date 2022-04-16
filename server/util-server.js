@@ -90,6 +90,9 @@ exports.pingAsync = function (hostname, ipv6 = false) {
 };
 
 exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
+
+    log.debug("mqtt", `Topic: ${topic}`);
+
     return new Promise((resolve, reject) => {
         const { port, username, password, interval = 20 } = options;
 
@@ -114,7 +117,12 @@ exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
 
         client.on("connect", () => {
             log.debug("mqtt", "MQTT subscribe topic");
-            client.subscribe(topic);
+
+            try {
+                client.subscribe(topic);
+            } catch (e) {
+                reject(new Error("Cannot subscribe topic"));
+            }
         });
 
         client.on("error", (error) => {
@@ -256,7 +264,7 @@ const parseCertificateInfo = function (info) {
     const existingList = {};
 
     while (link) {
-        log.debug("util", `[${i}] ${link.fingerprint}`);
+        log.debug("cert", `[${i}] ${link.fingerprint}`);
 
         if (!link.valid_from || !link.valid_to) {
             break;
@@ -271,7 +279,7 @@ const parseCertificateInfo = function (info) {
         if (link.issuerCertificate == null) {
             break;
         } else if (link.issuerCertificate.fingerprint in existingList) {
-            log.debug("util", `[Last] ${link.issuerCertificate.fingerprint}`);
+            log.debug("cert", `[Last] ${link.issuerCertificate.fingerprint}`);
             link.issuerCertificate = null;
             break;
         } else {
@@ -292,7 +300,7 @@ exports.checkCertificate = function (res) {
     const info = res.request.res.socket.getPeerCertificate(true);
     const valid = res.request.res.socket.authorized || false;
 
-    log.debug("util", "Parsing Certificate Info");
+    log.debug("cert", "Parsing Certificate Info");
     const parsedInfo = parseCertificateInfo(info);
 
     return {
