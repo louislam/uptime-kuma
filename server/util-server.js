@@ -88,9 +88,9 @@ exports.pingAsync = function (hostname, ipv6 = false) {
     });
 };
 
-exports.dnsResolve = function (hostname, resolver_server, rrtype) {
+exports.dnsResolve = function (hostname, resolverServer, rrtype) {
     const resolver = new Resolver();
-    resolver.setServers([resolver_server]);
+    resolver.setServers([resolverServer]);
     return new Promise((resolve, reject) => {
         if (rrtype == "PTR") {
             resolver.reverse(hostname, (err, records) => {
@@ -257,19 +257,19 @@ exports.checkCertificate = function (res) {
 // Return: true if the status code is within the accepted ranges, false otherwise
 // Will throw an error if the provided status code is not a valid range string or code string
 
-exports.checkStatusCode = function (status, accepted_codes) {
-    if (accepted_codes == null || accepted_codes.length === 0) {
+exports.checkStatusCode = function (status, acceptedCodes) {
+    if (acceptedCodes == null || acceptedCodes.length === 0) {
         return false;
     }
 
-    for (const code_range of accepted_codes) {
-        const code_range_split = code_range.split("-").map(string => parseInt(string));
-        if (code_range_split.length === 1) {
-            if (status === code_range_split[0]) {
+    for (const codeRange of acceptedCodes) {
+        const codeRangeSplit = codeRange.split("-").map(string => parseInt(string));
+        if (codeRangeSplit.length === 1) {
+            if (status === codeRangeSplit[0]) {
                 return true;
             }
-        } else if (code_range_split.length === 2) {
-            if (status >= code_range_split[0] && status <= code_range_split[1]) {
+        } else if (codeRangeSplit.length === 2) {
+            if (status >= codeRangeSplit[0] && status <= codeRangeSplit[1]) {
                 return true;
             }
         } else {

@@ -1,6 +1,6 @@
 import { io } from "socket.io-client";
 import { useToast } from "vue-toastification";
-import jwt_decode from "jwt-decode";
+import jwtDecode from "jwt-decode";
 import Favico from "favico.js";
 const toast = useToast();
 
@@ -266,7 +266,7 @@ export default {
             const jwtToken = this.$root.storage().token;
 
             if (jwtToken && jwtToken !== "autoLogin") {
-                return jwt_decode(jwtToken);
+                return jwtDecode(jwtToken);
             }
             return undefined;
         },

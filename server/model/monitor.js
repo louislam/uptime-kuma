@@ -609,11 +609,11 @@ class Monitor extends BeanModel {
     }
 
     static async sendCertInfo(io, monitorID, userID) {
-        let tls_info = await R.findOne("monitor_tls_info", "monitor_id = ?", [
+        let tlsInfo = await R.findOne("monitor_tls_info", "monitor_id = ?", [
             monitorID,
         ]);
-        if (tls_info != null) {
-            io.to(userID).emit("certInfo", monitorID, tls_info.info_json);
+        if (tlsInfo != null) {
+            io.to(userID).emit("certInfo", monitorID, tlsInfo.info_json);
         }
     }
 

@@ -1,5 +1,5 @@
 let express = require("express");
-const { allowDevAllOrigin, getSettings, setting } = require("../util-server");
+const { allowDevAllOrigin } = require("../util-server");
 const { R } = require("redbean-node");
 const server = require("../server");
 const apicache = require("../modules/apicache");
@@ -194,14 +194,6 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
         send403(response, error.message);
     }
 });
-
-/**
- * Default is published
- * @returns {Promise<boolean>}
- */
-async function isPublished() {
-    return true;
-}
 
 function send403(res, msg = "") {
     res.status(403).json({
