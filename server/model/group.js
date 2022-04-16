@@ -3,6 +3,11 @@ const { R } = require("redbean-node");
 
 class Group extends BeanModel {
 
+    /**
+     * Return a object that ready to parse to JSON for public
+     * Only show necessary data to public
+     * @returns {Object}
+     */
     async toPublicJSON() {
         let monitorBeanList = await this.getMonitorList();
         let monitorList = [];
@@ -19,6 +24,10 @@ class Group extends BeanModel {
         };
     }
 
+    /**
+     * Get all monitors
+     * @returns {Array<Bean>}
+     */
     async getMonitorList() {
         return R.convertToBeans("monitor", await R.getAll(`
             SELECT monitor.* FROM monitor, monitor_group
