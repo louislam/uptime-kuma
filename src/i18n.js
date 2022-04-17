@@ -43,7 +43,7 @@ for (let lang in languageList) {
     };
 }
 
-const rtlLangs = ["fa"];
+const rtlLangs = [ "fa" ];
 
 export const currentLocale = () => localStorage.locale
     || languageList[navigator.language] && navigator.language

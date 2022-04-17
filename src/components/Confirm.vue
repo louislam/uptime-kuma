@@ -42,7 +42,7 @@ export default {
             default: "No",
         },
     },
-    emits: ["yes"],
+    emits: [ "yes" ],
     data: () => ({
         modal: null,
     }),

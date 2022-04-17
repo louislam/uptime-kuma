@@ -31,7 +31,7 @@ if (! exists) {
 function commit(version) {
     let msg = "Update to " + version;
 
-    let res = childProcess.spawnSync("git", ["commit", "-m", msg, "-a"]);
+    let res = childProcess.spawnSync("git", [ "commit", "-m", msg, "-a" ]);
     let stdout = res.stdout.toString().trim();
     console.log(stdout);
 
@@ -39,15 +39,15 @@ function commit(version) {
         throw new Error("commit error");
     }
 
-    res = childProcess.spawnSync("git", ["push", "origin", "master"]);
+    res = childProcess.spawnSync("git", [ "push", "origin", "master" ]);
     console.log(res.stdout.toString().trim());
 }
 
 function tag(version) {
-    let res = childProcess.spawnSync("git", ["tag", version]);
+    let res = childProcess.spawnSync("git", [ "tag", version ]);
     console.log(res.stdout.toString().trim());
 
-    res = childProcess.spawnSync("git", ["push", "origin", version]);
+    res = childProcess.spawnSync("git", [ "push", "origin", version ]);
     console.log(res.stdout.toString().trim());
 }
 
@@ -56,7 +56,7 @@ function tagExists(version) {
         throw new Error("invalid version");
     }
 
-    let res = childProcess.spawnSync("git", ["tag", "-l", version]);
+    let res = childProcess.spawnSync("git", [ "tag", "-l", version ]);
 
     return res.stdout.toString().trim() === version;
 }

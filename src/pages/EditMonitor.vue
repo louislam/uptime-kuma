@@ -516,17 +516,17 @@ export default {
         },
 
         bodyPlaceholder() {
-            return this.$t("Example:", [`
+            return this.$t("Example:", [ `
 {
     "key": "value"
-}`]);
+}` ]);
         },
 
         headersPlaceholder() {
-            return this.$t("Example:", [`
+            return this.$t("Example:", [ `
 {
     "HeaderName": "HeaderValue"
-}`]);
+}` ]);
         }
 
     },
@@ -633,7 +633,7 @@ export default {
                     noNotificationIfMasterDown: false,
                     expiryNotification: false,
                     maxredirects: 10,
-                    accepted_statuscodes: ["200-299"],
+                    accepted_statuscodes: [ "200-299" ],
                     dns_resolve_type: "A",
                     dns_resolve_server: "1.1.1.1",
                     docker_container: "",

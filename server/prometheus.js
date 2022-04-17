@@ -49,8 +49,8 @@ class Prometheus {
 
         if (typeof tlsInfo !== "undefined") {
             try {
-                let isValid = 0;
-                if (tlsInfo.valid == true) {
+                let isValid;
+                if (tlsInfo.valid === true) {
                     isValid = 1;
                 } else {
                     isValid = 0;

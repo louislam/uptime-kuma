@@ -10,7 +10,7 @@ class Octopush extends NotificationProvider {
 
         try {
         // Default - V2
-            if (notification.octopushVersion == 2 || !notification.octopushVersion) {
+            if (notification.octopushVersion === 2 || !notification.octopushVersion) {
                 let config = {
                     headers: {
                         "api-key": notification.octopushAPIKey,
@@ -31,13 +31,13 @@ class Octopush extends NotificationProvider {
                     "sender": notification.octopushSenderName
                 };
                 await axios.post("https://api.octopush.com/v1/public/sms-campaign/send", data, config);
-            } else if (notification.octopushVersion == 1) {
+            } else if (notification.octopushVersion === 1) {
                 let data = {
                     "user_login": notification.octopushDMLogin,
                     "api_key": notification.octopushDMAPIKey,
                     "sms_recipients": notification.octopushDMPhoneNumber,
                     "sms_sender": notification.octopushDMSenderName,
-                    "sms_type": (notification.octopushDMSMSType == "sms_premium") ? "FR" : "XXX",
+                    "sms_type": (notification.octopushDMSMSType === "sms_premium") ? "FR" : "XXX",
                     "transactional": "1",
                     //octopush not supporting non ascii char
                     "sms_text": msg.replace(/[^\x00-\x7F]/g, ""),

@@ -89,7 +89,7 @@ export default {
             }
 
             socket = io(wsHost, {
-                transports: ["websocket"],
+                transports: [ "websocket" ],
             });
 
             socket.on("info", (info) => {
@@ -108,7 +108,7 @@ export default {
 
             socket.on("monitorList", (data) => {
                 // Add Helper function
-                Object.entries(data).forEach(([monitorID, monitor]) => {
+                Object.entries(data).forEach(([ monitorID, monitor ]) => {
                     monitor.getUrl = () => {
                         try {
                             return new URL(monitor.url);

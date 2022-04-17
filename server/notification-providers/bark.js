@@ -28,12 +28,12 @@ class Bark extends NotificationProvider {
             barkEndpoint = barkEndpoint.substring(0, barkEndpoint.length - 1);
         }
 
-        if (msg != null && heartbeatJSON != null && heartbeatJSON["status"] == UP) {
+        if (msg != null && heartbeatJSON != null && heartbeatJSON["status"] === UP) {
             let title = "UptimeKuma Monitor Up";
             return await this.postNotification(title, msg, barkEndpoint);
         }
 
-        if (msg != null && heartbeatJSON != null && heartbeatJSON["status"] == DOWN) {
+        if (msg != null && heartbeatJSON != null && heartbeatJSON["status"] === DOWN) {
             let title = "UptimeKuma Monitor Down";
             return await this.postNotification(title, msg, barkEndpoint);
         }

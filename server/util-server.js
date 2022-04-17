@@ -148,9 +148,9 @@ exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
 
 exports.dnsResolve = function (hostname, resolverServer, rrtype) {
     const resolver = new Resolver();
-    resolver.setServers([resolverServer]);
+    resolver.setServers([ resolverServer ]);
     return new Promise((resolve, reject) => {
-        if (rrtype == "PTR") {
+        if (rrtype === "PTR") {
             resolver.reverse(hostname, (err, records) => {
                 if (err) {
                     reject(err);
@@ -403,7 +403,7 @@ exports.doubleCheckPassword = async (socket, currentPassword) => {
 exports.startUnitTest = async () => {
     console.log("Starting unit test...");
     const npm = /^win/.test(process.platform) ? "npm.cmd" : "npm";
-    const child = childProcess.spawn(npm, ["run", "jest"]);
+    const child = childProcess.spawn(npm, [ "run", "jest" ]);
 
     child.stdout.on("data", (data) => {
         console.log(data.toString());
