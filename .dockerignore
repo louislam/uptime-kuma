@@ -28,6 +28,8 @@ SECURITY.md
 tsconfig.json
 .env
 /tmp
+/babel.config.js
+/ecosystem.config.js
 
 ### .gitignore content (commented rules are duplicated)
 
@@ -41,5 +43,7 @@ dist-ssr
 #/data
 #!/data/.gitkeep
 #.vscode
+
+
 
 ### End of .gitignore content

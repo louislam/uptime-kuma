@@ -32,13 +32,16 @@
                                     <option value="steam">
                                         Steam Game Server
                                     </option>
+                                    <option value="mqtt">
+                                        MQTT
+                                    </option>
                                 </select>
                             </div>
 
                             <!-- Friendly Name -->
                             <div class="my-3">
                                 <label for="name" class="form-label">{{ $t("Friendly Name") }}</label>
-                                <input id="name" v-model="monitor.name" type="text" class="form-control" required>
+                                <input id="name" v-model="monitor.name" type="text" class="form-control" :required="friendlyNameRequired()">
                             </div>
 
                             <!-- URL -->
@@ -55,6 +58,9 @@
                                     {{ $t("needPushEvery", [monitor.interval]) }}<br />
                                     {{ $t("pushOptionalParams", ["msg, ping"]) }}
                                 </div>
+                                <button class="btn btn-primary" type="button" @click="resetToken">
+                                    {{ $t("Reset Token") }}
+                                </button>
                             </div>
 
                             <!-- Keyword -->
@@ -67,15 +73,15 @@
                             </div>
 
                             <!-- Hostname -->
-                            <!-- TCP Port / Ping / DNS / Steam only -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam'" class="my-3">
+                            <!-- TCP Port / Ping / DNS / Steam / MQTT only -->
+                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'mqtt'" class="my-3">
                                 <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>
                                 <input id="hostname" v-model="monitor.hostname" type="text" class="form-control" :pattern="`${ipRegexPattern}|${hostnameRegexPattern}`" required>
                             </div>
 
                             <!-- Port -->
-                            <!-- For TCP Port / Steam Type -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'steam'" class="my-3">
+                            <!-- For TCP Port / Steam / MQTT Type -->
+                            <div v-if="monitor.type === 'port' || monitor.type === 'steam' || monitor.type === 'mqtt'" class="my-3">
                                 <label for="port" class="form-label">{{ $t("Port") }}</label>
                                 <input id="port" v-model="monitor.port" type="number" class="form-control" required min="0" max="65535" step="1">
                             </div>
@@ -87,7 +93,7 @@
                                     <label for="dns_resolve_server" class="form-label">{{ $t("Resolver Server") }}</label>
                                     <input id="dns_resolve_server" v-model="monitor.dns_resolve_server" type="text" class="form-control" :pattern="ipRegex" required>
                                     <div class="form-text">
-                                        {{ $t("resoverserverDescription") }}
+                                        {{ $t("resolverserverDescription") }}
                                     </div>
                                 </div>
 
@@ -115,6 +121,36 @@
                                 </div>
                             </template>
 
+                            <!-- MQTT -->
+                            <!-- For MQTT Type -->
+                            <template v-if="monitor.type === 'mqtt'">
+                                <div class="my-3">
+                                    <label for="mqttUsername" class="form-label">{{ $t("Username") }}</label>
+                                    <input id="mqttUsername" v-model="monitor.mqttUsername" type="text" class="form-control">
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="mqttPassword" class="form-label">{{ $t("Password") }}</label>
+                                    <input id="mqttPassword" v-model="monitor.mqttPassword" type="text" class="form-control">
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="mqttTopic" class="form-label">{{ $t("Topic") }}</label>
+                                    <input id="mqttTopic" v-model="monitor.mqttTopic" type="text" class="form-control" required>
+                                    <div class="form-text">
+                                        {{ $t("topicExplanation") }}
+                                    </div>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="mqttSuccessMessage" class="form-label">{{ $t("successMessage") }}</label>
+                                    <input id="mqttSuccessMessage" v-model="monitor.mqttSuccessMessage" type="text" class="form-control" required>
+                                    <div class="form-text">
+                                        {{ $t("successMessageExplanation") }}
+                                    </div>
+                                </div>
+                            </template>
+
                             <!-- Interval -->
                             <div class="my-3">
                                 <label for="interval" class="form-label">{{ $t("Heartbeat Interval") }} ({{ $t("checkEverySecond", [ monitor.interval ]) }})</label>
@@ -137,7 +173,25 @@
                                 <input id="retry-interval" v-model="monitor.retryInterval" type="number" class="form-control" required min="20" step="1">
                             </div>
 
+                            <div class="my-3">
+                                <label for="resend-interval" class="form-label">
+                                    {{ $t("Notification resend Interval if Down") }}
+                                    <span v-if="monitor.resendInterval > 0">({{ $t("resendEveryMinute", [ monitor.resendInterval ]) }})</span>
+                                    <span v-else>({{ $t("resendDisabled") }})</span>
+                                </label>
+                                <input id="resend-interval" v-model="monitor.resendInterval" type="number" class="form-control" required min="0" step="1">
+                            </div>
+
                             <h2 v-if="monitor.type !== 'push'" class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
+
+                            <div class="my-3 form-check">
+                                <input id="expiry-notification" v-model="monitor.expiryNotification" class="form-check-input" type="checkbox">
+                                <label class="form-check-label" for="expiry-notification">
+                                    {{ $t("Domain Name Expiry Notification") }}
+                                </label>
+                                <div class="form-text">
+                                </div>
+                            </div>
 
                             <div v-if="monitor.type === 'http' || monitor.type === 'keyword' " class="my-3 form-check">
                                 <input id="ignore-tls" v-model="monitor.ignoreTls" class="form-check-input" type="checkbox" value="">
@@ -222,6 +276,34 @@
                                 {{ $t("Setup Notification") }}
                             </button>
 
+                            <!-- Proxies -->
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword'">
+                                <h2 class="mt-5 mb-2">{{ $t("Proxy") }}</h2>
+                                <p v-if="$root.proxyList.length === 0">
+                                    {{ $t("Not available, please setup.") }}
+                                </p>
+
+                                <div v-if="$root.proxyList.length > 0" class="form-check my-3">
+                                    <input id="proxy-disable" v-model="monitor.proxyId" :value="null" name="proxy" class="form-check-input" type="radio">
+                                    <label class="form-check-label" for="proxy-disable">{{ $t("No Proxy") }}</label>
+                                </div>
+
+                                <div v-for="proxy in $root.proxyList" :key="proxy.id" class="form-check my-3">
+                                    <input :id="`proxy-${proxy.id}`" v-model="monitor.proxyId" :value="proxy.id" name="proxy" class="form-check-input" type="radio">
+
+                                    <label class="form-check-label" :for="`proxy-${proxy.id}`">
+                                        {{ proxy.host }}:{{ proxy.port }} ({{ proxy.protocol }})
+                                        <a href="#" @click="$refs.proxyDialog.show(proxy.id)">{{ $t("Edit") }}</a>
+                                    </label>
+
+                                    <span v-if="proxy.default === true" class="badge bg-primary ms-2">{{ $t("default") }}</span>
+                                </div>
+
+                                <button class="btn btn-primary me-2" type="button" @click="$refs.proxyDialog.show()">
+                                    {{ $t("Setup Proxy") }}
+                                </button>
+                            </div>
+
                             <!-- HTTP Options -->
                             <template v-if="monitor.type === 'http' || monitor.type === 'keyword' ">
                                 <h2 class="mt-5 mb-2">{{ $t("HTTP Options") }}</h2>
@@ -276,7 +358,7 @@
 
                                 <div class="my-3">
                                     <label for="basicauth" class="form-label">{{ $t("Password") }}</label>
-                                    <input id="basicauth-pass" v-model="monitor.basic_auth_pass" type="password" class="form-control" :placeholder="$t('Password')">
+                                    <input id="basicauth-pass" v-model="monitor.basic_auth_pass" type="password" autocomplete="new-password" class="form-control" :placeholder="$t('Password')">
                                 </div>
                             </template>
                         </div>
@@ -291,12 +373,14 @@
             </Confirm>
 
             <NotificationDialog ref="notificationDialog" @added="addedNotification" />
+            <ProxyDialog ref="proxyDialog" @added="addedProxy" />
         </div>
     </transition>
 </template>
 
 <script>
 import NotificationDialog from "../components/NotificationDialog.vue";
+import ProxyDialog from "../components/ProxyDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
 import CopyableInput from "../components/CopyableInput.vue";
 import Confirm from "../components/Confirm.vue";
@@ -307,8 +391,11 @@ import { genSecret, isDev } from "../util.ts";
 
 const toast = useToast();
 
+const pushTokenLength = 32;
+
 export default {
     components: {
+        ProxyDialog,
         CopyableInput,
         NotificationDialog,
         TagsManager,
@@ -325,6 +412,7 @@ export default {
             },
             acceptedStatusCodeOptions: [],
             dnsresolvetypeOptions: [],
+            friendlyNameRequiredOptions: [],
 
             // Source: https://digitalfortress.tech/tips/top-15-commonly-used-regex/
             ipRegexPattern: "((^\\s*((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\\s*$)|(^\\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:)))(%.+)?\\s*$))",
@@ -376,6 +464,17 @@ export default {
 
     },
     watch: {
+        "$root.proxyList"() {
+            if (this.isAdd) {
+                if (this.$root.proxyList && !this.monitor.proxyId) {
+                    const proxy = this.$root.proxyList.find(proxy => proxy.default);
+
+                    if (proxy) {
+                        this.monitor.proxyId = proxy.id;
+                    }
+                }
+            }
+        },
 
         "$route.fullPath"() {
             this.init();
@@ -391,7 +490,9 @@ export default {
         "monitor.type"() {
             if (this.monitor.type === "push") {
                 if (! this.monitor.pushToken) {
-                    this.monitor.pushToken = genSecret(10);
+                    // ideally this would require checking if the generated token is already used
+                    // it's very unlikely to get a collision though (62^32 ~ 2.27265788 * 10^57 unique tokens)
+                    this.monitor.pushToken = genSecret(pushTokenLength);
                 }
             }
         }
@@ -421,12 +522,17 @@ export default {
             "TXT",
         ];
 
+        let friendlyNameRequiredOptions = [
+            "push",
+        ];
+
         for (let i = 100; i <= 999; i++) {
             acceptedStatusCodeOptions.push(i.toString());
         }
 
         this.acceptedStatusCodeOptions = acceptedStatusCodeOptions;
         this.dnsresolvetypeOptions = dnsresolvetypeOptions;
+        this.friendlyNameRequiredOptions = friendlyNameRequiredOptions;
     },
     methods: {
         init() {
@@ -439,15 +545,30 @@ export default {
                     method: "GET",
                     interval: 60,
                     retryInterval: this.interval,
+                    resendInterval: 0,
                     maxretries: 0,
                     notificationIDList: {},
                     ignoreTls: false,
                     upsideDown: false,
+                    expiryNotification: false,
                     maxredirects: 10,
                     accepted_statuscodes: ["200-299"],
                     dns_resolve_type: "A",
                     dns_resolve_server: "1.1.1.1",
+                    proxyId: null,
+                    mqttUsername: "",
+                    mqttPassword: "",
+                    mqttTopic: "",
+                    mqttSuccessMessage: "",
                 };
+
+                if (this.$root.proxyList && !this.monitor.proxyId) {
+                    const proxy = this.$root.proxyList.find(proxy => proxy.default);
+
+                    if (proxy) {
+                        this.monitor.proxyId = proxy.id;
+                    }
+                }
 
                 for (let i = 0; i < this.$root.notificationList.length; i++) {
                     if (this.$root.notificationList[i].isDefault == true) {
@@ -459,6 +580,11 @@ export default {
                     if (res.ok) {
                         this.monitor = res.monitor;
 
+                        // Handling for when friendly name isn't set
+                        if (this.monitor.name === this.monitor.url || this.monitor.name === this.monitor.hostname) {
+                            this.monitor.name = "";
+                        }
+                        
                         // Handling for monitors that are created before 1.7.0
                         if (this.monitor.retryInterval === 0) {
                             this.monitor.retryInterval = this.monitor.interval;
@@ -501,8 +627,16 @@ export default {
             });
         },
 
+        resetToken() {
+            this.monitor.pushToken = genSecret(pushTokenLength);
+        },
+
         async submit() {
             this.processing = true;
+
+            // Check if friendly name has been supplied. If not, use URL
+            // or hostname
+            this.monitor.name = this.monitor.name || this.monitor.hostname || this.monitor.url;
 
             if (!this.isInputValid()) {
                 this.processing = false;
@@ -549,6 +683,21 @@ export default {
         // Enable it if the notification is added in EditMonitor.vue
         addedNotification(id) {
             this.monitor.notificationIDList[id] = true;
+        },
+
+        /**
+         * Is the friendly name required for the selected option.
+         * Returns true if it is else false
+         * @returns {boolean}
+         */
+        friendlyNameRequired() {
+            return this.friendlyNameRequiredOptions.includes(this.monitor.type);
+        },
+        
+        // Added a Proxy Event
+        // Enable it if the proxy is added in EditMonitor.vue
+        addedProxy(id) {
+            this.monitor.proxyId = id;
         },
     },
 };
