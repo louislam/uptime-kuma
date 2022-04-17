@@ -679,7 +679,7 @@ try {
         // Verify if monitor is duplicated
         socket.on("isDuplicatedMonitor", async (monitor, callback) => {
             try {
-                let monitorList = await sendMonitorList(socket);
+                let monitorList = await server.sendMonitorList(socket);
                 for (let monitorId in monitorList) {
                     let monitorFromList = monitorList[monitorId];
                     verifyPropertyAndThrowIfMatch(monitorFromList, monitor, "name");
