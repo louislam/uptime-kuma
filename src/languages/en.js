@@ -358,6 +358,9 @@ export default {
     serwersmsPhoneNumber: "Phone number",
     serwersmsSenderName: "SMS Sender Name (registered via customer portal)",
     stackfield: "Stackfield",
+    Customize: "Customize",
+    "Custom Footer": "Custom Footer",
+    "Custom CSS": "Custom CSS",
     smtpDkimSettings: "DKIM Settings",
     smtpDkimDesc: "Please refer to the Nodemailer DKIM {0} for usage.",
     documentation: "documentation",
@@ -455,4 +458,5 @@ export default {
     onebotPrivateMessage: "Private",
     onebotUserOrGroupId: "Group/User ID",
     onebotSafetyTips: "For safety, must set access token",
+    "PushDeer Key": "PushDeer Key",
 };

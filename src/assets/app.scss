@@ -469,6 +469,10 @@ textarea.form-control {
     color: $primary;
 }
 
+.prism-editor__textarea {
+    outline: none !important;
+}
+
 // Localization
 
 @import "localization.scss";

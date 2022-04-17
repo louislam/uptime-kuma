@@ -29,7 +29,7 @@ class Mattermost extends NotificationProvider {
             const mattermostIconEmoji = notification.mattermosticonemo;
             const mattermostIconUrl = notification.mattermosticonurl;
 
-            if (heartbeatJSON["status"] == DOWN) {
+            if (heartbeatJSON["status"] === DOWN) {
                 let mattermostdowndata = {
                     username: mattermostUserName,
                     text: "Uptime Kuma Alert",
@@ -73,7 +73,7 @@ class Mattermost extends NotificationProvider {
                     mattermostdowndata
                 );
                 return okMsg;
-            } else if (heartbeatJSON["status"] == UP) {
+            } else if (heartbeatJSON["status"] === UP) {
                 let mattermostupdata = {
                     username: mattermostUserName,
                     text: "Uptime Kuma Alert",
