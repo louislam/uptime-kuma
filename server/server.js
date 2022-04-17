@@ -720,6 +720,9 @@ try {
                 bean.dns_resolve_server = monitor.dns_resolve_server;
                 bean.pushToken = monitor.pushToken;
                 bean.proxyId = Number.isInteger(monitor.proxyId) ? monitor.proxyId : null;
+                bean.mqttUsername = monitor.mqttUsername;
+                bean.mqttTopic = monitor.mqttTopic;
+                bean.mqttSuccessMessage = monitor.mqttSuccessMessage;
 
                 await R.store(bean);
 
