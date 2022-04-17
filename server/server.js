@@ -11,7 +11,7 @@ if (nodeVersion < requiredVersion) {
 }
 
 const args = require("args-parser")(process.argv);
-const { sleep, log, getRandomInt, genSecret, debug } = require("../src/util");
+const { sleep, log, getRandomInt, genSecret, debug, isDev } = require("../src/util");
 const config = require("./config");
 
 log.info("server", "Welcome to Uptime Kuma");
@@ -234,6 +234,13 @@ try {
             response.redirect("/dashboard");
         }
     });
+
+    if (isDev) {
+        app.post("/test-webhook", async (request, response) => {
+            log.debug("test", request.body);
+            response.send("OK");
+        });
+    }
 
     // Robots.txt
     app.get("/robots.txt", async (_request, response) => {

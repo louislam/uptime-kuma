@@ -42,7 +42,7 @@ class Monitor extends BeanModel {
     /**
      * Return an object that ready to parse to JSON
      */
-    async toJSON() {
+    async toJSON(includeSensitiveData = true) {
 
         let notificationIDList = {};
 
@@ -56,15 +56,11 @@ class Monitor extends BeanModel {
 
         const tags = await this.getTags();
 
-        return {
+        let data = {
             id: this.id,
             name: this.name,
             url: this.url,
             method: this.method,
-            body: this.body,
-            headers: this.headers,
-            basic_auth_user: this.basic_auth_user,
-            basic_auth_pass: this.basic_auth_pass,
             hostname: this.hostname,
             port: this.port,
             maxretries: this.maxretries,
@@ -82,11 +78,23 @@ class Monitor extends BeanModel {
             dns_resolve_type: this.dns_resolve_type,
             dns_resolve_server: this.dns_resolve_server,
             dns_last_result: this.dns_last_result,
-            pushToken: this.pushToken,
             proxyId: this.proxy_id,
             notificationIDList,
             tags: tags,
         };
+
+        if (includeSensitiveData) {
+            data = {
+                ...data,
+                headers: this.headers,
+                body: this.body,
+                basic_auth_user: this.basic_auth_user,
+                basic_auth_pass: this.basic_auth_pass,
+                pushToken: this.pushToken,
+            };
+        }
+
+        return data;
     }
 
     async getTags() {
@@ -727,7 +735,7 @@ class Monitor extends BeanModel {
 
             for (let notification of notificationList) {
                 try {
-                    await Notification.send(JSON.parse(notification.config), msg, await monitor.toJSON(), bean.toJSON());
+                    await Notification.send(JSON.parse(notification.config), msg, await monitor.toJSON(false), bean.toJSON());
                 } catch (e) {
                     log.error("monitor", "Cannot send notification to " + notification.name);
                     log.error("monitor", e);
