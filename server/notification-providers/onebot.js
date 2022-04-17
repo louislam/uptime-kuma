@@ -27,7 +27,7 @@ class OneBot extends NotificationProvider {
                 "auto_escape": true,
                 "message": pushText,
             };
-            if (notification.msgType == "group") {
+            if (notification.msgType === "group") {
                 data["message_type"] = "group";
                 data["group_id"] = notification.recieverId;
             } else {

@@ -27,7 +27,7 @@ class Line extends NotificationProvider {
                     ]
                 };
                 await axios.post(lineAPIUrl, testMessage, config);
-            } else if (heartbeatJSON["status"] == DOWN) {
+            } else if (heartbeatJSON["status"] === DOWN) {
                 let downMessage = {
                     "to": notification.lineUserID,
                     "messages": [
@@ -38,7 +38,7 @@ class Line extends NotificationProvider {
                     ]
                 };
                 await axios.post(lineAPIUrl, downMessage, config);
-            } else if (heartbeatJSON["status"] == UP) {
+            } else if (heartbeatJSON["status"] === UP) {
                 let upMessage = {
                     "to": notification.lineUserID,
                     "messages": [

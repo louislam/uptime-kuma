@@ -92,7 +92,7 @@ exports.dnsResolve = function (hostname, resolverServer, rrtype) {
     const resolver = new Resolver();
     resolver.setServers([ resolverServer ]);
     return new Promise((resolve, reject) => {
-        if (rrtype == "PTR") {
+        if (rrtype === "PTR") {
             resolver.reverse(hostname, (err, records) => {
                 if (err) {
                     reject(err);

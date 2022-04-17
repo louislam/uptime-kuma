@@ -50,7 +50,7 @@ class DingDing extends NotificationProvider {
         };
 
         let result = await axios(config);
-        if (result.data.errmsg == "ok") {
+        if (result.data.errmsg === "ok") {
             return true;
         }
         return false;

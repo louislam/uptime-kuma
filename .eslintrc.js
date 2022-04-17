@@ -22,6 +22,8 @@ module.exports = {
         requireConfigFile: false,
     },
     rules: {
+        "yoda": "error",
+        eqeqeq: [ "warn", "smart" ],
         "linebreak-style": [ "error", "unix" ],
         "camelcase": [ "warn", {
             "properties": "never",

@@ -35,7 +35,7 @@ class Discord extends NotificationProvider {
             }
 
             // If heartbeatJSON is not null, we go into the normal alerting loop.
-            if (heartbeatJSON["status"] == DOWN) {
+            if (heartbeatJSON["status"] === DOWN) {
                 let discorddowndata = {
                     username: discordDisplayName,
                     embeds: [{
@@ -70,7 +70,7 @@ class Discord extends NotificationProvider {
                 await axios.post(notification.discordWebhookUrl, discorddowndata);
                 return okMsg;
 
-            } else if (heartbeatJSON["status"] == UP) {
+            } else if (heartbeatJSON["status"] === UP) {
                 let discordupdata = {
                     username: discordDisplayName,
                     embeds: [{

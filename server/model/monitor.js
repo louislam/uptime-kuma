@@ -262,7 +262,7 @@ class Monitor extends BeanModel {
                         log.debug("monitor", "Cert Info Query Time: " + (dayjs().valueOf() - certInfoStartTime) + "ms");
                     }
 
-                    if (process.env.UPTIME_KUMA_LOG_RESPONSE_BODY_MONITOR_ID == this.id) {
+                    if (process.env.UPTIME_KUMA_LOG_RESPONSE_BODY_MONITOR_ID === this.id) {
                         log.info("monitor", res.data);
                     }
 
@@ -302,24 +302,24 @@ class Monitor extends BeanModel {
                     let dnsRes = await dnsResolve(this.hostname, this.dns_resolve_server, this.dns_resolve_type);
                     bean.ping = dayjs().valueOf() - startTime;
 
-                    if (this.dns_resolve_type == "A" || this.dns_resolve_type == "AAAA" || this.dns_resolve_type == "TXT") {
+                    if (this.dns_resolve_type === "A" || this.dns_resolve_type === "AAAA" || this.dns_resolve_type === "TXT") {
                         dnsMessage += "Records: ";
                         dnsMessage += dnsRes.join(" | ");
-                    } else if (this.dns_resolve_type == "CNAME" || this.dns_resolve_type == "PTR") {
+                    } else if (this.dns_resolve_type === "CNAME" || this.dns_resolve_type === "PTR") {
                         dnsMessage = dnsRes[0];
-                    } else if (this.dns_resolve_type == "CAA") {
+                    } else if (this.dns_resolve_type === "CAA") {
                         dnsMessage = dnsRes[0].issue;
-                    } else if (this.dns_resolve_type == "MX") {
+                    } else if (this.dns_resolve_type === "MX") {
                         dnsRes.forEach(record => {
                             dnsMessage += `Hostname: ${record.exchange} - Priority: ${record.priority} | `;
                         });
                         dnsMessage = dnsMessage.slice(0, -2);
-                    } else if (this.dns_resolve_type == "NS") {
+                    } else if (this.dns_resolve_type === "NS") {
                         dnsMessage += "Servers: ";
                         dnsMessage += dnsRes.join(" | ");
-                    } else if (this.dns_resolve_type == "SOA") {
+                    } else if (this.dns_resolve_type === "SOA") {
                         dnsMessage += `NS-Name: ${dnsRes.nsname} | Hostmaster: ${dnsRes.hostmaster} | Serial: ${dnsRes.serial} | Refresh: ${dnsRes.refresh} | Retry: ${dnsRes.retry} | Expire: ${dnsRes.expire} | MinTTL: ${dnsRes.minttl}`;
-                    } else if (this.dns_resolve_type == "SRV") {
+                    } else if (this.dns_resolve_type === "SRV") {
                         dnsRes.forEach(record => {
                             dnsMessage += `Name: ${record.name} | Port: ${record.port} | Priority: ${record.priority} | Weight: ${record.weight} | `;
                         });
