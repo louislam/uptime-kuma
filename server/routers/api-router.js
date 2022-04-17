@@ -62,7 +62,7 @@ router.get("/api/push/:pushToken", async (request, response) => {
             duration = dayjs(bean.time).diff(dayjs(previousHeartbeat.time), "second");
         }
 
-        const isDegraded = await Monitor.isDegraded(monitor.id)
+        const isDegraded = await Monitor.isDegraded(monitor.id);
 
         if (status === UP && isDegraded) {
             msg = "Monitor is degraded, because at least one dependent monitor is DOWN";
@@ -90,9 +90,8 @@ router.get("/api/push/:pushToken", async (request, response) => {
         });
 
         if (monitor.noNotificationIfMasterDown && isDegraded || previousHeartbeat.msg === "Monitor is down and degraded") {
-            debug(`[${monitor.name}] will not sendNotification because it is/was degraded`);
-        }
-        else if (Monitor.isImportantForNotification(isFirstBeat, previousStatus, status)) {
+            log.debug("router", `[${monitor.name}] will not sendNotification because it is/was degraded`);
+        } else if (Monitor.isImportantForNotification(isFirstBeat, previousStatus, status)) {
             await Monitor.sendNotification(isFirstBeat, monitor, bean);
         }
 

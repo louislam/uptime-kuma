@@ -106,7 +106,7 @@
             <div class="shadow-box table-shadow-box">
                 <label for="dependent-monitors" class="form-label" style="margin-top: 20px; font-weight: bold">{{ $t("monitorDependsOn") }}:</label>
                 <br>
-                <button v-for="monitor in this.dependentMonitors" class="btn btn-monitor" style="margin: 5px; cursor: auto; color: white; font-weight: 500">
+                <button v-for="monitor in this.dependentMonitors" :key="monitor.id" class="btn btn-monitor" style="margin: 5px; cursor: auto; color: white; font-weight: 500">
                     {{ monitor }}
                 </button>
             </div>
