@@ -9,6 +9,7 @@ const iconv = require("iconv-lite");
 const chardet = require("chardet");
 const fs = require("fs");
 const nodeJsUtil = require("util");
+const mqtt = require("mqtt");
 
 // From ping-lite
 exports.WIN = /^win/.test(process.platform);
@@ -26,7 +27,7 @@ exports.initJWTSecret = async () => {
         "jwtSecret",
     ]);
 
-    if (! jwtSecretBean) {
+    if (!jwtSecretBean) {
         jwtSecretBean = R.dispense("setting");
         jwtSecretBean.key = "jwtSecret";
     }
@@ -85,6 +86,63 @@ exports.pingAsync = function (hostname, ipv6 = false) {
                 resolve(Math.round(ms));
             }
         });
+    });
+};
+
+exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
+
+    log.debug("mqtt", `Topic: ${topic}`);
+
+    return new Promise((resolve, reject) => {
+        const { port, username, password, interval = 20 } = options;
+
+        // Adds MQTT protocol to the hostname if not already present
+        if (!/^(?:http|mqtt)s?:\/\//.test(hostname)) {
+            hostname = "mqtt://" + hostname;
+        }
+
+        const timeoutID = setTimeout(() => {
+            log.debug("mqtt", "MQTT timeout triggered");
+            client.end();
+            reject("Timeout");
+        }, interval * 1000);
+
+        log.debug("mqtt", "MQTT connecting");
+
+        let client = mqtt.connect(hostname, {
+            port,
+            username,
+            password
+        });
+
+        client.on("connect", () => {
+            log.debug("mqtt", "MQTT subscribe topic");
+
+            try {
+                client.subscribe(topic);
+            } catch (e) {
+                reject(new Error("Cannot subscribe topic"));
+            }
+        });
+
+        client.on("error", (error) => {
+            client.end();
+            clearTimeout(timeoutID);
+            reject(error);
+        });
+
+        client.on("message", (messageTopic, message) => {
+            if (messageTopic == topic) {
+                client.end();
+                clearTimeout(timeoutID);
+                if (message.toString() === okMessage) {
+                    resolve(`Topic: ${messageTopic}; Message: ${message.toString()}`);
+                } else {
+                    reject(new Error(`Error; Topic: ${messageTopic}; Message: ${message.toString()}`));
+                }
+            }
+        });
+
     });
 };
 
@@ -206,7 +264,7 @@ const parseCertificateInfo = function (info) {
     const existingList = {};
 
     while (link) {
-        log.debug("util", `[${i}] ${link.fingerprint}`);
+        log.debug("cert", `[${i}] ${link.fingerprint}`);
 
         if (!link.valid_from || !link.valid_to) {
             break;
@@ -221,7 +279,7 @@ const parseCertificateInfo = function (info) {
         if (link.issuerCertificate == null) {
             break;
         } else if (link.issuerCertificate.fingerprint in existingList) {
-            log.debug("util", `[Last] ${link.issuerCertificate.fingerprint}`);
+            log.debug("cert", `[Last] ${link.issuerCertificate.fingerprint}`);
             link.issuerCertificate = null;
             break;
         } else {
@@ -242,7 +300,7 @@ exports.checkCertificate = function (res) {
     const info = res.request.res.socket.getPeerCertificate(true);
     const valid = res.request.res.socket.authorized || false;
 
-    log.debug("util", "Parsing Certificate Info");
+    log.debug("cert", "Parsing Certificate Info");
     const parsedInfo = parseCertificateInfo(info);
 
     return {
@@ -284,13 +342,13 @@ exports.getTotalClientInRoom = (io, roomName) => {
 
     const sockets = io.sockets;
 
-    if (! sockets) {
+    if (!sockets) {
         return 0;
     }
 
     const adapter = sockets.adapter;
 
-    if (! adapter) {
+    if (!adapter) {
         return 0;
     }
 
@@ -315,7 +373,7 @@ exports.allowAllOrigin = (res) => {
 };
 
 exports.checkLogin = (socket) => {
-    if (! socket.userID) {
+    if (!socket.userID) {
         throw new Error("You are not logged in.");
     }
 };

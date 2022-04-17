@@ -56,6 +56,7 @@ class Database {
         "patch-status-page.sql": true,
         "patch-proxy.sql": true,
         "patch-monitor-expiry-notification.sql": true,
+        "patch-added-mqtt-monitor.sql": true,
     }
 
     /**

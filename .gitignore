@@ -13,3 +13,5 @@ dist-ssr
 /out
 /tmp
 .env
+
+test/screenshots/
