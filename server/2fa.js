@@ -1,4 +1,3 @@
-const { checkLogin } = require("./util-server");
 const { R } = require("redbean-node");
 
 class TwoFA {

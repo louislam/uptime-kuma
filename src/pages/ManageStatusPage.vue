@@ -92,7 +92,6 @@ export default {
         }
 
         .info {
-
             .title {
                 font-weight: bold;
                 font-size: 20px;

@@ -2,6 +2,6 @@
 BEGIN TRANSACTION;
 
 ALTER TABLE monitor
-    ADD push_token VARCHAR(32) DEFAULT NULL;
+    ADD resend_interval INTEGER default 0 not null;
 
 COMMIT;

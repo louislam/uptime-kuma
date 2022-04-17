@@ -2,7 +2,7 @@ const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 const Slack = require("./slack");
 const { setting } = require("../util-server");
-const { getMonitorRelativeURL, UP, DOWN } = require("../../src/util");
+const { getMonitorRelativeURL, DOWN } = require("../../src/util");
 
 class RocketChat extends NotificationProvider {
 

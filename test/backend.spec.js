@@ -1,5 +1,9 @@
-const { genSecret, sleep } = require("../src/util");
+const { genSecret, DOWN } = require("../src/util");
 const utilServerRewire = require("../server/util-server");
+const Discord = require("../server/notification-providers/discord");
+const axios = require("axios");
+
+jest.mock("axios");
 
 describe("Test parseCertificateInfo", () => {
     it("should handle undefined", async () => {
@@ -164,3 +168,64 @@ describe("Test reset-password", () => {
     }, 120000);
 });
 
+describe("Test Discord Notification Provider", () => {
+    const sendNotification = async (hostname, port, type) => {
+        const discordProvider = new Discord();
+
+        axios.post.mockResolvedValue({});
+
+        await discordProvider.send(
+            {
+                discordUsername: "Uptime Kuma",
+                discordWebhookUrl: "https://discord.com",
+            },
+            "test message",
+            {
+                type,
+                hostname,
+                port,
+            },
+            {
+                status: DOWN,
+            }
+        );
+    };
+
+    it("should send hostname for dns monitors", async () => {
+        const hostname = "discord.com";
+        await sendNotification(hostname, null, "dns");
+
+        expect(axios.post.mock.lastCall[1].embeds[0].fields[1].value).toBe(
+            hostname
+        );
+    });
+
+    it("should send hostname for ping monitors", async () => {
+        const hostname = "discord.com";
+        await sendNotification(hostname, null, "ping");
+
+        expect(axios.post.mock.lastCall[1].embeds[0].fields[1].value).toBe(
+            hostname
+        );
+    });
+
+    it("should send hostname for port monitors", async () => {
+        const hostname = "discord.com";
+        const port = 1337;
+        await sendNotification(hostname, port, "port");
+
+        expect(axios.post.mock.lastCall[1].embeds[0].fields[1].value).toBe(
+            `${hostname}:${port}`
+        );
+    });
+
+    it("should send hostname for steam monitors", async () => {
+        const hostname = "discord.com";
+        const port = 1337;
+        await sendNotification(hostname, port, "steam");
+
+        expect(axios.post.mock.lastCall[1].embeds[0].fields[1].value).toBe(
+            `${hostname}:${port}`
+        );
+    });
+});

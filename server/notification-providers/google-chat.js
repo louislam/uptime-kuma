@@ -13,11 +13,11 @@ class GoogleChat extends NotificationProvider {
         try {
             // Google Chat message formatting: https://developers.google.com/chat/api/guides/message-formats/basic
 
-            let textMsg = ''
+            let textMsg = "";
             if (heartbeatJSON && heartbeatJSON.status === UP) {
-                textMsg = `✅ Application is back online\n`;
+                textMsg = "✅ Application is back online\n";
             } else if (heartbeatJSON && heartbeatJSON.status === DOWN) {
-                textMsg = `🔴 Application went down\n`;
+                textMsg = "🔴 Application went down\n";
             }
 
             if (monitorJSON && monitorJSON.name) {

@@ -69,7 +69,6 @@
 
 <script lang="ts">
 import { Modal } from "bootstrap";
-import { ucfirst } from "../util.ts";
 
 import Confirm from "./Confirm.vue";
 import NotificationFormList from "./notifications";

@@ -49,12 +49,105 @@ export function ucfirst(str: string) {
     return firstLetter.toUpperCase() + str.substr(1);
 }
 
+/**
+ * @deprecated Use log.debug
+ * @since https://github.com/louislam/uptime-kuma/pull/910
+ * @param msg
+ */
 export function debug(msg: any) {
-    if (isDev) {
-        console.log(msg);
+    log.log("", msg, "debug");
+}
+
+class Logger {
+
+    /**
+     * UPTIME_KUMA_HIDE_LOG=debug_monitor,info_monitor
+     *
+     * Example:
+     *  [
+     *     "debug_monitor",          // Hide all logs that level is debug and the module is monitor
+     *     "info_monitor",
+     *  ]
+     */
+    hideLog : any = {
+        info: [],
+        warn: [],
+        error: [],
+        debug: [],
+    };
+
+    constructor() {
+        if (typeof process !== "undefined" && process.env.UPTIME_KUMA_HIDE_LOG) {
+            let list = process.env.UPTIME_KUMA_HIDE_LOG.split(",").map(v => v.toLowerCase());
+
+            for (let pair of list) {
+                // split first "_" only
+                let values = pair.split(/_(.*)/s);
+
+                if (values.length >= 2) {
+                    this.hideLog[values[0]].push(values[1]);
+                }
+            }
+
+            this.debug("server", "UPTIME_KUMA_HIDE_LOG is set");
+            this.debug("server", this.hideLog);
+        }
+    }
+
+    log(module: string, msg: any, level: string) {
+        if (this.hideLog[level] && this.hideLog[level].includes(module)) {
+            return;
+        }
+
+        module = module.toUpperCase();
+        level = level.toUpperCase();
+
+        const now = new Date().toISOString();
+        const formattedMessage = (typeof msg === "string") ? `${now} [${module}] ${level}: ${msg}` : msg;
+
+        if (level === "INFO") {
+            console.info(formattedMessage);
+        } else if (level === "WARN") {
+            console.warn(formattedMessage);
+        } else if (level === "ERROR") {
+            console.error(formattedMessage);
+        } else if (level === "DEBUG") {
+            if (isDev) {
+                console.debug(formattedMessage);
+            }
+        } else {
+            console.log(formattedMessage);
+        }
+    }
+
+    info(module: string, msg: any) {
+        this.log(module, msg, "info");
+    }
+
+    warn(module: string, msg: any) {
+        this.log(module, msg, "warn");
+    }
+
+   error(module: string, msg: any) {
+       this.log(module, msg, "error");
+    }
+
+   debug(module: string, msg: any) {
+       this.log(module, msg, "debug");
+    }
+
+    exception(module: string, exception: any, msg: any) {
+        let finalMessage = exception
+
+        if (msg) {
+            finalMessage = `${msg}: ${exception}`
+        }
+
+        this.log(module, finalMessage , "error");
     }
 }
 
+export const log = new Logger();
 
 declare global { interface String { replaceAll(str: string, newStr: string): string; } }
 

@@ -118,6 +118,7 @@ export default {
                 return 0;
             });
 
+            // eslint-disable-next-line vue/no-side-effects-in-computed-properties
             this.heartBeatList = result;
 
             return result;
