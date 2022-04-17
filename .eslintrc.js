@@ -44,6 +44,7 @@ module.exports = {
         "vue/max-attributes-per-line": "off",
         "vue/singleline-html-element-content-newline": "off",
         "vue/html-self-closing": "off",
+        "vue/require-component-is": "off",      // not allow is="style" https://github.com/vuejs/eslint-plugin-vue/issues/462#issuecomment-430234675
         "vue/attribute-hyphenation": "off",     // This change noNL to "no-n-l" unexpectedly
         "no-multi-spaces": ["error", {
             ignoreEOLComments: true,

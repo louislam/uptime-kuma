@@ -155,6 +155,9 @@ module.exports.statusPageSocketHandler = (socket) => {
             //statusPage.search_engine_index = ;
             statusPage.show_tags = config.showTags;
             //statusPage.password = null;
+            statusPage.footer_text = config.footerText;
+            statusPage.custom_css = config.customCSS;
+            statusPage.show_powered_by = config.showPoweredBy;
             statusPage.modified_date = R.isoDateTime();
 
             await R.store(statusPage);
