@@ -63,5 +63,5 @@ export default {
     components: {
         HiddenInput,
     },
-}
+};
 </script>

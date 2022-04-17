@@ -9,11 +9,11 @@
                 <div class="row">
                     <div class="col">
                         <h3>{{ $t("Up") }}</h3>
-                        <span class="num">{{ stats.up }}</span>
+                        <span class="num">{{ $root.stats.up }}</span>
                     </div>
                     <div class="col">
                         <h3>{{ $t("Down") }}</h3>
-                        <span class="num text-danger">{{ stats.down }}</span>
+                        <span class="num text-danger">{{ $root.stats.down }}</span>
                     </div>
                     <div class="col">
                         <h3>{{ $t("Degraded") }}</h3>
@@ -21,11 +21,11 @@
                     </div>
                     <div class="col">
                         <h3>{{ $t("Unknown") }}</h3>
-                        <span class="num text-secondary">{{ stats.unknown }}</span>
+                        <span class="num text-secondary">{{ $root.stats.unknown }}</span>
                     </div>
                     <div class="col">
                         <h3>{{ $t("pauseDashboardHome") }}</h3>
-                        <span class="num text-secondary">{{ stats.pause }}</span>
+                        <span class="num text-secondary">{{ $root.stats.pause }}</span>
                     </div>
                 </div>
             </div>
@@ -156,6 +156,7 @@ export default {
                 return 0;
             });
 
+            // eslint-disable-next-line vue/no-side-effects-in-computed-properties
             this.heartBeatList = result;
 
             return result;

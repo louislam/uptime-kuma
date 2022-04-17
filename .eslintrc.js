@@ -1,4 +1,9 @@
 module.exports = {
+    ignorePatterns: [
+        "test/*",
+        "server/modules/apicache/*",
+        "src/util.js"
+    ],
     root: true,
     env: {
         browser: true,
@@ -22,9 +27,9 @@ module.exports = {
             "properties": "never",
             "ignoreImports": true
         }],
-        // override/add rules settings here, such as:
-        // 'vue/no-unused-vars': 'error'
-        "no-unused-vars": "warn",
+        "no-unused-vars": ["warn", {
+            "args": "none"
+        }],
         indent: [
             "error",
             4,
@@ -34,7 +39,7 @@ module.exports = {
             },
         ],
         quotes: ["warn", "double"],
-        semi: "warn",
+        semi: "error",
         "vue/html-indent": ["warn", 4], // default: 2
         "vue/max-attributes-per-line": "off",
         "vue/singleline-html-element-content-newline": "off",
