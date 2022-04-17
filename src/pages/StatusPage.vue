@@ -956,7 +956,6 @@ footer {
         background: $dark-bg;
         border: 1px solid $dark-border-color;
     }
-
 }
 
 </style>
