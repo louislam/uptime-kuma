@@ -1,11 +1,11 @@
 let express = require("express");
-const { allowDevAllOrigin, getSettings, setting } = require("../util-server");
+const { allowDevAllOrigin } = require("../util-server");
 const { R } = require("redbean-node");
 const server = require("../server");
 const apicache = require("../modules/apicache");
 const Monitor = require("../model/monitor");
 const dayjs = require("dayjs");
-const { UP, flipStatus, debug } = require("../../src/util");
+const { UP, flipStatus, log } = require("../../src/util");
 const StatusPage = require("../model/status_page");
 let router = express.Router();
 
@@ -62,9 +62,9 @@ router.get("/api/push/:pushToken", async (request, response) => {
             duration = dayjs(bean.time).diff(dayjs(previousHeartbeat.time), "second");
         }
 
-        debug(`/api/push/ called at ${dayjs().format('YYYY-MM-DD HH:mm:ss.SSS')}`)
-        debug("PreviousStatus: " + previousStatus);
-        debug("Current Status: " + status);
+        log.debug("router", `/api/push/ called at ${dayjs().format('YYYY-MM-DD HH:mm:ss.SSS')}`)
+        log.debug("router", "PreviousStatus: " + previousStatus);
+        log.debug("router", "Current Status: " + status);
 
         bean.important = Monitor.isImportantBeat(isFirstBeat, previousStatus, status);
         bean.monitor_id = monitor.id;
@@ -125,7 +125,7 @@ router.get("/api/status-page/:slug", cache("5 minutes"), async (request, respons
         // Public Group List
         const publicGroupList = [];
         const showTags = !!statusPage.show_tags;
-        debug("Show Tags???" + showTags);
+
         const list = await R.find("group", " public = 1 AND status_page_id = ? ORDER BY weight ", [
             statusPage.id
         ]);
@@ -195,14 +195,6 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
         send403(response, error.message);
     }
 });
-
-/**
- * Default is published
- * @returns {Promise<boolean>}
- */
-async function isPublished() {
-    return true;
-}
 
 function send403(res, msg = "") {
     res.status(403).json({
