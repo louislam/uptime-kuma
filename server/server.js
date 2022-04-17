@@ -108,7 +108,7 @@ if (hostname) {
     log.info("server", "Custom hostname: " + hostname);
 }
 
-const port = [args.port, process.env.UPTIME_KUMA_PORT, process.env.PORT, 3001]
+const port = [ args.port, process.env.UPTIME_KUMA_PORT, process.env.PORT, 3001 ]
     .map(portValue => parseInt(portValue))
     .find(portValue => !isNaN(portValue));
 
@@ -1237,7 +1237,7 @@ try {
                         const exists = proxies.find(item => item.id === proxy.id);
 
                         // Do not process when proxy already exists in import handle is skip and keep
-                        if (["skip", "keep"].includes(importHandle) && !exists) {
+                        if ([ "skip", "keep" ].includes(importHandle) && !exists) {
                             return;
                         }
 

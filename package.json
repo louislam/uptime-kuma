@@ -13,6 +13,7 @@
         "install-legacy": "npm install --legacy-peer-deps",
         "update-legacy": "npm update --legacy-peer-deps",
         "lint:js": "eslint --ext \".js,.vue\" --ignore-path .gitignore .",
+        "lint-fix:js": "eslint --ext \".js,.vue\" --fix --ignore-path .gitignore .",
         "lint:style": "stylelint \"**/*.{vue,css,scss}\" --ignore-path .gitignore",
         "lint": "npm run lint:js && npm run lint:style",
         "dev": "vite --host --config ./config/vite.config.js",

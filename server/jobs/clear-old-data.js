@@ -30,7 +30,7 @@ const DEFAULT_KEEP_PERIOD = 180;
     try {
         await R.exec(
             "DELETE FROM heartbeat WHERE time < DATETIME('now', '-' || ? || ' days') ",
-            [parsedPeriod]
+            [ parsedPeriod ]
         );
     } catch (e) {
         log(`Failed to clear old data: ${e.message}`);

@@ -10,7 +10,7 @@ import { sleep } from "../util.ts";
 export default {
 
     props: {
-        value: [String, Number],
+        value: [ String, Number ],
         time: {
             type: Number,
             default: 0.3,

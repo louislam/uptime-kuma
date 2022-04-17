@@ -48,7 +48,7 @@ export default {
             default: undefined,
         },
     },
-    emits: ["update:modelValue"],
+    emits: [ "update:modelValue" ],
     data() {
         return {
             visibility: "password",

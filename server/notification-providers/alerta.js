@@ -40,7 +40,7 @@ class Alerta extends NotificationProvider {
                 await axios.post(alertaUrl, postData, config);
             } else {
                 let datadup = Object.assign( {
-                    correlate: ["service_up", "service_down"],
+                    correlate: [ "service_up", "service_down" ],
                     event: monitorJSON["type"],
                     group: "uptimekuma-" + monitorJSON["type"],
                     resource: monitorJSON["name"],
