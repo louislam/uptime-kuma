@@ -62,7 +62,7 @@ router.get("/api/push/:pushToken", async (request, response) => {
             duration = dayjs(bean.time).diff(dayjs(previousHeartbeat.time), "second");
         }
 
-        log.debug("router", `/api/push/ called at ${dayjs().format('YYYY-MM-DD HH:mm:ss.SSS')}`)
+        log.debug("router", `/api/push/ called at ${dayjs().format('YYYY-MM-DD HH:mm:ss.SSS')}`);
         log.debug("router", "PreviousStatus: " + previousStatus);
         log.debug("router", "Current Status: " + status);
 
