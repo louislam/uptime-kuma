@@ -410,7 +410,7 @@ class Monitor extends BeanModel {
                         throw new Error("Server not found on Steam");
                     }
                 } else if (this.type === "docker") {
-                    debug(`[${this.name}] Prepare Options for Axios`);
+                    log.debug(`[${this.name}] Prepare Options for Axios`);
 
                     const options = {
                         url: `/containers/${this.docker_container}/json`,
@@ -430,7 +430,7 @@ class Monitor extends BeanModel {
                         options.baseURL = this.docker_daemon;
                     }
 
-                    debug(`[${this.name}] Axios Request`);
+                    log.debug(`[${this.name}] Axios Request`);
                     let res = await axios.request(options);
                     if (res.data.State.Running) {
                         bean.status = UP;
