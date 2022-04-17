@@ -283,6 +283,7 @@ const toast = useToast();
 
 const leavePageMsg = "Do you really want to leave? you have unsaved changes!";
 
+// eslint-disable-next-line no-unused-vars
 let feedInterval;
 
 const favicon = new Favico({
@@ -864,7 +865,7 @@ footer {
 
 .incident, .customize {
     .content {
-        &[contenteditable=true] {
+        &[contenteditable="true"] {
             min-height: 60px;
         }
     }

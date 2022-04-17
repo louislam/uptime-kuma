@@ -355,7 +355,7 @@ export default {
 <style lang="scss" scoped>
 @import "../../assets/vars.scss";
 
-h5:after {
+h5::after {
     content: "";
     display: block;
     width: 50%;

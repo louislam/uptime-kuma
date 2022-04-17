@@ -343,7 +343,7 @@ export default {
     "No Monitors": "Няма монитори",
     "Untitled Group": "Група без заглавие",
     Services: "Услуги",
-    Discard: "Премахни",
+    Discard: "Отмени",
     Cancel: "Отмени",
     "Powered by": "Създадено чрез",
     serwersms: "SerwerSMS.pl",

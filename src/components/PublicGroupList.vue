@@ -145,7 +145,7 @@ export default {
 
 .mobile {
     .item {
-        padding: 13px 0 10px 0;
+        padding: 13px 0 10px;
     }
 }
 

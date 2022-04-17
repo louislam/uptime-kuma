@@ -2,7 +2,6 @@ const basicAuth = require("express-basic-auth");
 const passwordHash = require("./password-hash");
 const { R } = require("redbean-node");
 const { setting } = require("./util-server");
-const { debug } = require("../src/util");
 const { loginRateLimiter } = require("./rate-limiter");
 
 /**
