@@ -443,6 +443,6 @@ export default {
     "Fingerprint:": "Fingerabdruck:",
     "No status pages": "Keine Status-Seiten",
     Customize: "Anpassen",
-    "Custom Footer": "Eigener Footer (Leerlassen für Standard)",
+    "Custom Footer": "Eigener Footer",
     "Custom CSS": "Eigenes CSS",
 };

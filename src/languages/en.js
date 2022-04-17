@@ -355,7 +355,7 @@ export default {
     serwersmsSenderName: "SMS Sender Name (registered via customer portal)",
     stackfield: "Stackfield",
     Customize: "Customize",
-    "Custom Footer": "Custom Footer (empty string for default)",
+    "Custom Footer": "Custom Footer",
     "Custom CSS": "Custom CSS",
     smtpDkimSettings: "DKIM Settings",
     smtpDkimDesc: "Please refer to the Nodemailer DKIM {0} for usage.",

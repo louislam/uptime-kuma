@@ -16,9 +16,16 @@
                     <input id="title" v-model="config.title" type="text" class="form-control">
                 </div>
 
+                <!-- Description -->
                 <div class="my-3">
                     <label for="description" class="form-label">{{ $t("Description") }}</label>
                     <textarea id="description" v-model="config.description" class="form-control"></textarea>
+                </div>
+
+                <!-- Footer Text -->
+                <div class="my-3">
+                    <label for="footer-text" class="form-label">{{ $t("Footer Text") }}</label>
+                    <textarea id="footer-text" v-model="config.footerText" class="form-control"></textarea>
                 </div>
 
                 <div class="my-3 form-check form-switch">
@@ -29,6 +36,12 @@
                 <div class="my-3 form-check form-switch">
                     <input id="showTags" v-model="config.showTags" class="form-check-input" type="checkbox">
                     <label class="form-check-label" for="showTags">{{ $t("Show Tags") }}</label>
+                </div>
+
+                <!-- Show Powered By -->
+                <div class="my-3 form-check form-switch">
+                    <input id="show-powered-by" v-model="config.showPoweredBy" class="form-check-input" type="checkbox">
+                    <label class="form-check-label" for="show-powered-by">{{ $t("Show Powered By") }}</label>
                 </div>
 
                 <div v-if="false" class="my-3">
@@ -49,6 +62,12 @@
                             <font-awesome-icon icon="times" class="action remove ms-2 me-3 text-danger" @click="removeDomain(index)" />
                         </li>
                     </ul>
+                </div>
+
+                <!-- Custom CSS -->
+                <div class="my-3">
+                    <div class="mb-1">{{ $t("Custom CSS") }}</div>
+                    <prism-editor v-model="config.customCSS" class="css-editor" :highlight="highlighter" line-numbers></prism-editor>
                 </div>
 
                 <div class="danger-zone">
@@ -119,11 +138,6 @@
                         <font-awesome-icon icon="bullhorn" />
                         {{ $t("Create Incident") }}
                     </button>
-
-                    <button class="btn btn-primary me-2" @click="customizeStatusPage">
-                        <font-awesome-icon icon="cog" />
-                        {{ $t("Customize") }}
-                    </button>
                 </div>
             </div>
 
@@ -178,15 +192,6 @@
                         {{ $t("Unpin") }}
                     </button>
                 </div>
-            </div>
-
-            <!-- Customize -->
-            <div v-if="editMode && enableEditCustomizeMode" class="mb-4 p-4 alert shadow-box customize" role="alert">
-                <strong v-if="enableEditCustomizeMode">{{ $t("Custom CSS") }}:</strong>
-                <Editable v-model="config.customCSS" tag="div" :contenteditable="enableEditCustomizeMode" class="content p-2" />
-                <br />
-                <strong v-if="enableEditCustomizeMode">{{ $t("Custom Footer") }}:</strong>
-                <Editable v-model="config.poweredBy" tag="h4" :contenteditable="enableEditCustomizeMode" :noNL="true" class="alert-heading p-2" />
             </div>
 
             <!-- Overall Status -->
@@ -253,8 +258,14 @@
             </div>
 
             <footer class="mt-5 mb-4">
-                <p v-if="config.poweredBy" v-html="config.poweredBy"></p>
-                <p v-else>{{ $t("Powered by") }} <a target="_blank" href="https://github.com/louislam/uptime-kuma">{{ $t("Uptime Kuma" ) }}</a></p>
+                <div class="custom-footer-text text-start">
+                    <strong v-if="enableEditMode">{{ $t("Custom Footer") }}:</strong>
+                </div>
+                <Editable v-model="config.footerText" tag="div" :contenteditable="enableEditMode" :noNL="false" class="alert-heading p-2" />
+
+                <p v-if="config.showPoweredBy">
+                    {{ $t("Powered by") }} <a target="_blank" href="https://github.com/louislam/uptime-kuma">{{ $t("Uptime Kuma" ) }}</a>
+                </p>
             </footer>
         </div>
 
@@ -278,6 +289,14 @@ import dayjs from "dayjs";
 import Favico from "favico.js";
 import { getResBaseURL } from "../util-frontend";
 import Confirm from "../components/Confirm.vue";
+// import Prism Editor
+import { PrismEditor } from "vue-prism-editor";
+import "vue-prism-editor/dist/prismeditor.min.css"; // import the styles somewhere
+
+// import highlighting library (you can use any library you want just return html string)
+import { highlight, languages } from "prismjs/components/prism-core";
+import "prismjs/components/prism-css";
+import "prismjs/themes/prism-tomorrow.css"; // import syntax highlighting styles
 
 const toast = useToast();
 
@@ -296,6 +315,7 @@ export default {
         PublicGroupList,
         ImageCropUpload,
         Confirm,
+        PrismEditor,
     },
 
     // Leave Page for vue route change
@@ -324,7 +344,6 @@ export default {
             slug: null,
             enableEditMode: false,
             enableEditIncidentMode: false,
-            enableEditCustomizeMode: false,
             hasToken: false,
             config: {},
             selectedMonitor: null,
@@ -439,6 +458,13 @@ export default {
                 this.$root.getSocket().emit("getStatusPage", this.slug, (res) => {
                     if (res.ok) {
                         this.config = res.config;
+
+                        if (!this.config.customCSS) {
+                            this.config.customCSS = "body {\n" +
+                                "  \n" +
+                                "}\n";
+                        }
+
                     } else {
                         toast.error(res.msg);
                     }
@@ -540,6 +566,10 @@ export default {
         }
     },
     methods: {
+
+        highlighter(code) {
+            return highlight(code, languages.css);
+        },
 
         updateHeartbeatList() {
             // If editMode, it will use the data from websocket.
@@ -726,14 +756,6 @@ export default {
             this.config.domainNameList.splice(index, 1);
         },
 
-        /** customize status page */
-        customizeStatusPage() {
-            if (this.editMode) {
-                // toggle modal
-                this.enableEditCustomizeMode = !this.enableEditCustomizeMode;
-            }
-        },
-
     }
 };
 </script>
@@ -863,7 +885,7 @@ footer {
     }
 }
 
-.incident, .customize {
+.incident {
     .content {
         &[contenteditable="true"] {
             min-height: 60px;
@@ -920,6 +942,21 @@ footer {
             }
         }
     }
+}
+
+/* required class */
+.css-editor {
+    /* we dont use `language-` classes anymore so thats why we need to add background and text color manually */
+
+    border-radius: 1rem;
+    padding: 10px 5px;
+    border: 1px solid #ced4da;
+
+    .dark & {
+        background: $dark-bg;
+        border: 1px solid $dark-border-color;
+    }
+
 }
 
 </style>

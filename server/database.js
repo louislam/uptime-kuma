@@ -56,6 +56,7 @@ class Database {
         "patch-status-page.sql": true,
         "patch-proxy.sql": true,
         "patch-monitor-expiry-notification.sql": true,
+        "patch-status-page-footer-css.sql": true,
     }
 
     /**
