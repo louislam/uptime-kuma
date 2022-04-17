@@ -5,7 +5,6 @@ const util = require("../../src/util");
 
 util.polyfill();
 
-const oldVersion = pkg.version;
 const version = process.env.VERSION;
 
 console.log("Beta Version: " + version);
@@ -60,12 +59,4 @@ function tagExists(version) {
     let res = childProcess.spawnSync("git", ["tag", "-l", version]);
 
     return res.stdout.toString().trim() === version;
-}
-
-function safeDelete(dir) {
-    if (fs.existsSync(dir)) {
-        fs.rmdirSync(dir, {
-            recursive: true,
-        });
-    }
 }

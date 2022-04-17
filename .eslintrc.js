@@ -27,9 +27,9 @@ module.exports = {
             "properties": "never",
             "ignoreImports": true
         }],
-        // override/add rules settings here, such as:
-        // 'vue/no-unused-vars': 'error'
-        "no-unused-vars": "warn",
+        "no-unused-vars": ["warn", {
+            "args": "none"
+        }],
         indent: [
             "error",
             4,

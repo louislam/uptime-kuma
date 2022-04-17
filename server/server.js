@@ -119,7 +119,7 @@ const disableFrameSameOrigin = args["disable-frame-sameorigin"] || !!process.env
 const cloudflaredToken = args["cloudflared-token"] || process.env.UPTIME_KUMA_CLOUDFLARED_TOKEN || undefined;
 
 // 2FA / notp verification defaults
-const twofa_verification_opts = {
+const twoFAVerifyOptions = {
     "window": 1,
     "time": 30
 };
@@ -175,6 +175,7 @@ app.use(function (req, res, next) {
 
 /**
  * Total WebSocket client connected to server currently, no actual use
+ *
  * @type {number}
  */
 let totalClient = 0;
@@ -379,7 +380,7 @@ try {
                 }
 
                 if (data.token) {
-                    let verify = notp.totp.verify(data.token, user.twofa_secret, twofa_verification_opts);
+                    let verify = notp.totp.verify(data.token, user.twofa_secret, twoFAVerifyOptions);
 
                     if (user.twofa_last_token !== data.token && verify) {
                         afterLogin(socket, user);
@@ -546,7 +547,7 @@ try {
                     socket.userID,
                 ]);
 
-                let verify = notp.totp.verify(token, user.twofa_secret, twofa_verification_opts);
+                let verify = notp.totp.verify(token, user.twofa_secret, twoFAVerifyOptions);
 
                 if (user.twofa_last_token !== token && verify) {
                     callback({

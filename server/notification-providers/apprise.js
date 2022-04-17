@@ -1,12 +1,12 @@
 const NotificationProvider = require("./notification-provider");
-const child_process = require("child_process");
+const childProcess = require("child_process");
 
 class Apprise extends NotificationProvider {
 
     name = "apprise";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let s = child_process.spawnSync("apprise", [ "-vv", "-b", msg, notification.appriseURL]);
+        let s = childProcess.spawnSync("apprise", [ "-vv", "-b", msg, notification.appriseURL]);
 
         let output = (s.stdout) ? s.stdout.toString() : "ERROR: maybe apprise not found";
 
