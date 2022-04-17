@@ -14,7 +14,7 @@ class Alerta extends NotificationProvider {
             let config = {
                 headers: {
                     "Content-Type": "application/json;charset=UTF-8",
-                    "Authorization": "Key " + notification.alertaapiKey,
+                    "Authorization": "Key " + notification.alertaApiKey,
                 }
             };
             let data = {

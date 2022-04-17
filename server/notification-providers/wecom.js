@@ -26,7 +26,7 @@ class WeCom extends NotificationProvider {
 
     composeMessage(heartbeatJSON, msg) {
         let title;
-        if (msg != null && heartbeatJSON != null && heartbeatJSON['status'] == UP) {
+        if (msg != null && heartbeatJSON != null && heartbeatJSON["status"] == UP) {
             title = "UptimeKuma Monitor Up";
         }
         if (msg != null && heartbeatJSON != null && heartbeatJSON["status"] == DOWN) {

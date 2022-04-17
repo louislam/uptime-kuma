@@ -31,10 +31,13 @@
                         <font-awesome-icon icon="tachometer-alt" /> {{ $t("Dashboard") }}
                     </router-link>
                 </li>
-                <li v-if="$root.loggedIn" class="nav-item">
+                <li v-if="$root.loggedIn" class="nav-item me-2">
                     <router-link to="/settings" class="nav-link" :class="{ active: $route.path.includes('settings') }">
                         <font-awesome-icon icon="cog" /> {{ $t("Settings") }}
                     </router-link>
+                </li>
+                <li v-if="$root.loggedIn && $root.storage().token !== 'autoLogin'" class="nav-item">
+                    <button id="logout-btn" class="btn btn-danger me-2" @click="$root.logout">{{ $t("Logout") }}</button>
                 </li>
             </ul>
         </header>
@@ -74,6 +77,10 @@
                 <div><font-awesome-icon icon="cog" /></div>
                 {{ $t("Settings") }}
             </router-link>
+            <button v-if="$root.loggedIn && $root.storage().token !== 'autoLogin'" id="logout-btn" class="nav-link" @click="$root.logout">
+                <div><font-awesome-icon icon="sign-out-alt" /></div>
+                {{ $t("Logout") }}
+            </button>
         </nav>
     </div>
 </template>
@@ -149,9 +156,9 @@ export default {
     white-space: nowrap;
     padding: 0 10px;
 
-    a {
+    a, button {
         text-align: center;
-        width: 25%;
+        width: 20%;
         display: inline-block;
         height: 100%;
         padding: 8px 10px 0;
@@ -159,6 +166,7 @@ export default {
         color: #c1c1c1;
         overflow: hidden;
         text-decoration: none;
+        vertical-align: top;
 
         &.router-link-exact-active, &.active {
             color: $primary;
@@ -168,6 +176,12 @@ export default {
         div {
             font-size: 20px;
         }
+    }
+
+    button {
+        border: none;
+        background: none;
+        color: #dc3545;
     }
 }
 
@@ -189,6 +203,7 @@ main {
     color: white;
     position: fixed;
     width: 100%;
+    z-index: 99999;
 }
 
 .dark {

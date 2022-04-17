@@ -5,9 +5,7 @@ name: Auto Test
 
 on:
   push:
-    branches: [ master ]
   pull_request:
-    branches: [ master ]
 
 jobs:
   auto-test:
@@ -20,6 +18,7 @@ jobs:
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
+    - run: git config --global core.autocrlf false  # Mainly for Windows
     - uses: actions/checkout@v2
 
     - name: Use Node.js ${{ matrix.node-version }}
@@ -33,3 +32,11 @@ jobs:
       env:
         HEADLESS_TEST: 1
         JUST_FOR_TEST: ${{ secrets.JUST_FOR_TEST }}
+    - name: Upload test artifacts
+      uses: actions/upload-artifact@v2
+      if: always()
+      with:
+        name: test-screenshots ${{ matrix.os }} ${{ matrix.node-version }}
+        path: |
+          test/screenshots
+          !test/screenshots/.gitkeep

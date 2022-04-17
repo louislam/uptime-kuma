@@ -5,7 +5,7 @@
 
 <script lang="ts">
 
-import { sleep } from "../util.ts"
+import { sleep } from "../util.ts";
 
 export default {
 
@@ -25,12 +25,12 @@ export default {
         return {
             output: "",
             frameDuration: 30,
-        }
+        };
     },
 
     computed: {
         isNum() {
-            return typeof this.value === "number"
+            return typeof this.value === "number";
         },
     },
 
@@ -45,7 +45,7 @@ export default {
             } else {
                 for (let i = 1; i < frames; i++) {
                     this.output += step;
-                    await sleep(15)
+                    await sleep(15);
                 }
             }
 
@@ -59,5 +59,5 @@ export default {
 
     methods: {},
 
-}
+};
 </script>

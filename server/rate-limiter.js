@@ -1,5 +1,5 @@
 const { RateLimiter } = require("limiter");
-const { debug } = require("../src/util");
+const { log } = require("../src/util");
 
 class KumaRateLimiter {
     constructor(config) {
@@ -9,7 +9,7 @@ class KumaRateLimiter {
 
     async pass(callback, num = 1) {
         const remainingRequests = await this.removeTokens(num);
-        debug("Rate Limit (remainingRequests):" + remainingRequests);
+        log.info("rate-limit", "remaining requests: " + remainingRequests);
         if (remainingRequests < 0) {
             if (callback) {
                 callback({
@@ -34,6 +34,14 @@ const loginRateLimiter = new KumaRateLimiter({
     errorMessage: "Too frequently, try again later."
 });
 
+const twoFaRateLimiter = new KumaRateLimiter({
+    tokensPerInterval: 30,
+    interval: "minute",
+    fireImmediately: true,
+    errorMessage: "Too frequently, try again later."
+});
+
 module.exports = {
-    loginRateLimiter
+    loginRateLimiter,
+    twoFaRateLimiter,
 };

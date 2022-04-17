@@ -17,21 +17,26 @@ class Discord extends NotificationProvider {
                 let discordtestdata = {
                     username: discordDisplayName,
                     content: msg,
-                }
-                await axios.post(notification.discordWebhookUrl, discordtestdata)
+                };
+                await axios.post(notification.discordWebhookUrl, discordtestdata);
                 return okMsg;
             }
 
             let url;
 
-            if (monitorJSON["type"] === "port") {
-                url = monitorJSON["hostname"];
-                if (monitorJSON["port"]) {
-                    url += ":" + monitorJSON["port"];
-                }
-
-            } else {
-                url = monitorJSON["url"];
+            switch (monitorJSON["type"]) {
+                case "dns":
+                case "ping":
+                case "port":
+                case "steam":
+                    url = monitorJSON["hostname"];
+                    if (monitorJSON["port"]) {
+                        url += ":" + monitorJSON["port"];
+                    }
+                    break;
+                default:
+                    url = monitorJSON["url"];
+                    break;
             }
 
             // If heartbeatJSON is not null, we go into the normal alerting loop.
@@ -61,13 +66,13 @@ class Discord extends NotificationProvider {
                             },
                         ],
                     }],
-                }
+                };
 
                 if (notification.discordPrefixMessage) {
                     discorddowndata.content = notification.discordPrefixMessage;
                 }
 
-                await axios.post(notification.discordWebhookUrl, discorddowndata)
+                await axios.post(notification.discordWebhookUrl, discorddowndata);
                 return okMsg;
 
             } else if (heartbeatJSON["status"] == UP) {
@@ -96,17 +101,17 @@ class Discord extends NotificationProvider {
                             },
                         ],
                     }],
-                }
+                };
 
                 if (notification.discordPrefixMessage) {
                     discordupdata.content = notification.discordPrefixMessage;
                 }
 
-                await axios.post(notification.discordWebhookUrl, discordupdata)
+                await axios.post(notification.discordWebhookUrl, discordupdata);
                 return okMsg;
             }
         } catch (error) {
-            this.throwGeneralAxiosError(error)
+            this.throwGeneralAxiosError(error);
         }
     }
 

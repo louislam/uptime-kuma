@@ -29,7 +29,8 @@ const languageList = {
     "pl": "Polski",
     "et-EE": "eesti",
     "vi-VN": "Tiếng Việt",
-    "zh-TW": "繁體中文 (台灣)"
+    "zh-TW": "繁體中文 (台灣)",
+    "uk-UA": "Український",
 };
 
 let messages = {
