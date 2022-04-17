@@ -2,7 +2,7 @@
 BEGIN TRANSACTION;
 
 ALTER TABLE monitor
-	ADD mqtt_topic VARCHAR(50);
+	ADD mqtt_topic TEXT;
 
 ALTER TABLE monitor
 	ADD mqtt_success_message VARCHAR(255);
