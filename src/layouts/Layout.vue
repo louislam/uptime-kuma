@@ -3,6 +3,9 @@
         <div v-if="! $root.socket.connected && ! $root.socket.firstConnect" class="lost-connection">
             <div class="container-fluid">
                 {{ $root.connectionErrorMsg }}
+                <div v-if="$root.showReverseProxyGuide">
+                    Using a Reverse Proxy? <a href="https://github.com/louislam/uptime-kuma/wiki/Reverse-Proxy" target="_blank">Check how to config it for WebSocket</a>
+                </div>
             </div>
         </div>
 
@@ -18,20 +21,23 @@
             </a>
 
             <ul class="nav nav-pills">
-                <li class="nav-item me-2">
-                    <a href="/status" class="nav-link status-page">
-                        <font-awesome-icon icon="stream" /> {{ $t("Status Page") }}
-                    </a>
+                <li v-if="$root.loggedIn" class="nav-item me-2">
+                    <router-link to="/manage-status-page" class="nav-link">
+                        <font-awesome-icon icon="stream" /> {{ $t("Status Pages") }}
+                    </router-link>
                 </li>
                 <li v-if="$root.loggedIn" class="nav-item me-2">
                     <router-link to="/dashboard" class="nav-link">
                         <font-awesome-icon icon="tachometer-alt" /> {{ $t("Dashboard") }}
                     </router-link>
                 </li>
-                <li v-if="$root.loggedIn" class="nav-item">
+                <li v-if="$root.loggedIn" class="nav-item me-2">
                     <router-link to="/settings" class="nav-link" :class="{ active: $route.path.includes('settings') }">
                         <font-awesome-icon icon="cog" /> {{ $t("Settings") }}
                     </router-link>
+                </li>
+                <li v-if="$root.loggedIn && $root.storage().token !== 'autoLogin'" class="nav-item">
+                    <button id="logout-btn" class="btn btn-danger me-2" @click="$root.logout">{{ $t("Logout") }}</button>
                 </li>
             </ul>
         </header>
@@ -45,7 +51,7 @@
         </header>
 
         <main>
-            <router-view v-if="$root.loggedIn" />
+            <router-view v-if="$root.loggedIn || forceShowContent" />
             <Login v-if="! $root.loggedIn && $root.allowLoginDialog" />
         </main>
 
@@ -71,6 +77,10 @@
                 <div><font-awesome-icon icon="cog" /></div>
                 {{ $t("Settings") }}
             </router-link>
+            <button v-if="$root.loggedIn && $root.storage().token !== 'autoLogin'" id="logout-btn" class="nav-link" @click="$root.logout">
+                <div><font-awesome-icon icon="sign-out-alt" /></div>
+                {{ $t("Logout") }}
+            </button>
         </nav>
     </div>
 </template>
@@ -146,9 +156,9 @@ export default {
     white-space: nowrap;
     padding: 0 10px;
 
-    a {
+    a, button {
         text-align: center;
-        width: 25%;
+        width: 20%;
         display: inline-block;
         height: 100%;
         padding: 8px 10px 0;
@@ -156,8 +166,9 @@ export default {
         color: #c1c1c1;
         overflow: hidden;
         text-decoration: none;
+        vertical-align: top;
 
-        &.router-link-exact-active {
+        &.router-link-exact-active, &.active {
             color: $primary;
             font-weight: bold;
         }
@@ -165,6 +176,12 @@ export default {
         div {
             font-size: 20px;
         }
+    }
+
+    button {
+        border: none;
+        background: none;
+        color: #dc3545;
     }
 }
 
@@ -184,6 +201,9 @@ main {
     padding: 5px;
     background-color: crimson;
     color: white;
+    position: fixed;
+    width: 100%;
+    z-index: 99999;
 }
 
 .dark {
