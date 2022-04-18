@@ -1,7 +1,7 @@
 const { R } = require("redbean-node");
-const { checkLogin, setSettings, setSetting } = require("../util-server");
+const { checkLogin, setSetting } = require("../util-server");
 const dayjs = require("dayjs");
-const { debug } = require("../../src/util");
+const { log } = require("../../src/util");
 const ImageDataURI = require("../image-data-uri");
 const Database = require("../database");
 const apicache = require("../modules/apicache");
@@ -85,15 +85,35 @@ module.exports.statusPageSocketHandler = (socket) => {
         }
     });
 
+    socket.on("getStatusPage", async (slug, callback) => {
+        try {
+            checkLogin(socket);
+
+            let statusPage = await R.findOne("status_page", " slug = ? ", [
+                slug
+            ]);
+
+            if (!statusPage) {
+                throw new Error("No slug?");
+            }
+
+            callback({
+                ok: true,
+                config: await statusPage.toJSON(),
+            });
+        } catch (error) {
+            callback({
+                ok: false,
+                msg: error.message,
+            });
+        }
+    });
+
     // Save Status Page
     // imgDataUrl Only Accept PNG!
     socket.on("saveStatusPage", async (slug, config, imgDataUrl, publicGroupList, callback) => {
-
         try {
-            checkSlug(config.slug);
-
             checkLogin(socket);
-            apicache.clear();
 
             // Save Config
             let statusPage = await R.findOne("status_page", " slug = ? ", [
@@ -103,6 +123,8 @@ module.exports.statusPageSocketHandler = (socket) => {
             if (!statusPage) {
                 throw new Error("No slug?");
             }
+
+            checkSlug(config.slug);
 
             const header = "data:image/png;base64,";
 
@@ -133,9 +155,15 @@ module.exports.statusPageSocketHandler = (socket) => {
             //statusPage.search_engine_index = ;
             statusPage.show_tags = config.showTags;
             //statusPage.password = null;
+            statusPage.footer_text = config.footerText;
+            statusPage.custom_css = config.customCSS;
+            statusPage.show_powered_by = config.showPoweredBy;
             statusPage.modified_date = R.isoDateTime();
 
             await R.store(statusPage);
+
+            await statusPage.updateDomainNameList(config.domainNameList);
+            await StatusPage.loadDomainMappingList();
 
             // Save Public Group List
             const groupIDList = [];
@@ -177,8 +205,8 @@ module.exports.statusPageSocketHandler = (socket) => {
                 group.id = groupBean.id;
             }
 
-            // Delete groups that not in the list
-            debug("Delete groups that not in the list");
+            // Delete groups that are not in the list
+            log.debug("socket", "Delete groups that are not in the list");
             const slots = groupIDList.map(() => "?").join(",");
 
             const data = [
@@ -193,13 +221,15 @@ module.exports.statusPageSocketHandler = (socket) => {
                 await setSetting("entryPage", server.entryPage, "general");
             }
 
+            apicache.clear();
+
             callback({
                 ok: true,
                 publicGroupList,
             });
 
         } catch (error) {
-            console.error(error);
+            log.error("socket", error);
 
             callback({
                 ok: false,

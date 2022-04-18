@@ -38,6 +38,8 @@ import {
     faPen,
     faExternalLinkSquareAlt,
     faSpinner,
+    faUndo,
+    faPlusCircle,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -75,6 +77,8 @@ library.add(
     faPen,
     faExternalLinkSquareAlt,
     faSpinner,
+    faUndo,
+    faPlusCircle,
 );
 
 export { FontAwesomeIcon };

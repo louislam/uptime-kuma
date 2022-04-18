@@ -197,7 +197,7 @@ export default {
     line: "Line Messenger",
     mattermost: "Mattermost",
     "Status Page": "Státusz oldal",
-    "Status Pages": "Státusz oldal",
+    "Status Pages": "Státusz oldalak",
     "Primary Base URL": "Elsődleges URL",
     "Push URL": "Meghívandó URL",
     needPushEvery: "Ezt az URL-t kell meghívni minden {0} másodpercben.",
@@ -370,4 +370,5 @@ export default {
     alertaApiKey: "API kulcs",
     alertaAlertState: "Figyelmeztetési állapot",
     alertaRecoverState: "Visszaállási állapot",
+    deleteStatusPageMsg: "Biztos, hogy törölni akarja a státusz oldalt?",
 };
