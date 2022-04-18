@@ -31,13 +31,28 @@
                         <font-awesome-icon icon="tachometer-alt" /> {{ $t("Dashboard") }}
                     </router-link>
                 </li>
-                <li v-if="$root.loggedIn" class="nav-item me-2">
-                    <router-link to="/settings" class="nav-link" :class="{ active: $route.path.includes('settings') }">
-                        <font-awesome-icon icon="cog" /> {{ $t("Settings") }}
-                    </router-link>
-                </li>
-                <li v-if="$root.loggedIn && $root.storage().token !== 'autoLogin'" class="nav-item">
-                    <button id="logout-btn" class="btn btn-danger me-2" @click="$root.logout">{{ $t("Logout") }}</button>
+                <li v-if="$root.loggedIn" class="nav-item">
+                    <div class="dropdown dropdown-profile-pic">
+                        <div type="button" class="nav-link" data-bs-toggle="dropdown">
+                            <div class="profile-pic">L</div>
+                            <font-awesome-icon icon="angle-down" />
+                        </div>
+                        <ul class="dropdown-menu">
+                            <li><span class="dropdown-item-text">Signed in as <strong>louislamlouislam</strong></span></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <router-link to="/settings" class="dropdown-item" :class="{ active: $route.path.includes('settings') }">
+                                    <font-awesome-icon icon="cog" /> {{ $t("Settings") }}
+                                </router-link>
+                            </li>
+                            <li v-if="$root.loggedIn && $root.storage().token !== 'autoLogin'">
+                                <button class="dropdown-item" @click="$root.logout">
+                                    <font-awesome-icon icon="sign-out-alt" />
+                                    {{ $t("Logout") }}
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
                 </li>
             </ul>
         </header>
@@ -77,10 +92,6 @@
                 <div><font-awesome-icon icon="cog" /></div>
                 {{ $t("Settings") }}
             </router-link>
-            <button v-if="$root.loggedIn && $root.storage().token !== 'autoLogin'" id="logout-btn" class="nav-link" @click="$root.logout">
-                <div><font-awesome-icon icon="sign-out-alt" /></div>
-                {{ $t("Logout") }}
-            </button>
         </nav>
     </div>
 </template>
@@ -156,9 +167,9 @@ export default {
     white-space: nowrap;
     padding: 0 10px;
 
-    a, button {
+    a {
         text-align: center;
-        width: 20%;
+        width: 25%;
         display: inline-block;
         height: 100%;
         padding: 8px 10px 0;
@@ -166,7 +177,6 @@ export default {
         color: #c1c1c1;
         overflow: hidden;
         text-decoration: none;
-        vertical-align: top;
 
         &.router-link-exact-active, &.active {
             color: $primary;
@@ -176,12 +186,6 @@ export default {
         div {
             font-size: 20px;
         }
-    }
-
-    button {
-        border: none;
-        background: none;
-        color: #dc3545;
     }
 }
 
@@ -204,6 +208,78 @@ main {
     position: fixed;
     width: 100%;
     z-index: 99999;
+}
+
+// Profile Pic Button with Dropdown
+.dropdown-profile-pic {
+    user-select: none;
+
+    .nav-link {
+        cursor: pointer;
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        background-color: rgba(200, 200, 200, 0.2);
+        padding: 0.5rem 0.8rem;
+
+        &:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+    }
+
+    .dropdown-menu {
+        transition: all 0.2s;
+        padding-left: 0;
+
+        .dropdown-divider {
+            margin: 0;
+            border-top: 1px solid rgba(0, 0, 0, 0.4);
+            background-color: transparent;
+        }
+
+        .dropdown-item-text {
+            font-size: 14px;
+            padding-bottom: 0.7rem;
+        }
+
+        .dropdown-item {
+            padding: 0.7rem 1rem;
+        }
+
+        .dark & {
+            background-color: $dark-bg;
+            color: $dark-font-color;
+            border-color: $dark-border-color;
+
+            .dropdown-item {
+                color: $dark-font-color;
+
+                &.active {
+                    color: $dark-font-color2;
+                    background-color: $highlight !important;
+                }
+
+                &:hover {
+                    background-color: $dark-bg2;
+                }
+            }
+        }
+    }
+
+    .profile-pic {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        background-color: $primary;
+        width: 24px;
+        height: 24px;
+        margin-right: 5px;
+        border-radius: 50rem;
+        font-weight: bold;
+        font-size: 10px;
+
+    }
 }
 
 .dark {

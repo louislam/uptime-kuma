@@ -86,5 +86,7 @@ module.exports.autoStart = async (token) => {
 
 module.exports.stop = async () => {
     console.log("Stop cloudflared");
-    cloudflared.stop();
+    if (cloudflared) {
+        cloudflared.stop();
+    }
 };
