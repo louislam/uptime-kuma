@@ -463,4 +463,5 @@ export default {
     "PushDeer Key": "PushDeer Key",
     "Footer Text": "Footer Text",
     "Show Powered By": "Show Powered By",
+    "Domain Names": "Domain Names",
 };
