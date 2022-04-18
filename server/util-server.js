@@ -135,10 +135,10 @@ exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
             if (messageTopic == topic) {
                 client.end();
                 clearTimeout(timeoutID);
-                if (message.toString() === okMessage) {
-                    resolve(`Topic: ${messageTopic}; Message: ${message.toString()}`);
+                if (okMessage != null && okMessage !== "" && message.toString() !== okMessage) {
+                    reject(new Error(`Message Mismatch - Topic: ${messageTopic}; Message: ${message.toString()}`));
                 } else {
-                    reject(new Error(`Error; Topic: ${messageTopic}; Message: ${message.toString()}`));
+                    resolve(`Topic: ${messageTopic}; Message: ${message.toString()}`);
                 }
             }
         });

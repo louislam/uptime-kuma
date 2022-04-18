@@ -141,7 +141,7 @@
 
                                 <div class="my-3">
                                     <label for="mqttSuccessMessage" class="form-label">MQTT {{ $t("successMessage") }}</label>
-                                    <input id="mqttSuccessMessage" v-model="monitor.mqttSuccessMessage" type="text" class="form-control" required>
+                                    <input id="mqttSuccessMessage" v-model="monitor.mqttSuccessMessage" type="text" class="form-control">
                                     <div class="form-text">
                                         {{ $t("successMessageExplanation") }}
                                     </div>
