@@ -91,6 +91,7 @@
         "node-cloudflared-tunnel": "~1.0.9",
         "nodemailer": "~6.6.5",
         "notp": "~2.0.3",
+        "npm": "^8.7.0",
         "password-hash": "~1.2.2",
         "postcss-rtlcss": "~3.4.1",
         "postcss-scss": "~4.0.3",
