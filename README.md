@@ -154,10 +154,17 @@ https://www.reddit.com/r/UptimeKuma/
 
 ## Contribute
 
+### Test Beta Version
+
+Check out the latest beta release here: https://github.com/louislam/uptime-kuma/releases
+
+### Bug Reports / Feature Requests
 If you want to report a bug or request a new feature. Free feel to open a [new issue](https://github.com/louislam/uptime-kuma/issues).
 
+## Translations
 If you want to translate Uptime Kuma into your language, please read: https://github.com/louislam/uptime-kuma/tree/master/src/languages
 
-If you want to modify Uptime Kuma, this guideline may be useful for you: https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md
+Feel free to correct my grammar in this README, source code, or wiki, as my mother language is not English and my grammar is not that great.
 
-Unfortunately, English proofreading is needed too because my grammar is not that great. Feel free to correct my grammar in this README, source code, or wiki.
+## Pull Requests
+If you want to modify Uptime Kuma, this guideline may be useful for you: https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md
