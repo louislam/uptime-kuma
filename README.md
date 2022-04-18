@@ -2,6 +2,7 @@
 
 <a target="_blank" href="https://github.com/louislam/uptime-kuma"><img src="https://img.shields.io/github/stars/louislam/uptime-kuma" /></a> <a target="_blank" href="https://hub.docker.com/r/louislam/uptime-kuma"><img src="https://img.shields.io/docker/pulls/louislam/uptime-kuma" /></a> <a target="_blank" href="https://hub.docker.com/r/louislam/uptime-kuma"><img src="https://img.shields.io/docker/v/louislam/uptime-kuma/latest?label=docker%20image%20ver." /></a> <a target="_blank" href="https://github.com/louislam/uptime-kuma"><img src="https://img.shields.io/github/last-commit/louislam/uptime-kuma" /></a>  <a target="_blank" href="https://opencollective.com/uptime-kuma"><img src="https://opencollective.com/uptime-kuma/total/badge.svg?label=Open%20Collective%20Backers&color=brightgreen" /></a>
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/louislam?label=GitHub%20Sponsors)](https://github.com/sponsors/louislam)
+[![Open in Gitpod](https://img.shields.io/badge/Open%20in-Gitpod-%232cb64c?logo=gitpod)](https://gitpod.io/#https://github.com/louislam/uptime-kuma)
 
 <div align="center" width="100%">
     <img src="./public/icon.svg" width="128" alt="" />
@@ -161,3 +162,18 @@ If you want to translate Uptime Kuma into your language, please read: https://gi
 If you want to modify Uptime Kuma, this guideline may be useful for you: https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md
 
 Unfortunately, English proofreading is needed too because my grammar is not that great. Feel free to correct my grammar in this README, source code, or wiki.
+
+### Gitpod Environment Variables
+
+The following features can be enabled through environment variables that have been set in your [Gitpod preferences](https://gitpod.io/variables).:
+<br />
+\* _Please note that storing sensitive data in environment variables is not ultimately secure but should be OK for most development situations._
+- ### Sign Git commits with a GPG key
+   - `GPG_KEY_ID` (required)
+     - The ID of the GPG key you want to use to sign your git commits
+   - `GPG_KEY` (required)
+     - Base64 encoded private GPG key that corresponds to your `GPG_KEY_ID`
+   - `GPG_MATCH_GIT_TO_EMAIL` (optional)
+     - Sets your git user.email in `~/.gitconfig` to the value provided
+   - `GPG_AUTO_ULTIMATE_TRUST` (optional)
+     - If the value is set to `yes` or `YES` then your `GPG_KEY` will be automatically ultimately trusted
