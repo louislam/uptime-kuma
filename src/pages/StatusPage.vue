@@ -52,7 +52,7 @@
                 <!-- Domain Name List -->
                 <div class="my-3">
                     <label class="form-label">
-                        Domain Names
+                        {{ $t("Domain Names") }}
                         <font-awesome-icon icon="plus-circle" class="btn-add-domain action text-primary" @click="addDomainField" />
                     </label>
 
@@ -707,7 +707,7 @@ export default {
         },
 
         postIncident() {
-            if (this.incident.title == "" || this.incident.content == "") {
+            if (this.incident.title === "" || this.incident.content === "") {
                 toast.error(this.$t("Please input title and content"));
                 return;
             }
