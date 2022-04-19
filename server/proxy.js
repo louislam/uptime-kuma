@@ -3,7 +3,7 @@ const HttpProxyAgent = require("http-proxy-agent");
 const HttpsProxyAgent = require("https-proxy-agent");
 const SocksProxyAgent = require("socks-proxy-agent");
 const { debug } = require("../src/util");
-const server = require("./server");
+const { UptimeKumaServer } = require("./uptime-kuma-server");
 
 class Proxy {
 
@@ -151,6 +151,8 @@ class Proxy {
      * @returns {Promise<void>}
      */
     static async reloadProxy() {
+        const server = UptimeKumaServer.getInstance();
+
         let updatedList = await R.getAssoc("SELECT id, proxy_id FROM monitor");
 
         for (let monitorID in server.monitorList) {
