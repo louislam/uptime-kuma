@@ -1,3 +1,8 @@
+/*
+ * Uptime Kuma Server
+ * node "server/server.js"
+ * DO NOT require("./server") in other modules, it likely creates circular dependency!
+ */
 console.log("Welcome to Uptime Kuma");
 
 // Check Node.js Version
@@ -24,14 +29,10 @@ console.log("Node Env: " + process.env.NODE_ENV);
 
 console.log("Importing Node libraries");
 const fs = require("fs");
-const http = require("http");
-const https = require("https");
 
 console.log("Importing 3rd-party libraries");
 debug("Importing express");
 const express = require("express");
-debug("Importing socket.io");
-const { Server } = require("socket.io");
 debug("Importing redbean-node");
 const { R } = require("redbean-node");
 debug("Importing jsonwebtoken");
@@ -48,26 +49,10 @@ debug("Importing 2FA Modules");
 const notp = require("notp");
 const base32 = require("thirty-two");
 
-/**
- * `module.exports` (alias: `server`) should be inside this class, in order to avoid circular dependency issue.
- * @type {UptimeKumaServer}
- */
-class UptimeKumaServer {
-    /**
-     * Main monitor list
-     * @type {{}}
-     */
-    monitorList = {};
-    entryPage = "dashboard";
-
-    async sendMonitorList(socket) {
-        let list = await getMonitorJSONList(socket.userID);
-        io.to(socket.userID).emit("monitorList", list);
-        return list;
-    }
-}
-
-const server = module.exports = new UptimeKumaServer();
+const { UptimeKumaServer } = require("./uptime-kuma-server");
+const server = UptimeKumaServer.getInstance(args);
+const io = module.exports.io = server.io;
+const app = server.app;
 
 console.log("Importing this project modules");
 debug("Importing Monitor");
@@ -110,10 +95,6 @@ if (hostname) {
 }
 
 const port = parseInt(process.env.UPTIME_KUMA_PORT || process.env.PORT || args.port || 3001);
-
-// SSL
-const sslKey = process.env.UPTIME_KUMA_SSL_KEY || process.env.SSL_KEY || args["ssl-key"] || undefined;
-const sslCert = process.env.UPTIME_KUMA_SSL_CERT || process.env.SSL_CERT || args["ssl-cert"] || undefined;
 const disableFrameSameOrigin = !!process.env.UPTIME_KUMA_DISABLE_FRAME_SAMEORIGIN || args["disable-frame-sameorigin"] || false;
 const cloudflaredToken = args["cloudflared-token"] || process.env.UPTIME_KUMA_CLOUDFLARED_TOKEN || undefined;
 
@@ -132,25 +113,6 @@ const testMode = !!args["test"] || false;
 if (config.demoMode) {
     console.log("==== Demo Mode ====");
 }
-
-console.log("Creating express and socket.io instance");
-const app = express();
-
-let httpServer;
-
-if (sslKey && sslCert) {
-    console.log("Server Type: HTTPS");
-    httpServer = https.createServer({
-        key: fs.readFileSync(sslKey),
-        cert: fs.readFileSync(sslCert)
-    }, app);
-} else {
-    console.log("Server Type: HTTP");
-    httpServer = http.createServer(app);
-}
-
-const io = new Server(httpServer);
-module.exports.io = io;
 
 // Must be after io instantiation
 const { sendNotificationList, sendHeartbeatList, sendImportantHeartbeatList, sendInfo, sendProxyList } = require("./client");
@@ -1433,12 +1395,12 @@ try {
 
     console.log("Init the server");
 
-    httpServer.once("error", async (err) => {
+    server.httpServer.once("error", async (err) => {
         console.error("Cannot listen: " + err.message);
         await shutdownFunction();
     });
 
-    httpServer.listen(port, hostname, () => {
+    server.httpServer.listen(port, hostname, () => {
         if (hostname) {
             console.log(`Listening on ${hostname}:${port}`);
         } else {
@@ -1508,20 +1470,6 @@ async function afterLogin(socket, user) {
     for (let monitorID in monitorList) {
         await Monitor.sendStats(io, monitorID, user.id);
     }
-}
-
-async function getMonitorJSONList(userID) {
-    let result = {};
-
-    let monitorList = await R.find("monitor", " user_id = ? ORDER BY weight DESC, name", [
-        userID,
-    ]);
-
-    for (let monitor of monitorList) {
-        result[monitor.id] = await monitor.toJSON();
-    }
-
-    return result;
 }
 
 async function initDatabase(testMode = false) {
@@ -1636,7 +1584,7 @@ function finalFunction() {
     console.log("Graceful shutdown successful!");
 }
 
-gracefulShutdown(httpServer, {
+gracefulShutdown(server.httpServer, {
     signals: "SIGINT SIGTERM",
     timeout: 30000,                   // timeout: 30 secs
     development: false,               // not in dev mode
