@@ -278,7 +278,6 @@ main {
         border-radius: 50rem;
         font-weight: bold;
         font-size: 10px;
-
     }
 }
 
