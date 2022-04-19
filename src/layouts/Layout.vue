@@ -230,6 +230,8 @@ main {
     .dropdown-menu {
         transition: all 0.2s;
         padding-left: 0;
+        margin-top: 8px !important;
+        border-radius: 20px;
 
         .dropdown-divider {
             margin: 0;
