@@ -4,7 +4,7 @@
             <!-- Change Password -->
             <template v-if="!settings.disableAuth">
                 <p>
-                    {{ $t("Current User") }}: <strong>{{ username }}</strong>
+                    {{ $t("Current User") }}: <strong>{{ $root.username }}</strong>
                     <button v-if="! settings.disableAuth" id="logout-btn" class="btn btn-danger ms-4 me-2 mb-2" @click="$root.logout">{{ $t("Logout") }}</button>
                 </p>
 
@@ -269,7 +269,6 @@ export default {
 
     data() {
         return {
-            username: "",
             invalidPassword: false,
             password: {
                 currentPassword: "",
@@ -297,10 +296,6 @@ export default {
         },
     },
 
-    mounted() {
-        this.loadUsername();
-    },
-
     methods: {
         savePassword() {
             if (this.password.newPassword !== this.password.repeatNewPassword) {
@@ -316,14 +311,6 @@ export default {
                             this.password.repeatNewPassword = "";
                         }
                     });
-            }
-        },
-
-        loadUsername() {
-            const jwtPayload = this.$root.getJWTPayload();
-
-            if (jwtPayload) {
-                this.username = jwtPayload.username;
             }
         },
 

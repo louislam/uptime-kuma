@@ -34,11 +34,11 @@
                 <li v-if="$root.loggedIn" class="nav-item">
                     <div class="dropdown dropdown-profile-pic">
                         <div type="button" class="nav-link" data-bs-toggle="dropdown">
-                            <div class="profile-pic">L</div>
+                            <div class="profile-pic">{{ $root.usernameFirstChar }}</div>
                             <font-awesome-icon icon="angle-down" />
                         </div>
                         <ul class="dropdown-menu">
-                            <li><span class="dropdown-item-text">Signed in as <strong>louislamlouislam</strong></span></li>
+                            <li><span class="dropdown-item-text">Signed in as <strong>{{ $root.username }}</strong></span></li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <router-link to="/settings" class="dropdown-item" :class="{ active: $route.path.includes('settings') }">
