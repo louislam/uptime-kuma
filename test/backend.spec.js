@@ -1,4 +1,4 @@
-const { genSecret, sleep } = require("../src/util");
+const { genSecret } = require("../src/util");
 const utilServerRewire = require("../server/util-server");
 
 describe("Test parseCertificateInfo", () => {

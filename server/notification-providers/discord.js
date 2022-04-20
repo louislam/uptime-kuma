@@ -17,8 +17,8 @@ class Discord extends NotificationProvider {
                 let discordtestdata = {
                     username: discordDisplayName,
                     content: msg,
-                }
-                await axios.post(notification.discordWebhookUrl, discordtestdata)
+                };
+                await axios.post(notification.discordWebhookUrl, discordtestdata);
                 return okMsg;
             }
 
@@ -35,7 +35,7 @@ class Discord extends NotificationProvider {
             }
 
             // If heartbeatJSON is not null, we go into the normal alerting loop.
-            if (heartbeatJSON["status"] == DOWN) {
+            if (heartbeatJSON["status"] === DOWN) {
                 let discorddowndata = {
                     username: discordDisplayName,
                     embeds: [{
@@ -61,16 +61,16 @@ class Discord extends NotificationProvider {
                             },
                         ],
                     }],
-                }
+                };
 
                 if (notification.discordPrefixMessage) {
                     discorddowndata.content = notification.discordPrefixMessage;
                 }
 
-                await axios.post(notification.discordWebhookUrl, discorddowndata)
+                await axios.post(notification.discordWebhookUrl, discorddowndata);
                 return okMsg;
 
-            } else if (heartbeatJSON["status"] == UP) {
+            } else if (heartbeatJSON["status"] === UP) {
                 let discordupdata = {
                     username: discordDisplayName,
                     embeds: [{
@@ -96,17 +96,17 @@ class Discord extends NotificationProvider {
                             },
                         ],
                     }],
-                }
+                };
 
                 if (notification.discordPrefixMessage) {
                     discordupdata.content = notification.discordPrefixMessage;
                 }
 
-                await axios.post(notification.discordWebhookUrl, discordupdata)
+                await axios.post(notification.discordWebhookUrl, discordupdata);
                 return okMsg;
             }
         } catch (error) {
-            this.throwGeneralAxiosError(error)
+            this.throwGeneralAxiosError(error);
         }
     }
 

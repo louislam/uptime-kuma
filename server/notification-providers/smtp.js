@@ -1,6 +1,6 @@
 const nodemailer = require("nodemailer");
 const NotificationProvider = require("./notification-provider");
-const { DOWN, UP } = require("../../src/util");
+const { DOWN } = require("../../src/util");
 
 class SMTP extends NotificationProvider {
 

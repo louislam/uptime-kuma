@@ -9,7 +9,7 @@ const log = function (any) {
 };
 
 const exit = function (error) {
-    if (error && error != 0) {
+    if (error && error !== 0) {
         process.exit(error);
     } else {
         if (parentPort) {
