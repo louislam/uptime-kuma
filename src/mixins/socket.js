@@ -103,8 +103,8 @@ export default {
 
             socket.on("autoLogin", (monitorID, data) => {
                 this.loggedIn = true;
-                this.username = "No Auth";
                 this.storage().token = "autoLogin";
+                this.socket.token = "autoLogin";
                 this.allowLoginDialog = false;
             });
 

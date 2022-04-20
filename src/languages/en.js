@@ -462,4 +462,6 @@ export default {
     "Footer Text": "Footer Text",
     "Show Powered By": "Show Powered By",
     "Domain Names": "Domain Names",
+    signedInDisp: "Signed in as {0}",
+    signedInDispDisabled: "Auth Disabled.",
 };
