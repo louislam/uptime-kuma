@@ -38,7 +38,10 @@
                             <font-awesome-icon icon="angle-down" />
                         </div>
                         <ul class="dropdown-menu">
-                            <li><span class="dropdown-item-text">Signed in as <strong>{{ $root.username }}</strong></span></li>
+                            <li>
+                                <span v-if="$root.username != null" class="dropdown-item-text">Signed in as <strong>{{ $root.username }}</strong></span>
+                                <span v-if="$root.username == null" class="dropdown-item-text">Auth Disabled.</span>
+                            </li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <router-link to="/settings" class="dropdown-item" :class="{ active: $route.path.includes('settings') }">
