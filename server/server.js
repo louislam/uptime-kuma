@@ -1362,6 +1362,13 @@ exports.entryPage = "dashboard";
 
 })();
 
+/**
+ * Update notifications for a given monitor
+ * @param {number} monitorID ID of monitor to update
+ * @param {Array<number>} notificationIDList List of new notification
+ * providers to add
+ * @returns {Promise<void>}
+ */
 async function updateMonitorNotification(monitorID, notificationIDList) {
     await R.exec("DELETE FROM monitor_notification WHERE monitor_id = ? ", [
         monitorID,
@@ -1377,6 +1384,13 @@ async function updateMonitorNotification(monitorID, notificationIDList) {
     }
 }
 
+/**
+ * Check if a given user owns a specific monitor
+ * @param {number} userID
+ * @param {number} monitorID
+ * @returns {Promise<void>}
+ * @throws {Error} The specified user does not own the monitor
+ */
 async function checkOwner(userID, monitorID) {
     let row = await R.getRow("SELECT id FROM monitor WHERE id = ? AND user_id = ? ", [
         monitorID,
@@ -1388,12 +1402,23 @@ async function checkOwner(userID, monitorID) {
     }
 }
 
+/**
+ * Send the monitor list to clients
+ * @param {Socket} socket Socket.io instance
+ * @returns {Object}
+ */
 async function sendMonitorList(socket) {
     let list = await getMonitorJSONList(socket.userID);
     io.to(socket.userID).emit("monitorList", list);
     return list;
 }
 
+/**
+ * Function called after user login
+ * @param {Socket} socket Socket.io instance
+ * @param {Object} user User object
+ * @returns {Promise<void>}
+ */
 async function afterLogin(socket, user) {
     socket.userID = user.id;
     socket.join(user.id);
@@ -1416,6 +1441,11 @@ async function afterLogin(socket, user) {
     }
 }
 
+/**
+ * Get a JSON representation of monitor list
+ * @param {number} userID
+ * @returns {Promise<Object>}
+ */
 async function getMonitorJSONList(userID) {
     let result = {};
 
@@ -1430,6 +1460,12 @@ async function getMonitorJSONList(userID) {
     return result;
 }
 
+/**
+ * Initialize the database
+ * @param {boolean} [testMode=false] Should the connection be
+ * started in test mode?
+ * @returns {Promise<void>}
+ */
 async function initDatabase(testMode = false) {
     if (! fs.existsSync(Database.path)) {
         console.log("Copying Database");
@@ -1464,6 +1500,12 @@ async function initDatabase(testMode = false) {
     jwtSecret = jwtSecretBean.value;
 }
 
+/**
+ * Start the specified monitor
+ * @param {number} userID ID of user who owns monitor
+ * @param {number} monitorID ID of monitor to start
+ * @returns {Promise<void>}
+ */
 async function startMonitor(userID, monitorID) {
     await checkOwner(userID, monitorID);
 
@@ -1486,10 +1528,22 @@ async function startMonitor(userID, monitorID) {
     monitor.start(io);
 }
 
+/**
+ * Restart a given monitor
+ * @param {number} userID ID of user who owns monitor
+ * @param {number} monitorID ID of monitor to start
+ * @returns {Promise<void>}
+ */
 async function restartMonitor(userID, monitorID) {
     return await startMonitor(userID, monitorID);
 }
 
+/**
+ * Pause a given monitor
+* @param {number} userID ID of user who owns monitor
+ * @param {number} monitorID ID of monitor to start
+ * @returns {Promise<void>}
+ */
 async function pauseMonitor(userID, monitorID) {
     await checkOwner(userID, monitorID);
 
@@ -1505,9 +1559,7 @@ async function pauseMonitor(userID, monitorID) {
     }
 }
 
-/**
- * Resume active monitors
- */
+/** Resume active monitors */
 async function startMonitors() {
     let list = await R.find("monitor", " active = 1 ");
 
@@ -1522,6 +1574,11 @@ async function startMonitors() {
     }
 }
 
+/**
+ * Shutdown the application
+ * @param {string} signal Shutdown signal
+ * @returns {Promise<void>}
+ */
 async function shutdownFunction(signal) {
     console.log("Shutdown requested");
     console.log("Called signal: " + signal);
@@ -1535,6 +1592,7 @@ async function shutdownFunction(signal) {
     await Database.close();
 }
 
+/** Final function called before application exits */
 function finalFunction() {
     console.log("Graceful shutdown successful!");
 }

@@ -6,10 +6,10 @@ const { debug } = require("../src/util");
 const { loginRateLimiter } = require("./rate-limiter");
 
 /**
- *
- * @param username : string
- * @param password : string
- * @returns {Promise<Bean|null>}
+ * Login to web app
+ * @param {string} username
+ * @param {string} password
+ * @returns {Promise<(Bean|null)>}
  */
 exports.login = async function (username, password) {
     let user = await R.findOne("user", " username = ? AND active = 1 ", [
@@ -30,6 +30,19 @@ exports.login = async function (username, password) {
     return null;
 };
 
+/**
+ * Callback for myAuthorizer
+ * @callback myAuthorizerCB
+ * @param {any} err Any error encountered
+ * @param {boolean} authorized Is the client authorized?
+ */
+
+/**
+ * Custom authorizer for express-basic-auth
+ * @param {string} username
+ * @param {string} password
+ * @param {myAuthorizerCB} callback
+ */
 function myAuthorizer(username, password, callback) {
     setting("disableAuth").then((result) => {
         if (result) {

@@ -8,6 +8,11 @@ const util = require("./util-server");
 
 module.exports = Ping;
 
+/**
+ * Constructor for ping class
+ * @param {string} host Host to ping
+ * @param {string} options Command line options for ping
+ */
 function Ping(host, options) {
     if (!host) {
         throw new Error("You must specify a host to ping!");
@@ -75,8 +80,17 @@ function Ping(host, options) {
 
 Ping.prototype.__proto__ = events.EventEmitter.prototype;
 
-// SEND A PING
-// ===========
+/**
+ * Callback for send
+ * @callback pingCB
+ * @param {any} err Any error encountered
+ * @param {number} ms Ping time in ms
+ */
+
+/**
+ * Send a ping
+ * @param {pingCB} callback Callback to call with results
+ */
 Ping.prototype.send = function (callback) {
     let self = this;
     callback = callback || function (err, ms) {
@@ -145,8 +159,10 @@ Ping.prototype.send = function (callback) {
     }
 };
 
-// CALL Ping#send(callback) ON A TIMER
-// ===================================
+/**
+ * Ping every interval
+ * @param {pingCB} callback Callback to call with results
+ */
 Ping.prototype.start = function (callback) {
     let self = this;
     this._i = setInterval(function () {
@@ -155,8 +171,7 @@ Ping.prototype.start = function (callback) {
     self.send(callback);
 };
 
-// STOP SENDING PINGS
-// ==================
+/** Stop sending pings */
 Ping.prototype.stop = function () {
     clearInterval(this._i);
 };
@@ -165,7 +180,7 @@ Ping.prototype.stop = function () {
  * Try to convert to UTF-8 for Windows, as the ping's output on Windows is not UTF-8 and could be in other languages
  * Thank @pemassi
  * https://github.com/louislam/uptime-kuma/issues/570#issuecomment-941984094
- * @param data
+ * @param {any} data
  * @returns {string}
  */
 function convertOutput(data) {

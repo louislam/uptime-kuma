@@ -37,6 +37,12 @@ exports.initJWTSecret = async () => {
     return jwtSecretBean;
 };
 
+/**
+ * Send TCP request to specified hostname and port
+ * @param {string} hostname Hostname / address of machine
+ * @param {number} port TCP port to test
+ * @returns {Promise<number>} Maximum time in ms rounded to nearest integer
+ */
 exports.tcping = function (hostname, port) {
     return new Promise((resolve, reject) => {
         tcpp.ping({
@@ -58,6 +64,11 @@ exports.tcping = function (hostname, port) {
     });
 };
 
+/**
+ * Ping the specified machine
+ * @param {string} hostname Hostname / address of machine
+ * @returns {Promise<number>} Time for ping in ms rounded to nearest integer
+ */
 exports.ping = async (hostname) => {
     try {
         return await exports.pingAsync(hostname);
@@ -71,6 +82,12 @@ exports.ping = async (hostname) => {
     }
 };
 
+/**
+ * Ping the specified machine
+ * @param {string} hostname Hostname / address of machine to ping
+ * @param {boolean} ipv6 Should IPv6 be used?
+ * @returns {Promise<number>} Time for ping in ms rounded to nearest integer
+ */
 exports.pingAsync = function (hostname, ipv6 = false) {
     return new Promise((resolve, reject) => {
         const ping = new Ping(hostname, {
@@ -89,6 +106,14 @@ exports.pingAsync = function (hostname, ipv6 = false) {
     });
 };
 
+// `string[]`, `Object[]` and `Object`.
+/**
+ * Resolves a given record using the specified DNS server
+ * @param {string} hostname The hostname of the record to lookup
+ * @param {string} resolver_server The DNS server to use
+ * @param {string} rrtype The type of record to request
+ * @returns {Promise<(string[]|Object[]|Object)>}
+ */
 exports.dnsResolve = function (hostname, resolver_server, rrtype) {
     const resolver = new Resolver();
     resolver.setServers([resolver_server]);
@@ -113,6 +138,11 @@ exports.dnsResolve = function (hostname, resolver_server, rrtype) {
     });
 };
 
+/**
+ * Retrieve value of setting based on key
+ * @param {string} key Key of setting to retrieve
+ * @returns {Promise<Object>} Object representation of setting
+ */
 exports.setting = async function (key) {
     let value = await R.getCell("SELECT `value` FROM setting WHERE `key` = ? ", [
         key,
@@ -127,6 +157,13 @@ exports.setting = async function (key) {
     }
 };
 
+/**
+ * Sets the specified setting to specifed value
+ * @param {string} key Key of setting to set
+ * @param {any} value Value to set to
+ * @param {?string} type Type of setting
+ * @returns {Promise<void>}
+ */
 exports.setSetting = async function (key, value, type = null) {
     let bean = await R.findOne("setting", " `key` = ? ", [
         key,
@@ -140,6 +177,11 @@ exports.setSetting = async function (key, value, type = null) {
     await R.store(bean);
 };
 
+/**
+ * Get settings based on type
+ * @param {?string} type The type of setting
+ * @returns {Promise<Bean>}
+ */
 exports.getSettings = async function (type) {
     let list = await R.getAll("SELECT `key`, `value` FROM setting WHERE `type` = ? ", [
         type,
@@ -158,6 +200,12 @@ exports.getSettings = async function (type) {
     return result;
 };
 
+/**
+ * Set settings based on type
+ * @param {?string} type Type of settings to set
+ * @param {Object} data Values of settings
+ * @returns {Promise<void>}
+ */
 exports.setSettings = async function (type, data) {
     let keyList = Object.keys(data);
 
@@ -184,12 +232,23 @@ exports.setSettings = async function (type, data) {
 };
 
 // ssl-checker by @dyaa
-// param: res - response object from axios
-// return an object containing the certificate information
+//https://github.com/dyaa/ssl-checker/blob/master/src/index.ts
 
+/**
+ * Get number of days between two dates
+ * @param {Date} validFrom Start date
+ * @param {Date} validTo End date
+ * @returns {number}
+ */
 const getDaysBetween = (validFrom, validTo) =>
     Math.round(Math.abs(+validFrom - +validTo) / 8.64e7);
 
+/**
+ * Get days remaining from a time range
+ * @param {Date} validFrom Start date
+ * @param {Date} validTo End date
+ * @returns {number}
+ */
 const getDaysRemaining = (validFrom, validTo) => {
     const daysRemaining = getDaysBetween(validFrom, validTo);
     if (new Date(validTo).getTime() < new Date().getTime()) {
@@ -198,8 +257,11 @@ const getDaysRemaining = (validFrom, validTo) => {
     return daysRemaining;
 };
 
-// Fix certificate Info for display
-// param: info -  the chain obtained from getPeerCertificate()
+/**
+ * Fix certificate info for display
+ * @param {Object} info The chain obtained from getPeerCertificate()
+ * @returns {Object} An object representing certificate information
+ */
 const parseCertificateInfo = function (info) {
     let link = info;
     let i = 0;
@@ -239,6 +301,11 @@ const parseCertificateInfo = function (info) {
     return info;
 };
 
+/**
+ * Check if certificate is valid
+ * @param {Object} res Response object from axios
+ * @returns {Object} Object containing certificate information
+ */
 exports.checkCertificate = function (res) {
     const info = res.request.res.socket.getPeerCertificate(true);
     const valid = res.request.res.socket.authorized || false;
@@ -252,12 +319,13 @@ exports.checkCertificate = function (res) {
     };
 };
 
-// Check if the provided status code is within the accepted ranges
-// Param: status - the status code to check
-// Param: accepted_codes - an array of accepted status codes
-// Return: true if the status code is within the accepted ranges, false otherwise
-// Will throw an error if the provided status code is not a valid range string or code string
-
+/**
+ * Check if the provided status code is within the accepted ranges
+ * @param {string} status The status code to check
+ * @param {Array<string>} accepted_codes An array of accepted status codes
+ * @returns {boolean} True if status code within range, false otherwise
+ * @throws {Error} Will throw an error if the provided status code is not a valid range string or code string
+ */
 exports.checkStatusCode = function (status, accepted_codes) {
     if (accepted_codes == null || accepted_codes.length === 0) {
         return false;
@@ -281,6 +349,12 @@ exports.checkStatusCode = function (status, accepted_codes) {
     return false;
 };
 
+/**
+ * Get total number of clients in room
+ * @param {Server} io Socket server instance
+ * @param {string} roomName Name of room to check
+ * @returns {number}
+ */
 exports.getTotalClientInRoom = (io, roomName) => {
 
     const sockets = io.sockets;
@@ -304,23 +378,36 @@ exports.getTotalClientInRoom = (io, roomName) => {
     }
 };
 
+/**
+ * Allow CORS all origins if development
+ * @param {Object} res Response object from axios
+ */
 exports.allowDevAllOrigin = (res) => {
     if (process.env.NODE_ENV === "development") {
         exports.allowAllOrigin(res);
     }
 };
 
+/**
+ * Allow CORS all origins
+ * @param {Object} res Response object from axios
+ */
 exports.allowAllOrigin = (res) => {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
 };
 
+/**
+ * Check if a user is logged in
+ * @param {Socket} socket Socket instance
+ */
 exports.checkLogin = (socket) => {
     if (! socket.userID) {
         throw new Error("You are not logged in.");
     }
 };
 
+/** Start Unit tests */
 exports.startUnitTest = async () => {
     console.log("Starting unit test...");
     const npm = /^win/.test(process.platform) ? "npm.cmd" : "npm";
@@ -341,7 +428,8 @@ exports.startUnitTest = async () => {
 };
 
 /**
- * @param body : Buffer
+ * Convert unknown string to UTF8
+ * @param {Uint8Array} body Buffer
  * @returns {string}
  */
 exports.convertToUTF8 = (body) => {
@@ -359,6 +447,11 @@ try {
     });
 } catch (_) { }
 
+/**
+ * Write error to log file
+ * @param {any} error The error to write
+ * @param {boolean} outputToConsole Should the error also be output to console?
+ */
 exports.errorLog = (error, outputToConsole = true) => {
     try {
         if (logFile) {

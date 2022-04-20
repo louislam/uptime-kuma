@@ -7,6 +7,11 @@ const { io } = require("./server");
 const { setting } = require("./util-server");
 const checkVersion = require("./check-version");
 
+/**
+ * Send list of notification providers to client
+ * @param {Socket} socket Socket.io socket instance
+ * @returns {Promise<Bean[]>}
+ */
 async function sendNotificationList(socket) {
     const timeLogger = new TimeLogger();
 
@@ -28,8 +33,11 @@ async function sendNotificationList(socket) {
 
 /**
  * Send Heartbeat History list to socket
- * @param toUser  True = send to all browsers with the same user id, False = send to the current browser only
- * @param overwrite Overwrite client-side's heartbeat list
+ * @param {Socket} socket Socket.io instance
+ * @param {number} monitorID ID of monitor to send heartbeat history
+ * @param {boolean} [toUser=false]  True = send to all browsers with the same user id, False = send to the current browser only
+ * @param {boolean} [overwrite=false] Overwrite client-side's heartbeat list
+ * @returns {Promise<void>}
  */
 async function sendHeartbeatList(socket, monitorID, toUser = false, overwrite = false) {
     const timeLogger = new TimeLogger();
@@ -56,10 +64,11 @@ async function sendHeartbeatList(socket, monitorID, toUser = false, overwrite = 
 
 /**
  *  Important Heart beat list (aka event list)
- * @param socket
- * @param monitorID
- * @param toUser  True = send to all browsers with the same user id, False = send to the current browser only
- * @param overwrite Overwrite client-side's heartbeat list
+ * @param {Socket} socket Socket.io instance
+ * @param {number} monitorID ID of monitor to send heartbeat history
+ * @param {boolean} [toUser=false]  True = send to all browsers with the same user id, False = send to the current browser only
+ * @param {boolean} [overwrite=false] Overwrite client-side's heartbeat list
+ * @returns {Promise<void>}
  */
 async function sendImportantHeartbeatList(socket, monitorID, toUser = false, overwrite = false) {
     const timeLogger = new TimeLogger();
@@ -83,6 +92,11 @@ async function sendImportantHeartbeatList(socket, monitorID, toUser = false, ove
 
 }
 
+/**
+ * Send application info
+ * @param {Socket} socket Socket.io socket instance
+ * @returns {Promise<void>}
+ */
 async function sendInfo(socket) {
     socket.emit("info", {
         version: checkVersion.version,

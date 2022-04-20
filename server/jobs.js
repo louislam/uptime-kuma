@@ -9,6 +9,11 @@ const jobs = [
     },
 ];
 
+/**
+ * Initialize background jobs
+ * @param {Object} args Arguments to pass to workers
+ * @returns {Bree}
+ */
 const initBackgroundJobs = function (args) {
     const bree = new Bree({
         root: path.resolve("server", "jobs"),

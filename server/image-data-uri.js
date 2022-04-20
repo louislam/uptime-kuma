@@ -6,6 +6,11 @@ let fs = require("fs");
 
 let ImageDataURI = (() => {
 
+    /**
+     * Decode the data:image/ URI
+     * @param {string} dataURI data:image/ URI to decode
+     * @returns {Object}
+     */
     function decode(dataURI) {
         if (!/data:image\//.test(dataURI)) {
             console.log("ImageDataURI :: Error :: It seems that it is not an Image Data URI. Couldn't match \"data:image/\"");
@@ -20,6 +25,12 @@ let ImageDataURI = (() => {
         };
     }
 
+    /**
+     * Endcode an image into data:image/ URI
+     * @param {(Buffer|string)} data Data to encode
+     * @param {string} mediaType Media type of data
+     * @returns {(string|null)}
+     */
     function encode(data, mediaType) {
         if (!data || !mediaType) {
             console.log("ImageDataURI :: Error :: Missing some of the required params: data, mediaType ");
@@ -33,6 +44,12 @@ let ImageDataURI = (() => {
         return dataImgBase64;
     }
 
+    /**
+     * Write data URI to file
+     * @param {string} dataURI data:image/ URI
+     * @param {string} filePath Path to write file to
+     * @returns {Promise<string>}
+     */
     function outputFile(dataURI, filePath) {
         filePath = filePath || "./";
         return new Promise((resolve, reject) => {
