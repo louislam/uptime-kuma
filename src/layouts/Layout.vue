@@ -39,8 +39,10 @@
                         </div>
                         <ul class="dropdown-menu">
                             <li>
-                                <span v-if="$root.username != null" class="dropdown-item-text">Signed in as <strong>{{ $root.username }}</strong></span>
-                                <span v-if="$root.username == null" class="dropdown-item-text">Auth Disabled.</span>
+                                <i18n-t v-if="$root.username != null" tag="span" keypath="signedInDisp" class="dropdown-item-text">
+                                    <strong>{{ $root.username }}</strong>
+                                </i18n-t>
+                                <span v-if="$root.username == null" class="dropdown-item-text">{{ $t("signedInDispDisabled") }}</span>
                             </li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
