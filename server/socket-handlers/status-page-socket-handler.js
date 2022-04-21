@@ -8,6 +8,10 @@ const apicache = require("../modules/apicache");
 const StatusPage = require("../model/status_page");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 
+/**
+ * Socket handlers for status page
+ * @param {Socket} socket Socket.io instance to add listeners on
+ */
 module.exports.statusPageSocketHandler = (socket) => {
 
     // Post or edit incident
@@ -338,6 +342,7 @@ module.exports.statusPageSocketHandler = (socket) => {
 /**
  * Check slug a-z, 0-9, - only
  * Regex from: https://stackoverflow.com/questions/22454258/js-regex-string-validation-for-slug
+ * @param {string} slug Slug to test
  */
 function checkSlug(slug) {
     if (typeof slug !== "string") {
