@@ -40,9 +40,9 @@ module.exports = {
                 SwitchCase: 1,
             },
         ],
-        quotes: [ "warn", "double" ],
+        quotes: [ "error", "double" ],
         semi: "error",
-        "vue/html-indent": [ "warn", 4 ], // default: 2
+        "vue/html-indent": [ "error", 4 ], // default: 2
         "vue/max-attributes-per-line": "off",
         "vue/singleline-html-element-content-newline": "off",
         "vue/html-self-closing": "off",
@@ -72,7 +72,7 @@ module.exports = {
         "keyword-spacing": "warn",
         "space-infix-ops": "warn",
         "arrow-spacing": "warn",
-        "no-trailing-spaces": "warn",
+        "no-trailing-spaces": "error",
         "no-constant-condition": [ "error", {
             "checkLoops": false,
         }],
