@@ -103,6 +103,10 @@ class Monitor extends BeanModel {
         return data;
     }
 
+    /**
+     * Get all tags applied to this monitor
+     * @returns {Promise<LooseObject<any>[]>}
+     */
     async getTags() {
         return await R.getAll("SELECT mt.*, tag.name, tag.color FROM monitor_tag mt JOIN tag ON mt.tag_id = tag.id WHERE mt.monitor_id = ?", [ this.id ]);
     }
@@ -116,6 +120,10 @@ class Monitor extends BeanModel {
         return Buffer.from(user + ":" + pass).toString("base64");
     }
 
+    /**
+     * Is the TLS expiry notification enabled?
+     * @returns {boolean}
+     */
     isEnabledExpiryNotification() {
         return Boolean(this.expiryNotification);
     }
@@ -507,6 +515,7 @@ class Monitor extends BeanModel {
 
         };
 
+        /** Get a heartbeat and handle errors */
         const safeBeat = async () => {
             try {
                 await beat();
@@ -540,6 +549,10 @@ class Monitor extends BeanModel {
         this.prometheus().remove();
     }
 
+    /**
+     * Get a new prometheus instance
+     * @returns {Prometheus}
+     */
     prometheus() {
         return new Prometheus(this);
     }
