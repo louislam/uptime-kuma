@@ -108,7 +108,12 @@ exports.pingAsync = function (hostname, ipv6 = false) {
 
 /**
  * MQTT Monitor
- * TODO: Add docs for MQTT monitor
+ * @param {string} hostname Hostname / address of machine to test
+ * @param {string} topic MQTT topic
+ * @param {string} okMessage Expected result
+ * @param {Object} [options={}] MQTT options. Contains port, username,
+ * password and interval (interval defaults to 20)
+ * @returns {Promise<string>}
  */
 exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
     return new Promise((resolve, reject) => {
