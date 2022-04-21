@@ -27,7 +27,7 @@ class Group extends BeanModel {
 
     /**
      * Get all monitors
-     * @returns {Array<Bean>}
+     * @returns {Bean[]}
      */
     async getMonitorList() {
         return R.convertToBeans("monitor", await R.getAll(`

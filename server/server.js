@@ -1475,7 +1475,7 @@ try {
 /**
  * Update notifications for a given monitor
  * @param {number} monitorID ID of monitor to update
- * @param {Array<number>} notificationIDList List of new notification
+ * @param {number[]} notificationIDList List of new notification
  * providers to add
  * @returns {Promise<void>}
  */

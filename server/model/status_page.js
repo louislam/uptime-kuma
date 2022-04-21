@@ -39,7 +39,7 @@ class StatusPage extends BeanModel {
 
     /**
      * Update list of domain names
-     * @param {Array<string>} domainNameList
+     * @param {string[]} domainNameList
      * @returns {Promise<void>}
      */
     async updateDomainNameList(domainNameList) {
@@ -83,7 +83,7 @@ class StatusPage extends BeanModel {
 
     /**
      * Get list of domain names
-     * @returns {Array<Object>}
+     * @returns {Object[]}
      */
     getDomainNameList() {
         let domainList = [];

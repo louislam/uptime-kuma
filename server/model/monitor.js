@@ -840,7 +840,7 @@ class Monitor extends BeanModel {
      * than target days
      * @param {number} daysRemaining Number of days remaining on certifcate
      * @param {number} targetDays Number of days to alert after
-     * @param {Array<LooseObject<any>>} notificationList List of notification providers
+     * @param {LooseObject<any>[]} notificationList List of notification providers
      * @returns {Promise<void>}
      */
     async sendCertNotificationByTargetDays(daysRemaining, targetDays, notificationList) {

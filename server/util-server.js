@@ -387,7 +387,7 @@ exports.checkCertificate = function (res) {
 /**
  * Check if the provided status code is within the accepted ranges
  * @param {string} status The status code to check
- * @param {Array<string>} acceptedCodes An array of accepted status codes
+ * @param {string[]} acceptedCodes An array of accepted status codes
  * @returns {boolean} True if status code within range, false otherwise
  * @throws {Error} Will throw an error if the provided status code is not a valid range string or code string
  */
