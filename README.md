@@ -161,10 +161,10 @@ Check out the latest beta release here: https://github.com/louislam/uptime-kuma/
 ### Bug Reports / Feature Requests
 If you want to report a bug or request a new feature. Free feel to open a [new issue](https://github.com/louislam/uptime-kuma/issues).
 
-## Translations
+### Translations
 If you want to translate Uptime Kuma into your language, please read: https://github.com/louislam/uptime-kuma/tree/master/src/languages
 
 Feel free to correct my grammar in this README, source code, or wiki, as my mother language is not English and my grammar is not that great.
 
-## Pull Requests
+### Pull Requests
 If you want to modify Uptime Kuma, this guideline may be useful for you: https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md
