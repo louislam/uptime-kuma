@@ -1168,7 +1168,6 @@ try {
                 let monitorListData = backupData.monitorList;
 
                 let version17x = compareVersions.compare(backupData.version, "1.7.0", ">=");
-                let version1132 = compareVersions.compare(backupData.version, "1.13.2", ">=");
 
                 // If the import option is "overwrite" it'll clear most of the tables, except "settings" and "user"
                 if (importHandle == "overwrite") {
@@ -1237,7 +1236,6 @@ try {
 
                             // Define default values
                             let retryInterval = 0;
-                            let resendInterval = 0;
 
                             /*
                             Only replace the default value with the backup file data for the specific version, where it appears the first time
@@ -1245,10 +1243,6 @@ try {
                             */
                             if (version17x) {
                                 retryInterval = monitorListData[i].retryInterval;
-                            }
-
-                            if (version1132) {
-                                resendInterval = monitorListData[i].resendInterval;
                             }
 
                             // --- End ---
@@ -1265,7 +1259,7 @@ try {
                                 basic_auth_pass: monitorListData[i].basic_auth_pass,
                                 interval: monitorListData[i].interval,
                                 retryInterval: retryInterval,
-                                resendInterval: resendInterval,
+                                resendInterval: monitorListData[i].resendInterval || 0,
                                 hostname: monitorListData[i].hostname,
                                 maxretries: monitorListData[i].maxretries,
                                 port: monitorListData[i].port,
