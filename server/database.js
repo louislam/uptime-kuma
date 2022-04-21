@@ -93,7 +93,7 @@ class Database {
      * Connect to the database
      * @param {boolean} [testMode=false] Should the connection be
      * started in test mode?
-     * @param {boolean} [autoloadModels=true] Should models be 
+     * @param {boolean} [autoloadModels=true] Should models be
      * automatically loaded?
      * @param {boolean} [noLog=false] Should logs not be output?
      * @returns {Promise<void>}
@@ -243,7 +243,7 @@ class Database {
         await setSetting("databasePatchedFiles", databasePatchedFiles);
     }
 
-    /**     
+    /**
      * Migrate status page value in setting to "status_page" table
      * @returns {Promise<void>}
      */
