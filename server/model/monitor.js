@@ -470,7 +470,8 @@ class Monitor extends BeanModel {
                 bean.important = false;
 
                 if (bean.status === DOWN && this.resendInterval > 0) {
-                    let timeSinceLastNotified = (dayjs.utc().valueOf() - (bean.lastNotifiedTime == null ? 0 : dayjs.utc(bean.lastNotifiedTime).valueOf())) / 1000 / 60; // divide by 1000 to convert from milliseconds to seconds and divide by 60 to convert from seconds to minutes
+                    // divide by 1000 to convert from milliseconds to seconds and divide by 60 to convert from seconds to minutes
+                    let timeSinceLastNotified = (dayjs.utc().valueOf() - (bean.lastNotifiedTime == null ? 0 : dayjs.utc(bean.lastNotifiedTime).valueOf())) / 1000 / 60; 
                     if (timeSinceLastNotified >= this.resendInterval) {
                         // Send notification again, because we are still DOWN
                         log.debug("monitor", `[${this.name}] sendNotification again: lastNotifiedTime: ${bean.lastNotifiedTime} | current time: ${R.isoDateTime(dayjs.utc())}`);
