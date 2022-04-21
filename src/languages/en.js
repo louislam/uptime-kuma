@@ -74,6 +74,7 @@ export default {
     "Heartbeat Interval": "Heartbeat Interval",
     Retries: "Retries",
     "Heartbeat Retry Interval": "Heartbeat Retry Interval",
+    "Notification resend interval if down": "Notification resend interval if down",
     Advanced: "Advanced",
     "Upside Down Mode": "Upside Down Mode",
     "Max. Redirects": "Max. Redirects",

@@ -163,6 +163,7 @@ export default {
     Pink: "Pink",
     "Search...": "Suchen...",
     "Heartbeat Retry Interval": "Überprüfungsintervall",
+    "Notification resend interval if down": "Benachrichtigung erneut versenden wenn Inaktiv",
     retryCheckEverySecond: "Alle {0} Sekunden neu versuchen",
     resendEveryMinute: "Erneut versenden alle {0} Minuten",
     resendDisabled: "Erneut versenden deaktiviert",
