@@ -70,7 +70,7 @@ class AliyunSMS extends NotificationProvider {
         };
 
         let result = await axios(config);
-        if (result.data.Message == "OK") {
+        if (result.data.Message === "OK") {
             return true;
         }
         return false;

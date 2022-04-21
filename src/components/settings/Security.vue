@@ -4,7 +4,7 @@
             <!-- Change Password -->
             <template v-if="!settings.disableAuth">
                 <p>
-                    {{ $t("Current User") }}: <strong>{{ username }}</strong>
+                    {{ $t("Current User") }}: <strong>{{ $root.username }}</strong>
                     <button v-if="! settings.disableAuth" id="logout-btn" class="btn btn-danger ms-4 me-2 mb-2" @click="$root.logout">{{ $t("Logout") }}</button>
                 </p>
 
@@ -192,6 +192,12 @@
                 <p>Пожалуйста, используйте с осторожностью.</p>
             </template>
 
+            <template v-else-if="$i18n.locale === 'uk-UA' ">
+                <p>Ви впевнені, що бажаєте <strong>вимкнути авторизацію</strong>?</p>
+                <p>Це підходить для <strong>тих, у кого встановлена інша авторизація</strong> пееред відкриттям Uptime Kuma, наприклад Cloudflare Access.</p>
+                <p>Будь ласка, використовуйте з обережністю.</p>
+            </template>
+
             <template v-else-if="$i18n.locale === 'fa' ">
                 <p>آیا مطمئن هستید که میخواهید <strong>احراز هویت را غیر فعال کنید</strong>?</p>
                 <p>این ویژگی برای کسانی است که <strong> لایه امنیتی شخص ثالث دیگر بر روی این آدرس فعال کرده‌اند</strong>، مانند Cloudflare Access.</p>
@@ -216,12 +222,37 @@
                 <p>Vennligst vær forsiktig.</p>
             </template>
 
+            <template v-else-if="$i18n.locale === 'cs-CZ' ">
+                <p>Opravdu chcete <strong>deaktivovat autentifikaci</strong>?</p>
+                <p>Tato možnost je určena pro případy, kdy <strong>máte autentifikaci zajištěnou třetí stranou</strong> ještě před přístupem do Uptime Kuma, například prostřednictvím Cloudflare Access.</p>
+                <p>Používejte ji prosím s rozmyslem.</p>
+            </template>
+
+            <template v-else-if="$i18n.locale === 'vi-VN' ">
+                <p>Bạn có muốn <strong>TẮT XÁC THỰC</strong> không?</p>
+                <p>Điều này rất nguy hiểm<strong>BẤT KỲ AI</strong> cũng có thể truy cập và cướp quyền điều khiển.</p>
+                <p>Vui lòng <strong>cẩn thận</strong>.</p>
+            </template>
+
             <!-- English (en) -->
             <template v-else>
-                <p>Are you sure want to <strong>disable auth</strong>?</p>
-                <p>It is for <strong>someone who have 3rd-party auth</strong> in front of Uptime Kuma such as Cloudflare Access.</p>
-                <p>Please use it carefully.</p>
+                <p>Are you sure want to <strong>disable authentication</strong>?</p>
+                <p>It is designed for scenarios <strong>where you intend to implement third-party authentication</strong> in front of Uptime Kuma such as Cloudflare Access, Authelia or other authentication mechanisms.</p>
+                <p>Please use this option carefully!</p>
             </template>
+
+            <div class="mb-3">
+                <label for="current-password2" class="form-label">
+                    {{ $t("Current Password") }}
+                </label>
+                <input
+                    id="current-password2"
+                    v-model="password.currentPassword"
+                    type="password"
+                    class="form-control"
+                    required
+                />
+            </div>
         </Confirm>
     </div>
 </template>
@@ -238,7 +269,6 @@ export default {
 
     data() {
         return {
-            username: "",
             invalidPassword: false,
             password: {
                 currentPassword: "",
@@ -266,10 +296,6 @@ export default {
         },
     },
 
-    mounted() {
-        this.loadUsername();
-    },
-
     methods: {
         savePassword() {
             if (this.password.newPassword !== this.password.repeatNewPassword) {
@@ -288,17 +314,16 @@ export default {
             }
         },
 
-        loadUsername() {
-            const jwtPayload = this.$root.getJWTPayload();
-
-            if (jwtPayload) {
-                this.username = jwtPayload.username;
-            }
-        },
-
         disableAuth() {
             this.settings.disableAuth = true;
-            this.saveSettings();
+
+            // Need current password to disable auth
+            // Set it to empty if done
+            this.saveSettings(() => {
+                this.password.currentPassword = "";
+                this.$root.username = null;
+                this.$root.socket.token = "autoLogin";
+            }, this.password.currentPassword);
         },
 
         enableAuth() {
@@ -319,7 +344,7 @@ export default {
 <style lang="scss" scoped>
 @import "../../assets/vars.scss";
 
-h5:after {
+h5::after {
     content: "";
     display: block;
     width: 50%;

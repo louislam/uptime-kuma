@@ -17,7 +17,7 @@ const log = function (any) {
  * @param {number} error The status code to exit
  */
 const exit = function (error) {
-    if (error && error != 0) {
+    if (error && error !== 0) {
         process.exit(error);
     } else {
         if (parentPort) {

@@ -21,31 +21,26 @@ class Bark extends NotificationProvider {
     name = "Bark";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        try {
-            var barkEndpoint = notification.barkEndpoint;
+        let barkEndpoint = notification.barkEndpoint;
 
-            // check if the endpoint has a "/" suffix, if so, delete it first
-            if (barkEndpoint.endsWith("/")) {
-                barkEndpoint = barkEndpoint.substring(0, barkEndpoint.length - 1);
-            }
+        // check if the endpoint has a "/" suffix, if so, delete it first
+        if (barkEndpoint.endsWith("/")) {
+            barkEndpoint = barkEndpoint.substring(0, barkEndpoint.length - 1);
+        }
 
-            if (msg != null && heartbeatJSON != null && heartbeatJSON["status"] == UP) {
-                let title = "UptimeKuma Monitor Up";
-                return await this.postNotification(title, msg, barkEndpoint);
-            }
+        if (msg != null && heartbeatJSON != null && heartbeatJSON["status"] === UP) {
+            let title = "UptimeKuma Monitor Up";
+            return await this.postNotification(title, msg, barkEndpoint);
+        }
 
-            if (msg != null && heartbeatJSON != null && heartbeatJSON["status"] == DOWN) {
-                let title = "UptimeKuma Monitor Down";
-                return await this.postNotification(title, msg, barkEndpoint);
-            }
+        if (msg != null && heartbeatJSON != null && heartbeatJSON["status"] === DOWN) {
+            let title = "UptimeKuma Monitor Down";
+            return await this.postNotification(title, msg, barkEndpoint);
+        }
 
-            if (msg != null) {
-                let title = "UptimeKuma Message";
-                return await this.postNotification(title, msg, barkEndpoint);
-            }
-
-        } catch (error) {
-            throw error;
+        if (msg != null) {
+            let title = "UptimeKuma Message";
+            return await this.postNotification(title, msg, barkEndpoint);
         }
     }
 

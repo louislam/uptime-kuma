@@ -1,7 +1,8 @@
 const path = require("path");
 const Bree = require("bree");
 const { SHARE_ENV } = require("worker_threads");
-
+const { log } = require("../src/util");
+let bree;
 const jobs = [
     {
         name: "clear-old-data",
@@ -15,7 +16,7 @@ const jobs = [
  * @returns {Bree}
  */
 const initBackgroundJobs = function (args) {
-    const bree = new Bree({
+    bree = new Bree({
         root: path.resolve("server", "jobs"),
         jobs,
         worker: {
@@ -23,7 +24,7 @@ const initBackgroundJobs = function (args) {
             workerData: args,
         },
         workerMessageHandler: (message) => {
-            console.log("[Background Job]:", message);
+            log.info("jobs", message);
         }
     });
 
@@ -31,6 +32,13 @@ const initBackgroundJobs = function (args) {
     return bree;
 };
 
+const stopBackgroundJobs = function () {
+    if (bree) {
+        bree.stop();
+    }
+};
+
 module.exports = {
-    initBackgroundJobs
+    initBackgroundJobs,
+    stopBackgroundJobs
 };

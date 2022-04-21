@@ -12,6 +12,7 @@ const ClickSendSMS = require("./notification-providers/clicksendsms");
 const Pushbullet = require("./notification-providers/pushbullet");
 const Pushover = require("./notification-providers/pushover");
 const Pushy = require("./notification-providers/pushy");
+const TechulusPush = require("./notification-providers/techulus-push");
 const RocketChat = require("./notification-providers/rocket-chat");
 const Signal = require("./notification-providers/signal");
 const Slack = require("./notification-providers/slack");
@@ -23,10 +24,15 @@ const Feishu = require("./notification-providers/feishu");
 const AliyunSms = require("./notification-providers/aliyun-sms");
 const DingDing = require("./notification-providers/dingding");
 const Bark = require("./notification-providers/bark");
+const { log } = require("../src/util");
 const SerwerSMS = require("./notification-providers/serwersms");
 const Stackfield = require("./notification-providers/stackfield");
 const WeCom = require("./notification-providers/wecom");
 const GoogleChat = require("./notification-providers/google-chat");
+const Gorush = require("./notification-providers/gorush");
+const Alerta = require("./notification-providers/alerta");
+const OneBot = require("./notification-providers/onebot");
+const PushDeer = require("./notification-providers/pushdeer");
 
 class Notification {
 
@@ -34,7 +40,7 @@ class Notification {
 
     /** Initialize the notification providers */
     static init() {
-        console.log("Prepare Notification Providers");
+        log.info("notification", "Prepare Notification Providers");
 
         this.providerList = {};
 
@@ -56,6 +62,7 @@ class Notification {
             new Pushbullet(),
             new Pushover(),
             new Pushy(),
+            new TechulusPush(),
             new RocketChat(),
             new Signal(),
             new Slack(),
@@ -66,7 +73,11 @@ class Notification {
             new SerwerSMS(),
             new Stackfield(),
             new WeCom(),
-            new GoogleChat()
+            new GoogleChat(),
+            new Gorush(),
+            new Alerta(),
+            new OneBot(),
+            new PushDeer(),
         ];
 
         for (let item of list) {

@@ -3,7 +3,8 @@
  */
 const { TimeLogger } = require("../src/util");
 const { R } = require("redbean-node");
-const { io } = require("./server");
+const { UptimeKumaServer } = require("./uptime-kuma-server");
+const io = UptimeKumaServer.getInstance().io;
 const { setting } = require("./util-server");
 const checkVersion = require("./check-version");
 
@@ -63,7 +64,7 @@ async function sendHeartbeatList(socket, monitorID, toUser = false, overwrite = 
 }
 
 /**
- *  Important Heart beat list (aka event list)
+ * Important Heart beat list (aka event list)
  * @param {Socket} socket Socket.io instance
  * @param {number} monitorID ID of monitor to send heartbeat history
  * @param {boolean} [toUser=false]  True = send to all browsers with the same user id, False = send to the current browser only
@@ -93,7 +94,23 @@ async function sendImportantHeartbeatList(socket, monitorID, toUser = false, ove
 }
 
 /**
- * Send application info
+ * Emit proxy list to client
+ * @param {Socket} socket Socket.io socket instance
+ * @return {Promise<Bean[]>}
+ */
+async function sendProxyList(socket) {
+    const timeLogger = new TimeLogger();
+
+    const list = await R.find("proxy", " user_id = ? ", [ socket.userID ]);
+    io.to(socket.userID).emit("proxyList", list.map(bean => bean.export()));
+
+    timeLogger.print("Send Proxy List");
+
+    return list;
+}
+
+/**
+ * Emits the version information to the client.
  * @param {Socket} socket Socket.io socket instance
  * @returns {Promise<void>}
  */
@@ -109,6 +126,6 @@ module.exports = {
     sendNotificationList,
     sendImportantHeartbeatList,
     sendHeartbeatList,
-    sendInfo
+    sendProxyList,
+    sendInfo,
 };
-

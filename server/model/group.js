@@ -6,14 +6,15 @@ class Group extends BeanModel {
     /**
      * Return a object that ready to parse to JSON for public
      * Only show necessary data to public
+     * @param {boolean} [showTags=false] Should the JSON include monitor tags
      * @returns {Object}
      */
-    async toPublicJSON() {
+    async toPublicJSON(showTags = false) {
         let monitorBeanList = await this.getMonitorList();
         let monitorList = [];
 
         for (let bean of monitorBeanList) {
-            monitorList.push(await bean.toPublicJSON());
+            monitorList.push(await bean.toPublicJSON(showTags));
         }
 
         return {
