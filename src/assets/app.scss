@@ -22,6 +22,18 @@ textarea.form-control {
     width: 10px;
 }
 
+.list-group {
+    border-radius: 0.75rem;
+
+    .dark & {
+        .list-group-item {
+            background-color: $dark-bg;
+            color: $dark-font-color;
+            border-color: $dark-border-color;
+        }
+    }
+}
+
 ::-webkit-scrollbar-thumb {
     background: #ccc;
     border-radius: 20px;
@@ -412,6 +424,10 @@ textarea.form-control {
     background-color: rgba(239, 239, 239, 0.7);
     border-radius: 8px;
 
+    &.no-bg {
+        background-color: transparent !important;
+    }
+
     &:focus {
         outline: 0 solid #eee;
         background-color: rgba(245, 245, 245, 0.9);
@@ -451,6 +467,10 @@ textarea.form-control {
 
 .spinner {
     color: $primary;
+}
+
+.prism-editor__textarea {
+    outline: none !important;
 }
 
 // Localization

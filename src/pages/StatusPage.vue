@@ -2,49 +2,80 @@
     <div v-if="loadedTheme" class="container mt-3">
         <!-- Sidebar for edit mode -->
         <div v-if="enableEditMode" class="sidebar">
-            <div class="my-3">
-                <label for="slug" class="form-label">{{ $t("Slug") }}</label>
-                <div class="input-group">
-                    <span id="basic-addon3" class="input-group-text">/status/</span>
-                    <input id="slug" v-model="config.slug" type="text" class="form-control">
+            <div class="sidebar-body">
+                <div class="my-3">
+                    <label for="slug" class="form-label">{{ $t("Slug") }}</label>
+                    <div class="input-group">
+                        <span id="basic-addon3" class="input-group-text">/status/</span>
+                        <input id="slug" v-model="config.slug" type="text" class="form-control">
+                    </div>
                 </div>
-            </div>
 
-            <div class="my-3">
-                <label for="title" class="form-label">{{ $t("Title") }}</label>
-                <input id="title" v-model="config.title" type="text" class="form-control">
-            </div>
+                <div class="my-3">
+                    <label for="title" class="form-label">{{ $t("Title") }}</label>
+                    <input id="title" v-model="config.title" type="text" class="form-control">
+                </div>
 
-            <div class="my-3">
-                <label for="description" class="form-label">{{ $t("Description") }}</label>
-                <textarea id="description" v-model="config.description" class="form-control"></textarea>
-            </div>
+                <!-- Description -->
+                <div class="my-3">
+                    <label for="description" class="form-label">{{ $t("Description") }}</label>
+                    <textarea id="description" v-model="config.description" class="form-control"></textarea>
+                </div>
 
-            <div class="my-3 form-check form-switch">
-                <input id="switch-theme" v-model="config.theme" class="form-check-input" type="checkbox" true-value="dark" false-value="light">
-                <label class="form-check-label" for="switch-theme">{{ $t("Switch to Dark Theme") }}</label>
-            </div>
+                <!-- Footer Text -->
+                <div class="my-3">
+                    <label for="footer-text" class="form-label">{{ $t("Footer Text") }}</label>
+                    <textarea id="footer-text" v-model="config.footerText" class="form-control"></textarea>
+                </div>
 
-            <div class="my-3 form-check form-switch">
-                <input id="showTags" v-model="config.showTags" class="form-check-input" type="checkbox">
-                <label class="form-check-label" for="showTags">{{ $t("Show Tags") }}</label>
-            </div>
+                <div class="my-3 form-check form-switch">
+                    <input id="switch-theme" v-model="config.theme" class="form-check-input" type="checkbox" true-value="dark" false-value="light">
+                    <label class="form-check-label" for="switch-theme">{{ $t("Switch to Dark Theme") }}</label>
+                </div>
 
-            <div v-if="false" class="my-3">
-                <label for="password" class="form-label">{{ $t("Password") }} <sup>Coming Soon</sup></label>
-                <input id="password" v-model="config.password" disabled type="password" autocomplete="new-password" class="form-control">
-            </div>
+                <div class="my-3 form-check form-switch">
+                    <input id="showTags" v-model="config.showTags" class="form-check-input" type="checkbox">
+                    <label class="form-check-label" for="showTags">{{ $t("Show Tags") }}</label>
+                </div>
 
-            <div v-if="false" class="my-3">
-                <label for="cname" class="form-label">Domain Names <sup>Coming Soon</sup></label>
-                <textarea id="cname" v-model="config.domanNames" rows="3" disabled class="form-control" :placeholder="domainNamesPlaceholder"></textarea>
-            </div>
+                <!-- Show Powered By -->
+                <div class="my-3 form-check form-switch">
+                    <input id="show-powered-by" v-model="config.showPoweredBy" class="form-check-input" type="checkbox">
+                    <label class="form-check-label" for="show-powered-by">{{ $t("Show Powered By") }}</label>
+                </div>
 
-            <div class="danger-zone">
-                <button class="btn btn-danger me-2" @click="deleteDialog">
-                    <font-awesome-icon icon="trash" />
-                    {{ $t("Delete") }}
-                </button>
+                <div v-if="false" class="my-3">
+                    <label for="password" class="form-label">{{ $t("Password") }} <sup>Coming Soon</sup></label>
+                    <input id="password" v-model="config.password" disabled type="password" autocomplete="new-password" class="form-control">
+                </div>
+
+                <!-- Domain Name List -->
+                <div class="my-3">
+                    <label class="form-label">
+                        {{ $t("Domain Names") }}
+                        <font-awesome-icon icon="plus-circle" class="btn-add-domain action text-primary" @click="addDomainField" />
+                    </label>
+
+                    <ul class="list-group domain-name-list">
+                        <li v-for="(domain, index) in config.domainNameList" :key="index" class="list-group-item">
+                            <input v-model="config.domainNameList[index]" type="text" class="no-bg domain-input" placeholder="example.com" />
+                            <font-awesome-icon icon="times" class="action remove ms-2 me-3 text-danger" @click="removeDomain(index)" />
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Custom CSS -->
+                <div class="my-3">
+                    <div class="mb-1">{{ $t("Custom CSS") }}</div>
+                    <prism-editor v-model="config.customCSS" class="css-editor" :highlight="highlighter" line-numbers></prism-editor>
+                </div>
+
+                <div class="danger-zone">
+                    <button class="btn btn-danger me-2" @click="deleteDialog">
+                        <font-awesome-icon icon="trash" />
+                        {{ $t("Delete") }}
+                    </button>
+                </div>
             </div>
 
             <!-- Sidebar Footer -->
@@ -55,7 +86,7 @@
                 </button>
 
                 <button class="btn btn-danger me-2" @click="discard">
-                    <font-awesome-icon icon="save" />
+                    <font-awesome-icon icon="undo" />
                     {{ $t("Discard") }}
                 </button>
             </div>
@@ -67,7 +98,7 @@
             <h1 class="mb-4 title-flex">
                 <!-- Logo -->
                 <span class="logo-wrapper" @click="showImageCropUploadMethod">
-                    <img :src="logoURL" alt class="logo me-2" :class="logoClass" />
+                    <img :src="logoURL" alt class="logo me-2" :class="logoClass" @load="statusPageLogoLoaded" />
                     <font-awesome-icon v-if="enableEditMode" class="icon-upload" icon="upload" />
                 </span>
 
@@ -120,7 +151,7 @@
 
                 <!-- Incident Date -->
                 <div class="date mt-3">
-                    {{ $t("Created") }}: {{ $root.datetime(incident.createdDate) }} ({{ dateFromNow(incident.createdDate) }})<br />
+                    {{ $t("Date Created") }}: {{ $root.datetime(incident.createdDate) }} ({{ dateFromNow(incident.createdDate) }})<br />
                     <span v-if="incident.lastUpdatedDate">
                         {{ $t("Last Updated") }}: {{ $root.datetime(incident.lastUpdatedDate) }} ({{ dateFromNow(incident.lastUpdatedDate) }})
                     </span>
@@ -227,13 +258,24 @@
             </div>
 
             <footer class="mt-5 mb-4">
-                {{ $t("Powered by") }} <a target="_blank" href="https://github.com/louislam/uptime-kuma">{{ $t("Uptime Kuma" ) }}</a>
+                <div class="custom-footer-text text-start">
+                    <strong v-if="enableEditMode">{{ $t("Custom Footer") }}:</strong>
+                </div>
+                <Editable v-model="config.footerText" tag="div" :contenteditable="enableEditMode" :noNL="false" class="alert-heading p-2" />
+
+                <p v-if="config.showPoweredBy">
+                    {{ $t("Powered by") }} <a target="_blank" href="https://github.com/louislam/uptime-kuma">{{ $t("Uptime Kuma" ) }}</a>
+                </p>
             </footer>
         </div>
 
         <Confirm ref="confirmDelete" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="deleteStatusPage">
             {{ $t("deleteStatusPageMsg") }}
         </Confirm>
+
+        <component is="style" v-if="config.customCSS" type="text/css">
+            {{ config.customCSS }}
+        </component>
     </div>
 </template>
 
@@ -247,11 +289,20 @@ import dayjs from "dayjs";
 import Favico from "favico.js";
 import { getResBaseURL } from "../util-frontend";
 import Confirm from "../components/Confirm.vue";
+// import Prism Editor
+import { PrismEditor } from "vue-prism-editor";
+import "vue-prism-editor/dist/prismeditor.min.css"; // import the styles somewhere
+
+// import highlighting library (you can use any library you want just return html string)
+import { highlight, languages } from "prismjs/components/prism-core";
+import "prismjs/components/prism-css";
+import "prismjs/themes/prism-tomorrow.css"; // import syntax highlighting styles
 
 const toast = useToast();
 
 const leavePageMsg = "Do you really want to leave? you have unsaved changes!";
 
+// eslint-disable-next-line no-unused-vars
 let feedInterval;
 
 const favicon = new Favico({
@@ -259,10 +310,12 @@ const favicon = new Favico({
 });
 
 export default {
+
     components: {
         PublicGroupList,
         ImageCropUpload,
         Confirm,
+        PrismEditor,
     },
 
     // Leave Page for vue route change
@@ -276,6 +329,14 @@ export default {
             }
         }
         next();
+    },
+
+    props: {
+        overrideSlug: {
+            type: String,
+            required: false,
+            default: null,
+        },
     },
 
     data() {
@@ -294,7 +355,6 @@ export default {
             loadedData: false,
             baseURL: "",
             clickedEditButton: false,
-            domainNamesPlaceholder: "domain1.com\ndomain2.com\n..."
         };
     },
     computed: {
@@ -390,6 +450,29 @@ export default {
     watch: {
 
         /**
+         * If connected to the socket and logged in, request private data of this statusPage
+         * @param connected
+         */
+        "$root.loggedIn"(loggedIn) {
+            if (loggedIn) {
+                this.$root.getSocket().emit("getStatusPage", this.slug, (res) => {
+                    if (res.ok) {
+                        this.config = res.config;
+
+                        if (!this.config.customCSS) {
+                            this.config.customCSS = "body {\n" +
+                                "  \n" +
+                                "}\n";
+                        }
+
+                    } else {
+                        toast.error(res.msg);
+                    }
+                });
+            }
+        },
+
+        /**
          * Selected a monitor and add to the list.
          */
         selectedMonitor(monitor) {
@@ -449,7 +532,7 @@ export default {
         this.baseURL = getResBaseURL();
     },
     async mounted() {
-        this.slug = this.$route.params.slug;
+        this.slug = this.overrideSlug || this.$route.params.slug;
 
         if (!this.slug) {
             this.slug = "default";
@@ -457,6 +540,10 @@ export default {
 
         axios.get("/api/status-page/" + this.slug).then((res) => {
             this.config = res.data.config;
+
+            if (!this.config.domainNameList) {
+                this.config.domainNameList = [];
+            }
 
             if (this.config.icon) {
                 this.imgDataUrl = this.config.icon;
@@ -479,6 +566,10 @@ export default {
         }
     },
     methods: {
+
+        highlighter(code) {
+            return highlight(code, languages.css);
+        },
 
         updateHeartbeatList() {
             // If editMode, it will use the data from websocket.
@@ -575,6 +666,10 @@ export default {
             });
         },
 
+        addDomainField() {
+            this.config.domainNameList.push("");
+        },
+
         discard() {
             location.href = "/status/" + this.slug;
         },
@@ -592,6 +687,11 @@ export default {
             }
         },
 
+        statusPageLogoLoaded(eventPayload) {
+            // Remark: may not work in dev, due to cros
+            favicon.image(eventPayload.target);
+        },
+
         createIncident() {
             this.enableEditIncidentMode = true;
 
@@ -607,7 +707,7 @@ export default {
         },
 
         postIncident() {
-            if (this.incident.title == "" || this.incident.content == "") {
+            if (this.incident.title === "" || this.incident.content === "") {
                 toast.error(this.$t("Please input title and content"));
                 return;
             }
@@ -650,6 +750,10 @@ export default {
 
         dateFromNow(date) {
             return dayjs.utc(date).fromNow();
+        },
+
+        removeDomain(index) {
+            this.config.domainNameList.splice(index, 1);
         },
 
     }
@@ -700,9 +804,7 @@ h1 {
     top: 0;
     width: 300px;
     height: 100vh;
-    padding: 15px 15px 68px 15px;
-    overflow-x: hidden;
-    overflow-y: auto;
+
     border-right: 1px solid #ededed;
 
     .danger-zone {
@@ -710,13 +812,25 @@ h1 {
         padding-top: 15px;
     }
 
+    .sidebar-body {
+        padding: 0 10px 10px 10px;
+        overflow-x: hidden;
+        overflow-y: auto;
+        height: calc(100% - 70px);
+    }
+
     .sidebar-footer {
-        width: 100%;
-        bottom: 0;
-        left: 0;
-        padding: 15px;
-        position: absolute;
         border-top: 1px solid #ededed;
+        border-right: 1px solid #ededed;
+        padding: 10px;
+        width: 300px;
+        height: 70px;
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        background-color: white;
+        display: flex;
+        align-items: center;
     }
 }
 
@@ -773,7 +887,7 @@ footer {
 
 .incident {
     .content {
-        &[contenteditable=true] {
+        &[contenteditable="true"] {
             min-height: 60px;
         }
     }
@@ -803,8 +917,44 @@ footer {
         }
 
         .sidebar-footer {
+            border-right-color: $dark-border-color;
             border-top-color: $dark-border-color;
+            background-color: $dark-header-bg;
         }
+    }
+}
+
+.domain-name-list {
+    li {
+        display: flex;
+        align-items: center;
+        padding: 10px 0 10px 10px;
+
+        .domain-input {
+            flex-grow: 1;
+            background-color: transparent;
+            border: none;
+            color: $dark-font-color;
+            outline: none;
+
+            &::placeholder {
+                color: #1d2634;
+            }
+        }
+    }
+}
+
+/* required class */
+.css-editor {
+    /* we dont use `language-` classes anymore so thats why we need to add background and text color manually */
+
+    border-radius: 1rem;
+    padding: 10px 5px;
+    border: 1px solid #ced4da;
+
+    .dark & {
+        background: $dark-bg;
+        border: 1px solid $dark-border-color;
     }
 }
 

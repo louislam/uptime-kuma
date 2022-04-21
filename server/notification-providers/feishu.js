@@ -21,7 +21,7 @@ class Feishu extends NotificationProvider {
                 return okMsg;
             }
 
-            if (heartbeatJSON["status"] == DOWN) {
+            if (heartbeatJSON["status"] === DOWN) {
                 let downdata = {
                     msg_type: "post",
                     content: {
@@ -48,7 +48,7 @@ class Feishu extends NotificationProvider {
                 return okMsg;
             }
 
-            if (heartbeatJSON["status"] == UP) {
+            if (heartbeatJSON["status"] === UP) {
                 let updata = {
                     msg_type: "post",
                     content: {

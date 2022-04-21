@@ -12,7 +12,7 @@ class ClickSendSMS extends NotificationProvider {
             let config = {
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": "Basic " + Buffer.from(notification.clicksendsmsLogin + ":" + notification.clicksendsmsPassword).toString('base64'),
+                    "Authorization": "Basic " + Buffer.from(notification.clicksendsmsLogin + ":" + notification.clicksendsmsPassword).toString("base64"),
                     "Accept": "text/json",
                 }
             };
