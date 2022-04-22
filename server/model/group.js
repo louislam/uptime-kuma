@@ -4,7 +4,7 @@ const { R } = require("redbean-node");
 class Group extends BeanModel {
 
     /**
-     * Return a object that ready to parse to JSON for public
+     * Return an object that ready to parse to JSON for public
      * Only show necessary data to public
      * @param {boolean} [showTags=false] Should the JSON include monitor tags
      * @returns {Object}

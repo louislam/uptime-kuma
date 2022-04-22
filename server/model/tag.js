@@ -3,7 +3,7 @@ const { BeanModel } = require("redbean-node/dist/bean-model");
 class Tag extends BeanModel {
 
     /**
-     * Return a object that ready to parse to JSON
+     * Return an object that ready to parse to JSON
      * @returns {Object}
      */
     toJSON() {

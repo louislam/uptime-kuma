@@ -3,7 +3,7 @@ const { BeanModel } = require("redbean-node/dist/bean-model");
 class Incident extends BeanModel {
 
     /**
-     * Return a object that ready to parse to JSON for public
+     * Return an object that ready to parse to JSON for public
      * Only show necessary data to public
      * @returns {Object}
      */
