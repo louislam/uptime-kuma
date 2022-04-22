@@ -79,6 +79,7 @@ I personally do not like something need to learn so much and need to config so m
 - 4 spaces indentation
 - Follow `.editorconfig`
 - Follow ESLint
+- Methods and funtions should be documented with JSDoc
 
 ## Name convention
 
