@@ -3,7 +3,9 @@ const Database = require("../database");
 const path = require("path");
 
 /**
- * Send message to parent process
+ * Send message to parent process for logging
+ * since worker_thread does not have access to stdout, this is used
+ * instead of console.log()
  * @param {any} any The message to log
  */
 const log = function (any) {

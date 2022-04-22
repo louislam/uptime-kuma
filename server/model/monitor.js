@@ -145,7 +145,7 @@ class Monitor extends BeanModel {
     }
 
     /**
-     * Get status codes that are acceptable
+     * Get accepted status codes
      * @returns {Object}
      */
     getAcceptedStatuscodes() {
@@ -658,7 +658,7 @@ class Monitor extends BeanModel {
     }
 
     /**
-     * Send certificate information to information
+     * Send certificate information to client
      * @param {Server} io Socket server instance
      * @param {number} monitorID ID of monitor to send
      * @param {number} userID ID of user to send to
