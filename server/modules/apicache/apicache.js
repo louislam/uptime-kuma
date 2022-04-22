@@ -656,7 +656,7 @@ function ApiCache() {
              * misses.
              * @param {Uint8Array} array An array representing hits and
              * misses.
-             * @returns {number} a number between 0 and 1, or null if
+             * @returns {?number} a number between 0 and 1, or null if
              * the array has no hits or misses
              */
             this.hitRate = function (array) {
