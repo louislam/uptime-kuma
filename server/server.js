@@ -646,6 +646,27 @@ try {
             }
         });
 
+        // Verify if monitor is duplicated
+        socket.on("isDuplicatedMonitor", async (monitor, callback) => {
+            try {
+                let monitorList = await sendMonitorList(socket);
+                for (let monitorId in monitorList) {
+                    let monitorFromList = monitorList[monitorId];
+                    verifyPropertyAndThrowIfMatch(monitorFromList, monitor, "name");
+                    verifyPropertyAndThrowIfMatch(monitorFromList, monitor, "url");
+                }
+                callback({
+                    ok: true,
+                    msg: "No duplicate for this monitor"
+                });
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message
+                });
+            }
+        });
+
         // Edit a monitor
         socket.on("editMonitor", async (monitor, callback) => {
             try {
@@ -1676,6 +1697,13 @@ async function shutdownFunction(signal) {
 
 function getClientIp(socket) {
     return socket.client.conn.remoteAddress.replace(/^.*:/, "");
+}
+
+function verifyPropertyAndThrowIfMatch(monitorFromList, incomingMonitor, property) {
+    let capitalizedProperty = property.charAt(0).toUpperCase() + property.slice(1);
+    if (monitorFromList.id !== incomingMonitor.id && monitorFromList[property] === incomingMonitor[property]) {
+        throw new Error(`duplicatedMonitor${capitalizedProperty}Warning`);
+    }
 }
 
 function finalFunction() {
