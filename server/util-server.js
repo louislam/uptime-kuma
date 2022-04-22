@@ -13,7 +13,6 @@ const mqtt = require("mqtt");
 const chroma = require("chroma-js");
 const { badgeConstants } = require("./config");
 
-
 // From ping-lite
 exports.WIN = /^win/.test(process.platform);
 exports.LIN = /^linux/.test(process.platform);
