@@ -28,9 +28,12 @@ VPS is sponsored by Uptime Kuma sponsors on [Open Collective](https://opencollec
 * Notifications via Telegram, Discord, Gotify, Slack, Pushover, Email (SMTP), and [90+ notification services, click here for the full list](https://github.com/louislam/uptime-kuma/tree/master/src/components/notifications).
 * 20 second intervals.
 * [Multi Languages](https://github.com/louislam/uptime-kuma/tree/master/src/languages)
-* Simple Status Page
+* Multiple Status Pages
+* Map Status Page to Domain
 * Ping Chart
 * Certificate Info
+* Proxy Support
+* 2FA available
 
 ## 🔧 How to Install
 
@@ -154,7 +157,7 @@ https://www.reddit.com/r/UptimeKuma/
 
 ## Contribute
 
-### Test Beta Version
+### Beta Version
 
 Check out the latest beta release here: https://github.com/louislam/uptime-kuma/releases
 
