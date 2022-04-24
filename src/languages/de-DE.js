@@ -337,7 +337,7 @@ export default {
     "Hide Tags": "Tags ausblenden",
     Description: "Beschreibung",
     "No monitors available.": "Keine Monitore verfügbar.",
-    "Add one": "Füge eins hinzu",
+    "Add one": "Hinzufügen",
     "No Monitors": "Keine Monitore",
     "Untitled Group": "Gruppe ohne Titel",
     Services: "Dienste",
@@ -442,4 +442,7 @@ export default {
     "Issuer:": "Aussteller:",
     "Fingerprint:": "Fingerabdruck:",
     "No status pages": "Keine Status-Seiten",
+    Customize: "Anpassen",
+    "Custom Footer": "Eigener Footer",
+    "Custom CSS": "Eigenes CSS",
 };

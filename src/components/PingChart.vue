@@ -220,6 +220,7 @@ export default {
             if (newPeriod == "0") {
                 newPeriod = null;
                 this.heartbeatList = null;
+                this.$root.storage().removeItem(`chart-period-${this.monitorId}`);
             } else {
                 this.loading = true;
 
@@ -228,6 +229,7 @@ export default {
                         toast.error(res.msg);
                     } else {
                         this.heartbeatList = res.data;
+                        this.$root.storage()[`chart-period-${this.monitorId}`] = newPeriod;
                     }
                     this.loading = false;
                 });
@@ -248,6 +250,12 @@ export default {
             },
             { deep: true }
         );
+
+        // Load chart period from storage if saved
+        let period = this.$root.storage()[`chart-period-${this.monitorId}`];
+        if (period != null) {
+            this.chartPeriodHrs = Math.min(period, 6);
+        }
     }
 };
 </script>
@@ -286,6 +294,7 @@ export default {
 
             .dark &:hover {
                 background: $dark-font-color;
+                color: $dark-font-color2;
             }
         }
 

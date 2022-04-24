@@ -3,7 +3,8 @@
  */
 const { TimeLogger } = require("../src/util");
 const { R } = require("redbean-node");
-const { io } = require("./server");
+const { UptimeKumaServer } = require("./uptime-kuma-server");
+const io = UptimeKumaServer.getInstance().io;
 const { setting } = require("./util-server");
 const checkVersion = require("./check-version");
 
@@ -98,7 +99,7 @@ async function sendImportantHeartbeatList(socket, monitorID, toUser = false, ove
 async function sendProxyList(socket) {
     const timeLogger = new TimeLogger();
 
-    const list = await R.find("proxy", " user_id = ? ", [socket.userID]);
+    const list = await R.find("proxy", " user_id = ? ", [ socket.userID ]);
     io.to(socket.userID).emit("proxyList", list.map(bean => bean.export()));
 
     timeLogger.print("Send Proxy List");

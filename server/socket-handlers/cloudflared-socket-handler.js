@@ -1,6 +1,7 @@
 const { checkLogin, setSetting, setting, doubleCheckPassword } = require("../util-server");
 const { CloudflaredTunnel } = require("node-cloudflared-tunnel");
-const { io } = require("../server");
+const { UptimeKumaServer } = require("../uptime-kuma-server");
+const io = UptimeKumaServer.getInstance().io;
 
 const prefix = "cloudflared_";
 const cloudflared = new CloudflaredTunnel();
@@ -86,5 +87,7 @@ module.exports.autoStart = async (token) => {
 
 module.exports.stop = async () => {
     console.log("Stop cloudflared");
-    cloudflared.stop();
+    if (cloudflared) {
+        cloudflared.stop();
+    }
 };

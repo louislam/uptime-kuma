@@ -92,6 +92,9 @@ class StatusPage extends BeanModel {
             published: !!this.published,
             showTags: !!this.show_tags,
             domainNameList: this.getDomainNameList(),
+            customCSS: this.custom_css,
+            footerText: this.footer_text,
+            showPoweredBy: !!this.show_powered_by,
         };
     }
 
@@ -104,6 +107,9 @@ class StatusPage extends BeanModel {
             theme: this.theme,
             published: !!this.published,
             showTags: !!this.show_tags,
+            customCSS: this.custom_css,
+            footerText: this.footer_text,
+            showPoweredBy: !!this.show_powered_by,
         };
     }
 

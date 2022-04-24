@@ -1,3 +1,8 @@
+/*
+ * Uptime Kuma Server
+ * node "server/server.js"
+ * DO NOT require("./server") in other modules, it likely creates circular dependency!
+ */
 console.log("Welcome to Uptime Kuma");
 
 // Check Node.js Version
@@ -11,7 +16,7 @@ if (nodeVersion < requiredVersion) {
 }
 
 const args = require("args-parser")(process.argv);
-const { sleep, log, getRandomInt, genSecret, debug } = require("../src/util");
+const { sleep, log, getRandomInt, genSecret, debug, isDev } = require("../src/util");
 const config = require("./config");
 
 log.info("server", "Welcome to Uptime Kuma");
@@ -26,14 +31,10 @@ log.info("server", "Node Env: " + process.env.NODE_ENV);
 
 log.info("server", "Importing Node libraries");
 const fs = require("fs");
-const http = require("http");
-const https = require("https");
 
 log.info("server", "Importing 3rd-party libraries");
 log.debug("server", "Importing express");
 const express = require("express");
-log.debug("server", "Importing socket.io");
-const { Server } = require("socket.io");
 log.debug("server", "Importing redbean-node");
 const { R } = require("redbean-node");
 log.debug("server", "Importing jsonwebtoken");
@@ -50,26 +51,10 @@ log.debug("server", "Importing 2FA Modules");
 const notp = require("notp");
 const base32 = require("thirty-two");
 
-/**
- * `module.exports` (alias: `server`) should be inside this class, in order to avoid circular dependency issue.
- * @type {UptimeKumaServer}
- */
-class UptimeKumaServer {
-    /**
-     * Main monitor list
-     * @type {{}}
-     */
-    monitorList = {};
-    entryPage = "dashboard";
-
-    async sendMonitorList(socket) {
-        let list = await getMonitorJSONList(socket.userID);
-        io.to(socket.userID).emit("monitorList", list);
-        return list;
-    }
-}
-
-const server = module.exports = new UptimeKumaServer();
+const { UptimeKumaServer } = require("./uptime-kuma-server");
+const server = UptimeKumaServer.getInstance(args);
+const io = module.exports.io = server.io;
+const app = server.app;
 
 log.info("server", "Importing this project modules");
 log.debug("server", "Importing Monitor");
@@ -108,18 +93,15 @@ if (hostname) {
     log.info("server", "Custom hostname: " + hostname);
 }
 
-const port = [args.port, process.env.UPTIME_KUMA_PORT, process.env.PORT, 3001]
+const port = [ args.port, process.env.UPTIME_KUMA_PORT, process.env.PORT, 3001 ]
     .map(portValue => parseInt(portValue))
     .find(portValue => !isNaN(portValue));
 
-// SSL
-const sslKey = args["ssl-key"] || process.env.UPTIME_KUMA_SSL_KEY || process.env.SSL_KEY || undefined;
-const sslCert = args["ssl-cert"] || process.env.UPTIME_KUMA_SSL_CERT || process.env.SSL_CERT || undefined;
-const disableFrameSameOrigin = args["disable-frame-sameorigin"] || !!process.env.UPTIME_KUMA_DISABLE_FRAME_SAMEORIGIN || false;
+const disableFrameSameOrigin = !!process.env.UPTIME_KUMA_DISABLE_FRAME_SAMEORIGIN || args["disable-frame-sameorigin"] || false;
 const cloudflaredToken = args["cloudflared-token"] || process.env.UPTIME_KUMA_CLOUDFLARED_TOKEN || undefined;
 
 // 2FA / notp verification defaults
-const twofa_verification_opts = {
+const twoFAVerifyOptions = {
     "window": 1,
     "time": 30
 };
@@ -133,25 +115,6 @@ const testMode = !!args["test"] || false;
 if (config.demoMode) {
     log.info("server", "==== Demo Mode ====");
 }
-
-log.info("server", "Creating express and socket.io instance");
-const app = express();
-
-let httpServer;
-
-if (sslKey && sslCert) {
-    log.info("server", "Server Type: HTTPS");
-    httpServer = https.createServer({
-        key: fs.readFileSync(sslKey),
-        cert: fs.readFileSync(sslCert)
-    }, app);
-} else {
-    log.info("server", "Server Type: HTTP");
-    httpServer = http.createServer(app);
-}
-
-const io = new Server(httpServer);
-module.exports.io = io;
 
 // Must be after io instantiation
 const { sendNotificationList, sendHeartbeatList, sendImportantHeartbeatList, sendInfo, sendProxyList } = require("./client");
@@ -175,6 +138,7 @@ app.use(function (req, res, next) {
 
 /**
  * Total WebSocket client connected to server currently, no actual use
+ *
  * @type {number}
  */
 let totalClient = 0;
@@ -233,6 +197,13 @@ try {
             response.redirect("/dashboard");
         }
     });
+
+    if (isDev) {
+        app.post("/test-webhook", async (request, response) => {
+            log.debug("test", request.body);
+            response.send("OK");
+        });
+    }
 
     // Robots.txt
     app.get("/robots.txt", async (_request, response) => {
@@ -379,7 +350,7 @@ try {
                 }
 
                 if (data.token) {
-                    let verify = notp.totp.verify(data.token, user.twofa_secret, twofa_verification_opts);
+                    let verify = notp.totp.verify(data.token, user.twofa_secret, twoFAVerifyOptions);
 
                     if (user.twofa_last_token !== data.token && verify) {
                         afterLogin(socket, user);
@@ -546,7 +517,7 @@ try {
                     socket.userID,
                 ]);
 
-                let verify = notp.totp.verify(token, user.twofa_secret, twofa_verification_opts);
+                let verify = notp.totp.verify(token, user.twofa_secret, twoFAVerifyOptions);
 
                 if (user.twofa_last_token !== token && verify) {
                     callback({
@@ -712,6 +683,10 @@ try {
                 bean.dns_resolve_server = monitor.dns_resolve_server;
                 bean.pushToken = monitor.pushToken;
                 bean.proxyId = Number.isInteger(monitor.proxyId) ? monitor.proxyId : null;
+                bean.mqttUsername = monitor.mqttUsername;
+                bean.mqttPassword = monitor.mqttPassword;
+                bean.mqttTopic = monitor.mqttTopic;
+                bean.mqttSuccessMessage = monitor.mqttSuccessMessage;
 
                 await R.store(bean);
 
@@ -1228,7 +1203,7 @@ try {
                 }
 
                 // Only starts importing if the backup file contains at least one proxy
-                if (proxyListData.length >= 1) {
+                if (proxyListData && proxyListData.length >= 1) {
                     const proxies = await R.findAll("proxy");
 
                     // Loop over proxy list and save proxies
@@ -1236,7 +1211,7 @@ try {
                         const exists = proxies.find(item => item.id === proxy.id);
 
                         // Do not process when proxy already exists in import handle is skip and keep
-                        if (["skip", "keep"].includes(importHandle) && !exists) {
+                        if ([ "skip", "keep" ].includes(importHandle) && !exists) {
                             return;
                         }
 
@@ -1471,12 +1446,12 @@ try {
 
     log.info("server", "Init the server");
 
-    httpServer.once("error", async (err) => {
+    server.httpServer.once("error", async (err) => {
         console.error("Cannot listen: " + err.message);
         await shutdownFunction();
     });
 
-    httpServer.listen(port, hostname, () => {
+    server.httpServer.listen(port, hostname, () => {
         if (hostname) {
             log.info("server", `Listening on ${hostname}:${port}`);
         } else {
@@ -1564,27 +1539,6 @@ async function afterLogin(socket, user) {
     for (let monitorID in monitorList) {
         await Monitor.sendStats(io, monitorID, user.id);
     }
-}
-
-/**
- * Get a list of monitors for the given user.
- * @param {string} userID - The ID of the user to get monitors for.
- * @returns {Promise<Object>} A promise that resolves to an object with monitor IDs as keys and monitor objects as values.
- *
- * Generated by Trelent
- */
-async function getMonitorJSONList(userID) {
-    let result = {};
-
-    let monitorList = await R.find("monitor", " user_id = ? ORDER BY weight DESC, name", [
-        userID,
-    ]);
-
-    for (let monitor of monitorList) {
-        result[monitor.id] = await monitor.toJSON();
-    }
-
-    return result;
 }
 
 /**
@@ -1728,7 +1682,7 @@ function finalFunction() {
     log.info("server", "Graceful shutdown successful!");
 }
 
-gracefulShutdown(httpServer, {
+gracefulShutdown(server.httpServer, {
     signals: "SIGINT SIGTERM",
     timeout: 30000,                   // timeout: 30 secs
     development: false,               // not in dev mode

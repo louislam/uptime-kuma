@@ -9,6 +9,7 @@ const iconv = require("iconv-lite");
 const chardet = require("chardet");
 const fs = require("fs");
 const nodeJsUtil = require("util");
+const mqtt = require("mqtt");
 
 // From ping-lite
 exports.WIN = /^win/.test(process.platform);
@@ -26,7 +27,7 @@ exports.initJWTSecret = async () => {
         "jwtSecret",
     ]);
 
-    if (! jwtSecretBean) {
+    if (!jwtSecretBean) {
         jwtSecretBean = R.dispense("setting");
         jwtSecretBean.key = "jwtSecret";
     }
@@ -88,14 +89,71 @@ exports.pingAsync = function (hostname, ipv6 = false) {
     });
 };
 
-exports.dnsResolve = function (hostname, resolver_server, resolver_port, rrtype) {
+exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
+    return new Promise((resolve, reject) => {
+        const { port, username, password, interval = 20 } = options;
+
+        // Adds MQTT protocol to the hostname if not already present
+        if (!/^(?:http|mqtt)s?:\/\//.test(hostname)) {
+            hostname = "mqtt://" + hostname;
+        }
+
+        const timeoutID = setTimeout(() => {
+            log.debug("mqtt", "MQTT timeout triggered");
+            client.end();
+            reject(new Error("Timeout"));
+        }, interval * 1000 * 0.8);
+
+        log.debug("mqtt", "MQTT connecting");
+
+        let client = mqtt.connect(hostname, {
+            port,
+            username,
+            password
+        });
+
+        client.on("connect", () => {
+            log.debug("mqtt", "MQTT connected");
+
+            try {
+                log.debug("mqtt", "MQTT subscribe topic");
+                client.subscribe(topic);
+            } catch (e) {
+                client.end();
+                clearTimeout(timeoutID);
+                reject(new Error("Cannot subscribe topic"));
+            }
+        });
+
+        client.on("error", (error) => {
+            client.end();
+            clearTimeout(timeoutID);
+            reject(error);
+        });
+
+        client.on("message", (messageTopic, message) => {
+            if (messageTopic == topic) {
+                client.end();
+                clearTimeout(timeoutID);
+                if (okMessage != null && okMessage !== "" && message.toString() !== okMessage) {
+                    reject(new Error(`Message Mismatch - Topic: ${messageTopic}; Message: ${message.toString()}`));
+                } else {
+                    resolve(`Topic: ${messageTopic}; Message: ${message.toString()}`);
+                }
+            }
+        });
+
+    });
+};
+
+exports.dnsResolve = function (hostname, resolverServer, resolverPort, rrtype) {
     const resolver = new Resolver();
     // Remove brackets from IPv6 addresses so we can re-add them to
     // prevent issues with ::1:5300 (::1 port 5300)
-    resolver_server = resolver_server.replace("[", "").replace("]", "");
-    resolver.setServers([`[${resolver_server}]:${resolver_port}`]);
+    resolverServer = resolverServer.replace("[", "").replace("]", "");
+    resolver.setServers([`[${resolverServer}]:${resolverPort}`]);
     return new Promise((resolve, reject) => {
-        if (rrtype == "PTR") {
+        if (rrtype === "PTR") {
             resolver.reverse(hostname, (err, records) => {
                 if (err) {
                     reject(err);
@@ -209,7 +267,7 @@ const parseCertificateInfo = function (info) {
     const existingList = {};
 
     while (link) {
-        log.debug("util", `[${i}] ${link.fingerprint}`);
+        log.debug("cert", `[${i}] ${link.fingerprint}`);
 
         if (!link.valid_from || !link.valid_to) {
             break;
@@ -224,7 +282,7 @@ const parseCertificateInfo = function (info) {
         if (link.issuerCertificate == null) {
             break;
         } else if (link.issuerCertificate.fingerprint in existingList) {
-            log.debug("util", `[Last] ${link.issuerCertificate.fingerprint}`);
+            log.debug("cert", `[Last] ${link.issuerCertificate.fingerprint}`);
             link.issuerCertificate = null;
             break;
         } else {
@@ -245,7 +303,7 @@ exports.checkCertificate = function (res) {
     const info = res.request.res.socket.getPeerCertificate(true);
     const valid = res.request.res.socket.authorized || false;
 
-    log.debug("util", "Parsing Certificate Info");
+    log.debug("cert", "Parsing Certificate Info");
     const parsedInfo = parseCertificateInfo(info);
 
     return {
@@ -260,19 +318,19 @@ exports.checkCertificate = function (res) {
 // Return: true if the status code is within the accepted ranges, false otherwise
 // Will throw an error if the provided status code is not a valid range string or code string
 
-exports.checkStatusCode = function (status, accepted_codes) {
-    if (accepted_codes == null || accepted_codes.length === 0) {
+exports.checkStatusCode = function (status, acceptedCodes) {
+    if (acceptedCodes == null || acceptedCodes.length === 0) {
         return false;
     }
 
-    for (const code_range of accepted_codes) {
-        const code_range_split = code_range.split("-").map(string => parseInt(string));
-        if (code_range_split.length === 1) {
-            if (status === code_range_split[0]) {
+    for (const codeRange of acceptedCodes) {
+        const codeRangeSplit = codeRange.split("-").map(string => parseInt(string));
+        if (codeRangeSplit.length === 1) {
+            if (status === codeRangeSplit[0]) {
                 return true;
             }
-        } else if (code_range_split.length === 2) {
-            if (status >= code_range_split[0] && status <= code_range_split[1]) {
+        } else if (codeRangeSplit.length === 2) {
+            if (status >= codeRangeSplit[0] && status <= codeRangeSplit[1]) {
                 return true;
             }
         } else {
@@ -287,13 +345,13 @@ exports.getTotalClientInRoom = (io, roomName) => {
 
     const sockets = io.sockets;
 
-    if (! sockets) {
+    if (!sockets) {
         return 0;
     }
 
     const adapter = sockets.adapter;
 
-    if (! adapter) {
+    if (!adapter) {
         return 0;
     }
 
@@ -318,7 +376,7 @@ exports.allowAllOrigin = (res) => {
 };
 
 exports.checkLogin = (socket) => {
-    if (! socket.userID) {
+    if (!socket.userID) {
         throw new Error("You are not logged in.");
     }
 };
@@ -348,7 +406,7 @@ exports.doubleCheckPassword = async (socket, currentPassword) => {
 exports.startUnitTest = async () => {
     console.log("Starting unit test...");
     const npm = /^win/.test(process.platform) ? "npm.cmd" : "npm";
-    const child = childProcess.spawn(npm, ["run", "jest"]);
+    const child = childProcess.spawn(npm, [ "run", "jest" ]);
 
     child.stdout.on("data", (data) => {
         console.log(data.toString());

@@ -42,6 +42,7 @@ export default {
             default: "No",
         },
     },
+    emits: [ "yes" ],
     data: () => ({
         modal: null,
     }),

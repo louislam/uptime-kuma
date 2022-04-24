@@ -6,7 +6,7 @@ const ImageDataURI = require("../image-data-uri");
 const Database = require("../database");
 const apicache = require("../modules/apicache");
 const StatusPage = require("../model/status_page");
-const server = require("../server");
+const { UptimeKumaServer } = require("../uptime-kuma-server");
 
 module.exports.statusPageSocketHandler = (socket) => {
 
@@ -155,6 +155,9 @@ module.exports.statusPageSocketHandler = (socket) => {
             //statusPage.search_engine_index = ;
             statusPage.show_tags = config.showTags;
             //statusPage.password = null;
+            statusPage.footer_text = config.footerText;
+            statusPage.custom_css = config.customCSS;
+            statusPage.show_powered_by = config.showPoweredBy;
             statusPage.modified_date = R.isoDateTime();
 
             await R.store(statusPage);
@@ -211,6 +214,8 @@ module.exports.statusPageSocketHandler = (socket) => {
                 statusPage.id
             ];
             await R.exec(`DELETE FROM \`group\` WHERE id NOT IN (${slots}) AND status_page_id = ?`, data);
+
+            const server = UptimeKumaServer.getInstance();
 
             // Also change entry page to new slug if it is the default one, and slug is changed.
             if (server.entryPage === "statusPage-" + slug && statusPage.slug !== slug) {
@@ -281,6 +286,8 @@ module.exports.statusPageSocketHandler = (socket) => {
 
     // Delete a status page
     socket.on("deleteStatusPage", async (slug, callback) => {
+        const server = UptimeKumaServer.getInstance();
+
         try {
             checkLogin(socket);
 

@@ -7,7 +7,7 @@ dayjs.extend(timezone);
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
 const { log, UP, DOWN, PENDING, flipStatus, TimeLogger } = require("../../src/util");
-const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, errorLog } = require("../util-server");
+const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, errorLog, mqttAsync } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification");
@@ -42,7 +42,7 @@ class Monitor extends BeanModel {
     /**
      * Return an object that ready to parse to JSON
      */
-    async toJSON() {
+    async toJSON(includeSensitiveData = true) {
 
         let notificationIDList = {};
 
@@ -56,15 +56,11 @@ class Monitor extends BeanModel {
 
         const tags = await this.getTags();
 
-        return {
+        let data = {
             id: this.id,
             name: this.name,
             url: this.url,
             method: this.method,
-            body: this.body,
-            headers: this.headers,
-            basic_auth_user: this.basic_auth_user,
-            basic_auth_pass: this.basic_auth_pass,
             hostname: this.hostname,
             port: this.port,
             maxretries: this.maxretries,
@@ -82,15 +78,31 @@ class Monitor extends BeanModel {
             dns_resolve_type: this.dns_resolve_type,
             dns_resolve_server: this.dns_resolve_server,
             dns_last_result: this.dns_last_result,
-            pushToken: this.pushToken,
             proxyId: this.proxy_id,
             notificationIDList,
             tags: tags,
+            mqttUsername: this.mqttUsername,
+            mqttPassword: this.mqttPassword,
+            mqttTopic: this.mqttTopic,
+            mqttSuccessMessage: this.mqttSuccessMessage
         };
+
+        if (includeSensitiveData) {
+            data = {
+                ...data,
+                headers: this.headers,
+                body: this.body,
+                basic_auth_user: this.basic_auth_user,
+                basic_auth_pass: this.basic_auth_pass,
+                pushToken: this.pushToken,
+            };
+        }
+
+        return data;
     }
 
     async getTags() {
-        return await R.getAll("SELECT mt.*, tag.name, tag.color FROM monitor_tag mt JOIN tag ON mt.tag_id = tag.id WHERE mt.monitor_id = ?", [this.id]);
+        return await R.getAll("SELECT mt.*, tag.name, tag.color FROM monitor_tag mt JOIN tag ON mt.tag_id = tag.id WHERE mt.monitor_id = ?", [ this.id ]);
     }
 
     /**
@@ -151,7 +163,7 @@ class Monitor extends BeanModel {
             // undefined if not https
             let tlsInfo = undefined;
 
-            if (! previousBeat) {
+            if (!previousBeat) {
                 previousBeat = await R.findOne("heartbeat", " monitor_id = ? ORDER BY time DESC", [
                     this.id,
                 ]);
@@ -169,7 +181,7 @@ class Monitor extends BeanModel {
             }
 
             // Duration
-            if (! isFirstBeat) {
+            if (!isFirstBeat) {
                 bean.duration = dayjs(bean.time).diff(dayjs(previousBeat.time), "second");
             } else {
                 bean.duration = 0;
@@ -262,7 +274,7 @@ class Monitor extends BeanModel {
                         log.debug("monitor", "Cert Info Query Time: " + (dayjs().valueOf() - certInfoStartTime) + "ms");
                     }
 
-                    if (process.env.UPTIME_KUMA_LOG_RESPONSE_BODY_MONITOR_ID == this.id) {
+                    if (process.env.UPTIME_KUMA_LOG_RESPONSE_BODY_MONITOR_ID === this.id) {
                         log.info("monitor", res.data);
                     }
 
@@ -302,24 +314,24 @@ class Monitor extends BeanModel {
                     let dnsRes = await dnsResolve(this.hostname, this.dns_resolve_server, this.port, this.dns_resolve_type);
                     bean.ping = dayjs().valueOf() - startTime;
 
-                    if (this.dns_resolve_type == "A" || this.dns_resolve_type == "AAAA" || this.dns_resolve_type == "TXT") {
+                    if (this.dns_resolve_type === "A" || this.dns_resolve_type === "AAAA" || this.dns_resolve_type === "TXT") {
                         dnsMessage += "Records: ";
                         dnsMessage += dnsRes.join(" | ");
-                    } else if (this.dns_resolve_type == "CNAME" || this.dns_resolve_type == "PTR") {
+                    } else if (this.dns_resolve_type === "CNAME" || this.dns_resolve_type === "PTR") {
                         dnsMessage = dnsRes[0];
-                    } else if (this.dns_resolve_type == "CAA") {
+                    } else if (this.dns_resolve_type === "CAA") {
                         dnsMessage = dnsRes[0].issue;
-                    } else if (this.dns_resolve_type == "MX") {
+                    } else if (this.dns_resolve_type === "MX") {
                         dnsRes.forEach(record => {
                             dnsMessage += `Hostname: ${record.exchange} - Priority: ${record.priority} | `;
                         });
                         dnsMessage = dnsMessage.slice(0, -2);
-                    } else if (this.dns_resolve_type == "NS") {
+                    } else if (this.dns_resolve_type === "NS") {
                         dnsMessage += "Servers: ";
                         dnsMessage += dnsRes.join(" | ");
-                    } else if (this.dns_resolve_type == "SOA") {
+                    } else if (this.dns_resolve_type === "SOA") {
                         dnsMessage += `NS-Name: ${dnsRes.nsname} | Hostmaster: ${dnsRes.hostmaster} | Serial: ${dnsRes.serial} | Refresh: ${dnsRes.refresh} | Retry: ${dnsRes.retry} | Expire: ${dnsRes.expire} | MinTTL: ${dnsRes.minttl}`;
-                    } else if (this.dns_resolve_type == "SRV") {
+                    } else if (this.dns_resolve_type === "SRV") {
                         dnsRes.forEach(record => {
                             dnsMessage += `Name: ${record.name} | Port: ${record.port} | Priority: ${record.priority} | Weight: ${record.weight} | `;
                         });
@@ -374,7 +386,7 @@ class Monitor extends BeanModel {
                         },
                         httpsAgent: new https.Agent({
                             maxCachedSessions: 0,      // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
-                            rejectUnauthorized: ! this.getIgnoreTls(),
+                            rejectUnauthorized: !this.getIgnoreTls(),
                         }),
                         maxRedirects: this.maxredirects,
                         validateStatus: (status) => {
@@ -396,7 +408,14 @@ class Monitor extends BeanModel {
                     } else {
                         throw new Error("Server not found on Steam");
                     }
-
+                } else if (this.type === "mqtt") {
+                    bean.msg = await mqttAsync(this.hostname, this.mqttTopic, this.mqttSuccessMessage, {
+                        port: this.port,
+                        username: this.mqttUsername,
+                        password: this.mqttPassword,
+                        interval: this.interval,
+                    });
+                    bean.status = UP;
                 } else {
                     bean.msg = "Unknown Monitor Type";
                     bean.status = PENDING;
@@ -609,11 +628,11 @@ class Monitor extends BeanModel {
     }
 
     static async sendCertInfo(io, monitorID, userID) {
-        let tls_info = await R.findOne("monitor_tls_info", "monitor_id = ?", [
+        let tlsInfo = await R.findOne("monitor_tls_info", "monitor_id = ?", [
             monitorID,
         ]);
-        if (tls_info != null) {
-            io.to(userID).emit("certInfo", monitorID, tls_info.info_json);
+        if (tlsInfo != null) {
+            io.to(userID).emit("certInfo", monitorID, tlsInfo.info_json);
         }
     }
 
@@ -675,7 +694,7 @@ class Monitor extends BeanModel {
 
         } else {
             // Handle new monitor with only one beat, because the beat's duration = 0
-            let status = parseInt(await R.getCell("SELECT `status` FROM heartbeat WHERE monitor_id = ?", [ monitorID ]));
+            let status = parseInt(await R.getCell("SELECT `status` FROM heartbeat WHERE monitor_id = ?", [monitorID]));
 
             if (status === UP) {
                 uptime = 1;
@@ -727,7 +746,7 @@ class Monitor extends BeanModel {
 
             for (let notification of notificationList) {
                 try {
-                    await Notification.send(JSON.parse(notification.config), msg, await monitor.toJSON(), bean.toJSON());
+                    await Notification.send(JSON.parse(notification.config), msg, await monitor.toJSON(false), bean.toJSON());
                 } catch (e) {
                     log.error("monitor", "Cannot send notification to " + notification.name);
                     log.error("monitor", e);
