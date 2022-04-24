@@ -7,6 +7,9 @@ const { loginRateLimiter, apiRateLimiter } = require("./rate-limiter");
 const { Settings } = require("./settings");
 const dayjs = require("dayjs");
 
+const remoteAuthEnabled = process.env.REMOTE_AUTH_ENABLED || false;
+const remoteAuthHeader = process.env.REMOTE_AUTH_HEADER || "Remote-User";
+
 /**
  * Login to web app
  * @param {string} username Username to login with
@@ -133,29 +136,40 @@ function userAuthorizer(username, password, callback) {
  * @returns {Promise<void>}
  */
 exports.basicAuth = async function (req, res, next) {
-    const middleware = basicAuth({
-        authorizer: userAuthorizer,
-        authorizeAsync: true,
-        challenge: true,
-    });
-
     const disabledAuth = await setting("disableAuth");
 
-    if (!disabledAuth) {
-        middleware(req, res, next);
-    } else {
-        next();
+    if (remoteAuthEnabled) {
+        const remoteUser = req.headers[remoteAuthHeader.toLowerCase()];
+        if (remoteUser !== undefined) {
+            let user = await R.findOne("user", " username = ? AND active = 1 ", [ remoteUser ]);
+            if (user) {
+                next();
+                return;
+            }
+        }
     }
+
+    if (!disabledAuth) {
+        const middleware = basicAuth({
+            authorizer: userAuthorizer,
+            authorizeAsync: true,
+            challenge: true,
+        });
+        middleware(req, res, next);
+        return;
+    }
+
+    next();
 };
 
 /**
- * Use use API Key if API keys enabled, else use basic auth
+ * Use API Key if API keys enabled, else use basic auth
  * @param {express.Request} req Express request object
  * @param {express.Response} res Express response object
  * @param {express.NextFunction} next Next handler in chain
  * @returns {Promise<void>}
  */
-exports.apiAuth = async function (req, res, next) {
+exports.authMiddleware = async function (req, res, next) {
     if (!await Settings.get("disableAuth")) {
         let usingAPIKeys = await Settings.get("apiKeysEnabled");
         let middleware;

@@ -48,6 +48,17 @@ class User extends BeanModel {
         }, jwtSecret);
     }
 
+    /**
+     * @param {number} userID ID of user to update
+     * @param {string} newUsername Users new username
+     * @returns {Promise<void>}
+     */
+    static async updateUsername(userID, newUsername) {
+        await R.exec("UPDATE `user` SET username = ? WHERE id = ? ", [
+            newUsername,
+            userID
+        ]);
+    }
 }
 
 module.exports = User;
