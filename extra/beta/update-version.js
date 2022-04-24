@@ -20,6 +20,10 @@ if (! exists) {
     // Process package.json
     pkg.version = version;
     fs.writeFileSync("package.json", JSON.stringify(pkg, null, 4) + "\n");
+
+    // Also update package-lock.json
+    childProcess.spawnSync("npm", [ "install" ]);
+
     commit(version);
     tag(version);
 
