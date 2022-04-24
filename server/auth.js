@@ -4,6 +4,9 @@ const { R } = require("redbean-node");
 const { setting } = require("./util-server");
 const { loginRateLimiter } = require("./rate-limiter");
 
+const remoteAuthEnabled = process.env.REMOTE_AUTH_ENABLED || false;
+const remoteAuthHeader = process.env.REMOTE_AUTH_HEADER || "Remote-User";
+
 /**
  * Login to web app
  * @param {string} username
@@ -63,18 +66,35 @@ function myAuthorizer(username, password, callback) {
     });
 }
 
-exports.basicAuth = async function (req, res, next) {
-    const middleware = basicAuth({
-        authorizer: myAuthorizer,
-        authorizeAsync: true,
-        challenge: true,
-    });
-
+/**
+ * authMiddleware for express handling basicAuth and remoteAuthHeader
+ * @param {express.Request} req
+ * @param {express.Response} res
+ * @param {express.NextFunction} next
+ */
+exports.authMiddleware = async function (req, res, next) {
     const disabledAuth = await setting("disableAuth");
 
-    if (!disabledAuth) {
-        middleware(req, res, next);
-    } else {
-        next();
+    if (remoteAuthEnabled) {
+        const remoteUser = req.headers[remoteAuthHeader.toLowerCase()];
+        if (remoteUser !== undefined) {
+            let user = await R.findOne("user", " username = ? AND active = 1 ", [ remoteUser ]);
+            if (user) {
+                next();
+                return;
+            }
+        }
     }
+
+    if (!disabledAuth) {
+        const middleware = basicAuth({
+            authorizer: myAuthorizer,
+            authorizeAsync: true,
+            challenge: true,
+        });
+        middleware(req, res, next);
+        return;
+    }
+
+    next();
 };

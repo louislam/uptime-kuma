@@ -50,7 +50,7 @@
                                     <font-awesome-icon icon="cog" /> {{ $t("Settings") }}
                                 </router-link>
                             </li>
-                            <li v-if="$root.loggedIn && $root.socket.token !== 'autoLogin'">
+                            <li v-if="$root.loggedIn && $root.socket.token.startsWith('autoLogin') === false">
                                 <button class="dropdown-item" @click="$root.logout">
                                     <font-awesome-icon icon="sign-out-alt" />
                                     {{ $t("Logout") }}
