@@ -120,7 +120,10 @@ For production, it binds to  `0.0.0.0:3000` by default.
 
 It is mainly a socket.io app + express.js.
 
-express.js is just used for serving the frontend built files (index.html, .js and .css etc.)
+express.js is used for: 
+- entry point such as redirecting to a status page or the dashboard
+- serving the frontend built files (index.html, .js and .css etc.)
+- serving internal APIs of status page
 
 
 ### Structure in /server/
