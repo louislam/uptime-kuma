@@ -175,7 +175,7 @@
                             <div v-if="monitor.type === 'http' || monitor.type === 'keyword' " class="my-3 form-check">
                                 <input id="expiry-notification" v-model="monitor.expiryNotification" class="form-check-input" type="checkbox">
                                 <label class="form-check-label" for="expiry-notification">
-                                    {{ $t("Domain Name Expiry Notification") }}
+                                    {{ $t("Certificate Expiry Notification") }}
                                 </label>
                                 <div class="form-text">
                                 </div>
