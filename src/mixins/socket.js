@@ -1,6 +1,6 @@
 import { io } from "socket.io-client";
 import { useToast } from "vue-toastification";
-import jwt_decode from "jwt-decode";
+import jwtDecode from "jwt-decode";
 import Favico from "favico.js";
 const toast = useToast();
 
@@ -28,6 +28,7 @@ export default {
                 connectCount: 0,
                 initedSocketIO: false,
             },
+            username: null,
             remember: (localStorage.remember !== "0"),
             allowLoginDialog: false,        // Allowed to show login dialog, but "loggedIn" have to be true too. This exists because prevent the login dialog show 0.1s in first before the socket server auth-ed.
             loggedIn: false,
@@ -40,6 +41,7 @@ export default {
             notificationList: [],
             statusPageListLoaded: false,
             statusPageList: [],
+            proxyList: [],
             connectionErrorMsg: "Cannot connect to the socket server. Reconnecting...",
             showReverseProxyGuide: true,
             cloudflared: {
@@ -88,7 +90,7 @@ export default {
             }
 
             socket = io(wsHost, {
-                transports: ["websocket"],
+                transports: [ "websocket" ],
             });
 
             socket.on("info", (info) => {
@@ -102,12 +104,13 @@ export default {
             socket.on("autoLogin", (monitorID, data) => {
                 this.loggedIn = true;
                 this.storage().token = "autoLogin";
+                this.socket.token = "autoLogin";
                 this.allowLoginDialog = false;
             });
 
             socket.on("monitorList", (data) => {
                 // Add Helper function
-                Object.entries(data).forEach(([monitorID, monitor]) => {
+                Object.entries(data).forEach(([ monitorID, monitor ]) => {
                     monitor.getUrl = () => {
                         try {
                             return new URL(monitor.url);
@@ -126,6 +129,16 @@ export default {
             socket.on("statusPageList", (data) => {
                 this.statusPageListLoaded = true;
                 this.statusPageList = data;
+            });
+
+            socket.on("proxyList", (data) => {
+                this.proxyList = data.map(item => {
+                    item.auth = !!item.auth;
+                    item.active = !!item.active;
+                    item.default = !!item.default;
+
+                    return item;
+                });
             });
 
             socket.on("heartbeat", (data) => {
@@ -222,7 +235,6 @@ export default {
                     if (token !== "autoLogin") {
                         this.loginByToken(token);
                     } else {
-
                         // Timeout if it is not actually auto login
                         setTimeout(() => {
                             if (! this.loggedIn) {
@@ -230,7 +242,6 @@ export default {
                                 this.$root.storage().removeItem("token");
                             }
                         }, 5000);
-
                     }
                 } else {
                     this.allowLoginDialog = true;
@@ -255,7 +266,7 @@ export default {
             const jwtToken = this.$root.storage().token;
 
             if (jwtToken && jwtToken !== "autoLogin") {
-                return jwt_decode(jwtToken);
+                return jwtDecode(jwtToken);
             }
             return undefined;
         },
@@ -294,6 +305,7 @@ export default {
                     this.storage().token = res.token;
                     this.socket.token = res.token;
                     this.loggedIn = true;
+                    this.username = this.getJWTPayload()?.username;
 
                     // Trigger Chrome Save Password
                     history.pushState({}, "");
@@ -311,6 +323,7 @@ export default {
                     this.logout();
                 } else {
                     this.loggedIn = true;
+                    this.username = this.getJWTPayload()?.username;
                 }
             });
         },
@@ -320,6 +333,7 @@ export default {
             this.storage().removeItem("token");
             this.socket.token = null;
             this.loggedIn = false;
+            this.username = null;
             this.clearData();
         },
 
@@ -386,6 +400,14 @@ export default {
     },
 
     computed: {
+
+        usernameFirstChar() {
+            if (typeof this.username == "string" && this.username.length >= 1) {
+                return this.username.charAt(0).toUpperCase();
+            } else {
+                return "🐻";
+            }
+        },
 
         lastHeartbeatList() {
             let result = {};

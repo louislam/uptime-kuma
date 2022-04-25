@@ -16,6 +16,14 @@
                             {{ item.title }}
                         </div>
                     </router-link>
+
+                    <!-- Logout Button -->
+                    <a v-if="$root.isMobile && $root.loggedIn && $root.socket.token !== 'autoLogin'" class="logout" @click.prevent="$root.logout">
+                        <div class="menu-item">
+                            <font-awesome-icon icon="sign-out-alt" />
+                            {{ $t("Logout") }}
+                        </div>
+                    </a>
                 </div>
                 <div class="settings-content col-lg-9 col-md-7">
                     <div v-if="currentPage" class="settings-content-header">
@@ -84,6 +92,9 @@ export default {
                 security: {
                     title: this.$t("Security"),
                 },
+                proxies: {
+                    title: this.$t("Proxies"),
+                },
                 backup: {
                     title: this.$t("Backup"),
                 },
@@ -117,6 +128,10 @@ export default {
         loadSettings() {
             this.$root.getSocket().emit("getSettings", (res) => {
                 this.settings = res.data;
+
+                if (this.settings.checkUpdate === undefined) {
+                    this.settings.checkUpdate = true;
+                }
 
                 if (this.settings.searchEngineIndex === undefined) {
                     this.settings.searchEngineIndex = false;
@@ -225,5 +240,9 @@ footer {
             }
         }
     }
+}
+
+.logout {
+    color: $danger !important;
 }
 </style>

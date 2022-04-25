@@ -5,17 +5,29 @@ const { R } = require("redbean-node");
 class User extends BeanModel {
 
     /**
-     * Direct execute, no need R.store()
+     *
+     * Fix #1510, as in the context reset-password.js, there is no auto model mapping. Call this static function instead.
+     * @param userID
+     * @param newPassword
+     * @returns {Promise<void>}
+     */
+    static async resetPassword(userID, newPassword) {
+        await R.exec("UPDATE `user` SET password = ? WHERE id = ? ", [
+            passwordHash.generate(newPassword),
+            userID
+        ]);
+    }
+
+    /**
+     *
      * @param newPassword
      * @returns {Promise<void>}
      */
     async resetPassword(newPassword) {
-        await R.exec("UPDATE `user` SET password = ? WHERE id = ? ", [
-            passwordHash.generate(newPassword),
-            this.id
-        ]);
+        await User.resetPassword(this.id, newPassword);
         this.password = newPassword;
     }
+
 }
 
 module.exports = User;

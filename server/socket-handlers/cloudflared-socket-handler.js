@@ -1,6 +1,7 @@
 const { checkLogin, setSetting, setting, doubleCheckPassword } = require("../util-server");
 const { CloudflaredTunnel } = require("node-cloudflared-tunnel");
-const { io } = require("../server");
+const { UptimeKumaServer } = require("../uptime-kuma-server");
+const io = UptimeKumaServer.getInstance().io;
 
 const prefix = "cloudflared_";
 const cloudflared = new CloudflaredTunnel();
@@ -37,6 +38,7 @@ module.exports.cloudflaredSocketHandler = (socket) => {
         try {
             checkLogin(socket);
             if (token && typeof token === "string") {
+                await setSetting("cloudflaredTunnelToken", token);
                 cloudflared.token = token;
             } else {
                 cloudflared.token = null;
@@ -80,5 +82,12 @@ module.exports.autoStart = async (token) => {
         console.log("Start cloudflared");
         cloudflared.token = token;
         cloudflared.start();
+    }
+};
+
+module.exports.stop = async () => {
+    console.log("Stop cloudflared");
+    if (cloudflared) {
+        cloudflared.stop();
     }
 };

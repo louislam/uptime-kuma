@@ -4,7 +4,7 @@
             <!-- Change Password -->
             <template v-if="!settings.disableAuth">
                 <p>
-                    {{ $t("Current User") }}: <strong>{{ username }}</strong>
+                    {{ $t("Current User") }}: <strong>{{ $root.username }}</strong>
                     <button v-if="! settings.disableAuth" id="logout-btn" class="btn btn-danger ms-4 me-2 mb-2" @click="$root.logout">{{ $t("Logout") }}</button>
                 </p>
 
@@ -192,6 +192,12 @@
                 <p>Пожалуйста, используйте с осторожностью.</p>
             </template>
 
+            <template v-else-if="$i18n.locale === 'uk-UA' ">
+                <p>Ви впевнені, що бажаєте <strong>вимкнути авторизацію</strong>?</p>
+                <p>Це підходить для <strong>тих, у кого встановлена інша авторизація</strong> пееред відкриттям Uptime Kuma, наприклад Cloudflare Access.</p>
+                <p>Будь ласка, використовуйте з обережністю.</p>
+            </template>
+
             <template v-else-if="$i18n.locale === 'fa' ">
                 <p>آیا مطمئن هستید که میخواهید <strong>احراز هویت را غیر فعال کنید</strong>?</p>
                 <p>این ویژگی برای کسانی است که <strong> لایه امنیتی شخص ثالث دیگر بر روی این آدرس فعال کرده‌اند</strong>، مانند Cloudflare Access.</p>
@@ -263,7 +269,6 @@ export default {
 
     data() {
         return {
-            username: "",
             invalidPassword: false,
             password: {
                 currentPassword: "",
@@ -291,10 +296,6 @@ export default {
         },
     },
 
-    mounted() {
-        this.loadUsername();
-    },
-
     methods: {
         savePassword() {
             if (this.password.newPassword !== this.password.repeatNewPassword) {
@@ -313,14 +314,6 @@ export default {
             }
         },
 
-        loadUsername() {
-            const jwtPayload = this.$root.getJWTPayload();
-
-            if (jwtPayload) {
-                this.username = jwtPayload.username;
-            }
-        },
-
         disableAuth() {
             this.settings.disableAuth = true;
 
@@ -328,6 +321,8 @@ export default {
             // Set it to empty if done
             this.saveSettings(() => {
                 this.password.currentPassword = "";
+                this.$root.username = null;
+                this.$root.socket.token = "autoLogin";
             }, this.password.currentPassword);
         },
 
@@ -349,7 +344,7 @@ export default {
 <style lang="scss" scoped>
 @import "../../assets/vars.scss";
 
-h5:after {
+h5::after {
     content: "";
     display: block;
     width: 50%;

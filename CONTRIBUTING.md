@@ -44,6 +44,8 @@ My long story here: https://www.reddit.com/r/UptimeKuma/comments/t1t6or/comment/
 
 ### Recommended Pull Request Guideline
 
+Before deep into coding, disscussion first is preferred. Creating an empty pull request for disscussion would be recommended.
+
 1. Fork the project
 1. Clone your fork repo to local
 1. Create a new branch
@@ -53,6 +55,7 @@ My long story here: https://www.reddit.com/r/UptimeKuma/comments/t1t6or/comment/
 1. Create a pull request: https://github.com/louislam/uptime-kuma/compare
 1. Write a proper description
 1. Click "Change to draft"
+1. Discussion
 
 #### ❌ Won't Merge
 
@@ -76,6 +79,7 @@ I personally do not like something need to learn so much and need to config so m
 - 4 spaces indentation
 - Follow `.editorconfig`
 - Follow ESLint
+- Methods and funtions should be documented with JSDoc
 
 ## Name convention
 

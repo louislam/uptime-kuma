@@ -29,7 +29,7 @@ const github = require("@actions/github");
                 owner: issue.owner,
                 repo: issue.repo,
                 issue_number: issue.number,
-                labels: ["invalid-format"]
+                labels: [ "invalid-format" ]
             });
 
             // Add the issue closing comment

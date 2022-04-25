@@ -1,7 +1,7 @@
 const fs = require("fs");
 const { R } = require("redbean-node");
 const { setSetting, setting } = require("./util-server");
-const { debug, sleep } = require("../src/util");
+const { log, sleep } = require("../src/util");
 const dayjs = require("dayjs");
 const knex = require("knex");
 
@@ -54,6 +54,10 @@ class Database {
         "patch-notification_sent_history.sql": true,
         "patch-monitor-basic-auth.sql": true,
         "patch-status-page.sql": true,
+        "patch-proxy.sql": true,
+        "patch-monitor-expiry-notification.sql": true,
+        "patch-status-page-footer-css.sql": true,
+        "patch-added-mqtt-monitor.sql": true,
     }
 
     /**
@@ -78,10 +82,10 @@ class Database {
             fs.mkdirSync(Database.uploadDir, { recursive: true });
         }
 
-        console.log(`Data Dir: ${Database.dataDir}`);
+        log.info("db", `Data Dir: ${Database.dataDir}`);
     }
 
-    static async connect(testMode = false) {
+    static async connect(testMode = false, autoloadModels = true, noLog = false) {
         const acquireConnectionTimeout = 120 * 1000;
 
         const Dialect = require("knex/lib/dialects/sqlite3/index.js");
@@ -111,7 +115,10 @@ class Database {
 
         // Auto map the model to a bean object
         R.freeze(true);
-        await R.autoloadModels("./server/model");
+
+        if (autoloadModels) {
+            await R.autoloadModels("./server/model");
+        }
 
         await R.exec("PRAGMA foreign_keys = ON");
         if (testMode) {
@@ -124,10 +131,17 @@ class Database {
         await R.exec("PRAGMA cache_size = -12000");
         await R.exec("PRAGMA auto_vacuum = FULL");
 
-        console.log("SQLite config:");
-        console.log(await R.getAll("PRAGMA journal_mode"));
-        console.log(await R.getAll("PRAGMA cache_size"));
-        console.log("SQLite Version: " + await R.getCell("SELECT sqlite_version()"));
+        // This ensures that an operating system crash or power failure will not corrupt the database.
+        // FULL synchronous is very safe, but it is also slower.
+        // Read more: https://sqlite.org/pragma.html#pragma_synchronous
+        await R.exec("PRAGMA synchronous = FULL");
+
+        if (!noLog) {
+            log.info("db", "SQLite config:");
+            log.info("db", await R.getAll("PRAGMA journal_mode"));
+            log.info("db", await R.getAll("PRAGMA cache_size"));
+            log.info("db", "SQLite Version: " + await R.getCell("SELECT sqlite_version()"));
+        }
     }
 
     static async patch() {
@@ -137,15 +151,15 @@ class Database {
             version = 0;
         }
 
-        console.info("Your database version: " + version);
-        console.info("Latest database version: " + this.latestVersion);
+        log.info("db", "Your database version: " + version);
+        log.info("db", "Latest database version: " + this.latestVersion);
 
         if (version === this.latestVersion) {
-            console.info("Database patch not needed");
+            log.info("db", "Database patch not needed");
         } else if (version > this.latestVersion) {
-            console.info("Warning: Database version is newer than expected");
+            log.info("db", "Warning: Database version is newer than expected");
         } else {
-            console.info("Database patch is needed");
+            log.info("db", "Database patch is needed");
 
             this.backup(version);
 
@@ -153,17 +167,17 @@ class Database {
             try {
                 for (let i = version + 1; i <= this.latestVersion; i++) {
                     const sqlFile = `./db/patch${i}.sql`;
-                    console.info(`Patching ${sqlFile}`);
+                    log.info("db", `Patching ${sqlFile}`);
                     await Database.importSQLFile(sqlFile);
-                    console.info(`Patched ${sqlFile}`);
+                    log.info("db", `Patched ${sqlFile}`);
                     await setSetting("database_version", i);
                 }
             } catch (ex) {
                 await Database.close();
 
-                console.error(ex);
-                console.error("Start Uptime-Kuma failed due to issue patching the database");
-                console.error("Please submit a bug report if you still encounter the problem after restart: https://github.com/louislam/uptime-kuma/issues");
+                log.error("db", ex);
+                log.error("db", "Start Uptime-Kuma failed due to issue patching the database");
+                log.error("db", "Please submit a bug report if you still encounter the problem after restart: https://github.com/louislam/uptime-kuma/issues");
 
                 this.restore();
                 process.exit(1);
@@ -179,15 +193,15 @@ class Database {
      * @returns {Promise<void>}
      */
     static async patch2() {
-        console.log("Database Patch 2.0 Process");
+        log.info("db", "Database Patch 2.0 Process");
         let databasePatchedFiles = await setting("databasePatchedFiles");
 
         if (! databasePatchedFiles) {
             databasePatchedFiles = {};
         }
 
-        debug("Patched files:");
-        debug(databasePatchedFiles);
+        log.debug("db", "Patched files:");
+        log.debug("db", databasePatchedFiles);
 
         try {
             for (let sqlFilename in this.patchList) {
@@ -195,15 +209,15 @@ class Database {
             }
 
             if (this.patched) {
-                console.log("Database Patched Successfully");
+                log.info("db", "Database Patched Successfully");
             }
 
         } catch (ex) {
             await Database.close();
 
-            console.error(ex);
-            console.error("Start Uptime-Kuma failed due to issue patching the database");
-            console.error("Please submit the bug report if you still encounter the problem after restart: https://github.com/louislam/uptime-kuma/issues");
+            log.error("db", ex);
+            log.error("db", "Start Uptime-Kuma failed due to issue patching the database");
+            log.error("db", "Please submit the bug report if you still encounter the problem after restart: https://github.com/louislam/uptime-kuma/issues");
 
             this.restore();
 
@@ -290,16 +304,16 @@ class Database {
         let value = this.patchList[sqlFilename];
 
         if (! value) {
-            console.log(sqlFilename + " skip");
+            log.info("db", sqlFilename + " skip");
             return;
         }
 
         // Check if patched
         if (! databasePatchedFiles[sqlFilename]) {
-            console.log(sqlFilename + " is not patched");
+            log.info("db", sqlFilename + " is not patched");
 
             if (value.parents) {
-                console.log(sqlFilename + " need parents");
+                log.info("db", sqlFilename + " need parents");
                 for (let parentSQLFilename of value.parents) {
                     await this.patch2Recursion(parentSQLFilename, databasePatchedFiles);
                 }
@@ -307,14 +321,14 @@ class Database {
 
             this.backup(dayjs().format("YYYYMMDDHHmmss"));
 
-            console.log(sqlFilename + " is patching");
+            log.info("db", sqlFilename + " is patching");
             this.patched = true;
             await this.importSQLFile("./db/" + sqlFilename);
             databasePatchedFiles[sqlFilename] = true;
-            console.log(sqlFilename + " was patched successfully");
+            log.info("db", sqlFilename + " was patched successfully");
 
         } else {
-            debug(sqlFilename + " is already patched, skip");
+            log.debug("db", sqlFilename + " is already patched, skip");
         }
     }
 
@@ -366,7 +380,7 @@ class Database {
         };
         process.addListener("unhandledRejection", listener);
 
-        console.log("Closing the database");
+        log.info("db", "Closing the database");
 
         while (true) {
             Database.noReject = true;
@@ -376,10 +390,10 @@ class Database {
             if (Database.noReject) {
                 break;
             } else {
-                console.log("Waiting to close the database");
+                log.info("db", "Waiting to close the database");
             }
         }
-        console.log("SQLite closed");
+        log.info("db", "SQLite closed");
 
         process.removeListener("unhandledRejection", listener);
     }
@@ -391,7 +405,7 @@ class Database {
      */
     static backup(version) {
         if (! this.backupPath) {
-            console.info("Backing up the database");
+            log.info("db", "Backing up the database");
             this.backupPath = this.dataDir + "kuma.db.bak" + version;
             fs.copyFileSync(Database.path, this.backupPath);
 
@@ -414,7 +428,7 @@ class Database {
      */
     static restore() {
         if (this.backupPath) {
-            console.error("Patching the database failed!!! Restoring the backup");
+            log.error("db", "Patching the database failed!!! Restoring the backup");
 
             const shmPath = Database.path + "-shm";
             const walPath = Database.path + "-wal";
@@ -433,7 +447,7 @@ class Database {
                     fs.unlinkSync(walPath);
                 }
             } catch (e) {
-                console.log("Restore failed; you may need to restore the backup manually");
+                log.error("db", "Restore failed; you may need to restore the backup manually");
                 process.exit(1);
             }
 
@@ -449,14 +463,14 @@ class Database {
             }
 
         } else {
-            console.log("Nothing to restore");
+            log.info("db", "Nothing to restore");
         }
     }
 
     static getSize() {
-        debug("Database.getSize()");
+        log.debug("db", "Database.getSize()");
         let stats = fs.statSync(Database.path);
-        debug(stats);
+        log.debug("db", stats);
         return stats.size;
     }
 

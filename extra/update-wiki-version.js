@@ -1,4 +1,4 @@
-const child_process = require("child_process");
+const childProcess = require("child_process");
 const fs = require("fs");
 
 const newVersion = process.env.VERSION;
@@ -16,23 +16,23 @@ function updateWiki(newVersion) {
 
     safeDelete(wikiDir);
 
-    child_process.spawnSync("git", ["clone", "https://github.com/louislam/uptime-kuma.wiki.git", wikiDir]);
+    childProcess.spawnSync("git", [ "clone", "https://github.com/louislam/uptime-kuma.wiki.git", wikiDir ]);
     let content = fs.readFileSync(howToUpdateFilename).toString();
 
     // Replace the version: https://regex101.com/r/hmj2Bc/1
     content = content.replace(/(git checkout )([^\s]+)/, `$1${newVersion}`);
     fs.writeFileSync(howToUpdateFilename, content);
 
-    child_process.spawnSync("git", ["add", "-A"], {
+    childProcess.spawnSync("git", [ "add", "-A" ], {
         cwd: wikiDir,
     });
 
-    child_process.spawnSync("git", ["commit", "-m", `Update to ${newVersion}`], {
+    childProcess.spawnSync("git", [ "commit", "-m", `Update to ${newVersion}` ], {
         cwd: wikiDir,
     });
 
     console.log("Pushing to Github");
-    child_process.spawnSync("git", ["push"], {
+    childProcess.spawnSync("git", [ "push" ], {
         cwd: wikiDir,
     });
 

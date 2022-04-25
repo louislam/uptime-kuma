@@ -24,17 +24,17 @@ class Webhook extends NotificationProvider {
 
                 config = {
                     headers: finalData.getHeaders(),
-                }
+                };
 
             } else {
                 finalData = data;
             }
 
-            await axios.post(notification.webhookURL, finalData, config)
+            await axios.post(notification.webhookURL, finalData, config);
             return okMsg;
 
         } catch (error) {
-            this.throwGeneralAxiosError(error)
+            this.throwGeneralAxiosError(error);
         }
 
     }

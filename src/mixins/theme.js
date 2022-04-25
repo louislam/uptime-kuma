@@ -6,6 +6,7 @@ export default {
             userTheme: localStorage.theme,
             userHeartbeatBar: localStorage.heartbeatBarTheme,
             statusPageTheme: "light",
+            forceStatusPageTheme: false,
             path: "",
         };
     },
@@ -27,6 +28,10 @@ export default {
 
     computed: {
         theme() {
+            // As entry can be status page now, set forceStatusPageTheme to true to use status page theme
+            if (this.forceStatusPageTheme) {
+                return this.statusPageTheme;
+            }
 
             // Entry no need dark
             if (this.path === "") {
