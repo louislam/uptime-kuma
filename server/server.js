@@ -327,7 +327,7 @@ try {
             let user = await login(data.username, data.password);
 
             if (user) {
-                if (user.twofa_status == 0) {
+                if (user.twofa_status === 0) {
                     afterLogin(socket, user);
 
                     log.info("auth", `Successfully logged in user ${data.username}. IP=${getClientIp(socket)}`);
@@ -340,7 +340,7 @@ try {
                     });
                 }
 
-                if (user.twofa_status == 1 && !data.token) {
+                if (user.twofa_status === 1 && !data.token) {
 
                     log.info("auth", `2FA token required for user ${data.username}. IP=${getClientIp(socket)}`);
 
@@ -417,7 +417,7 @@ try {
                     socket.userID,
                 ]);
 
-                if (user.twofa_status == 0) {
+                if (user.twofa_status === 0) {
                     let newSecret = genSecret();
                     let encodedSecret = base32.encode(newSecret);
 
@@ -548,7 +548,7 @@ try {
                     socket.userID,
                 ]);
 
-                if (user.twofa_status == 1) {
+                if (user.twofa_status === 1) {
                     callback({
                         ok: true,
                         status: true,
@@ -1169,7 +1169,7 @@ try {
                 let version17x = compareVersions.compare(backupData.version, "1.7.0", ">=");
 
                 // If the import option is "overwrite" it'll clear most of the tables, except "settings" and "user"
-                if (importHandle == "overwrite") {
+                if (importHandle === "overwrite") {
                     // Stops every monitor first, so it doesn't execute any heartbeat while importing
                     for (let id in server.monitorList) {
                         let monitor = server.monitorList[id];
@@ -1193,7 +1193,7 @@ try {
 
                     for (let i = 0; i < notificationListData.length; i++) {
                         // Only starts importing the notification if the import option is "overwrite", "keep" or "skip" but the notification doesn't exists
-                        if ((importHandle == "skip" && notificationNameListString.includes(notificationListData[i].name) == false) || importHandle == "keep" || importHandle == "overwrite") {
+                        if ((importHandle === "skip" && notificationNameListString.includes(notificationListData[i].name) === false) || importHandle === "keep" || importHandle === "overwrite") {
 
                             let notification = JSON.parse(notificationListData[i].config);
                             await Notification.save(notification, null, socket.userID);
