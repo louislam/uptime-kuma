@@ -137,13 +137,6 @@ app.use(function (req, res, next) {
 });
 
 /**
- * Total WebSocket client connected to server currently, no actual use
- *
- * @type {number}
- */
-let totalClient = 0;
-
-/**
  * Use for decode the auth object
  * @type {null}
  */
@@ -248,16 +241,10 @@ try {
 
         sendInfo(socket);
 
-        totalClient++;
-
         if (needSetup) {
             log.info("server", "Redirect to setup page");
             socket.emit("setup");
         }
-
-        socket.on("disconnect", () => {
-            totalClient--;
-        });
 
         // ***************************
         // Public Socket API
@@ -1228,7 +1215,7 @@ try {
 
                     for (let i = 0; i < monitorListData.length; i++) {
                         // Only starts importing the monitor if the import option is "overwrite", "keep" or "skip" but the notification doesn't exists
-                        if ((importHandle == "skip" && monitorNameListString.includes(monitorListData[i].name) == false) || importHandle == "keep" || importHandle == "overwrite") {
+                        if ((importHandle === "skip" && monitorNameListString.includes(monitorListData[i].name) === false) || importHandle === "keep" || importHandle === "overwrite") {
 
                             // Define in here every new variable for monitors which where implemented after the first version of the Import/Export function (1.6.0)
                             // --- Start ---
@@ -1325,7 +1312,7 @@ try {
                             await updateMonitorNotification(bean.id, notificationIDList);
 
                             // If monitor was active start it immediately, otherwise pause it
-                            if (monitorListData[i].active == 1) {
+                            if (monitorListData[i].active === 1) {
                                 await startMonitor(socket.userID, bean.id);
                             } else {
                                 await pauseMonitor(socket.userID, bean.id);

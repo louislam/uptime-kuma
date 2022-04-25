@@ -361,13 +361,12 @@
 </template>
 
 <script>
+import VueMultiselect from "vue-multiselect";
+import { useToast } from "vue-toastification";
+import CopyableInput from "../components/CopyableInput.vue";
 import NotificationDialog from "../components/NotificationDialog.vue";
 import ProxyDialog from "../components/ProxyDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
-import CopyableInput from "../components/CopyableInput.vue";
-
-import { useToast } from "vue-toastification";
-import VueMultiselect from "vue-multiselect";
 import { genSecret, isDev } from "../util.ts";
 
 const toast = useToast();
@@ -540,7 +539,7 @@ export default {
                 }
 
                 for (let i = 0; i < this.$root.notificationList.length; i++) {
-                    if (this.$root.notificationList[i].isDefault == true) {
+                    if (this.$root.notificationList[i].isDefault === true) {
                         this.monitor.notificationIDList[this.$root.notificationList[i].id] = true;
                     }
                 }
