@@ -21,4 +21,7 @@ export default defineConfig({
             "plugins": [ postcssRTLCSS ]
         }
     },
+    server: {
+        open: "/"
+    }
 });
