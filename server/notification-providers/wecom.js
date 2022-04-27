@@ -24,6 +24,12 @@ class WeCom extends NotificationProvider {
         }
     }
 
+    /**
+     * Generate the message to send
+     * @param {Object} heartbeatJSON Heartbeat details (For Up/Down only)
+     * @param {string} msg General message
+     * @returns {Object}
+     */
     composeMessage(heartbeatJSON, msg) {
         let title;
         if (msg != null && heartbeatJSON != null && heartbeatJSON["status"] === UP) {
