@@ -184,7 +184,7 @@
                             <div v-if="monitor.type === 'http' || monitor.type === 'keyword' " class="my-3 form-check">
                                 <input id="expiry-notification" v-model="monitor.expiryNotification" class="form-check-input" type="checkbox">
                                 <label class="form-check-label" for="expiry-notification">
-                                    {{ $t("Domain Name Expiry Notification") }}
+                                    {{ $t("Certificate Expiry Notification") }}
                                 </label>
                                 <div class="form-text">
                                 </div>
@@ -370,13 +370,12 @@
 </template>
 
 <script>
+import VueMultiselect from "vue-multiselect";
+import { useToast } from "vue-toastification";
+import CopyableInput from "../components/CopyableInput.vue";
 import NotificationDialog from "../components/NotificationDialog.vue";
 import ProxyDialog from "../components/ProxyDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
-import CopyableInput from "../components/CopyableInput.vue";
-
-import { useToast } from "vue-toastification";
-import VueMultiselect from "vue-multiselect";
 import { genSecret, isDev } from "../util.ts";
 
 const toast = useToast();
@@ -558,7 +557,7 @@ export default {
                 }
 
                 for (let i = 0; i < this.$root.notificationList.length; i++) {
-                    if (this.$root.notificationList[i].isDefault == true) {
+                    if (this.$root.notificationList[i].isDefault === true) {
                         this.monitor.notificationIDList[this.$root.notificationList[i].id] = true;
                     }
                 }

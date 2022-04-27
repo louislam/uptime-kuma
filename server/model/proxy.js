@@ -1,6 +1,10 @@
 const { BeanModel } = require("redbean-node/dist/bean-model");
 
 class Proxy extends BeanModel {
+    /**
+     * Return an object that ready to parse to JSON
+     * @returns {Object}
+     */
     toJSON() {
         return {
             id: this._id,

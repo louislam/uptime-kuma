@@ -33,8 +33,11 @@ const monitorStatus = new PrometheusClient.Gauge({
 });
 
 class Prometheus {
-    monitorLabelValues = {}
+    monitorLabelValues = {};
 
+    /**
+     * @param {Object} monitor Monitor object to monitor
+     */
     constructor(monitor) {
         this.monitorLabelValues = {
             monitor_name: monitor.name,
@@ -45,6 +48,11 @@ class Prometheus {
         };
     }
 
+    /**
+     * Update the metrics page
+     * @param {Object} heartbeat Heartbeat details
+     * @param {Object} tlsInfo TLS details
+     */
     update(heartbeat, tlsInfo) {
 
         if (typeof tlsInfo !== "undefined") {

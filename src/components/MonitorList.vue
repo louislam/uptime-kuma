@@ -47,8 +47,8 @@
 
 <script>
 import HeartbeatBar from "../components/HeartbeatBar.vue";
-import Uptime from "../components/Uptime.vue";
 import Tag from "../components/Tag.vue";
+import Uptime from "../components/Uptime.vue";
 import { getMonitorRelativeURL } from "../util.ts";
 
 export default {
@@ -105,7 +105,7 @@ export default {
 
             // Simple filter by search text
             // finds monitor name, tag name or tag value
-            if (this.searchText != "") {
+            if (this.searchText !== "") {
                 const loweredSearchText = this.searchText.toLowerCase();
                 result = result.filter(monitor => {
                     return monitor.name.toLowerCase().includes(loweredSearchText)
@@ -167,12 +167,6 @@ export default {
     .dark & {
         background-color: $dark-header-bg;
         border-bottom: 0;
-    }
-}
-
-.dark {
-    .footer {
-        //  background-color: $dark-bg;
     }
 }
 
