@@ -44,7 +44,7 @@ My long story here: https://www.reddit.com/r/UptimeKuma/comments/t1t6or/comment/
 
 ### Recommended Pull Request Guideline
 
-Before deep into coding, disscussion first is preferred. Creating an empty pull request for disscussion would be recommended.
+Before deep into coding, discussion first is preferred. Creating an empty pull request for discussion would be recommended.
 
 1. Fork the project
 1. Clone your fork repo to local
