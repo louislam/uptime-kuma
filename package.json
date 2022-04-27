@@ -16,7 +16,8 @@
         "lint-fix:js": "eslint --ext \".js,.vue\" --fix --ignore-path .gitignore .",
         "lint:style": "stylelint \"**/*.{vue,css,scss}\" --ignore-path .gitignore",
         "lint": "npm run lint:js && npm run lint:style",
-        "dev": "vite --host --config ./config/vite.config.js",
+        "dev": "concurrently -k -r \"wait-on tcp:3000 && npm run start-server-dev \" \"npm run start-frontend-dev\"",
+        "start-frontend-dev": "cross-env NODE_ENV=development vite --host --config ./config/vite.config.js",
         "start": "npm run start-server",
         "start-server": "node server/server.js",
         "start-server-dev": "cross-env NODE_ENV=development node server/server.js",
@@ -130,6 +131,7 @@
         "@vue/compiler-sfc": "~3.2.31",
         "aedes": "^0.46.3",
         "babel-plugin-rewire": "~1.2.0",
+        "concurrently": "^7.1.0",
         "core-js": "~3.18.3",
         "cross-env": "~7.0.3",
         "dns2": "~2.0.1",
@@ -144,6 +146,7 @@
         "stylelint": "~14.2.0",
         "stylelint-config-standard": "~24.0.0",
         "typescript": "~4.4.4",
-        "vite": "~2.6.14"
+        "vite": "~2.6.14",
+        "wait-on": "^6.0.1"
     }
 }
