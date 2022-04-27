@@ -33,7 +33,7 @@ const monitorStatus = new PrometheusClient.Gauge({
 });
 
 class Prometheus {
-    monitorLabelValues = {}
+    monitorLabelValues = {};
 
     /**
      * @param {Object} monitor Monitor object to monitor

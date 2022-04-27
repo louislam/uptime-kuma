@@ -158,7 +158,7 @@ exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
         });
 
         client.on("message", (messageTopic, message) => {
-            if (messageTopic == topic) {
+            if (messageTopic === topic) {
                 client.end();
                 clearTimeout(timeoutID);
                 if (okMessage != null && okMessage !== "" && message.toString() !== okMessage) {

@@ -137,13 +137,6 @@ app.use(function (req, res, next) {
 });
 
 /**
- * Total WebSocket client connected to server currently, no actual use
- *
- * @type {number}
- */
-let totalClient = 0;
-
-/**
  * Use for decode the auth object
  * @type {null}
  */
@@ -248,16 +241,10 @@ try {
 
         sendInfo(socket);
 
-        totalClient++;
-
         if (needSetup) {
             log.info("server", "Redirect to setup page");
             socket.emit("setup");
         }
-
-        socket.on("disconnect", () => {
-            totalClient--;
-        });
 
         // ***************************
         // Public Socket API
@@ -327,7 +314,7 @@ try {
             let user = await login(data.username, data.password);
 
             if (user) {
-                if (user.twofa_status == 0) {
+                if (user.twofa_status === 0) {
                     afterLogin(socket, user);
 
                     log.info("auth", `Successfully logged in user ${data.username}. IP=${getClientIp(socket)}`);
@@ -340,7 +327,7 @@ try {
                     });
                 }
 
-                if (user.twofa_status == 1 && !data.token) {
+                if (user.twofa_status === 1 && !data.token) {
 
                     log.info("auth", `2FA token required for user ${data.username}. IP=${getClientIp(socket)}`);
 
@@ -417,7 +404,7 @@ try {
                     socket.userID,
                 ]);
 
-                if (user.twofa_status == 0) {
+                if (user.twofa_status === 0) {
                     let newSecret = genSecret();
                     let encodedSecret = base32.encode(newSecret);
 
@@ -548,7 +535,7 @@ try {
                     socket.userID,
                 ]);
 
-                if (user.twofa_status == 1) {
+                if (user.twofa_status === 1) {
                     callback({
                         ok: true,
                         status: true,
@@ -1169,7 +1156,7 @@ try {
                 let version17x = compareVersions.compare(backupData.version, "1.7.0", ">=");
 
                 // If the import option is "overwrite" it'll clear most of the tables, except "settings" and "user"
-                if (importHandle == "overwrite") {
+                if (importHandle === "overwrite") {
                     // Stops every monitor first, so it doesn't execute any heartbeat while importing
                     for (let id in server.monitorList) {
                         let monitor = server.monitorList[id];
@@ -1193,7 +1180,7 @@ try {
 
                     for (let i = 0; i < notificationListData.length; i++) {
                         // Only starts importing the notification if the import option is "overwrite", "keep" or "skip" but the notification doesn't exists
-                        if ((importHandle == "skip" && notificationNameListString.includes(notificationListData[i].name) == false) || importHandle == "keep" || importHandle == "overwrite") {
+                        if ((importHandle === "skip" && notificationNameListString.includes(notificationListData[i].name) === false) || importHandle === "keep" || importHandle === "overwrite") {
 
                             let notification = JSON.parse(notificationListData[i].config);
                             await Notification.save(notification, null, socket.userID);
@@ -1228,7 +1215,7 @@ try {
 
                     for (let i = 0; i < monitorListData.length; i++) {
                         // Only starts importing the monitor if the import option is "overwrite", "keep" or "skip" but the notification doesn't exists
-                        if ((importHandle == "skip" && monitorNameListString.includes(monitorListData[i].name) == false) || importHandle == "keep" || importHandle == "overwrite") {
+                        if ((importHandle === "skip" && monitorNameListString.includes(monitorListData[i].name) === false) || importHandle === "keep" || importHandle === "overwrite") {
 
                             // Define in here every new variable for monitors which where implemented after the first version of the Import/Export function (1.6.0)
                             // --- Start ---
@@ -1325,7 +1312,7 @@ try {
                             await updateMonitorNotification(bean.id, notificationIDList);
 
                             // If monitor was active start it immediately, otherwise pause it
-                            if (monitorListData[i].active == 1) {
+                            if (monitorListData[i].active === 1) {
                                 await startMonitor(socket.userID, bean.id);
                             } else {
                                 await pauseMonitor(socket.userID, bean.id);
