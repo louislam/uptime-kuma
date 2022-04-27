@@ -30,10 +30,11 @@ router.get("/api/entry-page", async (request, response) => {
 
 router.get("/api/push/:pushToken", async (request, response) => {
     try {
-
         let pushToken = request.params.pushToken;
-        let msg = request.query.msg || "OK";
-        let ping = request.query.ping || null;
+
+        let {msg, ping, ...requestTags} = request.query;
+        msg = msg || "OK";
+        ping = ping || null;
 
         let monitor = await R.findOne("monitor", " push_token = ? AND active = 1 ", [
             pushToken
@@ -44,6 +45,28 @@ router.get("/api/push/:pushToken", async (request, response) => {
         }
 
         const previousHeartbeat = await Monitor.getPreviousHeartbeat(monitor.id);
+
+        const tagKeys = Object.keys(requestTags)
+        if (tagKeys.length > 0) {
+            // Request has additional tags. Fetch all tags for this monitor.
+            //   For multiple tags with same name, get the oldest one.
+            const monitorTags = await R.getAll("SELECT tag.name, MIN(monitor_tag.id) id FROM monitor_tag JOIN tag ON tag.id = monitor_tag.tag_id AND monitor_tag.monitor_id = ? GROUP BY tag.name ORDER BY 1", [monitor.id]);
+
+            // Update monitor_tag, ignoring non-existing request tags.
+            monitorTags
+                .filter(mt => tagKeys.includes(mt.name))
+                .forEach(async mt => {
+                    const tagValue = requestTags[mt.name];
+
+                    await R.exec("UPDATE monitor_tag SET value = ? WHERE id = ?", [
+                        tagValue,
+                        mt.id
+                    ]);
+
+                    // FixMe: Not working. What to emit here?
+                    io.to(monitor.user_id).emit("addMonitorTag", mt.id, monitor.id, tagValue);
+                });
+        }
 
         let status = UP;
         if (monitor.isUpsideDown()) {
@@ -73,10 +96,12 @@ router.get("/api/push/:pushToken", async (request, response) => {
         bean.ping = ping;
         bean.duration = duration;
 
-        await R.store(bean);
+        await trx.store(bean);
 
         io.to(monitor.user_id).emit("heartbeat", bean.toJSON());
         Monitor.sendStats(io, monitor.id, monitor.user_id);
+
+        await trx.commit();
 
         response.json({
             ok: true,
@@ -87,6 +112,8 @@ router.get("/api/push/:pushToken", async (request, response) => {
         }
 
     } catch (e) {
+        await trx.rollback();
+
         response.json({
             ok: false,
             msg: e.message
