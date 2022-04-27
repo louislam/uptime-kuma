@@ -4,6 +4,10 @@ const { sendProxyList } = require("../client");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const server = UptimeKumaServer.getInstance();
 
+/**
+ * Handlers for proxy
+ * @param {Socket} socket Socket.io instance
+ */
 module.exports.proxySocketHandler = (socket) => {
     socket.on("addProxy", async (proxy, proxyID, callback) => {
         try {

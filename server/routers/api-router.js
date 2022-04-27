@@ -196,6 +196,11 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
     }
 });
 
+/**
+ * Send a 403 response
+ * @param {Object} res Express response object
+ * @param {string} [msg=""] Message to send
+ */
 function send403(res, msg = "") {
     res.status(403).json({
         "status": "fail",

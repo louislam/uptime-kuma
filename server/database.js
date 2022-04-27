@@ -68,6 +68,10 @@ class Database {
 
     static noReject = true;
 
+    /**
+     * Initialize the database
+     * @param {Object} args Arguments to initialize DB with
+     */
     static init(args) {
         // Data Directory (must be end with "/")
         Database.dataDir = process.env.DATA_DIR || args["data-dir"] || "./data/";
@@ -85,6 +89,15 @@ class Database {
         log.info("db", `Data Dir: ${Database.dataDir}`);
     }
 
+    /**
+     * Connect to the database
+     * @param {boolean} [testMode=false] Should the connection be
+     * started in test mode?
+     * @param {boolean} [autoloadModels=true] Should models be
+     * automatically loaded?
+     * @param {boolean} [noLog=false] Should logs not be output?
+     * @returns {Promise<void>}
+     */
     static async connect(testMode = false, autoloadModels = true, noLog = false) {
         const acquireConnectionTimeout = 120 * 1000;
 
@@ -144,6 +157,7 @@ class Database {
         }
     }
 
+    /** Patch the database */
     static async patch() {
         let version = parseInt(await setting("database_version"));
 
@@ -189,7 +203,9 @@ class Database {
     }
 
     /**
+     * Patch DB using new process
      * Call it from patch() only
+     * @private
      * @returns {Promise<void>}
      */
     static async patch2() {
@@ -296,9 +312,12 @@ class Database {
     }
 
     /**
+     * Patch database using new patching process
      * Used it patch2() only
+     * @private
      * @param sqlFilename
      * @param databasePatchedFiles
+     * @returns {Promise<void>}
      */
     static async patch2Recursion(sqlFilename, databasePatchedFiles) {
         let value = this.patchList[sqlFilename];
@@ -333,12 +352,12 @@ class Database {
     }
 
     /**
-     * Sadly, multi sql statements is not supported by many sqlite libraries, I have to implement it myself
-     * @param filename
+     * Load an SQL file and execute it
+     * @param filename Filename of SQL file to import
      * @returns {Promise<void>}
      */
     static async importSQLFile(filename) {
-
+        // Sadly, multi sql statements is not supported by many sqlite libraries, I have to implement it myself
         await R.getCell("SELECT 1");
 
         let text = fs.readFileSync(filename).toString();
@@ -366,6 +385,10 @@ class Database {
         }
     }
 
+    /**
+     * Aquire a direct connection to database
+     * @returns {any}
+     */
     static getBetterSQLite3Database() {
         return R.knex.client.acquireConnection();
     }
@@ -401,7 +424,7 @@ class Database {
     /**
      * One backup one time in this process.
      * Reset this.backupPath if you want to backup again
-     * @param version
+     * @param {string} version Version code of backup
      */
     static backup(version) {
         if (! this.backupPath) {
@@ -423,9 +446,7 @@ class Database {
         }
     }
 
-    /**
-     *
-     */
+    /** Restore from most recent backup */
     static restore() {
         if (this.backupPath) {
             log.error("db", "Patching the database failed!!! Restoring the backup");
@@ -467,6 +488,7 @@ class Database {
         }
     }
 
+    /** Get the size of the database */
     static getSize() {
         log.debug("db", "Database.getSize()");
         let stats = fs.statSync(Database.path);
@@ -474,6 +496,10 @@ class Database {
         return stats.size;
     }
 
+    /**
+     * Shrink the database
+     * @returns {Promise<void>}
+     */
     static async shrink() {
         await R.exec("VACUUM");
     }
