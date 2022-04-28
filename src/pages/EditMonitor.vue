@@ -56,7 +56,7 @@
                                 <CopyableInput id="push-url" v-model="pushURL" type="url" disabled="disabled" />
                                 <div class="form-text">
                                     {{ $t("needPushEvery", [monitor.interval]) }}<br />
-                                    {{ $t("pushOptionalParams", ["msg, ping"]) }}
+                                    {{ $t("pushOptionalParams", ["status, msg, ping"]) }}
                                 </div>
                             </div>
 
@@ -421,7 +421,7 @@ export default {
         },
 
         pushURL() {
-            return this.$root.baseURL + "/api/push/" + this.monitor.pushToken + "?msg=OK&ping=";
+            return this.$root.baseURL + "/api/push/" + this.monitor.pushToken + "?status=true&msg=OK&ping=";
         },
 
         bodyPlaceholder() {
