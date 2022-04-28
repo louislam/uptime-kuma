@@ -1047,7 +1047,13 @@ try {
             try {
                 checkLogin(socket);
 
-                if (data.disableAuth) {
+                // If currently is disabled auth, don't need to check
+                // Disabled Auth + Want to Disable Auth => No Check
+                // Disabled Auth + Want to Enable Auth => No Check
+                // Enabled Auth + Want to Disable Auth => Check!!
+                // Enabled Auth + Want to Enable Auth => No Check
+                const currentDisabledAuth = await setting("disableAuth");
+                if (!currentDisabledAuth && data.disableAuth) {
                     await doubleCheckPassword(socket, currentPassword);
                 }
 
