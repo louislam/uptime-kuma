@@ -29,7 +29,7 @@ const github = require("@actions/github");
                 owner: issue.owner,
                 repo: issue.repo,
                 issue_number: issue.number,
-                labels: ["invalid-format"]
+                labels: [ "invalid-format" ]
             });
 
             // Add the issue closing comment
@@ -37,7 +37,7 @@ const github = require("@actions/github");
                 owner: issue.owner,
                 repo: issue.repo,
                 issue_number: issue.number,
-                body: `@${username}: Hello! :wave:\n\nThis issue is being automatically closed because it does not follow the issue template. Please DO NOT open a blank issue`
+                body: `@${username}: Hello! :wave:\n\nThis issue is being automatically closed because it does not follow the issue template. Please DO NOT open a blank issue.`
             });
 
             // Close the issue

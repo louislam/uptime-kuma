@@ -9,19 +9,19 @@
                 <div class="row">
                     <div class="col">
                         <h3>{{ $t("Up") }}</h3>
-                        <span class="num">{{ stats.up }}</span>
+                        <span class="num">{{ $root.stats.up }}</span>
                     </div>
                     <div class="col">
                         <h3>{{ $t("Down") }}</h3>
-                        <span class="num text-danger">{{ stats.down }}</span>
+                        <span class="num text-danger">{{ $root.stats.down }}</span>
                     </div>
                     <div class="col">
                         <h3>{{ $t("Unknown") }}</h3>
-                        <span class="num text-secondary">{{ stats.unknown }}</span>
+                        <span class="num text-secondary">{{ $root.stats.unknown }}</span>
                     </div>
                     <div class="col">
                         <h3>{{ $t("pauseDashboardHome") }}</h3>
-                        <span class="num text-secondary">{{ stats.pause }}</span>
+                        <span class="num text-secondary">{{ $root.stats.pause }}</span>
                     </div>
                 </div>
             </div>
@@ -89,37 +89,6 @@ export default {
         };
     },
     computed: {
-        stats() {
-            let result = {
-                up: 0,
-                down: 0,
-                unknown: 0,
-                pause: 0,
-            };
-
-            for (let monitorID in this.$root.monitorList) {
-                let beat = this.$root.lastHeartbeatList[monitorID];
-                let monitor = this.$root.monitorList[monitorID];
-
-                if (monitor && ! monitor.active) {
-                    result.pause++;
-                } else if (beat) {
-                    if (beat.status === 1) {
-                        result.up++;
-                    } else if (beat.status === 0) {
-                        result.down++;
-                    } else if (beat.status === 2) {
-                        result.up++;
-                    } else {
-                        result.unknown++;
-                    }
-                } else {
-                    result.unknown++;
-                }
-            }
-
-            return result;
-        },
 
         importantHeartBeatList() {
             let result = [];
@@ -149,6 +118,7 @@ export default {
                 return 0;
             });
 
+            // eslint-disable-next-line vue/no-side-effects-in-computed-properties
             this.heartBeatList = result;
 
             return result;
