@@ -34,8 +34,8 @@ router.get("/api/push/:pushToken", async (request, response) => {
         let pushToken = request.params.pushToken;
         let msg = request.query.msg || "OK";
         let ping = request.query.ping || null;
-        let status = request.query.status || "true";
-        status = status === "true" ? UP : DOWN;
+        let statusString = request.query.status || "up";
+        let status = (statusString === "up") ? UP : DOWN;
 
         let monitor = await R.findOne("monitor", " push_token = ? AND active = 1 ", [
             pushToken
