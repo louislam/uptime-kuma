@@ -88,7 +88,7 @@ export default {
     Dark: "黑暗",
     Auto: "自动",
     "Theme - Heartbeat Bar": "主题 - 心跳栏",
-    Normal: "正常", // 此处还供 Gorush 的通知优先级功能使用，不应翻译为“正常显示”
+    Normal: "正常",
     Bottom: "靠下",
     None: "不显示",
     Timezone: "时区",
@@ -398,11 +398,9 @@ export default {
     Invalid: "无效",
     AccessKeyId: "AccessKey ID",
     SecretAccessKey: "AccessKey Secret",
-    /* 以下为阿里云短信服务 API Dysms#SendSms 的参数 */
     PhoneNumbers: "PhoneNumbers",
     TemplateCode: "TemplateCode",
     SignName: "SignName",
-    /* 以上为阿里云短信服务 API Dysms#SendSms 的参数 */
     "Bark Endpoint": "Bark 接入点",
     "Device Token": "Apple Device Token",
     Platform: "平台",
@@ -477,7 +475,7 @@ export default {
     "Leave blank to use a shared sender number.": "留空以使用平台共享的发件人手机号码",
     "Octopush API Version": "Octopush API 版本",
     "Legacy Octopush-DM": "旧版本 Octopush-DM",
-    "endpoint": "接入点",
+    endpoint: "接入点",
     octopushAPIKey: "控制台 HTTP API credentials 里的 \"API key\"",
     octopushLogin: "控制台 HTTP API credentials 里的 \"Login\"",
     promosmsLogin: "API 登录名",
@@ -520,4 +518,6 @@ export default {
     "Go back to the previous page.": "返回到上一页面。",
     "Coming Soon": "即将推出",
     wayToGetClickSendSMSToken: "您可以从 {0} 获取 API 凭证 Username 和 凭证 Key。",
+    signedInDisp: "当前用户： {0}",
+    signedInDispDisabled: "已禁用身份验证",
 };
