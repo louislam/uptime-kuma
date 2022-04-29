@@ -115,8 +115,8 @@ npm run dev
 
 ## Backend Server
 
-For development, it binds to `0.0.0.0:3001` by default.
-For production, it binds to  `0.0.0.0:3000` by default.
+It binds to `0.0.0.0:3001` by default.
+
 
 It is mainly a socket.io app + express.js.
 
