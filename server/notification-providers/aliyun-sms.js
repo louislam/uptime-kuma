@@ -92,15 +92,15 @@ class AliyunSMS extends NotificationProvider {
             let key = oa[i];
             param2[key] = param[key];
         }
-        
-        let moreEscapesTable = function(m) {
+
+        let moreEscapesTable = function (m) {
             return {
-                "!": "%21", 
-                "*": "%2A", 
-                "'": "%27", 
-                "(": "%28", 
+                "!": "%21",
+                "*": "%2A",
+                "'": "%27",
+                "(": "%28",
                 ")": "%29"
-            }[m]
+            }[m];
         };
 
         for (let key in param2) {
