@@ -45,7 +45,7 @@
                 </div>
 
                 <div v-if="false" class="my-3">
-                    <label for="password" class="form-label">{{ $t("Password") }} <sup>Coming Soon</sup></label>
+                    <label for="password" class="form-label">{{ $t("Password") }} <sup>{{ $t("Coming Soon") }}</sup></label>
                     <input id="password" v-model="config.password" disabled type="password" autocomplete="new-password" class="form-control">
                 </div>
 
