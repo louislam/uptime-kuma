@@ -441,7 +441,7 @@ export default {
     "No Proxy": "无代理",
     "HTTP Basic Auth": "HTTP 基础身份验证",
     "New Status Page": "新的状态页",
-    "Page Not Found": "状态页未找到",
+    "Page Not Found": "未找到该页面",
     "Reverse Proxy": "反向代理",
     "Subject:": "颁发给：",
     "Valid To:": "有效期至：",
@@ -519,4 +519,5 @@ export default {
     "Retype the address.": "重新输入地址；",
     "Go back to the previous page.": "返回到上一页面。",
     "Coming Soon": "即将推出",
+    wayToGetClickSendSMSToken: "您可以从 {0} 获取 API 凭证 Username 和 凭证 Key。",
 };

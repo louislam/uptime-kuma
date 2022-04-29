@@ -1,10 +1,9 @@
 <template>
     <div class="mb-3">
         <label for="clicksendsms-login" class="form-label">{{ $t("API Username") }}</label>
-        <div class="form-text">
-            {{ $t("apiCredentials") }}
+        <i18n-t tag="div" class="form-text" keypath="wayToGetClickSendSMSToken">
             <a href="http://dashboard.clicksend.com/account/subaccounts" target="_blank">{{ $t("here") }}</a>
-        </div>
+        </i18n-t>
         <input id="clicksendsms-login" v-model="$parent.notification.clicksendsmsLogin" type="text" class="form-control" required>
         <label for="clicksendsms-key" class="form-label">{{ $t("API Key") }}</label>
         <HiddenInput id="clicksendsms-key" v-model="$parent.notification.clicksendsmsPassword" :required="true" autocomplete="one-time-code"></HiddenInput>
@@ -21,7 +20,7 @@
     </div>
     <div class="mb-3">
         <label for="clicksendsms-sender-name" class="form-label">{{ $t("From Name/Number") }} -
-            <i18n-t tag="span" keypath="Read more:"><a href="https://help.clicksend.com/article/4kgj7krx00-what-is-a-sender-id-or-sender-number" target="_blank">https://help.clicksend.com/article/4kgj7krx00-what-is-a-sender-id-or-sender-number</a></i18n-t>
+            <a href="https://help.clicksend.com/article/4kgj7krx00-what-is-a-sender-id-or-sender-number" target="_blank">{{ $t("Read more") }}</a>
         </label>
         <input id="clicksendsms-sender-name" v-model="$parent.notification.clicksendsmsSenderName" type="text" minlength="3" maxlength="11" class="form-control">
         <div class="form-text">{{ $t("Leave blank to use a shared sender number.") }}</div>
