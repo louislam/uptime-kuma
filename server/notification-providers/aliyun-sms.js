@@ -92,9 +92,20 @@ class AliyunSMS extends NotificationProvider {
             let key = oa[i];
             param2[key] = param[key];
         }
+        
+        let moreEscapesTable = function(m) {
+            return {
+                "!": "%21", 
+                "*": "%2A", 
+                "'": "%27", 
+                "(": "%28", 
+                ")": "%29"
+            }[m]
+        };
 
         for (let key in param2) {
-            data.push(`${encodeURIComponent(key)}=${encodeURIComponent(param2[key])}`);
+            let value = encodeURIComponent(param2[key]).replace(/[!*'()]/g, moreEscapesTable);
+            data.push(`${encodeURIComponent(key)}=${value}`);
         }
 
         let StringToSign = `POST&${encodeURIComponent("/")}&${encodeURIComponent(data.join("&"))}`;
