@@ -457,7 +457,7 @@ exports.errorLog = (error, outputToConsole = true) => {
  * 0% => hue = 10 => red
  * 100% => hue = 90 => green
  *
- * @param {number} percentage, float, 0 to 1
+ * @param {number} percentage float, 0 to 1
  * @param {number} maxHue, int
  * @param {number} minHue, int
  * @returns {string}, hex value
