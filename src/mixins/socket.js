@@ -388,8 +388,16 @@ export default {
             socket.emit("addMonitorMaintenance", maintenanceID, monitors, callback);
         },
 
+        addMaintenanceStatusPage(maintenanceID, statusPages, callback) {
+            socket.emit("addMaintenanceStatusPage", maintenanceID, statusPages, callback);
+        },
+
         getMonitorMaintenance(maintenanceID, callback) {
             socket.emit("getMonitorMaintenance", maintenanceID, callback);
+        },
+
+        getMaintenanceStatusPage(maintenanceID, callback) {
+            socket.emit("getMaintenanceStatusPage", maintenanceID, callback);
         },
 
         deleteMonitor(monitorID, callback) {

@@ -128,7 +128,7 @@ router.get("/api/status-page/:slug", cache("5 minutes"), async (request, respons
             incident = incident.toPublicJSON();
         }
 
-        let maintenance = await getMaintenanceList();
+        let maintenance = await getMaintenanceList(statusPage.id);
 
         // Public Group List
         const publicGroupList = [];
@@ -158,17 +158,20 @@ router.get("/api/status-page/:slug", cache("5 minutes"), async (request, respons
 });
 
 // Status Page - Maintenance List
-async function getMaintenanceList() {
+async function getMaintenanceList(statusPageId) {
     try {
         const publicMaintenanceList = [];
 
         let maintenanceBeanList = R.convertToBeans("maintenance", await R.getAll(`
-            SELECT maintenance.*
-            FROM maintenance
-            WHERE datetime(maintenance.start_date) <= datetime('now')
-              AND datetime(maintenance.end_date) >= datetime('now')
-            ORDER BY maintenance.end_date
-        `));
+            SELECT m.*
+            FROM maintenance m
+            JOIN maintenance_status_page msp
+            ON msp.maintenance_id = m.id
+            WHERE datetime(m.start_date) <= datetime('now')
+              AND datetime(m.end_date) >= datetime('now')
+              AND msp.status_page_id = ?
+            ORDER BY m.end_date
+        `, [ statusPageId ]));
 
         for (const bean of maintenanceBeanList) {
             publicMaintenanceList.push(await bean.toPublicJSON());

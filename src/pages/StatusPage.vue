@@ -247,7 +247,7 @@
                     </div>
 
                     <div v-else-if="isMaintenance">
-                        <font-awesome-icon icon="wrench" class="statusMaintenance" />
+                        <font-awesome-icon icon="wrench" class="status-maintenance" />
                         {{ $t("Maintenance") }}
                     </div>
 
@@ -595,7 +595,7 @@ export default {
             }
 
             this.incident = res.data.incident;
-            this.maintenance = res.data.maintenance;
+            this.maintenance = res.data.maintenance || [];
             this.$root.publicGroupList = res.data.publicGroupList;
         });
 
@@ -956,7 +956,7 @@ footer {
     background-color: #0d1117;
 }
 
-.statusMaintenance {
+.status-maintenance {
     color: $maintenance;
     margin-right: 5px;
 }

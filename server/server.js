@@ -802,6 +802,40 @@ try {
             }
         });
 
+        // Add a new monitor_maintenance
+        socket.on("addMaintenanceStatusPage", async (maintenanceID, statusPages, callback) => {
+            try {
+                checkLogin(socket);
+
+                await R.exec("DELETE FROM maintenance_status_page WHERE maintenance_id = ?", [
+                    maintenanceID
+                ]);
+
+                for await (const statusPage of statusPages) {
+                    let bean = R.dispense("maintenance_status_page");
+
+                    bean.import({
+                        status_page_id: statusPage.id,
+                        maintenance_id: maintenanceID
+                    });
+                    await R.store(bean);
+                }
+
+                apicache.clear();
+
+                callback({
+                    ok: true,
+                    msg: "Added Successfully.",
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
         socket.on("getMonitorList", async (callback) => {
             try {
                 checkLogin(socket);
@@ -895,6 +929,30 @@ try {
                 callback({
                     ok: true,
                     monitors,
+                });
+
+            } catch (e) {
+                console.error(e);
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("getMaintenanceStatusPage", async (maintenanceID, callback) => {
+            try {
+                checkLogin(socket);
+
+                console.log(`Get Status Pages for Maintenance: ${maintenanceID} User ID: ${socket.userID}`);
+
+                let statusPages = await R.getAll("SELECT status_page.id, status_page.title FROM maintenance_status_page msp JOIN status_page ON msp.status_page_id = status_page.id WHERE msp.maintenance_id = ? ", [
+                    maintenanceID,
+                ]);
+
+                callback({
+                    ok: true,
+                    statusPages,
                 });
 
             } catch (e) {

@@ -8,7 +8,7 @@
                 <span>{{ $t("End") }}: {{ $root.datetimeMaintenance(maintenance.end_date) }}</span>
             </p>
 
-            <div class="functions" style="margin-top: 10px">
+            <div class="functions" style="margin-top: 10px;">
                 <router-link :to=" '/editMaintenance/' + maintenance.id " class="btn btn-secondary">
                     <font-awesome-icon icon="edit" /> {{ $t("Edit") }}
                 </router-link>
@@ -17,13 +17,20 @@
                 </button>
             </div>
 
-            <label for="description" class="form-label" style="margin-top: 20px">{{ $t("Description") }}</label>
+            <label for="description" class="form-label" style="margin-top: 20px;">{{ $t("Description") }}</label>
             <textarea id="description" v-model="maintenance.description" class="form-control" disabled></textarea>
 
-            <label for="affected_monitors" class="form-label" style="margin-top: 20px">{{ $t("Affected Monitors") }}</label>
+            <label for="affected_monitors" class="form-label" style="margin-top: 20px;">{{ $t("Affected Monitors") }}</label>
             <br>
-            <button v-for="monitor in affectedMonitors" :key="monitor.id" class="btn btn-monitor" style="margin: 5px; cursor: auto; color: white; font-weight: bold">
+            <button v-for="monitor in affectedMonitors" :key="monitor.id" class="btn btn-monitor" style="margin: 5px; cursor: auto; color: white; font-weight: bold;">
                 {{ monitor }}
+            </button>
+            <br />
+
+            <label for="selected_status_pages" class="form-label" style="margin-top: 20px;">{{ $t("Selected status pages") }}</label>
+            <br>
+            <button v-for="statusPage in selectedStatusPages" :key="statusPage.id" class="btn btn-monitor" style="margin: 5px; cursor: auto; color: white; font-weight: bold;">
+                {{ statusPage }}
             </button>
 
             <Confirm ref="confirmDelete" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="deleteMaintenance">
@@ -45,6 +52,7 @@ export default {
     data() {
         return {
             affectedMonitors: [],
+            selectedStatusPages: [],
         };
     },
     computed: {
@@ -61,6 +69,14 @@ export default {
             this.$root.getSocket().emit("getMonitorMaintenance", this.$route.params.id, (res) => {
                 if (res.ok) {
                     this.affectedMonitors = Object.values(res.monitors).map(monitor => monitor.name);
+                } else {
+                    toast.error(res.msg);
+                }
+            });
+
+            this.$root.getSocket().emit("getMaintenanceStatusPage", this.$route.params.id, (res) => {
+                if (res.ok) {
+                    this.selectedStatusPages = Object.values(res.statusPages).map(statusPage => statusPage.title);
                 } else {
                     toast.error(res.msg);
                 }
