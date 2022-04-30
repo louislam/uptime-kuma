@@ -2,6 +2,7 @@ import { createI18n } from "vue-i18n/index";
 import en from "./languages/en";
 
 const languageList = {
+    "cs-CZ": "Čeština",
     "zh-HK": "繁體中文 (香港)",
     "bg-BG": "Български",
     "de-DE": "Deutsch (Deutschland)",
@@ -27,8 +28,9 @@ const languageList = {
     "zh-CN": "简体中文",
     "pl": "Polski",
     "et-EE": "eesti",
-    "vi": "Vietnamese",
-    "zh-TW": "繁體中文 (台灣)"
+    "vi-VN": "Tiếng Việt",
+    "zh-TW": "繁體中文 (台灣)",
+    "uk-UA": "Український",
 };
 
 let messages = {
@@ -41,7 +43,7 @@ for (let lang in languageList) {
     };
 }
 
-const rtlLangs = ["fa"];
+const rtlLangs = [ "fa" ];
 
 export const currentLocale = () => localStorage.locale
     || languageList[navigator.language] && navigator.language

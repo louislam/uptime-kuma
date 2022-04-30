@@ -69,7 +69,7 @@
 
             <div class="mb-2">
                 <input
-                    id="importBackup"
+                    id="import-backend"
                     type="file"
                     class="form-control"
                     accept="application/json"
@@ -94,7 +94,7 @@
             <div
                 v-if="importAlert"
                 class="alert alert-danger mt-3"
-                style="padding: 6px 16px"
+                style="padding: 6px 16px;"
             >
                 {{ importAlert }}
             </div>
@@ -159,7 +159,7 @@ export default {
 
         importBackup() {
             this.processing = true;
-            let uploadItem = document.getElementById("importBackup").files;
+            let uploadItem = document.getElementById("import-backend").files;
 
             if (uploadItem.length <= 0) {
                 this.processing = false;
@@ -198,7 +198,7 @@ export default {
 @import "../../assets/vars.scss";
 
 .dark {
-    #importBackup {
+    #import-backend {
         &::file-selector-button {
             color: $primary;
             background-color: $dark-bg;

@@ -10,6 +10,7 @@ class Slack extends NotificationProvider {
     /**
      * Deprecated property notification.slackbutton
      * Set it as primary base url if this is not yet set.
+     * @param {string} url The primary base URL to use
      */
     static async deprecateURL(url) {
         let currentPrimaryBaseURL = await setting("primaryBaseURL");

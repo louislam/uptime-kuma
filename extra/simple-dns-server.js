@@ -26,7 +26,7 @@ server.on("request", (request, send, rinfo) => {
                     ttl: 300,
                     address: "1.2.3.4"
                 });
-            } if (question.type === Packet.TYPE.AAAA) {
+            } else if (question.type === Packet.TYPE.AAAA) {
                 response.answers.push({
                     name: question.name,
                     type: question.type,
