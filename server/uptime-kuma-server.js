@@ -7,6 +7,7 @@ const { R } = require("redbean-node");
 const { log } = require("../src/util");
 const Database = require("./database");
 const util = require("util");
+const { PluginsManager } = require("./plugins-manager");
 
 /**
  * `module.exports` (alias: `server`) should be inside this class, in order to avoid circular dependency issue.
@@ -34,6 +35,12 @@ class UptimeKumaServer {
      * @type {string}
      */
     indexHTML = "";
+
+    /**
+     * Plugins Manager
+     * @type {PluginsManager}
+     */
+    pluginsManager = null;
 
     static getInstance(args) {
         if (UptimeKumaServer.instance == null) {
@@ -126,6 +133,11 @@ class UptimeKumaServer {
 
         errorLogStream.end();
     }
+
+    loadPlugins(dir) {
+        this.pluginsManager = new PluginsManager(dir);
+    }
+
 }
 
 module.exports = {

@@ -153,6 +153,8 @@ let needSetup = false;
     Database.init(args);
     await initDatabase(testMode);
 
+    server.loadPlugins(Database.dataDir + "plugins/");
+
     exports.entryPage = await setting("entryPage");
     await StatusPage.loadDomainMappingList();
 
