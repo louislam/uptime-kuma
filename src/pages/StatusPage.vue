@@ -198,7 +198,7 @@
             <!-- Maintenance -->
             <template v-if="maintenance.length !== 0">
                 <div
-                    v-for="maintenanceItem in maintenance" class="shadow-box alert mb-4 p-4 maintenance" role="alert"
+                    v-for="maintenanceItem in maintenance" :key="maintenanceItem.id" class="shadow-box alert mb-4 p-4 maintenance" role="alert"
                     :class="maintenanceClass"
                 >
                     <h4 class="alert-heading" v-text="maintenanceItem.title" />

@@ -1,7 +1,7 @@
 <template>
     <transition name="slide-fade" appear>
         <div v-if="maintenance">
-            <h1> {{ maintenance.title }}</h1>
+            <h1>{{ maintenance.title }}</h1>
             <p class="url">
                 <span>{{ $t("Start") }}: {{ $root.datetimeMaintenance(maintenance.start_date) }}</span>
                 <br>
@@ -18,11 +18,11 @@
             </div>
 
             <label for="description" class="form-label" style="margin-top: 20px">{{ $t("Description") }}</label>
-            <textarea id="description" class="form-control" disabled>{{ maintenance.description }}</textarea>
+            <textarea id="description" v-model="maintenance.description" class="form-control" disabled></textarea>
 
             <label for="affected_monitors" class="form-label" style="margin-top: 20px">{{ $t("Affected Monitors") }}</label>
             <br>
-            <button v-for="monitor in affectedMonitors" class="btn btn-monitor" style="margin: 5px; cursor: auto; color: white; font-weight: bold">
+            <button v-for="monitor in affectedMonitors" :key="monitor.id" class="btn btn-monitor" style="margin: 5px; cursor: auto; color: white; font-weight: bold">
                 {{ monitor }}
             </button>
 

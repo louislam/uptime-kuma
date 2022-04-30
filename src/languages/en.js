@@ -15,7 +15,6 @@ export default {
     "Pick Affected Monitors...": "Pick Affected Monitors...",
     "Start of maintenance": "Start of maintenance",
     "Expected end of maintenance": "Expected end of maintenance",
-    Start: "Start",
     End: "End",
     affectedMonitorsDescription: "Select monitors that are affected by current maintenance",
     atLeastOneMonitor: "Select at least one affected monitor",

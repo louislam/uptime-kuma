@@ -87,7 +87,6 @@
 </template>
 
 <script>
-import CopyableInput from "../components/CopyableInput.vue";
 
 import { useToast } from "vue-toastification";
 import VueMultiselect from "vue-multiselect";
@@ -96,7 +95,6 @@ const toast = useToast();
 
 export default {
     components: {
-        CopyableInput,
         VueMultiselect,
     },
 
