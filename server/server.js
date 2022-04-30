@@ -1740,6 +1740,11 @@ async function afterLogin(socket, user) {
     }
 }
 
+/**
+ * Get a list of maintenances for the given user.
+ * @param {string} userID - The ID of the user to get maintenances for.
+ * @returns {Promise<Object>} A promise that resolves to an object with maintenance IDs as keys and maintenances objects as values.
+ */
 async function getMaintenanceJSONList(userID) {
     let result = {};
 

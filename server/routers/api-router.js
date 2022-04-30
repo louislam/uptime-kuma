@@ -156,7 +156,7 @@ router.get("/api/status-page/:slug", cache("5 minutes"), async (request, respons
     }
 
 });
-// TODO: make slug aware
+
 // Status Page - Maintenance List
 async function getMaintenanceList() {
     try {

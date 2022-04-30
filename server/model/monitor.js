@@ -947,6 +947,11 @@ class Monitor extends BeanModel {
         ]);
     }
 
+    /**
+     * Check if monitor is under maintenance
+     * @param {number} monitorID ID of monitor to check
+     * @returns {Promise<boolean>}
+     */
     static async isUnderMaintenance(monitorID) {
         const maintenance = await R.getRow("SELECT COUNT(*) AS count FROM monitor_maintenance mm JOIN maintenance ON mm.maintenance_id = maintenance.id WHERE mm.monitor_id = ? AND datetime(maintenance.start_date) <= datetime('now') AND datetime(maintenance.end_date) >= datetime('now') LIMIT 1", [ monitorID ]);
         return maintenance.count !== 0;
