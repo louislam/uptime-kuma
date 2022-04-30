@@ -196,19 +196,29 @@
             </div>
 
             <!-- Maintenance -->
-            <template v-if="maintenance.length !== 0">
+            <template v-if="maintenance.length">
                 <div
-                    v-for="maintenanceItem in maintenance" :key="maintenanceItem.id" class="shadow-box alert mb-4 p-4 maintenance" role="alert"
-                    :class="maintenanceClass"
+                    v-for="maintenanceItem in maintenance" :key="maintenanceItem.id"
+                    class="shadow-box alert mb-4 p-4 maintenance mt-4 position-relative" role="alert"
                 >
-                    <h4 class="alert-heading" v-text="maintenanceItem.title" />
+                    <div class="item">
+                        <div class="row">
+                            <div class="col-1 col-md-1 d-flex justify-content-center align-items-center">
+                                <font-awesome-icon
+                                    icon="wrench"
+                                    class="maintenance-icon maintenance-bg-info"
+                                />
+                            </div>
+                            <div class="col-11 col-md-11">
+                                <h4 class="alert-heading">{{ maintenanceItem.title }}</h4>
+                                <div class="content">{{ maintenanceItem.description }}</div>
 
-                    <div class="content" v-text="maintenanceItem.description" />
-
-                    <!-- Incident Date -->
-                    <div class="date mt-3">
-                        {{ $t("End") }}: {{ $root.datetimeMaintenance(maintenanceItem.end_date) }}
-                        ({{ dateFromNow(maintenanceItem.start_date) }})<br />
+                                <div class="date mt-3">
+                                    {{ $t("End") }}: {{ $root.datetimeMaintenance(maintenanceItem.end_date) }}
+                                    ({{ dateFromNow(maintenanceItem.start_date) }})<br />
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </template>
@@ -933,20 +943,22 @@ footer {
     }
 }
 
-.maintenance {
-    color: white;
-
-    .date {
-        font-size: 12px;
-    }
+.maintenance-bg-info {
+    color: $maintenance;
 }
 
-.bg-maintenance {
-    background-color: $maintenance;
+.maintenance-icon {
+    font-size: 30px;
+    vertical-align: middle;
+}
+
+.dark .shadow-box {
+    background-color: #0d1117;
 }
 
 .statusMaintenance {
     color: $maintenance;
+    margin-right: 5px;
 }
 
 .mobile {
