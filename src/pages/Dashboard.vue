@@ -8,12 +8,12 @@
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li>
-                            <button type="button" class="dropdown-item" @click="this.$router.push('/add')">
+                            <button type="button" class="dropdown-item" @click="$router.push('/add')">
                                 <font-awesome-icon icon="heartbeat" /> {{ $t("Monitor") }}
                             </button>
                         </li>
                         <li>
-                            <button type="button" class="dropdown-item" @click="this.$router.push('/addMaintenance')">
+                            <button type="button" class="dropdown-item" @click="$router.push('/addMaintenance')">
                                 <font-awesome-icon icon="exclamation-circle" /> {{ $t("Maintenance") }}
                             </button>
                         </li>

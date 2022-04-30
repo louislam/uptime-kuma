@@ -212,8 +212,7 @@ class Monitor extends BeanModel {
                 if (await Monitor.isUnderMaintenance(this.id)) {
                     bean.msg = "Monitor under maintenance";
                     bean.status = MAINTENANCE;
-                }
-                else if (this.type === "http" || this.type === "keyword") {
+                } else if (this.type === "http" || this.type === "keyword") {
                     // Do not do any queries/high loading things before the "bean.ping"
                     let startTime = dayjs().valueOf();
 
@@ -482,8 +481,7 @@ class Monitor extends BeanModel {
                 if (Monitor.isImportantForNotification(isFirstBeat, previousBeat?.status, bean.status)) {
                     log.debug("monitor", `[${this.name}] sendNotification`);
                     await Monitor.sendNotification(isFirstBeat, this, bean);
-                }
-                else {
+                } else {
                     log.debug("monitor", `[${this.name}] will not sendNotification because it is (or was) under maintenance`);
                 }
 
@@ -950,7 +948,7 @@ class Monitor extends BeanModel {
     }
 
     static async isUnderMaintenance(monitorID) {
-        const maintenance = await R.getRow("SELECT COUNT(*) AS count FROM monitor_maintenance mm JOIN maintenance ON mm.maintenance_id = maintenance.id WHERE mm.monitor_id = ? AND datetime(maintenance.start_date) <= datetime('now') AND datetime(maintenance.end_date) >= datetime('now') LIMIT 1", [monitorID]);
+        const maintenance = await R.getRow("SELECT COUNT(*) AS count FROM monitor_maintenance mm JOIN maintenance ON mm.maintenance_id = maintenance.id WHERE mm.monitor_id = ? AND datetime(maintenance.start_date) <= datetime('now') AND datetime(maintenance.end_date) >= datetime('now') LIMIT 1", [ monitorID ]);
         return maintenance.count !== 0;
     }
 }

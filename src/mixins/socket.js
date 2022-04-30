@@ -464,8 +464,7 @@ export default {
                         text: this.$t("Maintenance"),
                         color: "maintenance",
                     };
-                }
-                else if (! lastHeartBeat) {
+                } else if (! lastHeartBeat) {
                     result[monitorID] = unknown;
                 } else if (lastHeartBeat.status === 1) {
                     result[monitorID] = {
@@ -505,8 +504,7 @@ export default {
 
                 if (monitor && monitor.maintenance) {
                     result.maintenance++;
-                }
-                else if (monitor && ! monitor.active) {
+                } else if (monitor && ! monitor.active) {
                     result.pause++;
                 } else if (beat) {
                     if (beat.status === 1) {

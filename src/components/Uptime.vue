@@ -15,7 +15,7 @@ export default {
 
     computed: {
         uptime() {
-            
+
             if (this.type === "maintenance") {
                 return this.$t("Maintenance");
             }
@@ -31,9 +31,9 @@ export default {
 
         color() {
             if (this.type === "maintenance" || this.monitor.maintenance) {
-                return "maintenance"
+                return "maintenance";
             }
-            
+
             if (this.lastHeartBeat.status === 0) {
                 return "danger";
             }

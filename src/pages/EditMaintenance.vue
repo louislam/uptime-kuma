@@ -11,15 +11,19 @@
                             <!-- Title -->
                             <div class="my-3">
                                 <label for="name" class="form-label">{{ $t("Title") }}</label>
-                                <input id="name" v-model="maintenance.title" type="text" class="form-control"
-                                       :placeholder="titlePlaceholder" required>
+                                <input
+                                    id="name" v-model="maintenance.title" type="text" class="form-control"
+                                    :placeholder="titlePlaceholder" required
+                                >
                             </div>
 
                             <!-- Description -->
                             <div class="my-3">
                                 <label for="description" class="form-label">{{ $t("Description") }}</label>
-                                <textarea id="description" v-model="maintenance.description" class="form-control"
-                                          :placeholder="descriptionPlaceholder"></textarea>
+                                <textarea
+                                    id="description" v-model="maintenance.description" class="form-control"
+                                    :placeholder="descriptionPlaceholder"
+                                ></textarea>
                             </div>
 
                             <!-- Affected Monitors -->
@@ -50,21 +54,28 @@
 
                             <!-- Start Date Time -->
                             <div class="my-3">
-                                <label for="start_date" class="form-label">{{ $t("Start of maintenance") }} ({{this.$root.timezone}})</label>
-                                <input :type="'datetime-local'" id="start_date" v-model="maintenance.start_date"
-                                       class="form-control" :class="{'darkCalendar': dark }" required>
+                                <label for="start_date" class="form-label">{{ $t("Start of maintenance") }} ({{ $root.timezone }})</label>
+                                <input
+                                    id="start_date" v-model="maintenance.start_date" :type="'datetime-local'"
+                                    class="form-control" :class="{'darkCalendar': dark }" required
+                                >
                             </div>
 
                             <!-- End Date Time -->
                             <div class="my-3">
-                                <label for="end_date" class="form-label">{{ $t("Expected end of maintenance") }} ({{this.$root.timezone}})</label>
-                                <input :type="'datetime-local'" id="end_date" v-model="maintenance.end_date"
-                                       class="form-control" :class="{'darkCalendar': dark }" required>
+                                <label for="end_date" class="form-label">{{ $t("Expected end of maintenance") }} ({{ $root.timezone }})</label>
+                                <input
+                                    id="end_date" v-model="maintenance.end_date" :type="'datetime-local'"
+                                    class="form-control" :class="{'darkCalendar': dark }" required
+                                >
                             </div>
 
                             <div class="mt-5 mb-1">
-                                <button id="monitor-submit-btn" class="btn btn-primary" type="submit"
-                                        :disabled="processing">{{ $t("Save") }}
+                                <button
+                                    id="monitor-submit-btn" class="btn btn-primary" type="submit"
+                                    :disabled="processing"
+                                >
+                                    {{ $t("Save") }}
                                 </button>
                             </div>
                         </div>
@@ -78,7 +89,7 @@
 <script>
 import CopyableInput from "../components/CopyableInput.vue";
 
-import {useToast} from "vue-toastification";
+import { useToast } from "vue-toastification";
 import VueMultiselect from "vue-multiselect";
 
 const toast = useToast();
@@ -145,7 +156,7 @@ export default {
     methods: {
         init() {
             this.affectedMonitors = [];
-            
+
             if (this.isAdd) {
                 this.maintenance = {
                     title: "",

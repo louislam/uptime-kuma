@@ -104,15 +104,16 @@
 
                 <!-- Uploader -->
                 <!--    url="/api/status-page/upload-logo" -->
-                <ImageCropUpload v-model="showImageCropUpload"
-                                 field="img"
-                                 :width="128"
-                                 :height="128"
-                                 :langType="$i18n.locale"
-                                 img-format="png"
-                                 :noCircle="true"
-                                 :noSquare="false"
-                                 @crop-success="cropSuccess"
+                <ImageCropUpload
+                    v-model="showImageCropUpload"
+                    field="img"
+                    :width="128"
+                    :height="128"
+                    :langType="$i18n.locale"
+                    img-format="png"
+                    :noCircle="true"
+                    :noSquare="false"
+                    @crop-success="cropSuccess"
                 />
 
                 <!-- Title -->
@@ -196,16 +197,18 @@
 
             <!-- Maintenance -->
             <template v-if="maintenance.length !== 0">
-                <div v-for="maintenanceItem in maintenance" class="shadow-box alert mb-4 p-4 maintenance" role="alert"
-                     :class="maintenanceClass">
-                    <h4 v-text="maintenanceItem.title" class="alert-heading"/>
+                <div
+                    v-for="maintenanceItem in maintenance" class="shadow-box alert mb-4 p-4 maintenance" role="alert"
+                    :class="maintenanceClass"
+                >
+                    <h4 class="alert-heading" v-text="maintenanceItem.title" />
 
-                    <div v-text="maintenanceItem.description" class="content"/>
+                    <div class="content" v-text="maintenanceItem.description" />
 
                     <!-- Incident Date -->
                     <div class="date mt-3">
                         {{ $t("End") }}: {{ $root.datetimeMaintenance(maintenanceItem.end_date) }}
-                        ({{ dateFromNow(maintenanceItem.start_date) }})<br/>
+                        ({{ dateFromNow(maintenanceItem.start_date) }})<br />
                     </div>
                 </div>
             </template>
@@ -448,8 +451,7 @@ export default {
 
                 if (beat.status === MAINTENANCE) {
                     return STATUS_PAGE_MAINTENANCE;
-                }
-                else if (beat.status === UP) {
+                } else if (beat.status === UP) {
                     hasUp = true;
                 } else {
                     status = STATUS_PAGE_PARTIAL_DOWN;

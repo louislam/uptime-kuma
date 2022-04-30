@@ -3,8 +3,8 @@
         <div class="list-header">
             <div class="search-wrapper float-start">
                 <select v-model="selectedList" class="form-control">
-                    <option value="monitor" selected>{{$t('Monitor List')}}</option>
-                    <option value="maintenance">{{$t('Maintenance List')}}</option>
+                    <option value="monitor" selected>{{ $t('Monitor List') }}</option>
+                    <option value="maintenance">{{ $t('Maintenance List') }}</option>
                 </select>
             </div>
             <div class="search-wrapper">
@@ -27,39 +27,55 @@
                 {{ $t("No Maintenance, please") }} <router-link to="/addMaintenance">{{ $t("add one") }}</router-link>
             </div>
 
-            <router-link v-if="selectedList === 'maintenance'" v-for="(item, index) in sortedMaintenanceList" :key="index" :to="maintenanceURL(item.id)" class="item" :class="{ 'disabled': !this.$root.isActiveMaintenance(item.end_date) }">
-                <div class="row">
-                    <div class="col-9 col-md-8 small-padding">
-                        <div class="info">
-                            <Uptime :monitor="null" type="maintenance" :pill="true" />
-                            {{ item.title }}
+            <template v-if="selectedList === 'maintenance'">
+                <router-link
+                    v-for="(item, index) in sortedMaintenanceList" :key="index" :to="maintenanceURL(item.id)"
+                    class="item" :class="{ 'disabled': !$root.isActiveMaintenance(item.end_date) }"
+                >
+                    <div class="row">
+                        <div class="col-9 col-md-8 small-padding">
+                            <div class="info">
+                                <Uptime :monitor="null" type="maintenance" :pill="true" />
+                                {{ item.title }}
+                            </div>
                         </div>
                     </div>
-                </div>
-            </router-link>
+                </router-link>
+            </template>
 
-            <router-link v-if="selectedList === 'monitor'" v-for="(item, index) in sortedMonitorList" :key="index" :to="monitorURL(item.id)" class="item" :class="{ 'disabled': ! item.active }">
-                <div class="row">
-                    <div class="col-9 col-md-8 small-padding" :class="{ 'monitor-item': $root.userHeartbeatBar == 'bottom' || $root.userHeartbeatBar == 'none' }">
-                        <div class="info">
-                            <Uptime :monitor="item" type="24" :pill="true" />
-                            {{ item.name }}
+            <template v-if="selectedList === 'monitor'">
+                <router-link
+                    v-for="(item, index) in sortedMonitorList" :key="index" :to="monitorURL(item.id)"
+                    class="item" :class="{ 'disabled': ! item.active }"
+                >
+                    <div class="row">
+                        <div
+                            class="col-9 col-md-8 small-padding"
+                            :class="{ 'monitor-item': $root.userHeartbeatBar == 'bottom' || $root.userHeartbeatBar == 'none' }"
+                        >
+                            <div class="info">
+                                <Uptime :monitor="item" type="24" :pill="true" />
+                                {{ item.name }}
+                            </div>
+                            <div class="tags">
+                                <Tag v-for="tag in item.tags" :key="tag" :item="tag" :size="'sm'" />
+                            </div>
                         </div>
-                        <div class="tags">
-                            <Tag v-for="tag in item.tags" :key="tag" :item="tag" :size="'sm'" />
+                        <div
+                            v-show="$root.userHeartbeatBar == 'normal'" :key="$root.userHeartbeatBar"
+                            class="col-3 col-md-4"
+                        >
+                            <HeartbeatBar size="small" :monitor-id="item.id" />
                         </div>
                     </div>
-                    <div v-show="$root.userHeartbeatBar == 'normal'" :key="$root.userHeartbeatBar" class="col-3 col-md-4">
-                        <HeartbeatBar size="small" :monitor-id="item.id" />
-                    </div>
-                </div>
 
-                <div v-if="$root.userHeartbeatBar == 'bottom'" class="row">
-                    <div class="col-12 bottom-style">
-                        <HeartbeatBar size="small" :monitor-id="item.id" />
+                    <div v-if="$root.userHeartbeatBar == 'bottom'" class="row">
+                        <div class="col-12 bottom-style">
+                            <HeartbeatBar size="small" :monitor-id="item.id" />
+                        </div>
                     </div>
-                </div>
-            </router-link>
+                </router-link>
+            </template>
         </div>
     </div>
 </template>
@@ -281,7 +297,6 @@ export default {
     padding-left: 67px;
     margin-top: 5px;
 }
-
 
 .bg-maintenance {
     background-color: $maintenance;

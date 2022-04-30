@@ -34,10 +34,11 @@ export default {
             const inputDate = new Date(value);
             const now = new Date(Date.now());
 
-            if (inputDate.getFullYear() === now.getUTCFullYear() && inputDate.getMonth() === now.getUTCMonth() && inputDate.getDay() === now.getUTCDay())
+            if (inputDate.getFullYear() === now.getUTCFullYear() && inputDate.getMonth() === now.getUTCMonth() && inputDate.getDay() === now.getUTCDay()) {
                 return this.datetimeFormat(value, "HH:mm");
-            else
+            } else {
                 return this.datetimeFormat(value, "YYYY-MM-DD HH:mm");
+            }
         },
 
         date(value) {

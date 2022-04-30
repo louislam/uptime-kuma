@@ -3,9 +3,9 @@
         <div v-if="maintenance">
             <h1> {{ maintenance.title }}</h1>
             <p class="url">
-                <span>{{$t("Start")}}: {{ $root.datetimeMaintenance(maintenance.start_date) }}</span>
+                <span>{{ $t("Start") }}: {{ $root.datetimeMaintenance(maintenance.start_date) }}</span>
                 <br>
-                <span>{{$t("End")}}: {{ $root.datetimeMaintenance(maintenance.end_date) }}</span>
+                <span>{{ $t("End") }}: {{ $root.datetimeMaintenance(maintenance.end_date) }}</span>
             </p>
 
             <div class="functions" style="margin-top: 10px">
@@ -22,7 +22,7 @@
 
             <label for="affected_monitors" class="form-label" style="margin-top: 20px">{{ $t("Affected Monitors") }}</label>
             <br>
-            <button v-for="monitor in this.affectedMonitors" class="btn btn-monitor" style="margin: 5px; cursor: auto; color: white; font-weight: bold">
+            <button v-for="monitor in affectedMonitors" class="btn btn-monitor" style="margin: 5px; cursor: auto; color: white; font-weight: bold">
                 {{ monitor }}
             </button>
 
@@ -66,7 +66,7 @@ export default {
                 }
             });
         },
-        
+
         deleteDialog() {
             this.$refs.confirmDelete.show();
         },
