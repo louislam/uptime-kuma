@@ -96,7 +96,6 @@ class AliyunSMS extends NotificationProvider {
         // Escape more characters than encodeURIComponent does.
         // For generating Aliyun signature, all characters except A-Za-z0-9~-._ are encoded.
         // See https://help.aliyun.com/document_detail/315526.html
-
         let moreEscapesTable = function (m) {
             return {
                 "!": "%21",
