@@ -128,6 +128,8 @@ router.get("/api/status-page/:slug", cache("5 minutes"), async (request, respons
             incident = incident.toPublicJSON();
         }
 
+        let maintenance = await getMaintenanceList();
+
         // Public Group List
         const publicGroupList = [];
         const showTags = !!statusPage.show_tags;
@@ -145,6 +147,7 @@ router.get("/api/status-page/:slug", cache("5 minutes"), async (request, respons
         response.json({
             config: await statusPage.toPublicJSON(),
             incident,
+            maintenance,
             publicGroupList
         });
 
@@ -153,15 +156,10 @@ router.get("/api/status-page/:slug", cache("5 minutes"), async (request, respons
     }
 
 });
-
-//TODO: make OK with new multi status pages
+// TODO: make slug aware
 // Status Page - Maintenance List
-// Can fetch only if published
-router.get("/api/status-page/maintenance-list", async (_request, response) => {
-    allowDevAllOrigin(response);
-
+async function getMaintenanceList() {
     try {
-        await checkPublished();
         const publicMaintenanceList = [];
 
         let maintenanceBeanList = R.convertToBeans("maintenance", await R.getAll(`
@@ -176,12 +174,12 @@ router.get("/api/status-page/maintenance-list", async (_request, response) => {
             publicMaintenanceList.push(await bean.toPublicJSON());
         }
 
-        response.json(publicMaintenanceList);
+        return publicMaintenanceList;
 
     } catch (error) {
-        send403(response, error.message);
+        return null;
     }
-});
+}
 
 // Status Page Polling Data
 // Can fetch only if published

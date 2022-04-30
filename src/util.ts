@@ -280,7 +280,7 @@ export function genSecret(length = 64) {
 }
 
 export function getMonitorRelativeURL(id: string) {
-    return "/dashboard/monitor/" + id;
+    return "/dashboard/" + id;
 }
 
 export function getMaintenanceRelativeURL(id: string) {

@@ -17,7 +17,7 @@
                     </div>
                     <div class="col">
                         <h3>{{ $t("Maintenance") }}</h3>
-                        <span class="num text-maintenance">{{ stats.maintenance }}</span>
+                        <span class="num text-maintenance">{{ $root.stats.maintenance }}</span>
                     </div>
                     <div class="col">
                         <h3>{{ $t("Unknown") }}</h3>

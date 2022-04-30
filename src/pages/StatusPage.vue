@@ -195,16 +195,20 @@
             </div>
 
             <!-- Maintenance -->
-            <div v-if="maintenance.length !== 0" v-for="maintenanceItem in maintenance" class="shadow-box alert mb-4 p-4 maintenance" role="alert" :class="maintenanceClass">
-                <h4 v-text="maintenanceItem.title" class="alert-heading" />
+            <template v-if="maintenance.length !== 0">
+                <div v-for="maintenanceItem in maintenance" class="shadow-box alert mb-4 p-4 maintenance" role="alert"
+                     :class="maintenanceClass">
+                    <h4 v-text="maintenanceItem.title" class="alert-heading"/>
 
-                <div v-text="maintenanceItem.description" class="content" />
+                    <div v-text="maintenanceItem.description" class="content"/>
 
-                <!-- Incident Date -->
-                <div class="date mt-3">
-                    {{ $t("End") }}: {{ $root.datetimeMaintenance(maintenanceItem.end_date) }} ({{ dateFromNow(maintenanceItem.start_date) }})<br />
+                    <!-- Incident Date -->
+                    <div class="date mt-3">
+                        {{ $t("End") }}: {{ $root.datetimeMaintenance(maintenanceItem.end_date) }}
+                        ({{ dateFromNow(maintenanceItem.start_date) }})<br/>
+                    </div>
                 </div>
-            </div>
+            </template>
 
             <!-- Overall Status -->
             <div class="shadow-box list  p-4 overall-status mb-4">
@@ -300,7 +304,7 @@
 import axios from "axios";
 import PublicGroupList from "../components/PublicGroupList.vue";
 import ImageCropUpload from "vue-image-crop-upload";
-import { STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_MAINTENANCE, STATUS_PAGE_PARTIAL_DOWN, UP } from "../util.ts";
+import { STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_MAINTENANCE, STATUS_PAGE_PARTIAL_DOWN, UP, MAINTENANCE } from "../util.ts";
 import { useToast } from "vue-toastification";
 import dayjs from "dayjs";
 import Favico from "favico.js";
@@ -579,12 +583,8 @@ export default {
             }
 
             this.incident = res.data.incident;
+            this.maintenance = res.data.maintenance;
             this.$root.publicGroupList = res.data.publicGroupList;
-        });
-
-        //TODO: make OK with multi status pages
-        axios.get("/api/status-page/maintenance-list").then((res) => {
-            this.maintenance = res.data;
         });
 
         // 5mins a loop

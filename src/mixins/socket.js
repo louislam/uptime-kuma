@@ -494,6 +494,7 @@ export default {
             let result = {
                 up: 0,
                 down: 0,
+                maintenance: 0,
                 unknown: 0,
                 pause: 0,
             };
@@ -502,7 +503,10 @@ export default {
                 let beat = this.$root.lastHeartbeatList[monitorID];
                 let monitor = this.$root.monitorList[monitorID];
 
-                if (monitor && ! monitor.active) {
+                if (monitor && monitor.maintenance) {
+                    result.maintenance++;
+                }
+                else if (monitor && ! monitor.active) {
                     result.pause++;
                 } else if (beat) {
                     if (beat.status === 1) {

@@ -24,7 +24,7 @@ import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
 import { LineChart } from "vue-chart-3";
 import { useToast } from "vue-toastification";
-import { DOWN, MAINTENANCE } from "../util.ts";
+import { DOWN, PENDING, MAINTENANCE } from "../util.ts";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -187,7 +187,7 @@ export default {
                         x,
                         y: (beat.status === DOWN || beat.status === MAINTENANCE || beat.status === PENDING) ? 1 : 0,
                     });
-                    colorData.push((beat.status === MAINTENANCE) ? "rgba(23,71,245,0.41)" : ((beat.status === PENDING) ? "rgba(245,182,23,0.41)" : "#DC354568"))
+                    colorData.push((beat.status === MAINTENANCE) ? "rgba(23,71,245,0.41)" : ((beat.status === PENDING) ? "rgba(245,182,23,0.41)" : "#DC354568"));
                 });
 
             return {
