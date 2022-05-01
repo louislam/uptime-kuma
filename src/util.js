@@ -102,7 +102,7 @@ class Logger {
         }
         else if (level === "DEBUG") {
             if (exports.isDev) {
-                console.debug(formattedMessage);
+                console.log(formattedMessage);
             }
         }
         else {

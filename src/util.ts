@@ -113,7 +113,7 @@ class Logger {
             console.error(formattedMessage);
         } else if (level === "DEBUG") {
             if (isDev) {
-                console.debug(formattedMessage);
+                console.log(formattedMessage);
             }
         } else {
             console.log(formattedMessage);
