@@ -218,7 +218,6 @@ export default {
         // Update chart data when the selected chart period changes
         chartPeriodHrs: function (newPeriod) {
             if (newPeriod === "0") {
-                newPeriod = null;
                 this.heartbeatList = null;
                 this.$root.storage().removeItem(`chart-period-${this.monitorId}`);
             } else {
@@ -241,7 +240,7 @@ export default {
         // And mirror latest change to this.heartbeatList
         this.$watch(() => this.$root.heartbeatList[this.monitorId],
             (heartbeatList) => {
-                if (this.chartPeriodHrs !== 0) {
+                if (this.chartPeriodHrs !== "0") {
                     const newBeat = heartbeatList.at(-1);
                     if (newBeat && dayjs.utc(newBeat.time) > dayjs.utc(this.heartbeatList.at(-1)?.time)) {
                         this.heartbeatList.push(heartbeatList.at(-1));
