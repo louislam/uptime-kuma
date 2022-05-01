@@ -16,8 +16,7 @@ const { demoMode } = require("../config");
 const version = require("../../package.json").version;
 const apicache = require("../modules/apicache");
 
-require = require("esm")(module);
-const axiosCachedDnsResolve = require("axios-cached-dns-resolve");
+const axiosCachedDnsResolve = require("esm")(module)("axios-cached-dns-resolve");
 
 // create an axios client instance with the cached DNS resolve interceptor
 const axiosClient = axios.create();
