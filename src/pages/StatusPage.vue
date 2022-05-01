@@ -274,7 +274,7 @@
             {{ $t("deleteStatusPageMsg") }}
         </Confirm>
 
-        <component :is="style" v-if="config.customCSS" type="text/css">
+        <component is="style" v-if="config.customCSS" type="text/css">
             {{ config.customCSS }}
         </component>
     </div>
