@@ -4,7 +4,7 @@ const { R } = require("redbean-node");
 const apicache = require("../modules/apicache");
 const Monitor = require("../model/monitor");
 const dayjs = require("dayjs");
-const { UP, flipStatus, log } = require("../../src/util");
+const { UP, DOWN, flipStatus, log } = require("../../src/util");
 const StatusPage = require("../model/status_page");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { makeBadge } = require("badge-maker");
@@ -37,6 +37,8 @@ router.get("/api/push/:pushToken", async (request, response) => {
         let pushToken = request.params.pushToken;
         let msg = request.query.msg || "OK";
         let ping = request.query.ping || null;
+        let statusString = request.query.status || "up";
+        let status = (statusString === "up") ? UP : DOWN;
 
         let monitor = await R.findOne("monitor", " push_token = ? AND active = 1 ", [
             pushToken
@@ -48,7 +50,6 @@ router.get("/api/push/:pushToken", async (request, response) => {
 
         const previousHeartbeat = await Monitor.getPreviousHeartbeat(monitor.id);
 
-        let status = UP;
         if (monitor.isUpsideDown()) {
             status = flipStatus(status);
         }
@@ -399,6 +400,11 @@ async function isPublished() {
     return value;
 }
 
+/**
+ * Send a 403 response
+ * @param {Object} res Express response object
+ * @param {string} [msg=""] Message to send
+ */
 function send403(res, msg = "") {
     res.status(403).json({
         "status": "fail",

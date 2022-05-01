@@ -321,6 +321,8 @@ export default {
             // Set it to empty if done
             this.saveSettings(() => {
                 this.password.currentPassword = "";
+                this.$root.username = null;
+                this.$root.socket.token = "autoLogin";
             }, this.password.currentPassword);
         },
 

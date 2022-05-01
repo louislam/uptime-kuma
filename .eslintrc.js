@@ -40,14 +40,15 @@ module.exports = {
                 SwitchCase: 1,
             },
         ],
-        quotes: [ "warn", "double" ],
+        quotes: [ "error", "double" ],
         semi: "error",
-        "vue/html-indent": [ "warn", 4 ], // default: 2
+        "vue/html-indent": [ "error", 4 ], // default: 2
         "vue/max-attributes-per-line": "off",
         "vue/singleline-html-element-content-newline": "off",
         "vue/html-self-closing": "off",
         "vue/require-component-is": "off",      // not allow is="style" https://github.com/vuejs/eslint-plugin-vue/issues/462#issuecomment-430234675
         "vue/attribute-hyphenation": "off",     // This change noNL to "no-n-l" unexpectedly
+        "vue/multi-word-component-names": "off",
         "no-multi-spaces": [ "error", {
             ignoreEOLComments: true,
         }],
@@ -72,7 +73,7 @@ module.exports = {
         "keyword-spacing": "warn",
         "space-infix-ops": "warn",
         "arrow-spacing": "warn",
-        "no-trailing-spaces": "warn",
+        "no-trailing-spaces": "error",
         "no-constant-condition": [ "error", {
             "checkLoops": false,
         }],
