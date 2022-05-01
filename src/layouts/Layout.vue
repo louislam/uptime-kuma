@@ -71,7 +71,7 @@
         </header>
 
         <main>
-            <router-view v-if="$root.loggedIn || forceShowContent" />
+            <router-view v-if="$root.loggedIn" />
             <Login v-if="! $root.loggedIn && $root.allowLoginDialog" />
         </main>
 

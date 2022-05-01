@@ -24,7 +24,7 @@ import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
 import { LineChart } from "vue-chart-3";
 import { useToast } from "vue-toastification";
-import { DOWN, PENDING, MAINTENANCE } from "../util.ts";
+import { DOWN, PENDING, MAINTENANCE, log } from "../util.ts";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -219,8 +219,9 @@ export default {
     watch: {
         // Update chart data when the selected chart period changes
         chartPeriodHrs: function (newPeriod) {
-            if (newPeriod === "0") {
-                newPeriod = null;
+
+            // eslint-disable-next-line eqeqeq
+            if (newPeriod == "0") {
                 this.heartbeatList = null;
                 this.$root.storage().removeItem(`chart-period-${this.monitorId}`);
             } else {
@@ -243,7 +244,11 @@ export default {
         // And mirror latest change to this.heartbeatList
         this.$watch(() => this.$root.heartbeatList[this.monitorId],
             (heartbeatList) => {
-                if (this.chartPeriodHrs !== 0) {
+
+                log.debug("ping_chart", `this.chartPeriodHrs type ${typeof this.chartPeriodHrs}, value: ${this.chartPeriodHrs}`);
+
+                // eslint-disable-next-line eqeqeq
+                if (this.chartPeriodHrs != "0") {
                     const newBeat = heartbeatList.at(-1);
                     if (newBeat && dayjs.utc(newBeat.time) > dayjs.utc(this.heartbeatList.at(-1)?.time)) {
                         this.heartbeatList.push(heartbeatList.at(-1));
