@@ -103,11 +103,11 @@
                 </div>
             </div>
 
-            <div class="shadow-box table-shadow-box">
-                <label for="dependent-monitors" class="form-label" style="margin-top: 20px; font-weight: bold">{{ $t("monitorDependsOn") }}:</label>
+            <div v-if="dependentMonitors.length" class="shadow-box table-shadow-box">
+                <label for="master-monitors" class="form-label" style="margin-top: 20px; font-weight: bold;">{{ $t("monitorDependsOn") }}:</label>
                 <br>
-                <button v-for="monitor in this.dependentMonitors" class="btn btn-monitor" style="margin: 5px; cursor: auto; color: white; font-weight: 500">
-                    {{ monitor }}
+                <button v-for="masterMonitor in dependentMonitors" :key="masterMonitor.id" class="btn btn-monitor" style="margin: 5px; cursor: auto; color: white; font-weight: 500;">
+                    {{ masterMonitor }}
                 </button>
             </div>
 
@@ -307,7 +307,7 @@ export default {
                 }
             });
         },
-        
+
         testNotification() {
             this.$root.getSocket().emit("testNotification", this.monitor.id);
             toast.success("Test notification is requested.");
@@ -520,6 +520,10 @@ table {
 
 .btn-monitor {
     background-color: #5cdd8b;
+}
+
+.dark .btn-monitor {
+    color: #020b05 !important;
 }
 
 </style>

@@ -498,12 +498,10 @@ class Monitor extends BeanModel {
 
                 if (this.noNotificationIfMasterDown && isDegraded || previousBeat && previousBeat.msg === "Monitor is down and degraded") {
                     log.debug("monitor", `[${this.name}] will not sendNotification because it is/was degraded`);
-                }
-                else if (Monitor.isImportantForNotification(isFirstBeat, previousBeat?.status, bean.status)) {
+                } else if (Monitor.isImportantForNotification(isFirstBeat, previousBeat?.status, bean.status)) {
                     log.debug("monitor", `[${this.name}] sendNotification`);
                     await Monitor.sendNotification(isFirstBeat, this, bean);
-                }
-                else {
+                } else {
                     log.debug("monitor", `[${this.name}] will not sendNotification because it is not required`);
                 }
 

@@ -473,6 +473,7 @@ export default {
             let result = {
                 up: 0,
                 down: 0,
+                degraded: 0,
                 unknown: 0,
                 pause: 0,
             };
@@ -490,6 +491,8 @@ export default {
                         result.down++;
                     } else if (beat.status === 2) {
                         result.up++;
+                    } else if (beat.status === 4) {
+                        result.degraded++;
                     } else {
                         result.unknown++;
                     }

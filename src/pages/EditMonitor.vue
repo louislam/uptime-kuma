@@ -241,12 +241,12 @@
                                 </div>
                             </template>
 
-                            <!-- Dependent Monitors -->
+                            <!-- Master Monitors -->
                             <div class="my-3">
-                                <label for="dependent-monitors" class="form-label">{{ $t("Dependent Monitors") }}</label>
+                                <label for="master-monitors" class="form-label">{{ $t("Master Monitors") }}</label>
 
                                 <VueMultiselect
-                                    id="dependent-monitors"
+                                    id="master-monitors"
                                     v-model="dependentMonitors"
                                     :options="dependentMonitorsOptions"
                                     track-by="id"
@@ -255,14 +255,14 @@
                                     :close-on-select="false"
                                     :clear-on-select="false"
                                     :preserve-search="true"
-                                    :placeholder="$t('Pick Dependent Monitors...')"
+                                    :placeholder="$t('Pick Master Monitors...')"
                                     :preselect-first="false"
                                     :max-height="600"
                                     :taggable="true"
                                 ></VueMultiselect>
 
                                 <div class="form-text">
-                                    {{ $t("dependentMonitorsDescription") }}
+                                    {{ $t("masterMonitorsDescription") }}
                                 </div>
                             </div>
 
@@ -514,7 +514,7 @@ export default {
 
         this.$root.getMonitorList((res) => {
             if (res.ok) {
-                Object.values(this.$root.monitorList).filter(monitor => monitor.id != this.$route.params.id).map(monitor => {
+                Object.values(this.$root.monitorList).filter(monitor => monitor.id !== Number(this.$route.params.id)).map(monitor => {
                     this.dependentMonitorsOptions.push({
                         id: monitor.id,
                         name: monitor.name,
@@ -554,7 +554,7 @@ export default {
     methods: {
         init() {
             this.dependentMonitors = [];
-            
+
             if (this.isAdd) {
 
                 this.monitor = {

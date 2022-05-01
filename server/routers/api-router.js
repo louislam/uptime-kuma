@@ -91,8 +91,7 @@ router.get("/api/push/:pushToken", async (request, response) => {
 
         if (monitor.noNotificationIfMasterDown && isDegraded || previousHeartbeat.msg === "Monitor is down and degraded") {
             log.debug("router", `[${monitor.name}] will not sendNotification because it is/was degraded`);
-        }
-        else if (Monitor.isImportantForNotification(isFirstBeat, previousStatus, status)) {
+        } else if (Monitor.isImportantForNotification(isFirstBeat, previousStatus, status)) {
             await Monitor.sendNotification(isFirstBeat, monitor, bean);
         }
 
