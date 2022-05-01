@@ -37,6 +37,7 @@ module.exports.cloudflaredSocketHandler = (socket) => {
         try {
             checkLogin(socket);
             if (token && typeof token === "string") {
+                await setSetting("cloudflaredTunnelToken", token);
                 cloudflared.token = token;
             } else {
                 cloudflared.token = null;
@@ -81,4 +82,9 @@ module.exports.autoStart = async (token) => {
         cloudflared.token = token;
         cloudflared.start();
     }
+};
+
+module.exports.stop = async () => {
+    console.log("Stop cloudflared");
+    cloudflared.stop();
 };

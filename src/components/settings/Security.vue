@@ -192,6 +192,12 @@
                 <p>Пожалуйста, используйте с осторожностью.</p>
             </template>
 
+            <template v-else-if="$i18n.locale === 'uk-UA' ">
+                <p>Ви впевнені, що бажаєте <strong>вимкнути авторизацію</strong>?</p>
+                <p>Це підходить для <strong>тих, у кого встановлена інша авторизація</strong> пееред відкриттям Uptime Kuma, наприклад Cloudflare Access.</p>
+                <p>Будь ласка, використовуйте з обережністю.</p>
+            </template>
+
             <template v-else-if="$i18n.locale === 'fa' ">
                 <p>آیا مطمئن هستید که میخواهید <strong>احراز هویت را غیر فعال کنید</strong>?</p>
                 <p>این ویژگی برای کسانی است که <strong> لایه امنیتی شخص ثالث دیگر بر روی این آدرس فعال کرده‌اند</strong>، مانند Cloudflare Access.</p>
@@ -349,7 +355,7 @@ export default {
 <style lang="scss" scoped>
 @import "../../assets/vars.scss";
 
-h5:after {
+h5::after {
     content: "";
     display: block;
     width: 50%;
