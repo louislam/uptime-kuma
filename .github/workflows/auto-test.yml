@@ -13,11 +13,12 @@ jobs:
   auto-test:
     needs: [ check-linters ]
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
 
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
-        node: [14, 16, 17]
+        node: [ 14, 16, 17, 18 ]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
@@ -45,7 +46,7 @@ jobs:
     - name: Use Node.js LTS
       uses: actions/setup-node@v3
       with:
-        node-version: 16
+        node-version: 14
         cache: 'npm'
     - run: npm install
     - run: npm run lint
