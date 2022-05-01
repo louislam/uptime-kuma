@@ -93,8 +93,23 @@ class AliyunSMS extends NotificationProvider {
             param2[key] = param[key];
         }
 
+        // Escape more characters than encodeURIComponent does.
+        // For generating Aliyun signature, all characters except A-Za-z0-9~-._ are encoded.
+        // See https://help.aliyun.com/document_detail/315526.html
+        // This encoding methods as known as RFC 3986 (https://tools.ietf.org/html/rfc3986)
+        let moreEscapesTable = function (m) {
+            return {
+                "!": "%21",
+                "*": "%2A",
+                "'": "%27",
+                "(": "%28",
+                ")": "%29"
+            }[m];
+        };
+
         for (let key in param2) {
-            data.push(`${encodeURIComponent(key)}=${encodeURIComponent(param2[key])}`);
+            let value = encodeURIComponent(param2[key]).replace(/[!*'()]/g, moreEscapesTable);
+            data.push(`${encodeURIComponent(key)}=${value}`);
         }
 
         let StringToSign = `POST&${encodeURIComponent("/")}&${encodeURIComponent(data.join("&"))}`;
