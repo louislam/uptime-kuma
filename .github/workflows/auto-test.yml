@@ -11,6 +11,7 @@ on:
 
 jobs:
   auto-test:
+    needs: [ check-linters ]
     runs-on: ${{ matrix.os }}
 
     strategy:
