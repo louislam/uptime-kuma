@@ -217,7 +217,9 @@ export default {
     watch: {
         // Update chart data when the selected chart period changes
         chartPeriodHrs: function (newPeriod) {
-            if (newPeriod === "0") {
+
+            // eslint-disable-next-line eqeqeq
+            if (newPeriod == "0") {
                 this.heartbeatList = null;
                 this.$root.storage().removeItem(`chart-period-${this.monitorId}`);
             } else {
@@ -243,7 +245,8 @@ export default {
 
                 log.debug("ping_chart", `this.chartPeriodHrs type ${typeof this.chartPeriodHrs}, value: ${this.chartPeriodHrs}`);
 
-                if (this.chartPeriodHrs !== "0") {
+                // eslint-disable-next-line eqeqeq
+                if (this.chartPeriodHrs != "0") {
                     const newBeat = heartbeatList.at(-1);
                     if (newBeat && dayjs.utc(newBeat.time) > dayjs.utc(this.heartbeatList.at(-1)?.time)) {
                         this.heartbeatList.push(heartbeatList.at(-1));
