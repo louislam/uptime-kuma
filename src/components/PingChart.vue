@@ -18,13 +18,13 @@
 
 <script lang="ts">
 import { BarController, BarElement, Chart, Filler, LinearScale, LineController, LineElement, PointElement, TimeScale, Tooltip } from "chart.js";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import timezone from "dayjs/plugin/timezone";
 import "chartjs-adapter-dayjs";
+import dayjs from "dayjs";
+import timezone from "dayjs/plugin/timezone";
+import utc from "dayjs/plugin/utc";
 import { LineChart } from "vue-chart-3";
 import { useToast } from "vue-toastification";
-import { UP, DOWN, PENDING } from "../util.ts";
+import { DOWN, log } from "../util.ts";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -217,9 +217,11 @@ export default {
     watch: {
         // Update chart data when the selected chart period changes
         chartPeriodHrs: function (newPeriod) {
+
+            // eslint-disable-next-line eqeqeq
             if (newPeriod == "0") {
-                newPeriod = null;
                 this.heartbeatList = null;
+                this.$root.storage().removeItem(`chart-period-${this.monitorId}`);
             } else {
                 this.loading = true;
 
@@ -228,6 +230,7 @@ export default {
                         toast.error(res.msg);
                     } else {
                         this.heartbeatList = res.data;
+                        this.$root.storage()[`chart-period-${this.monitorId}`] = newPeriod;
                     }
                     this.loading = false;
                 });
@@ -239,7 +242,11 @@ export default {
         // And mirror latest change to this.heartbeatList
         this.$watch(() => this.$root.heartbeatList[this.monitorId],
             (heartbeatList) => {
-                if (this.chartPeriodHrs != 0) {
+
+                log.debug("ping_chart", `this.chartPeriodHrs type ${typeof this.chartPeriodHrs}, value: ${this.chartPeriodHrs}`);
+
+                // eslint-disable-next-line eqeqeq
+                if (this.chartPeriodHrs != "0") {
                     const newBeat = heartbeatList.at(-1);
                     if (newBeat && dayjs.utc(newBeat.time) > dayjs.utc(this.heartbeatList.at(-1)?.time)) {
                         this.heartbeatList.push(heartbeatList.at(-1));
@@ -248,6 +255,12 @@ export default {
             },
             { deep: true }
         );
+
+        // Load chart period from storage if saved
+        let period = this.$root.storage()[`chart-period-${this.monitorId}`];
+        if (period != null) {
+            this.chartPeriodHrs = Math.min(period, 6);
+        }
     }
 };
 </script>
@@ -278,7 +291,7 @@ export default {
 
         .dropdown-item {
             border-radius: 0.3rem;
-            padding: 2px 16px 4px 16px;
+            padding: 2px 16px 4px;
 
             .dark & {
                 background: $dark-bg;
@@ -286,6 +299,7 @@ export default {
 
             .dark &:hover {
                 background: $dark-font-color;
+                color: $dark-font-color2;
             }
         }
 

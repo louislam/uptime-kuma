@@ -1,15 +1,20 @@
 import { io } from "socket.io-client";
 import { useToast } from "vue-toastification";
-import jwt_decode from "jwt-decode";
+import jwtDecode from "jwt-decode";
+import Favico from "favico.js";
 const toast = useToast();
 
 let socket;
 
 const noSocketIOPages = [
-    "/status-page",
-    "/status",
-    "/"
+    /^\/status-page$/,  //  /status-page
+    /^\/status/,    // /status**
+    /^\/$/      //  /
 ];
+
+const favicon = new Favico({
+    animation: "none"
+});
 
 export default {
 
@@ -23,6 +28,7 @@ export default {
                 connectCount: 0,
                 initedSocketIO: false,
             },
+            username: null,
             remember: (localStorage.remember !== "0"),
             allowLoginDialog: false,        // Allowed to show login dialog, but "loggedIn" have to be true too. This exists because prevent the login dialog show 0.1s in first before the socket server auth-ed.
             loggedIn: false,
@@ -33,7 +39,19 @@ export default {
             uptimeList: { },
             tlsInfoList: {},
             notificationList: [],
+            statusPageListLoaded: false,
+            statusPageList: [],
+            proxyList: [],
             connectionErrorMsg: "Cannot connect to the socket server. Reconnecting...",
+            showReverseProxyGuide: true,
+            cloudflared: {
+                cloudflareTunnelToken: "",
+                installed: null,
+                running: false,
+                message: "",
+                errorMessage: "",
+                currentPassword: "",
+            }
         };
     },
 
@@ -51,8 +69,12 @@ export default {
             }
 
             // No need to connect to the socket.io for status page
-            if (! bypass && noSocketIOPages.includes(location.pathname)) {
-                return;
+            if (! bypass && location.pathname) {
+                for (let page of noSocketIOPages) {
+                    if (location.pathname.match(page)) {
+                        return;
+                    }
+                }
             }
 
             this.socket.initedSocketIO = true;
@@ -68,7 +90,7 @@ export default {
             }
 
             socket = io(wsHost, {
-                transports: ["websocket"],
+                transports: [ "websocket" ],
             });
 
             socket.on("info", (info) => {
@@ -82,12 +104,13 @@ export default {
             socket.on("autoLogin", (monitorID, data) => {
                 this.loggedIn = true;
                 this.storage().token = "autoLogin";
+                this.socket.token = "autoLogin";
                 this.allowLoginDialog = false;
             });
 
             socket.on("monitorList", (data) => {
                 // Add Helper function
-                Object.entries(data).forEach(([monitorID, monitor]) => {
+                Object.entries(data).forEach(([ monitorID, monitor ]) => {
                     monitor.getUrl = () => {
                         try {
                             return new URL(monitor.url);
@@ -101,6 +124,21 @@ export default {
 
             socket.on("notificationList", (data) => {
                 this.notificationList = data;
+            });
+
+            socket.on("statusPageList", (data) => {
+                this.statusPageListLoaded = true;
+                this.statusPageList = data;
+            });
+
+            socket.on("proxyList", (data) => {
+                this.proxyList = data.map(item => {
+                    item.auth = !!item.auth;
+                    item.active = !!item.active;
+                    item.default = !!item.default;
+
+                    return item;
+                });
             });
 
             socket.on("heartbeat", (data) => {
@@ -169,6 +207,7 @@ export default {
             socket.on("connect_error", (err) => {
                 console.error(`Failed to connect to the backend. Socket.io connect_error: ${err.message}`);
                 this.connectionErrorMsg = `Cannot connect to the socket server. [${err}] Reconnecting...`;
+                this.showReverseProxyGuide = true;
                 this.socket.connected = false;
                 this.socket.firstConnect = false;
             });
@@ -183,6 +222,7 @@ export default {
                 console.log("Connected to the socket server");
                 this.socket.connectCount++;
                 this.socket.connected = true;
+                this.showReverseProxyGuide = false;
 
                 // Reset Heartbeat list if it is re-connect
                 if (this.socket.connectCount >= 2) {
@@ -195,7 +235,6 @@ export default {
                     if (token !== "autoLogin") {
                         this.loginByToken(token);
                     } else {
-
                         // Timeout if it is not actually auto login
                         setTimeout(() => {
                             if (! this.loggedIn) {
@@ -203,7 +242,6 @@ export default {
                                 this.$root.storage().removeItem("token");
                             }
                         }, 5000);
-
                     }
                 } else {
                     this.allowLoginDialog = true;
@@ -212,6 +250,12 @@ export default {
                 this.socket.firstConnect = false;
             });
 
+            // cloudflared
+            socket.on("cloudflared_installed", (res) => this.cloudflared.installed = res);
+            socket.on("cloudflared_running", (res) => this.cloudflared.running = res);
+            socket.on("cloudflared_message", (res) => this.cloudflared.message = res);
+            socket.on("cloudflared_errorMessage", (res) => this.cloudflared.errorMessage = res);
+            socket.on("cloudflared_token", (res) => this.cloudflared.cloudflareTunnelToken = res);
         },
 
         storage() {
@@ -222,7 +266,7 @@ export default {
             const jwtToken = this.$root.storage().token;
 
             if (jwtToken && jwtToken !== "autoLogin") {
-                return jwt_decode(jwtToken);
+                return jwtDecode(jwtToken);
             }
             return undefined;
         },
@@ -239,6 +283,14 @@ export default {
             }
         },
 
+        toastSuccess(msg) {
+            toast.success(msg);
+        },
+
+        toastError(msg) {
+            toast.error(msg);
+        },
+
         login(username, password, token, callback) {
             socket.emit("login", {
                 username,
@@ -253,6 +305,7 @@ export default {
                     this.storage().token = res.token;
                     this.socket.token = res.token;
                     this.loggedIn = true;
+                    this.username = this.getJWTPayload()?.username;
 
                     // Trigger Chrome Save Password
                     history.pushState({}, "");
@@ -270,6 +323,7 @@ export default {
                     this.logout();
                 } else {
                     this.loggedIn = true;
+                    this.username = this.getJWTPayload()?.username;
                 }
             });
         },
@@ -279,6 +333,7 @@ export default {
             this.storage().removeItem("token");
             this.socket.token = null;
             this.loggedIn = false;
+            this.username = null;
             this.clearData();
         },
 
@@ -354,6 +409,14 @@ export default {
 
     computed: {
 
+        usernameFirstChar() {
+            if (typeof this.username == "string" && this.username.length >= 1) {
+                return this.username.charAt(0).toUpperCase();
+            } else {
+                return "🐻";
+            }
+        },
+
         lastHeartbeatList() {
             let result = {};
 
@@ -405,9 +468,48 @@ export default {
 
             return result;
         },
+
+        stats() {
+            let result = {
+                up: 0,
+                down: 0,
+                unknown: 0,
+                pause: 0,
+            };
+
+            for (let monitorID in this.$root.monitorList) {
+                let beat = this.$root.lastHeartbeatList[monitorID];
+                let monitor = this.$root.monitorList[monitorID];
+
+                if (monitor && ! monitor.active) {
+                    result.pause++;
+                } else if (beat) {
+                    if (beat.status === 1) {
+                        result.up++;
+                    } else if (beat.status === 0) {
+                        result.down++;
+                    } else if (beat.status === 2) {
+                        result.up++;
+                    } else {
+                        result.unknown++;
+                    }
+                } else {
+                    result.unknown++;
+                }
+            }
+
+            return result;
+        },
     },
 
     watch: {
+
+        // Update Badge
+        "stats.down"(to, from) {
+            if (to !== from) {
+                favicon.badge(to);
+            }
+        },
 
         // Reload the SPA if the server version is changed.
         "info.version"(to, from) {
@@ -422,9 +524,15 @@ export default {
 
         // Reconnect the socket io, if status-page to dashboard
         "$route.fullPath"(newValue, oldValue) {
-            if (noSocketIOPages.includes(newValue)) {
-                return;
+
+            if (newValue) {
+                for (let page of noSocketIOPages) {
+                    if (newValue.match(page)) {
+                        return;
+                    }
+                }
             }
+
             this.initSocketIO();
         },
 

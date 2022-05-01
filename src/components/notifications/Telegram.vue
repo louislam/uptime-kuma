@@ -63,9 +63,9 @@ export default {
                     let update = res.data.result[res.data.result.length - 1];
 
                     if (update.channel_post) {
-                        this.notification.telegramChatID = update.channel_post.chat.id;
+                        this.$parent.notification.telegramChatID = update.channel_post.chat.id;
                     } else if (update.message) {
-                        this.notification.telegramChatID = update.message.chat.id;
+                        this.$parent.notification.telegramChatID = update.message.chat.id;
                     } else {
                         throw new Error(this.$t("chatIDNotFound"));
                     }

@@ -5,12 +5,12 @@
 
 <script lang="ts">
 
-import { sleep } from "../util.ts"
+import { sleep } from "../util.ts";
 
 export default {
 
     props: {
-        value: [String, Number],
+        value: [ String, Number ],
         time: {
             type: Number,
             default: 0.3,
@@ -25,12 +25,12 @@ export default {
         return {
             output: "",
             frameDuration: 30,
-        }
+        };
     },
 
     computed: {
         isNum() {
-            return typeof this.value === "number"
+            return typeof this.value === "number";
         },
     },
 
@@ -45,7 +45,7 @@ export default {
             } else {
                 for (let i = 1; i < frames; i++) {
                     this.output += step;
-                    await sleep(15)
+                    await sleep(15);
                 }
             }
 
@@ -59,5 +59,5 @@ export default {
 
     methods: {},
 
-}
+};
 </script>
