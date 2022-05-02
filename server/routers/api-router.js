@@ -214,8 +214,6 @@ router.get("/api/badge/:id/status", cache("5 minutes"), async (request, response
     } = request.query;
 
     try {
-        await checkPublished();
-
         const requestedMonitorId = parseInt(request.params.id, 10);
         const overrideValue = value !== undefined ? parseInt(value) : undefined;
 
@@ -269,8 +267,6 @@ router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (reques
     } = request.query;
 
     try {
-        await checkPublished();
-
         const requestedMonitorId = parseInt(request.params.id, 10);
         // if no duration is given, set value to 24 (h)
         const requestedDuration = request.params.duration !== undefined ? parseInt(request.params.duration, 10) : 24;
@@ -335,8 +331,6 @@ router.get("/api/badge/:id/ping/:duration?", cache("5 minutes"), async (request,
     } = request.query;
 
     try {
-        await checkPublished();
-
         const requestedMonitorId = parseInt(request.params.id, 10);
 
         // Default duration is 24 (h) if not defined in queryParam, limited to 720h (30d)
@@ -381,24 +375,6 @@ router.get("/api/badge/:id/ping/:duration?", cache("5 minutes"), async (request,
         send403(response, error.message);
     }
 });
-
-async function checkPublished() {
-    if (! await isPublished()) {
-        throw new Error("The status page is not published");
-    }
-}
-
-/**
- * Default is published
- * @returns {Promise<boolean>}
- */
-async function isPublished() {
-    const value = await setting("statusPagePublished");
-    if (value === null) {
-        return true;
-    }
-    return value;
-}
 
 /**
  * Send a 403 response
