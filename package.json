@@ -79,7 +79,7 @@
         "command-exists": "~1.2.9",
         "compare-versions": "~3.6.0",
         "dayjs": "~1.10.8",
-        "esm": "^3.2.25",
+        "esm-wallaby": "^3.2.26",
         "express": "~4.17.3",
         "express-basic-auth": "~1.2.1",
         "favico.js": "^0.3.10",
