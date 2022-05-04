@@ -23,7 +23,7 @@
         "start-server": "node server/server.js",
         "start-server-dev": "cross-env NODE_ENV=development node server/server.js",
         "build": "vite build --config ./config/vite.config.js",
-        "test": "ava test/axios-cached-dns-resolve-test.js -timeout=2m && node test/prepare-test-server.js && node server/server.js --port=3002 --data-dir=./data/test/ --test",
+        "test": "ava test/axios-cached-dns-resolve-test.js -timeout=10m && node test/prepare-test-server.js && node server/server.js --port=3002 --data-dir=./data/test/ --test",
         "test-with-build": "npm run build && npm test",
         "jest": "node test/prepare-jest.js && npm run jest-frontend && npm run jest-backend",
         "jest-frontend": "cross-env TEST_FRONTEND=1 jest --config=./config/jest-frontend.config.js",
