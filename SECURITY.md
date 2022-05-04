@@ -13,10 +13,7 @@ currently being supported with security updates.
 
 ### Uptime Kuma Versions
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 1.9.X  | :white_check_mark: |
-| <= 1.8.X  | ❌ |
+You should use or upgrade to the latest version of Uptime Kuma. All `1.X.X` versions are upgradable to the lastest version.
 
 ### Upgradable Docker Tags
 
@@ -24,8 +21,8 @@ currently being supported with security updates.
 | ------- | ------------------ |
 | 1 | :white_check_mark: |
 | 1-debian | :white_check_mark: |
-| 1-alpine | :white_check_mark: |
 | latest | :white_check_mark: |
 | debian | :white_check_mark: |
-| alpine | :white_check_mark: |
+| 1-alpine | ⚠️ Deprecated |
+| alpine | ⚠️ Deprecated |
 | All other tags  | ❌ |

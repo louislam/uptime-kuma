@@ -25,12 +25,15 @@ VPS is sponsored by Uptime Kuma sponsors on [Open Collective](https://opencollec
 
 * Monitoring uptime for HTTP(s) / TCP / HTTP(s) Keyword / Ping / DNS Record / Push / Steam Game Server.
 * Fancy, Reactive, Fast UI/UX.
-* Notifications via Telegram, Discord, Gotify, Slack, Pushover, Email (SMTP), and [70+ notification services, click here for the full list](https://github.com/louislam/uptime-kuma/tree/master/src/components/notifications).
+* Notifications via Telegram, Discord, Gotify, Slack, Pushover, Email (SMTP), and [90+ notification services, click here for the full list](https://github.com/louislam/uptime-kuma/tree/master/src/components/notifications).
 * 20 second intervals.
 * [Multi Languages](https://github.com/louislam/uptime-kuma/tree/master/src/languages)
-* Simple Status Page
+* Multiple Status Pages
+* Map Status Page to Domain
 * Ping Chart
 * Certificate Info
+* Proxy Support
+* 2FA available
 
 ## 🔧 How to Install
 
@@ -154,12 +157,12 @@ https://www.reddit.com/r/UptimeKuma/
 
 ## Contribute
 
-### Test Beta Version
+### Beta Version
 
 Check out the latest beta release here: https://github.com/louislam/uptime-kuma/releases
 
 ### Bug Reports / Feature Requests
-If you want to report a bug or request a new feature. Free feel to open a [new issue](https://github.com/louislam/uptime-kuma/issues).
+If you want to report a bug or request a new feature, feel free to open a [new issue](https://github.com/louislam/uptime-kuma/issues).
 
 ### Translations
 If you want to translate Uptime Kuma into your language, please read: https://github.com/louislam/uptime-kuma/tree/master/src/languages

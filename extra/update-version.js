@@ -25,6 +25,9 @@ if (! exists) {
     pkg.scripts.setup = pkg.scripts.setup.replace(/(git checkout )([^\s]+)/, `$1${newVersion}`);
     fs.writeFileSync("package.json", JSON.stringify(pkg, null, 4) + "\n");
 
+    // Also update package-lock.json
+    childProcess.spawnSync("npm", [ "install" ]);
+
     commit(newVersion);
     tag(newVersion);
 

@@ -37,6 +37,12 @@ class AliyunSMS extends NotificationProvider {
         }
     }
 
+    /**
+     * Send the SMS notification
+     * @param {BeanModel} notification Notification details
+     * @param {string} msgbody Message template
+     * @returns {boolean} True if successful else false
+     */
     async sendSms(notification, msgbody) {
         let params = {
             PhoneNumbers: notification.phonenumber,
@@ -70,7 +76,12 @@ class AliyunSMS extends NotificationProvider {
         return false;
     }
 
-    /** Aliyun request sign */
+    /**
+     * Aliyun request sign
+     * @param {Object} param Parameters object to sign
+     * @param {string} AccessKeySecret Secret key to sign parameters with
+     * @returns {string}
+     */
     sign(param, AccessKeySecret) {
         let param2 = {};
         let data = [];
@@ -82,8 +93,23 @@ class AliyunSMS extends NotificationProvider {
             param2[key] = param[key];
         }
 
+        // Escape more characters than encodeURIComponent does.
+        // For generating Aliyun signature, all characters except A-Za-z0-9~-._ are encoded.
+        // See https://help.aliyun.com/document_detail/315526.html
+        // This encoding methods as known as RFC 3986 (https://tools.ietf.org/html/rfc3986)
+        let moreEscapesTable = function (m) {
+            return {
+                "!": "%21",
+                "*": "%2A",
+                "'": "%27",
+                "(": "%28",
+                ")": "%29"
+            }[m];
+        };
+
         for (let key in param2) {
-            data.push(`${encodeURIComponent(key)}=${encodeURIComponent(param2[key])}`);
+            let value = encodeURIComponent(param2[key]).replace(/[!*'()]/g, moreEscapesTable);
+            data.push(`${encodeURIComponent(key)}=${value}`);
         }
 
         let StringToSign = `POST&${encodeURIComponent("/")}&${encodeURIComponent(data.join("&"))}`;
@@ -93,6 +119,11 @@ class AliyunSMS extends NotificationProvider {
             .digest("base64");
     }
 
+    /**
+     * Convert status constant to string
+     * @param {const} status The status constant
+     * @returns {string}
+     */
     statusToString(status) {
         switch (status) {
             case DOWN:

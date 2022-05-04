@@ -27,24 +27,20 @@ The frontend code build into "dist" directory. The server (express.js) exposes t
 
 ## Can I create a pull request for Uptime Kuma?
 
-⚠️ 2022-03-02 Update:
-
-Since I found that merging pull requests is a pretty heavy task for me, I try to rearrange it.
+(Updated 2022-04-24) Since I don't want to waste your time, be sure to create empty draft pull request, so we can discuss first.
 
 ✅ Accept:
 - Bug/Security fix
 - Translations
 - Adding notification providers
 
-❌ Avoid:
+⚠️ Discuss First
 - Large pull requests
-- New big features
-
-My long story here: https://www.reddit.com/r/UptimeKuma/comments/t1t6or/comment/hynyijx/
+- New features
 
 ### Recommended Pull Request Guideline
 
-Before deep into coding, disscussion first is preferred. Creating an empty pull request for disscussion would be recommended.
+Before deep into coding, discussion first is preferred. Creating an empty pull request for discussion would be recommended.
 
 1. Fork the project
 1. Clone your fork repo to local
@@ -79,6 +75,7 @@ I personally do not like something need to learn so much and need to config so m
 - 4 spaces indentation
 - Follow `.editorconfig`
 - Follow ESLint
+- Methods and functions should be documented with JSDoc
 
 ## Name convention
 
@@ -89,9 +86,10 @@ I personally do not like something need to learn so much and need to config so m
 ## Tools
 
 - Node.js >= 14
+- NPM >= 8.5
 - Git
 - IDE that supports ESLint and EditorConfig (I am using IntelliJ IDEA)
-- A SQLite tool (SQLite Expert Personal is suggested)
+- A SQLite GUI tool (SQLite Expert Personal is suggested)
 
 ## Install dependencies
 
@@ -99,39 +97,45 @@ I personally do not like something need to learn so much and need to config so m
 npm ci
 ```
 
-## How to start the Backend Dev Server
+## Dev Server
 
-(2021-09-23 Update)
+(2022-04-26 Update)
+
+We can start the frontend dev server and the backend dev server in one command.
+
+Port `3000` and port `3001` will be used.
 
 ```bash
-npm run start-server-dev
+npm run dev
 ```
+
+## Backend Server
 
 It binds to `0.0.0.0:3001` by default.
 
-### Backend Details
 
 It is mainly a socket.io app + express.js.
 
-express.js is just used for serving the frontend built files (index.html, .js and .css etc.)
+express.js is used for: 
+- entry point such as redirecting to a status page or the dashboard
+- serving the frontend built files (index.html, .js and .css etc.)
+- serving internal APIs of status page
+
+
+### Structure in /server/
 
 - model/ (Object model, auto mapping to the database table name)
 - modules/ (Modified 3rd-party modules)
 - notification-providers/ (individual notification logic)
 - routers/ (Express Routers)
 - socket-handler (Socket.io Handlers)
-- server.js (Server main logic)
+- server.js (Server entry point and main logic)
 
-## How to start the Frontend Dev Server
+## Frontend Dev Server
 
-1. Set the env var `NODE_ENV` to "development".
-2. Start the frontend dev server by the following command.
+It binds to `0.0.0.0:3000` by default. Frontend dev server is used for development only. 
 
-   ```bash
-   npm run dev
-   ```
-
-   It binds to `0.0.0.0:3000` by default.
+For production, it is not used. It will be compiled to `dist` directory instead. 
 
 You can use Vue.js devtools Chrome extension for debugging.
 

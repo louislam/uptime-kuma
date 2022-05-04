@@ -137,13 +137,6 @@ app.use(function (req, res, next) {
 });
 
 /**
- * Total WebSocket client connected to server currently, no actual use
- *
- * @type {number}
- */
-let totalClient = 0;
-
-/**
  * Use for decode the auth object
  * @type {null}
  */
@@ -248,16 +241,10 @@ try {
 
         sendInfo(socket);
 
-        totalClient++;
-
         if (needSetup) {
             log.info("server", "Redirect to setup page");
             socket.emit("setup");
         }
-
-        socket.on("disconnect", () => {
-            totalClient--;
-        });
 
         // ***************************
         // Public Socket API
@@ -327,7 +314,7 @@ try {
             let user = await login(data.username, data.password);
 
             if (user) {
-                if (user.twofa_status == 0) {
+                if (user.twofa_status === 0) {
                     afterLogin(socket, user);
 
                     log.info("auth", `Successfully logged in user ${data.username}. IP=${getClientIp(socket)}`);
@@ -340,7 +327,7 @@ try {
                     });
                 }
 
-                if (user.twofa_status == 1 && !data.token) {
+                if (user.twofa_status === 1 && !data.token) {
 
                     log.info("auth", `2FA token required for user ${data.username}. IP=${getClientIp(socket)}`);
 
@@ -417,7 +404,7 @@ try {
                     socket.userID,
                 ]);
 
-                if (user.twofa_status == 0) {
+                if (user.twofa_status === 0) {
                     let newSecret = genSecret();
                     let encodedSecret = base32.encode(newSecret);
 
@@ -548,7 +535,7 @@ try {
                     socket.userID,
                 ]);
 
-                if (user.twofa_status == 1) {
+                if (user.twofa_status === 1) {
                     callback({
                         ok: true,
                         status: true,
@@ -1061,7 +1048,13 @@ try {
             try {
                 checkLogin(socket);
 
-                if (data.disableAuth) {
+                // If currently is disabled auth, don't need to check
+                // Disabled Auth + Want to Disable Auth => No Check
+                // Disabled Auth + Want to Enable Auth => No Check
+                // Enabled Auth + Want to Disable Auth => Check!!
+                // Enabled Auth + Want to Enable Auth => No Check
+                const currentDisabledAuth = await setting("disableAuth");
+                if (!currentDisabledAuth && data.disableAuth) {
                     await doubleCheckPassword(socket, currentPassword);
                 }
 
@@ -1170,7 +1163,7 @@ try {
                 let version17x = compareVersions.compare(backupData.version, "1.7.0", ">=");
 
                 // If the import option is "overwrite" it'll clear most of the tables, except "settings" and "user"
-                if (importHandle == "overwrite") {
+                if (importHandle === "overwrite") {
                     // Stops every monitor first, so it doesn't execute any heartbeat while importing
                     for (let id in server.monitorList) {
                         let monitor = server.monitorList[id];
@@ -1194,7 +1187,7 @@ try {
 
                     for (let i = 0; i < notificationListData.length; i++) {
                         // Only starts importing the notification if the import option is "overwrite", "keep" or "skip" but the notification doesn't exists
-                        if ((importHandle == "skip" && notificationNameListString.includes(notificationListData[i].name) == false) || importHandle == "keep" || importHandle == "overwrite") {
+                        if ((importHandle === "skip" && notificationNameListString.includes(notificationListData[i].name) === false) || importHandle === "keep" || importHandle === "overwrite") {
 
                             let notification = JSON.parse(notificationListData[i].config);
                             await Notification.save(notification, null, socket.userID);
@@ -1229,7 +1222,7 @@ try {
 
                     for (let i = 0; i < monitorListData.length; i++) {
                         // Only starts importing the monitor if the import option is "overwrite", "keep" or "skip" but the notification doesn't exists
-                        if ((importHandle == "skip" && monitorNameListString.includes(monitorListData[i].name) == false) || importHandle == "keep" || importHandle == "overwrite") {
+                        if ((importHandle === "skip" && monitorNameListString.includes(monitorListData[i].name) === false) || importHandle === "keep" || importHandle === "overwrite") {
 
                             // Define in here every new variable for monitors which where implemented after the first version of the Import/Export function (1.6.0)
                             // --- Start ---
@@ -1327,7 +1320,7 @@ try {
                             await updateMonitorNotification(bean.id, notificationIDList);
 
                             // If monitor was active start it immediately, otherwise pause it
-                            if (monitorListData[i].active == 1) {
+                            if (monitorListData[i].active === 1) {
                                 await startMonitor(socket.userID, bean.id);
                             } else {
                                 await pauseMonitor(socket.userID, bean.id);
@@ -1475,11 +1468,11 @@ try {
 })();
 
 /**
- * Adds or removes notifications from a monitor.
- * @param {number} monitorID The ID of the monitor to add/remove notifications from.
- * @param {Array.<number>} notificationIDList An array of IDs for the notifications to add/remove.
- *
- * Generated by Trelent
+ * Update notifications for a given monitor
+ * @param {number} monitorID ID of monitor to update
+ * @param {number[]} notificationIDList List of new notification
+ * providers to add
+ * @returns {Promise<void>}
  */
 async function updateMonitorNotification(monitorID, notificationIDList) {
     await R.exec("DELETE FROM monitor_notification WHERE monitor_id = ? ", [
@@ -1497,11 +1490,11 @@ async function updateMonitorNotification(monitorID, notificationIDList) {
 }
 
 /**
- * This function checks if the user owns a monitor with the given ID.
- * @param {number} monitorID - The ID of the monitor to check ownership for.
- * @param {number} userID - The ID of the user who is trying to access this data.
- *
- * Generated by Trelent
+ * Check if a given user owns a specific monitor
+ * @param {number} userID
+ * @param {number} monitorID
+ * @returns {Promise<void>}
+ * @throws {Error} The specified user does not own the monitor
  */
 async function checkOwner(userID, monitorID) {
     let row = await R.getRow("SELECT id FROM monitor WHERE id = ? AND user_id = ? ", [
@@ -1515,8 +1508,11 @@ async function checkOwner(userID, monitorID) {
 }
 
 /**
+ * Function called after user login
  * This function is used to send the heartbeat list of a monitor.
- * @param {Socket} socket - The socket object that will be used to send the data.
+ * @param {Socket} socket Socket.io instance
+ * @param {Object} user User object
+ * @returns {Promise<void>}
  */
 async function afterLogin(socket, user) {
     socket.userID = user.id;
@@ -1544,9 +1540,10 @@ async function afterLogin(socket, user) {
 }
 
 /**
- * Connect to the database and patch it if necessary.
- *
- * Generated by Trelent
+ * Initialize the database
+ * @param {boolean} [testMode=false] Should the connection be
+ * started in test mode?
+ * @returns {Promise<void>}
  */
 async function initDatabase(testMode = false) {
     if (! fs.existsSync(Database.path)) {
@@ -1583,11 +1580,10 @@ async function initDatabase(testMode = false) {
 }
 
 /**
- * Resume a monitor.
- * @param {string} userID - The ID of the user who owns the monitor.
- * @param {string} monitorID - The ID of the monitor to resume.
- *
- * Generated by Trelent
+ * Start the specified monitor
+ * @param {number} userID ID of user who owns monitor
+ * @param {number} monitorID ID of monitor to start
+ * @returns {Promise<void>}
  */
 async function startMonitor(userID, monitorID) {
     await checkOwner(userID, monitorID);
@@ -1611,16 +1607,21 @@ async function startMonitor(userID, monitorID) {
     monitor.start(io);
 }
 
+/**
+ * Restart a given monitor
+ * @param {number} userID ID of user who owns monitor
+ * @param {number} monitorID ID of monitor to start
+ * @returns {Promise<void>}
+ */
 async function restartMonitor(userID, monitorID) {
     return await startMonitor(userID, monitorID);
 }
 
 /**
- * Pause a monitor.
- * @param {string} userID - The ID of the user who owns the monitor.
- * @param {string} monitorID - The ID of the monitor to pause.
- *
- * Generated by Trelent
+ * Pause a given monitor
+ * @param {number} userID ID of user who owns monitor
+ * @param {number} monitorID ID of monitor to start
+ * @returns {Promise<void>}
  */
 async function pauseMonitor(userID, monitorID) {
     await checkOwner(userID, monitorID);
@@ -1637,9 +1638,7 @@ async function pauseMonitor(userID, monitorID) {
     }
 }
 
-/**
- * Resume active monitors
- */
+/** Resume active monitors */
 async function startMonitors() {
     let list = await R.find("monitor", " active = 1 ");
 
@@ -1655,10 +1654,10 @@ async function startMonitors() {
 }
 
 /**
+ * Shutdown the application
  * Stops all monitors and closes the database connection.
  * @param {string} signal The signal that triggered this function to be called.
- *
- * Generated by Trelent
+ * @returns {Promise<void>}
  */
 async function shutdownFunction(signal) {
     log.info("server", "Shutdown requested");
@@ -1680,6 +1679,7 @@ function getClientIp(socket) {
     return socket.client.conn.remoteAddress.replace(/^.*:/, "");
 }
 
+/** Final function called before application exits */
 function finalFunction() {
     log.info("server", "Graceful shutdown successful!");
 }
