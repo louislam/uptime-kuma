@@ -59,7 +59,6 @@ class Database {
         "patch-status-page-footer-css.sql": true,
         "patch-added-mqtt-monitor.sql": true,
         "patch-monitor-add-resend-interval.sql": true,
-        "patch-heartbeat-add-last-notified-time.sql": true,
     };
 
     /**

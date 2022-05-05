@@ -4,4 +4,7 @@ BEGIN TRANSACTION;
 ALTER TABLE monitor
     ADD resend_interval INTEGER default 0 not null;
 
+ALTER TABLE heartbeat
+    ADD last_notified_time DATETIME default null;
+
 COMMIT;
