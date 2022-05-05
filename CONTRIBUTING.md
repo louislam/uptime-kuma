@@ -27,24 +27,20 @@ The frontend code build into "dist" directory. The server (express.js) exposes t
 
 ## Can I create a pull request for Uptime Kuma?
 
-⚠️ 2022-03-02 Update:
-
-Since I found that merging pull requests is a pretty heavy task for me, I try to rearrange it.
+(Updated 2022-04-24) Since I don't want to waste your time, be sure to create empty draft pull request, so we can discuss first.
 
 ✅ Accept:
 - Bug/Security fix
 - Translations
 - Adding notification providers
 
-❌ Avoid:
+⚠️ Discuss First
 - Large pull requests
-- New big features
-
-My long story here: https://www.reddit.com/r/UptimeKuma/comments/t1t6or/comment/hynyijx/
+- New features
 
 ### Recommended Pull Request Guideline
 
-Before deep into coding, disscussion first is preferred. Creating an empty pull request for disscussion would be recommended.
+Before deep into coding, discussion first is preferred. Creating an empty pull request for discussion would be recommended.
 
 1. Fork the project
 1. Clone your fork repo to local
@@ -115,8 +111,8 @@ npm run dev
 
 ## Backend Server
 
-For development, it binds to `0.0.0.0:3001` by default.
-For production, it binds to  `0.0.0.0:3000` by default.
+It binds to `0.0.0.0:3001` by default.
+
 
 It is mainly a socket.io app + express.js.
 

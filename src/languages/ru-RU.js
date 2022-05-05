@@ -381,7 +381,7 @@ export default {
     smtpDkimPrivateKey: "Приватный ключ",
     smtpDkimHashAlgo: "Алгоритм хэша (опционально)",
     smtpDkimheaderFieldNames: "Заголовок ключей для подписи (опционально)",
-    smtpDkimskipFields: "Заколовок ключей не для подписи (опционально)",
+    smtpDkimskipFields: "Заголовок ключей не для подписи (опционально)",
     gorush: "Gorush",
     alerta: "Alerta",
     alertaApiEndpoint: "Конечная точка API",

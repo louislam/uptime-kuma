@@ -44,7 +44,12 @@ class Bark extends NotificationProvider {
         }
     }
 
-    // add additional parameter for better on device styles (iOS 15 optimized)
+    /**
+     * Add additional parameter for better on device styles (iOS 15
+     * optimized)
+     * @param {string} postUrl URL to append parameters to
+     * @returns {string}
+     */
     appendAdditionalParameters(postUrl) {
         // grouping all our notifications
         postUrl += "?group=" + barkNotificationGroup;
@@ -55,7 +60,11 @@ class Bark extends NotificationProvider {
         return postUrl;
     }
 
-    // thrown if failed to check result, result code should be in range 2xx
+    /**
+     * Check if result is successful
+     * @param {Object} result Axios response object
+     * @throws {Error} The status code is not in range 2xx
+     */
     checkResult(result) {
         if (result.status == null) {
             throw new Error("Bark notification failed with invalid response!");
@@ -65,6 +74,13 @@ class Bark extends NotificationProvider {
         }
     }
 
+    /**
+     * Send the message
+     * @param {string} title Message title
+     * @param {string} subtitle Message
+     * @param {string} endpoint Endpoint to send request to
+     * @returns {string}
+     */
     async postNotification(title, subtitle, endpoint) {
         // url encode title and subtitle
         title = encodeURIComponent(title);
