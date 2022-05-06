@@ -350,9 +350,9 @@ class Monitor extends BeanModel {
                 } else if (this.type === "push") {      // Type: Push
                     log.debug(`[${this.name}] Checking monitor at ${dayjs().format("YYYY-MM-DD HH:mm:ss.SSS")}`);
                     const bufferTime = 1000; // 1s buffer to accommodate clock differences
-                    // Fix #922, since previous heartbeat could be inserted by api, it should get from database
+                    // Fix #922, since previous heartbeat could be inserted by API, it should get from database
                     previousBeat = await Monitor.getPreviousHeartbeat(this.id);
-                    //If the previous beat was nonexistent, down or pending we use the regular
+                    // If the previous beat was nonexistent, down or pending we use the regular
                     // beatInterval/retryInterval in the setTimeout further below
                     if (previousBeat) {
                         const msSinceLastBeat = dayjs.utc().valueOf() - dayjs.utc(previousBeat.time).valueOf();
