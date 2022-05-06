@@ -60,7 +60,7 @@ log.info("server", "Importing this project modules");
 log.debug("server", "Importing Monitor");
 const Monitor = require("./model/monitor");
 log.debug("server", "Importing Settings");
-const { getSettings, setSettings, setting, initJWTSecret, checkLogin, startUnitTest, FBSD, errorLog, doubleCheckPassword } = require("./util-server");
+const { getSettings, setSettings, setting, initJWTSecret, checkLogin, startUnitTest, FBSD, doubleCheckPassword } = require("./util-server");
 
 log.debug("server", "Importing Notification");
 const { Notification } = require("./notification");
@@ -1694,6 +1694,6 @@ gracefulShutdown(server.httpServer, {
 // Catch unexpected errors here
 process.addListener("unhandledRejection", (error, promise) => {
     console.trace(error);
-    errorLog(error, false);
+    UptimeKumaServer.errorLog(error, false);
     console.error("If you keep encountering errors, please report to https://github.com/louislam/uptime-kuma/issues");
 });
