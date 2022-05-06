@@ -33,7 +33,7 @@
                 </li>
                 <li v-if="$root.loggedIn" class="nav-item">
                     <div class="dropdown dropdown-profile-pic">
-                        <div type="button" class="nav-link" data-bs-toggle="dropdown">
+                        <div class="nav-link" data-bs-toggle="dropdown">
                             <div class="profile-pic">{{ $root.usernameFirstChar }}</div>
                             <font-awesome-icon icon="angle-down" />
                         </div>

@@ -7,7 +7,7 @@ dayjs.extend(timezone);
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
 const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, TimeLogger } = require("../../src/util");
-const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, errorLog, mqttAsync } = require("../util-server");
+const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mqttAsync } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification");
@@ -15,6 +15,7 @@ const { Proxy } = require("../proxy");
 const { demoMode } = require("../config");
 const version = require("../../package.json").version;
 const apicache = require("../modules/apicache");
+const { UptimeKumaServer } = require("../uptime-kuma-server");
 
 /**
  * status:
@@ -533,7 +534,7 @@ class Monitor extends BeanModel {
                 await beat();
             } catch (e) {
                 console.trace(e);
-                errorLog(e, false);
+                UptimeKumaServer.errorLog(e, false);
                 log.error("monitor", "Please report to https://github.com/louislam/uptime-kuma/issues");
 
                 if (! this.isStop) {

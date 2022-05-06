@@ -7,8 +7,6 @@ const { Resolver } = require("dns");
 const childProcess = require("child_process");
 const iconv = require("iconv-lite");
 const chardet = require("chardet");
-const fs = require("fs");
-const nodeJsUtil = require("util");
 const mqtt = require("mqtt");
 
 // From ping-lite
@@ -206,7 +204,7 @@ exports.dnsResolve = function (hostname, resolverServer, rrtype) {
 /**
  * Retrieve value of setting based on key
  * @param {string} key Key of setting to retrieve
- * @returns {Promise<Object>} Object representation of setting
+ * @returns {Promise<any>} Value
  */
 exports.setting = async function (key) {
     let value = await R.getCell("SELECT `value` FROM setting WHERE `key` = ? ", [
@@ -523,30 +521,4 @@ exports.convertToUTF8 = (body) => {
     const guessEncoding = chardet.detect(body);
     const str = iconv.decode(body, guessEncoding);
     return str.toString();
-};
-
-let logFile;
-
-try {
-    logFile = fs.createWriteStream("./data/error.log", {
-        flags: "a"
-    });
-} catch (_) { }
-
-/**
- * Write error to log file
- * @param {any} error The error to write
- * @param {boolean} outputToConsole Should the error also be output to console?
- */
-exports.errorLog = (error, outputToConsole = true) => {
-    try {
-        if (logFile) {
-            const dateTime = R.isoDateTime();
-            logFile.write(`[${dateTime}] ` + nodeJsUtil.format(error) + "\n");
-
-            if (outputToConsole) {
-                console.error(error);
-            }
-        }
-    } catch (_) { }
 };
