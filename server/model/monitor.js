@@ -6,7 +6,7 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
-const { log, UP, DOWN, PENDING, DEGRADED, flipStatus, TimeLogger } = require("../../src/util");
+const { log, UP, DOWN, PENDING, DEGRADED, MONITOR_DOWN_DEGRADED, flipStatus, TimeLogger } = require("../../src/util");
 const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mqttAsync } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
@@ -467,7 +467,6 @@ class Monitor extends BeanModel {
                     bean.msg = "Monitor is degraded, because at least one master monitor is pending, down or degraded";
                     bean.status = DEGRADED;
                 }
-
             } catch (error) {
 
                 bean.msg = error.message;
@@ -482,10 +481,8 @@ class Monitor extends BeanModel {
                     bean.status = PENDING;
                 }
 
-                // Do not change this text!
-                // Condition below and in api-router depends on it
                 if (isDegraded && bean.status === DOWN) {
-                    bean.msg = "Monitor is down and degraded";
+                    bean.msg = MONITOR_DOWN_DEGRADED;
                 }
             }
 
@@ -497,7 +494,7 @@ class Monitor extends BeanModel {
             if (isImportant) {
                 bean.important = true;
 
-                if (this.noNotificationIfMasterDown && isDegraded || previousBeat && previousBeat.msg === "Monitor is down and degraded") {
+                if (this.noNotificationIfMasterDown && isDegraded || previousBeat && previousBeat.msg === MONITOR_DOWN_DEGRADED) {
                     log.debug("monitor", `[${this.name}] will not sendNotification because it is/was degraded`);
                 } else if (Monitor.isImportantForNotification(isFirstBeat, previousBeat?.status, bean.status)) {
                     log.debug("monitor", `[${this.name}] sendNotification`);

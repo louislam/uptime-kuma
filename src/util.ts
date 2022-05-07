@@ -20,6 +20,7 @@ export const STATUS_PAGE_ALL_DOWN = 0;
 export const STATUS_PAGE_ALL_UP = 1;
 export const STATUS_PAGE_PARTIAL_DOWN = 2;
 
+export const MONITOR_DOWN_DEGRADED = "Monitor is down and degraded";
 
 export function flipStatus(s: number) {
     if (s === UP) {
