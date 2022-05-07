@@ -10,7 +10,7 @@ create table `group`
     created_date DATETIME              default (DATETIME('now')) not null,
     public       BOOLEAN               default 0 not null,
     active       BOOLEAN               default 1 not null,
-    weight       BOOLEAN      NOT NULL DEFAULT 1000
+    weight       INTEGER      NOT NULL DEFAULT 1000
 );
 
 CREATE TABLE [monitor_group]
@@ -18,7 +18,7 @@ CREATE TABLE [monitor_group]
     [id]         INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
     [monitor_id] INTEGER                           NOT NULL REFERENCES [monitor] ([id]) ON DELETE CASCADE ON UPDATE CASCADE,
     [group_id]   INTEGER                           NOT NULL REFERENCES [group] ([id]) ON DELETE CASCADE ON UPDATE CASCADE,
-    weight BOOLEAN NOT NULL DEFAULT 1000
+    weight INTEGER NOT NULL DEFAULT 1000
 );
 
 CREATE INDEX [fk]
