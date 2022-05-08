@@ -595,7 +595,7 @@ export default {
             }
 
             this.incident = res.data.incident;
-            this.maintenance = res.data.maintenance || [];
+            this.maintenance = res.data.maintenance;
             this.$root.publicGroupList = res.data.publicGroupList;
         });
 

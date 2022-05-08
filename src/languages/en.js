@@ -20,6 +20,7 @@ export default {
     End: "End",
     affectedMonitorsDescription: "Select monitors that are affected by current maintenance",
     atLeastOneMonitor: "Select at least one affected monitor",
+    maintenanceInvalidDate: "Invalid maintenance end date entered",
     selectedStatusPagesDescription: "Select status pages to display maintenance info on",
     atLeastOneStatusPage: "Select at least one status page",
     maintenanceTitleExample: "Network infrastructure maintenance",

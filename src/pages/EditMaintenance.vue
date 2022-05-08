@@ -260,6 +260,11 @@ export default {
                 return this.processing = false;
             }
 
+            if (this.maintenance.start_date >= this.maintenance.end_date) {
+                toast.error(this.$t("maintenanceInvalidDate"));
+                return this.processing = false;
+            }
+
             if (!this.showOnAllPages && this.selectedStatusPages.length === 0) {
                 toast.error(this.$t("atLeastOneStatusPage"));
                 return this.processing = false;

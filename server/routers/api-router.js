@@ -180,7 +180,7 @@ async function getMaintenanceList(statusPageId) {
         return publicMaintenanceList;
 
     } catch (error) {
-        return null;
+        return [];
     }
 }
 
