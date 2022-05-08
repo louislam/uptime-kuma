@@ -515,6 +515,8 @@ export default {
         this.$root.getSocket().emit("getAvailableMasterMonitors", this.$route.params.id, (res) => {
             if (res.ok) {
                 this.masterMonitorsOptions = res.monitors;
+            } else {
+                toast.error(res.msg);
             }
         });
 
@@ -596,9 +598,7 @@ export default {
 
                         this.$root.getSocket().emit("getMasterMonitors", this.$route.params.id, (res) => {
                             if (res.ok) {
-                                Object.values(res.monitors).map(monitor => {
-                                    this.masterMonitors.push(monitor);
-                                });
+                                this.masterMonitors = res.monitors;
                             } else {
                                 toast.error(res.msg);
                             }
