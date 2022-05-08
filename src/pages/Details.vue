@@ -107,7 +107,7 @@
                 <label for="master-monitors" class="form-label" style="margin-top: 20px; font-weight: bold;">{{ $t("monitorDependsOn") }}:</label>
                 <br>
                 <button v-for="masterMonitor in masterMonitors" :key="masterMonitor.id" class="btn btn-monitor" style="margin: 5px; cursor: auto; color: white; font-weight: 500;">
-                    {{ masterMonitor }}
+                    {{ masterMonitor.name }}
                 </button>
             </div>
 
@@ -301,7 +301,7 @@ export default {
         init() {
             this.$root.getSocket().emit("getMasterMonitors", this.$route.params.id, (res) => {
                 if (res.ok) {
-                    this.masterMonitors = Object.values(res.monitors).map(monitor => monitor.name);
+                    this.masterMonitors = res.monitors;
                 } else {
                     toast.error(res.msg);
                 }

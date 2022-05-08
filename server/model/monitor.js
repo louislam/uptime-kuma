@@ -816,6 +816,13 @@ class Monitor extends BeanModel {
             (previousBeatStatus === PENDING && currentBeatStatus === DOWN);
     }
 
+    /**
+     * Is it necessary to send a notification? (not all important beats are so important that we need to send a notification)
+     * @param {boolean} isFirstBeat Is this the first beat of this monitor?
+     * @param {const} previousBeatStatus Status of the previous beat
+     * @param {const} currentBeatStatus Status of the current beat
+     * @returns {boolean} True if is an important beat for notification else false
+     */
     static isImportantForNotification(isFirstBeat, previousBeatStatus, currentBeatStatus) {
         // * ? -> ANY STATUS = important [isFirstBeat]
         // UP -> PENDING = not important
@@ -965,6 +972,11 @@ class Monitor extends BeanModel {
         ]);
     }
 
+    /**
+     * Checks if the monitor is in the DEGRADED state
+     * @param {number} monitorID ID of monitor to check
+     * @returns {Promise<boolean>}
+     */
     static async isDegraded(monitorID) {
         const monitors = await R.getAll(`
             SELECT hb.id FROM heartbeat hb JOIN dependent_monitors dm on hb.monitor_id = dm.depends_on JOIN (SELECT MAX(id) AS id FROM heartbeat GROUP BY monitor_id) USING (id)

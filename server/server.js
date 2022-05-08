@@ -773,6 +773,7 @@ try {
             }
         });
 
+        // Retrieves all master monitors for the given monitor from the database
         socket.on("getMasterMonitors", async (monitorID, callback) => {
             try {
                 checkLogin(socket);
@@ -796,6 +797,7 @@ try {
             }
         });
 
+        // Retrieves all available master monitors for the given monitor from the database
         socket.on("getAvailableMasterMonitors", async (monitorID, callback) => {
             try {
                 checkLogin(socket);
