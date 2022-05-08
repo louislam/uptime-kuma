@@ -376,8 +376,8 @@ export default {
             socket.emit("addDependentMonitors", monitorID, monitors, callback);
         },
 
-        getDependentMonitors(monitorID, callback) {
-            socket.emit("getDependentMonitors", monitorID, callback);
+        getMasterMonitors(monitorID, callback) {
+            socket.emit("getMasterMonitors", monitorID, callback);
         },
 
         clearData() {

@@ -773,13 +773,37 @@ try {
             }
         });
 
-        socket.on("getDependentMonitors", async (monitorID, callback) => {
+        socket.on("getMasterMonitors", async (monitorID, callback) => {
             try {
                 checkLogin(socket);
 
-                console.log(`Get dependent Monitors for Monitor: ${monitorID} User ID: ${socket.userID}`);
+                console.log(`Get master Monitors for Monitor: ${monitorID} User ID: ${socket.userID}`);
 
                 let monitors = await R.getAll("SELECT monitor.id, monitor.name FROM dependent_monitors dm JOIN monitor ON dm.depends_on = monitor.id WHERE dm.monitor_id = ? ", [
+                    monitorID,
+                ]);
+
+                callback({
+                    ok: true,
+                    monitors,
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("getAvailableMasterMonitors", async (monitorID, callback) => {
+            try {
+                checkLogin(socket);
+
+                console.log(`Get available master Monitors for Monitor: ${monitorID} User ID: ${socket.userID}`);
+
+                let monitors = await R.getAll("SELECT id, name FROM monitor WHERE id != ? AND id NOT IN (SELECT monitor_id FROM dependent_monitors WHERE depends_on = ?)", [
+                    monitorID,
                     monitorID,
                 ]);
 

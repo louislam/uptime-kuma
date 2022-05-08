@@ -66,7 +66,7 @@ router.get("/api/push/:pushToken", async (request, response) => {
 
         const isDegraded = await Monitor.isDegraded(monitor.id);
         if (status === UP && isDegraded) {
-            msg = "Monitor is degraded, because at least one dependent monitor is DOWN";
+            msg = "Monitor is degraded, because at least one master monitor is DOWN";
             status = DEGRADED;
         }
 

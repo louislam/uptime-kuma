@@ -103,10 +103,10 @@
                 </div>
             </div>
 
-            <div v-if="dependentMonitors.length" class="shadow-box table-shadow-box">
+            <div v-if="masterMonitors.length" class="shadow-box table-shadow-box">
                 <label for="master-monitors" class="form-label" style="margin-top: 20px; font-weight: bold;">{{ $t("monitorDependsOn") }}:</label>
                 <br>
-                <button v-for="masterMonitor in dependentMonitors" :key="masterMonitor.id" class="btn btn-monitor" style="margin: 5px; cursor: auto; color: white; font-weight: 500;">
+                <button v-for="masterMonitor in masterMonitors" :key="masterMonitor.id" class="btn btn-monitor" style="margin: 5px; cursor: auto; color: white; font-weight: 500;">
                     {{ masterMonitor }}
                 </button>
             </div>
@@ -220,7 +220,7 @@ export default {
                 hideCount: true,
                 chunksNavigation: "scroll",
             },
-            dependentMonitors: [],
+            masterMonitors: [],
         };
     },
     computed: {
@@ -299,9 +299,9 @@ export default {
     },
     methods: {
         init() {
-            this.$root.getSocket().emit("getDependentMonitors", this.$route.params.id, (res) => {
+            this.$root.getSocket().emit("getMasterMonitors", this.$route.params.id, (res) => {
                 if (res.ok) {
-                    this.dependentMonitors = Object.values(res.monitors).map(monitor => monitor.name);
+                    this.masterMonitors = Object.values(res.monitors).map(monitor => monitor.name);
                 } else {
                     toast.error(res.msg);
                 }
