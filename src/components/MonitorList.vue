@@ -1,10 +1,11 @@
 <template>
     <div class="shadow-box mb-3" :style="boxStyle">
         <div class="list-header">
-            <div class="search-wrapper float-start">
-                <select v-model="selectedList" class="form-control">
-                    <option value="monitor" selected>{{ $t('Monitor List') }}</option>
-                    <option value="maintenance">{{ $t('Maintenance List') }}</option>
+            <div class="search-wrapper float-start" style="margin-left: 5px;">
+                <font-awesome-icon icon="filter" />
+                <select v-model="selectedList" class="form-control" style="margin-left: 5px;">
+                    <option value="monitor" selected>{{ $t('Monitors') }}</option>
+                    <option value="maintenance">{{ $t('Maintenance') }}</option>
                 </select>
             </div>
             <div class="search-wrapper">
