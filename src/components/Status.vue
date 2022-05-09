@@ -5,7 +5,10 @@
 <script>
 export default {
     props: {
-        status: Number,
+        status: {
+            type: Number,
+            default: 0,
+        }
     },
 
     computed: {

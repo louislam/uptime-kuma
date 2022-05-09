@@ -5,8 +5,14 @@
 <script>
 export default {
     props: {
-        monitor: Object,
-        type: String,
+        monitor: {
+            type: Object,
+            default: null,
+        },
+        type: {
+            type: String,
+            default: null,
+        },
         pill: {
             type: Boolean,
             default: false,

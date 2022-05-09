@@ -8,6 +8,8 @@ const childProcess = require("child_process");
 const iconv = require("iconv-lite");
 const chardet = require("chardet");
 const mqtt = require("mqtt");
+const chroma = require("chroma-js");
+const { badgeConstants } = require("./config");
 
 // From ping-lite
 exports.WIN = /^win/.test(process.platform);
@@ -521,4 +523,34 @@ exports.convertToUTF8 = (body) => {
     const guessEncoding = chardet.detect(body);
     const str = iconv.decode(body, guessEncoding);
     return str.toString();
+};
+
+/**
+ * Returns a color code in hex format based on a given percentage:
+ * 0% => hue = 10 => red
+ * 100% => hue = 90 => green
+ *
+ * @param {number} percentage float, 0 to 1
+ * @param {number} maxHue
+ * @param {number} minHue, int
+ * @returns {string}, hex value
+ */
+exports.percentageToColor = (percentage, maxHue = 90, minHue = 10) => {
+    const hue = percentage * (maxHue - minHue) + minHue;
+    try {
+        return chroma(`hsl(${hue}, 90%, 40%)`).hex();
+    } catch (err) {
+        return badgeConstants.naColor;
+    }
+};
+
+/**
+ * Joins and array of string to one string after filtering out empty values
+ *
+ * @param {string[]} parts
+ * @param {string} connector
+ * @returns {string}
+ */
+exports.filterAndJoin = (parts, connector = "") => {
+    return parts.filter((part) => !!part && part !== "").join(connector);
 };
