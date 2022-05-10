@@ -76,6 +76,7 @@
         "chart.js": "~3.6.2",
         "chartjs-adapter-dayjs": "~1.0.0",
         "check-password-strength": "^2.0.5",
+        "cheerio": "^1.0.0-rc.10",
         "chroma-js": "^2.1.2",
         "command-exists": "~1.2.9",
         "compare-versions": "~3.6.0",

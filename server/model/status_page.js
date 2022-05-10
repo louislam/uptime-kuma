@@ -1,9 +1,21 @@
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { R } = require("redbean-node");
+const cheerio = require("cheerio");
 
 class StatusPage extends BeanModel {
 
     static domainMappingList = { };
+
+    /**
+     * SSR for status pages
+     * @param {string} indexHTML
+     * @param {StatusPage} statusPage
+     */
+    static renderHTML(indexHTML, statusPage) {
+        const $ = cheerio.load(indexHTML);
+
+        return $.root().html();
+    }
 
     /**
      * Loads domain mapping from DB

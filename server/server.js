@@ -183,7 +183,8 @@ try {
 
         if (request.hostname in StatusPage.domainMappingList) {
             debug("This is a status page domain");
-            response.send(indexHTML);
+            // TODO
+            response.send(StatusPage.renderHTML(indexHTML));
         } else if (exports.entryPage && exports.entryPage.startsWith("statusPage-")) {
             response.redirect("/status/" + exports.entryPage.replace("statusPage-", ""));
         } else {
