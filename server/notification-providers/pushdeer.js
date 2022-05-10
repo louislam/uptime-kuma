@@ -13,9 +13,9 @@ class PushDeer extends NotificationProvider {
         let valid = msg != null && monitorJSON != null && heartbeatJSON != null;
 
         let title;
-        if (valid && heartbeatJSON.status == UP) {
+        if (valid && heartbeatJSON.status === UP) {
             title = "## Uptime Kuma: " + monitorJSON.name + " up";
-        } else if (valid && heartbeatJSON.status == DOWN) {
+        } else if (valid && heartbeatJSON.status === DOWN) {
             title = "## Uptime Kuma: " + monitorJSON.name + " down";
         } else {
             title = "## Uptime Kuma Message";
@@ -38,7 +38,7 @@ class PushDeer extends NotificationProvider {
             if (res.data.content.result.length === 0) {
                 let error = "Invalid PushDeer key";
                 this.throwGeneralAxiosError(error);
-            } else if (JSON.parse(res.data.content.result[0]).success != "ok") {
+            } else if (JSON.parse(res.data.content.result[0]).success !== "ok") {
                 let error = "Unknown error";
                 this.throwGeneralAxiosError(error);
             }

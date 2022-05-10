@@ -16,9 +16,16 @@
                     <input id="title" v-model="config.title" type="text" class="form-control">
                 </div>
 
+                <!-- Description -->
                 <div class="my-3">
                     <label for="description" class="form-label">{{ $t("Description") }}</label>
                     <textarea id="description" v-model="config.description" class="form-control"></textarea>
+                </div>
+
+                <!-- Footer Text -->
+                <div class="my-3">
+                    <label for="footer-text" class="form-label">{{ $t("Footer Text") }}</label>
+                    <textarea id="footer-text" v-model="config.footerText" class="form-control"></textarea>
                 </div>
 
                 <div class="my-3 form-check form-switch">
@@ -31,6 +38,12 @@
                     <label class="form-check-label" for="showTags">{{ $t("Show Tags") }}</label>
                 </div>
 
+                <!-- Show Powered By -->
+                <div class="my-3 form-check form-switch">
+                    <input id="show-powered-by" v-model="config.showPoweredBy" class="form-check-input" type="checkbox">
+                    <label class="form-check-label" for="show-powered-by">{{ $t("Show Powered By") }}</label>
+                </div>
+
                 <div v-if="false" class="my-3">
                     <label for="password" class="form-label">{{ $t("Password") }} <sup>Coming Soon</sup></label>
                     <input id="password" v-model="config.password" disabled type="password" autocomplete="new-password" class="form-control">
@@ -39,7 +52,7 @@
                 <!-- Domain Name List -->
                 <div class="my-3">
                     <label class="form-label">
-                        Domain Names
+                        {{ $t("Domain Names") }}
                         <font-awesome-icon icon="plus-circle" class="btn-add-domain action text-primary" @click="addDomainField" />
                     </label>
 
@@ -49,6 +62,12 @@
                             <font-awesome-icon icon="times" class="action remove ms-2 me-3 text-danger" @click="removeDomain(index)" />
                         </li>
                     </ul>
+                </div>
+
+                <!-- Custom CSS -->
+                <div class="my-3">
+                    <div class="mb-1">{{ $t("Custom CSS") }}</div>
+                    <prism-editor v-model="config.customCSS" class="css-editor" :highlight="highlighter" line-numbers></prism-editor>
                 </div>
 
                 <div class="danger-zone">
@@ -85,15 +104,16 @@
 
                 <!-- Uploader -->
                 <!--    url="/api/status-page/upload-logo" -->
-                <ImageCropUpload v-model="showImageCropUpload"
-                                 field="img"
-                                 :width="128"
-                                 :height="128"
-                                 :langType="$i18n.locale"
-                                 img-format="png"
-                                 :noCircle="true"
-                                 :noSquare="false"
-                                 @crop-success="cropSuccess"
+                <ImageCropUpload
+                    v-model="showImageCropUpload"
+                    field="img"
+                    :width="128"
+                    :height="128"
+                    :langType="$i18n.locale"
+                    img-format="png"
+                    :noCircle="true"
+                    :noSquare="false"
+                    @crop-success="cropSuccess"
                 />
 
                 <!-- Title -->
@@ -239,31 +259,50 @@
             </div>
 
             <footer class="mt-5 mb-4">
-                {{ $t("Powered by") }} <a target="_blank" href="https://github.com/louislam/uptime-kuma">{{ $t("Uptime Kuma" ) }}</a>
+                <div class="custom-footer-text text-start">
+                    <strong v-if="enableEditMode">{{ $t("Custom Footer") }}:</strong>
+                </div>
+                <Editable v-model="config.footerText" tag="div" :contenteditable="enableEditMode" :noNL="false" class="alert-heading p-2" />
+
+                <p v-if="config.showPoweredBy">
+                    {{ $t("Powered by") }} <a target="_blank" href="https://github.com/louislam/uptime-kuma">{{ $t("Uptime Kuma" ) }}</a>
+                </p>
             </footer>
         </div>
 
         <Confirm ref="confirmDelete" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="deleteStatusPage">
             {{ $t("deleteStatusPageMsg") }}
         </Confirm>
+
+        <component is="style" v-if="config.customCSS" type="text/css">
+            {{ config.customCSS }}
+        </component>
     </div>
 </template>
 
 <script>
 import axios from "axios";
-import PublicGroupList from "../components/PublicGroupList.vue";
-import ImageCropUpload from "vue-image-crop-upload";
-import { STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_PARTIAL_DOWN, UP } from "../util.ts";
-import { useToast } from "vue-toastification";
 import dayjs from "dayjs";
 import Favico from "favico.js";
-import { getResBaseURL } from "../util-frontend";
+// import highlighting library (you can use any library you want just return html string)
+import { highlight, languages } from "prismjs/components/prism-core";
+import "prismjs/components/prism-css";
+import "prismjs/themes/prism-tomorrow.css"; // import syntax highlighting styles
+import ImageCropUpload from "vue-image-crop-upload";
+// import Prism Editor
+import { PrismEditor } from "vue-prism-editor";
+import "vue-prism-editor/dist/prismeditor.min.css"; // import the styles somewhere
+import { useToast } from "vue-toastification";
 import Confirm from "../components/Confirm.vue";
+import PublicGroupList from "../components/PublicGroupList.vue";
+import { getResBaseURL } from "../util-frontend";
+import { STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_PARTIAL_DOWN, UP } from "../util.ts";
 
 const toast = useToast();
 
 const leavePageMsg = "Do you really want to leave? you have unsaved changes!";
 
+// eslint-disable-next-line no-unused-vars
 let feedInterval;
 
 const favicon = new Favico({
@@ -276,6 +315,7 @@ export default {
         PublicGroupList,
         ImageCropUpload,
         Confirm,
+        PrismEditor,
     },
 
     // Leave Page for vue route change
@@ -418,6 +458,13 @@ export default {
                 this.$root.getSocket().emit("getStatusPage", this.slug, (res) => {
                     if (res.ok) {
                         this.config = res.config;
+
+                        if (!this.config.customCSS) {
+                            this.config.customCSS = "body {\n" +
+                                "  \n" +
+                                "}\n";
+                        }
+
                     } else {
                         toast.error(res.msg);
                     }
@@ -519,6 +566,10 @@ export default {
         }
     },
     methods: {
+
+        highlighter(code) {
+            return highlight(code, languages.css);
+        },
 
         updateHeartbeatList() {
             // If editMode, it will use the data from websocket.
@@ -656,7 +707,7 @@ export default {
         },
 
         postIncident() {
-            if (this.incident.title == "" || this.incident.content == "") {
+            if (this.incident.title === "" || this.incident.content === "") {
                 toast.error(this.$t("Please input title and content"));
                 return;
             }
@@ -890,6 +941,20 @@ footer {
                 color: #1d2634;
             }
         }
+    }
+}
+
+/* required class */
+.css-editor {
+    /* we dont use `language-` classes anymore so thats why we need to add background and text color manually */
+
+    border-radius: 1rem;
+    padding: 10px 5px;
+    border: 1px solid #ced4da;
+
+    .dark & {
+        background: $dark-bg;
+        border: 1px solid $dark-border-color;
     }
 }
 

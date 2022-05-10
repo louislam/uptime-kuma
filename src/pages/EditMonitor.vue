@@ -32,6 +32,9 @@
                                     <option value="steam">
                                         Steam Game Server
                                     </option>
+                                    <option value="mqtt">
+                                        MQTT
+                                    </option>
                                 </select>
                             </div>
 
@@ -53,7 +56,7 @@
                                 <CopyableInput id="push-url" v-model="pushURL" type="url" disabled="disabled" />
                                 <div class="form-text">
                                     {{ $t("needPushEvery", [monitor.interval]) }}<br />
-                                    {{ $t("pushOptionalParams", ["msg, ping"]) }}
+                                    {{ $t("pushOptionalParams", ["status, msg, ping"]) }}
                                 </div>
                             </div>
 
@@ -67,15 +70,15 @@
                             </div>
 
                             <!-- Hostname -->
-                            <!-- TCP Port / Ping / DNS / Steam only -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam'" class="my-3">
+                            <!-- TCP Port / Ping / DNS / Steam / MQTT only -->
+                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'mqtt'" class="my-3">
                                 <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>
                                 <input id="hostname" v-model="monitor.hostname" type="text" class="form-control" :pattern="`${ipRegexPattern}|${hostnameRegexPattern}`" required>
                             </div>
 
                             <!-- Port -->
-                            <!-- For TCP Port / Steam Type -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'steam'" class="my-3">
+                            <!-- For TCP Port / Steam / MQTT Type -->
+                            <div v-if="monitor.type === 'port' || monitor.type === 'steam' || monitor.type === 'mqtt'" class="my-3">
                                 <label for="port" class="form-label">{{ $t("Port") }}</label>
                                 <input id="port" v-model="monitor.port" type="number" class="form-control" required min="0" max="65535" step="1">
                             </div>
@@ -115,6 +118,36 @@
                                 </div>
                             </template>
 
+                            <!-- MQTT -->
+                            <!-- For MQTT Type -->
+                            <template v-if="monitor.type === 'mqtt'">
+                                <div class="my-3">
+                                    <label for="mqttUsername" class="form-label">MQTT {{ $t("Username") }}</label>
+                                    <input id="mqttUsername" v-model="monitor.mqttUsername" type="text" class="form-control">
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="mqttPassword" class="form-label">MQTT {{ $t("Password") }}</label>
+                                    <input id="mqttPassword" v-model="monitor.mqttPassword" type="password" class="form-control">
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="mqttTopic" class="form-label">MQTT {{ $t("Topic") }}</label>
+                                    <input id="mqttTopic" v-model="monitor.mqttTopic" type="text" class="form-control" required>
+                                    <div class="form-text">
+                                        {{ $t("topicExplanation") }}
+                                    </div>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="mqttSuccessMessage" class="form-label">MQTT {{ $t("successMessage") }}</label>
+                                    <input id="mqttSuccessMessage" v-model="monitor.mqttSuccessMessage" type="text" class="form-control">
+                                    <div class="form-text">
+                                        {{ $t("successMessageExplanation") }}
+                                    </div>
+                                </div>
+                            </template>
+
                             <!-- Interval -->
                             <div class="my-3">
                                 <label for="interval" class="form-label">{{ $t("Heartbeat Interval") }} ({{ $t("checkEverySecond", [ monitor.interval ]) }})</label>
@@ -139,10 +172,10 @@
 
                             <h2 v-if="monitor.type !== 'push'" class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
 
-                            <div class="my-3 form-check">
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' " class="my-3 form-check">
                                 <input id="expiry-notification" v-model="monitor.expiryNotification" class="form-check-input" type="checkbox">
                                 <label class="form-check-label" for="expiry-notification">
-                                    {{ $t("Domain Name Expiry Notification") }}
+                                    {{ $t("Certificate Expiry Notification") }}
                                 </label>
                                 <div class="form-text">
                                 </div>
@@ -328,13 +361,12 @@
 </template>
 
 <script>
+import VueMultiselect from "vue-multiselect";
+import { useToast } from "vue-toastification";
+import CopyableInput from "../components/CopyableInput.vue";
 import NotificationDialog from "../components/NotificationDialog.vue";
 import ProxyDialog from "../components/ProxyDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
-import CopyableInput from "../components/CopyableInput.vue";
-
-import { useToast } from "vue-toastification";
-import VueMultiselect from "vue-multiselect";
 import { genSecret, isDev } from "../util.ts";
 
 const toast = useToast();
@@ -389,21 +421,21 @@ export default {
         },
 
         pushURL() {
-            return this.$root.baseURL + "/api/push/" + this.monitor.pushToken + "?msg=OK&ping=";
+            return this.$root.baseURL + "/api/push/" + this.monitor.pushToken + "?status=up&msg=OK&ping=";
         },
 
         bodyPlaceholder() {
-            return this.$t("Example:", [`
+            return this.$t("Example:", [ `
 {
     "key": "value"
-}`]);
+}` ]);
         },
 
         headersPlaceholder() {
-            return this.$t("Example:", [`
+            return this.$t("Example:", [ `
 {
     "HeaderName": "HeaderValue"
-}`]);
+}` ]);
         }
 
     },
@@ -488,10 +520,14 @@ export default {
                     upsideDown: false,
                     expiryNotification: false,
                     maxredirects: 10,
-                    accepted_statuscodes: ["200-299"],
+                    accepted_statuscodes: [ "200-299" ],
                     dns_resolve_type: "A",
                     dns_resolve_server: "1.1.1.1",
                     proxyId: null,
+                    mqttUsername: "",
+                    mqttPassword: "",
+                    mqttTopic: "",
+                    mqttSuccessMessage: "",
                 };
 
                 if (this.$root.proxyList && !this.monitor.proxyId) {
@@ -503,7 +539,7 @@ export default {
                 }
 
                 for (let i = 0; i < this.$root.notificationList.length; i++) {
-                    if (this.$root.notificationList[i].isDefault == true) {
+                    if (this.$root.notificationList[i].isDefault === true) {
                         this.monitor.notificationIDList[this.$root.notificationList[i].id] = true;
                     }
                 }

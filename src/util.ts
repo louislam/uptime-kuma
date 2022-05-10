@@ -59,7 +59,46 @@ export function debug(msg: any) {
 }
 
 class Logger {
+
+    /**
+     * UPTIME_KUMA_HIDE_LOG=debug_monitor,info_monitor
+     *
+     * Example:
+     *  [
+     *     "debug_monitor",          // Hide all logs that level is debug and the module is monitor
+     *     "info_monitor",
+     *  ]
+     */
+    hideLog : any = {
+        info: [],
+        warn: [],
+        error: [],
+        debug: [],
+    };
+
+    constructor() {
+        if (typeof process !== "undefined" && process.env.UPTIME_KUMA_HIDE_LOG) {
+            let list = process.env.UPTIME_KUMA_HIDE_LOG.split(",").map(v => v.toLowerCase());
+
+            for (let pair of list) {
+                // split first "_" only
+                let values = pair.split(/_(.*)/s);
+
+                if (values.length >= 2) {
+                    this.hideLog[values[0]].push(values[1]);
+                }
+            }
+
+            this.debug("server", "UPTIME_KUMA_HIDE_LOG is set");
+            this.debug("server", this.hideLog);
+        }
+    }
+
     log(module: string, msg: any, level: string) {
+        if (this.hideLog[level] && this.hideLog[level].includes(module)) {
+            return;
+        }
+
         module = module.toUpperCase();
         level = level.toUpperCase();
 
@@ -74,7 +113,7 @@ class Logger {
             console.error(formattedMessage);
         } else if (level === "DEBUG") {
             if (isDev) {
-                console.debug(formattedMessage);
+                console.log(formattedMessage);
             }
         } else {
             console.log(formattedMessage);

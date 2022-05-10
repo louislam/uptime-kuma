@@ -9,32 +9,35 @@ const commonLabels = [
     "monitor_port",
 ];
 
-const monitor_cert_days_remaining = new PrometheusClient.Gauge({
+const monitorCertDaysRemaining = new PrometheusClient.Gauge({
     name: "monitor_cert_days_remaining",
     help: "The number of days remaining until the certificate expires",
     labelNames: commonLabels
 });
 
-const monitor_cert_is_valid = new PrometheusClient.Gauge({
+const monitorCertIsValid = new PrometheusClient.Gauge({
     name: "monitor_cert_is_valid",
     help: "Is the certificate still valid? (1 = Yes, 0= No)",
     labelNames: commonLabels
 });
-const monitor_response_time = new PrometheusClient.Gauge({
+const monitorResponseTime = new PrometheusClient.Gauge({
     name: "monitor_response_time",
     help: "Monitor Response Time (ms)",
     labelNames: commonLabels
 });
 
-const monitor_status = new PrometheusClient.Gauge({
+const monitorStatus = new PrometheusClient.Gauge({
     name: "monitor_status",
     help: "Monitor Status (1 = UP, 0= DOWN)",
     labelNames: commonLabels
 });
 
 class Prometheus {
-    monitorLabelValues = {}
+    monitorLabelValues = {};
 
+    /**
+     * @param {Object} monitor Monitor object to monitor
+     */
     constructor(monitor) {
         this.monitorLabelValues = {
             monitor_name: monitor.name,
@@ -45,17 +48,22 @@ class Prometheus {
         };
     }
 
+    /**
+     * Update the metrics page
+     * @param {Object} heartbeat Heartbeat details
+     * @param {Object} tlsInfo TLS details
+     */
     update(heartbeat, tlsInfo) {
 
         if (typeof tlsInfo !== "undefined") {
             try {
-                let isValid = 0;
-                if (tlsInfo.valid == true) {
+                let isValid;
+                if (tlsInfo.valid === true) {
                     isValid = 1;
                 } else {
                     isValid = 0;
                 }
-                monitor_cert_is_valid.set(this.monitorLabelValues, isValid);
+                monitorCertIsValid.set(this.monitorLabelValues, isValid);
             } catch (e) {
                 log.error("prometheus", "Caught error");
                 log.error("prometheus", e);
@@ -63,7 +71,7 @@ class Prometheus {
 
             try {
                 if (tlsInfo.certInfo != null) {
-                    monitor_cert_days_remaining.set(this.monitorLabelValues, tlsInfo.certInfo.daysRemaining);
+                    monitorCertDaysRemaining.set(this.monitorLabelValues, tlsInfo.certInfo.daysRemaining);
                 }
             } catch (e) {
                 log.error("prometheus", "Caught error");
@@ -72,7 +80,7 @@ class Prometheus {
         }
 
         try {
-            monitor_status.set(this.monitorLabelValues, heartbeat.status);
+            monitorStatus.set(this.monitorLabelValues, heartbeat.status);
         } catch (e) {
             log.error("prometheus", "Caught error");
             log.error("prometheus", e);
@@ -80,10 +88,10 @@ class Prometheus {
 
         try {
             if (typeof heartbeat.ping === "number") {
-                monitor_response_time.set(this.monitorLabelValues, heartbeat.ping);
+                monitorResponseTime.set(this.monitorLabelValues, heartbeat.ping);
             } else {
                 // Is it good?
-                monitor_response_time.set(this.monitorLabelValues, -1);
+                monitorResponseTime.set(this.monitorLabelValues, -1);
             }
         } catch (e) {
             log.error("prometheus", "Caught error");
@@ -93,10 +101,10 @@ class Prometheus {
 
     remove() {
         try {
-            monitor_cert_days_remaining.remove(this.monitorLabelValues);
-            monitor_cert_is_valid.remove(this.monitorLabelValues);
-            monitor_response_time.remove(this.monitorLabelValues);
-            monitor_status.remove(this.monitorLabelValues);
+            monitorCertDaysRemaining.remove(this.monitorLabelValues);
+            monitorCertIsValid.remove(this.monitorLabelValues);
+            monitorResponseTime.remove(this.monitorLabelValues);
+            monitorStatus.remove(this.monitorLabelValues);
         } catch (e) {
             console.error(e);
         }

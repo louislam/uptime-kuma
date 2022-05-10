@@ -32,9 +32,32 @@
                     </router-link>
                 </li>
                 <li v-if="$root.loggedIn" class="nav-item">
-                    <router-link to="/settings" class="nav-link" :class="{ active: $route.path.includes('settings') }">
-                        <font-awesome-icon icon="cog" /> {{ $t("Settings") }}
-                    </router-link>
+                    <div class="dropdown dropdown-profile-pic">
+                        <div class="nav-link" data-bs-toggle="dropdown">
+                            <div class="profile-pic">{{ $root.usernameFirstChar }}</div>
+                            <font-awesome-icon icon="angle-down" />
+                        </div>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <i18n-t v-if="$root.username != null" tag="span" keypath="signedInDisp" class="dropdown-item-text">
+                                    <strong>{{ $root.username }}</strong>
+                                </i18n-t>
+                                <span v-if="$root.username == null" class="dropdown-item-text">{{ $t("signedInDispDisabled") }}</span>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <router-link to="/settings" class="dropdown-item" :class="{ active: $route.path.includes('settings') }">
+                                    <font-awesome-icon icon="cog" /> {{ $t("Settings") }}
+                                </router-link>
+                            </li>
+                            <li v-if="$root.loggedIn && $root.socket.token !== 'autoLogin'">
+                                <button class="dropdown-item" @click="$root.logout">
+                                    <font-awesome-icon icon="sign-out-alt" />
+                                    {{ $t("Logout") }}
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
                 </li>
             </ul>
         </header>
@@ -48,7 +71,7 @@
         </header>
 
         <main>
-            <router-view v-if="$root.loggedIn || forceShowContent" />
+            <router-view v-if="$root.loggedIn" />
             <Login v-if="! $root.loggedIn && $root.allowLoginDialog" />
         </main>
 
@@ -190,6 +213,81 @@ main {
     position: fixed;
     width: 100%;
     z-index: 99999;
+}
+
+// Profile Pic Button with Dropdown
+.dropdown-profile-pic {
+    user-select: none;
+
+    .nav-link {
+        cursor: pointer;
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        background-color: rgba(200, 200, 200, 0.2);
+        padding: 0.5rem 0.8rem;
+
+        &:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+    }
+
+    .dropdown-menu {
+        transition: all 0.2s;
+        padding-left: 0;
+        padding-bottom: 0;
+        margin-top: 8px !important;
+        border-radius: 16px;
+        overflow: hidden;
+
+        .dropdown-divider {
+            margin: 0;
+            border-top: 1px solid rgba(0, 0, 0, 0.4);
+            background-color: transparent;
+        }
+
+        .dropdown-item-text {
+            font-size: 14px;
+            padding-bottom: 0.7rem;
+        }
+
+        .dropdown-item {
+            padding: 0.7rem 1rem;
+        }
+
+        .dark & {
+            background-color: $dark-bg;
+            color: $dark-font-color;
+            border-color: $dark-border-color;
+
+            .dropdown-item {
+                color: $dark-font-color;
+
+                &.active {
+                    color: $dark-font-color2;
+                    background-color: $highlight !important;
+                }
+
+                &:hover {
+                    background-color: $dark-bg2;
+                }
+            }
+        }
+    }
+
+    .profile-pic {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        background-color: $primary;
+        width: 24px;
+        height: 24px;
+        margin-right: 5px;
+        border-radius: 50rem;
+        font-weight: bold;
+        font-size: 10px;
+    }
 }
 
 .dark {
