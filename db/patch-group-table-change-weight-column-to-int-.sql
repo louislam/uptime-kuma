@@ -23,6 +23,11 @@ CREATE TABLE [new_monitor_group]
     weight INTEGER NOT NULL DEFAULT 1000
 );
 
+CREATE INDEX [fk]
+    ON [monitor_group] (
+    [monitor_id],
+    [group_id]);
+
 INSERT INTO new_group(id, name, created_date, public, active, weight, status_page_id)
 SELECT id, name, created_date, public, active, weight, status_page_id
 FROM `group`;
@@ -36,6 +41,11 @@ DROP TABLE monitor_group;
 
 ALTER TABLE new_group RENAME TO `group`;
 ALTER TABLE new_monitor_group RENAME TO monitor_group;
+
+CREATE INDEX [fk]
+    ON [monitor_group] (
+    [monitor_id],
+    [group_id]);
 
 COMMIT;
 
