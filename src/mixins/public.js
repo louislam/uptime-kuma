@@ -7,6 +7,17 @@ if (env === "development" || localStorage.dev === "dev") {
     axios.defaults.baseURL = location.protocol + "//" + location.hostname + ":3001";
 }
 
+// Add a response interceptor to catch 404 errors in dymanic routes such as /status/:slug
+axios.interceptors.response.use(function (response) {
+    return response;
+}, function (error) {
+    if(error.response.status === 404){
+        location.href = "/page-not-found";
+    }
+    console.log(error);
+    return Promise.reject(error);
+});
+
 export default {
     data() {
         return {
