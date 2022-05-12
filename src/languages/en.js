@@ -515,4 +515,6 @@ export default {
     "Go back to the previous page.": "Go back to the previous page.",
     "Coming Soon": "Coming Soon",
     wayToGetClickSendSMSToken: "You can get API Username and API Key from {0} .",
+    settingsCertificateExpiry: "TLS Certificate Expiry",
+    certificationExpiryDescription: "HTTPS Monitors trigger notification when TLS certificate expires in:",
 };

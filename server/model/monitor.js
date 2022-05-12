@@ -7,7 +7,7 @@ dayjs.extend(timezone);
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
 const { log, UP, DOWN, PENDING, flipStatus, TimeLogger } = require("../../src/util");
-const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mqttAsync } = require("../util-server");
+const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mqttAsync, setSetting } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification");
@@ -826,10 +826,19 @@ class Monitor extends BeanModel {
         if (tlsInfoObject && tlsInfoObject.certInfo && tlsInfoObject.certInfo.daysRemaining) {
             const notificationList = await Monitor.getNotificationList(this);
 
-            log.debug("monitor", "call sendCertNotificationByTargetDays");
-            await this.sendCertNotificationByTargetDays(tlsInfoObject.certInfo.daysRemaining, 21, notificationList);
-            await this.sendCertNotificationByTargetDays(tlsInfoObject.certInfo.daysRemaining, 14, notificationList);
-            await this.sendCertNotificationByTargetDays(tlsInfoObject.certInfo.daysRemaining, 7, notificationList);
+            let notifyDays = await setting("tlsExpiryNotifyDays");
+            if (notifyDays == null || !Array.isArray(notifyDays)) {
+                // Reset Default
+                setSetting("tlsExpiryNotifyDays", [ 7, 14, 21 ], "general");
+                notifyDays = [ 7, 14, 21 ];
+            }
+
+            if (notifyDays != null && Array.isArray(notifyDays)) {
+                for (const day of notifyDays) {
+                    log.debug("monitor", "call sendCertNotificationByTargetDays", day);
+                    await this.sendCertNotificationByTargetDays(tlsInfoObject.certInfo.daysRemaining, day, notificationList);
+                }
+            }
         }
     }
 
