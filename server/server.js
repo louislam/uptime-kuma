@@ -674,6 +674,8 @@ try {
                 bean.mqttPassword = monitor.mqttPassword;
                 bean.mqttTopic = monitor.mqttTopic;
                 bean.mqttSuccessMessage = monitor.mqttSuccessMessage;
+                bean.databaseConnectionString = monitor.databaseConnectionString;
+                bean.databaseQuery = monitor.databaseQuery;
 
                 await R.store(bean);
 

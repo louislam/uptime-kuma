@@ -10,6 +10,7 @@ const chardet = require("chardet");
 const mqtt = require("mqtt");
 const chroma = require("chroma-js");
 const { badgeConstants } = require("./config");
+const sql = require("mssql");
 
 // From ping-lite
 exports.WIN = /^win/.test(process.platform);
@@ -200,6 +201,30 @@ exports.dnsResolve = function (hostname, resolverServer, rrtype) {
                 }
             });
         }
+    });
+};
+
+/**
+ * Run a query on SQL Server
+ * @param {string} connectionString The database connection string
+ * @param {string} query The query to validate the database with
+ * @returns {Promise<(string[]|Object[]|Object)>}
+ */
+exports.sqlserver = function (connectionString, query) {
+    return new Promise((resolve, reject) => {
+        sql.on("error", err => {
+            reject(err);
+        });
+
+        sql.connect(connectionString).then(pool => {
+
+            return pool.request()
+                .query(query);
+        }).then(result => {
+            resolve(result);
+        }).catch(err => {
+            reject(err);
+        });
     });
 };
 

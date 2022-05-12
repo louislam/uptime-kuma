@@ -35,6 +35,9 @@
                                     <option value="mqtt">
                                         MQTT
                                     </option>
+                                    <option value="sqlserver">
+                                        SQL Server
+                                    </option>
                                 </select>
                             </div>
 
@@ -145,6 +148,18 @@
                                     <div class="form-text">
                                         {{ $t("successMessageExplanation") }}
                                     </div>
+                                </div>
+                            </template>
+
+                            <!-- SQL Server -->
+                            <template v-if="monitor.type === 'sqlserver'">
+                                <div class="my-3">
+                                    <label for="sqlserverConnectionString" class="form-label">SQL Server {{ $t("Connection String") }}</label>
+                                    <input id="sqlserverConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control">
+                                </div>
+                                <div class="my-3">
+                                    <label for="sqlserverQuery" class="form-label">SQL Server {{ $t("Query") }}</label>
+                                    <textarea id="sqlserverQuery" v-model="monitor.databaseQuery" class="form-control" placeholder="Example: select getdate()"></textarea>
                                 </div>
                             </template>
 
