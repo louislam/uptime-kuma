@@ -13,7 +13,10 @@ dayjs.extend(relativeTime);
 
 export default {
     props: {
-        value: String,
+        value: {
+            type: String,
+            default: null,
+        },
         dateOnly: {
             type: Boolean,
             default: false,

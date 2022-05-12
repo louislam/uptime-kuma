@@ -7,9 +7,9 @@ const { Resolver } = require("dns");
 const childProcess = require("child_process");
 const iconv = require("iconv-lite");
 const chardet = require("chardet");
-const fs = require("fs");
-const nodeJsUtil = require("util");
 const mqtt = require("mqtt");
+const chroma = require("chroma-js");
+const { badgeConstants } = require("./config");
 
 // From ping-lite
 exports.WIN = /^win/.test(process.platform);
@@ -206,7 +206,7 @@ exports.dnsResolve = function (hostname, resolverServer, rrtype) {
 /**
  * Retrieve value of setting based on key
  * @param {string} key Key of setting to retrieve
- * @returns {Promise<Object>} Object representation of setting
+ * @returns {Promise<any>} Value
  */
 exports.setting = async function (key) {
     let value = await R.getCell("SELECT `value` FROM setting WHERE `key` = ? ", [
@@ -525,28 +525,32 @@ exports.convertToUTF8 = (body) => {
     return str.toString();
 };
 
-let logFile;
-
-try {
-    logFile = fs.createWriteStream("./data/error.log", {
-        flags: "a"
-    });
-} catch (_) { }
+/**
+ * Returns a color code in hex format based on a given percentage:
+ * 0% => hue = 10 => red
+ * 100% => hue = 90 => green
+ *
+ * @param {number} percentage float, 0 to 1
+ * @param {number} maxHue
+ * @param {number} minHue, int
+ * @returns {string}, hex value
+ */
+exports.percentageToColor = (percentage, maxHue = 90, minHue = 10) => {
+    const hue = percentage * (maxHue - minHue) + minHue;
+    try {
+        return chroma(`hsl(${hue}, 90%, 40%)`).hex();
+    } catch (err) {
+        return badgeConstants.naColor;
+    }
+};
 
 /**
- * Write error to log file
- * @param {any} error The error to write
- * @param {boolean} outputToConsole Should the error also be output to console?
+ * Joins and array of string to one string after filtering out empty values
+ *
+ * @param {string[]} parts
+ * @param {string} connector
+ * @returns {string}
  */
-exports.errorLog = (error, outputToConsole = true) => {
-    try {
-        if (logFile) {
-            const dateTime = R.isoDateTime();
-            logFile.write(`[${dateTime}] ` + nodeJsUtil.format(error) + "\n");
-
-            if (outputToConsole) {
-                console.error(error);
-            }
-        }
-    } catch (_) { }
+exports.filterAndJoin = (parts, connector = "") => {
+    return parts.filter((part) => !!part && part !== "").join(connector);
 };
