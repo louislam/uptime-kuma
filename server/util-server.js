@@ -10,7 +10,7 @@ const chardet = require("chardet");
 const mqtt = require("mqtt");
 const chroma = require("chroma-js");
 const { badgeConstants } = require("./config");
-const sql = require("mssql");
+const mssql = require("mssql");
 
 // From ping-lite
 exports.WIN = /^win/.test(process.platform);
@@ -212,11 +212,11 @@ exports.dnsResolve = function (hostname, resolverServer, rrtype) {
  */
 exports.sqlserver = function (connectionString, query) {
     return new Promise((resolve, reject) => {
-        sql.on("error", err => {
+        mssql.on("error", err => {
             reject(err);
         });
 
-        sql.connect(connectionString).then(pool => {
+        mssql.connect(connectionString).then(pool => {
 
             return pool.request()
                 .query(query);
