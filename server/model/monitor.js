@@ -89,7 +89,7 @@ class Monitor extends BeanModel {
             mqttTopic: this.mqttTopic,
             mqttSuccessMessage: this.mqttSuccessMessage,
             databaseConnectionString: this.databaseConnectionString,
-            databaseQuery: this.databaseQuery
+            databaseQuery: this.databaseQuery,
         };
 
         if (includeSensitiveData) {
