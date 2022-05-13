@@ -217,7 +217,6 @@ exports.sqlserver = function (connectionString, query) {
         });
 
         mssql.connect(connectionString).then(pool => {
-
             return pool.request()
                 .query(query);
         }).then(result => {
