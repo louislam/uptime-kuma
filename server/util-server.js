@@ -210,7 +210,7 @@ exports.dnsResolve = function (hostname, resolverServer, rrtype) {
  * @param {string} query The query to validate the database with
  * @returns {Promise<(string[]|Object[]|Object)>}
  */
-exports.sqlserver = function (connectionString, query) {
+exports.mssqlQuery = function (connectionString, query) {
     return new Promise((resolve, reject) => {
         mssql.on("error", err => {
             reject(err);
