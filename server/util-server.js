@@ -223,6 +223,8 @@ exports.mssqlQuery = function (connectionString, query) {
             resolve(result);
         }).catch(err => {
             reject(err);
+        }).finally(() => {
+            mssql.close();
         });
     });
 };
