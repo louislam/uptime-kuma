@@ -10,6 +10,7 @@ const chardet = require("chardet");
 const mqtt = require("mqtt");
 const chroma = require("chroma-js");
 const { badgeConstants } = require("./config");
+const { NtlmClient } = require("axios-ntlm");
 
 // From ping-lite
 exports.WIN = /^win/.test(process.platform);
@@ -169,6 +170,26 @@ exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
             }
         });
 
+    });
+};
+
+/**
+ * Use NTLM Auth for a http request.
+ * @param {Object} options The http request options
+ * @param {Object} ntlmOptions The auth options
+ * @returns {Promise<(string[]|Object[]|Object)>}
+ */
+exports.httpNtlm = function (options, ntlmOptions) {
+    return new Promise((resolve, reject) => {
+        let client = NtlmClient(ntlmOptions);
+
+        client(options)
+            .then((resp) => {
+                resolve(resp);
+            })
+            .catch((err) => {
+                reject(err);
+            });
     });
 };
 

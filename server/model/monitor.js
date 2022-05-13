@@ -7,7 +7,7 @@ dayjs.extend(timezone);
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
 const { log, UP, DOWN, PENDING, flipStatus, TimeLogger } = require("../../src/util");
-const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mqttAsync } = require("../util-server");
+const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mqttAsync, httpNtlm } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification");
@@ -87,7 +87,10 @@ class Monitor extends BeanModel {
             mqttUsername: this.mqttUsername,
             mqttPassword: this.mqttPassword,
             mqttTopic: this.mqttTopic,
-            mqttSuccessMessage: this.mqttSuccessMessage
+            mqttSuccessMessage: this.mqttSuccessMessage,
+            authMethod: this.authMethod,
+            authWorkstation: this.authWorkstation,
+            authDomain: this.authDomain,
         };
 
         if (includeSensitiveData) {
@@ -213,7 +216,7 @@ class Monitor extends BeanModel {
 
                     // HTTP basic auth
                     let basicAuthHeader = {};
-                    if (this.basic_auth_user) {
+                    if (this.auth_method === "basic") {
                         basicAuthHeader = {
                             "Authorization": "Basic " + this.encodeBase64(this.basic_auth_user, this.basic_auth_pass),
                         };
@@ -264,7 +267,21 @@ class Monitor extends BeanModel {
                     log.debug("monitor", `[${this.name}] Axios Options: ${JSON.stringify(options)}`);
                     log.debug("monitor", `[${this.name}] Axios Request`);
 
-                    let res = await axios.request(options);
+                    let res;
+                    if (this.auth_method === "ntlm") {
+                        options.httpsAgent.keepAlive = true;
+
+                        res = await httpNtlm(options, {
+                            username: this.basic_auth_user,
+                            password: this.basic_auth_pass,
+                            domain: this.authDomain,
+                            workstation: this.authWorkstation,
+                        });
+
+                    } else {
+                        res = await axios.request(options);
+                    }
+
                     bean.msg = `${res.status} - ${res.statusText}`;
                     bean.ping = dayjs().valueOf() - startTime;
 

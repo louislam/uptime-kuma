@@ -674,6 +674,9 @@ try {
                 bean.mqttPassword = monitor.mqttPassword;
                 bean.mqttTopic = monitor.mqttTopic;
                 bean.mqttSuccessMessage = monitor.mqttSuccessMessage;
+                bean.authMethod = monitor.authMethod;
+                bean.authWorkstation = monitor.authWorkstation;
+                bean.authDomain = monitor.authDomain;
 
                 await R.store(bean);
 
@@ -1247,8 +1250,11 @@ try {
                                 method: monitorListData[i].method || "GET",
                                 body: monitorListData[i].body,
                                 headers: monitorListData[i].headers,
+                                authMethod: monitorListData[i].authMethod,
                                 basic_auth_user: monitorListData[i].basic_auth_user,
                                 basic_auth_pass: monitorListData[i].basic_auth_pass,
+                                authWorkstation: monitorListData[i].authWorkstation,
+                                authDomain: monitorListData[i].authDomain,
                                 interval: monitorListData[i].interval,
                                 retryInterval: retryInterval,
                                 hostname: monitorListData[i].hostname,

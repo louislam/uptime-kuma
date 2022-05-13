@@ -58,6 +58,7 @@ class Database {
         "patch-monitor-expiry-notification.sql": true,
         "patch-status-page-footer-css.sql": true,
         "patch-added-mqtt-monitor.sql": true,
+        "patch-add-other-auth.sql": { parents: [ "patch-monitor-basic-auth.sql" ] },
     };
 
     /**

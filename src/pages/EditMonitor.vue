@@ -358,24 +358,39 @@
                                 <div class="my-3">
                                     <label for="method" class="form-label">{{ $t("Method") }}</label>
                                     <select id="method" v-model="monitor.authMethod" class="form-select">
-                                        <option value="GET">
+                                        <option value="">
+                                            None
+                                        </option>
+                                        <option value="basic">
                                             Basic
                                         </option>
-                                        <option value="POST">
-                                            NTML
+                                        <option value="ntlm">
+                                            NTLM
                                         </option>
                                     </select>
                                 </div>
+                                <template v-if="monitor.authMethod && monitor.authMethod !== '' ">
+                                    <div class="my-3">
+                                        <label for="basicauth" class="form-label">{{ $t("Username") }}</label>
+                                        <input id="basicauth-user" v-model="monitor.basic_auth_user" type="text" class="form-control" :placeholder="$t('Username')">
+                                    </div>
 
-                                <div class="my-3">
-                                    <label for="basicauth" class="form-label">{{ $t("Username") }}</label>
-                                    <input id="basicauth-user" v-model="monitor.basic_auth_user" type="text" class="form-control" :placeholder="$t('Username')">
-                                </div>
+                                    <div class="my-3">
+                                        <label for="basicauth" class="form-label">{{ $t("Password") }}</label>
+                                        <input id="basicauth-pass" v-model="monitor.basic_auth_pass" type="password" autocomplete="new-password" class="form-control" :placeholder="$t('Password')">
+                                    </div>
+                                    <template v-if="monitor.authMethod === 'ntlm' ">
+                                        <div class="my-3">
+                                            <label for="basicauth" class="form-label">{{ $t("Domain") }}</label>
+                                            <input id="basicauth-domain" v-model="monitor.authDomain" type="text" class="form-control" :placeholder="$t('Domain')">
+                                        </div>
 
-                                <div class="my-3">
-                                    <label for="basicauth" class="form-label">{{ $t("Password") }}</label>
-                                    <input id="basicauth-pass" v-model="monitor.basic_auth_pass" type="password" autocomplete="new-password" class="form-control" :placeholder="$t('Password')">
-                                </div>
+                                        <div class="my-3">
+                                            <label for="basicauth" class="form-label">{{ $t("Workstation") }}</label>
+                                            <input id="basicauth-workstation" v-model="monitor.authWorkstation" type="password" autocomplete="new-password" class="form-control" :placeholder="$t('Workstation')">
+                                        </div>
+                                    </template>
+                                </template>
                             </template>
                         </div>
                     </div>
