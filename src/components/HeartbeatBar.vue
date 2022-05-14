@@ -171,7 +171,7 @@ export default {
         },
 
         getBeatTitle(beat) {
-            return `${this.$root.datetime(beat.time)}` + ((beat.msg) ? ` - ${beat.msg}` : ``);
+            return `${this.$root.datetime(beat.time)}` + ((beat.msg) ? ` - ${beat.msg}` : "");
         },
 
         // Toggling the activeSibling class on hover over the current hover item
