@@ -4,16 +4,19 @@
 
 <script>
 import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime"
-import utc from "dayjs/plugin/utc"
-import timezone from "dayjs/plugin/timezone" // dependent on utc plugin
-dayjs.extend(utc)
-dayjs.extend(timezone)
-dayjs.extend(relativeTime)
+import relativeTime from "dayjs/plugin/relativeTime";
+import timezone from "dayjs/plugin/timezone"; // dependent on utc plugin
+import utc from "dayjs/plugin/utc";
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.extend(relativeTime);
 
 export default {
     props: {
-        value: String,
+        value: {
+            type: String,
+            default: null,
+        },
         dateOnly: {
             type: Boolean,
             default: false,
@@ -29,5 +32,5 @@ export default {
             }
         },
     },
-}
+};
 </script>

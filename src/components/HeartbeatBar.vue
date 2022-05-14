@@ -42,7 +42,7 @@ export default {
             beatMargin: 4,
             move: false,
             maxBeat: -1,
-        }
+        };
     },
     computed: {
 
@@ -73,12 +73,12 @@ export default {
             if (start < 0) {
                 // Add empty placeholder
                 for (let i = start; i < 0; i++) {
-                    placeholders.push(0)
+                    placeholders.push(0);
                 }
                 start = 0;
             }
 
-            return placeholders.concat(this.beatList.slice(start))
+            return placeholders.concat(this.beatList.slice(start));
         },
 
         wrapStyle() {
@@ -88,7 +88,7 @@ export default {
             return {
                 padding: `${topBottom}px ${leftRight}px`,
                 width: "100%",
-            }
+            };
         },
 
         barStyle() {
@@ -98,12 +98,12 @@ export default {
                 return {
                     transition: "all ease-in-out 0.25s",
                     transform: `translateX(${width}px)`,
-                }
+                };
 
             }
             return {
                 transform: "translateX(0)",
-            }
+            };
 
         },
 
@@ -113,7 +113,7 @@ export default {
                 height: this.beatHeight + "px",
                 margin: this.beatMargin + "px",
                 "--hover-scale": this.hoverScale,
-            }
+            };
         },
 
     },
@@ -124,7 +124,7 @@ export default {
 
                 setTimeout(() => {
                     this.move = false;
-                }, 300)
+                }, 300);
             },
             deep: true,
         },
@@ -166,7 +166,7 @@ export default {
     methods: {
         resize() {
             if (this.$refs.wrap) {
-                this.maxBeat = Math.floor(this.$refs.wrap.clientWidth / (this.beatWidth + this.beatMargin * 2))
+                this.maxBeat = Math.floor(this.$refs.wrap.clientWidth / (this.beatWidth + this.beatMargin * 2));
             }
         },
 

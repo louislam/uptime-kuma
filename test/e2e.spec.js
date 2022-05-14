@@ -1,7 +1,6 @@
 // eslint-disable-next-line no-unused-vars
 const { Page, Browser } = require("puppeteer");
 const { sleep } = require("../src/util");
-const axios = require("axios");
 
 /**
  * Set back the correct data type for page object
@@ -285,6 +284,11 @@ describe("Init", () => {
     });
 });
 
+/**
+ * Test login
+ * @param {string} username
+ * @param {string} password
+ */
 async function login(username, password) {
     await input(page, "#floatingInput", username);
     await input(page, "#floatingPassword", password);
@@ -292,6 +296,13 @@ async function login(username, password) {
     await sleep(5000);
 }
 
+/**
+ * Click on an element on the page
+ * @param {Page} page Puppeteer page instance
+ * @param {string} selector
+ * @param {number} elementIndex
+ * @returns {Promise<any>}
+ */
 async function click(page, selector, elementIndex = 0) {
     await page.waitForSelector(selector, {
         timeout: 5000,
@@ -301,6 +312,12 @@ async function click(page, selector, elementIndex = 0) {
     }, selector, elementIndex);
 }
 
+/**
+ * Input text into selected field
+ * @param {Page} page Puppeteer page instance
+ * @param {string} selector
+ * @param {string} text Text to input
+ */
 async function input(page, selector, text) {
     await page.waitForSelector(selector, {
         timeout: 5000,

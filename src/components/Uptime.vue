@@ -5,8 +5,14 @@
 <script>
 export default {
     props: {
-        monitor: Object,
-        type: String,
+        monitor: {
+            type: Object,
+            default: null,
+        },
+        type: {
+            type: String,
+            default: null,
+        },
         pill: {
             type: Boolean,
             default: false,
@@ -22,33 +28,33 @@ export default {
                 return Math.round(this.$root.uptimeList[key] * 10000) / 100 + "%";
             }
 
-            return this.$t("notAvailableShort")
+            return this.$t("notAvailableShort");
         },
 
         color() {
             if (this.lastHeartBeat.status === 0) {
-                return "danger"
+                return "danger";
             }
 
             if (this.lastHeartBeat.status === 1) {
-                return "primary"
+                return "primary";
             }
 
             if (this.lastHeartBeat.status === 2) {
-                return "warning"
+                return "warning";
             }
 
-            return "secondary"
+            return "secondary";
         },
 
         lastHeartBeat() {
             if (this.monitor.id in this.$root.lastHeartbeatList && this.$root.lastHeartbeatList[this.monitor.id]) {
-                return this.$root.lastHeartbeatList[this.monitor.id]
+                return this.$root.lastHeartbeatList[this.monitor.id];
             }
 
             return {
                 status: -1,
-            }
+            };
         },
 
         className() {
@@ -59,7 +65,7 @@ export default {
             return "";
         },
     },
-}
+};
 </script>
 
 <style>

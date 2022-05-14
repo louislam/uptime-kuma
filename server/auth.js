@@ -2,16 +2,19 @@ const basicAuth = require("express-basic-auth");
 const passwordHash = require("./password-hash");
 const { R } = require("redbean-node");
 const { setting } = require("./util-server");
-const { debug } = require("../src/util");
 const { loginRateLimiter } = require("./rate-limiter");
 
 /**
- *
- * @param username : string
- * @param password : string
- * @returns {Promise<Bean|null>}
+ * Login to web app
+ * @param {string} username
+ * @param {string} password
+ * @returns {Promise<(Bean|null)>}
  */
 exports.login = async function (username, password) {
+    if (typeof username !== "string" || typeof password !== "string") {
+        return null;
+    }
+
     let user = await R.findOne("user", " username = ? AND active = 1 ", [
         username,
     ]);
@@ -30,32 +33,48 @@ exports.login = async function (username, password) {
     return null;
 };
 
-function myAuthorizer(username, password, callback) {
-    setting("disableAuth").then((result) => {
-        if (result) {
-            callback(null, true);
-        } else {
-            // Login Rate Limit
-            loginRateLimiter.pass(null, 0).then((pass) => {
-                if (pass) {
-                    exports.login(username, password).then((user) => {
-                        callback(null, user != null);
+/**
+ * Callback for myAuthorizer
+ * @callback myAuthorizerCB
+ * @param {any} err Any error encountered
+ * @param {boolean} authorized Is the client authorized?
+ */
 
-                        if (user == null) {
-                            loginRateLimiter.removeTokens(1);
-                        }
-                    });
-                } else {
-                    callback(null, false);
+/**
+ * Custom authorizer for express-basic-auth
+ * @param {string} username
+ * @param {string} password
+ * @param {myAuthorizerCB} callback
+ */
+function myAuthorizer(username, password, callback) {
+    // Login Rate Limit
+    loginRateLimiter.pass(null, 0).then((pass) => {
+        if (pass) {
+            exports.login(username, password).then((user) => {
+                callback(null, user != null);
+
+                if (user == null) {
+                    loginRateLimiter.removeTokens(1);
                 }
             });
-
+        } else {
+            callback(null, false);
         }
     });
 }
 
-exports.basicAuth = basicAuth({
-    authorizer: myAuthorizer,
-    authorizeAsync: true,
-    challenge: true,
-});
+exports.basicAuth = async function (req, res, next) {
+    const middleware = basicAuth({
+        authorizer: myAuthorizer,
+        authorizeAsync: true,
+        challenge: true,
+    });
+
+    const disabledAuth = await setting("disableAuth");
+
+    if (!disabledAuth) {
+        middleware(req, res, next);
+    } else {
+        next();
+    }
+};

@@ -1,19 +1,34 @@
 let express = require("express");
-const { allowDevAllOrigin, getSettings, setting } = require("../util-server");
+const { allowDevAllOrigin, allowAllOrigin, percentageToColor, filterAndJoin } = require("../util-server");
 const { R } = require("redbean-node");
-const server = require("../server");
 const apicache = require("../modules/apicache");
 const Monitor = require("../model/monitor");
 const dayjs = require("dayjs");
-const { UP, flipStatus, debug } = require("../../src/util");
+const { UP, DOWN, flipStatus, log } = require("../../src/util");
+const StatusPage = require("../model/status_page");
+const { UptimeKumaServer } = require("../uptime-kuma-server");
+const { makeBadge } = require("badge-maker");
+const { badgeConstants } = require("../config");
+
 let router = express.Router();
 
 let cache = apicache.middleware;
+const server = UptimeKumaServer.getInstance();
 let io = server.io;
 
-router.get("/api/entry-page", async (_, response) => {
+router.get("/api/entry-page", async (request, response) => {
     allowDevAllOrigin(response);
-    response.json(server.entryPage);
+
+    let result = { };
+
+    if (request.hostname in StatusPage.domainMappingList) {
+        result.type = "statusPageMatchedDomain";
+        result.statusPageSlug = StatusPage.domainMappingList[request.hostname];
+    } else {
+        result.type = "entryPage";
+        result.entryPage = server.entryPage;
+    }
+    response.json(result);
 });
 
 router.get("/api/push/:pushToken", async (request, response) => {
@@ -22,6 +37,8 @@ router.get("/api/push/:pushToken", async (request, response) => {
         let pushToken = request.params.pushToken;
         let msg = request.query.msg || "OK";
         let ping = request.query.ping || null;
+        let statusString = request.query.status || "up";
+        let status = (statusString === "up") ? UP : DOWN;
 
         let monitor = await R.findOne("monitor", " push_token = ? AND active = 1 ", [
             pushToken
@@ -33,7 +50,6 @@ router.get("/api/push/:pushToken", async (request, response) => {
 
         const previousHeartbeat = await Monitor.getPreviousHeartbeat(monitor.id);
 
-        let status = UP;
         if (monitor.isUpsideDown()) {
             status = flipStatus(status);
         }
@@ -51,8 +67,8 @@ router.get("/api/push/:pushToken", async (request, response) => {
             duration = dayjs(bean.time).diff(dayjs(previousHeartbeat.time), "second");
         }
 
-        debug("PreviousStatus: " + previousStatus);
-        debug("Current Status: " + status);
+        log.debug("router", "PreviousStatus: " + previousStatus);
+        log.debug("router", "Current Status: " + status);
 
         bean.important = Monitor.isImportantBeat(isFirstBeat, previousStatus, status);
         bean.monitor_id = monitor.id;
@@ -82,110 +98,80 @@ router.get("/api/push/:pushToken", async (request, response) => {
     }
 });
 
-// Status Page Config
-router.get("/api/status-page/config", async (_request, response) => {
+// Status page config, incident, monitor list
+router.get("/api/status-page/:slug", cache("5 minutes"), async (request, response) => {
     allowDevAllOrigin(response);
+    let slug = request.params.slug;
 
-    let config = await getSettings("statusPage");
+    // Get Status Page
+    let statusPage = await R.findOne("status_page", " slug = ? ", [
+        slug
+    ]);
 
-    if (! config.statusPageTheme) {
-        config.statusPageTheme = "light";
+    if (!statusPage) {
+        response.statusCode = 404;
+        response.json({
+            msg: "Not Found"
+        });
+        return;
     }
-
-    if (! config.statusPagePublished) {
-        config.statusPagePublished = true;
-    }
-
-    if (! config.statusPageTags) {
-        config.statusPageTags = false;
-    }
-
-    if (! config.title) {
-        config.title = "Uptime Kuma";
-    }
-
-    response.json(config);
-});
-
-// Status Page - Get the current Incident
-// Can fetch only if published
-router.get("/api/status-page/incident", async (_, response) => {
-    allowDevAllOrigin(response);
 
     try {
-        await checkPublished();
-
-        let incident = await R.findOne("incident", " pin = 1 AND active = 1");
+        // Incident
+        let incident = await R.findOne("incident", " pin = 1 AND active = 1 AND status_page_id = ? ", [
+            statusPage.id,
+        ]);
 
         if (incident) {
             incident = incident.toPublicJSON();
         }
 
+        // Public Group List
+        const publicGroupList = [];
+        const showTags = !!statusPage.show_tags;
+
+        const list = await R.find("group", " public = 1 AND status_page_id = ? ORDER BY weight ", [
+            statusPage.id
+        ]);
+
+        for (let groupBean of list) {
+            let monitorGroup = await groupBean.toPublicJSON(showTags);
+            publicGroupList.push(monitorGroup);
+        }
+
+        // Response
         response.json({
-            ok: true,
+            config: await statusPage.toPublicJSON(),
             incident,
+            publicGroupList
         });
 
     } catch (error) {
         send403(response, error.message);
     }
-});
 
-// Status Page - Monitor List
-// Can fetch only if published
-router.get("/api/status-page/monitor-list", cache("5 minutes"), async (_request, response) => {
-    allowDevAllOrigin(response);
-
-    try {
-        await checkPublished();
-        const publicGroupList = [];
-        const tagsVisible = (await getSettings("statusPage")).statusPageTags;
-        const list = await R.find("group", " public = 1 ORDER BY weight ");
-        for (let groupBean of list) {
-            let monitorGroup = await groupBean.toPublicJSON();
-            if (tagsVisible) {
-                monitorGroup.monitorList = await Promise.all(monitorGroup.monitorList.map(async (monitor) => {
-                    // Includes tags as an array in response, allows for tags to be displayed on public status page
-                    const tags = await R.getAll(
-                            `SELECT monitor_tag.monitor_id, monitor_tag.value, tag.name, tag.color
-                            FROM monitor_tag
-                            JOIN tag
-                            ON monitor_tag.tag_id = tag.id
-                            WHERE monitor_tag.monitor_id = ?`, [monitor.id]
-                    );
-                    return {
-                        ...monitor,
-                        tags: tags
-                    };
-                }));
-            }
-
-            publicGroupList.push(monitorGroup);
-        }
-
-        response.json(publicGroupList);
-
-    } catch (error) {
-        send403(response, error.message);
-    }
 });
 
 // Status Page Polling Data
 // Can fetch only if published
-router.get("/api/status-page/heartbeat", cache("5 minutes"), async (_request, response) => {
+router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (request, response) => {
     allowDevAllOrigin(response);
 
     try {
-        await checkPublished();
-
         let heartbeatList = {};
         let uptimeList = {};
+
+        let slug = request.params.slug;
+        let statusPageID = await StatusPage.slugToID(slug);
 
         let monitorIDList = await R.getCol(`
             SELECT monitor_group.monitor_id FROM monitor_group, \`group\`
             WHERE monitor_group.group_id = \`group\`.id
             AND public = 1
-        `);
+            AND \`group\`.status_page_id = ?
+        `, [
+            statusPageID
+        ]);
 
         for (let monitorID of monitorIDList) {
             let list = await R.getAll(`
@@ -214,24 +200,187 @@ router.get("/api/status-page/heartbeat", cache("5 minutes"), async (_request, re
     }
 });
 
-async function checkPublished() {
-    if (! await isPublished()) {
-        throw new Error("The status page is not published");
+router.get("/api/badge/:id/status", cache("5 minutes"), async (request, response) => {
+    allowAllOrigin(response);
+
+    const {
+        label,
+        upLabel = "Up",
+        downLabel = "Down",
+        upColor = badgeConstants.defaultUpColor,
+        downColor = badgeConstants.defaultDownColor,
+        style = badgeConstants.defaultStyle,
+        value, // for demo purpose only
+    } = request.query;
+
+    try {
+        const requestedMonitorId = parseInt(request.params.id, 10);
+        const overrideValue = value !== undefined ? parseInt(value) : undefined;
+
+        let publicMonitor = await R.getRow(`
+                SELECT monitor_group.monitor_id FROM monitor_group, \`group\`
+                WHERE monitor_group.group_id = \`group\`.id
+                AND monitor_group.monitor_id = ?
+                AND public = 1
+            `,
+        [ requestedMonitorId ]
+        );
+
+        const badgeValues = { style };
+
+        if (!publicMonitor) {
+            // return a "N/A" badge in naColor (grey), if monitor is not public / not available / non exsitant
+
+            badgeValues.message = "N/A";
+            badgeValues.color = badgeConstants.naColor;
+        } else {
+            const heartbeat = await Monitor.getPreviousHeartbeat(requestedMonitorId);
+            const state = overrideValue !== undefined ? overrideValue : heartbeat.status === 1;
+
+            badgeValues.color = state ? upColor : downColor;
+            badgeValues.message = label ?? state ? upLabel : downLabel;
+        }
+
+        // build the svg based on given values
+        const svg = makeBadge(badgeValues);
+
+        response.type("image/svg+xml");
+        response.send(svg);
+    } catch (error) {
+        send403(response, error.message);
     }
-}
+});
+
+router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (request, response) => {
+    allowAllOrigin(response);
+
+    const {
+        label,
+        labelPrefix,
+        labelSuffix = badgeConstants.defaultUptimeLabelSuffix,
+        prefix,
+        suffix = badgeConstants.defaultUptimeValueSuffix,
+        color,
+        labelColor,
+        style = badgeConstants.defaultStyle,
+        value, // for demo purpose only
+    } = request.query;
+
+    try {
+        const requestedMonitorId = parseInt(request.params.id, 10);
+        // if no duration is given, set value to 24 (h)
+        const requestedDuration = request.params.duration !== undefined ? parseInt(request.params.duration, 10) : 24;
+        const overrideValue = value && parseFloat(value);
+
+        let publicMonitor = await R.getRow(`
+                SELECT monitor_group.monitor_id FROM monitor_group, \`group\`
+                WHERE monitor_group.group_id = \`group\`.id
+                AND monitor_group.monitor_id = ?
+                AND public = 1
+            `,
+        [ requestedMonitorId ]
+        );
+
+        const badgeValues = { style };
+
+        if (!publicMonitor) {
+            // return a "N/A" badge in naColor (grey), if monitor is not public / not available / non exsitant
+            badgeValues.message = "N/A";
+            badgeValues.color = badgeConstants.naColor;
+        } else {
+            const uptime = overrideValue ?? await Monitor.calcUptime(
+                requestedDuration,
+                requestedMonitorId
+            );
+
+            // limit the displayed uptime percentage to four (two, when displayed as percent) decimal digits
+            const cleanUptime = parseFloat(uptime.toPrecision(4));
+
+            // use a given, custom color or calculate one based on the uptime value
+            badgeValues.color = color ?? percentageToColor(uptime);
+            // use a given, custom labelColor or use the default badge label color (defined by badge-maker)
+            badgeValues.labelColor = labelColor ?? "";
+            // build a lable string. If a custom label is given, override the default one (requestedDuration)
+            badgeValues.label = filterAndJoin([ labelPrefix, label ?? requestedDuration, labelSuffix ]);
+            badgeValues.message = filterAndJoin([ prefix, `${cleanUptime * 100}`, suffix ]);
+        }
+
+        // build the SVG based on given values
+        const svg = makeBadge(badgeValues);
+
+        response.type("image/svg+xml");
+        response.send(svg);
+    } catch (error) {
+        send403(response, error.message);
+    }
+});
+
+router.get("/api/badge/:id/ping/:duration?", cache("5 minutes"), async (request, response) => {
+    allowAllOrigin(response);
+
+    const {
+        label,
+        labelPrefix,
+        labelSuffix = badgeConstants.defaultPingLabelSuffix,
+        prefix,
+        suffix = badgeConstants.defaultPingValueSuffix,
+        color = badgeConstants.defaultPingColor,
+        labelColor,
+        style = badgeConstants.defaultStyle,
+        value, // for demo purpose only
+    } = request.query;
+
+    try {
+        const requestedMonitorId = parseInt(request.params.id, 10);
+
+        // Default duration is 24 (h) if not defined in queryParam, limited to 720h (30d)
+        const requestedDuration = Math.min(request.params.duration ? parseInt(request.params.duration, 10) : 24, 720);
+        const overrideValue = value && parseFloat(value);
+
+        const publicAvgPing = parseInt(await R.getCell(`
+                SELECT AVG(ping) FROM monitor_group, \`group\`, heartbeat
+                WHERE monitor_group.group_id = \`group\`.id
+                AND heartbeat.time > DATETIME('now', ? || ' hours')
+                AND heartbeat.ping IS NOT NULL
+                AND public = 1
+                AND heartbeat.monitor_id = ?
+            `,
+        [ -requestedDuration, requestedMonitorId ]
+        ));
+
+        const badgeValues = { style };
+
+        if (!publicAvgPing) {
+            // return a "N/A" badge in naColor (grey), if monitor is not public / not available / non exsitant
+
+            badgeValues.message = "N/A";
+            badgeValues.color = badgeConstants.naColor;
+        } else {
+            const avgPing = parseInt(overrideValue ?? publicAvgPing);
+
+            badgeValues.color = color;
+            // use a given, custom labelColor or use the default badge label color (defined by badge-maker)
+            badgeValues.labelColor = labelColor ?? "";
+            // build a lable string. If a custom label is given, override the default one (requestedDuration)
+            badgeValues.label = filterAndJoin([ labelPrefix, label ?? requestedDuration, labelSuffix ]);
+            badgeValues.message = filterAndJoin([ prefix, avgPing, suffix ]);
+        }
+
+        // build the SVG based on given values
+        const svg = makeBadge(badgeValues);
+
+        response.type("image/svg+xml");
+        response.send(svg);
+    } catch (error) {
+        send403(response, error.message);
+    }
+});
 
 /**
- * Default is published
- * @returns {Promise<boolean>}
+ * Send a 403 response
+ * @param {Object} res Express response object
+ * @param {string} [msg=""] Message to send
  */
-async function isPublished() {
-    const value = await setting("statusPagePublished");
-    if (value === null) {
-        return true;
-    }
-    return value;
-}
-
 function send403(res, msg = "") {
     res.status(403).json({
         "status": "fail",
