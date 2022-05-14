@@ -242,7 +242,7 @@ export default {
         }
 
         &.active-sibling {
-            transform: scale(1.3);
+            transform: scale(1.15);
             transition: all ease 0.15s;
         }
     }
