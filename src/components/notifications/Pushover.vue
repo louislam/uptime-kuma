@@ -18,29 +18,29 @@
         </select>
         <label for="pushover-sound" class="form-label">{{ $t("Notification Sound") }}</label>
         <select id="pushover-sound" v-model="$parent.notification.pushoversounds" class="form-select">
-            <option>{{ $t("pushoversounds pushover") }}</option>
-            <option>{{ $t("pushoversounds bike") }}</option>
-            <option>{{ $t("pushoversounds bugle") }}</option>
-            <option>{{ $t("pushoversounds cashregister") }}</option>
-            <option>{{ $t("pushoversounds classical") }}</option>
-            <option>{{ $t("pushoversounds cosmic") }}</option>
-            <option>{{ $t("pushoversounds falling") }}</option>
-            <option>{{ $t("pushoversounds gamelan") }}</option>
-            <option>{{ $t("pushoversounds incoming") }}</option>
-            <option>{{ $t("pushoversounds intermission") }}</option>
-            <option>{{ $t("pushoversounds magic") }}</option>
-            <option>{{ $t("pushoversounds mechanical") }}</option>
-            <option>{{ $t("pushoversounds pianobar") }}</option>
-            <option>{{ $t("pushoversounds siren") }}</option>
-            <option>{{ $t("pushoversounds spacealarm") }}</option>
-            <option>{{ $t("pushoversounds tugboat") }}</option>
-            <option>{{ $t("pushoversounds alien") }}</option>
-            <option>{{ $t("pushoversounds climb") }}</option>
-            <option>{{ $t("pushoversounds persistent") }}</option>
-            <option>{{ $t("pushoversounds echo") }}</option>
-            <option>{{ $t("pushoversounds updown") }}</option>
-            <option>{{ $t("pushoversounds vibrate") }}</option>
-            <option>{{ $t("pushoversounds none") }}</option>
+            <option value="pushover">{{ $t("pushoversounds pushover") }}</option>
+            <option value="bike">{{ $t("pushoversounds bike") }}</option>
+            <option value="bugle">{{ $t("pushoversounds bugle") }}</option>
+            <option value="cashregister">{{ $t("pushoversounds cashregister") }}</option>
+            <option value="classical">{{ $t("pushoversounds classical") }}</option>
+            <option value="cosmic">{{ $t("pushoversounds cosmic") }}</option>
+            <option value="falling">{{ $t("pushoversounds falling") }}</option>
+            <option value="gamelan">{{ $t("pushoversounds gamelan") }}</option>
+            <option value="incoming">{{ $t("pushoversounds incoming") }}</option>
+            <option value="intermission">{{ $t("pushoversounds intermission") }}</option>
+            <option value="magic">{{ $t("pushoversounds magic") }}</option>
+            <option value="mechanical">{{ $t("pushoversounds mechanical") }}</option>
+            <option value="pianobar">{{ $t("pushoversounds pianobar") }}</option>
+            <option value="siren">{{ $t("pushoversounds siren") }}</option>
+            <option value="spacealarm">{{ $t("pushoversounds spacealarm") }}</option>
+            <option value="tugboat">{{ $t("pushoversounds tugboat") }}</option>
+            <option value="alien">{{ $t("pushoversounds alien") }}</option>
+            <option value="climb">{{ $t("pushoversounds climb") }}</option>
+            <option value="persistent">{{ $t("pushoversounds persistent") }}</option>
+            <option value="echo">{{ $t("pushoversounds echo") }}</option>
+            <option value="updown">{{ $t("pushoversounds updown") }}</option>
+            <option value="vibrate">{{ $t("pushoversounds vibrate") }}</option>
+            <option value="none">{{ $t("pushoversounds none") }}</option>
         </select>
         <div class="form-text">
             <span style="color: red;"><sup>*</sup></span>{{ $t("Required") }}
