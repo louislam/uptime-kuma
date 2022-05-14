@@ -22,20 +22,22 @@ class Discord extends NotificationProvider {
                 return okMsg;
             }
 
-            let url;
+            let address;
 
             switch (monitorJSON["type"]) {
-                case "dns":
                 case "ping":
+                    address = monitorJSON["hostname"];
+                    break;
                 case "port":
+                case "dns":
                 case "steam":
-                    url = monitorJSON["hostname"];
+                    address = monitorJSON["hostname"];
                     if (monitorJSON["port"]) {
-                        url += ":" + monitorJSON["port"];
+                        address += ":" + monitorJSON["port"];
                     }
                     break;
                 default:
-                    url = monitorJSON["url"];
+                    address = monitorJSON["url"];
                     break;
             }
 
@@ -53,8 +55,8 @@ class Discord extends NotificationProvider {
                                 value: monitorJSON["name"],
                             },
                             {
-                                name: "Service URL",
-                                value: url,
+                                name: "Service URL / Address",
+                                value: address,
                             },
                             {
                                 name: "Time (UTC)",
@@ -89,7 +91,7 @@ class Discord extends NotificationProvider {
                             },
                             {
                                 name: "Service URL",
-                                value: url.startsWith("http") ? "[Visit Service](" + url + ")" : url,
+                                value: address.startsWith("http") ? "[Visit Service](" + address + ")" : address,
                             },
                             {
                                 name: "Time (UTC)",
