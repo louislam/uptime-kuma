@@ -688,7 +688,7 @@ export default {
         },
 
         statusPageLogoLoaded(eventPayload) {
-            // Remark: may not work in dev, due to cros
+            // Remark: may not work in dev, due to CORS
             favicon.image(eventPayload.target);
         },
 
