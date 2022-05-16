@@ -9,11 +9,11 @@
 
             <div class="mt-1">
                 <div class="form-check">
-                    <label><input v-model="settings.checkUpdate" type="checkbox" @change="saveSettings()" /> Show update if available</label>
+                    <label><input v-model="settings.checkUpdate" type="checkbox" @change="saveSettings()" /> {{ $t("Show update if available") }}</label>
                 </div>
 
                 <div class="form-check">
-                    <label><input v-model="settings.checkBeta" type="checkbox" :disabled="!settings.checkUpdate" @change="saveSettings()" /> Also check beta release</label>
+                    <label><input v-model="settings.checkBeta" type="checkbox" :disabled="!settings.checkUpdate" @change="saveSettings()" /> {{ $t("Also check beta release") }}</label>
                 </div>
             </div>
         </div>
