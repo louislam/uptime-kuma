@@ -16,6 +16,10 @@
                         <span class="num text-danger">{{ $root.stats.down }}</span>
                     </div>
                     <div class="col">
+                        <h3>{{ $t("Maintenance") }}</h3>
+                        <span class="num text-maintenance">{{ $root.stats.maintenance }}</span>
+                    </div>
+                    <div class="col">
                         <h3>{{ $t("Unknown") }}</h3>
                         <span class="num text-secondary">{{ $root.stats.unknown }}</span>
                     </div>
@@ -141,6 +145,14 @@ export default {
     color: $primary;
     font-weight: bold;
     display: block;
+}
+
+.text-maintenance {
+    color: $maintenance;
+}
+
+.bg-maintenance {
+    background-color: $maintenance;
 }
 
 .shadow-box {

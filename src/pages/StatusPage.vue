@@ -195,6 +195,34 @@
                 </div>
             </div>
 
+            <!-- Maintenance -->
+            <template v-if="maintenance.length">
+                <div
+                    v-for="maintenanceItem in maintenance" :key="maintenanceItem.id"
+                    class="shadow-box alert mb-4 p-4 maintenance mt-4 position-relative" role="alert"
+                >
+                    <div class="item">
+                        <div class="row">
+                            <div class="col-1 col-md-1 d-flex justify-content-center align-items-center">
+                                <font-awesome-icon
+                                    icon="wrench"
+                                    class="maintenance-icon maintenance-bg-info"
+                                />
+                            </div>
+                            <div class="col-11 col-md-11">
+                                <h4 class="alert-heading">{{ maintenanceItem.title }}</h4>
+                                <div class="content">{{ maintenanceItem.description }}</div>
+
+                                <div class="date mt-3">
+                                    {{ $t("End") }}: {{ $root.datetimeMaintenance(maintenanceItem.end_date) }}
+                                    ({{ dateFromNow(maintenanceItem.start_date) }})<br />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
             <!-- Overall Status -->
             <div class="shadow-box list  p-4 overall-status mb-4">
                 <div v-if="Object.keys($root.publicMonitorList).length === 0 && loadedData">
@@ -216,6 +244,11 @@
                     <div v-else-if="allDown">
                         <font-awesome-icon icon="times-circle" class="danger" />
                         {{ $t("Degraded Service") }}
+                    </div>
+
+                    <div v-else-if="isMaintenance">
+                        <font-awesome-icon icon="wrench" class="status-maintenance" />
+                        {{ $t("Maintenance") }}
                     </div>
 
                     <div v-else>
@@ -296,7 +329,7 @@ import { useToast } from "vue-toastification";
 import Confirm from "../components/Confirm.vue";
 import PublicGroupList from "../components/PublicGroupList.vue";
 import { getResBaseURL } from "../util-frontend";
-import { STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_PARTIAL_DOWN, UP } from "../util.ts";
+import { STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_MAINTENANCE, STATUS_PAGE_PARTIAL_DOWN, UP, MAINTENANCE } from "../util.ts";
 
 const toast = useToast();
 
@@ -355,6 +388,7 @@ export default {
             loadedData: false,
             baseURL: "",
             clickedEditButton: false,
+            maintenance: [],
         };
     },
     computed: {
@@ -408,6 +442,10 @@ export default {
             return "bg-" + this.incident.style;
         },
 
+        maintenanceClass() {
+            return "bg-maintenance";
+        },
+
         overallStatus() {
 
             if (Object.keys(this.$root.publicLastHeartbeatList).length === 0) {
@@ -420,7 +458,9 @@ export default {
             for (let id in this.$root.publicLastHeartbeatList) {
                 let beat = this.$root.publicLastHeartbeatList[id];
 
-                if (beat.status === UP) {
+                if (beat.status === MAINTENANCE) {
+                    return STATUS_PAGE_MAINTENANCE;
+                } else if (beat.status === UP) {
                     hasUp = true;
                 } else {
                     status = STATUS_PAGE_PARTIAL_DOWN;
@@ -444,6 +484,10 @@ export default {
 
         allDown() {
             return this.overallStatus === STATUS_PAGE_ALL_DOWN;
+        },
+
+        isMaintenance() {
+            return this.overallStatus === STATUS_PAGE_MAINTENANCE;
         },
 
     },
@@ -550,6 +594,7 @@ export default {
             }
 
             this.incident = res.data.incident;
+            this.maintenance = res.data.maintenance;
             this.$root.publicGroupList = res.data.publicGroupList;
         });
 
@@ -895,6 +940,24 @@ footer {
     .date {
         font-size: 12px;
     }
+}
+
+.maintenance-bg-info {
+    color: $maintenance;
+}
+
+.maintenance-icon {
+    font-size: 30px;
+    vertical-align: middle;
+}
+
+.dark .shadow-box {
+    background-color: #0d1117;
+}
+
+.status-maintenance {
+    color: $maintenance;
+    margin-right: 5px;
 }
 
 .mobile {

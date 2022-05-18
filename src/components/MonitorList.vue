@@ -1,7 +1,13 @@
 <template>
     <div class="shadow-box mb-3" :style="boxStyle">
         <div class="list-header">
-            <div class="placeholder"></div>
+            <div class="search-wrapper float-start" style="margin-left: 5px;">
+                <font-awesome-icon icon="filter" />
+                <select v-model="selectedList" class="form-control" style="margin-left: 5px;">
+                    <option value="monitor" selected>{{ $t('Monitors') }}</option>
+                    <option value="maintenance">{{ $t('Maintenance') }}</option>
+                </select>
+            </div>
             <div class="search-wrapper">
                 <a v-if="searchText == ''" class="search-icon">
                     <font-awesome-icon icon="search" />
@@ -15,32 +21,62 @@
             </div>
         </div>
         <div class="monitor-list" :class="{ scrollbar: scrollbar }">
-            <div v-if="Object.keys($root.monitorList).length === 0" class="text-center mt-3">
+            <div v-if="Object.keys($root.monitorList).length === 0 && selectedList === 'monitor'" class="text-center mt-3">
                 {{ $t("No Monitors, please") }} <router-link to="/add">{{ $t("add one") }}</router-link>
             </div>
+            <div v-if="Object.keys($root.maintenanceList).length === 0 && selectedList === 'maintenance'" class="text-center mt-3">
+                {{ $t("No Maintenance, please") }} <router-link to="/addMaintenance">{{ $t("add one") }}</router-link>
+            </div>
 
-            <router-link v-for="(item, index) in sortedMonitorList" :key="index" :to="monitorURL(item.id)" class="item" :class="{ 'disabled': ! item.active }">
-                <div class="row">
-                    <div class="col-9 col-md-8 small-padding" :class="{ 'monitor-item': $root.userHeartbeatBar == 'bottom' || $root.userHeartbeatBar == 'none' }">
-                        <div class="info">
-                            <Uptime :monitor="item" type="24" :pill="true" />
-                            {{ item.name }}
-                        </div>
-                        <div class="tags">
-                            <Tag v-for="tag in item.tags" :key="tag" :item="tag" :size="'sm'" />
+            <template v-if="selectedList === 'maintenance'">
+                <router-link
+                    v-for="(item, index) in sortedMaintenanceList" :key="index" :to="maintenanceURL(item.id)"
+                    class="item" :class="{ 'disabled': !$root.isActiveMaintenance(item.end_date) }"
+                >
+                    <div class="row">
+                        <div class="col-9 col-md-8 small-padding">
+                            <div class="info">
+                                <Uptime :monitor="null" type="maintenance" :pill="true" />
+                                {{ item.title }}
+                            </div>
                         </div>
                     </div>
-                    <div v-show="$root.userHeartbeatBar == 'normal'" :key="$root.userHeartbeatBar" class="col-3 col-md-4">
-                        <HeartbeatBar size="small" :monitor-id="item.id" />
-                    </div>
-                </div>
+                </router-link>
+            </template>
 
-                <div v-if="$root.userHeartbeatBar == 'bottom'" class="row">
-                    <div class="col-12 bottom-style">
-                        <HeartbeatBar size="small" :monitor-id="item.id" />
+            <template v-if="selectedList === 'monitor'">
+                <router-link
+                    v-for="(item, index) in sortedMonitorList" :key="index" :to="monitorURL(item.id)"
+                    class="item" :class="{ 'disabled': ! item.active }"
+                >
+                    <div class="row">
+                        <div
+                            class="col-9 col-md-8 small-padding"
+                            :class="{ 'monitor-item': $root.userHeartbeatBar == 'bottom' || $root.userHeartbeatBar == 'none' }"
+                        >
+                            <div class="info">
+                                <Uptime :monitor="item" type="24" :pill="true" />
+                                {{ item.name }}
+                            </div>
+                            <div class="tags">
+                                <Tag v-for="tag in item.tags" :key="tag" :item="tag" :size="'sm'" />
+                            </div>
+                        </div>
+                        <div
+                            v-show="$root.userHeartbeatBar == 'normal'" :key="$root.userHeartbeatBar"
+                            class="col-3 col-md-4"
+                        >
+                            <HeartbeatBar size="small" :monitor-id="item.id" />
+                        </div>
                     </div>
-                </div>
-            </router-link>
+
+                    <div v-if="$root.userHeartbeatBar == 'bottom'" class="row">
+                        <div class="col-12 bottom-style">
+                            <HeartbeatBar size="small" :monitor-id="item.id" />
+                        </div>
+                    </div>
+                </router-link>
+            </template>
         </div>
     </div>
 </template>
@@ -49,7 +85,7 @@
 import HeartbeatBar from "../components/HeartbeatBar.vue";
 import Tag from "../components/Tag.vue";
 import Uptime from "../components/Uptime.vue";
-import { getMonitorRelativeURL } from "../util.ts";
+import { getMaintenanceRelativeURL, getMonitorRelativeURL } from "../util.ts";
 
 export default {
     components: {
@@ -65,6 +101,7 @@ export default {
     data() {
         return {
             searchText: "",
+            selectedList: "monitor",
             windowTop: 0,
         };
     },
@@ -73,6 +110,56 @@ export default {
             return {
                 height: `calc(100vh - 160px + ${this.windowTop}px)`,
             };
+        },
+
+        sortedMaintenanceList() {
+            let result = Object.values(this.$root.maintenanceList);
+
+            result.sort((m1, m2) => {
+
+                if (this.$root.isActiveMaintenance(m1.end_date) !== this.$root.isActiveMaintenance(m2.end_date)) {
+                    if (!this.$root.isActiveMaintenance(m2.end_date)) {
+                        return -1;
+                    }
+                    if (!this.$root.isActiveMaintenance(m1.end_date)) {
+                        return 1;
+                    }
+                }
+
+                if (this.$root.isActiveMaintenance(m1.end_date) && this.$root.isActiveMaintenance(m2.end_date)) {
+                    if (Date.parse(m1.end_date) < Date.parse(m2.end_date)) {
+                        return -1;
+                    }
+
+                    if (Date.parse(m2.end_date) < Date.parse(m1.end_date)) {
+                        return 1;
+                    }
+                }
+
+                if (!this.$root.isActiveMaintenance(m1.end_date) && !this.$root.isActiveMaintenance(m2.end_date)) {
+                    if (Date.parse(m1.end_date) < Date.parse(m2.end_date)) {
+                        return 1;
+                    }
+
+                    if (Date.parse(m2.end_date) < Date.parse(m1.end_date)) {
+                        return -1;
+                    }
+                }
+
+                return m1.title.localeCompare(m2.title);
+            });
+
+            // Simple filter by search text
+            // finds maintenance name
+            if (this.searchText !== "") {
+                const loweredSearchText = this.searchText.toLowerCase();
+                result = result.filter(maintenance => {
+                    return maintenance.title.toLowerCase().includes(loweredSearchText)
+                        || maintenance.description.toLowerCase().includes(loweredSearchText);
+                });
+            }
+
+            return result;
         },
 
         sortedMonitorList() {
@@ -133,6 +220,9 @@ export default {
         },
         monitorURL(id) {
             return getMonitorRelativeURL(id);
+        },
+        maintenanceURL(id) {
+            return getMaintenanceRelativeURL(id);
         },
         clearSearchText() {
             this.searchText = "";
@@ -209,4 +299,11 @@ export default {
     margin-top: 5px;
 }
 
+.bg-maintenance {
+    background-color: $maintenance;
+}
+
+select {
+    text-align: center;
+}
 </style>

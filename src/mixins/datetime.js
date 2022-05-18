@@ -18,8 +18,27 @@ export default {
     },
 
     methods: {
+        isActiveMaintenance(endDate) {
+            return (dayjs.utc(endDate).unix() >= dayjs.utc().unix());
+        },
+
+        toUTC(value) {
+            return dayjs.tz(value, this.timezone).utc().format();
+        },
+
         datetime(value) {
             return this.datetimeFormat(value, "YYYY-MM-DD HH:mm:ss");
+        },
+
+        datetimeMaintenance(value) {
+            const inputDate = new Date(value);
+            const now = new Date(Date.now());
+
+            if (inputDate.getFullYear() === now.getUTCFullYear() && inputDate.getMonth() === now.getUTCMonth() && inputDate.getDay() === now.getUTCDay()) {
+                return this.datetimeFormat(value, "HH:mm");
+            } else {
+                return this.datetimeFormat(value, "YYYY-MM-DD HH:mm");
+            }
         },
 
         date(value) {
@@ -41,7 +60,7 @@ export default {
                 return dayjs.utc(value).tz(this.timezone).format(format);
             }
             return "";
-        }
+        },
     },
 
     computed: {

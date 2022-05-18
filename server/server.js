@@ -124,6 +124,7 @@ const TwoFA = require("./2fa");
 const StatusPage = require("./model/status_page");
 const { cloudflaredSocketHandler, autoStart: cloudflaredAutoStart, stop: cloudflaredStop } = require("./socket-handlers/cloudflared-socket-handler");
 const { proxySocketHandler } = require("./socket-handlers/proxy-socket-handler");
+const apicache = require("./modules/apicache");
 
 app.use(express.json());
 
@@ -141,6 +142,12 @@ app.use(function (req, res, next) {
  * @type {null}
  */
 let jwtSecret = null;
+
+/**
+* Main maintenance list
+* @type {{}}
+*/
+let maintenanceList = {};
 
 /**
  * Show Setup Page
@@ -700,6 +707,135 @@ try {
             }
         });
 
+        // Add a new maintenance
+        socket.on("addMaintenance", async (maintenance, callback) => {
+            try {
+                checkLogin(socket);
+                let bean = R.dispense("maintenance");
+
+                bean.import(maintenance);
+                bean.user_id = socket.userID;
+                let maintenanceID = await R.store(bean);
+
+                await sendMaintenanceList(socket);
+
+                callback({
+                    ok: true,
+                    msg: "Added Successfully.",
+                    maintenanceID,
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        // Edit a maintenance
+        socket.on("editMaintenance", async (maintenance, callback) => {
+            try {
+                checkLogin(socket);
+
+                let bean = await R.findOne("maintenance", " id = ? ", [ maintenance.id ]);
+
+                if (bean.user_id !== socket.userID) {
+                    throw new Error("Permission denied.");
+                }
+
+                bean.title = maintenance.title;
+                bean.description = maintenance.description;
+                bean.start_date = maintenance.start_date;
+                bean.end_date = maintenance.end_date;
+
+                await R.store(bean);
+
+                await sendMaintenanceList(socket);
+
+                callback({
+                    ok: true,
+                    msg: "Saved.",
+                    maintenanceID: bean.id,
+                });
+
+            } catch (e) {
+                console.error(e);
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        // Add a new monitor_maintenance
+        socket.on("addMonitorMaintenance", async (maintenanceID, monitors, callback) => {
+            try {
+                checkLogin(socket);
+
+                await R.exec("DELETE FROM monitor_maintenance WHERE maintenance_id = ?", [
+                    maintenanceID
+                ]);
+
+                for await (const monitor of monitors) {
+                    let bean = R.dispense("monitor_maintenance");
+
+                    bean.import({
+                        monitor_id: monitor.id,
+                        maintenance_id: maintenanceID
+                    });
+                    await R.store(bean);
+                }
+
+                apicache.clear();
+
+                callback({
+                    ok: true,
+                    msg: "Added Successfully.",
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        // Add a new monitor_maintenance
+        socket.on("addMaintenanceStatusPage", async (maintenanceID, statusPages, callback) => {
+            try {
+                checkLogin(socket);
+
+                await R.exec("DELETE FROM maintenance_status_page WHERE maintenance_id = ?", [
+                    maintenanceID
+                ]);
+
+                for await (const statusPage of statusPages) {
+                    let bean = R.dispense("maintenance_status_page");
+
+                    bean.import({
+                        status_page_id: statusPage.id,
+                        maintenance_id: maintenanceID
+                    });
+                    await R.store(bean);
+                }
+
+                apicache.clear();
+
+                callback({
+                    ok: true,
+                    msg: "Added Successfully.",
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
         socket.on("getMonitorList", async (callback) => {
             try {
                 checkLogin(socket);
@@ -709,6 +845,22 @@ try {
                 });
             } catch (e) {
                 log.error("monitor", e);
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("getMaintenanceList", async (callback) => {
+            try {
+                checkLogin(socket);
+                await sendMaintenanceList(socket);
+                callback({
+                    ok: true,
+                });
+            } catch (e) {
+                console.error(e);
                 callback({
                     ok: false,
                     msg: e.message,
@@ -733,6 +885,78 @@ try {
                 });
 
             } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("getMaintenance", async (maintenanceID, callback) => {
+            try {
+                checkLogin(socket);
+
+                console.log(`Get Maintenance: ${maintenanceID} User ID: ${socket.userID}`);
+
+                let bean = await R.findOne("maintenance", " id = ? AND user_id = ? ", [
+                    maintenanceID,
+                    socket.userID,
+                ]);
+
+                callback({
+                    ok: true,
+                    maintenance: await bean.toJSON(),
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("getMonitorMaintenance", async (maintenanceID, callback) => {
+            try {
+                checkLogin(socket);
+
+                console.log(`Get Monitors for Maintenance: ${maintenanceID} User ID: ${socket.userID}`);
+
+                let monitors = await R.getAll("SELECT monitor.id, monitor.name FROM monitor_maintenance mm JOIN monitor ON mm.monitor_id = monitor.id WHERE mm.maintenance_id = ? ", [
+                    maintenanceID,
+                ]);
+
+                callback({
+                    ok: true,
+                    monitors,
+                });
+
+            } catch (e) {
+                console.error(e);
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("getMaintenanceStatusPage", async (maintenanceID, callback) => {
+            try {
+                checkLogin(socket);
+
+                console.log(`Get Status Pages for Maintenance: ${maintenanceID} User ID: ${socket.userID}`);
+
+                let statusPages = await R.getAll("SELECT status_page.id, status_page.title FROM maintenance_status_page msp JOIN status_page ON msp.status_page_id = status_page.id WHERE msp.maintenance_id = ? ", [
+                    maintenanceID,
+                ]);
+
+                callback({
+                    ok: true,
+                    statusPages,
+                });
+
+            } catch (e) {
+                console.error(e);
                 callback({
                     ok: false,
                     msg: e.message,
@@ -835,6 +1059,36 @@ try {
                 await server.sendMonitorList(socket);
                 // Clear heartbeat list on client
                 await sendImportantHeartbeatList(socket, monitorID, true, true);
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("deleteMaintenance", async (maintenanceID, callback) => {
+            try {
+                checkLogin(socket);
+
+                console.log(`Delete Maintenance: ${maintenanceID} User ID: ${socket.userID}`);
+
+                if (maintenanceID in maintenanceList) {
+                    delete maintenanceList[maintenanceID];
+                }
+
+                await R.exec("DELETE FROM maintenance WHERE id = ? AND user_id = ? ", [
+                    maintenanceID,
+                    socket.userID,
+                ]);
+
+                callback({
+                    ok: true,
+                    msg: "Deleted Successfully.",
+                });
+
+                await sendMaintenanceList(socket);
 
             } catch (e) {
                 callback({
@@ -1505,6 +1759,12 @@ async function checkOwner(userID, monitorID) {
     }
 }
 
+async function sendMaintenanceList(socket) {
+    let list = await getMaintenanceJSONList(socket.userID);
+    io.to(socket.userID).emit("maintenanceList", list);
+    return list;
+}
+
 /**
  * Function called after user login
  * This function is used to send the heartbeat list of a monitor.
@@ -1517,6 +1777,7 @@ async function afterLogin(socket, user) {
     socket.join(user.id);
 
     let monitorList = await server.sendMonitorList(socket);
+    sendMaintenanceList(socket);
     sendNotificationList(socket);
     sendProxyList(socket);
 
@@ -1535,6 +1796,25 @@ async function afterLogin(socket, user) {
     for (let monitorID in monitorList) {
         await Monitor.sendStats(io, monitorID, user.id);
     }
+}
+
+/**
+ * Get a list of maintenances for the given user.
+ * @param {string} userID - The ID of the user to get maintenances for.
+ * @returns {Promise<Object>} A promise that resolves to an object with maintenance IDs as keys and maintenances objects as values.
+ */
+async function getMaintenanceJSONList(userID) {
+    let result = {};
+
+    let maintenanceList = await R.find("maintenance", " user_id = ? ORDER BY end_date DESC, title", [
+        userID,
+    ]);
+
+    for (let maintenance of maintenanceList) {
+        result[maintenance.id] = await maintenance.toJSON();
+    }
+
+    return result;
 }
 
 /**

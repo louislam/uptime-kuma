@@ -5,6 +5,7 @@ import Dashboard from "./pages/Dashboard.vue";
 import DashboardHome from "./pages/DashboardHome.vue";
 import Details from "./pages/Details.vue";
 import EditMonitor from "./pages/EditMonitor.vue";
+import EditMaintenance from "./pages/EditMaintenance.vue";
 import List from "./pages/List.vue";
 const Settings = () => import("./pages/Settings.vue");
 import Setup from "./pages/Setup.vue";
@@ -23,6 +24,7 @@ import About from "./components/settings/About.vue";
 import ManageStatusPage from "./pages/ManageStatusPage.vue";
 import AddStatusPage from "./pages/AddStatusPage.vue";
 import NotFound from "./pages/NotFound.vue";
+import MaintenanceDetails from "./pages/MaintenanceDetails.vue";
 
 const routes = [
     {
@@ -60,8 +62,26 @@ const routes = [
                                 ],
                             },
                             {
+                                path: "/dashboard/maintenance/:id",
+                                component: EmptyLayout,
+                                children: [
+                                    {
+                                        path: "",
+                                        component: MaintenanceDetails,
+                                    },
+                                    {
+                                        path: "/editMaintenance/:id",
+                                        component: EditMaintenance,
+                                    },
+                                ],
+                            },
+                            {
                                 path: "/add",
                                 component: EditMonitor,
+                            },
+                            {
+                                path: "/addMaintenance",
+                                component: EditMaintenance,
                             },
                             {
                                 path: "/list",

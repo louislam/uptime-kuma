@@ -6,7 +6,7 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
-const { log, UP, DOWN, PENDING, flipStatus, TimeLogger } = require("../../src/util");
+const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, TimeLogger } = require("../../src/util");
 const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mqttAsync } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
@@ -22,6 +22,7 @@ const { UptimeKumaServer } = require("../uptime-kuma-server");
  *      0 = DOWN
  *      1 = UP
  *      2 = PENDING
+ *      3 = MAINTENANCE
  */
 class Monitor extends BeanModel {
 
@@ -34,6 +35,7 @@ class Monitor extends BeanModel {
         let obj = {
             id: this.id,
             name: this.name,
+            maintenance: await Monitor.isUnderMaintenance(this.id),
         };
         if (showTags) {
             obj.tags = await this.getTags();
@@ -84,6 +86,7 @@ class Monitor extends BeanModel {
             proxyId: this.proxy_id,
             notificationIDList,
             tags: tags,
+            maintenance: await Monitor.isUnderMaintenance(this.id),
             mqttUsername: this.mqttUsername,
             mqttPassword: this.mqttPassword,
             mqttTopic: this.mqttTopic,
@@ -207,7 +210,10 @@ class Monitor extends BeanModel {
             }
 
             try {
-                if (this.type === "http" || this.type === "keyword") {
+                if (await Monitor.isUnderMaintenance(this.id)) {
+                    bean.msg = "Monitor under maintenance";
+                    bean.status = MAINTENANCE;
+                } else if (this.type === "http" || this.type === "keyword") {
                     // Do not do any queries/high loading things before the "bean.ping"
                     let startTime = dayjs().valueOf();
 
@@ -470,8 +476,12 @@ class Monitor extends BeanModel {
             if (isImportant) {
                 bean.important = true;
 
-                log.debug("monitor", `[${this.name}] sendNotification`);
-                await Monitor.sendNotification(isFirstBeat, this, bean);
+                if (Monitor.isImportantForNotification(isFirstBeat, previousBeat?.status, bean.status)) {
+                    log.debug("monitor", `[${this.name}] sendNotification`);
+                    await Monitor.sendNotification(isFirstBeat, this, bean);
+                } else {
+                    log.debug("monitor", `[${this.name}] will not sendNotification because it is (or was) under maintenance`);
+                }
 
                 // Clear Status Page Cache
                 log.debug("monitor", `[${this.name}] apicache clear`);
@@ -488,6 +498,8 @@ class Monitor extends BeanModel {
                     beatInterval = this.retryInterval;
                 }
                 log.warn("monitor", `Monitor #${this.id} '${this.name}': Pending: ${bean.msg} | Max retries: ${this.maxretries} | Retry: ${retries} | Retry Interval: ${beatInterval} seconds | Type: ${this.type}`);
+            } else if (bean.status === MAINTENANCE) {
+                log.warn("monitor", `Monitor #${this.id} '${this.name}': Under Maintenance | Type: ${this.type}`);
             } else {
                 log.warn("monitor", `Monitor #${this.id} '${this.name}': Failing: ${bean.msg} | Interval: ${beatInterval} seconds | Type: ${this.type}`);
             }
@@ -698,7 +710,7 @@ class Monitor extends BeanModel {
                -- SUM all uptime duration, also trim off the beat out of time window
                 SUM(
                     CASE
-                        WHEN (status = 1)
+                        WHEN (status = 1 OR status = 3)
                         THEN
                             CASE
                                 WHEN (JULIANDAY(\`time\`) - JULIANDAY(?)) * 86400 < duration
@@ -769,11 +781,42 @@ class Monitor extends BeanModel {
         // DOWN -> PENDING = this case not exists
         // DOWN -> DOWN = not important
         // * DOWN -> UP = important
-        let isImportant = isFirstBeat ||
+        // MAINTENANCE -> MAINTENANCE = not important
+        // * MAINTENANCE -> UP = important
+        // * MAINTENANCE -> DOWN = important
+        // * DOWN -> MAINTENANCE = important
+        // * UP -> MAINTENANCE = important
+        return isFirstBeat ||
+            (previousBeatStatus === DOWN && currentBeatStatus === MAINTENANCE) ||
+            (previousBeatStatus === UP && currentBeatStatus === MAINTENANCE) ||
+            (previousBeatStatus === MAINTENANCE && currentBeatStatus === DOWN) ||
+            (previousBeatStatus === MAINTENANCE && currentBeatStatus === UP) ||
             (previousBeatStatus === UP && currentBeatStatus === DOWN) ||
             (previousBeatStatus === DOWN && currentBeatStatus === UP) ||
             (previousBeatStatus === PENDING && currentBeatStatus === DOWN);
-        return isImportant;
+    }
+
+    static isImportantForNotification(isFirstBeat, previousBeatStatus, currentBeatStatus) {
+        // * ? -> ANY STATUS = important [isFirstBeat]
+        // UP -> PENDING = not important
+        // * UP -> DOWN = important
+        // UP -> UP = not important
+        // PENDING -> PENDING = not important
+        // * PENDING -> DOWN = important
+        // PENDING -> UP = not important
+        // DOWN -> PENDING = this case not exists
+        // DOWN -> DOWN = not important
+        // * DOWN -> UP = important
+        // MAINTENANCE -> MAINTENANCE = not important
+        // MAINTENANCE -> UP = not important
+        // * MAINTENANCE -> DOWN = important
+        // DOWN -> MAINTENANCE = not important
+        // UP -> MAINTENANCE = not important
+        return isFirstBeat ||
+            (previousBeatStatus === MAINTENANCE && currentBeatStatus === DOWN) ||
+            (previousBeatStatus === UP && currentBeatStatus === DOWN) ||
+            (previousBeatStatus === DOWN && currentBeatStatus === UP) ||
+            (previousBeatStatus === PENDING && currentBeatStatus === DOWN);
     }
 
     /**
@@ -900,6 +943,16 @@ class Monitor extends BeanModel {
         `, [
             monitorID
         ]);
+    }
+
+    /**
+     * Check if monitor is under maintenance
+     * @param {number} monitorID ID of monitor to check
+     * @returns {Promise<boolean>}
+     */
+    static async isUnderMaintenance(monitorID) {
+        const maintenance = await R.getRow("SELECT COUNT(*) AS count FROM monitor_maintenance mm JOIN maintenance ON mm.maintenance_id = maintenance.id WHERE mm.monitor_id = ? AND datetime(maintenance.start_date) <= datetime('now') AND datetime(maintenance.end_date) >= datetime('now') LIMIT 1", [ monitorID ]);
+        return maintenance.count !== 0;
     }
 }
 

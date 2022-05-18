@@ -41,6 +41,9 @@ import {
     faUndo,
     faPlusCircle,
     faAngleDown,
+    faWrench,
+    faHeartbeat,
+    faFilter,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -81,6 +84,9 @@ library.add(
     faUndo,
     faPlusCircle,
     faAngleDown,
+    faWrench,
+    faHeartbeat,
+    faFilter,
 );
 
 export { FontAwesomeIcon };

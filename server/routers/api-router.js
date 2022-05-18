@@ -4,7 +4,7 @@ const { R } = require("redbean-node");
 const apicache = require("../modules/apicache");
 const Monitor = require("../model/monitor");
 const dayjs = require("dayjs");
-const { UP, DOWN, flipStatus, log } = require("../../src/util");
+const { UP, MAINTENANCE, DOWN, flipStatus, log } = require("../../src/util");
 const StatusPage = require("../model/status_page");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { makeBadge } = require("badge-maker");
@@ -67,6 +67,11 @@ router.get("/api/push/:pushToken", async (request, response) => {
             duration = dayjs(bean.time).diff(dayjs(previousHeartbeat.time), "second");
         }
 
+        if (await Monitor.isUnderMaintenance(monitor.id)) {
+            msg = "Monitor under maintenance";
+            status = MAINTENANCE;
+        }
+
         log.debug("router", "PreviousStatus: " + previousStatus);
         log.debug("router", "Current Status: " + status);
 
@@ -86,7 +91,7 @@ router.get("/api/push/:pushToken", async (request, response) => {
             ok: true,
         });
 
-        if (bean.important) {
+        if (Monitor.isImportantForNotification(isFirstBeat, previousStatus, status)) {
             await Monitor.sendNotification(isFirstBeat, monitor, bean);
         }
 
@@ -126,6 +131,8 @@ router.get("/api/status-page/:slug", cache("5 minutes"), async (request, respons
             incident = incident.toPublicJSON();
         }
 
+        let maintenance = await getMaintenanceList(statusPage.id);
+
         // Public Group List
         const publicGroupList = [];
         const showTags = !!statusPage.show_tags;
@@ -143,6 +150,7 @@ router.get("/api/status-page/:slug", cache("5 minutes"), async (request, respons
         response.json({
             config: await statusPage.toPublicJSON(),
             incident,
+            maintenance,
             publicGroupList
         });
 
@@ -151,6 +159,33 @@ router.get("/api/status-page/:slug", cache("5 minutes"), async (request, respons
     }
 
 });
+
+// Status Page - Maintenance List
+async function getMaintenanceList(statusPageId) {
+    try {
+        const publicMaintenanceList = [];
+
+        let maintenanceBeanList = R.convertToBeans("maintenance", await R.getAll(`
+            SELECT m.*
+            FROM maintenance m
+            JOIN maintenance_status_page msp
+            ON msp.maintenance_id = m.id
+            WHERE datetime(m.start_date) <= datetime('now')
+              AND datetime(m.end_date) >= datetime('now')
+              AND msp.status_page_id = ?
+            ORDER BY m.end_date
+        `, [ statusPageId ]));
+
+        for (const bean of maintenanceBeanList) {
+            publicMaintenanceList.push(await bean.toPublicJSON());
+        }
+
+        return publicMaintenanceList;
+
+    } catch (error) {
+        return [];
+    }
+}
 
 // Status Page Polling Data
 // Can fetch only if published
