@@ -185,7 +185,7 @@ class Monitor extends BeanModel {
             // undefined if not https
             let tlsInfo = undefined;
 
-            if (!previousBeat) {
+            if (!previousBeat || this.type === "push") {
                 previousBeat = await R.findOne("heartbeat", " monitor_id = ? ORDER BY time DESC", [
                     this.id,
                 ]);
@@ -383,9 +383,6 @@ class Monitor extends BeanModel {
                     log.debug("monitor", "heartbeatCount" + heartbeatCount + " " + time);
 
                     if (heartbeatCount <= 0) {
-                        // Fix #922, since previous heartbeat could be inserted by api, it should get from database
-                        previousBeat = await Monitor.getPreviousHeartbeat(this.id);
-
                         throw new Error("No heartbeat in the time window");
                     } else {
                         // No need to insert successful heartbeat for push type, so end here
