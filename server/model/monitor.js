@@ -92,7 +92,7 @@ class Monitor extends BeanModel {
             radiusPassword: this.radiusPassword,
             radiusCalledStationId: this.radiusCalledStationId,
             radiusCallingStationId: this.radiusCallingStationId,
-            radiusSecret: this.radiusSecret
+            radiusSecret: this.radiusSecret,
         };
 
         if (includeSensitiveData) {
