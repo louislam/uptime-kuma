@@ -30,7 +30,7 @@
                                         Push
                                     </option>
                                     <option value="steam">
-                                        Steam Game Server
+                                        {{ $t("Steam Game Server") }}
                                     </option>
                                     <option value="mqtt">
                                         MQTT
