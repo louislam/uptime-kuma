@@ -31,6 +31,7 @@ const languageList = {
     "vi-VN": "Tiếng Việt",
     "zh-TW": "繁體中文 (台灣)",
     "uk-UA": "Український",
+    "th-TH": "ไทย",
 };
 
 let messages = {

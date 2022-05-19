@@ -234,6 +234,12 @@
                 <p>Vui lòng <strong>cẩn thận</strong>.</p>
             </template>
 
+            <template v-else-if="$i18n.locale === 'th-TH' ">
+                <p>คุณต้องการที่จะ <strong>ปิดใช้งานระบบรับรองความถูกต้องใช่หรือไม่</strong>?</p>
+                <p>ระบบนี้ถูกออกแบบมาเพื่อการใช้งานกับระบบรับรองความถูกต้องของบุคคลที่สามเช่น Cloudflare Access, Authelia หรือวิธีการอื่น ๆ</p>
+                <p>โปรดใช้ความระมัดระวังในการเลือกใช้งานระบบนี้ !</p>
+            </template>
+
             <!-- English (en) -->
             <template v-else>
                 <p>Are you sure want to <strong>disable authentication</strong>?</p>
