@@ -21,7 +21,7 @@
 
             <router-link v-for="(item, index) in sortedMonitorList" :key="index" :to="monitorURL(item.id)" class="item" :class="{ 'disabled': ! item.active }">
                 <div class="row">
-                    <div class="col-9 col-md-8 small-padding" :class="{ 'monitorItem': $root.userHeartbeatBar == 'bottom' || $root.userHeartbeatBar == 'none' }">
+                    <div class="col-9 col-md-8 small-padding" :class="{ 'monitor-item': $root.userHeartbeatBar == 'bottom' || $root.userHeartbeatBar == 'none' }">
                         <div class="info">
                             <Uptime :monitor="item" type="24" :pill="true" />
                             {{ item.name }}
@@ -47,8 +47,8 @@
 
 <script>
 import HeartbeatBar from "../components/HeartbeatBar.vue";
-import Uptime from "../components/Uptime.vue";
 import Tag from "../components/Tag.vue";
+import Uptime from "../components/Uptime.vue";
 import { getMonitorRelativeURL } from "../util.ts";
 
 export default {
@@ -105,7 +105,7 @@ export default {
 
             // Simple filter by search text
             // finds monitor name, tag name or tag value
-            if (this.searchText != "") {
+            if (this.searchText !== "") {
                 const loweredSearchText = this.searchText.toLowerCase();
                 result = result.filter(monitor => {
                     return monitor.name.toLowerCase().includes(loweredSearchText)
@@ -170,12 +170,6 @@ export default {
     }
 }
 
-.dark {
-    .footer {
-      //  background-color: $dark-bg;
-    }
-}
-
 @media (max-width: 770px) {
     .list-header {
         margin: -20px;
@@ -198,7 +192,7 @@ export default {
     max-width: 15em;
 }
 
-.monitorItem {
+.monitor-item {
     width: 100%;
 }
 

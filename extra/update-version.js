@@ -1,7 +1,6 @@
 const pkg = require("../package.json");
 const fs = require("fs");
-const rmSync = require("./fs-rmSync.js");
-const child_process = require("child_process");
+const childProcess = require("child_process");
 const util = require("../src/util");
 
 util.polyfill();
@@ -26,6 +25,9 @@ if (! exists) {
     pkg.scripts.setup = pkg.scripts.setup.replace(/(git checkout )([^\s]+)/, `$1${newVersion}`);
     fs.writeFileSync("package.json", JSON.stringify(pkg, null, 4) + "\n");
 
+    // Also update package-lock.json
+    childProcess.spawnSync("npm", [ "install" ]);
+
     commit(newVersion);
     tag(newVersion);
 
@@ -42,7 +44,7 @@ if (! exists) {
 function commit(version) {
     let msg = "Update to " + version;
 
-    let res = child_process.spawnSync("git", ["commit", "-m", msg, "-a"]);
+    let res = childProcess.spawnSync("git", [ "commit", "-m", msg, "-a" ]);
     let stdout = res.stdout.toString().trim();
     console.log(stdout);
 
@@ -52,7 +54,7 @@ function commit(version) {
 }
 
 function tag(version) {
-    let res = child_process.spawnSync("git", ["tag", version]);
+    let res = childProcess.spawnSync("git", [ "tag", version ]);
     console.log(res.stdout.toString().trim());
 }
 
@@ -67,7 +69,7 @@ function tagExists(version) {
         throw new Error("invalid version");
     }
 
-    let res = child_process.spawnSync("git", ["tag", "-l", version]);
+    let res = childProcess.spawnSync("git", [ "tag", "-l", version ]);
 
     return res.stdout.toString().trim() === version;
 }

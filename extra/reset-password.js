@@ -4,6 +4,7 @@ const Database = require("../server/database");
 const { R } = require("redbean-node");
 const readline = require("readline");
 const { initJWTSecret } = require("../server/util-server");
+const User = require("../server/model/user");
 const args = require("args-parser")(process.argv);
 const rl = readline.createInterface({
     input: process.stdin,
@@ -30,7 +31,7 @@ const main = async () => {
                 let confirmPassword = await question("Confirm New Password: ");
 
                 if (password === confirmPassword) {
-                    await user.resetPassword(password);
+                    await User.resetPassword(user.id, password);
 
                     // Reset all sessions by reset jwt secret
                     await initJWTSecret();

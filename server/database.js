@@ -1,7 +1,7 @@
 const fs = require("fs");
 const { R } = require("redbean-node");
 const { setSetting, setting } = require("./util-server");
-const { debug, sleep } = require("../src/util");
+const { log, sleep } = require("../src/util");
 const dayjs = require("dayjs");
 const knex = require("knex");
 
@@ -57,7 +57,9 @@ class Database {
         "patch-status-page.sql": true,
         "patch-proxy.sql": true,
         "patch-monitor-expiry-notification.sql": true,
-    }
+        "patch-status-page-footer-css.sql": true,
+        "patch-added-mqtt-monitor.sql": true,
+    };
 
     /**
      * The final version should be 10 after merged tag feature
@@ -67,6 +69,10 @@ class Database {
 
     static noReject = true;
 
+    /**
+     * Initialize the database
+     * @param {Object} args Arguments to initialize DB with
+     */
     static init(args) {
         // Data Directory (must be end with "/")
         Database.dataDir = process.env.DATA_DIR || args["data-dir"] || "./data/";
@@ -81,9 +87,18 @@ class Database {
             fs.mkdirSync(Database.uploadDir, { recursive: true });
         }
 
-        console.log(`Data Dir: ${Database.dataDir}`);
+        log.info("db", `Data Dir: ${Database.dataDir}`);
     }
 
+    /**
+     * Connect to the database
+     * @param {boolean} [testMode=false] Should the connection be
+     * started in test mode?
+     * @param {boolean} [autoloadModels=true] Should models be
+     * automatically loaded?
+     * @param {boolean} [noLog=false] Should logs not be output?
+     * @returns {Promise<void>}
+     */
     static async connect(testMode = false, autoloadModels = true, noLog = false) {
         const acquireConnectionTimeout = 120 * 1000;
 
@@ -136,13 +151,14 @@ class Database {
         await R.exec("PRAGMA synchronous = FULL");
 
         if (!noLog) {
-            console.log("SQLite config:");
-            console.log(await R.getAll("PRAGMA journal_mode"));
-            console.log(await R.getAll("PRAGMA cache_size"));
-            console.log("SQLite Version: " + await R.getCell("SELECT sqlite_version()"));
+            log.info("db", "SQLite config:");
+            log.info("db", await R.getAll("PRAGMA journal_mode"));
+            log.info("db", await R.getAll("PRAGMA cache_size"));
+            log.info("db", "SQLite Version: " + await R.getCell("SELECT sqlite_version()"));
         }
     }
 
+    /** Patch the database */
     static async patch() {
         let version = parseInt(await setting("database_version"));
 
@@ -150,15 +166,15 @@ class Database {
             version = 0;
         }
 
-        console.info("Your database version: " + version);
-        console.info("Latest database version: " + this.latestVersion);
+        log.info("db", "Your database version: " + version);
+        log.info("db", "Latest database version: " + this.latestVersion);
 
         if (version === this.latestVersion) {
-            console.info("Database patch not needed");
+            log.info("db", "Database patch not needed");
         } else if (version > this.latestVersion) {
-            console.info("Warning: Database version is newer than expected");
+            log.info("db", "Warning: Database version is newer than expected");
         } else {
-            console.info("Database patch is needed");
+            log.info("db", "Database patch is needed");
 
             this.backup(version);
 
@@ -166,17 +182,17 @@ class Database {
             try {
                 for (let i = version + 1; i <= this.latestVersion; i++) {
                     const sqlFile = `./db/patch${i}.sql`;
-                    console.info(`Patching ${sqlFile}`);
+                    log.info("db", `Patching ${sqlFile}`);
                     await Database.importSQLFile(sqlFile);
-                    console.info(`Patched ${sqlFile}`);
+                    log.info("db", `Patched ${sqlFile}`);
                     await setSetting("database_version", i);
                 }
             } catch (ex) {
                 await Database.close();
 
-                console.error(ex);
-                console.error("Start Uptime-Kuma failed due to issue patching the database");
-                console.error("Please submit a bug report if you still encounter the problem after restart: https://github.com/louislam/uptime-kuma/issues");
+                log.error("db", ex);
+                log.error("db", "Start Uptime-Kuma failed due to issue patching the database");
+                log.error("db", "Please submit a bug report if you still encounter the problem after restart: https://github.com/louislam/uptime-kuma/issues");
 
                 this.restore();
                 process.exit(1);
@@ -188,19 +204,21 @@ class Database {
     }
 
     /**
+     * Patch DB using new process
      * Call it from patch() only
+     * @private
      * @returns {Promise<void>}
      */
     static async patch2() {
-        console.log("Database Patch 2.0 Process");
+        log.info("db", "Database Patch 2.0 Process");
         let databasePatchedFiles = await setting("databasePatchedFiles");
 
         if (! databasePatchedFiles) {
             databasePatchedFiles = {};
         }
 
-        debug("Patched files:");
-        debug(databasePatchedFiles);
+        log.debug("db", "Patched files:");
+        log.debug("db", databasePatchedFiles);
 
         try {
             for (let sqlFilename in this.patchList) {
@@ -208,15 +226,15 @@ class Database {
             }
 
             if (this.patched) {
-                console.log("Database Patched Successfully");
+                log.info("db", "Database Patched Successfully");
             }
 
         } catch (ex) {
             await Database.close();
 
-            console.error(ex);
-            console.error("Start Uptime-Kuma failed due to issue patching the database");
-            console.error("Please submit the bug report if you still encounter the problem after restart: https://github.com/louislam/uptime-kuma/issues");
+            log.error("db", ex);
+            log.error("db", "Start Uptime-Kuma failed due to issue patching the database");
+            log.error("db", "Please submit the bug report if you still encounter the problem after restart: https://github.com/louislam/uptime-kuma/issues");
 
             this.restore();
 
@@ -295,24 +313,27 @@ class Database {
     }
 
     /**
+     * Patch database using new patching process
      * Used it patch2() only
+     * @private
      * @param sqlFilename
      * @param databasePatchedFiles
+     * @returns {Promise<void>}
      */
     static async patch2Recursion(sqlFilename, databasePatchedFiles) {
         let value = this.patchList[sqlFilename];
 
         if (! value) {
-            console.log(sqlFilename + " skip");
+            log.info("db", sqlFilename + " skip");
             return;
         }
 
         // Check if patched
         if (! databasePatchedFiles[sqlFilename]) {
-            console.log(sqlFilename + " is not patched");
+            log.info("db", sqlFilename + " is not patched");
 
             if (value.parents) {
-                console.log(sqlFilename + " need parents");
+                log.info("db", sqlFilename + " need parents");
                 for (let parentSQLFilename of value.parents) {
                     await this.patch2Recursion(parentSQLFilename, databasePatchedFiles);
                 }
@@ -320,24 +341,24 @@ class Database {
 
             this.backup(dayjs().format("YYYYMMDDHHmmss"));
 
-            console.log(sqlFilename + " is patching");
+            log.info("db", sqlFilename + " is patching");
             this.patched = true;
             await this.importSQLFile("./db/" + sqlFilename);
             databasePatchedFiles[sqlFilename] = true;
-            console.log(sqlFilename + " was patched successfully");
+            log.info("db", sqlFilename + " was patched successfully");
 
         } else {
-            debug(sqlFilename + " is already patched, skip");
+            log.debug("db", sqlFilename + " is already patched, skip");
         }
     }
 
     /**
-     * Sadly, multi sql statements is not supported by many sqlite libraries, I have to implement it myself
-     * @param filename
+     * Load an SQL file and execute it
+     * @param filename Filename of SQL file to import
      * @returns {Promise<void>}
      */
     static async importSQLFile(filename) {
-
+        // Sadly, multi sql statements is not supported by many sqlite libraries, I have to implement it myself
         await R.getCell("SELECT 1");
 
         let text = fs.readFileSync(filename).toString();
@@ -365,6 +386,10 @@ class Database {
         }
     }
 
+    /**
+     * Aquire a direct connection to database
+     * @returns {any}
+     */
     static getBetterSQLite3Database() {
         return R.knex.client.acquireConnection();
     }
@@ -379,7 +404,7 @@ class Database {
         };
         process.addListener("unhandledRejection", listener);
 
-        console.log("Closing the database");
+        log.info("db", "Closing the database");
 
         while (true) {
             Database.noReject = true;
@@ -389,10 +414,10 @@ class Database {
             if (Database.noReject) {
                 break;
             } else {
-                console.log("Waiting to close the database");
+                log.info("db", "Waiting to close the database");
             }
         }
-        console.log("SQLite closed");
+        log.info("db", "SQLite closed");
 
         process.removeListener("unhandledRejection", listener);
     }
@@ -400,11 +425,11 @@ class Database {
     /**
      * One backup one time in this process.
      * Reset this.backupPath if you want to backup again
-     * @param version
+     * @param {string} version Version code of backup
      */
     static backup(version) {
         if (! this.backupPath) {
-            console.info("Backing up the database");
+            log.info("db", "Backing up the database");
             this.backupPath = this.dataDir + "kuma.db.bak" + version;
             fs.copyFileSync(Database.path, this.backupPath);
 
@@ -422,12 +447,10 @@ class Database {
         }
     }
 
-    /**
-     *
-     */
+    /** Restore from most recent backup */
     static restore() {
         if (this.backupPath) {
-            console.error("Patching the database failed!!! Restoring the backup");
+            log.error("db", "Patching the database failed!!! Restoring the backup");
 
             const shmPath = Database.path + "-shm";
             const walPath = Database.path + "-wal";
@@ -446,7 +469,7 @@ class Database {
                     fs.unlinkSync(walPath);
                 }
             } catch (e) {
-                console.log("Restore failed; you may need to restore the backup manually");
+                log.error("db", "Restore failed; you may need to restore the backup manually");
                 process.exit(1);
             }
 
@@ -462,17 +485,22 @@ class Database {
             }
 
         } else {
-            console.log("Nothing to restore");
+            log.info("db", "Nothing to restore");
         }
     }
 
+    /** Get the size of the database */
     static getSize() {
-        debug("Database.getSize()");
+        log.debug("db", "Database.getSize()");
         let stats = fs.statSync(Database.path);
-        debug(stats);
+        log.debug("db", stats);
         return stats.size;
     }
 
+    /**
+     * Shrink the database
+     * @returns {Promise<void>}
+     */
     static async shrink() {
         await R.exec("VACUUM");
     }

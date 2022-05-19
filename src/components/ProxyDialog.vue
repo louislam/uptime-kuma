@@ -25,7 +25,7 @@
                             <label for="proxy-host" class="form-label">{{ $t("Proxy Server") }}</label>
                             <div class="d-flex">
                                 <input id="proxy-host" v-model="proxy.host" type="text" class="form-control" required :placeholder="$t('Server Address')">
-                                <input v-model="proxy.port" type="number" class="form-control ms-2" style="width: 100px" required min="1" max="65535" :placeholder="$t('Port')">
+                                <input v-model="proxy.port" type="number" class="form-control ms-2" style="width: 100px;" required min="1" max="65535" :placeholder="$t('Port')">
                             </div>
                         </div>
 
@@ -105,7 +105,7 @@ export default {
         Confirm,
     },
     props: {},
-    emits: ["added"],
+    emits: [ "added" ],
     data() {
         return {
             model: null,

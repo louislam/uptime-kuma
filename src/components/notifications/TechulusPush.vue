@@ -1,6 +1,6 @@
 <template>
     <div class="mb-3">
-        <label for="push-api-key" class="form-label">API_KEY</label>
+        <label for="push-api-key" class="form-label">{{ $t("API Key") }}</label>
         <HiddenInput id="push-api-key" v-model="$parent.notification.pushAPIKey" :required="true" autocomplete="one-time-code"></HiddenInput>
     </div>
 

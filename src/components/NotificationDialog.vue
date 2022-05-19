@@ -69,7 +69,6 @@
 
 <script lang="ts">
 import { Modal } from "bootstrap";
-import { ucfirst } from "../util.ts";
 
 import Confirm from "./Confirm.vue";
 import NotificationFormList from "./notifications";
@@ -79,7 +78,7 @@ export default {
         Confirm,
     },
     props: {},
-    emits: ["added"],
+    emits: [ "added" ],
     data() {
         return {
             model: null,
