@@ -22,16 +22,23 @@ class Discord extends NotificationProvider {
                 return okMsg;
             }
 
-            let url;
+            let address;
 
-            if (monitorJSON["type"] === "port") {
-                url = monitorJSON["hostname"];
-                if (monitorJSON["port"]) {
-                    url += ":" + monitorJSON["port"];
-                }
-
-            } else {
-                url = monitorJSON["url"];
+            switch (monitorJSON["type"]) {
+                case "ping":
+                    address = monitorJSON["hostname"];
+                    break;
+                case "port":
+                case "dns":
+                case "steam":
+                    address = monitorJSON["hostname"];
+                    if (monitorJSON["port"]) {
+                        address += ":" + monitorJSON["port"];
+                    }
+                    break;
+                default:
+                    address = monitorJSON["url"];
+                    break;
             }
 
             // If heartbeatJSON is not null, we go into the normal alerting loop.
@@ -48,8 +55,8 @@ class Discord extends NotificationProvider {
                                 value: monitorJSON["name"],
                             },
                             {
-                                name: "Service URL",
-                                value: url,
+                                name: "Service URL / Address",
+                                value: address,
                             },
                             {
                                 name: "Time (UTC)",
@@ -84,7 +91,7 @@ class Discord extends NotificationProvider {
                             },
                             {
                                 name: "Service URL",
-                                value: url.startsWith("http") ? "[Visit Service](" + url + ")" : url,
+                                value: address.startsWith("http") ? "[Visit Service](" + address + ")" : address,
                             },
                             {
                                 name: "Time (UTC)",

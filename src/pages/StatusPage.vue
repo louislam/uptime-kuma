@@ -45,7 +45,7 @@
                 </div>
 
                 <div v-if="false" class="my-3">
-                    <label for="password" class="form-label">{{ $t("Password") }} <sup>Coming Soon</sup></label>
+                    <label for="password" class="form-label">{{ $t("Password") }} <sup>{{ $t("Coming Soon") }}</sup></label>
                     <input id="password" v-model="config.password" disabled type="password" autocomplete="new-password" class="form-control">
                 </div>
 
@@ -104,15 +104,16 @@
 
                 <!-- Uploader -->
                 <!--    url="/api/status-page/upload-logo" -->
-                <ImageCropUpload v-model="showImageCropUpload"
-                                 field="img"
-                                 :width="128"
-                                 :height="128"
-                                 :langType="$i18n.locale"
-                                 img-format="png"
-                                 :noCircle="true"
-                                 :noSquare="false"
-                                 @crop-success="cropSuccess"
+                <ImageCropUpload
+                    v-model="showImageCropUpload"
+                    field="img"
+                    :width="128"
+                    :height="128"
+                    :langType="$i18n.locale"
+                    img-format="png"
+                    :noCircle="true"
+                    :noSquare="false"
+                    @crop-success="cropSuccess"
                 />
 
                 <!-- Title -->
@@ -281,22 +282,21 @@
 
 <script>
 import axios from "axios";
-import PublicGroupList from "../components/PublicGroupList.vue";
-import ImageCropUpload from "vue-image-crop-upload";
-import { STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_PARTIAL_DOWN, UP } from "../util.ts";
-import { useToast } from "vue-toastification";
 import dayjs from "dayjs";
 import Favico from "favico.js";
-import { getResBaseURL } from "../util-frontend";
-import Confirm from "../components/Confirm.vue";
-// import Prism Editor
-import { PrismEditor } from "vue-prism-editor";
-import "vue-prism-editor/dist/prismeditor.min.css"; // import the styles somewhere
-
 // import highlighting library (you can use any library you want just return html string)
 import { highlight, languages } from "prismjs/components/prism-core";
 import "prismjs/components/prism-css";
 import "prismjs/themes/prism-tomorrow.css"; // import syntax highlighting styles
+import ImageCropUpload from "vue-image-crop-upload";
+// import Prism Editor
+import { PrismEditor } from "vue-prism-editor";
+import "vue-prism-editor/dist/prismeditor.min.css"; // import the styles somewhere
+import { useToast } from "vue-toastification";
+import Confirm from "../components/Confirm.vue";
+import PublicGroupList from "../components/PublicGroupList.vue";
+import { getResBaseURL } from "../util-frontend";
+import { STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_PARTIAL_DOWN, UP } from "../util.ts";
 
 const toast = useToast();
 
@@ -693,7 +693,7 @@ export default {
         },
 
         statusPageLogoLoaded(eventPayload) {
-            // Remark: may not work in dev, due to cros
+            // Remark: may not work in dev, due to CORS
             favicon.image(eventPayload.target);
         },
 
