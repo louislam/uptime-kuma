@@ -120,7 +120,7 @@
                                     </div>
                                 </div>
                             </template>
-                            
+
                             <!-- Docker Container Name / ID -->
                             <!-- For Docker Type -->
                             <div v-if="monitor.type === 'docker'" class="my-3">
