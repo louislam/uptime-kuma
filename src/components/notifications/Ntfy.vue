@@ -1,6 +1,6 @@
 <template>
     <div class="mb-3">
-        <label for="ntfy-ntfytopic" class="form-label">ntfytopic</label>
+        <label for="ntfy-ntfytopic" class="form-label">{{ $t("ntfy Topic") }}</label>
         <div class="input-group mb-3">
             <input id="ntfy-ntfytopic" v-model="$parent.notification.ntfytopic" type="text" class="form-control" required>
         </div>
