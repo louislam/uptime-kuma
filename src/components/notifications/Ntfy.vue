@@ -14,7 +14,7 @@
 
     <div class="mb-3">
         <label for="ntfy-priority" class="form-label">{{ $t("Priority") }}</label>
-        <input id="ntfy-priority" v-model="$parent.notification.ntfyPriority" type="number" class="form-control" required min="0" max="10" step="1">
+        <input id="ntfy-priority" v-model="$parent.notification.ntfyPriority" type="number" class="form-control" required min="1" max="5" step="1">
     </div>
 </template>
 
@@ -22,7 +22,7 @@
 export default {
     mounted() {
         if (typeof this.$parent.notification.ntfyPriority === "undefined") {
-            this.$parent.notification.ntfyPriority = 4;
+            this.$parent.notification.ntfyPriority = 5;
         }
     },
 }
