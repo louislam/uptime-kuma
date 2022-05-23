@@ -8,9 +8,6 @@ class Ntfy extends NotificationProvider {
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
         try {
-            if (notification.ntfyserverurl && notification.ntfyserverurl.endsWith("/")) {
-                notification.ntfyserverurl = notification.ntfyserverurl.slice(0, -1);
-            }
             await axios.post(`${notification.ntfyserverurl}`, {
                 "topic": notification.ntfytopic,
                 "message": msg,
