@@ -13,7 +13,7 @@ class Ntfy extends NotificationProvider {
                 "message": msg,
                 "priority": notification.ntfyPriority || 4,
                 "title": "Uptime-Kuma",
-            })
+            });
 
             return okMsg;
 

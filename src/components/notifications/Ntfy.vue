@@ -26,5 +26,5 @@ export default {
             this.$parent.notification.ntfyPriority = 5;
         }
     },
-}
+};
 </script>
