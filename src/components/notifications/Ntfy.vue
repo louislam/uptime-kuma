@@ -19,12 +19,7 @@
 </template>
 
 <script>
-import HiddenInput from "../HiddenInput.vue";
-
 export default {
-    components: {
-        HiddenInput,
-    },
     mounted() {
         if (typeof this.$parent.notification.ntfyPriority === "undefined") {
             this.$parent.notification.ntfyPriority = 4;
