@@ -330,7 +330,7 @@ class Monitor extends BeanModel {
                     let startTime = dayjs().valueOf();
                     let dnsMessage = "";
 
-                    let dnsRes = await dnsResolve(this.hostname, this.dns_resolve_server, this.dns_resolve_type);
+                    let dnsRes = await dnsResolve(this.hostname, this.dns_resolve_server, this.port, this.dns_resolve_type);
                     bean.ping = dayjs().valueOf() - startTime;
 
                     if (this.dns_resolve_type === "A" || this.dns_resolve_type === "AAAA" || this.dns_resolve_type === "TXT") {

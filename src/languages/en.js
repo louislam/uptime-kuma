@@ -13,6 +13,7 @@ export default {
     pauseDashboardHome: "Pause",
     deleteMonitorMsg: "Are you sure want to delete this monitor?",
     deleteNotificationMsg: "Are you sure want to delete this notification for all monitors?",
+    dnsPortDescription: "DNS server port. Defaults to 53. You can change the port at any time.",
     resolverserverDescription: "Cloudflare is the default server. You can change the resolver server anytime.",
     rrtypeDescription: "Select the RR type you want to monitor",
     pauseMonitorMsg: "Are you sure want to pause?",
