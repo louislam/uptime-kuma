@@ -8,7 +8,7 @@
     </div>
     <div class="mb-3">
         <label for="pagerduty-integration-url" class="form-label">{{ $t("Integration URL") }}</label>
-        <input id="pagerduty-integration-url" v-model="$parent.notification.pagerdutyIntegrationUrl" type="text" class="form-control" autocomplete="false" value="https://events.pagerduty.com/v2/enqueue">
+        <input id="pagerduty-integration-url" v-model="$parent.notification.pagerdutyIntegrationUrl" type="text" class="form-control" autocomplete="false">
     </div>
     <div class="mb-3">
         <label for="pagerduty-priority" class="form-label">{{ $t("Priority") }}</label>
@@ -36,5 +36,10 @@ export default {
     components: {
         HiddenInput,
     },
+    mounted() {
+        if (typeof this.$parent.notification.pagerdutyIntegrationUrl === "undefined") {
+            this.$parent.notification.pagerdutyIntegrationUrl = "https://events.pagerduty.com/v2/enqueue";
+        }
+    }
 };
 </script>
