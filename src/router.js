@@ -24,6 +24,7 @@ import Appearance from "./components/settings/Appearance.vue";
 import General from "./components/settings/General.vue";
 const Notifications = () => import("./components/settings/Notifications.vue");
 import ReverseProxy from "./components/settings/ReverseProxy.vue";
+import Tags from "./components/settings/Tags.vue";
 import MonitorHistory from "./components/settings/MonitorHistory.vue";
 const Security = () => import("./components/settings/Security.vue");
 import Proxies from "./components/settings/Proxies.vue";
@@ -94,6 +95,10 @@ const routes = [
                             {
                                 path: "reverse-proxy",
                                 component: ReverseProxy,
+                            },
+                            {
+                                path: "tags",
+                                component: Tags,
                             },
                             {
                                 path: "monitor-history",
