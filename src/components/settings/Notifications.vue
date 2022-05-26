@@ -26,7 +26,7 @@
             <div class="mt-2 mb-4 ps-2 cert-exp-days col-12 col-xl-6">
                 <div v-for="day in settings.tlsExpiryNotifyDays" :key="day" class="d-flex align-items-center justify-content-between cert-exp-day-row py-2">
                     <span>{{ day }} {{ $t("day(s)") }}</span>
-                    <button type="button" class="btn btn-outline-primary ms-2 px-3 py-1" @click="removeExpiryNotifDay(day)">
+                    <button type="button" class="btn-rm-expiry btn btn-outline-danger ms-2 py-1" @click="removeExpiryNotifDay(day)">
                         <font-awesome-icon class="" icon="times" />
                     </button>
                 </div>
@@ -94,6 +94,11 @@ export default {
 
 <style lang="scss" scoped>
 @import "../../assets/vars.scss";
+
+.btn-rm-expiry {
+    padding-left: 11px;
+    padding-right: 11px;
+}
 
 .dark {
     .list-group-item {
