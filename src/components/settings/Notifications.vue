@@ -83,6 +83,7 @@ export default {
                 if (parsedDay != null && !isNaN(parsedDay) && parsedDay > 0) {
                     if (!this.settings.tlsExpiryNotifyDays.includes(parsedDay)) {
                         this.settings.tlsExpiryNotifyDays.push(parseInt(day));
+                        this.settings.tlsExpiryNotifyDays.sort((a, b) => a - b);
                         this.expiryNotifInput = null;
                     }
                 }
