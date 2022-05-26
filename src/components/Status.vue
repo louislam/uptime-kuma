@@ -21,7 +21,7 @@ export default {
                 return "primary";
             }
 
-            if (this.status === 2) {
+            if (this.status === 2 || this.status === 4) {
                 return "warning";
             }
 
@@ -39,6 +39,10 @@ export default {
 
             if (this.status === 2) {
                 return this.$t("Pending");
+            }
+
+            if (this.status === 4) {
+                return this.$t("Degraded");
             }
 
             return this.$t("Unknown");

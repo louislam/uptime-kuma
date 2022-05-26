@@ -6,7 +6,7 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
-const { log, UP, DOWN, PENDING, flipStatus, TimeLogger } = require("../../src/util");
+const { log, UP, DOWN, PENDING, DEGRADED, MONITOR_DOWN_DEGRADED, flipStatus, TimeLogger } = require("../../src/util");
 const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mqttAsync } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
@@ -22,6 +22,7 @@ const { UptimeKumaServer } = require("../uptime-kuma-server");
  *      0 = DOWN
  *      1 = UP
  *      2 = PENDING
+ *      4 = DEGRADED
  */
 class Monitor extends BeanModel {
 
@@ -76,6 +77,7 @@ class Monitor extends BeanModel {
             expiryNotification: this.isEnabledExpiryNotification(),
             ignoreTls: this.getIgnoreTls(),
             upsideDown: this.isUpsideDown(),
+            noNotificationIfMasterDown: this.getNoNotificationIfMasterDown(),
             maxredirects: this.maxredirects,
             accepted_statuscodes: this.getAcceptedStatuscodes(),
             dns_resolve_type: this.dns_resolve_type,
@@ -146,6 +148,14 @@ class Monitor extends BeanModel {
     }
 
     /**
+     * Parse to boolean
+     * @returns {boolean}
+     */
+    getNoNotificationIfMasterDown() {
+        return Boolean(this.noNotificationIfMasterDown);
+    }
+
+    /**
      * Get accepted status codes
      * @returns {Object}
      */
@@ -206,7 +216,10 @@ class Monitor extends BeanModel {
                 bean.duration = 0;
             }
 
+            let isDegraded = false;
+
             try {
+                isDegraded = await Monitor.isDegraded(this.id);
                 if (this.type === "http" || this.type === "keyword") {
                     // Do not do any queries/high loading things before the "bean.ping"
                     let startTime = dayjs().valueOf();
@@ -447,6 +460,10 @@ class Monitor extends BeanModel {
 
                 retries = 0;
 
+                if (bean.status === UP && isDegraded) {
+                    bean.msg = "Monitor is degraded, because at least one master monitor is pending, down or degraded";
+                    bean.status = DEGRADED;
+                }
             } catch (error) {
 
                 bean.msg = error.message;
@@ -460,6 +477,10 @@ class Monitor extends BeanModel {
                     retries++;
                     bean.status = PENDING;
                 }
+
+                if (isDegraded && bean.status === DOWN) {
+                    bean.msg = MONITOR_DOWN_DEGRADED;
+                }
             }
 
             log.debug("monitor", `[${this.name}] Check isImportant`);
@@ -470,8 +491,14 @@ class Monitor extends BeanModel {
             if (isImportant) {
                 bean.important = true;
 
-                log.debug("monitor", `[${this.name}] sendNotification`);
-                await Monitor.sendNotification(isFirstBeat, this, bean);
+                if (this.noNotificationIfMasterDown && isDegraded || previousBeat && previousBeat.msg === MONITOR_DOWN_DEGRADED) {
+                    log.debug("monitor", `[${this.name}] will not sendNotification because it is/was degraded`);
+                } else if (Monitor.isImportantForNotification(isFirstBeat, previousBeat?.status, bean.status)) {
+                    log.debug("monitor", `[${this.name}] sendNotification`);
+                    await Monitor.sendNotification(isFirstBeat, this, bean);
+                } else {
+                    log.debug("monitor", `[${this.name}] will not sendNotification because it is not required`);
+                }
 
                 // Clear Status Page Cache
                 log.debug("monitor", `[${this.name}] apicache clear`);
@@ -488,6 +515,8 @@ class Monitor extends BeanModel {
                     beatInterval = this.retryInterval;
                 }
                 log.warn("monitor", `Monitor #${this.id} '${this.name}': Pending: ${bean.msg} | Max retries: ${this.maxretries} | Retry: ${retries} | Retry Interval: ${beatInterval} seconds | Type: ${this.type}`);
+            } else if (bean.status === DEGRADED) {
+                log.warn("monitor", `Monitor #${this.id} '${this.name}': Degraded: ${bean.msg} | Type: ${this.type}`);
             } else {
                 log.warn("monitor", `Monitor #${this.id} '${this.name}': Failing: ${bean.msg} | Interval: ${beatInterval} seconds | Type: ${this.type}`);
             }
@@ -769,11 +798,49 @@ class Monitor extends BeanModel {
         // DOWN -> PENDING = this case not exists
         // DOWN -> DOWN = not important
         // * DOWN -> UP = important
-        let isImportant = isFirstBeat ||
+        // * DEGRADED -> DOWN = important
+        // * DEGRADED -> UP = important
+        // * DOWN -> DEGRADED = important
+        // * UP -> DEGRADED = important
+        // DEGRADED -> PENDING = not important
+        return isFirstBeat ||
+            (previousBeatStatus === DEGRADED && currentBeatStatus === DOWN) ||
+            (previousBeatStatus === DEGRADED && currentBeatStatus === UP) ||
+            (previousBeatStatus === DOWN && currentBeatStatus === DEGRADED) ||
+            (previousBeatStatus === UP && currentBeatStatus === DEGRADED) ||
             (previousBeatStatus === UP && currentBeatStatus === DOWN) ||
             (previousBeatStatus === DOWN && currentBeatStatus === UP) ||
             (previousBeatStatus === PENDING && currentBeatStatus === DOWN);
-        return isImportant;
+    }
+
+    /**
+     * Is it necessary to send a notification? (not all important beats are so important that we need to send a notification)
+     * @param {boolean} isFirstBeat Is this the first beat of this monitor?
+     * @param {const} previousBeatStatus Status of the previous beat
+     * @param {const} currentBeatStatus Status of the current beat
+     * @returns {boolean} True if is an important beat for notification else false
+     */
+    static isImportantForNotification(isFirstBeat, previousBeatStatus, currentBeatStatus) {
+        // * ? -> ANY STATUS = important [isFirstBeat]
+        // UP -> PENDING = not important
+        // * UP -> DOWN = important
+        // UP -> UP = not important
+        // PENDING -> PENDING = not important
+        // * PENDING -> DOWN = important
+        // PENDING -> UP = not important
+        // DOWN -> PENDING = this case not exists
+        // DOWN -> DOWN = not important
+        // * DOWN -> UP = important
+        // * DEGRADED -> DOWN = important
+        // DEGRADED -> UP = not important
+        // DOWN -> DEGRADED = not important
+        // UP -> DEGRADED = not important
+        // DEGRADED -> PENDING = not important
+        return isFirstBeat ||
+            (previousBeatStatus === DEGRADED && currentBeatStatus === DOWN) ||
+            (previousBeatStatus === UP && currentBeatStatus === DOWN) ||
+            (previousBeatStatus === DOWN && currentBeatStatus === UP) ||
+            (previousBeatStatus === PENDING && currentBeatStatus === DOWN);
     }
 
     /**
@@ -895,11 +962,27 @@ class Monitor extends BeanModel {
      */
     static async getPreviousHeartbeat(monitorID) {
         return await R.getRow(`
-            SELECT status, time FROM heartbeat
+            SELECT msg, status, time FROM heartbeat
             WHERE id = (select MAX(id) from heartbeat where monitor_id = ?)
         `, [
             monitorID
         ]);
+    }
+
+    /**
+     * Checks if the monitor is in the DEGRADED state
+     * @param {number} monitorID ID of monitor to check
+     * @returns {Promise<boolean>}
+     */
+    static async isDegraded(monitorID) {
+        const monitors = await R.getAll(`
+            SELECT hb.id FROM heartbeat hb JOIN dependent_monitors dm on hb.monitor_id = dm.depends_on JOIN (SELECT MAX(id) AS id FROM heartbeat GROUP BY monitor_id) USING (id)
+            WHERE dm.monitor_id = ? AND (hb.status = 0 OR hb.status = 2 OR hb.status = 4)
+        `, [
+            monitorID
+        ]);
+
+        return monitors.length !== 0;
     }
 }
 

@@ -103,6 +103,14 @@
                 </div>
             </div>
 
+            <div v-if="masterMonitors.length" class="shadow-box table-shadow-box">
+                <label for="master-monitors" class="form-label" style="margin-top: 20px; font-weight: bold;">{{ $t("monitorDependsOn") }}:</label>
+                <br>
+                <button v-for="masterMonitor in masterMonitors" :key="masterMonitor.id" class="btn btn-monitor" style="margin: 5px; cursor: auto; color: white; font-weight: 500;">
+                    {{ masterMonitor.name }}
+                </button>
+            </div>
+
             <div class="shadow-box table-shadow-box">
                 <div class="dropdown dropdown-clear-data">
                     <button class="btn btn-sm btn-outline-danger dropdown-toggle" type="button" data-bs-toggle="dropdown">
@@ -212,6 +220,7 @@ export default {
                 hideCount: true,
                 chunksNavigation: "scroll",
             },
+            masterMonitors: [],
         };
     },
     computed: {
@@ -286,9 +295,19 @@ export default {
         },
     },
     mounted() {
-
+        this.init();
     },
     methods: {
+        init() {
+            this.$root.getSocket().emit("getMasterMonitors", this.$route.params.id, (res) => {
+                if (res.ok) {
+                    this.masterMonitors = res.monitors;
+                } else {
+                    toast.error(res.msg);
+                }
+            });
+        },
+
         testNotification() {
             this.$root.getSocket().emit("testNotification", this.monitor.id);
             toast.success("Test notification is requested.");
@@ -497,6 +516,14 @@ table {
 
 .tags > div:first-child {
     margin-left: 0 !important;
+}
+
+.btn-monitor {
+    background-color: #5cdd8b;
+}
+
+.dark .btn-monitor {
+    color: #020b05 !important;
 }
 
 </style>

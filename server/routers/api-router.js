@@ -4,7 +4,7 @@ const { R } = require("redbean-node");
 const apicache = require("../modules/apicache");
 const Monitor = require("../model/monitor");
 const dayjs = require("dayjs");
-const { UP, DOWN, flipStatus, log } = require("../../src/util");
+const { UP, DOWN, DEGRADED, MONITOR_DOWN_DEGRADED, flipStatus, log } = require("../../src/util");
 const StatusPage = require("../model/status_page");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { makeBadge } = require("badge-maker");
@@ -67,6 +67,12 @@ router.get("/api/push/:pushToken", async (request, response) => {
             duration = dayjs(bean.time).diff(dayjs(previousHeartbeat.time), "second");
         }
 
+        const isDegraded = await Monitor.isDegraded(monitor.id);
+        if (status === UP && isDegraded) {
+            msg = "Monitor is degraded, because at least one master monitor is DOWN";
+            status = DEGRADED;
+        }
+
         log.debug("router", "PreviousStatus: " + previousStatus);
         log.debug("router", "Current Status: " + status);
 
@@ -86,7 +92,9 @@ router.get("/api/push/:pushToken", async (request, response) => {
             ok: true,
         });
 
-        if (bean.important) {
+        if (monitor.noNotificationIfMasterDown && isDegraded || previousHeartbeat.msg === MONITOR_DOWN_DEGRADED) {
+            log.debug("router", `[${monitor.name}] will not sendNotification because it is/was degraded`);
+        } else if (Monitor.isImportantForNotification(isFirstBeat, previousStatus, status)) {
             await Monitor.sendNotification(isFirstBeat, monitor, bean);
         }
 

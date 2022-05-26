@@ -664,6 +664,7 @@ try {
                 bean.ignoreTls = monitor.ignoreTls;
                 bean.expiryNotification = monitor.expiryNotification;
                 bean.upsideDown = monitor.upsideDown;
+                bean.noNotificationIfMasterDown = monitor.noNotificationIfMasterDown;
                 bean.maxredirects = monitor.maxredirects;
                 bean.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
                 bean.dns_resolve_type = monitor.dns_resolve_type;
@@ -693,6 +694,38 @@ try {
 
             } catch (e) {
                 log.error("monitor", e);
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        // Add a new dependent_monitors
+        socket.on("addDependentMonitors", async (monitorID, monitors, callback) => {
+            try {
+                checkLogin(socket);
+
+                await R.exec("DELETE FROM dependent_monitors WHERE monitor_id = ?", [
+                    monitorID
+                ]);
+
+                for await (const monitor of monitors) {
+                    let bean = R.dispense("dependent_monitors");
+
+                    bean.import({
+                        monitor_id: monitorID,
+                        depends_on: monitor.id,
+                    });
+                    await R.store(bean);
+                }
+
+                callback({
+                    ok: true,
+                    msg: "Added Successfully.",
+                });
+
+            } catch (e) {
                 callback({
                     ok: false,
                     msg: e.message,
@@ -730,6 +763,55 @@ try {
                 callback({
                     ok: true,
                     monitor: await bean.toJSON(),
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        // Retrieves all master monitors for the given monitor from the database
+        socket.on("getMasterMonitors", async (monitorID, callback) => {
+            try {
+                checkLogin(socket);
+
+                console.log(`Get master Monitors for Monitor: ${monitorID} User ID: ${socket.userID}`);
+
+                let monitors = await R.getAll("SELECT monitor.id, monitor.name FROM dependent_monitors dm JOIN monitor ON dm.depends_on = monitor.id WHERE dm.monitor_id = ? ", [
+                    monitorID,
+                ]);
+
+                callback({
+                    ok: true,
+                    monitors,
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        // Retrieves all available master monitors for the given monitor from the database
+        socket.on("getAvailableMasterMonitors", async (monitorID, callback) => {
+            try {
+                checkLogin(socket);
+
+                console.log(`Get available master Monitors for Monitor: ${monitorID} User ID: ${socket.userID}`);
+
+                let monitors = await R.getAll("SELECT id, name FROM monitor WHERE id != ? AND id NOT IN (SELECT monitor_id FROM dependent_monitors WHERE depends_on = ?)", [
+                    monitorID,
+                    monitorID,
+                ]);
+
+                callback({
+                    ok: true,
+                    monitors,
                 });
 
             } catch (e) {
