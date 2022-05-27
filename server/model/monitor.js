@@ -348,7 +348,7 @@ class Monitor extends BeanModel {
                     bean.msg = dnsMessage;
                     bean.status = UP;
                 } else if (this.type === "push") {      // Type: Push
-                    log.debug(`[${this.name}] Checking monitor at ${dayjs().format("YYYY-MM-DD HH:mm:ss.SSS")}`);
+                    log.debug("monitor", `[${this.name}] Checking monitor at ${dayjs().format("YYYY-MM-DD HH:mm:ss.SSS")}`);
                     const bufferTime = 1000; // 1s buffer to accommodate clock differences
                     // Fix #922, since previous heartbeat could be inserted by API, it should get from database
                     previousBeat = await Monitor.getPreviousHeartbeat(this.id);
@@ -368,7 +368,7 @@ class Monitor extends BeanModel {
                             }
                             // No need to insert successful heartbeat for push type, so end here
                             retries = 0;
-                            log.debug(`[${this.name}] timeout = ${timeout}`);
+                            log.debug("monitor", `[${this.name}] timeout = ${timeout}`);
                             this.heartbeatInterval = setTimeout(beat, timeout);
                             return;
                         }
