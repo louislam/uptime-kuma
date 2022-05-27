@@ -524,5 +524,5 @@ export default {
     "Auto resolve or acknowledged": "Otomatik çözümleme veya onaylama",
     "do nothing": "hiçbir şey yapma",
     "auto acknowledged": "otomatik onaylama",
-    "auto resolve": "otomatik çözümleme"
+    "auto resolve": "otomatik çözümleme",
 };
