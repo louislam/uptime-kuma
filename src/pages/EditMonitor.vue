@@ -97,6 +97,15 @@
                                     </div>
                                 </div>
 
+                                <!-- Port -->
+                                <div class="my-3">
+                                    <label for="port" class="form-label">{{ $t("Port") }}</label>
+                                    <input id="port" v-model="monitor.port" type="number" class="form-control" required min="0" max="65535" step="1">
+                                    <div class="form-text">
+                                        {{ $t("dnsPortDescription") }}
+                                    </div>
+                                </div>
+
                                 <div class="my-3">
                                     <label for="dns_resolve_type" class="form-label">{{ $t("Resource Record Type") }}</label>
 
@@ -498,6 +507,15 @@ export default {
             if (this.monitor.type === "push") {
                 if (! this.monitor.pushToken) {
                     this.monitor.pushToken = genSecret(10);
+                }
+            }
+
+            // Set default port for DNS if not already defined
+            if (! this.monitor.port || this.monitor.port === "53") {
+                if (this.monitor.type === "dns") {
+                    this.monitor.port = "53";
+                } else {
+                    this.monitor.port = "";
                 }
             }
         }
