@@ -374,7 +374,9 @@ class Monitor extends BeanModel {
                     // beatInterval/retryInterval in the setTimeout further below
                     if (previousBeat) {
                         const msSinceLastBeat = dayjs.utc().valueOf() - dayjs.utc(previousBeat.time).valueOf();
-                        log.debug(`[${this.name}] msSinceLastBeat = ${msSinceLastBeat}`);
+
+                        log.debug("monitor", `[${this.name}] msSinceLastBeat = ${msSinceLastBeat}`);
+
                         if (previousBeat.status !== UP || msSinceLastBeat > beatInterval * 1000 + bufferTime) {
                             throw new Error("No heartbeat in the time window");
                         } else {
