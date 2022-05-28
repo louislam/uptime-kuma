@@ -7,7 +7,7 @@ dayjs.extend(timezone);
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
 const { log, UP, DOWN, PENDING, flipStatus, TimeLogger } = require("../../src/util");
-const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, errorLog, mqttAsync } = require("../util-server");
+const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mqttAsync } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification");
@@ -15,6 +15,7 @@ const { Proxy } = require("../proxy");
 const { demoMode } = require("../config");
 const version = require("../../package.json").version;
 const apicache = require("../modules/apicache");
+const { UptimeKumaServer } = require("../uptime-kuma-server");
 
 /**
  * status:
@@ -27,6 +28,7 @@ class Monitor extends BeanModel {
     /**
      * Return an object that ready to parse to JSON for public
      * Only show necessary data to public
+     * @returns {Object}
      */
     async toPublicJSON(showTags = false) {
         let obj = {
@@ -41,6 +43,7 @@ class Monitor extends BeanModel {
 
     /**
      * Return an object that ready to parse to JSON
+     * @returns {Object}
      */
     async toJSON(includeSensitiveData = true) {
 
@@ -101,6 +104,10 @@ class Monitor extends BeanModel {
         return data;
     }
 
+    /**
+     * Get all tags applied to this monitor
+     * @returns {Promise<LooseObject<any>[]>}
+     */
     async getTags() {
         return await R.getAll("SELECT mt.*, tag.name, tag.color FROM monitor_tag mt JOIN tag ON mt.tag_id = tag.id WHERE mt.monitor_id = ?", [ this.id ]);
     }
@@ -114,6 +121,10 @@ class Monitor extends BeanModel {
         return Buffer.from(user + ":" + pass).toString("base64");
     }
 
+    /**
+     * Is the TLS expiry notification enabled?
+     * @returns {boolean}
+     */
     isEnabledExpiryNotification() {
         return Boolean(this.expiryNotification);
     }
@@ -134,10 +145,18 @@ class Monitor extends BeanModel {
         return Boolean(this.upsideDown);
     }
 
+    /**
+     * Get accepted status codes
+     * @returns {Object}
+     */
     getAcceptedStatuscodes() {
         return JSON.parse(this.accepted_statuscodes_json);
     }
 
+    /**
+     * Start monitor
+     * @param {Server} io Socket server instance
+     */
     start(io) {
         let previousBeat = null;
         let retries = 0;
@@ -163,7 +182,7 @@ class Monitor extends BeanModel {
             // undefined if not https
             let tlsInfo = undefined;
 
-            if (!previousBeat) {
+            if (!previousBeat || this.type === "push") {
                 previousBeat = await R.findOne("heartbeat", " monitor_id = ? ORDER BY time DESC", [
                     this.id,
                 ]);
@@ -311,7 +330,7 @@ class Monitor extends BeanModel {
                     let startTime = dayjs().valueOf();
                     let dnsMessage = "";
 
-                    let dnsRes = await dnsResolve(this.hostname, this.dns_resolve_server, this.dns_resolve_type);
+                    let dnsRes = await dnsResolve(this.hostname, this.dns_resolve_server, this.port, this.dns_resolve_type);
                     bean.ping = dayjs().valueOf() - startTime;
 
                     if (this.dns_resolve_type === "A" || this.dns_resolve_type === "AAAA" || this.dns_resolve_type === "TXT") {
@@ -350,8 +369,7 @@ class Monitor extends BeanModel {
                 } else if (this.type === "push") {      // Type: Push
                     log.debug("monitor", `[${this.name}] Checking monitor at ${dayjs().format("YYYY-MM-DD HH:mm:ss.SSS")}`);
                     const bufferTime = 1000; // 1s buffer to accommodate clock differences
-                    // Fix #922, since previous heartbeat could be inserted by API, it should get from database
-                    previousBeat = await Monitor.getPreviousHeartbeat(this.id);
+
                     // If the previous beat was nonexistent, down or pending we use the regular
                     // beatInterval/retryInterval in the setTimeout further below
                     if (previousBeat) {
@@ -502,12 +520,13 @@ class Monitor extends BeanModel {
 
         };
 
+        /** Get a heartbeat and handle errors */
         const safeBeat = async () => {
             try {
                 await beat();
             } catch (e) {
                 console.trace(e);
-                errorLog(e, false);
+                UptimeKumaServer.errorLog(e, false);
                 log.error("monitor", "Please report to https://github.com/louislam/uptime-kuma/issues");
 
                 if (! this.isStop) {
@@ -527,6 +546,7 @@ class Monitor extends BeanModel {
         }
     }
 
+    /** Stop monitor */
     stop() {
         clearTimeout(this.heartbeatInterval);
         this.isStop = true;
@@ -534,6 +554,10 @@ class Monitor extends BeanModel {
         this.prometheus().remove();
     }
 
+    /**
+     * Get a new prometheus instance
+     * @returns {Prometheus}
+     */
     prometheus() {
         return new Prometheus(this);
     }
@@ -542,7 +566,7 @@ class Monitor extends BeanModel {
      * Helper Method:
      * returns URL object for further usage
      * returns null if url is invalid
-     * @returns {null|URL}
+     * @returns {(null|URL)}
      */
     getUrl() {
         try {
@@ -555,7 +579,7 @@ class Monitor extends BeanModel {
     /**
      * Store TLS info to database
      * @param checkCertificateResult
-     * @returns {Promise<object>}
+     * @returns {Promise<Object>}
      */
     async updateTlsInfo(checkCertificateResult) {
         let tlsInfoBean = await R.findOne("monitor_tls_info", "monitor_id = ?", [
@@ -597,6 +621,12 @@ class Monitor extends BeanModel {
         return checkCertificateResult;
     }
 
+    /**
+     * Send statistics to clients
+     * @param {Server} io Socket server instance
+     * @param {number} monitorID ID of monitor to send
+     * @param {number} userID ID of user to send to
+     */
     static async sendStats(io, monitorID, userID) {
         const hasClients = getTotalClientInRoom(io, userID) > 0;
 
@@ -611,8 +641,8 @@ class Monitor extends BeanModel {
     }
 
     /**
-     *
-     * @param duration : int Hours
+     * Send the average ping to user
+     * @param {number} duration Hours
      */
     static async sendAvgPing(duration, io, monitorID, userID) {
         const timeLogger = new TimeLogger();
@@ -632,6 +662,12 @@ class Monitor extends BeanModel {
         io.to(userID).emit("avgPing", monitorID, avgPing);
     }
 
+    /**
+     * Send certificate information to client
+     * @param {Server} io Socket server instance
+     * @param {number} monitorID ID of monitor to send
+     * @param {number} userID ID of user to send to
+     */
     static async sendCertInfo(io, monitorID, userID) {
         let tlsInfo = await R.findOne("monitor_tls_info", "monitor_id = ?", [
             monitorID,
@@ -645,7 +681,8 @@ class Monitor extends BeanModel {
      * Uptime with calculation
      * Calculation based on:
      * https://www.uptrends.com/support/kb/reporting/calculation-of-uptime-and-downtime
-     * @param duration : int Hours
+     * @param {number} duration Hours
+     * @param {number} monitorID ID of monitor to calculate
      */
     static async calcUptime(duration, monitorID) {
         const timeLogger = new TimeLogger();
@@ -711,13 +748,23 @@ class Monitor extends BeanModel {
 
     /**
      * Send Uptime
-     * @param duration : int Hours
+     * @param {number} duration Hours
+     * @param {Server} io Socket server instance
+     * @param {number} monitorID ID of monitor to send
+     * @param {number} userID ID of user to send to
      */
     static async sendUptime(duration, io, monitorID, userID) {
         const uptime = await this.calcUptime(duration, monitorID);
         io.to(userID).emit("uptime", monitorID, duration, uptime);
     }
 
+    /**
+     * Has status of monitor changed since last beat?
+     * @param {boolean} isFirstBeat Is this the first beat of this monitor?
+     * @param {const} previousBeatStatus Status of the previous beat
+     * @param {const} currentBeatStatus Status of the current beat
+     * @returns {boolean} True if is an important beat else false
+     */
     static isImportantBeat(isFirstBeat, previousBeatStatus, currentBeatStatus) {
         // * ? -> ANY STATUS = important [isFirstBeat]
         // UP -> PENDING = not important
@@ -736,6 +783,12 @@ class Monitor extends BeanModel {
         return isImportant;
     }
 
+    /**
+     * Send a notification about a monitor
+     * @param {boolean} isFirstBeat Is this beat the first of this monitor?
+     * @param {Monitor} monitor The monitor to send a notificaton about
+     * @param {Bean} bean Status information about monitor
+     */
     static async sendNotification(isFirstBeat, monitor, bean) {
         if (!isFirstBeat || bean.status === DOWN) {
             const notificationList = await Monitor.getNotificationList(monitor);
@@ -760,6 +813,11 @@ class Monitor extends BeanModel {
         }
     }
 
+    /**
+     * Get list of notification providers for a given monitor
+     * @param {Monitor} monitor Monitor to get notification providers for
+     * @returns {Promise<LooseObject<any>[]>}
+     */
     static async getNotificationList(monitor) {
         let notificationList = await R.getAll("SELECT notification.* FROM notification, monitor_notification WHERE monitor_id = ? AND monitor_notification.notification_id = notification.id ", [
             monitor.id,
@@ -767,6 +825,10 @@ class Monitor extends BeanModel {
         return notificationList;
     }
 
+    /**
+     * Send notification about a certificate
+     * @param {Object} tlsInfoObject Information about certificate
+     */
     async sendCertNotification(tlsInfoObject) {
         if (tlsInfoObject && tlsInfoObject.certInfo && tlsInfoObject.certInfo.daysRemaining) {
             const notificationList = await Monitor.getNotificationList(this);
@@ -778,6 +840,14 @@ class Monitor extends BeanModel {
         }
     }
 
+    /**
+     * Send a certificate notification when certificate expires in less
+     * than target days
+     * @param {number} daysRemaining Number of days remaining on certifcate
+     * @param {number} targetDays Number of days to alert after
+     * @param {LooseObject<any>[]} notificationList List of notification providers
+     * @returns {Promise<void>}
+     */
     async sendCertNotificationByTargetDays(daysRemaining, targetDays, notificationList) {
 
         if (daysRemaining > targetDays) {
@@ -825,6 +895,11 @@ class Monitor extends BeanModel {
         }
     }
 
+    /**
+     * Get the status of the previous heartbeat
+     * @param {number} monitorID ID of monitor to check
+     * @returns {Promise<LooseObject<any>>}
+     */
     static async getPreviousHeartbeat(monitorID) {
         return await R.getRow(`
             SELECT status, time FROM heartbeat

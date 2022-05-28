@@ -6,9 +6,14 @@ class Apprise extends NotificationProvider {
     name = "apprise";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let s = childProcess.spawnSync("apprise", [ "-vv", "-b", msg, notification.appriseURL ]);
+        const args = [ "-vv", "-b", msg, notification.appriseURL ];
+        if (notification.title) {
+            args.push("-t");
+            args.push(notification.title);
+        }
+        const s = childProcess.spawnSync("apprise", args);
 
-        let output = (s.stdout) ? s.stdout.toString() : "ERROR: maybe apprise not found";
+        const output = (s.stdout) ? s.stdout.toString() : "ERROR: maybe apprise not found";
 
         if (output) {
 

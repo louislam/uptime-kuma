@@ -27,6 +27,7 @@ import SerwerSMS from "./SerwerSMS.vue";
 import Stackfield from "./Stackfield.vue";
 import WeCom from "./WeCom.vue";
 import GoogleChat from "./GoogleChat.vue";
+import PagerDuty from "./PagerDuty.vue";
 import Gorush from "./Gorush.vue";
 import Alerta from "./Alerta.vue";
 import OneBot from "./OneBot.vue";
@@ -67,6 +68,7 @@ const NotificationFormList = {
     "stackfield": Stackfield,
     "WeCom": WeCom,
     "GoogleChat": GoogleChat,
+    "PagerDuty": PagerDuty,
     "gorush": Gorush,
     "alerta": Alerta,
     "OneBot": OneBot,

@@ -206,7 +206,7 @@
 
             <template v-else-if="$i18n.locale === 'bg-BG' ">
                 <p>Сигурни ли сте, че желаете да <strong>изключите удостоверяването</strong>?</p>
-                <p>Използва се в случаите, когато <strong>има настроен алтернативен метод за удостоверяване</strong> преди Uptime Kuma, например Cloudflare Access.</p>
+                <p>Използва се в случаите, когато <strong>има настроен алтернативен метод за удостоверяване</strong> преди Uptime Kuma, например Cloudflare Access, Authelia или друг механизъм за удостоверяване.</p>
                 <p>Моля, използвайте с повишено внимание.</p>
             </template>
 
@@ -232,6 +232,12 @@
                 <p>Bạn có muốn <strong>TẮT XÁC THỰC</strong> không?</p>
                 <p>Điều này rất nguy hiểm<strong>BẤT KỲ AI</strong> cũng có thể truy cập và cướp quyền điều khiển.</p>
                 <p>Vui lòng <strong>cẩn thận</strong>.</p>
+            </template>
+
+            <template v-else-if="$i18n.locale === 'th-TH' ">
+                <p>คุณต้องการที่จะ <strong>ปิดใช้งานระบบรับรองความถูกต้องใช่หรือไม่</strong>?</p>
+                <p>ระบบนี้ถูกออกแบบมาเพื่อการใช้งานกับระบบรับรองความถูกต้องของบุคคลที่สามเช่น Cloudflare Access, Authelia หรือวิธีการอื่น ๆ</p>
+                <p>โปรดใช้ความระมัดระวังในการเลือกใช้งานระบบนี้ !</p>
             </template>
 
             <!-- English (en) -->

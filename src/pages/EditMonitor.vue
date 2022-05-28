@@ -30,7 +30,7 @@
                                         Push
                                     </option>
                                     <option value="steam">
-                                        Steam Game Server
+                                        {{ $t("Steam Game Server") }}
                                     </option>
                                     <option value="mqtt">
                                         MQTT
@@ -56,7 +56,7 @@
                                 <CopyableInput id="push-url" v-model="pushURL" type="url" disabled="disabled" />
                                 <div class="form-text">
                                     {{ $t("needPushEvery", [monitor.interval]) }}<br />
-                                    {{ $t("pushOptionalParams", ["msg, ping"]) }}
+                                    {{ $t("pushOptionalParams", ["status, msg, ping"]) }}
                                 </div>
                             </div>
 
@@ -91,6 +91,15 @@
                                     <input id="dns_resolve_server" v-model="monitor.dns_resolve_server" type="text" class="form-control" :pattern="ipRegex" required>
                                     <div class="form-text">
                                         {{ $t("resolverserverDescription") }}
+                                    </div>
+                                </div>
+
+                                <!-- Port -->
+                                <div class="my-3">
+                                    <label for="port" class="form-label">{{ $t("Port") }}</label>
+                                    <input id="port" v-model="monitor.port" type="number" class="form-control" required min="0" max="65535" step="1">
+                                    <div class="form-text">
+                                        {{ $t("dnsPortDescription") }}
                                     </div>
                                 </div>
 
@@ -361,13 +370,12 @@
 </template>
 
 <script>
+import VueMultiselect from "vue-multiselect";
+import { useToast } from "vue-toastification";
+import CopyableInput from "../components/CopyableInput.vue";
 import NotificationDialog from "../components/NotificationDialog.vue";
 import ProxyDialog from "../components/ProxyDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
-import CopyableInput from "../components/CopyableInput.vue";
-
-import { useToast } from "vue-toastification";
-import VueMultiselect from "vue-multiselect";
 import { genSecret, isDev } from "../util.ts";
 
 const toast = useToast();
@@ -422,7 +430,7 @@ export default {
         },
 
         pushURL() {
-            return this.$root.baseURL + "/api/push/" + this.monitor.pushToken + "?msg=OK&ping=";
+            return this.$root.baseURL + "/api/push/" + this.monitor.pushToken + "?status=up&msg=OK&ping=";
         },
 
         bodyPlaceholder() {
@@ -468,6 +476,15 @@ export default {
             if (this.monitor.type === "push") {
                 if (! this.monitor.pushToken) {
                     this.monitor.pushToken = genSecret(10);
+                }
+            }
+
+            // Set default port for DNS if not already defined
+            if (! this.monitor.port || this.monitor.port === "53") {
+                if (this.monitor.type === "dns") {
+                    this.monitor.port = "53";
+                } else {
+                    this.monitor.port = "";
                 }
             }
         }
@@ -540,7 +557,7 @@ export default {
                 }
 
                 for (let i = 0; i < this.$root.notificationList.length; i++) {
-                    if (this.$root.notificationList[i].isDefault == true) {
+                    if (this.$root.notificationList[i].isDefault === true) {
                         this.monitor.notificationIDList[this.$root.notificationList[i].id] = true;
                     }
                 }

@@ -11,26 +11,42 @@ on:
 
 jobs:
   auto-test:
+    needs: [ check-linters ]
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
 
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
-        node-version: [14.x, 16.x, 17.x]
+        node: [ 14, 16, 17, 18 ]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
     - run: git config --global core.autocrlf false  # Mainly for Windows
     - uses: actions/checkout@v3
 
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v2
+    - name: Use Node.js ${{ matrix.node }}
+      uses: actions/setup-node@v3
       with:
-        node-version: ${{ matrix.node-version }}
+        node-version: ${{ matrix.node }}
         cache: 'npm'
-    - run: npm run install-legacy
+    - run: npm install
     - run: npm run build
     - run: npm test
       env:
         HEADLESS_TEST: 1
         JUST_FOR_TEST: ${{ secrets.JUST_FOR_TEST }}
+  check-linters:
+    runs-on: ubuntu-latest
+
+    steps:
+    - run: git config --global core.autocrlf false  # Mainly for Windows
+    - uses: actions/checkout@v3
+
+    - name: Use Node.js 14
+      uses: actions/setup-node@v3
+      with:
+        node-version: 14
+        cache: 'npm'
+    - run: npm install
+    - run: npm run lint
