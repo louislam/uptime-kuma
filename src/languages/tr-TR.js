@@ -516,4 +516,13 @@ export default {
     "Go back to the previous page.": "Bir önceki sayfaya geri git.",
     "Coming Soon": "Yakında gelecek",
     wayToGetClickSendSMSToken: "API Kullanıcı Adı ve API Anahtarını {0} adresinden alabilirsiniz.",
+    error: "hata",
+    critical: "kritik",
+    wayToGetPagerDutyKey: "Bunu şuraya giderek alabilirsiniz: Servis -> Servis Dizini -> (Bir servis seçin) -> Entegrasyonlar -> Entegrasyon ekle. Burada \"Events API V2\" için arama yapabilirsiniz. Daha fazla bilgi {0}",
+    "Integration Key": "Entegrasyon Anahtarı",
+    "Integration URL": "Entegrasyon URL",
+    "Auto resolve or acknowledged": "Otomatik çözümleme veya onaylama",
+    "do nothing": "hiçbir şey yapma",
+    "auto acknowledged": "otomatik onaylama",
+    "auto resolve": "otomatik çözümleme",
 };
