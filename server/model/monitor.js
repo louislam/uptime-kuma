@@ -370,13 +370,13 @@ class Monitor extends BeanModel {
                     log.debug("monitor", `[${this.name}] Checking monitor at ${dayjs().format("YYYY-MM-DD HH:mm:ss.SSS")}`);
                     const bufferTime = 1000; // 1s buffer to accommodate clock differences
 
-                    // If the previous beat was nonexistent, down or pending we use the regular
-                    // beatInterval/retryInterval in the setTimeout further below
                     if (previousBeat) {
                         const msSinceLastBeat = dayjs.utc().valueOf() - dayjs.utc(previousBeat.time).valueOf();
 
                         log.debug("monitor", `[${this.name}] msSinceLastBeat = ${msSinceLastBeat}`);
 
+                        // If the previous beat was down or pending we use the regular
+                        // beatInterval/retryInterval in the setTimeout further below
                         if (previousBeat.status !== UP || msSinceLastBeat > beatInterval * 1000 + bufferTime) {
                             throw new Error("No heartbeat in the time window");
                         } else {
@@ -392,6 +392,8 @@ class Monitor extends BeanModel {
                             this.heartbeatInterval = setTimeout(beat, timeout);
                             return;
                         }
+                    } else {
+                        throw new Error("No heartbeat in the time window");
                     }
 
                 } else if (this.type === "steam") {
