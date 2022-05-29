@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="period-options">
+        <div v-if="displayDropdown" class="period-options">
             <button type="button" class="btn btn-light dropdown-toggle btn-period-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                 {{ chartPeriodOptions[chartPeriodHrs] }}&nbsp;
             </button>
@@ -38,6 +38,11 @@ export default {
         monitorId: {
             type: Number,
             required: true,
+        },
+        displayDropdown: {
+            type: Boolean,
+            required: false,
+            default: true,
         },
     },
     data() {

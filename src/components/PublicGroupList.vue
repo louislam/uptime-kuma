@@ -49,6 +49,15 @@
                                         <HeartbeatBar size="small" :monitor-id="monitor.element.id" />
                                     </div>
                                 </div>
+
+                                <!-- Ping Chart -->
+                                <div class="shadow-box big-padding text-center ping-chart-wrapper">
+                                    <div class="row">
+                                        <div class="col">
+                                            <PingChart :monitor-id="monitor.element.id" :display-dropdown="false" />
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </template>
                     </Draggable>
@@ -63,9 +72,11 @@ import Draggable from "vuedraggable";
 import HeartbeatBar from "./HeartbeatBar.vue";
 import Uptime from "./Uptime.vue";
 import Tag from "./Tag.vue";
+import PingChart from "./PingChart.vue";
 
 export default {
     components: {
+        PingChart,
         Draggable,
         HeartbeatBar,
         Uptime,
@@ -147,6 +158,10 @@ export default {
     .item {
         padding: 13px 0 10px;
     }
+}
+
+.ping-chart-wrapper {
+    margin-top: 10px;
 }
 
 </style>
