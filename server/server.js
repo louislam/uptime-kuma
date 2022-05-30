@@ -124,6 +124,7 @@ const TwoFA = require("./2fa");
 const StatusPage = require("./model/status_page");
 const { cloudflaredSocketHandler, autoStart: cloudflaredAutoStart, stop: cloudflaredStop } = require("./socket-handlers/cloudflared-socket-handler");
 const { proxySocketHandler } = require("./socket-handlers/proxy-socket-handler");
+const apiRouter = require("./routers/api-router");
 
 app.use(express.json());
 
@@ -148,22 +149,6 @@ let jwtSecret = null;
  */
 let needSetup = false;
 
-/**
- * Cache Index HTML
- * @type {string}
- */
-let indexHTML = "";
-
-try {
-    indexHTML = fs.readFileSync("./dist/index.html").toString();
-} catch (e) {
-    // "dist/index.html" is not necessary for development
-    if (process.env.NODE_ENV !== "development") {
-        log.error("server", "Error: Cannot find 'dist/index.html', did you install correctly?");
-        process.exit(1);
-    }
-}
-
 (async () => {
     Database.init(args);
     await initDatabase(testMode);
@@ -179,14 +164,17 @@ try {
 
     // Entry Page
     app.get("/", async (request, response) => {
-        debug(`Request Domain: ${request.hostname}`);
+        log.debug("entry", `Request Domain: ${request.hostname}`);
 
         if (request.hostname in StatusPage.domainMappingList) {
-            debug("This is a status page domain");
-            // TODO
-            response.send(StatusPage.renderHTML(indexHTML));
+            log.debug("entry", "This is a status page domain");
+
+            let slug = StatusPage.domainMappingList[request.hostname];
+            await StatusPage.handleStatusPageResponse(response, server.indexHTML, slug);
+
         } else if (exports.entryPage && exports.entryPage.startsWith("statusPage-")) {
             response.redirect("/status/" + exports.entryPage.replace("statusPage-", ""));
+
         } else {
             response.redirect("/dashboard");
         }
@@ -228,12 +216,16 @@ try {
     const apiRouter = require("./routers/api-router");
     app.use(apiRouter);
 
+    // Status Page Router
+    const statusPageRouter = require("./routers/status-page-router");
+    app.use(statusPageRouter);
+
     // Universal Route Handler, must be at the end of all express routes.
     app.get("*", async (_request, response) => {
         if (_request.originalUrl.startsWith("/upload/")) {
             response.status(404).send("File not found.");
         } else {
-            response.send(indexHTML);
+            response.send(server.indexHTML);
         }
     });
 

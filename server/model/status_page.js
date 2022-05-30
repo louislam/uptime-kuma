@@ -1,10 +1,33 @@
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { R } = require("redbean-node");
 const cheerio = require("cheerio");
+const { UptimeKumaServer } = require("../uptime-kuma-server");
 
 class StatusPage extends BeanModel {
 
+    /**
+     * Like this: { "test-uptime.kuma.pet": "default" }
+     * @type {{}}
+     */
     static domainMappingList = { };
+
+    /**
+     *
+     * @param {Response} response
+     * @param {string} indexHTML
+     * @param {string} slug
+     */
+    static async handleStatusPageResponse(response, indexHTML, slug) {
+        let statusPage = await R.findOne("status_page", " slug = ? ", [
+            slug
+        ]);
+
+        if (statusPage) {
+            response.send(StatusPage.renderHTML(indexHTML, statusPage));
+        } else {
+            response.status(404).send(UptimeKumaServer.getInstance().indexHTML);
+        }
+    }
 
     /**
      * SSR for status pages
@@ -13,6 +36,17 @@ class StatusPage extends BeanModel {
      */
     static renderHTML(indexHTML, statusPage) {
         const $ = cheerio.load(indexHTML);
+
+        $("title").text(statusPage.title);
+        $("meta[name=description]").attr("content", statusPage.description.substring(0, 155));
+
+        if (statusPage.icon) {
+            $("link[rel=icon]")
+                .attr("href", statusPage.icon)
+                .removeAttr("type");
+        }
+
+        const head = $("head");
 
         return $.root().html();
     }
