@@ -77,7 +77,7 @@
                         <h4>{{ $t("Cert Exp.") }}</h4>
                         <p>(<Datetime :value="tlsInfo.certInfo.validTo" date-only />)</p>
                         <span class="num">
-                            <a href="#" @click.prevent="toggleCertInfoBox = !toggleCertInfoBox">{{ tlsInfo.certInfo.daysRemaining }} {{ $t("days") }}</a>
+                            <a href="#" @click.prevent="toggleCertInfoBox = !toggleCertInfoBox">{{ tlsInfo.certInfo.daysRemaining }} {{ $tc("day", tlsInfo.certInfo.daysRemaining) }}</a>
                         </span>
                     </div>
                 </div>

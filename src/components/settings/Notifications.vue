@@ -25,14 +25,14 @@
             <p>{{ $t("certificationExpiryDescription") }}</p>
             <div class="mt-2 mb-4 ps-2 cert-exp-days col-12 col-xl-6">
                 <div v-for="day in settings.tlsExpiryNotifyDays" :key="day" class="d-flex align-items-center justify-content-between cert-exp-day-row py-2">
-                    <span>{{ day }} {{ $t("day(s)") }}</span>
+                    <span>{{ day }} {{ $tc("day", day) }}</span>
                     <button type="button" class="btn-rm-expiry btn btn-outline-danger ms-2 py-1" @click="removeExpiryNotifDay(day)">
                         <font-awesome-icon class="" icon="times" />
                     </button>
                 </div>
             </div>
             <div class="col-12 col-xl-6">
-                <ActionInput v-model="expiryNotifInput" :type="'number'" :placeholder="$t('day(s)')" :icon="'plus'" :action="() => addExpiryNotifDay(expiryNotifInput)" />
+                <ActionInput v-model="expiryNotifInput" :type="'number'" :placeholder="$t('day')" :icon="'plus'" :action="() => addExpiryNotifDay(expiryNotifInput)" />
             </div>
             <div>
                 <button class="btn btn-primary" type="button" @click="saveSettings()">
