@@ -160,7 +160,11 @@ router.get("/api/status-page/:slug", cache("5 minutes"), async (request, respons
 
 });
 
-// Status Page - Maintenance List
+/**
+ * Get list of maintenances
+ * @param {number} statusPageId ID of status page to get maintenance for
+ * @returns {Object} Object representing maintenances sanitized for public
+ */
 async function getMaintenanceList(statusPageId) {
     try {
         const publicMaintenanceList = [];
