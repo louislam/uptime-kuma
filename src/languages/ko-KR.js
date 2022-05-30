@@ -55,7 +55,6 @@ export default {
     Current: "현재",
     Uptime: "업타임",
     "Cert Exp.": "인증서 만료",
-    days: "일",
     day: "일",
     "-day": "-일",
     hour: "시간",

@@ -55,7 +55,6 @@ export default {
     Current: "Aktuális",
     Uptime: "Uptime",
     "Cert Exp.": "SSL lejárat",
-    days: "nap",
     day: "nap",
     "-day": " nap",
     hour: "óra",

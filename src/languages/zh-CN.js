@@ -57,7 +57,6 @@ export default {
     Current: "当前",
     Uptime: "在线时间",
     "Cert Exp.": "证书有效期",
-    days: "天",
     day: "天",
     "-day": " 天",
     hour: "小时",
