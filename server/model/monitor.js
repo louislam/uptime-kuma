@@ -182,7 +182,7 @@ class Monitor extends BeanModel {
             // undefined if not https
             let tlsInfo = undefined;
 
-            if (!previousBeat) {
+            if (!previousBeat || this.type === "push") {
                 previousBeat = await R.findOne("heartbeat", " monitor_id = ? ORDER BY time DESC", [
                     this.id,
                 ]);
@@ -192,7 +192,7 @@ class Monitor extends BeanModel {
 
             let bean = R.dispense("heartbeat");
             bean.monitor_id = this.id;
-            bean.time = R.isoDateTime(dayjs.utc());
+            bean.time = R.isoDateTimeMillis(dayjs.utc());
             bean.status = DOWN;
 
             if (this.isUpsideDown()) {
@@ -330,7 +330,7 @@ class Monitor extends BeanModel {
                     let startTime = dayjs().valueOf();
                     let dnsMessage = "";
 
-                    let dnsRes = await dnsResolve(this.hostname, this.dns_resolve_server, this.dns_resolve_type);
+                    let dnsRes = await dnsResolve(this.hostname, this.dns_resolve_server, this.port, this.dns_resolve_type);
                     bean.ping = dayjs().valueOf() - startTime;
 
                     if (this.dns_resolve_type === "A" || this.dns_resolve_type === "AAAA" || this.dns_resolve_type === "TXT") {
@@ -367,25 +367,33 @@ class Monitor extends BeanModel {
                     bean.msg = dnsMessage;
                     bean.status = UP;
                 } else if (this.type === "push") {      // Type: Push
-                    const time = R.isoDateTime(dayjs.utc().subtract(this.interval, "second"));
+                    log.debug("monitor", `[${this.name}] Checking monitor at ${dayjs().format("YYYY-MM-DD HH:mm:ss.SSS")}`);
+                    const bufferTime = 1000; // 1s buffer to accommodate clock differences
 
-                    let heartbeatCount = await R.count("heartbeat", " monitor_id = ? AND time > ? ", [
-                        this.id,
-                        time
-                    ]);
+                    if (previousBeat) {
+                        const msSinceLastBeat = dayjs.utc().valueOf() - dayjs.utc(previousBeat.time).valueOf();
 
-                    log.debug("monitor", "heartbeatCount" + heartbeatCount + " " + time);
+                        log.debug("monitor", `[${this.name}] msSinceLastBeat = ${msSinceLastBeat}`);
 
-                    if (heartbeatCount <= 0) {
-                        // Fix #922, since previous heartbeat could be inserted by api, it should get from database
-                        previousBeat = await Monitor.getPreviousHeartbeat(this.id);
-
-                        throw new Error("No heartbeat in the time window");
+                        // If the previous beat was down or pending we use the regular
+                        // beatInterval/retryInterval in the setTimeout further below
+                        if (previousBeat.status !== UP || msSinceLastBeat > beatInterval * 1000 + bufferTime) {
+                            throw new Error("No heartbeat in the time window");
+                        } else {
+                            let timeout = beatInterval * 1000 - msSinceLastBeat;
+                            if (timeout < 0) {
+                                timeout = bufferTime;
+                            } else {
+                                timeout += bufferTime;
+                            }
+                            // No need to insert successful heartbeat for push type, so end here
+                            retries = 0;
+                            log.debug("monitor", `[${this.name}] timeout = ${timeout}`);
+                            this.heartbeatInterval = setTimeout(beat, timeout);
+                            return;
+                        }
                     } else {
-                        // No need to insert successful heartbeat for push type, so end here
-                        retries = 0;
-                        this.heartbeatInterval = setTimeout(beat, beatInterval * 1000);
-                        return;
+                        throw new Error("No heartbeat in the time window");
                     }
 
                 } else if (this.type === "steam") {

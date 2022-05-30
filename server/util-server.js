@@ -176,12 +176,16 @@ exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
  * Resolves a given record using the specified DNS server
  * @param {string} hostname The hostname of the record to lookup
  * @param {string} resolverServer The DNS server to use
+ * @param {string} resolverPort Port the DNS server is listening on
  * @param {string} rrtype The type of record to request
  * @returns {Promise<(string[]|Object[]|Object)>}
  */
-exports.dnsResolve = function (hostname, resolverServer, rrtype) {
+exports.dnsResolve = function (hostname, resolverServer, resolverPort, rrtype) {
     const resolver = new Resolver();
-    resolver.setServers([ resolverServer ]);
+    // Remove brackets from IPv6 addresses so we can re-add them to
+    // prevent issues with ::1:5300 (::1 port 5300)
+    resolverServer = resolverServer.replace("[", "").replace("]", "");
+    resolver.setServers([`[${resolverServer}]:${resolverPort}`]);
     return new Promise((resolve, reject) => {
         if (rrtype === "PTR") {
             resolver.reverse(hostname, (err, records) => {

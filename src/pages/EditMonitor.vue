@@ -30,7 +30,7 @@
                                         Push
                                     </option>
                                     <option value="steam">
-                                        Steam Game Server
+                                        {{ $t("Steam Game Server") }}
                                     </option>
                                     <option value="mqtt">
                                         MQTT
@@ -91,6 +91,15 @@
                                     <input id="dns_resolve_server" v-model="monitor.dns_resolve_server" type="text" class="form-control" :pattern="ipRegex" required>
                                     <div class="form-text">
                                         {{ $t("resolverserverDescription") }}
+                                    </div>
+                                </div>
+
+                                <!-- Port -->
+                                <div class="my-3">
+                                    <label for="port" class="form-label">{{ $t("Port") }}</label>
+                                    <input id="port" v-model="monitor.port" type="number" class="form-control" required min="0" max="65535" step="1">
+                                    <div class="form-text">
+                                        {{ $t("dnsPortDescription") }}
                                     </div>
                                 </div>
 
@@ -467,6 +476,15 @@ export default {
             if (this.monitor.type === "push") {
                 if (! this.monitor.pushToken) {
                     this.monitor.pushToken = genSecret(10);
+                }
+            }
+
+            // Set default port for DNS if not already defined
+            if (! this.monitor.port || this.monitor.port === "53") {
+                if (this.monitor.type === "dns") {
+                    this.monitor.port = "53";
+                } else {
+                    this.monitor.port = "";
                 }
             }
         }
