@@ -796,6 +796,13 @@ class Monitor extends BeanModel {
             (previousBeatStatus === PENDING && currentBeatStatus === DOWN);
     }
 
+    /**
+     * Is this beat important for notifications?
+     * @param {boolean} isFirstBeat Is this the first beat of this monitor?
+     * @param {const} previousBeatStatus Status of the previous beat
+     * @param {const} currentBeatStatus Status of the current beat
+     * @returns {boolean} True if is an important beat else false
+     */
     static isImportantForNotification(isFirstBeat, previousBeatStatus, currentBeatStatus) {
         // * ? -> ANY STATUS = important [isFirstBeat]
         // UP -> PENDING = not important
