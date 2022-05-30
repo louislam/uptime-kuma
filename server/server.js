@@ -1759,6 +1759,11 @@ async function checkOwner(userID, monitorID) {
     }
 }
 
+/**
+ * Send maintenance list to client
+ * @param {Socket} socket Socket.io instance to send to
+ * @returns {Object}
+ */
 async function sendMaintenanceList(socket) {
     let list = await getMaintenanceJSONList(socket.userID);
     io.to(socket.userID).emit("maintenanceList", list);
