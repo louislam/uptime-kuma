@@ -14,6 +14,7 @@ import publicMixin from "./mixins/public";
 import socket from "./mixins/socket";
 import theme from "./mixins/theme";
 import lang from "./mixins/lang";
+import badges from "./mixins/badges";
 import { router } from "./router";
 import { appName } from "./util.ts";
 import dayjs from "dayjs";
@@ -32,6 +33,7 @@ const app = createApp({
         datetime,
         publicMixin,
         lang,
+        badges
     ],
     data() {
         return {
