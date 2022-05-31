@@ -41,7 +41,7 @@
                                             <Uptime :monitor="monitor.element" type="24" :pill="true" />
                                             {{ monitor.element.name }}
                                         </div>
-                                        <div v-if="showTag" class="tags">
+                                        <div v-if="showTags" class="tags">
                                             <Tag v-for="tag in monitor.element.tags" :key="tag" :item="tag" :size="'sm'" />
                                         </div>
                                     </div>
