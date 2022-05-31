@@ -57,6 +57,9 @@ export default {
 
     data() {
         return {
+            /**
+             * Variable to store the input for new certificate expiry day.
+             */
             expiryNotifInput: null,
         };
     },
@@ -74,9 +77,22 @@ export default {
     },
 
     methods: {
+        /**
+         * Remove a day from expiry notification days.
+         * @param {number} day The day to remove.
+         */
         removeExpiryNotifDay(day) {
             this.settings.tlsExpiryNotifyDays = this.settings.tlsExpiryNotifyDays.filter(d => d !== day);
         },
+        /**
+         * Add a new expiry notification day.
+         * Will verify:
+         * - day is not null or empty string.
+         * - day is a number.
+         * - day is > 0.
+         * - The day is not already in the list.
+         * @param {number} day The day number to add.
+         */
         addExpiryNotifDay(day) {
             if (day != null && day !== "") {
                 const parsedDay = parseInt(day);
