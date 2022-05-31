@@ -36,9 +36,10 @@ class StatusPage extends BeanModel {
      */
     static renderHTML(indexHTML, statusPage) {
         const $ = cheerio.load(indexHTML);
+        const description155 = statusPage.description.substring(0, 155);
 
         $("title").text(statusPage.title);
-        $("meta[name=description]").attr("content", statusPage.description.substring(0, 155));
+        $("meta[name=description]").attr("content", description155);
 
         if (statusPage.icon) {
             $("link[rel=icon]")
@@ -47,6 +48,10 @@ class StatusPage extends BeanModel {
         }
 
         const head = $("head");
+
+        // OG Meta Tags
+        head.append(`<meta property="og:title" content="${statusPage.title}" />`);
+        head.append(`<meta property="og:description" content="${description155}" />`);
 
         return $.root().html();
     }
