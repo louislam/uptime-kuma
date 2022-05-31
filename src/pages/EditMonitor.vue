@@ -301,6 +301,10 @@
                                 </button>
                             </div>
 
+                            <div v-if="isEdit" class="my-3">
+                                <badges :monitor="monitor" />
+                            </div>
+
                             <!-- HTTP Options -->
                             <template v-if="monitor.type === 'http' || monitor.type === 'keyword' ">
                                 <h2 class="mt-5 mb-2">{{ $t("HTTP Options") }}</h2>
@@ -377,6 +381,7 @@ import NotificationDialog from "../components/NotificationDialog.vue";
 import ProxyDialog from "../components/ProxyDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
 import { genSecret, isDev } from "../util.ts";
+import Badges from "../components/Badges.vue";
 
 const toast = useToast();
 
@@ -387,6 +392,7 @@ export default {
         NotificationDialog,
         TagsManager,
         VueMultiselect,
+        Badges
     },
 
     data() {
