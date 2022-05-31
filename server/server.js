@@ -16,7 +16,7 @@ if (nodeVersion < requiredVersion) {
 }
 
 const args = require("args-parser")(process.argv);
-const { sleep, log, getRandomInt, genSecret, debug, isDev } = require("../src/util");
+const { sleep, log, getRandomInt, genSecret, isDev } = require("../src/util");
 const config = require("./config");
 
 log.info("server", "Welcome to Uptime Kuma");
@@ -124,7 +124,6 @@ const TwoFA = require("./2fa");
 const StatusPage = require("./model/status_page");
 const { cloudflaredSocketHandler, autoStart: cloudflaredAutoStart, stop: cloudflaredStop } = require("./socket-handlers/cloudflared-socket-handler");
 const { proxySocketHandler } = require("./socket-handlers/proxy-socket-handler");
-const apiRouter = require("./routers/api-router");
 
 app.use(express.json());
 
