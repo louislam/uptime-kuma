@@ -23,10 +23,7 @@
                         <button
                             v-if="interval !== undefined"
                             class="btn btn-outline-danger"
-                            @click="(event) => {
-                                event.preventDefault();
-                                interval = undefined;
-                            }"
+                            @click="set('interval', undefined, $event)"
                         >
                             x
                         </button>
@@ -62,12 +59,7 @@
                                 <button
                                     v-if="$data[propName] !== ''"
                                     class="btn btn-outline-danger"
-                                    @click="
-                                        (event) => {
-                                            event.preventDefault();
-                                            $data[propName] = '';
-                                        }
-                                    "
+                                    @click="set(propName, '', $event)"
                                 >
                                     x
                                 </button>
@@ -120,11 +112,7 @@
                                         <a
                                             class="dropdown-item"
                                             href="#"
-                                            @click="
-                                                () => {
-                                                    $data[propName] = color;
-                                                }
-                                            "
+                                            @click="set(propName, color, $event)"
                                         >{{ color }}</a>
                                     </li>
                                 </ul>
@@ -137,12 +125,7 @@
                                 <button
                                     v-if="$data[propName] !== ''"
                                     class="btn btn-outline-danger"
-                                    @click="
-                                        (event) => {
-                                            event.preventDefault();
-                                            $data[propName] = '';
-                                        }
-                                    "
+                                    @click="set(propName, '', $event)"
                                 >
                                     x
                                 </button>
@@ -250,6 +233,10 @@ export default {
         },
         toggleColors() {
             this.colorsVisible = !this.colorsVisible;
+        },
+        set(propName, value, $event) {
+            $event.preventDefault();
+            this.$data[propName] = value;
         },
         getBadgeURL() {
             const baseUrlString =

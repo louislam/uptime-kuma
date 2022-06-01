@@ -42,12 +42,7 @@
                                 <button
                                     v-if="$data[propName] !== ''"
                                     class="btn btn-outline-danger"
-                                    @click="
-                                        (event) => {
-                                            event.preventDefault();
-                                            $data[propName] = '';
-                                        }
-                                    "
+                                    @click="set(propName, '', $event)"
                                 >
                                     x
                                 </button>
@@ -100,11 +95,7 @@
                                         <a
                                             class="dropdown-item"
                                             href="#"
-                                            @click="
-                                                () => {
-                                                    $data[propName] = color;
-                                                }
-                                            "
+                                            @click="set(propName, color, $event)"
                                         >{{ color }}</a>
                                     </li>
                                 </ul>
@@ -117,101 +108,13 @@
                                 <button
                                     v-if="$data[propName] !== ''"
                                     class="btn btn-outline-danger"
-                                    @click="reset(propName, '', $event)"
+                                    @click="set(propName, '', $event)"
                                 >
                                     x
                                 </button>
                             </div>
                         </div>
                     </div>
-                    <!-- <div class="row ms-2">
-                        <label for="upColorInput" class="col-2 col-form-label">up</label>
-                        <div class="col-10">
-                            <div class="input-group">
-                                <input v-model="upcolor" class="form-control" />
-                                <button
-                                    type="button"
-                                    class="btn btn-outline-secondary dropdown-toggle border-primary"
-                                    data-bs-toggle="dropdown"
-                                    aria-expanded="false"
-                                >
-                                    <span class="visually-hidden">Toggle Dropdown</span>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li
-                                        v-for="color in colors"
-                                        :key="'upcolor' + color"
-                                        :value="color"
-                                        :label="color"
-                                    >
-                                        <a
-                                            class="dropdown-item"
-                                            href="#"
-                                            @click="
-                                                () => {
-                                                    upcolor = color;
-                                                }
-                                            "
-                                        >{{ color }}</a>
-                                    </li>
-                                </ul>
-                                <input
-                                    id="upColorInput"
-                                    v-model="upcolor"
-                                    type="color"
-                                    class="form-control form-control-color fix-width-label"
-                                    title="Choose your color"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row ms-2">
-                        <label
-                            for="exampleColorInput"
-                            class="col-2 col-form-label"
-                        >down</label>
-                        <div class="col-10">
-                            <div class="input-group">
-                                <input
-                                    v-model="downcolor"
-                                    class="form-control"
-                                />
-                                <button
-                                    type="button"
-                                    class="btn btn-outline-secondary dropdown-toggle border-primary"
-                                    data-bs-toggle="dropdown"
-                                    aria-expanded="false"
-                                >
-                                    <span class="visually-hidden">Toggle Dropdown</span>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li
-                                        v-for="color in colors"
-                                        :key="'downcolor' + color"
-                                        :value="color"
-                                        :label="color"
-                                    >
-                                        <a
-                                            class="dropdown-item"
-                                            href="#"
-                                            @click="
-                                                () => {
-                                                    downcolor = color;
-                                                }
-                                            "
-                                        >{{ color }}</a>
-                                    </li>
-                                </ul>
-                                <input
-                                    id="downColorInput"
-                                    v-model="downcolor"
-                                    type="color"
-                                    class="form-control form-control-color fix-width-label"
-                                    title="Choose your color"
-                                />
-                            </div>
-                        </div>
-                    </div> -->
                 </div>
             </div>
             <div>Badge URL</div>
@@ -296,11 +199,9 @@ export default {
         toggleColors() {
             this.colorsVisible = !this.colorsVisible;
         },
-        reset: (propName, resetValue, $event) => {
-            console.log("reset", this.$data);
+        set(propName, value, $event) {
             $event.preventDefault();
-
-            this.$data[propName] = resetValue;
+            this.$data[propName] = value;
         },
         getStatusBadgeURL() {
             const baseUrlString =
