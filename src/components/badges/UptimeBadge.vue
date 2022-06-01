@@ -1,6 +1,6 @@
 <template>
     <div class="my-3">
-        <div class="mb-4" style="cursor: pointer" @click="toggle">
+        <div class="mb-4 pointer" @click="toggle">
             <div>
                 <strong>Uptime Badge</strong><span class="ps-2">{{ visible ? "-" : "+" }}</span>
             </div>
@@ -35,7 +35,7 @@
             </div>
             <div class="my-2">
                 <div class="flex-row" @click="toggleLabels">
-                    <span style="cursor: pointer">
+                    <span class="pointer">
                         Labels {{ labelsVisible ? "-" : "+" }}
                     </span>
                 </div>
@@ -77,10 +77,8 @@
                 </div>
             </div>
             <div class="my-2">
-                <div class="flex-row" @click="toggleColors">
-                    <span style="cursor: pointer">
-                        Colors {{ colorsVisible ? "-" : "+" }}
-                    </span>
+                <div class="flex-row pointer" @click="toggleColors">
+                    Colors {{ colorsVisible ? "-" : "+" }}
                 </div>
                 <div :class="!colorsVisible && 'collapse'">
                     <div
@@ -312,5 +310,3 @@ export default {
     },
 };
 </script>
-
-<style></style>

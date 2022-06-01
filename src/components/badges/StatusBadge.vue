@@ -1,6 +1,6 @@
 <template>
     <div :key="statusBadgeURL" class="my-3">
-        <div class="mb-4 flex flex-row" style="cursor: pointer" @click="toggle">
+        <div class="mb-4 flex flex-row pointer" @click="toggle">
             <div>
                 <strong>
                     Status Badge<span class="ps-2">{{
@@ -15,7 +15,7 @@
         <div v-if="visible" class="border-start ps-2">
             <div class="my-2">
                 <div class="flex-row" @click="toggleLabels">
-                    <span style="cursor: pointer">
+                    <span class="pointer">
                         Labels {{ labelsVisible ? "-" : "+" }}
                     </span>
                 </div>
@@ -57,10 +57,8 @@
                 </div>
             </div>
             <div class="my-2">
-                <div class="flex-row" @click="toggleColors">
-                    <span style="cursor: pointer">
-                        Colors {{ colorsVisible ? "-" : "+" }}
-                    </span>
+                <div class="flex-row pointer" @click="toggleColors">
+                    Colors {{ colorsVisible ? "-" : "+" }}
                 </div>
                 <div :class="!colorsVisible && 'collapse'">
                     <div
@@ -336,5 +334,3 @@ export default {
     },
 };
 </script>
-
-<style></style>

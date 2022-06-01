@@ -1,6 +1,6 @@
 <template>
     <div class="my-3">
-        <div class="mb-4" style="cursor: pointer" @click="toggle">
+        <div class="mb-4 pointer" @click="toggle">
             <div>
                 <strong>Ping Badge<span class="ps-2">{{
                     visible ? "-" : "+"
@@ -35,7 +35,7 @@
             </div>
             <div class="my-2">
                 <div class="flex-row" @click="toggleLabels">
-                    <span style="cursor: pointer">
+                    <span class="pointer">
                         Labels {{ labelsVisible ? "-" : "+" }}
                     </span>
                 </div>
@@ -78,7 +78,7 @@
             </div>
             <div class="my-2">
                 <div class="flex-row" @click="toggleColors">
-                    <span style="cursor: pointer">
+                    <span class="pointer">
                         Colors {{ colorsVisible ? "-" : "+" }}
                     </span>
                 </div>
@@ -284,5 +284,3 @@ export default {
     },
 };
 </script>
-
-<style></style>
