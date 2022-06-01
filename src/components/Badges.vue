@@ -1,13 +1,6 @@
 <template>
     <div>
-        <h2
-            style="cursor: pointer"
-            @click="
-                () => {
-                    visible = !visible;
-                }
-            "
-        >
+        <h2 style="cursor: pointer" @click="toggle">
             Badges generator {{ visible ? "-" : "+" }}
         </h2>
         <div v-if="visible">
@@ -58,7 +51,11 @@ export default {
     computed: {},
     watch: {},
     mounted() {},
-    methods: {},
+    methods: {
+        toggle() {
+            this.visible = !this.visible;
+        },
+    },
 };
 </script>
 

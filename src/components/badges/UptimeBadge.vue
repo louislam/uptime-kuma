@@ -23,12 +23,10 @@
                         <button
                             v-if="interval !== undefined"
                             class="btn btn-outline-danger"
-                            @click="
-                                (event) => {
-                                    event.preventDefault();
-                                    interval = undefined;
-                                }
-                            "
+                            @click="(event) => {
+                                event.preventDefault();
+                                interval = undefined;
+                            }"
                         >
                             x
                         </button>
@@ -37,9 +35,9 @@
             </div>
             <div class="my-2">
                 <div class="flex-row" @click="toggleLabels">
-                    <h6 style="cursor: pointer">
+                    <span style="cursor: pointer">
                         Labels {{ labelsVisible ? "-" : "+" }}
-                    </h6>
+                    </span>
                 </div>
                 <div :class="!labelsVisible && 'collapse'">
                     <div
@@ -80,9 +78,9 @@
             </div>
             <div class="my-2">
                 <div class="flex-row" @click="toggleColors">
-                    <h6 style="cursor: pointer">
+                    <span style="cursor: pointer">
                         Colors {{ colorsVisible ? "-" : "+" }}
-                    </h6>
+                    </span>
                 </div>
                 <div :class="!colorsVisible && 'collapse'">
                     <div
@@ -155,13 +153,10 @@
                     </div>
                 </div>
             </div>
-            <div class="">
-                <h6>Badge URL</h6>
-                <div class="ms-2">
-                    <CopyableInput
-                        type="readonly"
-                        :modelValue="uptimeBadgeURL"
-                    />
+            <div>Badge URL</div>
+            <div class="row justify-content-end">
+                <div class="col-11">
+                    <CopyableInput id="badgeStatusURL" type="readonly" :modelValue="uptimeBadgeURL" />
                 </div>
             </div>
         </div>

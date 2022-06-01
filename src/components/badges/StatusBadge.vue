@@ -2,9 +2,11 @@
     <div :key="statusBadgeURL" class="my-3">
         <div class="mb-4 flex flex-row" style="cursor: pointer" @click="toggle">
             <div>
-                <strong>Status Badge<span class="ps-2">{{
-                    visible ? "-" : "+"
-                }}</span></strong>
+                <strong>
+                    Status Badge<span class="ps-2">{{
+                        visible ? "-" : "+"
+                    }}</span>
+                </strong>
             </div>
             <img :srcset="statusBadgeUpURL" alt="Badge" />
             <span> / </span>
@@ -13,9 +15,9 @@
         <div v-if="visible" class="border-start ps-2">
             <div class="my-2">
                 <div class="flex-row" @click="toggleLabels">
-                    <h6 style="cursor: pointer">
+                    <span style="cursor: pointer">
                         Labels {{ labelsVisible ? "-" : "+" }}
-                    </h6>
+                    </span>
                 </div>
                 <div :class="!labelsVisible && 'collapse'">
                     <div
@@ -56,9 +58,9 @@
             </div>
             <div class="my-2">
                 <div class="flex-row" @click="toggleColors">
-                    <h6 style="cursor: pointer">
+                    <span style="cursor: pointer">
                         Colors {{ colorsVisible ? "-" : "+" }}
-                    </h6>
+                    </span>
                 </div>
                 <div :class="!colorsVisible && 'collapse'">
                     <div
@@ -72,7 +74,7 @@
                     >
                         <label
                             :for="$data[propName] + 'Input'"
-                            class="col-2 text-end col-form-label"
+                            class="col-2 text-end form-label col-form-label"
                         >{{ display }}</label>
                         <div class="col-10">
                             <div class="input-group">
@@ -117,12 +119,7 @@
                                 <button
                                     v-if="$data[propName] !== ''"
                                     class="btn btn-outline-danger"
-                                    @click="
-                                        (event) => {
-                                            event.preventDefault();
-                                            $data[propName] = '';
-                                        }
-                                    "
+                                    @click="reset(propName, '', $event)"
                                 >
                                     x
                                 </button>
@@ -219,9 +216,9 @@
                     </div> -->
                 </div>
             </div>
-            <div class="">
-                <h6>Badge URL</h6>
-                <div class="ms-2">
+            <div>Badge URL</div>
+            <div class="row justify-content-end">
+                <div class="col-11">
                     <CopyableInput
                         id="badgeStatusURL"
                         type="readonly"
@@ -300,6 +297,12 @@ export default {
         },
         toggleColors() {
             this.colorsVisible = !this.colorsVisible;
+        },
+        reset: (propName, resetValue, $event) => {
+            console.log("reset", this.$data);
+            $event.preventDefault();
+
+            this.$data[propName] = resetValue;
         },
         getStatusBadgeURL() {
             const baseUrlString =
