@@ -1,6 +1,6 @@
 <template>
     <div>
-        <h2 style="cursor: pointer" @click="toggle">
+        <h2 class="pointer" @click="toggle">
             Badges generator {{ visible ? "-" : "+" }}
         </h2>
         <div v-if="visible">
@@ -62,5 +62,9 @@ export default {
 <style>
 .fix-width-label {
     max-width: 40px;
+}
+
+.pointer {
+    cursor: pointer;
 }
 </style>
