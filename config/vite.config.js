@@ -25,4 +25,17 @@ export default defineConfig({
             "plugins": [ postcssRTLCSS ]
         }
     },
+    build: {
+        rollupOptions: {
+            output: {
+                manualChunks(id) {
+                    if (id.includes("src/pages/StatusPage.vue")) {
+                        return "StatusPage";
+                    } else {
+                        console.log(id);
+                    }
+                }
+            }
+        }
+    }
 });
