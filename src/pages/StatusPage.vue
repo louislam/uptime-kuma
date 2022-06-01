@@ -538,7 +538,7 @@ export default {
             this.slug = "default";
         }
 
-        axios.get("/api/status-page/" + this.slug).then((res) => {
+        this.getData().then((res) => {
             this.config = res.data.config;
 
             if (!this.config.domainNameList) {
@@ -566,6 +566,21 @@ export default {
         }
     },
     methods: {
+
+        /**
+         * Get status page data
+         * It should be preloaded in window.preloadData
+         * @returns {Promise<any>}
+         */
+        getData: function () {
+            if (window.preloadData) {
+                return new Promise(resolve => resolve({
+                    data: window.preloadData
+                }));
+            } else {
+                return axios.get("/api/status-page/" + this.slug);
+            }
+        },
 
         highlighter(code) {
             return highlight(code, languages.css);

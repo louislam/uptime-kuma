@@ -23,7 +23,7 @@ class StatusPage extends BeanModel {
         ]);
 
         if (statusPage) {
-            response.send(StatusPage.renderHTML(indexHTML, statusPage));
+            response.send(await StatusPage.renderHTML(indexHTML, statusPage));
         } else {
             response.status(404).send(UptimeKumaServer.getInstance().indexHTML);
         }
@@ -34,7 +34,7 @@ class StatusPage extends BeanModel {
      * @param {string} indexHTML
      * @param {StatusPage} statusPage
      */
-    static renderHTML(indexHTML, statusPage) {
+    static async renderHTML(indexHTML, statusPage) {
         const $ = cheerio.load(indexHTML);
         const description155 = statusPage.description.substring(0, 155);
 
@@ -53,7 +53,50 @@ class StatusPage extends BeanModel {
         head.append(`<meta property="og:title" content="${statusPage.title}" />`);
         head.append(`<meta property="og:description" content="${description155}" />`);
 
+        // Preload data
+        const json = JSON.stringify(await StatusPage.getStatusPageData(statusPage));
+        head.append(`
+            <script>
+                window.preloadData = ${json}
+            </script>
+        `);
+
         return $.root().html();
+    }
+
+    /**
+     * Get all status page data in one call
+     * @param {StatusPage} statusPage
+     */
+    static async getStatusPageData(statusPage) {
+        // Incident
+        let incident = await R.findOne("incident", " pin = 1 AND active = 1 AND status_page_id = ? ", [
+            statusPage.id,
+        ]);
+
+        if (incident) {
+            incident = incident.toPublicJSON();
+        }
+
+        // Public Group List
+        const publicGroupList = [];
+        const showTags = !!statusPage.show_tags;
+
+        const list = await R.find("group", " public = 1 AND status_page_id = ? ORDER BY weight ", [
+            statusPage.id
+        ]);
+
+        for (let groupBean of list) {
+            let monitorGroup = await groupBean.toPublicJSON(showTags);
+            publicGroupList.push(monitorGroup);
+        }
+
+        // Response
+        return {
+            config: await statusPage.toPublicJSON(),
+            incident,
+            publicGroupList
+        };
     }
 
     /**
