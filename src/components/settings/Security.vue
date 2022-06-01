@@ -303,6 +303,7 @@ export default {
     },
 
     methods: {
+        /** Check new passwords match before saving them */
         savePassword() {
             if (this.password.newPassword !== this.password.repeatNewPassword) {
                 this.invalidPassword = true;
@@ -320,6 +321,7 @@ export default {
             }
         },
 
+        /** Disable authentication for web app access */
         disableAuth() {
             this.settings.disableAuth = true;
 
@@ -332,6 +334,7 @@ export default {
             }, this.password.currentPassword);
         },
 
+        /** Enable authentication for web app access */
         enableAuth() {
             this.settings.disableAuth = false;
             this.saveSettings();
