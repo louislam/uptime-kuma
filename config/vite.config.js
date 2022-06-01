@@ -1,6 +1,7 @@
 import legacy from "@vitejs/plugin-legacy";
 import vue from "@vitejs/plugin-vue";
 import { defineConfig } from "vite";
+import visualizer from "rollup-plugin-visualizer";
 
 const postCssScss = require("postcss-scss");
 const postcssRTLCSS = require("postcss-rtlcss");
@@ -12,7 +13,10 @@ export default defineConfig({
         legacy({
             targets: [ "ie > 11" ],
             additionalLegacyPolyfills: [ "regenerator-runtime/runtime" ]
-        })
+        }),
+        visualizer({
+            filename: "tmp/dist-stats.html"
+        }),
     ],
     css: {
         postcss: {
