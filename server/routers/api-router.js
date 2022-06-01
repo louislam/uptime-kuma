@@ -1,5 +1,5 @@
 let express = require("express");
-const { allowDevAllOrigin, allowAllOrigin, percentageToColor, filterAndJoin } = require("../util-server");
+const { allowDevAllOrigin, allowAllOrigin, percentageToColor, filterAndJoin, send403 } = require("../util-server");
 const { R } = require("redbean-node");
 const apicache = require("../modules/apicache");
 const Monitor = require("../model/monitor");
@@ -96,108 +96,6 @@ router.get("/api/push/:pushToken", async (request, response) => {
             ok: false,
             msg: e.message
         });
-    }
-});
-
-// Status page config, incident, monitor list
-router.get("/api/status-page/:slug", cache("5 minutes"), async (request, response) => {
-    allowDevAllOrigin(response);
-    let slug = request.params.slug;
-
-    // Get Status Page
-    let statusPage = await R.findOne("status_page", " slug = ? ", [
-        slug
-    ]);
-
-    if (!statusPage) {
-        response.statusCode = 404;
-        response.json({
-            msg: "Not Found"
-        });
-        return;
-    }
-
-    try {
-        // Incident
-        let incident = await R.findOne("incident", " pin = 1 AND active = 1 AND status_page_id = ? ", [
-            statusPage.id,
-        ]);
-
-        if (incident) {
-            incident = incident.toPublicJSON();
-        }
-
-        // Public Group List
-        const publicGroupList = [];
-        const showTags = !!statusPage.show_tags;
-
-        const list = await R.find("group", " public = 1 AND status_page_id = ? ORDER BY weight ", [
-            statusPage.id
-        ]);
-
-        for (let groupBean of list) {
-            let monitorGroup = await groupBean.toPublicJSON(showTags);
-            publicGroupList.push(monitorGroup);
-        }
-
-        // Response
-        response.json({
-            config: await statusPage.toPublicJSON(),
-            incident,
-            publicGroupList
-        });
-
-    } catch (error) {
-        send403(response, error.message);
-    }
-
-});
-
-// Status Page Polling Data
-// Can fetch only if published
-router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (request, response) => {
-    allowDevAllOrigin(response);
-
-    try {
-        let heartbeatList = {};
-        let uptimeList = {};
-
-        let slug = request.params.slug;
-        let statusPageID = await StatusPage.slugToID(slug);
-
-        let monitorIDList = await R.getCol(`
-            SELECT monitor_group.monitor_id FROM monitor_group, \`group\`
-            WHERE monitor_group.group_id = \`group\`.id
-            AND public = 1
-            AND \`group\`.status_page_id = ?
-        `, [
-            statusPageID
-        ]);
-
-        for (let monitorID of monitorIDList) {
-            let list = await R.getAll(`
-                    SELECT * FROM heartbeat
-                    WHERE monitor_id = ?
-                    ORDER BY time DESC
-                    LIMIT 50
-            `, [
-                monitorID,
-            ]);
-
-            list = R.convertToBeans("heartbeat", list);
-            heartbeatList[monitorID] = list.reverse().map(row => row.toPublicJSON());
-
-            const type = 24;
-            uptimeList[`${monitorID}_${type}`] = await Monitor.calcUptime(type, monitorID);
-        }
-
-        response.json({
-            heartbeatList,
-            uptimeList
-        });
-
-    } catch (error) {
-        send403(response, error.message);
     }
 });
 
@@ -376,17 +274,5 @@ router.get("/api/badge/:id/ping/:duration?", cache("5 minutes"), async (request,
         send403(response, error.message);
     }
 });
-
-/**
- * Send a 403 response
- * @param {Object} res Express response object
- * @param {string} [msg=""] Message to send
- */
-function send403(res, msg = "") {
-    res.status(403).json({
-        "status": "fail",
-        "msg": msg,
-    });
-}
 
 module.exports = router;

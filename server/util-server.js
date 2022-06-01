@@ -185,7 +185,7 @@ exports.dnsResolve = function (hostname, resolverServer, resolverPort, rrtype) {
     // Remove brackets from IPv6 addresses so we can re-add them to
     // prevent issues with ::1:5300 (::1 port 5300)
     resolverServer = resolverServer.replace("[", "").replace("]", "");
-    resolver.setServers([`[${resolverServer}]:${resolverPort}`]);
+    resolver.setServers([ `[${resolverServer}]:${resolverPort}` ]);
     return new Promise((resolve, reject) => {
         if (rrtype === "PTR") {
             resolver.reverse(hostname, (err, records) => {
@@ -557,4 +557,16 @@ exports.percentageToColor = (percentage, maxHue = 90, minHue = 10) => {
  */
 exports.filterAndJoin = (parts, connector = "") => {
     return parts.filter((part) => !!part && part !== "").join(connector);
+};
+
+/**
+ * Send a 403 response
+ * @param {Object} res Express response object
+ * @param {string} [msg=""] Message to send
+ */
+module.exports.send403 = (res, msg = "") => {
+    res.status(403).json({
+        "status": "fail",
+        "msg": msg,
+    });
 };

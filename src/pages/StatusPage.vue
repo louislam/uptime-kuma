@@ -98,7 +98,7 @@
             <h1 class="mb-4 title-flex">
                 <!-- Logo -->
                 <span class="logo-wrapper" @click="showImageCropUploadMethod">
-                    <img :src="logoURL" alt class="logo me-2" :class="logoClass" @load="statusPageLogoLoaded" />
+                    <img :src="logoURL" alt class="logo me-2" :class="logoClass" />
                     <font-awesome-icon v-if="enableEditMode" class="icon-upload" icon="upload" />
                 </span>
 
@@ -538,7 +538,7 @@ export default {
             this.slug = "default";
         }
 
-        axios.get("/api/status-page/" + this.slug).then((res) => {
+        this.getData().then((res) => {
             this.config = res.data.config;
 
             if (!this.config.domainNameList) {
@@ -566,6 +566,21 @@ export default {
         }
     },
     methods: {
+
+        /**
+         * Get status page data
+         * It should be preloaded in window.preloadData
+         * @returns {Promise<any>}
+         */
+        getData: function () {
+            if (window.preloadData) {
+                return new Promise(resolve => resolve({
+                    data: window.preloadData
+                }));
+            } else {
+                return axios.get("/api/status-page/" + this.slug);
+            }
+        },
 
         highlighter(code) {
             return highlight(code, languages.css);
@@ -685,11 +700,6 @@ export default {
             if (this.editMode) {
                 this.showImageCropUpload = true;
             }
-        },
-
-        statusPageLogoLoaded(eventPayload) {
-            // Remark: may not work in dev, due to CORS
-            favicon.image(eventPayload.target);
         },
 
         createIncident() {
