@@ -29,10 +29,12 @@
 <script>
 export default {
     props: {
+        /** Heading to use */
         heading: {
             type: String,
             default: "",
         },
+        /** Should the selection be open by default? */
         defaultOpen: {
             type: Boolean,
             default: false,

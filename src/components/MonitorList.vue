@@ -58,6 +58,7 @@ export default {
         Tag,
     },
     props: {
+        /** Should the scrollbar be shown */
         scrollbar: {
             type: Boolean,
         },
@@ -124,6 +125,7 @@ export default {
         window.removeEventListener("scroll", this.onScroll);
     },
     methods: {
+        /** Called when the user scrolls */
         onScroll() {
             if (window.top.scrollY <= 133) {
                 this.windowTop = window.top.scrollY;
@@ -131,9 +133,15 @@ export default {
                 this.windowTop = 133;
             }
         },
+        /**
+         * Get URL of monitor
+         * @param {number} id ID of monitor
+         * @returns {string} Relative URL of monitor
+         */
         monitorURL(id) {
             return getMonitorRelativeURL(id);
         },
+        /** Clear the search bar */
         clearSearchText() {
             this.searchText = "";
         }
