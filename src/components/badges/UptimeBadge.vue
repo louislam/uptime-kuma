@@ -11,25 +11,7 @@
             <img :srcset="uptimeBadge100URL" alt="Badge" />
         </div>
         <div v-if="visible" class="border-start ps-2">
-            <div class="row ms-2">
-                <label class="col-3 text-end col-form-label">Interval (h)</label>
-                <div class="col-9">
-                    <div class="input-group">
-                        <input
-                            v-model.lazy="interval"
-                            class="form-control"
-                            placeholder="24"
-                        />
-                        <button
-                            v-if="interval !== undefined"
-                            class="btn btn-outline-danger"
-                            @click="set('interval', undefined, $event)"
-                        >
-                            x
-                        </button>
-                    </div>
-                </div>
-            </div>
+            <LabelInput :modelValue="values.interval" placeholder="24" label="Interval" @update:model-value="set('interval', $event)" />
             <div class="my-2">
                 <div class="flex-row" @click="toggleLabels">
                     <span class="pointer">
@@ -37,34 +19,8 @@
                     </span>
                 </div>
                 <div :class="!labelsVisible && 'collapse'">
-                    <div
-                        v-for="[
-                            propName,
-                            display,
-                            placeholder = '',
-                        ] in labelFields"
-                        :key="display"
-                        class="row ms-2"
-                    >
-                        <label class="col-3 text-end col-form-label">{{
-                            display
-                        }}</label>
-                        <div class="col-9">
-                            <div class="input-group">
-                                <input
-                                    v-model.lazy="$data[propName]"
-                                    class="form-control"
-                                    :placeholder="placeholder"
-                                />
-                                <button
-                                    v-if="$data[propName] !== ''"
-                                    class="btn btn-outline-danger"
-                                    @click="set(propName, '', $event)"
-                                >
-                                    x
-                                </button>
-                            </div>
-                        </div>
+                    <div v-for="[ propName, display, placeholder = '' ] in labelFields" :key="display">
+                        <LabelInput :modelValue="values[propName]" :placeholder="placeholder" :label="display" @update:model-value="set(propName, $event)" />
                     </div>
                 </div>
             </div>
@@ -73,64 +29,8 @@
                     Colors {{ colorsVisible ? "-" : "+" }}
                 </div>
                 <div :class="!colorsVisible && 'collapse'">
-                    <div
-                        v-for="[
-                            propName,
-                            display,
-                            placeholder = '',
-                        ] in colorFields"
-                        :key="display"
-                        class="row ms-2"
-                    >
-                        <label
-                            :for="$data[propName] + 'Input'"
-                            class="col-3 text-end col-form-label"
-                        >{{ display }}</label>
-                        <div class="col-9">
-                            <div class="input-group">
-                                <input
-                                    :id="$data[propName] + 'Input'"
-                                    v-model="$data[propName]"
-                                    class="form-control"
-                                    :placeholder="placeholder"
-                                />
-                                <button
-                                    type="button"
-                                    class="btn btn-outline-secondary dropdown-toggle border-primary"
-                                    data-bs-toggle="dropdown"
-                                    aria-expanded="false"
-                                >
-                                    <span class="visually-hidden">Toggle Dropdown</span>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li
-                                        v-for="color in colors"
-                                        :key="propName + color"
-                                        :value="color"
-                                        :label="color"
-                                    >
-                                        <a
-                                            class="dropdown-item"
-                                            href="#"
-                                            @click="set(propName, color, $event)"
-                                        >{{ color }}</a>
-                                    </li>
-                                </ul>
-                                <input
-                                    v-model="$data[propName]"
-                                    type="color"
-                                    class="form-control form-control-color fix-width-label"
-                                    title="Choose your color"
-                                />
-                                <button
-                                    v-if="$data[propName] !== ''"
-                                    class="btn btn-outline-danger"
-                                    @click="set(propName, '', $event)"
-                                >
-                                    x
-                                </button>
-                            </div>
-                        </div>
+                    <div v-for="[ propName, display, placeholder = '' ] in colorFields" :key="display">
+                        <ColorInput :modelValue="values[propName]" :placeholder="placeholder" :label="display" @update:model-value="set(propName, $event)" />
                     </div>
                 </div>
             </div>
@@ -145,11 +45,15 @@
 </template>
 
 <script>
-import { buildUrl } from "../../util-badges";
+import { filterSearchParams } from "../../util-badges";
 import CopyableInput from "../CopyableInput.vue";
+import LabelInput from "./LabelInput.vue";
+import ColorInput from "./ColorInput.vue";
 
 export default {
-    components: { CopyableInput },
+    components: { CopyableInput,
+        LabelInput,
+        ColorInput },
     props: {
         colors: {
             default: () => [ "red", "green" ],
@@ -173,13 +77,16 @@ export default {
                 [ "labelcolor", "Label", "grey" ],
                 [ "valuecolor", "Value", "" ],
             ],
-            prefixlabel: "",
-            label: "",
-            suffixlabel: "",
-            prefix: "",
-            suffix: "",
-            labelcolor: "",
-            valuecolor: "",
+            values: {
+                interval: undefined,
+                prefixlabel: "",
+                label: "",
+                suffixlabel: "",
+                prefix: "",
+                suffix: "",
+                labelcolor: "",
+                valuecolor: "",
+            },
             uptimeBadgeURL: "",
             uptimeBadge10URL: "",
             uptimeBadge30URL: "",
@@ -189,35 +96,16 @@ export default {
             visible: false,
             labelsVisible: false,
             colorsVisible: false,
-            interval: undefined,
         };
     },
     watch: {
-        interval() {
-            this.getBadgeURL();
-        },
-        prefixlabel() {
-            this.getBadgeURL();
-        },
-        label() {
-            this.getBadgeURL();
-        },
-        suffixlabel() {
-            this.getBadgeURL();
-        },
-        prefix() {
-            this.getBadgeURL();
-        },
-        suffix() {
-            this.getBadgeURL();
+        values: {
+            handler() {
+                this.getBadgeURL();
+            },
+            deep: true
         },
         monitor() {
-            this.getBadgeURL();
-        },
-        labelcolor() {
-            this.getBadgeURL();
-        },
-        valuecolor() {
             this.getBadgeURL();
         },
     },
@@ -235,61 +123,58 @@ export default {
             this.colorsVisible = !this.colorsVisible;
         },
         set(propName, value, $event) {
-            $event.preventDefault();
-            this.$data[propName] = value;
+            $event && $event.preventDefault();
+            this.values[propName] = value;
+        },
+        emitCallback(a, b, c) {
+            console.log({ a,
+                b,
+                c });
         },
         getBadgeURL() {
-            const baseUrlString =
-                this.$root.badgeBaseURL +
-                "/" +
-                this.monitor.id +
-                "/uptime" +
-                (this.interval ? "/" + this.interval : "");
-            const searchParamsRaw = {};
-            if (this.prefixlabel) {
-                searchParamsRaw.labelPrefix = this.prefixlabel;
-            }
-            if (this.label) {
-                searchParamsRaw.label = this.label;
-            }
-            if (this.suffixlabel) {
-                searchParamsRaw.labelSuffix = this.suffixlabel;
-            }
+            const searchParams = filterSearchParams({
+                labelPrefix: this.values.prefixlabel,
+                label: this.values.label,
+                labelSuffix: this.values.suffixlabel,
+                prefix: this.values.prefix,
+                suffix: this.values.suffix,
+                labelColor: this.values.labelcolor,
+                color: this.values.valuecolor
+            });
 
-            if (this.prefix) {
-                searchParamsRaw.prefix = this.prefix;
-            }
-            if (this.suffix) {
-                searchParamsRaw.suffix = this.suffix;
-            }
-
-            if (this.labelcolor) {
-                searchParamsRaw.labelColor = this.labelcolor;
-            }
-            if (this.valuecolor) {
-                searchParamsRaw.color = this.valuecolor;
-            }
-            this.uptimeBadgeURL = buildUrl(baseUrlString, searchParamsRaw);
+            this.uptimeBadgeURL = this.$root.getBadgesUrl(this.monitor.id, "uptime/{interval}", {
+                interval: this.values.interval
+            }, searchParams);
 
             //### For demo / test purpose only
-            this.uptimeBadge10URL = buildUrl(baseUrlString, {
-                ...searchParamsRaw,
+            this.uptimeBadge10URL = this.$root.getBadgesUrl(this.monitor.id, "uptime/{interval}", {
+                interval: this.values.interval
+            }, {
+                ...searchParams,
                 value: 0.1,
             });
-            this.uptimeBadge30URL = buildUrl(baseUrlString, {
-                ...searchParamsRaw,
+            this.uptimeBadge30URL = this.$root.getBadgesUrl(this.monitor.id, "uptime/{interval}", {
+                interval: this.values.interval
+            }, {
+                ...searchParams,
                 value: 0.3,
             });
-            this.uptimeBadge50URL = buildUrl(baseUrlString, {
-                ...searchParamsRaw,
+            this.uptimeBadge50URL = this.$root.getBadgesUrl(this.monitor.id, "uptime/{interval}", {
+                interval: this.values.interval
+            }, {
+                ...searchParams,
                 value: 0.5,
             });
-            this.uptimeBadge70URL = buildUrl(baseUrlString, {
-                ...searchParamsRaw,
+            this.uptimeBadge70URL = this.$root.getBadgesUrl(this.monitor.id, "uptime/{interval}", {
+                interval: this.values.interval
+            }, {
+                ...searchParams,
                 value: 0.7,
             });
-            this.uptimeBadge100URL = buildUrl(baseUrlString, {
-                ...searchParamsRaw,
+            this.uptimeBadge100URL = this.$root.getBadgesUrl(this.monitor.id, "uptime/{interval}", {
+                interval: this.values.interval
+            }, {
+                ...searchParams,
                 value: 1,
             });
             //###

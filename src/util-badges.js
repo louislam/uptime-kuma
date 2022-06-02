@@ -6,3 +6,13 @@ export const buildUrl = (baseUrl, searchParamsRaw) => {
     return urlObject.toString();
 
 };
+
+export const filterSearchParams = (searchParams) => {
+    return Object.keys(searchParams).reduce((carry, key) => {
+        if (searchParams[key] && searchParams[key] !== "") {
+            carry[key] = searchParams[key];
+        }
+
+        return carry;
+    }, {});
+};
