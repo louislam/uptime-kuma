@@ -18,7 +18,7 @@ export default {
             this.updateBody();
         },
 
-        /** Update the document body */
+        /** Add css-class "mobile" to body if needed */
         updateBody() {
             if (this.isMobile) {
                 document.body.classList.add("mobile");

@@ -314,9 +314,9 @@ export function getCryptoRandomInt(min: number, max: number):number {
 }
 
 /**
- * Generate a secret
- * @param length Lenght of secret to generate
- * @returns 
+ * Generate a random alphanumeric string of fixed length
+ * @param length Length of string to generate
+ * @returns string
  */
 export function genSecret(length = 64) {
     let secret = "";

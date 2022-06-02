@@ -271,9 +271,9 @@ export default {
         },
         /**
          * Get colour of text inside the tag
-         * @param {Object} option Object representing color choice. If
-         * option.color is set, the text color will be white, else it
-         * be chosen based upon application theme
+         * @param {Object} option The tag that needs to be displayed.
+         * Defaults to "white" unless the tag has no color, which will
+         * then return the body color (based on application theme)
          * @returns string
          */
         textColor(option) {

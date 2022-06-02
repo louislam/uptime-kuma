@@ -130,7 +130,7 @@ export default {
     },
 
     methods: {
-        /** Show dialog to confirm delection */
+        /** Show dialog to confirm deletion */
         deleteConfirm() {
             this.modal.hide();
             this.$refs.confirmDelete.show();
