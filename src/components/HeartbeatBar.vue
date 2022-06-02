@@ -17,7 +17,7 @@
 
 export default {
     props: {
-        /** Size of the heart beat bar */
+        /** Size of the heartbeat bar */
         size: {
             type: String,
             default: "big",
@@ -27,7 +27,7 @@ export default {
             type: Number,
             required: true,
         },
-        /** Array of the monitors heart beats */
+        /** Array of the monitors heartbeats */
         heartbeatList: {
             type: Array,
             default: null,
@@ -171,7 +171,8 @@ export default {
         },
 
         /**
-         * Get the title of the beat
+         * Get the title of the beat.
+         * Used as the hover tooltip on the heartbeat bar.
          * @param {Object} beat Beat to get title from
          * @returns {string}
          */

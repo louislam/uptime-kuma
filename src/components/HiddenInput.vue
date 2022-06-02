@@ -34,7 +34,7 @@ export default {
             type: String,
             default: ""
         },
-        /** Maximum lenght of the input */
+        /** Maximum length of the input */
         maxlength: {
             type: Number,
             default: 255

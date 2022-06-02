@@ -270,7 +270,7 @@ export default {
             }
         },
         /**
-         * Set colour of text
+         * Get colour of text inside the tag
          * @param {Object} option Object representing color choice. If
          * option.color is set, the text color will be white, else it
          * be chosen based upon application theme
@@ -357,7 +357,7 @@ export default {
                 this.$root.getSocket().emit("deleteMonitorTag", tagId, monitorId, value, resolve);
             });
         },
-        /** Called as user types input */
+        /** Handle pressing Enter key when inside the modal */
         onEnter() {
             if (!this.validateDraftTag.invalid) {
                 this.addDraftTag();
