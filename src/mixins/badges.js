@@ -1,4 +1,5 @@
 import axios from "axios";
+import { buildUrl } from "../util-badges";
 
 const env = process.env.NODE_ENV || "production";
 
@@ -20,5 +21,21 @@ export default {
                 return location.protocol + "//" + location.host + "/api/badge";
             }
         },
+    },
+    methods: {
+        getBadgesUrl(monitorId, path, pathParams, searchParams) {
+
+            const pathParamGlobal = /\/\{(\w+)\}/ig;
+            const pathParam = /\/\{(\w+)\}/i;
+
+            const matches = path.match(pathParamGlobal);
+
+            matches && matches.forEach((match) => {
+                const [ , name ] = match.match(pathParam) ?? [];
+                path = path.replace(match, name && pathParams[name] ? `/${pathParams[name]}` : "");
+            });
+
+            return buildUrl(`${this.$root.badgeBaseURL}/${monitorId}/${path}`, searchParams);
+        }
     }
 };

@@ -20,34 +20,8 @@
                     </span>
                 </div>
                 <div :class="!labelsVisible && 'collapse'">
-                    <div
-                        v-for="[
-                            propName,
-                            display,
-                            placeholder = '',
-                        ] in labelFields"
-                        :key="display"
-                        class="row ms-2"
-                    >
-                        <label class="col-2 text-end col-form-label">{{
-                            display
-                        }}</label>
-                        <div class="col-10">
-                            <div class="input-group">
-                                <input
-                                    v-model.lazy="$data[propName]"
-                                    class="form-control"
-                                    :placeholder="placeholder"
-                                />
-                                <button
-                                    v-if="$data[propName] !== ''"
-                                    class="btn btn-outline-danger"
-                                    @click="set(propName, '', $event)"
-                                >
-                                    x
-                                </button>
-                            </div>
-                        </div>
+                    <div v-for="[ propName, display, placeholder = '' ] in labelFields" :key="display">
+                        <LabelInput :modelValue="values[propName]" :placeholder="placeholder" :label="display" @update:model-value="set(propName, $event)" />
                     </div>
                 </div>
             </div>
@@ -56,64 +30,8 @@
                     Colors {{ colorsVisible ? "-" : "+" }}
                 </div>
                 <div :class="!colorsVisible && 'collapse'">
-                    <div
-                        v-for="[
-                            propName,
-                            display,
-                            placeholder = '',
-                        ] in colorFields"
-                        :key="display"
-                        class="row ms-2"
-                    >
-                        <label
-                            :for="$data[propName] + 'Input'"
-                            class="col-2 text-end form-label col-form-label"
-                        >{{ display }}</label>
-                        <div class="col-10">
-                            <div class="input-group">
-                                <input
-                                    :id="$data[propName] + 'Input'"
-                                    v-model="$data[propName]"
-                                    class="form-control"
-                                    :placeholder="placeholder"
-                                />
-                                <button
-                                    type="button"
-                                    class="btn btn-outline-secondary dropdown-toggle border-primary"
-                                    data-bs-toggle="dropdown"
-                                    aria-expanded="false"
-                                >
-                                    <span class="visually-hidden">Toggle Dropdown</span>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li
-                                        v-for="color in colors"
-                                        :key="propName + color"
-                                        :value="color"
-                                        :label="color"
-                                    >
-                                        <a
-                                            class="dropdown-item"
-                                            href="#"
-                                            @click="set(propName, color, $event)"
-                                        >{{ color }}</a>
-                                    </li>
-                                </ul>
-                                <input
-                                    v-model="$data[propName]"
-                                    type="color"
-                                    class="form-control form-control-color fix-width-label"
-                                    title="Choose your color"
-                                />
-                                <button
-                                    v-if="$data[propName] !== ''"
-                                    class="btn btn-outline-danger"
-                                    @click="set(propName, '', $event)"
-                                >
-                                    x
-                                </button>
-                            </div>
-                        </div>
+                    <div v-for="[ propName, display, placeholder = '' ] in colorFields" :key="display">
+                        <ColorInput :modelValue="values[propName]" :placeholder="placeholder" :label="display" @update:model-value="set(propName, $event)" />
                     </div>
                 </div>
             </div>
@@ -132,19 +50,19 @@
 </template>
 
 <script>
-import { buildUrl } from "../../util-badges";
+import { filterSearchParams } from "../../util-badges";
 import CopyableInput from "../CopyableInput.vue";
+import LabelInput from "./LabelInput.vue";
+import ColorInput from "./ColorInput.vue";
 
 export default {
-    components: { CopyableInput },
+    components: { CopyableInput,
+        LabelInput,
+        ColorInput },
     props: {
         monitor: {
             default: () => {},
             type: Object,
-        },
-        colors: {
-            default: () => [ "red", "green" ],
-            type: Array,
         },
     },
     data() {
@@ -157,10 +75,12 @@ export default {
                 [ "upcolor", "Up", "green" ],
                 [ "downcolor", "Down", "red" ],
             ],
-            uplabel: "",
-            downlabel: "",
-            upcolor: "",
-            downcolor: "",
+            values: {
+                uplabel: "",
+                downlabel: "",
+                upcolor: "",
+                downcolor: "",
+            },
             statusBadgeURL: "",
             statusBadgeUpURL: "",
             statusBadgeDownURL: "",
@@ -170,24 +90,18 @@ export default {
         };
     },
     watch: {
-        uplabel() {
-            this.getStatusBadgeURL();
-        },
-        downlabel() {
-            this.getStatusBadgeURL();
+        values: {
+            handler() {
+                this.getBadgeURL();
+            },
+            deep: true
         },
         monitor() {
-            this.getStatusBadgeURL();
-        },
-        upcolor() {
-            this.getStatusBadgeURL();
-        },
-        downcolor() {
-            this.getStatusBadgeURL();
+            this.getBadgeURL();
         },
     },
     mounted() {
-        this.getStatusBadgeURL();
+        this.getBadgeURL();
     },
     methods: {
         toggle() {
@@ -200,34 +114,27 @@ export default {
             this.colorsVisible = !this.colorsVisible;
         },
         set(propName, value, $event) {
-            $event.preventDefault();
-            this.$data[propName] = value;
+            $event && $event.preventDefault();
+            this.values[propName] = value;
         },
-        getStatusBadgeURL() {
-            const baseUrlString =
-                this.$root.badgeBaseURL + "/" + this.monitor.id + "/status";
-            const searchParamsRaw = {};
-            if (this.uplabel) {
-                searchParamsRaw.upLabel = this.uplabel;
-            }
-            if (this.downlabel) {
-                searchParamsRaw.downLabel = this.downlabel;
-            }
-            if (this.upcolor) {
-                searchParamsRaw.upColor = this.upcolor;
-            }
-            if (this.downcolor) {
-                searchParamsRaw.downColor = this.downcolor;
-            }
-            this.statusBadgeURL = buildUrl(baseUrlString, searchParamsRaw);
+        getBadgeURL() {
+            const searchParams = filterSearchParams({
+                upLabel: this.values.uplabel,
+                downLabel: this.values.downlabel,
+                upColor: this.values.upcolor,
+                downColor: this.values.downcolor,
+
+            });
+
+            this.statusBadgeURL = this.$root.getBadgesUrl(this.monitor.id, "status", {}, searchParams);
 
             //### For demo / test purpose only
-            this.statusBadgeUpURL = buildUrl(baseUrlString, {
-                ...searchParamsRaw,
+            this.statusBadgeUpURL = this.$root.getBadgesUrl(this.monitor.id, "status", {}, {
+                ...searchParams,
                 value: 1,
             });
-            this.statusBadgeDownURL = buildUrl(baseUrlString, {
-                ...searchParamsRaw,
+            this.statusBadgeDownURL = this.$root.getBadgesUrl(this.monitor.id, "status", {}, {
+                ...searchParams,
                 value: 0,
             });
             //###
