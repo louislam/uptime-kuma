@@ -44,6 +44,7 @@ export default {
 
     },
     methods: {
+        /** Go back 1 in browser history */
         goBack() {
             history.back();
         }

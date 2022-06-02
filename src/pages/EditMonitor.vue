@@ -522,6 +522,7 @@ export default {
         this.dnsresolvetypeOptions = dnsresolvetypeOptions;
     },
     methods: {
+        /** Initialize the edit monitor form */
         init() {
             if (this.isAdd) {
 
@@ -578,6 +579,10 @@ export default {
 
         },
 
+        /**
+         * Validate form input
+         * @returns {boolean} Is the form input valid?
+         */
         isInputValid() {
             if (this.monitor.body) {
                 try {
@@ -598,6 +603,10 @@ export default {
             return true;
         },
 
+        /**
+         * Submit the form data for processing
+         * @returns {void}
+         */
         async submit() {
             this.processing = true;
 
@@ -642,14 +651,20 @@ export default {
             }
         },
 
-        // Added a Notification Event
-        // Enable it if the notification is added in EditMonitor.vue
+        /**
+         * Added a Notification Event
+         * Enable it if the notification is added in EditMonitor.vue
+         * @param {number} id ID of notification to add
+         */
         addedNotification(id) {
             this.monitor.notificationIDList[id] = true;
         },
 
-        // Added a Proxy Event
-        // Enable it if the proxy is added in EditMonitor.vue
+        /**
+         * Added a Proxy Event
+         * Enable it if the proxy is added in EditMonitor.vue
+         * @param {number} id ID of proxy to add
+         */
         addedProxy(id) {
             this.monitor.proxyId = id;
         },
