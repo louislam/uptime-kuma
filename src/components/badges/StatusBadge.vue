@@ -132,7 +132,7 @@
 </template>
 
 <script>
-import { buildUrl } from "../../util-badges";
+import { buildUrl, filterSearchParams } from "../../util-badges";
 import CopyableInput from "../CopyableInput.vue";
 
 export default {
@@ -204,30 +204,23 @@ export default {
             this.$data[propName] = value;
         },
         getStatusBadgeURL() {
-            const baseUrlString =
-                this.$root.badgeBaseURL + "/" + this.monitor.id + "/status";
-            const searchParamsRaw = {};
-            if (this.uplabel) {
-                searchParamsRaw.upLabel = this.uplabel;
-            }
-            if (this.downlabel) {
-                searchParamsRaw.downLabel = this.downlabel;
-            }
-            if (this.upcolor) {
-                searchParamsRaw.upColor = this.upcolor;
-            }
-            if (this.downcolor) {
-                searchParamsRaw.downColor = this.downcolor;
-            }
-            this.statusBadgeURL = buildUrl(baseUrlString, searchParamsRaw);
+            const searchParams = filterSearchParams({
+                upLabel: this.uplabel,
+                downLabel: this.downlabel,
+                upColor: this.upcolor,
+                downColor: this.downcolor,
+
+            });
+
+            this.statusBadgeURL = this.$root.getBadgesUrl(this.monitor.id, "status", {}, searchParams);
 
             //### For demo / test purpose only
-            this.statusBadgeUpURL = buildUrl(baseUrlString, {
-                ...searchParamsRaw,
+            this.statusBadgeUpURL = this.$root.getBadgesUrl(this.monitor.id, "status", {}, {
+                ...searchParams,
                 value: 1,
             });
-            this.statusBadgeDownURL = buildUrl(baseUrlString, {
-                ...searchParamsRaw,
+            this.statusBadgeDownURL = this.$root.getBadgesUrl(this.monitor.id, "status", {}, {
+                ...searchParams,
                 value: 0,
             });
             //###
