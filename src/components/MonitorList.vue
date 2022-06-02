@@ -125,7 +125,7 @@ export default {
         window.removeEventListener("scroll", this.onScroll);
     },
     methods: {
-        /** Called when the user scrolls */
+        /** Handle user scroll */
         onScroll() {
             if (window.top.scrollY <= 133) {
                 this.windowTop = window.top.scrollY;

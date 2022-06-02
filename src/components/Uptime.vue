@@ -15,7 +15,7 @@ export default {
             type: String,
             default: null,
         },
-        /** Is this a pill */
+        /** Is this a pill? */
         pill: {
             type: Boolean,
             default: false,

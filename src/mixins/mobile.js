@@ -12,7 +12,7 @@ export default {
     },
 
     methods: {
-        /** Called when the screen changes size */
+        /** Handle screen resize */
         onResize() {
             this.windowWidth = window.innerWidth;
             this.updateBody();

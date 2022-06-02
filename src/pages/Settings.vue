@@ -120,7 +120,7 @@ export default {
 
         /**
          * Load the general settings page
-         * For desktop only, mobile do nothing
+         * For desktop only, on mobile do nothing
          */
         loadGeneralPage() {
             if (!this.currentPage && !this.$root.isMobile) {

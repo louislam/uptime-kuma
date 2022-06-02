@@ -29,7 +29,7 @@
 <script>
 export default {
     props: {
-        /** Heading of the Section */
+        /** Heading of the section */
         heading: {
             type: String,
             default: "",

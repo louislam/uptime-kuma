@@ -13,7 +13,7 @@ dayjs.extend(relativeTime);
 
 export default {
     props: {
-        /** Value of data time */
+        /** Value of date time */
         value: {
             type: String,
             default: null,

@@ -58,7 +58,7 @@ export default {
             this.modal.show();
         },
         /**
-         * @emits "yes" - Notify the parent when Yes is pressed
+         * @emits string "yes" Notify the parent when Yes is pressed
          */
         yes() {
             this.$emit("yes");
