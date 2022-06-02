@@ -12,11 +12,13 @@ export default {
     },
 
     methods: {
+        /** Called when the screen changes size */
         onResize() {
             this.windowWidth = window.innerWidth;
             this.updateBody();
         },
 
+        /** Update the document body */
         updateBody() {
             if (this.isMobile) {
                 document.body.classList.add("mobile");
