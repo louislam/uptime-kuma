@@ -80,6 +80,7 @@
         "chroma-js": "^2.1.2",
         "command-exists": "~1.2.9",
         "compare-versions": "~3.6.0",
+        "compression": "^1.7.4",
         "dayjs": "^1.11.0",
         "express": "~4.17.3",
         "express-basic-auth": "~1.2.1",
