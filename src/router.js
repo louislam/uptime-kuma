@@ -1,28 +1,30 @@
 import { createRouter, createWebHistory } from "vue-router";
-import EmptyLayout from "./layouts/EmptyLayout.vue";
-import Layout from "./layouts/Layout.vue";
-import Dashboard from "./pages/Dashboard.vue";
-import DashboardHome from "./pages/DashboardHome.vue";
-import Details from "./pages/Details.vue";
-import EditMonitor from "./pages/EditMonitor.vue";
-import List from "./pages/List.vue";
-const Settings = () => import("./pages/Settings.vue");
-import Setup from "./pages/Setup.vue";
-const StatusPage = () => import("./pages/StatusPage.vue");
-import Entry from "./pages/Entry.vue";
 
-import Appearance from "./components/settings/Appearance.vue";
-import General from "./components/settings/General.vue";
-import Notifications from "./components/settings/Notifications.vue";
-import ReverseProxy from "./components/settings/ReverseProxy.vue";
-import MonitorHistory from "./components/settings/MonitorHistory.vue";
-import Security from "./components/settings/Security.vue";
-import Proxies from "./components/settings/Proxies.vue";
-import Backup from "./components/settings/Backup.vue";
-import About from "./components/settings/About.vue";
-import ManageStatusPage from "./pages/ManageStatusPage.vue";
-import AddStatusPage from "./pages/AddStatusPage.vue";
-import NotFound from "./pages/NotFound.vue";
+const EmptyLayout = () => import("./layouts/EmptyLayout.vue");
+const Layout = () => import("./layouts/Layout.vue");
+const Dashboard = () => import("./pages/Dashboard.vue");
+const DashboardHome = () => import("./pages/DashboardHome.vue");
+const Details = () => import("./pages/Details.vue");
+const EditMonitor = () => import("./pages/EditMonitor.vue");
+const List = () => import("./pages/List.vue");
+const Settings = () => import("./pages/Settings.vue");
+const Setup = () => import("./pages/Setup.vue");
+const StatusPage = () => import("./pages/StatusPage.vue");
+const Entry = () => import("./pages/Entry.vue");
+const ManageStatusPage = () => import("./pages/ManageStatusPage.vue");
+const AddStatusPage = () => import("./pages/AddStatusPage.vue");
+const NotFound = () => import("./pages/NotFound.vue");
+
+// Settings - Sub Pages
+const Appearance = () => import("./components/settings/Appearance.vue");
+const General = () => import("./components/settings/General.vue");
+const Notifications = () => import("./components/settings/Notifications.vue");
+const ReverseProxy = () => import("./components/settings/ReverseProxy.vue");
+const MonitorHistory = () => import("./components/settings/MonitorHistory.vue");
+const Security = () => import("./components/settings/Security.vue");
+const Proxies = () => import("./components/settings/Proxies.vue");
+const Backup = () => import("./components/settings/Backup.vue");
+const About = () => import("./components/settings/About.vue");
 
 const routes = [
     {
