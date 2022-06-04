@@ -206,14 +206,7 @@ let needSetup = false;
     // With Basic Auth using the first user's username/password
     app.get("/metrics", basicAuth, prometheusAPIMetrics());
 
-    app.use("/", express.static("dist", {
-        enableBrotli: true,
-        customCompressions: [{
-            encodingName: "deflate",
-            fileExtension: "zz"
-        }],
-        orderPreference: [ "br" ]
-    }));
+    app.use("/", express.static("dist"));
 
     // ./data/upload
     app.use("/upload", express.static(Database.uploadDir));
