@@ -57,7 +57,8 @@
         "ncu-patch": "npm-check-updates -u -t patch",
         "release-final": "node extra/update-version.js && npm run build-docker && node ./extra/press-any-key.js && npm run upload-artifacts && node ./extra/update-wiki-version.js",
         "release-beta": "node extra/beta/update-version.js && npm run build && node ./extra/env2arg.js docker buildx build -f docker/dockerfile --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma:$VERSION -t louislam/uptime-kuma:beta .  --target release --push && node ./extra/press-any-key.js && npm run upload-artifacts",
-        "git-remove-tag": "git tag -d"
+        "git-remove-tag": "git tag -d",
+        "build-dist-and-restart": "npm run build && npm run start-server-dev"
     },
     "dependencies": {
         "@fortawesome/fontawesome-svg-core": "~1.2.36",
@@ -80,9 +81,11 @@
         "chroma-js": "^2.1.2",
         "command-exists": "~1.2.9",
         "compare-versions": "~3.6.0",
+        "compression": "^1.7.4",
         "dayjs": "^1.11.0",
         "express": "~4.17.3",
         "express-basic-auth": "~1.2.1",
+        "express-static-gzip": "^2.1.7",
         "favico.js": "^0.3.10",
         "form-data": "~4.0.0",
         "http-graceful-shutdown": "~3.1.7",
@@ -130,9 +133,9 @@
         "@babel/eslint-parser": "~7.17.0",
         "@babel/preset-env": "^7.15.8",
         "@types/bootstrap": "~5.1.9",
-        "@vitejs/plugin-legacy": "~1.6.4",
-        "@vitejs/plugin-vue": "~1.9.4",
-        "@vue/compiler-sfc": "~3.2.31",
+        "@vitejs/plugin-legacy": "~1.8.2",
+        "@vitejs/plugin-vue": "~2.3.3",
+        "@vue/compiler-sfc": "~3.2.36",
         "aedes": "^0.46.3",
         "babel-plugin-rewire": "~1.2.0",
         "concurrently": "^7.1.0",
@@ -146,11 +149,13 @@
         "npm-check-updates": "^12.5.9",
         "postcss-html": "^1.3.1",
         "puppeteer": "~13.1.3",
+        "rollup-plugin-visualizer": "^5.6.0",
         "sass": "~1.42.1",
         "stylelint": "~14.7.1",
         "stylelint-config-standard": "~25.0.0",
         "typescript": "~4.4.4",
-        "vite": "~2.6.14",
+        "vite": "~2.9.9",
+        "vite-plugin-compression": "^0.5.1",
         "wait-on": "^6.0.1"
     }
 }

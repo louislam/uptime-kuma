@@ -35,6 +35,7 @@ const fs = require("fs");
 log.info("server", "Importing 3rd-party libraries");
 log.debug("server", "Importing express");
 const express = require("express");
+const expressStaticGzip = require("express-static-gzip");
 log.debug("server", "Importing redbean-node");
 const { R } = require("redbean-node");
 log.debug("server", "Importing jsonwebtoken");
@@ -202,7 +203,9 @@ let needSetup = false;
     // With Basic Auth using the first user's username/password
     app.get("/metrics", basicAuth, prometheusAPIMetrics());
 
-    app.use("/", express.static("dist"));
+    app.use("/", expressStaticGzip("dist", {
+        enableBrotli: true,
+    }));
 
     // ./data/upload
     app.use("/upload", express.static(Database.uploadDir));
