@@ -16,15 +16,15 @@ import AddStatusPage from "./pages/AddStatusPage.vue";
 import NotFound from "./pages/NotFound.vue";
 
 // Settings - Sub Pages
-const Appearance = () => import("./components/settings/Appearance.vue");
-const General = () => import("./components/settings/General.vue");
+import Appearance from "./components/settings/Appearance.vue";
+import General from "./components/settings/General.vue";
 const Notifications = () => import("./components/settings/Notifications.vue");
-const ReverseProxy = () => import("./components/settings/ReverseProxy.vue");
-const MonitorHistory = () => import("./components/settings/MonitorHistory.vue");
+import ReverseProxy from "./components/settings/ReverseProxy.vue";
+import MonitorHistory from "./components/settings/MonitorHistory.vue";
 const Security = () => import("./components/settings/Security.vue");
-const Proxies = () => import("./components/settings/Proxies.vue");
-const Backup = () => import("./components/settings/Backup.vue");
-const About = () => import("./components/settings/About.vue");
+import Proxies from "./components/settings/Proxies.vue";
+import Backup from "./components/settings/Backup.vue";
+import About from "./components/settings/About.vue";
 
 const routes = [
     {
