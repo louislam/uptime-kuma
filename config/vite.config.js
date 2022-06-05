@@ -7,6 +7,8 @@ import viteCompression from "vite-plugin-compression";
 const postCssScss = require("postcss-scss");
 const postcssRTLCSS = require("postcss-rtlcss");
 
+const viteCompressionFilter = /\.(js|mjs|json|css|html|svg)$/i;
+
 // https://vitejs.dev/config/
 export default defineConfig({
     plugins: [
@@ -20,9 +22,11 @@ export default defineConfig({
         }),
         viteCompression({
             algorithm: "gzip",
+            filter: viteCompressionFilter,
         }),
         viteCompression({
             algorithm: "brotliCompress",
+            filter: viteCompressionFilter,
         }),
     ],
     css: {
