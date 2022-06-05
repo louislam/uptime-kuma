@@ -1,19 +1,19 @@
 import { createRouter, createWebHistory } from "vue-router";
 
-const EmptyLayout = () => import("./layouts/EmptyLayout.vue");
-const Layout = () => import("./layouts/Layout.vue");
-const Dashboard = () => import("./pages/Dashboard.vue");
-const DashboardHome = () => import("./pages/DashboardHome.vue");
-const Details = () => import("./pages/Details.vue");
-const EditMonitor = () => import("./pages/EditMonitor.vue");
-const List = () => import("./pages/List.vue");
+import EmptyLayout from "./layouts/EmptyLayout.vue";
+import Layout from "./layouts/Layout.vue";
+import Dashboard from "./pages/Dashboard.vue";
+import DashboardHome from "./pages/DashboardHome.vue";
+import Details from "./pages/Details.vue";
+import EditMonitor from "./pages/EditMonitor.vue";
+import List from "./pages/List.vue";
 const Settings = () => import("./pages/Settings.vue");
-const Setup = () => import("./pages/Setup.vue");
-const StatusPage = () => import("./pages/StatusPage.vue");
-const Entry = () => import("./pages/Entry.vue");
-const ManageStatusPage = () => import("./pages/ManageStatusPage.vue");
-const AddStatusPage = () => import("./pages/AddStatusPage.vue");
-const NotFound = () => import("./pages/NotFound.vue");
+import Setup from "./pages/Setup.vue";
+import StatusPage from "./pages/StatusPage.vue";
+import Entry from "./pages/Entry.vue";
+import ManageStatusPage from "./pages/ManageStatusPage.vue";
+import AddStatusPage from "./pages/AddStatusPage.vue";
+import NotFound from "./pages/NotFound.vue";
 
 // Settings - Sub Pages
 const Appearance = () => import("./components/settings/Appearance.vue");

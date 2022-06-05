@@ -2,6 +2,7 @@ import legacy from "@vitejs/plugin-legacy";
 import vue from "@vitejs/plugin-vue";
 import { defineConfig } from "vite";
 import visualizer from "rollup-plugin-visualizer";
+import viteCompression from "vite-plugin-compression";
 
 const postCssScss = require("postcss-scss");
 const postcssRTLCSS = require("postcss-rtlcss");
@@ -17,6 +18,12 @@ export default defineConfig({
         visualizer({
             filename: "tmp/dist-stats.html"
         }),
+        viteCompression({
+            algorithm: "gzip",
+        }),
+        viteCompression({
+            algorithm: "brotliCompress",
+        }),
     ],
     css: {
         postcss: {
@@ -28,14 +35,10 @@ export default defineConfig({
     build: {
         rollupOptions: {
             output: {
-                manualChunks(id) {
-                    if (id.includes("src/pages/StatusPage.vue")) {
-                        return "StatusPage";
-                    } else {
-                        console.log(id);
-                    }
+                manualChunks(id, { getModuleInfo, getModuleIds }) {
+
                 }
             }
-        }
+        },
     }
 });

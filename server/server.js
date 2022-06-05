@@ -35,7 +35,7 @@ const fs = require("fs");
 log.info("server", "Importing 3rd-party libraries");
 log.debug("server", "Importing express");
 const express = require("express");
-const compression = require("compression");
+const expressStaticGzip = require("express-static-gzip");
 log.debug("server", "Importing redbean-node");
 const { R } = require("redbean-node");
 log.debug("server", "Importing jsonwebtoken");
@@ -127,9 +127,6 @@ const { cloudflaredSocketHandler, autoStart: cloudflaredAutoStart, stop: cloudfl
 const { proxySocketHandler } = require("./socket-handlers/proxy-socket-handler");
 
 app.use(express.json());
-app.use(compression({
-    level: 1
-}));
 
 // Global Middleware
 app.use(function (req, res, next) {
@@ -206,7 +203,9 @@ let needSetup = false;
     // With Basic Auth using the first user's username/password
     app.get("/metrics", basicAuth, prometheusAPIMetrics());
 
-    app.use("/", express.static("dist"));
+    app.use("/", expressStaticGzip("dist", {
+        enableBrotli: true,
+    }));
 
     // ./data/upload
     app.use("/upload", express.static(Database.uploadDir));
