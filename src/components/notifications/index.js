@@ -4,6 +4,7 @@ import Discord from "./Discord.vue";
 import Webhook from "./Webhook.vue";
 import Signal from "./Signal.vue";
 import Gotify from "./Gotify.vue";
+import Ntfy from "./Ntfy.vue";
 import Slack from "./Slack.vue";
 import RocketChat from "./RocketChat.vue";
 import Teams from "./Teams.vue";
@@ -46,6 +47,7 @@ const NotificationFormList = {
     "teams": Teams,
     "signal": Signal,
     "gotify": Gotify,
+    "ntfy": Ntfy,
     "slack": Slack,
     "rocket.chat": RocketChat,
     "pushover": Pushover,
