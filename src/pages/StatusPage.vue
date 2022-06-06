@@ -551,6 +551,11 @@ export default {
 
             this.incident = res.data.incident;
             this.$root.publicGroupList = res.data.publicGroupList;
+        }).catch( function (error) {
+            if (error.response.status === 404) {
+                location.href = "/page-not-found";
+            }
+            console.log(error);
         });
 
         // 5mins a loop
