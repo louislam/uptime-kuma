@@ -92,7 +92,7 @@ router.get("/api/push/:pushToken", async (request, response) => {
         }
 
     } catch (e) {
-        response.json({
+        response.status(404).json({
             ok: false,
             msg: e.message
         });
