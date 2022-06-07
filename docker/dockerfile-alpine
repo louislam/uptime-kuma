@@ -3,9 +3,14 @@ WORKDIR /app
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1
 
+# Cache docker layers, faster development, less bandwidth much wauw
+COPY package.json .
+COPY package-lock.json .
+RUN npm ci --production
+
+# Copy all over
 COPY . .
-RUN npm ci --production && \
-    chmod +x /app/extra/entrypoint.sh
+RUN chmod +x extra/entrypoint.sh
 
 FROM louislam/uptime-kuma:base-alpine AS build_app
 WORKDIR /app
@@ -13,7 +18,7 @@ WORKDIR /app
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1
 
 COPY . .
-RUN npm ci && npm build
+RUN npm ci && npm run build
 
 FROM louislam/uptime-kuma:base-alpine AS release
 WORKDIR /app
