@@ -42,6 +42,7 @@
         "setup": "git checkout 1.17.1 && npm ci --production && npm run download-dist",
         "download-dist": "node extra/download-dist.js",
         "mark-as-nightly": "node extra/mark-as-nightly.js",
+        "change-username": "node extra/change-username.js",
         "reset-password": "node extra/reset-password.js",
         "remove-2fa": "node extra/remove-2fa.js",
         "compile-install-script": "@powershell -NoProfile -ExecutionPolicy Unrestricted -Command ./extra/compile-install-script.ps1",
