@@ -160,7 +160,10 @@
                             <!-- Interval -->
                             <div class="my-3">
                                 <label for="interval" class="form-label">{{ $t("Heartbeat Interval") }} ({{ $t("checkEverySecond", [ monitor.interval ]) }})</label>
-                                <input id="interval" v-model="monitor.interval" type="number" class="form-control" required min="20" step="1">
+                                <input id="interval" v-model="monitor.interval" type="number" class="form-control" required min="1" step="1">
+                                <div v-if="monitor.interval < 20" class="form-text">
+                                    {{ $t("minimumIntervalWarning") }}
+                                </div>
                             </div>
 
                             <div class="my-3">
@@ -176,7 +179,10 @@
                                     {{ $t("Heartbeat Retry Interval") }}
                                     <span>({{ $t("retryCheckEverySecond", [ monitor.retryInterval ]) }})</span>
                                 </label>
-                                <input id="retry-interval" v-model="monitor.retryInterval" type="number" class="form-control" required min="20" step="1">
+                                <input id="retry-interval" v-model="monitor.retryInterval" type="number" class="form-control" required min="1" step="1">
+                                <div v-if="monitor.retryInterval < 20" class="form-text">
+                                    {{ $t("minimumIntervalWarning") }}
+                                </div>
                             </div>
 
                             <h2 v-if="monitor.type !== 'push'" class="mt-5 mb-2">{{ $t("Advanced") }}</h2>

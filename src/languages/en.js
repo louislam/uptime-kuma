@@ -3,6 +3,7 @@ export default {
     checkEverySecond: "Check every {0} seconds",
     retryCheckEverySecond: "Retry every {0} seconds",
     retriesDescription: "Maximum retries before the service is marked as down and a notification is sent",
+    minimumIntervalWarning: "Warning: Intervals below 20 seconds may result in poor performance.",
     ignoreTLSError: "Ignore TLS/SSL error for HTTPS websites",
     upsideDownModeDescription: "Flip the status upside down. If the service is reachable, it is DOWN.",
     maxRedirectDescription: "Maximum number of redirects to follow. Set to 0 to disable redirects.",
