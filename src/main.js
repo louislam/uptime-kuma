@@ -15,6 +15,7 @@ import theme from "./mixins/theme";
 import lang from "./mixins/lang";
 import { router } from "./router";
 import { appName } from "./util.ts";
+import badges from "./mixins/badges";
 
 const app = createApp({
     mixins: [
@@ -24,6 +25,7 @@ const app = createApp({
         datetime,
         publicMixin,
         lang,
+        badges
     ],
     data() {
         return {
