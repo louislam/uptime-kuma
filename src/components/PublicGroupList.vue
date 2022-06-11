@@ -39,7 +39,21 @@
                                             <font-awesome-icon v-if="editMode" icon="times" class="action remove me-3" @click="removeMonitor(group.index, monitor.index)" />
 
                                             <Uptime :monitor="monitor.element" type="24" :pill="true" />
-                                            {{ monitor.element.name }}
+                                            <a
+                                                v-if="showLink(monitor)"
+                                                :href="monitor.element.url"
+                                                class="item-name"
+                                                target="_blank"
+                                            >
+                                                {{ monitor.element.name }}
+                                            </a>
+                                            <p v-else class="item-name"> {{ monitor.element.name }} </p>
+                                            <font-awesome-icon
+                                                v-if="editMode"
+                                                :class="{'link-active': monitor.element.sendUrl}"
+                                                icon="link" class="action me-3"
+                                                @click="toggleLink(group.index, monitor.index)"
+                                            />
                                         </div>
                                         <div v-if="showTags" class="tags">
                                             <Tag v-for="tag in monitor.element.tags" :key="tag" :item="tag" :size="'sm'" />
@@ -101,6 +115,27 @@ export default {
         removeMonitor(groupIndex, index) {
             this.$root.publicGroupList[groupIndex].monitorList.splice(index, 1);
         },
+
+        /**
+         * Toggle the value of sendUrl
+         * @param {number} groupIndex Index of group monitor is member of
+         * @param {number} index Index of monitor within group
+         */
+        toggleLink(groupIndex, index) {
+            this.$root.publicGroupList[groupIndex].monitorList[index].sendUrl = !this.$root.publicGroupList[groupIndex].monitorList[index].sendUrl;
+        },
+
+        /**
+         * Should a link to the monitor be shown?
+         * Attempts to guess if a link should be shown based upon if
+         * sendUrl is set and if the URL is default or not.
+         * @param {Object} monitor Monitor to check
+         * @returns {boolean}
+         */
+        showLink(monitor) {
+            return monitor.element.sendUrl && monitor.element.url && monitor.element.url !== "https://";
+
+        },
     }
 };
 </script>
@@ -117,6 +152,17 @@ export default {
 
 .monitor-list {
     min-height: 46px;
+}
+
+.item-name {
+    padding-left: 5px;
+    padding-right: 5px;
+    margin: 0;
+    display: inline-block;
+}
+
+.link-active {
+    color: #4caf50;
 }
 
 .flip-list-move {
