@@ -48,7 +48,7 @@ class Bark extends NotificationProvider {
      * @param {string} postUrl URL to append parameters to
      * @returns {string}
      */
-    appendAdditionalParameters(postUrl) {
+    appendAdditionalParameters(notification, postUrl) {
         // grouping all our notifications
         if (notification.barkGroup != null) {
             postUrl += "&group=" + notification.barkGroup;
