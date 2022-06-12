@@ -18,7 +18,6 @@
     </div>
     <div class="mb-3">
         <label for="Bark Sound" class="form-label">{{ $t("Bark Sound") }}</label>
-        
         <select id="Bark Sound" v-model="$parent.notification.barkSound" class="form-select" required>
             <option value="alarm">
                 alarm
