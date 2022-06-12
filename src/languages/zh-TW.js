@@ -396,6 +396,8 @@ export default {
     SignName: "SignName",
     "Sms template must contain parameters: ": "Sms 範本必須包含參數：",
     "Bark Endpoint": "Bark 端點",
+    "Bark Group": "Bark 群組",
+    "Bark Sound": "Bark 鈴聲",
     WebHookUrl: "WebHookUrl",
     SecretKey: "SecretKey",
     "For safety, must use secret key": "為了安全起見，必須使用秘密金鑰",

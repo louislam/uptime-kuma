@@ -396,6 +396,8 @@ export default {
     SignName: "ป้ายชื่อ",
     "Sms template must contain parameters: ": "เทมเพลต SMS ต้องมีพารามิเตอร์ : ",
     "Bark Endpoint": "Bark Endpoint",
+    "Bark Group": "Bark Group",
+    "Bark Sound": "Bark Sound",
     WebHookUrl: "WebHookUrl",
     SecretKey: "SecretKey",
     "For safety, must use secret key": "เพื่อความปลอดภัย จำเป็นต้องตั้งค่ากุญแจการเข้าถึง",

@@ -396,6 +396,8 @@ export default {
     SignName: "Podpis",
     "Sms template must contain parameters: ": "Szablon sms musi posiadać parametry: ",
     "Bark Endpoint": "Punkt końcowy Bark",
+    "Bark Group": "grupa Bark",
+    "Bark Sound": "Dzwonek Bark",
     WebHookUrl: "WebHookUrl",
     SecretKey: "Tajny klucz",
     "For safety, must use secret key": "Ze względów bezpieczeństwa musisz użyć tajnego klucza",

@@ -406,6 +406,8 @@ export default {
     SignName: "SignName",
     "Sms template must contain parameters: ": "Sms 템플릿은 다음과 같은 파라미터가 포함되어야 해요:",
     "Bark Endpoint": "Bark Endpoint",
+    "Bark Group": "Bark Group",
+    "Bark Sound": "Bark Sound",
     WebHookUrl: "웹훅 URL",
     SecretKey: "Secret Key",
     "For safety, must use secret key": "안전을 위해 꼭 Secret Key를 사용하세요.",

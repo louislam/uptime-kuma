@@ -402,6 +402,8 @@ export default {
     TemplateCode: "TemplateCode",
     SignName: "SignName",
     "Bark Endpoint": "Bark 接入点",
+    "Bark Group": "Bark 群组",
+    "Bark Sound": "Bark 铃声",
     "Device Token": "Apple Device Token",
     Platform: "平台",
     iOS: "iOS",
