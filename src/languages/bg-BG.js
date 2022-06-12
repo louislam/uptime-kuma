@@ -389,8 +389,6 @@ export default {
     SignName: "Знак име",
     "Sms template must contain parameters: ": "SMS шаблонът трябва да съдържа следните параметри: ",
     "Bark Endpoint": "Bark крайна точка",
-    "Bark Group": "Bark група",
-    "Bark Sound": "Bark Звънене",
     WebHookUrl: "URL адрес на уеб кука",
     SecretKey: "Таен ключ",
     "For safety, must use secret key": "За сигурност, трябва да се използва таен ключ",

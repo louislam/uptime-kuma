@@ -397,8 +397,6 @@ export default {
     SignName: "SignName",
     "Sms template must contain parameters: ": "Sms şablonu parametreleri içermelidir:",
     "Bark Endpoint": "Bark Endpoint",
-    "Bark Group": "Bark Group",
-    "Bark Sound": "Bark Sound",
     WebHookUrl: "WebHookUrl",
     SecretKey: "SecretKey",
     "For safety, must use secret key": "Güvenlik için gizli anahtar kullanılmalıdır",
