@@ -50,7 +50,6 @@ class Bark extends NotificationProvider {
      */
     appendAdditionalParameters(postUrl) {
         // grouping all our notifications
-        postUrl += "?group=" + barkNotificationGroup;
         if (notification.barkGroup != null) {
             postUrl += "&group=" + notification.barkGroup;
         } else {
