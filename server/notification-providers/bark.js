@@ -62,8 +62,8 @@ class Bark extends NotificationProvider {
         if (notification.barkSound != null) {
             postUrl += "&sound=" + notification.barkSound;
         } else {
-            postUrl += "&sound=" + "telegraph";
             // default sound
+            postUrl += "&sound=" + "telegraph";
         }
         return postUrl;
     }
