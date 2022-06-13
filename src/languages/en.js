@@ -525,4 +525,6 @@ export default {
     "Go back to the previous page.": "Go back to the previous page.",
     "Coming Soon": "Coming Soon",
     wayToGetClickSendSMSToken: "You can get API Username and API Key from {0} .",
+    "Connection String": "Connection String",
+    "Query": "Query",
 };
