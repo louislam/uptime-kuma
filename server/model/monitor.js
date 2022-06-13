@@ -17,6 +17,12 @@ const version = require("../../package.json").version;
 const apicache = require("../modules/apicache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 
+const axiosCachedDnsResolve = require("esm-wallaby")(module)("axios-cached-dns-resolve");
+
+// create an axios client instance with the cached DNS resolve interceptor
+const axiosClient = axios.create();
+axiosCachedDnsResolve.registerInterceptor(axiosClient);
+
 /**
  * status:
  *      0 = DOWN
@@ -266,7 +272,7 @@ class Monitor extends BeanModel {
                     log.debug("monitor", `[${this.name}] Axios Options: ${JSON.stringify(options)}`);
                     log.debug("monitor", `[${this.name}] Axios Request`);
 
-                    let res = await axios.request(options);
+                    let res = await axiosClient.request(options);
                     bean.msg = `${res.status} - ${res.statusText}`;
                     bean.ping = dayjs().valueOf() - startTime;
 
@@ -411,7 +417,7 @@ class Monitor extends BeanModel {
                         throw new Error("Steam API Key not found");
                     }
 
-                    let res = await axios.get(steamApiUrl, {
+                    let res = await axiosClient.get(steamApiUrl, {
                         timeout: this.interval * 1000 * 0.8,
                         headers: {
                             "Accept": "*/*",
