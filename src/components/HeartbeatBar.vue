@@ -168,7 +168,8 @@ export default {
 
         getBeatTitle(beat) {
             return `${this.$root.datetime(beat.time)}` + ((beat.msg) ? ` - ${beat.msg}` : "");
-        }
+        },
+
     },
 };
 </script>

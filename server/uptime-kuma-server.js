@@ -5,13 +5,14 @@ const http = require("http");
 const { Server } = require("socket.io");
 const { R } = require("redbean-node");
 const { log } = require("../src/util");
+const Database = require("./database");
+const util = require("util");
 
 /**
  * `module.exports` (alias: `server`) should be inside this class, in order to avoid circular dependency issue.
  * @type {UptimeKumaServer}
  */
 class UptimeKumaServer {
-
     /**
      *
      * @type {UptimeKumaServer}
@@ -27,6 +28,12 @@ class UptimeKumaServer {
     app = undefined;
     httpServer = undefined;
     io = undefined;
+
+    /**
+     * Cache Index HTML
+     * @type {string}
+     */
+    indexHTML = "";
 
     static getInstance(args) {
         if (UptimeKumaServer.instance == null) {
@@ -52,6 +59,16 @@ class UptimeKumaServer {
         } else {
             log.info("server", "Server Type: HTTP");
             this.httpServer = http.createServer(this.app);
+        }
+
+        try {
+            this.indexHTML = fs.readFileSync("./dist/index.html").toString();
+        } catch (e) {
+            // "dist/index.html" is not necessary for development
+            if (process.env.NODE_ENV !== "development") {
+                log.error("server", "Error: Cannot find 'dist/index.html', did you install correctly?");
+                process.exit(1);
+            }
         }
 
         this.io = new Server(this.httpServer);
@@ -82,6 +99,32 @@ class UptimeKumaServer {
         }
 
         return result;
+    }
+
+    /**
+     * Write error to log file
+     * @param {any} error The error to write
+     * @param {boolean} outputToConsole Should the error also be output to console?
+     */
+    static errorLog(error, outputToConsole = true) {
+        const errorLogStream = fs.createWriteStream(Database.dataDir + "/error.log", {
+            flags: "a"
+        });
+
+        errorLogStream.on("error", () => {
+            log.info("", "Cannot write to error.log");
+        });
+
+        if (errorLogStream) {
+            const dateTime = R.isoDateTime();
+            errorLogStream.write(`[${dateTime}] ` + util.format(error) + "\n");
+
+            if (outputToConsole) {
+                console.error(error);
+            }
+        }
+
+        errorLogStream.end();
     }
 }
 
