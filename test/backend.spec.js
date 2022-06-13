@@ -159,7 +159,6 @@ describe("Test genSecret", () => {
         expect(secret).toContain("A");
         expect(secret).toContain("9");
     });
-
 });
 
 describe("Test reset-password", () => {
@@ -169,6 +168,9 @@ describe("Test reset-password", () => {
 });
 
 describe("Test Discord Notification Provider", () => {
+    const hostname = "discord.com";
+    const port = 1337;
+
     const sendNotification = async (hostname, port, type) => {
         const discordProvider = new Discord();
 
@@ -191,63 +193,35 @@ describe("Test Discord Notification Provider", () => {
         );
     };
 
-    it("should send hostname for dns monitors", async () => {
-        const hostname = "discord.com";
-        await sendNotification(hostname, null, "dns");
-
-        expect(axios.post.mock.lastCall[1].embeds[0].fields[1].value).toBe(
-            hostname
-        );
-    });
-
     it("should send hostname for ping monitors", async () => {
-        const hostname = "discord.com";
         await sendNotification(hostname, null, "ping");
-
-        expect(axios.post.mock.lastCall[1].embeds[0].fields[1].value).toBe(
-            hostname
-        );
+        expect(axios.post.mock.lastCall[1].embeds[0].fields[1].value).toBe(hostname);
     });
 
-    it("should send hostname for port monitors", async () => {
-        const hostname = "discord.com";
-        const port = 1337;
-        await sendNotification(hostname, port, "port");
-
-        expect(axios.post.mock.lastCall[1].embeds[0].fields[1].value).toBe(
-            `${hostname}:${port}`
-        );
-    });
-
-    it("should send hostname for steam monitors", async () => {
-        const hostname = "discord.com";
-        const port = 1337;
-        await sendNotification(hostname, port, "steam");
-
-        expect(axios.post.mock.lastCall[1].embeds[0].fields[1].value).toBe(
-            `${hostname}:${port}`
-        );
+    it.each([ "dns", "port", "steam" ])("should send hostname for %p monitors", async (type) => {
+        await sendNotification(hostname, port, type);
+        expect(axios.post.mock.lastCall[1].embeds[0].fields[1].value).toBe(`${hostname}:${port}`);
     });
 });
 
 describe("The function filterAndJoin", () => {
     it("should join and array of strings to one string", () => {
-        const result = utilServerRewire.filterAndJoin(["one", "two", "three"]);
+        const result = utilServerRewire.filterAndJoin([ "one", "two", "three" ]);
         expect(result).toBe("onetwothree");
     });
 
     it("should join strings using a given connector", () => {
-        const result = utilServerRewire.filterAndJoin(["one", "two", "three"], "-");
+        const result = utilServerRewire.filterAndJoin([ "one", "two", "three" ], "-");
         expect(result).toBe("one-two-three");
     });
 
     it("should filter null, undefined and empty strings before joining", () => {
-        const result = utilServerRewire.filterAndJoin([undefined, "", "three"], "--");
+        const result = utilServerRewire.filterAndJoin([ undefined, "", "three" ], "--");
         expect(result).toBe("three");
     });
 
     it("should return an empty string if all parts are filtered out", () => {
-        const result = utilServerRewire.filterAndJoin([undefined, "", ""], "--");
+        const result = utilServerRewire.filterAndJoin([ undefined, "", "" ], "--");
         expect(result).toBe("");
     });
 });

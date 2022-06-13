@@ -56,7 +56,6 @@ export default {
     Current: "目前",
     Uptime: "運作率",
     "Cert Exp.": "憑證期限",
-    days: "天",
     day: "天",
     "-day": "天",
     hour: "小時",

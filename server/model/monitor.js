@@ -7,7 +7,7 @@ dayjs.extend(timezone);
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
 const { log, UP, DOWN, PENDING, flipStatus, TimeLogger } = require("../../src/util");
-const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mqttAsync } = require("../util-server");
+const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, mqttAsync, setSetting } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification");
@@ -16,6 +16,12 @@ const { demoMode } = require("../config");
 const version = require("../../package.json").version;
 const apicache = require("../modules/apicache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
+
+const axiosCachedDnsResolve = require("esm-wallaby")(module)("axios-cached-dns-resolve");
+
+// create an axios client instance with the cached DNS resolve interceptor
+const axiosClient = axios.create();
+axiosCachedDnsResolve.registerInterceptor(axiosClient);
 
 /**
  * status:
@@ -87,7 +93,9 @@ class Monitor extends BeanModel {
             mqttUsername: this.mqttUsername,
             mqttPassword: this.mqttPassword,
             mqttTopic: this.mqttTopic,
-            mqttSuccessMessage: this.mqttSuccessMessage
+            mqttSuccessMessage: this.mqttSuccessMessage,
+            databaseConnectionString: this.databaseConnectionString,
+            databaseQuery: this.databaseQuery,
         };
 
         if (includeSensitiveData) {
@@ -192,7 +200,7 @@ class Monitor extends BeanModel {
 
             let bean = R.dispense("heartbeat");
             bean.monitor_id = this.id;
-            bean.time = R.isoDateTime(dayjs.utc());
+            bean.time = R.isoDateTimeMillis(dayjs.utc());
             bean.status = DOWN;
 
             if (this.isUpsideDown()) {
@@ -264,7 +272,7 @@ class Monitor extends BeanModel {
                     log.debug("monitor", `[${this.name}] Axios Options: ${JSON.stringify(options)}`);
                     log.debug("monitor", `[${this.name}] Axios Request`);
 
-                    let res = await axios.request(options);
+                    let res = await axiosClient.request(options);
                     bean.msg = `${res.status} - ${res.statusText}`;
                     bean.ping = dayjs().valueOf() - startTime;
 
@@ -312,7 +320,11 @@ class Monitor extends BeanModel {
                             bean.msg += ", keyword is found";
                             bean.status = UP;
                         } else {
-                            throw new Error(bean.msg + ", but keyword is not found");
+                            data = data.replace(/<[^>]*>?|[\n\r]|\s+/gm, " ");
+                            if (data.length > 50) {
+                                data = data.substring(0, 47) + "...";
+                            }
+                            throw new Error(bean.msg + ", but keyword is not in [" + data + "]");
                         }
 
                     }
@@ -330,7 +342,7 @@ class Monitor extends BeanModel {
                     let startTime = dayjs().valueOf();
                     let dnsMessage = "";
 
-                    let dnsRes = await dnsResolve(this.hostname, this.dns_resolve_server, this.dns_resolve_type);
+                    let dnsRes = await dnsResolve(this.hostname, this.dns_resolve_server, this.port, this.dns_resolve_type);
                     bean.ping = dayjs().valueOf() - startTime;
 
                     if (this.dns_resolve_type === "A" || this.dns_resolve_type === "AAAA" || this.dns_resolve_type === "TXT") {
@@ -367,22 +379,33 @@ class Monitor extends BeanModel {
                     bean.msg = dnsMessage;
                     bean.status = UP;
                 } else if (this.type === "push") {      // Type: Push
-                    const time = R.isoDateTime(dayjs.utc().subtract(this.interval, "second"));
+                    log.debug("monitor", `[${this.name}] Checking monitor at ${dayjs().format("YYYY-MM-DD HH:mm:ss.SSS")}`);
+                    const bufferTime = 1000; // 1s buffer to accommodate clock differences
 
-                    let heartbeatCount = await R.count("heartbeat", " monitor_id = ? AND time > ? ", [
-                        this.id,
-                        time
-                    ]);
+                    if (previousBeat) {
+                        const msSinceLastBeat = dayjs.utc().valueOf() - dayjs.utc(previousBeat.time).valueOf();
 
-                    log.debug("monitor", "heartbeatCount" + heartbeatCount + " " + time);
+                        log.debug("monitor", `[${this.name}] msSinceLastBeat = ${msSinceLastBeat}`);
 
-                    if (heartbeatCount <= 0) {
-                        throw new Error("No heartbeat in the time window");
+                        // If the previous beat was down or pending we use the regular
+                        // beatInterval/retryInterval in the setTimeout further below
+                        if (previousBeat.status !== UP || msSinceLastBeat > beatInterval * 1000 + bufferTime) {
+                            throw new Error("No heartbeat in the time window");
+                        } else {
+                            let timeout = beatInterval * 1000 - msSinceLastBeat;
+                            if (timeout < 0) {
+                                timeout = bufferTime;
+                            } else {
+                                timeout += bufferTime;
+                            }
+                            // No need to insert successful heartbeat for push type, so end here
+                            retries = 0;
+                            log.debug("monitor", `[${this.name}] timeout = ${timeout}`);
+                            this.heartbeatInterval = setTimeout(beat, timeout);
+                            return;
+                        }
                     } else {
-                        // No need to insert successful heartbeat for push type, so end here
-                        retries = 0;
-                        this.heartbeatInterval = setTimeout(beat, beatInterval * 1000);
-                        return;
+                        throw new Error("No heartbeat in the time window");
                     }
 
                 } else if (this.type === "steam") {
@@ -394,7 +417,7 @@ class Monitor extends BeanModel {
                         throw new Error("Steam API Key not found");
                     }
 
-                    let res = await axios.get(steamApiUrl, {
+                    let res = await axiosClient.get(steamApiUrl, {
                         timeout: this.interval * 1000 * 0.8,
                         headers: {
                             "Accept": "*/*",
@@ -432,6 +455,14 @@ class Monitor extends BeanModel {
                         interval: this.interval,
                     });
                     bean.status = UP;
+                } else if (this.type === "sqlserver") {
+                    let startTime = dayjs().valueOf();
+
+                    await mssqlQuery(this.databaseConnectionString, this.databaseQuery);
+
+                    bean.msg = "";
+                    bean.status = UP;
+                    bean.ping = dayjs().valueOf() - startTime;
                 } else {
                     bean.msg = "Unknown Monitor Type";
                     bean.status = PENDING;
@@ -482,7 +513,7 @@ class Monitor extends BeanModel {
             }
 
             if (bean.status === UP) {
-                log.info("monitor", `Monitor #${this.id} '${this.name}': Successful Response: ${bean.ping} ms | Interval: ${beatInterval} seconds | Type: ${this.type}`);
+                log.debug("monitor", `Monitor #${this.id} '${this.name}': Successful Response: ${bean.ping} ms | Interval: ${beatInterval} seconds | Type: ${this.type}`);
             } else if (bean.status === PENDING) {
                 if (this.retryInterval > 0) {
                     beatInterval = this.retryInterval;
@@ -826,10 +857,19 @@ class Monitor extends BeanModel {
         if (tlsInfoObject && tlsInfoObject.certInfo && tlsInfoObject.certInfo.daysRemaining) {
             const notificationList = await Monitor.getNotificationList(this);
 
-            log.debug("monitor", "call sendCertNotificationByTargetDays");
-            await this.sendCertNotificationByTargetDays(tlsInfoObject.certInfo.daysRemaining, 21, notificationList);
-            await this.sendCertNotificationByTargetDays(tlsInfoObject.certInfo.daysRemaining, 14, notificationList);
-            await this.sendCertNotificationByTargetDays(tlsInfoObject.certInfo.daysRemaining, 7, notificationList);
+            let notifyDays = await setting("tlsExpiryNotifyDays");
+            if (notifyDays == null || !Array.isArray(notifyDays)) {
+                // Reset Default
+                setSetting("tlsExpiryNotifyDays", [ 7, 14, 21 ], "general");
+                notifyDays = [ 7, 14, 21 ];
+            }
+
+            if (notifyDays != null && Array.isArray(notifyDays)) {
+                for (const day of notifyDays) {
+                    log.debug("monitor", "call sendCertNotificationByTargetDays", day);
+                    await this.sendCertNotificationByTargetDays(tlsInfoObject.certInfo.daysRemaining, day, notificationList);
+                }
+            }
         }
     }
 
