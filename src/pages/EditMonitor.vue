@@ -11,33 +11,41 @@
                             <div class="my-3">
                                 <label for="type" class="form-label">{{ $t("Monitor Type") }}</label>
                                 <select id="type" v-model="monitor.type" class="form-select">
-                                    <option value="http">
-                                        HTTP(s)
-                                    </option>
-                                    <option value="port">
-                                        TCP Port
-                                    </option>
-                                    <option value="ping">
-                                        Ping
-                                    </option>
-                                    <option value="keyword">
-                                        HTTP(s) - {{ $t("Keyword") }}
-                                    </option>
-                                    <option value="dns">
-                                        DNS
-                                    </option>
-                                    <option value="push">
-                                        Push
-                                    </option>
-                                    <option value="steam">
-                                        {{ $t("Steam Game Server") }}
-                                    </option>
-                                    <option value="mqtt">
-                                        MQTT
-                                    </option>
-                                    <option value="sqlserver">
-                                        SQL Server
-                                    </option>
+                                    <optgroup label="General Monitor Type">
+                                        <option value="http">
+                                            HTTP(s)
+                                        </option>
+                                        <option value="port">
+                                            TCP Port
+                                        </option>
+                                        <option value="ping">
+                                            Ping
+                                        </option>
+                                        <option value="keyword">
+                                            HTTP(s) - {{ $t("Keyword") }}
+                                        </option>
+                                        <option value="dns">
+                                            DNS
+                                        </option>
+                                    </optgroup>
+
+                                    <optgroup label="Passive Monitor Type">
+                                        <option value="push">
+                                            Push
+                                        </option>
+                                    </optgroup>
+
+                                    <optgroup label="Specific Monitor Type">
+                                        <option value="steam">
+                                            {{ $t("Steam Game Server") }}
+                                        </option>
+                                        <option value="mqtt">
+                                            MQTT
+                                        </option>
+                                        <option value="sqlserver">
+                                            SQL Server
+                                        </option>
+                                    </optgroup>
                                 </select>
                             </div>
 
