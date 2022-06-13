@@ -53,8 +53,8 @@ class Bark extends NotificationProvider {
         if (notification.barkGroup != null) {
             postUrl += "&group=" + notification.barkGroup;
         } else {
-            postUrl += "&group=" + "UptimeKuma";
             // default group
+            postUrl += "&group=" + "UptimeKuma";
         }
         // set icon to uptime kuma icon, 11kb should be fine
         postUrl += "&icon=" + barkNotificationAvatar;
