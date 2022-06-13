@@ -513,7 +513,7 @@ class Monitor extends BeanModel {
             }
 
             if (bean.status === UP) {
-                log.info("monitor", `Monitor #${this.id} '${this.name}': Successful Response: ${bean.ping} ms | Interval: ${beatInterval} seconds | Type: ${this.type}`);
+                log.debug("monitor", `Monitor #${this.id} '${this.name}': Successful Response: ${bean.ping} ms | Interval: ${beatInterval} seconds | Type: ${this.type}`);
             } else if (bean.status === PENDING) {
                 if (this.retryInterval > 0) {
                     beatInterval = this.retryInterval;
