@@ -53,7 +53,7 @@ class Bark extends NotificationProvider {
         if (notification.barkGroup != null) {
             postUrl += "&group=" + notification.barkGroup;
         } else {
-            // default group
+            // default group name
             postUrl += "&group=" + "UptimeKuma";
         }
         // set icon to uptime kuma icon, 11kb should be fine
@@ -62,7 +62,7 @@ class Bark extends NotificationProvider {
         if (notification.barkSound != null) {
             postUrl += "&sound=" + notification.barkSound;
         } else {
-            // default sound
+            // default app sound
             postUrl += "&sound=" + "telegraph";
         }
         return postUrl;
