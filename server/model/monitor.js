@@ -17,7 +17,7 @@ const version = require("../../package.json").version;
 const apicache = require("../modules/apicache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 
-const axiosCachedDnsResolve = require("esm")(module)("axios-cached-dns-resolve");
+const axiosCachedDnsResolve = require("esm-wallaby")(module)("axios-cached-dns-resolve");
 
 // create an axios client instance with the cached DNS resolve interceptor
 const axiosClient = axios.create();
