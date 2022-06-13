@@ -49,20 +49,20 @@ class Bark extends NotificationProvider {
      * @returns {string}
      */
     appendAdditionalParameters(notification, postUrl) {
+        // set icon to uptime kuma icon, 11kb should be fine
+        postUrl += "&icon=" + barkNotificationAvatar;
         // grouping all our notifications
         if (notification.barkGroup != null) {
             postUrl += "&group=" + notification.barkGroup;
         } else {
-            // default group name
+            // default name
             postUrl += "&group=" + "UptimeKuma";
         }
-        // set icon to uptime kuma icon, 11kb should be fine
-        postUrl += "&icon=" + barkNotificationAvatar;
         // picked a sound, this should follow system's mute status when arrival
         if (notification.barkSound != null) {
             postUrl += "&sound=" + notification.barkSound;
         } else {
-            // default app sound
+            // default sound
             postUrl += "&sound=" + "telegraph";
         }
         return postUrl;
