@@ -624,6 +624,9 @@ export default {
                 this.$root.initSocketIO(true);
                 this.enableEditMode = true;
                 this.clickedEditButton = true;
+
+                // Try to fix #1658
+                this.loadedData = true;
             }
         },
 
