@@ -1,14 +1,13 @@
+#example build command:
+#start in the root dir
+#podman build -t non-root -f docker/alpine-non-root.dockerfile .
 #create build image
 FROM node:16-alpine AS build
 #standardverzeichnis
 WORKDIR /app
 
 #or download
-RUN wget https://github.com/louislam/uptime-kuma/archive/refs/tags/1.15.1.tar.gz && \
-    tar xvzf 1.15.1.tar.gz && \
-    mv uptime-kuma-1.15.1/* . && \
-    rm -rf uptime-kuma-1.15.1 1.15.1.tar.gz
-
+COPY . .
 #--production do not work bc : vite not found
 #RUN npm install --production
 RUN npm install
