@@ -373,6 +373,8 @@ const getDaysRemaining = (validFrom, validTo) => {
     return daysRemaining;
 };
 
+exports.getDaysRemaining = getDaysRemaining;
+
 /**
  * Fix certificate info for display
  * @param {Object} info The chain obtained from getPeerCertificate()
