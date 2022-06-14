@@ -404,7 +404,7 @@
 
                                         <div class="my-3">
                                             <label for="basicauth" class="form-label">{{ $t("Workstation") }}</label>
-                                            <input id="basicauth-workstation" v-model="monitor.authWorkstation" type="password" autocomplete="new-password" class="form-control" :placeholder="$t('Workstation')">
+                                            <input id="basicauth-workstation" v-model="monitor.authWorkstation" type="text" class="form-control" :placeholder="$t('Workstation')">
                                         </div>
                                     </template>
                                 </template>
