@@ -146,7 +146,7 @@ export default {
                 }
 
                 if (this.settings.tlsExpiryNotifyDays === undefined) {
-                    this.settings.tlsExpiryNotifyDays = [];
+                    this.settings.tlsExpiryNotifyDays = [ 7, 14, 21 ];
                 }
 
                 this.settingsLoaded = true;
