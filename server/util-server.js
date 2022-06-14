@@ -10,6 +10,7 @@ const chardet = require("chardet");
 const mqtt = require("mqtt");
 const chroma = require("chroma-js");
 const { badgeConstants } = require("./config");
+const mssql = require("mssql");
 const { NtlmClient } = require("axios-ntlm");
 
 // From ping-lite
@@ -197,12 +198,16 @@ exports.httpNtlm = function (options, ntlmOptions) {
  * Resolves a given record using the specified DNS server
  * @param {string} hostname The hostname of the record to lookup
  * @param {string} resolverServer The DNS server to use
+ * @param {string} resolverPort Port the DNS server is listening on
  * @param {string} rrtype The type of record to request
  * @returns {Promise<(string[]|Object[]|Object)>}
  */
-exports.dnsResolve = function (hostname, resolverServer, rrtype) {
+exports.dnsResolve = function (hostname, resolverServer, resolverPort, rrtype) {
     const resolver = new Resolver();
-    resolver.setServers([ resolverServer ]);
+    // Remove brackets from IPv6 addresses so we can re-add them to
+    // prevent issues with ::1:5300 (::1 port 5300)
+    resolverServer = resolverServer.replace("[", "").replace("]", "");
+    resolver.setServers([ `[${resolverServer}]:${resolverPort}` ]);
     return new Promise((resolve, reject) => {
         if (rrtype === "PTR") {
             resolver.reverse(hostname, (err, records) => {
@@ -221,6 +226,31 @@ exports.dnsResolve = function (hostname, resolverServer, rrtype) {
                 }
             });
         }
+    });
+};
+
+/**
+ * Run a query on SQL Server
+ * @param {string} connectionString The database connection string
+ * @param {string} query The query to validate the database with
+ * @returns {Promise<(string[]|Object[]|Object)>}
+ */
+exports.mssqlQuery = function (connectionString, query) {
+    return new Promise((resolve, reject) => {
+        mssql.on("error", err => {
+            reject(err);
+        });
+
+        mssql.connect(connectionString).then(pool => {
+            return pool.request()
+                .query(query);
+        }).then(result => {
+            resolve(result);
+        }).catch(err => {
+            reject(err);
+        }).finally(() => {
+            mssql.close();
+        });
     });
 };
 
@@ -574,4 +604,16 @@ exports.percentageToColor = (percentage, maxHue = 90, minHue = 10) => {
  */
 exports.filterAndJoin = (parts, connector = "") => {
     return parts.filter((part) => !!part && part !== "").join(connector);
+};
+
+/**
+ * Send a 403 response
+ * @param {Object} res Express response object
+ * @param {string} [msg=""] Message to send
+ */
+module.exports.send403 = (res, msg = "") => {
+    res.status(403).json({
+        "status": "fail",
+        "msg": msg,
+    });
 };

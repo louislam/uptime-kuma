@@ -11,30 +11,41 @@
                             <div class="my-3">
                                 <label for="type" class="form-label">{{ $t("Monitor Type") }}</label>
                                 <select id="type" v-model="monitor.type" class="form-select">
-                                    <option value="http">
-                                        HTTP(s)
-                                    </option>
-                                    <option value="port">
-                                        TCP Port
-                                    </option>
-                                    <option value="ping">
-                                        Ping
-                                    </option>
-                                    <option value="keyword">
-                                        HTTP(s) - {{ $t("Keyword") }}
-                                    </option>
-                                    <option value="dns">
-                                        DNS
-                                    </option>
-                                    <option value="push">
-                                        Push
-                                    </option>
-                                    <option value="steam">
-                                        Steam Game Server
-                                    </option>
-                                    <option value="mqtt">
-                                        MQTT
-                                    </option>
+                                    <optgroup label="General Monitor Type">
+                                        <option value="http">
+                                            HTTP(s)
+                                        </option>
+                                        <option value="port">
+                                            TCP Port
+                                        </option>
+                                        <option value="ping">
+                                            Ping
+                                        </option>
+                                        <option value="keyword">
+                                            HTTP(s) - {{ $t("Keyword") }}
+                                        </option>
+                                        <option value="dns">
+                                            DNS
+                                        </option>
+                                    </optgroup>
+
+                                    <optgroup label="Passive Monitor Type">
+                                        <option value="push">
+                                            Push
+                                        </option>
+                                    </optgroup>
+
+                                    <optgroup label="Specific Monitor Type">
+                                        <option value="steam">
+                                            {{ $t("Steam Game Server") }}
+                                        </option>
+                                        <option value="mqtt">
+                                            MQTT
+                                        </option>
+                                        <option value="sqlserver">
+                                            SQL Server
+                                        </option>
+                                    </optgroup>
                                 </select>
                             </div>
 
@@ -94,6 +105,15 @@
                                     </div>
                                 </div>
 
+                                <!-- Port -->
+                                <div class="my-3">
+                                    <label for="port" class="form-label">{{ $t("Port") }}</label>
+                                    <input id="port" v-model="monitor.port" type="number" class="form-control" required min="0" max="65535" step="1">
+                                    <div class="form-text">
+                                        {{ $t("dnsPortDescription") }}
+                                    </div>
+                                </div>
+
                                 <div class="my-3">
                                     <label for="dns_resolve_type" class="form-label">{{ $t("Resource Record Type") }}</label>
 
@@ -145,6 +165,18 @@
                                     <div class="form-text">
                                         {{ $t("successMessageExplanation") }}
                                     </div>
+                                </div>
+                            </template>
+
+                            <!-- SQL Server -->
+                            <template v-if="monitor.type === 'sqlserver'">
+                                <div class="my-3">
+                                    <label for="sqlserverConnectionString" class="form-label">SQL Server {{ $t("Connection String") }}</label>
+                                    <input id="sqlserverConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control">
+                                </div>
+                                <div class="my-3">
+                                    <label for="sqlserverQuery" class="form-label">SQL Server {{ $t("Query") }}</label>
+                                    <textarea id="sqlserverQuery" v-model="monitor.databaseQuery" class="form-control" placeholder="Example: select getdate()"></textarea>
                                 </div>
                             </template>
 
@@ -495,6 +527,15 @@ export default {
             if (this.monitor.type === "push") {
                 if (! this.monitor.pushToken) {
                     this.monitor.pushToken = genSecret(10);
+                }
+            }
+
+            // Set default port for DNS if not already defined
+            if (! this.monitor.port || this.monitor.port === "53") {
+                if (this.monitor.type === "dns") {
+                    this.monitor.port = "53";
+                } else {
+                    this.monitor.port = "";
                 }
             }
         }

@@ -1,8 +1,8 @@
 <template>
     <div class="mb-3">
-        <label for="promosms-login" class="form-label">API LOGIN</label>
+        <label for="promosms-login" class="form-label">{{ $t("promosmsLogin") }}</label>
         <input id="promosms-login" v-model="$parent.notification.promosmsLogin" type="text" class="form-control" required>
-        <label for="promosms-key" class="form-label">API PASSWORD</label>
+        <label for="promosms-key" class="form-label">{{ $t("promosmsPassword") }}</label>
         <HiddenInput id="promosms-key" v-model="$parent.notification.promosmsPassword" :required="true" autocomplete="one-time-code"></HiddenInput>
     </div>
     <div class="mb-3">

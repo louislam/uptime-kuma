@@ -7,7 +7,7 @@
         <b>{{ $t("Basic Settings") }}</b>
     </i18n-t>
     <div class="mb-3" style="margin-top: 12px;">
-        <label for="line-user-id" class="form-label">User ID</label>
+        <label for="line-user-id" class="form-label">{{ $t("User ID") }}</label>
         <input id="line-user-id" v-model="$parent.notification.lineUserID" type="text" class="form-control" required>
     </div>
     <i18n-t tag="div" keypath="lineDevConsoleTo" class="form-text">

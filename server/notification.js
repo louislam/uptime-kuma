@@ -2,6 +2,7 @@ const { R } = require("redbean-node");
 const Apprise = require("./notification-providers/apprise");
 const Discord = require("./notification-providers/discord");
 const Gotify = require("./notification-providers/gotify");
+const Ntfy = require("./notification-providers/ntfy");
 const Line = require("./notification-providers/line");
 const LunaSea = require("./notification-providers/lunasea");
 const Mattermost = require("./notification-providers/mattermost");
@@ -29,6 +30,7 @@ const SerwerSMS = require("./notification-providers/serwersms");
 const Stackfield = require("./notification-providers/stackfield");
 const WeCom = require("./notification-providers/wecom");
 const GoogleChat = require("./notification-providers/google-chat");
+const PagerDuty = require("./notification-providers/pagerduty");
 const Gorush = require("./notification-providers/gorush");
 const Alerta = require("./notification-providers/alerta");
 const OneBot = require("./notification-providers/onebot");
@@ -51,6 +53,7 @@ class Notification {
             new Discord(),
             new Teams(),
             new Gotify(),
+            new Ntfy(),
             new Line(),
             new LunaSea(),
             new Feishu(),
@@ -74,6 +77,7 @@ class Notification {
             new Stackfield(),
             new WeCom(),
             new GoogleChat(),
+            new PagerDuty(),
             new Gorush(),
             new Alerta(),
             new OneBot(),

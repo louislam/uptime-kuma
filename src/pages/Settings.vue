@@ -145,6 +145,10 @@ export default {
                     this.settings.keepDataPeriodDays = 180;
                 }
 
+                if (this.settings.tlsExpiryNotifyDays === undefined) {
+                    this.settings.tlsExpiryNotifyDays = [];
+                }
+
                 this.settingsLoaded = true;
             });
         },
