@@ -375,7 +375,7 @@
                                 <div class="my-3">
                                     <label for="method" class="form-label">{{ $t("Method") }}</label>
                                     <select id="method" v-model="monitor.authMethod" class="form-select">
-                                        <option value="">
+                                        <option :value="null">
                                             None
                                         </option>
                                         <option value="basic">
@@ -386,7 +386,7 @@
                                         </option>
                                     </select>
                                 </div>
-                                <template v-if="monitor.authMethod && monitor.authMethod !== '' ">
+                                <template v-if="monitor.authMethod && monitor.authMethod !== null ">
                                     <div class="my-3">
                                         <label for="basicauth" class="form-label">{{ $t("Username") }}</label>
                                         <input id="basicauth-user" v-model="monitor.basic_auth_user" type="text" class="form-control" :placeholder="$t('Username')">
@@ -597,6 +597,7 @@ export default {
                     mqttPassword: "",
                     mqttTopic: "",
                     mqttSuccessMessage: "",
+                    authMethod: null,
                 };
 
                 if (this.$root.proxyList && !this.monitor.proxyId) {
