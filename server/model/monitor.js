@@ -279,17 +279,12 @@ class Monitor extends BeanModel {
                     if (this.auth_method === "ntlm") {
                         options.httpsAgent.keepAlive = true;
 
-                        let ntlmOptions = {
+                        res = await httpNtlm(options, {
                             username: this.basic_auth_user,
                             password: this.basic_auth_pass,
                             domain: this.authDomain,
-                        };
-
-                        if (this.authWorkstation) {
-                            ntlmOptions.workstation = this.authWorkstation;
-                        }
-
-                        res = await httpNtlm(options, ntlmOptions);
+                            workstation: this.authWorkstation ? this.authWorkstation : undefined
+                        });
 
                     } else {
                         res = await axiosClient.request(options);
