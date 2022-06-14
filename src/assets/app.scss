@@ -363,6 +363,12 @@ textarea.form-control {
         overflow-y: auto;
         height: calc(100% - 65px);
     }
+    
+    @media (max-width: 770px) {
+        &.scrollbar {
+            height: calc(100% - 40px);
+        }
+    }
 
     .item {
         display: block;
