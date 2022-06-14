@@ -406,7 +406,7 @@ class Monitor extends BeanModel {
 
                         // If the previous beat was down or pending we use the regular
                         // beatInterval/retryInterval in the setTimeout further below
-                        if (previousBeat.status !== UP || msSinceLastBeat > beatInterval * 1000 + bufferTime) {
+                        if (previousBeat.status !== (this.isUpsideDown() ? DOWN : UP) || msSinceLastBeat > beatInterval * 1000 + bufferTime) {
                             throw new Error("No heartbeat in the time window");
                         } else {
                             let timeout = beatInterval * 1000 - msSinceLastBeat;
