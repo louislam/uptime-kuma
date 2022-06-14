@@ -473,6 +473,14 @@ textarea.form-control {
     outline: none !important;
 }
 
+h5.settings-subheading::after {
+    content: "";
+    display: block;
+    width: 50%;
+    padding-top: 8px;
+    border-bottom: 1px solid $dark-border-color;
+}
+
 // Localization
 
 @import "localization.scss";
