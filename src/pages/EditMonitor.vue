@@ -583,6 +583,7 @@ export default {
                     method: "GET",
                     interval: 60,
                     retryInterval: this.interval,
+                    databaseConnectionString: "Server=<hostname>,<port>;Database=<your database>;User Id=<your user id>;Password=<your password>;Encrypt=<true/false>;TrustServerCertificate=<Yes/No>;Connection Timeout=<int>",
                     maxretries: 0,
                     notificationIDList: {},
                     ignoreTls: false,
