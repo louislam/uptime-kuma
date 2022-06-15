@@ -12,7 +12,7 @@
             <div class="shadow-box">
                 <template v-if="$root.statusPageListLoaded">
                     <span v-if="Object.keys($root.statusPageList).length === 0" class="d-flex align-items-center justify-content-center my-3">
-                        No status pages
+                        {{ $t("No status pages") }}
                     </span>
 
                     <!-- use <a> instead of <router-link>, because the heartbeat won't load. -->
@@ -51,6 +51,11 @@ export default {
 
     },
     methods: {
+        /**
+         * Get the correct URL for the icon
+         * @param {string} icon Path for icon
+         * @returns {string} Correctly formatted path including port numbers
+         */
         icon(icon) {
             if (icon === "/icon.svg") {
                 return icon;
@@ -92,7 +97,6 @@ export default {
         }
 
         .info {
-
             .title {
                 font-weight: bold;
                 font-size: 20px;

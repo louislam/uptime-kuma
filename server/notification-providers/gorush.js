@@ -18,7 +18,7 @@ class Gorush extends NotificationProvider {
             let data = {
                 "notifications": [
                     {
-                        "tokens": [notification.gorushDeviceToken],
+                        "tokens": [ notification.gorushDeviceToken ],
                         "platform": platformMapping[notification.gorushPlatform],
                         "message": msg,
                         // Optional

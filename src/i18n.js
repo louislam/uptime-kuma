@@ -31,6 +31,7 @@ const languageList = {
     "vi-VN": "Tiếng Việt",
     "zh-TW": "繁體中文 (台灣)",
     "uk-UA": "Український",
+    "th-TH": "ไทย",
 };
 
 let messages = {
@@ -43,7 +44,7 @@ for (let lang in languageList) {
     };
 }
 
-const rtlLangs = ["fa"];
+const rtlLangs = [ "fa" ];
 
 export const currentLocale = () => localStorage.locale
     || languageList[navigator.language] && navigator.language

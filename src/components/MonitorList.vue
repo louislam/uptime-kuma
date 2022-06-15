@@ -21,7 +21,7 @@
 
             <router-link v-for="(item, index) in sortedMonitorList" :key="index" :to="monitorURL(item.id)" class="item" :class="{ 'disabled': ! item.active }">
                 <div class="row">
-                    <div class="col-9 col-md-8 small-padding" :class="{ 'monitorItem': $root.userHeartbeatBar == 'bottom' || $root.userHeartbeatBar == 'none' }">
+                    <div class="col-9 col-md-8 small-padding" :class="{ 'monitor-item': $root.userHeartbeatBar == 'bottom' || $root.userHeartbeatBar == 'none' }">
                         <div class="info">
                             <Uptime :monitor="item" type="24" :pill="true" />
                             {{ item.name }}
@@ -36,7 +36,7 @@
                 </div>
 
                 <div v-if="$root.userHeartbeatBar == 'bottom'" class="row">
-                    <div class="col-12">
+                    <div class="col-12 bottom-style">
                         <HeartbeatBar size="small" :monitor-id="item.id" />
                     </div>
                 </div>
@@ -47,8 +47,8 @@
 
 <script>
 import HeartbeatBar from "../components/HeartbeatBar.vue";
-import Uptime from "../components/Uptime.vue";
 import Tag from "../components/Tag.vue";
+import Uptime from "../components/Uptime.vue";
 import { getMonitorRelativeURL } from "../util.ts";
 
 export default {
@@ -58,6 +58,7 @@ export default {
         Tag,
     },
     props: {
+        /** Should the scrollbar be shown */
         scrollbar: {
             type: Boolean,
         },
@@ -69,10 +70,22 @@ export default {
         };
     },
     computed: {
+        /**
+         * Improve the sticky appearance of the list by increasing its
+         * height as user scrolls down.
+         * Not used on mobile.
+         */
         boxStyle() {
-            return {
-                height: `calc(100vh - 160px + ${this.windowTop}px)`,
-            };
+            if (window.innerWidth > 550) {
+                return {
+                    height: `calc(100vh - 160px + ${this.windowTop}px)`,
+                };
+            } else {
+                return {
+                    height: "calc(100vh - 160px)",
+                };
+            }
+
         },
 
         sortedMonitorList() {
@@ -105,7 +118,7 @@ export default {
 
             // Simple filter by search text
             // finds monitor name, tag name or tag value
-            if (this.searchText != "") {
+            if (this.searchText !== "") {
                 const loweredSearchText = this.searchText.toLowerCase();
                 result = result.filter(monitor => {
                     return monitor.name.toLowerCase().includes(loweredSearchText)
@@ -124,6 +137,7 @@ export default {
         window.removeEventListener("scroll", this.onScroll);
     },
     methods: {
+        /** Handle user scroll */
         onScroll() {
             if (window.top.scrollY <= 133) {
                 this.windowTop = window.top.scrollY;
@@ -131,9 +145,15 @@ export default {
                 this.windowTop = 133;
             }
         },
+        /**
+         * Get URL of monitor
+         * @param {number} id ID of monitor
+         * @returns {string} Relative URL of monitor
+         */
         monitorURL(id) {
             return getMonitorRelativeURL(id);
         },
+        /** Clear the search bar */
         clearSearchText() {
             this.searchText = "";
         }
@@ -170,12 +190,6 @@ export default {
     }
 }
 
-.dark {
-    .footer {
-      //  background-color: $dark-bg;
-    }
-}
-
 @media (max-width: 770px) {
     .list-header {
         margin: -20px;
@@ -198,14 +212,21 @@ export default {
     max-width: 15em;
 }
 
-.monitorItem {
+.monitor-item {
     width: 100%;
 }
 
 .tags {
-    padding-left: 62px;
+    margin-top: 4px;
+    padding-left: 67px;
     display: flex;
     flex-wrap: wrap;
     gap: 0;
 }
+
+.bottom-style {
+    padding-left: 67px;
+    margin-top: 5px;
+}
+
 </style>

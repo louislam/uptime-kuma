@@ -16,6 +16,14 @@
                             {{ item.title }}
                         </div>
                     </router-link>
+
+                    <!-- Logout Button -->
+                    <a v-if="$root.isMobile && $root.loggedIn && $root.socket.token !== 'autoLogin'" class="logout" @click.prevent="$root.logout">
+                        <div class="menu-item">
+                            <font-awesome-icon icon="sign-out-alt" />
+                            {{ $t("Logout") }}
+                        </div>
+                    </a>
                 </div>
                 <div class="settings-content col-lg-9 col-md-7">
                     <div v-if="currentPage" class="settings-content-header">
@@ -110,13 +118,17 @@ export default {
 
     methods: {
 
-        // For desktop only, mobile do nothing
+        /**
+         * Load the general settings page
+         * For desktop only, on mobile do nothing
+         */
         loadGeneralPage() {
             if (!this.currentPage && !this.$root.isMobile) {
                 this.$router.push("/settings/general");
             }
         },
 
+        /** Load settings from server */
         loadSettings() {
             this.$root.getSocket().emit("getSettings", (res) => {
                 this.settings = res.data;
@@ -137,13 +149,24 @@ export default {
                     this.settings.keepDataPeriodDays = 180;
                 }
 
+                if (this.settings.tlsExpiryNotifyDays === undefined) {
+                    this.settings.tlsExpiryNotifyDays = [ 7, 14, 21 ];
+                }
+
                 this.settingsLoaded = true;
             });
         },
 
         /**
+         * Callback for saving settings
+         * @callback saveSettingsCB
+         * @param {Object} res Result of operation
+         */
+
+        /**
          * Save Settings
-         * @param currentPassword (Optional) Only need for disableAuth to true
+         * @param {saveSettingsCB} [callback]
+         * @param {string} [currentPassword] Only need for disableAuth to true
          */
         saveSettings(callback, currentPassword) {
             this.$root.getSocket().emit("setSettings", this.settings, currentPassword, (res) => {
@@ -232,5 +255,9 @@ footer {
             }
         }
     }
+}
+
+.logout {
+    color: $danger !important;
 }
 </style>

@@ -25,9 +25,9 @@ class Line extends NotificationProvider {
                             "text": "Test Successful!"
                         }
                     ]
-                }
-                await axios.post(lineAPIUrl, testMessage, config)
-            } else if (heartbeatJSON["status"] == DOWN) {
+                };
+                await axios.post(lineAPIUrl, testMessage, config);
+            } else if (heartbeatJSON["status"] === DOWN) {
                 let downMessage = {
                     "to": notification.lineUserID,
                     "messages": [
@@ -36,9 +36,9 @@ class Line extends NotificationProvider {
                             "text": "UptimeKuma Alert: [🔴 Down]\n" + "Name: " + monitorJSON["name"] + " \n" + heartbeatJSON["msg"] + "\nTime (UTC): " + heartbeatJSON["time"]
                         }
                     ]
-                }
-                await axios.post(lineAPIUrl, downMessage, config)
-            } else if (heartbeatJSON["status"] == UP) {
+                };
+                await axios.post(lineAPIUrl, downMessage, config);
+            } else if (heartbeatJSON["status"] === UP) {
                 let upMessage = {
                     "to": notification.lineUserID,
                     "messages": [
@@ -47,12 +47,12 @@ class Line extends NotificationProvider {
                             "text": "UptimeKuma Alert: [✅ Up]\n" + "Name: " + monitorJSON["name"] + " \n" + heartbeatJSON["msg"] + "\nTime (UTC): " + heartbeatJSON["time"]
                         }
                     ]
-                }
-                await axios.post(lineAPIUrl, upMessage, config)
+                };
+                await axios.post(lineAPIUrl, upMessage, config);
             }
             return okMsg;
         } catch (error) {
-            this.throwGeneralAxiosError(error)
+            this.throwGeneralAxiosError(error);
         }
     }
 }

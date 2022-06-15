@@ -1,9 +1,13 @@
 {
     "extends": "stylelint-config-standard",
+    "customSyntax": "postcss-html",
     "rules": {
         "indentation": 4,
         "no-descending-specificity": null,
         "selector-list-comma-newline-after": null,
-        "declaration-empty-line-before": null
+        "declaration-empty-line-before": null,
+        "alpha-value-notation": "number",
+        "color-function-notation": "legacy",
+        "shorthand-property-no-redundant-values": null
     }
 }
