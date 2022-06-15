@@ -481,8 +481,8 @@ class Monitor extends BeanModel {
                     bean.status = UP;
                     bean.ping = dayjs().valueOf() - startTime;
                 } else if (this.type === "domain") {
-                    const expiry = await whoisExpiryDate(this.hostname)
-                    const daysRemaining = getDaysRemaining(Date.now(), expiry)
+                    const expiry = await whoisExpiryDate(this.hostname);
+                    const daysRemaining = getDaysRemaining(Date.now(), expiry);
                     log.debug("monitor", `[${this.name}] daysRemaining = ${daysRemaining}`);
 
                     bean.msg = `daysRemaining = ${daysRemaining}`;
