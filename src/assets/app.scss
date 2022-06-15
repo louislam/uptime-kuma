@@ -34,6 +34,25 @@ textarea.form-control {
     }
 }
 
+
+// optgroup
+optgroup {
+    color: #b1b1b1;
+    option {
+        color: #212529;
+    }
+}
+
+.dark {
+    optgroup {
+        color: #535864;
+        option {
+            color: $dark-font-color;
+        }
+    }
+}
+
+// Scrollbar
 ::-webkit-scrollbar-thumb {
     background: #ccc;
     border-radius: 20px;
