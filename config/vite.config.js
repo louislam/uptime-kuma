@@ -14,8 +14,7 @@ export default defineConfig({
     plugins: [
         vue(),
         legacy({
-            targets: [ "ie > 11" ],
-            additionalLegacyPolyfills: [ "regenerator-runtime/runtime" ]
+            targets: [ "since 2015" ],
         }),
         visualizer({
             filename: "tmp/dist-stats.html"
