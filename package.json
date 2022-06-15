@@ -104,6 +104,7 @@
         "nodemailer": "~6.6.5",
         "notp": "~2.0.3",
         "password-hash": "~1.2.2",
+        "pg": "^8.7.3",
         "postcss-rtlcss": "~3.4.1",
         "postcss-scss": "~4.0.3",
         "prismjs": "^1.27.0",

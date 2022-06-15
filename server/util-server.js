@@ -11,6 +11,7 @@ const mqtt = require("mqtt");
 const chroma = require("chroma-js");
 const { badgeConstants } = require("./config");
 const mssql = require("mssql");
+const { Client } = require("pg");
 const { NtlmClient } = require("axios-ntlm");
 
 // From ping-lite
@@ -251,6 +252,33 @@ exports.mssqlQuery = function (connectionString, query) {
         }).finally(() => {
             mssql.close();
         });
+    });
+};
+
+/**
+ * Run a query on Postgres
+ * @param {string} connectionString The database connection string
+ * @param {string} query The query to validate the database with
+ * @returns {Promise<(string[]|Object[]|Object)>}
+ */
+exports.postgresQuery = function (connectionString, query) {
+
+    return new Promise((resolve, reject) => {
+
+        const client = new Client({ connectionString });
+
+        client.connect();
+
+        client.query(query)
+            .then(res => {
+                resolve(res);
+            })
+            .catch(err => {
+                reject(err);
+            })
+            .finally(() => {
+                client.end();
+            });
     });
 };
 
