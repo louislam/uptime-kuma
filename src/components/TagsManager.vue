@@ -139,6 +139,7 @@ export default {
         VueMultiselect,
     },
     props: {
+        /** Array of tags to be pre-selected */
         preSelectedTags: {
             type: Array,
             default: () => [],
@@ -241,9 +242,11 @@ export default {
         this.getExistingTags();
     },
     methods: {
+        /** Show the add tag dialog */
         showAddDialog() {
             this.modal.show();
         },
+        /** Get all existing tags */
         getExistingTags() {
             this.$root.getSocket().emit("getTags", (res) => {
                 if (res.ok) {
@@ -253,6 +256,10 @@ export default {
                 }
             });
         },
+        /**
+         * Delete the specified tag
+         * @param {Object} tag Object representing tag to delete
+         */
         deleteTag(item) {
             if (item.new) {
                 // Undo Adding a new Tag
@@ -262,6 +269,13 @@ export default {
                 this.deleteTags.push(item);
             }
         },
+        /**
+         * Get colour of text inside the tag
+         * @param {Object} option The tag that needs to be displayed.
+         * Defaults to "white" unless the tag has no color, which will
+         * then return the body color (based on application theme)
+         * @returns string
+         */
         textColor(option) {
             if (option.color) {
                 return "white";
@@ -269,6 +283,7 @@ export default {
                 return this.$root.theme === "light" ? "var(--bs-body-color)" : "inherit";
             }
         },
+        /** Add a draft tag */
         addDraftTag() {
             console.log("Adding Draft Tag: ", this.newDraftTag);
             if (this.newDraftTag.select != null) {
@@ -296,6 +311,7 @@ export default {
             }
             this.clearDraftTag();
         },
+        /** Remove a draft tag */
         clearDraftTag() {
             this.newDraftTag = {
                 name: null,
@@ -307,26 +323,51 @@ export default {
             };
             this.modal.hide();
         },
+        /**
+         * Add a tag asynchronously
+         * @param {Object} newTag Object representing new tag to add
+         * @returns {Promise<void>}
+         */
         addTagAsync(newTag) {
             return new Promise((resolve) => {
                 this.$root.getSocket().emit("addTag", newTag, resolve);
             });
         },
+        /**
+         * Add a tag to a monitor asynchronously
+         * @param {number} tagId ID of tag to add
+         * @param {number} monitorId ID of monitor to add tag to
+         * @param {string} value Value of tag
+         * @returns {Promise<void>}
+         */
         addMonitorTagAsync(tagId, monitorId, value) {
             return new Promise((resolve) => {
                 this.$root.getSocket().emit("addMonitorTag", tagId, monitorId, value, resolve);
             });
         },
+        /**
+         * Delete a tag from a monitor asynchronously
+         * @param {number} tagId ID of tag to remove
+         * @param {number} monitorId ID of monitor to remove tag from
+         * @param {string} value Value of tag
+         * @returns {Promise<void>}
+         */
         deleteMonitorTagAsync(tagId, monitorId, value) {
             return new Promise((resolve) => {
                 this.$root.getSocket().emit("deleteMonitorTag", tagId, monitorId, value, resolve);
             });
         },
+        /** Handle pressing Enter key when inside the modal */
         onEnter() {
             if (!this.validateDraftTag.invalid) {
                 this.addDraftTag();
             }
         },
+        /**
+         * Submit the form data
+         * @param {number} monitorId ID of monitor this change affects
+         * @returns {void}
+         */
         async submit(monitorId) {
             console.log(`Submitting tag changes for monitor ${monitorId}...`);
             this.processing = true;

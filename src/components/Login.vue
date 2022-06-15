@@ -55,6 +55,7 @@ export default {
         };
     },
     methods: {
+        /** Submit the user details and attempt to log in */
         submit() {
             this.processing = true;
 

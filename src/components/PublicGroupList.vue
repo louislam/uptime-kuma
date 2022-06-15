@@ -72,10 +72,12 @@ export default {
         Tag,
     },
     props: {
+        /** Are we in edit mode? */
         editMode: {
             type: Boolean,
             required: true,
         },
+        /** Should tags be shown? */
         showTags: {
             type: Boolean,
         }
@@ -94,10 +96,20 @@ export default {
 
     },
     methods: {
+        /**
+         * Remove the specified group
+         * @param {number} index Index of group to remove
+         */
         removeGroup(index) {
             this.$root.publicGroupList.splice(index, 1);
         },
 
+        /**
+         * Remove a monitor from a group
+         * @param {number} groupIndex Index of group to remove monitor
+         * from
+         * @param {number} index Index of monitor to remove
+         */
         removeMonitor(groupIndex, index) {
             this.$root.publicGroupList[groupIndex].monitorList.splice(index, 1);
         },

@@ -20,14 +20,20 @@
 <script>
 export default {
     props: {
+        /** Object representing tag */
         item: {
             type: Object,
             required: true,
         },
+        /** Function to remove tag */
         remove: {
             type: Function,
             default: null,
         },
+        /**
+         * Size of tag
+         * @values normal, small
+         */
         size: {
             type: String,
             default: "normal",

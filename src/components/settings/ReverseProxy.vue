@@ -120,14 +120,17 @@ export default {
         this.$root.getSocket().emit(prefix + "leave");
     },
     methods: {
+        /** Start the Cloudflare tunnel */
         start() {
             this.$root.getSocket().emit(prefix + "start", this.cloudflareTunnelToken);
         },
+        /** Stop the Cloudflare tunnel */
         stop() {
             this.$root.getSocket().emit(prefix + "stop", this.currentPassword, (res) => {
                 this.$root.toastRes(res);
             });
         },
+        /** Remove the token for the Cloudflare tunnel */
         removeToken() {
             this.$root.getSocket().emit(prefix + "removeToken");
             this.cloudflareTunnelToken = "";
