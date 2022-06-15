@@ -62,6 +62,12 @@ export default {
 
     methods: {
 
+        /**
+         * Initialize connection to socket server
+         * @param {boolean} [bypass = false] Should the check for if we
+         * are on a status page be bypassed?
+         * @returns {(void|null)}
+         */
         initSocketIO(bypass = false) {
             // No need to re-init
             if (this.socket.initedSocketIO) {
@@ -258,10 +264,18 @@ export default {
             socket.on("cloudflared_token", (res) => this.cloudflared.cloudflareTunnelToken = res);
         },
 
+        /**
+         * The storage currently in use
+         * @returns {Storage}
+         */
         storage() {
             return (this.remember) ? localStorage : sessionStorage;
         },
 
+        /**
+         * Get payload of JWT cookie
+         * @returns {(Object|undefined)}
+         */
         getJWTPayload() {
             const jwtToken = this.$root.storage().token;
 
@@ -271,10 +285,18 @@ export default {
             return undefined;
         },
 
+        /**
+         * Get current socket
+         * @returns {Socket}
+         */
         getSocket() {
             return socket;
         },
 
+        /**
+         * Show success or error toast dependant on response status code
+         * @param {Object} res Response object
+         */
         toastRes(res) {
             if (res.ok) {
                 toast.success(res.msg);
@@ -283,14 +305,35 @@ export default {
             }
         },
 
+        /**
+         * Show a success toast
+         * @param {string} msg Message to show
+         */
         toastSuccess(msg) {
             toast.success(msg);
         },
 
+        /**
+         * Show an error toast
+         * @param {string} msg Message to show
+         */
         toastError(msg) {
             toast.error(msg);
         },
 
+        /**
+         * Callback for login
+         * @callback loginCB
+         * @param {Object} res Response object
+         */
+
+        /**
+         * Send request to log user in
+         * @param {string} username Username to log in with
+         * @param {string} password Password to log in with
+         * @param {string} token User token
+         * @param {loginCB} callback Callback to call with result
+         */
         login(username, password, token, callback) {
             socket.emit("login", {
                 username,
@@ -315,6 +358,10 @@ export default {
             });
         },
 
+        /**
+         * Log in using a token
+         * @param {string} token Token to log in with
+         */
         loginByToken(token) {
             socket.emit("loginByToken", token, (res) => {
                 this.allowLoginDialog = true;
@@ -328,6 +375,7 @@ export default {
             });
         },
 
+        /** Log out of the web application */
         logout() {
             socket.emit("logout", () => { });
             this.storage().removeItem("token");
@@ -337,26 +385,54 @@ export default {
             this.clearData();
         },
 
+        /**
+         * Callback for general socket requests
+         * @callback socketCB
+         * @param {Object} res Result of operation
+         */
+        /** Prepare 2FA configuration */
         prepare2FA(callback) {
             socket.emit("prepare2FA", callback);
         },
 
+        /**
+         * Save the current 2FA configuration
+         * @param {any} secret Unused
+         * @param {socketCB} callback
+         */
         save2FA(secret, callback) {
             socket.emit("save2FA", callback);
         },
 
+        /**
+         * Disable 2FA for this user
+         * @param {socketCB} callback
+         */
         disable2FA(callback) {
             socket.emit("disable2FA", callback);
         },
 
+        /**
+         * Verify the provided 2FA token
+         * @param {string} token Token to verify
+         * @param {socketCB} callback
+         */
         verifyToken(token, callback) {
             socket.emit("verifyToken", token, callback);
         },
 
+        /**
+         * Get current 2FA status
+         * @param {socketCB} callback
+         */
         twoFAStatus(callback) {
             socket.emit("twoFAStatus", callback);
         },
 
+        /**
+         * Get list of monitors
+         * @param {socketCB} callback
+         */
         getMonitorList(callback) {
             if (! callback) {
                 callback = () => { };
@@ -364,36 +440,74 @@ export default {
             socket.emit("getMonitorList", callback);
         },
 
+        /**
+         * Add a monitor
+         * @param {Object} monitor Object representing monitor to add
+         * @param {socketCB} callback
+         */
         add(monitor, callback) {
             socket.emit("add", monitor, callback);
         },
 
+        /**
+         * Delete monitor by ID
+         * @param {number} monitorID ID of monitor to delete
+         * @param {socketCB} callback
+         */
         deleteMonitor(monitorID, callback) {
             socket.emit("deleteMonitor", monitorID, callback);
         },
 
+        /** Clear the hearbeat list */
         clearData() {
             console.log("reset heartbeat list");
             this.heartbeatList = {};
             this.importantHeartbeatList = {};
         },
 
+        /**
+         * Upload the provided backup
+         * @param {string} uploadedJSON JSON to upload
+         * @param {string} importHandle Type of import. If set to
+         * most data in database will be replaced
+         * @param {socketCB} callback
+         */
         uploadBackup(uploadedJSON, importHandle, callback) {
             socket.emit("uploadBackup", uploadedJSON, importHandle, callback);
         },
 
+        /**
+         * Clear events for a specified monitor
+         * @param {number} monitorID ID of monitor to clear
+         * @param {socketCB} callback
+         */
         clearEvents(monitorID, callback) {
             socket.emit("clearEvents", monitorID, callback);
         },
 
+        /**
+         * Clear the heartbeats of a specified monitor
+         * @param {number} monitorID Id of monitor to clear
+         * @param {socketCB} callback
+         */
         clearHeartbeats(monitorID, callback) {
             socket.emit("clearHeartbeats", monitorID, callback);
         },
 
+        /**
+         * Clear all statistics
+         * @param {socketCB} callback
+         */
         clearStatistics(callback) {
             socket.emit("clearStatistics", callback);
         },
 
+        /**
+         * Get monitor beats for a specific monitor in a time range
+         * @param {number} monitorID ID of monitor to fetch
+         * @param {number} period Time in hours from now
+         * @param {socketCB} callback
+         */
         getMonitorBeats(monitorID, period, callback) {
             socket.emit("getMonitorBeats", monitorID, period, callback);
         }

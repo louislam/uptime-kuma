@@ -45,7 +45,7 @@
                 </div>
 
                 <div v-if="false" class="my-3">
-                    <label for="password" class="form-label">{{ $t("Password") }} <sup>Coming Soon</sup></label>
+                    <label for="password" class="form-label">{{ $t("Password") }} <sup>{{ $t("Coming Soon") }}</sup></label>
                     <input id="password" v-model="config.password" disabled type="password" autocomplete="new-password" class="form-control">
                 </div>
 
@@ -98,21 +98,22 @@
             <h1 class="mb-4 title-flex">
                 <!-- Logo -->
                 <span class="logo-wrapper" @click="showImageCropUploadMethod">
-                    <img :src="logoURL" alt class="logo me-2" :class="logoClass" @load="statusPageLogoLoaded" />
+                    <img :src="logoURL" alt class="logo me-2" :class="logoClass" />
                     <font-awesome-icon v-if="enableEditMode" class="icon-upload" icon="upload" />
                 </span>
 
                 <!-- Uploader -->
                 <!--    url="/api/status-page/upload-logo" -->
-                <ImageCropUpload v-model="showImageCropUpload"
-                                 field="img"
-                                 :width="128"
-                                 :height="128"
-                                 :langType="$i18n.locale"
-                                 img-format="png"
-                                 :noCircle="true"
-                                 :noSquare="false"
-                                 @crop-success="cropSuccess"
+                <ImageCropUpload
+                    v-model="showImageCropUpload"
+                    field="img"
+                    :width="128"
+                    :height="128"
+                    :langType="$i18n.locale"
+                    img-format="png"
+                    :noCircle="true"
+                    :noSquare="false"
+                    @crop-success="cropSuccess"
                 />
 
                 <!-- Title -->
@@ -281,22 +282,21 @@
 
 <script>
 import axios from "axios";
-import PublicGroupList from "../components/PublicGroupList.vue";
-import ImageCropUpload from "vue-image-crop-upload";
-import { STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_PARTIAL_DOWN, UP } from "../util.ts";
-import { useToast } from "vue-toastification";
 import dayjs from "dayjs";
 import Favico from "favico.js";
-import { getResBaseURL } from "../util-frontend";
-import Confirm from "../components/Confirm.vue";
-// import Prism Editor
-import { PrismEditor } from "vue-prism-editor";
-import "vue-prism-editor/dist/prismeditor.min.css"; // import the styles somewhere
-
 // import highlighting library (you can use any library you want just return html string)
 import { highlight, languages } from "prismjs/components/prism-core";
 import "prismjs/components/prism-css";
 import "prismjs/themes/prism-tomorrow.css"; // import syntax highlighting styles
+import ImageCropUpload from "vue-image-crop-upload";
+// import Prism Editor
+import { PrismEditor } from "vue-prism-editor";
+import "vue-prism-editor/dist/prismeditor.min.css"; // import the styles somewhere
+import { useToast } from "vue-toastification";
+import Confirm from "../components/Confirm.vue";
+import PublicGroupList from "../components/PublicGroupList.vue";
+import { getResBaseURL } from "../util-frontend";
+import { STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_PARTIAL_DOWN, UP } from "../util.ts";
 
 const toast = useToast();
 
@@ -332,6 +332,7 @@ export default {
     },
 
     props: {
+        /** Override for the status page slug */
         overrideSlug: {
             type: String,
             required: false,
@@ -538,7 +539,7 @@ export default {
             this.slug = "default";
         }
 
-        axios.get("/api/status-page/" + this.slug).then((res) => {
+        this.getData().then((res) => {
             this.config = res.data.config;
 
             if (!this.config.domainNameList) {
@@ -551,6 +552,11 @@ export default {
 
             this.incident = res.data.incident;
             this.$root.publicGroupList = res.data.publicGroupList;
+        }).catch( function (error) {
+            if (error.response.status === 404) {
+                location.href = "/page-not-found";
+            }
+            console.log(error);
         });
 
         // 5mins a loop
@@ -567,10 +573,31 @@ export default {
     },
     methods: {
 
+        /**
+         * Get status page data
+         * It should be preloaded in window.preloadData
+         * @returns {Promise<any>}
+         */
+        getData: function () {
+            if (window.preloadData) {
+                return new Promise(resolve => resolve({
+                    data: window.preloadData
+                }));
+            } else {
+                return axios.get("/api/status-page/" + this.slug);
+            }
+        },
+
+        /**
+         * Provide syntax highlighting for CSS
+         * @param {string} code Text to highlight
+         * @returns {string}
+         */
         highlighter(code) {
             return highlight(code, languages.css);
         },
 
+        /** Update the heartbeat list and update favicon if neccessary */
         updateHeartbeatList() {
             // If editMode, it will use the data from websocket.
             if (! this.editMode) {
@@ -599,14 +626,19 @@ export default {
             }
         },
 
+        /** Enable editing mode */
         edit() {
             if (this.hasToken) {
                 this.$root.initSocketIO(true);
                 this.enableEditMode = true;
                 this.clickedEditButton = true;
+
+                // Try to fix #1658
+                this.loadedData = true;
             }
         },
 
+        /** Save the status page */
         save() {
             let startTime = new Date();
             this.config.slug = this.config.slug.trim().toLowerCase();
@@ -634,10 +666,12 @@ export default {
             });
         },
 
+        /** Show dialog confirming deletion */
         deleteDialog() {
             this.$refs.confirmDelete.show();
         },
 
+        /** Request deletion of this status page */
         deleteStatusPage() {
             this.$root.getSocket().emit("deleteStatusPage", this.slug, (res) => {
                 if (res.ok) {
@@ -649,10 +683,16 @@ export default {
             });
         },
 
+        /**
+         * Returns label for a specifed monitor
+         * @param {Object} monitor Object representing monitor
+         * @returns {string}
+         */
         monitorSelectorLabel(monitor) {
             return `${monitor.name}`;
         },
 
+        /** Add a group to the status page */
         addGroup() {
             let groupName = this.$t("Untitled Group");
 
@@ -666,32 +706,32 @@ export default {
             });
         },
 
+        /** Add a domain to the status page */
         addDomainField() {
             this.config.domainNameList.push("");
         },
 
+        /** Discard changes to status page */
         discard() {
             location.href = "/status/" + this.slug;
         },
 
         /**
-         * Crop Success
+         * Set URL of new image after successful crop operation
+         * @param {string} imgDataUrl URL of image in data:// format
          */
         cropSuccess(imgDataUrl) {
             this.imgDataUrl = imgDataUrl;
         },
 
+        /** Show image crop dialog if in edit mode */
         showImageCropUploadMethod() {
             if (this.editMode) {
                 this.showImageCropUpload = true;
             }
         },
 
-        statusPageLogoLoaded(eventPayload) {
-            // Remark: may not work in dev, due to cros
-            favicon.image(eventPayload.target);
-        },
-
+        /** Create an incident for this status page */
         createIncident() {
             this.enableEditIncidentMode = true;
 
@@ -706,6 +746,7 @@ export default {
             };
         },
 
+        /** Post the incident to the status page */
         postIncident() {
             if (this.incident.title === "" || this.incident.content === "") {
                 toast.error(this.$t("Please input title and content"));
@@ -725,14 +766,13 @@ export default {
 
         },
 
-        /**
-         * Click Edit Button
-         */
+        /** Click Edit Button */
         editIncident() {
             this.enableEditIncidentMode = true;
             this.previousIncident = Object.assign({}, this.incident);
         },
 
+        /** Cancel creation or editing of incident */
         cancelIncident() {
             this.enableEditIncidentMode = false;
 
@@ -742,16 +782,25 @@ export default {
             }
         },
 
+        /** Unpin the incident */
         unpinIncident() {
             this.$root.getSocket().emit("unpinIncident", this.slug, () => {
                 this.incident = null;
             });
         },
 
+        /**
+         * Get the relative time difference of a date from now
+         * @returns {string}
+         */
         dateFromNow(date) {
             return dayjs.utc(date).fromNow();
         },
 
+        /**
+         * Remove a domain from the status page
+         * @param {number} index Index of domain to remove
+         */
         removeDomain(index) {
             this.config.domainNameList.splice(index, 1);
         },

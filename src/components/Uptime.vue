@@ -5,8 +5,17 @@
 <script>
 export default {
     props: {
-        monitor: Object,
-        type: String,
+        /** Monitor this represents */
+        monitor: {
+            type: Object,
+            default: null,
+        },
+        /** Type of monitor */
+        type: {
+            type: String,
+            default: null,
+        },
+        /** Is this a pill? */
         pill: {
             type: Boolean,
             default: false,

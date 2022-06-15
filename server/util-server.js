@@ -7,9 +7,11 @@ const { Resolver } = require("dns");
 const childProcess = require("child_process");
 const iconv = require("iconv-lite");
 const chardet = require("chardet");
-const fs = require("fs");
-const nodeJsUtil = require("util");
 const mqtt = require("mqtt");
+const chroma = require("chroma-js");
+const { badgeConstants } = require("./config");
+const mssql = require("mssql");
+const { NtlmClient } = require("axios-ntlm");
 
 // From ping-lite
 exports.WIN = /^win/.test(process.platform);
@@ -173,15 +175,39 @@ exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
 };
 
 /**
+ * Use NTLM Auth for a http request.
+ * @param {Object} options The http request options
+ * @param {Object} ntlmOptions The auth options
+ * @returns {Promise<(string[]|Object[]|Object)>}
+ */
+exports.httpNtlm = function (options, ntlmOptions) {
+    return new Promise((resolve, reject) => {
+        let client = NtlmClient(ntlmOptions);
+
+        client(options)
+            .then((resp) => {
+                resolve(resp);
+            })
+            .catch((err) => {
+                reject(err);
+            });
+    });
+};
+
+/**
  * Resolves a given record using the specified DNS server
  * @param {string} hostname The hostname of the record to lookup
  * @param {string} resolverServer The DNS server to use
+ * @param {string} resolverPort Port the DNS server is listening on
  * @param {string} rrtype The type of record to request
  * @returns {Promise<(string[]|Object[]|Object)>}
  */
-exports.dnsResolve = function (hostname, resolverServer, rrtype) {
+exports.dnsResolve = function (hostname, resolverServer, resolverPort, rrtype) {
     const resolver = new Resolver();
-    resolver.setServers([ resolverServer ]);
+    // Remove brackets from IPv6 addresses so we can re-add them to
+    // prevent issues with ::1:5300 (::1 port 5300)
+    resolverServer = resolverServer.replace("[", "").replace("]", "");
+    resolver.setServers([ `[${resolverServer}]:${resolverPort}` ]);
     return new Promise((resolve, reject) => {
         if (rrtype === "PTR") {
             resolver.reverse(hostname, (err, records) => {
@@ -204,9 +230,34 @@ exports.dnsResolve = function (hostname, resolverServer, rrtype) {
 };
 
 /**
+ * Run a query on SQL Server
+ * @param {string} connectionString The database connection string
+ * @param {string} query The query to validate the database with
+ * @returns {Promise<(string[]|Object[]|Object)>}
+ */
+exports.mssqlQuery = function (connectionString, query) {
+    return new Promise((resolve, reject) => {
+        mssql.on("error", err => {
+            reject(err);
+        });
+
+        mssql.connect(connectionString).then(pool => {
+            return pool.request()
+                .query(query);
+        }).then(result => {
+            resolve(result);
+        }).catch(err => {
+            reject(err);
+        }).finally(() => {
+            mssql.close();
+        });
+    });
+};
+
+/**
  * Retrieve value of setting based on key
  * @param {string} key Key of setting to retrieve
- * @returns {Promise<Object>} Object representation of setting
+ * @returns {Promise<any>} Value
  */
 exports.setting = async function (key) {
     let value = await R.getCell("SELECT `value` FROM setting WHERE `key` = ? ", [
@@ -525,28 +576,44 @@ exports.convertToUTF8 = (body) => {
     return str.toString();
 };
 
-let logFile;
-
-try {
-    logFile = fs.createWriteStream("./data/error.log", {
-        flags: "a"
-    });
-} catch (_) { }
+/**
+ * Returns a color code in hex format based on a given percentage:
+ * 0% => hue = 10 => red
+ * 100% => hue = 90 => green
+ *
+ * @param {number} percentage float, 0 to 1
+ * @param {number} maxHue
+ * @param {number} minHue, int
+ * @returns {string}, hex value
+ */
+exports.percentageToColor = (percentage, maxHue = 90, minHue = 10) => {
+    const hue = percentage * (maxHue - minHue) + minHue;
+    try {
+        return chroma(`hsl(${hue}, 90%, 40%)`).hex();
+    } catch (err) {
+        return badgeConstants.naColor;
+    }
+};
 
 /**
- * Write error to log file
- * @param {any} error The error to write
- * @param {boolean} outputToConsole Should the error also be output to console?
+ * Joins and array of string to one string after filtering out empty values
+ *
+ * @param {string[]} parts
+ * @param {string} connector
+ * @returns {string}
  */
-exports.errorLog = (error, outputToConsole = true) => {
-    try {
-        if (logFile) {
-            const dateTime = R.isoDateTime();
-            logFile.write(`[${dateTime}] ` + nodeJsUtil.format(error) + "\n");
+exports.filterAndJoin = (parts, connector = "") => {
+    return parts.filter((part) => !!part && part !== "").join(connector);
+};
 
-            if (outputToConsole) {
-                console.error(error);
-            }
-        }
-    } catch (_) { }
+/**
+ * Send a 403 response
+ * @param {Object} res Express response object
+ * @param {string} [msg=""] Message to send
+ */
+module.exports.send403 = (res, msg = "") => {
+    res.status(403).json({
+        "status": "fail",
+        "msg": msg,
+    });
 };

@@ -56,12 +56,19 @@ export default {
         Datetime,
     },
     props: {
+        /** Object representing certificate */
         cert: {
             type: Object,
             required: true,
         },
     },
     methods: {
+        /**
+         * Format the subject of the certificate
+         * @param {Object} subject Object representing the certificates
+         * subject
+         * @returns {string}
+         */
         formatSubject(subject) {
             if (subject.O && subject.CN && subject.C) {
                 return `${subject.CN} - ${subject.O} (${subject.C})`;

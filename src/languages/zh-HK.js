@@ -30,7 +30,6 @@ export default {
     Current: "目前",
     Uptime: "上線率",
     "Cert Exp.": "証書期限",
-    days: "日",
     day: "日",
     "-day": "日",
     hour: "小時",

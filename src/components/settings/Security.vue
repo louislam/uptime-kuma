@@ -8,7 +8,7 @@
                     <button v-if="! settings.disableAuth" id="logout-btn" class="btn btn-danger ms-4 me-2 mb-2" @click="$root.logout">{{ $t("Logout") }}</button>
                 </p>
 
-                <h5 class="my-4">{{ $t("Change Password") }}</h5>
+                <h5 class="my-4 settings-subheading">{{ $t("Change Password") }}</h5>
                 <form class="mb-3" @submit.prevent="savePassword">
                     <div class="mb-3">
                         <label for="current-password" class="form-label">
@@ -62,7 +62,7 @@
             </template>
 
             <div v-if="! settings.disableAuth" class="mt-5 mb-3">
-                <h5 class="my-4">
+                <h5 class="my-4 settings-subheading">
                     {{ $t("Two Factor Authentication") }}
                 </h5>
                 <div class="mb-4">
@@ -78,7 +78,7 @@
 
             <div class="my-4">
                 <!-- Advanced -->
-                <h5 class="my-4">{{ $t("Advanced") }}</h5>
+                <h5 class="my-4 settings-subheading">{{ $t("Advanced") }}</h5>
 
                 <div class="mb-4">
                     <button v-if="settings.disableAuth" id="enableAuth-btn" class="btn btn-outline-primary me-2 mb-2" @click="enableAuth">{{ $t("Enable Auth") }}</button>
@@ -206,7 +206,7 @@
 
             <template v-else-if="$i18n.locale === 'bg-BG' ">
                 <p>Сигурни ли сте, че желаете да <strong>изключите удостоверяването</strong>?</p>
-                <p>Използва се в случаите, когато <strong>има настроен алтернативен метод за удостоверяване</strong> преди Uptime Kuma, например Cloudflare Access.</p>
+                <p>Използва се в случаите, когато <strong>има настроен алтернативен метод за удостоверяване</strong> преди Uptime Kuma, например Cloudflare Access, Authelia или друг механизъм за удостоверяване.</p>
                 <p>Моля, използвайте с повишено внимание.</p>
             </template>
 
@@ -232,6 +232,12 @@
                 <p>Bạn có muốn <strong>TẮT XÁC THỰC</strong> không?</p>
                 <p>Điều này rất nguy hiểm<strong>BẤT KỲ AI</strong> cũng có thể truy cập và cướp quyền điều khiển.</p>
                 <p>Vui lòng <strong>cẩn thận</strong>.</p>
+            </template>
+
+            <template v-else-if="$i18n.locale === 'th-TH' ">
+                <p>คุณต้องการที่จะ <strong>ปิดใช้งานระบบรับรองความถูกต้องใช่หรือไม่</strong>?</p>
+                <p>ระบบนี้ถูกออกแบบมาเพื่อการใช้งานกับระบบรับรองความถูกต้องของบุคคลที่สามเช่น Cloudflare Access, Authelia หรือวิธีการอื่น ๆ</p>
+                <p>โปรดใช้ความระมัดระวังในการเลือกใช้งานระบบนี้ !</p>
             </template>
 
             <!-- English (en) -->
@@ -297,6 +303,7 @@ export default {
     },
 
     methods: {
+        /** Check new passwords match before saving them */
         savePassword() {
             if (this.password.newPassword !== this.password.repeatNewPassword) {
                 this.invalidPassword = true;
@@ -314,6 +321,7 @@ export default {
             }
         },
 
+        /** Disable authentication for web app access */
         disableAuth() {
             this.settings.disableAuth = true;
 
@@ -326,6 +334,7 @@ export default {
             }, this.password.currentPassword);
         },
 
+        /** Enable authentication for web app access */
         enableAuth() {
             this.settings.disableAuth = false;
             this.saveSettings();
@@ -340,15 +349,3 @@ export default {
     },
 };
 </script>
-
-<style lang="scss" scoped>
-@import "../../assets/vars.scss";
-
-h5::after {
-    content: "";
-    display: block;
-    width: 50%;
-    padding-top: 8px;
-    border-bottom: 1px solid $dark-border-color;
-}
-</style>

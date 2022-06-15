@@ -125,11 +125,16 @@ export default {
     },
     methods: {
 
+        /** Show dialog to confirm deletion */
         deleteConfirm() {
             this.modal.hide();
             this.$refs.confirmDelete.show();
         },
 
+        /**
+         * Show settings for specified notification
+         * @param {number} notificationID ID of notification to show
+         */
         show(notificationID) {
             if (notificationID) {
                 this.id = notificationID;
@@ -152,6 +157,7 @@ export default {
             this.modal.show();
         },
 
+        /** Submit the form to the server */
         submit() {
             this.processing = true;
             this.$root.getSocket().emit("addNotification", this.notification, this.id, (res) => {
@@ -170,6 +176,7 @@ export default {
             });
         },
 
+        /** Test the notification endpoint */
         test() {
             this.processing = true;
             this.$root.getSocket().emit("testNotification", this.notification, (res) => {
@@ -178,6 +185,7 @@ export default {
             });
         },
 
+        /** Delete the notification endpoint */
         deleteNotification() {
             this.processing = true;
             this.$root.getSocket().emit("deleteNotification", this.id, (res) => {
@@ -190,6 +198,7 @@ export default {
             });
         },
         /**
+         * Get a unique default name for the notification
          * @param {keyof NotificationFormList} notificationKey
          * @return {string}
          */

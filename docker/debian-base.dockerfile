@@ -12,7 +12,8 @@ RUN apt update && \
     apt --yes --no-install-recommends install python3 python3-pip python3-cryptography python3-six python3-yaml python3-click python3-markdown python3-requests python3-requests-oauthlib \
         sqlite3 iputils-ping util-linux dumb-init && \
     pip3 --no-cache-dir install apprise==0.9.8.3 && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* && \
+    apt --yes autoremove
 
 # Install cloudflared
 # dpkg --add-architecture arm: cloudflared do not provide armhf, this is workaround. Read more: https://github.com/cloudflare/cloudflared/issues/583
@@ -22,5 +23,6 @@ RUN node ./extra/download-cloudflared.js $TARGETPLATFORM && \
     apt update && \
     apt --yes --no-install-recommends install ./cloudflared.deb && \
     rm -rf /var/lib/apt/lists/* && \
-    rm -f cloudflared.deb
+    rm -f cloudflared.deb && \
+    apt --yes autoremove
 

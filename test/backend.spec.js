@@ -1,5 +1,9 @@
-const { genSecret } = require("../src/util");
+const { genSecret, DOWN } = require("../src/util");
 const utilServerRewire = require("../server/util-server");
+const Discord = require("../server/notification-providers/discord");
+const axios = require("axios");
+
+jest.mock("axios");
 
 describe("Test parseCertificateInfo", () => {
     it("should handle undefined", async () => {
@@ -155,7 +159,6 @@ describe("Test genSecret", () => {
         expect(secret).toContain("A");
         expect(secret).toContain("9");
     });
-
 });
 
 describe("Test reset-password", () => {
@@ -164,3 +167,61 @@ describe("Test reset-password", () => {
     }, 120000);
 });
 
+describe("Test Discord Notification Provider", () => {
+    const hostname = "discord.com";
+    const port = 1337;
+
+    const sendNotification = async (hostname, port, type) => {
+        const discordProvider = new Discord();
+
+        axios.post.mockResolvedValue({});
+
+        await discordProvider.send(
+            {
+                discordUsername: "Uptime Kuma",
+                discordWebhookUrl: "https://discord.com",
+            },
+            "test message",
+            {
+                type,
+                hostname,
+                port,
+            },
+            {
+                status: DOWN,
+            }
+        );
+    };
+
+    it("should send hostname for ping monitors", async () => {
+        await sendNotification(hostname, null, "ping");
+        expect(axios.post.mock.lastCall[1].embeds[0].fields[1].value).toBe(hostname);
+    });
+
+    it.each([ "dns", "port", "steam" ])("should send hostname for %p monitors", async (type) => {
+        await sendNotification(hostname, port, type);
+        expect(axios.post.mock.lastCall[1].embeds[0].fields[1].value).toBe(`${hostname}:${port}`);
+    });
+});
+
+describe("The function filterAndJoin", () => {
+    it("should join and array of strings to one string", () => {
+        const result = utilServerRewire.filterAndJoin([ "one", "two", "three" ]);
+        expect(result).toBe("onetwothree");
+    });
+
+    it("should join strings using a given connector", () => {
+        const result = utilServerRewire.filterAndJoin([ "one", "two", "three" ], "-");
+        expect(result).toBe("one-two-three");
+    });
+
+    it("should filter null, undefined and empty strings before joining", () => {
+        const result = utilServerRewire.filterAndJoin([ undefined, "", "three" ], "--");
+        expect(result).toBe("three");
+    });
+
+    it("should return an empty string if all parts are filtered out", () => {
+        const result = utilServerRewire.filterAndJoin([ undefined, "", "" ], "--");
+        expect(result).toBe("");
+    });
+});
