@@ -7,7 +7,7 @@ dayjs.extend(timezone);
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
 const { log, UP, DOWN, PENDING, flipStatus, TimeLogger } = require("../../src/util");
-const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, mqttAsync, setSetting, httpNtlm, getDaysRemaining } = require("../util-server");
+const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, mqttAsync, setSetting, httpNtlm, getDaysRemaining, whoisExpiryDate } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification");
@@ -16,7 +16,6 @@ const { demoMode } = require("../config");
 const version = require("../../package.json").version;
 const apicache = require("../modules/apicache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
-const WhoisLight = require("whois-light");
 
 const axiosCachedDnsResolve = require("esm-wallaby")(module)("axios-cached-dns-resolve");
 
@@ -482,18 +481,15 @@ class Monitor extends BeanModel {
                     bean.status = UP;
                     bean.ping = dayjs().valueOf() - startTime;
                 } else if (this.type === "domain") {
-                    
-                    var whois = await WhoisLight.lookup({ format: true }, this.hostname);
-                    if (whois["Registry Expiry Date"] != null) {
-                        const expiry = Date.parse(whois["Registry Expiry Date"]);
-                        const daysRemaining = getDaysRemaining(Date.now(), expiry)
-                        log.debug("monitor", `[${this.name}] daysRemaining = ${daysRemaining}`);
-                        if (daysRemaining >= 30) {
-                            bean.status = UP;
-                            bean.msg = `daysRemaining = ${daysRemaining}`;
-                        }
+                    const expiry = await whoisExpiryDate(this.hostname)
+                    const daysRemaining = getDaysRemaining(Date.now(), expiry)
+                    log.debug("monitor", `[${this.name}] daysRemaining = ${daysRemaining}`);
+
+                    bean.msg = `daysRemaining = ${daysRemaining}`;
+                    if (daysRemaining >= 30) {
+                        bean.status = UP;
                     }
-                    
+
                 } else {
                     bean.msg = "Unknown Monitor Type";
                     bean.status = PENDING;
