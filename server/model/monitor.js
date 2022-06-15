@@ -206,7 +206,7 @@ class Monitor extends BeanModel {
             bean.monitor_id = this.id;
             bean.time = R.isoDateTimeMillis(dayjs.utc());
             bean.status = DOWN;
-            bean.lastNotifiedTime = previousBeat?.lastNotifiedTime;
+            bean.downCount = previousBeat?.downCount || 0;
 
             if (this.isUpsideDown()) {
                 bean.status = flipStatus(bean.status);
@@ -523,8 +523,8 @@ class Monitor extends BeanModel {
                 log.debug("monitor", `[${this.name}] sendNotification`);
                 await Monitor.sendNotification(isFirstBeat, this, bean);
 
-                // Set last notified time to now
-                bean.lastNotifiedTime = R.isoDateTime(dayjs.utc());
+                // Reset down count
+                bean.downCount = 0;
 
                 // Clear Status Page Cache
                 log.debug("monitor", `[${this.name}] apicache clear`);
@@ -534,16 +534,14 @@ class Monitor extends BeanModel {
                 bean.important = false;
 
                 if (bean.status === DOWN && this.resendInterval > 0) {
-                    // divide by 1000 to convert from milliseconds to seconds and divide by 60 to convert from seconds to minutes
-                    let timeSinceLastNotified = (dayjs.utc().valueOf() - (bean.lastNotifiedTime == null ? 0 : dayjs.utc(bean.lastNotifiedTime).valueOf())) / 1000 / 60;
-                    if (timeSinceLastNotified >= this.resendInterval) {
+                    ++bean.downCount;
+                    if (bean.downCount >= this.resendInterval) {
                         // Send notification again, because we are still DOWN
-                        const currentTime = R.isoDateTime(dayjs.utc());
-                        log.debug("monitor", `[${this.name}] sendNotification again: lastNotifiedTime: ${bean.lastNotifiedTime} | current time: ${currentTime}`);
+                        log.debug("monitor", `[${this.name}] sendNotification again: Down Count: ${bean.downCount} | Resend Interval: ${this.resendInterval}`);
                         await Monitor.sendNotification(isFirstBeat, this, bean);
 
-                        // Set last notified time to now
-                        bean.lastNotifiedTime = currentTime;
+                        // Reset down count
+                        bean.downCount = 0;
                     }
                 }
             }
@@ -556,7 +554,7 @@ class Monitor extends BeanModel {
                 }
                 log.warn("monitor", `Monitor #${this.id} '${this.name}': Pending: ${bean.msg} | Max retries: ${this.maxretries} | Retry: ${retries} | Retry Interval: ${beatInterval} seconds | Type: ${this.type}`);
             } else {
-                log.warn("monitor", `Monitor #${this.id} '${this.name}': Failing: ${bean.msg} | Interval: ${beatInterval} seconds | Type: ${this.type}`);
+                log.warn("monitor", `Monitor #${this.id} '${this.name}': Failing: ${bean.msg} | Interval: ${beatInterval} seconds | Type: ${this.type} | Down Count: ${bean.downCount} | Resend Interval: ${this.resendInterval}`);
             }
 
             log.debug("monitor", `[${this.name}] Send to socket`);
