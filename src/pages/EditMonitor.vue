@@ -630,7 +630,7 @@ export default {
                         if (this.monitor.name === this.monitor.url || this.monitor.name === this.monitor.hostname) {
                             this.monitor.name = "";
                         }
-                        
+
                         // Handling for monitors that are created before 1.7.0
                         if (this.monitor.retryInterval === 0) {
                             this.monitor.retryInterval = this.monitor.interval;
@@ -736,7 +736,7 @@ export default {
         friendlyNameRequired() {
             return this.friendlyNameRequiredOptions.includes(this.monitor.type);
         },
-        
+
         /*
          * Added a Proxy Event
          * Enable it if the proxy is added in EditMonitor.vue
