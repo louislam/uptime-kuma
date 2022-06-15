@@ -12,6 +12,7 @@ const chroma = require("chroma-js");
 const { badgeConstants } = require("./config");
 const mssql = require("mssql");
 const { Client } = require("pg");
+const postgresConParse = require("pg-connection-string").parse;
 const { NtlmClient } = require("axios-ntlm");
 
 // From ping-lite
@@ -265,11 +266,18 @@ exports.postgresQuery = function (connectionString, query) {
 
     return new Promise((resolve, reject) => {
 
+        const config = postgresConParse(connectionString);
+
+        if (config.password === "") {
+            // See https://github.com/brianc/node-postgres/issues/1927
+            return reject(new Error("Password is undefined."));
+        }
+
         const client = new Client({ connectionString });
 
         client.connect();
 
-        client.query(query)
+        return client.query(query)
             .then(res => {
                 resolve(res);
             })
