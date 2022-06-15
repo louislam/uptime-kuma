@@ -428,6 +428,7 @@ export default {
     Next: "下一步",
     "The slug is already taken. Please choose another slug.": "此 slug 已被使用。請選擇其他 slug。",
     "No Proxy": "無 Proxy",
+    Authentication: "驗證",
     "HTTP Basic Auth": "HTTP 基本驗證",
     "New Status Page": "新狀態頁",
     "Page Not Found": "找不到頁面",
