@@ -34,6 +34,25 @@ textarea.form-control {
     }
 }
 
+
+// optgroup
+optgroup {
+    color: #b1b1b1;
+    option {
+        color: #212529;
+    }
+}
+
+.dark {
+    optgroup {
+        color: #535864;
+        option {
+            color: $dark-font-color;
+        }
+    }
+}
+
+// Scrollbar
 ::-webkit-scrollbar-thumb {
     background: #ccc;
     border-radius: 20px;
@@ -363,6 +382,12 @@ textarea.form-control {
         overflow-y: auto;
         height: calc(100% - 65px);
     }
+    
+    @media (max-width: 770px) {
+        &.scrollbar {
+            height: calc(100% - 40px);
+        }
+    }
 
     .item {
         display: block;
@@ -471,6 +496,14 @@ textarea.form-control {
 
 .prism-editor__textarea {
     outline: none !important;
+}
+
+h5.settings-subheading::after {
+    content: "";
+    display: block;
+    width: 50%;
+    padding-top: 8px;
+    border-bottom: 1px solid $dark-border-color;
 }
 
 // Localization

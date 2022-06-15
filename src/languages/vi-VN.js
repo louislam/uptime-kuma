@@ -56,7 +56,6 @@ export default {
     Current: "Hiện tại",
     Uptime: "Uptime",
     "Cert Exp.": "Cert hết hạn",
-    days: "ngày",
     day: "ngày",
     "-day": "-ngày",
     hour: "giờ",

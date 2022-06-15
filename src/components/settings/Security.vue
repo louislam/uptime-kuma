@@ -8,7 +8,7 @@
                     <button v-if="! settings.disableAuth" id="logout-btn" class="btn btn-danger ms-4 me-2 mb-2" @click="$root.logout">{{ $t("Logout") }}</button>
                 </p>
 
-                <h5 class="my-4">{{ $t("Change Password") }}</h5>
+                <h5 class="my-4 settings-subheading">{{ $t("Change Password") }}</h5>
                 <form class="mb-3" @submit.prevent="savePassword">
                     <div class="mb-3">
                         <label for="current-password" class="form-label">
@@ -62,7 +62,7 @@
             </template>
 
             <div v-if="! settings.disableAuth" class="mt-5 mb-3">
-                <h5 class="my-4">
+                <h5 class="my-4 settings-subheading">
                     {{ $t("Two Factor Authentication") }}
                 </h5>
                 <div class="mb-4">
@@ -78,7 +78,7 @@
 
             <div class="my-4">
                 <!-- Advanced -->
-                <h5 class="my-4">{{ $t("Advanced") }}</h5>
+                <h5 class="my-4 settings-subheading">{{ $t("Advanced") }}</h5>
 
                 <div class="mb-4">
                     <button v-if="settings.disableAuth" id="enableAuth-btn" class="btn btn-outline-primary me-2 mb-2" @click="enableAuth">{{ $t("Enable Auth") }}</button>
@@ -346,15 +346,3 @@ export default {
     },
 };
 </script>
-
-<style lang="scss" scoped>
-@import "../../assets/vars.scss";
-
-h5::after {
-    content: "";
-    display: block;
-    width: 50%;
-    padding-top: 8px;
-    border-bottom: 1px solid $dark-border-color;
-}
-</style>

@@ -55,7 +55,6 @@ export default {
     Current: "فعلی",
     Uptime: "آپتایم",
     "Cert Exp.": "تاریخ انقضای SSL",
-    days: "روز",
     day: "روز",
     "-day": "-روز",
     hour: "ساعت",

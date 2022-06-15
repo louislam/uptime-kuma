@@ -69,10 +69,22 @@ export default {
         };
     },
     computed: {
+        /**
+         * Improve the sticky appearance of the list by increasing its
+         * height as user scrolls down.
+         * Not used on mobile.
+         */
         boxStyle() {
-            return {
-                height: `calc(100vh - 160px + ${this.windowTop}px)`,
-            };
+            if (window.innerWidth > 550) {
+                return {
+                    height: `calc(100vh - 160px + ${this.windowTop}px)`,
+                };
+            } else {
+                return {
+                    height: "calc(100vh - 160px)",
+                };
+            }
+
         },
 
         sortedMonitorList() {
