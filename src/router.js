@@ -65,11 +65,11 @@ const routes = [
                                 path: "/add",
                                 component: EditMonitor,
                             },
-                            {
-                                path: "/list",
-                                component: List,
-                            },
                         ],
+                    },
+                    {
+                        path: "/list",
+                        component: List,
                     },
                     {
                         path: "/settings",

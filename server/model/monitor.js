@@ -283,7 +283,7 @@ class Monitor extends BeanModel {
                             username: this.basic_auth_user,
                             password: this.basic_auth_pass,
                             domain: this.authDomain,
-                            workstation: this.authWorkstation,
+                            workstation: this.authWorkstation ? this.authWorkstation : undefined
                         });
 
                     } else {
