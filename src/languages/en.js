@@ -529,4 +529,7 @@ export default {
     "Query": "Query",
     settingsCertificateExpiry: "TLS Certificate Expiry",
     certificationExpiryDescription: "HTTPS Monitors trigger notification when TLS certificate expires in:",
+    "ntfy Topic": "ntfy Topic",
+    "Domain": "Domain",
+    "Workstation": "Workstation",
 };
