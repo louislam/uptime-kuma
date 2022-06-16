@@ -421,6 +421,7 @@ export default {
     Next: "Weiter",
     "The slug is already taken. Please choose another slug.": "Der Slug ist bereits in Verwendung. Bitte wähle einen anderen.",
     "No Proxy": "Kein Proxy",
+    Authentication: "Authentifizierung",
     "HTTP Basic Auth": "HTTP Basisauthentifizierung",
     "New Status Page": "Neue Status-Seite",
     "Page Not Found": "Seite nicht gefunden",

@@ -438,6 +438,7 @@ export default {
     Next: "다음",
     "The slug is already taken. Please choose another slug.": "이미 존재하는 주소에요. 다른 주소를 사용해 주세요.",
     "No Proxy": "프록시 없음",
+    Authentication: "인증",
     "HTTP Basic Auth": "HTTP 인증",
     "New Status Page": "새로운 상태 페이지",
     "Page Not Found": "페이지를 찾을 수 없어요",

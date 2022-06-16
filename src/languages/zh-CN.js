@@ -436,6 +436,7 @@ export default {
     Next: "下一步",
     "The slug is already taken. Please choose another slug.": "该路径已被使用。请选择其他路径。",
     "No Proxy": "无代理",
+    Authentication: "验证",
     "HTTP Basic Auth": "HTTP 基础身份验证",
     "New Status Page": "新的状态页",
     "Page Not Found": "未找到该页面",

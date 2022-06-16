@@ -438,6 +438,7 @@ export default {
     Next: "Next",
     "The slug is already taken. Please choose another slug.": "The slug is already taken. Please choose another slug.",
     "No Proxy": "No Proxy",
+    Authentication: "Authentication",
     "HTTP Basic Auth": "HTTP Basic Auth",
     "New Status Page": "New Status Page",
     "Page Not Found": "Page Not Found",

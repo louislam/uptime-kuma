@@ -421,6 +421,7 @@ export default {
     Next: "Следващ",
     "The slug is already taken. Please choose another slug.": "Този слъг вече се използва. Моля изберете друг.",
     "No Proxy": "Без прокси",
+    Authentication: "Удостоверяване",
     "HTTP Basic Auth": "HTTP основно удостоверяване",
     "New Status Page": "Нова статус страница",
     "Page Not Found": "Страницата не е открита",
