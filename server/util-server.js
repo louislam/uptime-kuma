@@ -508,6 +508,25 @@ exports.startUnitTest = async () => {
     });
 };
 
+exports.startE2eTests = async () => {
+    console.log("Starting unit test...");
+    const npm = /^win/.test(process.platform) ? "npm.cmd" : "npm";
+    const child = childProcess.spawn(npm, [ "run", "cy:run" ]);
+
+    child.stdout.on("data", (data) => {
+        console.log(data.toString());
+    });
+
+    child.stderr.on("data", (data) => {
+        console.log(data.toString());
+    });
+
+    child.on("close", function (code) {
+        console.log("Jest exit code: " + code);
+        process.exit(code);
+    });
+};
+
 /**
  * Convert unknown string to UTF8
  * @param {Uint8Array} body Buffer

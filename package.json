@@ -59,6 +59,7 @@
         "release-beta": "node extra/beta/update-version.js && npm run build && node ./extra/env2arg.js docker buildx build -f docker/dockerfile --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma:$VERSION -t louislam/uptime-kuma:beta .  --target release --push && node ./extra/press-any-key.js && npm run upload-artifacts",
         "git-remove-tag": "git tag -d",
         "build-dist-and-restart": "npm run build && npm run start-server-dev",
+        "cy:test": "node test/prepare-test-server.js && node server/server.js --port=3002 --data-dir=./data/test/ --e2e",
         "cy:run": "npx cypress run --browser chrome --headless"
     },
     "dependencies": {

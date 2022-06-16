@@ -61,7 +61,7 @@ log.info("server", "Importing this project modules");
 log.debug("server", "Importing Monitor");
 const Monitor = require("./model/monitor");
 log.debug("server", "Importing Settings");
-const { getSettings, setSettings, setting, initJWTSecret, checkLogin, startUnitTest, FBSD, doubleCheckPassword } = require("./util-server");
+const { getSettings, setSettings, setting, initJWTSecret, checkLogin, startUnitTest, FBSD, doubleCheckPassword, startE2eTests } = require("./util-server");
 
 log.debug("server", "Importing Notification");
 const { Notification } = require("./notification");
@@ -112,6 +112,7 @@ const twoFAVerifyOptions = {
  * @type {boolean}
  */
 const testMode = !!args["test"] || false;
+const e2eTestMode = !!args["e2e"] || false;
 
 if (config.demoMode) {
     log.info("server", "==== Demo Mode ====");
@@ -1458,6 +1459,10 @@ let needSetup = false;
 
         if (testMode) {
             startUnitTest();
+        }
+
+        if (e2eTestMode) {
+            startE2eTests();
         }
     });
 
