@@ -472,7 +472,7 @@ export default {
     "Leave blank to use a shared sender number.": "Paylaşılan bir gönderen numarası kullanmak için boş bırakın.",
     "Octopush API Version": "Octopush API Sürümü",
     "Legacy Octopush-DM": "Eski Octopush-DM",
-    "endpoint": "endpoint",
+    endpoint: "endpoint",
     octopushAPIKey: "Kontrol panelindeki HTTP API kimlik bilgilerinden \"API Key\"",
     octopushLogin: "Kontrol panelindeki HTTP API kimlik bilgilerinden \"Login\"",
     promosmsLogin: "API Oturum Açma Adı",
@@ -524,4 +524,9 @@ export default {
     "do nothing": "hiçbir şey yapma",
     "auto acknowledged": "otomatik onaylama",
     "auto resolve": "otomatik çözümleme",
+    "Connection String": "Connection String",
+    Query: "Query",
+    settingsCertificateExpiry: "TLS Certificate Expiry",
+    certificationExpiryDescription: "HTTPS Monitors trigger notification when TLS certificate expires in:",
+    wayToGetLineNotifyToken: "You can get a access token from {0}",
 };

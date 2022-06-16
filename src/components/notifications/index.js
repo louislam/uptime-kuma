@@ -19,6 +19,7 @@ import Feishu from "./Feishu.vue";
 import Apprise from "./Apprise.vue";
 import Pushbullet from "./Pushbullet.vue";
 import Line from "./Line.vue";
+import LineNotify from "./LineNotify.vue";
 import Mattermost from "./Mattermost.vue";
 import Matrix from "./Matrix.vue";
 import AliyunSMS from "./AliyunSms.vue";
@@ -62,6 +63,7 @@ const NotificationFormList = {
     "apprise": Apprise,
     "pushbullet": Pushbullet,
     "line": Line,
+    "LineNotify": LineNotify,
     "mattermost": Mattermost,
     "matrix": Matrix,
     "DingDing": DingDing,

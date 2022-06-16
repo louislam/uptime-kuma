@@ -4,6 +4,7 @@ const Discord = require("./notification-providers/discord");
 const Gotify = require("./notification-providers/gotify");
 const Ntfy = require("./notification-providers/ntfy");
 const Line = require("./notification-providers/line");
+const LineNotify = require("./notification-providers/linenotify");
 const LunaSea = require("./notification-providers/lunasea");
 const Mattermost = require("./notification-providers/mattermost");
 const Matrix = require("./notification-providers/matrix");
@@ -55,6 +56,7 @@ class Notification {
             new Gotify(),
             new Ntfy(),
             new Line(),
+            new LineNotify(),
             new LunaSea(),
             new Feishu(),
             new Mattermost(),
