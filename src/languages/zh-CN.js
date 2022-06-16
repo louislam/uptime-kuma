@@ -529,4 +529,9 @@ export default {
     "do nothing": "不做任何操作",
     "auto acknowledged": "自动标记为已读",
     "auto resolve": "自动标记为已解决",
+    "Connection String": "Connection String",
+    Query: "Query",
+    settingsCertificateExpiry: "TLS Certificate Expiry",
+    certificationExpiryDescription: "HTTPS Monitors trigger notification when TLS certificate expires in:",
+    wayToGetLineNotifyToken: "You can get a access token from {0}",
 };

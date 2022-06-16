@@ -481,7 +481,7 @@ export default {
     "Leave blank to use a shared sender number.": "Leave blank to use a shared sender number.",
     "Octopush API Version": "Octopush API Version",
     "Legacy Octopush-DM": "Legacy Octopush-DM",
-    "endpoint": "endpoint",
+    endpoint: "endpoint",
     octopushAPIKey: "\"API key\" from HTTP API credentials in control panel",
     octopushLogin: "\"Login\" from HTTP API credentials in control panel",
     promosmsLogin: "API Login Name",
@@ -525,7 +525,8 @@ export default {
     "Coming Soon": "Coming Soon",
     wayToGetClickSendSMSToken: "You can get API Username and API Key from {0} .",
     "Connection String": "Connection String",
-    "Query": "Query",
+    Query: "Query",
     settingsCertificateExpiry: "TLS Certificate Expiry",
     certificationExpiryDescription: "HTTPS Monitors trigger notification when TLS certificate expires in:",
+    wayToGetLineNotifyToken: "You can get a access token from {0}",
 };

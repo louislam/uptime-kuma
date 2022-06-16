@@ -528,4 +528,5 @@ export default {
     Query: "Заявка",
     settingsCertificateExpiry: "Изтичане валидността на TLS сертификата",
     certificationExpiryDescription: "HTTPS мониторите задействат известие при изтичане на TLS сертификата в:",
+    wayToGetLineNotifyToken: "You can get a access token from {0}",
 };
