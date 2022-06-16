@@ -263,7 +263,6 @@ exports.mssqlQuery = function (connectionString, query) {
  * @returns {Promise<(string[]|Object[]|Object)>}
  */
 exports.postgresQuery = function (connectionString, query) {
-
     return new Promise((resolve, reject) => {
 
         const config = postgresConParse(connectionString);
