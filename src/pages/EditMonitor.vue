@@ -369,17 +369,17 @@
                                 </div>
 
                                 <!-- HTTP Auth -->
-                                <h4 class="mt-5 mb-2">{{ $t("HTTP Authentication") }}</h4>
+                                <h4 class="mt-5 mb-2">{{ $t("Authentication") }}</h4>
 
                                 <!-- Method -->
                                 <div class="my-3">
                                     <label for="method" class="form-label">{{ $t("Method") }}</label>
                                     <select id="method" v-model="monitor.authMethod" class="form-select">
                                         <option :value="null">
-                                            None
+                                            {{ $t("None") }}
                                         </option>
                                         <option value="basic">
-                                            Basic
+                                            {{ $t("HTTP Basic Auth") }}
                                         </option>
                                         <option value="ntlm">
                                             NTLM
