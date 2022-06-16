@@ -264,7 +264,6 @@ exports.mssqlQuery = function (connectionString, query) {
  */
 exports.postgresQuery = function (connectionString, query) {
     return new Promise((resolve, reject) => {
-
         const config = postgresConParse(connectionString);
 
         if (config.password === "") {
