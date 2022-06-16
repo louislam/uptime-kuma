@@ -453,7 +453,6 @@ export default {
     "No consecutive dashes": "No consecutive dashes",
     "The slug is already taken. Please choose another slug.": "The slug is already taken. Please choose another slug.",
     "No Proxy": "No Proxy",
-    "HTTP Basic Auth": "HTTP Basic Auth",
     "Page Not Found": "Page Not Found",
     "Reverse Proxy": "Reverse Proxy",
     wayToGetCloudflaredURL: "(Download cloudflared from {0})",
