@@ -508,6 +508,7 @@ exports.startUnitTest = async () => {
     });
 };
 
+/** Start end-to-end tests */
 exports.startE2eTests = async () => {
     console.log("Starting unit test...");
     const npm = /^win/.test(process.platform) ? "npm.cmd" : "npm";
