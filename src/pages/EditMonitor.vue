@@ -180,7 +180,7 @@
                                         <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="Server=<hostname>,<port>;Database=<your database>;User Id=<your user id>;Password=<your password>;Encrypt=<true/false>;TrustServerCertificate=<Yes/No>;Connection Timeout=<int>">
                                     </template>
                                     <template v-if="monitor.type === 'postgres'">
-                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" placeholder="postgres://username:password@host:port/database" type="text" class="form-control">
+                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="postgres://username:password@host:port/database">
                                     </template>
                                 </div>
                                 <div class="my-3">
