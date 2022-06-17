@@ -135,7 +135,7 @@ class UptimeKumaServer {
     }
 
     loadPlugins(dir) {
-        this.pluginsManager = new PluginsManager(dir);
+        this.pluginsManager = new PluginsManager(this, dir);
     }
 
 }
