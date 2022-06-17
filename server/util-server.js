@@ -14,7 +14,7 @@ const mssql = require("mssql");
 const { NtlmClient } = require("axios-ntlm");
 const WhoisLight = require("whois-light");
 const dayjs = require("dayjs");
-const customParseFormat = require('dayjs/plugin/customParseFormat');
+const customParseFormat = require("dayjs/plugin/customParseFormat");
 dayjs.extend(customParseFormat);
 
 // From ping-lite
