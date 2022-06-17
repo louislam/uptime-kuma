@@ -13,7 +13,9 @@ const { badgeConstants } = require("./config");
 const mssql = require("mssql");
 const { NtlmClient } = require("axios-ntlm");
 const WhoisLight = require("whois-light");
-const moment = require("moment");
+const dayjs = require("dayjs");
+const customParseFormat = require('dayjs/plugin/customParseFormat');
+dayjs.extend(customParseFormat);
 
 // From ping-lite
 exports.WIN = /^win/.test(process.platform);
@@ -269,7 +271,7 @@ exports.whoisExpiryDate = async function (domain) {
     if (expiryDates != null) {
         let expiry;
         if (domain.endsWith("hk")) {
-            expiry = moment(expiryDates[0], "DD-MM-YYYY").toDate();
+            expiry = dayjs(expiryDates[0], "DD-MM-YYYY").toDate();
         } else {
             expiry = Date.parse(expiryDates[0]);
         }

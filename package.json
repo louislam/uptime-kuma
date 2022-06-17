@@ -98,7 +98,6 @@
         "jsonwebtoken": "~8.5.1",
         "jwt-decode": "^3.1.2",
         "limiter": "^2.1.0",
-        "moment": "^2.29.3",
         "mqtt": "^4.2.8",
         "mssql": "^8.1.0",
         "node-cloudflared-tunnel": "~1.0.9",
