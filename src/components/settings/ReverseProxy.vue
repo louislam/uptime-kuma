@@ -68,7 +68,9 @@
                 <Confirm ref="confirmStop" btn-style="btn-danger" :yes-text="$t('Stop') + ' cloudflared'" :no-text="$t('Cancel')" @yes="stop">
                     {{ $t("The current connection may be lost if you are currently connecting via Cloudflare Tunnel. Are you sure want to stop it? Type your current password to confirm it.") }}
 
-                    <div class="mt-3">
+                    <p class="mt-2">{{ $t("disableCloudflaredNoAuthMsg") }}</p>
+
+                    <div v-if="!settings.disableAuth" class="mt-3">
                         <label for="current-password2" class="form-label">
                             {{ $t("Current Password") }}
                         </label>
@@ -108,7 +110,9 @@ export default {
         return this.$root.cloudflared;
     },
     computed: {
-
+        settings() {
+            return this.$parent.$parent.$parent.settings;
+        },
     },
     watch: {
 
@@ -120,14 +124,17 @@ export default {
         this.$root.getSocket().emit(prefix + "leave");
     },
     methods: {
+        /** Start the Cloudflare tunnel */
         start() {
             this.$root.getSocket().emit(prefix + "start", this.cloudflareTunnelToken);
         },
+        /** Stop the Cloudflare tunnel */
         stop() {
             this.$root.getSocket().emit(prefix + "stop", this.currentPassword, (res) => {
                 this.$root.toastRes(res);
             });
         },
+        /** Remove the token for the Cloudflare tunnel */
         removeToken() {
             this.$root.getSocket().emit(prefix + "removeToken");
             this.cloudflareTunnelToken = "";

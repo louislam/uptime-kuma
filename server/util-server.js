@@ -10,6 +10,8 @@ const chardet = require("chardet");
 const mqtt = require("mqtt");
 const chroma = require("chroma-js");
 const { badgeConstants } = require("./config");
+const mssql = require("mssql");
+const { NtlmClient } = require("axios-ntlm");
 
 // From ping-lite
 exports.WIN = /^win/.test(process.platform);
@@ -173,6 +175,26 @@ exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
 };
 
 /**
+ * Use NTLM Auth for a http request.
+ * @param {Object} options The http request options
+ * @param {Object} ntlmOptions The auth options
+ * @returns {Promise<(string[]|Object[]|Object)>}
+ */
+exports.httpNtlm = function (options, ntlmOptions) {
+    return new Promise((resolve, reject) => {
+        let client = NtlmClient(ntlmOptions);
+
+        client(options)
+            .then((resp) => {
+                resolve(resp);
+            })
+            .catch((err) => {
+                reject(err);
+            });
+    });
+};
+
+/**
  * Resolves a given record using the specified DNS server
  * @param {string} hostname The hostname of the record to lookup
  * @param {string} resolverServer The DNS server to use
@@ -204,6 +226,31 @@ exports.dnsResolve = function (hostname, resolverServer, resolverPort, rrtype) {
                 }
             });
         }
+    });
+};
+
+/**
+ * Run a query on SQL Server
+ * @param {string} connectionString The database connection string
+ * @param {string} query The query to validate the database with
+ * @returns {Promise<(string[]|Object[]|Object)>}
+ */
+exports.mssqlQuery = function (connectionString, query) {
+    return new Promise((resolve, reject) => {
+        mssql.on("error", err => {
+            reject(err);
+        });
+
+        mssql.connect(connectionString).then(pool => {
+            return pool.request()
+                .query(query);
+        }).then(result => {
+            resolve(result);
+        }).catch(err => {
+            reject(err);
+        }).finally(() => {
+            mssql.close();
+        });
     });
 };
 

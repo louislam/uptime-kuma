@@ -35,6 +35,7 @@ Chart.register(LineController, BarController, LineElement, PointElement, TimeSca
 export default {
     components: { LineChart },
     props: {
+        /** ID of monitor */
         monitorId: {
             type: Number,
             required: true,

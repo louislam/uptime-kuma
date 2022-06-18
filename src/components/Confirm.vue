@@ -29,14 +29,17 @@ import { Modal } from "bootstrap";
 
 export default {
     props: {
+        /** Style of button */
         btnStyle: {
             type: String,
             default: "btn-primary",
         },
+        /** Text to use as yes */
         yesText: {
             type: String,
             default: "Yes",     // TODO: No idea what to translate this
         },
+        /** Text to use as no */
         noText: {
             type: String,
             default: "No",
@@ -50,9 +53,13 @@ export default {
         this.modal = new Modal(this.$refs.modal);
     },
     methods: {
+        /** Show the confirm dialog */
         show() {
             this.modal.show();
         },
+        /**
+         * @emits string "yes" Notify the parent when Yes is pressed
+         */
         yes() {
             this.$emit("yes");
         },
