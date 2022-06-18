@@ -535,4 +535,5 @@ export default {
     "ntfy Topic": "ntfy Topic",
     "Domain": "Domain",
     "Workstation": "Workstation",
+    disableCloudflaredNoAuthMsg: "You are in No Auth mode, password is not require.",
 };
