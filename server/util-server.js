@@ -12,6 +12,10 @@ const chroma = require("chroma-js");
 const { badgeConstants } = require("./config");
 const mssql = require("mssql");
 const { NtlmClient } = require("axios-ntlm");
+const WhoisLight = require("whois-light");
+const dayjs = require("dayjs");
+const customParseFormat = require("dayjs/plugin/customParseFormat");
+dayjs.extend(customParseFormat);
 
 // From ping-lite
 exports.WIN = /^win/.test(process.platform);
@@ -255,6 +259,32 @@ exports.mssqlQuery = function (connectionString, query) {
 };
 
 /**
+ * Check domain expiry date for the specified domain
+ * @param {string} hostname Hostname / address of machine
+ * @returns {Promise<Date>} Date Object on domain expiry
+ */
+exports.whoisExpiryDate = async function (domain) {
+    const whois = await WhoisLight.lookup({ format: true }, domain);
+
+    const expiryDates = Object.entries(whois).filter(([ key, value ]) => key.match(/(Expiry|Renewal) Date$/i)).map(([ key, value ]) => value);
+
+    if (expiryDates != null) {
+        let expiry;
+        if (domain.endsWith("hk")) {
+            expiry = dayjs(expiryDates[0], "DD-MM-YYYY").toDate();
+        } else {
+            expiry = Date.parse(expiryDates[0]);
+        }
+        if (isNaN(expiry)) {
+            throw new Error("No correct date format is parsed");
+        }
+        return expiry;
+    } else {
+        throw new Error("No expiry date is found");
+    }
+};
+
+/**
  * Retrieve value of setting based on key
  * @param {string} key Key of setting to retrieve
  * @returns {Promise<any>} Value
@@ -372,6 +402,8 @@ const getDaysRemaining = (validFrom, validTo) => {
     }
     return daysRemaining;
 };
+
+exports.getDaysRemaining = getDaysRemaining;
 
 /**
  * Fix certificate info for display
