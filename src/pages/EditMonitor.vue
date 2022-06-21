@@ -535,7 +535,7 @@ export default {
                 if (this.monitor.type === "dns") {
                     this.monitor.port = "53";
                 } else {
-                    this.monitor.port = "";
+                    this.monitor.port = undefined;
                 }
             }
         }
