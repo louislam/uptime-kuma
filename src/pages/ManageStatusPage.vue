@@ -91,6 +91,7 @@ export default {
 
         .logo {
             width: $logo-width;
+            height: $logo-width;
 
             // Better when the image is loading
             min-height: 1px;
