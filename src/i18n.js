@@ -9,6 +9,7 @@ const languageList = {
     "nl-NL": "Nederlands",
     "nb-NO": "Norsk",
     "es-ES": "Español",
+    "eu": "Euskara",
     "fa": "Farsi",
     "pt-BR": "Português (Brasileiro)",
     "fr-FR": "Français (France)",
