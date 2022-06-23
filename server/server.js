@@ -1677,7 +1677,8 @@ async function shutdownFunction(signal) {
 }
 
 function getClientIp(socket) {
-    return socket.client.conn.remoteAddress.replace(/^.*:/, "");
+    return socket.client.conn.request.headers["x-forwarded-for"]
+            || socket.client.conn.remoteAddress.replace(/^.*:/, "");
 }
 
 /** Final function called before application exits */
