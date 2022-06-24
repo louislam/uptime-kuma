@@ -175,6 +175,29 @@ exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
 };
 
 /**
+ * gRPC Monitor
+ * @param {string} hostname Hostname / address of machine to test
+ * @param {string} port Port of the gRPC server
+ * @returns {Promise<(string[]|Object[]|Object)>}
+ */
+exports.grpc = function (hostname, port) {
+    return new Promise((resolve, reject) => {
+        childProcess.exec(`./grpcurl --plaintext ${hostname}:${port} list`, (error, stdout, stderr) => {
+            if (error) {
+                reject(error);
+            }
+
+            if (stderr) {
+                reject(stderr);
+            }
+
+            resolve(stdout);
+        });
+    });
+};
+
+
+/**
  * Use NTLM Auth for a http request.
  * @param {Object} options The http request options
  * @param {Object} ntlmOptions The auth options
