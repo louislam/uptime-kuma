@@ -196,7 +196,6 @@ exports.grpc = function (hostname, port) {
     });
 };
 
-
 /**
  * Use NTLM Auth for a http request.
  * @param {Object} options The http request options

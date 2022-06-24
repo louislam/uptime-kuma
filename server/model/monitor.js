@@ -476,8 +476,8 @@ class Monitor extends BeanModel {
                     bean.ping = dayjs().valueOf() - startTime;
                 } else if (this.type === "grpc") {
                     let startTime = dayjs().valueOf();
-                    let response = await grpc(this.hostname, this.port);
-                    bean.ping = dayjs().valueOf() - startTime; 
+                    await grpc(this.hostname, this.port);
+                    bean.ping = dayjs().valueOf() - startTime;
                 } else {
                     bean.msg = "Unknown Monitor Type";
                     bean.status = PENDING;
