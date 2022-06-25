@@ -58,7 +58,8 @@
         "release-final": "node extra/update-version.js && npm run build-docker && node ./extra/press-any-key.js && npm run upload-artifacts && node ./extra/update-wiki-version.js",
         "release-beta": "node extra/beta/update-version.js && npm run build && node ./extra/env2arg.js docker buildx build -f docker/dockerfile --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma:$VERSION -t louislam/uptime-kuma:beta .  --target release --push && node ./extra/press-any-key.js && npm run upload-artifacts",
         "git-remove-tag": "git tag -d",
-        "build-dist-and-restart": "npm run build && npm run start-server-dev"
+        "build-dist-and-restart": "npm run build && npm run start-server-dev",
+        "swagger-autogen": "node ./extra/swagger.js"
     },
     "dependencies": {
         "@fortawesome/fontawesome-svg-core": "~1.2.36",
@@ -112,6 +113,7 @@
         "socket.io": "~4.4.1",
         "socket.io-client": "~4.4.1",
         "socks-proxy-agent": "^6.1.1",
+        "swagger-ui-express": "^4.4.0",
         "tar": "^6.1.11",
         "tcp-ping": "~0.1.1",
         "thirty-two": "~1.0.2",
@@ -155,6 +157,7 @@
         "sass": "~1.42.1",
         "stylelint": "~14.7.1",
         "stylelint-config-standard": "~25.0.0",
+        "swagger-autogen": "^2.21.3",
         "typescript": "~4.4.4",
         "vite": "~2.9.9",
         "vite-plugin-compression": "^0.5.1",
