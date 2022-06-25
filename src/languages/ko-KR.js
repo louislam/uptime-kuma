@@ -528,4 +528,5 @@ export default {
     "Go back to the previous page.": "이전 페이지로 돌아가기",
     "Coming Soon": "Coming Soon",
     wayToGetClickSendSMSToken: "{0}에서 API 사용자 이름과 키를 얻을 수 있어요.",
+    HomeAssistant: "Home Assistant",
 };

@@ -352,4 +352,5 @@ export default {
     serwersmsPhoneNumber: "Telefonnummer",
     serwersmsSenderName: "SMS Afsender Navn (registreret via kundeportal)",
     stackfield: "Stackfield",
+    HomeAssistant: "Home Assistant",
 };

@@ -375,4 +375,5 @@ export default {
     alertaAlertState: "Stanje upozorenja",
     alertaRecoverState: "Stanje oporavka",
     deleteStatusPageMsg: "Sigurno želite obrisati ovu statusnu stranicu?",
+    HomeAssistant: "Home Assistant",
 };

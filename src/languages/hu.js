@@ -373,4 +373,5 @@ export default {
     alertaAlertState: "Figyelmeztetési állapot",
     alertaRecoverState: "Visszaállási állapot",
     deleteStatusPageMsg: "Biztos, hogy törölni akarja a státusz oldalt?",
+    HomeAssistant: "Home Assistant",
 };

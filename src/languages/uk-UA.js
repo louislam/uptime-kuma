@@ -392,4 +392,5 @@ export default {
     alertaAlertState: "Стан алерту",
     alertaRecoverState: "Стан відновлення",
     deleteStatusPageMsg: "Дійсно хочете видалити цю сторінку статусів?",
+    HomeAssistant: "Home Assistant",
 };

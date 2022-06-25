@@ -462,4 +462,5 @@ export default {
     "Footer Text": "Footer Tekst",
     "Show Powered By": "Laat 'Mogeljik gemaakt door' zien",
     "Domain Names": "Domein Namen",
+    HomeAssistant: "Home Assistant",
 };

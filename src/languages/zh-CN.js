@@ -540,4 +540,5 @@ export default {
     "ntfy Topic": "ntfy 主题",
     "Domain": "域名",
     "Workstation": "工作站",
+    HomeAssistant: "Home Assistant",
 };

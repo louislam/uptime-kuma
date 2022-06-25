@@ -309,4 +309,5 @@ export default {
     alertaApiKey: "Clé de l'API",
     alertaAlertState: "État de l'Alerte",
     alertaRecoverState: "État de récupération",
+    HomeAssistant: "Home Assistant",
 };

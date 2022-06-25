@@ -206,4 +206,5 @@ export default {
     alertaApiKey: "API võti",
     alertaAlertState: "Häireseisund",
     alertaRecoverState: "Taasta algolek",
+    HomeAssistant: "Home Assistant",
 };
