@@ -7,6 +7,8 @@ const { R } = require("redbean-node");
 const { log } = require("../src/util");
 const Database = require("./database");
 const util = require("util");
+const swaggerUi = require("swagger-ui-express");
+const checkVersion = require("./check-version");
 
 /**
  * `module.exports` (alias: `server`) should be inside this class, in order to avoid circular dependency issue.
@@ -49,6 +51,13 @@ class UptimeKumaServer {
 
         log.info("server", "Creating express and socket.io instance");
         this.app = express();
+
+        // TODO swaggerDocument.host should be match current base url!
+        const swaggerDocument = require("../swagger.json");
+        swaggerDocument.info.version = checkVersion.version;
+
+        // TODO it should be optional and configurable in the settings
+        this.app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
         if (sslKey && sslCert) {
             log.info("server", "Server Type: HTTPS");

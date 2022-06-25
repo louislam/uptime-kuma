@@ -1,0 +1,283 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Uptime Kuma API",
+    "description": "Autogen by swagger-autogen",
+    "version": "1.0.0"
+  },
+  "host": "localhost:3001",
+  "basePath": "/",
+  "schemes": [
+    "http"
+  ],
+  "paths": {
+    "/api/entry-page": {
+      "get": {
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/push/{pushToken}": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "pushToken",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "msg",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "ping",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/badge/{id}/status": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "label",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "upLabel",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "downLabel",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "upColor",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "downColor",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "style",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "value",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "Access-Control-Allow-Origin",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "Access-Control-Allow-Headers",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/badge/{id}/uptime/{duration?}": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "duration?",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "label",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "labelPrefix",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "labelSuffix",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "prefix",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "suffix",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "color",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "labelColor",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "style",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "value",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "Access-Control-Allow-Origin",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "Access-Control-Allow-Headers",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/badge/{id}/ping/{duration?}": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "duration?",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "label",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "labelPrefix",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "labelSuffix",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "prefix",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "suffix",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "color",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "labelColor",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "style",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "value",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "Access-Control-Allow-Origin",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "Access-Control-Allow-Headers",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  }
+}
