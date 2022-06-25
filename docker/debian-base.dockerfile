@@ -28,5 +28,6 @@ RUN node ./extra/download-cloudflared.js $TARGETPLATFORM && \
 
 # Install grpcurl
 # Can be used like ./grpcurl
-RUN wget https://github.com/fullstorydev/grpcurl/releases/download/v1.8.6/grpcurl_1.8.6_linux_x86_64.tar.gz
-RUN tar xf grpcurl_1.8.6_linux_x86_64.tar.gz
+ARG GRPCURL_VERSION=1.8.6
+RUN wget https://github.com/fullstorydev/grpcurl/releases/download/v$GRPCURL_VERSION/grpcurl_$GRPCURL_VERSION_linux_x86_64.tar.gz
+RUN tar xf grpcurl_$GRPCURL_VERSION_linux_x86_64.tar.gz

@@ -9,5 +9,6 @@ RUN apk add --no-cache iputils setpriv dumb-init python3 py3-cryptography py3-pi
 
 # Install grpcurl
 # Can be used like ./grpcurl
-RUN wget https://github.com/fullstorydev/grpcurl/releases/download/v1.8.6/grpcurl_1.8.6_linux_x86_64.tar.gz
-RUN tar xf grpcurl_1.8.6_linux_x86_64.tar.gz
+ARG GRPCURL_VERSION=1.8.6
+RUN wget https://github.com/fullstorydev/grpcurl/releases/download/v$GRPCURL_VERSION/grpcurl_$GRPCURL_VERSION_linux_x86_64.tar.gz
+RUN tar xf grpcurl_$GRPCURL_VERSION_linux_x86_64.tar.gz
