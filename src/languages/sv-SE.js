@@ -107,5 +107,4 @@ export default {
     "Repeat Password": "Upprepa Lösenord",
     respTime: "Svarstid (ms)",
     notAvailableShort: "Ej Tillg.",
-    HomeAssistant: "Home Assistant",
 };

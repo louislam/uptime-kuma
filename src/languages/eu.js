@@ -536,5 +536,4 @@ export default {
     Domain: "Domeinua",
     Workstation: "Lan gunea",
     disableCloudflaredNoAuthMsg: "Ez Auth moduan zaude, pasahitza ez da beharrezkoa.",
-    HomeAssistant: "Home Assistant",
 };

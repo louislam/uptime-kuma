@@ -536,5 +536,4 @@ export default {
     Domain: "Домейн",
     Workstation: "Работна станция",
     disableCloudflaredNoAuthMsg: "Тъй като сте в режим \"No Auth mode\", парола не се изисква.",
-    HomeAssistant: "Home Assistant",
 };

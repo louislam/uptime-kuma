@@ -466,5 +466,4 @@ export default {
     "Domain Names": "Domain Names",
     signedInDisp: "Signed in as {0}",
     signedInDispDisabled: "Auth Disabled.",
-    HomeAssistant: "Home Assistant",
 };

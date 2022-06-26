@@ -364,5 +364,4 @@ export default {
     smtpDkimHashAlgo: "Hashovací algoritmus (volitelné)",
     smtpDkimheaderFieldNames: "Podepisovat tyto hlavičky (volitelné)",
     smtpDkimskipFields: "Nepodepisovat tyto hlavičky (volitelné)",
-    HomeAssistant: "Home Assistant",
 };

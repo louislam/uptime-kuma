@@ -465,5 +465,4 @@ export default {
     "Footer Text": "頁尾文字",
     "Show Powered By": "顯示技術支援文字",
     "Domain Names": "網域名稱",
-    HomeAssistant: "Home Assistant",
 };

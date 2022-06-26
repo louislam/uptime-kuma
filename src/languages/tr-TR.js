@@ -527,5 +527,4 @@ export default {
     "do nothing": "hiçbir şey yapma",
     "auto acknowledged": "otomatik onaylama",
     "auto resolve": "otomatik çözümleme",
-    HomeAssistant: "Home Assistant",
 };

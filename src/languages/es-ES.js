@@ -206,5 +206,4 @@ export default {
     records: "registros",
     "One record": "Un registro",
     steamApiKeyDescription: "Para monitorear un servidor de juegos de Steam, necesita una clave Steam Web-API. Puede registrar su clave API aquí: ",
-    HomeAssistant: "Home Assistant",
 };

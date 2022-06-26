@@ -282,5 +282,4 @@ export default {
     promosmsTypeSpeed: "SMS SPEED - Høyest prioritet i systemet.Veldig rask på pålitelig, men dyrt (omtrent det dobbeltet av SMS FULL pris).",
     promosmsPhoneNumber: "Telefonnummber (for polske mottakere. Du trenger ikke områdekode.)",
     promosmsSMSSender: "SMS Avsendernavn : Forhåndsregistert navn eller en av standardnavnene: InfoSMS, SMS Info, MaxSMS, INFO, SMS",
-    HomeAssistant: "Home Assistant",
 };
