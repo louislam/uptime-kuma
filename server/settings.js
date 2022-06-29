@@ -3,7 +3,25 @@ const { log } = require("../src/util");
 
 class Settings {
 
-    cacheList = [];
+    /**
+     *  Example:
+     *      {
+     *         key1: {
+     *             value: "value2",
+     *             timestamp: 12345678
+     *         },
+     *         key2: {
+     *             value: 2,
+     *             timestamp: 12345678
+     *         },
+     *     }
+     * @type {{}}
+     */
+    static cacheList = {
+
+    };
+
+    static cacheCleaner = null;
 
     /**
      * Retrieve value of setting based on key
@@ -11,13 +29,41 @@ class Settings {
      * @returns {Promise<any>} Value
      */
     static async get(key) {
+
+        // Start cache clear if not started yet
+        if (!Settings.cacheCleaner) {
+            Settings.cacheCleaner = setInterval(() => {
+                log.debug("settings", "Cache Cleaner is just started.");
+                for (key in Settings.cacheList) {
+                    if (Date.now() - Settings.cacheList[key].timestamp > 60 * 1000) {
+                        log.debug("settings", "Cache Cleaner deleted: " + key);
+                        delete Settings.cacheList[key];
+                    }
+                }
+
+            }, 60 * 1000);
+        }
+
+        // Query from cache
+        if (key in Settings.cacheList) {
+            const v = Settings.cacheList[key].value;
+            log.debug("settings", `Get Setting (cache): ${key}: ${v}`);
+            return v;
+        }
+
         let value = await R.getCell("SELECT `value` FROM setting WHERE `key` = ? ", [
             key,
         ]);
 
         try {
             const v = JSON.parse(value);
-            log.debug("util", `Get Setting: ${key}: ${v}`);
+            log.debug("settings", `Get Setting: ${key}: ${v}`);
+
+            Settings.cacheList[key] = {
+                value: v,
+                timestamp: Date.now()
+            };
+
             return v;
         } catch (e) {
             return value;
@@ -32,6 +78,7 @@ class Settings {
      * @returns {Promise<void>}
      */
     static async set(key, value, type = null) {
+
         let bean = await R.findOne("setting", " `key` = ? ", [
             key,
         ]);
@@ -42,6 +89,8 @@ class Settings {
         bean.type = type;
         bean.value = JSON.stringify(value);
         await R.store(bean);
+
+        Settings.deleteCache([ key ]);
     }
 
     /**
@@ -96,6 +145,18 @@ class Settings {
         }
 
         await Promise.all(promiseList);
+
+        Settings.deleteCache(keyList);
+    }
+
+    /**
+     *
+     * @param {string[]} keyList
+     */
+    static deleteCache(keyList) {
+        for (let key of keyList) {
+            delete Settings.cacheList[key];
+        }
     }
 }
 
