@@ -177,7 +177,13 @@ class Database {
         } else {
             log.info("db", "Database patch is needed");
 
-            this.backup(version);
+            try {
+                this.backup(version);
+            } catch (e) {
+                log.error("db", e);
+                log.error("db", "Unable to create a backup before patching the database. Please make sure you have enough space and permission.");
+                process.exit(1);
+            }
 
             // Try catch anything here, if gone wrong, restore the backup
             try {
@@ -444,6 +450,23 @@ class Database {
             if (fs.existsSync(walPath)) {
                 this.backupWalPath = walPath + ".bak" + version;
                 fs.copyFileSync(walPath, this.backupWalPath);
+            }
+
+            // Double confirm if all files actually backup
+            if (!fs.existsSync(this.backupPath)) {
+                throw new Error("Backup failed! " + this.backupPath);
+            }
+
+            if (fs.existsSync(shmPath)) {
+                if (!fs.existsSync(this.backupShmPath)) {
+                    throw new Error("Backup failed! " + this.backupShmPath);
+                }
+            }
+
+            if (fs.existsSync(walPath)) {
+                if (!fs.existsSync(this.backupWalPath)) {
+                    throw new Error("Backup failed! " + this.backupWalPath);
+                }
             }
         }
     }
