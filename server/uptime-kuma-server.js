@@ -55,7 +55,7 @@ class UptimeKumaServer {
         if (!basePathEnv.endsWith("/")) {
             basePathEnv = basePathEnv + "/";
         }
-        
+
         this.basePath = basePathEnv;
 
         log.info("server", "Creating express and socket.io instance");
@@ -74,7 +74,7 @@ class UptimeKumaServer {
 
         try {
             this.indexHTML = fs.readFileSync("./dist/index.html").toString();
-            this.indexHTML = this.indexHTML.replace(/<base href.*?\>/, `<base href="${this.basePath}">`);
+            this.indexHTML = this.indexHTML.replace(/<base href.*?>/, `<base href="${this.basePath}">`);
         } catch (e) {
             // "dist/index.html" is not necessary for development
             if (process.env.NODE_ENV !== "development") {
@@ -82,8 +82,10 @@ class UptimeKumaServer {
                 process.exit(1);
             }
         }
-        
-        this.io = new Server(this.httpServer, {path: this.basePath + "socket.io"});
+
+        this.io = new Server(this.httpServer, {
+            path: this.basePath + "socket.io"
+        });
     }
 
     async sendMonitorList(socket) {

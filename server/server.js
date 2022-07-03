@@ -154,7 +154,7 @@ let needSetup = false;
     await initDatabase(testMode);
 
     exports.entryPage = await setting("entryPage");
-    
+
     const mainRouter = express.Router();
     await StatusPage.loadDomainMappingList();
 
@@ -232,7 +232,7 @@ let needSetup = false;
             response.send(server.indexHTML);
         }
     });
-    
+
     app.use(server.basePath, mainRouter);
 
     log.info("server", "Adding socket handler");
