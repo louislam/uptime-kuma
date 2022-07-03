@@ -286,7 +286,7 @@
 
                                 <label class="form-check-label" :for=" 'notification' + notification.id">
                                     {{ notification.name }}
-                                    <a href="#" @click="$refs.notificationDialog.show(notification.id)">{{ $t("Edit") }}</a>
+                                    <a href="#" @click.prevent="$refs.notificationDialog.show(notification.id)">{{ $t("Edit") }}</a>
                                 </label>
 
                                 <span v-if="notification.isDefault == true" class="badge bg-primary ms-2">{{ $t("Default") }}</span>
@@ -313,7 +313,7 @@
 
                                     <label class="form-check-label" :for="`proxy-${proxy.id}`">
                                         {{ proxy.host }}:{{ proxy.port }} ({{ proxy.protocol }})
-                                        <a href="#" @click="$refs.proxyDialog.show(proxy.id)">{{ $t("Edit") }}</a>
+                                        <a href="#" @click.prevent="$refs.proxyDialog.show(proxy.id)">{{ $t("Edit") }}</a>
                                     </label>
 
                                     <span v-if="proxy.default === true" class="badge bg-primary ms-2">{{ $t("default") }}</span>

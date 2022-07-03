@@ -128,10 +128,10 @@
                         {{ $t("Edit Status Page") }}
                     </button>
 
-                    <a href="/manage-status-page" class="btn btn-info">
+                    <router-link to="/manage-status-page" class="btn btn-info">
                         <font-awesome-icon icon="tachometer-alt" />
                         {{ $t("Go to Dashboard") }}
-                    </a>
+                    </router-link>
                 </div>
 
                 <div v-else>
@@ -179,12 +179,12 @@
                             {{ $t("Style") }}: {{ $t(incident.style) }}
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                            <li><a class="dropdown-item" href="#" @click="incident.style = 'info'">{{ $t("info") }}</a></li>
-                            <li><a class="dropdown-item" href="#" @click="incident.style = 'warning'">{{ $t("warning") }}</a></li>
-                            <li><a class="dropdown-item" href="#" @click="incident.style = 'danger'">{{ $t("danger") }}</a></li>
-                            <li><a class="dropdown-item" href="#" @click="incident.style = 'primary'">{{ $t("primary") }}</a></li>
-                            <li><a class="dropdown-item" href="#" @click="incident.style = 'light'">{{ $t("light") }}</a></li>
-                            <li><a class="dropdown-item" href="#" @click="incident.style = 'dark'">{{ $t("dark") }}</a></li>
+                            <li><a class="dropdown-item" href="#" @click.prevent="incident.style = 'info'">{{ $t("info") }}</a></li>
+                            <li><a class="dropdown-item" href="#" @click.prevent="incident.style = 'warning'">{{ $t("warning") }}</a></li>
+                            <li><a class="dropdown-item" href="#" @click.prevent="incident.style = 'danger'">{{ $t("danger") }}</a></li>
+                            <li><a class="dropdown-item" href="#" @click.prevent="incident.style = 'primary'">{{ $t("primary") }}</a></li>
+                            <li><a class="dropdown-item" href="#" @click.prevent="incident.style = 'light'">{{ $t("light") }}</a></li>
+                            <li><a class="dropdown-item" href="#" @click.prevent="incident.style = 'dark'">{{ $t("dark") }}</a></li>
                         </ul>
                     </div>
 
@@ -554,7 +554,7 @@ export default {
             this.$root.publicGroupList = res.data.publicGroupList;
         }).catch( function (error) {
             if (error.response.status === 404) {
-                location.href = "/page-not-found";
+                this.$router.push("/page-not-found");
             }
             console.log(error);
         });
@@ -657,7 +657,7 @@ export default {
                     }
 
                     setTimeout(() => {
-                        location.href = "/status/" + this.config.slug;
+                        this.$router.push("/status/" + this.config.slug);
                     }, time);
 
                 } else {
@@ -676,7 +676,7 @@ export default {
             this.$root.getSocket().emit("deleteStatusPage", this.slug, (res) => {
                 if (res.ok) {
                     this.enableEditMode = false;
-                    location.href = "/manage-status-page";
+                    this.$router.push("/manage-status-page");
                 } else {
                     toast.error(res.msg);
                 }
@@ -713,7 +713,7 @@ export default {
 
         /** Discard changes to status page */
         discard() {
-            location.href = "/status/" + this.slug;
+            this.$router.back();
         },
 
         /**
