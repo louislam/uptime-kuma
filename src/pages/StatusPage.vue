@@ -128,12 +128,12 @@
                         {{ $t("Style") }}: {{ $t(incident.style) }}
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                        <li><a class="dropdown-item" href="#" @click="incident.style = 'info'">{{ $t("info") }}</a></li>
-                        <li><a class="dropdown-item" href="#" @click="incident.style = 'warning'">{{ $t("warning") }}</a></li>
-                        <li><a class="dropdown-item" href="#" @click="incident.style = 'danger'">{{ $t("danger") }}</a></li>
-                        <li><a class="dropdown-item" href="#" @click="incident.style = 'primary'">{{ $t("primary") }}</a></li>
-                        <li><a class="dropdown-item" href="#" @click="incident.style = 'light'">{{ $t("light") }}</a></li>
-                        <li><a class="dropdown-item" href="#" @click="incident.style = 'dark'">{{ $t("dark") }}</a></li>
+                        <li><a class="dropdown-item" @click="incident.style = 'info'">{{ $t("info") }}</a></li>
+                        <li><a class="dropdown-item" @click="incident.style = 'warning'">{{ $t("warning") }}</a></li>
+                        <li><a class="dropdown-item" @click="incident.style = 'danger'">{{ $t("danger") }}</a></li>
+                        <li><a class="dropdown-item" @click="incident.style = 'primary'">{{ $t("primary") }}</a></li>
+                        <li><a class="dropdown-item" @click="incident.style = 'light'">{{ $t("light") }}</a></li>
+                        <li><a class="dropdown-item" @click="incident.style = 'dark'">{{ $t("dark") }}</a></li>
                     </ul>
                 </div>
 
