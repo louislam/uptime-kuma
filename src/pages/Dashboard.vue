@@ -25,9 +25,9 @@ export default {
         MonitorList,
     },
     data() {
-        return {}
+        return {};
     },
-}
+};
 </script>
 
 <style lang="scss" scoped>

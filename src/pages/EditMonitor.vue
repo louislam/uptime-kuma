@@ -11,27 +11,41 @@
                             <div class="my-3">
                                 <label for="type" class="form-label">{{ $t("Monitor Type") }}</label>
                                 <select id="type" v-model="monitor.type" class="form-select">
-                                    <option value="http">
-                                        HTTP(s)
-                                    </option>
-                                    <option value="port">
-                                        TCP Port
-                                    </option>
-                                    <option value="ping">
-                                        Ping
-                                    </option>
-                                    <option value="keyword">
-                                        HTTP(s) - {{ $t("Keyword") }}
-                                    </option>
-                                    <option value="dns">
-                                        DNS
-                                    </option>
-                                    <option value="push">
-                                        Push
-                                    </option>
-                                    <option value="steam">
-                                        Steam Game Server
-                                    </option>
+                                    <optgroup label="General Monitor Type">
+                                        <option value="http">
+                                            HTTP(s)
+                                        </option>
+                                        <option value="port">
+                                            TCP Port
+                                        </option>
+                                        <option value="ping">
+                                            Ping
+                                        </option>
+                                        <option value="keyword">
+                                            HTTP(s) - {{ $t("Keyword") }}
+                                        </option>
+                                        <option value="dns">
+                                            DNS
+                                        </option>
+                                    </optgroup>
+
+                                    <optgroup label="Passive Monitor Type">
+                                        <option value="push">
+                                            Push
+                                        </option>
+                                    </optgroup>
+
+                                    <optgroup label="Specific Monitor Type">
+                                        <option value="steam">
+                                            {{ $t("Steam Game Server") }}
+                                        </option>
+                                        <option value="mqtt">
+                                            MQTT
+                                        </option>
+                                        <option value="sqlserver">
+                                            SQL Server
+                                        </option>
+                                    </optgroup>
                                 </select>
                             </div>
 
@@ -53,7 +67,7 @@
                                 <CopyableInput id="push-url" v-model="pushURL" type="url" disabled="disabled" />
                                 <div class="form-text">
                                     {{ $t("needPushEvery", [monitor.interval]) }}<br />
-                                    {{ $t("pushOptionalParams", ["msg, ping"]) }}
+                                    {{ $t("pushOptionalParams", ["status, msg, ping"]) }}
                                 </div>
                             </div>
 
@@ -67,15 +81,15 @@
                             </div>
 
                             <!-- Hostname -->
-                            <!-- TCP Port / Ping / DNS / Steam only -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam'" class="my-3">
+                            <!-- TCP Port / Ping / DNS / Steam / MQTT only -->
+                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'mqtt'" class="my-3">
                                 <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>
                                 <input id="hostname" v-model="monitor.hostname" type="text" class="form-control" :pattern="`${ipRegexPattern}|${hostnameRegexPattern}`" required>
                             </div>
 
                             <!-- Port -->
-                            <!-- For TCP Port / Steam Type -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'steam'" class="my-3">
+                            <!-- For TCP Port / Steam / MQTT Type -->
+                            <div v-if="monitor.type === 'port' || monitor.type === 'steam' || monitor.type === 'mqtt'" class="my-3">
                                 <label for="port" class="form-label">{{ $t("Port") }}</label>
                                 <input id="port" v-model="monitor.port" type="number" class="form-control" required min="0" max="65535" step="1">
                             </div>
@@ -87,7 +101,16 @@
                                     <label for="dns_resolve_server" class="form-label">{{ $t("Resolver Server") }}</label>
                                     <input id="dns_resolve_server" v-model="monitor.dns_resolve_server" type="text" class="form-control" :pattern="ipRegex" required>
                                     <div class="form-text">
-                                        {{ $t("resoverserverDescription") }}
+                                        {{ $t("resolverserverDescription") }}
+                                    </div>
+                                </div>
+
+                                <!-- Port -->
+                                <div class="my-3">
+                                    <label for="port" class="form-label">{{ $t("Port") }}</label>
+                                    <input id="port" v-model="monitor.port" type="number" class="form-control" required min="0" max="65535" step="1">
+                                    <div class="form-text">
+                                        {{ $t("dnsPortDescription") }}
                                     </div>
                                 </div>
 
@@ -115,6 +138,48 @@
                                 </div>
                             </template>
 
+                            <!-- MQTT -->
+                            <!-- For MQTT Type -->
+                            <template v-if="monitor.type === 'mqtt'">
+                                <div class="my-3">
+                                    <label for="mqttUsername" class="form-label">MQTT {{ $t("Username") }}</label>
+                                    <input id="mqttUsername" v-model="monitor.mqttUsername" type="text" class="form-control">
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="mqttPassword" class="form-label">MQTT {{ $t("Password") }}</label>
+                                    <input id="mqttPassword" v-model="monitor.mqttPassword" type="password" class="form-control">
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="mqttTopic" class="form-label">MQTT {{ $t("Topic") }}</label>
+                                    <input id="mqttTopic" v-model="monitor.mqttTopic" type="text" class="form-control" required>
+                                    <div class="form-text">
+                                        {{ $t("topicExplanation") }}
+                                    </div>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="mqttSuccessMessage" class="form-label">MQTT {{ $t("successMessage") }}</label>
+                                    <input id="mqttSuccessMessage" v-model="monitor.mqttSuccessMessage" type="text" class="form-control">
+                                    <div class="form-text">
+                                        {{ $t("successMessageExplanation") }}
+                                    </div>
+                                </div>
+                            </template>
+
+                            <!-- SQL Server -->
+                            <template v-if="monitor.type === 'sqlserver'">
+                                <div class="my-3">
+                                    <label for="sqlserverConnectionString" class="form-label">SQL Server {{ $t("Connection String") }}</label>
+                                    <input id="sqlserverConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control">
+                                </div>
+                                <div class="my-3">
+                                    <label for="sqlserverQuery" class="form-label">SQL Server {{ $t("Query") }}</label>
+                                    <textarea id="sqlserverQuery" v-model="monitor.databaseQuery" class="form-control" placeholder="Example: select getdate()"></textarea>
+                                </div>
+                            </template>
+
                             <!-- Interval -->
                             <div class="my-3">
                                 <label for="interval" class="form-label">{{ $t("Heartbeat Interval") }} ({{ $t("checkEverySecond", [ monitor.interval ]) }})</label>
@@ -138,6 +203,15 @@
                             </div>
 
                             <h2 v-if="monitor.type !== 'push'" class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
+
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' " class="my-3 form-check">
+                                <input id="expiry-notification" v-model="monitor.expiryNotification" class="form-check-input" type="checkbox">
+                                <label class="form-check-label" for="expiry-notification">
+                                    {{ $t("Certificate Expiry Notification") }}
+                                </label>
+                                <div class="form-text">
+                                </div>
+                            </div>
 
                             <div v-if="monitor.type === 'http' || monitor.type === 'keyword' " class="my-3 form-check">
                                 <input id="ignore-tls" v-model="monitor.ignoreTls" class="form-check-input" type="checkbox" value="">
@@ -222,6 +296,34 @@
                                 {{ $t("Setup Notification") }}
                             </button>
 
+                            <!-- Proxies -->
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword'">
+                                <h2 class="mt-5 mb-2">{{ $t("Proxy") }}</h2>
+                                <p v-if="$root.proxyList.length === 0">
+                                    {{ $t("Not available, please setup.") }}
+                                </p>
+
+                                <div v-if="$root.proxyList.length > 0" class="form-check my-3">
+                                    <input id="proxy-disable" v-model="monitor.proxyId" :value="null" name="proxy" class="form-check-input" type="radio">
+                                    <label class="form-check-label" for="proxy-disable">{{ $t("No Proxy") }}</label>
+                                </div>
+
+                                <div v-for="proxy in $root.proxyList" :key="proxy.id" class="form-check my-3">
+                                    <input :id="`proxy-${proxy.id}`" v-model="monitor.proxyId" :value="proxy.id" name="proxy" class="form-check-input" type="radio">
+
+                                    <label class="form-check-label" :for="`proxy-${proxy.id}`">
+                                        {{ proxy.host }}:{{ proxy.port }} ({{ proxy.protocol }})
+                                        <a href="#" @click="$refs.proxyDialog.show(proxy.id)">{{ $t("Edit") }}</a>
+                                    </label>
+
+                                    <span v-if="proxy.default === true" class="badge bg-primary ms-2">{{ $t("default") }}</span>
+                                </div>
+
+                                <button class="btn btn-primary me-2" type="button" @click="$refs.proxyDialog.show()">
+                                    {{ $t("Setup Proxy") }}
+                                </button>
+                            </div>
+
                             <!-- HTTP Options -->
                             <template v-if="monitor.type === 'http' || monitor.type === 'keyword' ">
                                 <h2 class="mt-5 mb-2">{{ $t("HTTP Options") }}</h2>
@@ -266,18 +368,46 @@
                                     <textarea id="headers" v-model="monitor.headers" class="form-control" :placeholder="headersPlaceholder"></textarea>
                                 </div>
 
-                                <!-- HTTP Basic Auth -->
-                                <h4 class="mt-5 mb-2">{{ $t("HTTP Basic Auth") }}</h4>
+                                <!-- HTTP Auth -->
+                                <h4 class="mt-5 mb-2">{{ $t("Authentication") }}</h4>
 
+                                <!-- Method -->
                                 <div class="my-3">
-                                    <label for="basicauth" class="form-label">{{ $t("Username") }}</label>
-                                    <input id="basicauth-user" v-model="monitor.basic_auth_user" type="text" class="form-control" :placeholder="$t('Username')">
+                                    <label for="method" class="form-label">{{ $t("Method") }}</label>
+                                    <select id="method" v-model="monitor.authMethod" class="form-select">
+                                        <option :value="null">
+                                            {{ $t("None") }}
+                                        </option>
+                                        <option value="basic">
+                                            {{ $t("HTTP Basic Auth") }}
+                                        </option>
+                                        <option value="ntlm">
+                                            NTLM
+                                        </option>
+                                    </select>
                                 </div>
+                                <template v-if="monitor.authMethod && monitor.authMethod !== null ">
+                                    <div class="my-3">
+                                        <label for="basicauth" class="form-label">{{ $t("Username") }}</label>
+                                        <input id="basicauth-user" v-model="monitor.basic_auth_user" type="text" class="form-control" :placeholder="$t('Username')">
+                                    </div>
 
-                                <div class="my-3">
-                                    <label for="basicauth" class="form-label">{{ $t("Password") }}</label>
-                                    <input id="basicauth-pass" v-model="monitor.basic_auth_pass" type="password" autocomplete="new-password" class="form-control" :placeholder="$t('Password')">
-                                </div>
+                                    <div class="my-3">
+                                        <label for="basicauth" class="form-label">{{ $t("Password") }}</label>
+                                        <input id="basicauth-pass" v-model="monitor.basic_auth_pass" type="password" autocomplete="new-password" class="form-control" :placeholder="$t('Password')">
+                                    </div>
+                                    <template v-if="monitor.authMethod === 'ntlm' ">
+                                        <div class="my-3">
+                                            <label for="basicauth" class="form-label">{{ $t("Domain") }}</label>
+                                            <input id="basicauth-domain" v-model="monitor.authDomain" type="text" class="form-control" :placeholder="$t('Domain')">
+                                        </div>
+
+                                        <div class="my-3">
+                                            <label for="basicauth" class="form-label">{{ $t("Workstation") }}</label>
+                                            <input id="basicauth-workstation" v-model="monitor.authWorkstation" type="text" class="form-control" :placeholder="$t('Workstation')">
+                                        </div>
+                                    </template>
+                                </template>
                             </template>
                         </div>
                     </div>
@@ -285,23 +415,25 @@
             </form>
 
             <NotificationDialog ref="notificationDialog" @added="addedNotification" />
+            <ProxyDialog ref="proxyDialog" @added="addedProxy" />
         </div>
     </transition>
 </template>
 
 <script>
-import NotificationDialog from "../components/NotificationDialog.vue";
-import TagsManager from "../components/TagsManager.vue";
-import CopyableInput from "../components/CopyableInput.vue";
-
-import { useToast } from "vue-toastification";
 import VueMultiselect from "vue-multiselect";
+import { useToast } from "vue-toastification";
+import CopyableInput from "../components/CopyableInput.vue";
+import NotificationDialog from "../components/NotificationDialog.vue";
+import ProxyDialog from "../components/ProxyDialog.vue";
+import TagsManager from "../components/TagsManager.vue";
 import { genSecret, isDev } from "../util.ts";
 
 const toast = useToast();
 
 export default {
     components: {
+        ProxyDialog,
         CopyableInput,
         NotificationDialog,
         TagsManager,
@@ -349,25 +481,36 @@ export default {
         },
 
         pushURL() {
-            return this.$root.baseURL + "api/push/" + this.monitor.pushToken + "?msg=OK&ping=";
+            return this.$root.baseURL + "api/push/" + this.monitor.pushToken + "?status=up&msg=OK&ping=";
         },
 
         bodyPlaceholder() {
-            return this.$t("Example:", [`
+            return this.$t("Example:", [ `
 {
     "key": "value"
-}`]);
+}` ]);
         },
 
         headersPlaceholder() {
-            return this.$t("Example:", [`
+            return this.$t("Example:", [ `
 {
     "HeaderName": "HeaderValue"
-}`]);
+}` ]);
         }
 
     },
     watch: {
+        "$root.proxyList"() {
+            if (this.isAdd) {
+                if (this.$root.proxyList && !this.monitor.proxyId) {
+                    const proxy = this.$root.proxyList.find(proxy => proxy.default);
+
+                    if (proxy) {
+                        this.monitor.proxyId = proxy.id;
+                    }
+                }
+            }
+        },
 
         "$route.fullPath"() {
             this.init();
@@ -384,6 +527,15 @@ export default {
             if (this.monitor.type === "push") {
                 if (! this.monitor.pushToken) {
                     this.monitor.pushToken = genSecret(10);
+                }
+            }
+
+            // Set default port for DNS if not already defined
+            if (! this.monitor.port || this.monitor.port === "53") {
+                if (this.monitor.type === "dns") {
+                    this.monitor.port = "53";
+                } else {
+                    this.monitor.port = undefined;
                 }
             }
         }
@@ -421,6 +573,7 @@ export default {
         this.dnsresolvetypeOptions = dnsresolvetypeOptions;
     },
     methods: {
+        /** Initialize the edit monitor form */
         init() {
             if (this.isAdd) {
 
@@ -431,18 +584,34 @@ export default {
                     method: "GET",
                     interval: 60,
                     retryInterval: this.interval,
+                    databaseConnectionString: "Server=<hostname>,<port>;Database=<your database>;User Id=<your user id>;Password=<your password>;Encrypt=<true/false>;TrustServerCertificate=<Yes/No>;Connection Timeout=<int>",
                     maxretries: 0,
                     notificationIDList: {},
                     ignoreTls: false,
                     upsideDown: false,
+                    expiryNotification: false,
                     maxredirects: 10,
-                    accepted_statuscodes: ["200-299"],
+                    accepted_statuscodes: [ "200-299" ],
                     dns_resolve_type: "A",
                     dns_resolve_server: "1.1.1.1",
+                    proxyId: null,
+                    mqttUsername: "",
+                    mqttPassword: "",
+                    mqttTopic: "",
+                    mqttSuccessMessage: "",
+                    authMethod: null,
                 };
 
+                if (this.$root.proxyList && !this.monitor.proxyId) {
+                    const proxy = this.$root.proxyList.find(proxy => proxy.default);
+
+                    if (proxy) {
+                        this.monitor.proxyId = proxy.id;
+                    }
+                }
+
                 for (let i = 0; i < this.$root.notificationList.length; i++) {
-                    if (this.$root.notificationList[i].isDefault == true) {
+                    if (this.$root.notificationList[i].isDefault === true) {
                         this.monitor.notificationIDList[this.$root.notificationList[i].id] = true;
                     }
                 }
@@ -463,6 +632,10 @@ export default {
 
         },
 
+        /**
+         * Validate form input
+         * @returns {boolean} Is the form input valid?
+         */
         isInputValid() {
             if (this.monitor.body) {
                 try {
@@ -483,6 +656,10 @@ export default {
             return true;
         },
 
+        /**
+         * Submit the form data for processing
+         * @returns {void}
+         */
         async submit() {
             this.processing = true;
 
@@ -527,10 +704,22 @@ export default {
             }
         },
 
-        // Added a Notification Event
-        // Enable it if the notification is added in EditMonitor.vue
+        /**
+         * Added a Notification Event
+         * Enable it if the notification is added in EditMonitor.vue
+         * @param {number} id ID of notification to add
+         */
         addedNotification(id) {
             this.monitor.notificationIDList[id] = true;
+        },
+
+        /**
+         * Added a Proxy Event
+         * Enable it if the proxy is added in EditMonitor.vue
+         * @param {number} id ID of proxy to add
+         */
+        addedProxy(id) {
+            this.monitor.proxyId = id;
         },
     },
 };

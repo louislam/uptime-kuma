@@ -41,7 +41,7 @@
                                             <Uptime :monitor="monitor.element" type="24" :pill="true" />
                                             {{ monitor.element.name }}
                                         </div>
-                                        <div class="tags">
+                                        <div v-if="showTags" class="tags">
                                             <Tag v-for="tag in monitor.element.tags" :key="tag" :item="tag" :size="'sm'" />
                                         </div>
                                     </div>
@@ -72,10 +72,15 @@ export default {
         Tag,
     },
     props: {
+        /** Are we in edit mode? */
         editMode: {
             type: Boolean,
             required: true,
         },
+        /** Should tags be shown? */
+        showTags: {
+            type: Boolean,
+        }
     },
     data() {
         return {
@@ -91,10 +96,20 @@ export default {
 
     },
     methods: {
+        /**
+         * Remove the specified group
+         * @param {number} index Index of group to remove
+         */
         removeGroup(index) {
             this.$root.publicGroupList.splice(index, 1);
         },
 
+        /**
+         * Remove a monitor from a group
+         * @param {number} groupIndex Index of group to remove monitor
+         * from
+         * @param {number} index Index of monitor to remove
+         */
         removeMonitor(groupIndex, index) {
             this.$root.publicGroupList[groupIndex].monitorList.splice(index, 1);
         },
@@ -142,7 +157,7 @@ export default {
 
 .mobile {
     .item {
-        padding: 13px 0 10px 0;
+        padding: 13px 0 10px;
     }
 }
 

@@ -71,6 +71,10 @@ export default {
         });
     },
     methods: {
+        /**
+         * Submit form data for processing
+         * @returns {void}
+         */
         submit() {
             this.processing = true;
 

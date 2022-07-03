@@ -1,14 +1,16 @@
-import STMP from "./SMTP.vue"
+import STMP from "./SMTP.vue";
 import Telegram from "./Telegram.vue";
 import Discord from "./Discord.vue";
 import Webhook from "./Webhook.vue";
 import Signal from "./Signal.vue";
 import Gotify from "./Gotify.vue";
+import Ntfy from "./Ntfy.vue";
 import Slack from "./Slack.vue";
 import RocketChat from "./RocketChat.vue";
 import Teams from "./Teams.vue";
 import Pushover from "./Pushover.vue";
 import Pushy from "./Pushy.vue";
+import TechulusPush from "./TechulusPush.vue";
 import Octopush from "./Octopush.vue";
 import PromoSMS from "./PromoSMS.vue";
 import ClickSendSMS from "./ClickSendSMS.vue";
@@ -23,7 +25,14 @@ import AliyunSMS from "./AliyunSms.vue";
 import DingDing from "./DingDing.vue";
 import Bark from "./Bark.vue";
 import SerwerSMS from "./SerwerSMS.vue";
-import Stackfield from './Stackfield.vue';
+import Stackfield from "./Stackfield.vue";
+import WeCom from "./WeCom.vue";
+import GoogleChat from "./GoogleChat.vue";
+import PagerDuty from "./PagerDuty.vue";
+import Gorush from "./Gorush.vue";
+import Alerta from "./Alerta.vue";
+import OneBot from "./OneBot.vue";
+import PushDeer from "./PushDeer.vue";
 
 /**
  * Manage all notification form.
@@ -38,10 +47,12 @@ const NotificationFormList = {
     "teams": Teams,
     "signal": Signal,
     "gotify": Gotify,
+    "ntfy": Ntfy,
     "slack": Slack,
     "rocket.chat": RocketChat,
     "pushover": Pushover,
     "pushy": Pushy,
+    "PushByTechulus": TechulusPush,
     "octopush": Octopush,
     "promosms": PromoSMS,
     "clicksendsms": ClickSendSMS,
@@ -57,6 +68,13 @@ const NotificationFormList = {
     "Bark": Bark,
     "serwersms": SerwerSMS,
     "stackfield": Stackfield,
-}
+    "WeCom": WeCom,
+    "GoogleChat": GoogleChat,
+    "PagerDuty": PagerDuty,
+    "gorush": Gorush,
+    "alerta": Alerta,
+    "OneBot": OneBot,
+    "PushDeer": PushDeer,
+};
 
-export default NotificationFormList
+export default NotificationFormList;
