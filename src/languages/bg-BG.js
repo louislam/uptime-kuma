@@ -532,4 +532,8 @@ export default {
     Query: "Заявка",
     settingsCertificateExpiry: "Изтичане валидността на TLS сертификата",
     certificationExpiryDescription: "HTTPS мониторите ще задействат известие, ако е наличен изтичащ TLS сертификат, през следващите:",
+    "ntfy Topic": "ntfy Тема",
+    Domain: "Домейн",
+    Workstation: "Работна станция",
+    disableCloudflaredNoAuthMsg: "Тъй като сте в режим \"No Auth mode\", парола не се изисква.",
 };

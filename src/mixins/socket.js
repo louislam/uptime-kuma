@@ -601,6 +601,28 @@ export default {
 
             return result;
         },
+
+        /**
+         *  Frontend Version
+         *  It should be compiled to a static value while building the frontend.
+         *  Please see ./config/vite.config.js, it is defined via vite.js
+         * @returns {string}
+         */
+        frontendVersion() {
+            // eslint-disable-next-line no-undef
+            return FRONTEND_VERSION;
+        },
+
+        /**
+         * Are both frontend and backend in the same version?
+         * @returns {boolean}
+         */
+        isFrontendBackendVersionMatched() {
+            if (!this.info.version) {
+                return true;
+            }
+            return this.info.version === this.frontendVersion;
+        }
     },
 
     watch: {
