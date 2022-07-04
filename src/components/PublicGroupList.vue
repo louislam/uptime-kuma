@@ -48,7 +48,10 @@
                                                 {{ monitor.element.name }}
                                             </a>
                                             <p v-else class="item-name"> {{ monitor.element.name }} </p>
-                                            <span title="Toggle Clickable Link">
+                                            <span
+                                                v-if="showLink(monitor, true)"
+                                                title="Toggle Clickable Link"
+                                            >
                                                 <font-awesome-icon
                                                     v-if="editMode"
                                                     :class="{'link-active': monitor.element.sendUrl, 'btn-link': true}"
@@ -145,11 +148,17 @@ export default {
          * Attempts to guess if a link should be shown based upon if
          * sendUrl is set and if the URL is default or not.
          * @param {Object} monitor Monitor to check
+         * @param {boolean} [ignoreSendUrl=false] Should the presence of the sendUrl
+         * property be ignored. This will only work in edit mode.
          * @returns {boolean}
          */
-        showLink(monitor) {
-            return monitor.element.sendUrl && monitor.element.url && monitor.element.url !== "https://";
-
+        showLink(monitor, ignoreSendUrl = false) {
+            // We must check if there are any elements in monitorList to
+            // prevent undefined errors if it hasn't been loaded yet
+            if (this.$parent.editMode && ignoreSendUrl && Object.keys(this.$root.monitorList).length) {
+                return this.$root.monitorList[monitor.element.id].type === "http" || this.$root.monitorList[monitor.element.id].type === "keyword";
+            }
+            return monitor.element.sendUrl && monitor.element.url && monitor.element.url !== "https://" && !this.editMode;
         },
     }
 };
