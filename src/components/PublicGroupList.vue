@@ -48,12 +48,15 @@
                                                 {{ monitor.element.name }}
                                             </a>
                                             <p v-else class="item-name"> {{ monitor.element.name }} </p>
-                                            <font-awesome-icon
-                                                v-if="editMode"
-                                                :class="{'link-active': monitor.element.sendUrl}"
-                                                icon="link" class="action me-3"
-                                                @click="toggleLink(group.index, monitor.index)"
-                                            />
+                                            <span title="Toggle Clickable Link">
+                                                <font-awesome-icon
+                                                    v-if="editMode"
+                                                    :class="{'link-active': monitor.element.sendUrl, 'btn-link': true}"
+                                                    icon="link" class="action me-3"
+
+                                                    @click="toggleLink(group.index, monitor.index)"
+                                                />
+                                            </span>
                                         </div>
                                         <div v-if="showTags" class="tags">
                                             <Tag v-for="tag in monitor.element.tags" :key="tag" :item="tag" :size="'sm'" />
@@ -173,8 +176,13 @@ export default {
     display: inline-block;
 }
 
+.btn-link {
+    color: #bbbbbb;
+    margin-left: 5px;
+}
+
 .link-active {
-    color: #4caf50;
+    color: $primary;
 }
 
 .flip-list-move {
