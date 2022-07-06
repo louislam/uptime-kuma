@@ -34,7 +34,13 @@ class Monitor extends BeanModel {
         let obj = {
             id: this.id,
             name: this.name,
+            sendUrl: this.sendUrl,
         };
+
+        if (this.sendUrl) {
+            obj.url = this.url;
+        }
+
         if (showTags) {
             obj.tags = await this.getTags();
         }
