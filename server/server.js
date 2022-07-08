@@ -674,6 +674,10 @@ let needSetup = false;
                 bean.authMethod = monitor.authMethod;
                 bean.authWorkstation = monitor.authWorkstation;
                 bean.authDomain = monitor.authDomain;
+                bean.slowResponseNotification = monitor.slowResponseNotification;
+                bean.slowResponseThreshold = monitor.slowResponseThreshold;
+                bean.slowResponseNotificationRange = monitor.slowResponseNotificationRange;
+                bean.slowResponseNotificationMethod = monitor.slowResponseNotificationMethod;
 
                 await R.store(bean);
 

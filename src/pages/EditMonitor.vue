@@ -263,6 +263,47 @@
                                 </div>
                             </template>
 
+                            <h2 class="mt-5 mb-2">{{ $t("slowResponseNotification") }}</h2>
+
+                            <div class="my-3 form-check">
+                                <input id="slow-response-notification" v-model="monitor.slowResponseNotification" class="form-check-input" type="checkbox">
+                                <label class="form-check-label" for="slow-response-notification">
+                                    {{ $t("slowResponseNotificationUse") }}
+                                </label>
+                                <div class="form-text">
+                                    {{ $t("slowResponseNotificationUseDescription") }}
+                                </div>
+                            </div>
+
+                            <!-- Method -->
+                            <div class="my-3" v-if="monitor.slowResponseNotification">
+                                <label for="method" class="form-label">{{ $t("slowResponseNotificationMethodDescription") }}</label>
+                                <select id="method" v-model="monitor.slowResponseNotificationMethod" class="form-select">
+                                    <option value="average">
+                                        {{ $t("slowResponseNotificationMethodAverage") }}
+                                    </option>
+                                    <option value="max">
+                                        {{ $t("slowResponseNotificationMethodMax") }}
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div class="my-3" v-if="monitor.slowResponseNotification">
+                                <label for="slow-response-notification-threshold" class="form-label">{{ $t("slowResponseNotificationThreshold") }}</label>
+                                <input id="slow-response-notification-threshold" v-model="monitor.slowResponseNotificationThreshold" type="number" class="form-control" required min="0" step="1">
+                                <div class="form-text">
+                                    {{ $t("slowResponseNotificationThresholdDescription") }}
+                                </div>
+                            </div>
+
+                            <div class="my-3" v-if="monitor.slowResponseNotification">
+                                <label for="slow-response-notification-range" class="form-label">{{ $t("slowResponseNotificationRange") }}</label>
+                                <input id="slow-response-notification-range" v-model="monitor.slowResponseNotificationRange" type="number" class="form-control" required min="0" step="1">
+                                <div class="form-text">
+                                    {{ $t("slowResponseNotificationRangeDescription") }}
+                                </div>
+                            </div>
+
                             <div class="my-3">
                                 <tags-manager ref="tagsManager" :pre-selected-tags="monitor.tags"></tags-manager>
                             </div>
@@ -600,6 +641,10 @@ export default {
                     mqttTopic: "",
                     mqttSuccessMessage: "",
                     authMethod: null,
+                    slowResponseNotification: false,
+                    slowResponseNotificationThreshold: 5000,
+                    slowResponseNotificationRange: 60,
+                    slowResponseNotificationMethod: "average",
                 };
 
                 if (this.$root.proxyList && !this.monitor.proxyId) {
@@ -617,6 +662,7 @@ export default {
                 }
             } else if (this.isEdit) {
                 this.$root.getSocket().emit("getMonitor", this.$route.params.id, (res) => {
+                    console.log(res)
                     if (res.ok) {
                         this.monitor = res.monitor;
 

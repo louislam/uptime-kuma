@@ -99,7 +99,7 @@ class Monitor extends BeanModel {
             authMethod: this.authMethod,
             authWorkstation: this.authWorkstation,
             authDomain: this.authDomain,
-            slowResponseNotification: this.isEnabledSlowResponseNotification,
+            slowResponseNotification: this.isEnabledSlowResponseNotification(),
             slowResponseNotificationThreshold: this.slowResponseNotificationThreshold,
             slowResponseNotificationRange: this.slowResponseNotificationRange,
             slowResponseNotificationMethod: this.slowResponseNotificationMethod,
