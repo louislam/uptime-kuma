@@ -276,7 +276,7 @@
                             </div>
 
                             <!-- Method -->
-                            <div class="my-3" v-if="monitor.slowResponseNotification">
+                            <div v-if="monitor.slowResponseNotification" class="my-3">
                                 <label for="method" class="form-label">{{ $t("slowResponseNotificationMethodDescription") }}</label>
                                 <select id="method" v-model="monitor.slowResponseNotificationMethod" class="form-select">
                                     <option value="average">
@@ -288,7 +288,7 @@
                                 </select>
                             </div>
 
-                            <div class="my-3" v-if="monitor.slowResponseNotification">
+                            <div v-if="monitor.slowResponseNotification" class="my-3">
                                 <label for="slow-response-notification-threshold" class="form-label">{{ $t("slowResponseNotificationThreshold") }}</label>
                                 <input id="slow-response-notification-threshold" v-model="monitor.slowResponseNotificationThreshold" type="number" class="form-control" required min="0" step="1">
                                 <div class="form-text">
@@ -296,7 +296,7 @@
                                 </div>
                             </div>
 
-                            <div class="my-3" v-if="monitor.slowResponseNotification">
+                            <div v-if="monitor.slowResponseNotification" class="my-3">
                                 <label for="slow-response-notification-range" class="form-label">{{ $t("slowResponseNotificationRange") }}</label>
                                 <input id="slow-response-notification-range" v-model="monitor.slowResponseNotificationRange" type="number" class="form-control" required min="0" step="1">
                                 <div class="form-text">
@@ -662,7 +662,6 @@ export default {
                 }
             } else if (this.isEdit) {
                 this.$root.getSocket().emit("getMonitor", this.$route.params.id, (res) => {
-                    console.log(res)
                     if (res.ok) {
                         this.monitor = res.monitor;
 
