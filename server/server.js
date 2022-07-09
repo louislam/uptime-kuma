@@ -675,7 +675,7 @@ let needSetup = false;
                 bean.authWorkstation = monitor.authWorkstation;
                 bean.authDomain = monitor.authDomain;
                 bean.slowResponseNotification = monitor.slowResponseNotification;
-                bean.slowResponseThreshold = monitor.slowResponseThreshold;
+                bean.slowResponseNotificationThreshold = monitor.slowResponseNotificationThreshold;
                 bean.slowResponseNotificationRange = monitor.slowResponseNotificationRange;
                 bean.slowResponseNotificationMethod = monitor.slowResponseNotificationMethod;
 

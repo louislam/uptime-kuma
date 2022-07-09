@@ -277,7 +277,7 @@
 
                             <!-- Method -->
                             <div v-if="monitor.slowResponseNotification" class="my-3">
-                                <label for="method" class="form-label">{{ $t("slowResponseNotificationMethodDescription") }}</label>
+                                <label for="method" class="form-label">{{ $t("slowResponseNotificationMethod") }}</label>
                                 <select id="method" v-model="monitor.slowResponseNotificationMethod" class="form-select">
                                     <option value="average">
                                         {{ $t("slowResponseNotificationMethodAverage") }}
@@ -286,13 +286,19 @@
                                         {{ $t("slowResponseNotificationMethodMax") }}
                                     </option>
                                 </select>
+                                <div v-if="monitor.slowResponseNotificationMethod === 'average'" class="form-text">
+                                    {{ $t("slowResponseNotificationMethodAverageDescription", [monitor.slowResponseNotificationRange]) }}
+                                </div>
+                                <div v-if="monitor.slowResponseNotificationMethod === 'max'" class="form-text">
+                                    {{ $t("slowResponseNotificationMethodMaxDescription", [monitor.slowResponseNotificationRange]) }}
+                                </div>
                             </div>
 
                             <div v-if="monitor.slowResponseNotification" class="my-3">
                                 <label for="slow-response-notification-threshold" class="form-label">{{ $t("slowResponseNotificationThreshold") }}</label>
                                 <input id="slow-response-notification-threshold" v-model="monitor.slowResponseNotificationThreshold" type="number" class="form-control" required min="0" step="1">
                                 <div class="form-text">
-                                    {{ $t("slowResponseNotificationThresholdDescription") }}
+                                    {{ $t("slowResponseNotificationThresholdDescription", [monitor.slowResponseNotificationThreshold]) }}
                                 </div>
                             </div>
 
@@ -300,7 +306,7 @@
                                 <label for="slow-response-notification-range" class="form-label">{{ $t("slowResponseNotificationRange") }}</label>
                                 <input id="slow-response-notification-range" v-model="monitor.slowResponseNotificationRange" type="number" class="form-control" required min="0" step="1">
                                 <div class="form-text">
-                                    {{ $t("slowResponseNotificationRangeDescription") }}
+                                    {{ $t("slowResponseNotificationRangeDescription", [monitor.slowResponseNotificationRange]) }}
                                 </div>
                             </div>
 
