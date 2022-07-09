@@ -151,7 +151,7 @@ You can discuss or ask for help in [issues](https://github.com/louislam/uptime-k
 
 ### Subreddit
 
-My Reddit account: [u/louislamlam](https://reddit.com/u/louislamlam)
+My Reddit account: [u/louislamlam](https://reddit.com/u/louislamlam).  
 You can mention me if you ask a question on Reddit.
 [r/Uptime kuma](https://www.reddit.com/r/UptimeKuma/)
 
