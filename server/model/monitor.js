@@ -569,7 +569,7 @@ class Monitor extends BeanModel {
 
             previousBeat = bean;
 
-            if (!this.isStop) {
+            if (! this.isStop) {
                 log.debug("monitor", `[${this.name}] SetTimeout for next check.`);
                 this.heartbeatInterval = setTimeout(safeBeat, beatInterval * 1000);
             } else {
