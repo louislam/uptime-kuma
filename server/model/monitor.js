@@ -1006,7 +1006,7 @@ class Monitor extends BeanModel {
             return;
         }
 
-        log.debug("monitor", `[${this.name}] Try to Send slow response notification (${actualResponseTime} > ${thresholdResponseTime})`);
+        log.debug("monitor", `[${this.name}] Try to send slow response notification (${actualResponseTime} > ${thresholdResponseTime})`);
 
         const notificationList = await Monitor.getNotificationList(monitor);
 
