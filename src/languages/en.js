@@ -355,6 +355,8 @@ export default {
     Services: "Services",
     Discard: "Discard",
     Cancel: "Cancel",
+    Select: "Select",
+    "With Selected...": "With Selected...",
     "Powered by": "Powered by",
     shrinkDatabaseDescription: "Trigger database VACUUM for SQLite. If your database is created after 1.10.0, AUTO_VACUUM is already enabled and this action is not needed.",
     serwersms: "SerwerSMS.pl",
