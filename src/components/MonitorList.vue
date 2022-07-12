@@ -1,6 +1,24 @@
 <template>
     <div class="shadow-box mb-3" :style="boxStyle">
         <div class="list-header">
+            <div v-if="Object.keys($root.monitorList).length > 0" class="selection-controls">
+                <template v-if="Object.keys(selectedMonitors).length === 0">
+                    <input id="select-mode-btn" v-model="selectMode" type="checkbox" class="btn-check" autocomplete="off" :value="true">
+                    <label class="btn btn-sm text-primary" for="select-mode-btn">{{ $t(selectMode ? "Cancel" : "Select") }}</label>
+                    <button v-if="selectMode" class="btn btn-sm text-primary" type="button" @click="selectAll">Select All</button>
+                </template>
+                <div v-else class="dropdown">
+                    <button id="selectionDropdownButton" class="btn btn-sm btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        {{ $t("With Selected...") }}
+                    </button>
+                    <ul class="dropdown-menu" :class="{'dropdown-menu-dark': isDarkTheme}" aria-labelledby="selectionDropdownButton">
+                        <li><a class="dropdown-item" href="#" @click="pauseDialog"><font-awesome-icon icon="pause" size="sm" /> {{ $t("Pause") }}</a></li>
+                        <li><a class="dropdown-item" href="#" @click="resumeSelected"><font-awesome-icon icon="play" size="sm" /> {{ $t("Resume") }}</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#" @click="cancelSelectMode">{{ $t("Cancel") }}</a></li>
+                    </ul>
+                </div>
+            </div>
             <div class="placeholder"></div>
             <div class="search-wrapper">
                 <a v-if="searchText == ''" class="search-icon">
@@ -19,17 +37,32 @@
                 {{ $t("No Monitors, please") }} <router-link to="/add">{{ $t("add one") }}</router-link>
             </div>
 
-            <MonitorListItem v-for="(item, index) in sortedMonitorList" :key="index" :monitor="item" :isSearch="searchText !== ''" />
+            <MonitorListItem
+                v-for="(item, index) in sortedMonitorList"
+                :key="index"
+                :monitor="item"
+                :isSearch="searchText !== ''"
+                :isSelectMode="selectMode"
+                :isSelected="isSelected"
+                :select="select"
+                :deselect="deselect"
+            />
         </div>
     </div>
+
+    <Confirm ref="confirmPause" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="pauseSelected">
+        {{ $t("pauseMonitorMsg") }}
+    </Confirm>
 </template>
 
 <script>
+import Confirm from "../components/Confirm.vue";
 import MonitorListItem from "../components/MonitorListItem.vue";
 import { getMonitorRelativeURL } from "../util.ts";
 
 export default {
     components: {
+        Confirm,
         MonitorListItem,
     },
     props: {
@@ -41,6 +74,8 @@ export default {
     data() {
         return {
             searchText: "",
+            selectMode: false,
+            selectedMonitors: {},
             windowTop: 0,
         };
     },
@@ -107,6 +142,15 @@ export default {
 
             return result;
         },
+
+        isDarkTheme() {
+            return document.body.classList.contains("dark");
+        },
+    },
+    watch: {
+        searchText() {
+            this.cancelSelectMode();
+        }
     },
     mounted() {
         window.addEventListener("scroll", this.onScroll);
@@ -134,7 +178,61 @@ export default {
         /** Clear the search bar */
         clearSearchText() {
             this.searchText = "";
-        }
+        },
+        /** Select all monitors */
+        selectAll() {
+            this.selectedMonitors = {};
+            Object.values(this.$root.monitorList).forEach((item) => {
+                this.selectedMonitors[item.id] = true;
+            });
+        },
+        /**
+         * Deselect a monitor
+         * @param {number} id ID of monitor
+         */
+        deselect(id) {
+            delete this.selectedMonitors[id];
+        },
+        /**
+         * Select a monitor
+         * @param {number} id ID of monitor
+         */
+        select(id) {
+            this.selectedMonitors[id] = true;
+        },
+        /**
+         * Determine if monitor is selected
+         * @param {number} id ID of monitor
+         * @returns {bool}
+         */
+        isSelected(id) {
+            return id in this.selectedMonitors;
+        },
+        /** Disable select mode and reset selection */
+        cancelSelectMode() {
+            this.selectMode = false;
+            this.selectedMonitors = {};
+        },
+        /** Show dialog to confirm pause */
+        pauseDialog() {
+            this.$refs.confirmPause.show();
+        },
+        /** Pause each selected monitor */
+        pauseSelected() {
+            Object.keys(this.selectedMonitors)
+                .filter(id => this.$root.monitorList[id].active)
+                .forEach(id => this.$root.getSocket().emit("pauseMonitor", id));
+
+            this.cancelSelectMode();
+        },
+        /** Resume each selected monitor */
+        resumeSelected() {
+            Object.keys(this.selectedMonitors)
+                .filter(id => !this.$root.monitorList[id].active)
+                .forEach(id => this.$root.getSocket().emit("resumeMonitor", id));
+
+            this.cancelSelectMode();
+        },
     },
 };
 </script>
@@ -154,6 +252,7 @@ export default {
 }
 
 .list-header {
+    align-items: center;
     border-bottom: 1px solid #dee2e6;
     border-radius: 10px 10px 0 0;
     margin: -10px;
@@ -166,13 +265,27 @@ export default {
         background-color: $dark-header-bg;
         border-bottom: 0;
     }
+
+    .dropdown-menu {
+        padding-left: 0;
+    }
 }
 
 @media (max-width: 770px) {
     .list-header {
-        margin: -20px;
-        margin-bottom: 10px;
+        margin: -5px -15px 10px;
         padding: 5px;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1450px) {
+    .list-header {
+        flex-wrap: wrap;
+    }
+
+    .selection-controls {
+        flex: 1 0 100%;
+        order: 999;
     }
 }
 
@@ -204,17 +317,21 @@ export default {
     width: 100%;
 }
 
+.selection-controls .btn {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.selection-controls .dropdown-item [data-icon] {
+    margin-right: 6px;
+}
+
 .tags {
     margin-top: 4px;
     padding-left: 67px;
     display: flex;
     flex-wrap: wrap;
     gap: 0;
-}
-
-.bottom-style {
-    padding-left: 67px;
-    margin-top: 5px;
 }
 
 </style>
