@@ -49,8 +49,6 @@ class UptimeKumaServer {
 
         log.info("server", "Creating express and socket.io instance");
         this.app = express();
-        this.app.enable("trust proxy");
-
         if (sslKey && sslCert) {
             log.info("server", "Server Type: HTTPS");
             this.httpServer = https.createServer({
