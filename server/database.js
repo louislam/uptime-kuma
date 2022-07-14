@@ -61,6 +61,7 @@ class Database {
         "patch-add-clickable-status-page-link.sql": true,
         "patch-add-sqlserver-monitor.sql": true,
         "patch-add-other-auth.sql": { parents: [ "patch-monitor-basic-auth.sql" ] },
+        "patch-ping-packet-size.sql": true,
     };
 
     /**

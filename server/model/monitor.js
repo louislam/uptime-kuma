@@ -82,6 +82,7 @@ class Monitor extends BeanModel {
             expiryNotification: this.isEnabledExpiryNotification(),
             ignoreTls: this.getIgnoreTls(),
             upsideDown: this.isUpsideDown(),
+            packetSize: this.packetSize,
             maxredirects: this.maxredirects,
             accepted_statuscodes: this.getAcceptedStatuscodes(),
             dns_resolve_type: this.dns_resolve_type,
@@ -352,7 +353,7 @@ class Monitor extends BeanModel {
                     bean.status = UP;
 
                 } else if (this.type === "ping") {
-                    bean.ping = await ping(this.hostname);
+                    bean.ping = await ping(this.hostname, this.packetSize);
                     bean.msg = "";
                     bean.status = UP;
                 } else if (this.type === "dns") {
@@ -459,7 +460,7 @@ class Monitor extends BeanModel {
                         bean.msg = res.data.response.servers[0].name;
 
                         try {
-                            bean.ping = await ping(this.hostname);
+                            bean.ping = await ping(this.hostname, this.packetSize);
                         } catch (_) { }
                     } else {
                         throw new Error("Server not found on Steam");

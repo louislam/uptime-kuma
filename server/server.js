@@ -659,6 +659,7 @@ let needSetup = false;
                 bean.ignoreTls = monitor.ignoreTls;
                 bean.expiryNotification = monitor.expiryNotification;
                 bean.upsideDown = monitor.upsideDown;
+                bean.packetSize = monitor.packetSize;
                 bean.maxredirects = monitor.maxredirects;
                 bean.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
                 bean.dns_resolve_type = monitor.dns_resolve_type;

@@ -70,15 +70,16 @@ exports.tcping = function (hostname, port) {
 /**
  * Ping the specified machine
  * @param {string} hostname Hostname / address of machine
+ * @param {number} [size=56] Size of packet to send
  * @returns {Promise<number>} Time for ping in ms rounded to nearest integer
  */
-exports.ping = async (hostname) => {
+exports.ping = async (hostname, size = 56) => {
     try {
-        return await exports.pingAsync(hostname);
+        return await exports.pingAsync(hostname, false, size );
     } catch (e) {
         // If the host cannot be resolved, try again with ipv6
         if (e.message.includes("service not known")) {
-            return await exports.pingAsync(hostname, true);
+            return await exports.pingAsync(hostname, true, size);
         } else {
             throw e;
         }
@@ -89,12 +90,14 @@ exports.ping = async (hostname) => {
  * Ping the specified machine
  * @param {string} hostname Hostname / address of machine to ping
  * @param {boolean} ipv6 Should IPv6 be used?
+ * @param {number} [size=56] Size of ping packet to send
  * @returns {Promise<number>} Time for ping in ms rounded to nearest integer
  */
-exports.pingAsync = function (hostname, ipv6 = false) {
+exports.pingAsync = function (hostname, ipv6 = false, size = 56) {
     return new Promise((resolve, reject) => {
         const ping = new Ping(hostname, {
-            ipv6
+            ipv6,
+            size
         });
 
         ping.send(function (err, ms, stdout) {
