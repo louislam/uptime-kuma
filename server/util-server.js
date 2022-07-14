@@ -97,7 +97,7 @@ exports.pingAsync = function (hostname, ipv6 = false, size = 56) {
     return new Promise((resolve, reject) => {
         const ping = new Ping(hostname, {
             ipv6,
-            size
+            size,
         });
 
         ping.send(function (err, ms, stdout) {
