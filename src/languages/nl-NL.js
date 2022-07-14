@@ -528,4 +528,13 @@ export default {
     Domain: "Domein",
     Workstation: "Werkstation",
     disableCloudflaredNoAuthMsg: "De \"Geen authenticatie\" modus staat aan, wachtwoord is niet vereist.",
+    "Domain Name Expiry Notification": "Domain Name Expiry Notification",
+    "API Username": "API Username",
+    "API Key": "API Key",
+    "Octopush API Version": "Octopush API Version",
+    "Legacy Octopush-DM": "Legacy Octopush-DM",
+    octopushAPIKey: "\"API key\" from HTTP API credentials in control panel",
+    octopushLogin: "\"Login\" from HTTP API credentials in control panel",
+    promosmsLogin: "API Login Name",
+    promosmsPassword: "API Password",
 };

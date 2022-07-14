@@ -538,6 +538,7 @@ export default {
     settingsCertificateExpiry: "TLS 证书过期通知",
     certificationExpiryDescription: "HTTPS 监控项发现被监控目标的 TLS 证书剩余有效期少于以下天数时将发出通知：",
     "ntfy Topic": "ntfy 主题",
-    "Domain": "域名",
-    "Workstation": "工作站",
+    Domain: "域名",
+    Workstation: "工作站",
+    disableCloudflaredNoAuthMsg: "You are in No Auth mode, password is not require.",
 };
