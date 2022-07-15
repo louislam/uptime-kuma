@@ -353,5 +353,4 @@ export default {
     serwersmsAPIPassword: "API geslo",
     serwersmsPhoneNumber: "Telefonska številka",
     serwersmsSenderName: "Ime SMS pošiljatelja (registrirani prek portala za stranke)",
-    "stackfield": "Stackfield",
 };

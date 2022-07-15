@@ -351,5 +351,4 @@ export default {
     serwersmsAPIPassword: "API Adgangskode",
     serwersmsPhoneNumber: "Telefonnummer",
     serwersmsSenderName: "SMS Afsender Navn (registreret via kundeportal)",
-    stackfield: "Stackfield",
 };

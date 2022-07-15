@@ -354,7 +354,7 @@ export default {
     serwersmsAPIPassword: "API heslo",
     serwersmsPhoneNumber: "Telefonní číslo",
     serwersmsSenderName: "Odesílatel SMS (registrováno prostřednictvím zákaznického portálu)",
-    "stackfield": "Stackfield",
+    stackfield: "Stackfield",
     smtpDkimSettings: "Nastavení DKIM",
     smtpDkimDesc: "Informace o použití naleznete v {0} Nodemailer DKIM.",
     documentation: "dokumentaci",
