@@ -99,7 +99,7 @@
         "redbean-node": "0.1.4",
         "socket.io": "~4.4.1",
         "socket.io-client": "~4.4.1",
-        "socks-proxy-agent": "^6.1.1",
+        "socks-proxy-agent": "6.1.1",
         "tar": "^6.1.11",
         "tcp-ping": "~0.1.1",
         "thirty-two": "~1.0.2"
