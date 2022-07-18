@@ -238,10 +238,6 @@ exports.dnsResolve = function (hostname, resolverServer, resolverPort, rrtype) {
  */
 exports.mssqlQuery = function (connectionString, query) {
     return new Promise((resolve, reject) => {
-        mssql.on("error", err => {
-            reject(err);
-        });
-
         mssql.connect(connectionString).then(pool => {
             return pool.request()
                 .query(query);
