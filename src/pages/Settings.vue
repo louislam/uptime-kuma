@@ -153,6 +153,10 @@ export default {
                     this.settings.tlsExpiryNotifyDays = [ 7, 14, 21 ];
                 }
 
+                if (this.settings.trustProxy === undefined) {
+                    this.settings.trustProxy = false;
+                }
+
                 this.settingsLoaded = true;
             });
         },

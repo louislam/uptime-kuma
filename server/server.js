@@ -164,12 +164,20 @@ let needSetup = false;
 
     // Entry Page
     app.get("/", async (request, response) => {
-        log.debug("entry", `Request Domain: ${request.hostname}`);
+        let hostname = request.hostname;
+        if (await setting("trustProxy")) {
+            const proxy = request.headers["x-forwarded-host"];
+            if (proxy) {
+                hostname = proxy;
+            }
+        }
 
-        if (request.hostname in StatusPage.domainMappingList) {
+        log.debug("entry", `Request Domain: ${hostname}`);
+
+        if (hostname in StatusPage.domainMappingList) {
             log.debug("entry", "This is a status page domain");
 
-            let slug = StatusPage.domainMappingList[request.hostname];
+            let slug = StatusPage.domainMappingList[hostname];
             await StatusPage.handleStatusPageResponse(response, server.indexHTML, slug);
 
         } else if (exports.entryPage && exports.entryPage.startsWith("statusPage-")) {
