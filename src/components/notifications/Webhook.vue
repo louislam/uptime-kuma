@@ -1,18 +1,26 @@
 <template>
     <div class="mb-3">
         <label for="webhook-url" class="form-label">{{ $t("Post URL") }}</label>
-        <input id="webhook-url" v-model="$parent.notification.webhookURL" type="url" pattern="https?://.+" class="form-control" required>
+        <input
+            id="webhook-url"
+            v-model="$parent.notification.webhookURL"
+            type="url"
+            pattern="https?://.+"
+            class="form-control"
+            required
+        />
     </div>
 
     <div class="mb-3">
         <label for="webhook-content-type" class="form-label">{{ $t("Content Type") }}</label>
-        <select id="webhook-content-type" v-model="$parent.notification.webhookContentType" class="form-select" required>
-            <option value="json">
-                application/json
-            </option>
-            <option value="form-data">
-                multipart/form-data
-            </option>
+        <select
+            id="webhook-content-type"
+            v-model="$parent.notification.webhookContentType"
+            class="form-select"
+            required
+        >
+            <option value="json">application/json</option>
+            <option value="form-data">multipart/form-data</option>
         </select>
 
         <div class="form-text">
@@ -25,4 +33,22 @@
             </i18n-t>
         </div>
     </div>
+
+    <div class="mb-3">
+        <label for="authorization-header" class="form-label">{{ $t("Authorization Header") }}</label>
+        <HiddenInput
+            id="authorization-header"
+            v-model="$parent.notification.webhookAuthorizationHeader"
+            autocomplete="one-time-code"
+        ></HiddenInput>
+    </div>
 </template>
+
+<script>
+import HiddenInput from "../HiddenInput.vue";
+export default {
+    components: {
+        HiddenInput,
+    },
+};
+</script>
