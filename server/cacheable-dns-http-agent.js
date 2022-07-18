@@ -17,6 +17,10 @@ class CacheableDnsHttpAgent {
         this.cacheable.install(https.globalAgent);
     }
 
+    static install(agent) {
+        this.cacheable.install(agent);
+    }
+
     /**
      * @var {https.AgentOptions} agentOptions
      * @return {https.Agent}
