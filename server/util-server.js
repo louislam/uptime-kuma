@@ -238,10 +238,6 @@ exports.dnsResolve = function (hostname, resolverServer, resolverPort, rrtype) {
  */
 exports.mssqlQuery = function (connectionString, query) {
     return new Promise((resolve, reject) => {
-        mssql.on("error", err => {
-            reject(err);
-        });
-
         mssql.connect(connectionString).then(pool => {
             return pool.request()
                 .query(query);
@@ -384,7 +380,7 @@ exports.checkCertificate = function (res) {
 
 /**
  * Check if the provided status code is within the accepted ranges
- * @param {string} status The status code to check
+ * @param {number} status The status code to check
  * @param {string[]} acceptedCodes An array of accepted status codes
  * @returns {boolean} True if status code within range, false otherwise
  * @throws {Error} Will throw an error if the provided status code is not a valid range string or code string
