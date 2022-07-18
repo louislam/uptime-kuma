@@ -16,18 +16,20 @@ class Webhook extends NotificationProvider {
                 msg,
             };
             let finalData;
-            let config = {};
+            let config = {
+                headers: {}
+            };
 
             if (notification.webhookContentType === "form-data") {
                 finalData = new FormData();
                 finalData.append("data", JSON.stringify(data));
-
-                config = {
-                    headers: finalData.getHeaders(),
-                };
-
+                config.headers = finalData.getHeaders();
             } else {
                 finalData = data;
+            }
+
+            if (notification.webhookAuthorizationHeader) {
+                config.headers["Authorization"] = notification.webhookAuthorizationHeader;
             }
 
             await axios.post(notification.webhookURL, finalData, config);
