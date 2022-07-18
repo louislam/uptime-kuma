@@ -144,7 +144,7 @@ module.exports.statusPageSocketHandler = (socket) => {
 
                 // Convert to file
                 await ImageDataURI.outputFile(imgDataUrl, Database.uploadDir + filename);
-                config.logo = `/upload/${filename}?t=` + Date.now();
+                config.logo = `./upload/${filename}?t=` + Date.now();
 
             } else {
                 config.icon = imgDataUrl;

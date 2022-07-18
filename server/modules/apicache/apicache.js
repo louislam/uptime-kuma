@@ -514,7 +514,7 @@ function ApiCache() {
    * Return cache performance statistics (hit rate).  Suitable for
    * putting into a route:
    * <code>
-   * app.get('/api/cache/performance', (req, res) => {
+   * app.get('./api/cache/performance', (req, res) => {
    *    res.json(apicache.getPerformance())
    * })
    * </code>

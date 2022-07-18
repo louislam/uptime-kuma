@@ -95,8 +95,12 @@ export default {
                 wsHost = protocol + location.host;
             }
 
+            // always starts and ends with '/'
+            const basePath = document.querySelector("head base").getAttribute("href");
+
             socket = io(wsHost, {
-                transports: [ "websocket" ],
+                transports: ["websocket"],
+                path: basePath + "socket.io",
             });
 
             socket.on("info", (info) => {

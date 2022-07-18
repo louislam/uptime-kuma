@@ -185,7 +185,8 @@ export default {
         },
         /** Get the base URL of the application */
         autoGetPrimaryBaseURL() {
-            this.settings.primaryBaseURL = location.protocol + "//" + location.host;
+            const basePath = document.querySelector("head base").getAttribute("href");
+            this.settings.primaryBaseURL = location.protocol + "//" + location.host + basePath;
         },
     },
 };

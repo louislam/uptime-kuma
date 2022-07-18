@@ -22,7 +22,7 @@ export default {
         // There are only 2 cases that could come in here.
         // 1. Matched status Page domain name
         // 2. Vue Frontend Dev
-        let res = (await axios.get("/api/entry-page")).data;
+        let res = (await axios.get("./api/entry-page")).data;
 
         if (res.type === "statusPageMatchedDomain") {
             this.statusPageSlug = res.statusPageSlug;
