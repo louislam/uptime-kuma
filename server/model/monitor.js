@@ -31,7 +31,7 @@ class Monitor extends BeanModel {
      * Only show necessary data to public
      * @returns {Object}
      */
-    async toPublicJSON(showTags = false) {
+    async toPublicJSON(showTags = false, includeStatus = false) {
         let obj = {
             id: this.id,
             name: this.name,
@@ -45,6 +45,12 @@ class Monitor extends BeanModel {
         if (showTags) {
             obj.tags = await this.getTags();
         }
+
+        if (includeStatus) {
+            const heartbeat = await Monitor.getPreviousHeartbeat(this.id);
+            obj.status = heartbeat.status === 1 ? "up" : "down";
+        }
+
         return obj;
     }
 
