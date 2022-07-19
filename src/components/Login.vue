@@ -54,6 +54,15 @@ export default {
             tokenRequired: false,
         };
     },
+
+    mounted() {
+        document.title += " - Login";
+    },
+
+    unmounted() {
+        document.title = document.title.replace(" - Login", "");
+    },
+
     methods: {
         /** Submit the user details and attempt to log in */
         submit() {
