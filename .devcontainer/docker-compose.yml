@@ -1,0 +1,15 @@
+version: '3.4'
+services:
+  uptimekuma:
+    user: node
+    build:
+      context: .
+    extra_hosts:
+      - "host.docker.internal:host-gateway" # to test connections on host
+
+    volumes:
+      - ..:/workspace:cached
+      # Uncomment the next line to use Docker from inside the container. See https://aka.ms/vscode-remote/samples/docker-from-docker-compose for details.
+      # - /var/run/docker.sock:/var/run/docker.sock 
+
+    command: /bin/sh -c "while sleep 1000; do :; done"
