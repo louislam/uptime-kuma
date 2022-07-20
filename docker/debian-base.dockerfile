@@ -26,3 +26,8 @@ RUN node ./extra/download-cloudflared.js $TARGETPLATFORM && \
     rm -f cloudflared.deb && \
     apt --yes autoremove
 
+# Install grpcurl
+# Can be used like ./grpcurl
+ARG GRPCURL_VERSION=1.8.6
+RUN wget https://github.com/fullstorydev/grpcurl/releases/download/v$GRPCURL_VERSION/grpcurl_$GRPCURL_VERSION_linux_x86_64.tar.gz
+RUN tar xf grpcurl_$GRPCURL_VERSION_linux_x86_64.tar.gz

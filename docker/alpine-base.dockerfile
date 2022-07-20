@@ -6,3 +6,9 @@ WORKDIR /app
 RUN apk add --no-cache iputils setpriv dumb-init python3 py3-cryptography py3-pip py3-six py3-yaml py3-click py3-markdown py3-requests py3-requests-oauthlib && \
     pip3 --no-cache-dir install apprise==0.9.9 && \
     rm -rf /root/.cache
+
+# Install grpcurl
+# Can be used like ./grpcurl
+ARG GRPCURL_VERSION=1.8.6
+RUN wget https://github.com/fullstorydev/grpcurl/releases/download/v$GRPCURL_VERSION/grpcurl_$GRPCURL_VERSION_linux_x86_64.tar.gz
+RUN tar xf grpcurl_$GRPCURL_VERSION_linux_x86_64.tar.gz
