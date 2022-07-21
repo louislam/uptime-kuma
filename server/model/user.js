@@ -27,6 +27,17 @@ class User extends BeanModel {
         this.password = newPassword;
     }
 
+    /**
+     * @param {number} userID
+     * @param {string} newUsername
+     * @returns {Promise<void>}
+     */
+    static async updateUsername(userID, newUsername) {
+        await R.exec("UPDATE `user` SET username = ? WHERE id = ? ", [
+            newUsername,
+            userID
+        ]);
+    }
 }
 
 module.exports = User;

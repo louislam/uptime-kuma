@@ -1,18 +1,31 @@
-FROM louislam/uptime-kuma:base-alpine AS build
+FROM louislam/uptime-kuma:base-alpine AS build_server
+WORKDIR /app
+
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1
+
+# Cache docker layers, faster development, less bandwidth much wauw
+COPY package.json .
+COPY package-lock.json .
+RUN npm ci --production
+
+# Copy all over
+COPY . .
+RUN chmod +x extra/entrypoint.sh
+
+FROM louislam/uptime-kuma:base-alpine AS build_app
 WORKDIR /app
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1
 
 COPY . .
-RUN npm ci --production && \
-    chmod +x /app/extra/entrypoint.sh
-
+RUN npm ci && npm run build
 
 FROM louislam/uptime-kuma:base-alpine AS release
 WORKDIR /app
 
 # Copy app files from build layer
-COPY --from=build /app /app
+COPY --from=build_server /app /app
+COPY --from=build_app /app/dist /app/dist
 
 EXPOSE 3001
 VOLUME ["/app/data"]
