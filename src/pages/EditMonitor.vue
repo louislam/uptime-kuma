@@ -230,6 +230,12 @@
                                 </div>
                             </div>
 
+                            <!-- Ping packet size -->
+                            <div v-if="monitor.type === 'ping'" class="my-3">
+                                <label for="packet-size" class="form-label">{{ $t("Packet Size") }}</label>
+                                <input id="packet-size" v-model="monitor.packetSize" type="number" class="form-control" required min="1" max="65500" step="1">
+                            </div>
+
                             <!-- HTTP / Keyword only -->
                             <template v-if="monitor.type === 'http' || monitor.type === 'keyword' ">
                                 <div class="my-3">
@@ -589,6 +595,7 @@ export default {
                     notificationIDList: {},
                     ignoreTls: false,
                     upsideDown: false,
+                    packetSize: 56,
                     expiryNotification: false,
                     maxredirects: 10,
                     accepted_statuscodes: [ "200-299" ],

@@ -28,13 +28,13 @@ function Ping(host, options) {
 
     if (util.WIN) {
         this._bin = "c:/windows/system32/ping.exe";
-        this._args = (options.args) ? options.args : [ "-n", "1", "-w", timeout * 1000, host ];
+        this._args = (options.args) ? options.args : [ "-n", "1", "-w", timeout * 1000, "-l", this._options.size, host ];
         this._regmatch = /[><=]([0-9.]+?)ms/;
 
     } else if (util.LIN) {
         this._bin = "/bin/ping";
 
-        const defaultArgs = [ "-n", "-w", timeout, "-c", "1", host ];
+        const defaultArgs = [ "-n", "-w", timeout, "-c", "1", "-s", this._options.size, host ];
 
         if (net.isIPv6(host) || options.ipv6) {
             defaultArgs.unshift("-6");
@@ -51,13 +51,13 @@ function Ping(host, options) {
             this._bin = "/sbin/ping";
         }
 
-        this._args = (options.args) ? options.args : [ "-n", "-t", timeout, "-c", "1", host ];
+        this._args = (options.args) ? options.args : [ "-n", "-t", timeout, "-c", "1", "-s", this._options.size, host ];
         this._regmatch = /=([0-9.]+?) ms/;
 
     } else if (util.BSD) {
         this._bin = "/sbin/ping";
 
-        const defaultArgs = [ "-n", "-t", timeout, "-c", "1", host ];
+        const defaultArgs = [ "-n", "-t", timeout, "-c", "1", "-s", this._options.size, host ];
 
         if (net.isIPv6(host) || options.ipv6) {
             defaultArgs.unshift("-6");
