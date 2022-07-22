@@ -144,7 +144,7 @@ export default {
 
             socket.on("dockerHostList", (data) => {
                 this.dockerHostList = data;
-            })
+            });
 
             socket.on("heartbeat", (data) => {
                 if (! (data.monitorID in this.heartbeatList)) {

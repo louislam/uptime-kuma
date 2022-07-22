@@ -12,7 +12,7 @@ class DockerHost extends BeanModel {
             daemon: this._dockerDaemon,
             type: this._dockerType,
             name: this._name,
-        }
+        };
     }
 }
 

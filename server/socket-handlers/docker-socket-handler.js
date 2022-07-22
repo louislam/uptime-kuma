@@ -2,6 +2,10 @@ const { sendDockerHostList } = require("../client");
 const { checkLogin } = require("../util-server");
 const { DockerHost } = require("../docker");
 
+/**
+ * Handlers for docker hosts
+ * @param {Socket} socket Socket.io instance
+ */
 module.exports.dockerSocketHandler = (socket) => {
     socket.on("addDockerHost", async (dockerHost, dockerHostID, callback) => {
         try {
@@ -20,7 +24,7 @@ module.exports.dockerSocketHandler = (socket) => {
             callback({
                 ok: false,
                 msg: e.message,
-            })
+            });
         }
     });
 
@@ -40,7 +44,7 @@ module.exports.dockerSocketHandler = (socket) => {
             callback({
                 ok: false,
                 msg: e.message,
-            })
+            });
         }
     });
 
@@ -61,7 +65,7 @@ module.exports.dockerSocketHandler = (socket) => {
             callback({
                 ok: false,
                 msg: e.message,
-            })
+            });
         }
-    })
-}
+    });
+};

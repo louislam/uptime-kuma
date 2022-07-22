@@ -4,6 +4,13 @@ const version = require("../package.json").version;
 const https = require("https");
 
 class DockerHost {
+    /**
+     * Save a docker host
+     * @param {Object} dockerHost Docker host to save
+     * @param {?number} dockerHostID ID of the docker host to update
+     * @param {number} userID ID of the user who adds the docker host
+     * @returns {Promise<Bean>}
+     */
     static async save(dockerHost, dockerHostID, userID) {
         let bean;
 
@@ -28,6 +35,12 @@ class DockerHost {
         return bean;
     }
 
+    /**
+     * Delete a Docker host
+     * @param {number} dockerHostID ID of the Docker host to delete
+     * @param {number} userID ID of the user who created the Docker host
+     * @returns {Promise<void>}
+     */
     static async delete(dockerHostID, userID) {
         let bean = await R.findOne("docker_host", " id = ? AND user_id = ? ", [ dockerHostID, userID ]);
 
@@ -38,6 +51,11 @@ class DockerHost {
         await R.trash(bean);
     }
 
+    /**
+     * Fetches the amount of containers on the Docker host
+     * @param {Object} dockerHost Docker host to check for
+     * @returns {number} Total amount of containers on the host
+     */
     static async getAmountContainer(dockerHost) {
         const options = {
             url: "/containers/json?all=true",
@@ -64,4 +82,4 @@ class DockerHost {
 
 module.exports = {
     DockerHost,
-}
+};

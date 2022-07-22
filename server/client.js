@@ -122,6 +122,11 @@ async function sendInfo(socket) {
     });
 }
 
+/**
+ * Send list of docker hosts to client
+ * @param {Socket} socket Socket.io socket instance
+ * @returns {Promise<Bean[]>}
+ */
 async function sendDockerHostList(socket) {
     const timeLogger = new TimeLogger();
 

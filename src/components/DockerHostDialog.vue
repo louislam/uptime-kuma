@@ -66,7 +66,7 @@ export default {
             model: null,
             processing: false,
             id: null,
-            connectionTypes: ["socket", "tcp"],
+            connectionTypes: [ "socket", "tcp" ],
             dockerHost: {
                 name: "",
                 dockerDaemon: "",
