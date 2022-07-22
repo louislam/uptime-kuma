@@ -148,25 +148,25 @@
                                 <input id="docker_container" v-model="monitor.docker_container" type="text" class="form-control" required>
                             </div>
 
-                            <!-- Docker Connection Type -->
+                            <!-- Docker Host -->
                             <!-- For Docker Type -->
                             <div v-if="monitor.type === 'docker'" class="my-3">
-                                <label for="docker_type" class="form-label">{{ $t("Docker Type") }}</label>
-                                <select id="docker_type" v-model="monitor.docker_type" class="form-select">
-                                    <option value="socket">
-                                        {{ $t("docker_socket") }}
-                                    </option>
-                                    <option value="tcp">
-                                        {{ $t("docker_tcp") }}
-                                    </option>
-                                </select>
-                            </div>
+                                <h2 class="mb-2">{{ $t("Docker Host") }}</h2>
+                                <p v-if="$root.dockerHostList.length === 0">
+                                    {{ $t("Not available, please setup.") }}
+                                </p>
 
-                            <!-- Docker Daemon -->
-                            <!-- For Docker Type -->
-                            <div v-if="monitor.type === 'docker'" class="my-3">
-                                <label for="docker_daemon" class="form-label">{{ $t("Docker Daemon") }}</label>
-                                <input id="docker_daemon" v-model="monitor.docker_daemon" type="text" class="form-control" required>
+                                <div class="mb-3">
+                                    <label for="docker-host" class="form-label">{{ $t("Docker Host") }}</label>
+                                    <select id="docket-host" v-model="monitor.docker_host" class="form-select">
+                                        <option v-for="host in $root.dockerHostList" :key="host.id" :value="host.id">{{ host.name }}</option>
+                                    </select>
+                                    <a href="#" @click="$refs.dockerHostDialog.show(monitor.docker_host)">{{ $t("Edit") }}</a>
+                                </div>
+
+                                <button class="btn btn-primary me-2" type="button" @click="$refs.dockerHostDialog.show()">
+                                    {{ $t("Setup Docker Host") }}
+                                </button>
                             </div>
 
                             <!-- MQTT -->
@@ -446,6 +446,7 @@
             </form>
 
             <NotificationDialog ref="notificationDialog" @added="addedNotification" />
+            <DockerHostDialog ref="dockerHostDialog" @added="addedDockerHost" />
             <ProxyDialog ref="proxyDialog" @added="addedProxy" />
         </div>
     </transition>
@@ -456,6 +457,7 @@ import VueMultiselect from "vue-multiselect";
 import { useToast } from "vue-toastification";
 import CopyableInput from "../components/CopyableInput.vue";
 import NotificationDialog from "../components/NotificationDialog.vue";
+import DockerHostDialog from "../components/DockerHostDialog.vue";
 import ProxyDialog from "../components/ProxyDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
 import { genSecret, isDev } from "../util.ts";
@@ -467,6 +469,7 @@ export default {
         ProxyDialog,
         CopyableInput,
         NotificationDialog,
+        DockerHostDialog,
         TagsManager,
         VueMultiselect,
     },
@@ -625,8 +628,7 @@ export default {
                     dns_resolve_type: "A",
                     dns_resolve_server: "1.1.1.1",
                     docker_container: "",
-                    docker_daemon: "/var/run/docker.sock",
-                    docker_type: "socket",
+                    docker_host: null,
                     proxyId: null,
                     mqttUsername: "",
                     mqttPassword: "",
@@ -740,6 +742,12 @@ export default {
         addedProxy(id) {
             this.monitor.proxyId = id;
         },
+
+        // Added a Docker Host Event
+        // Enable it if the Docker Host is added in EditMonitor.vue
+        addedDockerHost(id) {
+            this.monitor.docker_host = id;
+        }
     },
 };
 </script>

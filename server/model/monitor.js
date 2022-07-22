@@ -89,8 +89,7 @@ class Monitor extends BeanModel {
             dns_last_result: this.dns_last_result,
             pushToken: this.pushToken,
             docker_container: this.docker_container,
-            docker_daemon: this.docker_daemon,
-            docker_type: this.docker_type,
+            docker_host: this.docker_host,
             proxyId: this.proxy_id,
             notificationIDList,
             tags: tags,
@@ -471,6 +470,8 @@ class Monitor extends BeanModel {
                 } else if (this.type === "docker") {
                     log.debug(`[${this.name}] Prepare Options for Axios`);
 
+                    const docker_host = await R.load("docker_host", this.docker_host);
+
                     const options = {
                         url: `/containers/${this.docker_container}/json`,
                         headers: {
@@ -483,10 +484,10 @@ class Monitor extends BeanModel {
                         }),
                     };
 
-                    if (this.docker_type === "socket") {
-                        options.socketPath = this.docker_daemon;
-                    } else if (this.docker_type === "tcp") {
-                        options.baseURL = this.docker_daemon;
+                    if (docker_host._dockerType === "socket") {
+                        options.socketPath = docker_host._dockerDaemon;
+                    } else if (docker_host._dockerType === "tcp") {
+                        options.baseURL = docker_host._dockerDaemon;
                     }
 
                     log.debug(`[${this.name}] Axios Request`);
