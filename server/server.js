@@ -1677,7 +1677,12 @@ async function shutdownFunction(signal) {
 }
 
 function getClientIp(socket) {
-    return socket.client.conn.remoteAddress.replace(/^.*:/, "");
+    let address = socket.client.conn.remoteAddress;
+    if (address) {
+        return address.replace(/^.*:/, "");
+    } else {
+        return socket.handshake.headers["x-forwarded-for"].split(",")[0];
+    }
 }
 
 /** Final function called before application exits */
