@@ -94,6 +94,8 @@
         "nodemailer": "~6.6.5",
         "notp": "~2.0.3",
         "password-hash": "~1.2.2",
+        "pg": "^8.7.3",
+        "pg-connection-string": "^2.5.0",
         "prom-client": "~13.2.0",
         "prometheus-api-metrics": "~3.2.1",
         "redbean-node": "0.1.4",
