@@ -541,7 +541,7 @@ export default {
     "Docker Container": "Docker Container",
     "Container Name / ID": "Container Name / ID",
     "Docker Host": "Docker Host",
-    "Docker Hosts": "Docker Hosts"
+    "Docker Hosts": "Docker Hosts",
     "ntfy Topic": "ntfy Topic",
     "Domain": "Domain",
     "Workstation": "Workstation",

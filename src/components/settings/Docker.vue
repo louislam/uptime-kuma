@@ -23,12 +23,10 @@
 
 <script>
 import DockerHostDialog from "../../components/DockerHostDialog.vue";
-import ActionInput from "../ActionInput.vue";
 
 export default {
     components: {
         DockerHostDialog,
-        ActionInput,
     },
 
     data() {
