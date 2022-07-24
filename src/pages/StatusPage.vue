@@ -332,6 +332,7 @@ export default {
     },
 
     props: {
+        /** Override for the status page slug */
         overrideSlug: {
             type: String,
             required: false,
@@ -587,10 +588,16 @@ export default {
             }
         },
 
+        /**
+         * Provide syntax highlighting for CSS
+         * @param {string} code Text to highlight
+         * @returns {string}
+         */
         highlighter(code) {
             return highlight(code, languages.css);
         },
 
+        /** Update the heartbeat list and update favicon if neccessary */
         updateHeartbeatList() {
             // If editMode, it will use the data from websocket.
             if (! this.editMode) {
@@ -619,6 +626,7 @@ export default {
             }
         },
 
+        /** Enable editing mode */
         edit() {
             if (this.hasToken) {
                 this.$root.initSocketIO(true);
@@ -630,6 +638,7 @@ export default {
             }
         },
 
+        /** Save the status page */
         save() {
             let startTime = new Date();
             this.config.slug = this.config.slug.trim().toLowerCase();
@@ -657,10 +666,12 @@ export default {
             });
         },
 
+        /** Show dialog confirming deletion */
         deleteDialog() {
             this.$refs.confirmDelete.show();
         },
 
+        /** Request deletion of this status page */
         deleteStatusPage() {
             this.$root.getSocket().emit("deleteStatusPage", this.slug, (res) => {
                 if (res.ok) {
@@ -672,10 +683,16 @@ export default {
             });
         },
 
+        /**
+         * Returns label for a specifed monitor
+         * @param {Object} monitor Object representing monitor
+         * @returns {string}
+         */
         monitorSelectorLabel(monitor) {
             return `${monitor.name}`;
         },
 
+        /** Add a group to the status page */
         addGroup() {
             let groupName = this.$t("Untitled Group");
 
@@ -689,27 +706,32 @@ export default {
             });
         },
 
+        /** Add a domain to the status page */
         addDomainField() {
             this.config.domainNameList.push("");
         },
 
+        /** Discard changes to status page */
         discard() {
             location.href = "/status/" + this.slug;
         },
 
         /**
-         * Crop Success
+         * Set URL of new image after successful crop operation
+         * @param {string} imgDataUrl URL of image in data:// format
          */
         cropSuccess(imgDataUrl) {
             this.imgDataUrl = imgDataUrl;
         },
 
+        /** Show image crop dialog if in edit mode */
         showImageCropUploadMethod() {
             if (this.editMode) {
                 this.showImageCropUpload = true;
             }
         },
 
+        /** Create an incident for this status page */
         createIncident() {
             this.enableEditIncidentMode = true;
 
@@ -724,6 +746,7 @@ export default {
             };
         },
 
+        /** Post the incident to the status page */
         postIncident() {
             if (this.incident.title === "" || this.incident.content === "") {
                 toast.error(this.$t("Please input title and content"));
@@ -743,14 +766,13 @@ export default {
 
         },
 
-        /**
-         * Click Edit Button
-         */
+        /** Click Edit Button */
         editIncident() {
             this.enableEditIncidentMode = true;
             this.previousIncident = Object.assign({}, this.incident);
         },
 
+        /** Cancel creation or editing of incident */
         cancelIncident() {
             this.enableEditIncidentMode = false;
 
@@ -760,16 +782,25 @@ export default {
             }
         },
 
+        /** Unpin the incident */
         unpinIncident() {
             this.$root.getSocket().emit("unpinIncident", this.slug, () => {
                 this.incident = null;
             });
         },
 
+        /**
+         * Get the relative time difference of a date from now
+         * @returns {string}
+         */
         dateFromNow(date) {
             return dayjs.utc(date).fromNow();
         },
 
+        /**
+         * Remove a domain from the status page
+         * @param {number} index Index of domain to remove
+         */
         removeDomain(index) {
             this.config.domainNameList.splice(index, 1);
         },

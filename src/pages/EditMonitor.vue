@@ -48,6 +48,9 @@
                                         <option value="sqlserver">
                                             SQL Server
                                         </option>
+                                        <option value="postgres">
+                                            PostgreSQL
+                                        </option>
                                     </optgroup>
                                 </select>
                             </div>
@@ -199,15 +202,21 @@
                                 </div>
                             </template>
 
-                            <!-- SQL Server -->
-                            <template v-if="monitor.type === 'sqlserver'">
+                            <!-- SQL Server and PostgreSQL -->
+                            <template v-if="monitor.type === 'sqlserver' || monitor.type === 'postgres'">
                                 <div class="my-3">
-                                    <label for="sqlserverConnectionString" class="form-label">SQL Server {{ $t("Connection String") }}</label>
-                                    <input id="sqlserverConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control">
+                                    <label for="sqlConnectionString" class="form-label">{{ $t("Connection String") }}</label>
+
+                                    <template v-if="monitor.type === 'sqlserver'">
+                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="Server=<hostname>,<port>;Database=<your database>;User Id=<your user id>;Password=<your password>;Encrypt=<true/false>;TrustServerCertificate=<Yes/No>;Connection Timeout=<int>">
+                                    </template>
+                                    <template v-if="monitor.type === 'postgres'">
+                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="postgres://username:password@host:port/database">
+                                    </template>
                                 </div>
                                 <div class="my-3">
-                                    <label for="sqlserverQuery" class="form-label">SQL Server {{ $t("Query") }}</label>
-                                    <textarea id="sqlserverQuery" v-model="monitor.databaseQuery" class="form-control" placeholder="Example: select getdate()"></textarea>
+                                    <label for="sqlQuery" class="form-label">{{ $t("Query") }}</label>
+                                    <textarea id="sqlQuery" v-model="monitor.databaseQuery" class="form-control" placeholder="Example: select getdate()"></textarea>
                                 </div>
                             </template>
 
@@ -400,17 +409,17 @@
                                 </div>
 
                                 <!-- HTTP Auth -->
-                                <h4 class="mt-5 mb-2">{{ $t("HTTP Authentication") }}</h4>
+                                <h4 class="mt-5 mb-2">{{ $t("Authentication") }}</h4>
 
                                 <!-- Method -->
                                 <div class="my-3">
                                     <label for="method" class="form-label">{{ $t("Method") }}</label>
                                     <select id="method" v-model="monitor.authMethod" class="form-select">
                                         <option :value="null">
-                                            None
+                                            {{ $t("None") }}
                                         </option>
                                         <option value="basic">
-                                            Basic
+                                            {{ $t("HTTP Basic Auth") }}
                                         </option>
                                         <option value="ntlm">
                                             NTLM
@@ -569,7 +578,7 @@ export default {
                 if (this.monitor.type === "dns") {
                     this.monitor.port = "53";
                 } else {
-                    this.monitor.port = "";
+                    this.monitor.port = undefined;
                 }
             }
         }
@@ -607,6 +616,7 @@ export default {
         this.dnsresolvetypeOptions = dnsresolvetypeOptions;
     },
     methods: {
+        /** Initialize the edit monitor form */
         init() {
             if (this.isAdd) {
 
@@ -617,7 +627,6 @@ export default {
                     method: "GET",
                     interval: 60,
                     retryInterval: this.interval,
-                    databaseConnectionString: "Server=<hostname>,<port>;Database=<your database>;User Id=<your user id>;Password=<your password>;Encrypt=<true/false>;TrustServerCertificate=<Yes/No>;Connection Timeout=<int>",
                     maxretries: 0,
                     notificationIDList: {},
                     ignoreTls: false,
@@ -667,6 +676,10 @@ export default {
 
         },
 
+        /**
+         * Validate form input
+         * @returns {boolean} Is the form input valid?
+         */
         isInputValid() {
             if (this.monitor.body) {
                 try {
@@ -687,6 +700,10 @@ export default {
             return true;
         },
 
+        /**
+         * Submit the form data for processing
+         * @returns {void}
+         */
         async submit() {
             this.processing = true;
 
@@ -731,14 +748,20 @@ export default {
             }
         },
 
-        // Added a Notification Event
-        // Enable it if the notification is added in EditMonitor.vue
+        /**
+         * Added a Notification Event
+         * Enable it if the notification is added in EditMonitor.vue
+         * @param {number} id ID of notification to add
+         */
         addedNotification(id) {
             this.monitor.notificationIDList[id] = true;
         },
 
-        // Added a Proxy Event
-        // Enable it if the proxy is added in EditMonitor.vue
+        /**
+         * Added a Proxy Event
+         * Enable it if the proxy is added in EditMonitor.vue
+         * @param {number} id ID of proxy to add
+         */
         addedProxy(id) {
             this.monitor.proxyId = id;
         },

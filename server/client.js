@@ -22,7 +22,10 @@ async function sendNotificationList(socket) {
     ]);
 
     for (let bean of list) {
-        result.push(bean.export());
+        let notificationObject = bean.export();
+        notificationObject.isDefault = (notificationObject.isDefault === 1);
+        notificationObject.active = (notificationObject.active === 1);
+        result.push(notificationObject);
     }
 
     io.to(socket.userID).emit("notificationList", result);

@@ -29,10 +29,12 @@
 <script>
 export default {
     props: {
+        /** Heading of the section */
         heading: {
             type: String,
             default: "",
         },
+        /** Should the section be open by default? */
         defaultOpen: {
             type: Boolean,
             default: false,

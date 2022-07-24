@@ -5,6 +5,7 @@
 <script>
 export default {
     props: {
+        /** Current status of monitor */
         status: {
             type: Number,
             default: 0,

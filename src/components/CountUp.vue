@@ -10,6 +10,7 @@ import { sleep } from "../util.ts";
 export default {
 
     props: {
+        /** Value to count */
         value: {
             type: [ String, Number ],
             default: 0,
@@ -18,6 +19,7 @@ export default {
             type: Number,
             default: 0.3,
         },
+        /** Unit of the value */
         unit: {
             type: String,
             default: "ms",
@@ -43,9 +45,7 @@ export default {
             let frames = 12;
             let step = Math.floor(diff / frames);
 
-            if (isNaN(step) || ! this.isNum || (diff > 0 && step < 1) || (diff < 0 && step > 1) || diff === 0) {
-                // Lazy to NOT this condition, hahaha.
-            } else {
+            if (! (isNaN(step) || ! this.isNum || (diff > 0 && step < 1) || (diff < 0 && step > 1) || diff === 0)) {
                 for (let i = 1; i < frames; i++) {
                     this.output += step;
                     await sleep(15);

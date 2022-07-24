@@ -13,10 +13,12 @@ dayjs.extend(relativeTime);
 
 export default {
     props: {
+        /** Value of date time */
         value: {
             type: String,
             default: null,
         },
+        /** Should only the date be displayed? */
         dateOnly: {
             type: Boolean,
             default: false,

@@ -1,4 +1,4 @@
-# Simple docker-composer.yml
+# Simple docker-compose.yml
 # You can change your port or volume location
 
 version: '3.3'

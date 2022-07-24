@@ -81,6 +81,7 @@ library.add(
     faUndo,
     faPlusCircle,
     faAngleDown,
+    faLink,
 );
 
 export { FontAwesomeIcon };
