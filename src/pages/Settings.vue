@@ -89,6 +89,9 @@ export default {
                 "monitor-history": {
                     title: this.$t("Monitor History"),
                 },
+                "docker-hosts": {
+                    title: this.$t("Docker Hosts"),
+                },
                 security: {
                     title: this.$t("Security"),
                 },

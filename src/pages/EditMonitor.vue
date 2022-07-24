@@ -156,7 +156,7 @@
                                     {{ $t("Not available, please setup.") }}
                                 </p>
 
-                                <div class="mb-3">
+                                <div class="mb-3" v-else>
                                     <label for="docker-host" class="form-label">{{ $t("Docker Host") }}</label>
                                     <select id="docket-host" v-model="monitor.docker_host" class="form-select">
                                         <option v-for="host in $root.dockerHostList" :key="host.id" :value="host.id">{{ host.name }}</option>
