@@ -14,6 +14,7 @@ const mssql = require("mssql");
 const { Client } = require("pg");
 const postgresConParse = require("pg-connection-string").parse;
 const { NtlmClient } = require("axios-ntlm");
+const { Settings } = require("./settings");
 
 // From ping-lite
 exports.WIN = /^win/.test(process.platform);
@@ -239,10 +240,6 @@ exports.dnsResolve = function (hostname, resolverServer, resolverPort, rrtype) {
  */
 exports.mssqlQuery = function (connectionString, query) {
     return new Promise((resolve, reject) => {
-        mssql.on("error", err => {
-            reject(err);
-        });
-
         mssql.connect(connectionString).then(pool => {
             return pool.request()
                 .query(query);
@@ -294,17 +291,7 @@ exports.postgresQuery = function (connectionString, query) {
  * @returns {Promise<any>} Value
  */
 exports.setting = async function (key) {
-    let value = await R.getCell("SELECT `value` FROM setting WHERE `key` = ? ", [
-        key,
-    ]);
-
-    try {
-        const v = JSON.parse(value);
-        log.debug("util", `Get Setting: ${key}: ${v}`);
-        return v;
-    } catch (e) {
-        return value;
-    }
+    return await Settings.get(key);
 };
 
 /**
@@ -315,70 +302,26 @@ exports.setting = async function (key) {
  * @returns {Promise<void>}
  */
 exports.setSetting = async function (key, value, type = null) {
-    let bean = await R.findOne("setting", " `key` = ? ", [
-        key,
-    ]);
-    if (!bean) {
-        bean = R.dispense("setting");
-        bean.key = key;
-    }
-    bean.type = type;
-    bean.value = JSON.stringify(value);
-    await R.store(bean);
+    await Settings.set(key, value, type);
 };
 
 /**
  * Get settings based on type
- * @param {?string} type The type of setting
+ * @param {string} type The type of setting
  * @returns {Promise<Bean>}
  */
 exports.getSettings = async function (type) {
-    let list = await R.getAll("SELECT `key`, `value` FROM setting WHERE `type` = ? ", [
-        type,
-    ]);
-
-    let result = {};
-
-    for (let row of list) {
-        try {
-            result[row.key] = JSON.parse(row.value);
-        } catch (e) {
-            result[row.key] = row.value;
-        }
-    }
-
-    return result;
+    return await Settings.getSettings(type);
 };
 
 /**
  * Set settings based on type
- * @param {?string} type Type of settings to set
+ * @param {string} type Type of settings to set
  * @param {Object} data Values of settings
  * @returns {Promise<void>}
  */
 exports.setSettings = async function (type, data) {
-    let keyList = Object.keys(data);
-
-    let promiseList = [];
-
-    for (let key of keyList) {
-        let bean = await R.findOne("setting", " `key` = ? ", [
-            key
-        ]);
-
-        if (bean == null) {
-            bean = R.dispense("setting");
-            bean.type = type;
-            bean.key = key;
-        }
-
-        if (bean.type === type) {
-            bean.value = JSON.stringify(data[key]);
-            promiseList.push(R.store(bean));
-        }
-    }
-
-    await Promise.all(promiseList);
+    await Settings.setSettings(type, data);
 };
 
 // ssl-checker by @dyaa
@@ -471,7 +414,7 @@ exports.checkCertificate = function (res) {
 
 /**
  * Check if the provided status code is within the accepted ranges
- * @param {string} status The status code to check
+ * @param {number} status The status code to check
  * @param {string[]} acceptedCodes An array of accepted status codes
  * @returns {boolean} True if status code within range, false otherwise
  * @throws {Error} Will throw an error if the provided status code is not a valid range string or code string
