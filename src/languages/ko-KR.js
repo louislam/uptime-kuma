@@ -521,7 +521,7 @@ export default {
     "Check how to config it for WebSocket": "웹소켓 대한 설정 방법",
     "Steam Game Server": "스팀 게임 서버",
     "Most likely causes:": "원인:",
-    "The resource is no longer available.": "더이상 사용할 수 없어요...",
+    "The resource is no longer available.": "더 이상 사용할 수 없어요...",
     "There might be a typing error in the address.": "주소에 오탈자가 있을 수 있어요.",
     "What you can try:": "해결 방법:",
     "Retype the address.": "주소 다시 입력하기",
