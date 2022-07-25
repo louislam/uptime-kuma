@@ -254,7 +254,7 @@ export default {
     octopushTypePremium: "프리미엄 (빠름) - 알림 기능에 적합해요)",
     octopushTypeLowCost: "저렴한 요금 (느림) - 가끔 차단될 수 있어요)",
     "Check octopush prices": "{0}에서 Octopush 가격을 확인할 수 있어요.",
-    octopushPhoneNumber: "휴대전화 번호 (intl format, 예시: +82 1023456789) ",
+    octopushPhoneNumber: "휴대전화 번호 (intl format, 예시: +821023456789) ",
     octopushSMSSender: "보내는 사람 이름 : 3-11개의 영숫자 및 여백공간 (a-z, A-Z, 0-9)",
     "LunaSea Device ID": "LunaSea 장치 ID",
     "Apprise URL": "Apprise URL",
