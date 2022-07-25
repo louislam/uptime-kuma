@@ -231,7 +231,7 @@ export default {
     "Uptime Kuma URL": "Uptime Kuma URL",
     aboutWebhooks: "Webhook에 대한 설명: {0}",
     aboutChannelName: "Webhook 채널을 무시하려면 {0} 채널 이름칸에 채널 이름을 입력해주세요. 예: #기타-채널",
-    aboutKumaURL: "Uptime Kuma URL칸을 공백으로 두면 기본적으로 Github Project  페이지로 설정해요.",
+    aboutKumaURL: "Uptime Kuma URL칸을 공백으로 두면 기본적으로 Github Project 페이지로 설정해요.",
     emojiCheatSheet: "이모지 목록 시트: {0}",
     "rocket.chat": "Rocket.chat",
     pushover: "Pushover",
