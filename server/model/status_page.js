@@ -73,8 +73,9 @@ class StatusPage extends BeanModel {
      * Get all status page data in one call
      * @param {StatusPage} statusPage
      * @param {boolean} includeStatus whether each monitor should include the status of the monitor ("up" or "down")
+     * @param {boolean} includeConfig whether the config for the status paghe should be included in the returned JSON
      */
-    static async getStatusPageData(statusPage, includeStatus = false) {
+    static async getStatusPageData(statusPage, includeStatus = false, includeConfig = true) {
         // Incident
         let incident = await R.findOne("incident", " pin = 1 AND active = 1 AND status_page_id = ? ", [
             statusPage.id,
@@ -97,9 +98,16 @@ class StatusPage extends BeanModel {
             publicGroupList.push(monitorGroup);
         }
 
+        let config = {};
+        if (includeConfig) {
+            config = {
+                config: await statusPage.toPublicJSON()
+            }
+        }
+
         // Response
         return {
-            config: await statusPage.toPublicJSON(),
+            ...config,
             incident,
             publicGroupList
         };

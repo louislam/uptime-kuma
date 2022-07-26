@@ -41,7 +41,7 @@ router.get("/api/status-page/:slug/summary", cache("5 minutes"), async (request,
             return null;
         }
 
-        let statusPageData = await StatusPage.getStatusPageData(statusPage, true);
+        let statusPageData = await StatusPage.getStatusPageData(statusPage, true, false);
 
         if (!statusPageData) {
             response.statusCode = 404;
