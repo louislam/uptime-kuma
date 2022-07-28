@@ -102,7 +102,7 @@ class StatusPage extends BeanModel {
         if (includeConfig) {
             config = {
                 config: await statusPage.toPublicJSON()
-            }
+            };
         }
 
         // Response
