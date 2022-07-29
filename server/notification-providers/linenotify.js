@@ -19,7 +19,7 @@ class LineNotify extends NotificationProvider {
             };
             if (heartbeatJSON == null) {
                 let testMessage = {
-                    "message": "Test Successful!"
+                    "message": msg,
                 };
                 await axios.post(lineAPIUrl, qs.stringify(testMessage), config);
             } else if (heartbeatJSON["status"] === DOWN) {
