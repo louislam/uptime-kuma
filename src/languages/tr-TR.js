@@ -527,9 +527,4 @@ export default {
     "do nothing": "hiçbir şey yapma",
     "auto acknowledged": "otomatik onaylama",
     "auto resolve": "otomatik çözümleme",
-    "Connection String": "Connection String",
-    Query: "Query",
-    settingsCertificateExpiry: "TLS Certificate Expiry",
-    certificationExpiryDescription: "HTTPS Monitors trigger notification when TLS certificate expires in:",
-    wayToGetLineNotifyToken: "You can get a access token from {0}",
 };
