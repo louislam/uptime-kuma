@@ -59,7 +59,7 @@ class DockerHost {
      * @param {Object} dockerHost Docker host to check for
      * @returns {number} Total amount of containers on the host
      */
-    static async getAmountContainer(dockerHost) {
+    static async testDockerHost(dockerHost) {
         const options = {
             url: "/containers/json?all=true",
             headers: {
@@ -72,14 +72,32 @@ class DockerHost {
             }),
         };
 
-        if (dockerHost.docker_type === "socket") {
-            options.socketPath = dockerHost.docker_daemon;
-        } else if (dockerHost.docker_type === "tcp") {
-            options.baseURL = dockerHost.docker_daemon;
+        if (dockerHost.dockerType === "socket") {
+            options.socketPath = dockerHost.dockerDaemon;
+        } else if (dockerHost.dockerType === "tcp") {
+            options.baseURL = dockerHost.dockerDaemon;
         }
 
         let res = await axios.request(options);
-        return res.data.length;
+
+        if (Array.isArray(res.data)) {
+
+            if (res.data.length > 1) {
+
+                if ("ImageID" in res.data[0]) {
+                    return res.data.length;
+                } else {
+                    throw new Error("Invalid Docker response, is it Docker really a daemon?");
+                }
+
+            } else {
+                return res.data.length;
+            }
+
+        } else {
+            throw new Error("Invalid Docker response, is it Docker really a daemon?");
+        }
+
     }
 }
 
