@@ -41,7 +41,7 @@ function updateWiki(newVersion) {
 
 function safeDelete(dir) {
     if (fs.existsSync(dir)) {
-        fs.rmdirSync(dir, {
+        fs.rm(dir, {
             recursive: true,
         });
     }

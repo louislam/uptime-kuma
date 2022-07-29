@@ -23,6 +23,7 @@
         <div class="my-4 pt-4">
             <h5 class="my-4 settings-subheading">{{ $t("settingsCertificateExpiry") }}</h5>
             <p>{{ $t("certificationExpiryDescription") }}</p>
+            <p>{{ $t("notificationDescription") }}</p>
             <div class="mt-1 mb-3 ps-2 cert-exp-days col-12 col-xl-6">
                 <div v-for="day in settings.tlsExpiryNotifyDays" :key="day" class="d-flex align-items-center justify-content-between cert-exp-day-row py-2">
                     <span>{{ day }} {{ $tc("day", day) }}</span>

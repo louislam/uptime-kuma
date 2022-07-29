@@ -86,8 +86,8 @@ I personally do not like something need to learn so much and need to config so m
 ## Name convention
 
 - Javascript/Typescript: camelCaseType
-- SQLite: underscore_type
-- CSS/SCSS: dash-type
+- SQLite: snake_case (Underscore)
+- CSS/SCSS: kebab-case (Dash)
 
 ## Tools
 

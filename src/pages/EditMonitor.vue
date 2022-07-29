@@ -45,6 +45,9 @@
                                         <option value="sqlserver">
                                             SQL Server
                                         </option>
+                                        <option value="postgres">
+                                            PostgreSQL
+                                        </option>
                                     </optgroup>
                                 </select>
                             </div>
@@ -168,15 +171,21 @@
                                 </div>
                             </template>
 
-                            <!-- SQL Server -->
-                            <template v-if="monitor.type === 'sqlserver'">
+                            <!-- SQL Server and PostgreSQL -->
+                            <template v-if="monitor.type === 'sqlserver' || monitor.type === 'postgres'">
                                 <div class="my-3">
-                                    <label for="sqlserverConnectionString" class="form-label">SQL Server {{ $t("Connection String") }}</label>
-                                    <input id="sqlserverConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control">
+                                    <label for="sqlConnectionString" class="form-label">{{ $t("Connection String") }}</label>
+
+                                    <template v-if="monitor.type === 'sqlserver'">
+                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="Server=<hostname>,<port>;Database=<your database>;User Id=<your user id>;Password=<your password>;Encrypt=<true/false>;TrustServerCertificate=<Yes/No>;Connection Timeout=<int>">
+                                    </template>
+                                    <template v-if="monitor.type === 'postgres'">
+                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="postgres://username:password@host:port/database">
+                                    </template>
                                 </div>
                                 <div class="my-3">
-                                    <label for="sqlserverQuery" class="form-label">SQL Server {{ $t("Query") }}</label>
-                                    <textarea id="sqlserverQuery" v-model="monitor.databaseQuery" class="form-control" placeholder="Example: select getdate()"></textarea>
+                                    <label for="sqlQuery" class="form-label">{{ $t("Query") }}</label>
+                                    <textarea id="sqlQuery" v-model="monitor.databaseQuery" class="form-control" placeholder="Example: select getdate()"></textarea>
                                 </div>
                             </template>
 
@@ -535,7 +544,7 @@ export default {
                 if (this.monitor.type === "dns") {
                     this.monitor.port = "53";
                 } else {
-                    this.monitor.port = "";
+                    this.monitor.port = undefined;
                 }
             }
         }
@@ -584,7 +593,6 @@ export default {
                     method: "GET",
                     interval: 60,
                     retryInterval: this.interval,
-                    databaseConnectionString: "Server=<hostname>,<port>;Database=<your database>;User Id=<your user id>;Password=<your password>;Encrypt=<true/false>;TrustServerCertificate=<Yes/No>;Connection Timeout=<int>",
                     maxretries: 0,
                     notificationIDList: {},
                     ignoreTls: false,

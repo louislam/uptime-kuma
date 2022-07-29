@@ -1,39 +1,40 @@
-import STMP from "./SMTP.vue";
-import Telegram from "./Telegram.vue";
-import Discord from "./Discord.vue";
-import Webhook from "./Webhook.vue";
-import Signal from "./Signal.vue";
-import Gotify from "./Gotify.vue";
-import Ntfy from "./Ntfy.vue";
-import Slack from "./Slack.vue";
-import RocketChat from "./RocketChat.vue";
-import Teams from "./Teams.vue";
-import Pushover from "./Pushover.vue";
-import Pushy from "./Pushy.vue";
-import TechulusPush from "./TechulusPush.vue";
-import Octopush from "./Octopush.vue";
-import PromoSMS from "./PromoSMS.vue";
-import ClickSendSMS from "./ClickSendSMS.vue";
-import LunaSea from "./LunaSea.vue";
-import Feishu from "./Feishu.vue";
+import Alerta from "./Alerta.vue";
+import AlertNow from "./AlertNow.vue";
+import AliyunSMS from "./AliyunSms.vue";
 import Apprise from "./Apprise.vue";
-import Pushbullet from "./Pushbullet.vue";
+import Bark from "./Bark.vue";
+import ClickSendSMS from "./ClickSendSMS.vue";
+import DingDing from "./DingDing.vue";
+import Discord from "./Discord.vue";
+import Feishu from "./Feishu.vue";
+import GoogleChat from "./GoogleChat.vue";
+import Gorush from "./Gorush.vue";
+import Gotify from "./Gotify.vue";
 import Line from "./Line.vue";
 import LineNotify from "./LineNotify.vue";
-import Mattermost from "./Mattermost.vue";
+import LunaSea from "./LunaSea.vue";
 import Matrix from "./Matrix.vue";
-import AliyunSMS from "./AliyunSms.vue";
-import DingDing from "./DingDing.vue";
-import Bark from "./Bark.vue";
-import SerwerSMS from "./SerwerSMS.vue";
-import Stackfield from "./Stackfield.vue";
-import WeCom from "./WeCom.vue";
-import GoogleChat from "./GoogleChat.vue";
-import PagerDuty from "./PagerDuty.vue";
-import Gorush from "./Gorush.vue";
-import Alerta from "./Alerta.vue";
+import Mattermost from "./Mattermost.vue";
+import Ntfy from "./Ntfy.vue";
+import Octopush from "./Octopush.vue";
 import OneBot from "./OneBot.vue";
+import PagerDuty from "./PagerDuty.vue";
+import PromoSMS from "./PromoSMS.vue";
+import Pushbullet from "./Pushbullet.vue";
 import PushDeer from "./PushDeer.vue";
+import Pushover from "./Pushover.vue";
+import Pushy from "./Pushy.vue";
+import RocketChat from "./RocketChat.vue";
+import SerwerSMS from "./SerwerSMS.vue";
+import Signal from "./Signal.vue";
+import Slack from "./Slack.vue";
+import Stackfield from "./Stackfield.vue";
+import STMP from "./SMTP.vue";
+import Teams from "./Teams.vue";
+import TechulusPush from "./TechulusPush.vue";
+import Telegram from "./Telegram.vue";
+import Webhook from "./Webhook.vue";
+import WeCom from "./WeCom.vue";
 
 /**
  * Manage all notification form.
@@ -41,42 +42,43 @@ import PushDeer from "./PushDeer.vue";
  * @type { Record<string, any> }
  */
 const NotificationFormList = {
-    "telegram": Telegram,
-    "webhook": Webhook,
-    "smtp": STMP,
-    "discord": Discord,
-    "teams": Teams,
-    "signal": Signal,
-    "gotify": Gotify,
-    "ntfy": Ntfy,
-    "slack": Slack,
-    "rocket.chat": RocketChat,
-    "pushover": Pushover,
-    "pushy": Pushy,
-    "PushByTechulus": TechulusPush,
-    "octopush": Octopush,
-    "promosms": PromoSMS,
-    "clicksendsms": ClickSendSMS,
-    "lunasea": LunaSea,
-    "Feishu": Feishu,
+    "alerta": Alerta,
+    "AlertNow": AlertNow,
     "AliyunSMS": AliyunSMS,
     "apprise": Apprise,
-    "pushbullet": Pushbullet,
+    "Bark": Bark,
+    "clicksendsms": ClickSendSMS,
+    "DingDing": DingDing,
+    "discord": Discord,
+    "Feishu": Feishu,
+    "GoogleChat": GoogleChat,
+    "gorush": Gorush,
+    "gotify": Gotify,
     "line": Line,
     "LineNotify": LineNotify,
-    "mattermost": Mattermost,
+    "lunasea": LunaSea,
     "matrix": Matrix,
-    "DingDing": DingDing,
-    "Bark": Bark,
-    "serwersms": SerwerSMS,
-    "stackfield": Stackfield,
-    "WeCom": WeCom,
-    "GoogleChat": GoogleChat,
-    "PagerDuty": PagerDuty,
-    "gorush": Gorush,
-    "alerta": Alerta,
+    "mattermost": Mattermost,
+    "ntfy": Ntfy,
+    "octopush": Octopush,
     "OneBot": OneBot,
+    "PagerDuty": PagerDuty,
+    "promosms": PromoSMS,
+    "pushbullet": Pushbullet,
+    "PushByTechulus": TechulusPush,
     "PushDeer": PushDeer,
+    "pushover": Pushover,
+    "pushy": Pushy,
+    "rocket.chat": RocketChat,
+    "serwersms": SerwerSMS,
+    "signal": Signal,
+    "slack": Slack,
+    "smtp": STMP,
+    "stackfield": Stackfield,
+    "teams": Teams,
+    "telegram": Telegram,
+    "webhook": Webhook,
+    "WeCom": WeCom,
 };
 
 export default NotificationFormList;
