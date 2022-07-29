@@ -11,6 +11,7 @@ import GoogleChat from "./GoogleChat.vue";
 import Gorush from "./Gorush.vue";
 import Gotify from "./Gotify.vue";
 import Line from "./Line.vue";
+import LineNotify from "./LineNotify.vue";
 import LunaSea from "./LunaSea.vue";
 import Matrix from "./Matrix.vue";
 import Mattermost from "./Mattermost.vue";
@@ -54,6 +55,7 @@ const NotificationFormList = {
     "gorush": Gorush,
     "gotify": Gotify,
     "line": Line,
+    "LineNotify": LineNotify,
     "lunasea": LunaSea,
     "matrix": Matrix,
     "mattermost": Mattermost,

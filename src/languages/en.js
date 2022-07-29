@@ -536,4 +536,5 @@ export default {
     "Domain": "Domain",
     "Workstation": "Workstation",
     disableCloudflaredNoAuthMsg: "You are in No Auth mode, password is not require.",
+    wayToGetLineNotifyToken: "You can get a access token from {0}",
 };

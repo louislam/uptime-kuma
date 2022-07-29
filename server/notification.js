@@ -13,6 +13,7 @@ const GoogleChat = require("./notification-providers/google-chat");
 const Gorush = require("./notification-providers/gorush");
 const Gotify = require("./notification-providers/gotify");
 const Line = require("./notification-providers/line");
+const LineNotify = require("./notification-providers/linenotify");
 const LunaSea = require("./notification-providers/lunasea");
 const Matrix = require("./notification-providers/matrix");
 const Mattermost = require("./notification-providers/mattermost");
@@ -61,6 +62,7 @@ class Notification {
             new Gorush(),
             new Gotify(),
             new Line(),
+            new LineNotify(),
             new LunaSea(),
             new Matrix(),
             new Mattermost(),
