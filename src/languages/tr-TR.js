@@ -475,7 +475,7 @@ export default {
     "Leave blank to use a shared sender number.": "Paylaşılan bir gönderen numarası kullanmak için boş bırakın.",
     "Octopush API Version": "Octopush API Sürümü",
     "Legacy Octopush-DM": "Eski Octopush-DM",
-    endpoint: "endpoint",
+    "endpoint": "endpoint",
     octopushAPIKey: "Kontrol panelindeki HTTP API kimlik bilgilerinden \"API Key\"",
     octopushLogin: "Kontrol panelindeki HTTP API kimlik bilgilerinden \"Login\"",
     promosmsLogin: "API Oturum Açma Adı",
