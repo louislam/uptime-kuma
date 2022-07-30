@@ -7,11 +7,11 @@ class DockerHost extends BeanModel {
      */
     toJSON() {
         return {
-            id: this._id,
-            userId: this._user_id,
-            daemon: this._dockerDaemon,
-            type: this._dockerType,
-            name: this._name,
+            id: this.id,
+            userID: this.user_id,
+            dockerDaemon: this.docker_daemon,
+            dockerType: this.docker_type,
+            name: this.name,
         };
     }
 }

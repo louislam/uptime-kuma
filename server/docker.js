@@ -26,8 +26,8 @@ class DockerHost {
         }
 
         bean.user_id = userID;
-        bean.docker_daemon = dockerHost.docker_daemon;
-        bean.docker_type = dockerHost.docker_type;
+        bean.docker_daemon = dockerHost.dockerDaemon;
+        bean.docker_type = dockerHost.dockerType;
         bean.name = dockerHost.name;
 
         await R.store(bean);

@@ -139,7 +139,7 @@ async function sendDockerHostList(socket) {
     ]);
 
     for (let bean of list) {
-        result.push(bean.export());
+        result.push(bean.toJSON());
     }
 
     io.to(socket.userID).emit("dockerHostList", result);
