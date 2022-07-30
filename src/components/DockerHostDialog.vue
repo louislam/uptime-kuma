@@ -25,6 +25,14 @@
                         <div class="mb-3">
                             <label for="docker-daemon" class="form-label">{{ $t("Docker Daemon") }}</label>
                             <input id="docker-daemon" v-model="dockerHost.dockerDaemon" type="text" class="form-control" required>
+
+                            <div class="form-text">
+                                {{ $t("Examples") }}:
+                                <ul>
+                                    <li>/var/run/docker.sock</li>
+                                    <li>tcp://localhost:2375</li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
 
