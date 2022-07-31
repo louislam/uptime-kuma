@@ -465,6 +465,7 @@ export default {
     "Domain Name Expiry Notification": "Domain Name Expiry Notification",
     Proxy: "Proxy",
     "Date Created": "Date Created",
+    HomeAssistant: "Home Assistant",
     onebotHttpAddress: "OneBot HTTP Address",
     onebotMessageType: "OneBot Message Type",
     onebotGroupMessage: "Group",
@@ -536,5 +537,5 @@ export default {
     "Domain": "Domain",
     "Workstation": "Workstation",
     disableCloudflaredNoAuthMsg: "You are in No Auth mode, password is not require.",
-    HomeAssistant: "Home Assistant",
+    wayToGetLineNotifyToken: "You can get an access token from {0}",
 };

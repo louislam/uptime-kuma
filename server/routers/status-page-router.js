@@ -107,4 +107,42 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
     }
 });
 
+// Status page's manifest.json
+router.get("/api/status-page/:slug/manifest.json", cache("1440 minutes"), async (request, response) => {
+    allowDevAllOrigin(response);
+    let slug = request.params.slug;
+
+    try {
+        // Get Status Page
+        let statusPage = await R.findOne("status_page", " slug = ? ", [
+            slug
+        ]);
+
+        if (!statusPage) {
+            response.statusCode = 404;
+            response.json({
+                msg: "Not Found"
+            });
+            return;
+        }
+
+        // Response
+        response.json({
+            "name": statusPage.title,
+            "start_url": "/status/" + statusPage.slug,
+            "display": "standalone",
+            "icons": [
+                {
+                    "src": statusPage.icon,
+                    "sizes": "128x128",
+                    "type": "image/png"
+                }
+            ]
+        });
+
+    } catch (error) {
+        send403(response, error.message);
+    }
+});
+
 module.exports = router;
