@@ -11,6 +11,8 @@ const mqtt = require("mqtt");
 const chroma = require("chroma-js");
 const { badgeConstants } = require("./config");
 const mssql = require("mssql");
+const { Client } = require("pg");
+const postgresConParse = require("pg-connection-string").parse;
 const { NtlmClient } = require("axios-ntlm");
 const { Settings } = require("./settings");
 
@@ -238,10 +240,6 @@ exports.dnsResolve = function (hostname, resolverServer, resolverPort, rrtype) {
  */
 exports.mssqlQuery = function (connectionString, query) {
     return new Promise((resolve, reject) => {
-        mssql.on("error", err => {
-            reject(err);
-        });
-
         mssql.connect(connectionString).then(pool => {
             return pool.request()
                 .query(query);
@@ -252,6 +250,38 @@ exports.mssqlQuery = function (connectionString, query) {
         }).finally(() => {
             mssql.close();
         });
+    });
+};
+
+/**
+ * Run a query on Postgres
+ * @param {string} connectionString The database connection string
+ * @param {string} query The query to validate the database with
+ * @returns {Promise<(string[]|Object[]|Object)>}
+ */
+exports.postgresQuery = function (connectionString, query) {
+    return new Promise((resolve, reject) => {
+        const config = postgresConParse(connectionString);
+
+        if (config.password === "") {
+            // See https://github.com/brianc/node-postgres/issues/1927
+            return reject(new Error("Password is undefined."));
+        }
+
+        const client = new Client({ connectionString });
+
+        client.connect();
+
+        return client.query(query)
+            .then(res => {
+                resolve(res);
+            })
+            .catch(err => {
+                reject(err);
+            })
+            .finally(() => {
+                client.end();
+            });
     });
 };
 
@@ -384,7 +414,7 @@ exports.checkCertificate = function (res) {
 
 /**
  * Check if the provided status code is within the accepted ranges
- * @param {string} status The status code to check
+ * @param {number} status The status code to check
  * @param {string[]} acceptedCodes An array of accepted status codes
  * @returns {boolean} True if status code within range, false otherwise
  * @throws {Error} Will throw an error if the provided status code is not a valid range string or code string

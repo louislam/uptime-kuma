@@ -7,6 +7,7 @@ const { R } = require("redbean-node");
 const { log } = require("../src/util");
 const Database = require("./database");
 const util = require("util");
+const { CacheableDnsHttpAgent } = require("./cacheable-dns-http-agent");
 
 /**
  * `module.exports` (alias: `server`) should be inside this class, in order to avoid circular dependency issue.
@@ -69,6 +70,8 @@ class UptimeKumaServer {
                 process.exit(1);
             }
         }
+
+        CacheableDnsHttpAgent.registerGlobalAgent();
 
         this.io = new Server(this.httpServer);
     }

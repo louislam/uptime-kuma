@@ -518,4 +518,5 @@ export default {
     "Go back to the previous page.": "กลับไปที่หน้าก่อนหน้า",
     "Coming Soon": "เร็ว ๆ นี้",
     wayToGetClickSendSMSToken: "คุณสามารถรับ API Username และ API Key ได้จาก {0}",
+    wayToGetLineNotifyToken: "คุณสามารถรับ access token ได้จาก {0}",
 };

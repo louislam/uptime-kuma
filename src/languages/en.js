@@ -539,4 +539,5 @@ export default {
     "Workstation": "Workstation",
     disableCloudflaredNoAuthMsg: "You are in No Auth mode, password is not require.",
     trustProxyDescription: "Trust 'X-Forwarded-*' headers. If you want to get the correct client IP and your Uptime Kuma is behind such as Nginx or Apache, you should enable this.",
+    wayToGetLineNotifyToken: "You can get an access token from {0}",
 };
