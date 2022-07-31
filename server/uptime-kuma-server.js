@@ -8,6 +8,7 @@ const { log } = require("../src/util");
 const Database = require("./database");
 const util = require("util");
 const { CacheableDnsHttpAgent } = require("./cacheable-dns-http-agent");
+const { setting } = require("./util-server");
 
 /**
  * `module.exports` (alias: `server`) should be inside this class, in order to avoid circular dependency issue.
@@ -127,6 +128,18 @@ class UptimeKumaServer {
         }
 
         errorLogStream.end();
+    }
+
+    async getClientIP(socket) {
+        const clientIP = socket.client.conn.remoteAddress.replace(/^.*:/, "");
+
+        if (await setting("trustProxy")) {
+            return socket.client.conn.request.headers["x-forwarded-for"]
+                || socket.client.conn.request.headers["x-real-ip"]
+                || clientIP;
+        } else {
+            return clientIP;
+        }
     }
 }
 
