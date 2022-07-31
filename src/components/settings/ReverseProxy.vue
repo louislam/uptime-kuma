@@ -103,12 +103,12 @@
                     v-model="settings.trustProxy"
                     class="form-check-input"
                     type="radio"
-                    name="flexRadioDefault"
+                    name="trustProxyYes"
                     :value="true"
                     required
                 />
                 <label class="form-check-label" for="trustProxyYes">
-                    {{ $t("Trust 'X-Forwarded-*' headers") }}
+                    {{ $t("Yes") }}
                 </label>
             </div>
             <div class="form-check">
@@ -121,9 +121,13 @@
                     :value="false"
                     required
                 />
-                <label class="form-check-label" for="trustProxyYes">
-                    {{ $t("Don't trust 'X-Forwarded-*' headers") }}
+                <label class="form-check-label" for="trustProxyNo">
+                    {{ $t("No") }}
                 </label>
+            </div>
+
+            <div class="form-text">
+                {{ $t("trustProxyDescription") }}
             </div>
         </div>
 
