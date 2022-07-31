@@ -91,6 +91,51 @@
             {{ $t("For example: nginx, Apache and Traefik.") }} <br />
             {{ $t("Please read") }} <a href="https://github.com/louislam/uptime-kuma/wiki/Reverse-Proxy" target="_blank">https://github.com/louislam/uptime-kuma/wiki/Reverse-Proxy</a>.
         </div>
+
+        <h4 class="my-4">{{ $t("HTTP Headers") }}</h4>
+        <div class="my-3">
+            <label class="form-label">
+                {{ $t("Trust Proxy") }}
+            </label>
+            <div class="form-check">
+                <input
+                    id="trustProxyYes"
+                    v-model="settings.trustProxy"
+                    class="form-check-input"
+                    type="radio"
+                    name="trustProxyYes"
+                    :value="true"
+                    required
+                />
+                <label class="form-check-label" for="trustProxyYes">
+                    {{ $t("Yes") }}
+                </label>
+            </div>
+            <div class="form-check">
+                <input
+                    id="trustProxyNo"
+                    v-model="settings.trustProxy"
+                    class="form-check-input"
+                    type="radio"
+                    name="flexRadioDefault"
+                    :value="false"
+                    required
+                />
+                <label class="form-check-label" for="trustProxyNo">
+                    {{ $t("No") }}
+                </label>
+            </div>
+
+            <div class="form-text">
+                {{ $t("trustProxyDescription") }}
+            </div>
+        </div>
+
+        <div>
+            <button class="btn btn-primary" type="submit" @click="saveSettings()">
+                {{ $t("Save") }}
+            </button>
+        </div>
     </div>
 </template>
 
@@ -112,6 +157,12 @@ export default {
     computed: {
         settings() {
             return this.$parent.$parent.$parent.settings;
+        },
+        saveSettings() {
+            return this.$parent.$parent.$parent.saveSettings;
+        },
+        settingsLoaded() {
+            return this.$parent.$parent.$parent.settingsLoaded;
         },
     },
     watch: {
