@@ -254,7 +254,9 @@ let needSetup = false;
         // ***************************
 
         socket.on("loginByToken", async (token, callback) => {
-            log.info("auth", `Login by token. IP=${getClientIp(socket)}`);
+            const clientIP = await server.getClientIP(socket);
+
+            log.info("auth", `Login by token. IP=${clientIP}`);
 
             try {
                 let decoded = jwt.verify(token, jwtSecret);
@@ -270,14 +272,14 @@ let needSetup = false;
                     afterLogin(socket, user);
                     log.debug("auth", "afterLogin ok");
 
-                    log.info("auth", `Successfully logged in user ${decoded.username}. IP=${getClientIp(socket)}`);
+                    log.info("auth", `Successfully logged in user ${decoded.username}. IP=${clientIP}`);
 
                     callback({
                         ok: true,
                     });
                 } else {
 
-                    log.info("auth", `Inactive or deleted user ${decoded.username}. IP=${getClientIp(socket)}`);
+                    log.info("auth", `Inactive or deleted user ${decoded.username}. IP=${clientIP}`);
 
                     callback({
                         ok: false,
@@ -286,7 +288,7 @@ let needSetup = false;
                 }
             } catch (error) {
 
-                log.error("auth", `Invalid token. IP=${getClientIp(socket)}`);
+                log.error("auth", `Invalid token. IP=${clientIP}`);
 
                 callback({
                     ok: false,
@@ -297,7 +299,9 @@ let needSetup = false;
         });
 
         socket.on("login", async (data, callback) => {
-            log.info("auth", `Login by username + password. IP=${getClientIp(socket)}`);
+            const clientIP = await server.getClientIP(socket);
+
+            log.info("auth", `Login by username + password. IP=${clientIP}`);
 
             // Checking
             if (typeof callback !== "function") {
@@ -310,7 +314,7 @@ let needSetup = false;
 
             // Login Rate Limit
             if (! await loginRateLimiter.pass(callback)) {
-                log.info("auth", `Too many failed requests for user ${data.username}. IP=${getClientIp(socket)}`);
+                log.info("auth", `Too many failed requests for user ${data.username}. IP=${clientIP}`);
                 return;
             }
 
@@ -320,7 +324,7 @@ let needSetup = false;
                 if (user.twofa_status === 0) {
                     afterLogin(socket, user);
 
-                    log.info("auth", `Successfully logged in user ${data.username}. IP=${getClientIp(socket)}`);
+                    log.info("auth", `Successfully logged in user ${data.username}. IP=${clientIP}`);
 
                     callback({
                         ok: true,
@@ -332,7 +336,7 @@ let needSetup = false;
 
                 if (user.twofa_status === 1 && !data.token) {
 
-                    log.info("auth", `2FA token required for user ${data.username}. IP=${getClientIp(socket)}`);
+                    log.info("auth", `2FA token required for user ${data.username}. IP=${clientIP}`);
 
                     callback({
                         tokenRequired: true,
@@ -350,7 +354,7 @@ let needSetup = false;
                             socket.userID,
                         ]);
 
-                        log.info("auth", `Successfully logged in user ${data.username}. IP=${getClientIp(socket)}`);
+                        log.info("auth", `Successfully logged in user ${data.username}. IP=${clientIP}`);
 
                         callback({
                             ok: true,
@@ -360,7 +364,7 @@ let needSetup = false;
                         });
                     } else {
 
-                        log.warn("auth", `Invalid token provided for user ${data.username}. IP=${getClientIp(socket)}`);
+                        log.warn("auth", `Invalid token provided for user ${data.username}. IP=${clientIP}`);
 
                         callback({
                             ok: false,
@@ -370,7 +374,7 @@ let needSetup = false;
                 }
             } else {
 
-                log.warn("auth", `Incorrect username or password for user ${data.username}. IP=${getClientIp(socket)}`);
+                log.warn("auth", `Incorrect username or password for user ${data.username}. IP=${clientIP}`);
 
                 callback({
                     ok: false,
@@ -442,6 +446,8 @@ let needSetup = false;
         });
 
         socket.on("save2FA", async (currentPassword, callback) => {
+            const clientIP = await server.getClientIP(socket);
+
             try {
                 if (! await twoFaRateLimiter.pass(callback)) {
                     return;
@@ -454,7 +460,7 @@ let needSetup = false;
                     socket.userID,
                 ]);
 
-                log.info("auth", `Saved 2FA token. IP=${getClientIp(socket)}`);
+                log.info("auth", `Saved 2FA token. IP=${clientIP}`);
 
                 callback({
                     ok: true,
@@ -462,7 +468,7 @@ let needSetup = false;
                 });
             } catch (error) {
 
-                log.error("auth", `Error changing 2FA token. IP=${getClientIp(socket)}`);
+                log.error("auth", `Error changing 2FA token. IP=${clientIP}`);
 
                 callback({
                     ok: false,
@@ -472,6 +478,8 @@ let needSetup = false;
         });
 
         socket.on("disable2FA", async (currentPassword, callback) => {
+            const clientIP = await server.getClientIP(socket);
+
             try {
                 if (! await twoFaRateLimiter.pass(callback)) {
                     return;
@@ -481,7 +489,7 @@ let needSetup = false;
                 await doubleCheckPassword(socket, currentPassword);
                 await TwoFA.disable2FA(socket.userID);
 
-                log.info("auth", `Disabled 2FA token. IP=${getClientIp(socket)}`);
+                log.info("auth", `Disabled 2FA token. IP=${clientIP}`);
 
                 callback({
                     ok: true,
@@ -489,7 +497,7 @@ let needSetup = false;
                 });
             } catch (error) {
 
-                log.error("auth", `Error disabling 2FA token. IP=${getClientIp(socket)}`);
+                log.error("auth", `Error disabling 2FA token. IP=${clientIP}`);
 
                 callback({
                     ok: false,
@@ -1682,10 +1690,6 @@ async function shutdownFunction(signal) {
 
     stopBackgroundJobs();
     await cloudflaredStop();
-}
-
-function getClientIp(socket) {
-    return socket.client.conn.remoteAddress.replace(/^.*:/, "");
 }
 
 /** Final function called before application exits */

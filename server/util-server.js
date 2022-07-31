@@ -289,6 +289,7 @@ exports.postgresQuery = function (connectionString, query) {
  * Retrieve value of setting based on key
  * @param {string} key Key of setting to retrieve
  * @returns {Promise<any>} Value
+ * @deprecated Use await Settings.get(key)
  */
 exports.setting = async function (key) {
     return await Settings.get(key);
