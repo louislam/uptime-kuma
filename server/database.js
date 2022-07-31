@@ -146,7 +146,7 @@ class Database {
         }
         await R.exec("PRAGMA cache_size = -12000");
         await R.exec("PRAGMA auto_vacuum = FULL");
-        
+
         //Avoid error "SQLITE_BUSY: database is locked" by allowing SQLITE to wait up to 5 seconds to do a write
         await R.exec("PRAGMA busy_timeout = 5000;");
 
