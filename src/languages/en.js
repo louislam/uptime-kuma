@@ -453,6 +453,8 @@ export default {
     "Message:": "Message:",
     "Don't know how to get the token? Please read the guide:": "Don't know how to get the token? Please read the guide:",
     "The current connection may be lost if you are currently connecting via Cloudflare Tunnel. Are you sure want to stop it? Type your current password to confirm it.": "The current connection may be lost if you are currently connecting via Cloudflare Tunnel. Are you sure want to stop it? Type your current password to confirm it.",
+    "HTTP Headers": "HTTP Headers",
+    "Trust Proxy": "Trust Proxy",
     "Other Software": "Other Software",
     "For example: nginx, Apache and Traefik.": "For example: nginx, Apache and Traefik.",
     "Please read": "Please read",
@@ -536,4 +538,6 @@ export default {
     "Domain": "Domain",
     "Workstation": "Workstation",
     disableCloudflaredNoAuthMsg: "You are in No Auth mode, password is not require.",
+    trustProxyDescription: "Trust 'X-Forwarded-*' headers. If you want to get the correct client IP and your Uptime Kuma is behind such as Nginx or Apache, you should enable this.",
+    wayToGetLineNotifyToken: "You can get an access token from {0}",
 };

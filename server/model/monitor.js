@@ -7,7 +7,7 @@ dayjs.extend(timezone);
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
 const { log, UP, DOWN, PENDING, flipStatus, TimeLogger } = require("../../src/util");
-const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, mqttAsync, setSetting, httpNtlm } = require("../util-server");
+const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mqttAsync, setSetting, httpNtlm } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification");
@@ -16,6 +16,7 @@ const { demoMode } = require("../config");
 const version = require("../../package.json").version;
 const apicache = require("../modules/apicache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
+const { CacheableDnsHttpAgent } = require("../cacheable-dns-http-agent");
 
 /**
  * status:
@@ -34,7 +35,13 @@ class Monitor extends BeanModel {
         let obj = {
             id: this.id,
             name: this.name,
+            sendUrl: this.sendUrl,
         };
+
+        if (this.sendUrl) {
+            obj.url = this.url;
+        }
+
         if (showTags) {
             obj.tags = await this.getTags();
         }
@@ -434,9 +441,12 @@ class Monitor extends BeanModel {
                             "Accept": "*/*",
                             "User-Agent": "Uptime-Kuma/" + version,
                         },
-                        httpsAgent: new https.Agent({
+                        httpsAgent: CacheableDnsHttpAgent.getHttpsAgent({
                             maxCachedSessions: 0,      // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
                             rejectUnauthorized: !this.getIgnoreTls(),
+                        }),
+                        httpAgent: CacheableDnsHttpAgent.getHttpAgent({
+                            maxCachedSessions: 0,
                         }),
                         maxRedirects: this.maxredirects,
                         validateStatus: (status) => {
@@ -470,6 +480,14 @@ class Monitor extends BeanModel {
                     let startTime = dayjs().valueOf();
 
                     await mssqlQuery(this.databaseConnectionString, this.databaseQuery);
+
+                    bean.msg = "";
+                    bean.status = UP;
+                    bean.ping = dayjs().valueOf() - startTime;
+                } else if (this.type === "postgres") {
+                    let startTime = dayjs().valueOf();
+
+                    await postgresQuery(this.databaseConnectionString, this.databaseQuery);
 
                     bean.msg = "";
                     bean.status = UP;
