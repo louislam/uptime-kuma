@@ -455,8 +455,6 @@ export default {
     "The current connection may be lost if you are currently connecting via Cloudflare Tunnel. Are you sure want to stop it? Type your current password to confirm it.": "The current connection may be lost if you are currently connecting via Cloudflare Tunnel. Are you sure want to stop it? Type your current password to confirm it.",
     "HTTP Headers": "HTTP Headers",
     "Trust Proxy": "Trust Proxy",
-    "Trust 'X-Forwarded-*' headers": "Trust 'X-Forwarded-*' headers",
-    "Don't trust 'X-Forwarded-*' headers": "Don't trust 'X-Forwarded-*' headers",
     "Other Software": "Other Software",
     "For example: nginx, Apache and Traefik.": "For example: nginx, Apache and Traefik.",
     "Please read": "Please read",
