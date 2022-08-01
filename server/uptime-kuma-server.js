@@ -131,14 +131,18 @@ class UptimeKumaServer {
     }
 
     async getClientIP(socket) {
-        const clientIP = socket.client.conn.remoteAddress.replace(/^.*:/, "");
+        let clientIP = socket.client.conn.remoteAddress;
+
+        if (clientIP === undefined) {
+            clientIP = "";
+        }
 
         if (await Settings.get("trustProxy")) {
             return socket.client.conn.request.headers["x-forwarded-for"]
                 || socket.client.conn.request.headers["x-real-ip"]
-                || clientIP;
+                || clientIP.replace(/^.*:/, "");
         } else {
-            return clientIP;
+            return clientIP.replace(/^.*:/, "");
         }
     }
 }
