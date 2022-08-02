@@ -13,6 +13,11 @@ const { BeanModel } = require("redbean-node/dist/bean-model");
  */
 class Heartbeat extends BeanModel {
 
+    /**
+     * Return an object that ready to parse to JSON for public
+     * Only show necessary data to public
+     * @returns {Object}
+     */
     toPublicJSON() {
         return {
             status: this.status,
@@ -22,6 +27,10 @@ class Heartbeat extends BeanModel {
         };
     }
 
+    /**
+     * Return an object that ready to parse to JSON
+     * @returns {Object}
+     */
     toJSON() {
         return {
             monitorID: this.monitor_id,

@@ -3,6 +3,7 @@
 import fs from "fs";
 import path from "path";
 import util from "util";
+import rmSync from "../fs-rmSync.js";
 
 // https://stackoverflow.com/questions/13786160/copy-folder-recursively-in-node-js
 /**
@@ -30,7 +31,7 @@ console.log("Arguments:", process.argv);
 const baseLangCode = process.argv[2] || "en";
 console.log("Base Lang: " + baseLangCode);
 if (fs.existsSync("./languages")) {
-    fs.rmdirSync("./languages", { recursive: true });
+    rmSync("./languages", { recursive: true });
 }
 copyRecursiveSync("../../src/languages", "./languages");
 
@@ -40,7 +41,7 @@ const files = fs.readdirSync("./languages");
 console.log("Files:", files);
 
 for (const file of files) {
-    if (!file.endsWith(".js")) {
+    if (! file.endsWith(".js")) {
         console.log("Skipping " + file);
         continue;
     }
@@ -82,5 +83,5 @@ for (const file of files) {
     fs.writeFileSync(`../../src/languages/${file}`, code);
 }
 
-fs.rmdirSync("./languages", { recursive: true });
+rmSync("./languages", { recursive: true });
 console.log("Done. Fixing formatting by ESLint...");

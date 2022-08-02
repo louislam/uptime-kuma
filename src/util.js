@@ -7,7 +7,7 @@
 // Backend uses the compiled file util.js
 // Frontend uses util.ts
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getMonitorRelativeURL = exports.genSecret = exports.getCryptoRandomInt = exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isDev = void 0;
+exports.getMonitorRelativeURL = exports.genSecret = exports.getCryptoRandomInt = exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.log = exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isDev = void 0;
 const _dayjs = require("dayjs");
 const dayjs = _dayjs;
 exports.isDev = process.env.NODE_ENV === "development";
@@ -18,6 +18,7 @@ exports.PENDING = 2;
 exports.STATUS_PAGE_ALL_DOWN = 0;
 exports.STATUS_PAGE_ALL_UP = 1;
 exports.STATUS_PAGE_PARTIAL_DOWN = 2;
+/** Flip the status of s */
 function flipStatus(s) {
     if (s === exports.UP) {
         return exports.DOWN;
@@ -28,6 +29,10 @@ function flipStatus(s) {
     return s;
 }
 exports.flipStatus = flipStatus;
+/**
+ * Delays for specified number of seconds
+ * @param ms Number of milliseconds to sleep for
+ */
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -44,19 +49,131 @@ function ucfirst(str) {
     return firstLetter.toUpperCase() + str.substr(1);
 }
 exports.ucfirst = ucfirst;
+/**
+ * @deprecated Use log.debug
+ * @since https://github.com/louislam/uptime-kuma/pull/910
+ * @param msg
+ */
 function debug(msg) {
-    if (exports.isDev) {
-        console.log(msg);
-    }
+    exports.log.log("", msg, "debug");
 }
 exports.debug = debug;
-function polyfill() {
+class Logger {
+    constructor() {
+        /**
+         * UPTIME_KUMA_HIDE_LOG=debug_monitor,info_monitor
+         *
+         * Example:
+         *  [
+         *     "debug_monitor",          // Hide all logs that level is debug and the module is monitor
+         *     "info_monitor",
+         *  ]
+         */
+        this.hideLog = {
+            info: [],
+            warn: [],
+            error: [],
+            debug: [],
+        };
+        if (typeof process !== "undefined" && process.env.UPTIME_KUMA_HIDE_LOG) {
+            let list = process.env.UPTIME_KUMA_HIDE_LOG.split(",").map(v => v.toLowerCase());
+            for (let pair of list) {
+                // split first "_" only
+                let values = pair.split(/_(.*)/s);
+                if (values.length >= 2) {
+                    this.hideLog[values[0]].push(values[1]);
+                }
+            }
+            this.debug("server", "UPTIME_KUMA_HIDE_LOG is set");
+            this.debug("server", this.hideLog);
+        }
+    }
     /**
-     * String.prototype.replaceAll() polyfill
-     * https://gomakethings.com/how-to-replace-a-section-of-a-string-with-another-one-with-vanilla-js/
-     * @author Chris Ferdinandi
-     * @license MIT
+     * Write a message to the log
+     * @param module The module the log comes from
+     * @param msg Message to write
+     * @param level Log level. One of INFO, WARN, ERROR, DEBUG or can be customized.
      */
+    log(module, msg, level) {
+        if (this.hideLog[level] && this.hideLog[level].includes(module)) {
+            return;
+        }
+        module = module.toUpperCase();
+        level = level.toUpperCase();
+        const now = new Date().toISOString();
+        const formattedMessage = (typeof msg === "string") ? `${now} [${module}] ${level}: ${msg}` : msg;
+        if (level === "INFO") {
+            console.info(formattedMessage);
+        }
+        else if (level === "WARN") {
+            console.warn(formattedMessage);
+        }
+        else if (level === "ERROR") {
+            console.error(formattedMessage);
+        }
+        else if (level === "DEBUG") {
+            if (exports.isDev) {
+                console.log(formattedMessage);
+            }
+        }
+        else {
+            console.log(formattedMessage);
+        }
+    }
+    /**
+     * Log an INFO message
+     * @param module Module log comes from
+     * @param msg Message to write
+     */
+    info(module, msg) {
+        this.log(module, msg, "info");
+    }
+    /**
+     * Log a WARN message
+     * @param module Module log comes from
+     * @param msg Message to write
+     */
+    warn(module, msg) {
+        this.log(module, msg, "warn");
+    }
+    /**
+     * Log an ERROR message
+     * @param module Module log comes from
+     * @param msg Message to write
+     */
+    error(module, msg) {
+        this.log(module, msg, "error");
+    }
+    /**
+     * Log a DEBUG message
+     * @param module Module log comes from
+     * @param msg Message to write
+     */
+    debug(module, msg) {
+        this.log(module, msg, "debug");
+    }
+    /**
+     * Log an exeption as an ERROR
+     * @param module Module log comes from
+     * @param exception The exeption to include
+     * @param msg The message to write
+     */
+    exception(module, exception, msg) {
+        let finalMessage = exception;
+        if (msg) {
+            finalMessage = `${msg}: ${exception}`;
+        }
+        this.log(module, finalMessage, "error");
+    }
+}
+exports.log = new Logger();
+/**
+ * String.prototype.replaceAll() polyfill
+ * https://gomakethings.com/how-to-replace-a-section-of-a-string-with-another-one-with-vanilla-js/
+ * @author Chris Ferdinandi
+ * @license MIT
+ */
+function polyfill() {
     if (!String.prototype.replaceAll) {
         String.prototype.replaceAll = function (str, newStr) {
             // If a regex pattern
@@ -73,6 +190,10 @@ class TimeLogger {
     constructor() {
         this.startTime = dayjs().valueOf();
     }
+    /**
+     * Output time since start of monitor
+     * @param name Name of monitor
+     */
     print(name) {
         if (exports.isDev && process.env.TIMELOGGER === "1") {
             console.log(name + ": " + (dayjs().valueOf() - this.startTime) + "ms");
@@ -121,6 +242,13 @@ let getRandomBytes = ((typeof window !== 'undefined' && window.crypto)
     : function () {
         return require("crypto").randomBytes;
     })();
+/**
+ * Get a random integer suitable for use in cryptography between upper
+ * and lower bounds.
+ * @param min Minimum value of integer
+ * @param max Maximum value of integer
+ * @returns Cryptographically suitable random integer
+ */
 function getCryptoRandomInt(min, max) {
     // synchronous version of: https://github.com/joepie91/node-random-number-csprng
     const range = max - min;
@@ -151,6 +279,11 @@ function getCryptoRandomInt(min, max) {
     }
 }
 exports.getCryptoRandomInt = getCryptoRandomInt;
+/**
+ * Generate a secret
+ * @param length Lenght of secret to generate
+ * @returns
+ */
 function genSecret(length = 64) {
     let secret = "";
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -161,6 +294,11 @@ function genSecret(length = 64) {
     return secret;
 }
 exports.genSecret = genSecret;
+/**
+ * Get the path of a monitor
+ * @param id ID of monitor
+ * @returns Formatted relative path
+ */
 function getMonitorRelativeURL(id) {
     return "/dashboard/" + id;
 }

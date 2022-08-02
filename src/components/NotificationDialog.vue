@@ -69,7 +69,6 @@
 
 <script lang="ts">
 import { Modal } from "bootstrap";
-import { ucfirst } from "../util.ts";
 
 import Confirm from "./Confirm.vue";
 import NotificationFormList from "./notifications";
@@ -79,13 +78,15 @@ export default {
         Confirm,
     },
     props: {},
-    emits: ["added"],
+    emits: [ "added" ],
     data() {
         return {
             model: null,
             processing: false,
             id: null,
-            notificationTypes: Object.keys(NotificationFormList),
+            notificationTypes: Object.keys(NotificationFormList).sort((a, b) => {
+                return a.toLowerCase().localeCompare(b.toLowerCase());
+            }),
             notification: {
                 name: "",
                 /** @type { null | keyof NotificationFormList } */
@@ -124,11 +125,16 @@ export default {
     },
     methods: {
 
+        /** Show dialog to confirm deletion */
         deleteConfirm() {
             this.modal.hide();
             this.$refs.confirmDelete.show();
         },
 
+        /**
+         * Show settings for specified notification
+         * @param {number} notificationID ID of notification to show
+         */
         show(notificationID) {
             if (notificationID) {
                 this.id = notificationID;
@@ -143,17 +149,15 @@ export default {
                 this.id = null;
                 this.notification = {
                     name: "",
-                    type: null,
+                    type: "telegram",
                     isDefault: false,
                 };
-
-                // Set Default value here
-                this.notification.type = this.notificationTypes[0];
             }
 
             this.modal.show();
         },
 
+        /** Submit the form to the server */
         submit() {
             this.processing = true;
             this.$root.getSocket().emit("addNotification", this.notification, this.id, (res) => {
@@ -172,6 +176,7 @@ export default {
             });
         },
 
+        /** Test the notification endpoint */
         test() {
             this.processing = true;
             this.$root.getSocket().emit("testNotification", this.notification, (res) => {
@@ -180,6 +185,7 @@ export default {
             });
         },
 
+        /** Delete the notification endpoint */
         deleteNotification() {
             this.processing = true;
             this.$root.getSocket().emit("deleteNotification", this.id, (res) => {
@@ -192,6 +198,7 @@ export default {
             });
         },
         /**
+         * Get a unique default name for the notification
          * @param {keyof NotificationFormList} notificationKey
          * @return {string}
          */

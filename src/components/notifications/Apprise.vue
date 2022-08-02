@@ -8,6 +8,9 @@
                 <a href="https://github.com/caronc/apprise/wiki#notification-services" target="_blank">https://github.com/caronc/apprise/wiki#notification-services</a>
             </i18n-t>
         </div>
+
+        <label for="title" class="form-label">{{ $t("Title") }}</label>
+        <input id="title" v-model="$parent.notification.title" type="text" class="form-control">
     </div>
     <div class="mb-3">
         <i18n-t tag="p" keypath="Status:">
