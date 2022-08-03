@@ -45,10 +45,10 @@ const monitorStatus = new PrometheusClient.Gauge({
 class Prometheus {
     monitorLabelValues = {};
 
-    async get_tags(monitor) {
+    async getMonitorTags(monitor) {
         console.log("Getting Tags for Prometheus");
 
-        const tags = await R.getAll("SELECT mt.*, tag.name, tag.color FROM monitor_tag mt JOIN tag ON mt.tag_id = tag.id WHERE mt.monitor_id = ?", [monitor.id]);
+        const tags = await R.getAll("SELECT mt.*, tag.name, tag.color FROM monitor_tag mt JOIN tag ON mt.tag_id = tag.id WHERE mt.monitor_id = ?", [ monitor.id ]);
 
         return tags;
     }
@@ -65,11 +65,11 @@ class Prometheus {
             monitor_port: monitor.port
         };
 
-        this.get_tags(monitor).then(tags => {
+        this.getMonitorTags(monitor).then(tags => {
             for (let tag in tags) {
-                let tag_detail = tags[tag];
-                let name = tag_detail.name;
-                let value = tag_detail.value;
+                let tagDetail = tags[tag];
+                let name = tagDetail.name;
+                let value = tagDetail.value;
                 console.log("New tag created: {" + name + ": " + value + "}");
                 this.monitorLabelValues[name] = value;
             }
