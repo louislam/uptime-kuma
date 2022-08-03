@@ -462,10 +462,10 @@
                             <!-- gRPC Options -->
                             <template v-if="monitor.type === 'grpc-keyword' ">
                                 <!-- Proto service enable TLS -->
-                                <h2 class="mt-5 mb-2">{{ $t("HTTP Options") }}</h2>
+                                <h2 class="mt-5 mb-2">{{ $t("GRPC Options") }}</h2>
                                 <div class="my-3 form-check">
-                                    <input id="grpc-tls" v-model="monitor.grpcEnableTls" class="form-check-input" type="checkbox">
-                                    <label class="form-check-label" for="upside-down">
+                                    <input id="grpc-enable-tls" v-model="monitor.grpcEnableTls" class="form-check-input" type="checkbox" value="">
+                                    <label class="form-check-label" for="grpc-enable-tls">
                                         {{ $t("Enable TLS") }}
                                     </label>
                                     <div class="form-text">

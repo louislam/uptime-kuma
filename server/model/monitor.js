@@ -107,7 +107,7 @@ class Monitor extends BeanModel {
             grpcProtobuf: this.grpcProtobuf,
             grpcMethod: this.grpcMethod,
             grpcServiceName: this.grpcServiceName,
-            grpcEnableTls: this.grpcEnableTls,
+            grpcEnableTls: this.getGrpcEnableTls(),
         };
 
         if (includeSensitiveData) {
@@ -165,6 +165,14 @@ class Monitor extends BeanModel {
      */
     isUpsideDown() {
         return Boolean(this.upsideDown);
+    }
+
+    /**
+     * Parse to boolean
+     * @returns {boolean}
+     */
+    getGrpcEnableTls() {
+        return Boolean(this.grpcEnableTls);
     }
 
     /**
