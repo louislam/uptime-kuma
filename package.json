@@ -61,6 +61,11 @@
         "build-dist-and-restart": "npm run build && npm run start-server-dev"
     },
     "dependencies": {
+        "@fortawesome/fontawesome-svg-core": "~1.2.36",
+        "@fortawesome/free-regular-svg-icons": "~5.15.4",
+        "@fortawesome/free-solid-svg-icons": "~5.15.4",
+        "@fortawesome/vue-fontawesome": "~3.0.0-5",
+        "@grpc/grpc-js": "^1.6.8",
         "@louislam/sqlite3": "~15.0.6",
         "args-parser": "~1.3.0",
         "axios": "~0.26.1",
@@ -81,6 +86,7 @@
         "express-basic-auth": "~1.2.1",
         "express-static-gzip": "^2.1.7",
         "form-data": "~4.0.0",
+        "grpc-health-check": "^1.3.0",
         "http-graceful-shutdown": "~3.1.7",
         "http-proxy-agent": "^5.0.0",
         "https-proxy-agent": "^5.0.0",
@@ -98,6 +104,8 @@
         "pg-connection-string": "^2.5.0",
         "prom-client": "~13.2.0",
         "prometheus-api-metrics": "~3.2.1",
+        "protobufjs": "^7.0.0",
+        "qrcode": "~1.5.0",
         "redbean-node": "0.1.4",
         "socket.io": "~4.4.1",
         "socket.io-client": "~4.4.1",

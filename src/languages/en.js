@@ -6,6 +6,8 @@ export default {
     ignoreTLSError: "Ignore TLS/SSL error for HTTPS websites",
     upsideDownModeDescription: "Flip the status upside down. If the service is reachable, it is DOWN.",
     maxRedirectDescription: "Maximum number of redirects to follow. Set to 0 to disable redirects.",
+    enableGRPCTls: "Allow to send gRPC request with TLS connection",
+    grpcMethodDescription: "Method name is convert to cammelCase format such as sayHello, check, etc.",
     acceptedStatusCodesDescription: "Select status codes which are considered as a successful response.",
     passwordNotMatchMsg: "The repeat password does not match.",
     notificationDescription: "Notifications must be assigned to a monitor to function.",

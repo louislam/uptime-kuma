@@ -15,6 +15,8 @@ const { Client } = require("pg");
 const postgresConParse = require("pg-connection-string").parse;
 const { NtlmClient } = require("axios-ntlm");
 const { Settings } = require("./settings");
+const grpc = require("@grpc/grpc-js");
+const protojs = require("protobufjs");
 
 // From ping-lite
 exports.WIN = /^win/.test(process.platform);
@@ -593,5 +595,53 @@ module.exports.send403 = (res, msg = "") => {
     res.status(403).json({
         "status": "fail",
         "msg": msg,
+    });
+};
+
+/**
+ * Create gRPC client stib
+ * @param {Object} options from gRPC client
+ */
+module.exports.grpcQuery = async (options) => {
+    const { grpcUrl, grpcProtobufData, grpcServiceName, grpcEnableTls, grpcMethod, grpcBody } = options;
+    const protocObject = protojs.parse(grpcProtobufData);
+    const protoServiceObject = protocObject.root.lookupService(grpcServiceName);
+    const Client = grpc.makeGenericClientConstructor({});
+    const credentials = grpcEnableTls ? grpc.credentials.createSsl() : grpc.credentials.createInsecure();
+    const client = new Client(
+        grpcUrl,
+        credentials
+    );
+    const grpcService = protoServiceObject.create(function (method, requestData, cb) {
+        const fullServiceName = method.fullName;
+        const serviceFQDN = fullServiceName.split(".");
+        const serviceMethod = serviceFQDN.pop();
+        const serviceMethodClientImpl = `/${serviceFQDN.slice(1).join(".")}/${serviceMethod}`;
+        log.debug("monitor", `gRPC method ${serviceMethodClientImpl}`);
+        client.makeUnaryRequest(
+            serviceMethodClientImpl,
+            arg => arg,
+            arg => arg,
+            requestData,
+            cb);
+    }, false, false);
+    return new Promise((resolve, _) => {
+        return grpcService[`${grpcMethod}`](JSON.parse(grpcBody), function (err, response) {
+            const responseData = JSON.stringify(response);
+            if (err) {
+                return resolve({
+                    code: err.code,
+                    errorMessage: err.details,
+                    data: ""
+                });
+            } else {
+                log.debug("monitor:", `gRPC response: ${response}`);
+                return resolve({
+                    code: 1,
+                    errorMessage: "",
+                    data: responseData
+                });
+            }
+        });
     });
 };
