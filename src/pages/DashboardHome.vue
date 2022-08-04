@@ -7,11 +7,11 @@
 
             <div class="shadow-box big-padding text-center mb-4">
                 <div class="row">
-                    <div class="col" :class="{'filter-selected':$root.statusFilter===1}" style="cursor: pointer" @click="$root.statusFilter=$root.statusFilter===1?undefined:1">
+                    <div class="col" :class="{'filter-selected':$root.statusFilter===1}" style="cursor: pointer;" @click="$root.statusFilter=$root.statusFilter===1?undefined:1">
                         <h3>{{ $t("Up") }}</h3>
                         <span class="num">{{ $root.stats.up }}</span>
                     </div>
-                    <div class="col" :class="{'filter-selected':$root.statusFilter===0}" style="cursor: pointer" @click="$root.statusFilter=$root.statusFilter===0?undefined:0">
+                    <div class="col" :class="{'filter-selected':$root.statusFilter===0}" style="cursor: pointer;" @click="$root.statusFilter=$root.statusFilter===0?undefined:0">
                         <h3>{{ $t("Down") }}</h3>
                         <span class="num text-danger">{{ $root.stats.down }}</span>
                     </div>
