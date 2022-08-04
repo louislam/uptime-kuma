@@ -52,7 +52,8 @@ export default {
                 message: "",
                 errorMessage: "",
                 currentPassword: "",
-            }
+            },
+            statusFilter: undefined
         };
     },
 

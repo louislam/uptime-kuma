@@ -127,6 +127,14 @@ export default {
                 });
             }
 
+            // Add monitor status from last heartbeat
+            result.map(monitor => {
+                if (monitor.id in this.$root.lastHeartbeatList && this.$root.lastHeartbeatList[monitor.id]) {
+                    monitor.status = this.$root.lastHeartbeatList[monitor.id].status;
+                }
+            });
+            result = result.filter(monitor => this.$root.statusFilter !== undefined ? monitor.status === this.$root.statusFilter : true);
+
             return result;
         },
     },
