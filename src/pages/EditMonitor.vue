@@ -27,6 +27,9 @@
                                         <option value="dns">
                                             DNS
                                         </option>
+                                        <option value="docker">
+                                            {{ $t("Docker Container") }}
+                                        </option>
                                     </optgroup>
 
                                     <optgroup label="Passive Monitor Type">
@@ -44,6 +47,9 @@
                                         </option>
                                         <option value="sqlserver">
                                             SQL Server
+                                        </option>
+                                        <option value="postgres">
+                                            PostgreSQL
                                         </option>
                                     </optgroup>
                                 </select>
@@ -138,6 +144,34 @@
                                 </div>
                             </template>
 
+                            <!-- Docker Container Name / ID -->
+                            <!-- For Docker Type -->
+                            <div v-if="monitor.type === 'docker'" class="my-3">
+                                <label for="docker_container" class="form-label">{{ $t("Container Name / ID") }}</label>
+                                <input id="docker_container" v-model="monitor.docker_container" type="text" class="form-control" required>
+                            </div>
+
+                            <!-- Docker Host -->
+                            <!-- For Docker Type -->
+                            <div v-if="monitor.type === 'docker'" class="my-3">
+                                <h2 class="mb-2">{{ $t("Docker Host") }}</h2>
+                                <p v-if="$root.dockerHostList.length === 0">
+                                    {{ $t("Not available, please setup.") }}
+                                </p>
+
+                                <div v-else class="mb-3">
+                                    <label for="docker-host" class="form-label">{{ $t("Docker Host") }}</label>
+                                    <select id="docket-host" v-model="monitor.docker_host" class="form-select">
+                                        <option v-for="host in $root.dockerHostList" :key="host.id" :value="host.id">{{ host.name }}</option>
+                                    </select>
+                                    <a href="#" @click="$refs.dockerHostDialog.show(monitor.docker_host)">{{ $t("Edit") }}</a>
+                                </div>
+
+                                <button class="btn btn-primary me-2" type="button" @click="$refs.dockerHostDialog.show()">
+                                    {{ $t("Setup Docker Host") }}
+                                </button>
+                            </div>
+
                             <!-- MQTT -->
                             <!-- For MQTT Type -->
                             <template v-if="monitor.type === 'mqtt'">
@@ -168,15 +202,21 @@
                                 </div>
                             </template>
 
-                            <!-- SQL Server -->
-                            <template v-if="monitor.type === 'sqlserver'">
+                            <!-- SQL Server and PostgreSQL -->
+                            <template v-if="monitor.type === 'sqlserver' || monitor.type === 'postgres'">
                                 <div class="my-3">
-                                    <label for="sqlserverConnectionString" class="form-label">SQL Server {{ $t("Connection String") }}</label>
-                                    <input id="sqlserverConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control">
+                                    <label for="sqlConnectionString" class="form-label">{{ $t("Connection String") }}</label>
+
+                                    <template v-if="monitor.type === 'sqlserver'">
+                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="Server=<hostname>,<port>;Database=<your database>;User Id=<your user id>;Password=<your password>;Encrypt=<true/false>;TrustServerCertificate=<Yes/No>;Connection Timeout=<int>">
+                                    </template>
+                                    <template v-if="monitor.type === 'postgres'">
+                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="postgres://username:password@host:port/database">
+                                    </template>
                                 </div>
                                 <div class="my-3">
-                                    <label for="sqlserverQuery" class="form-label">SQL Server {{ $t("Query") }}</label>
-                                    <textarea id="sqlserverQuery" v-model="monitor.databaseQuery" class="form-control" placeholder="Example: select getdate()"></textarea>
+                                    <label for="sqlQuery" class="form-label">{{ $t("Query") }}</label>
+                                    <textarea id="sqlQuery" v-model="monitor.databaseQuery" class="form-control" placeholder="Example: select getdate()"></textarea>
                                 </div>
                             </template>
 
@@ -378,17 +418,17 @@
                                 </div>
 
                                 <!-- HTTP Auth -->
-                                <h4 class="mt-5 mb-2">{{ $t("HTTP Authentication") }}</h4>
+                                <h4 class="mt-5 mb-2">{{ $t("Authentication") }}</h4>
 
                                 <!-- Method -->
                                 <div class="my-3">
                                     <label for="method" class="form-label">{{ $t("Method") }}</label>
                                     <select id="method" v-model="monitor.authMethod" class="form-select">
                                         <option :value="null">
-                                            None
+                                            {{ $t("None") }}
                                         </option>
                                         <option value="basic">
-                                            Basic
+                                            {{ $t("HTTP Basic Auth") }}
                                         </option>
                                         <option value="ntlm">
                                             NTLM
@@ -424,6 +464,7 @@
             </form>
 
             <NotificationDialog ref="notificationDialog" @added="addedNotification" />
+            <DockerHostDialog ref="dockerHostDialog" @added="addedDockerHost" />
             <ProxyDialog ref="proxyDialog" @added="addedProxy" />
         </div>
     </transition>
@@ -434,6 +475,7 @@ import VueMultiselect from "vue-multiselect";
 import { useToast } from "vue-toastification";
 import CopyableInput from "../components/CopyableInput.vue";
 import NotificationDialog from "../components/NotificationDialog.vue";
+import DockerHostDialog from "../components/DockerHostDialog.vue";
 import ProxyDialog from "../components/ProxyDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
 import { genSecret, isDev } from "../util.ts";
@@ -445,6 +487,7 @@ export default {
         ProxyDialog,
         CopyableInput,
         NotificationDialog,
+        DockerHostDialog,
         TagsManager,
         VueMultiselect,
     },
@@ -544,7 +587,7 @@ export default {
                 if (this.monitor.type === "dns") {
                     this.monitor.port = "53";
                 } else {
-                    this.monitor.port = "";
+                    this.monitor.port = undefined;
                 }
             }
         }
@@ -594,7 +637,6 @@ export default {
                     interval: 60,
                     retryInterval: this.interval,
                     resendInterval: 0,
-                    databaseConnectionString: "Server=<hostname>,<port>;Database=<your database>;User Id=<your user id>;Password=<your password>;Encrypt=<true/false>;TrustServerCertificate=<Yes/No>;Connection Timeout=<int>",
                     maxretries: 0,
                     notificationIDList: {},
                     ignoreTls: false,
@@ -604,6 +646,8 @@ export default {
                     accepted_statuscodes: [ "200-299" ],
                     dns_resolve_type: "A",
                     dns_resolve_server: "1.1.1.1",
+                    docker_container: "",
+                    docker_host: null,
                     proxyId: null,
                     mqttUsername: "",
                     mqttPassword: "",
@@ -731,6 +775,12 @@ export default {
         addedProxy(id) {
             this.monitor.proxyId = id;
         },
+
+        // Added a Docker Host Event
+        // Enable it if the Docker Host is added in EditMonitor.vue
+        addedDockerHost(id) {
+            this.monitor.docker_host = id;
+        }
     },
 };
 </script>

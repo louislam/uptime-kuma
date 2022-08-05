@@ -101,6 +101,9 @@ export default {
     "Update Password": "อัพเดทรหัสผ่าน",
     "Disable Auth": "ปิดใช้งานการตรวจสอบสิทธิ์",
     "Enable Auth": "เปิดใช้งานการตรวจสอบสิทธิ์",
+    "disableauth.message1": "คุณต้องการที่จะ <strong>ปิดใช้งานระบบรับรองความถูกต้องใช่หรือไม่</strong>?",
+    "disableauth.message2": "ระบบนี้ถูกออกแบบมาเพื่อการใช้งานกับระบบรับรองความถูกต้องของบุคคลที่สามเช่น Cloudflare Access, Authelia หรือวิธีการอื่น ๆ",
+    "Please use this option carefully!": "โปรดใช้ความระมัดระวังในการเลือกใช้งานระบบนี้ !",
     Logout: "ออกจากระบบ",
     Leave: "ออก",
     "I understand, please disable": "ฉันเข้าใจแล้ว, กรุณาปิดการใช้งาน",
@@ -515,4 +518,5 @@ export default {
     "Go back to the previous page.": "กลับไปที่หน้าก่อนหน้า",
     "Coming Soon": "เร็ว ๆ นี้",
     wayToGetClickSendSMSToken: "คุณสามารถรับ API Username และ API Key ได้จาก {0}",
+    wayToGetLineNotifyToken: "คุณสามารถรับ access token ได้จาก {0}",
 };
