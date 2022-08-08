@@ -1048,7 +1048,6 @@ class Monitor extends BeanModel {
             monitorID
         ]);
     }
-
 }
 
 module.exports = Monitor;
