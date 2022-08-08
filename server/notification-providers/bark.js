@@ -12,9 +12,7 @@ const { default: axios } = require("axios");
 
 // bark is an APN bridge that sends notifications to Apple devices.
 
-const barkNotificationGroup = "UptimeKuma";
 const barkNotificationAvatar = "https://github.com/louislam/uptime-kuma/raw/master/public/icon.png";
-const barkNotificationSound = "telegraph";
 const successMessage = "Successes!";
 
 class Bark extends NotificationProvider {
@@ -50,13 +48,23 @@ class Bark extends NotificationProvider {
      * @param {string} postUrl URL to append parameters to
      * @returns {string}
      */
-    appendAdditionalParameters(postUrl) {
-        // grouping all our notifications
-        postUrl += "?group=" + barkNotificationGroup;
+    appendAdditionalParameters(notification, postUrl) {
         // set icon to uptime kuma icon, 11kb should be fine
         postUrl += "&icon=" + barkNotificationAvatar;
+        // grouping all our notifications
+        if (notification.barkGroup != null) {
+            postUrl += "&group=" + notification.barkGroup;
+        } else {
+            // default name
+            postUrl += "&group=" + "UptimeKuma";
+        }
         // picked a sound, this should follow system's mute status when arrival
-        postUrl += "&sound=" + barkNotificationSound;
+        if (notification.barkSound != null) {
+            postUrl += "&sound=" + notification.barkSound;
+        } else {
+            // default sound
+            postUrl += "&sound=" + "telegraph";
+        }
         return postUrl;
     }
 
