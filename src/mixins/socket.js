@@ -53,7 +53,7 @@ export default {
                 errorMessage: "",
                 currentPassword: "",
             },
-            statusFilter: undefined
+            statusFilter: undefined,
         };
     },
 
