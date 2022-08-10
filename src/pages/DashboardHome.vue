@@ -7,7 +7,7 @@
 
             <div class="shadow-box big-padding text-center mb-4">
                 <div class="row">
-                    <div class="col" :class="{'filter-selected':$root.statusFilter===1}" style="cursor: pointer;" @click="$root.statusFilter=$root.statusFilter===1?undefined:1">
+                    <div class="col" :class="{'filter-selected' : $root.statusFilter === 1}" style="cursor: pointer;" @click="$root.statusFilter = $root.statusFilter === 1 ? undefined : 1">
                         <h3>{{ $t("Up") }}</h3>
                         <span class="num">{{ $root.stats.up }}</span>
                     </div>
