@@ -396,6 +396,22 @@
                                     </select>
                                 </div>
 
+                                <!-- Encoding -->
+                                <div class="my-3">
+                                    <label for="bodyEncoding" class="form-label">{{ $t("Body Encoding") }}</label>
+                                    <select id="bodyEncoding" v-model="monitor.bodyEncoding" class="form-select">
+                                        <option value="json">
+                                            JSON
+                                        </option>
+                                        <option value="form">
+                                            x-www-form-urlencoded
+                                        </option>
+                                        <option value="xml">
+                                            XML
+                                        </option>
+                                    </select>
+                                </div>
+
                                 <!-- Body -->
                                 <div class="my-3">
                                     <label for="body" class="form-label">{{ $t("Body") }}</label>
@@ -644,6 +660,7 @@ export default {
                     mqttTopic: "",
                     mqttSuccessMessage: "",
                     authMethod: null,
+                    bodyEncoding: null
                 };
 
                 if (this.$root.proxyList && !this.monitor.proxyId) {
