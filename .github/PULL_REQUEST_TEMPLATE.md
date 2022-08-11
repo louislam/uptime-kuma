@@ -1,3 +1,5 @@
+👉 Delete this line if you have read and agree our pull request rules and guidelines: https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md#can-i-create-a-pull-request-for-uptime-kuma
+
 # Description
 
 Fixes #(issue)

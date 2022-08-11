@@ -178,10 +178,12 @@ export default {
     },
 
     methods: {
+        /** Save the settings */
         saveGeneral() {
             localStorage.timezone = this.$root.userTimezone;
             this.saveSettings();
         },
+        /** Get the base URL of the application */
         autoGetPrimaryBaseURL() {
             this.settings.primaryBaseURL = location.protocol + "//" + location.host;
         },

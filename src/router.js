@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
+
 import EmptyLayout from "./layouts/EmptyLayout.vue";
 import Layout from "./layouts/Layout.vue";
 import Dashboard from "./pages/Dashboard.vue";
@@ -8,21 +9,23 @@ import EditMonitor from "./pages/EditMonitor.vue";
 import List from "./pages/List.vue";
 const Settings = () => import("./pages/Settings.vue");
 import Setup from "./pages/Setup.vue";
-const StatusPage = () => import("./pages/StatusPage.vue");
+import StatusPage from "./pages/StatusPage.vue";
 import Entry from "./pages/Entry.vue";
-
-import Appearance from "./components/settings/Appearance.vue";
-import General from "./components/settings/General.vue";
-import Notifications from "./components/settings/Notifications.vue";
-import ReverseProxy from "./components/settings/ReverseProxy.vue";
-import MonitorHistory from "./components/settings/MonitorHistory.vue";
-import Security from "./components/settings/Security.vue";
-import Proxies from "./components/settings/Proxies.vue";
-import Backup from "./components/settings/Backup.vue";
-import About from "./components/settings/About.vue";
 import ManageStatusPage from "./pages/ManageStatusPage.vue";
 import AddStatusPage from "./pages/AddStatusPage.vue";
 import NotFound from "./pages/NotFound.vue";
+
+// Settings - Sub Pages
+import Appearance from "./components/settings/Appearance.vue";
+import General from "./components/settings/General.vue";
+const Notifications = () => import("./components/settings/Notifications.vue");
+import ReverseProxy from "./components/settings/ReverseProxy.vue";
+import MonitorHistory from "./components/settings/MonitorHistory.vue";
+const Security = () => import("./components/settings/Security.vue");
+import Proxies from "./components/settings/Proxies.vue";
+import Backup from "./components/settings/Backup.vue";
+import About from "./components/settings/About.vue";
+import DockerHosts from "./components/settings/Docker.vue";
 
 const routes = [
     {
@@ -63,11 +66,11 @@ const routes = [
                                 path: "/add",
                                 component: EditMonitor,
                             },
-                            {
-                                path: "/list",
-                                component: List,
-                            },
                         ],
+                    },
+                    {
+                        path: "/list",
+                        component: List,
                     },
                     {
                         path: "/settings",
@@ -92,6 +95,10 @@ const routes = [
                             {
                                 path: "monitor-history",
                                 component: MonitorHistory,
+                            },
+                            {
+                                path: "docker-hosts",
+                                component: DockerHosts,
                             },
                             {
                                 path: "security",

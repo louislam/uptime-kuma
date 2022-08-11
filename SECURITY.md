@@ -8,9 +8,6 @@ Do not use the issue tracker or discuss it in the public as it will cause more d
 
 ## Supported Versions
 
-Use this section to tell people about which versions of your project are
-currently being supported with security updates.
-
 ### Uptime Kuma Versions
 
 You should use or upgrade to the latest version of Uptime Kuma. All `1.X.X` versions are upgradable to the lastest version.

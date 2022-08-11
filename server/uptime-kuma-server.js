@@ -7,6 +7,8 @@ const { R } = require("redbean-node");
 const { log } = require("../src/util");
 const Database = require("./database");
 const util = require("util");
+const { CacheableDnsHttpAgent } = require("./cacheable-dns-http-agent");
+const { Settings } = require("./settings");
 
 /**
  * `module.exports` (alias: `server`) should be inside this class, in order to avoid circular dependency issue.
@@ -29,6 +31,12 @@ class UptimeKumaServer {
     httpServer = undefined;
     io = undefined;
 
+    /**
+     * Cache Index HTML
+     * @type {string}
+     */
+    indexHTML = "";
+
     static getInstance(args) {
         if (UptimeKumaServer.instance == null) {
             UptimeKumaServer.instance = new UptimeKumaServer(args);
@@ -43,7 +51,6 @@ class UptimeKumaServer {
 
         log.info("server", "Creating express and socket.io instance");
         this.app = express();
-
         if (sslKey && sslCert) {
             log.info("server", "Server Type: HTTPS");
             this.httpServer = https.createServer({
@@ -54,6 +61,18 @@ class UptimeKumaServer {
             log.info("server", "Server Type: HTTP");
             this.httpServer = http.createServer(this.app);
         }
+
+        try {
+            this.indexHTML = fs.readFileSync("./dist/index.html").toString();
+        } catch (e) {
+            // "dist/index.html" is not necessary for development
+            if (process.env.NODE_ENV !== "development") {
+                log.error("server", "Error: Cannot find 'dist/index.html', did you install correctly?");
+                process.exit(1);
+            }
+        }
+
+        CacheableDnsHttpAgent.registerGlobalAgent();
 
         this.io = new Server(this.httpServer);
     }
@@ -109,6 +128,22 @@ class UptimeKumaServer {
         }
 
         errorLogStream.end();
+    }
+
+    async getClientIP(socket) {
+        let clientIP = socket.client.conn.remoteAddress;
+
+        if (clientIP === undefined) {
+            clientIP = "";
+        }
+
+        if (await Settings.get("trustProxy")) {
+            return socket.client.conn.request.headers["x-forwarded-for"]
+                || socket.client.conn.request.headers["x-real-ip"]
+                || clientIP.replace(/^.*:/, "");
+        } else {
+            return clientIP.replace(/^.*:/, "");
+        }
     }
 }
 

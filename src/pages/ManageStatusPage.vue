@@ -51,6 +51,11 @@ export default {
 
     },
     methods: {
+        /**
+         * Get the correct URL for the icon
+         * @param {string} icon Path for icon
+         * @returns {string} Correctly formatted path including port numbers
+         */
         icon(icon) {
             if (icon === "/icon.svg") {
                 return icon;
@@ -86,6 +91,7 @@ export default {
 
         .logo {
             width: $logo-width;
+            height: $logo-width;
 
             // Better when the image is loading
             min-height: 1px;
