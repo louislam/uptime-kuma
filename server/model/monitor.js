@@ -252,7 +252,7 @@ class Monitor extends BeanModel {
                     let bodyValue = null;
                     let contentType = null;
 
-                    if (this.body && !this.httpBodyEncoding || this.httpBodyEncoding === "json"){
+                    if (this.body && !this.httpBodyEncoding || this.httpBodyEncoding === "json") {
                         bodyValue = JSON.parse(this.body);
                         contentType = "application/json";
                     } else if (this.body && (this.httpBodyEncoding === "xml")) {
