@@ -398,8 +398,8 @@
 
                                 <!-- Encoding -->
                                 <div class="my-3">
-                                    <label for="bodyEncoding" class="form-label">{{ $t("Body Encoding") }}</label>
-                                    <select id="bodyEncoding" v-model="monitor.bodyEncoding" class="form-select">
+                                    <label for="httpBodyEncoding" class="form-label">{{ $t("Body Encoding") }}</label>
+                                    <select id="httpBodyEncoding" v-model="monitor.httpBodyEncoding" class="form-select">
                                         <option value="json">
                                             JSON
                                         </option>
@@ -660,7 +660,7 @@ export default {
                     mqttTopic: "",
                     mqttSuccessMessage: "",
                     authMethod: null,
-                    bodyEncoding: null
+                    httpBodyEncoding: "json"
                 };
 
                 if (this.$root.proxyList && !this.monitor.proxyId) {
@@ -698,7 +698,8 @@ export default {
          * @returns {boolean} Is the form input valid?
          */
         isInputValid() {
-            if (this.monitor.body) {
+            //TODO: Handle validation for all 3 possible options + null value
+            if (this.monitor.body && (!this.monitor.httpBodyEncoding || this.monitor.httpBodyEncoding === "json")) {
                 try {
                     JSON.parse(this.monitor.body);
                 } catch (err) {
@@ -729,8 +730,8 @@ export default {
                 return;
             }
 
-            // Beautify the JSON format
-            if (this.monitor.body) {
+            // Beautify the JSON format (only if httpBodyEncoding is not set or === json)
+            if (this.monitor.body && (!this.monitor.httpBodyEncoding || this.monitor.httpBodyEncoding === "json")) {
                 this.monitor.body = JSON.stringify(JSON.parse(this.monitor.body), null, 4);
             }
 

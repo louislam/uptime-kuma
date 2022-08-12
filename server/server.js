@@ -693,6 +693,7 @@ let needSetup = false;
                 bean.authMethod = monitor.authMethod;
                 bean.authWorkstation = monitor.authWorkstation;
                 bean.authDomain = monitor.authDomain;
+                bean.httpBodyEncoding = monitor.httpBodyEncoding;
 
                 await R.store(bean);
 

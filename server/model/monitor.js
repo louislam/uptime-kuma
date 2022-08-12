@@ -103,6 +103,7 @@ class Monitor extends BeanModel {
             authMethod: this.authMethod,
             authWorkstation: this.authWorkstation,
             authDomain: this.authDomain,
+            httpBodyEncoding: this.httpBodyEncoding
         };
 
         if (includeSensitiveData) {
@@ -241,16 +242,33 @@ class Monitor extends BeanModel {
 
                     log.debug("monitor", `[${this.name}] Prepare Options for axios`);
 
+                    // Set content-type header and body values based on the httpBodyEncoding type selected
+                    // TODO: Check if this.headers already contains a content-type header set by the user; if so, don't inject one
+                    let bodyValue = null;
+                    let contentType = null;
+
+                    if (this.body && !this.httpBodyEncoding || this.httpBodyEncoding === "json"){
+                        bodyValue = JSON.parse(this.body);
+                        contentType = "application/json";
+                    } else if (this.body && (this.httpBodyEncoding === "xml")) {
+                        bodyValue = this.body;
+                        contentType = "text/xml";
+                    } else if (this.body && (this.httpBodyEncoding === "form")) {
+                        bodyValue = this.body;
+                        contentType = "application/x-www-form-urlencoded";
+                    }
+
                     const options = {
                         url: this.url,
                         method: (this.method || "get").toLowerCase(),
-                        ...(this.body ? { data: JSON.parse(this.body) } : {}),
+                        ...(bodyValue ? { data: bodyValue } : {}),
                         timeout: this.interval * 1000 * 0.8,
                         headers: {
                             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
                             "User-Agent": "Uptime-Kuma/" + version,
                             ...(this.headers ? JSON.parse(this.headers) : {}),
                             ...(basicAuthHeader),
+                            ...(contentType ? { "Content-Type": contentType } : {})
                         },
                         maxRedirects: this.maxredirects,
                         validateStatus: (status) => {
