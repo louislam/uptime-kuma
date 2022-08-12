@@ -398,7 +398,7 @@
                             </div>
 
                             <!-- HTTP Options -->
-                            <template v-if="monitor.type === 'http' || monitor.type === 'keyword' ">
+                            <template v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'push'">
                                 <h2 class="mt-5 mb-2">{{ $t("HTTP Options") }}</h2>
 
                                 <!-- Method -->
@@ -429,56 +429,58 @@
                                     </select>
                                 </div>
 
-                                <!-- Body -->
-                                <div class="my-3">
-                                    <label for="body" class="form-label">{{ $t("Body") }}</label>
-                                    <textarea id="body" v-model="monitor.body" class="form-control" :placeholder="bodyPlaceholder"></textarea>
-                                </div>
-
-                                <!-- Headers -->
-                                <div class="my-3">
-                                    <label for="headers" class="form-label">{{ $t("Headers") }}</label>
-                                    <textarea id="headers" v-model="monitor.headers" class="form-control" :placeholder="headersPlaceholder"></textarea>
-                                </div>
-
-                                <!-- HTTP Auth -->
-                                <h4 class="mt-5 mb-2">{{ $t("Authentication") }}</h4>
-
-                                <!-- Method -->
-                                <div class="my-3">
-                                    <label for="method" class="form-label">{{ $t("Method") }}</label>
-                                    <select id="method" v-model="monitor.authMethod" class="form-select">
-                                        <option :value="null">
-                                            {{ $t("None") }}
-                                        </option>
-                                        <option value="basic">
-                                            {{ $t("HTTP Basic Auth") }}
-                                        </option>
-                                        <option value="ntlm">
-                                            NTLM
-                                        </option>
-                                    </select>
-                                </div>
-                                <template v-if="monitor.authMethod && monitor.authMethod !== null ">
+                                <template v-if="monitor.type !== 'push'">
+                                    <!-- Body -->
                                     <div class="my-3">
-                                        <label for="basicauth" class="form-label">{{ $t("Username") }}</label>
-                                        <input id="basicauth-user" v-model="monitor.basic_auth_user" type="text" class="form-control" :placeholder="$t('Username')">
+                                        <label for="body" class="form-label">{{ $t("Body") }}</label>
+                                        <textarea id="body" v-model="monitor.body" class="form-control" :placeholder="bodyPlaceholder"></textarea>
                                     </div>
 
+                                    <!-- Headers -->
                                     <div class="my-3">
-                                        <label for="basicauth" class="form-label">{{ $t("Password") }}</label>
-                                        <input id="basicauth-pass" v-model="monitor.basic_auth_pass" type="password" autocomplete="new-password" class="form-control" :placeholder="$t('Password')">
+                                        <label for="headers" class="form-label">{{ $t("Headers") }}</label>
+                                        <textarea id="headers" v-model="monitor.headers" class="form-control" :placeholder="headersPlaceholder"></textarea>
                                     </div>
-                                    <template v-if="monitor.authMethod === 'ntlm' ">
+
+                                    <!-- HTTP Auth -->
+                                    <h4 class="mt-5 mb-2">{{ $t("Authentication") }}</h4>
+
+                                    <!-- Method -->
+                                    <div class="my-3">
+                                        <label for="method" class="form-label">{{ $t("Method") }}</label>
+                                        <select id="method" v-model="monitor.authMethod" class="form-select">
+                                            <option :value="null">
+                                                {{ $t("None") }}
+                                            </option>
+                                            <option value="basic">
+                                                {{ $t("HTTP Basic Auth") }}
+                                            </option>
+                                            <option value="ntlm">
+                                                NTLM
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <template v-if="monitor.authMethod && monitor.authMethod !== null ">
                                         <div class="my-3">
-                                            <label for="basicauth" class="form-label">{{ $t("Domain") }}</label>
-                                            <input id="basicauth-domain" v-model="monitor.authDomain" type="text" class="form-control" :placeholder="$t('Domain')">
+                                            <label for="basicauth" class="form-label">{{ $t("Username") }}</label>
+                                            <input id="basicauth-user" v-model="monitor.basic_auth_user" type="text" class="form-control" :placeholder="$t('Username')">
                                         </div>
 
                                         <div class="my-3">
-                                            <label for="basicauth" class="form-label">{{ $t("Workstation") }}</label>
-                                            <input id="basicauth-workstation" v-model="monitor.authWorkstation" type="text" class="form-control" :placeholder="$t('Workstation')">
+                                            <label for="basicauth" class="form-label">{{ $t("Password") }}</label>
+                                            <input id="basicauth-pass" v-model="monitor.basic_auth_pass" type="password" autocomplete="new-password" class="form-control" :placeholder="$t('Password')">
                                         </div>
+                                        <template v-if="monitor.authMethod === 'ntlm' ">
+                                            <div class="my-3">
+                                                <label for="basicauth" class="form-label">{{ $t("Domain") }}</label>
+                                                <input id="basicauth-domain" v-model="monitor.authDomain" type="text" class="form-control" :placeholder="$t('Domain')">
+                                            </div>
+
+                                            <div class="my-3">
+                                                <label for="basicauth" class="form-label">{{ $t("Workstation") }}</label>
+                                                <input id="basicauth-workstation" v-model="monitor.authWorkstation" type="text" class="form-control" :placeholder="$t('Workstation')">
+                                            </div>
+                                        </template>
                                     </template>
                                 </template>
                             </template>

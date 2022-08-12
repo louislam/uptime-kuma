@@ -31,9 +31,8 @@ router.get("/api/entry-page", async (request, response) => {
     response.json(result);
 });
 
-router.get("/api/push/:pushToken", async (request, response) => {
+router.all("/api/push/:pushToken", async (request, response) => {
     try {
-
         let pushToken = request.params.pushToken;
         let msg = request.query.msg || "OK";
         let ping = request.query.ping || null;
@@ -46,6 +45,10 @@ router.get("/api/push/:pushToken", async (request, response) => {
 
         if (! monitor) {
             throw new Error("Monitor not found or not active.");
+        }
+
+        if (monitor.method !== request.method) {
+            throw new Error("Monitor HTTP method (" + monitor.method + ") does not match request (" + request.method + ").");
         }
 
         const previousHeartbeat = await Monitor.getPreviousHeartbeat(monitor.id);
