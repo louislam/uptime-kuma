@@ -7,6 +7,8 @@ const { R } = require("redbean-node");
 const { log } = require("../src/util");
 const Database = require("./database");
 const util = require("util");
+const { CacheableDnsHttpAgent } = require("./cacheable-dns-http-agent");
+const { Settings } = require("./settings");
 
 /**
  * `module.exports` (alias: `server`) should be inside this class, in order to avoid circular dependency issue.
@@ -49,7 +51,6 @@ class UptimeKumaServer {
 
         log.info("server", "Creating express and socket.io instance");
         this.app = express();
-
         if (sslKey && sslCert) {
             log.info("server", "Server Type: HTTPS");
             this.httpServer = https.createServer({
@@ -70,6 +71,8 @@ class UptimeKumaServer {
                 process.exit(1);
             }
         }
+
+        CacheableDnsHttpAgent.registerGlobalAgent();
 
         this.io = new Server(this.httpServer);
     }
@@ -125,6 +128,22 @@ class UptimeKumaServer {
         }
 
         errorLogStream.end();
+    }
+
+    async getClientIP(socket) {
+        let clientIP = socket.client.conn.remoteAddress;
+
+        if (clientIP === undefined) {
+            clientIP = "";
+        }
+
+        if (await Settings.get("trustProxy")) {
+            return socket.client.conn.request.headers["x-forwarded-for"]
+                || socket.client.conn.request.headers["x-real-ip"]
+                || clientIP.replace(/^.*:/, "");
+        } else {
+            return clientIP.replace(/^.*:/, "");
+        }
     }
 }
 
