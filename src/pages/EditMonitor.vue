@@ -275,6 +275,15 @@
                                 <input id="retry-interval" v-model="monitor.retryInterval" type="number" class="form-control" required min="20" step="1">
                             </div>
 
+                            <div class="my-3">
+                                <label for="resend-interval" class="form-label">
+                                    {{ $t("Resend Notification if Down X times consequently") }}
+                                    <span v-if="monitor.resendInterval > 0">({{ $t("resendEveryXTimes", [ monitor.resendInterval ]) }})</span>
+                                    <span v-else>({{ $t("resendDisabled") }})</span>
+                                </label>
+                                <input id="resend-interval" v-model="monitor.resendInterval" type="number" class="form-control" required min="0" step="1">
+                            </div>
+
                             <h2 v-if="monitor.type !== 'push'" class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
 
                             <div v-if="monitor.type === 'http' || monitor.type === 'keyword' " class="my-3 form-check">
@@ -660,6 +669,7 @@ export default {
                     method: "GET",
                     interval: 60,
                     retryInterval: this.interval,
+                    resendInterval: 0,
                     maxretries: 0,
                     notificationIDList: {},
                     ignoreTls: false,

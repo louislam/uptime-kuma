@@ -669,6 +669,7 @@ let needSetup = false;
                 bean.basic_auth_pass = monitor.basic_auth_pass;
                 bean.interval = monitor.interval;
                 bean.retryInterval = monitor.retryInterval;
+                bean.resendInterval = monitor.resendInterval;
                 bean.hostname = monitor.hostname;
                 bean.maxretries = monitor.maxretries;
                 bean.port = parseInt(monitor.port);
@@ -1278,6 +1279,7 @@ let needSetup = false;
                                 authDomain: monitorListData[i].authDomain,
                                 interval: monitorListData[i].interval,
                                 retryInterval: retryInterval,
+                                resendInterval: monitorListData[i].resendInterval || 0,
                                 hostname: monitorListData[i].hostname,
                                 maxretries: monitorListData[i].maxretries,
                                 port: monitorListData[i].port,
