@@ -54,6 +54,9 @@
                                         <option value="postgres">
                                             PostgreSQL
                                         </option>
+                                        <option value="radius">
+                                            Radius
+                                        </option>
                                     </optgroup>
                                 </select>
                             </div>
@@ -96,8 +99,8 @@
                             </div>
 
                             <!-- Hostname -->
-                            <!-- TCP Port / Ping / DNS / Steam / MQTT only -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'mqtt'" class="my-3">
+                            <!-- TCP Port / Ping / DNS / Steam / MQTT / Radius only -->
+                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'mqtt' || monitor.type === 'radius'" class="my-3">
                                 <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>
                                 <input id="hostname" v-model="monitor.hostname" type="text" class="form-control" :pattern="`${ipRegexPattern}|${hostnameRegexPattern}`" required>
                             </div>
@@ -211,6 +214,36 @@
                                 </div>
                             </template>
 
+                            <template v-if="monitor.type === 'radius'">
+                                <div class="my-3">
+                                    <label for="radius_username" class="form-label">Radius {{ $t("Username") }}</label>
+                                    <input id="radius_username" v-model="monitor.radiusUsername" type="text" class="form-control" required />
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="radius_password" class="form-label">Radius {{ $t("Password") }}</label>
+                                    <input id="radius_password" v-model="monitor.radiusPassword" type="password" class="form-control" required />
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="radius_secret" class="form-label">{{ $t("RadiusSecret") }}</label>
+                                    <input id="radius_secret" v-model="monitor.radiusSecret" type="password" class="form-control" required />
+                                    <div class="form-text"> {{ $t( "RadiusSecretDescription") }} </div>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="radius_called_station_id" class="form-label">{{ $t("RadiusCalledStationId") }}</label>
+                                    <input id="radius_called_station_id" v-model="monitor.radiusCalledStationId" type="text" class="form-control" required />
+                                    <div class="form-text"> {{ $t( "RadiusCalledStationIdDescription") }} </div>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="radius_calling_station_id" class="form-label">{{ $t("RadiusCallingStationId") }}</label>
+                                    <input id="radius_calling_station_id" v-model="monitor.radiusCallingStationId" type="text" class="form-control" required />
+                                    <div class="form-text"> {{ $t( "RadiusCallingStationIdDescription") }} </div>
+                                </div>
+                            </template>
+
                             <!-- SQL Server and PostgreSQL -->
                             <template v-if="monitor.type === 'sqlserver' || monitor.type === 'postgres'">
                                 <div class="my-3">
@@ -249,6 +282,15 @@
                                     <span>({{ $t("retryCheckEverySecond", [ monitor.retryInterval ]) }})</span>
                                 </label>
                                 <input id="retry-interval" v-model="monitor.retryInterval" type="number" class="form-control" required min="20" step="1">
+                            </div>
+
+                            <div class="my-3">
+                                <label for="resend-interval" class="form-label">
+                                    {{ $t("Resend Notification if Down X times consequently") }}
+                                    <span v-if="monitor.resendInterval > 0">({{ $t("resendEveryXTimes", [ monitor.resendInterval ]) }})</span>
+                                    <span v-else>({{ $t("resendDisabled") }})</span>
+                                </label>
+                                <input id="resend-interval" v-model="monitor.resendInterval" type="number" class="form-control" required min="0" step="1">
                             </div>
 
                             <h2 v-if="monitor.type !== 'push'" class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
@@ -719,6 +761,7 @@ message HealthCheckResponse {
                     method: "GET",
                     interval: 60,
                     retryInterval: this.interval,
+                    resendInterval: 0,
                     maxretries: 0,
                     notificationIDList: {},
                     ignoreTls: false,

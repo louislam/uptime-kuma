@@ -7,7 +7,7 @@ dayjs.extend(timezone);
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
 const { log, UP, DOWN, PENDING, flipStatus, TimeLogger } = require("../../src/util");
-const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mqttAsync, setSetting, httpNtlm, grpcQuery } = require("../util-server");
+const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mqttAsync, setSetting, httpNtlm, radius, grpcQuery } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification");
@@ -79,6 +79,7 @@ class Monitor extends BeanModel {
             type: this.type,
             interval: this.interval,
             retryInterval: this.retryInterval,
+            resendInterval: this.resendInterval,
             keyword: this.keyword,
             expiryNotification: this.isEnabledExpiryNotification(),
             ignoreTls: this.getIgnoreTls(),
@@ -108,6 +109,11 @@ class Monitor extends BeanModel {
             grpcMethod: this.grpcMethod,
             grpcServiceName: this.grpcServiceName,
             grpcEnableTls: this.getGrpcEnableTls(),
+            radiusUsername: this.radiusUsername,
+            radiusPassword: this.radiusPassword,
+            radiusCalledStationId: this.radiusCalledStationId,
+            radiusCallingStationId: this.radiusCallingStationId,
+            radiusSecret: this.radiusSecret,
         };
 
         if (includeSensitiveData) {
@@ -224,6 +230,7 @@ class Monitor extends BeanModel {
             bean.monitor_id = this.id;
             bean.time = R.isoDateTimeMillis(dayjs.utc());
             bean.status = DOWN;
+            bean.downCount = previousBeat?.downCount || 0;
 
             if (this.isUpsideDown()) {
                 bean.status = flipStatus(bean.status);
@@ -570,6 +577,30 @@ class Monitor extends BeanModel {
                     bean.msg = "";
                     bean.status = UP;
                     bean.ping = dayjs().valueOf() - startTime;
+                } else if (this.type === "radius") {
+                    let startTime = dayjs().valueOf();
+                    try {
+                        const resp = await radius(
+                            this.hostname,
+                            this.radiusUsername,
+                            this.radiusPassword,
+                            this.radiusCalledStationId,
+                            this.radiusCallingStationId,
+                            this.radiusSecret
+                        );
+                        if (resp.code) {
+                            bean.msg = resp.code;
+                        }
+                        bean.status = UP;
+                    } catch (error) {
+                        bean.status = DOWN;
+                        if (error.response?.code) {
+                            bean.msg = error.response.code;
+                        } else {
+                            bean.msg = error.message;
+                        }
+                    }
+                    bean.ping = dayjs().valueOf() - startTime;
                 } else {
                     bean.msg = "Unknown Monitor Type";
                     bean.status = PENDING;
@@ -611,12 +642,27 @@ class Monitor extends BeanModel {
                 log.debug("monitor", `[${this.name}] sendNotification`);
                 await Monitor.sendNotification(isFirstBeat, this, bean);
 
+                // Reset down count
+                bean.downCount = 0;
+
                 // Clear Status Page Cache
                 log.debug("monitor", `[${this.name}] apicache clear`);
                 apicache.clear();
 
             } else {
                 bean.important = false;
+
+                if (bean.status === DOWN && this.resendInterval > 0) {
+                    ++bean.downCount;
+                    if (bean.downCount >= this.resendInterval) {
+                        // Send notification again, because we are still DOWN
+                        log.debug("monitor", `[${this.name}] sendNotification again: Down Count: ${bean.downCount} | Resend Interval: ${this.resendInterval}`);
+                        await Monitor.sendNotification(isFirstBeat, this, bean);
+
+                        // Reset down count
+                        bean.downCount = 0;
+                    }
+                }
             }
 
             if (bean.status === UP) {
@@ -627,7 +673,7 @@ class Monitor extends BeanModel {
                 }
                 log.warn("monitor", `Monitor #${this.id} '${this.name}': Pending: ${bean.msg} | Max retries: ${this.maxretries} | Retry: ${retries} | Retry Interval: ${beatInterval} seconds | Type: ${this.type}`);
             } else {
-                log.warn("monitor", `Monitor #${this.id} '${this.name}': Failing: ${bean.msg} | Interval: ${beatInterval} seconds | Type: ${this.type}`);
+                log.warn("monitor", `Monitor #${this.id} '${this.name}': Failing: ${bean.msg} | Interval: ${beatInterval} seconds | Type: ${this.type} | Down Count: ${bean.downCount} | Resend Interval: ${this.resendInterval}`);
             }
 
             log.debug("monitor", `[${this.name}] Send to socket`);
