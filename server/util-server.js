@@ -15,6 +15,12 @@ const { Client } = require("pg");
 const postgresConParse = require("pg-connection-string").parse;
 const { NtlmClient } = require("axios-ntlm");
 const { Settings } = require("./settings");
+const radiusClient = require("node-radius-client");
+const {
+    dictionaries: {
+        rfc2865: { file, attributes },
+    },
+} = require("node-radius-utils");
 
 // From ping-lite
 exports.WIN = /^win/.test(process.platform);
@@ -282,6 +288,30 @@ exports.postgresQuery = function (connectionString, query) {
             .finally(() => {
                 client.end();
             });
+    });
+};
+
+exports.radius = function (
+    hostname,
+    username,
+    password,
+    calledStationId,
+    callingStationId,
+    secret,
+) {
+    const client = new radiusClient({
+        host: hostname,
+        dictionaries: [ file ],
+    });
+
+    return client.accessRequest({
+        secret: secret,
+        attributes: [
+            [ attributes.USER_NAME, username ],
+            [ attributes.USER_PASSWORD, password ],
+            [ attributes.CALLING_STATION_ID, callingStationId ],
+            [ attributes.CALLED_STATION_ID, calledStationId ],
+        ],
     });
 };
 

@@ -51,6 +51,9 @@
                                         <option value="postgres">
                                             PostgreSQL
                                         </option>
+                                        <option value="radius">
+                                            Radius
+                                        </option>
                                     </optgroup>
                                 </select>
                             </div>
@@ -87,8 +90,8 @@
                             </div>
 
                             <!-- Hostname -->
-                            <!-- TCP Port / Ping / DNS / Steam / MQTT only -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'mqtt'" class="my-3">
+                            <!-- TCP Port / Ping / DNS / Steam / MQTT / Radius only -->
+                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'mqtt' || monitor.type === 'radius'" class="my-3">
                                 <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>
                                 <input id="hostname" v-model="monitor.hostname" type="text" class="form-control" :pattern="`${ipRegexPattern}|${hostnameRegexPattern}`" required>
                             </div>
@@ -199,6 +202,36 @@
                                     <div class="form-text">
                                         {{ $t("successMessageExplanation") }}
                                     </div>
+                                </div>
+                            </template>
+
+                            <template v-if="monitor.type === 'radius'">
+                                <div class="my-3">
+                                    <label for="radius_username" class="form-label">Radius {{ $t("Username") }}</label>
+                                    <input id="radius_username" v-model="monitor.radiusUsername" type="text" class="form-control" required />
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="radius_password" class="form-label">Radius {{ $t("Password") }}</label>
+                                    <input id="radius_password" v-model="monitor.radiusPassword" type="password" class="form-control" required />
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="radius_secret" class="form-label">{{ $t("RadiusSecret") }}</label>
+                                    <input id="radius_secret" v-model="monitor.radiusSecret" type="password" class="form-control" required />
+                                    <div class="form-text"> {{ $t( "RadiusSecretDescription") }} </div>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="radius_called_station_id" class="form-label">{{ $t("RadiusCalledStationId") }}</label>
+                                    <input id="radius_called_station_id" v-model="monitor.radiusCalledStationId" type="text" class="form-control" required />
+                                    <div class="form-text"> {{ $t( "RadiusCalledStationIdDescription") }} </div>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="radius_calling_station_id" class="form-label">{{ $t("RadiusCallingStationId") }}</label>
+                                    <input id="radius_calling_station_id" v-model="monitor.radiusCallingStationId" type="text" class="form-control" required />
+                                    <div class="form-text"> {{ $t( "RadiusCallingStationIdDescription") }} </div>
                                 </div>
                             </template>
 
