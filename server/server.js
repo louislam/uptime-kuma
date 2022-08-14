@@ -118,13 +118,14 @@ if (config.demoMode) {
 }
 
 // Must be after io instantiation
-const { sendNotificationList, sendHeartbeatList, sendImportantHeartbeatList, sendInfo, sendProxyList } = require("./client");
+const { sendNotificationList, sendHeartbeatList, sendImportantHeartbeatList, sendInfo, sendProxyList, sendDockerHostList } = require("./client");
 const { statusPageSocketHandler } = require("./socket-handlers/status-page-socket-handler");
 const databaseSocketHandler = require("./socket-handlers/database-socket-handler");
 const TwoFA = require("./2fa");
 const StatusPage = require("./model/status_page");
 const { cloudflaredSocketHandler, autoStart: cloudflaredAutoStart, stop: cloudflaredStop } = require("./socket-handlers/cloudflared-socket-handler");
 const { proxySocketHandler } = require("./socket-handlers/proxy-socket-handler");
+const { dockerSocketHandler } = require("./socket-handlers/docker-socket-handler");
 
 app.use(express.json());
 
@@ -668,6 +669,7 @@ let needSetup = false;
                 bean.basic_auth_pass = monitor.basic_auth_pass;
                 bean.interval = monitor.interval;
                 bean.retryInterval = monitor.retryInterval;
+                bean.resendInterval = monitor.resendInterval;
                 bean.hostname = monitor.hostname;
                 bean.maxretries = monitor.maxretries;
                 bean.port = parseInt(monitor.port);
@@ -680,6 +682,8 @@ let needSetup = false;
                 bean.dns_resolve_type = monitor.dns_resolve_type;
                 bean.dns_resolve_server = monitor.dns_resolve_server;
                 bean.pushToken = monitor.pushToken;
+                bean.docker_container = monitor.docker_container;
+                bean.docker_host = monitor.docker_host;
                 bean.proxyId = Number.isInteger(monitor.proxyId) ? monitor.proxyId : null;
                 bean.mqttUsername = monitor.mqttUsername;
                 bean.mqttPassword = monitor.mqttPassword;
@@ -690,6 +694,11 @@ let needSetup = false;
                 bean.authMethod = monitor.authMethod;
                 bean.authWorkstation = monitor.authWorkstation;
                 bean.authDomain = monitor.authDomain;
+                bean.radiusUsername = monitor.radiusUsername;
+                bean.radiusPassword = monitor.radiusPassword;
+                bean.radiusCalledStationId = monitor.radiusCalledStationId;
+                bean.radiusCallingStationId = monitor.radiusCallingStationId;
+                bean.radiusSecret = monitor.radiusSecret;
 
                 await R.store(bean);
 
@@ -1270,6 +1279,7 @@ let needSetup = false;
                                 authDomain: monitorListData[i].authDomain,
                                 interval: monitorListData[i].interval,
                                 retryInterval: retryInterval,
+                                resendInterval: monitorListData[i].resendInterval || 0,
                                 hostname: monitorListData[i].hostname,
                                 maxretries: monitorListData[i].maxretries,
                                 port: monitorListData[i].port,
@@ -1438,6 +1448,7 @@ let needSetup = false;
         cloudflaredSocketHandler(socket);
         databaseSocketHandler(socket);
         proxySocketHandler(socket);
+        dockerSocketHandler(socket);
 
         log.debug("server", "added all socket handlers");
 
@@ -1538,6 +1549,7 @@ async function afterLogin(socket, user) {
     let monitorList = await server.sendMonitorList(socket);
     sendNotificationList(socket);
     sendProxyList(socket);
+    sendDockerHostList(socket);
 
     await sleep(500);
 

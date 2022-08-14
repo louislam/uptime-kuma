@@ -1,6 +1,6 @@
 {
     "name": "uptime-kuma",
-    "version": "1.17.1",
+    "version": "1.18.0-beta.0",
     "license": "MIT",
     "repository": {
         "type": "git",
@@ -91,6 +91,7 @@
         "mqtt": "^4.2.8",
         "mssql": "^8.1.0",
         "node-cloudflared-tunnel": "~1.0.9",
+        "node-radius-client": "^1.0.0",
         "nodemailer": "~6.6.5",
         "notp": "~2.0.3",
         "password-hash": "~1.2.2",

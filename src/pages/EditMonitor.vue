@@ -27,6 +27,9 @@
                                         <option value="dns">
                                             DNS
                                         </option>
+                                        <option value="docker">
+                                            {{ $t("Docker Container") }}
+                                        </option>
                                     </optgroup>
 
                                     <optgroup label="Passive Monitor Type">
@@ -47,6 +50,9 @@
                                         </option>
                                         <option value="postgres">
                                             PostgreSQL
+                                        </option>
+                                        <option value="radius">
+                                            Radius
                                         </option>
                                     </optgroup>
                                 </select>
@@ -84,8 +90,8 @@
                             </div>
 
                             <!-- Hostname -->
-                            <!-- TCP Port / Ping / DNS / Steam / MQTT only -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'mqtt'" class="my-3">
+                            <!-- TCP Port / Ping / DNS / Steam / MQTT / Radius only -->
+                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'mqtt' || monitor.type === 'radius'" class="my-3">
                                 <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>
                                 <input id="hostname" v-model="monitor.hostname" type="text" class="form-control" :pattern="`${ipRegexPattern}|${hostnameRegexPattern}`" required>
                             </div>
@@ -141,6 +147,34 @@
                                 </div>
                             </template>
 
+                            <!-- Docker Container Name / ID -->
+                            <!-- For Docker Type -->
+                            <div v-if="monitor.type === 'docker'" class="my-3">
+                                <label for="docker_container" class="form-label">{{ $t("Container Name / ID") }}</label>
+                                <input id="docker_container" v-model="monitor.docker_container" type="text" class="form-control" required>
+                            </div>
+
+                            <!-- Docker Host -->
+                            <!-- For Docker Type -->
+                            <div v-if="monitor.type === 'docker'" class="my-3">
+                                <h2 class="mb-2">{{ $t("Docker Host") }}</h2>
+                                <p v-if="$root.dockerHostList.length === 0">
+                                    {{ $t("Not available, please setup.") }}
+                                </p>
+
+                                <div v-else class="mb-3">
+                                    <label for="docker-host" class="form-label">{{ $t("Docker Host") }}</label>
+                                    <select id="docket-host" v-model="monitor.docker_host" class="form-select">
+                                        <option v-for="host in $root.dockerHostList" :key="host.id" :value="host.id">{{ host.name }}</option>
+                                    </select>
+                                    <a href="#" @click="$refs.dockerHostDialog.show(monitor.docker_host)">{{ $t("Edit") }}</a>
+                                </div>
+
+                                <button class="btn btn-primary me-2" type="button" @click="$refs.dockerHostDialog.show()">
+                                    {{ $t("Setup Docker Host") }}
+                                </button>
+                            </div>
+
                             <!-- MQTT -->
                             <!-- For MQTT Type -->
                             <template v-if="monitor.type === 'mqtt'">
@@ -168,6 +202,36 @@
                                     <div class="form-text">
                                         {{ $t("successMessageExplanation") }}
                                     </div>
+                                </div>
+                            </template>
+
+                            <template v-if="monitor.type === 'radius'">
+                                <div class="my-3">
+                                    <label for="radius_username" class="form-label">Radius {{ $t("Username") }}</label>
+                                    <input id="radius_username" v-model="monitor.radiusUsername" type="text" class="form-control" required />
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="radius_password" class="form-label">Radius {{ $t("Password") }}</label>
+                                    <input id="radius_password" v-model="monitor.radiusPassword" type="password" class="form-control" required />
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="radius_secret" class="form-label">{{ $t("RadiusSecret") }}</label>
+                                    <input id="radius_secret" v-model="monitor.radiusSecret" type="password" class="form-control" required />
+                                    <div class="form-text"> {{ $t( "RadiusSecretDescription") }} </div>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="radius_called_station_id" class="form-label">{{ $t("RadiusCalledStationId") }}</label>
+                                    <input id="radius_called_station_id" v-model="monitor.radiusCalledStationId" type="text" class="form-control" required />
+                                    <div class="form-text"> {{ $t( "RadiusCalledStationIdDescription") }} </div>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="radius_calling_station_id" class="form-label">{{ $t("RadiusCallingStationId") }}</label>
+                                    <input id="radius_calling_station_id" v-model="monitor.radiusCallingStationId" type="text" class="form-control" required />
+                                    <div class="form-text"> {{ $t( "RadiusCallingStationIdDescription") }} </div>
                                 </div>
                             </template>
 
@@ -209,6 +273,15 @@
                                     <span>({{ $t("retryCheckEverySecond", [ monitor.retryInterval ]) }})</span>
                                 </label>
                                 <input id="retry-interval" v-model="monitor.retryInterval" type="number" class="form-control" required min="20" step="1">
+                            </div>
+
+                            <div class="my-3">
+                                <label for="resend-interval" class="form-label">
+                                    {{ $t("Resend Notification if Down X times consequently") }}
+                                    <span v-if="monitor.resendInterval > 0">({{ $t("resendEveryXTimes", [ monitor.resendInterval ]) }})</span>
+                                    <span v-else>({{ $t("resendDisabled") }})</span>
+                                </label>
+                                <input id="resend-interval" v-model="monitor.resendInterval" type="number" class="form-control" required min="0" step="1">
                             </div>
 
                             <h2 v-if="monitor.type !== 'push'" class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
@@ -424,6 +497,7 @@
             </form>
 
             <NotificationDialog ref="notificationDialog" @added="addedNotification" />
+            <DockerHostDialog ref="dockerHostDialog" @added="addedDockerHost" />
             <ProxyDialog ref="proxyDialog" @added="addedProxy" />
         </div>
     </transition>
@@ -434,6 +508,7 @@ import VueMultiselect from "vue-multiselect";
 import { useToast } from "vue-toastification";
 import CopyableInput from "../components/CopyableInput.vue";
 import NotificationDialog from "../components/NotificationDialog.vue";
+import DockerHostDialog from "../components/DockerHostDialog.vue";
 import ProxyDialog from "../components/ProxyDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
 import { genSecret, isDev } from "../util.ts";
@@ -445,6 +520,7 @@ export default {
         ProxyDialog,
         CopyableInput,
         NotificationDialog,
+        DockerHostDialog,
         TagsManager,
         VueMultiselect,
     },
@@ -593,6 +669,7 @@ export default {
                     method: "GET",
                     interval: 60,
                     retryInterval: this.interval,
+                    resendInterval: 0,
                     maxretries: 0,
                     notificationIDList: {},
                     ignoreTls: false,
@@ -602,6 +679,8 @@ export default {
                     accepted_statuscodes: [ "200-299" ],
                     dns_resolve_type: "A",
                     dns_resolve_server: "1.1.1.1",
+                    docker_container: "",
+                    docker_host: null,
                     proxyId: null,
                     mqttUsername: "",
                     mqttPassword: "",
@@ -729,6 +808,12 @@ export default {
         addedProxy(id) {
             this.monitor.proxyId = id;
         },
+
+        // Added a Docker Host Event
+        // Enable it if the Docker Host is added in EditMonitor.vue
+        addedDockerHost(id) {
+            this.monitor.docker_host = id;
+        }
     },
 };
 </script>
