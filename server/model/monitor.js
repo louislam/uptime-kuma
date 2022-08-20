@@ -79,6 +79,7 @@ class Monitor extends BeanModel {
             type: this.type,
             interval: this.interval,
             retryInterval: this.retryInterval,
+            resendInterval: this.resendInterval,
             keyword: this.keyword,
             expiryNotification: this.isEnabledExpiryNotification(),
             ignoreTls: this.getIgnoreTls(),
@@ -215,6 +216,7 @@ class Monitor extends BeanModel {
             bean.monitor_id = this.id;
             bean.time = R.isoDateTimeMillis(dayjs.utc());
             bean.status = DOWN;
+            bean.downCount = previousBeat?.downCount || 0;
 
             if (this.isUpsideDown()) {
                 bean.status = flipStatus(bean.status);
@@ -612,12 +614,27 @@ class Monitor extends BeanModel {
                 log.debug("monitor", `[${this.name}] sendNotification`);
                 await Monitor.sendNotification(isFirstBeat, this, bean);
 
+                // Reset down count
+                bean.downCount = 0;
+
                 // Clear Status Page Cache
                 log.debug("monitor", `[${this.name}] apicache clear`);
                 apicache.clear();
 
             } else {
                 bean.important = false;
+
+                if (bean.status === DOWN && this.resendInterval > 0) {
+                    ++bean.downCount;
+                    if (bean.downCount >= this.resendInterval) {
+                        // Send notification again, because we are still DOWN
+                        log.debug("monitor", `[${this.name}] sendNotification again: Down Count: ${bean.downCount} | Resend Interval: ${this.resendInterval}`);
+                        await Monitor.sendNotification(isFirstBeat, this, bean);
+
+                        // Reset down count
+                        bean.downCount = 0;
+                    }
+                }
             }
 
             if (bean.status === UP) {
@@ -628,7 +645,7 @@ class Monitor extends BeanModel {
                 }
                 log.warn("monitor", `Monitor #${this.id} '${this.name}': Pending: ${bean.msg} | Max retries: ${this.maxretries} | Retry: ${retries} | Retry Interval: ${beatInterval} seconds | Type: ${this.type}`);
             } else {
-                log.warn("monitor", `Monitor #${this.id} '${this.name}': Failing: ${bean.msg} | Interval: ${beatInterval} seconds | Type: ${this.type}`);
+                log.warn("monitor", `Monitor #${this.id} '${this.name}': Failing: ${bean.msg} | Interval: ${beatInterval} seconds | Type: ${this.type} | Down Count: ${bean.downCount} | Resend Interval: ${this.resendInterval}`);
             }
 
             log.debug("monitor", `[${this.name}] Send to socket`);
