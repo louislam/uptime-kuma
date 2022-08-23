@@ -577,7 +577,7 @@ export default {
     "Frontend Version": "Frontend Version",
     "Frontend Version do not match backend version!": "Frontend Version do not match backend version!",
     "Base URL": "Base URL",
-    goAlertInfo: "GoAlert is a An open source application for on-call scheduling, automated escalations and notifications (like SMS or voice calls). Automatically engage the right person, the right way, and at the right time!",
+    goAlertInfo: "GoAlert is a An open source application for on-call scheduling, automated escalations and notifications (like SMS or voice calls). Automatically engage the right person, the right way, and at the right time! {0}",
     goAlertIntegrationKeyInfo: "Get generic API integration key for the service in this format \"aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee\" usually the value of token parameter of copied URL.",
     goAlert: "GoAlert"
 };
