@@ -2,7 +2,7 @@
     <div class="mb-3">
         <label for="goalert-base-url" class="form-label">{{ $t("Base URL") }}</label>
         <div class="input-group mb-3">
-            <input class="form-control" id="goalert-base-url" v-model="$parent.notification.goAlertBaseURL" type="text" required>
+            <input id="goalert-base-url" v-model="$parent.notification.goAlertBaseURL" type="text" class="form-control" required>
         </div>
         <i18n-t tag="div" keypath="goAlertInfo" class="form-text">
             <a href="https://goalert.me" target="_blank">https://goalert.me</a>
@@ -26,5 +26,5 @@ export default {
     components: {
         HiddenInput,
     },
-}
+};
 </script>
