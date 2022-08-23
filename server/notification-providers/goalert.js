@@ -12,7 +12,7 @@ class GoAlert extends NotificationProvider {
         let parameters = {
             token: notification.goAlertToken,
             summary: msg,
-        }
+        };
         if (heartbeatJSON["status"] === UP) {
             parameters["action"] = closeAction;
         }

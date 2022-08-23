@@ -38,7 +38,7 @@ const TechulusPush = require("./notification-providers/techulus-push");
 const Telegram = require("./notification-providers/telegram");
 const Webhook = require("./notification-providers/webhook");
 const WeCom = require("./notification-providers/wecom");
-const GoAlert = require("./notification-providers/goalert")
+const GoAlert = require("./notification-providers/goalert");
 
 class Notification {
 
