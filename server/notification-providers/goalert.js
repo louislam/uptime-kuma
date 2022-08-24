@@ -17,7 +17,7 @@ class GoAlert extends NotificationProvider {
             parameters["action"] = closeAction;
         }
         try {
-            await axios.get(`${notification.goAlertBaseURL}/api/v2/generic/incoming`, {
+            await axios.post(`${notification.goAlertBaseURL}/api/v2/generic/incoming`, {
                 params: parameters,
             });
             return okMsg;
