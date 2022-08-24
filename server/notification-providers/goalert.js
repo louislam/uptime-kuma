@@ -4,7 +4,7 @@ const { UP } = require("../../src/util");
 
 class GoAlert extends NotificationProvider {
 
-    name = "goalert";
+    name = "GoAlert";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
@@ -13,9 +13,9 @@ class GoAlert extends NotificationProvider {
             token: notification.goAlertToken,
             summary: msg,
         };
-        if (heartbeatJSON["status"] === UP) {
-            parameters["action"] = closeAction;
-        }
+        // if (heartbeatJSON["status"] === UP) {
+        //     parameters["action"] = closeAction;
+        // }
         try {
             await axios.post(`${notification.goAlertBaseURL}/api/v2/generic/incoming`, {
                 params: parameters,
@@ -24,6 +24,7 @@ class GoAlert extends NotificationProvider {
 
         } catch (error) {
             let msg = (error.response.data) ? error.response.data : "Error without response";
+            console.log(error)
             throw new Error(msg);
         }
     }
