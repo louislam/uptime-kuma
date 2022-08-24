@@ -8,23 +8,26 @@ class GoAlert extends NotificationProvider {
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
-        let closeAction = "close";
-        let parameters = {
-            token: notification.goAlertToken,
-            summary: msg,
-        };
-        // if (heartbeatJSON["status"] === UP) {
-        //     parameters["action"] = closeAction;
-        // }
         try {
-            await axios.post(`${notification.goAlertBaseURL}/api/v2/generic/incoming`, {
-                params: parameters,
-            });
+            let closeAction = "close";
+            let data = {
+                summary: msg,
+            };
+            if (heartbeatJSON != null && heartbeatJSON["status"] === UP) {
+                data["action"] = closeAction;
+            }
+            let headers = {
+                'Content-Type': 'multipart/form-data',
+            };
+            let config = {
+                headers: headers
+            };
+            let resp = await axios.post(`${notification.goAlertBaseURL}/api/v2/generic/incoming?token=${notification.goAlertToken}`, data, config);
+            console.log(resp);
             return okMsg;
 
         } catch (error) {
             let msg = (error.response.data) ? error.response.data : "Error without response";
-            console.log(error)
             throw new Error(msg);
         }
     }
