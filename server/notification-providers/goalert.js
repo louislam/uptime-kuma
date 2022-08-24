@@ -17,7 +17,7 @@ class GoAlert extends NotificationProvider {
                 data["action"] = closeAction;
             }
             let headers = {
-                'Content-Type': 'multipart/form-data',
+                "Content-Type": "multipart/form-data",
             };
             let config = {
                 headers: headers
