@@ -23,7 +23,6 @@ class GoAlert extends NotificationProvider {
                 headers: headers
             };
             let resp = await axios.post(`${notification.goAlertBaseURL}/api/v2/generic/incoming?token=${notification.goAlertToken}`, data, config);
-            console.log(resp);
             return okMsg;
 
         } catch (error) {
