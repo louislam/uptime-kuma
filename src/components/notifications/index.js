@@ -82,7 +82,7 @@ const NotificationFormList = {
     "telegram": Telegram,
     "webhook": Webhook,
     "WeCom": WeCom,
-    "GoAlert": GoAlert
+    "GoAlert": GoAlert,
 };
 
 export default NotificationFormList;
