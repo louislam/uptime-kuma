@@ -59,7 +59,8 @@
         "release-final": "node extra/update-version.js && npm run build-docker && node ./extra/press-any-key.js && npm run upload-artifacts && node ./extra/update-wiki-version.js",
         "release-beta": "node extra/beta/update-version.js && npm run build && node ./extra/env2arg.js docker buildx build -f docker/dockerfile --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma:$VERSION -t louislam/uptime-kuma:beta .  --target release --push && node ./extra/press-any-key.js && npm run upload-artifacts",
         "git-remove-tag": "git tag -d",
-        "build-dist-and-restart": "npm run build && npm run start-server-dev"
+        "build-dist-and-restart": "npm run build && npm run start-server-dev",
+        "start-pr-test": "node extra/checkout-pr.js && npm install && npm run dev"
     },
     "dependencies": {
         "@louislam/sqlite3": "~15.0.6",
