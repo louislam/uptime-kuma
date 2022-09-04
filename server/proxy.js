@@ -3,10 +3,11 @@ const HttpProxyAgent = require("http-proxy-agent");
 const HttpsProxyAgent = require("https-proxy-agent");
 const SocksProxyAgent = require("socks-proxy-agent");
 const { debug } = require("../src/util");
+const { UptimeKumaServer } = require("./uptime-kuma-server");
 
 class Proxy {
 
-    static SUPPORTED_PROXY_PROTOCOLS = ["http", "https", "socks", "socks5", "socks4"]
+    static SUPPORTED_PROXY_PROTOCOLS = [ "http", "https", "socks", "socks5", "socks4" ];
 
     /**
      * Saves and updates given proxy entity
@@ -20,7 +21,7 @@ class Proxy {
         let bean;
 
         if (proxyID) {
-            bean = await R.findOne("proxy", " id = ? AND user_id = ? ", [proxyID, userID]);
+            bean = await R.findOne("proxy", " id = ? AND user_id = ? ", [ proxyID, userID ]);
 
             if (!bean) {
                 throw new Error("proxy not found");
@@ -70,14 +71,14 @@ class Proxy {
      * @return {Promise<void>}
      */
     static async delete(proxyID, userID) {
-        const bean = await R.findOne("proxy", " id = ? AND user_id = ? ", [proxyID, userID]);
+        const bean = await R.findOne("proxy", " id = ? AND user_id = ? ", [ proxyID, userID ]);
 
         if (!bean) {
             throw new Error("proxy not found");
         }
 
         // Delete removed proxy from monitors if exists
-        await R.exec("UPDATE monitor SET proxy_id = null WHERE proxy_id = ?", [proxyID]);
+        await R.exec("UPDATE monitor SET proxy_id = null WHERE proxy_id = ?", [ proxyID ]);
 
         // Delete proxy from list
         await R.trash(bean);
@@ -144,6 +145,24 @@ class Proxy {
             httpsAgent
         };
     }
+
+    /**
+     * Reload proxy settings for current monitors
+     * @returns {Promise<void>}
+     */
+    static async reloadProxy() {
+        const server = UptimeKumaServer.getInstance();
+
+        let updatedList = await R.getAssoc("SELECT id, proxy_id FROM monitor");
+
+        for (let monitorID in server.monitorList) {
+            let monitor = server.monitorList[monitorID];
+
+            if (updatedList[monitorID]) {
+                monitor.proxy_id = updatedList[monitorID].proxy_id;
+            }
+        }
+    }
 }
 
 /**
@@ -155,12 +174,12 @@ class Proxy {
  */
 async function applyProxyEveryMonitor(proxyID, userID) {
     // Find all monitors with id and proxy id
-    const monitors = await R.getAll("SELECT id, proxy_id FROM monitor WHERE user_id = ?", [userID]);
+    const monitors = await R.getAll("SELECT id, proxy_id FROM monitor WHERE user_id = ?", [ userID ]);
 
     // Update proxy id not match with given proxy id
     for (const monitor of monitors) {
         if (monitor.proxy_id !== proxyID) {
-            await R.exec("UPDATE monitor SET proxy_id = ? WHERE id = ?", [proxyID, monitor.id]);
+            await R.exec("UPDATE monitor SET proxy_id = ? WHERE id = ?", [ proxyID, monitor.id ]);
         }
     }
 }

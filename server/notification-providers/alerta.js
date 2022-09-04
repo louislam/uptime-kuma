@@ -14,7 +14,7 @@ class Alerta extends NotificationProvider {
             let config = {
                 headers: {
                     "Content-Type": "application/json;charset=UTF-8",
-                    "Authorization": "Key " + notification.alertaapiKey,
+                    "Authorization": "Key " + notification.alertaApiKey,
                 }
             };
             let data = {
@@ -40,17 +40,17 @@ class Alerta extends NotificationProvider {
                 await axios.post(alertaUrl, postData, config);
             } else {
                 let datadup = Object.assign( {
-                    correlate: ["service_up", "service_down"],
+                    correlate: [ "service_up", "service_down" ],
                     event: monitorJSON["type"],
                     group: "uptimekuma-" + monitorJSON["type"],
                     resource: monitorJSON["name"],
                 }, data );
 
-                if (heartbeatJSON["status"] == DOWN) {
+                if (heartbeatJSON["status"] === DOWN) {
                     datadup.severity = notification.alertaAlertState; // critical
                     datadup.text = "Service " + monitorJSON["type"] + " is down.";
                     await axios.post(alertaUrl, datadup, config);
-                } else if (heartbeatJSON["status"] == UP) {
+                } else if (heartbeatJSON["status"] === UP) {
                     datadup.severity = notification.alertaRecoverState; // cleaned
                     datadup.text = "Service " + monitorJSON["type"] + " is up.";
                     await axios.post(alertaUrl, datadup, config);

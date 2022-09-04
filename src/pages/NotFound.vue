@@ -22,16 +22,17 @@
             </div>
 
             <div class="guide">
-                Most likely causes:
+                {{ $t("Most likely causes:") }}
                 <ul>
-                    <li>The resource is no longer available.</li>
-                    <li>There might be a typing error in the address.</li>
+                    <li>{{ $t("The resource is no longer available.") }}</li>
+                    <li>{{ $t("There might be a typing error in the address.") }}</li>
                 </ul>
 
-                What you can try:<br />
+                {{ $t("What you can try:") }}<br />
                 <ul>
-                    <li>Retype the address.</li>
-                    <li><a href="#" class="go-back" @click="goBack()">Go back to the previous page.</a></li>
+                    <li>{{ $t("Retype the address.") }}</li>
+                    <li><a href="#" class="go-back" @click="goBack()">{{ $t("Go back to the previous page.") }}</a></li>
+                    <li><a href="/" class="go-back">Go back to home page.</a></li>
                 </ul>
             </div>
         </div>
@@ -44,6 +45,7 @@ export default {
 
     },
     methods: {
+        /** Go back 1 in browser history */
         goBack() {
             history.back();
         }

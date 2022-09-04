@@ -14,12 +14,12 @@ class Telegram extends NotificationProvider {
                     chat_id: notification.telegramChatID,
                     text: msg,
                 },
-            })
+            });
             return okMsg;
 
         } catch (error) {
-            let msg = (error.response.data.description) ? error.response.data.description : "Error without description"
-            throw new Error(msg)
+            let msg = (error.response.data.description) ? error.response.data.description : "Error without description";
+            throw new Error(msg);
         }
     }
 }

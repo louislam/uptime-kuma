@@ -34,18 +34,20 @@
                             label="name"
                         >
                             <template #option="{ option }">
-                                <div class="mx-2 py-1 px-3 rounded d-inline-flex"
-                                     style="margin-top: -5px; margin-bottom: -5px; height: 24px;"
-                                     :style="{ color: textColor(option), backgroundColor: option.color + ' !important' }"
+                                <div
+                                    class="mx-2 py-1 px-3 rounded d-inline-flex"
+                                    style="margin-top: -5px; margin-bottom: -5px; height: 24px;"
+                                    :style="{ color: textColor(option), backgroundColor: option.color + ' !important' }"
                                 >
                                     <span>
                                         {{ option.name }}</span>
                                 </div>
                             </template>
                             <template #singleLabel="{ option }">
-                                <div class="py-1 px-3 rounded d-inline-flex"
-                                     style="height: 24px;"
-                                     :style="{ color: textColor(option), backgroundColor: option.color + ' !important' }"
+                                <div
+                                    class="py-1 px-3 rounded d-inline-flex"
+                                    style="height: 24px;"
+                                    :style="{ color: textColor(option), backgroundColor: option.color + ' !important' }"
                                 >
                                     <span>{{ option.name }}</span>
                                 </div>
@@ -53,10 +55,11 @@
                         </vue-multiselect>
                         <div v-if="newDraftTag.select?.name == null" class="d-flex mb-2">
                             <div class="w-50 pe-2">
-                                <input v-model="newDraftTag.name" class="form-control"
-                                       :class="{'is-invalid': validateDraftTag.nameInvalid}"
-                                       :placeholder="$t('Name')"
-                                       @keydown.enter.prevent="onEnter"
+                                <input
+                                    v-model="newDraftTag.name" class="form-control"
+                                    :class="{'is-invalid': validateDraftTag.nameInvalid}"
+                                    :placeholder="$t('Name')"
+                                    @keydown.enter.prevent="onEnter"
                                 />
                                 <div class="invalid-feedback">
                                     {{ $t("Tag with this name already exist.") }}
@@ -75,17 +78,19 @@
                                     deselect-label=""
                                 >
                                     <template #option="{ option }">
-                                        <div class="mx-2 py-1 px-3 rounded d-inline-flex"
-                                             style="height: 24px; color: white;"
-                                             :style="{ backgroundColor: option.color + ' !important' }"
+                                        <div
+                                            class="mx-2 py-1 px-3 rounded d-inline-flex"
+                                            style="height: 24px; color: white;"
+                                            :style="{ backgroundColor: option.color + ' !important' }"
                                         >
                                             <span>{{ option.name }}</span>
                                         </div>
                                     </template>
                                     <template #singleLabel="{ option }">
-                                        <div class="py-1 px-3 rounded d-inline-flex"
-                                             style="height: 24px; color: white;"
-                                             :style="{ backgroundColor: option.color + ' !important' }"
+                                        <div
+                                            class="py-1 px-3 rounded d-inline-flex"
+                                            style="height: 24px; color: white;"
+                                            :style="{ backgroundColor: option.color + ' !important' }"
                                         >
                                             <span>{{ option.name }}</span>
                                         </div>
@@ -94,10 +99,11 @@
                             </div>
                         </div>
                         <div class="mb-2">
-                            <input v-model="newDraftTag.value" class="form-control"
-                                   :class="{'is-invalid': validateDraftTag.valueInvalid}"
-                                   :placeholder="$t('value (optional)')"
-                                   @keydown.enter.prevent="onEnter"
+                            <input
+                                v-model="newDraftTag.value" class="form-control"
+                                :class="{'is-invalid': validateDraftTag.valueInvalid}"
+                                :placeholder="$t('value (optional)')"
+                                @keydown.enter.prevent="onEnter"
                             />
                             <div class="invalid-feedback">
                                 {{ $t("Tag with this value already exist.") }}
@@ -123,8 +129,8 @@
 <script>
 import { Modal } from "bootstrap";
 import VueMultiselect from "vue-multiselect";
-import Tag from "../components/Tag.vue";
 import { useToast } from "vue-toastification";
+import Tag from "../components/Tag.vue";
 const toast = useToast();
 
 export default {
@@ -133,6 +139,7 @@ export default {
         VueMultiselect,
     },
     props: {
+        /** Array of tags to be pre-selected */
         preSelectedTags: {
             type: Array,
             default: () => [],
@@ -159,14 +166,14 @@ export default {
         tagOptions() {
             const tagOptions = this.existingTags;
             for (const tag of this.newTags) {
-                if (!tagOptions.find(t => t.name == tag.name && t.color == tag.color)) {
+                if (!tagOptions.find(t => t.name === tag.name && t.color === tag.color)) {
                     tagOptions.push(tag);
                 }
             }
             return tagOptions;
         },
         selectedTags() {
-            return this.preSelectedTags.concat(this.newTags).filter(tag => !this.deleteTags.find(monitorTag => monitorTag.id == tag.id));
+            return this.preSelectedTags.concat(this.newTags).filter(tag => !this.deleteTags.find(monitorTag => monitorTag.id === tag.id));
         },
         colorOptions() {
             return [
@@ -192,7 +199,7 @@ export default {
             let nameInvalid = false;
             let valueInvalid = false;
             let invalid = true;
-            if (this.deleteTags.find(tag => tag.name == this.newDraftTag.select?.name && tag.value == this.newDraftTag.value)) {
+            if (this.deleteTags.find(tag => tag.name === this.newDraftTag.select?.name && tag.value === this.newDraftTag.value)) {
                 // Undo removing a Tag
                 nameInvalid = false;
                 valueInvalid = false;
@@ -202,9 +209,9 @@ export default {
                 nameInvalid = true;
                 invalid = true;
             } else if (this.newTags.concat(this.preSelectedTags).filter(tag => (
-                tag.name == this.newDraftTag.select?.name && tag.value == this.newDraftTag.value
+                tag.name === this.newDraftTag.select?.name && tag.value === this.newDraftTag.value
             ) || (
-                tag.name == this.newDraftTag.name && tag.value == this.newDraftTag.value
+                tag.name === this.newDraftTag.name && tag.value === this.newDraftTag.value
             )).length > 0) {
                 // Try to add a tag with existing name and value
                 valueInvalid = true;
@@ -235,9 +242,11 @@ export default {
         this.getExistingTags();
     },
     methods: {
+        /** Show the add tag dialog */
         showAddDialog() {
             this.modal.show();
         },
+        /** Get all existing tags */
         getExistingTags() {
             this.$root.getSocket().emit("getTags", (res) => {
                 if (res.ok) {
@@ -247,15 +256,26 @@ export default {
                 }
             });
         },
+        /**
+         * Delete the specified tag
+         * @param {Object} tag Object representing tag to delete
+         */
         deleteTag(item) {
             if (item.new) {
                 // Undo Adding a new Tag
-                this.newTags = this.newTags.filter(tag => !(tag.name == item.name && tag.value == item.value));
+                this.newTags = this.newTags.filter(tag => !(tag.name === item.name && tag.value === item.value));
             } else {
                 // Remove an Existing Tag
                 this.deleteTags.push(item);
             }
         },
+        /**
+         * Get colour of text inside the tag
+         * @param {Object} option The tag that needs to be displayed.
+         * Defaults to "white" unless the tag has no color, which will
+         * then return the body color (based on application theme)
+         * @returns string
+         */
         textColor(option) {
             if (option.color) {
                 return "white";
@@ -263,12 +283,13 @@ export default {
                 return this.$root.theme === "light" ? "var(--bs-body-color)" : "inherit";
             }
         },
+        /** Add a draft tag */
         addDraftTag() {
             console.log("Adding Draft Tag: ", this.newDraftTag);
             if (this.newDraftTag.select != null) {
-                if (this.deleteTags.find(tag => tag.name == this.newDraftTag.select.name && tag.value == this.newDraftTag.value)) {
+                if (this.deleteTags.find(tag => tag.name === this.newDraftTag.select.name && tag.value === this.newDraftTag.value)) {
                     // Undo removing a tag
-                    this.deleteTags = this.deleteTags.filter(tag => !(tag.name == this.newDraftTag.select.name && tag.value == this.newDraftTag.value));
+                    this.deleteTags = this.deleteTags.filter(tag => !(tag.name === this.newDraftTag.select.name && tag.value === this.newDraftTag.value));
                 } else {
                     // Add an existing Tag
                     this.newTags.push({
@@ -290,6 +311,7 @@ export default {
             }
             this.clearDraftTag();
         },
+        /** Remove a draft tag */
         clearDraftTag() {
             this.newDraftTag = {
                 name: null,
@@ -301,26 +323,51 @@ export default {
             };
             this.modal.hide();
         },
+        /**
+         * Add a tag asynchronously
+         * @param {Object} newTag Object representing new tag to add
+         * @returns {Promise<void>}
+         */
         addTagAsync(newTag) {
             return new Promise((resolve) => {
                 this.$root.getSocket().emit("addTag", newTag, resolve);
             });
         },
+        /**
+         * Add a tag to a monitor asynchronously
+         * @param {number} tagId ID of tag to add
+         * @param {number} monitorId ID of monitor to add tag to
+         * @param {string} value Value of tag
+         * @returns {Promise<void>}
+         */
         addMonitorTagAsync(tagId, monitorId, value) {
             return new Promise((resolve) => {
                 this.$root.getSocket().emit("addMonitorTag", tagId, monitorId, value, resolve);
             });
         },
+        /**
+         * Delete a tag from a monitor asynchronously
+         * @param {number} tagId ID of tag to remove
+         * @param {number} monitorId ID of monitor to remove tag from
+         * @param {string} value Value of tag
+         * @returns {Promise<void>}
+         */
         deleteMonitorTagAsync(tagId, monitorId, value) {
             return new Promise((resolve) => {
                 this.$root.getSocket().emit("deleteMonitorTag", tagId, monitorId, value, resolve);
             });
         },
+        /** Handle pressing Enter key when inside the modal */
         onEnter() {
             if (!this.validateDraftTag.invalid) {
                 this.addDraftTag();
             }
         },
+        /**
+         * Submit the form data
+         * @param {number} monitorId ID of monitor this change affects
+         * @returns {void}
+         */
         async submit(monitorId) {
             console.log(`Submitting tag changes for monitor ${monitorId}...`);
             this.processing = true;
@@ -345,7 +392,7 @@ export default {
                     tagId = newTagResult.id;
                     // Assign the new ID to the tags of the same name & color
                     this.newTags.map(tag => {
-                        if (tag.name == newTag.name && tag.color == newTag.color) {
+                        if (tag.name === newTag.name && tag.color === newTag.color) {
                             tag.id = newTagResult.id;
                         }
                     });

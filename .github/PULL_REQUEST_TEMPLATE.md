@@ -1,3 +1,5 @@
+👉 Delete this line if you have read and agree our pull request rules and guidelines: https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md#can-i-create-a-pull-request-for-uptime-kuma
+
 # Description
 
 Fixes #(issue)
@@ -20,6 +22,7 @@ Please delete any options that are not relevant.
 - [ ] I ran ESLint and other linters for modified files
 - [ ] I have performed a self-review of my own code and tested it
 - [ ] I have commented my code, particularly in hard-to-understand areas
+  (including JSDoc for methods)
 - [ ] My changes generate no new warnings
 - [ ] My code needed automated testing. I have added them (this is optional task)
 

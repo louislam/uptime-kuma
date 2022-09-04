@@ -20,11 +20,16 @@
             </div>
 
             <div v-if="errorMessage" class="mt-3">
-                Message:
+                {{ $t("Message:") }}
                 <textarea v-model="errorMessage" class="form-control" readonly></textarea>
             </div>
 
-            <p v-if="installed === false">(Download cloudflared from <a href="https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/installation/">Cloudflare Website</a>)</p>
+            <i18n-t v-if="installed === false" tag="p" keypath="wayToGetCloudflaredURL">
+                <a
+                    href="https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/installation/"
+                    target="_blank"
+                >{{ $t("cloudflareWebsite") }}</a>
+            </i18n-t>
         </div>
 
         <!-- If installed show token input -->
@@ -44,7 +49,7 @@
                         <span v-if="!running" class="remove-token" @click="removeToken">{{ $t("Remove Token") }}</span>
                     </div>
 
-                    Don't know how to get the token? Please read the guide:<br />
+                    {{ $t("Don't know how to get the token? Please read the guide:") }}<br />
                     <a href="https://github.com/louislam/uptime-kuma/wiki/Reverse-Proxy-with-Cloudflare-Tunnel" target="_blank">
                         https://github.com/louislam/uptime-kuma/wiki/Reverse-Proxy-with-Cloudflare-Tunnel
                     </a>
@@ -61,9 +66,11 @@
                 </button>
 
                 <Confirm ref="confirmStop" btn-style="btn-danger" :yes-text="$t('Stop') + ' cloudflared'" :no-text="$t('Cancel')" @yes="stop">
-                    The current connection may be lost if you are currently connecting via Cloudflare Tunnel. Are you sure want to stop it? Type your current password to confirm it.
+                    {{ $t("The current connection may be lost if you are currently connecting via Cloudflare Tunnel. Are you sure want to stop it? Type your current password to confirm it.") }}
 
-                    <div class="mt-3">
+                    <p class="mt-2">{{ $t("disableCloudflaredNoAuthMsg") }}</p>
+
+                    <div v-if="!settings.disableAuth" class="mt-3">
                         <label for="current-password2" class="form-label">
                             {{ $t("Current Password") }}
                         </label>
@@ -79,10 +86,55 @@
             </div>
         </div>
 
-        <h4 class="mt-4">Other Software</h4>
+        <h4 class="mt-4">{{ $t("Other Software") }}</h4>
         <div>
-            For example: nginx, Apache and Traefik. <br />
-            Please read <a href="https://github.com/louislam/uptime-kuma/wiki/Reverse-Proxy" target="_blank">https://github.com/louislam/uptime-kuma/wiki/Reverse-Proxy</a>.
+            {{ $t("For example: nginx, Apache and Traefik.") }} <br />
+            {{ $t("Please read") }} <a href="https://github.com/louislam/uptime-kuma/wiki/Reverse-Proxy" target="_blank">https://github.com/louislam/uptime-kuma/wiki/Reverse-Proxy</a>.
+        </div>
+
+        <h4 class="my-4">{{ $t("HTTP Headers") }}</h4>
+        <div class="my-3">
+            <label class="form-label">
+                {{ $t("Trust Proxy") }}
+            </label>
+            <div class="form-check">
+                <input
+                    id="trustProxyYes"
+                    v-model="settings.trustProxy"
+                    class="form-check-input"
+                    type="radio"
+                    name="trustProxyYes"
+                    :value="true"
+                    required
+                />
+                <label class="form-check-label" for="trustProxyYes">
+                    {{ $t("Yes") }}
+                </label>
+            </div>
+            <div class="form-check">
+                <input
+                    id="trustProxyNo"
+                    v-model="settings.trustProxy"
+                    class="form-check-input"
+                    type="radio"
+                    name="flexRadioDefault"
+                    :value="false"
+                    required
+                />
+                <label class="form-check-label" for="trustProxyNo">
+                    {{ $t("No") }}
+                </label>
+            </div>
+
+            <div class="form-text">
+                {{ $t("trustProxyDescription") }}
+            </div>
+        </div>
+
+        <div>
+            <button class="btn btn-primary" type="submit" @click="saveSettings()">
+                {{ $t("Save") }}
+            </button>
         </div>
     </div>
 </template>
@@ -103,7 +155,15 @@ export default {
         return this.$root.cloudflared;
     },
     computed: {
-
+        settings() {
+            return this.$parent.$parent.$parent.settings;
+        },
+        saveSettings() {
+            return this.$parent.$parent.$parent.saveSettings;
+        },
+        settingsLoaded() {
+            return this.$parent.$parent.$parent.settingsLoaded;
+        },
     },
     watch: {
 
@@ -115,14 +175,17 @@ export default {
         this.$root.getSocket().emit(prefix + "leave");
     },
     methods: {
+        /** Start the Cloudflare tunnel */
         start() {
             this.$root.getSocket().emit(prefix + "start", this.cloudflareTunnelToken);
         },
+        /** Stop the Cloudflare tunnel */
         stop() {
             this.$root.getSocket().emit(prefix + "stop", this.currentPassword, (res) => {
                 this.$root.toastRes(res);
             });
         },
+        /** Remove the token for the Cloudflare tunnel */
         removeToken() {
             this.$root.getSocket().emit(prefix + "removeToken");
             this.cloudflareTunnelToken = "";

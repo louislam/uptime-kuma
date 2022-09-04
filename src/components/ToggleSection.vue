@@ -29,10 +29,12 @@
 <script>
 export default {
     props: {
+        /** Heading of the section */
         heading: {
             type: String,
             default: "",
         },
+        /** Should the section be open by default? */
         defaultOpen: {
             type: Boolean,
             default: false,
@@ -49,7 +51,7 @@ export default {
 <style lang="scss" scoped>
 @import "../assets/vars.scss";
 
-h5:after {
+h5::after {
     content: "";
     display: block;
     width: 50%;
