@@ -52,7 +52,7 @@ Browse to http://localhost:3001 after starting.
 Required Tools: 
 - [Node.js](https://nodejs.org/en/download/) >= 14
 - [Git](https://git-scm.com/downloads) 
-- [pm2](https://pm2.keymetrics.io/) - For run in background
+- [PM2](https://pm2.keymetrics.io/) - Optional. For run in background
 
 ```bash
 # Update your npm to the latest version
@@ -64,7 +64,12 @@ npm run setup
 
 # Option 1. Try it
 node server/server.js
+```
+Browse to http://localhost:3001 after starting.
 
+#### PM2
+
+```bash
 # (Recommended) Option 2. Run in background using PM2
 # Install PM2 if you don't have it: 
 npm install pm2 -g && pm2 install pm2-logrotate
@@ -74,7 +79,6 @@ pm2 start server/server.js --name uptime-kuma
 
 
 ```
-Browse to http://localhost:3001 after starting.
 
 More useful PM2 Commands
 
@@ -84,6 +88,39 @@ pm2 monit
 
 # If you want to add it to startup
 pm2 save && pm2 startup
+```
+
+#### OpenRC
+
+For Alpine/postmarketOS/Gentoo/Artix, you can create an OpenRC service as
+`/etc/init.d/uptime-kuma`:
+
+```sh
+#!/sbin/openrc-run
+
+# Change $directory to path to uptime-kuma
+directory=${directory:-/usr/share/uptime-kuma}
+pidfile=${pidfile:-/run/$RC_SVCNAME.pid}
+
+log_dir="/var/log/$RC_SVCNAME"
+output_log="${output_log:-$log_dir/output.log}"
+error_log="${error_log:-$log_dir/error.log}"
+
+command=${command:-/usr/bin/node}
+command_args="$directory/server/server.js"
+command_background=true
+
+start_pre() {
+	checkpath --directory $log_dir
+}
+```
+
+```sh
+# Start Server
+sudo rc-service uptime-kuma start
+
+# If you want to add it to startup
+sudo rc-update add uptime-kuma
 ```
 
 ### Advanced Installation
