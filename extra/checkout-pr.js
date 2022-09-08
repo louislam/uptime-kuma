@@ -1,11 +1,21 @@
 const childProcess = require("child_process");
 
-if (!process.env.UPTIME_KUMA_PRUPTIME_KUMA_PR) {
-    console.error("Please set a pull request number to the environment variable 'UPTIME_KUMA_PRUPTIME_KUMA_PR'");
+if (!process.env.UPTIME_KUMA_GH_REPO) {
+    console.error("Please set a repo to the environment variable 'UPTIME_KUMA_GH_REPO' (e.g. mhkarimi1383:goalert-notification)");
     process.exit(1);
 }
+
+let inputArray = process.env.UPTIME_KUMA_GH_REPO.split(":");
+
+if (inputArray.length !== 2) {
+    console.error("Invalid format. Please set a repo to the environment variable 'UPTIME_KUMA_GH_REPO' (e.g. mhkarimi1383:goalert-notification)");
+}
+
+let name = inputArray[0];
+let branch = inputArray[1];
 
 console.log("Checkout pr");
 
 // Checkout the pr
-childProcess.spawnSync("gh", [ "pr", "checkout", process.env.UPTIME_KUMA_PR ]);
+childProcess.spawnSync("git", [ "remote", "add", name, `https://github.com/${name}/uptime-kuma` ]);
+childProcess.spawnSync("git", [ "checkout", `name/${branch}`, "--force" ]);
