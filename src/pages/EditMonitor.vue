@@ -321,7 +321,7 @@
 
                             <div v-if="monitor.customResolver === true " class="my-3">
                                 <label for="dnsResolver" class="form-label">{{ $t("DNS Resolver") }}</label>
-                                <input id="dnsResolver" v-model="monitor.dns_resolver" type="string" class="form-control" required >
+                                <input id="dnsResolver" v-model="monitor.dns_resolver" type="string" class="form-control" required>
                                 <div class="form-text">
                                     {{ $t("dnsResolverDescription") }}
                                 </div>
@@ -336,7 +336,7 @@
                                         {{ $t("maxRedirectDescription") }}
                                     </div>
                                 </div>
-                                
+
                                 <div class="my-3">
                                     <label for="acceptedStatusCodes" class="form-label">{{ $t("Accepted Status Codes") }}</label>
 
