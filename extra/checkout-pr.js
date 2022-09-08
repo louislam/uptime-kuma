@@ -19,10 +19,10 @@ console.log("Checkout pr");
 // Checkout the pr
 let result = childProcess.spawnSync("git", [ "remote", "add", name, `https://github.com/${name}/uptime-kuma` ]);
 
-console.log(result.stdout);
-console.error(result.stderr);
+console.log(result.stdout.toString());
+console.error(result.stderr.toString());
 
-result = childProcess.spawnSync("git", [ "checkout", `name/${branch}`, "--force" ]);
+result = childProcess.spawnSync("git", [ "checkout", `${name}/${branch}`, "--force" ]);
 
-console.log(result.stdout);
-console.error(result.stderr);
+console.log(result.stdout.toString());
+console.error(result.stderr.toString());
