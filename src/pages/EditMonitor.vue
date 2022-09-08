@@ -312,6 +312,21 @@
                                 </div>
                             </div>
 
+                            <div class="my-3 form-check">
+                                <input id="custom-resolver" v-model="monitor.customResolver" class="form-check-input" type="checkbox">
+                                <label class="form-check-label" for="upside-down">
+                                    {{ $t("Use Custom Resolver") }}
+                                </label>
+                            </div>
+
+                            <div v-if="monitor.customResolver === true " class="my-3">
+                                <label for="dnsResolver" class="form-label">{{ $t("DNS Resolver") }}</label>
+                                <input id="dnsResolver" v-model="monitor.dns_resolver" type="string" class="form-control" required >
+                                <div class="form-text">
+                                    {{ $t("dnsResolverDescription") }}
+                                </div>
+                            </div>
+
                             <!-- HTTP / Keyword only -->
                             <template v-if="monitor.type === 'http' || monitor.type === 'keyword' ">
                                 <div class="my-3">
@@ -321,7 +336,7 @@
                                         {{ $t("maxRedirectDescription") }}
                                     </div>
                                 </div>
-
+                                
                                 <div class="my-3">
                                     <label for="acceptedStatusCodes" class="form-label">{{ $t("Accepted Status Codes") }}</label>
 
@@ -679,6 +694,7 @@ export default {
                     accepted_statuscodes: [ "200-299" ],
                     dns_resolve_type: "A",
                     dns_resolve_server: "1.1.1.1",
+                    dns_resolver: "1.1.1.1",
                     docker_container: "",
                     docker_host: null,
                     proxyId: null,
