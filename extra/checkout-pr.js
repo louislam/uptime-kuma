@@ -17,5 +17,12 @@ let branch = inputArray[1];
 console.log("Checkout pr");
 
 // Checkout the pr
-childProcess.spawnSync("git", [ "remote", "add", name, `https://github.com/${name}/uptime-kuma` ]);
-childProcess.spawnSync("git", [ "checkout", `name/${branch}`, "--force" ]);
+let result = childProcess.spawnSync("git", [ "remote", "add", name, `https://github.com/${name}/uptime-kuma` ]);
+
+console.log(result.stdout);
+console.error(result.stderr);
+
+result = childProcess.spawnSync("git", [ "checkout", `name/${branch}`, "--force" ]);
+
+console.log(result.stdout);
+console.error(result.stderr);
