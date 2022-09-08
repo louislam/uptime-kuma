@@ -38,6 +38,7 @@
         "build-docker-nightly": "npm run build && docker buildx build -f docker/dockerfile --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma:nightly --target nightly . --push",
         "build-docker-nightly-alpine": "docker buildx build -f docker/dockerfile-alpine --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma:nightly-alpine --target nightly . --push",
         "build-docker-nightly-amd64": "docker buildx build -f docker/dockerfile --platform linux/amd64 -t louislam/uptime-kuma:nightly-amd64 --target nightly . --push --progress plain",
+        "build-docker-pr-test": "docker buildx build -f docker/dockerfile --platform linux/amd64,linux/arm64 -t louislam/uptime-kuma:pr-test --target pr-test . --push",
         "upload-artifacts": "docker buildx build -f docker/dockerfile --platform linux/amd64 -t louislam/uptime-kuma:upload-artifact --build-arg VERSION --build-arg GITHUB_TOKEN --target upload-artifact . --progress plain",
         "setup": "git checkout 1.18.0 && npm ci --production && npm run download-dist",
         "download-dist": "node extra/download-dist.js",
@@ -58,7 +59,8 @@
         "release-final": "node extra/update-version.js && npm run build-docker && node ./extra/press-any-key.js && npm run upload-artifacts && node ./extra/update-wiki-version.js",
         "release-beta": "node extra/beta/update-version.js && npm run build && node ./extra/env2arg.js docker buildx build -f docker/dockerfile --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma:$VERSION -t louislam/uptime-kuma:beta .  --target release --push && node ./extra/press-any-key.js && npm run upload-artifacts",
         "git-remove-tag": "git tag -d",
-        "build-dist-and-restart": "npm run build && npm run start-server-dev"
+        "build-dist-and-restart": "npm run build && npm run start-server-dev",
+        "start-pr-test": "node extra/checkout-pr.js && npm install && npm run dev"
     },
     "dependencies": {
         "@louislam/sqlite3": "~15.0.6",
