@@ -159,7 +159,7 @@ You can mention me if you ask a question on Reddit.
 
 ### Test Pull Requests
 
-There are a lot of pull requests right now, but I need have a lot of time to test them.
+There are a lot of pull requests right now, but I don't have time to test them all.
 
 If you want to help, you can check this:
 https://github.com/louislam/uptime-kuma/wiki/Test-Pull-Requests
