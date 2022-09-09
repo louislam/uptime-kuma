@@ -22,7 +22,12 @@ let result = childProcess.spawnSync("git", [ "remote", "add", name, `https://git
 console.log(result.stdout.toString());
 console.error(result.stderr.toString());
 
-result = childProcess.spawnSync("git", [ "pull", name, branch ]);
+result = childProcess.spawnSync("git", [ "fetch", name, branch ]);
+
+console.log(result.stdout.toString());
+console.error(result.stderr.toString());
+
+result = childProcess.spawnSync("git", [ "checkout", branch, "--force" ]);
 
 console.log(result.stdout.toString());
 console.error(result.stderr.toString());
