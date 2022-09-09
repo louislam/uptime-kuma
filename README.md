@@ -157,7 +157,14 @@ You can mention me if you ask a question on Reddit.
 
 ## Contribute
 
-### Beta Version
+### Test Pull Requests
+
+There are a lot of pull requests right now, but I need have a lot of time to test them.
+
+If you want to help, you can check this:
+https://github.com/louislam/uptime-kuma/wiki/Test-Pull-Requests
+
+### Test Beta Version
 
 Check out the latest beta release here: https://github.com/louislam/uptime-kuma/releases
 
@@ -169,5 +176,5 @@ If you want to translate Uptime Kuma into your language, please read: https://gi
 
 Feel free to correct my grammar in this README, source code, or wiki, as my mother language is not English and my grammar is not that great.
 
-### Pull Requests
+### Create Pull Requests
 If you want to modify Uptime Kuma, this guideline may be useful for you: https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md
