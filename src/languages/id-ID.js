@@ -163,7 +163,7 @@ export default {
     "Show URI": "Lihat URI",
     Tags: "Tanda",
     "Add New below or Select...": "Tambahkan Baru di bawah atau Pilih...",
-    "Tag with this name already exist.": "Tandadengan nama ini sudah ada.",
+    "Tag with this name already exist.": "Tanda dengan nama ini sudah ada.",
     "Tag with this value already exist.": "Tanda dengan nilai ini sudah ada.",
     color: "warna",
     "value (optional)": "nilai (harus diisi)",
