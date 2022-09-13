@@ -151,6 +151,12 @@ let jwtSecret = null;
  */
 let needSetup = false;
 
+/**
+ * Use for keep state of initialization
+ * @type {boolean}
+ */
+ let isReady = false;
+
 (async () => {
     Database.init(args);
     await initDatabase(testMode);
@@ -196,6 +202,16 @@ let needSetup = false;
             response.send("OK");
         });
     }
+
+    // Health Check for ReadinessProbe and LivenessProbe GKE
+    app.get("/healthz", (request, response) => {
+        if(!isReady) {
+            response.status(500);
+            response.send("Server is not ready yet");
+        } else {
+            response.send("Server is running well");
+        }
+    });
 
     // Robots.txt
     app.get("/robots.txt", async (_request, response) => {
@@ -1491,6 +1507,8 @@ let needSetup = false;
         if (e2eTestMode) {
             startE2eTests();
         }
+
+        isReady = true;
     });
 
     initBackgroundJobs(args);
