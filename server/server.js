@@ -155,7 +155,7 @@ let needSetup = false;
  * Use for keep state of initialization
  * @type {boolean}
  */
- let isReady = false;
+let isReady = false;
 
 (async () => {
     Database.init(args);
