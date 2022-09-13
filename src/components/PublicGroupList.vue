@@ -44,6 +44,7 @@
                                                 :href="monitor.element.url"
                                                 class="item-name"
                                                 target="_blank"
+                                                rel="noopener noreferrer"
                                             >
                                                 {{ monitor.element.name }}
                                             </a>

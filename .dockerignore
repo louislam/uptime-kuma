@@ -1,6 +1,7 @@
 /.idea
 /node_modules
 /data
+/cypress
 /out
 /test
 /kubernetes
