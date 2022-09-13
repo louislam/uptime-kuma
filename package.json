@@ -150,6 +150,7 @@
         "sass": "~1.42.1",
         "stylelint": "~14.7.1",
         "stylelint-config-standard": "~25.0.0",
+        "terser": "^5.15.0",
         "timezones-list": "~3.0.1",
         "typescript": "~4.4.4",
         "v-pagination-3": "~0.1.7",
