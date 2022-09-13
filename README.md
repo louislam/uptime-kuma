@@ -106,7 +106,7 @@ https://github.com/louislam/uptime-kuma/milestones
 
 Project Plan:
 
-https://github.com/louislam/uptime-kuma/projects/1
+https://github.com/users/louislam/projects/4/views/1
 
 ## ❤️ Sponsors
 
