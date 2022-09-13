@@ -293,7 +293,7 @@ export default {
     matrix: "Matrix",
     promosmsTypeEco: "SMS ECO - murah tapi lambat dan sering kelebihan beban. Terbatas hanya untuk penerima Polandia.",
     promosmsTypeFlash: "SMS FLASH - Pesan akan otomatis muncul di perangkat penerima. Terbatas hanya untuk penerima Polandia.",
-    promosmsTypeFull: "SMS FULL - SMS tingkat premium, Anda dapat menggunakan Nama Pengirim Anda (Anda harus mendaftarkan nama terlebih dahulu). DapatdiAndalkan untuk peringatan.",
+    promosmsTypeFull: "SMS FULL - SMS tingkat premium, Anda dapat menggunakan Nama Pengirim Anda (Anda harus mendaftarkan nama terlebih dahulu). Dapat diandalkan untuk peringatan.",
     promosmsTypeSpeed: "SMS SPEED - Prioritas tertinggi dalam sistem. Sangat cepat dan dapat diandalkan tetapi mahal (sekitar dua kali lipat dari harga SMS FULL).",
     promosmsPhoneNumber: "Nomor telepon (untuk penerima Polandia Anda dapat melewati kode area)",
     promosmsSMSSender: "Nama Pengirim SMS : Nama pra-registrasi atau salah satu bawaan: InfoSMS, Info SMS, MaxSMS, INFO, SMS",
