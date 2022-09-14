@@ -312,7 +312,7 @@
                                 </div>
                             </div>
 
-                            <div class="my-3 form-check">
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' " class="my-3 form-check">
                                 <input id="custom-resolver" v-model="monitor.customResolver" class="form-check-input" type="checkbox">
                                 <label class="form-check-label" for="upside-down">
                                     {{ $t("useCustomResolver") }}

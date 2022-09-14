@@ -156,7 +156,7 @@ class Monitor extends BeanModel {
      * Is a custom DNS resolver enabled?
      * @returns {boolean}
      */
-     isEnabledCustomResolver() {
+    isEnabledCustomResolver() {
         return Boolean(this.custom_resolver);
     }
 
