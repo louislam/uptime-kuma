@@ -3,8 +3,6 @@
 FROM node:16-buster-slim
 ARG TARGETPLATFORM
 
-WORKDIR /app
-
 # Install Curl
 # Install Apprise, add sqlite3 cli for debugging in the future, iputils-ping for ping, util-linux for setpriv
 # Stupid python3 and python3-pip actually install a lot of useless things into Debian, specify --no-install-recommends to skip them, make the base even smaller than alpine!
