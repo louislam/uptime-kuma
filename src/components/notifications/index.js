@@ -36,6 +36,7 @@ import TechulusPush from "./TechulusPush.vue";
 import Telegram from "./Telegram.vue";
 import Webhook from "./Webhook.vue";
 import WeCom from "./WeCom.vue";
+import GoAlert from "./GoAlert.vue";
 
 /**
  * Manage all notification form.
@@ -81,6 +82,7 @@ const NotificationFormList = {
     "telegram": Telegram,
     "webhook": Webhook,
     "WeCom": WeCom,
+    "GoAlert": GoAlert,
 };
 
 export default NotificationFormList;
