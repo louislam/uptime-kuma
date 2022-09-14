@@ -723,7 +723,6 @@ export default {
                 this.$root.getSocket().emit("getMonitor", this.$route.params.id, (res) => {
                     if (res.ok) {
                         this.monitor = res.monitor;
-                        console.log(res.monitor);
 
                         // Handling for monitors that are created before 1.7.0
                         if (this.monitor.retryInterval === 0) {
@@ -802,8 +801,6 @@ export default {
                 await this.$refs.tagsManager.submit(this.monitor.id);
 
                 this.$root.getSocket().emit("editMonitor", this.monitor, (res) => {
-                    console.log("edited:");
-                    console.log(this.monitor);
                     this.processing = false;
                     this.$root.toastRes(res);
                     this.init();
