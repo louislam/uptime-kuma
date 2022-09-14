@@ -50,7 +50,7 @@ class Bark extends NotificationProvider {
      */
     appendAdditionalParameters(notification, postUrl) {
         // set icon to uptime kuma icon, 11kb should be fine
-        postUrl += "&icon=" + barkNotificationAvatar;
+        postUrl += "?icon=" + barkNotificationAvatar;
         // grouping all our notifications
         if (notification.barkGroup != null) {
             postUrl += "&group=" + notification.barkGroup;
@@ -94,7 +94,7 @@ class Bark extends NotificationProvider {
         title = encodeURIComponent(title);
         subtitle = encodeURIComponent(subtitle);
         let postUrl = endpoint + "/" + title + "/" + subtitle;
-        postUrl = this.appendAdditionalParameters(postUrl);
+        postUrl = this.appendAdditionalParameters(notification, postUrl);
         let result = await axios.get(postUrl);
         this.checkResult(result);
         if (result.statusText != null) {
