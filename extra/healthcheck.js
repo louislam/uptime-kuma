@@ -18,7 +18,7 @@ if (sslKey && sslCert) {
 
 // If host is omitted, the server will accept connections on the unspecified IPv6 address (::) when IPv6 is available and the unspecified IPv4 address (0.0.0.0) otherwise.
 // Dual-stack support for (::)
-let hostname = process.env.UPTIME_KUMA_SERVICE_HOST || process.env.UPTIME_KUMA_HOST || "127.0.0.1";
+let hostname = process.env.UPTIME_KUMA_SERVICE_HOST || process.env.UPTIME_KUMA_HOST || "::";
 
 // Also read HOST if not *BSD, as HOST is a system environment variable in FreeBSD
 if (!hostname && !FBSD) {
