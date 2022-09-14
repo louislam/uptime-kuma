@@ -315,13 +315,13 @@
                             <div class="my-3 form-check">
                                 <input id="custom-resolver" v-model="monitor.customResolver" class="form-check-input" type="checkbox">
                                 <label class="form-check-label" for="upside-down">
-                                    {{ $t("Use Custom Resolver") }}
+                                    {{ $t("useCustomResolver") }}
                                 </label>
                             </div>
 
                             <div v-if="monitor.customResolver === true " class="my-3">
                                 <label for="dnsResolver" class="form-label">{{ $t("DNS Resolver") }}</label>
-                                <input id="dnsResolver" v-model="monitor.dns_resolver" type="string" class="form-control" required>
+                                <input id="dnsResolver" v-model="monitor.dnsResolver" type="string" class="form-control" required>
                                 <div class="form-text">
                                     {{ $t("dnsResolverDescription") }}
                                 </div>
@@ -694,7 +694,8 @@ export default {
                     accepted_statuscodes: [ "200-299" ],
                     dns_resolve_type: "A",
                     dns_resolve_server: "1.1.1.1",
-                    dns_resolver: "1.1.1.1",
+                    dnsResolver: "1.1.1.1",
+                    customResolver: false,
                     docker_container: "",
                     docker_host: null,
                     proxyId: null,
@@ -722,6 +723,7 @@ export default {
                 this.$root.getSocket().emit("getMonitor", this.$route.params.id, (res) => {
                     if (res.ok) {
                         this.monitor = res.monitor;
+                        console.log(res.monitor);
 
                         // Handling for monitors that are created before 1.7.0
                         if (this.monitor.retryInterval === 0) {
@@ -800,6 +802,8 @@ export default {
                 await this.$refs.tagsManager.submit(this.monitor.id);
 
                 this.$root.getSocket().emit("editMonitor", this.monitor, (res) => {
+                    console.log("edited:");
+                    console.log(this.monitor);
                     this.processing = false;
                     this.$root.toastRes(res);
                     this.init();

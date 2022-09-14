@@ -9,6 +9,7 @@ export default {
     upsideDownModeDescription: "Flip the status upside down. If the service is reachable, it is DOWN.",
     maxRedirectDescription: "Maximum number of redirects to follow. Set to 0 to disable redirects.",
     dnsResolverDescription: "DNS Resolver used. URL must be a valid hostname.",
+    useCustomResolver: "Use Custom Resolver",
     acceptedStatusCodesDescription: "Select status codes which are considered as a successful response.",
     passwordNotMatchMsg: "The repeat password does not match.",
     notificationDescription: "Notifications must be assigned to a monitor to function.",

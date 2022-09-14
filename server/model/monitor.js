@@ -88,6 +88,8 @@ class Monitor extends BeanModel {
             accepted_statuscodes: this.getAcceptedStatuscodes(),
             dns_resolve_type: this.dns_resolve_type,
             dns_resolve_server: this.dns_resolve_server,
+            dnsResolver: this.dns_resolver,
+            customResolver: this.isEnabledCustomResolver(),
             dns_last_result: this.dns_last_result,
             pushToken: this.pushToken,
             docker_container: this.docker_container,
@@ -148,6 +150,14 @@ class Monitor extends BeanModel {
      */
     isEnabledExpiryNotification() {
         return Boolean(this.expiryNotification);
+    }
+
+    /**
+     * Is a custom DNS resolver enabled?
+     * @returns {boolean}
+     */
+     isEnabledCustomResolver() {
+        return Boolean(this.custom_resolver);
     }
 
     /**
