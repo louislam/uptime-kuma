@@ -28,17 +28,17 @@ class Bark extends NotificationProvider {
 
         if (msg != null && heartbeatJSON != null && heartbeatJSON["status"] === UP) {
             let title = "UptimeKuma Monitor Up";
-            return await this.postNotification(title, msg, barkEndpoint);
+            return await this.postNotification(notification, title, msg, barkEndpoint);
         }
 
         if (msg != null && heartbeatJSON != null && heartbeatJSON["status"] === DOWN) {
             let title = "UptimeKuma Monitor Down";
-            return await this.postNotification(title, msg, barkEndpoint);
+            return await this.postNotification(notification, title, msg, barkEndpoint);
         }
 
         if (msg != null) {
             let title = "UptimeKuma Message";
-            return await this.postNotification(title, msg, barkEndpoint);
+            return await this.postNotification(notification, title, msg, barkEndpoint);
         }
     }
 
@@ -89,7 +89,7 @@ class Bark extends NotificationProvider {
      * @param {string} endpoint Endpoint to send request to
      * @returns {string}
      */
-    async postNotification(title, subtitle, endpoint) {
+    async postNotification(notification, title, subtitle, endpoint) {
         // url encode title and subtitle
         title = encodeURIComponent(title);
         subtitle = encodeURIComponent(subtitle);
