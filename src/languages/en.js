@@ -553,7 +553,7 @@ export default {
     smtpDkimskipFields: "Header Keys not to sign (Optional)",
     socket: "Socket",
     stackfield: "Stackfield",
-    startOrEndWithOnly: "Start or end with {0} only",
+    startOrEndWithOnly: "Can only start and end with {0}",
     statusPageNothing: "Nothing here, please add a group or a monitor.",
     steamApiKeyDescription: "For monitoring a Steam Game Server you need a Steam Web-API key. You can register your API key here: ",
     successMessage: "Success Message",
