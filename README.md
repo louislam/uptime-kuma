@@ -50,27 +50,36 @@ Browse to http://localhost:3001 after starting.
 ### 💪🏻 Non-Docker
 
 Required Tools: 
-- [Node.js](https://nodejs.org/en/download/) >= 14
+- [Node.js](https://nodejs.org/en/download) >= 14
 - [Git](https://git-scm.com/downloads) 
-- [pm2](https://pm2.keymetrics.io/) - For run in background
+- [pm2](https://pm2.keymetrics.io) or screen - For run in background
 
 ```bash
 # Update your npm to the latest version
 npm install npm -g
 
+# Cloning the repo
 git clone https://github.com/louislam/uptime-kuma.git
 cd uptime-kuma
-npm run setup
 
+# Or
+git clone https://github.com/louislam/uptime-kuma.git .
+
+# Setup Kuma
+npm run setup
 # Option 1. Try it
 node server/server.js
 
-# (Recommended) Option 2. Run in background using PM2
+# (Recommended) Option 2. Run in background using PM2 or screen
 # Install PM2 if you don't have it: 
-npm install pm2 -g && pm2 install pm2-logrotate
+npm install -g pm2 && pm2 install pm2-logrotate
+# Install screen if you don't have it:
+apt install screen -y
 
-# Start Server
+# Start Server with PM2
 pm2 start server/server.js --name uptime-kuma
+# Start Server with screen
+screen -S Kuma server/server.js
 
 
 ```
