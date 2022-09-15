@@ -67,6 +67,7 @@ git clone https://github.com/louislam/uptime-kuma.git .
 
 # Setup Kuma
 npm run setup
+
 # Option 1. Try it
 node server/server.js
 
