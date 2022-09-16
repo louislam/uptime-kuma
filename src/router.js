@@ -26,6 +26,7 @@ import Proxies from "./components/settings/Proxies.vue";
 import Backup from "./components/settings/Backup.vue";
 import About from "./components/settings/About.vue";
 import DockerHosts from "./components/settings/Docker.vue";
+import Plugins from "./components/settings/Plugins.vue";
 
 const routes = [
     {
@@ -111,6 +112,10 @@ const routes = [
                             {
                                 path: "backup",
                                 component: Backup,
+                            },
+                            {
+                                path: "plugins",
+                                component: Plugins,
                             },
                             {
                                 path: "about",

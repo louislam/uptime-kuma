@@ -127,6 +127,7 @@ const StatusPage = require("./model/status_page");
 const { cloudflaredSocketHandler, autoStart: cloudflaredAutoStart, stop: cloudflaredStop } = require("./socket-handlers/cloudflared-socket-handler");
 const { proxySocketHandler } = require("./socket-handlers/proxy-socket-handler");
 const { dockerSocketHandler } = require("./socket-handlers/docker-socket-handler");
+const { pluginsHandler } = require("./socket-handlers/plugins-handler");
 
 app.use(express.json());
 
@@ -1452,6 +1453,7 @@ let needSetup = false;
         databaseSocketHandler(socket);
         proxySocketHandler(socket);
         dockerSocketHandler(socket);
+        pluginsHandler(socket);
 
         log.debug("server", "added all socket handlers");
 
