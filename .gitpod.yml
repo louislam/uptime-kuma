@@ -3,14 +3,18 @@ image:
 
 tasks:
   - before: bash .gp/bash/before-tasks.sh
+    name: init gpg support
   - init: |
       npm ci \
         && npm install -g npm-check-updates pm2 pm2-logrotate \
-        && npm run build
+        && npm run build \
+        && gp sync-done build
+    name: npm install and build
   - openMode: split-right
+    init: gp sync-await build
     command: |
       npm run dev
-    name: npm dev server
+    name: starting the npm dev server
 
 ports:
   - port: 3000
