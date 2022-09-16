@@ -582,4 +582,4 @@ export default {
     webhook: "Webhook",
     webhookFormDataDesc: "{multipart} PHP için iyidir. JSON'un {decodeFunction} ile ayrıştırılması gerekecek",
     webhookJsonDesc: "{0}, Express.js gibi tüm modern HTTP sunucuları için iyidir",
-};
+}
