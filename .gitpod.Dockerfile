@@ -7,3 +7,6 @@ RUN apt-get update -q && export DEBIAN_FRONTEND=noninteractive
 RUN apt-get install -y git=1:2.37.3-0ppa1~ubuntu20.04.1 && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 USER gitpod
+
+# Add Workspace/Project composer bin folder to $PATH
+ENV PATH="$PATH:$GITPOD_REPO_ROOT/node_modules/.bin"

@@ -4,7 +4,9 @@ image:
 tasks:
   - before: bash .gp/bash/before-tasks.sh
   - init: |
-      npm ci && npm run build
+      npm ci \
+        && npm install -g npm-check-updates pm2 pm2-logrotate \
+        && npm run build
   - openMode: split-right
     command: |
       npm run dev
@@ -13,7 +15,7 @@ tasks:
 ports:
   - port: 3000
     visibility: private
-    description: Frontend Dev Server
+    description: Frontend Server
     onOpen: ignore
   - port: 3001
     visibility: private
