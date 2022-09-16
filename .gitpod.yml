@@ -1,0 +1,43 @@
+image:
+  file: .gitpod.Dockerfile
+
+tasks:
+  - before: bash .gp/bash/before-tasks.sh
+  - init: |
+      npm ci && npm run build
+  - openMode: split-right
+    command: |
+      npm run dev
+    name: npm dev server
+
+ports:
+  - port: 3000
+    visibility: private
+    description: Frontend Dev Server
+    onOpen: ignore
+  - port: 3001
+    visibility: private
+    description: Backend Server
+    onOpen: open-preview
+
+vscode:
+  extensions:
+    - ms-azuretools.vscode-docker
+    - dbaeumer.vscode-eslint
+
+github:
+  prebuilds:
+    # enable for the default branch (defaults to true)
+    master: true
+# enable for all branches in this repo (defaults to false)
+    branches: false
+# enable for pull requests coming from this repo (defaults to true)
+    pullRequests: true
+# enable for pull requests coming from forks (defaults to false)
+    pullRequestsFromForks: false
+# add a check to pull requests (defaults to true)
+    addCheck: true
+# add a "Review in Gitpod" button as a comment to pull requests (defaults to false)
+    addComment: false
+# add a "Review in Gitpod" button to the pull request's description (defaults to false)
+    addBadge: false
