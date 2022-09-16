@@ -206,6 +206,9 @@ The following features can be enabled through environment variables that have be
     - Sets your git user.email in `~/.gitconfig` to the value provided
   - `GPG_AUTO_ULTIMATE_TRUST` (optional)
     - If the value is set to `yes` or `YES` then your `GPG_KEY` will be automatically ultimately trusted
+- Using Cloudflare Tunnel Client (formerly Argo Tunnel)
+  - `UPTIME_KUMA_CLOUDFLARED_TOKEN` (optional)
+    - The CloudFlared Token you got to use the cloudflared tunnel as reverse proxy
 
 ## Translations
 
