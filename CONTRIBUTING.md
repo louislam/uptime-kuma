@@ -191,6 +191,22 @@ Since previously updating Vite 2.5.10 to 2.6.0 broke the application completely,
 
 Patch release = the third digit ([Semantic Versioning](https://semver.org/))
 
+## Gitpod Environment Variables
+
+The following features can be enabled through environment variables that have been set in your [Gitpod preferences](https://gitpod.io/variables).:
+
+\* _Please note that storing sensitive data in environment variables is not ultimately secure but should be OK for most development situations._
+
+- Sign Git commits with a GPG key
+  - `GPG_KEY_ID` (required)
+    - The ID of the GPG key you want to use to sign your git commits
+  - `GPG_KEY` (required)
+    - Base64 encoded private GPG key that corresponds to your `GPG_KEY_ID`
+  - `GPG_MATCH_GIT_TO_EMAIL` (optional)
+    - Sets your git user.email in `~/.gitconfig` to the value provided
+  - `GPG_AUTO_ULTIMATE_TRUST` (optional)
+    - If the value is set to `yes` or `YES` then your `GPG_KEY` will be automatically ultimately trusted
+
 ## Translations
 
 Please read: https://github.com/louislam/uptime-kuma/tree/master/src/languages
