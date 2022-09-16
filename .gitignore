@@ -13,3 +13,6 @@ dist-ssr
 /out
 /tmp
 .env
+
+cypress/videos
+cypress/screenshots

@@ -53,13 +53,17 @@ class Database {
         "patch-2fa-invalidate-used-token.sql": true,
         "patch-notification_sent_history.sql": true,
         "patch-monitor-basic-auth.sql": true,
+        "patch-add-docker-columns.sql": true,
         "patch-status-page.sql": true,
         "patch-proxy.sql": true,
         "patch-monitor-expiry-notification.sql": true,
         "patch-status-page-footer-css.sql": true,
         "patch-added-mqtt-monitor.sql": true,
+        "patch-add-clickable-status-page-link.sql": true,
         "patch-add-sqlserver-monitor.sql": true,
         "patch-add-other-auth.sql": { parents: [ "patch-monitor-basic-auth.sql" ] },
+        "patch-add-radius-monitor.sql": true,
+        "patch-monitor-add-resend-interval.sql": true,
     };
 
     /**
@@ -146,6 +150,9 @@ class Database {
         await R.exec("PRAGMA cache_size = -12000");
         await R.exec("PRAGMA auto_vacuum = FULL");
 
+        // Avoid error "SQLITE_BUSY: database is locked" by allowing SQLITE to wait up to 5 seconds to do a write
+        await R.exec("PRAGMA busy_timeout = 5000");
+
         // This ensures that an operating system crash or power failure will not corrupt the database.
         // FULL synchronous is very safe, but it is also slower.
         // Read more: https://sqlite.org/pragma.html#pragma_synchronous
@@ -177,7 +184,13 @@ class Database {
         } else {
             log.info("db", "Database patch is needed");
 
-            this.backup(version);
+            try {
+                this.backup(version);
+            } catch (e) {
+                log.error("db", e);
+                log.error("db", "Unable to create a backup before patching the database. Please make sure you have enough space and permission.");
+                process.exit(1);
+            }
 
             // Try catch anything here, if gone wrong, restore the backup
             try {
@@ -444,6 +457,23 @@ class Database {
             if (fs.existsSync(walPath)) {
                 this.backupWalPath = walPath + ".bak" + version;
                 fs.copyFileSync(walPath, this.backupWalPath);
+            }
+
+            // Double confirm if all files actually backup
+            if (!fs.existsSync(this.backupPath)) {
+                throw new Error("Backup failed! " + this.backupPath);
+            }
+
+            if (fs.existsSync(shmPath)) {
+                if (!fs.existsSync(this.backupShmPath)) {
+                    throw new Error("Backup failed! " + this.backupShmPath);
+                }
+            }
+
+            if (fs.existsSync(walPath)) {
+                if (!fs.existsSync(this.backupWalPath)) {
+                    throw new Error("Backup failed! " + this.backupWalPath);
+                }
             }
         }
     }
