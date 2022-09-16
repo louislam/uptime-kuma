@@ -1,7 +1,7 @@
 <template>
     <div>
-        <div class="mt-3">{{ pluginListMsg }}</div>
-        <PluginItem v-for="plugin in pluginList" :key="plugin.id" :plugin="plugin" />
+        <div class="mt-3">{{ remotePluginListMsg }}</div>
+        <PluginItem v-for="plugin in remotePluginList" :key="plugin.id" :plugin="plugin" />
     </div>
 </template>
 
@@ -15,12 +15,15 @@ export default {
 
     data() {
         return {
-            pluginList: [],
-            pluginListMsg: "",
+            remotePluginList: [],
+            remotePluginListMsg: "",
         };
     },
 
     computed: {
+        pluginList() {
+            return this.$parent.$parent.$parent.pluginList;
+        },
         settings() {
             return this.$parent.$parent.$parent.settings;
         },
@@ -33,14 +36,14 @@ export default {
     },
 
     async mounted() {
-        this.pluginListMsg = this.$t("Loading") + "...";
+        this.remotePluginListMsg = this.$t("Loading") + "...";
 
         this.$root.getSocket().emit("getPluginList", (res) => {
             if (res.ok) {
-                this.pluginList = res.pluginList;
-                this.pluginListMsg = "";
+                this.remotePluginList = res.pluginList;
+                this.remotePluginListMsg = "";
             } else {
-                this.pluginListMsg = this.$t("loadingError") + " " + res.message;
+                this.remotePluginListMsg = this.$t("loadingError") + " " + res.message;
             }
         });
     },

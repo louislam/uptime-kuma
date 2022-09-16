@@ -43,6 +43,32 @@ class PluginsManager {
             }
         }
     }
+
+    /**
+     * Install a Plugin
+     * @param {string} tarGzFileURL The url of tar.gz file
+     * @param {number} userID User ID - Used for streaming installing progress
+     */
+    installPlugin(tarGzFileURL, userID = undefined) {
+
+    }
+
+    /**
+     * Remove a plugin
+     * @param pluginID
+     */
+    removePlugin(pluginID) {
+
+    }
+
+    /**
+     * Update a plugin
+     * Only available for plugins which were downloaded from the official list
+     * @param pluginID
+     */
+    updatePlugin(pluginID) {
+
+    }
 }
 
 class Plugin {

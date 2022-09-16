@@ -2,7 +2,10 @@
     <div class="plugin-item pt-4 pb-2">
         <div>
             <h6>{{ plugin.name }}</h6>
-            <p class="description">{{ plugin.description }}</p>
+            <p class="description">
+                {{ plugin.description }}
+            </p>
+            <span class="version">{{ $t("Version") }}: {{ plugin.version }}</span>
         </div>
         <div class="buttons">
             <button class="btn btn-primary">Install</button>
@@ -35,5 +38,8 @@ export default {
         margin-bottom: 0;
     }
 
+    .version {
+        font-size: 13px;
+    }
 }
 </style>
