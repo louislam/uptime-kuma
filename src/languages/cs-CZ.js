@@ -576,4 +576,7 @@ export default {
     "Then choose an action, for example switch the scene to where an RGB light is red.": "Následně vyberte akci, například přepnutí scény z RGB světla na červenou.",
     "Frontend Version": "Verze frontendu",
     "Frontend Version do not match backend version!": "Verze frontendu neodpovídá verzi backendu!",
+    "You can divide numbers with": "Čísla můžete rozdělit pomocí ",
+    "or": "nebo",
+    "Gateway Type": "Typ brány",
 };

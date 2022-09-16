@@ -28,6 +28,7 @@ import Pushy from "./Pushy.vue";
 import RocketChat from "./RocketChat.vue";
 import SerwerSMS from "./SerwerSMS.vue";
 import Signal from "./Signal.vue";
+import SMSManager from "./SMSManager.vue";
 import Slack from "./Slack.vue";
 import Stackfield from "./Stackfield.vue";
 import STMP from "./SMTP.vue";
@@ -75,6 +76,7 @@ const NotificationFormList = {
     "rocket.chat": RocketChat,
     "serwersms": SerwerSMS,
     "signal": Signal,
+    "SMSManager": SMSManager,
     "slack": Slack,
     "smtp": STMP,
     "stackfield": Stackfield,
