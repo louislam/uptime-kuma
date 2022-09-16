@@ -382,7 +382,7 @@ optgroup {
         overflow-y: auto;
         height: calc(100% - 65px);
     }
-    
+
     @media (max-width: 770px) {
         &.scrollbar {
             height: calc(100% - 40px);
@@ -403,7 +403,6 @@ optgroup {
         .info {
             white-space: nowrap;
             overflow: hidden;
-            text-overflow: ellipsis;
         }
 
         &:hover {
