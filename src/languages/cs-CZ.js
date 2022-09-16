@@ -90,6 +90,7 @@ export default {
     "From Name/Number": "Jméno/číslo odesílatele",
     "Frontend Version do not match backend version!": "Verze frontendu neodpovídá verzi backendu!",
     "Frontend Version": "Verze frontendu",
+    "Gateway Type": "Typ brány",
     "Go back to the previous page.": "Vrátit se na předchozí stránku.",
     "Go to Dashboard": "Přejít na nástěnku",
     "HTTP Basic Auth": "HTTP Basic ověření",
@@ -225,6 +226,7 @@ export default {
     "What you can try:": "Co můžete vyzkoušet:",
     "Workstation": "Pracovní stanice",
     "YOUR BOT TOKEN HERE": "SEM ZADEJTE TOKEN VAŠEHO CHATBOTA",
+    "You can divide numbers with": "Čísla můžete rozdělit pomocí ",
     "add one": "přidat jeden",
     "auto acknowledged": "auto acknowledged",
     "auto resolve": "auto resolve",
@@ -233,6 +235,7 @@ export default {
     "disableauth.message2": "Tato možnost je určena pro případy, kdy <strong>máte autentifikaci zajištěnou třetí stranou</strong> ještě před přístupem do Uptime Kuma, například prostřednictvím Cloudflare Access.",
     "do nothing": "do nothing",
     "ntfy Topic": "ntfy Topic",
+    "or": "nebo",
     "pushoversounds alien": "Alien Alarm (dlouhý)",
     "pushoversounds bike": "Bike",
     "pushoversounds bugle": "Bugle",
@@ -576,4 +579,4 @@ export default {
     webhook: "Webhook",
     webhookFormDataDesc: "{multipart} je vhodné pro PHP. JSON bude nutné analyzovat prostřednictvím {decodeFunction}",
     webhookJsonDesc: "{0} je vhodný pro všechny moderní servery HTTP, jako je Express.js",
-};
+}
