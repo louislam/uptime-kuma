@@ -26,6 +26,13 @@ class UptimeKumaServer {
      * @type {{}}
      */
     monitorList = {};
+
+    /**
+     * Main maintenance list
+     * @type {{}}
+     */
+    maintenanceList = {};
+
     entryPage = "dashboard";
     app = undefined;
     httpServer = undefined;
@@ -99,6 +106,36 @@ class UptimeKumaServer {
 
         for (let monitor of monitorList) {
             result[monitor.id] = await monitor.toJSON();
+        }
+
+        return result;
+    }
+
+    /**
+     * Send maintenance list to client
+     * @param {Socket} socket Socket.io instance to send to
+     * @returns {Object}
+     */
+    async sendMaintenanceList(socket) {
+        let list = await this.getMaintenanceJSONList(socket.userID);
+        this.io.to(socket.userID).emit("maintenanceList", list);
+        return list;
+    }
+
+    /**
+     * Get a list of maintenances for the given user.
+     * @param {string} userID - The ID of the user to get maintenances for.
+     * @returns {Promise<Object>} A promise that resolves to an object with maintenance IDs as keys and maintenances objects as values.
+     */
+    async getMaintenanceJSONList(userID) {
+        let result = {};
+
+        let maintenanceList = await R.find("maintenance", " user_id = ? ORDER BY end_date DESC, title", [
+            userID,
+        ]);
+
+        for (let maintenance of maintenanceList) {
+            result[maintenance.id] = await maintenance.toJSON();
         }
 
         return result;
