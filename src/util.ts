@@ -340,5 +340,5 @@ export function getMonitorRelativeURL(id: string) {
 }
 
 export function getMaintenanceRelativeURL(id: string) {
-    return "/dashboard/maintenance/" + id;
+    return "/maintenance/" + id;
 }

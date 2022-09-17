@@ -282,9 +282,9 @@ function getCryptoRandomInt(min, max) {
 }
 exports.getCryptoRandomInt = getCryptoRandomInt;
 /**
- * Generate a secret
- * @param length Lenght of secret to generate
- * @returns
+ * Generate a random alphanumeric string of fixed length
+ * @param length Length of string to generate
+ * @returns string
  */
 function genSecret(length = 64) {
     let secret = "";
@@ -306,6 +306,6 @@ function getMonitorRelativeURL(id) {
 }
 exports.getMonitorRelativeURL = getMonitorRelativeURL;
 function getMaintenanceRelativeURL(id) {
-    return "/dashboard/maintenance/" + id;
+    return "/maintenance/" + id;
 }
 exports.getMaintenanceRelativeURL = getMaintenanceRelativeURL;

@@ -9,7 +9,7 @@
             </p>
 
             <div class="functions" style="margin-top: 10px;">
-                <router-link :to=" '/editMaintenance/' + maintenance.id " class="btn btn-secondary">
+                <router-link :to=" '/maintenance/edit/' + maintenance.id " class="btn btn-secondary">
                     <font-awesome-icon icon="edit" /> {{ $t("Edit") }}
                 </router-link>
                 <button class="btn btn-danger" @click="deleteDialog">
@@ -27,7 +27,7 @@
             </button>
             <br />
 
-            <label for="selected_status_pages" class="form-label" style="margin-top: 20px;">{{ $t("Selected status pages") }}</label>
+            <label for="selected_status_pages" class="form-label" style="margin-top: 20px;">{{ $t("Show this Maintenance Message on which Status Pages") }}</label>
             <br>
             <button v-for="statusPage in selectedStatusPages" :key="statusPage.id" class="btn btn-monitor" style="margin: 5px; cursor: auto; color: white; font-weight: 500;">
                 {{ statusPage }}

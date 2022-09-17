@@ -15,6 +15,9 @@ import Entry from "./pages/Entry.vue";
 import ManageStatusPage from "./pages/ManageStatusPage.vue";
 import AddStatusPage from "./pages/AddStatusPage.vue";
 import NotFound from "./pages/NotFound.vue";
+import DockerHosts from "./components/settings/Docker.vue";
+import MaintenanceDetails from "./pages/MaintenanceDetails.vue";
+import ManageMaintenance from "./pages/ManageMaintenance.vue";
 
 // Settings - Sub Pages
 import Appearance from "./components/settings/Appearance.vue";
@@ -26,8 +29,6 @@ const Security = () => import("./components/settings/Security.vue");
 import Proxies from "./components/settings/Proxies.vue";
 import Backup from "./components/settings/Backup.vue";
 import About from "./components/settings/About.vue";
-import DockerHosts from "./components/settings/Docker.vue";
-import MaintenanceDetails from "./pages/MaintenanceDetails.vue";
 
 const routes = [
     {
@@ -64,28 +65,12 @@ const routes = [
                                     },
                                 ],
                             },
-                            {
-                                path: "/dashboard/maintenance/:id",
-                                component: EmptyLayout,
-                                children: [
-                                    {
-                                        path: "",
-                                        component: MaintenanceDetails,
-                                    },
-                                    {
-                                        path: "/editMaintenance/:id",
-                                        component: EditMaintenance,
-                                    },
-                                ],
-                            },
+
                             {
                                 path: "/add",
                                 component: EditMonitor,
                             },
-                            {
-                                path: "/addMaintenance",
-                                component: EditMaintenance,
-                            },
+
                         ],
                     },
                     {
@@ -145,6 +130,22 @@ const routes = [
                     {
                         path: "/add-status-page",
                         component: AddStatusPage,
+                    },
+                    {
+                        path: "/maintenance",
+                        component: ManageMaintenance,
+                    },
+                    {
+                        path: "/maintenance/:id",
+                        component: MaintenanceDetails,
+                    },
+                    {
+                        path: "/add-maintenance",
+                        component: EditMaintenance,
+                    },
+                    {
+                        path: "/maintenance/edit/:id",
+                        component: EditMaintenance,
                     },
                 ],
             },

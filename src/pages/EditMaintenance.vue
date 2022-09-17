@@ -6,14 +6,12 @@
                 <div class="shadow-box">
                     <div class="row">
                         <div class="col-md-6">
-                            <h2 class="mb-2">{{ $t("General") }}</h2>
-
                             <!-- Title -->
                             <div class="my-3">
                                 <label for="name" class="form-label">{{ $t("Title") }}</label>
                                 <input
                                     id="name" v-model="maintenance.title" type="text" class="form-control"
-                                    :placeholder="titlePlaceholder" required
+                                    required
                                 >
                             </div>
 
@@ -22,7 +20,6 @@
                                 <label for="description" class="form-label">{{ $t("Description") }}</label>
                                 <textarea
                                     id="description" v-model="maintenance.description" class="form-control"
-                                    :placeholder="descriptionPlaceholder"
                                 ></textarea>
                             </div>
 
@@ -54,8 +51,7 @@
 
                             <!-- Start Date Time -->
                             <div class="my-3">
-                                <label for="start_date" class="form-label">{{ $t("Start of maintenance") }}
-                                    ({{ $root.timezone }})</label>
+                                <label for="start_date" class="form-label">{{ $t("Start Date") }}</label>
                                 <input
                                     id="start_date" v-model="maintenance.start_date" :type="'datetime-local'"
                                     class="form-control" :class="{'dark-calendar': dark }" required
@@ -64,8 +60,7 @@
 
                             <!-- End Date Time -->
                             <div class="my-3">
-                                <label for="end_date" class="form-label">{{ $t("Expected end of maintenance") }}
-                                    ({{ $root.timezone }})</label>
+                                <label for="end_date" class="form-label">{{ $t("End Date") }}</label>
                                 <input
                                     id="end_date" v-model="maintenance.end_date" :type="'datetime-local'"
                                     class="form-control" :class="{'dark-calendar': dark }" required
@@ -79,14 +74,14 @@
                                     type="checkbox"
                                 >
                                 <label class="form-check-label" for="show-powered-by">{{
-                                    $t("Show on all pages")
+                                    $t("Show this Maintenance Message on ALL Status Pages")
                                 }}</label>
                             </div>
 
                             <!-- Status pages to display maintenance info on -->
                             <div v-if="!showOnAllPages" class="my-3">
                                 <label for="selected_status_pages" class="form-label">{{
-                                    $t("Selected status pages")
+                                    $t("Show this Maintenance Message on which Status Pages")
                                 }}</label>
 
                                 <VueMultiselect
@@ -155,24 +150,16 @@ export default {
     computed: {
 
         pageName() {
-            return this.$t((this.isAdd) ? "Schedule maintenance" : "Edit");
+            return this.$t((this.isAdd) ? "Schedule Maintenance" : "Edit Maintenance");
         },
 
         isAdd() {
-            return this.$route.path === "/addMaintenance";
+            return this.$route.path === "/add-maintenance";
         },
 
         isEdit() {
-            return this.$route.path.startsWith("/editMaintenance");
+            return this.$route.path.startsWith("/maintenance/edit");
         },
-
-        titlePlaceholder() {
-            return this.$t("maintenanceTitleExample");
-        },
-
-        descriptionPlaceholder() {
-            return this.$t("maintenanceDescriptionExample");
-        }
 
     },
     watch: {
@@ -281,7 +268,7 @@ export default {
                                 toast.success(res.msg);
                                 this.processing = false;
                                 this.$root.getMaintenanceList();
-                                this.$router.push("/dashboard/maintenance/" + res.maintenanceID);
+                                this.$router.push("/maintenance/" + res.maintenanceID);
                             });
                         });
                     } else {
