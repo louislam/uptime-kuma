@@ -139,6 +139,30 @@ module.exports.maintenanceSocketHandler = (socket) => {
         }
     });
 
+    socket.on("getMaintenance", async (maintenanceID, callback) => {
+        try {
+            checkLogin(socket);
+
+            log.debug("maintenance", `Get Maintenance: ${maintenanceID} User ID: ${socket.userID}`);
+
+            let bean = await R.findOne("maintenance", " id = ? AND user_id = ? ", [
+                maintenanceID,
+                socket.userID,
+            ]);
+
+            callback({
+                ok: true,
+                maintenance: await bean.toJSON(),
+            });
+
+        } catch (e) {
+            callback({
+                ok: false,
+                msg: e.message,
+            });
+        }
+    });
+
     socket.on("getMaintenanceList", async (callback) => {
         try {
             checkLogin(socket);
@@ -159,7 +183,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
         try {
             checkLogin(socket);
 
-            console.log(`Get Monitors for Maintenance: ${maintenanceID} User ID: ${socket.userID}`);
+            log.debug("maintenance", `Get Monitors for Maintenance: ${maintenanceID} User ID: ${socket.userID}`);
 
             let monitors = await R.getAll("SELECT monitor.id, monitor.name FROM monitor_maintenance mm JOIN monitor ON mm.monitor_id = monitor.id WHERE mm.maintenance_id = ? ", [
                 maintenanceID,
@@ -183,7 +207,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
         try {
             checkLogin(socket);
 
-            console.log(`Get Status Pages for Maintenance: ${maintenanceID} User ID: ${socket.userID}`);
+            log.debug("maintenance", `Get Status Pages for Maintenance: ${maintenanceID} User ID: ${socket.userID}`);
 
             let statusPages = await R.getAll("SELECT status_page.id, status_page.title FROM maintenance_status_page msp JOIN status_page ON msp.status_page_id = status_page.id WHERE msp.maintenance_id = ? ", [
                 maintenanceID,
@@ -207,7 +231,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
         try {
             checkLogin(socket);
 
-            console.log(`Delete Maintenance: ${maintenanceID} User ID: ${socket.userID}`);
+            log.debug("maintenance", `Delete Maintenance: ${maintenanceID} User ID: ${socket.userID}`);
 
             if (maintenanceID in server.maintenanceList) {
                 delete server.maintenanceList[maintenanceID];

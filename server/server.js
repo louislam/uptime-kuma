@@ -767,30 +767,6 @@ let needSetup = false;
             }
         });
 
-        socket.on("getMaintenance", async (maintenanceID, callback) => {
-            try {
-                checkLogin(socket);
-
-                console.log(`Get Maintenance: ${maintenanceID} User ID: ${socket.userID}`);
-
-                let bean = await R.findOne("maintenance", " id = ? AND user_id = ? ", [
-                    maintenanceID,
-                    socket.userID,
-                ]);
-
-                callback({
-                    ok: true,
-                    maintenance: await bean.toJSON(),
-                });
-
-            } catch (e) {
-                callback({
-                    ok: false,
-                    msg: e.message,
-                });
-            }
-        });
-
         socket.on("getMonitorBeats", async (monitorID, period, callback) => {
             try {
                 checkLogin(socket);
