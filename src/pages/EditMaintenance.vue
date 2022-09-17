@@ -140,7 +140,7 @@ export default {
             maintenance: {},
             affectedMonitors: [],
             affectedMonitorsOptions: [],
-            showOnAllPages: true,
+            showOnAllPages: false,
             selectedStatusPages: [],
             selectedStatusPagesOptions: [],
             dark: (this.$root.theme === "dark"),
