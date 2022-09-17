@@ -91,7 +91,7 @@ export default {
             this.$root.deleteMaintenance(this.maintenance.id, (res) => {
                 if (res.ok) {
                     toast.success(res.msg);
-                    this.$router.push("/dashboard");
+                    this.$router.push("/maintenance");
                 } else {
                     toast.error(res.msg);
                 }

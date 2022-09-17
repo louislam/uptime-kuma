@@ -16,21 +16,37 @@
                     {{ $t("No maintenance") }}
                 </span>
 
-                <router-link
+                <div
                     v-for="(item, index) in sortedMaintenanceList"
                     :key="index"
-                    :to="maintenanceURL(item.id)"
                     class="item"
-                    :class="{ 'disabled': !$root.isActiveMaintenance(item.end_date) }"
+                    :class="{ 'ended': !$root.isActiveMaintenance(item.end_date) }"
                 >
-                    <div>
+                    <div class="left-part">
+                        <div
+                            class="circle"
+                        ></div>
+                        <div class="info">
+                            <div class="title">{{ item.title }}</div>
+                            <div>{{ item.description }}</div>
+                        </div>
                     </div>
-                    <div class="info">
-                        <div class="title">{{ item.title }}</div>
-                        <div>{{ item.description }}</div>
+
+                    <div class="buttons">
+                        <router-link :to="maintenanceURL(item.id)" class="btn btn-light">{{ $t("Details") }}</router-link>
+                        <router-link :to="'/maintenance/edit/' + item.id" class="btn btn-secondary">
+                            <font-awesome-icon icon="edit" /> {{ $t("Edit") }}
+                        </router-link>
+                        <button class="btn btn-danger" @click="deleteDialog(item.id)">
+                            <font-awesome-icon icon="trash" /> {{ $t("Delete") }}
+                        </button>
                     </div>
-                </router-link>
+                </div>
             </div>
+
+            <Confirm ref="confirmDelete" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="deleteMaintenance">
+                {{ $t("deleteMaintenanceMsg") }}
+            </Confirm>
         </div>
     </transition>
 </template>
@@ -38,12 +54,17 @@
 <script>
 import { getResBaseURL } from "../util-frontend";
 import { getMaintenanceRelativeURL } from "../util.ts";
+import Confirm from "../components/Confirm.vue";
+import { useToast } from "vue-toastification";
+const toast = useToast();
 
 export default {
     components: {
+        Confirm,
     },
     data() {
         return {
+            selectedMaintenanceID: undefined,
         };
     },
     computed: {
@@ -107,6 +128,22 @@ export default {
         maintenanceURL(id) {
             return getMaintenanceRelativeURL(id);
         },
+
+        deleteDialog(maintenanceID) {
+            this.selectedMaintenanceID = maintenanceID;
+            this.$refs.confirmDelete.show();
+        },
+
+        deleteMaintenance() {
+            this.$root.deleteMaintenance(this.selectedMaintenanceID, (res) => {
+                if (res.ok) {
+                    toast.success(res.msg);
+                    this.$router.push("/maintenance");
+                } else {
+                    toast.error(res.msg);
+                }
+            });
+        },
     },
 };
 </script>
@@ -121,6 +158,7 @@ export default {
         text-decoration: none;
         border-radius: 10px;
         transition: all ease-in-out 0.15s;
+        justify-content: space-between;
         padding: 10px;
         min-height: 90px;
 
@@ -128,39 +166,49 @@ export default {
             background-color: $highlight-white;
         }
 
-        &.active {
-            background-color: #cdf8f4;
+        &.ended {
+            .left-part {
+                opacity: 0.5;
+                .circle {
+                    background-color: $dark-font-color;
+                }
+            }
         }
 
-        $logo-width: 70px;
+        .left-part {
+            display: flex;
+            gap: 12px;
+            align-items: center;
 
-        .logo {
-            width: $logo-width;
-            height: $logo-width;
+            .circle {
+                width: 25px;
+                height: 25px;
+                border-radius: 50rem;
+                background-color: $maintenance;
 
-            // Better when the image is loading
-            min-height: 1px;
+            }
+
+            .info {
+                .title {
+                    font-weight: bold;
+                    font-size: 20px;
+                }
+
+                .slug {
+                    font-size: 14px;
+                }
+            }
         }
 
-        .info {
-            .title {
-                font-weight: bold;
-                font-size: 20px;
-            }
-
-            .slug {
-                font-size: 14px;
-            }
+        .buttons {
+            display: flex;
+            gap: 8px;
         }
     }
 
     .dark {
         .item {
             &:hover {
-                background-color: $dark-bg2;
-            }
-
-            &.active {
                 background-color: $dark-bg2;
             }
         }
