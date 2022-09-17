@@ -65,12 +65,10 @@ const routes = [
                                     },
                                 ],
                             },
-
                             {
                                 path: "/add",
                                 component: EditMonitor,
                             },
-
                         ],
                     },
                     {

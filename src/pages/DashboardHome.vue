@@ -147,14 +147,6 @@ export default {
     display: block;
 }
 
-.text-maintenance {
-    color: $maintenance;
-}
-
-.bg-maintenance {
-    background-color: $maintenance;
-}
-
 .shadow-box {
     padding: 20px;
 }

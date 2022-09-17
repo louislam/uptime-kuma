@@ -514,8 +514,4 @@ table {
     margin-left: 0 !important;
 }
 
-.bg-maintenance {
-    background-color: $maintenance;
-}
-
 </style>
