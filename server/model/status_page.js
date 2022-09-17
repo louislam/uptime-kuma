@@ -83,6 +83,8 @@ class StatusPage extends BeanModel {
             incident = incident.toPublicJSON();
         }
 
+        let maintenance = await StatusPage.getMaintenanceList(statusPage.id);
+
         // Public Group List
         const publicGroupList = [];
         const showTags = !!statusPage.show_tags;
@@ -100,7 +102,8 @@ class StatusPage extends BeanModel {
         return {
             config: await statusPage.toPublicJSON(),
             incident,
-            publicGroupList
+            publicGroupList,
+            maintenance,
         };
     }
 
@@ -259,6 +262,36 @@ class StatusPage extends BeanModel {
         }
     }
 
+    /**
+     * Get list of maintenances
+     * @param {number} statusPageId ID of status page to get maintenance for
+     * @returns {Object} Object representing maintenances sanitized for public
+     */
+    static async getMaintenanceList(statusPageId) {
+        try {
+            const publicMaintenanceList = [];
+
+            let maintenanceBeanList = R.convertToBeans("maintenance", await R.getAll(`
+            SELECT m.*
+            FROM maintenance m
+            JOIN maintenance_status_page msp
+            ON msp.maintenance_id = m.id
+            WHERE datetime(m.start_date) <= datetime('now')
+              AND datetime(m.end_date) >= datetime('now')
+              AND msp.status_page_id = ?
+            ORDER BY m.end_date
+        `, [ statusPageId ]));
+
+            for (const bean of maintenanceBeanList) {
+                publicMaintenanceList.push(await bean.toPublicJSON());
+            }
+
+            return publicMaintenanceList;
+
+        } catch (error) {
+            return [];
+        }
+    }
 }
 
 module.exports = StatusPage;
