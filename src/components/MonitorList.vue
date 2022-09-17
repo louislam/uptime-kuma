@@ -94,6 +94,7 @@ export default {
         Tag,
     },
     props: {
+        /** Should the scrollbar be shown */
         scrollbar: {
             type: Boolean,
         },
@@ -106,10 +107,22 @@ export default {
         };
     },
     computed: {
+        /**
+         * Improve the sticky appearance of the list by increasing its
+         * height as user scrolls down.
+         * Not used on mobile.
+         */
         boxStyle() {
-            return {
-                height: `calc(100vh - 160px + ${this.windowTop}px)`,
-            };
+            if (window.innerWidth > 550) {
+                return {
+                    height: `calc(100vh - 160px + ${this.windowTop}px)`,
+                };
+            } else {
+                return {
+                    height: "calc(100vh - 160px)",
+                };
+            }
+
         },
 
         sortedMaintenanceList() {
@@ -211,6 +224,7 @@ export default {
         window.removeEventListener("scroll", this.onScroll);
     },
     methods: {
+        /** Handle user scroll */
         onScroll() {
             if (window.top.scrollY <= 133) {
                 this.windowTop = window.top.scrollY;
@@ -218,12 +232,18 @@ export default {
                 this.windowTop = 133;
             }
         },
+        /**
+         * Get URL of monitor
+         * @param {number} id ID of monitor
+         * @returns {string} Relative URL of monitor
+         */
         monitorURL(id) {
             return getMonitorRelativeURL(id);
         },
         maintenanceURL(id) {
             return getMaintenanceRelativeURL(id);
         },
+        /** Clear the search bar */
         clearSearchText() {
             this.searchText = "";
         }

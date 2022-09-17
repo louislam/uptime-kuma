@@ -9,7 +9,9 @@ const languageList = {
     "nl-NL": "Nederlands",
     "nb-NO": "Norsk",
     "es-ES": "Español",
+    "eu": "Euskara",
     "fa": "Farsi",
+    "pt-PT": "Português (Portugal)",
     "pt-BR": "Português (Brasileiro)",
     "fr-FR": "Français (France)",
     "hu": "Magyar",
@@ -31,6 +33,7 @@ const languageList = {
     "vi-VN": "Tiếng Việt",
     "zh-TW": "繁體中文 (台灣)",
     "uk-UA": "Український",
+    "th-TH": "ไทย",
 };
 
 let messages = {

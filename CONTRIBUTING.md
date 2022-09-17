@@ -27,16 +27,29 @@ The frontend code build into "dist" directory. The server (express.js) exposes t
 
 ## Can I create a pull request for Uptime Kuma?
 
-(Updated 2022-04-24) Since I don't want to waste your time, be sure to create empty draft pull request, so we can discuss first.
+Yes, you can. However, since I don't want to waste your time, be sure to **create empty draft pull request, so we can discuss first** if it is a large pull request or you don't know it will be merged or not.
+
+Also, please don't rush or ask for ETA, because I have to understand the pull request, make sure it is no breaking changes and stick to my vision of this project, especially for large pull requests.
+
+I will mark your pull request in the [milestones](https://github.com/louislam/uptime-kuma/milestones), if I am plan to review and merge it.
 
 ✅ Accept:
 - Bug/Security fix
 - Translations
 - Adding notification providers
 
-⚠️ Discuss First
+⚠️ Discussion First
 - Large pull requests
 - New features
+
+❌ Won't Merge
+- Do not pass auto test
+- Any breaking changes
+- Duplicated pull request
+- Buggy
+- Existing logic is completely modified or deleted for no reason
+- A function that is completely out of scope
+
 
 ### Recommended Pull Request Guideline
 
@@ -53,22 +66,15 @@ Before deep into coding, discussion first is preferred. Creating an empty pull r
 1. Click "Change to draft"
 1. Discussion
 
-#### ❌ Won't Merge
-
-- Any breaking changes
-- Duplicated pull request
-- Buggy
-- Existing logic is completely modified or deleted
-- A function that is completely out of scope
-
 ## Project Styles
 
 I personally do not like something need to learn so much and need to config so much before you can finally start the app.
 
 - Easy to install for non-Docker users, no native build dependency is needed (at least for x86_64), no extra config, no extra effort to get it run
 - Single container for Docker users, no very complex docker-compose file. Just map the volume and expose the port, then good to go
-- Settings should be configurable in the frontend. Env var is not encouraged.
+- Settings should be configurable in the frontend. Environment variable is not encouraged, unless it is related to startup such as `DATA_DIR`.
 - Easy to use
+- The web UI styling should be consistent and nice.
 
 ## Coding Styles
 
@@ -80,8 +86,8 @@ I personally do not like something need to learn so much and need to config so m
 ## Name convention
 
 - Javascript/Typescript: camelCaseType
-- SQLite: underscore_type
-- CSS/SCSS: dash-type
+- SQLite: snake_case (Underscore)
+- CSS/SCSS: kebab-case (Dash)
 
 ## Tools
 

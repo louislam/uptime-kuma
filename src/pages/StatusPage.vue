@@ -98,7 +98,7 @@
             <h1 class="mb-4 title-flex">
                 <!-- Logo -->
                 <span class="logo-wrapper" @click="showImageCropUploadMethod">
-                    <img :src="logoURL" alt class="logo me-2" :class="logoClass" @load="statusPageLogoLoaded" />
+                    <img :src="logoURL" alt class="logo me-2" :class="logoClass" />
                     <font-awesome-icon v-if="enableEditMode" class="icon-upload" icon="upload" />
                 </span>
 
@@ -298,7 +298,7 @@
                 <Editable v-model="config.footerText" tag="div" :contenteditable="enableEditMode" :noNL="false" class="alert-heading p-2" />
 
                 <p v-if="config.showPoweredBy">
-                    {{ $t("Powered by") }} <a target="_blank" href="https://github.com/louislam/uptime-kuma">{{ $t("Uptime Kuma" ) }}</a>
+                    {{ $t("Powered by") }} <a target="_blank" rel="noopener noreferrer" href="https://github.com/louislam/uptime-kuma">{{ $t("Uptime Kuma" ) }}</a>
                 </p>
             </footer>
         </div>
@@ -365,6 +365,7 @@ export default {
     },
 
     props: {
+        /** Override for the status page slug */
         overrideSlug: {
             type: String,
             required: false,
@@ -582,7 +583,7 @@ export default {
             this.slug = "default";
         }
 
-        axios.get("/api/status-page/" + this.slug).then((res) => {
+        this.getData().then((res) => {
             this.config = res.data.config;
 
             if (!this.config.domainNameList) {
@@ -596,6 +597,11 @@ export default {
             this.incident = res.data.incident;
             this.maintenance = res.data.maintenance;
             this.$root.publicGroupList = res.data.publicGroupList;
+        }).catch( function (error) {
+            if (error.response.status === 404) {
+                location.href = "/page-not-found";
+            }
+            console.log(error);
         });
 
         // 5mins a loop
@@ -612,10 +618,31 @@ export default {
     },
     methods: {
 
+        /**
+         * Get status page data
+         * It should be preloaded in window.preloadData
+         * @returns {Promise<any>}
+         */
+        getData: function () {
+            if (window.preloadData) {
+                return new Promise(resolve => resolve({
+                    data: window.preloadData
+                }));
+            } else {
+                return axios.get("/api/status-page/" + this.slug);
+            }
+        },
+
+        /**
+         * Provide syntax highlighting for CSS
+         * @param {string} code Text to highlight
+         * @returns {string}
+         */
         highlighter(code) {
             return highlight(code, languages.css);
         },
 
+        /** Update the heartbeat list and update favicon if neccessary */
         updateHeartbeatList() {
             // If editMode, it will use the data from websocket.
             if (! this.editMode) {
@@ -644,14 +671,19 @@ export default {
             }
         },
 
+        /** Enable editing mode */
         edit() {
             if (this.hasToken) {
                 this.$root.initSocketIO(true);
                 this.enableEditMode = true;
                 this.clickedEditButton = true;
+
+                // Try to fix #1658
+                this.loadedData = true;
             }
         },
 
+        /** Save the status page */
         save() {
             let startTime = new Date();
             this.config.slug = this.config.slug.trim().toLowerCase();
@@ -679,10 +711,12 @@ export default {
             });
         },
 
+        /** Show dialog confirming deletion */
         deleteDialog() {
             this.$refs.confirmDelete.show();
         },
 
+        /** Request deletion of this status page */
         deleteStatusPage() {
             this.$root.getSocket().emit("deleteStatusPage", this.slug, (res) => {
                 if (res.ok) {
@@ -694,10 +728,16 @@ export default {
             });
         },
 
+        /**
+         * Returns label for a specifed monitor
+         * @param {Object} monitor Object representing monitor
+         * @returns {string}
+         */
         monitorSelectorLabel(monitor) {
             return `${monitor.name}`;
         },
 
+        /** Add a group to the status page */
         addGroup() {
             let groupName = this.$t("Untitled Group");
 
@@ -711,32 +751,32 @@ export default {
             });
         },
 
+        /** Add a domain to the status page */
         addDomainField() {
             this.config.domainNameList.push("");
         },
 
+        /** Discard changes to status page */
         discard() {
             location.href = "/status/" + this.slug;
         },
 
         /**
-         * Crop Success
+         * Set URL of new image after successful crop operation
+         * @param {string} imgDataUrl URL of image in data:// format
          */
         cropSuccess(imgDataUrl) {
             this.imgDataUrl = imgDataUrl;
         },
 
+        /** Show image crop dialog if in edit mode */
         showImageCropUploadMethod() {
             if (this.editMode) {
                 this.showImageCropUpload = true;
             }
         },
 
-        statusPageLogoLoaded(eventPayload) {
-            // Remark: may not work in dev, due to CORS
-            favicon.image(eventPayload.target);
-        },
-
+        /** Create an incident for this status page */
         createIncident() {
             this.enableEditIncidentMode = true;
 
@@ -751,6 +791,7 @@ export default {
             };
         },
 
+        /** Post the incident to the status page */
         postIncident() {
             if (this.incident.title === "" || this.incident.content === "") {
                 toast.error(this.$t("Please input title and content"));
@@ -770,14 +811,13 @@ export default {
 
         },
 
-        /**
-         * Click Edit Button
-         */
+        /** Click Edit Button */
         editIncident() {
             this.enableEditIncidentMode = true;
             this.previousIncident = Object.assign({}, this.incident);
         },
 
+        /** Cancel creation or editing of incident */
         cancelIncident() {
             this.enableEditIncidentMode = false;
 
@@ -787,16 +827,25 @@ export default {
             }
         },
 
+        /** Unpin the incident */
         unpinIncident() {
             this.$root.getSocket().emit("unpinIncident", this.slug, () => {
                 this.incident = null;
             });
         },
 
+        /**
+         * Get the relative time difference of a date from now
+         * @returns {string}
+         */
         dateFromNow(date) {
             return dayjs.utc(date).fromNow();
         },
 
+        /**
+         * Remove a domain from the status page
+         * @param {number} index Index of domain to remove
+         */
         removeDomain(index) {
             this.config.domainNameList.splice(index, 1);
         },

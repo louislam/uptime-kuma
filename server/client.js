@@ -22,7 +22,10 @@ async function sendNotificationList(socket) {
     ]);
 
     for (let bean of list) {
-        result.push(bean.export());
+        let notificationObject = bean.export();
+        notificationObject.isDefault = (notificationObject.isDefault === 1);
+        notificationObject.active = (notificationObject.active === 1);
+        result.push(notificationObject);
     }
 
     io.to(socket.userID).emit("notificationList", result);
@@ -122,10 +125,35 @@ async function sendInfo(socket) {
     });
 }
 
+/**
+ * Send list of docker hosts to client
+ * @param {Socket} socket Socket.io socket instance
+ * @returns {Promise<Bean[]>}
+ */
+async function sendDockerHostList(socket) {
+    const timeLogger = new TimeLogger();
+
+    let result = [];
+    let list = await R.find("docker_host", " user_id = ? ", [
+        socket.userID,
+    ]);
+
+    for (let bean of list) {
+        result.push(bean.toJSON());
+    }
+
+    io.to(socket.userID).emit("dockerHostList", result);
+
+    timeLogger.print("Send Docker Host List");
+
+    return list;
+}
+
 module.exports = {
     sendNotificationList,
     sendImportantHeartbeatList,
     sendHeartbeatList,
     sendProxyList,
     sendInfo,
+    sendDockerHostList
 };

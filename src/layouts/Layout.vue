@@ -77,7 +77,7 @@
 
         <!-- Mobile Only -->
         <div v-if="$root.isMobile" style="width: 100%; height: 60px;" />
-        <nav v-if="$root.isMobile" class="bottom-nav scroll">
+        <nav v-if="$root.isMobile && $root.loggedIn" class="bottom-nav scroll">
             <router-link to="/dashboard" class="nav-link">
                 <div><font-awesome-icon icon="tachometer-alt" /></div>
                 {{ $t("Dashboard") }}

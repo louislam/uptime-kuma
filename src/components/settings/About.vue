@@ -4,6 +4,11 @@
             <object class="my-4" width="200" height="200" data="/icon.svg" />
             <div class="fs-4 fw-bold">Uptime Kuma</div>
             <div>{{ $t("Version") }}: {{ $root.info.version }}</div>
+            <div class="frontend-version">{{ $t("Frontend Version") }}: {{ $root.frontendVersion }}</div>
+
+            <div v-if="!$root.isFrontendBackendVersionMatched" class="alert alert-warning mt-4" role="alert">
+                ⚠️ {{ $t("Frontend Version do not match backend version!") }}
+            </div>
 
             <div class="my-3 update-link"><a href="https://github.com/louislam/uptime-kuma/releases" target="_blank" rel="noopener">{{ $t("Check Update On GitHub") }}</a></div>
 
@@ -46,6 +51,16 @@ export default {
 }
 
 .update-link {
-    font-size: 0.9em;
+    font-size: 0.8em;
 }
+
+.frontend-version {
+    font-size: 0.9em;
+    color: #cccccc;
+
+    .dark & {
+        color: #333333;
+    }
+}
+
 </style>

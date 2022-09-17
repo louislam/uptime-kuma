@@ -1,9 +1,108 @@
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { R } = require("redbean-node");
+const cheerio = require("cheerio");
+const { UptimeKumaServer } = require("../uptime-kuma-server");
 
 class StatusPage extends BeanModel {
 
+    /**
+     * Like this: { "test-uptime.kuma.pet": "default" }
+     * @type {{}}
+     */
     static domainMappingList = { };
+
+    /**
+     *
+     * @param {Response} response
+     * @param {string} indexHTML
+     * @param {string} slug
+     */
+    static async handleStatusPageResponse(response, indexHTML, slug) {
+        let statusPage = await R.findOne("status_page", " slug = ? ", [
+            slug
+        ]);
+
+        if (statusPage) {
+            response.send(await StatusPage.renderHTML(indexHTML, statusPage));
+        } else {
+            response.status(404).send(UptimeKumaServer.getInstance().indexHTML);
+        }
+    }
+
+    /**
+     * SSR for status pages
+     * @param {string} indexHTML
+     * @param {StatusPage} statusPage
+     */
+    static async renderHTML(indexHTML, statusPage) {
+        const $ = cheerio.load(indexHTML);
+        const description155 = statusPage.description?.substring(0, 155);
+
+        $("title").text(statusPage.title);
+        $("meta[name=description]").attr("content", description155);
+
+        if (statusPage.icon) {
+            $("link[rel=icon]")
+                .attr("href", statusPage.icon)
+                .removeAttr("type");
+
+            $("link[rel=apple-touch-icon]").remove();
+        }
+
+        const head = $("head");
+
+        // OG Meta Tags
+        head.append(`<meta property="og:title" content="${statusPage.title}" />`);
+        head.append(`<meta property="og:description" content="${description155}" />`);
+
+        // Preload data
+        const json = JSON.stringify(await StatusPage.getStatusPageData(statusPage));
+        head.append(`
+            <script>
+                window.preloadData = ${json}
+            </script>
+        `);
+
+        // manifest.json
+        $("link[rel=manifest]").attr("href", `/api/status-page/${statusPage.slug}/manifest.json`);
+
+        return $.root().html();
+    }
+
+    /**
+     * Get all status page data in one call
+     * @param {StatusPage} statusPage
+     */
+    static async getStatusPageData(statusPage) {
+        // Incident
+        let incident = await R.findOne("incident", " pin = 1 AND active = 1 AND status_page_id = ? ", [
+            statusPage.id,
+        ]);
+
+        if (incident) {
+            incident = incident.toPublicJSON();
+        }
+
+        // Public Group List
+        const publicGroupList = [];
+        const showTags = !!statusPage.show_tags;
+
+        const list = await R.find("group", " public = 1 AND status_page_id = ? ORDER BY weight ", [
+            statusPage.id
+        ]);
+
+        for (let groupBean of list) {
+            let monitorGroup = await groupBean.toPublicJSON(showTags);
+            publicGroupList.push(monitorGroup);
+        }
+
+        // Response
+        return {
+            config: await statusPage.toPublicJSON(),
+            incident,
+            publicGroupList
+        };
+    }
 
     /**
      * Loads domain mapping from DB

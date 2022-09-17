@@ -1,6 +1,12 @@
 <template>
     <div>
         <div class="my-4">
+            <div class="alert alert-warning" role="alert" style="border-radius: 15px;">
+                {{ $t("backupOutdatedWarning") }}<br />
+                <br />
+                {{ $t("backupRecommend") }}
+            </div>
+
             <h4 class="mt-4 mb-2">{{ $t("Export Backup") }}</h4>
 
             <p>
@@ -133,10 +139,15 @@ export default {
     },
 
     methods: {
+        /**
+         * Show the confimation dialog confirming the configuration
+         * be imported
+         */
         confirmImport() {
             this.$refs.confirmImport.show();
         },
 
+        /** Download a backup of the configuration */
         downloadBackup() {
             let time = dayjs().format("YYYY_MM_DD-hh_mm_ss");
             let fileName = `Uptime_Kuma_Backup_${time}.json`;
@@ -157,6 +168,10 @@ export default {
             downloadItem.click();
         },
 
+        /**
+         * Import the specified backup file
+         * @returns {?string}
+         */
         importBackup() {
             this.processing = true;
             let uploadItem = document.getElementById("import-backend").files;
