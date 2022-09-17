@@ -169,6 +169,7 @@ export default {
         &.ended {
             .left-part {
                 opacity: 0.5;
+
                 .circle {
                     background-color: $dark-font-color;
                 }
@@ -185,7 +186,6 @@ export default {
                 height: 25px;
                 border-radius: 50rem;
                 background-color: $maintenance;
-
             }
 
             .info {
