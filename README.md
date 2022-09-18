@@ -177,4 +177,4 @@ If you want to translate Uptime Kuma into your language, please read: https://gi
 Feel free to correct my grammar in this README, source code, or wiki, as my mother language is not English and my grammar is not that great.
 
 ### Create Pull Requests
-If you want to modify Uptime Kuma, this guideline may be useful for you: https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md
+If you want to modify Uptime Kuma, please read this guide and follow the rules here: https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md
