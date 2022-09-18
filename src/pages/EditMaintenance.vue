@@ -138,12 +138,20 @@ export default {
             affectedMonitorsOptions: [],
             showOnAllPages: false,
             selectedStatusPages: [],
-            selectedStatusPagesOptions: [],
             dark: (this.$root.theme === "dark"),
         };
     },
 
     computed: {
+
+        selectedStatusPagesOptions() {
+            return Object.values(this.$root.statusPageList).map(statusPage => {
+                return {
+                    id: statusPage.id,
+                    name: statusPage.title
+                };
+            });
+        },
 
         pageName() {
             return this.$t((this.isAdd) ? "Schedule Maintenance" : "Edit Maintenance");
@@ -176,13 +184,6 @@ export default {
                     });
                 });
             }
-        });
-
-        Object.values(this.$root.statusPageList).map(statusPage => {
-            this.selectedStatusPagesOptions.push({
-                id: statusPage.id,
-                name: statusPage.title
-            });
         });
     },
     methods: {
