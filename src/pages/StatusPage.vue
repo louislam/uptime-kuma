@@ -199,14 +199,14 @@
             <template v-if="maintenance.length">
                 <div
                     v-for="maintenanceItem in maintenance" :key="maintenanceItem.id"
-                    class="shadow-box alert mb-4 p-4 maintenance mt-4 position-relative" role="alert"
+                    class="shadow-box alert mb-4 p-3 bg-maintenance mt-4 position-relative" role="alert"
                 >
                     <div class="item">
                         <div class="row">
                             <div class="col-1 col-md-1 d-flex justify-content-center align-items-center">
                                 <font-awesome-icon
                                     icon="wrench"
-                                    class="maintenance-icon maintenance-bg-info"
+                                    class="maintenance-icon"
                                 />
                             </div>
                             <div class="col-11 col-md-11">
@@ -215,7 +215,6 @@
 
                                 <div class="date mt-3">
                                     {{ $t("End") }}: {{ $root.datetimeMaintenance(maintenanceItem.end_date) }}
-                                    ({{ dateFromNow(maintenanceItem.start_date) }})<br />
                                 </div>
                             </div>
                         </div>
@@ -996,7 +995,7 @@ footer {
 }
 
 .maintenance-icon {
-    font-size: 30px;
+    font-size: 35px;
     vertical-align: middle;
 }
 

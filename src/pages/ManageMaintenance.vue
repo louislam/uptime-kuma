@@ -33,7 +33,7 @@
                     </div>
 
                     <div class="buttons">
-                        <router-link :to="maintenanceURL(item.id)" class="btn btn-light">{{ $t("Details") }}</router-link>
+                        <router-link v-if="false" :to="maintenanceURL(item.id)" class="btn btn-light">{{ $t("Details") }}</router-link>
                         <router-link :to="'/maintenance/edit/' + item.id" class="btn btn-secondary">
                             <font-awesome-icon icon="edit" /> {{ $t("Edit") }}
                         </router-link>

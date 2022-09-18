@@ -22,6 +22,19 @@ textarea.form-control {
     width: 10px;
 }
 
+.bg-maintenance {
+    color: white !important;
+    background-color: $maintenance !important;
+}
+
+.bg-dark {
+    color: white;
+}
+
+.text-maintenance {
+    color: $maintenance !important;
+}
+
 .list-group {
     border-radius: 0.75rem;
 
@@ -250,10 +263,6 @@ optgroup {
 
     .bg-primary {
         color: $dark-font-color2;
-    }
-
-    .bg-maintenance {
-        background-color: $maintenance;
     }
 
     .btn-secondary {

@@ -5,7 +5,7 @@
             <form @submit.prevent="submit">
                 <div class="shadow-box">
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-xl-7">
                             <!-- Title -->
                             <div class="my-3">
                                 <label for="name" class="form-label">{{ $t("Title") }}</label>
@@ -24,9 +24,10 @@
                             </div>
 
                             <!-- Affected Monitors -->
-                            <div class="my-3">
-                                <label for="affected_monitors" class="form-label">{{ $t("Affected Monitors") }}</label>
+                            <h2 class="mt-5">{{ $t("Affected Monitors") }}</h2>
+                            {{ $t("affectedMonitorsDescription") }}
 
+                            <div class="my-3">
                                 <VueMultiselect
                                     id="affected_monitors"
                                     v-model="affectedMonitors"
@@ -43,11 +44,45 @@
                                     :max-height="600"
                                     :taggable="false"
                                 ></VueMultiselect>
+                            </div>
 
-                                <div class="form-text">
-                                    {{ $t("affectedMonitorsDescription") }}
+                            <!-- Status pages to display maintenance info on -->
+                            <h2 class="mt-5">{{ $t("Status Pages") }}</h2>
+                            {{ $t("affectedStatusPages") }}
+
+                            <div class="my-3">
+                                <!-- Show on all pages -->
+                                <div class="form-check mb-2">
+                                    <input
+                                        id="show-on-all-pages" v-model="showOnAllPages" class="form-check-input"
+                                        type="checkbox"
+                                    >
+                                    <label class="form-check-label" for="show-powered-by">{{
+                                        $t("All Status Pages")
+                                    }}</label>
+                                </div>
+
+                                <div v-if="!showOnAllPages">
+                                    <VueMultiselect
+                                        id="selected_status_pages"
+                                        v-model="selectedStatusPages"
+                                        :options="selectedStatusPagesOptions"
+                                        track-by="id"
+                                        label="name"
+                                        :multiple="true"
+                                        :allow-empty="true"
+                                        :close-on-select="false"
+                                        :clear-on-select="false"
+                                        :preserve-search="true"
+                                        :placeholder="$t('Select status pages...')"
+                                        :preselect-first="false"
+                                        :max-height="600"
+                                        :taggable="false"
+                                    ></VueMultiselect>
                                 </div>
                             </div>
+
+                            <h2 class="mt-5">{{ $t("Effective Date Range") }}</h2>
 
                             <!-- Start Date Time -->
                             <div class="my-3">
@@ -67,46 +102,7 @@
                                 >
                             </div>
 
-                            <!-- Show on all pages -->
-                            <div class="my-3 form-check">
-                                <input
-                                    id="show-on-all-pages" v-model="showOnAllPages" class="form-check-input"
-                                    type="checkbox"
-                                >
-                                <label class="form-check-label" for="show-powered-by">{{
-                                    $t("Show this Maintenance Message on ALL Status Pages")
-                                }}</label>
-                            </div>
-
-                            <!-- Status pages to display maintenance info on -->
-                            <div v-if="!showOnAllPages" class="my-3">
-                                <label for="selected_status_pages" class="form-label">{{
-                                    $t("Show this Maintenance Message on which Status Pages")
-                                }}</label>
-
-                                <VueMultiselect
-                                    id="selected_status_pages"
-                                    v-model="selectedStatusPages"
-                                    :options="selectedStatusPagesOptions"
-                                    track-by="id"
-                                    label="name"
-                                    :multiple="true"
-                                    :allow-empty="false"
-                                    :close-on-select="false"
-                                    :clear-on-select="false"
-                                    :preserve-search="true"
-                                    :placeholder="$t('Select status pages...')"
-                                    :preselect-first="false"
-                                    :max-height="600"
-                                    :taggable="false"
-                                ></VueMultiselect>
-
-                                <div class="form-text">
-                                    {{ $t("selectedStatusPagesDescription") }}
-                                </div>
-                            </div>
-
-                            <div class="mt-5 mb-1">
+                            <div class="mt-4 mb-1">
                                 <button
                                     id="monitor-submit-btn" class="btn btn-primary" type="submit"
                                     :disabled="processing"
@@ -329,7 +325,7 @@ export default {
 }
 
 textarea {
-    min-height: 200px;
+    min-height: 150px;
 }
 
 .dark-calendar::-webkit-calendar-picker-indicator {
