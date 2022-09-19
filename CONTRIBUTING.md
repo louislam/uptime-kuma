@@ -27,13 +27,11 @@ The frontend code build into "dist" directory. The server (express.js) exposes t
 
 ## Can I create a pull request for Uptime Kuma?
 
-Yes, you can. However, since I don't want to waste your time, be sure to **create empty draft pull request, so we can discuss first** if it is a large pull request or you don't know it will be merged or not.
+Yes or no, it depends on what you will try to do. Since I don't want to waste your time, be sure to **create empty draft pull request or open an issue, so we can discuss first**. Especially for a large pull request or you don't know it will be merged or not.
 
-Also, please don't rush or ask for ETA, because I have to understand the pull request, make sure it is no breaking changes and stick to my vision of this project, especially for large pull requests.
+Here are some references:
 
-I will mark your pull request in the [milestones](https://github.com/louislam/uptime-kuma/milestones), if I am plan to review and merge it.
-
-✅ Accept:
+✅ Usually Accept:
 - Bug/Security fix
 - Translations
 - Adding notification providers
@@ -47,8 +45,14 @@ I will mark your pull request in the [milestones](https://github.com/louislam/up
 - Any breaking changes
 - Duplicated pull request
 - Buggy
+- UI/UX is not close to Uptime Kuma 
 - Existing logic is completely modified or deleted for no reason
 - A function that is completely out of scope
+- Unnesscary large code changes (Hard to review, casuse code conflicts to other pull requests)
+
+I will mark your pull request in the [milestones](https://github.com/louislam/uptime-kuma/milestones), if I am plan to review and merge it.
+
+Also, please don't rush or ask for ETA, because I have to understand the pull request, make sure it is no breaking changes and stick to my vision of this project, especially for large pull requests.
 
 
 ### Recommended Pull Request Guideline
