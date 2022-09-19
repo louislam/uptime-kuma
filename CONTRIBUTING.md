@@ -177,7 +177,18 @@ npm test
 
 By default, the Chromium window will be shown up during the test. Specifying `HEADLESS_TEST=1` for terminal environments.
 
-## Update Dependencies
+## Dependencies
+
+Both frontend and backend share the same package.json. However, the frontend dependencies are eventually not be used in production environment, because it is usually also baked into dist files. So:
+
+- Frontend dependencies = "devDependencies"
+  - Examples: vue, chart.js
+- Backend dependencies = "dependencies"
+  - Examples: socket.io, sqlite3
+- Development dependencies = "devDependencies"
+  - Examples: eslint, sass
+
+### Update Dependencies
 
 Install `ncu`
 https://github.com/raineorshine/npm-check-updates
