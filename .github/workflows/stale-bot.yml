@@ -20,3 +20,4 @@ jobs:
           exempt-pr-labels: 'awaiting-approval,work-in-progress,enhancement,feature-request'
           exempt-issue-assignees: 'louislam'
           exempt-pr-assignees: 'louislam'
+          operations-per-run: 90
