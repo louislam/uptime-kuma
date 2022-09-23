@@ -1,5 +1,6 @@
 name: 'Automatically close stale issues and PRs'
 on:
+  workflow_dispatch:
   schedule:
     - cron: '0 */6 * * *'
 #Run every 6 hours 
