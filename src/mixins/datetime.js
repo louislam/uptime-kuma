@@ -27,6 +27,15 @@ export default {
         },
 
         /**
+         * Used for <input type="datetime" />
+         * @param value
+         * @returns {string}
+         */
+        toDateTimeInputFormat(value) {
+            return this.datetimeFormat(value, "YYYY-MM-DDTHH:mm");
+        },
+
+        /**
          * Return a given value in the format YYYY-MM-DD HH:mm:ss
          * @param {any} value Value to format as date time
          * @returns {string}

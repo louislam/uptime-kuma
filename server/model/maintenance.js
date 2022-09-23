@@ -19,6 +19,8 @@ class Maintenance extends BeanModel {
             description: this.description,
             start_date: this.start_date,
             end_date: this.end_date,
+            strategy: this.strategy,
+            active: !!this.active,
         };
     }
 
@@ -27,13 +29,7 @@ class Maintenance extends BeanModel {
      * @returns {Object}
      */
     async toJSON() {
-        return {
-            id: this.id,
-            title: this.title,
-            description: this.description,
-            start_date: this.start_date,
-            end_date: this.end_date,
-        };
+        return this.toPublicJSON();
     }
 }
 

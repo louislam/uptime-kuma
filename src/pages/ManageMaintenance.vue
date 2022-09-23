@@ -44,6 +44,10 @@
                 </div>
             </div>
 
+            <div class="text-center mt-3" style="font-size: 13px;">
+                <a href="https://github.com/louislam/uptime-kuma/wiki/Maintenance" target="_blank">Learn More</a>
+            </div>
+
             <Confirm ref="confirmDelete" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="deleteMaintenance">
                 {{ $t("deleteMaintenanceMsg") }}
             </Confirm>

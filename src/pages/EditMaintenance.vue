@@ -7,7 +7,7 @@
                     <div class="row">
                         <div class="col-xl-7">
                             <!-- Title -->
-                            <div class="my-3">
+                            <div class="mb-3">
                                 <label for="name" class="form-label">{{ $t("Title") }}</label>
                                 <input
                                     id="name" v-model="maintenance.title" type="text" class="form-control"
@@ -35,7 +35,6 @@
                                     track-by="id"
                                     label="name"
                                     :multiple="true"
-                                    :allow-empty="false"
                                     :close-on-select="false"
                                     :clear-on-select="false"
                                     :preserve-search="true"
@@ -70,7 +69,6 @@
                                         track-by="id"
                                         label="name"
                                         :multiple="true"
-                                        :allow-empty="true"
                                         :close-on-select="false"
                                         :clear-on-select="false"
                                         :preserve-search="true"
@@ -82,25 +80,131 @@
                                 </div>
                             </div>
 
-                            <h2 class="mt-5">{{ $t("Effective Date Range") }}</h2>
+                            <h2 class="mt-5">{{ $t("Date and Time") }}</h2>
 
-                            <!-- Start Date Time -->
+                            <div>⚠️ {{ $t("warningTimezone") }}</div>
+
+                            <!-- Strategy -->
                             <div class="my-3">
-                                <label for="start_date" class="form-label">{{ $t("Start Date") }}</label>
-                                <input
-                                    id="start_date" v-model="maintenance.start_date" :type="'datetime-local'"
-                                    class="form-control" :class="{'dark-calendar': dark }" required
-                                >
+                                <label for="strategy" class="form-label">{{ $t("Strategy") }}</label>
+                                <select id="strategy" v-model="maintenance.strategy" class="form-select">
+                                    <option value="manual">{{ $t("strategyManual") }}</option>
+                                    <option value="single">Single Maintenance Window</option>
+                                    <option value="recurring-interval">{{ $t("Recurring") }} - {{ $t("recurringInterval") }}</option>
+                                    <option value="recurring-weekday">{{ $t("Recurring") }} - Weekday</option>
+                                    <option value="recurring-day-of-month">{{ $t("Recurring") }} - Day of Month</option>
+                                    <option v-if="false" value="recurring-day-of-year">{{ $t("Recurring") }} - Day of Year</option>
+                                </select>
                             </div>
 
-                            <!-- End Date Time -->
-                            <div class="my-3">
-                                <label for="end_date" class="form-label">{{ $t("End Date") }}</label>
-                                <input
-                                    id="end_date" v-model="maintenance.end_date" :type="'datetime-local'"
-                                    class="form-control" :class="{'dark-calendar': dark }" required
-                                >
-                            </div>
+                            <!-- Single Maintenance Window -->
+                            <template v-if="maintenance.strategy === 'single'">
+                                <!-- DateTime Range -->
+                                <div class="my-3">
+                                    <label class="form-label">{{ $t("DateTime Range") }}</label>
+                                    <Datepicker
+                                        v-model="maintenance.dateTimeRange"
+                                        :dark="$root.isDark"
+                                        range textInput
+                                        :monthChangeOnScroll="false"
+                                        :minDate="minDate"
+                                        format="yyyy-MM-dd HH:mm"
+                                        utc="preserve"
+                                    />
+                                </div>
+                            </template>
+
+                            <!-- Recurring - Interval -->
+                            <template v-if="maintenance.strategy === 'recurring-interval'">
+                                <div class="my-3">
+                                    <label for="interval-day" class="form-label">
+                                        {{ $t("recurringInterval") }}
+
+                                        <template v-if="maintenance.intervalDay >= 1">
+                                            ({{
+                                                $tc("recurringIntervalMessage", maintenance.intervalDay, [
+                                                    maintenance.intervalDay
+                                                ])
+                                            }})
+                                        </template>
+                                    </label>
+                                    <input id="interval-day" v-model="maintenance.intervalDay" type="number" class="form-control" required min="1" max="3650" step="1">
+                                </div>
+                            </template>
+
+                            <!-- Recurring - Weekday -->
+                            <template v-if="maintenance.strategy === 'recurring-weekday'">
+                                <div class="my-3">
+                                    <label for="interval-day" class="form-label">
+                                        {{ $t("Weekday") }}
+                                    </label>
+
+                                    <!-- Weekday Picker -->
+                                    <div class="weekday-picker">
+                                        <div v-for="(weekday, index) in weekdays" :key="index">
+                                            <label class="form-check-label" :for="weekday.id">{{ $t(weekday.langKey) }}</label>
+                                            <div class="form-check-inline"><input :id="weekday.id" v-model="maintenance.weekdays" type="checkbox" :value="weekday.value" class="form-check-input"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <!-- Recurring - Day of month -->
+                            <template v-if="maintenance.strategy === 'recurring-day-of-month'">
+                                <div class="my-3">
+                                    <label for="interval-day" class="form-label">
+                                        {{ $t("dayOfMonth") }}
+                                    </label>
+
+                                    <!-- Day Picker -->
+                                    <div class="day-picker">
+                                        <div v-for="index in 31" :key="index">
+                                            <label class="form-check-label" :for="'day' + index">{{ index }}</label>
+                                            <div class="form-check-inline">
+                                                <input :id="'day' + index" v-model="maintenance.daysOfMonth" type="checkbox" :value="index" class="form-check-input">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-3 mb-2">{{ $t("lastDay") }}</div>
+
+                                    <div v-for="(lastDay, index) in lastDays" :key="index" class="form-check">
+                                        <input :id="lastDay.langKey" v-model="maintenance.daysOfMonth" type="checkbox" :value="lastDay.value" class="form-check-input">
+                                        <label class="form-check-label" :for="lastDay.langKey">
+                                            {{ $t(lastDay.langKey) }}
+                                        </label>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <!-- For any recurring types -->
+                            <template v-if="maintenance.strategy === 'recurring-interval' || maintenance.strategy === 'recurring-weekday' || maintenance.strategy === 'recurring-day-of-month'">
+                                <!-- Maintenance Time Window of a Day -->
+                                <div class="my-3">
+                                    <label class="form-label">{{ $t("Maintenance Time Window of a Day") }}</label>
+                                    <Datepicker
+                                        v-model="maintenance.timeRange"
+                                        :dark="$root.isDark"
+                                        timePicker disableTimeRangeValidation range
+                                        placeholder="Select Time"
+                                        textInput
+                                    />
+                                </div>
+
+                                <!-- Date Range -->
+                                <div class="my-3">
+                                    <label class="form-label">{{ $t("Effective Date Range") }}</label>
+                                    <Datepicker
+                                        v-model="maintenance.dateRange"
+                                        :dark="$root.isDark"
+                                        range textInput datePicker
+                                        :monthChangeOnScroll="false"
+                                        :minDate="minDate"
+                                        :enableTimePicker="false"
+                                        utc="preserve"
+                                    />
+                                </div>
+                            </template>
 
                             <div class="mt-4 mb-1">
                                 <button
@@ -122,12 +226,15 @@
 
 import { useToast } from "vue-toastification";
 import VueMultiselect from "vue-multiselect";
+import dayjs from "dayjs";
+import Datepicker from "@vuepic/vue-datepicker";
 
 const toast = useToast();
 
 export default {
     components: {
         VueMultiselect,
+        Datepicker
     },
 
     data() {
@@ -139,6 +246,63 @@ export default {
             showOnAllPages: false,
             selectedStatusPages: [],
             dark: (this.$root.theme === "dark"),
+            neverEnd: false,
+            minDate: this.$root.date(dayjs()) + " 00:00",
+            lastDays: [
+                {
+                    langKey: "lastDay1",
+                    value: "lastDay1",
+                },
+                {
+                    langKey: "lastDay2",
+                    value: "lastDay2",
+                },
+                {
+                    langKey: "lastDay3",
+                    value: "lastDay3",
+                },
+                {
+                    langKey: "lastDay4",
+                    value: "lastDay4",
+                }
+            ],
+            weekdays: [
+                {
+                    id: "weekday1",
+                    langKey: "weekdayShortMon",
+                    value: 1,
+                },
+                {
+                    id: "weekday2",
+                    langKey: "weekdayShortTue",
+                    value: 2,
+                },
+                {
+                    id: "weekday3",
+                    langKey: "weekdayShortWed",
+                    value: 3,
+                },
+                {
+                    id: "weekday4",
+                    langKey: "weekdayShortTue",
+                    value: 4,
+                },
+                {
+                    id: "weekday5",
+                    langKey: "weekdayShortFri",
+                    value: 5,
+                },
+                {
+                    id: "weekday6",
+                    langKey: "weekdayShortSat",
+                    value: 6,
+                },
+                {
+                    id: "weekday7",
+                    langKey: "weekdayShortSun",
+                    value: 7,
+                },
+            ],
         };
     },
 
@@ -169,8 +333,13 @@ export default {
     watch: {
         "$route.fullPath"() {
             this.init();
-        }
+        },
 
+        neverEnd(value) {
+            if (value) {
+                this.maintenance.recurringEndDate = "";
+            }
+        },
     },
     mounted() {
         this.init();
@@ -195,8 +364,21 @@ export default {
                 this.maintenance = {
                     title: "",
                     description: "",
-                    start_date: "",
-                    end_date: "",
+                    strategy: "single",
+                    active: 1,
+                    recurringStartDate: this.$root.date(dayjs()),
+                    recurringEndDate: "",
+                    intervalDay: 1,
+                    dateTimeRange: [ this.minDate ],
+                    timeRange: [{
+                        hours: 2,
+                        minutes: 0,
+                    }, {
+                        hours: 3,
+                        minutes: 0,
+                    }],
+                    weekdays: [],
+                    daysOfMonth: [],
                 };
             } else if (this.isEdit) {
                 this.$root.getSocket().emit("getMaintenance", this.$route.params.id, (res) => {
@@ -332,4 +514,38 @@ textarea {
 .dark-calendar::-webkit-calendar-picker-indicator {
     filter: invert(1);
 }
+
+.weekday-picker {
+    display: flex;
+    gap: 10px;
+
+    & > div {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 40px;
+
+        .form-check-inline {
+            margin-right: 0;
+        }
+    }
+}
+
+.day-picker {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+
+    & > div {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 40px;
+
+        .form-check-inline {
+            margin-right: 0;
+        }
+    }
+}
+
 </style>
