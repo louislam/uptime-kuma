@@ -11,8 +11,16 @@ const mqtt = require("mqtt");
 const chroma = require("chroma-js");
 const { badgeConstants } = require("./config");
 const mssql = require("mssql");
+const { Client } = require("pg");
+const postgresConParse = require("pg-connection-string").parse;
 const { NtlmClient } = require("axios-ntlm");
 const { Settings } = require("./settings");
+const radiusClient = require("node-radius-client");
+const {
+    dictionaries: {
+        rfc2865: { file, attributes },
+    },
+} = require("node-radius-utils");
 
 // From ping-lite
 exports.WIN = /^win/.test(process.platform);
@@ -238,10 +246,6 @@ exports.dnsResolve = function (hostname, resolverServer, resolverPort, rrtype) {
  */
 exports.mssqlQuery = function (connectionString, query) {
     return new Promise((resolve, reject) => {
-        mssql.on("error", err => {
-            reject(err);
-        });
-
         mssql.connect(connectionString).then(pool => {
             return pool.request()
                 .query(query);
@@ -256,9 +260,66 @@ exports.mssqlQuery = function (connectionString, query) {
 };
 
 /**
+ * Run a query on Postgres
+ * @param {string} connectionString The database connection string
+ * @param {string} query The query to validate the database with
+ * @returns {Promise<(string[]|Object[]|Object)>}
+ */
+exports.postgresQuery = function (connectionString, query) {
+    return new Promise((resolve, reject) => {
+        const config = postgresConParse(connectionString);
+
+        if (config.password === "") {
+            // See https://github.com/brianc/node-postgres/issues/1927
+            return reject(new Error("Password is undefined."));
+        }
+
+        const client = new Client({ connectionString });
+
+        client.connect();
+
+        return client.query(query)
+            .then(res => {
+                resolve(res);
+            })
+            .catch(err => {
+                reject(err);
+            })
+            .finally(() => {
+                client.end();
+            });
+    });
+};
+
+exports.radius = function (
+    hostname,
+    username,
+    password,
+    calledStationId,
+    callingStationId,
+    secret,
+) {
+    const client = new radiusClient({
+        host: hostname,
+        dictionaries: [ file ],
+    });
+
+    return client.accessRequest({
+        secret: secret,
+        attributes: [
+            [ attributes.USER_NAME, username ],
+            [ attributes.USER_PASSWORD, password ],
+            [ attributes.CALLING_STATION_ID, callingStationId ],
+            [ attributes.CALLED_STATION_ID, calledStationId ],
+        ],
+    });
+};
+
+/**
  * Retrieve value of setting based on key
  * @param {string} key Key of setting to retrieve
  * @returns {Promise<any>} Value
+ * @deprecated Use await Settings.get(key)
  */
 exports.setting = async function (key) {
     return await Settings.get(key);
@@ -384,7 +445,7 @@ exports.checkCertificate = function (res) {
 
 /**
  * Check if the provided status code is within the accepted ranges
- * @param {string} status The status code to check
+ * @param {number} status The status code to check
  * @param {string[]} acceptedCodes An array of accepted status codes
  * @returns {boolean} True if status code within range, false otherwise
  * @throws {Error} Will throw an error if the provided status code is not a valid range string or code string
@@ -497,6 +558,26 @@ exports.startUnitTest = async () => {
     console.log("Starting unit test...");
     const npm = /^win/.test(process.platform) ? "npm.cmd" : "npm";
     const child = childProcess.spawn(npm, [ "run", "jest" ]);
+
+    child.stdout.on("data", (data) => {
+        console.log(data.toString());
+    });
+
+    child.stderr.on("data", (data) => {
+        console.log(data.toString());
+    });
+
+    child.on("close", function (code) {
+        console.log("Jest exit code: " + code);
+        process.exit(code);
+    });
+};
+
+/** Start end-to-end tests */
+exports.startE2eTests = async () => {
+    console.log("Starting unit test...");
+    const npm = /^win/.test(process.platform) ? "npm.cmd" : "npm";
+    const child = childProcess.spawn(npm, [ "run", "cy:run" ]);
 
     child.stdout.on("data", (data) => {
         console.log(data.toString());

@@ -39,6 +39,7 @@ export default {
             uptimeList: { },
             tlsInfoList: {},
             notificationList: [],
+            dockerHostList: [],
             statusPageListLoaded: false,
             statusPageList: [],
             proxyList: [],
@@ -149,6 +150,10 @@ export default {
 
                     return item;
                 });
+            });
+
+            socket.on("dockerHostList", (data) => {
+                this.dockerHostList = data;
             });
 
             socket.on("heartbeat", (data) => {

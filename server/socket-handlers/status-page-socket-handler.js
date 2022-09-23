@@ -202,6 +202,11 @@ module.exports.statusPageSocketHandler = (socket) => {
                     relationBean.weight = monitorOrder++;
                     relationBean.group_id = groupBean.id;
                     relationBean.monitor_id = monitor.id;
+
+                    if (monitor.sendUrl !== undefined) {
+                        relationBean.send_url = monitor.sendUrl;
+                    }
+
                     await R.store(relationBean);
                 }
 

@@ -45,6 +45,8 @@ class StatusPage extends BeanModel {
             $("link[rel=icon]")
                 .attr("href", statusPage.icon)
                 .removeAttr("type");
+
+            $("link[rel=apple-touch-icon]").remove();
         }
 
         const head = $("head");
@@ -60,6 +62,9 @@ class StatusPage extends BeanModel {
                 window.preloadData = ${json}
             </script>
         `);
+
+        // manifest.json
+        $("link[rel=manifest]").attr("href", `/api/status-page/${statusPage.slug}/manifest.json`);
 
         return $.root().html();
     }
