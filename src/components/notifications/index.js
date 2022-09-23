@@ -26,6 +26,7 @@ import PushDeer from "./PushDeer.vue";
 import Pushover from "./Pushover.vue";
 import Pushy from "./Pushy.vue";
 import RocketChat from "./RocketChat.vue";
+import ServerChan from "./ServerChan.vue";
 import SerwerSMS from "./SerwerSMS.vue";
 import Signal from "./Signal.vue";
 import SMSManager from "./SMSManager.vue";
@@ -85,6 +86,7 @@ const NotificationFormList = {
     "webhook": Webhook,
     "WeCom": WeCom,
     "GoAlert": GoAlert,
+    "ServerChan": ServerChan,
 };
 
 export default NotificationFormList;
