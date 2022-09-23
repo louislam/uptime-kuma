@@ -100,7 +100,7 @@ export default {
             const basePath = document.querySelector("head base").getAttribute("href");
 
             socket = io(wsHost, {
-                transports: ["websocket"],
+                transports: [ "websocket" ],
                 path: basePath + "socket.io",
             });
 
