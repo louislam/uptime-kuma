@@ -1583,6 +1583,7 @@ async function initDatabase(testMode = false) {
     if (! fs.existsSync(Database.path)) {
         log.info("server", "Copying Database");
         fs.copyFileSync(Database.templatePath, Database.path);
+        fs.chmodSync(Database.path, 0o640);
     }
 
     log.info("server", "Connecting to the Database");
