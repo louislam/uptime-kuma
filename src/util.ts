@@ -342,3 +342,52 @@ export function getMonitorRelativeURL(id: string) {
 export function getMaintenanceRelativeURL(id: string) {
     return "/maintenance/" + id;
 }
+
+/**
+ * Parse to Time Object that used in VueDatePicker
+ * @param {string} time E.g. 12:00
+ * @returns object
+ */
+export function parseVueDatePickerTimeFormat(time: string) {
+    if (!time) {
+        return {
+            hours: 0,
+            minutes: 0,
+        };
+    }
+
+    let array = time.split(":");
+
+    if (array.length < 2) {
+        throw new Error("parseVueDatePickerTimeFormat: Invalid Time");
+    }
+
+    let obj =  {
+        hours: parseInt(array[0]),
+        minutes: parseInt(array[1]),
+        seconds: 0,
+    }
+    if (array.length >= 3) {
+        obj.seconds = parseInt(array[2]);
+    }
+    return obj;
+}
+
+/**
+ * @returns string e.g. 12:00
+ */
+export function parseTimeFormatFromVueDatePicker(obj : any) {
+    if (!obj) {
+        return obj;
+    }
+
+    let result = "";
+
+    result += obj.hours.toString().padStart(2, "0") + ":" + obj.minutes.toString().padStart(2, "0")
+
+    if (obj.seconds) {
+        result += ":" +  obj.seconds.toString().padStart(2, "0")
+    }
+
+    return result;
+}

@@ -366,10 +366,9 @@ export default {
                     description: "",
                     strategy: "single",
                     active: 1,
-                    recurringStartDate: this.$root.date(dayjs()),
-                    recurringEndDate: "",
                     intervalDay: 1,
                     dateTimeRange: [ this.minDate ],
+                    dateRange: [],
                     timeRange: [{
                         hours: 2,
                         minutes: 0,
@@ -426,6 +425,8 @@ export default {
                 return this.processing = false;
             }
 
+            /*
+            TODO: Temporary disable
             if (this.maintenance.start_date >= this.maintenance.end_date) {
                 toast.error(this.$t("maintenanceInvalidDate"));
                 return this.processing = false;
@@ -438,6 +439,7 @@ export default {
 
             this.maintenance.start_date = this.$root.toUTC(this.maintenance.start_date);
             this.maintenance.end_date = this.$root.toUTC(this.maintenance.end_date);
+            */
 
             if (this.isAdd) {
                 this.$root.addMaintenance(this.maintenance, async (res) => {

@@ -3,6 +3,7 @@ const { log } = require("../../src/util");
 const { R } = require("redbean-node");
 const apicache = require("../modules/apicache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
+const Maintenance = require("../model/maintenance");
 const server = UptimeKumaServer.getInstance();
 
 /**
@@ -14,9 +15,10 @@ module.exports.maintenanceSocketHandler = (socket) => {
     socket.on("addMaintenance", async (maintenance, callback) => {
         try {
             checkLogin(socket);
-            let bean = R.dispense("maintenance");
 
-            bean.import(maintenance);
+            log.debug("maintenance", maintenance);
+
+            let bean = Maintenance.jsonToBean(R.dispense("maintenance"), maintenance);
             bean.user_id = socket.userID;
             let maintenanceID = await R.store(bean);
 
@@ -47,10 +49,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
                 throw new Error("Permission denied.");
             }
 
-            bean.title = maintenance.title;
-            bean.description = maintenance.description;
-            bean.start_date = maintenance.start_date;
-            bean.end_date = maintenance.end_date;
+            Maintenance.jsonToBean(bean, maintenance);
 
             await R.store(bean);
 

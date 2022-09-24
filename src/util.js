@@ -7,7 +7,7 @@
 // Backend uses the compiled file util.js
 // Frontend uses util.ts
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getMaintenanceRelativeURL = exports.getMonitorRelativeURL = exports.genSecret = exports.getCryptoRandomInt = exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.log = exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.STATUS_PAGE_MAINTENANCE = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.MAINTENANCE = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isDev = void 0;
+exports.parseTimeFormatFromVueDatePicker = exports.parseVueDatePickerTimeFormat = exports.getMaintenanceRelativeURL = exports.getMonitorRelativeURL = exports.genSecret = exports.getCryptoRandomInt = exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.log = exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.STATUS_PAGE_MAINTENANCE = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.MAINTENANCE = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isDev = void 0;
 const _dayjs = require("dayjs");
 const dayjs = _dayjs;
 exports.isDev = process.env.NODE_ENV === "development";
@@ -309,3 +309,45 @@ function getMaintenanceRelativeURL(id) {
     return "/maintenance/" + id;
 }
 exports.getMaintenanceRelativeURL = getMaintenanceRelativeURL;
+/**
+ * Parse to Time Object that used in VueDatePicker
+ * @param {string} time E.g. 12:00
+ * @returns object
+ */
+function parseVueDatePickerTimeFormat(time) {
+    if (!time) {
+        return {
+            hours: 0,
+            minutes: 0,
+        };
+    }
+    let array = time.split(":");
+    if (array.length < 2) {
+        throw new Error("parseVueDatePickerTimeFormat: Invalid Time");
+    }
+    let obj = {
+        hours: parseInt(array[0]),
+        minutes: parseInt(array[1]),
+        seconds: 0,
+    };
+    if (array.length >= 3) {
+        obj.seconds = parseInt(array[2]);
+    }
+    return obj;
+}
+exports.parseVueDatePickerTimeFormat = parseVueDatePickerTimeFormat;
+/**
+ * @returns string e.g. 12:00
+ */
+function parseTimeFormatFromVueDatePicker(obj) {
+    if (!obj) {
+        return obj;
+    }
+    let result = "";
+    result += obj.hours.toString().padStart(2, "0") + ":" + obj.minutes.toString().padStart(2, "0");
+    if (obj.seconds) {
+        result += ":" + obj.seconds.toString().padStart(2, "0");
+    }
+    return result;
+}
+exports.parseTimeFormatFromVueDatePicker = parseTimeFormatFromVueDatePicker;
