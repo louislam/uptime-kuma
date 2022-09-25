@@ -26,8 +26,10 @@ import PushDeer from "./PushDeer.vue";
 import Pushover from "./Pushover.vue";
 import Pushy from "./Pushy.vue";
 import RocketChat from "./RocketChat.vue";
+import ServerChan from "./ServerChan.vue";
 import SerwerSMS from "./SerwerSMS.vue";
 import Signal from "./Signal.vue";
+import SMSManager from "./SMSManager.vue";
 import Slack from "./Slack.vue";
 import Stackfield from "./Stackfield.vue";
 import STMP from "./SMTP.vue";
@@ -36,6 +38,7 @@ import TechulusPush from "./TechulusPush.vue";
 import Telegram from "./Telegram.vue";
 import Webhook from "./Webhook.vue";
 import WeCom from "./WeCom.vue";
+import GoAlert from "./GoAlert.vue";
 
 /**
  * Manage all notification form.
@@ -74,6 +77,7 @@ const NotificationFormList = {
     "rocket.chat": RocketChat,
     "serwersms": SerwerSMS,
     "signal": Signal,
+    "SMSManager": SMSManager,
     "slack": Slack,
     "smtp": STMP,
     "stackfield": Stackfield,
@@ -81,6 +85,8 @@ const NotificationFormList = {
     "telegram": Telegram,
     "webhook": Webhook,
     "WeCom": WeCom,
+    "GoAlert": GoAlert,
+    "ServerChan": ServerChan,
 };
 
 export default NotificationFormList;
