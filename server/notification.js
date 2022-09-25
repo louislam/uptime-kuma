@@ -40,6 +40,7 @@ const Webhook = require("./notification-providers/webhook");
 const WeCom = require("./notification-providers/wecom");
 const GoAlert = require("./notification-providers/goalert");
 const SMSManager = require("./notification-providers/smsmanager");
+const ServerChan = require("./notification-providers/serverchan");
 
 class Notification {
 
@@ -80,6 +81,7 @@ class Notification {
             new Pushover(),
             new Pushy(),
             new RocketChat(),
+            new ServerChan(),
             new SerwerSMS(),
             new Signal(),
             new SMSManager(),
