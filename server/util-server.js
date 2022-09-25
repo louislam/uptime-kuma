@@ -21,6 +21,11 @@ const {
         rfc2865: { file, attributes },
     },
 } = require("node-radius-utils");
+const dayjs = require("dayjs");
+const utc = require("dayjs/plugin/utc");
+let timezone = require("dayjs/plugin/timezone");
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 // From ping-lite
 exports.WIN = /^win/.test(process.platform);
@@ -644,4 +649,45 @@ module.exports.send403 = (res, msg = "") => {
         "status": "fail",
         "msg": msg,
     });
+};
+
+function timeObjectConvertTimezone(obj, timezone, timeObjectToUTC = true) {
+    // e.g. +08:00
+    let offsetString = dayjs().tz(timezone).format("Z");
+    let hours = parseInt(offsetString.substring(1, 3));
+    let minutes = parseInt(offsetString.substring(4, 6));
+
+    if (
+        (timeObjectToUTC && offsetString.startsWith("+")) ||
+        (!timeObjectToUTC && offsetString.startsWith("-"))
+    ) {
+        hours *= -1;
+        minutes *= -1;
+    }
+
+    obj.hours += hours;
+    obj.minutes += minutes;
+
+    // Handle out of bound
+    if (obj.hours < 0) {
+        obj.hours += 24;
+    } else if (obj.hours > 24) {
+        obj.hours -= 24;
+    }
+
+    if (obj.minutes < 0) {
+        obj.minutes += 24;
+    } else if (obj.minutes > 24) {
+        obj.minutes -= 24;
+    }
+
+    return obj;
+}
+
+module.exports.timeObjectToUTC = (obj, timezone) => {
+    return timeObjectConvertTimezone(obj, timezone, true);
+};
+
+module.exports.timeObjectToLocal = (obj, timezone) => {
+    return timeObjectConvertTimezone(obj, timezone, false);
 };

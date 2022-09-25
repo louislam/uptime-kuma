@@ -348,7 +348,7 @@ export function getMaintenanceRelativeURL(id: string) {
  * @param {string} time E.g. 12:00
  * @returns object
  */
-export function parseVueDatePickerTimeFormat(time: string) {
+export function parseTimeObject(time: string) {
     if (!time) {
         return {
             hours: 0,
@@ -376,7 +376,7 @@ export function parseVueDatePickerTimeFormat(time: string) {
 /**
  * @returns string e.g. 12:00
  */
-export function parseTimeFormatFromVueDatePicker(obj : any) {
+export function parseTimeFromTimeObject(obj : any) {
     if (!obj) {
         return obj;
     }
@@ -391,3 +391,4 @@ export function parseTimeFormatFromVueDatePicker(obj : any) {
 
     return result;
 }
+

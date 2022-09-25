@@ -7,7 +7,7 @@
 // Backend uses the compiled file util.js
 // Frontend uses util.ts
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseTimeFormatFromVueDatePicker = exports.parseVueDatePickerTimeFormat = exports.getMaintenanceRelativeURL = exports.getMonitorRelativeURL = exports.genSecret = exports.getCryptoRandomInt = exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.log = exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.STATUS_PAGE_MAINTENANCE = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.MAINTENANCE = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isDev = void 0;
+exports.parseTimeFromTimeObject = exports.parseTimeObject = exports.getMaintenanceRelativeURL = exports.getMonitorRelativeURL = exports.genSecret = exports.getCryptoRandomInt = exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.log = exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.STATUS_PAGE_MAINTENANCE = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.MAINTENANCE = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isDev = void 0;
 const _dayjs = require("dayjs");
 const dayjs = _dayjs;
 exports.isDev = process.env.NODE_ENV === "development";
@@ -314,7 +314,7 @@ exports.getMaintenanceRelativeURL = getMaintenanceRelativeURL;
  * @param {string} time E.g. 12:00
  * @returns object
  */
-function parseVueDatePickerTimeFormat(time) {
+function parseTimeObject(time) {
     if (!time) {
         return {
             hours: 0,
@@ -335,11 +335,11 @@ function parseVueDatePickerTimeFormat(time) {
     }
     return obj;
 }
-exports.parseVueDatePickerTimeFormat = parseVueDatePickerTimeFormat;
+exports.parseTimeObject = parseTimeObject;
 /**
  * @returns string e.g. 12:00
  */
-function parseTimeFormatFromVueDatePicker(obj) {
+function parseTimeFromTimeObject(obj) {
     if (!obj) {
         return obj;
     }
@@ -350,4 +350,4 @@ function parseTimeFormatFromVueDatePicker(obj) {
     }
     return result;
 }
-exports.parseTimeFormatFromVueDatePicker = parseTimeFormatFromVueDatePicker;
+exports.parseTimeFromTimeObject = parseTimeFromTimeObject;

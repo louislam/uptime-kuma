@@ -109,7 +109,6 @@
                                         :monthChangeOnScroll="false"
                                         :minDate="minDate"
                                         format="yyyy-MM-dd HH:mm"
-                                        utc="preserve"
                                     />
                                 </div>
                             </template>
@@ -185,8 +184,8 @@
                                     <Datepicker
                                         v-model="maintenance.timeRange"
                                         :dark="$root.isDark"
-                                        timePicker disableTimeRangeValidation range
-                                        placeholder="Select Time"
+                                        timePicker
+                                        disableTimeRangeValidation range
                                         textInput
                                     />
                                 </div>
@@ -201,7 +200,7 @@
                                         :monthChangeOnScroll="false"
                                         :minDate="minDate"
                                         :enableTimePicker="false"
-                                        utc="preserve"
+                                        :utc="true"
                                     />
                                 </div>
                             </template>
@@ -357,6 +356,9 @@ export default {
     },
     methods: {
         init() {
+            // Use browser's timezone!
+            let timezone = dayjs.tz.guess();
+
             this.affectedMonitors = [];
             this.selectedStatusPages = [];
 
@@ -380,10 +382,8 @@ export default {
                     daysOfMonth: [],
                 };
             } else if (this.isEdit) {
-                this.$root.getSocket().emit("getMaintenance", this.$route.params.id, (res) => {
+                this.$root.getSocket().emit("getMaintenance", this.$route.params.id, timezone, (res) => {
                     if (res.ok) {
-                        res.maintenance.start_date = this.$root.datetimeFormat(res.maintenance.start_date, "YYYY-MM-DDTHH:mm");
-                        res.maintenance.end_date = this.$root.datetimeFormat(res.maintenance.end_date, "YYYY-MM-DDTHH:mm");
                         this.maintenance = res.maintenance;
 
                         this.$root.getSocket().emit("getMonitorMaintenance", this.$route.params.id, (res) => {
@@ -441,8 +441,11 @@ export default {
             this.maintenance.end_date = this.$root.toUTC(this.maintenance.end_date);
             */
 
+            // Use browser's timezone!
+            let timezone = dayjs.tz.guess();
+
             if (this.isAdd) {
-                this.$root.addMaintenance(this.maintenance, async (res) => {
+                this.$root.addMaintenance(this.maintenance, timezone, async (res) => {
                     if (res.ok) {
                         await this.addMonitorMaintenance(res.maintenanceID, async () => {
                             await this.addMaintenanceStatusPage(res.maintenanceID, () => {
@@ -459,7 +462,7 @@ export default {
 
                 });
             } else {
-                this.$root.getSocket().emit("editMaintenance", this.maintenance, async (res) => {
+                this.$root.getSocket().emit("editMaintenance", this.maintenance, timezone, async (res) => {
                     if (res.ok) {
                         await this.addMonitorMaintenance(res.maintenanceID, async () => {
                             await this.addMaintenanceStatusPage(res.maintenanceID, () => {

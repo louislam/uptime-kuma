@@ -607,7 +607,7 @@ export default {
     recurringInterval: "Interval",
     "Recurring": "Recurring",
     strategyManual: "Active/Inactive Manually",
-    warningTimezone: "It is NOT your current browser's timezone. It is your server's timezone.",
+    warningTimezone: "It is using your current Device/PC's timezone.",
     weekdayShortMon: "Mon",
     weekdayShortTue: "Tue",
     weekdayShortWed: "Wed",

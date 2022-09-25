@@ -4,17 +4,19 @@ let timezone = require("dayjs/plugin/timezone");
 dayjs.extend(utc);
 dayjs.extend(timezone);
 const { BeanModel } = require("redbean-node/dist/bean-model");
-const { parseVueDatePickerTimeFormat, parseTimeFormatFromVueDatePicker } = require("../../src/util");
+const { parseTimeObject, parseTimeFromTimeObject } = require("../../src/util");
 const { isArray } = require("chart.js/helpers");
+const { timeObjectToUTC, timeObjectToLocal } = require("../util-server");
 
 class Maintenance extends BeanModel {
 
     /**
      * Return an object that ready to parse to JSON for public
      * Only show necessary data to public
+     * @param {string} timezone If not specified, the timeRange will be in UTC
      * @returns {Object}
      */
-    async toPublicJSON() {
+    async toPublicJSON(timezone = null) {
 
         let dateTimeRange = [];
         if (this.start_datetime) {
@@ -33,10 +35,20 @@ class Maintenance extends BeanModel {
         }
 
         let timeRange = [];
-        let startTime = parseVueDatePickerTimeFormat(this.start_time);
+        let startTime = parseTimeObject(this.start_time);
         timeRange.push(startTime);
-        let endTime = parseVueDatePickerTimeFormat(this.end_time);
+        let endTime = parseTimeObject(this.end_time);
         timeRange.push(endTime);
+
+        // Apply timezone offset
+        if (timezone) {
+            if (this.start_time) {
+                timeObjectToLocal(startTime, timezone);
+            }
+            if (this.end_time) {
+                timeObjectToLocal(endTime, timezone);
+            }
+        }
 
         let obj = {
             id: this.id,
@@ -65,15 +77,26 @@ class Maintenance extends BeanModel {
 
     /**
      * Return an object that ready to parse to JSON
+     * @param {string} timezone If not specified, the timeRange will be in UTC
      * @returns {Object}
      */
-    async toJSON() {
-        return this.toPublicJSON();
+    async toJSON(timezone = null) {
+        return this.toPublicJSON(timezone);
     }
 
-    static jsonToBean(bean, obj) {
+    static jsonToBean(bean, obj, timezone) {
         if (obj.id) {
             bean.id = obj.id;
+        }
+
+        // Apply timezone offset to timeRange, as it cannot apply automatically.
+        if (timezone) {
+            if (obj.timeRange[0]) {
+                timeObjectToUTC(obj.timeRange[0], timezone);
+                if (obj.timeRange[1]) {
+                    timeObjectToUTC(obj.timeRange[1], timezone);
+                }
+            }
         }
 
         bean.title = obj.title;
@@ -98,8 +121,8 @@ class Maintenance extends BeanModel {
             }
         }
 
-        bean.start_time = parseTimeFormatFromVueDatePicker(obj.timeRange[0]);
-        bean.end_time = parseTimeFormatFromVueDatePicker(obj.timeRange[1]);
+        bean.start_time = parseTimeFromTimeObject(obj.timeRange[0]);
+        bean.end_time = parseTimeFromTimeObject(obj.timeRange[1]);
 
         bean.weekdays = JSON.stringify(obj.weekdays);
         bean.days_of_month = JSON.stringify(obj.daysOfMonth);
