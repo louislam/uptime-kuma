@@ -741,7 +741,6 @@ export default {
          * @returns {boolean} Is the form input valid?
          */
         isInputValid() {
-            //TODO: Handle validation for all 3 possible options + null value
             if (this.monitor.body && (!this.monitor.httpBodyEncoding || this.monitor.httpBodyEncoding === "json")) {
                 try {
                     JSON.parse(this.monitor.body);
