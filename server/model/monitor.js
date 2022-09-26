@@ -249,20 +249,28 @@ class Monitor extends BeanModel {
 
                     log.debug("monitor", `[${this.name}] Prepare Options for axios`);
 
-                    // Set content-type header and body values based on the httpBodyEncoding type selected
-                    // TODO: Check if this.headers already contains a content-type header set by the user; if so, don't inject one
-                    let bodyValue = null;
-                    let contentType = null;
 
+
+                    // Check if this.headers already contains a content-type header set by the user; if so, don't inject one
+                    let contentTypeUserDefinedHeader = this.headers.find(function(header) {
+                        return header[0].toLowerCase() == "content-type";
+                    });
+
+                    let contentType = contentTypeUserDefinedHeader ? 
+                                        contentTypeUserDefinedHeader[1] :
+                                        null;
+
+                    let bodyValue = null;
+                    
                     if (this.body && !this.httpBodyEncoding || this.httpBodyEncoding === "json") {
                         bodyValue = JSON.parse(this.body);
-                        contentType = "application/json";
+                        contentType = contentType ? contentType : "application/json";
                     } else if (this.body && (this.httpBodyEncoding === "xml")) {
                         bodyValue = this.body;
-                        contentType = "text/xml";
+                        contentType = contentType ? contentType : "text/xml";
                     } else if (this.body && (this.httpBodyEncoding === "form")) {
                         bodyValue = this.body;
-                        contentType = "application/x-www-form-urlencoded";
+                        contentType = contentType ? contentType : "application/x-www-form-urlencoded";
                     }
 
                     const options = {
