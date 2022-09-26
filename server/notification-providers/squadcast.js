@@ -1,6 +1,6 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
-const { DOWN, UP } = require("../../src/util");
+const { DOWN } = require("../../src/util");
 
 class Squadcast extends NotificationProvider {
 
@@ -14,21 +14,21 @@ class Squadcast extends NotificationProvider {
             let config = {};
             let data = {
                 message: msg,
-                description: '',
+                description: "",
                 tags: {},
                 heartbeat: heartbeatJSON,
-                source: 'uptime-kuma'
-            }
+                source: "uptime-kuma"
+            };
 
             if (heartbeatJSON !== null) {
                 data.description = heartbeatJSON["msg"];
                 data.event_id = heartbeatJSON["monitorID"];
 
                 if (heartbeatJSON["status"] === DOWN) {
-                    data.message = `${monitorJSON['name']} is DOWN`;
+                    data.message = `${monitorJSON["name"]} is DOWN`;
                     data.status = "trigger";
                 } else {
-                    data.message = `${monitorJSON['name']} is UP`;
+                    data.message = `${monitorJSON["name"]} is UP`;
                     data.status = "resolve";
                 }
 
@@ -57,7 +57,7 @@ class Squadcast extends NotificationProvider {
                         value: tag["value"]
                     };
                     if (tag["color"] !== null) {
-                        data.tags[tag["name"]]["color"] = tag["color"]
+                        data.tags[tag["name"]]["color"] = tag["color"];
                     }
                 });
             }
