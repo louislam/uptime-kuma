@@ -2,6 +2,7 @@ const { BeanModel } = require("redbean-node/dist/bean-model");
 const { R } = require("redbean-node");
 const cheerio = require("cheerio");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
+const Maintenance = require("./maintenance");
 
 class StatusPage extends BeanModel {
 
@@ -271,14 +272,14 @@ class StatusPage extends BeanModel {
         try {
             const publicMaintenanceList = [];
 
+            let activeCondition = Maintenance.getActiveMaintenanceSQLCondition();
             let maintenanceBeanList = R.convertToBeans("maintenance", await R.getAll(`
                 SELECT m.*
                 FROM maintenance m, maintenance_status_page msp, maintenance_timeslot
                 WHERE  msp.maintenance_id = m.id
-                AND maintenance_timeslot.maintenance.id = m.id
-                AND maintenance_timeslot.start_date <= DATETIME('now')
-                AND maintenance_timeslot.end_date >= DATETIME('now')
-                AND msp.status_page_id = ?
+                    AND maintenance_timeslot.maintenance.id = m.id
+                    AND msp.status_page_id = ?
+                    AND ${activeCondition}
                 ORDER BY m.end_date
             `, [ statusPageId ]));
 

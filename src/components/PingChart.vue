@@ -16,18 +16,14 @@
     </div>
 </template>
 
-<script lang="ts">
+<script lang="js">
 import { BarController, BarElement, Chart, Filler, LinearScale, LineController, LineElement, PointElement, TimeScale, Tooltip } from "chart.js";
 import "chartjs-adapter-dayjs";
 import dayjs from "dayjs";
-import timezone from "dayjs/plugin/timezone";
-import utc from "dayjs/plugin/utc";
 import { LineChart } from "vue-chart-3";
 import { useToast } from "vue-toastification";
 import { DOWN, PENDING, MAINTENANCE, log } from "../util.ts";
 
-dayjs.extend(utc);
-dayjs.extend(timezone);
 const toast = useToast();
 
 Chart.register(LineController, BarController, LineElement, PointElement, TimeScale, BarElement, LinearScale, Tooltip, Filler);

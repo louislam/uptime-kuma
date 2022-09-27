@@ -33,6 +33,11 @@ log.info("server", "Importing Node libraries");
 const fs = require("fs");
 
 log.info("server", "Importing 3rd-party libraries");
+
+const dayjs = require("dayjs");
+dayjs.extend(require("dayjs/plugin/utc"));
+dayjs.extend(require("dayjs/plugin/timezone"));
+
 log.debug("server", "Importing express");
 const express = require("express");
 const expressStaticGzip = require("express-static-gzip");

@@ -1,9 +1,5 @@
 const https = require("https");
 const dayjs = require("dayjs");
-const utc = require("dayjs/plugin/utc");
-let timezone = require("dayjs/plugin/timezone");
-dayjs.extend(utc);
-dayjs.extend(timezone);
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
 const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, TimeLogger } = require("../../src/util");
@@ -17,6 +13,7 @@ const version = require("../../package.json").version;
 const apicache = require("../modules/apicache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { CacheableDnsHttpAgent } = require("../cacheable-dns-http-agent");
+const Maintenance = require("./maintenance");
 
 /**
  * status:
@@ -1105,6 +1102,7 @@ class Monitor extends BeanModel {
      * @returns {Promise<boolean>}
      */
     static async isUnderMaintenance(monitorID) {
+        let activeCondition = Maintenance.getActiveMaintenanceSQLCondition();
         const maintenance = await R.getRow(`
             SELECT COUNT(*) AS count
             FROM monitor_maintenance mm
@@ -1113,8 +1111,7 @@ class Monitor extends BeanModel {
             JOIN maintenance_timeslot
                 ON maintenance_timeslot.maintenance_id = maintenance.id
             WHERE mm.monitor_id = ?
-                AND maintenance_timeslot.start_date <= DATETIME('now')
-                AND maintenance_timeslot.end_date >= DATETIME('now')
+              AND ${activeCondition}
             LIMIT 1`, [ monitorID ]);
         return maintenance.count !== 0;
     }

@@ -6,11 +6,7 @@ const { UptimeKumaServer } = require("../uptime-kuma-server");
 const Maintenance = require("../model/maintenance");
 const server = UptimeKumaServer.getInstance();
 const dayjs = require("dayjs");
-const utc = require("dayjs/plugin/utc");
-let timezone = require("dayjs/plugin/timezone");
 const MaintenanceTimeslot = require("../model/maintenance_timeslot");
-dayjs.extend(utc);
-dayjs.extend(timezone);
 
 /**
  * Handlers for Maintenance

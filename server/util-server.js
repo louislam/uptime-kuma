@@ -22,10 +22,6 @@ const {
     },
 } = require("node-radius-utils");
 const dayjs = require("dayjs");
-const utc = require("dayjs/plugin/utc");
-let timezone = require("dayjs/plugin/timezone");
-dayjs.extend(utc);
-dayjs.extend(timezone);
 
 // From ping-lite
 exports.WIN = /^win/.test(process.platform);

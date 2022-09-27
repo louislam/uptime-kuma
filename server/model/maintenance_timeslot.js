@@ -1,6 +1,7 @@
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { R } = require("redbean-node");
 const dayjs = require("dayjs");
+const { log } = require("../../src/util");
 
 class MaintenanceTimeslot extends BeanModel {
 
@@ -30,7 +31,9 @@ class MaintenanceTimeslot extends BeanModel {
             ]);
         }
 
-        if (maintenance.strategy === "single") {
+        if (maintenance.strategy === "manual") {
+            log.debug("maintenance", "No need to generate timeslot for manual type");
+        } else if (maintenance.strategy === "single") {
             let bean = R.dispense("maintenance_timeslot");
             bean.maintenance_id = maintenance.id;
             bean.start_date = maintenance.start_datetime;

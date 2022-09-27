@@ -1,12 +1,9 @@
 const dayjs = require("dayjs");
-const utc = require("dayjs/plugin/utc");
-let timezone = require("dayjs/plugin/timezone");
-dayjs.extend(utc);
-dayjs.extend(timezone);
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { parseTimeObject, parseTimeFromTimeObject } = require("../../src/util");
 const { isArray } = require("chart.js/helpers");
 const { timeObjectToUTC, timeObjectToLocal } = require("../util-server");
+const { R } = require("redbean-node");
 
 class Maintenance extends BeanModel {
 
@@ -20,17 +17,18 @@ class Maintenance extends BeanModel {
 
         let dateTimeRange = [];
         if (this.start_datetime) {
-            dateTimeRange.push( this.start_datetime);
+
+            dateTimeRange.push(dayjs.utc(this.start_datetime).toISOString());
             if (this.end_datetime) {
-                dateTimeRange.push( this.end_datetime);
+                dateTimeRange.push(dayjs.utc(this.end_datetime).toISOString());
             }
         }
 
         let dateRange = [];
         if (this.start_date) {
-            dateRange.push( this.start_date);
+            dateRange.push(dayjs.utc(this.start_date).toISOString());
             if (this.end_date) {
-                dateRange.push( this.end_date);
+                dateRange.push(dayjs.utc(this.end_date).toISOString());
             }
         }
 
@@ -106,18 +104,18 @@ class Maintenance extends BeanModel {
         bean.active = obj.active;
 
         if (obj.dateRange[0]) {
-            bean.start_date = obj.dateRange[0];
+            bean.start_date = R.isoDate(dayjs(obj.dateRange[0]).utc());
 
             if (obj.dateRange[1]) {
-                bean.end_date = obj.dateRange[1];
+                bean.end_date = R.isoDate(dayjs(obj.dateRange[1]).utc());
             }
         }
 
         if (obj.dateTimeRange[0]) {
-            bean.start_datetime = obj.dateTimeRange[0];
+            bean.start_datetime = R.isoDateTime(dayjs(obj.dateTimeRange[0]).utc());
 
             if (obj.dateTimeRange[1]) {
-                bean.end_datetime = obj.dateTimeRange[1];
+                bean.end_datetime = R.isoDateTime(dayjs(obj.dateTimeRange[1]).utc());
             }
         }
 
@@ -128,6 +126,22 @@ class Maintenance extends BeanModel {
         bean.days_of_month = JSON.stringify(obj.daysOfMonth);
 
         return bean;
+    }
+
+    /**
+     * SQL conditions for active maintenance
+     * @returns {string}
+     */
+    static getActiveMaintenanceSQLCondition() {
+        return `
+
+            (maintenance_timeslot.start_date <= DATETIME('now')
+            AND maintenance_timeslot.end_date >= DATETIME('now')
+            AND maintenance.active = 1)
+            AND
+            (maintenance.strategy = 'manual' AND active = 1)
+
+        `;
     }
 }
 
