@@ -103,7 +103,7 @@
                                 <div class="my-3">
                                     <label class="form-label">{{ $t("DateTime Range") }}</label>
                                     <Datepicker
-                                        v-model="maintenance.dateTimeRange"
+                                        v-model="maintenance.dateRange"
                                         :dark="$root.isDark"
                                         range textInput
                                         :monthChangeOnScroll="false"
@@ -369,8 +369,7 @@ export default {
                     strategy: "single",
                     active: 1,
                     intervalDay: 1,
-                    dateTimeRange: [ this.minDate ],
-                    dateRange: [],
+                    dateRange: [ this.minDate ],
                     timeRange: [{
                         hours: 2,
                         minutes: 0,

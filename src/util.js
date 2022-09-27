@@ -7,9 +7,8 @@
 // Backend uses the compiled file util.js
 // Frontend uses util.ts
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseTimeFromTimeObject = exports.parseTimeObject = exports.getMaintenanceRelativeURL = exports.getMonitorRelativeURL = exports.genSecret = exports.getCryptoRandomInt = exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.log = exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.STATUS_PAGE_MAINTENANCE = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.MAINTENANCE = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isDev = void 0;
-const _dayjs = require("dayjs");
-const dayjs = _dayjs;
+exports.utcToISODateTime = exports.isoToUTCDateTime = exports.parseTimeFromTimeObject = exports.parseTimeObject = exports.getMaintenanceRelativeURL = exports.getMonitorRelativeURL = exports.genSecret = exports.getCryptoRandomInt = exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.log = exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.STATUS_PAGE_MAINTENANCE = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.MAINTENANCE = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isDev = void 0;
+const dayjs = require("dayjs");
 exports.isDev = process.env.NODE_ENV === "development";
 exports.appName = "Uptime Kuma";
 exports.DOWN = 0;
@@ -351,3 +350,14 @@ function parseTimeFromTimeObject(obj) {
     return result;
 }
 exports.parseTimeFromTimeObject = parseTimeFromTimeObject;
+function isoToUTCDateTime(input) {
+    return dayjs(input).utc().format("YYYY-MM-DD HH:mm:ss");
+}
+exports.isoToUTCDateTime = isoToUTCDateTime;
+/**
+ * @param input
+ */
+function utcToISODateTime(input) {
+    return dayjs.utc(input).toISOString();
+}
+exports.utcToISODateTime = utcToISODateTime;

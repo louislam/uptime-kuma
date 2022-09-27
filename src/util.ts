@@ -6,8 +6,10 @@
 // Backend uses the compiled file util.js
 // Frontend uses util.ts
 
-import * as _dayjs from "dayjs";
-const dayjs = _dayjs;
+import * as dayjs  from "dayjs";
+import * as timezone from "dayjs/plugin/timezone";
+import * as utc from "dayjs/plugin/utc";
+import {R} from "redbean-node";
 
 export const isDev = process.env.NODE_ENV === "development";
 export const appName = "Uptime Kuma";
@@ -392,3 +394,14 @@ export function parseTimeFromTimeObject(obj : any) {
     return result;
 }
 
+
+export function isoToUTCDateTime(input : string) {
+    return dayjs(input).utc().format("YYYY-MM-DD HH:mm:ss");
+}
+
+/**
+ * @param input
+ */
+export function utcToISODateTime(input : string) {
+    return dayjs.utc(input).toISOString();
+}

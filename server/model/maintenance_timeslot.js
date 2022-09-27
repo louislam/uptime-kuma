@@ -36,8 +36,8 @@ class MaintenanceTimeslot extends BeanModel {
         } else if (maintenance.strategy === "single") {
             let bean = R.dispense("maintenance_timeslot");
             bean.maintenance_id = maintenance.id;
-            bean.start_date = maintenance.start_datetime;
-            bean.end_date = maintenance.end_datetime;
+            bean.start_date = maintenance.start_date;
+            bean.end_date = maintenance.end_date;
             bean.generated_next = true;
             await R.store(bean);
         } else {

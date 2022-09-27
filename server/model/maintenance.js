@@ -1,9 +1,7 @@
-const dayjs = require("dayjs");
 const { BeanModel } = require("redbean-node/dist/bean-model");
-const { parseTimeObject, parseTimeFromTimeObject } = require("../../src/util");
+const { parseTimeObject, parseTimeFromTimeObject, isoToUTCDateTime, utcToISODateTime } = require("../../src/util");
 const { isArray } = require("chart.js/helpers");
 const { timeObjectToUTC, timeObjectToLocal } = require("../util-server");
-const { R } = require("redbean-node");
 
 class Maintenance extends BeanModel {
 
@@ -15,20 +13,11 @@ class Maintenance extends BeanModel {
      */
     async toPublicJSON(timezone = null) {
 
-        let dateTimeRange = [];
-        if (this.start_datetime) {
-
-            dateTimeRange.push(dayjs.utc(this.start_datetime).toISOString());
-            if (this.end_datetime) {
-                dateTimeRange.push(dayjs.utc(this.end_datetime).toISOString());
-            }
-        }
-
         let dateRange = [];
         if (this.start_date) {
-            dateRange.push(dayjs.utc(this.start_date).toISOString());
+            dateRange.push(utcToISODateTime(this.start_date));
             if (this.end_date) {
-                dateRange.push(dayjs.utc(this.end_date).toISOString());
+                dateRange.push(utcToISODateTime(this.end_date));
             }
         }
 
@@ -55,7 +44,6 @@ class Maintenance extends BeanModel {
             strategy: this.strategy,
             intervalDay: this.interval_day,
             active: !!this.active,
-            dateTimeRange: dateTimeRange,
             dateRange: dateRange,
             timeRange: timeRange,
             weekdays: (this.weekdays) ? JSON.parse(this.weekdays) : [],
@@ -104,18 +92,10 @@ class Maintenance extends BeanModel {
         bean.active = obj.active;
 
         if (obj.dateRange[0]) {
-            bean.start_date = R.isoDate(dayjs(obj.dateRange[0]).utc());
+            bean.start_date = isoToUTCDateTime(obj.dateRange[0]);
 
             if (obj.dateRange[1]) {
-                bean.end_date = R.isoDate(dayjs(obj.dateRange[1]).utc());
-            }
-        }
-
-        if (obj.dateTimeRange[0]) {
-            bean.start_datetime = R.isoDateTime(dayjs(obj.dateTimeRange[0]).utc());
-
-            if (obj.dateTimeRange[1]) {
-                bean.end_datetime = R.isoDateTime(dayjs(obj.dateTimeRange[1]).utc());
+                bean.end_date = isoToUTCDateTime(obj.dateRange[1]);
             }
         }
 
