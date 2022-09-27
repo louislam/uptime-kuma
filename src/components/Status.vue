@@ -47,7 +47,7 @@ export default {
             }
 
             if (this.status === 3) {
-                return this.$t("Maintenance");
+                return this.$t("statusMaintenance");
             }
 
             return this.$t("Unknown");

@@ -8,6 +8,7 @@ const server = UptimeKumaServer.getInstance();
 const dayjs = require("dayjs");
 const utc = require("dayjs/plugin/utc");
 let timezone = require("dayjs/plugin/timezone");
+const MaintenanceTimeslot = require("../model/maintenance_timeslot");
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
@@ -26,6 +27,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
             let bean = Maintenance.jsonToBean(R.dispense("maintenance"), maintenance, timezone);
             bean.user_id = socket.userID;
             let maintenanceID = await R.store(bean);
+            await MaintenanceTimeslot.generateTimeslot(bean);
 
             await server.sendMaintenanceList(socket);
 
@@ -57,6 +59,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
             Maintenance.jsonToBean(bean, maintenance, timezone);
 
             await R.store(bean);
+            await MaintenanceTimeslot.generateTimeslot(bean, null, true);
 
             await server.sendMaintenanceList(socket);
 

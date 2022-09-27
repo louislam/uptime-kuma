@@ -10,6 +10,7 @@ export default {
     maxRedirectDescription: "Maximum number of redirects to follow. Set to 0 to disable redirects.",
     acceptedStatusCodesDescription: "Select status codes which are considered as a successful response.",
     Maintenance: "Maintenance",
+    statusMaintenance: "Maintenance",
     "Schedule maintenance": "Schedule maintenance",
     "Affected Monitors": "Affected Monitors",
     "Pick Affected Monitors...": "Pick Affected Monitors...",

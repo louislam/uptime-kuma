@@ -272,15 +272,15 @@ class StatusPage extends BeanModel {
             const publicMaintenanceList = [];
 
             let maintenanceBeanList = R.convertToBeans("maintenance", await R.getAll(`
-            SELECT m.*
-            FROM maintenance m
-            JOIN maintenance_status_page msp
-            ON msp.maintenance_id = m.id
-            WHERE datetime(m.start_date) <= datetime('now')
-              AND datetime(m.end_date) >= datetime('now')
-              AND msp.status_page_id = ?
-            ORDER BY m.end_date
-        `, [ statusPageId ]));
+                SELECT m.*
+                FROM maintenance m, maintenance_status_page msp, maintenance_timeslot
+                WHERE  msp.maintenance_id = m.id
+                AND maintenance_timeslot.maintenance.id = m.id
+                AND maintenance_timeslot.start_date <= DATETIME('now')
+                AND maintenance_timeslot.end_date >= DATETIME('now')
+                AND msp.status_page_id = ?
+                ORDER BY m.end_date
+            `, [ statusPageId ]));
 
             for (const bean of maintenanceBeanList) {
                 publicMaintenanceList.push(await bean.toPublicJSON());

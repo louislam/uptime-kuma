@@ -26,7 +26,7 @@ export default {
         uptime() {
 
             if (this.type === "maintenance") {
-                return this.$t("Maintenance");
+                return this.$t("statusMaintenance");
             }
 
             let key = this.monitor.id + "_" + this.type;

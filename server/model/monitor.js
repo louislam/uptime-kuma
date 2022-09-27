@@ -1105,7 +1105,17 @@ class Monitor extends BeanModel {
      * @returns {Promise<boolean>}
      */
     static async isUnderMaintenance(monitorID) {
-        const maintenance = await R.getRow("SELECT COUNT(*) AS count FROM monitor_maintenance mm JOIN maintenance ON mm.maintenance_id = maintenance.id WHERE mm.monitor_id = ? AND datetime(maintenance.start_date) <= datetime('now') AND datetime(maintenance.end_date) >= datetime('now') LIMIT 1", [ monitorID ]);
+        const maintenance = await R.getRow(`
+            SELECT COUNT(*) AS count
+            FROM monitor_maintenance mm
+            JOIN maintenance
+                ON mm.maintenance_id = maintenance.id
+            JOIN maintenance_timeslot
+                ON maintenance_timeslot.maintenance_id = maintenance.id
+            WHERE mm.monitor_id = ?
+                AND maintenance_timeslot.start_date <= DATETIME('now')
+                AND maintenance_timeslot.end_date >= DATETIME('now')
+            LIMIT 1`, [ monitorID ]);
         return maintenance.count !== 0;
     }
 }

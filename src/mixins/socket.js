@@ -588,7 +588,7 @@ export default {
 
                 if (this.monitorList[monitorID].maintenance) {
                     result[monitorID] = {
-                        text: this.$t("Maintenance"),
+                        text: this.$t("statusMaintenance"),
                         color: "maintenance",
                     };
                 } else if (! lastHeartBeat) {
