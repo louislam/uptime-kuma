@@ -16,6 +16,11 @@
         <label for="ntfy-priority" class="form-label">{{ $t("Priority") }}</label>
         <input id="ntfy-priority" v-model="$parent.notification.ntfyPriority" type="number" class="form-control" required min="1" max="5" step="1">
     </div>
+
+    <div class="mb-3">
+        <label for="ntfy-icon" class="form-label">{{ $t("IconUrl") }}</label>
+        <input id="ntfy-icon" v-model="$parent.notification.ntfyIcon" type="text" class="form-control" required>
+    </div>
 </template>
 
 <script>
