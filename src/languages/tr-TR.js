@@ -582,4 +582,6 @@ export default {
     goAlert: "GoAlert",
     backupOutdatedWarning: "Kullanımdan Kaldırıldı: Birçok özellik eklendiğinden ve bu yedekleme özelliği biraz bakımsız olduğundan, tam bir yedekleme oluşturamaz veya geri yükleyemez.",
     backupRecommend: "Lütfen bunun yerine birimi veya veri klasörünü (./data/) doğrudan yedekleyin.",
+    "Heartbeat Timeout": "Heartbeat Timeout",
+    timeoutAfterMs: "Timeout after {0}ms",
 };
