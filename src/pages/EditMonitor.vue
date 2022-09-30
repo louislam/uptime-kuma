@@ -255,6 +255,11 @@
 
                             <!-- Interval -->
                             <div class="my-3">
+                                <label for="timeoutMs" class="form-label">{{ $t("Heartbeat Timeout") }} ({{ $t("timeoutAfterMs", [ monitor.timeoutMs ]) }})</label>
+                                <input id="timeoutMs" v-model="monitor.timeoutMs" type="number" class="form-control" required min="50" step="50">
+                            </div>
+
+                            <div class="my-3">
                                 <label for="interval" class="form-label">{{ $t("Heartbeat Interval") }} ({{ $t("checkEverySecond", [ monitor.interval ]) }})</label>
                                 <input id="interval" v-model="monitor.interval" type="number" class="form-control" required min="20" step="1">
                             </div>
@@ -606,6 +611,10 @@ export default {
             if (this.monitor.retryInterval === oldValue) {
                 this.monitor.retryInterval = value;
             }
+            // keep timeoutMs below interval, minding the unit conversion
+            if (!this.monitor.timeoutMs || this.monitor.timeoutMs >= value * 1000) {
+                this.monitor.timeoutMs = value * 1000 * 0.8;
+            }
         },
 
         "monitor.type"() {
@@ -668,6 +677,7 @@ export default {
                     url: "https://",
                     method: "GET",
                     interval: 60,
+                    timeoutMs: this.interval * 1000 * 0.8, // previous default value
                     retryInterval: this.interval,
                     resendInterval: 0,
                     maxretries: 0,
@@ -710,6 +720,10 @@ export default {
                         // Handling for monitors that are created before 1.7.0
                         if (this.monitor.retryInterval === 0) {
                             this.monitor.retryInterval = this.monitor.interval;
+                        }
+                        // Handling for monitors that are missing timeoutMs
+                        if (!this.monitor.timeoutMs) {
+                            this.monitor.timeoutMs = this.monitor.interval * 1000 * 0.8;
                         }
                     } else {
                         toast.error(res.msg);

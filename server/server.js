@@ -668,6 +668,7 @@ let needSetup = false;
                 bean.headers = monitor.headers;
                 bean.basic_auth_user = monitor.basic_auth_user;
                 bean.basic_auth_pass = monitor.basic_auth_pass;
+                bean.timeoutMs = monitor.timeoutMs;
                 bean.interval = monitor.interval;
                 bean.retryInterval = monitor.retryInterval;
                 bean.resendInterval = monitor.resendInterval;
@@ -1254,6 +1255,7 @@ let needSetup = false;
 
                             // Define default values
                             let retryInterval = 0;
+                            let timeoutMs = monitorListData[i].interval * 1000 * 0.8; // previously hardcoded in monitor.js
 
                             /*
                             Only replace the default value with the backup file data for the specific version, where it appears the first time
@@ -1278,6 +1280,7 @@ let needSetup = false;
                                 basic_auth_pass: monitorListData[i].basic_auth_pass,
                                 authWorkstation: monitorListData[i].authWorkstation,
                                 authDomain: monitorListData[i].authDomain,
+                                timeoutMs: timeoutMs,
                                 interval: monitorListData[i].interval,
                                 retryInterval: retryInterval,
                                 resendInterval: monitorListData[i].resendInterval || 0,
