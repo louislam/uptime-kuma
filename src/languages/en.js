@@ -74,8 +74,6 @@ export default {
     "Heartbeat Interval": "Heartbeat Interval",
     Retries: "Retries",
     "Heartbeat Retry Interval": "Heartbeat Retry Interval",
-    "Heartbeat Timeout": "Heartbeat Timeout",
-    timeoutAfterMs: "Timeout after {0}ms",
     "Resend Notification if Down X times consequently": "Resend Notification if Down X times consequently",
     Advanced: "Advanced",
     "Upside Down Mode": "Upside Down Mode",

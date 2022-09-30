@@ -582,8 +582,4 @@ export default {
     goAlert: "GoAlert",
     backupOutdatedWarning: "Usang: Karena banyak fitur ditambahkan dan fitur cadangan ini agak tidak terawat, itu tidak dapat menghasilkan atau memulihkan cadangan lengkap.",
     backupRecommend: "Harap cadangkan volume atau folder data (./data/) secara langsung.",
-    "Heartbeat Timeout": "Heartbeat Timeout",
-    timeoutAfterMs: "Timeout after {0}ms",
-    "Long-Lived Access Token can be created by clicking on your profile name (bottom left) and scrolling to the bottom then click Create Token. ": "Long-Lived Access Token can be created by clicking on your profile name (bottom left) and scrolling to the bottom then click Create Token. ",
-    "A list of Notification Services can be found in Home Assistant under \"Developer Tools > Services\" search for \"notification\" to find your device/phone name.": "A list of Notification Services can be found in Home Assistant under \"Developer Tools > Services\" search for \"notification\" to find your device/phone name.",
 };

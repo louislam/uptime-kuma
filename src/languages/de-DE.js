@@ -576,12 +576,4 @@ export default {
     "Then choose an action, for example switch the scene to where an RGB light is red.": "Dann eine Aktion wählen, zum Beispiel eine Scene wählen in der ein RGB Licht rot ist.",
     "Frontend Version": "Frontend Version",
     "Frontend Version do not match backend version!": "Die Frontend Version stimmt nicht mit der backend version überein!",
-    "Heartbeat Timeout": "Heartbeat Timeout",
-    timeoutAfterMs: "Timeout after {0}ms",
-    "Base URL": "Base URL",
-    goAlertInfo: "GoAlert is a An open source application for on-call scheduling, automated escalations and notifications (like SMS or voice calls). Automatically engage the right person, the right way, and at the right time! {0}",
-    goAlertIntegrationKeyInfo: "Get generic API integration key for the service in this format \"aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee\" usually the value of token parameter of copied URL.",
-    goAlert: "GoAlert",
-    backupOutdatedWarning: "Deprecated: Since a lot of features added and this backup feature is a bit unmaintained, it cannot generate or restore a complete backup.",
-    backupRecommend: "Please backup the volume or the data folder (./data/) directly instead.",
 };
