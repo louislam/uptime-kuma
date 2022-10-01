@@ -544,7 +544,6 @@ export default {
     "Coming Soon": "Coming Soon",
     wayToGetClickSendSMSToken: "You can get API Username and API Key from {0} .",
     lowIntervalWarning: "Are you sure want to set the interval value below 20 seconds? This is NOT supported and may make Uptime Kuma unstable.",
-    "Please use this option carefully!": "Please use this option carefully!",
     enterConfirmationString: "To confirm, please enter the following: {0}",
     confirmLowIntervalRequired: "You must confirm you want to use such a low interval before saving.",
     errCodeMismatch: "Confirmation code did not match",
