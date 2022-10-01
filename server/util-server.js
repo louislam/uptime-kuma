@@ -10,6 +10,17 @@ const chardet = require("chardet");
 const mqtt = require("mqtt");
 const chroma = require("chroma-js");
 const { badgeConstants } = require("./config");
+const mssql = require("mssql");
+const { Client } = require("pg");
+const postgresConParse = require("pg-connection-string").parse;
+const { NtlmClient } = require("axios-ntlm");
+const { Settings } = require("./settings");
+const radiusClient = require("node-radius-client");
+const {
+    dictionaries: {
+        rfc2865: { file, attributes },
+    },
+} = require("node-radius-utils");
 
 // From ping-lite
 exports.WIN = /^win/.test(process.platform);
@@ -173,6 +184,26 @@ exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
 };
 
 /**
+ * Use NTLM Auth for a http request.
+ * @param {Object} options The http request options
+ * @param {Object} ntlmOptions The auth options
+ * @returns {Promise<(string[]|Object[]|Object)>}
+ */
+exports.httpNtlm = function (options, ntlmOptions) {
+    return new Promise((resolve, reject) => {
+        let client = NtlmClient(ntlmOptions);
+
+        client(options)
+            .then((resp) => {
+                resolve(resp);
+            })
+            .catch((err) => {
+                reject(err);
+            });
+    });
+};
+
+/**
  * Resolves a given record using the specified DNS server
  * @param {string} hostname The hostname of the record to lookup
  * @param {string} resolverServer The DNS server to use
@@ -208,22 +239,90 @@ exports.dnsResolve = function (hostname, resolverServer, resolverPort, rrtype) {
 };
 
 /**
+ * Run a query on SQL Server
+ * @param {string} connectionString The database connection string
+ * @param {string} query The query to validate the database with
+ * @returns {Promise<(string[]|Object[]|Object)>}
+ */
+exports.mssqlQuery = function (connectionString, query) {
+    return new Promise((resolve, reject) => {
+        mssql.connect(connectionString).then(pool => {
+            return pool.request()
+                .query(query);
+        }).then(result => {
+            resolve(result);
+        }).catch(err => {
+            reject(err);
+        }).finally(() => {
+            mssql.close();
+        });
+    });
+};
+
+/**
+ * Run a query on Postgres
+ * @param {string} connectionString The database connection string
+ * @param {string} query The query to validate the database with
+ * @returns {Promise<(string[]|Object[]|Object)>}
+ */
+exports.postgresQuery = function (connectionString, query) {
+    return new Promise((resolve, reject) => {
+        const config = postgresConParse(connectionString);
+
+        if (config.password === "") {
+            // See https://github.com/brianc/node-postgres/issues/1927
+            return reject(new Error("Password is undefined."));
+        }
+
+        const client = new Client({ connectionString });
+
+        client.connect();
+
+        return client.query(query)
+            .then(res => {
+                resolve(res);
+            })
+            .catch(err => {
+                reject(err);
+            })
+            .finally(() => {
+                client.end();
+            });
+    });
+};
+
+exports.radius = function (
+    hostname,
+    username,
+    password,
+    calledStationId,
+    callingStationId,
+    secret,
+) {
+    const client = new radiusClient({
+        host: hostname,
+        dictionaries: [ file ],
+    });
+
+    return client.accessRequest({
+        secret: secret,
+        attributes: [
+            [ attributes.USER_NAME, username ],
+            [ attributes.USER_PASSWORD, password ],
+            [ attributes.CALLING_STATION_ID, callingStationId ],
+            [ attributes.CALLED_STATION_ID, calledStationId ],
+        ],
+    });
+};
+
+/**
  * Retrieve value of setting based on key
  * @param {string} key Key of setting to retrieve
  * @returns {Promise<any>} Value
+ * @deprecated Use await Settings.get(key)
  */
 exports.setting = async function (key) {
-    let value = await R.getCell("SELECT `value` FROM setting WHERE `key` = ? ", [
-        key,
-    ]);
-
-    try {
-        const v = JSON.parse(value);
-        log.debug("util", `Get Setting: ${key}: ${v}`);
-        return v;
-    } catch (e) {
-        return value;
-    }
+    return await Settings.get(key);
 };
 
 /**
@@ -234,70 +333,26 @@ exports.setting = async function (key) {
  * @returns {Promise<void>}
  */
 exports.setSetting = async function (key, value, type = null) {
-    let bean = await R.findOne("setting", " `key` = ? ", [
-        key,
-    ]);
-    if (!bean) {
-        bean = R.dispense("setting");
-        bean.key = key;
-    }
-    bean.type = type;
-    bean.value = JSON.stringify(value);
-    await R.store(bean);
+    await Settings.set(key, value, type);
 };
 
 /**
  * Get settings based on type
- * @param {?string} type The type of setting
+ * @param {string} type The type of setting
  * @returns {Promise<Bean>}
  */
 exports.getSettings = async function (type) {
-    let list = await R.getAll("SELECT `key`, `value` FROM setting WHERE `type` = ? ", [
-        type,
-    ]);
-
-    let result = {};
-
-    for (let row of list) {
-        try {
-            result[row.key] = JSON.parse(row.value);
-        } catch (e) {
-            result[row.key] = row.value;
-        }
-    }
-
-    return result;
+    return await Settings.getSettings(type);
 };
 
 /**
  * Set settings based on type
- * @param {?string} type Type of settings to set
+ * @param {string} type Type of settings to set
  * @param {Object} data Values of settings
  * @returns {Promise<void>}
  */
 exports.setSettings = async function (type, data) {
-    let keyList = Object.keys(data);
-
-    let promiseList = [];
-
-    for (let key of keyList) {
-        let bean = await R.findOne("setting", " `key` = ? ", [
-            key
-        ]);
-
-        if (bean == null) {
-            bean = R.dispense("setting");
-            bean.type = type;
-            bean.key = key;
-        }
-
-        if (bean.type === type) {
-            bean.value = JSON.stringify(data[key]);
-            promiseList.push(R.store(bean));
-        }
-    }
-
-    await Promise.all(promiseList);
+    await Settings.setSettings(type, data);
 };
 
 // ssl-checker by @dyaa
@@ -390,7 +445,7 @@ exports.checkCertificate = function (res) {
 
 /**
  * Check if the provided status code is within the accepted ranges
- * @param {string} status The status code to check
+ * @param {number} status The status code to check
  * @param {string[]} acceptedCodes An array of accepted status codes
  * @returns {boolean} True if status code within range, false otherwise
  * @throws {Error} Will throw an error if the provided status code is not a valid range string or code string
@@ -503,6 +558,26 @@ exports.startUnitTest = async () => {
     console.log("Starting unit test...");
     const npm = /^win/.test(process.platform) ? "npm.cmd" : "npm";
     const child = childProcess.spawn(npm, [ "run", "jest" ]);
+
+    child.stdout.on("data", (data) => {
+        console.log(data.toString());
+    });
+
+    child.stderr.on("data", (data) => {
+        console.log(data.toString());
+    });
+
+    child.on("close", function (code) {
+        console.log("Jest exit code: " + code);
+        process.exit(code);
+    });
+};
+
+/** Start end-to-end tests */
+exports.startE2eTests = async () => {
+    console.log("Starting unit test...");
+    const npm = /^win/.test(process.platform) ? "npm.cmd" : "npm";
+    const child = childProcess.spawn(npm, [ "run", "cy:run" ]);
 
     child.stdout.on("data", (data) => {
         console.log(data.toString());

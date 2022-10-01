@@ -6,7 +6,7 @@
                 <Tag v-for="tag in monitor.tags" :key="tag.id" :item="tag" :size="'sm'" />
             </div>
             <p class="url">
-                <a v-if="monitor.type === 'http' || monitor.type === 'keyword' " :href="monitor.url" target="_blank">{{ monitor.url }}</a>
+                <a v-if="monitor.type === 'http' || monitor.type === 'keyword' " :href="monitor.url" target="_blank" rel="noopener noreferrer">{{ monitor.url }}</a>
                 <span v-if="monitor.type === 'port'">TCP Ping {{ monitor.hostname }}:{{ monitor.port }}</span>
                 <span v-if="monitor.type === 'ping'">Ping: {{ monitor.hostname }}</span>
                 <span v-if="monitor.type === 'keyword'">
@@ -77,7 +77,7 @@
                         <h4>{{ $t("Cert Exp.") }}</h4>
                         <p>(<Datetime :value="tlsInfo.certInfo.validTo" date-only />)</p>
                         <span class="num">
-                            <a href="#" @click.prevent="toggleCertInfoBox = !toggleCertInfoBox">{{ tlsInfo.certInfo.daysRemaining }} {{ $t("days") }}</a>
+                            <a href="#" @click.prevent="toggleCertInfoBox = !toggleCertInfoBox">{{ tlsInfo.certInfo.daysRemaining }} {{ $tc("day", tlsInfo.certInfo.daysRemaining) }}</a>
                         </span>
                     </div>
                 </div>
@@ -289,39 +289,47 @@ export default {
 
     },
     methods: {
+        /** Request a test notification be sent for this monitor */
         testNotification() {
             this.$root.getSocket().emit("testNotification", this.monitor.id);
             toast.success("Test notification is requested.");
         },
 
+        /** Show dialog to confirm pause */
         pauseDialog() {
             this.$refs.confirmPause.show();
         },
 
+        /** Resume this monitor */
         resumeMonitor() {
             this.$root.getSocket().emit("resumeMonitor", this.monitor.id, (res) => {
                 this.$root.toastRes(res);
             });
         },
 
+        /** Request that this monitor is paused */
         pauseMonitor() {
             this.$root.getSocket().emit("pauseMonitor", this.monitor.id, (res) => {
                 this.$root.toastRes(res);
             });
         },
 
+        /** Show dialog to confirm deletion */
         deleteDialog() {
             this.$refs.confirmDelete.show();
         },
 
+        /** Show dialog to confirm clearing events */
         clearEventsDialog() {
             this.$refs.confirmClearEvents.show();
         },
 
+        /** Show dialog to confirm clearing heartbeats */
         clearHeartbeatsDialog() {
             this.$refs.confirmClearHeartbeats.show();
         },
 
+        /** Request that this monitor is deleted */
         deleteMonitor() {
             this.$root.deleteMonitor(this.monitor.id, (res) => {
                 if (res.ok) {
@@ -333,6 +341,7 @@ export default {
             });
         },
 
+        /** Request that this monitors events are cleared */
         clearEvents() {
             this.$root.clearEvents(this.monitor.id, (res) => {
                 if (! res.ok) {
@@ -341,6 +350,7 @@ export default {
             });
         },
 
+        /** Request that this monitors heartbeats are cleared */
         clearHeartbeats() {
             this.$root.clearHeartbeats(this.monitor.id, (res) => {
                 if (! res.ok) {
@@ -349,6 +359,11 @@ export default {
             });
         },
 
+        /**
+         * Return the correct title for the ping stat
+         * @param {boolean} [average=false] Is the statistic an average?
+         * @returns {string} Title formated dependant on monitor type
+         */
         pingTitle(average = false) {
             let translationPrefix = "";
             if (average) {

@@ -11,11 +11,16 @@ const viteCompressionFilter = /\.(js|mjs|json|css|html|svg)$/i;
 
 // https://vitejs.dev/config/
 export default defineConfig({
+    server: {
+        port: 3000,
+    },
+    define: {
+        "FRONTEND_VERSION": JSON.stringify(process.env.npm_package_version),
+    },
     plugins: [
         vue(),
         legacy({
-            targets: [ "ie > 11" ],
-            additionalLegacyPolyfills: [ "regenerator-runtime/runtime" ]
+            targets: [ "since 2015" ],
         }),
         visualizer({
             filename: "tmp/dist-stats.html"

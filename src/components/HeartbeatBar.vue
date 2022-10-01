@@ -17,14 +17,17 @@
 
 export default {
     props: {
+        /** Size of the heartbeat bar */
         size: {
             type: String,
             default: "big",
         },
+        /** ID of the monitor */
         monitorId: {
             type: Number,
             required: true,
         },
+        /** Array of the monitors heartbeats */
         heartbeatList: {
             type: Array,
             default: null,
@@ -160,12 +163,19 @@ export default {
         this.resize();
     },
     methods: {
+        /** Resize the heartbeat bar */
         resize() {
             if (this.$refs.wrap) {
                 this.maxBeat = Math.floor(this.$refs.wrap.clientWidth / (this.beatWidth + this.beatMargin * 2));
             }
         },
 
+        /**
+         * Get the title of the beat.
+         * Used as the hover tooltip on the heartbeat bar.
+         * @param {Object} beat Beat to get title from
+         * @returns {string}
+         */
         getBeatTitle(beat) {
             return `${this.$root.datetime(beat.time)}` + ((beat.msg) ? ` - ${beat.msg}` : "");
         },

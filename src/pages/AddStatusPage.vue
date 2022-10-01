@@ -51,6 +51,7 @@ export default {
         };
     },
     methods: {
+        /** Submit form data to add new status page */
         async submit() {
             this.processing = true;
 

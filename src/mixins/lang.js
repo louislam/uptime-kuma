@@ -22,6 +22,7 @@ export default {
     },
 
     methods: {
+        /** Change the application language */
         async changeLang(lang) {
             let message = (await langModules["../languages/" + lang + ".js"]()).default;
             this.$i18n.setLocaleMessage(lang, message);

@@ -25,6 +25,7 @@ const Security = () => import("./components/settings/Security.vue");
 import Proxies from "./components/settings/Proxies.vue";
 import Backup from "./components/settings/Backup.vue";
 import About from "./components/settings/About.vue";
+import DockerHosts from "./components/settings/Docker.vue";
 
 const routes = [
     {
@@ -65,11 +66,11 @@ const routes = [
                                 path: "/add",
                                 component: EditMonitor,
                             },
-                            {
-                                path: "/list",
-                                component: List,
-                            },
                         ],
+                    },
+                    {
+                        path: "/list",
+                        component: List,
                     },
                     {
                         path: "/settings",
@@ -94,6 +95,10 @@ const routes = [
                             {
                                 path: "monitor-history",
                                 component: MonitorHistory,
+                            },
+                            {
+                                path: "docker-hosts",
+                                component: DockerHosts,
                             },
                             {
                                 path: "security",

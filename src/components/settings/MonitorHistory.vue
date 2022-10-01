@@ -90,6 +90,7 @@ export default {
     },
 
     methods: {
+        /** Get the current size of the database */
         loadDatabaseSize() {
             log.debug("monitorhistory", "load database size");
             this.$root.getSocket().emit("getDatabaseSize", (res) => {
@@ -102,6 +103,7 @@ export default {
             });
         },
 
+        /** Request that the database is shrunk */
         shrinkDatabase() {
             this.$root.getSocket().emit("shrinkDatabase", (res) => {
                 if (res.ok) {
@@ -113,10 +115,12 @@ export default {
             });
         },
 
+        /** Show the dialog to confirm clearing stats */
         confirmClearStatistics() {
             this.$refs.confirmClearStatistics.show();
         },
 
+        /** Send the request to clear stats */
         clearStatistics() {
             this.$root.clearStatistics((res) => {
                 if (res.ok) {

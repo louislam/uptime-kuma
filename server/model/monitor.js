@@ -7,7 +7,7 @@ dayjs.extend(timezone);
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
 const { log, UP, DOWN, PENDING, flipStatus, TimeLogger } = require("../../src/util");
-const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mqttAsync } = require("../util-server");
+const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mqttAsync, setSetting, httpNtlm, radius } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification");
@@ -16,6 +16,7 @@ const { demoMode } = require("../config");
 const version = require("../../package.json").version;
 const apicache = require("../modules/apicache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
+const { CacheableDnsHttpAgent } = require("../cacheable-dns-http-agent");
 
 /**
  * status:
@@ -34,7 +35,13 @@ class Monitor extends BeanModel {
         let obj = {
             id: this.id,
             name: this.name,
+            sendUrl: this.sendUrl,
         };
+
+        if (this.sendUrl) {
+            obj.url = this.url;
+        }
+
         if (showTags) {
             obj.tags = await this.getTags();
         }
@@ -72,6 +79,7 @@ class Monitor extends BeanModel {
             type: this.type,
             interval: this.interval,
             retryInterval: this.retryInterval,
+            resendInterval: this.resendInterval,
             keyword: this.keyword,
             expiryNotification: this.isEnabledExpiryNotification(),
             ignoreTls: this.getIgnoreTls(),
@@ -81,13 +89,26 @@ class Monitor extends BeanModel {
             dns_resolve_type: this.dns_resolve_type,
             dns_resolve_server: this.dns_resolve_server,
             dns_last_result: this.dns_last_result,
+            pushToken: this.pushToken,
+            docker_container: this.docker_container,
+            docker_host: this.docker_host,
             proxyId: this.proxy_id,
             notificationIDList,
             tags: tags,
             mqttUsername: this.mqttUsername,
             mqttPassword: this.mqttPassword,
             mqttTopic: this.mqttTopic,
-            mqttSuccessMessage: this.mqttSuccessMessage
+            mqttSuccessMessage: this.mqttSuccessMessage,
+            databaseConnectionString: this.databaseConnectionString,
+            databaseQuery: this.databaseQuery,
+            authMethod: this.authMethod,
+            authWorkstation: this.authWorkstation,
+            authDomain: this.authDomain,
+            radiusUsername: this.radiusUsername,
+            radiusPassword: this.radiusPassword,
+            radiusCalledStationId: this.radiusCalledStationId,
+            radiusCallingStationId: this.radiusCallingStationId,
+            radiusSecret: this.radiusSecret,
         };
 
         if (includeSensitiveData) {
@@ -194,6 +215,7 @@ class Monitor extends BeanModel {
             bean.monitor_id = this.id;
             bean.time = R.isoDateTimeMillis(dayjs.utc());
             bean.status = DOWN;
+            bean.downCount = previousBeat?.downCount || 0;
 
             if (this.isUpsideDown()) {
                 bean.status = flipStatus(bean.status);
@@ -213,7 +235,7 @@ class Monitor extends BeanModel {
 
                     // HTTP basic auth
                     let basicAuthHeader = {};
-                    if (this.basic_auth_user) {
+                    if (this.auth_method === "basic") {
                         basicAuthHeader = {
                             "Authorization": "Basic " + this.encodeBase64(this.basic_auth_user, this.basic_auth_pass),
                         };
@@ -264,7 +286,21 @@ class Monitor extends BeanModel {
                     log.debug("monitor", `[${this.name}] Axios Options: ${JSON.stringify(options)}`);
                     log.debug("monitor", `[${this.name}] Axios Request`);
 
-                    let res = await axios.request(options);
+                    let res;
+                    if (this.auth_method === "ntlm") {
+                        options.httpsAgent.keepAlive = true;
+
+                        res = await httpNtlm(options, {
+                            username: this.basic_auth_user,
+                            password: this.basic_auth_pass,
+                            domain: this.authDomain,
+                            workstation: this.authWorkstation ? this.authWorkstation : undefined
+                        });
+
+                    } else {
+                        res = await axios.request(options);
+                    }
+
                     bean.msg = `${res.status} - ${res.statusText}`;
                     bean.ping = dayjs().valueOf() - startTime;
 
@@ -312,7 +348,11 @@ class Monitor extends BeanModel {
                             bean.msg += ", keyword is found";
                             bean.status = UP;
                         } else {
-                            throw new Error(bean.msg + ", but keyword is not found");
+                            data = data.replace(/<[^>]*>?|[\n\r]|\s+/gm, " ");
+                            if (data.length > 50) {
+                                data = data.substring(0, 47) + "...";
+                            }
+                            throw new Error(bean.msg + ", but keyword is not in [" + data + "]");
                         }
 
                     }
@@ -377,7 +417,7 @@ class Monitor extends BeanModel {
 
                         // If the previous beat was down or pending we use the regular
                         // beatInterval/retryInterval in the setTimeout further below
-                        if (previousBeat.status !== UP || msSinceLastBeat > beatInterval * 1000 + bufferTime) {
+                        if (previousBeat.status !== (this.isUpsideDown() ? DOWN : UP) || msSinceLastBeat > beatInterval * 1000 + bufferTime) {
                             throw new Error("No heartbeat in the time window");
                         } else {
                             let timeout = beatInterval * 1000 - msSinceLastBeat;
@@ -411,9 +451,12 @@ class Monitor extends BeanModel {
                             "Accept": "*/*",
                             "User-Agent": "Uptime-Kuma/" + version,
                         },
-                        httpsAgent: new https.Agent({
+                        httpsAgent: CacheableDnsHttpAgent.getHttpsAgent({
                             maxCachedSessions: 0,      // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
                             rejectUnauthorized: !this.getIgnoreTls(),
+                        }),
+                        httpAgent: CacheableDnsHttpAgent.getHttpAgent({
+                            maxCachedSessions: 0,
                         }),
                         maxRedirects: this.maxredirects,
                         validateStatus: (status) => {
@@ -435,6 +478,35 @@ class Monitor extends BeanModel {
                     } else {
                         throw new Error("Server not found on Steam");
                     }
+                } else if (this.type === "docker") {
+                    log.debug(`[${this.name}] Prepare Options for Axios`);
+
+                    const dockerHost = await R.load("docker_host", this.docker_host);
+
+                    const options = {
+                        url: `/containers/${this.docker_container}/json`,
+                        headers: {
+                            "Accept": "*/*",
+                            "User-Agent": "Uptime-Kuma/" + version,
+                        },
+                        httpsAgent: new https.Agent({
+                            maxCachedSessions: 0,      // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
+                            rejectUnauthorized: ! this.getIgnoreTls(),
+                        }),
+                    };
+
+                    if (dockerHost._dockerType === "socket") {
+                        options.socketPath = dockerHost._dockerDaemon;
+                    } else if (dockerHost._dockerType === "tcp") {
+                        options.baseURL = dockerHost._dockerDaemon;
+                    }
+
+                    log.debug(`[${this.name}] Axios Request`);
+                    let res = await axios.request(options);
+                    if (res.data.State.Running) {
+                        bean.status = UP;
+                        bean.msg = "";
+                    }
                 } else if (this.type === "mqtt") {
                     bean.msg = await mqttAsync(this.hostname, this.mqttTopic, this.mqttSuccessMessage, {
                         port: this.port,
@@ -443,6 +515,46 @@ class Monitor extends BeanModel {
                         interval: this.interval,
                     });
                     bean.status = UP;
+                } else if (this.type === "sqlserver") {
+                    let startTime = dayjs().valueOf();
+
+                    await mssqlQuery(this.databaseConnectionString, this.databaseQuery);
+
+                    bean.msg = "";
+                    bean.status = UP;
+                    bean.ping = dayjs().valueOf() - startTime;
+                } else if (this.type === "postgres") {
+                    let startTime = dayjs().valueOf();
+
+                    await postgresQuery(this.databaseConnectionString, this.databaseQuery);
+
+                    bean.msg = "";
+                    bean.status = UP;
+                    bean.ping = dayjs().valueOf() - startTime;
+                } else if (this.type === "radius") {
+                    let startTime = dayjs().valueOf();
+                    try {
+                        const resp = await radius(
+                            this.hostname,
+                            this.radiusUsername,
+                            this.radiusPassword,
+                            this.radiusCalledStationId,
+                            this.radiusCallingStationId,
+                            this.radiusSecret
+                        );
+                        if (resp.code) {
+                            bean.msg = resp.code;
+                        }
+                        bean.status = UP;
+                    } catch (error) {
+                        bean.status = DOWN;
+                        if (error.response?.code) {
+                            bean.msg = error.response.code;
+                        } else {
+                            bean.msg = error.message;
+                        }
+                    }
+                    bean.ping = dayjs().valueOf() - startTime;
                 } else {
                     bean.msg = "Unknown Monitor Type";
                     bean.status = PENDING;
@@ -484,23 +596,38 @@ class Monitor extends BeanModel {
                 log.debug("monitor", `[${this.name}] sendNotification`);
                 await Monitor.sendNotification(isFirstBeat, this, bean);
 
+                // Reset down count
+                bean.downCount = 0;
+
                 // Clear Status Page Cache
                 log.debug("monitor", `[${this.name}] apicache clear`);
                 apicache.clear();
 
             } else {
                 bean.important = false;
+
+                if (bean.status === DOWN && this.resendInterval > 0) {
+                    ++bean.downCount;
+                    if (bean.downCount >= this.resendInterval) {
+                        // Send notification again, because we are still DOWN
+                        log.debug("monitor", `[${this.name}] sendNotification again: Down Count: ${bean.downCount} | Resend Interval: ${this.resendInterval}`);
+                        await Monitor.sendNotification(isFirstBeat, this, bean);
+
+                        // Reset down count
+                        bean.downCount = 0;
+                    }
+                }
             }
 
             if (bean.status === UP) {
-                log.info("monitor", `Monitor #${this.id} '${this.name}': Successful Response: ${bean.ping} ms | Interval: ${beatInterval} seconds | Type: ${this.type}`);
+                log.debug("monitor", `Monitor #${this.id} '${this.name}': Successful Response: ${bean.ping} ms | Interval: ${beatInterval} seconds | Type: ${this.type}`);
             } else if (bean.status === PENDING) {
                 if (this.retryInterval > 0) {
                     beatInterval = this.retryInterval;
                 }
                 log.warn("monitor", `Monitor #${this.id} '${this.name}': Pending: ${bean.msg} | Max retries: ${this.maxretries} | Retry: ${retries} | Retry Interval: ${beatInterval} seconds | Type: ${this.type}`);
             } else {
-                log.warn("monitor", `Monitor #${this.id} '${this.name}': Failing: ${bean.msg} | Interval: ${beatInterval} seconds | Type: ${this.type}`);
+                log.warn("monitor", `Monitor #${this.id} '${this.name}': Failing: ${bean.msg} | Interval: ${beatInterval} seconds | Type: ${this.type} | Down Count: ${bean.downCount} | Resend Interval: ${this.resendInterval}`);
             }
 
             log.debug("monitor", `[${this.name}] Send to socket`);
@@ -837,10 +964,19 @@ class Monitor extends BeanModel {
         if (tlsInfoObject && tlsInfoObject.certInfo && tlsInfoObject.certInfo.daysRemaining) {
             const notificationList = await Monitor.getNotificationList(this);
 
-            log.debug("monitor", "call sendCertNotificationByTargetDays");
-            await this.sendCertNotificationByTargetDays(tlsInfoObject.certInfo.daysRemaining, 21, notificationList);
-            await this.sendCertNotificationByTargetDays(tlsInfoObject.certInfo.daysRemaining, 14, notificationList);
-            await this.sendCertNotificationByTargetDays(tlsInfoObject.certInfo.daysRemaining, 7, notificationList);
+            let notifyDays = await setting("tlsExpiryNotifyDays");
+            if (notifyDays == null || !Array.isArray(notifyDays)) {
+                // Reset Default
+                setSetting("tlsExpiryNotifyDays", [ 7, 14, 21 ], "general");
+                notifyDays = [ 7, 14, 21 ];
+            }
+
+            if (notifyDays != null && Array.isArray(notifyDays)) {
+                for (const day of notifyDays) {
+                    log.debug("monitor", "call sendCertNotificationByTargetDays", day);
+                    await this.sendCertNotificationByTargetDays(tlsInfoObject.certInfo.daysRemaining, day, notificationList);
+                }
+            }
         }
     }
 
