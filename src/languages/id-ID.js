@@ -380,7 +380,7 @@ export default {
     smtpDkimskipFields: "Header Keys not untuk ditambahkan (Optional)",
     wayToGetPagerDutyKey: "Anda dapat menambahkan melalui Service -> Service Directory -> (Select a service) -> Integrations -> Add integration. Lalu Anda dapat menjadi dengan kata kunci \"Events API V2\". Informasi tambahan {0}",
     "Integration Key": "Kunci Integrasi",
-    "Integration URL": "Url Integrasi",
+    "Integration URL": "URL Integrasi",
     "Auto resolve or acknowledged": "Penyelesaian otomatis atau diakui",
     "do nothing": "tidak melakukan apapun",
     "auto acknowledged": "otomatis diakui",
