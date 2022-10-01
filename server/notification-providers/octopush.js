@@ -49,7 +49,13 @@ class Octopush extends NotificationProvider {
                     },
                     params: data
                 };
-                await axios.post("https://www.octopush-dm.com/api/sms/json", {}, config);
+
+                // V1 API returns 200 even on error so we must check
+                // response data
+                let response = await axios.post("https://www.octopush-dm.com/api/sms/json", {}, config);
+                if ("error_code" in response.data) {
+                    this.throwGeneralAxiosError(`Octopush error ${JSON.stringify(response.data)}`);
+                }
             } else {
                 throw new Error("Unknown Octopush version!");
             }
