@@ -262,7 +262,8 @@
                                     type="number"
                                     class="form-control"
                                     required
-                                    min="1" step="1"
+                                    min="1"
+                                    step="1"
                                     @focus="lowIntervalConfirmation.editedValue=true"
                                     @blur="checkIntervalValue"
                                 >
