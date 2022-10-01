@@ -46,7 +46,7 @@
                                             MQTT
                                         </option>
                                         <option value="sqlserver">
-                                            SQL Server
+                                            Microsoft SQL Server
                                         </option>
                                         <option value="postgres">
                                             PostgreSQL
