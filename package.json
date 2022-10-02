@@ -94,6 +94,7 @@
         "limiter": "^2.1.0",
         "mqtt": "^4.2.8",
         "mssql": "^8.1.0",
+        "mysql2": "^2.3.3",
         "node-cloudflared-tunnel": "~1.0.9",
         "node-radius-client": "^1.0.0",
         "nodemailer": "~6.6.5",
