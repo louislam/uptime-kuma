@@ -178,14 +178,14 @@ let needSetup = false;
 
         log.debug("entry", `Request Domain: ${hostname}`);
 
-        const uptimeKumaEntryPage=UptimeKumaServer.getInstance().entryPage;
+        const uptimeKumaEntryPage = UptimeKumaServer.getInstance().entryPage;
         if (hostname in StatusPage.domainMappingList) {
             log.debug("entry", "This is a status page domain");
 
             let slug = StatusPage.domainMappingList[hostname];
             await StatusPage.handleStatusPageResponse(response, server.indexHTML, slug);
 
-        } else if (uptimeKumaEntryPage && uptimeKumaEntryPage.startsWith('statusPage-')) {
+        } else if (uptimeKumaEntryPage && uptimeKumaEntryPage.startsWith("statusPage-")) {
             response.redirect("/status/" + uptimeKumaEntryPage.replace("statusPage-", ""));
 
         } else {
