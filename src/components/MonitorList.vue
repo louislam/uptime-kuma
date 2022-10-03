@@ -10,7 +10,7 @@
                     <font-awesome-icon icon="times" />
                 </a>
                 <form>
-                    <input v-model="searchText" class="form-control search-input" :placeholder="$t('Search...')" autocomplete="off" aria-label="Search monitored sites"/>
+                    <input v-model="searchText" class="form-control search-input" :placeholder="$t('Search...')" autocomplete="off" aria-label="Search monitored sites" />
                 </form>
             </div>
         </div>
