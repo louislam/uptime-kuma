@@ -1,6 +1,5 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
-const { DOWN, UP } = require("../../src/util");
 
 class FreeMobile extends NotificationProvider {
 
