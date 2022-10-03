@@ -31,6 +31,7 @@ import SerwerSMS from "./SerwerSMS.vue";
 import Signal from "./Signal.vue";
 import SMSManager from "./SMSManager.vue";
 import Slack from "./Slack.vue";
+import Squadcast from "./Squadcast.vue";
 import Stackfield from "./Stackfield.vue";
 import STMP from "./SMTP.vue";
 import Teams from "./Teams.vue";
@@ -79,6 +80,7 @@ const NotificationFormList = {
     "signal": Signal,
     "SMSManager": SMSManager,
     "slack": Slack,
+    "squadcast": Squadcast,
     "smtp": STMP,
     "stackfield": Stackfield,
     "teams": Teams,

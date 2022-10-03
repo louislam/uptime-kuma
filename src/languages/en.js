@@ -583,4 +583,5 @@ export default {
     backupOutdatedWarning: "Deprecated: Since a lot of features added and this backup feature is a bit unmaintained, it cannot generate or restore a complete backup.",
     backupRecommend: "Please backup the volume or the data folder (./data/) directly instead.",
     "Optional": "Optional",
+    squadcast: "Squadcast",
 };

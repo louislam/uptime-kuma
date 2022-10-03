@@ -32,6 +32,7 @@ const SerwerSMS = require("./notification-providers/serwersms");
 const Signal = require("./notification-providers/signal");
 const Slack = require("./notification-providers/slack");
 const SMTP = require("./notification-providers/smtp");
+const Squadcast = require("./notification-providers/squadcast");
 const Stackfield = require("./notification-providers/stackfield");
 const Teams = require("./notification-providers/teams");
 const TechulusPush = require("./notification-providers/techulus-push");
@@ -87,6 +88,7 @@ class Notification {
             new SMSManager(),
             new Slack(),
             new SMTP(),
+            new Squadcast(),
             new Stackfield(),
             new Teams(),
             new TechulusPush(),
