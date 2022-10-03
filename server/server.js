@@ -155,7 +155,9 @@ let needSetup = false;
     Database.init(args);
     await initDatabase(testMode);
 
-    exports.entryPage = await setting("entryPage");
+    const entryPage = (await getSettings("general"))["entryPage"];
+    exports.entryPage = entryPage;
+    UptimeKumaServer.getInstance().entryPage = entryPage;
     await StatusPage.loadDomainMappingList();
 
     log.info("server", "Adding route");
@@ -176,14 +178,15 @@ let needSetup = false;
 
         log.debug("entry", `Request Domain: ${hostname}`);
 
+        const uptimeKumaEntryPage=UptimeKumaServer.getInstance().entryPage;
         if (hostname in StatusPage.domainMappingList) {
             log.debug("entry", "This is a status page domain");
 
             let slug = StatusPage.domainMappingList[hostname];
             await StatusPage.handleStatusPageResponse(response, server.indexHTML, slug);
 
-        } else if (exports.entryPage && exports.entryPage.startsWith("statusPage-")) {
-            response.redirect("/status/" + exports.entryPage.replace("statusPage-", ""));
+        } else if (uptimeKumaEntryPage && uptimeKumaEntryPage.startsWith('statusPage-')) {
+            response.redirect("/status/" + uptimeKumaEntryPage.replace("statusPage-", ""));
 
         } else {
             response.redirect("/dashboard");
@@ -200,7 +203,7 @@ let needSetup = false;
     // Robots.txt
     app.get("/robots.txt", async (_request, response) => {
         let txt = "User-agent: *\nDisallow:";
-        if (! await setting("searchEngineIndex")) {
+        if (!await setting("searchEngineIndex")) {
             txt += " /";
         }
         response.setHeader("Content-Type", "text/plain");
@@ -1085,6 +1088,7 @@ let needSetup = false;
 
                 await setSettings("general", data);
                 exports.entryPage = data.entryPage;
+                UptimeKumaServer.getInstance().entryPage = data.entryPage;
 
                 callback({
                     ok: true,
