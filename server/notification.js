@@ -9,6 +9,7 @@ const ClickSendSMS = require("./notification-providers/clicksendsms");
 const DingDing = require("./notification-providers/dingding");
 const Discord = require("./notification-providers/discord");
 const Feishu = require("./notification-providers/feishu");
+const FreeMobile = require("./notification-providers/freemobile");
 const GoogleChat = require("./notification-providers/google-chat");
 const Gorush = require("./notification-providers/gorush");
 const Gotify = require("./notification-providers/gotify");
@@ -62,6 +63,7 @@ class Notification {
             new DingDing(),
             new Discord(),
             new Feishu(),
+            new FreeMobile(),
             new GoogleChat(),
             new Gorush(),
             new Gotify(),
