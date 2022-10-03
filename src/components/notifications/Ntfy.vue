@@ -12,20 +12,20 @@
         </div>
     </div>
     <div class="mb-3">
-        <label for="ntfy-username" class="form-label">{{ $t("Username") }}</label>
+        <label for="ntfy-priority" class="form-label">{{ $t("Priority") }}</label>
+        <input id="ntfy-priority" v-model="$parent.notification.ntfyPriority" type="number" class="form-control" required min="1" max="5" step="1">
+    </div>
+    <div class="mb-3">
+        <label for="ntfy-username" class="form-label">{{ $t("Username") }} ({{ $t("Optional") }})</label>
         <div class="input-group mb-3">
             <input id="ntfy-username" v-model="$parent.notification.ntfyusername" type="text" class="form-control" required>
         </div>
     </div>
     <div class="mb-3">
-        <label for="ntfy-password" class="form-label">{{ $t("Password") }}</label>
+        <label for="ntfy-password" class="form-label">{{ $t("Password") }} ({{ $t("Optional") }})</label>
         <div class="input-group mb-3">
-            <HiddenInput id="ntfy-password" v-model="$parent.notification.ntfypassword"></HiddenInput>
+            <HiddenInput id="ntfy-password" v-model="$parent.notification.ntfypassword" autocomplete="new-password"></HiddenInput>
         </div>
-    </div>
-    <div class="mb-3">
-        <label for="ntfy-priority" class="form-label">{{ $t("Priority") }}</label>
-        <input id="ntfy-priority" v-model="$parent.notification.ntfyPriority" type="number" class="form-control" required min="1" max="5" step="1">
     </div>
 </template>
 
