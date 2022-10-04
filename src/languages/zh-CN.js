@@ -593,4 +593,6 @@ export default {
     "SMSManager API Docs ": "SMSManager API 文档在",
     "Gateway Type": "网关类型",
     SMSManager: "SMSManager",
+    "You can divide numbers with": "可用的分隔符：",
+    "or": "或",
 };

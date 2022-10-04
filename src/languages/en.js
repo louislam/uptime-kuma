@@ -588,4 +588,6 @@ export default {
     "SMSManager API Docs ": "SMSManager API Docs ",
     "Gateway Type": "Gateway Type",
     SMSManager: "SMSManager",
+    "You can divide numbers with": "You can divide numbers with",
+    "or": "or",
 };
