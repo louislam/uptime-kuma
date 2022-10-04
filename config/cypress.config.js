@@ -1,7 +1,10 @@
 const { defineConfig } = require("cypress");
 
-exports = defineConfig({
+module.exports = defineConfig({
     e2e: {
+        setupNodeEvents(on, config) {
+
+        },
         fixturesFolder: "test/cypress/fixtures",
         screenshotsFolder: "test/cypress/screenshots",
         videosFolder: "test/cypress/videos",
