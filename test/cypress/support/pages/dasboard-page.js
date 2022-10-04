@@ -1,3 +1,3 @@
-export const DashboardPage = {
+exports.DashboardPage = {
     url: Cypress.env("baseUrl") + "/dashboard",
 };
