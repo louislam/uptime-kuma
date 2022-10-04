@@ -75,7 +75,7 @@ class DockerHost {
         if (dockerHost.dockerType === "socket") {
             options.socketPath = dockerHost.dockerDaemon;
         } else if (dockerHost.dockerType === "tcp") {
-            options.baseURL = dockerHost.dockerDaemon;
+            options.baseURL = DockerHost.patchDockerURL(dockerHost.dockerDaemon);
         }
 
         let res = await axios.request(options);
@@ -98,6 +98,18 @@ class DockerHost {
             throw new Error("Invalid Docker response, is it Docker really a daemon?");
         }
 
+    }
+
+    /**
+     * Since axios 0.27.X, it does not accept `tcp://` protocol.
+     * Change it to `http://` on the fly in order to fix it. (https://github.com/louislam/uptime-kuma/issues/2165)
+     */
+    static patchDockerURL(url) {
+        if (typeof url === "string") {
+            // Replace the first occurrence only with g
+            return url.replace(/tcp:\/\//g, "http://");
+        }
+        return url;
     }
 }
 

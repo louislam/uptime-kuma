@@ -56,7 +56,7 @@ module.exports.dockerSocketHandler = (socket) => {
             let amount = await DockerHost.testDockerHost(dockerHost);
             let msg;
 
-            if (amount > 1) {
+            if (amount >= 1) {
                 msg = "Connected Successfully. Amount of containers: " + amount;
             } else {
                 msg = "Connected Successfully, but there are no containers?";
