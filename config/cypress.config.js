@@ -1,6 +1,6 @@
 const { defineConfig } = require("cypress");
 
-export default defineConfig({
+exports = defineConfig({
     e2e: {
         fixturesFolder: "test/cypress/fixtures",
         screenshotsFolder: "test/cypress/screenshots",
