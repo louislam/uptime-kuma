@@ -15,12 +15,10 @@ It is a self-hosted monitoring tool like "Uptime Robot".
 
 Try it!
 
-- https://demo.uptime.kuma.pet (Tokyo Server)
-- https://demo.uptime-kuma.karimi.dev:27000 (Europe server)
+- Tokyo Demo Server: https://demo.uptime.kuma.pet (Sponsored by [Uptime Kuma Sponsors](https://github.com/louislam/uptime-kuma#%EF%B8%8F-sponsors))
+- Europe Demo Server: https://demo.uptime-kuma.karimi.dev:27000 (Provided by [@mhkarimi1383](https://github.com/mhkarimi1383))
 
 It is a temporary live demo, all data will be deleted after 10 minutes. Use the one that is closer to you, but I suggest that you should install and try it out for the best demo experience.
-
-Tokyo VPS is sponsored by Uptime Kuma sponsors on [Open Collective](https://opencollective.com/uptime-kuma)! Thank you so much!
 
 ## ⭐ Features
 
