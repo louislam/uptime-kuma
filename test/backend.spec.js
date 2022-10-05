@@ -295,5 +295,6 @@ describe("Test uptimeKumaServer.getClientIP()", () => {
         ip = await server.getClientIP(fakeSocket);
         expect(ip).toBe("203.0.113.195");
 
+        await Database.close();
     }, 120000);
 });
