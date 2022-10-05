@@ -234,6 +234,7 @@ describe("Test uptimeKumaServer.getClientIP()", () => {
 
         Database.init("./data/test");
         await Database.connect(true);
+        await Database.patch();
 
         const fakeSocket = {
             client: {
