@@ -2,6 +2,9 @@ const { genSecret, DOWN } = require("../src/util");
 const utilServerRewire = require("../server/util-server");
 const Discord = require("../server/notification-providers/discord");
 const axios = require("axios");
+const { UptimeKumaServer } = require("../server/uptime-kuma-server");
+const Database = require("../server/database");
+const {Settings} = require("../server/settings");
 
 jest.mock("axios");
 
@@ -224,4 +227,72 @@ describe("The function filterAndJoin", () => {
         const result = utilServerRewire.filterAndJoin([ undefined, "", "" ], "--");
         expect(result).toBe("");
     });
+});
+
+describe("Test uptimeKumaServer.getClientIP()", () => {
+    it("should able to get a correct client IP", async () => {
+
+        Database.init("./data/test");
+        await Database.connect(true);
+
+        const fakeSocket = {
+            client: {
+                conn: {
+                    remoteAddress: "192.168.10.10",
+                    request: {
+                        headers: {
+                        }
+                    }
+                }
+            }
+        }
+        const server = Object.create(UptimeKumaServer.prototype);
+        let ip = await server.getClientIP(fakeSocket);
+
+        await Settings.set("trustProxy", false);
+        expect(await Settings.get("trustProxy")).toBe(false);
+        expect(ip).toBe("192.168.10.10");
+
+        fakeSocket.client.conn.request.headers["x-forwarded-for"] = "10.10.10.10";
+        ip = await server.getClientIP(fakeSocket);
+        expect(ip).toBe("192.168.10.10");
+
+        fakeSocket.client.conn.request.headers["x-real-ip"] = "20.20.20.20";
+        ip = await server.getClientIP(fakeSocket);
+        expect(ip).toBe("192.168.10.10");
+
+        await Settings.set("trustProxy", true);
+        expect(await Settings.get("trustProxy")).toBe(true);
+
+        fakeSocket.client.conn.request.headers["x-forwarded-for"] = "10.10.10.10";
+        ip = await server.getClientIP(fakeSocket);
+        expect(ip).toBe("10.10.10.10");
+
+        // x-real-ip
+        delete fakeSocket.client.conn.request.headers["x-forwarded-for"];
+        ip = await server.getClientIP(fakeSocket);
+        expect(ip).toBe("20.20.20.20");
+
+        fakeSocket.client.conn.request.headers["x-forwarded-for"] = "2001:db8:85a3:8d3:1319:8a2e:370:7348";
+        ip = await server.getClientIP(fakeSocket);
+        expect(ip).toBe("2001:db8:85a3:8d3:1319:8a2e:370:7348");
+
+        fakeSocket.client.conn.request.headers["x-forwarded-for"] = "203.0.113.195";
+        ip = await server.getClientIP(fakeSocket);
+        expect(ip).toBe("203.0.113.195");
+
+        fakeSocket.client.conn.request.headers["x-forwarded-for"] = "203.0.113.195, 2001:db8:85a3:8d3:1319:8a2e:370:7348";
+        ip = await server.getClientIP(fakeSocket);
+        expect(ip).toBe("203.0.113.195");
+
+        fakeSocket.client.conn.request.headers["x-forwarded-for"] = "203.0.113.195,2001:db8:85a3:8d3:1319:8a2e:370:7348,150.172.238.178";
+        ip = await server.getClientIP(fakeSocket);
+        expect(ip).toBe("203.0.113.195");
+
+        // Elements are comma-separated, with optional whitespace surrounding the commas.
+        fakeSocket.client.conn.request.headers["x-forwarded-for"] = "203.0.113.195 , 2001:db8:85a3:8d3:1319:8a2e:370:7348,150.172.238.178";
+        ip = await server.getClientIP(fakeSocket);
+        expect(ip).toBe("203.0.113.195");
+
+    }, 120000);
 });
