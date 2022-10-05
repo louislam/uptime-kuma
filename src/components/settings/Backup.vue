@@ -1,6 +1,12 @@
 <template>
     <div>
         <div class="my-4">
+            <div class="alert alert-warning" role="alert" style="border-radius: 15px;">
+                {{ $t("backupOutdatedWarning") }}<br />
+                <br />
+                {{ $t("backupRecommend") }}
+            </div>
+
             <h4 class="mt-4 mb-2">{{ $t("Export Backup") }}</h4>
 
             <p>
