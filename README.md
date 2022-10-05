@@ -18,7 +18,7 @@ Try it!
 https://demo.uptime.kuma.pet (Tokyo Server)
 https://demo.uptime-kuma.karimi.dev:27000 (Europe server)
 
-It is a temporary live demo, all data will be deleted after 10 minutes. Use the one that is closer to you, But I suggest that you should install and try it out for the best demo experience.
+It is a temporary live demo, all data will be deleted after 10 minutes. Use the one that is closer to you, but I suggest that you should install and try it out for the best demo experience.
 
 Tokyo VPS is sponsored by Uptime Kuma sponsors on [Open Collective](https://opencollective.com/uptime-kuma)! Thank you so much!
 
