@@ -1,10 +1,11 @@
-const { genSecret, DOWN } = require("../src/util");
+const { genSecret, DOWN, log} = require("../src/util");
 const utilServerRewire = require("../server/util-server");
 const Discord = require("../server/notification-providers/discord");
 const axios = require("axios");
 const { UptimeKumaServer } = require("../server/uptime-kuma-server");
 const Database = require("../server/database");
 const {Settings} = require("../server/settings");
+const fs = require("fs");
 
 jest.mock("axios");
 
@@ -231,8 +232,13 @@ describe("The function filterAndJoin", () => {
 
 describe("Test uptimeKumaServer.getClientIP()", () => {
     it("should able to get a correct client IP", async () => {
-
         Database.init("./data/test");
+
+        if (! fs.existsSync(Database.path)) {
+            log.info("server", "Copying Database");
+            fs.copyFileSync(Database.templatePath, Database.path);
+        }
+
         await Database.connect(true);
         await Database.patch();
 
