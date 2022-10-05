@@ -28,8 +28,15 @@ class Webhook extends NotificationProvider {
                 finalData = data;
             }
 
-            if (notification.webhookAuthorizationHeader) {
-                config.headers["Authorization"] = notification.webhookAuthorizationHeader;
+            if (notification.webhookAdditionalHeaders) {
+                try {
+                    config.headers = {
+                        ...config.headers,
+                        ...JSON.parse(notification.webhookAdditionalHeaders)
+                    };
+                } catch (err) {
+                    throw "Addional Headers is not a valid JSON";
+                }
             }
 
             await axios.post(notification.webhookURL, finalData, config);
