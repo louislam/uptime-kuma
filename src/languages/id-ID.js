@@ -457,7 +457,7 @@ export default {
     cloudflareWebsite: "Situs Cloudflare",
     "Message:": "Pesan:",
     "Don't know how to get the token? Please read the guide:": "Tidak tahu cara mendapatkan token? Silakan baca panduannya:",
-    "The current connection may be lost if you are currently connecting via Cloudflare Tunnel. Are you sure want to stop it? Type your current password to confirm it.": "Koneksi saat ini mungkin hilang jika Anda saat ini terhubung melalui Tunel Cloudflare. Apakah Anda yakin ingin menghentikannya? Ketik kata sandi Anda saat ini untuk mengonfirmasinya.",
+    "The current connection may be lost if you are currently connecting via Cloudflare Tunnel. Are you sure want to stop it? Type your current password to confirm it.": "Koneksi saat ini mungkin hilang jika Anda saat ini terhubung melalui Cloudflare Tunel. Apakah Anda yakin ingin menghentikannya? Ketik kata sandi Anda saat ini untuk mengonfirmasinya.",
     "HTTP Headers": "HTTP Headers",
     "Trust Proxy": "Proxy Terpercaya",
     "Other Software": "Perangkat Lunak lainnya",
