@@ -16,3 +16,6 @@ dist-ssr
 
 cypress/videos
 cypress/screenshots
+
+extra/exe-builder/bin
+extra/exe-builder/obj
