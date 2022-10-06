@@ -138,7 +138,9 @@ class UptimeKumaServer {
         }
 
         if (await Settings.get("trustProxy")) {
-            return socket.client.conn.request.headers["x-forwarded-for"]
+            const forwardedFor = socket.client.conn.request.headers["x-forwarded-for"];
+
+            return (typeof forwardedFor === "string" ? forwardedFor.split(",")[0].trim() : null)
                 || socket.client.conn.request.headers["x-real-ip"]
                 || clientIP.replace(/^.*:/, "");
         } else {
