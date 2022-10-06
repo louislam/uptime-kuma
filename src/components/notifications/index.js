@@ -7,6 +7,7 @@ import ClickSendSMS from "./ClickSendSMS.vue";
 import DingDing from "./DingDing.vue";
 import Discord from "./Discord.vue";
 import Feishu from "./Feishu.vue";
+import FreeMobile from "./FreeMobile.vue";
 import GoogleChat from "./GoogleChat.vue";
 import Gorush from "./Gorush.vue";
 import Gotify from "./Gotify.vue";
@@ -31,6 +32,7 @@ import SerwerSMS from "./SerwerSMS.vue";
 import Signal from "./Signal.vue";
 import SMSManager from "./SMSManager.vue";
 import Slack from "./Slack.vue";
+import Squadcast from "./Squadcast.vue";
 import Stackfield from "./Stackfield.vue";
 import STMP from "./SMTP.vue";
 import Teams from "./Teams.vue";
@@ -55,6 +57,7 @@ const NotificationFormList = {
     "DingDing": DingDing,
     "discord": Discord,
     "Feishu": Feishu,
+    "FreeMobile": FreeMobile,
     "GoogleChat": GoogleChat,
     "gorush": Gorush,
     "gotify": Gotify,
@@ -79,6 +82,7 @@ const NotificationFormList = {
     "signal": Signal,
     "SMSManager": SMSManager,
     "slack": Slack,
+    "squadcast": Squadcast,
     "smtp": STMP,
     "stackfield": Stackfield,
     "teams": Teams,
