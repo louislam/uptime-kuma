@@ -18,7 +18,7 @@
     <div class="mb-3">
         <label for="ntfy-username" class="form-label">{{ $t("Username") }} ({{ $t("Optional") }})</label>
         <div class="input-group mb-3">
-            <input id="ntfy-username" v-model="$parent.notification.ntfyusername" type="text" class="form-control" required>
+            <input id="ntfy-username" v-model="$parent.notification.ntfyusername" type="text" class="form-control">
         </div>
     </div>
     <div class="mb-3">
