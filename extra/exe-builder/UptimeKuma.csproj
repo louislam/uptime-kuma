@@ -13,7 +13,7 @@
         <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
         <Deterministic>true</Deterministic>
         <ApplicationIcon>..\..\public\favicon.ico</ApplicationIcon>
-        <LangVersion>10</LangVersion>
+        <LangVersion>9</LangVersion>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
         <PlatformTarget>AnyCPU</PlatformTarget>
@@ -33,6 +33,9 @@
         <DefineConstants>TRACE</DefineConstants>
         <ErrorReport>prompt</ErrorReport>
         <WarningLevel>4</WarningLevel>
+    </PropertyGroup>
+    <PropertyGroup>
+      <PostBuildEvent>COPY "$(SolutionDir)bin\Debug\uptime-kuma.exe" "C:\Users\LouisLam\Desktop\uptime-kuma-win64\"</PostBuildEvent>
     </PropertyGroup>
     <ItemGroup>
         <Reference Include="System" />

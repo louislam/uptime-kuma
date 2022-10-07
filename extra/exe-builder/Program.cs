@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using UptimeKuma.Properties;
@@ -14,7 +15,7 @@ namespace UptimeKuma {
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main() {
+        static void Main(string[] args) {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new UptimeKumaApplicationContext());
@@ -28,37 +29,44 @@ namespace UptimeKuma {
 
         public UptimeKumaApplicationContext()
         {
-            // Initialize Tray Icon
             trayIcon = new NotifyIcon();
 
             trayIcon.Icon = Icon.ExtractAssociatedIcon(Assembly.GetExecutingAssembly().Location);
             trayIcon.ContextMenu = new ContextMenu(new MenuItem[] {
-                new MenuItem("Open", Open),
-                new MenuItem("Check for Update", CheckForUpdate),
-                new MenuItem("About", About),
-                new MenuItem("Exit", Exit),
+                new("Open", Open),
+                //new("Debug Console", DebugConsole),
+                new("Check for Update...", CheckForUpdate),
+                new("Visit GitHub...", VisitGitHub),
+                new("About", About),
+                new("Exit", Exit),
             });
+
+            trayIcon.MouseDoubleClick += new MouseEventHandler(Open);
 
             trayIcon.Visible = true;
 
-            var startInfo = new ProcessStartInfo();
-            startInfo.FileName = "node/node.exe";
-            startInfo.Arguments = "server/server.js";
-            startInfo.RedirectStandardOutput = true;
-            startInfo.RedirectStandardError = true;
-            startInfo.UseShellExecute = false;
-            startInfo.CreateNoWindow = true;
-            startInfo.WorkingDirectory = "core";
+            var startInfo = new ProcessStartInfo {
+                FileName = "node/node.exe",
+                Arguments = "server/server.js --data-dir=\"../data/\"",
+                RedirectStandardOutput = false,
+                RedirectStandardError = false,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                WorkingDirectory = "core"
+            };
 
             process = new Process();
             process.StartInfo = startInfo;
             process.EnableRaisingEvents = true;
+            process.Exited += new EventHandler(ProcessExited);
+
+
             try {
                 process.Start();
-                Open(null, null);
+                //Open(null, null);
+
             } catch (Exception e) {
                 MessageBox.Show("Startup failed: " + e.Message, "Uptime Kuma Error");
-                throw;
             }
         }
 
@@ -66,8 +74,17 @@ namespace UptimeKuma {
             Process.Start("http://localhost:3001");
         }
 
-        void CheckForUpdate(object sender, EventArgs e) {
+        void DebugConsole(object sender, EventArgs e) {
 
+        }
+
+        void CheckForUpdate(object sender, EventArgs e) {
+            Process.Start("https://github.com/louislam/uptime-kuma/releases");
+        }
+
+        void VisitGitHub(object sender, EventArgs e)
+        {
+            Process.Start("https://github.com/louislam/uptime-kuma");
         }
 
         void About(object sender, EventArgs e)
@@ -79,9 +96,25 @@ namespace UptimeKuma {
         {
             // Hide tray icon, otherwise it will remain shown until user mouses over it
             trayIcon.Visible = false;
-            process.Close();
+            process.Kill();
+        }
+
+        void ProcessExited(object sender, EventArgs e) {
+
+            if (process.ExitCode != 0) {
+                var line = "";
+                while (!process.StandardOutput.EndOfStream)
+                {
+                    line += process.StandardOutput.ReadLine();
+                }
+
+                MessageBox.Show("Uptime Kuma exited unexpectedly. Exit code: " + process.ExitCode + " " + line);
+            }
+
+            trayIcon.Visible = false;
             Application.Exit();
         }
+
     }
 }
 
