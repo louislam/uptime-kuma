@@ -590,7 +590,7 @@ export default {
     Optional: "可选的",
     squadcast: "Squadcast",
     SendKey: "SendKey",
-    "SMSManager API Docs ": "SMSManager API 文档在",
+    "SMSManager API Docs": "SMSManager API 文档在",
     "Gateway Type": "网关类型",
     SMSManager: "SMSManager",
     "You can divide numbers with": "可用的分隔符：",

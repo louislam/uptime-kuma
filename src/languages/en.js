@@ -585,7 +585,7 @@ export default {
     "Optional": "Optional",
     squadcast: "Squadcast",
     SendKey: "SendKey",
-    "SMSManager API Docs ": "SMSManager API Docs ",
+    "SMSManager API Docs": "SMSManager API Docs ",
     "Gateway Type": "Gateway Type",
     SMSManager: "SMSManager",
     "You can divide numbers with": "You can divide numbers with",
