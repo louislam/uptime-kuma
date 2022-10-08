@@ -35,11 +35,12 @@
         <WarningLevel>4</WarningLevel>
     </PropertyGroup>
     <PropertyGroup>
-      <PostBuildEvent>COPY "$(SolutionDir)bin\Debug\uptime-kuma.exe" "C:\Users\LouisLam\Desktop\uptime-kuma-win64\"</PostBuildEvent>
+      <PostBuildEvent>COPY "$(SolutionDir)bin\Debug\uptime-kuma.exe" "%UserProfile%\Desktop\uptime-kuma-win64\"</PostBuildEvent>
     </PropertyGroup>
     <ItemGroup>
         <Reference Include="System" />
         <Reference Include="System.Core" />
+        <Reference Include="System.IO.Compression.FileSystem" />
         <Reference Include="System.Xml.Linq" />
         <Reference Include="System.Data.DataSetExtensions" />
         <Reference Include="Microsoft.CSharp" />

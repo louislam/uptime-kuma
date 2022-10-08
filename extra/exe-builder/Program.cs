@@ -45,7 +45,7 @@ namespace UptimeKuma {
             trayIcon.MouseDoubleClick += new MouseEventHandler(Open);
             trayIcon.Visible = true;
 
-            if (File.Exists("core") && File.Exists("node")) {
+            if (Directory.Exists("core") && Directory.Exists("node") && Directory.Exists("core/node_modules")) {
                 // Go go go
                 StartProcess();
             } else {
