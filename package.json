@@ -51,7 +51,7 @@
         "test-nodejs16": "docker build --progress plain -f test/ubuntu-nodejs16.dockerfile .",
         "simple-dns-server": "node extra/simple-dns-server.js",
         "simple-mqtt-server": "node extra/simple-mqtt-server.js",
-        "update-language-files": "cd extra/update-language-files && node index.js && eslint ../../src/languages/$npm_config_language.js --fix",
+        "update-language-files": "cd extra/update-language-files && node index.js && cross-env-shell eslint ../../src/languages/$npm_config_language.js --fix",
         "ncu-patch": "npm-check-updates -u -t patch",
         "release-final": "node extra/update-version.js && npm run build-docker && node ./extra/press-any-key.js && npm run upload-artifacts && node ./extra/update-wiki-version.js",
         "release-beta": "node extra/beta/update-version.js && npm run build && node ./extra/env2arg.js docker buildx build -f docker/dockerfile --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma:$VERSION -t louislam/uptime-kuma:beta .  --target release --push && node ./extra/press-any-key.js && npm run upload-artifacts",
