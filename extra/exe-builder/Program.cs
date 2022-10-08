@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -42,9 +43,23 @@ namespace UptimeKuma {
             });
 
             trayIcon.MouseDoubleClick += new MouseEventHandler(Open);
-
             trayIcon.Visible = true;
 
+            if (File.Exists("core") && File.Exists("node")) {
+                // Go go go
+                StartProcess();
+            } else {
+                DownloadFiles();
+            }
+        }
+
+        void DownloadFiles() {
+            var form = new DownloadForm();
+            form.Closed += Exit;
+            form.Show();
+        }
+
+        void StartProcess() {
             var startInfo = new ProcessStartInfo {
                 FileName = "node/node.exe",
                 Arguments = "server/server.js --data-dir=\"../data/\"",
@@ -58,8 +73,7 @@ namespace UptimeKuma {
             process = new Process();
             process.StartInfo = startInfo;
             process.EnableRaisingEvents = true;
-            process.Exited += new EventHandler(ProcessExited);
-
+            process.Exited += ProcessExited;
 
             try {
                 process.Start();
@@ -96,7 +110,8 @@ namespace UptimeKuma {
         {
             // Hide tray icon, otherwise it will remain shown until user mouses over it
             trayIcon.Visible = false;
-            process.Kill();
+            process?.Kill();
+            Application.Exit();
         }
 
         void ProcessExited(object sender, EventArgs e) {
