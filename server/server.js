@@ -127,6 +127,7 @@ const StatusPage = require("./model/status_page");
 const { cloudflaredSocketHandler, autoStart: cloudflaredAutoStart, stop: cloudflaredStop } = require("./socket-handlers/cloudflared-socket-handler");
 const { proxySocketHandler } = require("./socket-handlers/proxy-socket-handler");
 const { dockerSocketHandler } = require("./socket-handlers/docker-socket-handler");
+const { Settings } = require("./settings");
 
 app.use(express.json());
 
@@ -155,9 +156,7 @@ let needSetup = false;
     Database.init(args);
     await initDatabase(testMode);
 
-    const entryPage = (await getSettings("general"))["entryPage"];
-    exports.entryPage = entryPage;
-    UptimeKumaServer.getInstance().entryPage = entryPage;
+    server.entryPage = await Settings.get("entryPage");
     await StatusPage.loadDomainMappingList();
 
     log.info("server", "Adding route");
@@ -178,7 +177,7 @@ let needSetup = false;
 
         log.debug("entry", `Request Domain: ${hostname}`);
 
-        const uptimeKumaEntryPage = UptimeKumaServer.getInstance().entryPage;
+        const uptimeKumaEntryPage = server.entryPage;
         if (hostname in StatusPage.domainMappingList) {
             log.debug("entry", "This is a status page domain");
 
@@ -1087,8 +1086,7 @@ let needSetup = false;
                 }
 
                 await setSettings("general", data);
-                exports.entryPage = data.entryPage;
-                UptimeKumaServer.getInstance().entryPage = data.entryPage;
+                server.entryPage = data.entryPage;
 
                 callback({
                     ok: true,
