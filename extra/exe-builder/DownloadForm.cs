@@ -63,12 +63,6 @@ namespace UptimeKuma {
         }
 
         void npmSetup() {
-            if (Directory.Exists("core/node_modules")) {
-               // Application.Restart();
-            }
-
-            label.Text = "npm run setup";
-            progressBar.Value = 50;
             labelData.Text = "";
 
             var startInfo = new ProcessStartInfo {
@@ -86,10 +80,12 @@ namespace UptimeKuma {
             process.StartInfo = startInfo;
             process.EnableRaisingEvents = true;
             process.Exited += (object _, EventArgs e) => {
-               // Application.Restart();
-               progressBar.Value = 100;
+                progressBar.Value = 100;
 
                if (process.ExitCode == 0) {
+                   Task.Delay(2000).ContinueWith((task) => {
+                       Application.Restart();
+                   });
                    label.Text = "Done";
                } else {
                    label.Text = "Failed, exit code: " + process.ExitCode;
@@ -97,7 +93,12 @@ namespace UptimeKuma {
 
             };
             process.Start();
-            process.StandardInput.WriteLine("\"../node/npm\" run setup");
+            label.Text = "Installing dependencies and download dist files";
+            progressBar.Value = 50;
+
+            process.StandardInput.WriteLine("\"../node/npm\" ci --production");
+            process.StandardInput.WriteLine("\"../node/npm\" run download-dist");
+            process.StandardInput.WriteLine("exit");
         }
 
         void DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e) {
@@ -110,7 +111,7 @@ namespace UptimeKuma {
             }
         }
 
-        async void DownloadFileCompleted(object sender, AsyncCompletedEventArgs e) {
+        void DownloadFileCompleted(object sender, AsyncCompletedEventArgs e) {
             Extract(currentDownloadItem);
             DownloadNextFile();
         }
