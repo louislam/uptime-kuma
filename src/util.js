@@ -7,7 +7,7 @@
 // Backend uses the compiled file util.js
 // Frontend uses util.ts
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.utcToISODateTime = exports.isoToUTCDateTime = exports.parseTimeFromTimeObject = exports.parseTimeObject = exports.getMaintenanceRelativeURL = exports.getMonitorRelativeURL = exports.genSecret = exports.getCryptoRandomInt = exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.log = exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.STATUS_PAGE_MAINTENANCE = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.MAINTENANCE = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isDev = void 0;
+exports.localToUTC = exports.utcToLocal = exports.utcToISODateTime = exports.isoToUTCDateTime = exports.parseTimeFromTimeObject = exports.parseTimeObject = exports.getMaintenanceRelativeURL = exports.getMonitorRelativeURL = exports.genSecret = exports.getCryptoRandomInt = exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.log = exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.SQL_DATETIME_FORMAT = exports.SQL_DATE_FORMAT = exports.STATUS_PAGE_MAINTENANCE = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.MAINTENANCE = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isDev = void 0;
 const dayjs = require("dayjs");
 exports.isDev = process.env.NODE_ENV === "development";
 exports.appName = "Uptime Kuma";
@@ -19,6 +19,8 @@ exports.STATUS_PAGE_ALL_DOWN = 0;
 exports.STATUS_PAGE_ALL_UP = 1;
 exports.STATUS_PAGE_PARTIAL_DOWN = 2;
 exports.STATUS_PAGE_MAINTENANCE = 3;
+exports.SQL_DATE_FORMAT = "YYYY-MM-DD";
+exports.SQL_DATETIME_FORMAT = "YYYY-MM-DD HH:mm:ss";
 /** Flip the status of s */
 function flipStatus(s) {
     if (s === exports.UP) {
@@ -351,7 +353,7 @@ function parseTimeFromTimeObject(obj) {
 }
 exports.parseTimeFromTimeObject = parseTimeFromTimeObject;
 function isoToUTCDateTime(input) {
-    return dayjs(input).utc().format("YYYY-MM-DD HH:mm:ss");
+    return dayjs(input).utc().format(exports.SQL_DATETIME_FORMAT);
 }
 exports.isoToUTCDateTime = isoToUTCDateTime;
 /**
@@ -361,3 +363,15 @@ function utcToISODateTime(input) {
     return dayjs.utc(input).toISOString();
 }
 exports.utcToISODateTime = utcToISODateTime;
+/**
+/**
+ * For SQL_DATETIME_FORMAT
+ */
+function utcToLocal(input) {
+    return dayjs.utc(input).local().format(exports.SQL_DATETIME_FORMAT);
+}
+exports.utcToLocal = utcToLocal;
+function localToUTC(input) {
+    return dayjs(input).utc().format(exports.SQL_DATETIME_FORMAT);
+}
+exports.localToUTC = localToUTC;

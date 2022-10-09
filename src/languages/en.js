@@ -616,7 +616,7 @@ export default {
     recurringInterval: "Interval",
     "Recurring": "Recurring",
     strategyManual: "Active/Inactive Manually",
-    warningTimezone: "It is using your current Device/PC's timezone.",
+    warningTimezone: "It is using the server's timezone",
     weekdayShortMon: "Mon",
     weekdayShortTue: "Tue",
     weekdayShortWed: "Wed",

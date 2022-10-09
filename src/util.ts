@@ -23,6 +23,9 @@ export const STATUS_PAGE_ALL_UP = 1;
 export const STATUS_PAGE_PARTIAL_DOWN = 2;
 export const STATUS_PAGE_MAINTENANCE = 3;
 
+export const SQL_DATE_FORMAT = "YYYY-MM-DD";
+export const SQL_DATETIME_FORMAT = "YYYY-MM-DD HH:mm:ss";
+
 /** Flip the status of s */
 export function flipStatus(s: number) {
     if (s === UP) {
@@ -396,7 +399,7 @@ export function parseTimeFromTimeObject(obj : any) {
 
 
 export function isoToUTCDateTime(input : string) {
-    return dayjs(input).utc().format("YYYY-MM-DD HH:mm:ss");
+    return dayjs(input).utc().format(SQL_DATETIME_FORMAT);
 }
 
 /**
@@ -404,4 +407,16 @@ export function isoToUTCDateTime(input : string) {
  */
 export function utcToISODateTime(input : string) {
     return dayjs.utc(input).toISOString();
+}
+
+/**
+/**
+ * For SQL_DATETIME_FORMAT
+ */
+export function utcToLocal(input : string) {
+    return dayjs.utc(input).local().format(SQL_DATETIME_FORMAT);
+}
+
+export function localToUTC(input : string) {
+    return dayjs(input).utc().format(SQL_DATETIME_FORMAT);
 }

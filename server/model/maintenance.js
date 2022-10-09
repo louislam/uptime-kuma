@@ -1,5 +1,5 @@
 const { BeanModel } = require("redbean-node/dist/bean-model");
-const { parseTimeObject, parseTimeFromTimeObject, isoToUTCDateTime, utcToISODateTime } = require("../../src/util");
+const { parseTimeObject, parseTimeFromTimeObject, isoToUTCDateTime, utcToISODateTime, SQL_DATETIME_FORMAT, utcToLocal, localToUTC } = require("../../src/util");
 const { isArray } = require("chart.js/helpers");
 const { timeObjectToUTC, timeObjectToLocal } = require("../util-server");
 
@@ -15,9 +15,9 @@ class Maintenance extends BeanModel {
 
         let dateRange = [];
         if (this.start_date) {
-            dateRange.push(utcToISODateTime(this.start_date));
+            dateRange.push(utcToLocal(this.start_date));
             if (this.end_date) {
-                dateRange.push(utcToISODateTime(this.end_date));
+                dateRange.push(utcToLocal(this.end_date));
             }
         }
 
@@ -92,10 +92,10 @@ class Maintenance extends BeanModel {
         bean.active = obj.active;
 
         if (obj.dateRange[0]) {
-            bean.start_date = isoToUTCDateTime(obj.dateRange[0]);
+            bean.start_date = localToUTC(obj.dateRange[0]);
 
             if (obj.dateRange[1]) {
-                bean.end_date = isoToUTCDateTime(obj.dateRange[1]);
+                bean.end_date = localToUTC(obj.dateRange[1]);
             }
         }
 

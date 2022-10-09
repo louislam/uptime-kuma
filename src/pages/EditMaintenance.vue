@@ -82,7 +82,7 @@
 
                             <h2 class="mt-5">{{ $t("Date and Time") }}</h2>
 
-                            <div>⚠️ {{ $t("warningTimezone") }}</div>
+                            <div>⚠️ {{ $t("warningTimezone") }}: {{ $root.info.serverTimezone }}</div>
 
                             <!-- Strategy -->
                             <div class="my-3">
@@ -105,10 +105,11 @@
                                     <Datepicker
                                         v-model="maintenance.dateRange"
                                         :dark="$root.isDark"
-                                        range textInput
+                                        range
                                         :monthChangeOnScroll="false"
                                         :minDate="minDate"
                                         format="yyyy-MM-dd HH:mm"
+                                        modelType="yyyy-MM-dd HH:mm:ss"
                                     />
                                 </div>
                             </template>
@@ -186,7 +187,6 @@
                                         :dark="$root.isDark"
                                         timePicker
                                         disableTimeRangeValidation range
-                                        textInput
                                     />
                                 </div>
 
@@ -196,7 +196,7 @@
                                     <Datepicker
                                         v-model="maintenance.dateRange"
                                         :dark="$root.isDark"
-                                        range textInput datePicker
+                                        range datePicker
                                         :monthChangeOnScroll="false"
                                         :minDate="minDate"
                                         :enableTimePicker="false"
