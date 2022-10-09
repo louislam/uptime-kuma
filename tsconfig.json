@@ -11,11 +11,9 @@
         "removeComments": false,
         "preserveConstEnums": true,
         "sourceMap": false,
-        "strict": true,
-        "types": ["cypress"]
+        "strict": true
     },
     "files": [
-        "./src/util.ts",
-    ],
-    "include": ["cypress/**/*.ts"]
+        "./src/util.ts"
+    ]
 }

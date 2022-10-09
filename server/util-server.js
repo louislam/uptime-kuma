@@ -558,7 +558,7 @@ exports.doubleCheckPassword = async (socket, currentPassword) => {
 exports.startUnitTest = async () => {
     console.log("Starting unit test...");
     const npm = /^win/.test(process.platform) ? "npm.cmd" : "npm";
-    const child = childProcess.spawn(npm, [ "run", "jest" ]);
+    const child = childProcess.spawn(npm, [ "run", "jest-backend" ]);
 
     child.stdout.on("data", (data) => {
         console.log(data.toString());

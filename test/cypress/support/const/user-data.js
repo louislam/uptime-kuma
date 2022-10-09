@@ -1,4 +1,4 @@
-export const DEFAULT_USER_DATA = {
+exports.DEFAULT_USER_DATA = {
     username: "testuser",
     password: "testuser123",
 };

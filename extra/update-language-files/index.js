@@ -1,51 +1,45 @@
 // Need to use ES6 to read language files
 
 import fs from "fs";
-import path from "path";
 import util from "util";
 import rmSync from "../fs-rmSync.js";
 
-// https://stackoverflow.com/questions/13786160/copy-folder-recursively-in-node-js
 /**
- * Look ma, it's cp -R.
- * @param {string} src  The path to the thing to copy.
- * @param {string} dest The path to the new copy.
+ * Copy across the required language files
+ * Creates a local directory (./languages) and copies the required files
+ * into it.
+ * @param {string} langCode Code of language to update. A file will be
+ * created with this code if one does not already exist
+ * @param {string} baseLang The second base language file to copy. This
+ * will be ignored if set to "en" as en.js is copied by default
  */
-const copyRecursiveSync = function (src, dest) {
-    let exists = fs.existsSync(src);
-    let stats = exists && fs.statSync(src);
-    let isDirectory = exists && stats.isDirectory();
+function copyFiles(langCode, baseLang) {
+    if (fs.existsSync("./languages")) {
+        rmSync("./languages", { recursive: true });
+    }
+    fs.mkdirSync("./languages");
 
-    if (isDirectory) {
-        fs.mkdirSync(dest);
-        fs.readdirSync(src).forEach(function (childItemName) {
-            copyRecursiveSync(path.join(src, childItemName),
-                path.join(dest, childItemName));
-        });
+    if (!fs.existsSync(`../../src/languages/${langCode}.js`)) {
+        fs.closeSync(fs.openSync(`./languages/${langCode}.js`, "a"));
     } else {
-        fs.copyFileSync(src, dest);
+        fs.copyFileSync(`../../src/languages/${langCode}.js`, `./languages/${langCode}.js`);
     }
-};
-
-console.log("Arguments:", process.argv);
-const baseLangCode = process.argv[2] || "en";
-console.log("Base Lang: " + baseLangCode);
-if (fs.existsSync("./languages")) {
-    rmSync("./languages", { recursive: true });
+    fs.copyFileSync("../../src/languages/en.js", "./languages/en.js");
+    if (baseLang !== "en") {
+        fs.copyFileSync(`../../src/languages/${baseLang}.js`, `./languages/${baseLang}.js`);
+    }
 }
-copyRecursiveSync("../../src/languages", "./languages");
 
-const en = (await import("./languages/en.js")).default;
-const baseLang = (await import(`./languages/${baseLangCode}.js`)).default;
-const files = fs.readdirSync("./languages");
-console.log("Files:", files);
+/**
+ * Update the specified language file
+ * @param {string} langCode Language code to update
+ * @param {string} baseLang Second language to copy keys from
+ */
+async function updateLanguage(langCode, baseLangCode) {
+    const en = (await import("./languages/en.js")).default;
+    const baseLang = (await import(`./languages/${baseLangCode}.js`)).default;
 
-for (const file of files) {
-    if (! file.endsWith(".js")) {
-        console.log("Skipping " + file);
-        continue;
-    }
-
+    let file = langCode + ".js";
     console.log("Processing " + file);
     const lang = await import("./languages/" + file);
 
@@ -83,5 +77,20 @@ for (const file of files) {
     fs.writeFileSync(`../../src/languages/${file}`, code);
 }
 
+// Get command line arguments
+const baseLangCode = process.env.npm_config_baselang || "en";
+const langCode = process.env.npm_config_language;
+
+// We need the file to edit
+if (langCode == null) {
+    throw new Error("Argument --language=<code> must be provided");
+}
+
+console.log("Base Lang: " + baseLangCode);
+console.log("Updating: " + langCode);
+
+copyFiles(langCode, baseLangCode);
+await updateLanguage(langCode, baseLangCode);
 rmSync("./languages", { recursive: true });
+
 console.log("Done. Fixing formatting by ESLint...");

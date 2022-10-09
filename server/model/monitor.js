@@ -13,6 +13,7 @@ const version = require("../../package.json").version;
 const apicache = require("../modules/apicache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { CacheableDnsHttpAgent } = require("../cacheable-dns-http-agent");
+const { DockerHost } = require("../docker");
 const Maintenance = require("./maintenance");
 
 /**
@@ -501,7 +502,7 @@ class Monitor extends BeanModel {
                     if (dockerHost._dockerType === "socket") {
                         options.socketPath = dockerHost._dockerDaemon;
                     } else if (dockerHost._dockerType === "tcp") {
-                        options.baseURL = dockerHost._dockerDaemon;
+                        options.baseURL = DockerHost.patchDockerURL(dockerHost._dockerDaemon);
                     }
 
                     log.debug(`[${this.name}] Axios Request`);
