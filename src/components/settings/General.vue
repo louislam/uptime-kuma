@@ -1,15 +1,31 @@
 <template>
     <div>
         <form class="my-4" @submit.prevent="saveGeneral">
-            <!-- Timezone -->
+            <!-- Client side Timezone -->
             <div class="mb-4">
                 <label for="timezone" class="form-label">
-                    {{ $t("Timezone") }}
+                    {{ $t("Display Timezone") }}
                 </label>
                 <select id="timezone" v-model="$root.userTimezone" class="form-select">
                     <option value="auto">
                         {{ $t("Auto") }}: {{ guessTimezone }}
                     </option>
+                    <option
+                        v-for="(timezone, index) in timezoneList"
+                        :key="index"
+                        :value="timezone.value"
+                    >
+                        {{ timezone.name }}
+                    </option>
+                </select>
+            </div>
+
+            <!-- Server Timezone -->
+            <div class="mb-4">
+                <label for="timezone" class="form-label">
+                    {{ $t("Server Timezone") }}
+                </label>
+                <select id="timezone" v-model="settings.serverTimezone" class="form-select">
                     <option
                         v-for="(timezone, index) in timezoneList"
                         :key="index"

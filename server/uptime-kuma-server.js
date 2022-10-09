@@ -9,6 +9,7 @@ const Database = require("./database");
 const util = require("util");
 const { CacheableDnsHttpAgent } = require("./cacheable-dns-http-agent");
 const { Settings } = require("./settings");
+const dayjs = require("dayjs");
 
 /**
  * `module.exports` (alias: `server`) should be inside this class, in order to avoid circular dependency issue.
@@ -82,6 +83,13 @@ class UptimeKumaServer {
         CacheableDnsHttpAgent.registerGlobalAgent();
 
         this.io = new Server(this.httpServer);
+    }
+
+    async initAfterDatabaseReady() {
+        process.env.TZ = await this.getTimezone();
+        dayjs.tz.setDefault(process.env.TZ);
+        log.debug("DEBUG", "Timezone: " + process.env.TZ);
+        log.debug("DEBUG", "Current Time: " + dayjs.tz().format());
     }
 
     async sendMonitorList(socket) {
@@ -183,6 +191,23 @@ class UptimeKumaServer {
         } else {
             return clientIP.replace(/^.*:/, "");
         }
+    }
+
+    async getTimezone() {
+        let timezone = await Settings.get("serverTimezone");
+        if (timezone) {
+            return timezone;
+        } else if (process.env.TZ) {
+            return process.env.TZ;
+        } else {
+            return dayjs.tz.guess();
+        }
+    }
+
+    async setTimezone(timezone) {
+        await Settings.set("serverTimezone", timezone, "general");
+        process.env.TZ = timezone;
+        dayjs.tz.setDefault(timezone);
     }
 }
 

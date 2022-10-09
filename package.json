@@ -123,7 +123,7 @@
         "@vitejs/plugin-legacy": "~2.1.0",
         "@vitejs/plugin-vue": "~3.1.0",
         "@vue/compiler-sfc": "~3.2.36",
-        "@vuepic/vue-datepicker": "^3.4.8",
+        "@vuepic/vue-datepicker": "~3.4.8",
         "aedes": "^0.46.3",
         "babel-plugin-rewire": "~1.2.0",
         "bootstrap": "5.1.3",

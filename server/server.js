@@ -5,6 +5,11 @@
  */
 console.log("Welcome to Uptime Kuma");
 
+// As the log function need to use dayjs, it should be very top
+const dayjs = require("dayjs");
+dayjs.extend(require("dayjs/plugin/utc"));
+dayjs.extend(require("dayjs/plugin/timezone"));
+
 // Check Node.js Version
 const nodeVersion = parseInt(process.versions.node.split(".")[0]);
 const requiredVersion = 14;
@@ -33,10 +38,6 @@ log.info("server", "Importing Node libraries");
 const fs = require("fs");
 
 log.info("server", "Importing 3rd-party libraries");
-
-const dayjs = require("dayjs");
-dayjs.extend(require("dayjs/plugin/utc"));
-dayjs.extend(require("dayjs/plugin/timezone"));
 
 log.debug("server", "Importing express");
 const express = require("express");
@@ -160,6 +161,7 @@ let needSetup = false;
 (async () => {
     Database.init(args);
     await initDatabase(testMode);
+    await server.initAfterDatabaseReady();
 
     exports.entryPage = await setting("entryPage");
     await StatusPage.loadDomainMappingList();
@@ -1061,10 +1063,15 @@ let needSetup = false;
         socket.on("getSettings", async (callback) => {
             try {
                 checkLogin(socket);
+                const data = await getSettings("general");
+
+                if (!data.serverTimezone) {
+                    data.serverTimezone = await server.getTimezone();
+                }
 
                 callback({
                     ok: true,
-                    data: await getSettings("general"),
+                    data: data,
                 });
 
             } catch (e) {
@@ -1092,9 +1099,14 @@ let needSetup = false;
                 await setSettings("general", data);
                 exports.entryPage = data.entryPage;
 
+                // Also need to apply timezone globally
+                if (data.serverTimezone) {
+                    await server.setTimezone(data.serverTimezone);
+                }
+
                 callback({
                     ok: true,
-                    msg: "Saved"
+                    msg: "Saved " + dayjs()
                 });
 
                 sendInfo(socket);
