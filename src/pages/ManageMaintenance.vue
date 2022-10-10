@@ -20,7 +20,7 @@
                     v-for="(item, index) in sortedMaintenanceList"
                     :key="index"
                     class="item"
-                    :class="{ 'ended': !$root.isActiveMaintenance(item.end_date) }"
+                    :class="item.status"
                 >
                     <div class="left-part">
                         <div
@@ -35,7 +35,7 @@
                     <div class="buttons">
                         <router-link v-if="false" :to="maintenanceURL(item.id)" class="btn btn-light">{{ $t("Details") }}</router-link>
 
-                        <button v-if="item.active" class="btn btn-light" @click="pauseDialog">
+                        <button v-if="item.active" class="btn btn-normal" @click="pauseDialog">
                             <font-awesome-icon icon="pause" /> {{ $t("Pause") }}
                         </button>
 
@@ -43,7 +43,7 @@
                             <font-awesome-icon icon="play" /> {{ $t("Resume") }}
                         </button>
 
-                        <router-link :to="'/maintenance/edit/' + item.id" class="btn btn-secondary">
+                        <router-link :to="'/maintenance/edit/' + item.id" class="btn btn-normal">
                             <font-awesome-icon icon="edit" /> {{ $t("Edit") }}
                         </router-link>
 
@@ -90,36 +90,6 @@ export default {
             let result = Object.values(this.$root.maintenanceList);
 
             result.sort((m1, m2) => {
-
-                if (this.$root.isActiveMaintenance(m1.end_date) !== this.$root.isActiveMaintenance(m2.end_date)) {
-                    if (!this.$root.isActiveMaintenance(m2.end_date)) {
-                        return -1;
-                    }
-                    if (!this.$root.isActiveMaintenance(m1.end_date)) {
-                        return 1;
-                    }
-                }
-
-                if (this.$root.isActiveMaintenance(m1.end_date) && this.$root.isActiveMaintenance(m2.end_date)) {
-                    if (Date.parse(m1.end_date) < Date.parse(m2.end_date)) {
-                        return -1;
-                    }
-
-                    if (Date.parse(m2.end_date) < Date.parse(m1.end_date)) {
-                        return 1;
-                    }
-                }
-
-                if (!this.$root.isActiveMaintenance(m1.end_date) && !this.$root.isActiveMaintenance(m2.end_date)) {
-                    if (Date.parse(m1.end_date) < Date.parse(m2.end_date)) {
-                        return 1;
-                    }
-
-                    if (Date.parse(m2.end_date) < Date.parse(m1.end_date)) {
-                        return -1;
-                    }
-                }
-
                 return m1.title.localeCompare(m2.title);
             });
 
@@ -173,7 +143,7 @@ export default {
         /**
          * Pause maintenance
          */
-        pauseMonitor() {
+        pauseMaintenance() {
             return;
             this.$root.getSocket().emit("pauseMaintenance", selectedMaintenanceID, (res) => {
                 this.$root.toastRes(res);
@@ -211,13 +181,43 @@ export default {
             background-color: $highlight-white;
         }
 
+        &.under-maintenance {
+            background-color: rgba(23, 71, 245, 0.16);
+
+            &:hover {
+                background-color: rgba(23, 71, 245, 0.3) !important;
+            }
+
+            .circle {
+                background-color: $maintenance;
+            }
+        }
+
+        &.scheduled {
+            .circle {
+                background-color: $primary;
+            }
+        }
+
+        &.inactive {
+            .circle {
+                background-color: $danger;
+            }
+        }
+
         &.ended {
             .left-part {
-                opacity: 0.5;
+                opacity: 0.3;
+            }
 
-                .circle {
-                    background-color: $dark-font-color;
-                }
+            .circle {
+                background-color: $dark-font-color;
+            }
+        }
+
+        &.unknown {
+            .circle {
+                background-color: $dark-font-color;
             }
         }
 
@@ -230,7 +230,6 @@ export default {
                 width: 25px;
                 height: 25px;
                 border-radius: 50rem;
-                background-color: $maintenance;
             }
 
             .info {

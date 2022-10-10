@@ -1109,10 +1109,10 @@ class Monitor extends BeanModel {
             FROM monitor_maintenance mm
             JOIN maintenance
                 ON mm.maintenance_id = maintenance.id
-            JOIN maintenance_timeslot
+                AND mm.monitor_id = ?
+            LEFT JOIN maintenance_timeslot
                 ON maintenance_timeslot.maintenance_id = maintenance.id
-            WHERE mm.monitor_id = ?
-              AND ${activeCondition}
+            WHERE ${activeCondition}
             LIMIT 1`, [ monitorID ]);
         return maintenance.count !== 0;
     }

@@ -269,6 +269,20 @@ optgroup {
         color: white;
     }
 
+    .btn-normal {
+        $bg-color: $dark-header-bg;
+
+        color: $dark-font-color;
+        background-color: $bg-color;
+        border-color: $bg-color;
+
+        &:hover {
+            $hover-color: darken($bg-color, 3%);
+            background-color: $hover-color;
+            border-color: $hover-color;
+        }
+    }
+
     .btn-warning {
         color: $dark-font-color2;
 

@@ -12,10 +12,6 @@ export default {
     },
 
     methods: {
-        isActiveMaintenance(endDate) {
-            return (dayjs.utc(endDate).unix() >= dayjs.utc().unix());
-        },
-
         toUTC(value) {
             return dayjs.tz(value, this.timezone).utc().format();
         },

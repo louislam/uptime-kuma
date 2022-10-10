@@ -2,13 +2,14 @@ const { BeanModel } = require("redbean-node/dist/bean-model");
 const { parseTimeObject, parseTimeFromTimeObject, utcToLocal, localToUTC } = require("../../src/util");
 const { isArray } = require("chart.js/helpers");
 const { timeObjectToUTC, timeObjectToLocal } = require("../util-server");
+const { R } = require("redbean-node");
+const dayjs = require("dayjs");
 
 class Maintenance extends BeanModel {
 
     /**
      * Return an object that ready to parse to JSON for public
      * Only show necessary data to public
-     * @param {string} timezone If not specified, the timeRange will be in UTC
      * @returns {Object}
      */
     async toPublicJSON() {
@@ -38,6 +39,7 @@ class Maintenance extends BeanModel {
             timeRange: timeRange,
             weekdays: (this.weekdays) ? JSON.parse(this.weekdays) : [],
             daysOfMonth: (this.days_of_month) ? JSON.parse(this.days_of_month) : [],
+            timeslotList: await this.getTimeslotList(),
         };
 
         if (!isArray(obj.weekdays)) {
@@ -48,7 +50,43 @@ class Maintenance extends BeanModel {
             obj.daysOfMonth = [];
         }
 
+        // Maintenance Status
+        if (!obj.active) {
+            obj.status = "inactive";
+        } else if (obj.strategy === "manual" || obj.timeslotList.length > 0) {
+            for (let timeslot of obj.timeslotList) {
+                if (dayjs.utc(timeslot.start_date) <= dayjs.utc() && dayjs.utc(timeslot.end_date) >= dayjs.utc()) {
+                    obj.status = "under-maintenance";
+                    break;
+                }
+            }
+
+            if (!obj.status) {
+                obj.status = "scheduled";
+            }
+        } else if (obj.timeslotList.length === 0) {
+            obj.status = "ended";
+        } else {
+            obj.status = "unknown";
+        }
+
         return obj;
+    }
+
+    /**
+     * Only get future or current timeslots only
+     * @returns {Promise<[]>}
+     */
+    async getTimeslotList() {
+        return await R.getAll(`
+            SELECT maintenance_timeslot.*
+            FROM maintenance_timeslot, maintenance
+            WHERE maintenance_timeslot.maintenance_id = maintenance.id
+            AND maintenance.id = ?
+            AND ${Maintenance.getActiveAndFutureMaintenanceSQLCondition()}
+        `, [
+            this.id
+        ]);
     }
 
     /**
@@ -109,6 +147,19 @@ class Maintenance extends BeanModel {
             OR
             (maintenance.strategy = 'manual' AND active = 1)
 
+        `;
+    }
+
+    /**
+     * SQL conditions for active and future maintenance
+     * @returns {string}
+     */
+    static getActiveAndFutureMaintenanceSQLCondition() {
+        return `
+            (maintenance_timeslot.end_date >= DATETIME('now')
+            AND maintenance.active = 1)
+            OR
+            (maintenance.strategy = 'manual' AND active = 1)
         `;
     }
 }
