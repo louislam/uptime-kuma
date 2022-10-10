@@ -13,7 +13,7 @@
 
             <div class="shadow-box">
                 <span v-if="Object.keys(sortedMaintenanceList).length === 0" class="d-flex align-items-center justify-content-center my-3">
-                    {{ $t("No maintenance") }}
+                    {{ $t("No Maintenance") }}
                 </span>
 
                 <div
@@ -34,9 +34,19 @@
 
                     <div class="buttons">
                         <router-link v-if="false" :to="maintenanceURL(item.id)" class="btn btn-light">{{ $t("Details") }}</router-link>
+
+                        <button v-if="item.active" class="btn btn-light" @click="pauseDialog">
+                            <font-awesome-icon icon="pause" /> {{ $t("Pause") }}
+                        </button>
+
+                        <button v-if="!item.active" class="btn btn-primary" @click="resumeMaintenance">
+                            <font-awesome-icon icon="play" /> {{ $t("Resume") }}
+                        </button>
+
                         <router-link :to="'/maintenance/edit/' + item.id" class="btn btn-secondary">
                             <font-awesome-icon icon="edit" /> {{ $t("Edit") }}
                         </router-link>
+
                         <button class="btn btn-danger" @click="deleteDialog(item.id)">
                             <font-awesome-icon icon="trash" /> {{ $t("Delete") }}
                         </button>
@@ -47,6 +57,10 @@
             <div class="text-center mt-3" style="font-size: 13px;">
                 <a href="https://github.com/louislam/uptime-kuma/wiki/Maintenance" target="_blank">Learn More</a>
             </div>
+
+            <Confirm ref="confirmPause" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="pauseMaintenance">
+                {{ $t("pauseMaintenanceMsg") }}
+            </Confirm>
 
             <Confirm ref="confirmDelete" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="deleteMaintenance">
                 {{ $t("deleteMaintenanceMsg") }}
@@ -146,6 +160,33 @@ export default {
                 } else {
                     toast.error(res.msg);
                 }
+            });
+        },
+
+        /**
+         * Show dialog to confirm pause
+         */
+        pauseDialog() {
+            this.$refs.confirmPause.show();
+        },
+
+        /**
+         * Pause maintenance
+         */
+        pauseMonitor() {
+            return;
+            this.$root.getSocket().emit("pauseMaintenance", selectedMaintenanceID, (res) => {
+                this.$root.toastRes(res);
+            });
+        },
+
+        /**
+         * Resume maintenance
+         */
+        resumeMaintenance() {
+            return;
+            this.$root.getSocket().emit("resumeMaintenance", selectedMaintenanceID, (res) => {
+                this.$root.toastRes(res);
             });
         },
     },

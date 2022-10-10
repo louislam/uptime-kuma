@@ -630,4 +630,5 @@ export default {
     lastDay2: "2nd Last Day of Month",
     lastDay3: "3rd Last Day of Month",
     lastDay4: "4th Last Day of Month",
+    "No Maintenance": "No Maintenance",
 };

@@ -40,6 +40,12 @@ class MaintenanceTimeslot extends BeanModel {
             bean.end_date = maintenance.end_date;
             bean.generated_next = true;
             await R.store(bean);
+        } else if (maintenance.strategy === "recurring-interval") {
+            // TODO
+        } else if (maintenance.strategy === "recurring-weekday") {
+            // TODO
+        } else if (maintenance.strategy === "recurring-day-of-month") {
+            // TODO
         } else {
             throw new Error("Unknown maintenance strategy");
         }

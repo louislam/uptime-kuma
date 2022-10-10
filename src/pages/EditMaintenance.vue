@@ -200,7 +200,8 @@
                                         :monthChangeOnScroll="false"
                                         :minDate="minDate"
                                         :enableTimePicker="false"
-                                        :utc="true"
+                                        format="yyyy-MM-dd"
+                                        modelType="yyyy-MM-dd HH:mm:ss"
                                     />
                                 </div>
                             </template>
@@ -356,9 +357,6 @@ export default {
     },
     methods: {
         init() {
-            // Use browser's timezone!
-            let timezone = dayjs.tz.guess();
-
             this.affectedMonitors = [];
             this.selectedStatusPages = [];
 
@@ -381,7 +379,7 @@ export default {
                     daysOfMonth: [],
                 };
             } else if (this.isEdit) {
-                this.$root.getSocket().emit("getMaintenance", this.$route.params.id, timezone, (res) => {
+                this.$root.getSocket().emit("getMaintenance", this.$route.params.id, (res) => {
                     if (res.ok) {
                         this.maintenance = res.maintenance;
 
@@ -440,11 +438,8 @@ export default {
             this.maintenance.end_date = this.$root.toUTC(this.maintenance.end_date);
             */
 
-            // Use browser's timezone!
-            let timezone = dayjs.tz.guess();
-
             if (this.isAdd) {
-                this.$root.addMaintenance(this.maintenance, timezone, async (res) => {
+                this.$root.addMaintenance(this.maintenance, async (res) => {
                     if (res.ok) {
                         await this.addMonitorMaintenance(res.maintenanceID, async () => {
                             await this.addMaintenanceStatusPage(res.maintenanceID, () => {
@@ -461,7 +456,7 @@ export default {
 
                 });
             } else {
-                this.$root.getSocket().emit("editMaintenance", this.maintenance, timezone, async (res) => {
+                this.$root.getSocket().emit("editMaintenance", this.maintenance, async (res) => {
                     if (res.ok) {
                         await this.addMonitorMaintenance(res.maintenanceID, async () => {
                             await this.addMaintenanceStatusPage(res.maintenanceID, () => {

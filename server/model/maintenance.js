@@ -1,5 +1,5 @@
 const { BeanModel } = require("redbean-node/dist/bean-model");
-const { parseTimeObject, parseTimeFromTimeObject, isoToUTCDateTime, utcToISODateTime, SQL_DATETIME_FORMAT, utcToLocal, localToUTC } = require("../../src/util");
+const { parseTimeObject, parseTimeFromTimeObject, utcToLocal, localToUTC } = require("../../src/util");
 const { isArray } = require("chart.js/helpers");
 const { timeObjectToUTC, timeObjectToLocal } = require("../util-server");
 
@@ -11,7 +11,7 @@ class Maintenance extends BeanModel {
      * @param {string} timezone If not specified, the timeRange will be in UTC
      * @returns {Object}
      */
-    async toPublicJSON(timezone = null) {
+    async toPublicJSON() {
 
         let dateRange = [];
         if (this.start_date) {
@@ -22,20 +22,10 @@ class Maintenance extends BeanModel {
         }
 
         let timeRange = [];
-        let startTime = parseTimeObject(this.start_time);
+        let startTime = timeObjectToLocal(parseTimeObject(this.start_time));
         timeRange.push(startTime);
-        let endTime = parseTimeObject(this.end_time);
+        let endTime = timeObjectToLocal(parseTimeObject(this.end_time));
         timeRange.push(endTime);
-
-        // Apply timezone offset
-        if (timezone) {
-            if (this.start_time) {
-                timeObjectToLocal(startTime, timezone);
-            }
-            if (this.end_time) {
-                timeObjectToLocal(endTime, timezone);
-            }
-        }
 
         let obj = {
             id: this.id,
@@ -70,18 +60,16 @@ class Maintenance extends BeanModel {
         return this.toPublicJSON(timezone);
     }
 
-    static jsonToBean(bean, obj, timezone) {
+    static jsonToBean(bean, obj) {
         if (obj.id) {
             bean.id = obj.id;
         }
 
         // Apply timezone offset to timeRange, as it cannot apply automatically.
-        if (timezone) {
-            if (obj.timeRange[0]) {
-                timeObjectToUTC(obj.timeRange[0], timezone);
-                if (obj.timeRange[1]) {
-                    timeObjectToUTC(obj.timeRange[1], timezone);
-                }
+        if (obj.timeRange[0]) {
+            timeObjectToUTC(obj.timeRange[0]);
+            if (obj.timeRange[1]) {
+                timeObjectToUTC(obj.timeRange[1]);
             }
         }
 
@@ -118,7 +106,7 @@ class Maintenance extends BeanModel {
             (maintenance_timeslot.start_date <= DATETIME('now')
             AND maintenance_timeslot.end_date >= DATETIME('now')
             AND maintenance.active = 1)
-            AND
+            OR
             (maintenance.strategy = 'manual' AND active = 1)
 
         `;

@@ -5,7 +5,6 @@ const apicache = require("../modules/apicache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const Maintenance = require("../model/maintenance");
 const server = UptimeKumaServer.getInstance();
-const dayjs = require("dayjs");
 const MaintenanceTimeslot = require("../model/maintenance_timeslot");
 
 /**
@@ -14,13 +13,13 @@ const MaintenanceTimeslot = require("../model/maintenance_timeslot");
  */
 module.exports.maintenanceSocketHandler = (socket) => {
     // Add a new maintenance
-    socket.on("addMaintenance", async (maintenance, timezone, callback) => {
+    socket.on("addMaintenance", async (maintenance, callback) => {
         try {
             checkLogin(socket);
 
             log.debug("maintenance", maintenance);
 
-            let bean = Maintenance.jsonToBean(R.dispense("maintenance"), maintenance, timezone);
+            let bean = Maintenance.jsonToBean(R.dispense("maintenance"), maintenance);
             bean.user_id = socket.userID;
             let maintenanceID = await R.store(bean);
             await MaintenanceTimeslot.generateTimeslot(bean);
@@ -42,7 +41,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
     });
 
     // Edit a maintenance
-    socket.on("editMaintenance", async (maintenance, timezone, callback) => {
+    socket.on("editMaintenance", async (maintenance, callback) => {
         try {
             checkLogin(socket);
 
@@ -52,7 +51,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
                 throw new Error("Permission denied.");
             }
 
-            Maintenance.jsonToBean(bean, maintenance, timezone);
+            Maintenance.jsonToBean(bean, maintenance);
 
             await R.store(bean);
             await MaintenanceTimeslot.generateTimeslot(bean, null, true);
@@ -142,7 +141,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
         }
     });
 
-    socket.on("getMaintenance", async (maintenanceID, timezone, callback) => {
+    socket.on("getMaintenance", async (maintenanceID, callback) => {
         try {
             checkLogin(socket);
 
@@ -155,7 +154,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
 
             callback({
                 ok: true,
-                maintenance: await bean.toJSON(timezone),
+                maintenance: await bean.toJSON(),
             });
 
         } catch (e) {

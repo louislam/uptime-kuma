@@ -648,8 +648,14 @@ module.exports.send403 = (res, msg = "") => {
 };
 
 function timeObjectConvertTimezone(obj, timezone, timeObjectToUTC = true) {
-    // e.g. +08:00
-    let offsetString = dayjs().tz(timezone).format("Z");
+    let offsetString;
+
+    if (timezone) {
+        offsetString = dayjs().tz(timezone).format("Z");
+    } else {
+        offsetString = dayjs().format("Z");
+    }
+
     let hours = parseInt(offsetString.substring(1, 3));
     let minutes = parseInt(offsetString.substring(4, 6));
 
@@ -680,10 +686,22 @@ function timeObjectConvertTimezone(obj, timezone, timeObjectToUTC = true) {
     return obj;
 }
 
-module.exports.timeObjectToUTC = (obj, timezone) => {
+/**
+ *
+ * @param {object} obj
+ * @param {string} timezone
+ * @returns {object}
+ */
+module.exports.timeObjectToUTC = (obj, timezone = undefined) => {
     return timeObjectConvertTimezone(obj, timezone, true);
 };
 
-module.exports.timeObjectToLocal = (obj, timezone) => {
+/**
+ *
+ * @param {object} obj
+ * @param {string} timezone
+ * @returns {object}
+ */
+module.exports.timeObjectToLocal = (obj, timezone = undefined) => {
     return timeObjectConvertTimezone(obj, timezone, false);
 };
