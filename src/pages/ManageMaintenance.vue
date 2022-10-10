@@ -83,6 +83,13 @@ export default {
     data() {
         return {
             selectedMaintenanceID: undefined,
+            statusOrderList: {
+                "under-maintenance": 1000,
+                "scheduled": 900,
+                "inactive": 800,
+                "ended": 700,
+                "unknown": 0,
+            }
         };
     },
     computed: {
@@ -90,7 +97,11 @@ export default {
             let result = Object.values(this.$root.maintenanceList);
 
             result.sort((m1, m2) => {
-                return m1.title.localeCompare(m2.title);
+                if (this.statusOrderList[m1.status] === this.statusOrderList[m2.status]) {
+                    return m1.title.localeCompare(m2.title);
+                } else {
+                    return this.statusOrderList[m1.status] < this.statusOrderList[m2.status];
+                }
             });
 
             return result;
