@@ -35,21 +35,23 @@
                     <div class="buttons">
                         <router-link v-if="false" :to="maintenanceURL(item.id)" class="btn btn-light">{{ $t("Details") }}</router-link>
 
-                        <button v-if="item.active" class="btn btn-normal" @click="pauseDialog">
-                            <font-awesome-icon icon="pause" /> {{ $t("Pause") }}
-                        </button>
+                        <div class="btn-group" role="group">
+                            <button v-if="item.active" class="btn btn-normal" @click="pauseDialog">
+                                <font-awesome-icon icon="pause" /> {{ $t("Pause") }}
+                            </button>
 
-                        <button v-if="!item.active" class="btn btn-primary" @click="resumeMaintenance">
-                            <font-awesome-icon icon="play" /> {{ $t("Resume") }}
-                        </button>
+                            <button v-if="!item.active" class="btn btn-primary" @click="resumeMaintenance">
+                                <font-awesome-icon icon="play" /> {{ $t("Resume") }}
+                            </button>
 
-                        <router-link :to="'/maintenance/edit/' + item.id" class="btn btn-normal">
-                            <font-awesome-icon icon="edit" /> {{ $t("Edit") }}
-                        </router-link>
+                            <router-link :to="'/maintenance/edit/' + item.id" class="btn btn-normal">
+                                <font-awesome-icon icon="edit" /> {{ $t("Edit") }}
+                            </router-link>
 
-                        <button class="btn btn-danger" @click="deleteDialog(item.id)">
-                            <font-awesome-icon icon="trash" /> {{ $t("Delete") }}
-                        </button>
+                            <button class="btn btn-danger" @click="deleteDialog(item.id)">
+                                <font-awesome-icon icon="trash" /> {{ $t("Delete") }}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

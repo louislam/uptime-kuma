@@ -410,7 +410,6 @@ export function utcToISODateTime(input : string) {
 }
 
 /**
-/**
  * For SQL_DATETIME_FORMAT
  */
 export function utcToLocal(input : string) {

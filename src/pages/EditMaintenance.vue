@@ -5,7 +5,7 @@
             <form @submit.prevent="submit">
                 <div class="shadow-box">
                     <div class="row">
-                        <div class="col-xl-7">
+                        <div class="col-xl-10">
                             <!-- Title -->
                             <div class="mb-3">
                                 <label for="name" class="form-label">{{ $t("Title") }}</label>
@@ -82,7 +82,7 @@
 
                             <h2 class="mt-5">{{ $t("Date and Time") }}</h2>
 
-                            <div>⚠️ {{ $t("warningTimezone") }}: {{ $root.info.serverTimezone }}</div>
+                            <div>⚠️ {{ $t("warningTimezone") }}: <mark>{{ $root.info.serverTimezone }} ({{ $root.info.serverTimezoneOffset }})</mark></div>
 
                             <!-- Strategy -->
                             <div class="my-3">

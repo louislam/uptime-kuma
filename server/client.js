@@ -8,6 +8,7 @@ const server = UptimeKumaServer.getInstance();
 const io = server.io;
 const { setting } = require("./util-server");
 const checkVersion = require("./check-version");
+const dayjs = require("dayjs");
 
 /**
  * Send list of notification providers to client
@@ -124,6 +125,7 @@ async function sendInfo(socket) {
         latestVersion: checkVersion.latestVersion,
         primaryBaseURL: await setting("primaryBaseURL"),
         serverTimezone: await server.getTimezone(),
+        serverTimezoneOffset: dayjs().format("Z"),
     });
 }
 

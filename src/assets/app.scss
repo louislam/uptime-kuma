@@ -101,6 +101,11 @@ optgroup {
     }
 }
 
+// Override Bootstrap
+.btn-group > .btn:hover {
+    z-index: initial;
+}
+
 .btn {
     padding-left: 20px;
     padding-right: 20px;

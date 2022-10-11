@@ -364,7 +364,6 @@ function utcToISODateTime(input) {
 }
 exports.utcToISODateTime = utcToISODateTime;
 /**
-/**
  * For SQL_DATETIME_FORMAT
  */
 function utcToLocal(input) {
