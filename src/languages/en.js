@@ -59,7 +59,6 @@ export default {
     "Check Update On GitHub": "Check Update On GitHub",
     List: "List",
     Add: "Add",
-    "Add Monitor": "Add Monitor",
     "Add New Monitor": "Add New Monitor",
     "Quick Stats": "Quick Stats",
     Up: "Up",

@@ -103,7 +103,7 @@
 
             <router-link to="/add" class="nav-link">
                 <div><font-awesome-icon icon="plus" /></div>
-                {{ $t("Add Monitor") }}
+                {{ $t("Add") }}
             </router-link>
 
             <router-link to="/settings" class="nav-link">
@@ -317,22 +317,4 @@ main {
         background-color: $dark-bg;
     }
 }
-
-.scroll {
-    display: flex;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    -ms-overflow-style: -ms-autohiding-scrollbar;
-}
-
-.scroll::-webkit-scrollbar {
-    display: none;
-}
-
-.scroll a {
-    flex: 0 0 auto;
-    min-width: fit-content;
-}
-
 </style>
