@@ -7,7 +7,7 @@ const { UptimeKumaServer } = require("../uptime-kuma-server");
 class MaintenanceTimeslot extends BeanModel {
 
     async toPublicJSON() {
-        const serverTimezoneOffset = await UptimeKumaServer.getInstance().getTimezoneOffset();
+        const serverTimezoneOffset = UptimeKumaServer.getInstance().getTimezoneOffset();
 
         const obj = {
             id: this.id,

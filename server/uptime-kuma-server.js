@@ -204,7 +204,7 @@ class UptimeKumaServer {
         }
     }
 
-    async getTimezoneOffset() {
+    getTimezoneOffset() {
         return dayjs().format("Z");
     }
 
