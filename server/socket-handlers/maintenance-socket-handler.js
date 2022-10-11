@@ -258,4 +258,54 @@ module.exports.maintenanceSocketHandler = (socket) => {
             });
         }
     });
+
+    socket.on("pauseMaintenance", async (maintenanceID, callback) => {
+        try {
+            checkLogin(socket);
+
+            log.debug("maintenance", `Pause Maintenance: ${maintenanceID} User ID: ${socket.userID}`);
+
+            await R.exec("UPDATE maintenance SET active = 0 WHERE id = ? ", [
+                maintenanceID,
+            ]);
+
+            callback({
+                ok: true,
+                msg: "Paused Successfully.",
+            });
+
+            await server.sendMaintenanceList(socket);
+
+        } catch (e) {
+            callback({
+                ok: false,
+                msg: e.message,
+            });
+        }
+    });
+
+    socket.on("resumeMaintenance", async (maintenanceID, callback) => {
+        try {
+            checkLogin(socket);
+
+            log.debug("maintenance", `Resume Maintenance: ${maintenanceID} User ID: ${socket.userID}`);
+
+            await R.exec("UPDATE maintenance SET active = 1 WHERE id = ? ", [
+                maintenanceID,
+            ]);
+
+            callback({
+                ok: true,
+                msg: "Resume Successfully",
+            });
+
+            await server.sendMaintenanceList(socket);
+
+        } catch (e) {
+            callback({
+                ok: false,
+                msg: e.message,
+            });
+        }
+    });
 };

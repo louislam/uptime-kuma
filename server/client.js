@@ -125,7 +125,7 @@ async function sendInfo(socket) {
         latestVersion: checkVersion.latestVersion,
         primaryBaseURL: await setting("primaryBaseURL"),
         serverTimezone: await server.getTimezone(),
-        serverTimezoneOffset: dayjs().format("Z"),
+        serverTimezoneOffset: server.getTimezoneOffset(),
     });
 }
 

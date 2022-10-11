@@ -28,7 +28,18 @@
                         ></div>
                         <div class="info">
                             <div class="title">{{ item.title }}</div>
-                            <div>{{ item.description }}</div>
+                            <div v-if="false">{{ item.description }}</div>
+                            <div class="status">
+                                {{ $t("maintenanceStatus-" + item.status) }}
+                            </div>
+
+                            <div v-if="item.strategy === 'manual'" class="timeslot">
+                                {{ $t("Manual") }}
+                            </div>
+                            <div v-else-if="item.timeslotList.length > 0" class="timeslot">
+                                {{ item.timeslotList[0].startDateServerTimezone }} <span class="to">-</span> {{ item.timeslotList[0].endDateServerTimezone }}
+                                (UTC{{ item.timeslotList[0].serverTimezoneOffset }})
+                            </div>
                         </div>
                     </div>
 
@@ -36,11 +47,11 @@
                         <router-link v-if="false" :to="maintenanceURL(item.id)" class="btn btn-light">{{ $t("Details") }}</router-link>
 
                         <div class="btn-group" role="group">
-                            <button v-if="item.active" class="btn btn-normal" @click="pauseDialog">
+                            <button v-if="item.active" class="btn btn-normal" @click="pauseDialog(item.id)">
                                 <font-awesome-icon icon="pause" /> {{ $t("Pause") }}
                             </button>
 
-                            <button v-if="!item.active" class="btn btn-primary" @click="resumeMaintenance">
+                            <button v-if="!item.active" class="btn btn-primary" @click="resumeMaintenance(item.id)">
                                 <font-awesome-icon icon="play" /> {{ $t("Resume") }}
                             </button>
 
@@ -149,7 +160,8 @@ export default {
         /**
          * Show dialog to confirm pause
          */
-        pauseDialog() {
+        pauseDialog(maintenanceID) {
+            this.selectedMaintenanceID = maintenanceID;
             this.$refs.confirmPause.show();
         },
 
@@ -157,8 +169,7 @@ export default {
          * Pause maintenance
          */
         pauseMaintenance() {
-            return;
-            this.$root.getSocket().emit("pauseMaintenance", selectedMaintenanceID, (res) => {
+            this.$root.getSocket().emit("pauseMaintenance", this.selectedMaintenanceID, (res) => {
                 this.$root.toastRes(res);
             });
         },
@@ -166,9 +177,8 @@ export default {
         /**
          * Resume maintenance
          */
-        resumeMaintenance() {
-            return;
-            this.$root.getSocket().emit("resumeMaintenance", selectedMaintenanceID, (res) => {
+        resumeMaintenance(id) {
+            this.$root.getSocket().emit("resumeMaintenance", id, (res) => {
                 this.$root.toastRes(res);
             });
         },
@@ -189,6 +199,7 @@ export default {
         justify-content: space-between;
         padding: 10px;
         min-height: 90px;
+        margin-bottom: 5px;
 
         &:hover {
             background-color: $highlight-white;
@@ -251,8 +262,26 @@ export default {
                     font-size: 20px;
                 }
 
-                .slug {
+                .status {
                     font-size: 14px;
+                }
+
+                .timeslot {
+                    margin-top: 5px;
+                    display: inline-block;
+                    font-size: 14px;
+                    background-color: rgba(255, 255, 255, 0.5);
+                    border-radius: 20px;
+                    padding: 0 10px;
+
+                    .to {
+                        margin: 0 6px;
+                    }
+
+                    .dark & {
+                        color: white;
+                        background-color: rgba(255, 255, 255, 0.1);
+                    }
                 }
             }
         }

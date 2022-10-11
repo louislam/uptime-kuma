@@ -101,11 +101,6 @@ optgroup {
     }
 }
 
-// Override Bootstrap
-.btn-group > .btn:hover {
-    z-index: initial;
-}
-
 .btn {
     padding-left: 20px;
     padding-right: 20px;
@@ -122,6 +117,19 @@ optgroup {
 
     .dark & {
         color: $dark-font-color2;
+    }
+}
+
+.btn-normal {
+    $bg-color: #F5F5F5;
+
+    background-color: $bg-color;
+    border-color: $bg-color;
+
+    &:hover {
+        $hover-color: darken($bg-color, 3%);
+        background-color: $hover-color;
+        border-color: $hover-color;
     }
 }
 

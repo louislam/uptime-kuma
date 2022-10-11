@@ -1,16 +1,28 @@
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { R } = require("redbean-node");
 const dayjs = require("dayjs");
-const { log } = require("../../src/util");
+const { log, utcToLocal, SQL_DATETIME_FORMAT_WITHOUT_SECOND } = require("../../src/util");
+const { UptimeKumaServer } = require("../uptime-kuma-server");
 
 class MaintenanceTimeslot extends BeanModel {
 
     async toPublicJSON() {
+        const serverTimezoneOffset = await UptimeKumaServer.getInstance().getTimezoneOffset();
 
+        const obj = {
+            id: this.id,
+            startDate: this.start_date,
+            endDate: this.end_date,
+            startDateServerTimezone: utcToLocal(this.start_date, SQL_DATETIME_FORMAT_WITHOUT_SECOND),
+            endDateServerTimezone: utcToLocal(this.end_date, SQL_DATETIME_FORMAT_WITHOUT_SECOND),
+            serverTimezoneOffset,
+        };
+
+        return obj;
     }
 
     async toJSON() {
-
+        return await this.toPublicJSON();
     }
 
     /**

@@ -39,8 +39,14 @@ class Maintenance extends BeanModel {
             timeRange: timeRange,
             weekdays: (this.weekdays) ? JSON.parse(this.weekdays) : [],
             daysOfMonth: (this.days_of_month) ? JSON.parse(this.days_of_month) : [],
-            timeslotList: await this.getTimeslotList(),
+            timeslotList: [],
         };
+
+        const timeslotList = await this.getTimeslotList();
+
+        for (let timeslot of timeslotList) {
+            obj.timeslotList.push(await timeslot.toPublicJSON());
+        }
 
         if (!isArray(obj.weekdays)) {
             obj.weekdays = [];
@@ -53,7 +59,9 @@ class Maintenance extends BeanModel {
         // Maintenance Status
         if (!obj.active) {
             obj.status = "inactive";
-        } else if (obj.strategy === "manual" || obj.timeslotList.length > 0) {
+        } else if (obj.strategy === "manual") {
+            obj.status = "under-maintenance";
+        } else if (obj.timeslotList.length > 0) {
             for (let timeslot of obj.timeslotList) {
                 if (dayjs.utc(timeslot.start_date) <= dayjs.utc() && dayjs.utc(timeslot.end_date) >= dayjs.utc()) {
                     obj.status = "under-maintenance";
@@ -78,7 +86,7 @@ class Maintenance extends BeanModel {
      * @returns {Promise<[]>}
      */
     async getTimeslotList() {
-        return await R.getAll(`
+        return R.convertToBeans("maintenance_timeslot", await R.getAll(`
             SELECT maintenance_timeslot.*
             FROM maintenance_timeslot, maintenance
             WHERE maintenance_timeslot.maintenance_id = maintenance.id
@@ -86,7 +94,7 @@ class Maintenance extends BeanModel {
             AND ${Maintenance.getActiveAndFutureMaintenanceSQLCondition()}
         `, [
             this.id
-        ]);
+        ]));
     }
 
     /**
@@ -156,10 +164,10 @@ class Maintenance extends BeanModel {
      */
     static getActiveAndFutureMaintenanceSQLCondition() {
         return `
-            (maintenance_timeslot.end_date >= DATETIME('now')
+            ((maintenance_timeslot.end_date >= DATETIME('now')
             AND maintenance.active = 1)
             OR
-            (maintenance.strategy = 'manual' AND active = 1)
+            (maintenance.strategy = 'manual' AND active = 1))
         `;
     }
 }

@@ -204,6 +204,10 @@ class UptimeKumaServer {
         }
     }
 
+    async getTimezoneOffset() {
+        return dayjs().format("Z");
+    }
+
     async setTimezone(timezone) {
         await Settings.set("serverTimezone", timezone, "general");
         process.env.TZ = timezone;

@@ -631,4 +631,10 @@ export default {
     lastDay3: "3rd Last Day of Month",
     lastDay4: "4th Last Day of Month",
     "No Maintenance": "No Maintenance",
+    pauseMaintenanceMsg: "Are you sure want to pause?",
+    "maintenanceStatus-under-maintenance": "Under Maintenance",
+    "maintenanceStatus-inactive": "Inactive",
+    "maintenanceStatus-scheduled": "Scheduled",
+    "maintenanceStatus-ended": "Ended",
+    "maintenanceStatus-unknown": "Unknown",
 };

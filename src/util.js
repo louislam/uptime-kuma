@@ -7,7 +7,7 @@
 // Backend uses the compiled file util.js
 // Frontend uses util.ts
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.localToUTC = exports.utcToLocal = exports.utcToISODateTime = exports.isoToUTCDateTime = exports.parseTimeFromTimeObject = exports.parseTimeObject = exports.getMaintenanceRelativeURL = exports.getMonitorRelativeURL = exports.genSecret = exports.getCryptoRandomInt = exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.log = exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.SQL_DATETIME_FORMAT = exports.SQL_DATE_FORMAT = exports.STATUS_PAGE_MAINTENANCE = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.MAINTENANCE = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isDev = void 0;
+exports.localToUTC = exports.utcToLocal = exports.utcToISODateTime = exports.isoToUTCDateTime = exports.parseTimeFromTimeObject = exports.parseTimeObject = exports.getMaintenanceRelativeURL = exports.getMonitorRelativeURL = exports.genSecret = exports.getCryptoRandomInt = exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.log = exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.SQL_DATETIME_FORMAT_WITHOUT_SECOND = exports.SQL_DATETIME_FORMAT = exports.SQL_DATE_FORMAT = exports.STATUS_PAGE_MAINTENANCE = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.MAINTENANCE = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isDev = void 0;
 const dayjs = require("dayjs");
 exports.isDev = process.env.NODE_ENV === "development";
 exports.appName = "Uptime Kuma";
@@ -21,6 +21,7 @@ exports.STATUS_PAGE_PARTIAL_DOWN = 2;
 exports.STATUS_PAGE_MAINTENANCE = 3;
 exports.SQL_DATE_FORMAT = "YYYY-MM-DD";
 exports.SQL_DATETIME_FORMAT = "YYYY-MM-DD HH:mm:ss";
+exports.SQL_DATETIME_FORMAT_WITHOUT_SECOND = "YYYY-MM-DD HH:mm";
 /** Flip the status of s */
 function flipStatus(s) {
     if (s === exports.UP) {
@@ -366,11 +367,11 @@ exports.utcToISODateTime = utcToISODateTime;
 /**
  * For SQL_DATETIME_FORMAT
  */
-function utcToLocal(input) {
-    return dayjs.utc(input).local().format(exports.SQL_DATETIME_FORMAT);
+function utcToLocal(input, format = exports.SQL_DATETIME_FORMAT) {
+    return dayjs.utc(input).local().format(format);
 }
 exports.utcToLocal = utcToLocal;
-function localToUTC(input) {
-    return dayjs(input).utc().format(exports.SQL_DATETIME_FORMAT);
+function localToUTC(input, format = exports.SQL_DATETIME_FORMAT) {
+    return dayjs(input).utc().format(format);
 }
 exports.localToUTC = localToUTC;
