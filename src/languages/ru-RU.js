@@ -443,7 +443,6 @@ export default {
     "No consecutive dashes": "Без последовательных тире",
     "The slug is already taken. Please choose another slug.": "The slug is already taken. Please choose another slug.",
     "Page Not Found": "Страница не найдена",
-    "Reverse Proxy": "Обратный прокси",
     wayToGetCloudflaredURL: "(Скачать cloudflared с {0})",
     cloudflareWebsite: "Cloudflare Website",
     "Message:": "Сообщение:",
