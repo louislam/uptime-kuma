@@ -1106,7 +1106,7 @@ let needSetup = false;
 
                 callback({
                     ok: true,
-                    msg: "Saved " + dayjs()
+                    msg: "Saved"
                 });
 
                 sendInfo(socket);
