@@ -422,22 +422,6 @@ export default {
                 return this.processing = false;
             }
 
-            /*
-            TODO: Temporary disable
-            if (this.maintenance.start_date >= this.maintenance.end_date) {
-                toast.error(this.$t("maintenanceInvalidDate"));
-                return this.processing = false;
-            }
-
-            if (!this.showOnAllPages && this.selectedStatusPages.length === 0) {
-                toast.error(this.$t("atLeastOneStatusPage"));
-                return this.processing = false;
-            }
-
-            this.maintenance.start_date = this.$root.toUTC(this.maintenance.start_date);
-            this.maintenance.end_date = this.$root.toUTC(this.maintenance.end_date);
-            */
-
             if (this.isAdd) {
                 this.$root.addMaintenance(this.maintenance, async (res) => {
                     if (res.ok) {

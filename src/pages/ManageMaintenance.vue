@@ -33,13 +33,7 @@
                                 {{ $t("maintenanceStatus-" + item.status) }}
                             </div>
 
-                            <div v-if="item.strategy === 'manual'" class="timeslot">
-                                {{ $t("Manual") }}
-                            </div>
-                            <div v-else-if="item.timeslotList.length > 0" class="timeslot">
-                                {{ item.timeslotList[0].startDateServerTimezone }} <span class="to">-</span> {{ item.timeslotList[0].endDateServerTimezone }}
-                                (UTC{{ item.timeslotList[0].serverTimezoneOffset }})
-                            </div>
+                            <MaintenanceTime :maintenance="item" />
                         </div>
                     </div>
 
@@ -86,11 +80,13 @@
 import { getResBaseURL } from "../util-frontend";
 import { getMaintenanceRelativeURL } from "../util.ts";
 import Confirm from "../components/Confirm.vue";
+import MaintenanceTime from "../components/MaintenanceTime.vue";
 import { useToast } from "vue-toastification";
 const toast = useToast();
 
 export default {
     components: {
+        MaintenanceTime,
         Confirm,
     },
     data() {
@@ -264,24 +260,6 @@ export default {
 
                 .status {
                     font-size: 14px;
-                }
-
-                .timeslot {
-                    margin-top: 5px;
-                    display: inline-block;
-                    font-size: 14px;
-                    background-color: rgba(255, 255, 255, 0.5);
-                    border-radius: 20px;
-                    padding: 0 10px;
-
-                    .to {
-                        margin: 0 6px;
-                    }
-
-                    .dark & {
-                        color: white;
-                        background-color: rgba(255, 255, 255, 0.1);
-                    }
                 }
             }
         }

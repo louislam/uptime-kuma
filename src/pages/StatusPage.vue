@@ -195,33 +195,6 @@
                 </div>
             </div>
 
-            <!-- Maintenance -->
-            <template v-if="maintenance.length">
-                <div
-                    v-for="maintenanceItem in maintenance" :key="maintenanceItem.id"
-                    class="shadow-box alert mb-4 p-3 bg-maintenance mt-4 position-relative" role="alert"
-                >
-                    <div class="item">
-                        <div class="row">
-                            <div class="col-1 col-md-1 d-flex justify-content-center align-items-center">
-                                <font-awesome-icon
-                                    icon="wrench"
-                                    class="maintenance-icon"
-                                />
-                            </div>
-                            <div class="col-11 col-md-11">
-                                <h4 class="alert-heading">{{ maintenanceItem.title }}</h4>
-                                <div class="content">{{ maintenanceItem.description }}</div>
-
-                                <div class="date mt-3">
-                                    {{ $t("End") }}: {{ $root.datetimeMaintenance(maintenanceItem.end_date) }}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </template>
-
             <!-- Overall Status -->
             <div class="shadow-box list  p-4 overall-status mb-4">
                 <div v-if="Object.keys($root.publicMonitorList).length === 0 && loadedData">
@@ -247,7 +220,7 @@
 
                     <div v-else-if="isMaintenance">
                         <font-awesome-icon icon="wrench" class="status-maintenance" />
-                        {{ $t("Maintenance") }}
+                        {{ $t("maintenanceStatus-under-maintenance") }}
                     </div>
 
                     <div v-else>
@@ -255,6 +228,18 @@
                     </div>
                 </template>
             </div>
+
+            <!-- Maintenance -->
+            <template v-if="maintenanceList.length > 0">
+                <div
+                    v-for="maintenance in maintenanceList" :key="maintenance.id"
+                    class="shadow-box alert mb-4 p-3 bg-maintenance mt-4 position-relative" role="alert"
+                >
+                    <h4 class="alert-heading">{{ maintenance.title }}</h4>
+                    <div class="content">{{ maintenance.description }}</div>
+                    <MaintenanceTime :maintenance="maintenance" />
+                </div>
+            </template>
 
             <!-- Description -->
             <strong v-if="editMode">{{ $t("Description") }}:</strong>
@@ -327,6 +312,7 @@ import "vue-prism-editor/dist/prismeditor.min.css"; // import the styles somewhe
 import { useToast } from "vue-toastification";
 import Confirm from "../components/Confirm.vue";
 import PublicGroupList from "../components/PublicGroupList.vue";
+import MaintenanceTime from "../components/MaintenanceTime.vue";
 import { getResBaseURL } from "../util-frontend";
 import { STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_MAINTENANCE, STATUS_PAGE_PARTIAL_DOWN, UP, MAINTENANCE } from "../util.ts";
 
@@ -348,6 +334,7 @@ export default {
         ImageCropUpload,
         Confirm,
         PrismEditor,
+        MaintenanceTime,
     },
 
     // Leave Page for vue route change
@@ -388,7 +375,7 @@ export default {
             loadedData: false,
             baseURL: "",
             clickedEditButton: false,
-            maintenance: [],
+            maintenanceList: [],
         };
     },
     computed: {
@@ -594,7 +581,7 @@ export default {
             }
 
             this.incident = res.data.incident;
-            this.maintenance = res.data.maintenance;
+            this.maintenanceList = res.data.maintenanceList;
             this.$root.publicGroupList = res.data.publicGroupList;
         }).catch( function (error) {
             if (error.response.status === 404) {
@@ -1066,6 +1053,12 @@ footer {
     .dark & {
         background: $dark-bg;
         border: 1px solid $dark-border-color;
+    }
+}
+
+.bg-maintenance {
+    .alert-heading {
+        font-weight: bold;
     }
 }
 

@@ -91,7 +91,7 @@ class StatusPage extends BeanModel {
             incident = incident.toPublicJSON();
         }
 
-        let maintenance = await StatusPage.getMaintenanceList(statusPage.id);
+        let maintenanceList = await StatusPage.getMaintenanceList(statusPage.id);
 
         // Public Group List
         const publicGroupList = [];
@@ -111,7 +111,7 @@ class StatusPage extends BeanModel {
             config: await statusPage.toPublicJSON(),
             incident,
             publicGroupList,
-            maintenance,
+            maintenanceList,
         };
     }
 
@@ -281,13 +281,13 @@ class StatusPage extends BeanModel {
 
             let activeCondition = Maintenance.getActiveMaintenanceSQLCondition();
             let maintenanceBeanList = R.convertToBeans("maintenance", await R.getAll(`
-                SELECT m.*
-                FROM maintenance m, maintenance_status_page msp, maintenance_timeslot
-                WHERE  msp.maintenance_id = m.id
-                    AND maintenance_timeslot.maintenance.id = m.id
+                SELECT maintenance.*
+                FROM maintenance, maintenance_status_page msp, maintenance_timeslot
+                WHERE msp.maintenance_id = maintenance.id
+                    AND maintenance_timeslot.maintenance_id = maintenance.id
                     AND msp.status_page_id = ?
                     AND ${activeCondition}
-                ORDER BY m.end_date
+                ORDER BY maintenance.end_date
             `, [ statusPageId ]));
 
             for (const bean of maintenanceBeanList) {
