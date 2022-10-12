@@ -9,6 +9,7 @@ console.log("Welcome to Uptime Kuma");
 const dayjs = require("dayjs");
 dayjs.extend(require("dayjs/plugin/utc"));
 dayjs.extend(require("dayjs/plugin/timezone"));
+dayjs.extend(require("dayjs/plugin/customParseFormat"));
 
 // Check Node.js Version
 const nodeVersion = parseInt(process.versions.node.split(".")[0]);
@@ -1110,6 +1111,7 @@ let needSetup = false;
                 });
 
                 sendInfo(socket);
+                server.sendMaintenanceList(socket);
 
             } catch (e) {
                 callback({

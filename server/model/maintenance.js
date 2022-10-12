@@ -1,5 +1,5 @@
 const { BeanModel } = require("redbean-node/dist/bean-model");
-const { parseTimeObject, parseTimeFromTimeObject, utcToLocal, localToUTC } = require("../../src/util");
+const { parseTimeObject, parseTimeFromTimeObject, utcToLocal, localToUTC, log } = require("../../src/util");
 const { isArray } = require("chart.js/helpers");
 const { timeObjectToUTC, timeObjectToLocal } = require("../util-server");
 const { R } = require("redbean-node");
@@ -62,8 +62,15 @@ class Maintenance extends BeanModel {
         } else if (obj.strategy === "manual") {
             obj.status = "under-maintenance";
         } else if (obj.timeslotList.length > 0) {
+            let currentTimestamp = dayjs().unix();
+
             for (let timeslot of obj.timeslotList) {
-                if (dayjs.utc(timeslot.start_date) <= dayjs.utc() && dayjs.utc(timeslot.end_date) >= dayjs.utc()) {
+                if (dayjs.utc(timeslot.startDate).unix() <= currentTimestamp && dayjs.utc(timeslot.endDate).unix() >= currentTimestamp) {
+                    log.debug("timeslot", "Timeslot ID: " + timeslot.id);
+                    log.debug("timeslot", "currentTimestamp:" + currentTimestamp);
+                    log.debug("timeslot", "timeslot.start_date:" + dayjs.utc(timeslot.startDate).unix());
+                    log.debug("timeslot", "timeslot.end_date:" + dayjs.utc(timeslot.endDate).unix());
+
                     obj.status = "under-maintenance";
                     break;
                 }

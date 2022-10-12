@@ -1,9 +1,9 @@
 <template>
-    <div class="timeslot">
-        <div v-if="maintenance.strategy === 'manual'">
+    <div>
+        <div v-if="maintenance.strategy === 'manual'" class="timeslot">
             {{ $t("Manual") }}
         </div>
-        <div v-else-if="maintenance.timeslotList.length > 0">
+        <div v-else-if="maintenance.timeslotList.length > 0" class="timeslot">
             {{ maintenance.timeslotList[0].startDateServerTimezone }}
             <span class="to">-</span>
             {{ maintenance.timeslotList[0].endDateServerTimezone }}

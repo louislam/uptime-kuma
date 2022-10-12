@@ -671,16 +671,18 @@ function timeObjectConvertTimezone(obj, timezone, timeObjectToUTC = true) {
     obj.minutes += minutes;
 
     // Handle out of bound
+    if (obj.minutes < 0) {
+        obj.minutes += 60;
+        obj.hours--;
+    } else if (obj.minutes > 60) {
+        obj.minutes -= 60;
+        obj.hours++;
+    }
+
     if (obj.hours < 0) {
         obj.hours += 24;
     } else if (obj.hours > 24) {
         obj.hours -= 24;
-    }
-
-    if (obj.minutes < 0) {
-        obj.minutes += 24;
-    } else if (obj.minutes > 24) {
-        obj.minutes -= 24;
     }
 
     return obj;

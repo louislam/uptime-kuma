@@ -199,8 +199,7 @@
                                         range datePicker
                                         :monthChangeOnScroll="false"
                                         :minDate="minDate"
-                                        :enableTimePicker="false"
-                                        format="yyyy-MM-dd"
+                                        format="yyyy-MM-dd HH:mm:ss"
                                         modelType="yyyy-MM-dd HH:mm:ss"
                                     />
                                 </div>
