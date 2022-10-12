@@ -26,6 +26,7 @@
                     {{ $t("Server Timezone") }}
                 </label>
                 <select id="timezone" v-model="settings.serverTimezone" class="form-select">
+                    <option value="UTC">UTC</option>
                     <option
                         v-for="(timezone, index) in timezoneList"
                         :key="index"

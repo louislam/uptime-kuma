@@ -1,6 +1,5 @@
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { parseTimeObject, parseTimeFromTimeObject, utcToLocal, localToUTC, log } = require("../../src/util");
-const { isArray } = require("chart.js/helpers");
 const { timeObjectToUTC, timeObjectToLocal } = require("../util-server");
 const { R } = require("redbean-node");
 const dayjs = require("dayjs");
@@ -48,11 +47,11 @@ class Maintenance extends BeanModel {
             obj.timeslotList.push(await timeslot.toPublicJSON());
         }
 
-        if (!isArray(obj.weekdays)) {
+        if (!Array.isArray(obj.weekdays)) {
             obj.weekdays = [];
         }
 
-        if (!isArray(obj.daysOfMonth)) {
+        if (!Array.isArray(obj.daysOfMonth)) {
             obj.daysOfMonth = [];
         }
 

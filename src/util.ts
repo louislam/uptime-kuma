@@ -9,7 +9,6 @@
 import * as dayjs  from "dayjs";
 import * as timezone from "dayjs/plugin/timezone";
 import * as utc from "dayjs/plugin/utc";
-import {R} from "redbean-node";
 
 export const isDev = process.env.NODE_ENV === "development";
 export const appName = "Uptime Kuma";
