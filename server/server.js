@@ -127,6 +127,7 @@ const StatusPage = require("./model/status_page");
 const { cloudflaredSocketHandler, autoStart: cloudflaredAutoStart, stop: cloudflaredStop } = require("./socket-handlers/cloudflared-socket-handler");
 const { proxySocketHandler } = require("./socket-handlers/proxy-socket-handler");
 const { dockerSocketHandler } = require("./socket-handlers/docker-socket-handler");
+const { Settings } = require("./settings");
 
 app.use(express.json());
 
@@ -155,7 +156,7 @@ let needSetup = false;
     Database.init(args);
     await initDatabase(testMode);
 
-    exports.entryPage = await setting("entryPage");
+    server.entryPage = await Settings.get("entryPage");
     await StatusPage.loadDomainMappingList();
 
     log.info("server", "Adding route");
@@ -176,14 +177,15 @@ let needSetup = false;
 
         log.debug("entry", `Request Domain: ${hostname}`);
 
+        const uptimeKumaEntryPage = server.entryPage;
         if (hostname in StatusPage.domainMappingList) {
             log.debug("entry", "This is a status page domain");
 
             let slug = StatusPage.domainMappingList[hostname];
             await StatusPage.handleStatusPageResponse(response, server.indexHTML, slug);
 
-        } else if (exports.entryPage && exports.entryPage.startsWith("statusPage-")) {
-            response.redirect("/status/" + exports.entryPage.replace("statusPage-", ""));
+        } else if (uptimeKumaEntryPage && uptimeKumaEntryPage.startsWith("statusPage-")) {
+            response.redirect("/status/" + uptimeKumaEntryPage.replace("statusPage-", ""));
 
         } else {
             response.redirect("/dashboard");
@@ -200,7 +202,7 @@ let needSetup = false;
     // Robots.txt
     app.get("/robots.txt", async (_request, response) => {
         let txt = "User-agent: *\nDisallow:";
-        if (! await setting("searchEngineIndex")) {
+        if (!await setting("searchEngineIndex")) {
             txt += " /";
         }
         response.setHeader("Content-Type", "text/plain");
@@ -1084,7 +1086,7 @@ let needSetup = false;
                 }
 
                 await setSettings("general", data);
-                exports.entryPage = data.entryPage;
+                server.entryPage = data.entryPage;
 
                 callback({
                     ok: true,
