@@ -97,8 +97,8 @@
                             </div>
 
                             <!-- Port -->
-                            <!-- For TCP Port / Steam / MQTT Type -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'steam' || monitor.type === 'mqtt'" class="my-3">
+                            <!-- For TCP Port / Steam / MQTT / Radius Type -->
+                            <div v-if="monitor.type === 'port' || monitor.type === 'steam' || monitor.type === 'mqtt' || monitor.type === 'radius'" class="my-3">
                                 <label for="port" class="form-label">{{ $t("Port") }}</label>
                                 <input id="port" v-model="monitor.port" type="number" class="form-control" required min="0" max="65535" step="1">
                             </div>
@@ -616,9 +616,11 @@ export default {
             }
 
             // Set default port for DNS if not already defined
-            if (! this.monitor.port || this.monitor.port === "53") {
+            if (! this.monitor.port || this.monitor.port === "53" || this.monitor.port === "1812") {
                 if (this.monitor.type === "dns") {
                     this.monitor.port = "53";
+                } else if (this.monitor.type === "radius") {
+                    this.monitor.port = "1812";
                 } else {
                     this.monitor.port = undefined;
                 }
