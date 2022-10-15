@@ -65,6 +65,8 @@ CREATE INDEX [active_timeslot_index] ON [maintenance_timeslot] (
     [end_date] DESC
 );
 
+CREATE INDEX [generated_next_index] ON [maintenance_timeslot] ([generated_next]);
+
 -- monitor_maintenance
 CREATE TABLE monitor_maintenance (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,

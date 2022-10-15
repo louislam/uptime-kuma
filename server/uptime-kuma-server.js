@@ -45,6 +45,8 @@ class UptimeKumaServer {
      */
     indexHTML = "";
 
+    generateMaintenanceTimeslotsInterval = undefined;
+
     static getInstance(args) {
         if (UptimeKumaServer.instance == null) {
             UptimeKumaServer.instance = new UptimeKumaServer(args);
@@ -90,6 +92,9 @@ class UptimeKumaServer {
         dayjs.tz.setDefault(process.env.TZ);
         log.debug("DEBUG", "Timezone: " + process.env.TZ);
         log.debug("DEBUG", "Current Time: " + dayjs.tz().format());
+
+        await this.generateMaintenanceTimeslots();
+        this.generateMaintenanceTimeslotsInterval = setInterval(this.generateMaintenanceTimeslots, 60 * 1000);
     }
 
     async sendMonitorList(socket) {
@@ -213,8 +218,28 @@ class UptimeKumaServer {
         process.env.TZ = timezone;
         dayjs.tz.setDefault(timezone);
     }
+
+    async generateMaintenanceTimeslots() {
+
+        let list = await R.find("maintenance_timeslot", " generated_next = 0 AND start_date <= DATETIME('now') ");
+
+        for (let maintenanceTimeslot of list) {
+            let maintenance = await maintenanceTimeslot.maintenance;
+            await MaintenanceTimeslot.generateTimeslot(maintenance, maintenanceTimeslot.end_date, false);
+            maintenanceTimeslot.generated_next = true;
+            await R.store(maintenanceTimeslot);
+        }
+
+    }
+
+    async stop() {
+        clearTimeout(this.generateMaintenanceTimeslotsInterval);
+    }
 }
 
 module.exports = {
     UptimeKumaServer
 };
+
+// Must be at the end
+const MaintenanceTimeslot = require("./model/maintenance_timeslot");
