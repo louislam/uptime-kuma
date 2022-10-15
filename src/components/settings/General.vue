@@ -1,15 +1,32 @@
 <template>
     <div>
         <form class="my-4" autocomplete="off" @submit.prevent="saveGeneral">
-            <!-- Timezone -->
+            <!-- Client side Timezone -->
             <div class="mb-4">
                 <label for="timezone" class="form-label">
-                    {{ $t("Timezone") }}
+                    {{ $t("Display Timezone") }}
                 </label>
                 <select id="timezone" v-model="$root.userTimezone" class="form-select">
                     <option value="auto">
                         {{ $t("Auto") }}: {{ guessTimezone }}
                     </option>
+                    <option
+                        v-for="(timezone, index) in timezoneList"
+                        :key="index"
+                        :value="timezone.value"
+                    >
+                        {{ timezone.name }}
+                    </option>
+                </select>
+            </div>
+
+            <!-- Server Timezone -->
+            <div class="mb-4">
+                <label for="timezone" class="form-label">
+                    {{ $t("Server Timezone") }}
+                </label>
+                <select id="timezone" v-model="settings.serverTimezone" class="form-select">
+                    <option value="UTC">UTC</option>
                     <option
                         v-for="(timezone, index) in timezoneList"
                         :key="index"
@@ -146,11 +163,7 @@
 <script>
 import HiddenInput from "../../components/HiddenInput.vue";
 import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import timezone from "dayjs/plugin/timezone";
 import { timezoneList } from "../../util-frontend";
-dayjs.extend(utc);
-dayjs.extend(timezone);
 
 export default {
     components: {
