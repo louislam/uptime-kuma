@@ -112,6 +112,40 @@ class Maintenance extends BeanModel {
         return this.toPublicJSON(timezone);
     }
 
+    getDayOfWeekList() {
+        log.debug("timeslot", "List: " + this.weekdays);
+        return JSON.parse(this.weekdays).sort(function (a, b) {
+            return a - b;
+        });
+    }
+
+    getDayOfMonthList() {
+        return JSON.parse(this.days_of_month).sort(function (a, b) {
+            return a - b;
+        });
+    }
+
+    getStartDateTime() {
+        let startOfTheDay = dayjs.utc(this.start_date).format("HH:mm");
+        log.debug("timeslot", "startOfTheDay: " + startOfTheDay);
+
+        // Start Time
+        let startTimeSecond = dayjs.utc(this.start_time, "HH:mm").diff(dayjs.utc(startOfTheDay, "HH:mm"), "second");
+        log.debug("timeslot", "startTime: " + startTimeSecond);
+
+        // Bake StartDate + StartTime = Start DateTime
+        return dayjs.utc(this.start_date).add(startTimeSecond, "second");
+    }
+
+    getDuration() {
+        let duration = dayjs.utc(this.end_time, "HH:mm").diff(dayjs.utc(this.start_time, "HH:mm"), "second");
+        // Add 24hours if it is across day
+        if (duration < 0) {
+            duration += 24 * 3600;
+        }
+        return duration;
+    }
+
     static jsonToBean(bean, obj) {
         if (obj.id) {
             bean.id = obj.id;

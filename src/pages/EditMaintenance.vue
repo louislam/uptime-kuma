@@ -91,8 +91,8 @@
                                     <option value="manual">{{ $t("strategyManual") }}</option>
                                     <option value="single">Single Maintenance Window</option>
                                     <option value="recurring-interval">{{ $t("Recurring") }} - {{ $t("recurringInterval") }}</option>
-                                    <option value="recurring-weekday">{{ $t("Recurring") }} - Weekday</option>
-                                    <option value="recurring-day-of-month">{{ $t("Recurring") }} - Day of Month</option>
+                                    <option value="recurring-weekday">{{ $t("Recurring") }} - {{ $t("dayOfWeek") }}</option>
+                                    <option value="recurring-day-of-month">{{ $t("Recurring") }} - {{ $t("dayOfMonth") }}</option>
                                     <option v-if="false" value="recurring-day-of-year">{{ $t("Recurring") }} - Day of Year</option>
                                 </select>
                             </div>
@@ -136,7 +136,7 @@
                             <template v-if="maintenance.strategy === 'recurring-weekday'">
                                 <div class="my-3">
                                     <label for="interval-day" class="form-label">
-                                        {{ $t("Weekday") }}
+                                        {{ $t("dayOfWeek") }}
                                     </label>
 
                                     <!-- Weekday Picker -->
@@ -201,6 +201,7 @@
                                         :minDate="minDate"
                                         format="yyyy-MM-dd HH:mm:ss"
                                         modelType="yyyy-MM-dd HH:mm:ss"
+                                        required
                                     />
                                 </div>
                             </template>
@@ -297,9 +298,9 @@ export default {
                     value: 6,
                 },
                 {
-                    id: "weekday7",
+                    id: "weekday0",
                     langKey: "weekdayShortSun",
-                    value: 7,
+                    value: 0,
                 },
             ],
         };

@@ -40,6 +40,7 @@ class MaintenanceTimeslot extends BeanModel {
 
         if (maintenance.strategy === "manual") {
             log.debug("maintenance", "No need to generate timeslot for manual type");
+
         } else if (maintenance.strategy === "single") {
             let bean = R.dispense("maintenance_timeslot");
             bean.maintenance_id = maintenance.id;
@@ -47,73 +48,130 @@ class MaintenanceTimeslot extends BeanModel {
             bean.end_date = maintenance.end_date;
             bean.generated_next = true;
             return await R.store(bean);
-        } else if (maintenance.strategy === "recurring-interval") {
-            let bean = R.dispense("maintenance_timeslot");
 
+        } else if (maintenance.strategy === "recurring-interval") {
             // Prevent dead loop, in case interval_day is not set
             if (!maintenance.interval_day || maintenance.interval_day <= 0) {
                 maintenance.interval_day = 1;
             }
 
-            let startOfTheDay = dayjs.utc(maintenance.start_date).format("HH:mm");
-            log.debug("timeslot", "startOfTheDay: " + startOfTheDay);
+            return await this.handleRecurringType(maintenance, minDate, (startDateTime) => {
+                return startDateTime.add(maintenance.interval_day, "day");
+            });
 
-            // Start Time
-            let startTimeSecond = dayjs.utc(maintenance.start_time, "HH:mm").diff(dayjs.utc(startOfTheDay, "HH:mm"), "second");
-            log.debug("timeslot", "startTime: " + startTimeSecond);
-
-            // Duration
-            let duration = dayjs.utc(maintenance.end_time, "HH:mm").diff(dayjs.utc(maintenance.start_time, "HH:mm"), "second");
-            // Add 24hours if it is across day
-            if (duration < 0) {
-                duration += 24 * 3600;
-            }
-
-            // Bake StartDate + StartTime = Start DateTime
-            let startDateTime = dayjs.utc(maintenance.start_date).add(startTimeSecond, "second");
-            let endDateTime;
-
-            // Keep generating from the first possible date, until it is ok
-            while (true) {
-                log.debug("timeslot", "startDateTime: " + startDateTime.format());
-
-                // Handling out of effective date range
-                if (startDateTime.diff(dayjs.utc(maintenance.end_date)) > 0) {
-                    log.debug("timeslot", "Out of effective date range");
-                    return null;
-                }
-
-                endDateTime = startDateTime.add(duration, "second");
-
-                // If endDateTime is out of effective date range, use the end datetime from effective date range
-                if (endDateTime.diff(dayjs.utc(maintenance.end_date)) > 0) {
-                    endDateTime = dayjs.utc(maintenance.end_date);
-                }
-
-                // If minDate is set, the endDateTime must be bigger than it.
-                // And the endDateTime must be bigger current time
-                if (
-                    (!minDate || endDateTime.diff(minDate) > 0) &&
-                    endDateTime.diff(dayjs()) > 0
-                ) {
-                    break;
-                }
-
-                startDateTime = startDateTime.add(maintenance.interval_day, "day");
-            }
-
-            bean.maintenance_id = maintenance.id;
-            bean.start_date = localToUTC(startDateTime);
-            bean.end_date = localToUTC(endDateTime);
-            bean.generated_next = false;
-            return await R.store(bean);
         } else if (maintenance.strategy === "recurring-weekday") {
-            // TODO
+            let dayOfWeekList = maintenance.getDayOfWeekList();
+
+            if (dayOfWeekList.length <= 0) {
+                log.debug("timeslot", "No weekdays selected?");
+                return null;
+            }
+
+            return await this.handleRecurringType(maintenance, minDate, (startDateTime) => {
+                while (true) {
+                    startDateTime = startDateTime.add(1, "day");
+
+                    log.debug("timeslot", "nextDateTime: " + startDateTime);
+
+                    let day = startDateTime.local().day();
+                    log.debug("timeslot", "nextDateTime.day(): " + day);
+
+                    if (dayOfWeekList.includes(day)) {
+                        return startDateTime;
+                    }
+                }
+            });
+
         } else if (maintenance.strategy === "recurring-day-of-month") {
-            // TODO
+            let dayOfMonthList = maintenance.getDayOfMonthList();
+            if (dayOfMonthList.length <= 0) {
+                log.debug("timeslot", "No day selected?");
+                return null;
+            }
+
+            return await this.handleRecurringType(maintenance, minDate, (startDateTime) => {
+                while (true) {
+
+                    startDateTime = startDateTime.add(1, "day");
+
+                    let day = parseInt(startDateTime.local().format("D"));
+
+                    log.debug("timeslot", "day: " + day);
+
+                    // Check 1-31
+                    if (dayOfMonthList.includes(day)) {
+                        return startDateTime;
+                    }
+
+                    // Check "lastDay1","lastDay2"...
+                    let daysInMonth = startDateTime.daysInMonth();
+                    let lastDayList = [];
+
+                    // Small first, e.g. 28 > 29 > 30 > 31
+                    for (let i = 4; i >= 1; i--) {
+                        if (dayOfMonthList.includes("lastDay" + i)) {
+                            lastDayList.push(daysInMonth - i + 1);
+                        }
+                    }
+                    log.debug("timeslot", "lastDayList: " + lastDayList);
+                    if (lastDayList.includes(day)) {
+                        return startDateTime;
+                    }
+                }
+            });
         } else {
             throw new Error("Unknown maintenance strategy");
         }
+    }
+
+    /**
+     * Generate a next timeslot for all recurring types
+     * @param maintenance
+     * @param minDate
+     * @param nextDayCallback The logic how to get the next possible day
+     * @returns {Promise<null|MaintenanceTimeslot>}
+     */
+    static async handleRecurringType(maintenance, minDate, nextDayCallback) {
+        let bean = R.dispense("maintenance_timeslot");
+
+        let duration = maintenance.getDuration();
+        let startDateTime = maintenance.getStartDateTime();
+        let endDateTime;
+
+        // Keep generating from the first possible date, until it is ok
+        while (true) {
+            log.debug("timeslot", "startDateTime: " + startDateTime.format());
+
+            // Handling out of effective date range
+            if (startDateTime.diff(dayjs.utc(maintenance.end_date)) > 0) {
+                log.debug("timeslot", "Out of effective date range");
+                return null;
+            }
+
+            endDateTime = startDateTime.add(duration, "second");
+
+            // If endDateTime is out of effective date range, use the end datetime from effective date range
+            if (endDateTime.diff(dayjs.utc(maintenance.end_date)) > 0) {
+                endDateTime = dayjs.utc(maintenance.end_date);
+            }
+
+            // If minDate is set, the endDateTime must be bigger than it.
+            // And the endDateTime must be bigger current time
+            if (
+                (!minDate || endDateTime.diff(minDate) > 0) &&
+                endDateTime.diff(dayjs()) > 0
+            ) {
+                break;
+            }
+
+            startDateTime = nextDayCallback(startDateTime);
+        }
+
+        bean.maintenance_id = maintenance.id;
+        bean.start_date = localToUTC(startDateTime);
+        bean.end_date = localToUTC(endDateTime);
+        bean.generated_next = false;
+        return await R.store(bean);
     }
 }
 

@@ -620,6 +620,7 @@ export default {
     weekdayShortFri: "Fri",
     weekdayShortSat: "Sat",
     weekdayShortSun: "Sun",
+    dayOfWeek: "Day of Week",
     dayOfMonth: "Day of Month",
     lastDay: "Last Day",
     lastDay1: "Last Day of Month",
