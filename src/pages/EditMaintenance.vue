@@ -89,7 +89,7 @@
                                 <label for="strategy" class="form-label">{{ $t("Strategy") }}</label>
                                 <select id="strategy" v-model="maintenance.strategy" class="form-select">
                                     <option value="manual">{{ $t("strategyManual") }}</option>
-                                    <option value="single">Single Maintenance Window</option>
+                                    <option value="single">{{ $t("Single Maintenance Window") }}</option>
                                     <option value="recurring-interval">{{ $t("Recurring") }} - {{ $t("recurringInterval") }}</option>
                                     <option value="recurring-weekday">{{ $t("Recurring") }} - {{ $t("dayOfWeek") }}</option>
                                     <option value="recurring-day-of-month">{{ $t("Recurring") }} - {{ $t("dayOfMonth") }}</option>
@@ -284,7 +284,7 @@ export default {
                 },
                 {
                     id: "weekday4",
-                    langKey: "weekdayShortTue",
+                    langKey: "weekdayShortThu",
                     value: 4,
                 },
                 {
