@@ -1,6 +1,6 @@
 {
     "name": "uptime-kuma",
-    "version": "1.18.4",
+    "version": "1.19.0-beta.0",
     "license": "MIT",
     "repository": {
         "type": "git",
@@ -38,7 +38,7 @@
         "build-docker-nightly-amd64": "docker buildx build -f docker/dockerfile --platform linux/amd64 -t louislam/uptime-kuma:nightly-amd64 --target nightly . --push --progress plain",
         "build-docker-pr-test": "docker buildx build -f docker/dockerfile --platform linux/amd64,linux/arm64 -t louislam/uptime-kuma:pr-test --target pr-test . --push",
         "upload-artifacts": "docker buildx build -f docker/dockerfile --platform linux/amd64 -t louislam/uptime-kuma:upload-artifact --build-arg VERSION --build-arg GITHUB_TOKEN --target upload-artifact . --progress plain",
-        "setup": "git checkout 1.18.4 && npm ci --production && npm run download-dist",
+        "setup": "git checkout 1.18.5 && npm ci --production && npm run download-dist",
         "download-dist": "node extra/download-dist.js",
         "mark-as-nightly": "node extra/mark-as-nightly.js",
         "reset-password": "node extra/reset-password.js",
@@ -63,7 +63,7 @@
         "cypress-open": "concurrently -k -r \"node test/prepare-test-server.js && node server/server.js --port=3002 --data-dir=./data/test/\" \"cypress open --config-file ./config/cypress.config.js\""
     },
     "dependencies": {
-        "@louislam/sqlite3": "~15.0.6",
+        "@louislam/sqlite3": "15.1.2",
         "args-parser": "~1.3.0",
         "axios": "~0.27.0",
         "axios-ntlm": "~1.3.0",
@@ -123,6 +123,7 @@
         "@vitejs/plugin-legacy": "~2.1.0",
         "@vitejs/plugin-vue": "~3.1.0",
         "@vue/compiler-sfc": "~3.2.36",
+        "@vuepic/vue-datepicker": "~3.4.8",
         "aedes": "^0.46.3",
         "babel-plugin-rewire": "~1.2.0",
         "bootstrap": "5.1.3",
@@ -157,7 +158,7 @@
         "vue-chart-3": "3.0.9",
         "vue-confirm-dialog": "~1.0.2",
         "vue-contenteditable": "~3.0.4",
-        "vue-i18n": "~9.1.9",
+        "vue-i18n": "~9.2.2",
         "vue-image-crop-upload": "~3.0.3",
         "vue-multiselect": "~3.0.0-alpha.2",
         "vue-prism-editor": "~2.0.0-alpha.2",

@@ -6,6 +6,9 @@ const { UptimeKumaServer } = require("../server/uptime-kuma-server");
 const Database = require("../server/database");
 const {Settings} = require("../server/settings");
 const fs = require("fs");
+const dayjs = require("dayjs");
+dayjs.extend(require("dayjs/plugin/utc"));
+dayjs.extend(require("dayjs/plugin/timezone"));
 
 jest.mock("axios");
 

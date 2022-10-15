@@ -380,4 +380,6 @@ export default {
     proxyDescription: "必須將代理伺服器指派給監測器才能運作。",
     enableProxyDescription: "此代理伺服器在啟用前不會在監測器上生效，您可以藉由控制啟用狀態來暫時對所有的監測器停用代理伺服器。",
     setAsDefaultProxyDescription: "預設情況下，新監測器將啟用此代理伺服器。您仍可分別停用各監測器的代理伺服器。",
+    Maintenance: "維護",
+    statusMaintenance: "維護中",
 };
