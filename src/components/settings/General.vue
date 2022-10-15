@@ -1,6 +1,6 @@
 <template>
     <div>
-        <form class="my-4" @submit.prevent="saveGeneral">
+        <form class="my-4" autocomplete="off" @submit.prevent="saveGeneral">
             <!-- Client side Timezone -->
             <div class="mb-4">
                 <label for="timezone" class="form-label">
@@ -122,6 +122,7 @@
                         name="primaryBaseURL"
                         placeholder="https://"
                         pattern="https?://.+"
+                        autocomplete="new-password"
                     />
                     <button class="btn btn-outline-primary" type="button" @click="autoGetPrimaryBaseURL">
                         {{ $t("Auto Get") }}
@@ -139,7 +140,7 @@
                 <HiddenInput
                     id="steamAPIKey"
                     v-model="settings.steamAPIKey"
-                    autocomplete="one-time-code"
+                    autocomplete="new-password"
                 />
                 <div class="form-text">
                     {{ $t("steamApiKeyDescription") }}

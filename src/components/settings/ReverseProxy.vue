@@ -41,7 +41,7 @@
                 <HiddenInput
                     id="cloudflareTunnelToken"
                     v-model="cloudflareTunnelToken"
-                    autocomplete="one-time-code"
+                    autocomplete="new-password"
                     :readonly="running"
                 />
                 <div class="form-text">

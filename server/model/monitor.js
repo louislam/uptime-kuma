@@ -537,6 +537,17 @@ class Monitor extends BeanModel {
                     bean.ping = dayjs().valueOf() - startTime;
                 } else if (this.type === "radius") {
                     let startTime = dayjs().valueOf();
+
+                    // Handle monitors that were created before the
+                    // update and as such don't have a value for
+                    // this.port.
+                    let port;
+                    if (this.port == null) {
+                        port = 1812;
+                    } else {
+                        port = this.port;
+                    }
+
                     try {
                         const resp = await radius(
                             this.hostname,
@@ -544,7 +555,8 @@ class Monitor extends BeanModel {
                             this.radiusPassword,
                             this.radiusCalledStationId,
                             this.radiusCallingStationId,
-                            this.radiusSecret
+                            this.radiusSecret,
+                            port
                         );
                         if (resp.code) {
                             bean.msg = resp.code;
