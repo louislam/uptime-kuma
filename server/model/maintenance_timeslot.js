@@ -57,30 +57,37 @@ class MaintenanceTimeslot extends BeanModel {
 
             return await this.handleRecurringType(maintenance, minDate, (startDateTime) => {
                 return startDateTime.add(maintenance.interval_day, "day");
+            }, () => {
+                return true;
             });
 
         } else if (maintenance.strategy === "recurring-weekday") {
             let dayOfWeekList = maintenance.getDayOfWeekList();
+            log.debug("timeslot", dayOfWeekList);
 
             if (dayOfWeekList.length <= 0) {
                 log.debug("timeslot", "No weekdays selected?");
                 return null;
             }
 
+            const isValid = (startDateTime) => {
+                log.debug("timeslot", "nextDateTime: " + startDateTime);
+
+                let day = startDateTime.local().day();
+                log.debug("timeslot", "nextDateTime.day(): " + day);
+
+                return dayOfWeekList.includes(day);
+            };
+
             return await this.handleRecurringType(maintenance, minDate, (startDateTime) => {
                 while (true) {
                     startDateTime = startDateTime.add(1, "day");
 
-                    log.debug("timeslot", "nextDateTime: " + startDateTime);
-
-                    let day = startDateTime.local().day();
-                    log.debug("timeslot", "nextDateTime.day(): " + day);
-
-                    if (dayOfWeekList.includes(day)) {
+                    if (isValid(startDateTime)) {
                         return startDateTime;
                     }
                 }
-            });
+            }, isValid);
 
         } else if (maintenance.strategy === "recurring-day-of-month") {
             let dayOfMonthList = maintenance.getDayOfMonthList();
@@ -89,36 +96,38 @@ class MaintenanceTimeslot extends BeanModel {
                 return null;
             }
 
+            const isValid = (startDateTime) => {
+                let day = parseInt(startDateTime.local().format("D"));
+
+                log.debug("timeslot", "day: " + day);
+
+                // Check 1-31
+                if (dayOfMonthList.includes(day)) {
+                    return startDateTime;
+                }
+
+                // Check "lastDay1","lastDay2"...
+                let daysInMonth = startDateTime.daysInMonth();
+                let lastDayList = [];
+
+                // Small first, e.g. 28 > 29 > 30 > 31
+                for (let i = 4; i >= 1; i--) {
+                    if (dayOfMonthList.includes("lastDay" + i)) {
+                        lastDayList.push(daysInMonth - i + 1);
+                    }
+                }
+                log.debug("timeslot", lastDayList);
+                return lastDayList.includes(day);
+            };
+
             return await this.handleRecurringType(maintenance, minDate, (startDateTime) => {
                 while (true) {
-
                     startDateTime = startDateTime.add(1, "day");
-
-                    let day = parseInt(startDateTime.local().format("D"));
-
-                    log.debug("timeslot", "day: " + day);
-
-                    // Check 1-31
-                    if (dayOfMonthList.includes(day)) {
-                        return startDateTime;
-                    }
-
-                    // Check "lastDay1","lastDay2"...
-                    let daysInMonth = startDateTime.daysInMonth();
-                    let lastDayList = [];
-
-                    // Small first, e.g. 28 > 29 > 30 > 31
-                    for (let i = 4; i >= 1; i--) {
-                        if (dayOfMonthList.includes("lastDay" + i)) {
-                            lastDayList.push(daysInMonth - i + 1);
-                        }
-                    }
-                    log.debug("timeslot", "lastDayList: " + lastDayList);
-                    if (lastDayList.includes(day)) {
+                    if (isValid(startDateTime)) {
                         return startDateTime;
                     }
                 }
-            });
+            }, isValid);
         } else {
             throw new Error("Unknown maintenance strategy");
         }
@@ -128,10 +137,11 @@ class MaintenanceTimeslot extends BeanModel {
      * Generate a next timeslot for all recurring types
      * @param maintenance
      * @param minDate
-     * @param nextDayCallback The logic how to get the next possible day
+     * @param {function} nextDayCallback The logic how to get the next possible day
+     * @param {function} isValidCallback Check the day whether is matched the current strategy
      * @returns {Promise<null|MaintenanceTimeslot>}
      */
-    static async handleRecurringType(maintenance, minDate, nextDayCallback) {
+    static async handleRecurringType(maintenance, minDate, nextDayCallback, isValidCallback) {
         let bean = R.dispense("maintenance_timeslot");
 
         let duration = maintenance.getDuration();
@@ -157,13 +167,14 @@ class MaintenanceTimeslot extends BeanModel {
 
             // If minDate is set, the endDateTime must be bigger than it.
             // And the endDateTime must be bigger current time
+            // Is valid under current recurring strategy
             if (
                 (!minDate || endDateTime.diff(minDate) > 0) &&
-                endDateTime.diff(dayjs()) > 0
+                endDateTime.diff(dayjs()) > 0 &&
+                isValidCallback(startDateTime)
             ) {
                 break;
             }
-
             startDateTime = nextDayCallback(startDateTime);
         }
 

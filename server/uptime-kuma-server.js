@@ -10,6 +10,7 @@ const util = require("util");
 const { CacheableDnsHttpAgent } = require("./cacheable-dns-http-agent");
 const { Settings } = require("./settings");
 const dayjs = require("dayjs");
+// DO NOT IMPORT HERE IF THE MODULES USED `UptimeKumaServer.getInstance()`
 
 /**
  * `module.exports` (alias: `server`) should be inside this class, in order to avoid circular dependency issue.
@@ -130,8 +131,12 @@ class UptimeKumaServer {
      * @returns {Object}
      */
     async sendMaintenanceList(socket) {
-        let list = await this.getMaintenanceJSONList(socket.userID);
-        this.io.to(socket.userID).emit("maintenanceList", list);
+        return await this.sendMaintenanceListByUserID(socket.userID);
+    }
+
+    async sendMaintenanceListByUserID(userID) {
+        let list = await this.getMaintenanceJSONList(userID);
+        this.io.to(userID).emit("maintenanceList", list);
         return list;
     }
 

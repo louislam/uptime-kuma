@@ -623,6 +623,8 @@ class Monitor extends BeanModel {
                 log.debug("monitor", `[${this.name}] apicache clear`);
                 apicache.clear();
 
+                UptimeKumaServer.getInstance().sendMaintenanceListByUserID(this.user_id);
+
             } else {
                 bean.important = false;
 
