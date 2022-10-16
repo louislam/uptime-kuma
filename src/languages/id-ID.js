@@ -568,7 +568,7 @@ export default {
     "Long-Lived Access Token can be created by clicking on your profile name (bottom left) and scrolling to the bottom then click Create Token. ": "Token Akses Berumur Panjang dapat dibuat dengan mengklik nama profil Anda (kiri bawah) dan menggulir ke bawah lalu klik Buat Token. ",
     "Notification Service": "Layanan Pemberitahuan",
     "default: notify all devices": "bawaan: notifikasi seluruh perangkat",
-    "A listof Notification Services can be found in Home Assistant under \"Developer Tools > Services\" search for \"notification\" to find your device/phone name.": "Daftar Layanan Pemberitahuan dapat ditemukan di Home Assistant pada \"Developer Tools > Services\" cari \"notification\" lalu cari nama perangkat Anda.",
+    "A list of Notification Services can be found in Home Assistant under \"Developer Tools > Services\" search for \"notification\" to find your device/phone name.": "Daftar Layanan Pemberitahuan dapat ditemukan di Home Assistant pada \"Developer Tools > Services\" cari \"notification\" lalu cari nama perangkat Anda.",
     "Automations can optionally be triggered in Home Assistant:": "Otomatisasi dapat dipicu secara opsional di Home Assistant:",
     "Trigger type:": "Tipe Trigger/Pemicu:",
     "Event type:": "Tipe event:",
