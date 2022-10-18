@@ -11,9 +11,7 @@ class Webhook extends NotificationProvider {
 
         try {
             let data = {
-                heartbeat: heartbeatJSON,
-                monitor: monitorJSON,
-                msg,
+                text: msg
             };
             let finalData;
             let config = {};
