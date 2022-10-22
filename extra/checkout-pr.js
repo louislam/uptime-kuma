@@ -27,7 +27,7 @@ result = childProcess.spawnSync("git", [ "fetch", name, branch ]);
 console.log(result.stdout.toString());
 console.error(result.stderr.toString());
 
-result = childProcess.spawnSync("git", [ "checkout", branch, "--force" ]);
+result = childProcess.spawnSync("git", [ "checkout", `${name}/${branch}`, "--force" ]);
 
 console.log(result.stdout.toString());
 console.error(result.stderr.toString());

@@ -15,11 +15,10 @@ It is a self-hosted monitoring tool like "Uptime Robot".
 
 Try it!
 
-https://demo.uptime.kuma.pet
+- Tokyo Demo Server: https://demo.uptime.kuma.pet (Sponsored by [Uptime Kuma Sponsors](https://github.com/louislam/uptime-kuma#%EF%B8%8F-sponsors))
+- Europe Demo Server: https://demo.uptime-kuma.karimi.dev:27000 (Provided by [@mhkarimi1383](https://github.com/mhkarimi1383))
 
-It is a temporary live demo, all data will be deleted after 10 minutes. The server is located in Tokyo, so if you live far from there, it may affect your experience. I suggest that you should install and try it out for the best demo experience.
-
-VPS is sponsored by Uptime Kuma sponsors on [Open Collective](https://opencollective.com/uptime-kuma)! Thank you so much!
+It is a temporary live demo, all data will be deleted after 10 minutes. Use the one that is closer to you, but I suggest that you should install and try it out for the best demo experience.
 
 ## ⭐ Features
 
@@ -106,7 +105,7 @@ https://github.com/louislam/uptime-kuma/milestones
 
 Project Plan:
 
-https://github.com/louislam/uptime-kuma/projects/1
+https://github.com/users/louislam/projects/4/views/1
 
 ## ❤️ Sponsors
 
@@ -177,4 +176,4 @@ If you want to translate Uptime Kuma into your language, please read: https://gi
 Feel free to correct my grammar in this README, source code, or wiki, as my mother language is not English and my grammar is not that great.
 
 ### Create Pull Requests
-If you want to modify Uptime Kuma, this guideline may be useful for you: https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md
+If you want to modify Uptime Kuma, please read this guide and follow the rules here: https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md

@@ -1,4 +1,8 @@
-👉 Delete this line if you have read and agree our pull request rules and guidelines: https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md#can-i-create-a-pull-request-for-uptime-kuma
+⚠️⚠️⚠️ Since we do not accept all types of pull requests and do not want to waste your time. Please be sure that you have read pull request rules:
+https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md#can-i-create-a-pull-request-for-uptime-kuma
+
+Tick the checkbox if you understand [x]: 
+- [ ] I have read and understand the pull request rules.
 
 # Description
 

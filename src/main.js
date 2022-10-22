@@ -5,6 +5,7 @@ import Toast from "vue-toastification";
 import "vue-toastification/dist/index.css";
 import App from "./App.vue";
 import "./assets/app.scss";
+import "./assets/vue-datepicker.scss";
 import { i18n } from "./i18n";
 import { FontAwesomeIcon } from "./icon.js";
 import datetime from "./mixins/datetime";
@@ -15,6 +16,13 @@ import theme from "./mixins/theme";
 import lang from "./mixins/lang";
 import { router } from "./router";
 import { appName } from "./util.ts";
+import dayjs from "dayjs";
+import timezone from "dayjs/plugin/timezone";
+import utc from "dayjs/plugin/utc";
+import relativeTime from "dayjs/plugin/relativeTime";
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.extend(relativeTime);
 
 const app = createApp({
     mixins: [

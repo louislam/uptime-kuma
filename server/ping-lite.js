@@ -105,7 +105,7 @@ Ping.prototype.send = function (callback) {
     let _exited;
     let _errored;
 
-    this._ping = spawn(this._bin, this._args); // spawn the binary
+    this._ping = spawn(this._bin, this._args, { windowsHide: true }); // spawn the binary
 
     this._ping.on("error", function (err) { // handle binary errors
         _errored = true;
