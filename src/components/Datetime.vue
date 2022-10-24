@@ -3,8 +3,6 @@
 </template>
 
 <script>
-import dayjs from "dayjs";
-
 export default {
     props: {
         /** Value of date time */
