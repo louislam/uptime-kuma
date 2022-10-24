@@ -1,7 +1,8 @@
 # How to translate
 
 1. Fork this repo.
-2. Run `npm run update-language-files --language=<code>` where `<code>`
+2. Run `npm install`
+3. Run `npm run update-language-files --language=<code>` where `<code>`
    is a valid ISO language code:
    http://www.lingoes.net/en/translator/langcode.htm. You can also use
    this command to check if there are new strings to
