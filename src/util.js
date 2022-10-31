@@ -7,17 +7,21 @@
 // Backend uses the compiled file util.js
 // Frontend uses util.ts
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getMonitorRelativeURL = exports.genSecret = exports.getCryptoRandomInt = exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.log = exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isDev = void 0;
-const _dayjs = require("dayjs");
-const dayjs = _dayjs;
+exports.localToUTC = exports.utcToLocal = exports.utcToISODateTime = exports.isoToUTCDateTime = exports.parseTimeFromTimeObject = exports.parseTimeObject = exports.getMaintenanceRelativeURL = exports.getMonitorRelativeURL = exports.genSecret = exports.getCryptoRandomInt = exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.log = exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.SQL_DATETIME_FORMAT_WITHOUT_SECOND = exports.SQL_DATETIME_FORMAT = exports.SQL_DATE_FORMAT = exports.STATUS_PAGE_MAINTENANCE = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.MAINTENANCE = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isDev = void 0;
+const dayjs = require("dayjs");
 exports.isDev = process.env.NODE_ENV === "development";
 exports.appName = "Uptime Kuma";
 exports.DOWN = 0;
 exports.UP = 1;
 exports.PENDING = 2;
+exports.MAINTENANCE = 3;
 exports.STATUS_PAGE_ALL_DOWN = 0;
 exports.STATUS_PAGE_ALL_UP = 1;
 exports.STATUS_PAGE_PARTIAL_DOWN = 2;
+exports.STATUS_PAGE_MAINTENANCE = 3;
+exports.SQL_DATE_FORMAT = "YYYY-MM-DD";
+exports.SQL_DATETIME_FORMAT = "YYYY-MM-DD HH:mm:ss";
+exports.SQL_DATETIME_FORMAT_WITHOUT_SECOND = "YYYY-MM-DD HH:mm";
 /** Flip the status of s */
 function flipStatus(s) {
     if (s === exports.UP) {
@@ -100,7 +104,7 @@ class Logger {
         }
         module = module.toUpperCase();
         level = level.toUpperCase();
-        const now = new Date().toISOString();
+        const now = dayjs.tz(new Date()).format();
         const formattedMessage = (typeof msg === "string") ? `${now} [${module}] ${level}: ${msg}` : msg;
         if (level === "INFO") {
             console.info(formattedMessage);
@@ -280,9 +284,9 @@ function getCryptoRandomInt(min, max) {
 }
 exports.getCryptoRandomInt = getCryptoRandomInt;
 /**
- * Generate a secret
- * @param length Lenght of secret to generate
- * @returns
+ * Generate a random alphanumeric string of fixed length
+ * @param length Length of string to generate
+ * @returns string
  */
 function genSecret(length = 64) {
     let secret = "";
@@ -303,3 +307,71 @@ function getMonitorRelativeURL(id) {
     return "/dashboard/" + id;
 }
 exports.getMonitorRelativeURL = getMonitorRelativeURL;
+function getMaintenanceRelativeURL(id) {
+    return "/maintenance/" + id;
+}
+exports.getMaintenanceRelativeURL = getMaintenanceRelativeURL;
+/**
+ * Parse to Time Object that used in VueDatePicker
+ * @param {string} time E.g. 12:00
+ * @returns object
+ */
+function parseTimeObject(time) {
+    if (!time) {
+        return {
+            hours: 0,
+            minutes: 0,
+        };
+    }
+    let array = time.split(":");
+    if (array.length < 2) {
+        throw new Error("parseVueDatePickerTimeFormat: Invalid Time");
+    }
+    let obj = {
+        hours: parseInt(array[0]),
+        minutes: parseInt(array[1]),
+        seconds: 0,
+    };
+    if (array.length >= 3) {
+        obj.seconds = parseInt(array[2]);
+    }
+    return obj;
+}
+exports.parseTimeObject = parseTimeObject;
+/**
+ * @returns string e.g. 12:00
+ */
+function parseTimeFromTimeObject(obj) {
+    if (!obj) {
+        return obj;
+    }
+    let result = "";
+    result += obj.hours.toString().padStart(2, "0") + ":" + obj.minutes.toString().padStart(2, "0");
+    if (obj.seconds) {
+        result += ":" + obj.seconds.toString().padStart(2, "0");
+    }
+    return result;
+}
+exports.parseTimeFromTimeObject = parseTimeFromTimeObject;
+function isoToUTCDateTime(input) {
+    return dayjs(input).utc().format(exports.SQL_DATETIME_FORMAT);
+}
+exports.isoToUTCDateTime = isoToUTCDateTime;
+/**
+ * @param input
+ */
+function utcToISODateTime(input) {
+    return dayjs.utc(input).toISOString();
+}
+exports.utcToISODateTime = utcToISODateTime;
+/**
+ * For SQL_DATETIME_FORMAT
+ */
+function utcToLocal(input, format = exports.SQL_DATETIME_FORMAT) {
+    return dayjs.utc(input).local().format(format);
+}
+exports.utcToLocal = utcToLocal;
+function localToUTC(input, format = exports.SQL_DATETIME_FORMAT) {
+    return dayjs(input).utc().format(format);
+}
+exports.localToUTC = localToUTC;

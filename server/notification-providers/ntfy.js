@@ -7,18 +7,26 @@ class Ntfy extends NotificationProvider {
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
-        var ntfyparams = {
+        try {
+            let headers = {};
+            if (notification.ntfyusername) {
+                headers = {
+                    "Authorization": "Basic " + Buffer.from(notification.ntfyusername + ":" + notification.ntfypassword).toString("base64"),
+                };
+            }
+            let data = {
                 "topic": notification.ntfytopic,
                 "message": msg,
                 "priority": notification.ntfyPriority || 4,
                 "title": "Uptime-Kuma",
-        };
-        if (notification.ntfyIcon) {
-        	ntfyparams.icon = notification.ntfyIcon;
-	    }
+            };
 
-        try {
-            await axios.post(`${notification.ntfyserverurl}`, ntfyparams);
+            if (notification.ntfyIcon) {
+                data.icon = notification.ntfyIcon;
+            }
+
+            await axios.post(`${notification.ntfyserverurl}`, data, { headers: headers });
+
             return okMsg;
 
         } catch (error) {

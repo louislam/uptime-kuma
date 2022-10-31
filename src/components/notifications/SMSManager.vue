@@ -2,7 +2,7 @@
     <div class="mb-3">
         <label for="smsmanager-key" class="form-label">API Key</label>
         <div class="form-text">
-            {{ $t("SMSManager API Docs ") }}
+            {{ $t("SMSManager API Docs") }}
             <a href="https://smsmanager.cz/api/http#send" target="_blank">{{ $t("here") }}</a>
         </div>
         <input id="smsmanager-key" v-model="$parent.notification.smsmanagerApiKey" type="text" class="form-control">

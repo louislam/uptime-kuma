@@ -64,6 +64,7 @@ class Database {
         "patch-add-other-auth.sql": { parents: [ "patch-monitor-basic-auth.sql" ] },
         "patch-add-radius-monitor.sql": true,
         "patch-monitor-add-resend-interval.sql": true,
+        "patch-maintenance-table2.sql": true,
     };
 
     /**
