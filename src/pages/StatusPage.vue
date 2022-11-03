@@ -563,7 +563,7 @@ export default {
         this.baseURL = getResBaseURL();
     },
     async mounted() {
-        if (!this.hasToken) this.$router.push("/");
+        if (!this.hasToken) { this.$router.push("/"); }
         this.slug = this.overrideSlug || this.$route.params.slug;
 
         if (!this.slug) {
