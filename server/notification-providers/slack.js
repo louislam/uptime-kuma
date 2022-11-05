@@ -81,7 +81,7 @@ class Slack extends NotificationProvider {
 
             // Button
             if (baseURL) {
-                data.blocks.push({
+                data.attachments.blocks.push({
                     "type": "actions",
                     "elements": [{
                         "type": "button",
