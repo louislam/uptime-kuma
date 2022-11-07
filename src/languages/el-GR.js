@@ -216,6 +216,7 @@ export default {
     smtpCC: "CC",
     smtpBCC: "BCC",
     discord: "Discord",
+    DiscordPrivate: "Discord-Private",
     "Discord Webhook URL": "Discord Webhook URL",
     wayToGetDiscordURL: "Μπορείτε να το αποκτήσετε μεταβαίνοντας στις Ρυθμίσεις διακομιστή -> Ενσωματώσεις -> Δημιουργία Webhook",
     "Bot Display Name": "Εμφανιζόμενο όνομα bot",

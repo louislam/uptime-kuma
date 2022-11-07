@@ -207,6 +207,7 @@ export default {
     smtpCC: "DW",
     smtpBCC: "UDW",
     discord: "Discord",
+    DiscordPrivate: "Discord-Private",
     "Discord Webhook URL": "URL webhook Discorda",
     wayToGetDiscordURL: "Możesz go uzyskać, przechodząc do Ustawienia serwera -> Integracje -> Tworzenie webhooka",
     "Bot Display Name": "Wyświetlana nazwa bota",

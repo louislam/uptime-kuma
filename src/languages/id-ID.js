@@ -216,6 +216,7 @@ export default {
     smtpCC: "CC",
     smtpBCC: "BCC",
     discord: "Discord",
+    DiscordPrivate: "Discord-Private",
     "Discord Webhook URL": "Discord Webhook URL",
     wayToGetDiscordURL: "Anda bisa mendapatkan ini dengan pergi ke Server Pengaturan -> Integrasi -> Buat Webhook",
     "Bot Display Name": "Nama Bot",

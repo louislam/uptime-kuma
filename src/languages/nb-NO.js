@@ -207,6 +207,7 @@ export default {
     smtpCC: "CC",
     smtpBCC: "BCC",
     discord: "Discord",
+    DiscordPrivate: "Discord-Private",
     "Discord Webhook URL": "Discord Webhook URL",
     wayToGetDiscordURL: "Du kan få denne ved å gå til Serverinnstillinger -> Integrasjoner -> Opprett en Webhook",
     "Bot Display Name": "Bot Visningsnavn",

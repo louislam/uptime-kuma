@@ -216,6 +216,7 @@ export default {
     smtpCC: "Kopie",
     smtpBCC: "Skrytá kopie",
     discord: "Discord",
+    DiscordPrivate: "Discord-Private",
     "Discord Webhook URL": "Discord Webhook URL",
     wayToGetDiscordURL: "Získáte tak, že přejdete do Nastavení serveru - > Integrace - > Vytvořit Webhook",
     "Bot Display Name": "Zobrazované jméno robota",

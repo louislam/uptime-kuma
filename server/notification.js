@@ -8,6 +8,7 @@ const Bark = require("./notification-providers/bark");
 const ClickSendSMS = require("./notification-providers/clicksendsms");
 const DingDing = require("./notification-providers/dingding");
 const Discord = require("./notification-providers/discord");
+const DiscordPrivate = require("./notification-providers/DiscordPrivate");
 const Feishu = require("./notification-providers/feishu");
 const FreeMobile = require("./notification-providers/freemobile");
 const GoogleChat = require("./notification-providers/google-chat");
@@ -64,6 +65,7 @@ class Notification {
             new ClickSendSMS(),
             new DingDing(),
             new Discord(),
+            new DiscordPrivate(),
             new Feishu(),
             new FreeMobile(),
             new GoogleChat(),

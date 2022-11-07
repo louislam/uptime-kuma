@@ -229,6 +229,7 @@ export default {
     smtpCC: "CC",
     smtpBCC: "BCC",
     discord: "Discord",
+    DiscordPrivate: "Discord-Private",
     "Discord Webhook URL": "Discord Webhook 網址",
     wayToGetDiscordURL: "您可以前往伺服器設定 -> 整合 -> Webhook -> 新 Webhook 以取得",
     "Bot Display Name": "機器人顯示名稱",

@@ -212,6 +212,7 @@ export default {
     smtpCC: "CC",
     smtpBCC: "BCC",
     discord: "Discord",
+    DiscordPrivate: "Discord-Private",
     "Discord Webhook URL": "Discord Webhook URL",
     wayToGetDiscordURL: "Để lấy Discord, hãy vào: Server Settings -> Integrations -> Create Webhook",
     "Bot Display Name": "Tên hiển thị của BOT",

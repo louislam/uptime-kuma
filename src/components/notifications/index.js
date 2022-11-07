@@ -6,6 +6,7 @@ import Bark from "./Bark.vue";
 import ClickSendSMS from "./ClickSendSMS.vue";
 import DingDing from "./DingDing.vue";
 import Discord from "./Discord.vue";
+import DiscordPrivate from "./DiscordPrivate.vue";
 import Feishu from "./Feishu.vue";
 import FreeMobile from "./FreeMobile.vue";
 import GoogleChat from "./GoogleChat.vue";
@@ -57,6 +58,7 @@ const NotificationFormList = {
     "clicksendsms": ClickSendSMS,
     "DingDing": DingDing,
     "discord": Discord,
+    "DiscordPrivate": DiscordPrivate,
     "Feishu": Feishu,
     "FreeMobile": FreeMobile,
     "GoogleChat": GoogleChat,

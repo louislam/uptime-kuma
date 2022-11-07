@@ -213,6 +213,7 @@ export default {
     smtpCC: "CC",
     smtpBCC: "BCC",
     discord: "Discord",
+    DiscordPrivate: "Discord-Private",
     "Discord Webhook URL": "Discord Webhook URL",
     wayToGetDiscordURL: "คุณสามารถรับได้โดยการไปที่ Server Settings -> Integrations -> Create Webhook",
     "Bot Display Name": "ชื่อบอท",

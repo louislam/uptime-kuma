@@ -189,6 +189,7 @@ export default {
     webhook: "Webhook",
     smtp: "E-Mail (SMTP)",
     discord: "Discord",
+    DiscordPrivate: "Discord-Private",
     teams: "Microsoft Teams",
     signal: "Signal",
     gotify: "Gotify",

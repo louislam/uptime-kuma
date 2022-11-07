@@ -216,6 +216,7 @@ export default {
     smtpCC: "CC",
     smtpBCC: "BCC",
     discord: "Discord",
+    DiscordPrivate: "Discord-Private",
     "Discord Webhook URL": "Discord Webhook URL",
     wayToGetDiscordURL: "Bunu Sunucu Ayarları -> Entegrasyonlar -> Webhook Oluştur'a giderek alabilirsiniz.",
     "Bot Display Name": "Botun Görünecek Adı",

@@ -211,6 +211,43 @@ describe("Test Discord Notification Provider", () => {
     });
 });
 
+describe("Test DiscordPrivate Notification Provider", () => {
+    const hostname = "discord.com";
+    const port = 1337;
+
+    const sendNotification = async (hostname, port, type) => {
+        const discordProvider = new DiscordPrivate();
+
+        axios.post.mockResolvedValue({});
+
+        await discordProvider.send(
+            {
+                discordUsername: "Uptime Kuma",
+                discordWebhookUrl: "https://discord.com",
+            },
+            "test message",
+            {
+                type,
+                hostname,
+                port,
+            },
+            {
+                status: DOWN,
+            }
+        );
+    };
+
+    it("should send hostname for ping monitors", async () => {
+        await sendNotification(hostname, null, "ping");
+        expect(axios.post.mock.lastCall[1].embeds[0].fields[1].value).toBe(hostname);
+    });
+
+    it.each([ "dns", "port", "steam" ])("should send hostname for %p monitors", async (type) => {
+        await sendNotification(hostname, port, type);
+        expect(axios.post.mock.lastCall[1].embeds[0].fields[1].value).toBe(`${hostname}:${port}`);
+    });
+});
+
 describe("The function filterAndJoin", () => {
     it("should join and array of strings to one string", () => {
         const result = utilServerRewire.filterAndJoin([ "one", "two", "three" ]);

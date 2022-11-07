@@ -214,6 +214,7 @@ export default {
     smtpCC: "抄送",
     smtpBCC: "密送",
     discord: "Discord",
+    DiscordPrivate: "Discord-Private",
     "Discord Webhook URL": "Discord Webhook URL",
     wayToGetDiscordURL: "要获取，可以前往服务器设置 -> 整合 -> 创建 Webhook",
     "Bot Display Name": "机器人显示名称",

@@ -212,6 +212,7 @@ export default {
     smtpCC: "Cc",
     smtpBCC: "Bcc",
     discord: "Discord",
+    DiscordPrivate: "Discord-Private",
     "Discord Webhook URL": "URL Discord webhooka",
     wayToGetDiscordURL: "Ovo možete dobiti tako da odete na Postavke servera -> Integracije -> Napravi webhook",
     "Bot Display Name": "Nadimak Bota unutar servera",

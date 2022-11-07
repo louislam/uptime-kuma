@@ -207,6 +207,7 @@ export default {
     smtpCC: "참조",
     smtpBCC: "숨은 참조",
     discord: "Discord",
+    DiscordPrivate: "Discord-Private",
     "Discord Webhook URL": "Discord Webhook URL",
     wayToGetDiscordURL: "서버 설정 -> 연동 -> 웹후크 보기 -> 새 웹후크에서 얻을 수 있어요!",
     "Bot Display Name": "표시 이름",
