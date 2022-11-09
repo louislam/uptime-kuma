@@ -58,10 +58,6 @@ class DiscordPrivate extends NotificationProvider {
                                 name: "Time (UTC)",
                                 value: heartbeatJSON["time"],
                             },
-                            {
-                                name: "Error",
-                                value: heartbeatJSON["msg"],
-                            },
                         ],
                     }],
                 };
