@@ -1,4 +1,4 @@
-export const SetupPage = {
+exports.SetupPage = {
     url: Cypress.env("baseUrl") + "/setup",
     usernameInput: '[data-cy="username-input"]',
     passWordInput: '[data-cy="password-input"]',

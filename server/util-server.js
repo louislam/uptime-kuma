@@ -21,6 +21,7 @@ const {
         rfc2865: { file, attributes },
     },
 } = require("node-radius-utils");
+const dayjs = require("dayjs");
 
 // From ping-lite
 exports.WIN = /^win/.test(process.platform);
@@ -291,6 +292,17 @@ exports.postgresQuery = function (connectionString, query) {
     });
 };
 
+/**
+ * Query radius server
+ * @param {string} hostname Hostname of radius server
+ * @param {string} username Username to use
+ * @param {string} password Password to use
+ * @param {string} calledStationId ID of called station
+ * @param {string} callingStationId ID of calling station
+ * @param {string} secret Secret to use
+ * @param {number} [port=1812] Port to contact radius server on
+ * @returns {Promise<any>}
+ */
 exports.radius = function (
     hostname,
     username,
@@ -298,9 +310,11 @@ exports.radius = function (
     calledStationId,
     callingStationId,
     secret,
+    port = 1812,
 ) {
     const client = new radiusClient({
         host: hostname,
+        hostPort: port,
         dictionaries: [ file ],
     });
 
@@ -557,7 +571,7 @@ exports.doubleCheckPassword = async (socket, currentPassword) => {
 exports.startUnitTest = async () => {
     console.log("Starting unit test...");
     const npm = /^win/.test(process.platform) ? "npm.cmd" : "npm";
-    const child = childProcess.spawn(npm, [ "run", "jest" ]);
+    const child = childProcess.spawn(npm, [ "run", "jest-backend" ]);
 
     child.stdout.on("data", (data) => {
         console.log(data.toString());
@@ -644,4 +658,65 @@ module.exports.send403 = (res, msg = "") => {
         "status": "fail",
         "msg": msg,
     });
+};
+
+function timeObjectConvertTimezone(obj, timezone, timeObjectToUTC = true) {
+    let offsetString;
+
+    if (timezone) {
+        offsetString = dayjs().tz(timezone).format("Z");
+    } else {
+        offsetString = dayjs().format("Z");
+    }
+
+    let hours = parseInt(offsetString.substring(1, 3));
+    let minutes = parseInt(offsetString.substring(4, 6));
+
+    if (
+        (timeObjectToUTC && offsetString.startsWith("+")) ||
+        (!timeObjectToUTC && offsetString.startsWith("-"))
+    ) {
+        hours *= -1;
+        minutes *= -1;
+    }
+
+    obj.hours += hours;
+    obj.minutes += minutes;
+
+    // Handle out of bound
+    if (obj.minutes < 0) {
+        obj.minutes += 60;
+        obj.hours--;
+    } else if (obj.minutes > 60) {
+        obj.minutes -= 60;
+        obj.hours++;
+    }
+
+    if (obj.hours < 0) {
+        obj.hours += 24;
+    } else if (obj.hours > 24) {
+        obj.hours -= 24;
+    }
+
+    return obj;
+}
+
+/**
+ *
+ * @param {object} obj
+ * @param {string} timezone
+ * @returns {object}
+ */
+module.exports.timeObjectToUTC = (obj, timezone = undefined) => {
+    return timeObjectConvertTimezone(obj, timezone, true);
+};
+
+/**
+ *
+ * @param {object} obj
+ * @param {string} timezone
+ * @returns {object}
+ */
+module.exports.timeObjectToLocal = (obj, timezone = undefined) => {
+    return timeObjectConvertTimezone(obj, timezone, false);
 };
