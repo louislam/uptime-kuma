@@ -27,6 +27,10 @@
             <HiddenInput id="ntfy-password" v-model="$parent.notification.ntfypassword" autocomplete="new-password"></HiddenInput>
         </div>
     </div>
+    <div class="mb-3">
+        <label for="ntfy-icon" class="form-label">{{ $t("IconUrl") }}</label>
+        <input id="ntfy-icon" v-model="$parent.notification.ntfyIcon" type="text" class="form-control">
+    </div>
 </template>
 
 <script>

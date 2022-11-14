@@ -3,7 +3,7 @@ const dayjs = require("dayjs");
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
 const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, TimeLogger } = require("../../src/util");
-const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mqttAsync, setSetting, httpNtlm, radius } = require("../util-server");
+const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mqttAsync, setSetting, httpNtlm, radius, grpcQuery } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification");
@@ -105,6 +105,11 @@ class Monitor extends BeanModel {
             authMethod: this.authMethod,
             authWorkstation: this.authWorkstation,
             authDomain: this.authDomain,
+            grpcUrl: this.grpcUrl,
+            grpcProtobuf: this.grpcProtobuf,
+            grpcMethod: this.grpcMethod,
+            grpcServiceName: this.grpcServiceName,
+            grpcEnableTls: this.getGrpcEnableTls(),
             radiusUsername: this.radiusUsername,
             radiusPassword: this.radiusPassword,
             radiusCalledStationId: this.radiusCalledStationId,
@@ -117,6 +122,8 @@ class Monitor extends BeanModel {
                 ...data,
                 headers: this.headers,
                 body: this.body,
+                grpcBody: this.grpcBody,
+                grpcMetadata: this.grpcMetadata,
                 basic_auth_user: this.basic_auth_user,
                 basic_auth_pass: this.basic_auth_pass,
                 pushToken: this.pushToken,
@@ -165,6 +172,14 @@ class Monitor extends BeanModel {
      */
     isUpsideDown() {
         return Boolean(this.upsideDown);
+    }
+
+    /**
+     * Parse to boolean
+     * @returns {boolean}
+     */
+    getGrpcEnableTls() {
+        return Boolean(this.grpcEnableTls);
     }
 
     /**
@@ -527,6 +542,37 @@ class Monitor extends BeanModel {
                     bean.msg = "";
                     bean.status = UP;
                     bean.ping = dayjs().valueOf() - startTime;
+                } else if (this.type === "grpc-keyword") {
+                    let startTime = dayjs().valueOf();
+                    const options = {
+                        grpcUrl: this.grpcUrl,
+                        grpcProtobufData: this.grpcProtobuf,
+                        grpcServiceName: this.grpcServiceName,
+                        grpcEnableTls: this.grpcEnableTls,
+                        grpcMethod: this.grpcMethod,
+                        grpcBody: this.grpcBody,
+                        keyword: this.keyword
+                    };
+                    const response = await grpcQuery(options);
+                    bean.ping = dayjs().valueOf() - startTime;
+                    log.debug("monitor:", `gRPC response: ${JSON.stringify(response)}`);
+                    let responseData = response.data;
+                    if (responseData.length > 50) {
+                        responseData = response.substring(0, 47) + "...";
+                    }
+                    if (response.code !== 1) {
+                        bean.status = DOWN;
+                        bean.msg = `Error in send gRPC ${response.code} ${response.errorMessage}`;
+                    } else {
+                        if (response.data.toString().includes(this.keyword)) {
+                            bean.status = UP;
+                            bean.msg = `${responseData}, keyword [${this.keyword}] is found`;
+                        } else {
+                            log.debug("monitor:", `GRPC response [${response.data}] + ", but keyword [${this.keyword}] is not in [" + ${response.data} + "]"`);
+                            bean.status = DOWN;
+                            bean.msg = `, but keyword [${this.keyword}] is not in [" + ${responseData} + "]`;
+                        }
+                    }
                 } else if (this.type === "postgres") {
                     let startTime = dayjs().valueOf();
 

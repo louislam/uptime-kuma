@@ -20,6 +20,11 @@ class Ntfy extends NotificationProvider {
                 "priority": notification.ntfyPriority || 4,
                 "title": "Uptime-Kuma",
             };
+
+            if (notification.ntfyIcon) {
+                data.icon = notification.ntfyIcon;
+            }
+
             await axios.post(`${notification.ntfyserverurl}`, data, { headers: headers });
 
             return okMsg;
