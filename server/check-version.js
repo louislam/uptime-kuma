@@ -6,7 +6,7 @@ exports.version = require("../package.json").version;
 exports.latestVersion = null;
 
 // How much time in ms to wait between update checks
-const UPDATE_CHECKER_INTERVAL_MS = 3600 * 1000 * 48;
+const UPDATE_CHECKER_INTERVAL_MS = 1000 * 60 * 60 * 48;
 const UPDATE_CHECKER_LATEST_VERSION_URL = "https://uptime.kuma.pet/version";
 
 let interval;
