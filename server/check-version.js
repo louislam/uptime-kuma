@@ -5,6 +5,7 @@ const { log } = require("../src/util");
 exports.version = require("../package.json").version;
 exports.latestVersion = null;
 
+// How much time in ms to wait between update checks
 const UPDATE_CHECKER_INTERVAL_MS = 3600 * 1000 * 48;
 const UPDATE_CHECKER_LATEST_VERSION_URL = "https://uptime.kuma.pet/version";
 
@@ -16,7 +17,7 @@ exports.startInterval = () => {
             return;
         }
 
-        log.debug("update-checker", "retrieving latest versions");
+        log.debug("update-checker", "Retrieving latest versions");
 
         try {
             const res = await axios.get(UPDATE_CHECKER_LATEST_VERSION_URL);
@@ -37,7 +38,7 @@ exports.startInterval = () => {
             }
 
         } catch (_) {
-            log.info("update-checker", "Update checker: failed to check for new versions");
+            log.info("update-checker", "Failed to check for new versions");
         }
 
     };
