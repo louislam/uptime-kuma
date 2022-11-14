@@ -9,6 +9,8 @@ const Database = require("./database");
 const util = require("util");
 const { CacheableDnsHttpAgent } = require("./cacheable-dns-http-agent");
 const { Settings } = require("./settings");
+const dayjs = require("dayjs");
+// DO NOT IMPORT HERE IF THE MODULES USED `UptimeKumaServer.getInstance()`
 
 /**
  * `module.exports` (alias: `server`) should be inside this class, in order to avoid circular dependency issue.
@@ -26,6 +28,13 @@ class UptimeKumaServer {
      * @type {{}}
      */
     monitorList = {};
+
+    /**
+     * Main maintenance list
+     * @type {{}}
+     */
+    maintenanceList = {};
+
     entryPage = "dashboard";
     app = undefined;
     httpServer = undefined;
@@ -36,6 +45,8 @@ class UptimeKumaServer {
      * @type {string}
      */
     indexHTML = "";
+
+    generateMaintenanceTimeslotsInterval = undefined;
 
     static getInstance(args) {
         if (UptimeKumaServer.instance == null) {
@@ -77,6 +88,16 @@ class UptimeKumaServer {
         this.io = new Server(this.httpServer);
     }
 
+    async initAfterDatabaseReady() {
+        process.env.TZ = await this.getTimezone();
+        dayjs.tz.setDefault(process.env.TZ);
+        log.debug("DEBUG", "Timezone: " + process.env.TZ);
+        log.debug("DEBUG", "Current Time: " + dayjs.tz().format());
+
+        await this.generateMaintenanceTimeslots();
+        this.generateMaintenanceTimeslotsInterval = setInterval(this.generateMaintenanceTimeslots, 60 * 1000);
+    }
+
     async sendMonitorList(socket) {
         let list = await this.getMonitorJSONList(socket.userID);
         this.io.to(socket.userID).emit("monitorList", list);
@@ -99,6 +120,40 @@ class UptimeKumaServer {
 
         for (let monitor of monitorList) {
             result[monitor.id] = await monitor.toJSON();
+        }
+
+        return result;
+    }
+
+    /**
+     * Send maintenance list to client
+     * @param {Socket} socket Socket.io instance to send to
+     * @returns {Object}
+     */
+    async sendMaintenanceList(socket) {
+        return await this.sendMaintenanceListByUserID(socket.userID);
+    }
+
+    async sendMaintenanceListByUserID(userID) {
+        let list = await this.getMaintenanceJSONList(userID);
+        this.io.to(userID).emit("maintenanceList", list);
+        return list;
+    }
+
+    /**
+     * Get a list of maintenances for the given user.
+     * @param {string} userID - The ID of the user to get maintenances for.
+     * @returns {Promise<Object>} A promise that resolves to an object with maintenance IDs as keys and maintenances objects as values.
+     */
+    async getMaintenanceJSONList(userID) {
+        let result = {};
+
+        let maintenanceList = await R.find("maintenance", " user_id = ? ORDER BY end_date DESC, title", [
+            userID,
+        ]);
+
+        for (let maintenance of maintenanceList) {
+            result[maintenance.id] = await maintenance.toJSON();
         }
 
         return result;
@@ -138,15 +193,58 @@ class UptimeKumaServer {
         }
 
         if (await Settings.get("trustProxy")) {
-            return socket.client.conn.request.headers["x-forwarded-for"]
+            const forwardedFor = socket.client.conn.request.headers["x-forwarded-for"];
+
+            return (typeof forwardedFor === "string" ? forwardedFor.split(",")[0].trim() : null)
                 || socket.client.conn.request.headers["x-real-ip"]
                 || clientIP.replace(/^.*:/, "");
         } else {
             return clientIP.replace(/^.*:/, "");
         }
     }
+
+    async getTimezone() {
+        let timezone = await Settings.get("serverTimezone");
+        if (timezone) {
+            return timezone;
+        } else if (process.env.TZ) {
+            return process.env.TZ;
+        } else {
+            return dayjs.tz.guess();
+        }
+    }
+
+    getTimezoneOffset() {
+        return dayjs().format("Z");
+    }
+
+    async setTimezone(timezone) {
+        await Settings.set("serverTimezone", timezone, "general");
+        process.env.TZ = timezone;
+        dayjs.tz.setDefault(timezone);
+    }
+
+    async generateMaintenanceTimeslots() {
+
+        let list = await R.find("maintenance_timeslot", " generated_next = 0 AND start_date <= DATETIME('now') ");
+
+        for (let maintenanceTimeslot of list) {
+            let maintenance = await maintenanceTimeslot.maintenance;
+            await MaintenanceTimeslot.generateTimeslot(maintenance, maintenanceTimeslot.end_date, false);
+            maintenanceTimeslot.generated_next = true;
+            await R.store(maintenanceTimeslot);
+        }
+
+    }
+
+    async stop() {
+        clearTimeout(this.generateMaintenanceTimeslotsInterval);
+    }
 }
 
 module.exports = {
     UptimeKumaServer
 };
+
+// Must be at the end
+const MaintenanceTimeslot = require("./model/maintenance_timeslot");

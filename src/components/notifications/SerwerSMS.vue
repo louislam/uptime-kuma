@@ -5,7 +5,7 @@
     </div>
     <div class="mb-3">
         <label for="serwersms-key" class="form-label">{{ $t('serwersmsAPIPassword') }}</label>
-        <HiddenInput id="serwersms-key" v-model="$parent.notification.serwersmsPassword" :required="true" autocomplete="one-time-code"></HiddenInput>
+        <HiddenInput id="serwersms-key" v-model="$parent.notification.serwersmsPassword" :required="true" autocomplete="new-password"></HiddenInput>
     </div>
     <div class="mb-3">
         <label for="serwersms-phone-number" class="form-label">{{ $t("serwersmsPhoneNumber") }}</label>

@@ -11,7 +11,7 @@
     </div>
     <div class="mb-3">
         <label for="octopush-key" class="form-label">{{ $t("octopushAPIKey") }}</label>
-        <HiddenInput id="octopush-key" v-model="$parent.notification.octopushAPIKey" :required="true" autocomplete="one-time-code"></HiddenInput>
+        <HiddenInput id="octopush-key" v-model="$parent.notification.octopushAPIKey" :required="true" autocomplete="new-password"></HiddenInput>
         <label for="octopush-login" class="form-label">{{ $t("octopushLogin") }}</label>
         <input id="octopush-login" v-model="$parent.notification.octopushLogin" type="text" class="form-control" required>
     </div>

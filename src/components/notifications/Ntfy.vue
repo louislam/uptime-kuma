@@ -18,7 +18,7 @@
     <div class="mb-3">
         <label for="ntfy-username" class="form-label">{{ $t("Username") }} ({{ $t("Optional") }})</label>
         <div class="input-group mb-3">
-            <input id="ntfy-username" v-model="$parent.notification.ntfyusername" type="text" class="form-control" required>
+            <input id="ntfy-username" v-model="$parent.notification.ntfyusername" type="text" class="form-control">
         </div>
     </div>
     <div class="mb-3">
@@ -26,6 +26,10 @@
         <div class="input-group mb-3">
             <HiddenInput id="ntfy-password" v-model="$parent.notification.ntfypassword" autocomplete="new-password"></HiddenInput>
         </div>
+    </div>
+    <div class="mb-3">
+        <label for="ntfy-icon" class="form-label">{{ $t("IconUrl") }}</label>
+        <input id="ntfy-icon" v-model="$parent.notification.ntfyIcon" type="text" class="form-control">
     </div>
 </template>
 
