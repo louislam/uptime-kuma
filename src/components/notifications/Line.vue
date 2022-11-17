@@ -1,7 +1,7 @@
 <template>
     <div class="mb-3">
         <label for="line-channel-access-token" class="form-label">{{ $t("Channel access token") }}</label>
-        <HiddenInput id="line-channel-access-token" v-model="$parent.notification.lineChannelAccessToken" :required="true" autocomplete="one-time-code"></HiddenInput>
+        <HiddenInput id="line-channel-access-token" v-model="$parent.notification.lineChannelAccessToken" :required="true" autocomplete="new-password"></HiddenInput>
     </div>
     <i18n-t tag="div" keypath="lineDevConsoleTo" class="form-text">
         <b>{{ $t("Basic Settings") }}</b>

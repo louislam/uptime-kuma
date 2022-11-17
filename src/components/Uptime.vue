@@ -25,6 +25,10 @@ export default {
     computed: {
         uptime() {
 
+            if (this.type === "maintenance") {
+                return this.$t("statusMaintenance");
+            }
+
             let key = this.monitor.id + "_" + this.type;
 
             if (this.$root.uptimeList[key] !== undefined) {
@@ -35,6 +39,10 @@ export default {
         },
 
         color() {
+            if (this.type === "maintenance" || this.monitor.maintenance) {
+                return "maintenance";
+            }
+
             if (this.lastHeartBeat.status === 0) {
                 return "danger";
             }

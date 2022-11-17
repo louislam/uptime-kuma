@@ -62,8 +62,10 @@ class Database {
         "patch-add-clickable-status-page-link.sql": true,
         "patch-add-sqlserver-monitor.sql": true,
         "patch-add-other-auth.sql": { parents: [ "patch-monitor-basic-auth.sql" ] },
+        "patch-grpc-monitor.sql": true,
         "patch-add-radius-monitor.sql": true,
         "patch-monitor-add-resend-interval.sql": true,
+        "patch-maintenance-table2.sql": true,
     };
 
     /**

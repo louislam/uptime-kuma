@@ -1,6 +1,6 @@
 {
     "name": "uptime-kuma",
-    "version": "1.18.5",
+    "version": "1.19.0-beta.0",
     "license": "MIT",
     "repository": {
         "type": "git",
@@ -22,6 +22,7 @@
         "start": "npm run start-server",
         "start-server": "node server/server.js",
         "start-server-dev": "cross-env NODE_ENV=development node server/server.js",
+        "start-server-watch-dev": "cross-env NODE_ENV=development node  --watch server/server.js",
         "build": "vite build --config ./config/vite.config.js",
         "test": "node test/prepare-test-server.js && npm run jest-backend",
         "test-with-build": "npm run build && npm test",
@@ -63,7 +64,8 @@
         "cypress-open": "concurrently -k -r \"node test/prepare-test-server.js && node server/server.js --port=3002 --data-dir=./data/test/\" \"cypress open --config-file ./config/cypress.config.js\""
     },
     "dependencies": {
-        "@louislam/sqlite3": "~15.0.6",
+        "@grpc/grpc-js": "^1.7.0",
+        "@louislam/sqlite3": "15.1.2",
         "args-parser": "~1.3.0",
         "axios": "~0.27.0",
         "axios-ntlm": "~1.3.0",
@@ -103,9 +105,10 @@
         "pg-connection-string": "~2.5.0",
         "prom-client": "~13.2.0",
         "prometheus-api-metrics": "~3.2.1",
+        "protobufjs": "~7.1.1",
         "redbean-node": "0.1.4",
-        "socket.io": "~4.4.1",
-        "socket.io-client": "~4.4.1",
+        "socket.io": "~4.5.3",
+        "socket.io-client": "~4.5.3",
         "socks-proxy-agent": "6.1.1",
         "tar": "~6.1.11",
         "tcp-ping": "~0.1.1",
@@ -124,6 +127,7 @@
         "@vitejs/plugin-legacy": "~2.1.0",
         "@vitejs/plugin-vue": "~3.1.0",
         "@vue/compiler-sfc": "~3.2.36",
+        "@vuepic/vue-datepicker": "~3.4.8",
         "aedes": "^0.46.3",
         "babel-plugin-rewire": "~1.2.0",
         "bootstrap": "5.1.3",
