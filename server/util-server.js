@@ -13,6 +13,7 @@ const { badgeConstants } = require("./config");
 const mssql = require("mssql");
 const { Client } = require("pg");
 const postgresConParse = require("pg-connection-string").parse;
+const { MongoClient } = require("mongodb");
 const { NtlmClient } = require("axios-ntlm");
 const { Settings } = require("./settings");
 const grpc = require("@grpc/grpc-js");
@@ -293,6 +294,27 @@ exports.postgresQuery = function (connectionString, query) {
             });
     });
 };
+
+/**
+ * Connect to and Ping a MongoDB database
+ * @param {string} connectionString The database connection string
+ * @returns {Promise<(string[]|Object[]|Object)>}
+ */
+exports.mongodbPing = async function (connectionString) {
+    let client, db;
+    try {
+        client = await MongoClient.connect(connectionString, {useNewUrlParser: true})
+        db = client.db();
+        dbping = await db.command({ ping: 1 });
+        if (dbping["ok"] === 1) {
+            return 'UP'
+        }
+        throw Error("failed");
+    }
+    catch(err){ console.error(err); }
+    finally{ client.close(); }
+}
+
 
 /**
  * Query radius server
