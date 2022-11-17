@@ -315,7 +315,7 @@ exports.mongodbPing = async function (connectionString) {
         }
     } catch (err) {
         console.error(err);
-        throw Error(err)
+        throw Error(err);
     }
 };
 
