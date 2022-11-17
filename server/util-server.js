@@ -13,7 +13,7 @@ const { badgeConstants } = require("./config");
 const mssql = require("mssql");
 const { Client } = require("pg");
 const postgresConParse = require("pg-connection-string").parse;
-const mysql = require("mysql2/promise");
+const mysql = require("mysql2");
 const { NtlmClient } = require("axios-ntlm");
 const { Settings } = require("./settings");
 const radiusClient = require("node-radius-client");
@@ -300,16 +300,16 @@ exports.postgresQuery = function (connectionString, query) {
  */
 exports.mysqlQuery = function (connectionString, query) {
     return new Promise((resolve, reject) => {
-        return mysql.createConnection(connectionString)
-            .then(connection => {
-                connection.connect();
-                return connection.query(query);
-            })
+        const connection = mysql.createConnection(connectionString);
+        connection.promise().query(query)
             .then(res => {
                 resolve(res);
             })
             .catch(err => {
                 reject(err);
+            })
+            .finally(() => {
+                connection.end();
             });
     });
 };
