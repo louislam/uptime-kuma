@@ -301,20 +301,23 @@ exports.postgresQuery = function (connectionString, query) {
  * @returns {Promise<(string[]|Object[]|Object)>}
  */
 exports.mongodbPing = async function (connectionString) {
-    let client, db;
-    try {
-        client = await MongoClient.connect(connectionString, {useNewUrlParser: true})
-        db = client.db();
-        dbping = await db.command({ ping: 1 });
-        if (dbping["ok"] === 1) {
-            return 'UP'
-        }
-        throw Error("failed");
-    }
-    catch(err){ console.error(err); }
-    finally{ client.close(); }
-}
+    let client;
 
+    try {
+        client = await MongoClient.connect(connectionString, { useNewUrlParser: true });
+        let db = client.db();
+        let dbping = await db.command({ ping: 1 });
+        await client.close();
+        if (dbping["ok"] === 1) {
+            return "UP";
+        } else {
+            throw Error("failed");
+        }
+    } catch (err) {
+        console.error(err);
+        throw Error(err)
+    }
+};
 
 /**
  * Query radius server
