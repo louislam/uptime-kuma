@@ -2,6 +2,7 @@ const { BeanModel } = require("redbean-node/dist/bean-model");
 const { R } = require("redbean-node");
 const cheerio = require("cheerio");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
+const jsesc = require("jsesc");
 
 class StatusPage extends BeanModel {
 
@@ -56,12 +57,18 @@ class StatusPage extends BeanModel {
         head.append(`<meta property="og:description" content="${description155}" />`);
 
         // Preload data
-        const json = JSON.stringify(await StatusPage.getStatusPageData(statusPage));
-        head.append(`
-            <script>
-                window.preloadData = ${json}
+        // Add jsesc, fix https://github.com/louislam/uptime-kuma/issues/2186
+        const escapedJSONObject = jsesc(await StatusPage.getStatusPageData(statusPage), {
+            "isScriptContext": true
+        });
+
+        const script = $(`
+            <script id="preload-data" data-json="{}">
+                window.preloadData = ${escapedJSONObject};
             </script>
         `);
+
+        head.append(script);
 
         // manifest.json
         $("link[rel=manifest]").attr("href", `/api/status-page/${statusPage.slug}/manifest.json`);

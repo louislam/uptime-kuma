@@ -17,6 +17,7 @@ const version = require("../../package.json").version;
 const apicache = require("../modules/apicache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { CacheableDnsHttpAgent } = require("../cacheable-dns-http-agent");
+const { DockerHost } = require("../docker");
 
 /**
  * status:
@@ -498,7 +499,7 @@ class Monitor extends BeanModel {
                     if (dockerHost._dockerType === "socket") {
                         options.socketPath = dockerHost._dockerDaemon;
                     } else if (dockerHost._dockerType === "tcp") {
-                        options.baseURL = dockerHost._dockerDaemon;
+                        options.baseURL = DockerHost.patchDockerURL(dockerHost._dockerDaemon);
                     }
 
                     log.debug(`[${this.name}] Axios Request`);
@@ -541,6 +542,17 @@ class Monitor extends BeanModel {
                     bean.ping = dayjs().valueOf() - startTime;
                 } else if (this.type === "radius") {
                     let startTime = dayjs().valueOf();
+
+                    // Handle monitors that were created before the
+                    // update and as such don't have a value for
+                    // this.port.
+                    let port;
+                    if (this.port == null) {
+                        port = 1812;
+                    } else {
+                        port = this.port;
+                    }
+
                     try {
                         const resp = await radius(
                             this.hostname,
@@ -548,7 +560,8 @@ class Monitor extends BeanModel {
                             this.radiusPassword,
                             this.radiusCalledStationId,
                             this.radiusCallingStationId,
-                            this.radiusSecret
+                            this.radiusSecret,
+                            port
                         );
                         if (resp.code) {
                             bean.msg = resp.code;

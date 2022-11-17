@@ -314,6 +314,17 @@ exports.mysqlQuery = function (connectionString, query) {
     });
 };
 
+/**
+ * Query radius server
+ * @param {string} hostname Hostname of radius server
+ * @param {string} username Username to use
+ * @param {string} password Password to use
+ * @param {string} calledStationId ID of called station
+ * @param {string} callingStationId ID of calling station
+ * @param {string} secret Secret to use
+ * @param {number} [port=1812] Port to contact radius server on
+ * @returns {Promise<any>}
+ */
 exports.radius = function (
     hostname,
     username,
@@ -321,9 +332,11 @@ exports.radius = function (
     calledStationId,
     callingStationId,
     secret,
+    port = 1812,
 ) {
     const client = new radiusClient({
         host: hostname,
+        hostPort: port,
         dictionaries: [ file ],
     });
 
@@ -580,7 +593,7 @@ exports.doubleCheckPassword = async (socket, currentPassword) => {
 exports.startUnitTest = async () => {
     console.log("Starting unit test...");
     const npm = /^win/.test(process.platform) ? "npm.cmd" : "npm";
-    const child = childProcess.spawn(npm, [ "run", "jest" ]);
+    const child = childProcess.spawn(npm, [ "run", "jest-backend" ]);
 
     child.stdout.on("data", (data) => {
         console.log(data.toString());
