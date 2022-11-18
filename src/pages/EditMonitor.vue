@@ -292,7 +292,7 @@
                                 </label>
                                 <input id="resend-interval" v-model="monitor.resendInterval" type="number" class="form-control" required min="0" step="1">
                             </div>
-                            
+
                             <h2 v-if="monitor.type !== 'push'" class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
 
                             <div v-if="monitor.type === 'http' || monitor.type === 'keyword' " class="my-3 form-check">
@@ -466,7 +466,6 @@
                                         {{ $t("userAgentDescription") }}
                                     </div>
                                 </div>
-
 
                                 <!-- HTTP Auth -->
                                 <h4 class="mt-5 mb-2">{{ $t("Authentication") }}</h4>
