@@ -459,6 +459,7 @@
                                     <textarea id="headers" v-model="monitor.headers" class="form-control" :placeholder="headersPlaceholder"></textarea>
                                 </div>
 
+                                <!-- HTTP UserAgent -->
                                 <div class="my-3">
                                     <label for="userAgent" class="form-label">{{ $t("userAgent") }}</label>
                                     <input id="userAgent" v-model="monitor.userAgent" type="text" class="form-control" min="0" max="30" step="1">
