@@ -528,4 +528,6 @@ export default {
     "Go back to the previous page.": "이전 페이지로 돌아가기",
     "Coming Soon": "Coming Soon...",
     wayToGetClickSendSMSToken: "{0}에서 API 사용자 이름과 키를 얻을 수 있어요.",
+    userAgent: "유저 에이전트",
+    userAgentDescription: "HTTP 요청시 유저 에이전트를 지정하여 전송합니다.",
 };

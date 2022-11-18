@@ -293,6 +293,14 @@
                                 <input id="resend-interval" v-model="monitor.resendInterval" type="number" class="form-control" required min="0" step="1">
                             </div>
 
+                            <div v-if="monitor.type === 'http'" class="my-3">
+                                <label for="userAgent" class="form-label">{{ $t("userAgent") }}</label>
+                                <input id="userAgent" v-model="monitor.userAgent" type="text" class="form-control" min="0" max="30" step="1">
+                                <div class="form-text">
+                                    {{ $t("userAgentDescription") }}
+                                </div>
+                            </div>
+
                             <h2 v-if="monitor.type !== 'push'" class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
 
                             <div v-if="monitor.type === 'http' || monitor.type === 'keyword' " class="my-3 form-check">
@@ -781,6 +789,7 @@ message HealthCheckResponse {
                     mqttTopic: "",
                     mqttSuccessMessage: "",
                     authMethod: null,
+                    userAgent: "",
                 };
 
                 if (this.$root.proxyList && !this.monitor.proxyId) {

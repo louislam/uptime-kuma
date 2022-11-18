@@ -115,6 +115,7 @@ class Monitor extends BeanModel {
             radiusCalledStationId: this.radiusCalledStationId,
             radiusCallingStationId: this.radiusCallingStationId,
             radiusSecret: this.radiusSecret,
+            userAgent: this.userAgent,
         };
 
         if (includeSensitiveData) {
@@ -274,7 +275,7 @@ class Monitor extends BeanModel {
                         timeout: this.interval * 1000 * 0.8,
                         headers: {
                             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-                            "User-Agent": "Uptime-Kuma/" + version,
+                            "User-Agent": (this.userAgent !== null ? this.userAgent : "") + " Uptime-Kuma/" + version,
                             ...(this.headers ? JSON.parse(this.headers) : {}),
                             ...(basicAuthHeader),
                         },

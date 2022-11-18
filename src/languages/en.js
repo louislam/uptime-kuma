@@ -644,4 +644,7 @@ export default {
     "Server Timezone": "Server Timezone",
     statusPageMaintenanceEndDate: "End",
     IconUrl: "Icon URL",
+    userAgent: "User Agent",
+    userAgentDescription: "Specify and send the user agent when requesting HTTP.",
+
 };
