@@ -2,7 +2,7 @@ export default {
     languageName: "简体中文",
     checkEverySecond: "检测频率 {0} 秒",
     retryCheckEverySecond: "重试间隔 {0} 秒",
-    retriesDescription: "服务被标记为故障并发送通知之前得最大重试次数",
+    retriesDescription: "服务被标记为故障并发送通知之前的最大重试次数",
     ignoreTLSError: "忽略 HTTPS 站点的 TLS/SSL 错误",
     upsideDownModeDescription: "反转状态监控，如果服务可访问，则认为是故障。",
     maxRedirectDescription: "允许的最大重定向次数。设置为 0 禁用重定向。",
