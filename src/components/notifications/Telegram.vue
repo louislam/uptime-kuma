@@ -28,6 +28,15 @@
                 <a :href="telegramGetUpdatesURL('withToken')" target="_blank" style="word-break: break-word;">{{ telegramGetUpdatesURL("masked") }}</a>
             </p>
         </div>
+
+        <div class="form-check form-switch">
+            <input v-model="$parentnotification.telegramSendSilently" class="form-check-input" type="checkbox">
+            <label class="form-check-label">{{ $t("Send Silently") }}</label>
+        </div>
+
+        <div class="form-text">
+            {{ $t("telegramSendSilentlyDescription") }}
+        </div>
     </div>
 </template>
 

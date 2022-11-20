@@ -214,6 +214,8 @@ export default {
     "Chat ID": "Chat ID",
     supportTelegramChatID: "Support Direct Chat / Group / Channel's Chat ID",
     wayToGetTelegramChatID: "You can get your chat ID by sending a message to the bot and going to this URL to view the chat_id:",
+    "Send Silently": "Send Silently",
+    telegramSendSilentlyDescription: "Sends the message silently. Users will receive a notification with no sound.",
     "YOUR BOT TOKEN HERE": "YOUR BOT TOKEN HERE",
     chatIDNotFound: "Chat ID is not found; please send a message to this bot first",
     webhook: "Webhook",
