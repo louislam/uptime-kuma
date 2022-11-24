@@ -13,6 +13,7 @@ const { badgeConstants } = require("./config");
 const mssql = require("mssql");
 const { Client } = require("pg");
 const postgresConParse = require("pg-connection-string").parse;
+const mysql = require("mysql2");
 const { NtlmClient } = require("axios-ntlm");
 const { Settings } = require("./settings");
 const grpc = require("@grpc/grpc-js");
@@ -290,6 +291,28 @@ exports.postgresQuery = function (connectionString, query) {
             })
             .finally(() => {
                 client.end();
+            });
+    });
+};
+
+/**
+ * Run a query on MySQL/MariaDB
+ * @param {string} connectionString The database connection string
+ * @param {string} query The query to validate the database with
+ * @returns {Promise<(string[]|Object[]|Object)>}
+ */
+exports.mysqlQuery = function (connectionString, query) {
+    return new Promise((resolve, reject) => {
+        const connection = mysql.createConnection(connectionString);
+        connection.promise().query(query)
+            .then(res => {
+                resolve(res);
+            })
+            .catch(err => {
+                reject(err);
+            })
+            .finally(() => {
+                connection.end();
             });
     });
 };

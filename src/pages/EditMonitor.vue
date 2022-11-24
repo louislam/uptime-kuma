@@ -49,10 +49,13 @@
                                             MQTT
                                         </option>
                                         <option value="sqlserver">
-                                            SQL Server
+                                            Microsoft SQL Server
                                         </option>
                                         <option value="postgres">
                                             PostgreSQL
+                                        </option>
+                                        <option value="mysql">
+                                            MySQL/MariaDB
                                         </option>
                                         <option value="radius">
                                             Radius
@@ -244,8 +247,8 @@
                                 </div>
                             </template>
 
-                            <!-- SQL Server and PostgreSQL -->
-                            <template v-if="monitor.type === 'sqlserver' || monitor.type === 'postgres'">
+                            <!-- SQL Server / PostgreSQL / MySQL -->
+                            <template v-if="monitor.type === 'sqlserver' || monitor.type === 'postgres' || monitor.type === 'mysql'">
                                 <div class="my-3">
                                     <label for="sqlConnectionString" class="form-label">{{ $t("Connection String") }}</label>
 
@@ -254,6 +257,9 @@
                                     </template>
                                     <template v-if="monitor.type === 'postgres'">
                                         <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="postgres://username:password@host:port/database">
+                                    </template>
+                                    <template v-if="monitor.type === 'mysql'">
+                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="mysql://username:password@host:port/database">
                                     </template>
                                 </div>
                                 <div class="my-3">
