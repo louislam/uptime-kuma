@@ -635,7 +635,7 @@ export default {
     grpcMethodDescription: "Името на метода се форматира в \"cammelCase\", например sayHello, check, и т.н.",
     smseagle: "SMSEagle",
     smseagleTo: "Тел. номер(а)",
-    smseagleGroup: "Име(на) на група от тел. указател",
+    smseagleGroup: "Име на група/и от тел. указател",
     smseagleContact: "Име(на) от тел. указател",
     smseagleRecipientType: "Получател тип",
     smseagleRecipient: "Получател(и) (при повече от един разделете със запетая)",
@@ -643,5 +643,5 @@ export default {
     smseagleUrl: "Вашият SMSEagle URL на устройството",
     smseagleEncoding: "Изпрати като Unicode",
     smseaglePriority: "Приоритет на съобщението (0-9, по подразбиране = 0)",
-    IconUrl: "URL на иконата",
+    IconUrl: "Икона URL адрес",
 };
