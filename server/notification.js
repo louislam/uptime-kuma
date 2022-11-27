@@ -32,6 +32,7 @@ const RocketChat = require("./notification-providers/rocket-chat");
 const SerwerSMS = require("./notification-providers/serwersms");
 const Signal = require("./notification-providers/signal");
 const Slack = require("./notification-providers/slack");
+const SMSEagle = require("./notification-providers/smseagle");
 const SMTP = require("./notification-providers/smtp");
 const Squadcast = require("./notification-providers/squadcast");
 const Stackfield = require("./notification-providers/stackfield");
@@ -89,6 +90,7 @@ class Notification {
             new Signal(),
             new SMSManager(),
             new Slack(),
+            new SMSEagle(),
             new SMTP(),
             new Squadcast(),
             new Stackfield(),

@@ -1,4 +1,3 @@
-const dayjs = require("dayjs");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 
 /**

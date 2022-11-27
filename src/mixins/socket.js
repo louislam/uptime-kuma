@@ -58,7 +58,6 @@ export default {
     },
 
     created() {
-        window.addEventListener("resize", this.onResize);
         this.initSocketIO();
     },
 

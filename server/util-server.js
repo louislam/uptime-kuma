@@ -13,8 +13,11 @@ const { badgeConstants } = require("./config");
 const mssql = require("mssql");
 const { Client } = require("pg");
 const postgresConParse = require("pg-connection-string").parse;
+const mysql = require("mysql2");
 const { NtlmClient } = require("axios-ntlm");
 const { Settings } = require("./settings");
+const grpc = require("@grpc/grpc-js");
+const protojs = require("protobufjs");
 const radiusClient = require("node-radius-client");
 const {
     dictionaries: {
@@ -288,6 +291,28 @@ exports.postgresQuery = function (connectionString, query) {
             })
             .finally(() => {
                 client.end();
+            });
+    });
+};
+
+/**
+ * Run a query on MySQL/MariaDB
+ * @param {string} connectionString The database connection string
+ * @param {string} query The query to validate the database with
+ * @returns {Promise<(string[]|Object[]|Object)>}
+ */
+exports.mysqlQuery = function (connectionString, query) {
+    return new Promise((resolve, reject) => {
+        const connection = mysql.createConnection(connectionString);
+        connection.promise().query(query)
+            .then(res => {
+                resolve(res);
+            })
+            .catch(err => {
+                reject(err);
+            })
+            .finally(() => {
+                connection.end();
             });
     });
 };
@@ -719,4 +744,52 @@ module.exports.timeObjectToUTC = (obj, timezone = undefined) => {
  */
 module.exports.timeObjectToLocal = (obj, timezone = undefined) => {
     return timeObjectConvertTimezone(obj, timezone, false);
+};
+
+/**
+ * Create gRPC client stib
+ * @param {Object} options from gRPC client
+ */
+module.exports.grpcQuery = async (options) => {
+    const { grpcUrl, grpcProtobufData, grpcServiceName, grpcEnableTls, grpcMethod, grpcBody } = options;
+    const protocObject = protojs.parse(grpcProtobufData);
+    const protoServiceObject = protocObject.root.lookupService(grpcServiceName);
+    const Client = grpc.makeGenericClientConstructor({});
+    const credentials = grpcEnableTls ? grpc.credentials.createSsl() : grpc.credentials.createInsecure();
+    const client = new Client(
+        grpcUrl,
+        credentials
+    );
+    const grpcService = protoServiceObject.create(function (method, requestData, cb) {
+        const fullServiceName = method.fullName;
+        const serviceFQDN = fullServiceName.split(".");
+        const serviceMethod = serviceFQDN.pop();
+        const serviceMethodClientImpl = `/${serviceFQDN.slice(1).join(".")}/${serviceMethod}`;
+        log.debug("monitor", `gRPC method ${serviceMethodClientImpl}`);
+        client.makeUnaryRequest(
+            serviceMethodClientImpl,
+            arg => arg,
+            arg => arg,
+            requestData,
+            cb);
+    }, false, false);
+    return new Promise((resolve, _) => {
+        return grpcService[`${grpcMethod}`](JSON.parse(grpcBody), function (err, response) {
+            const responseData = JSON.stringify(response);
+            if (err) {
+                return resolve({
+                    code: err.code,
+                    errorMessage: err.details,
+                    data: ""
+                });
+            } else {
+                log.debug("monitor:", `gRPC response: ${response}`);
+                return resolve({
+                    code: 1,
+                    errorMessage: "",
+                    data: responseData
+                });
+            }
+        });
+    });
 };
