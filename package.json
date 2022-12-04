@@ -133,7 +133,7 @@
         "chart.js": "~3.6.2",
         "chartjs-adapter-dayjs": "~1.0.0",
         "concurrently": "^7.1.0",
-        "core-js": "~3.18.3",
+        "core-js": "~3.26.1",
         "cross-env": "~7.0.3",
         "cypress": "^10.1.0",
         "delay": "^5.0.0",
