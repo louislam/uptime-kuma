@@ -221,6 +221,8 @@ export default {
     "Content Type": "Content Type",
     webhookJsonDesc: "{0} is good for any modern HTTP servers such as Express.js",
     webhookFormDataDesc: "{multipart} is good for PHP. The JSON will need to be parsed with {decodeFunction}",
+    webhookAdditionalHeadersTitle: "Additional Headers",
+    webhookAdditionalHeadersDesc: "Sets additional headers sent with the webhook.",
     smtp: "Email (SMTP)",
     secureOptionNone: "None / STARTTLS (25, 587)",
     secureOptionTLS: "TLS (465)",

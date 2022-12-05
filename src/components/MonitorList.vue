@@ -206,6 +206,16 @@ export default {
 .search-icon {
     padding: 10px;
     color: #c0c0c0;
+
+    // Clear filter button (X)
+    svg[data-icon="times"] {
+        cursor: pointer;
+        transition: all ease-in-out 0.1s;
+
+        &:hover {
+            color: white;
+        }
+    }
 }
 
 .search-input {

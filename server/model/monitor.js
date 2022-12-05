@@ -89,32 +89,23 @@ class Monitor extends BeanModel {
             dns_resolve_type: this.dns_resolve_type,
             dns_resolve_server: this.dns_resolve_server,
             dns_last_result: this.dns_last_result,
-            pushToken: this.pushToken,
             docker_container: this.docker_container,
             docker_host: this.docker_host,
             proxyId: this.proxy_id,
             notificationIDList,
             tags: tags,
             maintenance: await Monitor.isUnderMaintenance(this.id),
-            mqttUsername: this.mqttUsername,
-            mqttPassword: this.mqttPassword,
             mqttTopic: this.mqttTopic,
             mqttSuccessMessage: this.mqttSuccessMessage,
-            databaseConnectionString: this.databaseConnectionString,
             databaseQuery: this.databaseQuery,
             authMethod: this.authMethod,
-            authWorkstation: this.authWorkstation,
-            authDomain: this.authDomain,
             grpcUrl: this.grpcUrl,
             grpcProtobuf: this.grpcProtobuf,
             grpcMethod: this.grpcMethod,
             grpcServiceName: this.grpcServiceName,
             grpcEnableTls: this.getGrpcEnableTls(),
-            radiusUsername: this.radiusUsername,
-            radiusPassword: this.radiusPassword,
             radiusCalledStationId: this.radiusCalledStationId,
             radiusCallingStationId: this.radiusCallingStationId,
-            radiusSecret: this.radiusSecret,
         };
 
         if (includeSensitiveData) {
@@ -127,9 +118,18 @@ class Monitor extends BeanModel {
                 basic_auth_user: this.basic_auth_user,
                 basic_auth_pass: this.basic_auth_pass,
                 pushToken: this.pushToken,
+                databaseConnectionString: this.databaseConnectionString,
+                radiusUsername: this.radiusUsername,
+                radiusPassword: this.radiusPassword,
+                radiusSecret: this.radiusSecret,
+                mqttUsername: this.mqttUsername,
+                mqttPassword: this.mqttPassword,
+                authWorkstation: this.authWorkstation,
+                authDomain: this.authDomain,
             };
         }
 
+        data.includeSensitiveData = includeSensitiveData;
         return data;
     }
 
@@ -267,17 +267,22 @@ class Monitor extends BeanModel {
 
                     log.debug("monitor", `[${this.name}] Prepare Options for axios`);
 
+                    // Axios Options
                     const options = {
                         url: this.url,
                         method: (this.method || "get").toLowerCase(),
                         ...(this.body ? { data: JSON.parse(this.body) } : {}),
                         timeout: this.interval * 1000 * 0.8,
                         headers: {
+                            // Fix #2253
+                            // Read more: https://stackoverflow.com/questions/1759956/curl-error-18-transfer-closed-with-outstanding-read-data-remaining
+                            "Accept-Encoding": "gzip, deflate",
                             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
                             "User-Agent": "Uptime-Kuma/" + version,
                             ...(this.headers ? JSON.parse(this.headers) : {}),
                             ...(basicAuthHeader),
                         },
+                        decompress: true,
                         maxRedirects: this.maxredirects,
                         validateStatus: (status) => {
                             return checkStatusCode(status, this.getAcceptedStatuscodes());
