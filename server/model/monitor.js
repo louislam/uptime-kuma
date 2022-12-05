@@ -89,32 +89,23 @@ class Monitor extends BeanModel {
             dns_resolve_type: this.dns_resolve_type,
             dns_resolve_server: this.dns_resolve_server,
             dns_last_result: this.dns_last_result,
-            pushToken: this.pushToken,
             docker_container: this.docker_container,
             docker_host: this.docker_host,
             proxyId: this.proxy_id,
             notificationIDList,
             tags: tags,
             maintenance: await Monitor.isUnderMaintenance(this.id),
-            mqttUsername: this.mqttUsername,
-            mqttPassword: this.mqttPassword,
             mqttTopic: this.mqttTopic,
             mqttSuccessMessage: this.mqttSuccessMessage,
-            databaseConnectionString: this.databaseConnectionString,
             databaseQuery: this.databaseQuery,
             authMethod: this.authMethod,
-            authWorkstation: this.authWorkstation,
-            authDomain: this.authDomain,
             grpcUrl: this.grpcUrl,
             grpcProtobuf: this.grpcProtobuf,
             grpcMethod: this.grpcMethod,
             grpcServiceName: this.grpcServiceName,
             grpcEnableTls: this.getGrpcEnableTls(),
-            radiusUsername: this.radiusUsername,
-            radiusPassword: this.radiusPassword,
             radiusCalledStationId: this.radiusCalledStationId,
             radiusCallingStationId: this.radiusCallingStationId,
-            radiusSecret: this.radiusSecret,
         };
 
         if (includeSensitiveData) {
@@ -127,9 +118,18 @@ class Monitor extends BeanModel {
                 basic_auth_user: this.basic_auth_user,
                 basic_auth_pass: this.basic_auth_pass,
                 pushToken: this.pushToken,
+                databaseConnectionString: this.databaseConnectionString,
+                radiusUsername: this.radiusUsername,
+                radiusPassword: this.radiusPassword,
+                radiusSecret: this.radiusSecret,
+                mqttUsername: this.mqttUsername,
+                mqttPassword: this.mqttPassword,
+                authWorkstation: this.authWorkstation,
+                authDomain: this.authDomain,
             };
         }
 
+        data.includeSensitiveData = includeSensitiveData;
         return data;
     }
 

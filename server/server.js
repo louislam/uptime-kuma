@@ -203,6 +203,7 @@ let needSetup = false;
 
     if (isDev) {
         app.post("/test-webhook", async (request, response) => {
+            log.debug("test", request.headers);
             log.debug("test", request.body);
             response.send("OK");
         });
