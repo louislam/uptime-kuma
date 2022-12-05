@@ -3,7 +3,7 @@ const dayjs = require("dayjs");
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
 const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, TimeLogger } = require("../../src/util");
-const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mqttAsync, setSetting, httpNtlm, radius, grpcQuery } = require("../util-server");
+const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, mqttAsync, setSetting, httpNtlm, radius, grpcQuery } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification");
@@ -267,17 +267,22 @@ class Monitor extends BeanModel {
 
                     log.debug("monitor", `[${this.name}] Prepare Options for axios`);
 
+                    // Axios Options
                     const options = {
                         url: this.url,
                         method: (this.method || "get").toLowerCase(),
                         ...(this.body ? { data: JSON.parse(this.body) } : {}),
                         timeout: this.interval * 1000 * 0.8,
                         headers: {
+                            // Fix #2253
+                            // Read more: https://stackoverflow.com/questions/1759956/curl-error-18-transfer-closed-with-outstanding-read-data-remaining
+                            "Accept-Encoding": "gzip, deflate",
                             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
                             "User-Agent": "Uptime-Kuma/" + version,
                             ...(this.headers ? JSON.parse(this.headers) : {}),
                             ...(basicAuthHeader),
                         },
+                        decompress: true,
                         maxRedirects: this.maxredirects,
                         validateStatus: (status) => {
                             return checkStatusCode(status, this.getAcceptedStatuscodes());
@@ -577,6 +582,14 @@ class Monitor extends BeanModel {
                     let startTime = dayjs().valueOf();
 
                     await postgresQuery(this.databaseConnectionString, this.databaseQuery);
+
+                    bean.msg = "";
+                    bean.status = UP;
+                    bean.ping = dayjs().valueOf() - startTime;
+                } else if (this.type === "mysql") {
+                    let startTime = dayjs().valueOf();
+
+                    await mysqlQuery(this.databaseConnectionString, this.databaseQuery);
 
                     bean.msg = "";
                     bean.status = UP;

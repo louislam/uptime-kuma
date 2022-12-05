@@ -5,7 +5,7 @@ const util = require("../src/util");
 util.polyfill();
 
 const oldVersion = pkg.version;
-const newVersion = oldVersion + "-nightly";
+const newVersion = oldVersion + "-nightly-" + util.genSecret(8);
 
 console.log("Old Version: " + oldVersion);
 console.log("New Version: " + newVersion);
