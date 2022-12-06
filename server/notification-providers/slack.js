@@ -81,17 +81,19 @@ class Slack extends NotificationProvider {
 
             // Button
             if (baseURL) {
-                data.attachments.blocks.push({
-                    "type": "actions",
-                    "elements": [{
-                        "type": "button",
-                        "text": {
-                            "type": "plain_text",
-                            "text": "Visit Uptime Kuma",
-                        },
-                        "value": "Uptime-Kuma",
-                        "url": baseURL + getMonitorRelativeURL(monitorJSON.id),
-                    }],
+                data.attachments.forEach(element => {
+                    element.blocks.push({
+                        "type": "actions",
+                        "elements": [{
+                            "type": "button",
+                            "text": {
+                                "type": "plain_text",
+                                "text": "Visit Uptime Kuma",
+                            },
+                            "value": "Uptime-Kuma",
+                            "url": baseURL + getMonitorRelativeURL(monitorJSON.id),
+                        }],
+                    })
                 });
             }
 
