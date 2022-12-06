@@ -93,7 +93,7 @@ class Slack extends NotificationProvider {
                             "value": "Uptime-Kuma",
                             "url": baseURL + getMonitorRelativeURL(monitorJSON.id),
                         }],
-                    })
+                    });
                 });
             }
 
