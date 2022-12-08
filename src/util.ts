@@ -26,6 +26,9 @@ export const SQL_DATE_FORMAT = "YYYY-MM-DD";
 export const SQL_DATETIME_FORMAT = "YYYY-MM-DD HH:mm:ss";
 export const SQL_DATETIME_FORMAT_WITHOUT_SECOND = "YYYY-MM-DD HH:mm";
 
+export const MAX_INTERVAL_SECOND = 2073600; // 24 days
+export const MIN_INTERVAL_SECOND = 20; // 20 seconds
+
 /** Flip the status of s */
 export function flipStatus(s: number) {
     if (s === UP) {
