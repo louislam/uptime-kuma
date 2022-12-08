@@ -1,35 +1,73 @@
 <template>
     <form @submit.prevent="submit">
-        <div ref="modal" class="modal fade" tabindex="-1" data-bs-backdrop="static">
+        <div
+            ref="modal"
+            class="modal fade"
+            tabindex="-1"
+            data-bs-backdrop="static"
+        >
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 id="exampleModalLabel" class="modal-title">
                             {{ $t("Setup Docker Host") }}
                         </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" />
+                        <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"
+                        />
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label for="docker-name" class="form-label">{{ $t("Friendly Name") }}</label>
-                            <input id="docker-name" v-model="dockerHost.name" type="text" class="form-control" required>
+                            <label for="docker-name" class="form-label">{{
+                                $t("Friendly Name")
+                            }}</label>
+                            <input
+                                id="docker-name"
+                                v-model="dockerHost.name"
+                                type="text"
+                                class="form-control"
+                                required
+                            />
                         </div>
 
                         <div class="mb-3">
-                            <label for="docker-type" class="form-label">{{ $t("Connection Type") }}</label>
-                            <select id="docker-type" v-model="dockerHost.dockerType" class="form-select">
-                                <option v-for="type in connectionTypes" :key="type" :value="type">{{ $t(type) }}</option>
+                            <label for="docker-type" class="form-label">{{
+                                $t("Connection Type")
+                            }}</label>
+                            <select
+                                id="docker-type"
+                                v-model="dockerHost.dockerType"
+                                class="form-select"
+                            >
+                                <option
+                                    v-for="type in connectionTypes"
+                                    :key="type"
+                                    :value="type"
+                                >
+                                    {{ $t(type) }}
+                                </option>
                             </select>
                         </div>
 
                         <div class="mb-3">
-                            <label for="docker-daemon" class="form-label">{{ $t("Docker Daemon") }}</label>
-                            <input id="docker-daemon" v-model="dockerHost.dockerDaemon" type="text" class="form-control" required>
+                            <label for="docker-daemon" class="form-label">{{
+                                $t("Docker Daemon")
+                            }}</label>
+                            <input
+                                id="docker-daemon"
+                                v-model="dockerHost.dockerDaemon"
+                                type="text"
+                                class="form-control"
+                                required
+                            />
 
                             <div class="form-text">
                                 {{ $t("Examples") }}:
                                 <ul>
-                                    <li>/var/run/docker.sock</li>
+                                    <li>/app/data/docker.sock</li>
                                     <li>http://localhost:2375</li>
                                     <li>https://localhost:2376 (TLS)</li>
                                 </ul>
@@ -38,14 +76,32 @@
                     </div>
 
                     <div class="modal-footer">
-                        <button v-if="id" type="button" class="btn btn-danger" :disabled="processing" @click="deleteConfirm">
+                        <button
+                            v-if="id"
+                            type="button"
+                            class="btn btn-danger"
+                            :disabled="processing"
+                            @click="deleteConfirm"
+                        >
                             {{ $t("Delete") }}
                         </button>
-                        <button type="button" class="btn btn-warning" :disabled="processing" @click="test">
+                        <button
+                            type="button"
+                            class="btn btn-warning"
+                            :disabled="processing"
+                            @click="test"
+                        >
                             {{ $t("Test") }}
                         </button>
-                        <button type="submit" class="btn btn-primary" :disabled="processing">
-                            <div v-if="processing" class="spinner-border spinner-border-sm me-1"></div>
+                        <button
+                            type="submit"
+                            class="btn btn-primary"
+                            :disabled="processing"
+                        >
+                            <div
+                                v-if="processing"
+                                class="spinner-border spinner-border-sm me-1"
+                            ></div>
                             {{ $t("Save") }}
                         </button>
                     </div>
@@ -54,7 +110,13 @@
         </div>
     </form>
 
-    <Confirm ref="confirmDelete" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="deleteDockerHost">
+    <Confirm
+        ref="confirmDelete"
+        btn-style="btn-danger"
+        :yes-text="$t('Yes')"
+        :no-text="$t('No')"
+        @yes="deleteDockerHost"
+    >
         {{ $t("deleteDockerHostMsg") }}
     </Confirm>
 </template>
@@ -70,19 +132,19 @@ export default {
         Confirm,
     },
     props: {},
-    emits: [ "added" ],
+    emits: ["added"],
     data() {
         return {
             model: null,
             processing: false,
             id: null,
-            connectionTypes: [ "socket", "tcp" ],
+            connectionTypes: ["socket", "tcp"],
             dockerHost: {
                 name: "",
                 dockerDaemon: "",
                 dockerType: "",
                 // Do not set default value here, please scroll to show()
-            }
+            },
         };
     },
 
@@ -90,7 +152,6 @@ export default {
         this.modal = new Modal(this.$refs.modal);
     },
     methods: {
-
         deleteConfirm() {
             this.modal.hide();
             this.$refs.confirmDelete.show();
@@ -113,13 +174,12 @@ export default {
                 if (!found) {
                     toast.error("Docker Host not found!");
                 }
-
             } else {
                 this.id = null;
                 this.dockerHost = {
                     name: "",
                     dockerType: "socket",
-                    dockerDaemon: "/var/run/docker.sock",
+                    dockerDaemon: "/app/data/docker.sock",
                 };
             }
 
@@ -128,28 +188,31 @@ export default {
 
         submit() {
             this.processing = true;
-            this.$root.getSocket().emit("addDockerHost", this.dockerHost, this.id, (res) => {
-                this.$root.toastRes(res);
-                this.processing = false;
+            this.$root
+                .getSocket()
+                .emit("addDockerHost", this.dockerHost, this.id, (res) => {
+                    this.$root.toastRes(res);
+                    this.processing = false;
 
-                if (res.ok) {
-                    this.modal.hide();
+                    if (res.ok) {
+                        this.modal.hide();
 
-                    // Emit added event, doesn't emit edit.
-                    if (! this.id) {
-                        this.$emit("added", res.id);
+                        // Emit added event, doesn't emit edit.
+                        if (!this.id) {
+                            this.$emit("added", res.id);
+                        }
                     }
-
-                }
-            });
+                });
         },
 
         test() {
             this.processing = true;
-            this.$root.getSocket().emit("testDockerHost", this.dockerHost, (res) => {
-                this.$root.toastRes(res);
-                this.processing = false;
-            });
+            this.$root
+                .getSocket()
+                .emit("testDockerHost", this.dockerHost, (res) => {
+                    this.$root.toastRes(res);
+                    this.processing = false;
+                });
         },
 
         deleteDockerHost() {
@@ -171,7 +234,8 @@ export default {
 @import "../assets/vars.scss";
 
 .dark {
-    .modal-dialog .form-text, .modal-dialog p {
+    .modal-dialog .form-text,
+    .modal-dialog p {
         color: $dark-font-color;
     }
 }
