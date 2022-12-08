@@ -1,27 +1,37 @@
-# Build need Golang
-FROM golang:1.19-buster AS build_healthcheck
+############################################
+# Build in Golang
+# Super slow for armv7 (compile time = 1200 seconds, but other platforms within 5 seconds).
+# Do not change everything here, so it should always use the cache.
+############################################
+FROM golang:1.19.4-buster AS build_healthcheck
 WORKDIR /app
 
-COPY . .
+COPY ./extra/healthcheck.go ./extra/healthcheck.go
 
 # Compile healthcheck.go
-RUN go build -o ./extra/healthcheck ./extra/healthcheck.go
+RUN go build -x -o ./extra/healthcheck ./extra/healthcheck.go
 
-# Build need Node.js
+############################################
+# Build in Node.js
+############################################
 FROM louislam/uptime-kuma:base-debian AS build
 WORKDIR /app
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1
 
-COPY --from=build_healthcheck /app /app
+COPY . .
 RUN npm ci --production && \
     chmod +x /app/extra/entrypoint.sh
 
+############################################
+# ⭐ Main Image
+############################################
 FROM louislam/uptime-kuma:base-debian AS release
 WORKDIR /app
 
 # Copy app files from build layer
 COPY --from=build /app /app
+COPY --from=build_healthcheck /app/extra/healthcheck /app/extra/healthcheck
 
 EXPOSE 3001
 VOLUME ["/app/data"]
@@ -29,11 +39,15 @@ HEALTHCHECK --interval=60s --timeout=30s --start-period=180s --retries=5 CMD ext
 ENTRYPOINT ["/usr/bin/dumb-init", "--", "extra/entrypoint.sh"]
 CMD ["node", "server/server.js"]
 
-
+############################################
+# Mark as Nightly
+############################################
 FROM release AS nightly
 RUN npm run mark-as-nightly
 
+############################################
 # Build an image for testing pr
+############################################
 FROM louislam/uptime-kuma:base-debian AS pr-test
 
 WORKDIR /app
@@ -63,8 +77,9 @@ VOLUME ["/app/data"]
 HEALTHCHECK --interval=60s --timeout=30s --start-period=180s --retries=5 CMD node extra/healthcheck.js
 CMD ["npm", "run", "start-pr-test"]
 
-
+############################################
 # Upload the artifact to Github
+############################################
 FROM louislam/uptime-kuma:base-debian AS upload-artifact
 WORKDIR /
 RUN apt update && \
