@@ -43,8 +43,7 @@ class ZohoCliq extends NotificationProvider {
        monitorMessage,
        monitorName,
        monitorUrl,
-   }) => {
-
+    }) => {
         const payload = ["### Uptime Kuma\n"];
         payload.push(this._statusMessageFactory(status, monitorName));
         payload.push(`*Description:* ${monitorMessage}`);
@@ -74,23 +73,6 @@ class ZohoCliq extends NotificationProvider {
         return this._sendNotification(webhookUrl, payload);
     };
 
-    _monitorUrlFactory = (monitorJSON) => {
-        let url;
-        switch(monitorJSON["type"]) {
-            case "http":
-            case "keywork":
-                url = monitorJSON["url"];
-                break;
-            case "docker":
-                url = monitorJSON["docker_host"];
-                break;
-            default:
-                url = monitorJSON["hostname"];
-                break;
-        }
-        return url;
-    };
-
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
 
@@ -100,10 +82,24 @@ class ZohoCliq extends NotificationProvider {
                 return okMsg;
             }
 
+            let url;
+            switch(monitorJSON["type"]) {
+                case "http":
+                case "keywork":
+                    url = monitorJSON["url"];
+                    break;
+                case "docker":
+                    url = monitorJSON["docker_host"];
+                    break;
+                default:
+                    url = monitorJSON["hostname"];
+                    break;
+            }
+
             const payload = this._notificationPayloadFactory({
                 monitorMessage: heartbeatJSON.msg,
                 monitorName: monitorJSON.name,
-                monitorUrl: this._monitorUrlFactory(monitorJSON),
+                monitorUrl: url,
                 status: heartbeatJSON.status,
             });
 
