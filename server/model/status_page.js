@@ -282,11 +282,13 @@ class StatusPage extends BeanModel {
             let activeCondition = Maintenance.getActiveMaintenanceSQLCondition();
             let maintenanceBeanList = R.convertToBeans("maintenance", await R.getAll(`
                 SELECT maintenance.*
-                FROM maintenance, maintenance_status_page msp, maintenance_timeslot
-                WHERE msp.maintenance_id = maintenance.id
-                    AND maintenance_timeslot.maintenance_id = maintenance.id
-                    AND msp.status_page_id = ?
-                    AND ${activeCondition}
+                FROM maintenance
+                JOIN maintenance_status_page
+                    ON maintenance_status_page.maintenance_id = maintenance.id
+                    AND maintenance_status_page.status_page_id = ?
+                LEFT JOIN maintenance_timeslot
+                    ON maintenance_timeslot.maintenance_id = maintenance.id
+                WHERE ${activeCondition}
                 ORDER BY maintenance.end_date
             `, [ statusPageId ]));
 

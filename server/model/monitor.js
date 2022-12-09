@@ -2,7 +2,7 @@ const https = require("https");
 const dayjs = require("dayjs");
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
-const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, TimeLogger } = require("../../src/util");
+const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, TimeLogger, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND } = require("../../src/util");
 const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, mqttAsync, setSetting, httpNtlm, radius, grpcQuery } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
@@ -1188,6 +1188,15 @@ class Monitor extends BeanModel {
             WHERE ${activeCondition}
             LIMIT 1`, [ monitorID ]);
         return maintenance.count !== 0;
+    }
+
+    validate() {
+        if (this.interval > MAX_INTERVAL_SECOND) {
+            throw new Error(`Interval cannot be more than ${MAX_INTERVAL_SECOND} seconds`);
+        }
+        if (this.interval < MIN_INTERVAL_SECOND) {
+            throw new Error(`Interval cannot be less than ${MIN_INTERVAL_SECOND} seconds`);
+        }
     }
 }
 
