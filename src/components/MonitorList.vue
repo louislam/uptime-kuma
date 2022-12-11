@@ -213,7 +213,7 @@ export default {
         transition: all ease-in-out 0.1s;
 
         &:hover {
-            color: white;
+            opacity: 0.5;
         }
     }
 }
