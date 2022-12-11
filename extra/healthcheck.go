@@ -49,7 +49,7 @@ func main() {
 	}
 
 	protocol := ""
-	if len(sslKey) != 0 && len(sslCert) == 0 {
+	if len(sslKey) != 0 && len(sslCert) != 0 {
 		protocol = "https"
 	} else {
 		protocol = "http"
