@@ -135,6 +135,7 @@ const { cloudflaredSocketHandler, autoStart: cloudflaredAutoStart, stop: cloudfl
 const { proxySocketHandler } = require("./socket-handlers/proxy-socket-handler");
 const { dockerSocketHandler } = require("./socket-handlers/docker-socket-handler");
 const { maintenanceSocketHandler } = require("./socket-handlers/maintenance-socket-handler");
+const { generalSocketHandler } = require("./socket-handlers/general-socket-handler");
 const { Settings } = require("./settings");
 const { CacheableDnsHttpAgent } = require("./cacheable-dns-http-agent");
 
@@ -1488,6 +1489,7 @@ let needSetup = false;
         proxySocketHandler(socket);
         dockerSocketHandler(socket);
         maintenanceSocketHandler(socket);
+        generalSocketHandler(socket, server);
 
         log.debug("server", "added all socket handlers");
 
@@ -1609,6 +1611,13 @@ async function afterLogin(socket, user) {
 
     for (let monitorID in monitorList) {
         await Monitor.sendStats(io, monitorID, user.id);
+    }
+
+    // Set server timezone from client browser if not set
+    // It should be run once only
+    if (! await Settings.get("initServerTimezone")) {
+        log.debug("server", "emit initServerTimezone");
+        socket.emit("initServerTimezone");
     }
 }
 
