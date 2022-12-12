@@ -1,15 +1,19 @@
 ############################################
 # Build in Golang
-# Super slow for armv7 (compile time = 1200 seconds, but other platforms within 5 seconds).
-# Do not change everything here, so it should always use the cache.
+# Run npm run build-healthcheck-armv7 in the host first, another it will be super slow where it is building the armv7 healthcheck
 ############################################
 FROM golang:1.19.4-buster AS build_healthcheck
 WORKDIR /app
-
-COPY ./extra/healthcheck.go ./extra/healthcheck.go
+ARG TARGETPLATFORM
+COPY ./extra/ ./extra/
 
 # Compile healthcheck.go
-RUN go build -x -o ./extra/healthcheck ./extra/healthcheck.go
+RUN apt update
+RUN apt --yes --no-install-recommends install curl
+RUN curl -sL https://deb.nodesource.com/setup_18.x | bash
+RUN apt --yes --no-install-recommends install nodejs
+RUN node -v
+RUN node ./extra/build-healthcheck.js $TARGETPLATFORM
 
 ############################################
 # Build in Node.js
@@ -18,8 +22,8 @@ FROM louislam/uptime-kuma:base-debian AS build
 WORKDIR /app
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1
-
 COPY . .
+COPY --from=build_healthcheck /app/extra/healthcheck /app/extra/healthcheck
 RUN npm ci --production && \
     chmod +x /app/extra/entrypoint.sh
 
@@ -31,7 +35,7 @@ WORKDIR /app
 
 # Copy app files from build layer
 COPY --from=build /app /app
-COPY --from=build_healthcheck /app/extra/healthcheck /app/extra/healthcheck
+
 
 EXPOSE 3001
 VOLUME ["/app/data"]
