@@ -11,7 +11,7 @@
                             <div class="my-3">
                                 <label for="type" class="form-label">{{ $t("Monitor Type") }}</label>
                                 <select id="type" v-model="monitor.type" class="form-select">
-                                    <optgroup label="General Monitor Type">
+                                    <optgroup :label="$t('General Monitor Type')">
                                         <option value="http">
                                             HTTP(s)
                                         </option>
@@ -35,13 +35,13 @@
                                         </option>
                                     </optgroup>
 
-                                    <optgroup label="Passive Monitor Type">
+                                    <optgroup :label="$t('Passive Monitor Type')">
                                         <option value="push">
                                             Push
                                         </option>
                                     </optgroup>
 
-                                    <optgroup label="Specific Monitor Type">
+                                    <optgroup :label="$t('Specific Monitor Type')">
                                         <option value="steam">
                                             {{ $t("Steam Game Server") }}
                                         </option>
