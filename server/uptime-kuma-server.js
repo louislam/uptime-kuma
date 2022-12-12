@@ -83,12 +83,12 @@ class UptimeKumaServer {
             }
         }
 
-        CacheableDnsHttpAgent.registerGlobalAgent();
-
         this.io = new Server(this.httpServer);
     }
 
     async initAfterDatabaseReady() {
+        await CacheableDnsHttpAgent.update();
+
         process.env.TZ = await this.getTimezone();
         dayjs.tz.setDefault(process.env.TZ);
         log.debug("DEBUG", "Timezone: " + process.env.TZ);

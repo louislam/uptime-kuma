@@ -15,6 +15,7 @@ const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { CacheableDnsHttpAgent } = require("../cacheable-dns-http-agent");
 const { DockerHost } = require("../docker");
 const Maintenance = require("./maintenance");
+const { UptimeCacheList } = require("../uptime-cache-list");
 
 /**
  * status:
@@ -714,6 +715,7 @@ class Monitor extends BeanModel {
             }
 
             log.debug("monitor", `[${this.name}] Send to socket`);
+            UptimeCacheList.clearCache(this.id);
             io.to(this.user_id).emit("heartbeat", bean.toJSON());
             Monitor.sendStats(io, this.id, this.user_id);
 
@@ -898,7 +900,15 @@ class Monitor extends BeanModel {
      * @param {number} duration Hours
      * @param {number} monitorID ID of monitor to calculate
      */
-    static async calcUptime(duration, monitorID) {
+    static async calcUptime(duration, monitorID, forceNoCache = false) {
+
+        if (!forceNoCache) {
+            let cachedUptime = UptimeCacheList.getUptime(monitorID, duration);
+            if (cachedUptime != null) {
+                return cachedUptime;
+            }
+        }
+
         const timeLogger = new TimeLogger();
 
         const startTime = R.isoDateTime(dayjs.utc().subtract(duration, "hour"));
@@ -956,6 +966,9 @@ class Monitor extends BeanModel {
                 uptime = 1;
             }
         }
+
+        // Cache
+        UptimeCacheList.addUptime(monitorID, duration, uptime);
 
         return uptime;
     }
