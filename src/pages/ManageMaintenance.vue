@@ -185,6 +185,14 @@ export default {
 <style lang="scss" scoped>
     @import "../assets/vars.scss";
 
+    .mobile {
+        .item {
+            flex-direction: column;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+    }
+
     .item {
         display: flex;
         align-items: center;
@@ -267,6 +275,11 @@ export default {
         .buttons {
             display: flex;
             gap: 8px;
+            flex-direction: row-reverse;
+
+            .btn-group {
+                width: 310px;
+            }
         }
     }
 
