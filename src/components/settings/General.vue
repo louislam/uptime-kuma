@@ -150,6 +150,46 @@
                 </div>
             </div>
 
+            <!-- Search Engine -->
+            <div class="mb-4">
+                <label class="form-label">
+                    {{ $t("Enable DNS Cache") }}
+                    <div class="form-text">
+                        ⚠️ {{ $t("dnsCacheDescription") }}
+                    </div>
+                </label>
+
+                <div class="form-check">
+                    <input
+                        id="dnsCacheEnable"
+                        v-model="settings.dnsCache"
+                        class="form-check-input"
+                        type="radio"
+                        name="flexRadioDefault"
+                        :value="true"
+                        required
+                    />
+                    <label class="form-check-label" for="dnsCacheEnable">
+                        {{ $t("Enable") }}
+                    </label>
+                </div>
+
+                <div class="form-check">
+                    <input
+                        id="dnsCacheDisable"
+                        v-model="settings.dnsCache"
+                        class="form-check-input"
+                        type="radio"
+                        name="flexRadioDefault"
+                        :value="false"
+                        required
+                    />
+                    <label class="form-check-label" for="dnsCacheDisable">
+                        {{ $t("Disable") }}
+                    </label>
+                </div>
+            </div>
+
             <!-- Save Button -->
             <div>
                 <button class="btn btn-primary" type="submit">

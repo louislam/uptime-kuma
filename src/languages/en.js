@@ -646,4 +646,8 @@ export default {
     "Server Timezone": "Server Timezone",
     statusPageMaintenanceEndDate: "End",
     IconUrl: "Icon URL",
+    "Enable DNS Cache": "Enable DNS Cache",
+    "Enable": "Enable",
+    "Disable": "Disable",
+    dnsCacheDescription: "It may be not working in some IPv6 environments, disable it if you encounter any issues.",
 };

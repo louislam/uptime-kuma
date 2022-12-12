@@ -157,6 +157,10 @@ export default {
                     this.settings.entryPage = "dashboard";
                 }
 
+                if (this.settings.dnsCache === undefined) {
+                    this.settings.dnsCache = false;
+                }
+
                 if (this.settings.keepDataPeriodDays === undefined) {
                     this.settings.keepDataPeriodDays = 180;
                 }

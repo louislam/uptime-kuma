@@ -136,6 +136,7 @@ const { proxySocketHandler } = require("./socket-handlers/proxy-socket-handler")
 const { dockerSocketHandler } = require("./socket-handlers/docker-socket-handler");
 const { maintenanceSocketHandler } = require("./socket-handlers/maintenance-socket-handler");
 const { Settings } = require("./settings");
+const { CacheableDnsHttpAgent } = require("./cacheable-dns-http-agent");
 
 app.use(express.json());
 
@@ -1113,6 +1114,8 @@ let needSetup = false;
 
                 await setSettings("general", data);
                 server.entryPage = data.entryPage;
+
+                await CacheableDnsHttpAgent.update();
 
                 // Also need to apply timezone globally
                 if (data.serverTimezone) {
