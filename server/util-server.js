@@ -470,6 +470,10 @@ const parseCertificateInfo = function (info) {
  * @returns {Object} Object containing certificate information
  */
 exports.checkCertificate = function (res) {
+    if (!res.request.res.socket) {
+        throw new Error("No socket found");
+    }
+
     const info = res.request.res.socket.getPeerCertificate(true);
     const valid = res.request.res.socket.authorized || false;
 
