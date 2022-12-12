@@ -15,8 +15,8 @@ It is a self-hosted monitoring tool like "Uptime Robot".
 
 Try it!
 
-- Tokyo Demo Server: https://demo.uptime.kuma.pet (Sponsored by [Uptime Kuma Sponsors](https://github.com/louislam/uptime-kuma#%EF%B8%8F-sponsors))
-- Europe Demo Server: https://demo.uptime-kuma.karimi.dev:27000 (Provided by [@mhkarimi1383](https://github.com/mhkarimi1383))
+- **Tokyo Demo Server** &rarr; [demo.uptime.kuma.pet](https://demo.uptime.kuma.pet) (Sponsored by 💁 [`Uptime Kuma Sponsors`](https://github.com/louislam/uptime-kuma#%EF%B8%8F-sponsors))
+- **Europe Demo Server** &rarr; [demo.uptime-kuma.karimi.dev:27000](https://demo.uptime-kuma.karimi.dev:27000) (Provided by 💁 [`@mhkarimi1383`](https://github.com/mhkarimi1383))
 
 It is a temporary live demo, all data will be deleted after 10 minutes. Use the one that is closer to you, but I suggest that you should install and try it out for the best demo experience.
 
@@ -87,15 +87,11 @@ pm2 save && pm2 startup
 
 ### Advanced Installation
 
-If you need more options or need to browse via a reverse proxy, please read:
-
-https://github.com/louislam/uptime-kuma/wiki/%F0%9F%94%A7-How-to-Install
+If you need more options or need to browse via a reverse proxy, please read &rarr; [github.com/louislam/uptime-kuma/wiki](https://github.com/louislam/uptime-kuma/wiki/%F0%9F%94%A7-How-to-Install)
 
 ## 🆙 How to Update
 
-Please read:
-
-https://github.com/louislam/uptime-kuma/wiki/%F0%9F%86%99-How-to-Update
+Please read &rarr; [github.com/louislam/uptime-kuma/wiki](https://github.com/louislam/uptime-kuma/wiki/%F0%9F%86%99-How-to-Update)
 
 ## 🆕 What's Next?
 
