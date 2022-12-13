@@ -49,7 +49,7 @@
                         v-model="settings.searchEngineIndex"
                         class="form-check-input"
                         type="radio"
-                        name="flexRadioDefault"
+                        name="searchEngineIndex"
                         :value="true"
                         required
                     />
@@ -63,7 +63,7 @@
                         v-model="settings.searchEngineIndex"
                         class="form-check-input"
                         type="radio"
-                        name="flexRadioDefault"
+                        name="searchEngineIndex"
                         :value="false"
                         required
                     />
@@ -150,7 +150,7 @@
                 </div>
             </div>
 
-            <!-- Search Engine -->
+            <!-- DNS Cache -->
             <div class="mb-4">
                 <label class="form-label">
                     {{ $t("Enable DNS Cache") }}
@@ -165,7 +165,7 @@
                         v-model="settings.dnsCache"
                         class="form-check-input"
                         type="radio"
-                        name="flexRadioDefault"
+                        name="dnsCache"
                         :value="true"
                         required
                     />
@@ -180,7 +180,7 @@
                         v-model="settings.dnsCache"
                         class="form-check-input"
                         type="radio"
-                        name="flexRadioDefault"
+                        name="dnsCache"
                         :value="false"
                         required
                     />
