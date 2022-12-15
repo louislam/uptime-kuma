@@ -60,7 +60,7 @@
             void 0 === t && (t = r);
             let n = this.utcOffset();
             let i = this.toDate();
-            let a = i.toLocaleString("en-US", { timeZone: t });
+            let a = i.toLocaleString("en-US", { timeZone: t }).replace("\u202f", " ");
             let u = Math.round((i - new Date(a)) / 1e3 / 60);
             let f = o(a).$set("millisecond", this.$ms).utcOffset(15 * -Math.round(i.getTimezoneOffset() / 15) - u, !0);
             if (e) {
