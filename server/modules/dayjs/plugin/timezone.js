@@ -5,6 +5,7 @@
  * License: MIT
  */
 !function (t, e) {
+    // eslint-disable-next-line no-undef
     typeof exports == "object" && typeof module != "undefined" ? module.exports = e() : typeof define == "function" && define.amd ? define(e) : (t = typeof globalThis != "undefined" ? globalThis : t || self).dayjs_plugin_timezone = e();
 }(this, (function () {
     "use strict";
@@ -42,7 +43,10 @@
             return r.formatToParts(o);
         };
         let u = function (e, n) {
-            for (var i = a(e, n), r = [], u = 0; u < i.length; u += 1) {
+            let i = a(e, n);
+            let r = [];
+            let u = 0;
+            for (; u < i.length; u += 1) {
                 let f = i[u];
                 let s = f.type;
                 let m = f.value;

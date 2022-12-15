@@ -16,7 +16,6 @@ const { CacheableDnsHttpAgent } = require("../cacheable-dns-http-agent");
 const { DockerHost } = require("../docker");
 const Maintenance = require("./maintenance");
 const { UptimeCacheList } = require("../uptime-cache-list");
-const zlib = require("zlib");
 
 /**
  * status:
