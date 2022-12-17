@@ -8,7 +8,7 @@ console.log("Welcome to Uptime Kuma");
 // As the log function need to use dayjs, it should be very top
 const dayjs = require("dayjs");
 dayjs.extend(require("dayjs/plugin/utc"));
-dayjs.extend(require("dayjs/plugin/timezone"));
+dayjs.extend(require("./modules/dayjs/plugin/timezone"));
 dayjs.extend(require("dayjs/plugin/customParseFormat"));
 
 // Check Node.js Version
