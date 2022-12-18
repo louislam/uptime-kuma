@@ -4,7 +4,8 @@
 const { TimeLogger } = require("../src/util");
 const { R } = require("redbean-node");
 const { UptimeKumaServer } = require("./uptime-kuma-server");
-const io = UptimeKumaServer.getInstance().io;
+const server = UptimeKumaServer.getInstance();
+const io = server.io;
 const { setting } = require("./util-server");
 const checkVersion = require("./check-version");
 
@@ -121,8 +122,34 @@ async function sendInfo(socket) {
     socket.emit("info", {
         version: checkVersion.version,
         latestVersion: checkVersion.latestVersion,
-        primaryBaseURL: await setting("primaryBaseURL")
+        primaryBaseURL: await setting("primaryBaseURL"),
+        serverTimezone: await server.getTimezone(),
+        serverTimezoneOffset: server.getTimezoneOffset(),
     });
+}
+
+/**
+ * Send list of docker hosts to client
+ * @param {Socket} socket Socket.io socket instance
+ * @returns {Promise<Bean[]>}
+ */
+async function sendDockerHostList(socket) {
+    const timeLogger = new TimeLogger();
+
+    let result = [];
+    let list = await R.find("docker_host", " user_id = ? ", [
+        socket.userID,
+    ]);
+
+    for (let bean of list) {
+        result.push(bean.toJSON());
+    }
+
+    io.to(socket.userID).emit("dockerHostList", result);
+
+    timeLogger.print("Send Docker Host List");
+
+    return list;
 }
 
 module.exports = {
@@ -131,4 +158,5 @@ module.exports = {
     sendHeartbeatList,
     sendProxyList,
     sendInfo,
+    sendDockerHostList
 };
