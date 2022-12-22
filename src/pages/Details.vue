@@ -6,7 +6,7 @@
                 <Tag v-for="tag in monitor.tags" :key="tag.id" :item="tag" :size="'sm'" />
             </div>
             <p class="url">
-                <a v-if="monitor.type === 'http' || monitor.type === 'keyword' " :href="monitor.url" target="_blank">{{ monitor.url }}</a>
+                <a v-if="monitor.type === 'http' || monitor.type === 'keyword' " :href="monitor.url" target="_blank" rel="noopener noreferrer">{{ monitor.url }}</a>
                 <span v-if="monitor.type === 'port'">TCP Ping {{ monitor.hostname }}:{{ monitor.port }}</span>
                 <span v-if="monitor.type === 'ping'">Ping: {{ monitor.hostname }}</span>
                 <span v-if="monitor.type === 'keyword'">
@@ -20,18 +20,20 @@
             </p>
 
             <div class="functions">
-                <button v-if="monitor.active" class="btn btn-light" @click="pauseDialog">
-                    <font-awesome-icon icon="pause" /> {{ $t("Pause") }}
-                </button>
-                <button v-if="! monitor.active" class="btn btn-primary" @click="resumeMonitor">
-                    <font-awesome-icon icon="play" /> {{ $t("Resume") }}
-                </button>
-                <router-link :to=" '/edit/' + monitor.id " class="btn btn-secondary">
-                    <font-awesome-icon icon="edit" /> {{ $t("Edit") }}
-                </router-link>
-                <button class="btn btn-danger" @click="deleteDialog">
-                    <font-awesome-icon icon="trash" /> {{ $t("Delete") }}
-                </button>
+                <div class="btn-group" role="group">
+                    <button v-if="monitor.active" class="btn btn-normal" @click="pauseDialog">
+                        <font-awesome-icon icon="pause" /> {{ $t("Pause") }}
+                    </button>
+                    <button v-if="! monitor.active" class="btn btn-primary" @click="resumeMonitor">
+                        <font-awesome-icon icon="play" /> {{ $t("Resume") }}
+                    </button>
+                    <router-link :to=" '/edit/' + monitor.id " class="btn btn-normal">
+                        <font-awesome-icon icon="edit" /> {{ $t("Edit") }}
+                    </router-link>
+                    <button class="btn btn-danger" @click="deleteDialog">
+                        <font-awesome-icon icon="trash" /> {{ $t("Delete") }}
+                    </button>
+                </div>
             </div>
 
             <div class="shadow-box">
@@ -392,11 +394,6 @@ export default {
 @media (max-width: 550px) {
     .functions {
         text-align: center;
-
-        button, a {
-            margin-left: 10px !important;
-            margin-right: 10px !important;
-        }
     }
 
     .ping-chart-wrapper {
@@ -436,12 +433,6 @@ export default {
 
     a {
         color: $primary;
-    }
-}
-
-.functions {
-    button, a {
-        margin-right: 20px;
     }
 }
 

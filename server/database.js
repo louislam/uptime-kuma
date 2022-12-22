@@ -53,6 +53,7 @@ class Database {
         "patch-2fa-invalidate-used-token.sql": true,
         "patch-notification_sent_history.sql": true,
         "patch-monitor-basic-auth.sql": true,
+        "patch-add-docker-columns.sql": true,
         "patch-status-page.sql": true,
         "patch-proxy.sql": true,
         "patch-monitor-expiry-notification.sql": true,
@@ -62,6 +63,10 @@ class Database {
         "patch-add-sqlserver-monitor.sql": true,
         "patch-add-other-auth.sql": { parents: [ "patch-monitor-basic-auth.sql" ] },
         "patch-monitor-slow-response-notification.sql": true,
+        "patch-grpc-monitor.sql": true,
+        "patch-add-radius-monitor.sql": true,
+        "patch-monitor-add-resend-interval.sql": true,
+        "patch-maintenance-table2.sql": true,
     };
 
     /**

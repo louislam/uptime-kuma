@@ -1,10 +1,19 @@
 <template>
     <div>
+        <div v-if="$root.isMobile" class="shadow-box mb-3">
+            <router-link to="/manage-status-page" class="nav-link">
+                <font-awesome-icon icon="stream" /> {{ $t("Status Pages") }}
+            </router-link>
+            <router-link to="/maintenance" class="nav-link">
+                <font-awesome-icon icon="wrench" /> {{ $t("Maintenance") }}
+            </router-link>
+        </div>
+
         <h1 v-show="show" class="mb-3">
             {{ $t("Settings") }}
         </h1>
 
-        <div class="shadow-box">
+        <div class="shadow-box shadow-box-settings">
             <div class="row">
                 <div v-if="showSubMenu" class="settings-menu col-lg-3 col-md-5">
                     <router-link
@@ -89,6 +98,9 @@ export default {
                 "monitor-history": {
                     title: this.$t("Monitor History"),
                 },
+                "docker-hosts": {
+                    title: this.$t("Docker Hosts"),
+                },
                 security: {
                     title: this.$t("Security"),
                 },
@@ -145,12 +157,20 @@ export default {
                     this.settings.entryPage = "dashboard";
                 }
 
+                if (this.settings.dnsCache === undefined) {
+                    this.settings.dnsCache = false;
+                }
+
                 if (this.settings.keepDataPeriodDays === undefined) {
                     this.settings.keepDataPeriodDays = 180;
                 }
 
                 if (this.settings.tlsExpiryNotifyDays === undefined) {
                     this.settings.tlsExpiryNotifyDays = [ 7, 14, 21 ];
+                }
+
+                if (this.settings.trustProxy === undefined) {
+                    this.settings.trustProxy = false;
                 }
 
                 this.settingsLoaded = true;
@@ -185,7 +205,7 @@ export default {
 <style lang="scss" scoped>
 @import "../assets/vars.scss";
 
-.shadow-box {
+.shadow-box-settings {
     padding: 20px;
     min-height: calc(100vh - 155px);
 }
