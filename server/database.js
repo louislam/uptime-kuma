@@ -4,6 +4,7 @@ const { setSetting, setting } = require("./util-server");
 const { log, sleep } = require("../src/util");
 const dayjs = require("dayjs");
 const knex = require("knex");
+const path = require("path");
 
 /**
  * Database & App Data Folder
@@ -109,24 +110,53 @@ class Database {
     static async connect(testMode = false, autoloadModels = true, noLog = false) {
         const acquireConnectionTimeout = 120 * 1000;
 
-        const Dialect = require("knex/lib/dialects/sqlite3/index.js");
-        Dialect.prototype._driver = () => require("@louislam/sqlite3");
+        let dbConfig;
 
-        const knexInstance = knex({
-            client: Dialect,
-            connection: {
-                filename: Database.path,
-                acquireConnectionTimeout: acquireConnectionTimeout,
-            },
-            useNullAsDefault: true,
-            pool: {
-                min: 1,
-                max: 1,
-                idleTimeoutMillis: 120 * 1000,
-                propagateCreateError: false,
-                acquireTimeoutMillis: acquireConnectionTimeout,
-            }
-        });
+        try {
+            dbConfig = fs.readFileSync(path.join(Database.dataDir, "db-config.json"));
+        } catch (_) {
+            dbConfig = {
+                type: "sqlite",
+            };
+        }
+
+        let config = {};
+
+        if (dbConfig.type === "sqlite") {
+            const Dialect = require("knex/lib/dialects/sqlite3/index.js");
+            Dialect.prototype._driver = () => require("@louislam/sqlite3");
+
+            config = {
+                client: Dialect,
+                connection: {
+                    filename: Database.path,
+                    acquireConnectionTimeout: acquireConnectionTimeout,
+                },
+                useNullAsDefault: true,
+                pool: {
+                    min: 1,
+                    max: 1,
+                    idleTimeoutMillis: 120 * 1000,
+                    propagateCreateError: false,
+                    acquireTimeoutMillis: acquireConnectionTimeout,
+                }
+            };
+        } else if (dbConfig === "embedded-mariadb") {
+            config = {
+                client: "mysql",
+                connection: {
+                    host: "127.0.0.1",
+                    port: 3306,
+                    user: "your_database_user",
+                    password: "your_database_password",
+                    database: "kuma"
+                }
+            };
+        } else {
+            throw new Error("Unknown Database type");
+        }
+
+        const knexInstance = knex(config);
 
         R.setup(knexInstance);
 
