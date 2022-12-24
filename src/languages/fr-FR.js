@@ -186,7 +186,7 @@ export default {
     startOrEndWithOnly: "Commence uniquement par {0}",
     "No consecutive dashes": "Pas de double tirets",
     Next: "Continuer",
-    "Setup Proxy": "Configuer Proxy",
+    "Setup Proxy": "Configurer Proxy",
     defaultNotificationName: "Ma notification {notification} numéro ({number})",
     here: "ici",
     Required: "Requis",
