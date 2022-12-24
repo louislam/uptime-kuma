@@ -1068,7 +1068,13 @@ class Monitor extends BeanModel {
 
             for (let notification of notificationList) {
                 try {
-                    await Notification.send(JSON.parse(notification.config), msg, await monitor.toJSON(false), bean.toJSON());
+                    // Prevent if the msg is undefined, notifications such as Discord cannot send out.
+                    const heartbeatJSON = bean.toJSON();
+                    if (!heartbeatJSON["msg"]) {
+                        heartbeatJSON["msg"] = "";
+                    }
+
+                    await Notification.send(JSON.parse(notification.config), msg, await monitor.toJSON(false), heartbeatJSON);
                 } catch (e) {
                     log.error("monitor", "Cannot send notification to " + notification.name);
                     log.error("monitor", e);
