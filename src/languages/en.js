@@ -584,7 +584,6 @@ export default {
     "Docker Host": "Docker Host",
     "Docker Hosts": "Docker Hosts",
     "ntfy Topic": "ntfy Topic",
-    disableCloudflaredNoAuthMsg: "You are in No Auth mode, password is not require.",
     slowResponseNotification: "Slow Response Notification",
     slowResponseNotificationUse: "Use Slow Response Notification",
     slowResponseNotificationUseDescription: "When response time is slow, notify.",
