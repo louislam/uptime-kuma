@@ -275,9 +275,6 @@ class Monitor extends BeanModel {
                         ...(this.body ? { data: JSON.parse(this.body) } : {}),
                         timeout: this.interval * 1000 * 0.8,
                         headers: {
-                            // Fix #2253
-                            // Read more: https://stackoverflow.com/questions/1759956/curl-error-18-transfer-closed-with-outstanding-read-data-remaining
-                            "Accept-Encoding": "gzip, deflate",
                             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
                             "User-Agent": "Uptime-Kuma/" + version,
                             ...(this.headers ? JSON.parse(this.headers) : {}),
@@ -310,20 +307,8 @@ class Monitor extends BeanModel {
                     log.debug("monitor", `[${this.name}] Axios Options: ${JSON.stringify(options)}`);
                     log.debug("monitor", `[${this.name}] Axios Request`);
 
-                    let res;
-                    if (this.auth_method === "ntlm") {
-                        options.httpsAgent.keepAlive = true;
-
-                        res = await httpNtlm(options, {
-                            username: this.basic_auth_user,
-                            password: this.basic_auth_pass,
-                            domain: this.authDomain,
-                            workstation: this.authWorkstation ? this.authWorkstation : undefined
-                        });
-
-                    } else {
-                        res = await axios.request(options);
-                    }
+                    // Make Request
+                    let res = await this.makeAxiosRequest(options);
 
                     bean.msg = `${res.status} - ${res.statusText}`;
                     bean.ping = dayjs().valueOf() - startTime;
@@ -758,6 +743,40 @@ class Monitor extends BeanModel {
             }, this.interval * 1000);
         } else {
             safeBeat();
+        }
+    }
+
+    async makeAxiosRequest(options, finalCall = false) {
+        try {
+            let res;
+            if (this.auth_method === "ntlm") {
+                options.httpsAgent.keepAlive = true;
+
+                res = await httpNtlm(options, {
+                    username: this.basic_auth_user,
+                    password: this.basic_auth_pass,
+                    domain: this.authDomain,
+                    workstation: this.authWorkstation ? this.authWorkstation : undefined
+                });
+
+            } else {
+                res = await axios.request(options);
+            }
+
+            return res;
+        } catch (e) {
+            // Fix #2253
+            // Read more: https://stackoverflow.com/questions/1759956/curl-error-18-transfer-closed-with-outstanding-read-data-remaining
+            if (!finalCall && typeof e.message === "string" && e.message.includes("maxContentLength size of -1 exceeded")) {
+                log.debug("monitor", "makeAxiosRequest with gzip");
+                options.headers["Accept-Encoding"] = "gzip, deflate";
+                return this.makeAxiosRequest(options, true);
+            } else {
+                if (typeof e.message === "string" && e.message.includes("maxContentLength size of -1 exceeded")) {
+                    e.message = "response timeout: incomplete response within a interval";
+                }
+                throw e;
+            }
         }
     }
 
