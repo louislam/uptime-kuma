@@ -252,6 +252,10 @@ class UptimeKumaServer {
         this.pluginsManager = new PluginsManager(this, dir);
     }
 
+    addMonitorType(monitorType) {
+        // TODO
+    }
+
 }
 
 module.exports = {
