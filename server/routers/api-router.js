@@ -4,7 +4,7 @@ const { R } = require("redbean-node");
 const apicache = require("../modules/apicache");
 const Monitor = require("../model/monitor");
 const dayjs = require("dayjs");
-const { UP, DOWN, flipStatus, log } = require("../../src/util");
+const { UP, MAINTENANCE, DOWN, flipStatus, log } = require("../../src/util");
 const StatusPage = require("../model/status_page");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { makeBadge } = require("badge-maker");
@@ -67,6 +67,11 @@ router.get("/api/push/:pushToken", async (request, response) => {
             duration = dayjs(bean.time).diff(dayjs(previousHeartbeat.time), "second");
         }
 
+        if (await Monitor.isUnderMaintenance(monitor.id)) {
+            msg = "Monitor under maintenance";
+            status = MAINTENANCE;
+        }
+
         log.debug("router", `/api/push/ called at ${dayjs().format("YYYY-MM-DD HH:mm:ss.SSS")}`);
         log.debug("router", "PreviousStatus: " + previousStatus);
         log.debug("router", "Current Status: " + status);
@@ -87,7 +92,7 @@ router.get("/api/push/:pushToken", async (request, response) => {
             ok: true,
         });
 
-        if (bean.important) {
+        if (Monitor.isImportantForNotification(isFirstBeat, previousStatus, status)) {
             await Monitor.sendNotification(isFirstBeat, monitor, bean);
         }
 

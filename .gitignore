@@ -16,3 +16,7 @@ dist-ssr
 
 cypress/videos
 cypress/screenshots
+
+/extra/healthcheck.exe
+/extra/healthcheck
+/extra/healthcheck-armv7
