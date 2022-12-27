@@ -1,5 +1,5 @@
 import { createI18n } from "vue-i18n/dist/vue-i18n.esm-browser.prod.js";
-import en from "./languages/en";
+import en from "./lang/en.json";
 
 const languageList = {
     "cs-CZ": "Čeština",
