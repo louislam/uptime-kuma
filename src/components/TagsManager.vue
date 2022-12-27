@@ -133,13 +133,27 @@ import { useToast } from "vue-toastification";
 import Tag from "../components/Tag.vue";
 const toast = useToast();
 
+/**
+ * @typedef Tag
+ * @type {object}
+ * @property {number | undefined} id
+ * @property {number | undefined} monitor_id
+ * @property {number | undefined} tag_id
+ * @property {string} value
+ * @property {string} name
+ * @property {string} color
+ * @property {boolean | undefined} new
+ */
+
 export default {
     components: {
         Tag,
         VueMultiselect,
     },
     props: {
-        /** Array of tags to be pre-selected */
+        /** Array of tags to be pre-selected
+         * @type {Tag[]}
+         */
         preSelectedTags: {
             type: Array,
             default: () => [],
@@ -147,10 +161,14 @@ export default {
     },
     data() {
         return {
+            /** @type {Modal | null} */
             modal: null,
+            /** @type {Tag[]} */
             existingTags: [],
             processing: false,
+            /** @type {Tag[]} */
             newTags: [],
+            /** @type {Tag[]} */
             deleteTags: [],
             newDraftTag: {
                 name: null,
