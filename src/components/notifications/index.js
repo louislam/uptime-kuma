@@ -12,6 +12,7 @@ import GoogleChat from "./GoogleChat.vue";
 import Gorush from "./Gorush.vue";
 import Gotify from "./Gotify.vue";
 import HomeAssistant from "./HomeAssistant.vue";
+import Kook from "./Kook.vue";
 import Line from "./Line.vue";
 import LineNotify from "./LineNotify.vue";
 import LunaSea from "./LunaSea.vue";
@@ -63,6 +64,7 @@ const NotificationFormList = {
     "gorush": Gorush,
     "gotify": Gotify,
     "HomeAssistant": HomeAssistant,
+    "Kook": Kook,
     "line": Line,
     "LineNotify": LineNotify,
     "lunasea": LunaSea,
