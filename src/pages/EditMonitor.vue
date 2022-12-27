@@ -620,11 +620,21 @@ export default {
         },
 
         pageName() {
-            return this.$t((this.isAdd) ? "Add New Monitor" : "Edit");
+            let name = "Add New Monitor";
+            if (this.isClone) {
+                name = "Clone Monitor";
+            } else if (this.isEdit) {
+                name = "Edit";
+            }
+            return this.$t(name);
         },
 
         isAdd() {
             return this.$route.path === "/add";
+        },
+
+        isClone() {
+            return this.$route.path.startsWith("/clone");
         },
 
         isEdit() {
@@ -804,10 +814,21 @@ message HealthCheckResponse {
                         this.monitor.notificationIDList[this.$root.notificationList[i].id] = true;
                     }
                 }
-            } else if (this.isEdit) {
+            } else if (this.isEdit || this.isClone) {
                 this.$root.getSocket().emit("getMonitor", this.$route.params.id, (res) => {
                     if (res.ok) {
                         this.monitor = res.monitor;
+
+                        if (this.isClone) {
+                            /**
+                             * Cloning a monitor will include properties that can not be posted to backend
+                             * as they are not valid columns in the SQLite table.
+                             */
+                            this.monitor.id = undefined; // Remove id when cloning as we want a new id
+                            this.monitor.includeSensitiveData = undefined;
+                            this.monitor.maintenance = undefined;
+                            this.monitor.tags = undefined; // FIXME: Cloning tags does not work yet
+                        }
 
                         // Handling for monitors that are created before 1.7.0
                         if (this.monitor.retryInterval === 0) {
@@ -866,7 +887,7 @@ message HealthCheckResponse {
                 this.monitor.headers = JSON.stringify(JSON.parse(this.monitor.headers), null, 4);
             }
 
-            if (this.isAdd) {
+            if (this.isAdd || this.isClone) {
                 this.$root.add(this.monitor, async (res) => {
 
                     if (res.ok) {
