@@ -787,7 +787,7 @@ module.exports.grpcQuery = async (options) => {
                     data: ""
                 });
             } else {
-                log.debug("monitor:", `gRPC response: ${response}`);
+                log.debug("monitor:", `gRPC response: ${JSON.stringify(response)}`);
                 return resolve({
                     code: 1,
                     errorMessage: "",
