@@ -1,5 +1,5 @@
 <template>
-    <span :class="className" :title="24 + $t('-hour')">{{ uptime }}</span>
+    <span :class="className" :title="title">{{ uptime }}</span>
 </template>
 
 <script>
@@ -75,6 +75,14 @@ export default {
 
             return "";
         },
+
+        title() {
+            if (this.type === "720") {
+                return `30${this.$t("-day")}`;
+            }
+
+            return `24${this.$t("-hour")}`;
+        }
     },
 };
 </script>
