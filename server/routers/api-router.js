@@ -9,6 +9,7 @@ const StatusPage = require("../model/status_page");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { makeBadge } = require("badge-maker");
 const { badgeConstants } = require("../config");
+const { Prometheus } = require("../prometheus");
 
 let router = express.Router();
 
@@ -87,6 +88,7 @@ router.get("/api/push/:pushToken", async (request, response) => {
 
         io.to(monitor.user_id).emit("heartbeat", bean.toJSON());
         Monitor.sendStats(io, monitor.id, monitor.user_id);
+        new Prometheus(monitor).update(bean, undefined);
 
         response.json({
             ok: true,
