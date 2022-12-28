@@ -723,6 +723,7 @@ let needSetup = false;
                 bean.radiusCalledStationId = monitor.radiusCalledStationId;
                 bean.radiusCallingStationId = monitor.radiusCallingStationId;
                 bean.radiusSecret = monitor.radiusSecret;
+                bean.httpBodyEncoding = monitor.httpBodyEncoding;
 
                 bean.validate();
 

@@ -107,6 +107,7 @@ class Monitor extends BeanModel {
             grpcEnableTls: this.getGrpcEnableTls(),
             radiusCalledStationId: this.radiusCalledStationId,
             radiusCallingStationId: this.radiusCallingStationId,
+            httpBodyEncoding: this.httpBodyEncoding,
         };
 
         if (includeSensitiveData) {
@@ -268,17 +269,29 @@ class Monitor extends BeanModel {
 
                     log.debug("monitor", `[${this.name}] Prepare Options for axios`);
 
+                    let contentType = null;
+                    let bodyValue = null;
+
+                    if (this.body && !this.httpBodyEncoding || this.httpBodyEncoding === "json") {
+                        bodyValue = JSON.parse(this.body);
+                        contentType = "application/json";
+                    } else if (this.body && (this.httpBodyEncoding === "xml")) {
+                        bodyValue = this.body;
+                        contentType = "text/xml; charset=utf-8";
+                    }
+
                     // Axios Options
                     const options = {
                         url: this.url,
                         method: (this.method || "get").toLowerCase(),
-                        ...(this.body ? { data: JSON.parse(this.body) } : {}),
+                        ...(bodyValue ? { data: bodyValue } : {}),
                         timeout: this.interval * 1000 * 0.8,
                         headers: {
                             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
                             "User-Agent": "Uptime-Kuma/" + version,
                             ...(this.headers ? JSON.parse(this.headers) : {}),
                             ...(basicAuthHeader),
+                            ...(contentType ? { "Content-Type": contentType } : {})
                         },
                         maxRedirects: this.maxredirects,
                         validateStatus: (status) => {
