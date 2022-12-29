@@ -249,7 +249,7 @@ class Monitor extends BeanModel {
                 if (await Monitor.isUnderMaintenance(this.id)) {
                     bean.msg = "Monitor under maintenance";
                     bean.status = MAINTENANCE;
-                } else if (this.type === "http" || this.type === "keyword") {
+                } else if (this.type === "http" || this.type === "keyword" || this.type === "mp-health" ) {
                     // Do not do any queries/high loading things before the "bean.ping"
                     let startTime = dayjs().valueOf();
 
@@ -344,6 +344,8 @@ class Monitor extends BeanModel {
 
                     if (this.type === "http") {
                         bean.status = UP;
+                    } else if (this.type === "mp-health") {
+                        await this.analyzeHealthcheckResponse(bean, res);
                     } else {
 
                         let data = res.data;
@@ -853,6 +855,150 @@ class Monitor extends BeanModel {
         await R.store(tlsInfoBean);
 
         return checkCertificateResult;
+    }
+
+    /**
+     * Analyzing the Micro Profile health check response.
+     * @param {Bean<heartbeat>} bean Heartbeat bean containing the current status
+     * @param {AxiosResponse<any>} res HTTP response containing the health check result
+     */
+    async analyzeHealthcheckResponse(bean, res) {
+        log.debug("monitor", "analyzeHealthcheckResponse");
+
+        const contentType = res.headers["content-type"];
+        if (contentType !== "application/json") {
+            bean.msg = `PENDING: unknown response content type: ${contentType}`;
+            bean.status = PENDING;
+            return;
+        }
+
+        // default is UP.
+        bean.status = UP;
+        bean.msg = "UP";
+
+        let data = res.data;
+        log.debug("monitor", data);
+
+        // special case for wildfly - response "DOWN" if server should be reloaded.
+        // This is not really a "DOWN" situation, it's handled like UP as long as no other problem exists.
+        let checkedServerASksForReload = false;
+        // Any other "DOWN" problem is treated as a real "DOWN" situation.
+        let realDownSituation = false;
+
+        // A health check typically contains several sub checks and more than one might be "DOWN",
+        // the Bean status should contain all failed sub checks.
+        // Consecutive messages should be separated.
+        let downMessages = [];
+        let recordsToCheck = [];
+
+        // evaluating first UP/DOWN indicators, where possible.
+        if ("status" in data) {
+            log.debug("monitor", "analyzing micro profile health check");
+            if (this.isUp(data)) {
+                // top level status is UP, so everything is fine.
+                bean.status = UP;
+                return;
+            }
+            // top level is not UP, further investigation necessary.
+            recordsToCheck = data.checks;
+        } else if (Array.isArray(data)) {
+            log.debug("monitor", `analyzing native wildfly health check, ${data.length} records.`);
+            recordsToCheck = data;
+        } else {
+            if (res.status < 400) {
+                log.info("monitor", "Response cannot be evaluated as a Health Check result, assuming all up.");
+                bean.msg = "UP";
+                bean.status = UP;
+                return;
+            }
+            log.info("monitor", "HTTP Status Code indicates a problem but response cannot be evaluated as a Health Check result, assuming DOWN.");
+            bean.msg = "UP";
+            bean.status = UP;
+            return;
+        }
+
+        // evaluating response details, every record has to be checked.
+        for (let record of recordsToCheck) {
+
+            if (this.isUp(record)) {
+                log.debug("monitoring", "single record is up, skipping");
+                continue;
+            }
+
+            log.debug("monitor", record);
+            if (!("name" in record)) {
+                // in case of wildfly legacy health check response the
+                // "master" record provides no further information.
+                // As the master record is a member of the array, its status cannot be checked first.
+                // every element has to be inspected (so we continue with the next).
+                continue;
+            }
+
+            if (record.name === "server-state" && "data" in record && record.data.value === "reload-required") {
+                // special case "server-state": sometimes the wildfly asks for a reload because of changes in the configuration file.
+                // This is not a real problem, still it is reported as "DOWN".
+                // We evaluate it as "UP" but have to ensure that no other check is really "DOWN".
+                log.debug("monitor", "server-state -> reload required, skipping");
+                checkedServerASksForReload = true;
+                continue;
+            }
+            // yep, a real problem...
+            realDownSituation = true;
+
+            if (record.name === "boot-errors") {
+                log.debug("monitor", "evaluating boot-errors");
+                let bootErrors;
+                if (Array.isArray(record.data)) {
+                    bootErrors = JSON.parse(record.data[0]["boot-errors"]);
+                } else {
+                    bootErrors = JSON.parse(record.data["boot-errors"]);
+                }
+                if (Array.isArray(bootErrors)) {
+                    for (let subRecord of bootErrors) {
+                        log.debug("monitor", subRecord);
+                        // "failed-operation" : {"operation" : "add", "address" : [{ "subsystem" : "naming" },{ "binding" : "identity-provider.timeoutMillis" }]}
+                        // "failure-description" : "WFLYNAM0048: Invalid binding name identity-provider.timeoutMillis, name must start with one of [java:global, java:jboss, java:/]"
+                        if ("failure-description" in subRecord) {
+                            let failureDescription = subRecord["failure-description"].split("\n");
+                            downMessages.push(`${record.name} => ${failureDescription[0]}`);
+                        } else {
+                            log.debug("monitor", "no subRecord 'failed-description', adding complete block to message");
+                            downMessages.push(`${record.name} => ${JSON.stringify(subRecord)}`);
+                        }
+                    }
+                } else {
+                    log.debug("monitor", `bootErrors is not an array => ${typeof bootErrors}`);
+                    log.debug("monitor", bootErrors);
+                }
+            } else {
+                log.debug("monitor", `evaluating regular element ${record.name}`);
+                downMessages.push(`${record.name} => ${JSON.stringify(record.data)}`);
+            }
+        }
+
+        if (checkedServerASksForReload && !realDownSituation) {
+            bean.status = UP;
+            bean.msg = "UP but: server-state => reload-required";
+            return;
+        }
+
+        bean.status = DOWN;
+        bean.msg = `DOWN (${downMessages.length}): ${downMessages.join(" // ")}`;
+    }
+
+    /**
+     * evaluates the status uf the health check record and returns true if the status is "UP" or the "outcome" is true.
+     * @param record the health check record to evaluate
+     * @returns {boolean} true if the record status is "UP"
+     */
+    isUp(record) {
+        if ("status" in record) {
+            return record.status === "UP";
+        }
+        if ("outcome" in record) {
+            return record.outcome;
+        }
+        return false;
     }
 
     /**
