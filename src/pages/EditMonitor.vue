@@ -60,6 +60,9 @@
                                         <option value="radius">
                                             Radius
                                         </option>
+                                        <option value="mp-health">
+                                            MicroProfile Health Check
+                                        </option>
                                     </optgroup>
                                 </select>
                             </div>
@@ -71,7 +74,7 @@
                             </div>
 
                             <!-- URL -->
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' " class="my-3">
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'mp-health' " class="my-3">
                                 <label for="url" class="form-label">{{ $t("URL") }}</label>
                                 <input id="url" v-model="monitor.url" type="url" class="form-control" pattern="https?://.+" required>
                             </div>
@@ -301,7 +304,7 @@
 
                             <h2 v-if="monitor.type !== 'push'" class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
 
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' " class="my-3 form-check">
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'mp-health' " class="my-3 form-check">
                                 <input id="expiry-notification" v-model="monitor.expiryNotification" class="form-check-input" type="checkbox">
                                 <label class="form-check-label" for="expiry-notification">
                                     {{ $t("Certificate Expiry Notification") }}
@@ -310,7 +313,7 @@
                                 </div>
                             </div>
 
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' " class="my-3 form-check">
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'mp-health' " class="my-3 form-check">
                                 <input id="ignore-tls" v-model="monitor.ignoreTls" class="form-check-input" type="checkbox" value="">
                                 <label class="form-check-label" for="ignore-tls">
                                     {{ $t("ignoreTLSError") }}
@@ -328,7 +331,7 @@
                             </div>
 
                             <!-- HTTP / Keyword only -->
-                            <template v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'grpc-keyword' ">
+                            <template v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'grpc-keyword' || monitor.type === 'mp-health' ">
                                 <div class="my-3">
                                     <label for="maxRedirects" class="form-label">{{ $t("Max. Redirects") }}</label>
                                     <input id="maxRedirects" v-model="monitor.maxredirects" type="number" class="form-control" required min="0" step="1">
@@ -394,7 +397,7 @@
                             </button>
 
                             <!-- Proxies -->
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword'">
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'mp-health' ">
                                 <h2 class="mt-5 mb-2">{{ $t("Proxy") }}</h2>
                                 <p v-if="$root.proxyList.length === 0">
                                     {{ $t("Not available, please setup.") }}
