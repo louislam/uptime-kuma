@@ -44,6 +44,7 @@ const WeCom = require("./notification-providers/wecom");
 const GoAlert = require("./notification-providers/goalert");
 const SMSManager = require("./notification-providers/smsmanager");
 const ServerChan = require("./notification-providers/serverchan");
+const ZohoCliq = require("./notification-providers/zoho-cliq");
 
 class Notification {
 
@@ -100,6 +101,7 @@ class Notification {
             new Webhook(),
             new WeCom(),
             new GoAlert(),
+            new ZohoCliq()
         ];
 
         for (let item of list) {
