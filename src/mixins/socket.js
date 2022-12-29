@@ -590,7 +590,7 @@ export default {
             for (let monitorID in this.lastHeartbeatList) {
                 let lastHeartBeat = this.lastHeartbeatList[monitorID];
 
-                if (this.monitorList[monitorID].maintenance) {
+                if (this.monitorList[monitorID] && this.monitorList[monitorID].maintenance) {
                     result[monitorID] = {
                         text: this.$t("statusMaintenance"),
                         color: "maintenance",

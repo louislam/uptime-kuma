@@ -122,7 +122,12 @@ class Logger {
         module = module.toUpperCase();
         level = level.toUpperCase();
 
-        const now = dayjs.tz(new Date()).format();
+        let now;
+        if (dayjs.tz) {
+            now = dayjs.tz(new Date()).format();
+        } else {
+            now = dayjs().format();
+        }
         const formattedMessage = (typeof msg === "string") ? `${now} [${module}] ${level}: ${msg}` : msg;
 
         if (level === "INFO") {
