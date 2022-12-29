@@ -42,6 +42,7 @@ import Telegram from "./Telegram.vue";
 import Webhook from "./Webhook.vue";
 import WeCom from "./WeCom.vue";
 import GoAlert from "./GoAlert.vue";
+import ZohoCliq from "./ZohoCliq.vue";
 
 /**
  * Manage all notification form.
@@ -93,6 +94,7 @@ const NotificationFormList = {
     "WeCom": WeCom,
     "GoAlert": GoAlert,
     "ServerChan": ServerChan,
+    "ZohoCliq": ZohoCliq
 };
 
 export default NotificationFormList;
