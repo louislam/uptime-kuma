@@ -866,7 +866,7 @@ class Monitor extends BeanModel {
         log.debug("monitor", "analyzeHealthcheckResponse");
 
         const contentType = res.headers["content-type"];
-        if (contentType !== "application/json") {
+        if (! contentType.startsWith("application/json")) {
             bean.msg = `PENDING: unknown response content type: ${contentType}`;
             bean.status = PENDING;
             return;
