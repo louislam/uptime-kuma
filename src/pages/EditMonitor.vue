@@ -61,6 +61,12 @@
                                             Radius
                                         </option>
                                     </optgroup>
+
+                                    <optgroup :label="$t('Custom Monitor Type')">
+                                        <option value="browser">
+                                            HTTP(s) with Real Browsers (Chromium or Firefox)
+                                        </option>
+                                    </optgroup>
                                 </select>
                             </div>
 
