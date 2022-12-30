@@ -1090,7 +1090,7 @@ class Monitor extends BeanModel {
                     // Prevent if the msg is undefined, notifications such as Discord cannot send out.
                     const heartbeatJSON = bean.toJSON();
                     if (!heartbeatJSON["msg"]) {
-                        heartbeatJSON["msg"] = "";
+                        heartbeatJSON["msg"] = "N/A";
                     }
 
                     await Notification.send(JSON.parse(notification.config), msg, await monitor.toJSON(false), heartbeatJSON);
