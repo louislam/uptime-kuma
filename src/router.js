@@ -18,8 +18,6 @@ import NotFound from "./pages/NotFound.vue";
 import DockerHosts from "./components/settings/Docker.vue";
 import MaintenanceDetails from "./pages/MaintenanceDetails.vue";
 import ManageMaintenance from "./pages/ManageMaintenance.vue";
-import SubUsers from "./pages/SubUsers.vue";
-import AddSubUser from "./pages/AddSubUser.vue";
 
 // Settings - Sub Pages
 import Appearance from "./components/settings/Appearance.vue";
@@ -146,14 +144,6 @@ const routes = [
                     {
                         path: "/maintenance/edit/:id",
                         component: EditMaintenance,
-                    },
-                    {
-                        path: "/manage-sub-users",
-                        component: SubUsers,
-                    },
-                    {
-                        path: "/add-sub-user",
-                        component: AddSubUser,
                     },
                 ],
             },

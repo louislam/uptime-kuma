@@ -44,7 +44,6 @@ export default {
             dockerHostList: [],
             statusPageListLoaded: false,
             statusPageList: [],
-            subUserList: {},
             proxyList: [],
             connectionErrorMsg: "Cannot connect to the socket server. Reconnecting...",
             showReverseProxyGuide: true,
@@ -142,10 +141,6 @@ export default {
             socket.on("statusPageList", (data) => {
                 this.statusPageListLoaded = true;
                 this.statusPageList = data;
-            });
-
-            socket.on("subUserList", (data) => {
-                this.subUserList = data;
             });
 
             socket.on("proxyList", (data) => {
@@ -473,14 +468,6 @@ export default {
          */
         add(monitor, callback) {
             socket.emit("add", monitor, callback);
-        },
-
-        addSubUser(username, password, callback) {
-            socket.emit("addSubUser", username, password, callback);
-        },
-
-        deleteSubUser(subUserID, callback) {
-            socket.emit("deleteSubUser", subUserID, callback);
         },
 
         addMaintenance(maintenance, callback) {

@@ -35,12 +35,6 @@ class UptimeKumaServer {
      */
     maintenanceList = {};
 
-    /**
-     * Main sub user list
-     * @type {{}}
-     */
-    subUserList = {};
-
     entryPage = "dashboard";
     app = undefined;
     httpServer = undefined;
@@ -160,37 +154,6 @@ class UptimeKumaServer {
 
         for (let maintenance of maintenanceList) {
             result[maintenance.id] = await maintenance.toJSON();
-        }
-
-        return result;
-    }
-
-
-    /**
-     * Send sub user list to client
-     */
-
-    async sendSubUserList(socket) {
-        return await this.sendSubUserListByUserID(socket.userID);
-    }
-
-    async sendSubUserListByUserID(userID) {
-        let list = await this.getSubUserJSONList(userID);
-        this.io.to(userID).emit("subUserList", list);
-        return list;
-    }
-
-    /**
-     * Get a list of sub users.
-     */
-
-    async getSubUserJSONList(userID) {
-        let result = {};
-
-        let list = await R.findAll("sub_users", " ORDER BY id ");
-
-        for (let subuser of list) {
-            result[subuser.id] = await subuser.toJSON();
         }
 
         return result;
