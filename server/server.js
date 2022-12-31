@@ -590,7 +590,7 @@ let needSetup = false;
         socket.on("setup", async (username, password, callback) => {
             try {
                 if (passwordStrength(password).value === "Too weak") {
-                    throw new Error("Password is too weak. lmao It should contain alphabetic and numeric characters. It must be at least 6 characters in length.");
+                    throw new Error("Password is too weak. It should contain alphabetic and numeric characters. It must be at least 6 characters in length.");
                 }
 
                 if ((await R.count("user")) !== 0) {
