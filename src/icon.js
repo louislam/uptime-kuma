@@ -44,6 +44,7 @@ import {
     faWrench,
     faHeartbeat,
     faFilter,
+    faUser,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -88,6 +89,7 @@ library.add(
     faWrench,
     faHeartbeat,
     faFilter,
+    faUser,
 );
 
 export { FontAwesomeIcon };
