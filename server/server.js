@@ -135,6 +135,7 @@ const { cloudflaredSocketHandler, autoStart: cloudflaredAutoStart, stop: cloudfl
 const { proxySocketHandler } = require("./socket-handlers/proxy-socket-handler");
 const { dockerSocketHandler } = require("./socket-handlers/docker-socket-handler");
 const { maintenanceSocketHandler } = require("./socket-handlers/maintenance-socket-handler");
+const { subUserSocketHandler } = require("./socket-handlers/subuser-socket-handler");
 const { generalSocketHandler } = require("./socket-handlers/general-socket-handler");
 const { Settings } = require("./settings");
 const { CacheableDnsHttpAgent } = require("./cacheable-dns-http-agent");
@@ -589,7 +590,7 @@ let needSetup = false;
         socket.on("setup", async (username, password, callback) => {
             try {
                 if (passwordStrength(password).value === "Too weak") {
-                    throw new Error("Password is too weak. It should contain alphabetic and numeric characters. It must be at least 6 characters in length.");
+                    throw new Error("Password is too weak. lmao It should contain alphabetic and numeric characters. It must be at least 6 characters in length.");
                 }
 
                 if ((await R.count("user")) !== 0) {
@@ -1490,6 +1491,7 @@ let needSetup = false;
         dockerSocketHandler(socket);
         maintenanceSocketHandler(socket);
         generalSocketHandler(socket, server);
+        subUserSocketHandler(socket);
 
         log.debug("server", "added all socket handlers");
 
@@ -1593,6 +1595,7 @@ async function afterLogin(socket, user) {
 
     let monitorList = await server.sendMonitorList(socket);
     server.sendMaintenanceList(socket);
+    server.sendSubUserList(socket);
     sendNotificationList(socket);
     sendProxyList(socket);
     sendDockerHostList(socket);
