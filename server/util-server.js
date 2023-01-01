@@ -778,22 +778,31 @@ module.exports.grpcQuery = async (options) => {
             cb);
     }, false, false);
     return new Promise((resolve, _) => {
-        return grpcService[`${grpcMethod}`](JSON.parse(grpcBody), function (err, response) {
-            const responseData = JSON.stringify(response);
-            if (err) {
-                return resolve({
-                    code: err.code,
-                    errorMessage: err.details,
-                    data: ""
-                });
-            } else {
-                log.debug("monitor:", `gRPC response: ${response}`);
-                return resolve({
-                    code: 1,
-                    errorMessage: "",
-                    data: responseData
-                });
-            }
-        });
+        try {
+            return grpcService[`${grpcMethod}`](JSON.parse(grpcBody), function (err, response) {
+                const responseData = JSON.stringify(response);
+                if (err) {
+                    return resolve({
+                        code: err.code,
+                        errorMessage: err.details,
+                        data: ""
+                    });
+                } else {
+                    log.debug("monitor:", `gRPC response: ${JSON.stringify(response)}`);
+                    return resolve({
+                        code: 1,
+                        errorMessage: "",
+                        data: responseData
+                    });
+                }
+            });
+        } catch (err) {
+            return resolve({
+                code: -1,
+                errorMessage: `Error ${err}. Please review your gRPC configuration option. The service name must not include package name value, and the method name must follow camelCase format`,
+                data: ""
+            });
+        }
+
     });
 };

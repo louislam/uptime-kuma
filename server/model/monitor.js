@@ -561,7 +561,7 @@ class Monitor extends BeanModel {
                     log.debug("monitor:", `gRPC response: ${JSON.stringify(response)}`);
                     let responseData = response.data;
                     if (responseData.length > 50) {
-                        responseData = response.substring(0, 47) + "...";
+                        responseData = responseData.toString().substring(0, 47) + "...";
                     }
                     if (response.code !== 1) {
                         bean.status = DOWN;
@@ -1103,7 +1103,7 @@ class Monitor extends BeanModel {
                     // Prevent if the msg is undefined, notifications such as Discord cannot send out.
                     const heartbeatJSON = bean.toJSON();
                     if (!heartbeatJSON["msg"]) {
-                        heartbeatJSON["msg"] = "";
+                        heartbeatJSON["msg"] = "N/A";
                     }
 
                     await Notification.send(JSON.parse(notification.config), msg, await monitor.toJSON(false), heartbeatJSON);
