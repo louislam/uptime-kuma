@@ -15,7 +15,7 @@ exports.login = async function (username, password) {
         return null;
     }
 
-    let user = await R.findOne("user", " username = ? AND active = 1", [
+    let user = await R.findOne("user", " username = ? AND active = 1 ", [
         username,
     ]);
 
