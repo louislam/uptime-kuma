@@ -548,7 +548,7 @@ class Monitor extends BeanModel {
                     log.debug("monitor:", `gRPC response: ${JSON.stringify(response)}`);
                     let responseData = response.data;
                     if (responseData.length > 50) {
-                        responseData = response.substring(0, 47) + "...";
+                        responseData = responseData.toString().substring(0, 47) + "...";
                     }
                     if (response.code !== 1) {
                         bean.status = DOWN;
