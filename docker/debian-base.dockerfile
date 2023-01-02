@@ -1,6 +1,5 @@
-# DON'T UPDATE TO node:14-bullseye-slim, see #372.
 # If the image changed, the second stage image should be changed too
-FROM node:16-buster-slim
+FROM node:16-bullseye-slim
 ARG TARGETPLATFORM
 
 WORKDIR /app
