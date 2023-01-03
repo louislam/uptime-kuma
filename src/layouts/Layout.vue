@@ -37,19 +37,32 @@
                             <div class="profile-pic">{{ $root.usernameFirstChar }}</div>
                             <font-awesome-icon icon="angle-down" />
                         </div>
+
+                        <!-- Header's Dropdown Menu -->
                         <ul class="dropdown-menu">
+                            <!-- Username -->
                             <li>
                                 <i18n-t v-if="$root.username != null" tag="span" keypath="signedInDisp" class="dropdown-item-text">
                                     <strong>{{ $root.username }}</strong>
                                 </i18n-t>
                                 <span v-if="$root.username == null" class="dropdown-item-text">{{ $t("signedInDispDisabled") }}</span>
                             </li>
+
                             <li><hr class="dropdown-divider"></li>
+
+                            <!-- Functions -->
                             <li>
-                                <router-link to="/settings" class="dropdown-item" :class="{ active: $route.path.includes('settings') }">
+                                <router-link to="/maintenance" class="dropdown-item" :class="{ active: $route.path.includes('manage-maintenance') }">
+                                    <font-awesome-icon icon="wrench" /> {{ $t("Maintenance") }}
+                                </router-link>
+                            </li>
+
+                            <li>
+                                <router-link to="/settings/general" class="dropdown-item" :class="{ active: $route.path.includes('settings') }">
                                     <font-awesome-icon icon="cog" /> {{ $t("Settings") }}
                                 </router-link>
                             </li>
+
                             <li v-if="$root.loggedIn && $root.socket.token !== 'autoLogin'">
                                 <button class="dropdown-item" @click="$root.logout">
                                     <font-awesome-icon icon="sign-out-alt" />
@@ -80,7 +93,7 @@
         <nav v-if="$root.isMobile && $root.loggedIn" class="bottom-nav">
             <router-link to="/dashboard" class="nav-link">
                 <div><font-awesome-icon icon="tachometer-alt" /></div>
-                {{ $t("Dashboard") }}
+                {{ $t("Home") }}
             </router-link>
 
             <router-link to="/list" class="nav-link">
@@ -304,5 +317,4 @@ main {
         background-color: $dark-bg;
     }
 }
-
 </style>

@@ -13,14 +13,18 @@ const { badgeConstants } = require("./config");
 const mssql = require("mssql");
 const { Client } = require("pg");
 const postgresConParse = require("pg-connection-string").parse;
+const mysql = require("mysql2");
 const { NtlmClient } = require("axios-ntlm");
 const { Settings } = require("./settings");
+const grpc = require("@grpc/grpc-js");
+const protojs = require("protobufjs");
 const radiusClient = require("node-radius-client");
 const {
     dictionaries: {
         rfc2865: { file, attributes },
     },
 } = require("node-radius-utils");
+const dayjs = require("dayjs");
 
 // From ping-lite
 exports.WIN = /^win/.test(process.platform);
@@ -244,19 +248,19 @@ exports.dnsResolve = function (hostname, resolverServer, resolverPort, rrtype) {
  * @param {string} query The query to validate the database with
  * @returns {Promise<(string[]|Object[]|Object)>}
  */
-exports.mssqlQuery = function (connectionString, query) {
-    return new Promise((resolve, reject) => {
-        mssql.connect(connectionString).then(pool => {
-            return pool.request()
-                .query(query);
-        }).then(result => {
-            resolve(result);
-        }).catch(err => {
-            reject(err);
-        }).finally(() => {
-            mssql.close();
-        });
-    });
+exports.mssqlQuery = async function (connectionString, query) {
+    let pool;
+    try {
+        pool = new mssql.ConnectionPool(connectionString);
+        await pool.connect();
+        await pool.request().query(query);
+        pool.close();
+    } catch (e) {
+        if (pool) {
+            pool.close();
+        }
+        throw e;
+    }
 };
 
 /**
@@ -291,6 +295,39 @@ exports.postgresQuery = function (connectionString, query) {
     });
 };
 
+/**
+ * Run a query on MySQL/MariaDB
+ * @param {string} connectionString The database connection string
+ * @param {string} query The query to validate the database with
+ * @returns {Promise<(string[]|Object[]|Object)>}
+ */
+exports.mysqlQuery = function (connectionString, query) {
+    return new Promise((resolve, reject) => {
+        const connection = mysql.createConnection(connectionString);
+        connection.promise().query(query)
+            .then(res => {
+                resolve(res);
+            })
+            .catch(err => {
+                reject(err);
+            })
+            .finally(() => {
+                connection.end();
+            });
+    });
+};
+
+/**
+ * Query radius server
+ * @param {string} hostname Hostname of radius server
+ * @param {string} username Username to use
+ * @param {string} password Password to use
+ * @param {string} calledStationId ID of called station
+ * @param {string} callingStationId ID of calling station
+ * @param {string} secret Secret to use
+ * @param {number} [port=1812] Port to contact radius server on
+ * @returns {Promise<any>}
+ */
 exports.radius = function (
     hostname,
     username,
@@ -298,9 +335,11 @@ exports.radius = function (
     calledStationId,
     callingStationId,
     secret,
+    port = 1812,
 ) {
     const client = new radiusClient({
         host: hostname,
+        hostPort: port,
         dictionaries: [ file ],
     });
 
@@ -431,6 +470,10 @@ const parseCertificateInfo = function (info) {
  * @returns {Object} Object containing certificate information
  */
 exports.checkCertificate = function (res) {
+    if (!res.request.res.socket) {
+        throw new Error("No socket found");
+    }
+
     const info = res.request.res.socket.getPeerCertificate(true);
     const valid = res.request.res.socket.authorized || false;
 
@@ -557,7 +600,7 @@ exports.doubleCheckPassword = async (socket, currentPassword) => {
 exports.startUnitTest = async () => {
     console.log("Starting unit test...");
     const npm = /^win/.test(process.platform) ? "npm.cmd" : "npm";
-    const child = childProcess.spawn(npm, [ "run", "jest" ]);
+    const child = childProcess.spawn(npm, [ "run", "jest-backend" ]);
 
     child.stdout.on("data", (data) => {
         console.log(data.toString());
@@ -643,5 +686,123 @@ module.exports.send403 = (res, msg = "") => {
     res.status(403).json({
         "status": "fail",
         "msg": msg,
+    });
+};
+
+function timeObjectConvertTimezone(obj, timezone, timeObjectToUTC = true) {
+    let offsetString;
+
+    if (timezone) {
+        offsetString = dayjs().tz(timezone).format("Z");
+    } else {
+        offsetString = dayjs().format("Z");
+    }
+
+    let hours = parseInt(offsetString.substring(1, 3));
+    let minutes = parseInt(offsetString.substring(4, 6));
+
+    if (
+        (timeObjectToUTC && offsetString.startsWith("+")) ||
+        (!timeObjectToUTC && offsetString.startsWith("-"))
+    ) {
+        hours *= -1;
+        minutes *= -1;
+    }
+
+    obj.hours += hours;
+    obj.minutes += minutes;
+
+    // Handle out of bound
+    if (obj.minutes < 0) {
+        obj.minutes += 60;
+        obj.hours--;
+    } else if (obj.minutes > 60) {
+        obj.minutes -= 60;
+        obj.hours++;
+    }
+
+    if (obj.hours < 0) {
+        obj.hours += 24;
+    } else if (obj.hours > 24) {
+        obj.hours -= 24;
+    }
+
+    return obj;
+}
+
+/**
+ *
+ * @param {object} obj
+ * @param {string} timezone
+ * @returns {object}
+ */
+module.exports.timeObjectToUTC = (obj, timezone = undefined) => {
+    return timeObjectConvertTimezone(obj, timezone, true);
+};
+
+/**
+ *
+ * @param {object} obj
+ * @param {string} timezone
+ * @returns {object}
+ */
+module.exports.timeObjectToLocal = (obj, timezone = undefined) => {
+    return timeObjectConvertTimezone(obj, timezone, false);
+};
+
+/**
+ * Create gRPC client stib
+ * @param {Object} options from gRPC client
+ */
+module.exports.grpcQuery = async (options) => {
+    const { grpcUrl, grpcProtobufData, grpcServiceName, grpcEnableTls, grpcMethod, grpcBody } = options;
+    const protocObject = protojs.parse(grpcProtobufData);
+    const protoServiceObject = protocObject.root.lookupService(grpcServiceName);
+    const Client = grpc.makeGenericClientConstructor({});
+    const credentials = grpcEnableTls ? grpc.credentials.createSsl() : grpc.credentials.createInsecure();
+    const client = new Client(
+        grpcUrl,
+        credentials
+    );
+    const grpcService = protoServiceObject.create(function (method, requestData, cb) {
+        const fullServiceName = method.fullName;
+        const serviceFQDN = fullServiceName.split(".");
+        const serviceMethod = serviceFQDN.pop();
+        const serviceMethodClientImpl = `/${serviceFQDN.slice(1).join(".")}/${serviceMethod}`;
+        log.debug("monitor", `gRPC method ${serviceMethodClientImpl}`);
+        client.makeUnaryRequest(
+            serviceMethodClientImpl,
+            arg => arg,
+            arg => arg,
+            requestData,
+            cb);
+    }, false, false);
+    return new Promise((resolve, _) => {
+        try {
+            return grpcService[`${grpcMethod}`](JSON.parse(grpcBody), function (err, response) {
+                const responseData = JSON.stringify(response);
+                if (err) {
+                    return resolve({
+                        code: err.code,
+                        errorMessage: err.details,
+                        data: ""
+                    });
+                } else {
+                    log.debug("monitor:", `gRPC response: ${JSON.stringify(response)}`);
+                    return resolve({
+                        code: 1,
+                        errorMessage: "",
+                        data: responseData
+                    });
+                }
+            });
+        } catch (err) {
+            return resolve({
+                code: -1,
+                errorMessage: `Error ${err}. Please review your gRPC configuration option. The service name must not include package name value, and the method name must follow camelCase format`,
+                data: ""
+            });
+        }
+
     });
 };

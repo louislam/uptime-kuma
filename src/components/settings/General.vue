@@ -1,15 +1,32 @@
 <template>
     <div>
-        <form class="my-4" @submit.prevent="saveGeneral">
-            <!-- Timezone -->
+        <form class="my-4" autocomplete="off" @submit.prevent="saveGeneral">
+            <!-- Client side Timezone -->
             <div class="mb-4">
                 <label for="timezone" class="form-label">
-                    {{ $t("Timezone") }}
+                    {{ $t("Display Timezone") }}
                 </label>
                 <select id="timezone" v-model="$root.userTimezone" class="form-select">
                     <option value="auto">
                         {{ $t("Auto") }}: {{ guessTimezone }}
                     </option>
+                    <option
+                        v-for="(timezone, index) in timezoneList"
+                        :key="index"
+                        :value="timezone.value"
+                    >
+                        {{ timezone.name }}
+                    </option>
+                </select>
+            </div>
+
+            <!-- Server Timezone -->
+            <div class="mb-4">
+                <label for="timezone" class="form-label">
+                    {{ $t("Server Timezone") }}
+                </label>
+                <select id="timezone" v-model="settings.serverTimezone" class="form-select">
+                    <option value="UTC">UTC</option>
                     <option
                         v-for="(timezone, index) in timezoneList"
                         :key="index"
@@ -32,7 +49,7 @@
                         v-model="settings.searchEngineIndex"
                         class="form-check-input"
                         type="radio"
-                        name="flexRadioDefault"
+                        name="searchEngineIndex"
                         :value="true"
                         required
                     />
@@ -46,7 +63,7 @@
                         v-model="settings.searchEngineIndex"
                         class="form-check-input"
                         type="radio"
-                        name="flexRadioDefault"
+                        name="searchEngineIndex"
                         :value="false"
                         required
                     />
@@ -105,6 +122,7 @@
                         name="primaryBaseURL"
                         placeholder="https://"
                         pattern="https?://.+"
+                        autocomplete="new-password"
                     />
                     <button class="btn btn-outline-primary" type="button" @click="autoGetPrimaryBaseURL">
                         {{ $t("Auto Get") }}
@@ -122,13 +140,53 @@
                 <HiddenInput
                     id="steamAPIKey"
                     v-model="settings.steamAPIKey"
-                    autocomplete="one-time-code"
+                    autocomplete="new-password"
                 />
                 <div class="form-text">
                     {{ $t("steamApiKeyDescription") }}
                     <a href="https://steamcommunity.com/dev" target="_blank">
                         https://steamcommunity.com/dev
                     </a>
+                </div>
+            </div>
+
+            <!-- DNS Cache -->
+            <div class="mb-4">
+                <label class="form-label">
+                    {{ $t("Enable DNS Cache") }}
+                    <div class="form-text">
+                        ⚠️ {{ $t("dnsCacheDescription") }}
+                    </div>
+                </label>
+
+                <div class="form-check">
+                    <input
+                        id="dnsCacheEnable"
+                        v-model="settings.dnsCache"
+                        class="form-check-input"
+                        type="radio"
+                        name="dnsCache"
+                        :value="true"
+                        required
+                    />
+                    <label class="form-check-label" for="dnsCacheEnable">
+                        {{ $t("Enable") }}
+                    </label>
+                </div>
+
+                <div class="form-check">
+                    <input
+                        id="dnsCacheDisable"
+                        v-model="settings.dnsCache"
+                        class="form-check-input"
+                        type="radio"
+                        name="dnsCache"
+                        :value="false"
+                        required
+                    />
+                    <label class="form-check-label" for="dnsCacheDisable">
+                        {{ $t("Disable") }}
+                    </label>
                 </div>
             </div>
 
@@ -145,11 +203,7 @@
 <script>
 import HiddenInput from "../../components/HiddenInput.vue";
 import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import timezone from "dayjs/plugin/timezone";
 import { timezoneList } from "../../util-frontend";
-dayjs.extend(utc);
-dayjs.extend(timezone);
 
 export default {
     components: {

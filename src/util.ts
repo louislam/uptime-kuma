@@ -6,18 +6,28 @@
 // Backend uses the compiled file util.js
 // Frontend uses util.ts
 
-import * as _dayjs from "dayjs";
-const dayjs = _dayjs;
+import * as dayjs  from "dayjs";
+import * as timezone from "dayjs/plugin/timezone";
+import * as utc from "dayjs/plugin/utc";
 
 export const isDev = process.env.NODE_ENV === "development";
 export const appName = "Uptime Kuma";
 export const DOWN = 0;
 export const UP = 1;
 export const PENDING = 2;
+export const MAINTENANCE = 3;
 
 export const STATUS_PAGE_ALL_DOWN = 0;
 export const STATUS_PAGE_ALL_UP = 1;
 export const STATUS_PAGE_PARTIAL_DOWN = 2;
+export const STATUS_PAGE_MAINTENANCE = 3;
+
+export const SQL_DATE_FORMAT = "YYYY-MM-DD";
+export const SQL_DATETIME_FORMAT = "YYYY-MM-DD HH:mm:ss";
+export const SQL_DATETIME_FORMAT_WITHOUT_SECOND = "YYYY-MM-DD HH:mm";
+
+export const MAX_INTERVAL_SECOND = 2073600; // 24 days
+export const MIN_INTERVAL_SECOND = 1; // 1 second
 
 /** Flip the status of s */
 export function flipStatus(s: number) {
@@ -105,14 +115,19 @@ class Logger {
      * @param level Log level. One of INFO, WARN, ERROR, DEBUG or can be customized.
      */
     log(module: string, msg: any, level: string) {
-        if (this.hideLog[level] && this.hideLog[level].includes(module)) {
+        if (this.hideLog[level] && this.hideLog[level].includes(module.toLowerCase())) {
             return;
         }
 
         module = module.toUpperCase();
         level = level.toUpperCase();
 
-        const now = new Date().toISOString();
+        let now;
+        if (dayjs.tz) {
+            now = dayjs.tz(new Date()).format();
+        } else {
+            now = dayjs().format();
+        }
         const formattedMessage = (typeof msg === "string") ? `${now} [${module}] ${level}: ${msg}` : msg;
 
         if (level === "INFO") {
@@ -335,4 +350,80 @@ export function genSecret(length = 64) {
  */
 export function getMonitorRelativeURL(id: string) {
     return "/dashboard/" + id;
+}
+
+export function getMaintenanceRelativeURL(id: string) {
+    return "/maintenance/" + id;
+}
+
+/**
+ * Parse to Time Object that used in VueDatePicker
+ * @param {string} time E.g. 12:00
+ * @returns object
+ */
+export function parseTimeObject(time: string) {
+    if (!time) {
+        return {
+            hours: 0,
+            minutes: 0,
+        };
+    }
+
+    let array = time.split(":");
+
+    if (array.length < 2) {
+        throw new Error("parseVueDatePickerTimeFormat: Invalid Time");
+    }
+
+    let obj =  {
+        hours: parseInt(array[0]),
+        minutes: parseInt(array[1]),
+        seconds: 0,
+    }
+    if (array.length >= 3) {
+        obj.seconds = parseInt(array[2]);
+    }
+    return obj;
+}
+
+/**
+ * @returns string e.g. 12:00
+ */
+export function parseTimeFromTimeObject(obj : any) {
+    if (!obj) {
+        return obj;
+    }
+
+    let result = "";
+
+    result += obj.hours.toString().padStart(2, "0") + ":" + obj.minutes.toString().padStart(2, "0")
+
+    if (obj.seconds) {
+        result += ":" +  obj.seconds.toString().padStart(2, "0")
+    }
+
+    return result;
+}
+
+
+export function isoToUTCDateTime(input : string) {
+    return dayjs(input).utc().format(SQL_DATETIME_FORMAT);
+}
+
+/**
+ * @param input
+ */
+export function utcToISODateTime(input : string) {
+    return dayjs.utc(input).toISOString();
+}
+
+/**
+ * For SQL_DATETIME_FORMAT
+ */
+export function utcToLocal(input : string, format = SQL_DATETIME_FORMAT) {
+    return dayjs.utc(input).local().format(format);
+}
+
+export function localToUTC(input : string, format = SQL_DATETIME_FORMAT) {
+    return dayjs(input).utc().format(format);
 }
