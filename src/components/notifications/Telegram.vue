@@ -1,7 +1,7 @@
 <template>
     <div class="mb-3">
         <label for="telegram-bot-token" class="form-label">{{ $t("Bot Token") }}</label>
-        <HiddenInput id="telegram-bot-token" v-model="$parent.notification.telegramBotToken" :required="true" autocomplete="one-time-code"></HiddenInput>
+        <HiddenInput id="telegram-bot-token" v-model="$parent.notification.telegramBotToken" :required="true" autocomplete="new-password"></HiddenInput>
         <i18n-t tag="div" keypath="wayToGetTelegramToken" class="form-text">
             <a href="https://t.me/BotFather" target="_blank">https://t.me/BotFather</a>
         </i18n-t>

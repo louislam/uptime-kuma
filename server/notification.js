@@ -14,6 +14,7 @@ const GoogleChat = require("./notification-providers/google-chat");
 const Gorush = require("./notification-providers/gorush");
 const Gotify = require("./notification-providers/gotify");
 const HomeAssistant = require("./notification-providers/home-assistant");
+const Kook = require("./notification-providers/kook");
 const Line = require("./notification-providers/line");
 const LineNotify = require("./notification-providers/linenotify");
 const LunaSea = require("./notification-providers/lunasea");
@@ -32,6 +33,7 @@ const RocketChat = require("./notification-providers/rocket-chat");
 const SerwerSMS = require("./notification-providers/serwersms");
 const Signal = require("./notification-providers/signal");
 const Slack = require("./notification-providers/slack");
+const SMSEagle = require("./notification-providers/smseagle");
 const SMTP = require("./notification-providers/smtp");
 const Squadcast = require("./notification-providers/squadcast");
 const Stackfield = require("./notification-providers/stackfield");
@@ -43,6 +45,7 @@ const WeCom = require("./notification-providers/wecom");
 const GoAlert = require("./notification-providers/goalert");
 const SMSManager = require("./notification-providers/smsmanager");
 const ServerChan = require("./notification-providers/serverchan");
+const ZohoCliq = require("./notification-providers/zoho-cliq");
 
 class Notification {
 
@@ -69,6 +72,7 @@ class Notification {
             new Gorush(),
             new Gotify(),
             new HomeAssistant(),
+            new Kook(),
             new Line(),
             new LineNotify(),
             new LunaSea(),
@@ -89,6 +93,7 @@ class Notification {
             new Signal(),
             new SMSManager(),
             new Slack(),
+            new SMSEagle(),
             new SMTP(),
             new Squadcast(),
             new Stackfield(),
@@ -98,6 +103,7 @@ class Notification {
             new Webhook(),
             new WeCom(),
             new GoAlert(),
+            new ZohoCliq()
         ];
 
         for (let item of list) {

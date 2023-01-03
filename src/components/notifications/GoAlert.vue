@@ -11,7 +11,7 @@
 
     <div class="mb-3">
         <label for="goalert-token" class="form-label">{{ $t("Token") }}</label>
-        <HiddenInput id="goalert-token" v-model="$parent.notification.goAlertToken" autocomplete="one-time-code" :required="true"></HiddenInput>
+        <HiddenInput id="goalert-token" v-model="$parent.notification.goAlertToken" autocomplete="new-password" :required="true"></HiddenInput>
 
         <div class="form-text">
             {{ $t("goAlertIntegrationKeyInfo") }}

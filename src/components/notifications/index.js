@@ -12,6 +12,7 @@ import GoogleChat from "./GoogleChat.vue";
 import Gorush from "./Gorush.vue";
 import Gotify from "./Gotify.vue";
 import HomeAssistant from "./HomeAssistant.vue";
+import Kook from "./Kook.vue";
 import Line from "./Line.vue";
 import LineNotify from "./LineNotify.vue";
 import LunaSea from "./LunaSea.vue";
@@ -33,6 +34,7 @@ import Signal from "./Signal.vue";
 import SMSManager from "./SMSManager.vue";
 import Slack from "./Slack.vue";
 import Squadcast from "./Squadcast.vue";
+import SMSEagle from "./SMSEagle.vue";
 import Stackfield from "./Stackfield.vue";
 import STMP from "./SMTP.vue";
 import Teams from "./Teams.vue";
@@ -41,6 +43,7 @@ import Telegram from "./Telegram.vue";
 import Webhook from "./Webhook.vue";
 import WeCom from "./WeCom.vue";
 import GoAlert from "./GoAlert.vue";
+import ZohoCliq from "./ZohoCliq.vue";
 
 /**
  * Manage all notification form.
@@ -62,6 +65,7 @@ const NotificationFormList = {
     "gorush": Gorush,
     "gotify": Gotify,
     "HomeAssistant": HomeAssistant,
+    "Kook": Kook,
     "line": Line,
     "LineNotify": LineNotify,
     "lunasea": LunaSea,
@@ -83,6 +87,7 @@ const NotificationFormList = {
     "SMSManager": SMSManager,
     "slack": Slack,
     "squadcast": Squadcast,
+    "SMSEagle": SMSEagle,
     "smtp": STMP,
     "stackfield": Stackfield,
     "teams": Teams,
@@ -91,6 +96,7 @@ const NotificationFormList = {
     "WeCom": WeCom,
     "GoAlert": GoAlert,
     "ServerChan": ServerChan,
+    "ZohoCliq": ZohoCliq
 };
 
 export default NotificationFormList;

@@ -5,6 +5,12 @@
  */
 console.log("Welcome to Uptime Kuma");
 
+// As the log function need to use dayjs, it should be very top
+const dayjs = require("dayjs");
+dayjs.extend(require("dayjs/plugin/utc"));
+dayjs.extend(require("./modules/dayjs/plugin/timezone"));
+dayjs.extend(require("dayjs/plugin/customParseFormat"));
+
 // Check Node.js Version
 const nodeVersion = parseInt(process.versions.node.split(".")[0]);
 const requiredVersion = 14;
@@ -33,6 +39,7 @@ log.info("server", "Importing Node libraries");
 const fs = require("fs");
 
 log.info("server", "Importing 3rd-party libraries");
+
 log.debug("server", "Importing express");
 const express = require("express");
 const expressStaticGzip = require("express-static-gzip");
@@ -127,7 +134,10 @@ const StatusPage = require("./model/status_page");
 const { cloudflaredSocketHandler, autoStart: cloudflaredAutoStart, stop: cloudflaredStop } = require("./socket-handlers/cloudflared-socket-handler");
 const { proxySocketHandler } = require("./socket-handlers/proxy-socket-handler");
 const { dockerSocketHandler } = require("./socket-handlers/docker-socket-handler");
+const { maintenanceSocketHandler } = require("./socket-handlers/maintenance-socket-handler");
+const { generalSocketHandler } = require("./socket-handlers/general-socket-handler");
 const { Settings } = require("./settings");
+const { CacheableDnsHttpAgent } = require("./cacheable-dns-http-agent");
 
 app.use(express.json());
 
@@ -155,6 +165,7 @@ let needSetup = false;
 (async () => {
     Database.init(args);
     await initDatabase(testMode);
+    await server.initAfterDatabaseReady();
 
     server.entryPage = await Settings.get("entryPage");
     await StatusPage.loadDomainMappingList();
@@ -194,6 +205,7 @@ let needSetup = false;
 
     if (isDev) {
         app.post("/test-webhook", async (request, response) => {
+            log.debug("test", request.headers);
             log.debug("test", request.body);
             response.send("OK");
         });
@@ -622,6 +634,9 @@ let needSetup = false;
 
                 bean.import(monitor);
                 bean.user_id = socket.userID;
+
+                bean.validate();
+
                 await R.store(bean);
 
                 await updateMonitorNotification(bean.id, notificationIDList);
@@ -697,11 +712,20 @@ let needSetup = false;
                 bean.authMethod = monitor.authMethod;
                 bean.authWorkstation = monitor.authWorkstation;
                 bean.authDomain = monitor.authDomain;
+                bean.grpcUrl = monitor.grpcUrl;
+                bean.grpcProtobuf = monitor.grpcProtobuf;
+                bean.grpcServiceName = monitor.grpcServiceName;
+                bean.grpcMethod = monitor.grpcMethod;
+                bean.grpcBody = monitor.grpcBody;
+                bean.grpcMetadata = monitor.grpcMetadata;
+                bean.grpcEnableTls = monitor.grpcEnableTls;
                 bean.radiusUsername = monitor.radiusUsername;
                 bean.radiusPassword = monitor.radiusPassword;
                 bean.radiusCalledStationId = monitor.radiusCalledStationId;
                 bean.radiusCallingStationId = monitor.radiusCallingStationId;
                 bean.radiusSecret = monitor.radiusSecret;
+
+                bean.validate();
 
                 await R.store(bean);
 
@@ -1057,10 +1081,15 @@ let needSetup = false;
         socket.on("getSettings", async (callback) => {
             try {
                 checkLogin(socket);
+                const data = await getSettings("general");
+
+                if (!data.serverTimezone) {
+                    data.serverTimezone = await server.getTimezone();
+                }
 
                 callback({
                     ok: true,
-                    data: await getSettings("general"),
+                    data: data,
                 });
 
             } catch (e) {
@@ -1088,12 +1117,20 @@ let needSetup = false;
                 await setSettings("general", data);
                 server.entryPage = data.entryPage;
 
+                await CacheableDnsHttpAgent.update();
+
+                // Also need to apply timezone globally
+                if (data.serverTimezone) {
+                    await server.setTimezone(data.serverTimezone);
+                }
+
                 callback({
                     ok: true,
                     msg: "Saved"
                 });
 
                 sendInfo(socket);
+                server.sendMaintenanceList(socket);
 
             } catch (e) {
                 callback({
@@ -1452,6 +1489,8 @@ let needSetup = false;
         databaseSocketHandler(socket);
         proxySocketHandler(socket);
         dockerSocketHandler(socket);
+        maintenanceSocketHandler(socket);
+        generalSocketHandler(socket, server);
 
         log.debug("server", "added all socket handlers");
 
@@ -1554,6 +1593,7 @@ async function afterLogin(socket, user) {
     socket.join(user.id);
 
     let monitorList = await server.sendMonitorList(socket);
+    server.sendMaintenanceList(socket);
     sendNotificationList(socket);
     sendProxyList(socket);
     sendDockerHostList(socket);
@@ -1572,6 +1612,13 @@ async function afterLogin(socket, user) {
 
     for (let monitorID in monitorList) {
         await Monitor.sendStats(io, monitorID, user.id);
+    }
+
+    // Set server timezone from client browser if not set
+    // It should be run once only
+    if (! await Settings.get("initServerTimezone")) {
+        log.debug("server", "emit initServerTimezone");
+        socket.emit("initServerTimezone");
     }
 }
 
@@ -1699,6 +1746,8 @@ async function shutdownFunction(signal) {
     log.info("server", "Shutdown requested");
     log.info("server", "Called signal: " + signal);
 
+    await server.stop();
+
     log.info("server", "Stopping all monitors");
     for (let id in server.monitorList) {
         let monitor = server.monitorList[id];
@@ -1709,6 +1758,7 @@ async function shutdownFunction(signal) {
 
     stopBackgroundJobs();
     await cloudflaredStop();
+    Settings.stopCacheCleaner();
 }
 
 /** Final function called before application exits */
