@@ -5,6 +5,7 @@ const badgeConstants = {
     naColor: "#999",
     defaultUpColor: "#66c20a",
     defaultDownColor: "#c2290a",
+    defaultMaintenanceColor: "#1747f5",
     defaultPingColor: "blue",  // as defined by badge-maker / shields.io
     defaultStyle: "flat",
     defaultPingValueSuffix: "ms",

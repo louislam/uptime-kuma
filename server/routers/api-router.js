@@ -111,8 +111,10 @@ router.get("/api/badge/:id/status", cache("5 minutes"), async (request, response
         label,
         upLabel = "Up",
         downLabel = "Down",
+        maintenanceLabel = "Maintenance",
         upColor = badgeConstants.defaultUpColor,
         downColor = badgeConstants.defaultDownColor,
+        maintenanceColor = badgeConstants.defaultMaintenanceColor,
         style = badgeConstants.defaultStyle,
         value, // for demo purpose only
     } = request.query;
@@ -139,11 +141,39 @@ router.get("/api/badge/:id/status", cache("5 minutes"), async (request, response
             badgeValues.color = badgeConstants.naColor;
         } else {
             const heartbeat = await Monitor.getPreviousHeartbeat(requestedMonitorId);
-            const state = overrideValue !== undefined ? overrideValue : heartbeat.status === 1;
+            const state = overrideValue !== undefined ? overrideValue : heartbeat.status;
 
             badgeValues.label = label ? label : "";
-            badgeValues.color = state ? upColor : downColor;
-            badgeValues.message = label ?? state ? upLabel : downLabel;
+            switch (state) {
+                case 1:
+                    badgeValues.color = upColor;
+                    break;
+                case 3:
+                    badgeValues.color = maintenanceColor;
+                    break;
+                case 0:
+                    badgeValues.color = downColor;
+                    break;
+                default:
+                    badgeValues.color = badgeConstants.naColor;
+            }
+            if (label !== undefined) {
+                badgeValues.message = label;
+            } else {
+                switch (state) {
+                    case 1:
+                        badgeValues.message = upLabel;
+                        break;
+                    case 3:
+                        badgeValues.message = maintenanceLabel;
+                        break;
+                    case 0:
+                        badgeValues.message = downLabel;
+                        break;
+                    default:
+                        badgeValues.message = "N/A";
+                }
+            }
         }
 
         // build the svg based on given values
