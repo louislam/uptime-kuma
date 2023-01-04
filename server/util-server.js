@@ -103,7 +103,7 @@ exports.pingAsync = function (hostname, ipv6 = false) {
             min_reply: 3
         }).then((res) => {
             // If ping failed, it will set field to unknown
-            if (res.host === "unknown") {
+            if (!res.alive && res.host === "unknown") {
                 reject(new Error("Name or service not known"));
             } else if (res.time === "unknown") {
                 reject(new Error(res.output));
