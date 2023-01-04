@@ -665,7 +665,7 @@ export default {
     Strategy: "Strateji",
     "Free Mobile User Identifier": "Ücretsiz Mobil Kullanıcı ID",
     "Free Mobile API Key": "Ücretsiz Mobil API Anahtarı",
-    "Enable TLS": "TLS\'yi Etkinleştir",
+    "Enable TLS": "TLS'yi Etkinleştir",
     "Proto Service Name": "Proto Service İsmi",
     "Proto Method": "Proto Method",
     "Proto Content": "Proto İçeriği",
@@ -674,5 +674,5 @@ export default {
     high: "Yüksek",
     "General Monitor Type": "Genel Monitör Tipi",
     "Passive Monitor Type": "Pasif Monitör Tipi",
-    "Specific Monitor Type": "Özel Monitör Tipi'
+    "Specific Monitor Type": "Özel Monitör Tipi",
 };
