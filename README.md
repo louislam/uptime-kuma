@@ -44,7 +44,7 @@ docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name upti
 
 ⚠️ Please use a **local volume** only. Other types such as NFS are not supported.
 
-Kuma is now running on http://localhost:3001
+Uptime Kuma is now running on http://localhost:3001
 
 ### 💪🏻 Non-Docker
 
@@ -73,7 +73,7 @@ pm2 start server/server.js --name uptime-kuma
 
 
 ```
-Kuma is now running on http://localhost:3001
+Uptime Kuma is now running on http://localhost:3001
 
 More useful PM2 Commands
 
