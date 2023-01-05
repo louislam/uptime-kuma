@@ -102,7 +102,8 @@ exports.pingAsync = function (hostname, ipv6 = false) {
     return new Promise((resolve, reject) => {
         ping.promise.probe(hostname, {
             v6: ipv6,
-            min_reply: 3
+            min_reply: 1,
+            timeout: 10000,
         }).then((res) => {
             // If ping failed, it will set field to unknown
             if (res.alive) {
