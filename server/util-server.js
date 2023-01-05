@@ -26,6 +26,8 @@ const {
 } = require("node-radius-utils");
 const dayjs = require("dayjs");
 
+const isWindows = process.platform === /^win/.test(process.platform);
+
 /**
  * Init or reset JWT secret
  * @returns {Promise<Bean>}
@@ -106,7 +108,11 @@ exports.pingAsync = function (hostname, ipv6 = false) {
             if (res.alive) {
                 resolve(res.time);
             } else {
-                reject(new Error(exports.convertToUTF8(res.output)));
+                if (isWindows) {
+                    reject(new Error(exports.convertToUTF8(res.output)));
+                } else {
+                    reject(new Error(res.output));
+                }
             }
         }).catch((err) => {
             reject(err);
