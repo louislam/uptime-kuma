@@ -63,7 +63,7 @@ class Teams extends NotificationProvider {
             });
         }
 
-        if (monitorUrl) {
+        if (monitorUrl && monitorUrl !== "https://") {
             facts.push({
                 name: "URL",
                 value: monitorUrl,
@@ -127,13 +127,17 @@ class Teams extends NotificationProvider {
 
             let url;
 
-            if (monitorJSON["type"] === "port") {
-                url = monitorJSON["hostname"];
-                if (monitorJSON["port"]) {
-                    url += ":" + monitorJSON["port"];
-                }
-            } else {
-                url = monitorJSON["url"];
+            switch (monitorJSON["type"]) {
+                case "http":
+                case "keywork":
+                    url = monitorJSON["url"];
+                    break;
+                case "docker":
+                    url = monitorJSON["docker_host"];
+                    break;
+                default:
+                    url = monitorJSON["hostname"];
+                    break;
             }
 
             const payload = this._notificationPayloadFactory({

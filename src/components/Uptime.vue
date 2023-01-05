@@ -1,5 +1,5 @@
 <template>
-    <span :class="className" :title="24 + $t('-hour')">{{ uptime }}</span>
+    <span :class="className" :title="title">{{ uptime }}</span>
 </template>
 
 <script>
@@ -25,6 +25,10 @@ export default {
     computed: {
         uptime() {
 
+            if (this.type === "maintenance") {
+                return this.$t("statusMaintenance");
+            }
+
             let key = this.monitor.id + "_" + this.type;
 
             if (this.$root.uptimeList[key] !== undefined) {
@@ -35,6 +39,10 @@ export default {
         },
 
         color() {
+            if (this.type === "maintenance" || this.monitor.maintenance) {
+                return "maintenance";
+            }
+
             if (this.lastHeartBeat.status === 0) {
                 return "danger";
             }
@@ -67,6 +75,14 @@ export default {
 
             return "";
         },
+
+        title() {
+            if (this.type === "720") {
+                return `30${this.$t("-day")}`;
+            }
+
+            return `24${this.$t("-hour")}`;
+        }
     },
 };
 </script>

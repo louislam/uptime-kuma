@@ -204,7 +204,7 @@ export default {
                 nameInvalid = false;
                 valueInvalid = false;
                 invalid = false;
-            } else if (this.existingTags.filter(tag => tag.name === this.newDraftTag.name).length > 0) {
+            } else if (this.existingTags.filter(tag => tag.name === this.newDraftTag.name).length > 0 && this.newDraftTag.select == null) {
                 // Try to create new tag with existing name
                 nameInvalid = true;
                 invalid = true;

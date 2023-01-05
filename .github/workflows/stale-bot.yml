@@ -1,0 +1,22 @@
+name: 'Automatically close stale issues and PRs'
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 */6 * * *'
+#Run every 6 hours 
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v5
+        with:
+          stale-issue-message: 'We are clearing up our old issues and your ticket has been open for 3 months with no activity. Remove stale label or comment or this will be closed in 2 days.'
+          close-issue-message: 'This issue was closed because it has been stalled for 2 days with no activity.'
+          days-before-stale: 90
+          days-before-close: 2
+          days-before-pr-stale: 999999999
+          days-before-pr-close: 1
+          exempt-issue-labels: 'News,Medium,High,discussion,bug,doc,feature-request'
+          exempt-issue-assignees: 'louislam'
+          operations-per-run: 200
