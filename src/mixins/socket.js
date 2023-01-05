@@ -454,6 +454,10 @@ export default {
             socket.emit("getMonitorList", callback);
         },
 
+        /**
+         * Get list of maintenances
+         * @param {socketCB} callback
+         */
         getMaintenanceList(callback) {
             if (! callback) {
                 callback = () => { };
@@ -470,22 +474,49 @@ export default {
             socket.emit("add", monitor, callback);
         },
 
+        /**
+         * Adds a maintenace
+         * @param {Object} maintenance
+         * @param {socketCB} callback
+         */
         addMaintenance(maintenance, callback) {
             socket.emit("addMaintenance", maintenance, callback);
         },
 
+        /**
+         * Add monitors to maintenance
+         * @param {number} maintenanceID
+         * @param {number[]} monitors
+         * @param {socketCB} callback
+         */
         addMonitorMaintenance(maintenanceID, monitors, callback) {
             socket.emit("addMonitorMaintenance", maintenanceID, monitors, callback);
         },
 
+        /**
+         * Add status page to maintenance
+         * @param {number} maintenanceID
+         * @param {number} statusPages
+         * @param {socketCB} callback
+         */
         addMaintenanceStatusPage(maintenanceID, statusPages, callback) {
             socket.emit("addMaintenanceStatusPage", maintenanceID, statusPages, callback);
         },
 
+        /**
+         * Get monitors affected by maintenance
+         * @param {number} maintenanceID
+         * @param {socketCB} callback
+         */
         getMonitorMaintenance(maintenanceID, callback) {
             socket.emit("getMonitorMaintenance", maintenanceID, callback);
         },
 
+        /**
+         * Get status pages where maintenance is shown
+         * @param {number} maintenanceID
+         * @param {socketCB} callback
+         */
         getMaintenanceStatusPage(maintenanceID, callback) {
             socket.emit("getMaintenanceStatusPage", maintenanceID, callback);
         },
@@ -499,6 +530,11 @@ export default {
             socket.emit("deleteMonitor", monitorID, callback);
         },
 
+        /**
+         * Delete specified maintenance
+         * @param {number} maintenanceID
+         * @param {socketCB} callback
+         */
         deleteMaintenance(maintenanceID, callback) {
             socket.emit("deleteMaintenance", maintenanceID, callback);
         },
