@@ -108,6 +108,7 @@
         "prometheus-api-metrics": "~3.2.1",
         "protobufjs": "~7.1.1",
         "redbean-node": "0.1.4",
+        "redis": "~4.5.1",
         "socket.io": "~4.5.3",
         "socket.io-client": "~4.5.3",
         "socks-proxy-agent": "6.1.1",

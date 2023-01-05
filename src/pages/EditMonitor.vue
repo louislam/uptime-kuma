@@ -60,6 +60,9 @@
                                         <option value="radius">
                                             Radius
                                         </option>
+                                        <option value="redis">
+                                            Redis
+                                        </option>
                                     </optgroup>
                                 </select>
                             </div>
@@ -267,7 +270,13 @@
                                     <textarea id="sqlQuery" v-model="monitor.databaseQuery" class="form-control" placeholder="Example: select getdate()"></textarea>
                                 </div>
                             </template>
-
+                            <!-- Redis -->
+                            <template v-if="monitor.type === 'redis'">
+                                <div class="my-3">
+                                    <label for="redisConnectionString" class="form-label">{{ $t("Connection String") }}</label>
+                                    <input id="redisConnectionString" v-model="monitor.redisConnectionString" type="text" class="form-control" placeholder="redis://user:password@host:port">
+                                </div>
+                            </template>
                             <!-- Interval -->
                             <div class="my-3">
                                 <label for="interval" class="form-label">{{ $t("Heartbeat Interval") }} ({{ $t("checkEverySecond", [ monitor.interval ]) }})</label>
