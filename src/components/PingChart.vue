@@ -1,23 +1,32 @@
 <template>
     <div>
         <div class="period-options">
-            <button type="button" class="btn btn-light dropdown-toggle btn-period-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+            <button
+                type="button"
+                class="btn btn-light dropdown-toggle btn-period-toggle"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+            >
                 {{ chartPeriodOptions[chartPeriodHrs] }}&nbsp;
             </button>
             <ul class="dropdown-menu dropdown-menu-end">
                 <li v-for="(item, key) in chartPeriodOptions" :key="key">
-                    <a class="dropdown-item" :class="{ active: chartPeriodHrs == key }" href="#" @click="chartPeriodHrs = key">{{ item }}</a>
+                    <a
+                        class="dropdown-item"
+                        :class="{ active: chartPeriodHrs == key }"
+                        href="#"
+                        @click="chartPeriodHrs = key">{{ item }}</a>
                 </li>
             </ul>
         </div>
-        <div class="chart-wrapper" :class="{ loading : loading}">
+        <div class="chart-wrapper" :class="{ loading: loading }">
             <LineChart :chart-data="chartData" :options="chartOptions" />
         </div>
     </div>
 </template>
 
 <script lang="js">
-import { BarController, BarElement, Chart, Filler, LinearScale, LineController, LineElement, PointElement, TimeScale, Tooltip } from "chart.js";
+import { Legend, BarController, BarElement, Chart, Filler, LinearScale, LineController, LineElement, PointElement, TimeScale, Tooltip } from "chart.js";
 import "chartjs-adapter-dayjs";
 import dayjs from "dayjs";
 import { LineChart } from "vue-chart-3";
@@ -26,7 +35,7 @@ import { DOWN, PENDING, MAINTENANCE, log } from "../util.ts";
 
 const toast = useToast();
 
-Chart.register(LineController, BarController, LineElement, PointElement, TimeScale, BarElement, LinearScale, Tooltip, Filler);
+Chart.register(LineController, BarController, LineElement, PointElement, TimeScale, BarElement, LinearScale, Tooltip, Filler, Legend);
 
 export default {
     components: { LineChart },
@@ -152,7 +161,19 @@ export default {
                         }
                     },
                     legend: {
-                        display: false,
+                        display: true,
+                        color: this.$root.theme === "light" ? "rgba(12,12,18,1.0)" : "rgba(220,220,220,1.0)",
+                        position: "top",
+                        labels: {
+                            usePointStyle: false,
+                            boxWidth: 10,
+                            boxHeight: 10,
+                            padding: 10,
+                        },
+                        title: {
+                            text: this.$t("Status"),
+                            display: true,
+                        },
                     },
                 },
             };
@@ -191,6 +212,7 @@ export default {
                 datasets: [
                     {
                         // Line Chart
+                        label: this.$t("respTime"),
                         data: pingData,
                         fill: "origin",
                         tension: 0.2,
@@ -200,6 +222,7 @@ export default {
                     },
                     {
                         // Bar Chart
+                        label: this.$t("Server Down"),
                         type: "bar",
                         data: downData,
                         borderColor: "#00000000",
@@ -334,3 +357,4 @@ export default {
     }
 }
 </style>
+
