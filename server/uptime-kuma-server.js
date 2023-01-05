@@ -86,6 +86,7 @@ class UptimeKumaServer {
         this.io = new Server(this.httpServer);
     }
 
+    /** Initialise app after the dabase has been set up */
     async initAfterDatabaseReady() {
         await CacheableDnsHttpAgent.update();
 
@@ -98,6 +99,11 @@ class UptimeKumaServer {
         this.generateMaintenanceTimeslotsInterval = setInterval(this.generateMaintenanceTimeslots, 60 * 1000);
     }
 
+    /**
+     * Send list of monitors to client
+     * @param {Socket} socket
+     * @returns {Object} List of monitors
+     */
     async sendMonitorList(socket) {
         let list = await this.getMonitorJSONList(socket.userID);
         this.io.to(socket.userID).emit("monitorList", list);
@@ -134,6 +140,11 @@ class UptimeKumaServer {
         return await this.sendMaintenanceListByUserID(socket.userID);
     }
 
+    /**
+     * Send list of maintenances to user
+     * @param {number} userID
+     * @returns {Object}
+     */
     async sendMaintenanceListByUserID(userID) {
         let list = await this.getMaintenanceJSONList(userID);
         this.io.to(userID).emit("maintenanceList", list);
@@ -185,6 +196,11 @@ class UptimeKumaServer {
         errorLogStream.end();
     }
 
+    /**
+     * Get the IP of the client connected to the socket
+     * @param {Socket} socket
+     * @returns {string}
+     */
     async getClientIP(socket) {
         let clientIP = socket.client.conn.remoteAddress;
 
@@ -203,6 +219,12 @@ class UptimeKumaServer {
         }
     }
 
+    /**
+     * Attempt to get the current server timezone
+     * If this fails, fall back to environment variables and then make a
+     * guess.
+     * @returns {string}
+     */
     async getTimezone() {
         let timezone = await Settings.get("serverTimezone");
         if (timezone) {
@@ -214,16 +236,25 @@ class UptimeKumaServer {
         }
     }
 
+    /**
+     * Get the current offset
+     * @returns {string}
+     */
     getTimezoneOffset() {
         return dayjs().format("Z");
     }
 
+    /**
+     * Set the current server timezone and environment variables
+     * @param {string} timezone
+     */
     async setTimezone(timezone) {
         await Settings.set("serverTimezone", timezone, "general");
         process.env.TZ = timezone;
         dayjs.tz.setDefault(timezone);
     }
 
+    /** Load the timeslots for maintenance */
     async generateMaintenanceTimeslots() {
 
         let list = await R.find("maintenance_timeslot", " generated_next = 0 AND start_date <= DATETIME('now') ");
@@ -237,6 +268,7 @@ class UptimeKumaServer {
 
     }
 
+    /** Stop the server */
     async stop() {
         clearTimeout(this.generateMaintenanceTimeslotsInterval);
     }
