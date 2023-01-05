@@ -145,8 +145,8 @@ exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
             reject(new Error("Timeout"));
         }, interval * 1000 * 0.8);
 
-        const mqttUrl = `${hostname}:${port}`
-        
+        const mqttUrl = `${hostname}:${port}`;
+
         log.debug("mqtt", `MQTT connecting to ${mqttUrl}`);
 
         let client = mqtt.connect(mqttUrl, {
