@@ -26,6 +26,16 @@ const { UptimeCacheList } = require("../uptime-cache-list");
  */
 class Monitor extends BeanModel {
 
+    statusToKey(status) {
+        switch (status) {
+            case 0: return "down";
+            case 1: return "up";
+            case 2: return "pending";
+            case 4: return "maintenance";
+            default: return "unknown";
+        }
+    }
+
     /**
      * Return an object that ready to parse to JSON for public
      * Only show necessary data to public
@@ -49,7 +59,7 @@ class Monitor extends BeanModel {
 
         if (includeStatus) {
             const heartbeat = await Monitor.getPreviousHeartbeat(this.id);
-            obj.status = heartbeat.status === 1 ? "up" : "down";
+            obj.status = this.statusToKey(heartbeat.status);
         }
 
         return obj;
