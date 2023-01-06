@@ -86,7 +86,7 @@ class UptimeKumaServer {
         this.io = new Server(this.httpServer);
     }
 
-    /** Initialise app after the dabase has been set up */
+    /** Initialise app after the database has been set up */
     async initAfterDatabaseReady() {
         await CacheableDnsHttpAgent.update();
 
