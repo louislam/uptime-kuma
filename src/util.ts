@@ -26,6 +26,9 @@ export const SQL_DATE_FORMAT = "YYYY-MM-DD";
 export const SQL_DATETIME_FORMAT = "YYYY-MM-DD HH:mm:ss";
 export const SQL_DATETIME_FORMAT_WITHOUT_SECOND = "YYYY-MM-DD HH:mm";
 
+export const MAX_INTERVAL_SECOND = 2073600; // 24 days
+export const MIN_INTERVAL_SECOND = 20; // 20 seconds
+
 /** Flip the status of s */
 export function flipStatus(s: number) {
     if (s === UP) {
@@ -112,14 +115,19 @@ class Logger {
      * @param level Log level. One of INFO, WARN, ERROR, DEBUG or can be customized.
      */
     log(module: string, msg: any, level: string) {
-        if (this.hideLog[level] && this.hideLog[level].includes(module)) {
+        if (this.hideLog[level] && this.hideLog[level].includes(module.toLowerCase())) {
             return;
         }
 
         module = module.toUpperCase();
         level = level.toUpperCase();
 
-        const now = dayjs.tz(new Date()).format();
+        let now;
+        if (dayjs.tz) {
+            now = dayjs.tz(new Date()).format();
+        } else {
+            now = dayjs().format();
+        }
         const formattedMessage = (typeof msg === "string") ? `${now} [${module}] ${level}: ${msg}` : msg;
 
         if (level === "INFO") {

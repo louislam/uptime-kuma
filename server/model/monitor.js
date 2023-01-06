@@ -2,8 +2,8 @@ const https = require("https");
 const dayjs = require("dayjs");
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
-const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, TimeLogger } = require("../../src/util");
-const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mqttAsync, setSetting, httpNtlm, radius } = require("../util-server");
+const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, TimeLogger, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND } = require("../../src/util");
+const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, mqttAsync, setSetting, httpNtlm, radius, grpcQuery } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification");
@@ -15,6 +15,7 @@ const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { CacheableDnsHttpAgent } = require("../cacheable-dns-http-agent");
 const { DockerHost } = require("../docker");
 const Maintenance = require("./maintenance");
+const { UptimeCacheList } = require("../uptime-cache-list");
 
 /**
  * status:
@@ -89,27 +90,23 @@ class Monitor extends BeanModel {
             dns_resolve_type: this.dns_resolve_type,
             dns_resolve_server: this.dns_resolve_server,
             dns_last_result: this.dns_last_result,
-            pushToken: this.pushToken,
             docker_container: this.docker_container,
             docker_host: this.docker_host,
             proxyId: this.proxy_id,
             notificationIDList,
             tags: tags,
             maintenance: await Monitor.isUnderMaintenance(this.id),
-            mqttUsername: this.mqttUsername,
-            mqttPassword: this.mqttPassword,
             mqttTopic: this.mqttTopic,
             mqttSuccessMessage: this.mqttSuccessMessage,
-            databaseConnectionString: this.databaseConnectionString,
             databaseQuery: this.databaseQuery,
             authMethod: this.authMethod,
-            authWorkstation: this.authWorkstation,
-            authDomain: this.authDomain,
-            radiusUsername: this.radiusUsername,
-            radiusPassword: this.radiusPassword,
+            grpcUrl: this.grpcUrl,
+            grpcProtobuf: this.grpcProtobuf,
+            grpcMethod: this.grpcMethod,
+            grpcServiceName: this.grpcServiceName,
+            grpcEnableTls: this.getGrpcEnableTls(),
             radiusCalledStationId: this.radiusCalledStationId,
             radiusCallingStationId: this.radiusCallingStationId,
-            radiusSecret: this.radiusSecret,
         };
 
         if (includeSensitiveData) {
@@ -117,12 +114,23 @@ class Monitor extends BeanModel {
                 ...data,
                 headers: this.headers,
                 body: this.body,
+                grpcBody: this.grpcBody,
+                grpcMetadata: this.grpcMetadata,
                 basic_auth_user: this.basic_auth_user,
                 basic_auth_pass: this.basic_auth_pass,
                 pushToken: this.pushToken,
+                databaseConnectionString: this.databaseConnectionString,
+                radiusUsername: this.radiusUsername,
+                radiusPassword: this.radiusPassword,
+                radiusSecret: this.radiusSecret,
+                mqttUsername: this.mqttUsername,
+                mqttPassword: this.mqttPassword,
+                authWorkstation: this.authWorkstation,
+                authDomain: this.authDomain,
             };
         }
 
+        data.includeSensitiveData = includeSensitiveData;
         return data;
     }
 
@@ -165,6 +173,14 @@ class Monitor extends BeanModel {
      */
     isUpsideDown() {
         return Boolean(this.upsideDown);
+    }
+
+    /**
+     * Parse to boolean
+     * @returns {boolean}
+     */
+    getGrpcEnableTls() {
+        return Boolean(this.grpcEnableTls);
     }
 
     /**
@@ -252,6 +268,7 @@ class Monitor extends BeanModel {
 
                     log.debug("monitor", `[${this.name}] Prepare Options for axios`);
 
+                    // Axios Options
                     const options = {
                         url: this.url,
                         method: (this.method || "get").toLowerCase(),
@@ -290,20 +307,8 @@ class Monitor extends BeanModel {
                     log.debug("monitor", `[${this.name}] Axios Options: ${JSON.stringify(options)}`);
                     log.debug("monitor", `[${this.name}] Axios Request`);
 
-                    let res;
-                    if (this.auth_method === "ntlm") {
-                        options.httpsAgent.keepAlive = true;
-
-                        res = await httpNtlm(options, {
-                            username: this.basic_auth_user,
-                            password: this.basic_auth_pass,
-                            domain: this.authDomain,
-                            workstation: this.authWorkstation ? this.authWorkstation : undefined
-                        });
-
-                    } else {
-                        res = await axios.request(options);
-                    }
+                    // Make Request
+                    let res = await this.makeAxiosRequest(options);
 
                     bean.msg = `${res.status} - ${res.statusText}`;
                     bean.ping = dayjs().valueOf() - startTime;
@@ -509,7 +514,9 @@ class Monitor extends BeanModel {
                     let res = await axios.request(options);
                     if (res.data.State.Running) {
                         bean.status = UP;
-                        bean.msg = "";
+                        bean.msg = res.data.State.Status;
+                    } else {
+                        throw Error("Container State is " + res.data.State.Status);
                     }
                 } else if (this.type === "mqtt") {
                     bean.msg = await mqttAsync(this.hostname, this.mqttTopic, this.mqttSuccessMessage, {
@@ -527,10 +534,49 @@ class Monitor extends BeanModel {
                     bean.msg = "";
                     bean.status = UP;
                     bean.ping = dayjs().valueOf() - startTime;
+                } else if (this.type === "grpc-keyword") {
+                    let startTime = dayjs().valueOf();
+                    const options = {
+                        grpcUrl: this.grpcUrl,
+                        grpcProtobufData: this.grpcProtobuf,
+                        grpcServiceName: this.grpcServiceName,
+                        grpcEnableTls: this.grpcEnableTls,
+                        grpcMethod: this.grpcMethod,
+                        grpcBody: this.grpcBody,
+                        keyword: this.keyword
+                    };
+                    const response = await grpcQuery(options);
+                    bean.ping = dayjs().valueOf() - startTime;
+                    log.debug("monitor:", `gRPC response: ${JSON.stringify(response)}`);
+                    let responseData = response.data;
+                    if (responseData.length > 50) {
+                        responseData = responseData.toString().substring(0, 47) + "...";
+                    }
+                    if (response.code !== 1) {
+                        bean.status = DOWN;
+                        bean.msg = `Error in send gRPC ${response.code} ${response.errorMessage}`;
+                    } else {
+                        if (response.data.toString().includes(this.keyword)) {
+                            bean.status = UP;
+                            bean.msg = `${responseData}, keyword [${this.keyword}] is found`;
+                        } else {
+                            log.debug("monitor:", `GRPC response [${response.data}] + ", but keyword [${this.keyword}] is not in [" + ${response.data} + "]"`);
+                            bean.status = DOWN;
+                            bean.msg = `, but keyword [${this.keyword}] is not in [" + ${responseData} + "]`;
+                        }
+                    }
                 } else if (this.type === "postgres") {
                     let startTime = dayjs().valueOf();
 
                     await postgresQuery(this.databaseConnectionString, this.databaseQuery);
+
+                    bean.msg = "";
+                    bean.status = UP;
+                    bean.ping = dayjs().valueOf() - startTime;
+                } else if (this.type === "mysql") {
+                    let startTime = dayjs().valueOf();
+
+                    await mysqlQuery(this.databaseConnectionString, this.databaseQuery);
 
                     bean.msg = "";
                     bean.status = UP;
@@ -655,6 +701,7 @@ class Monitor extends BeanModel {
             }
 
             log.debug("monitor", `[${this.name}] Send to socket`);
+            UptimeCacheList.clearCache(this.id);
             io.to(this.user_id).emit("heartbeat", bean.toJSON());
             Monitor.sendStats(io, this.id, this.user_id);
 
@@ -698,6 +745,40 @@ class Monitor extends BeanModel {
             }, this.interval * 1000);
         } else {
             safeBeat();
+        }
+    }
+
+    async makeAxiosRequest(options, finalCall = false) {
+        try {
+            let res;
+            if (this.auth_method === "ntlm") {
+                options.httpsAgent.keepAlive = true;
+
+                res = await httpNtlm(options, {
+                    username: this.basic_auth_user,
+                    password: this.basic_auth_pass,
+                    domain: this.authDomain,
+                    workstation: this.authWorkstation ? this.authWorkstation : undefined
+                });
+
+            } else {
+                res = await axios.request(options);
+            }
+
+            return res;
+        } catch (e) {
+            // Fix #2253
+            // Read more: https://stackoverflow.com/questions/1759956/curl-error-18-transfer-closed-with-outstanding-read-data-remaining
+            if (!finalCall && typeof e.message === "string" && e.message.includes("maxContentLength size of -1 exceeded")) {
+                log.debug("monitor", "makeAxiosRequest with gzip");
+                options.headers["Accept-Encoding"] = "gzip, deflate";
+                return this.makeAxiosRequest(options, true);
+            } else {
+                if (typeof e.message === "string" && e.message.includes("maxContentLength size of -1 exceeded")) {
+                    e.message = "response timeout: incomplete response within a interval";
+                }
+                throw e;
+            }
         }
     }
 
@@ -839,7 +920,15 @@ class Monitor extends BeanModel {
      * @param {number} duration Hours
      * @param {number} monitorID ID of monitor to calculate
      */
-    static async calcUptime(duration, monitorID) {
+    static async calcUptime(duration, monitorID, forceNoCache = false) {
+
+        if (!forceNoCache) {
+            let cachedUptime = UptimeCacheList.getUptime(monitorID, duration);
+            if (cachedUptime != null) {
+                return cachedUptime;
+            }
+        }
+
         const timeLogger = new TimeLogger();
 
         const startTime = R.isoDateTime(dayjs.utc().subtract(duration, "hour"));
@@ -897,6 +986,9 @@ class Monitor extends BeanModel {
                 uptime = 1;
             }
         }
+
+        // Cache
+        UptimeCacheList.addUptime(monitorID, duration, uptime);
 
         return uptime;
     }
@@ -997,7 +1089,13 @@ class Monitor extends BeanModel {
 
             for (let notification of notificationList) {
                 try {
-                    await Notification.send(JSON.parse(notification.config), msg, await monitor.toJSON(false), bean.toJSON());
+                    // Prevent if the msg is undefined, notifications such as Discord cannot send out.
+                    const heartbeatJSON = bean.toJSON();
+                    if (!heartbeatJSON["msg"]) {
+                        heartbeatJSON["msg"] = "N/A";
+                    }
+
+                    await Notification.send(JSON.parse(notification.config), msg, await monitor.toJSON(false), heartbeatJSON);
                 } catch (e) {
                     log.error("monitor", "Cannot send notification to " + notification.name);
                     log.error("monitor", e);
@@ -1129,6 +1227,15 @@ class Monitor extends BeanModel {
             WHERE ${activeCondition}
             LIMIT 1`, [ monitorID ]);
         return maintenance.count !== 0;
+    }
+
+    validate() {
+        if (this.interval > MAX_INTERVAL_SECOND) {
+            throw new Error(`Interval cannot be more than ${MAX_INTERVAL_SECOND} seconds`);
+        }
+        if (this.interval < MIN_INTERVAL_SECOND) {
+            throw new Error(`Interval cannot be less than ${MIN_INTERVAL_SECOND} seconds`);
+        }
     }
 }
 

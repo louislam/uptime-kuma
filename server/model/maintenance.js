@@ -188,13 +188,13 @@ class Maintenance extends BeanModel {
      */
     static getActiveMaintenanceSQLCondition() {
         return `
-
-            (maintenance_timeslot.start_date <= DATETIME('now')
-            AND maintenance_timeslot.end_date >= DATETIME('now')
-            AND maintenance.active = 1)
-            OR
-            (maintenance.strategy = 'manual' AND active = 1)
-
+            (
+                (maintenance_timeslot.start_date <= DATETIME('now')
+                AND maintenance_timeslot.end_date >= DATETIME('now')
+                AND maintenance.active = 1)
+                OR
+                (maintenance.strategy = 'manual' AND active = 1)
+            )
         `;
     }
 
@@ -204,10 +204,12 @@ class Maintenance extends BeanModel {
      */
     static getActiveAndFutureMaintenanceSQLCondition() {
         return `
-            ((maintenance_timeslot.end_date >= DATETIME('now')
-            AND maintenance.active = 1)
-            OR
-            (maintenance.strategy = 'manual' AND active = 1))
+            (
+                ((maintenance_timeslot.end_date >= DATETIME('now')
+                AND maintenance.active = 1)
+                OR
+                (maintenance.strategy = 'manual' AND active = 1))
+            )
         `;
     }
 }

@@ -93,7 +93,7 @@
         <nav v-if="$root.isMobile && $root.loggedIn" class="bottom-nav">
             <router-link to="/dashboard" class="nav-link">
                 <div><font-awesome-icon icon="tachometer-alt" /></div>
-                {{ $t("Dashboard") }}
+                {{ $t("Home") }}
             </router-link>
 
             <router-link to="/list" class="nav-link">

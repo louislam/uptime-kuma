@@ -11,7 +11,7 @@
                             <div class="my-3">
                                 <label for="type" class="form-label">{{ $t("Monitor Type") }}</label>
                                 <select id="type" v-model="monitor.type" class="form-select">
-                                    <optgroup label="General Monitor Type">
+                                    <optgroup :label="$t('General Monitor Type')">
                                         <option value="http">
                                             HTTP(s)
                                         </option>
@@ -24,6 +24,9 @@
                                         <option value="keyword">
                                             HTTP(s) - {{ $t("Keyword") }}
                                         </option>
+                                        <option value="grpc-keyword">
+                                            gRPC(s) - {{ $t("Keyword") }}
+                                        </option>
                                         <option value="dns">
                                             DNS
                                         </option>
@@ -32,13 +35,13 @@
                                         </option>
                                     </optgroup>
 
-                                    <optgroup label="Passive Monitor Type">
+                                    <optgroup :label="$t('Passive Monitor Type')">
                                         <option value="push">
                                             Push
                                         </option>
                                     </optgroup>
 
-                                    <optgroup label="Specific Monitor Type">
+                                    <optgroup :label="$t('Specific Monitor Type')">
                                         <option value="steam">
                                             {{ $t("Steam Game Server") }}
                                         </option>
@@ -46,10 +49,13 @@
                                             MQTT
                                         </option>
                                         <option value="sqlserver">
-                                            SQL Server
+                                            Microsoft SQL Server
                                         </option>
                                         <option value="postgres">
                                             PostgreSQL
+                                        </option>
+                                        <option value="mysql">
+                                            MySQL/MariaDB
                                         </option>
                                         <option value="radius">
                                             Radius
@@ -70,6 +76,12 @@
                                 <input id="url" v-model="monitor.url" type="url" class="form-control" pattern="https?://.+" required>
                             </div>
 
+                            <!-- gRPC URL -->
+                            <div v-if="monitor.type === 'grpc-keyword' " class="my-3">
+                                <label for="grpc-url" class="form-label">{{ $t("URL") }}</label>
+                                <input id="grpc-url" v-model="monitor.grpcUrl" type="url" class="form-control" pattern="[^\:]+:[0-9]{5}" required>
+                            </div>
+
                             <!-- Push URL -->
                             <div v-if="monitor.type === 'push' " class="my-3">
                                 <label for="push-url" class="form-label">{{ $t("PushUrl") }}</label>
@@ -81,7 +93,7 @@
                             </div>
 
                             <!-- Keyword -->
-                            <div v-if="monitor.type === 'keyword' " class="my-3">
+                            <div v-if="monitor.type === 'keyword' || monitor.type === 'grpc-keyword' " class="my-3">
                                 <label for="keyword" class="form-label">{{ $t("Keyword") }}</label>
                                 <input id="keyword" v-model="monitor.keyword" type="text" class="form-control" required>
                                 <div class="form-text">
@@ -235,8 +247,8 @@
                                 </div>
                             </template>
 
-                            <!-- SQL Server and PostgreSQL -->
-                            <template v-if="monitor.type === 'sqlserver' || monitor.type === 'postgres'">
+                            <!-- SQL Server / PostgreSQL / MySQL -->
+                            <template v-if="monitor.type === 'sqlserver' || monitor.type === 'postgres' || monitor.type === 'mysql'">
                                 <div class="my-3">
                                     <label for="sqlConnectionString" class="form-label">{{ $t("Connection String") }}</label>
 
@@ -245,6 +257,9 @@
                                     </template>
                                     <template v-if="monitor.type === 'postgres'">
                                         <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="postgres://username:password@host:port/database">
+                                    </template>
+                                    <template v-if="monitor.type === 'mysql'">
+                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="mysql://username:password@host:port/database">
                                     </template>
                                 </div>
                                 <div class="my-3">
@@ -256,7 +271,7 @@
                             <!-- Interval -->
                             <div class="my-3">
                                 <label for="interval" class="form-label">{{ $t("Heartbeat Interval") }} ({{ $t("checkEverySecond", [ monitor.interval ]) }})</label>
-                                <input id="interval" v-model="monitor.interval" type="number" class="form-control" required min="20" step="1">
+                                <input id="interval" v-model="monitor.interval" type="number" class="form-control" required :min="minInterval" step="1" :max="maxInterval">
                             </div>
 
                             <div class="my-3">
@@ -272,7 +287,7 @@
                                     {{ $t("Heartbeat Retry Interval") }}
                                     <span>({{ $t("retryCheckEverySecond", [ monitor.retryInterval ]) }})</span>
                                 </label>
-                                <input id="retry-interval" v-model="monitor.retryInterval" type="number" class="form-control" required min="20" step="1">
+                                <input id="retry-interval" v-model="monitor.retryInterval" type="number" class="form-control" required :min="minInterval" step="1">
                             </div>
 
                             <div class="my-3">
@@ -313,7 +328,7 @@
                             </div>
 
                             <!-- HTTP / Keyword only -->
-                            <template v-if="monitor.type === 'http' || monitor.type === 'keyword' ">
+                            <template v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'grpc-keyword' ">
                                 <div class="my-3">
                                     <label for="maxRedirects" class="form-label">{{ $t("Max. Redirects") }}</label>
                                     <input id="maxRedirects" v-model="monitor.maxredirects" type="number" class="form-control" required min="0" step="1">
@@ -491,6 +506,55 @@
                                     </template>
                                 </template>
                             </template>
+
+                            <!-- gRPC Options -->
+                            <template v-if="monitor.type === 'grpc-keyword' ">
+                                <!-- Proto service enable TLS -->
+                                <h2 class="mt-5 mb-2">{{ $t("GRPC Options") }}</h2>
+                                <div class="my-3 form-check">
+                                    <input id="grpc-enable-tls" v-model="monitor.grpcEnableTls" class="form-check-input" type="checkbox" value="">
+                                    <label class="form-check-label" for="grpc-enable-tls">
+                                        {{ $t("Enable TLS") }}
+                                    </label>
+                                    <div class="form-text">
+                                        {{ $t("enableGRPCTls") }}
+                                    </div>
+                                </div>
+                                <!-- Proto service name data -->
+                                <div class="my-3">
+                                    <label for="protobuf" class="form-label">{{ $t("Proto Service Name") }}</label>
+                                    <input id="name" v-model="monitor.grpcServiceName" type="text" class="form-control" :placeholder="protoServicePlaceholder" required>
+                                </div>
+
+                                <!-- Proto method data -->
+                                <div class="my-3">
+                                    <label for="protobuf" class="form-label">{{ $t("Proto Method") }}</label>
+                                    <input id="name" v-model="monitor.grpcMethod" type="text" class="form-control" :placeholder="protoMethodPlaceholder" required>
+                                    <div class="form-text">
+                                        {{ $t("grpcMethodDescription") }}
+                                    </div>
+                                </div>
+
+                                <!-- Proto data -->
+                                <div class="my-3">
+                                    <label for="protobuf" class="form-label">{{ $t("Proto Content") }}</label>
+                                    <textarea id="protobuf" v-model="monitor.grpcProtobuf" class="form-control" :placeholder="protoBufDataPlaceholder"></textarea>
+                                </div>
+
+                                <!-- Body -->
+                                <div class="my-3">
+                                    <label for="body" class="form-label">{{ $t("Body") }}</label>
+                                    <textarea id="body" v-model="monitor.grpcBody" class="form-control" :placeholder="bodyPlaceholder"></textarea>
+                                </div>
+
+                                <!-- Metadata: temporary disable waiting for next PR allow to send gRPC with metadata -->
+                                <template v-if="false">
+                                    <div class="my-3">
+                                        <label for="metadata" class="form-label">{{ $t("Metadata") }}</label>
+                                        <textarea id="metadata" v-model="monitor.grpcMetadata" class="form-control" :placeholder="headersPlaceholder"></textarea>
+                                    </div>
+                                </template>
+                            </template>
                         </div>
                     </div>
                 </div>
@@ -511,7 +575,7 @@ import NotificationDialog from "../components/NotificationDialog.vue";
 import DockerHostDialog from "../components/DockerHostDialog.vue";
 import ProxyDialog from "../components/ProxyDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
-import { genSecret, isDev } from "../util.ts";
+import { genSecret, isDev, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND } from "../util.ts";
 
 const toast = useToast();
 
@@ -527,6 +591,8 @@ export default {
 
     data() {
         return {
+            minInterval: MIN_INTERVAL_SECOND,
+            maxInterval: MAX_INTERVAL_SECOND,
             processing: false,
             monitor: {
                 notificationIDList: {},
@@ -569,6 +635,40 @@ export default {
             return this.$root.baseURL + "/api/push/" + this.monitor.pushToken + "?status=up&msg=OK&ping=";
         },
 
+        protoServicePlaceholder() {
+            return this.$t("Example:", [ "Health" ]);
+        },
+
+        protoMethodPlaceholder() {
+            return this.$t("Example:", [ "check" ]);
+        },
+
+        protoBufDataPlaceholder() {
+            return this.$t("Example:", [ `
+syntax = "proto3";
+
+package grpc.health.v1;
+
+service Health {
+  rpc Check(HealthCheckRequest) returns (HealthCheckResponse);
+  rpc Watch(HealthCheckRequest) returns (stream HealthCheckResponse);
+}
+
+message HealthCheckRequest {
+  string service = 1;
+}
+
+message HealthCheckResponse {
+  enum ServingStatus {
+    UNKNOWN = 0;
+    SERVING = 1;
+    NOT_SERVING = 2;
+    SERVICE_UNKNOWN = 3;  // Used only by the Watch method.
+  }
+  ServingStatus status = 1;
+}
+            ` ]);
+        },
         bodyPlaceholder() {
             return this.$t("Example:", [ `
 {
