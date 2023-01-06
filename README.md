@@ -22,17 +22,17 @@ It is a temporary live demo, all data will be deleted after 10 minutes. Use the 
 
 ## ⭐ Features
 
-* Monitoring uptime for HTTP(s) / TCP / HTTP(s) Keyword / Ping / DNS Record / Push / Steam Game Server / Docker Containers.
-* Fancy, Reactive, Fast UI/UX.
-* Notifications via Telegram, Discord, Gotify, Slack, Pushover, Email (SMTP), and [90+ notification services, click here for the full list](https://github.com/louislam/uptime-kuma/tree/master/src/components/notifications).
-* 20 second intervals.
+* Monitoring uptime for HTTP(s) / TCP / HTTP(s) Keyword / Ping / DNS Record / Push / Steam Game Server / Docker Containers
+* Fancy, Reactive, Fast UI/UX
+* Notifications via Telegram, Discord, Gotify, Slack, Pushover, Email (SMTP), and [90+ notification services, click here for the full list](https://github.com/louislam/uptime-kuma/tree/master/src/components/notifications)
+* 20 second intervals
 * [Multi Languages](https://github.com/louislam/uptime-kuma/tree/master/src/languages)
-* Multiple Status Pages
-* Map Status Page to Domain
-* Ping Chart
-* Certificate Info
-* Proxy Support
-* 2FA available
+* Multiple status pages
+* Map status pages to specific domains
+* Ping chart
+* Certificate info
+* Proxy support
+* 2FA support
 
 ## 🔧 How to Install
 
@@ -44,14 +44,14 @@ docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name upti
 
 ⚠️ Please use a **local volume** only. Other types such as NFS are not supported.
 
-Browse to http://localhost:3001 after starting.
+Uptime Kuma is now running on http://localhost:3001
 
 ### 💪🏻 Non-Docker
 
 Required Tools: 
 - [Node.js](https://nodejs.org/en/download/) >= 14
 - [Git](https://git-scm.com/downloads) 
-- [pm2](https://pm2.keymetrics.io/) - For run in background
+- [pm2](https://pm2.keymetrics.io/) - For running Uptime Kuma in the background
 
 ```bash
 # Update your npm to the latest version
@@ -73,7 +73,7 @@ pm2 start server/server.js --name uptime-kuma
 
 
 ```
-Browse to http://localhost:3001 after starting.
+Uptime Kuma is now running on http://localhost:3001
 
 More useful PM2 Commands
 
