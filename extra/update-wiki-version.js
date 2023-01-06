@@ -44,7 +44,7 @@ function updateWiki(newVersion) {
 }
 
 /**
- * Check if a directory exists before deleting
+ * Check if a directory exists and then delete it
  * @param {string} dir Directory to delete
  */
 function safeDelete(dir) {
