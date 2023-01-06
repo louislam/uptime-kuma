@@ -31,6 +31,9 @@ tsconfig.json
 /tmp
 /babel.config.js
 /ecosystem.config.js
+/extra/healthcheck.exe
+/extra/healthcheck
+
 
 ### .gitignore content (commented rules are duplicated)
 

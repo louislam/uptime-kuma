@@ -49,7 +49,7 @@
                         v-model="settings.searchEngineIndex"
                         class="form-check-input"
                         type="radio"
-                        name="flexRadioDefault"
+                        name="searchEngineIndex"
                         :value="true"
                         required
                     />
@@ -63,7 +63,7 @@
                         v-model="settings.searchEngineIndex"
                         class="form-check-input"
                         type="radio"
-                        name="flexRadioDefault"
+                        name="searchEngineIndex"
                         :value="false"
                         required
                     />
@@ -147,6 +147,46 @@
                     <a href="https://steamcommunity.com/dev" target="_blank">
                         https://steamcommunity.com/dev
                     </a>
+                </div>
+            </div>
+
+            <!-- DNS Cache -->
+            <div class="mb-4">
+                <label class="form-label">
+                    {{ $t("Enable DNS Cache") }}
+                    <div class="form-text">
+                        ⚠️ {{ $t("dnsCacheDescription") }}
+                    </div>
+                </label>
+
+                <div class="form-check">
+                    <input
+                        id="dnsCacheEnable"
+                        v-model="settings.dnsCache"
+                        class="form-check-input"
+                        type="radio"
+                        name="dnsCache"
+                        :value="true"
+                        required
+                    />
+                    <label class="form-check-label" for="dnsCacheEnable">
+                        {{ $t("Enable") }}
+                    </label>
+                </div>
+
+                <div class="form-check">
+                    <input
+                        id="dnsCacheDisable"
+                        v-model="settings.dnsCache"
+                        class="form-check-input"
+                        type="radio"
+                        name="dnsCache"
+                        :value="false"
+                        required
+                    />
+                    <label class="form-check-label" for="dnsCacheDisable">
+                        {{ $t("Disable") }}
+                    </label>
                 </div>
             </div>
 

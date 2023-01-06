@@ -7,7 +7,7 @@
 // Backend uses the compiled file util.js
 // Frontend uses util.ts
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.localToUTC = exports.utcToLocal = exports.utcToISODateTime = exports.isoToUTCDateTime = exports.parseTimeFromTimeObject = exports.parseTimeObject = exports.getMaintenanceRelativeURL = exports.getMonitorRelativeURL = exports.genSecret = exports.getCryptoRandomInt = exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.log = exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.SQL_DATETIME_FORMAT_WITHOUT_SECOND = exports.SQL_DATETIME_FORMAT = exports.SQL_DATE_FORMAT = exports.STATUS_PAGE_MAINTENANCE = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.MAINTENANCE = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isDev = void 0;
+exports.localToUTC = exports.utcToLocal = exports.utcToISODateTime = exports.isoToUTCDateTime = exports.parseTimeFromTimeObject = exports.parseTimeObject = exports.getMaintenanceRelativeURL = exports.getMonitorRelativeURL = exports.genSecret = exports.getCryptoRandomInt = exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.log = exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.MIN_INTERVAL_SECOND = exports.MAX_INTERVAL_SECOND = exports.SQL_DATETIME_FORMAT_WITHOUT_SECOND = exports.SQL_DATETIME_FORMAT = exports.SQL_DATE_FORMAT = exports.STATUS_PAGE_MAINTENANCE = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.MAINTENANCE = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isDev = void 0;
 const dayjs = require("dayjs");
 exports.isDev = process.env.NODE_ENV === "development";
 exports.appName = "Uptime Kuma";
@@ -22,6 +22,8 @@ exports.STATUS_PAGE_MAINTENANCE = 3;
 exports.SQL_DATE_FORMAT = "YYYY-MM-DD";
 exports.SQL_DATETIME_FORMAT = "YYYY-MM-DD HH:mm:ss";
 exports.SQL_DATETIME_FORMAT_WITHOUT_SECOND = "YYYY-MM-DD HH:mm";
+exports.MAX_INTERVAL_SECOND = 2073600; // 24 days
+exports.MIN_INTERVAL_SECOND = 20; // 20 seconds
 /** Flip the status of s */
 function flipStatus(s) {
     if (s === exports.UP) {
@@ -99,12 +101,18 @@ class Logger {
      * @param level Log level. One of INFO, WARN, ERROR, DEBUG or can be customized.
      */
     log(module, msg, level) {
-        if (this.hideLog[level] && this.hideLog[level].includes(module)) {
+        if (this.hideLog[level] && this.hideLog[level].includes(module.toLowerCase())) {
             return;
         }
         module = module.toUpperCase();
         level = level.toUpperCase();
-        const now = dayjs.tz(new Date()).format();
+        let now;
+        if (dayjs.tz) {
+            now = dayjs.tz(new Date()).format();
+        }
+        else {
+            now = dayjs().format();
+        }
         const formattedMessage = (typeof msg === "string") ? `${now} [${module}] ${level}: ${msg}` : msg;
         if (level === "INFO") {
             console.info(formattedMessage);

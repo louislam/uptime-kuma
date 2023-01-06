@@ -2,6 +2,7 @@ import { io } from "socket.io-client";
 import { useToast } from "vue-toastification";
 import jwtDecode from "jwt-decode";
 import Favico from "favico.js";
+import dayjs from "dayjs";
 const toast = useToast();
 
 let socket;
@@ -58,7 +59,6 @@ export default {
     },
 
     created() {
-        window.addEventListener("resize", this.onResize);
         this.initSocketIO();
     },
 
@@ -272,6 +272,10 @@ export default {
             socket.on("cloudflared_message", (res) => this.cloudflared.message = res);
             socket.on("cloudflared_errorMessage", (res) => this.cloudflared.errorMessage = res);
             socket.on("cloudflared_token", (res) => this.cloudflared.cloudflareTunnelToken = res);
+
+            socket.on("initServerTimezone", () => {
+                socket.emit("initServerTimezone", dayjs.tz.guess());
+            });
         },
 
         /**
@@ -586,7 +590,7 @@ export default {
             for (let monitorID in this.lastHeartbeatList) {
                 let lastHeartBeat = this.lastHeartbeatList[monitorID];
 
-                if (this.monitorList[monitorID].maintenance) {
+                if (this.monitorList[monitorID] && this.monitorList[monitorID].maintenance) {
                     result[monitorID] = {
                         text: this.$t("statusMaintenance"),
                         color: "maintenance",

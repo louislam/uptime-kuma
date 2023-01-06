@@ -2,9 +2,9 @@
 
 ## Reporting a Vulnerability
 
-Please report security issues to uptime@kuma.pet.
+Please report security issues to https://github.com/louislam/uptime-kuma/security/advisories/new.
 
-Do not use the issue tracker or discuss it in the public as it will cause more damage.
+Do not use the public issue tracker or discuss it in the public as it will cause more damage.
 
 ## Supported Versions
 
