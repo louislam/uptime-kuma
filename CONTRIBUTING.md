@@ -1,6 +1,6 @@
 # Project Info
 
-First of all, thank you everyone who made pull requests for Uptime Kuma, I never thought GitHub Community can be that nice! And also because of this, I also never thought other people actually read my code and edit my code. It is not structured and commented so well, lol. Sorry about that.
+First of all, I want to thank everyone who made pull requests for Uptime Kuma. I never thought the GitHub Community would be so nice! Because of this, I also never thought that other people would actually read and edit my code. It is not very well structured or commented, sorry about that.
 
 The project was created with vite.js (vue3). Then I created a subdirectory called "server" for server part. Both frontend and backend share the same package.json.
 
@@ -77,9 +77,9 @@ Before deep into coding, discussion first is preferred. Creating an empty pull r
 
 ## Project Styles
 
-I personally do not like something need to learn so much and need to config so much before you can finally start the app.
+I personally do not like it when something requires so much learning and configuration before you can finally start the app.
 
-- Easy to install for non-Docker users, no native build dependency is needed (at least for x86_64), no extra config, no extra effort to get it run
+- Easy to install for non-Docker users, no native build dependency is needed (at least for x86_64), no extra config, no extra effort required to get it running
 - Single container for Docker users, no very complex docker-compose file. Just map the volume and expose the port, then good to go
 - Settings should be configurable in the frontend. Environment variable is not encouraged, unless it is related to startup such as `DATA_DIR`.
 - Easy to use
@@ -177,14 +177,10 @@ The data and socket logic are in `src/mixins/socket.js`.
 
 ## Unit Test
 
-It is an end-to-end testing. It is using Jest and Puppeteer.
-
 ```bash
 npm run build
 npm test
 ```
-
-By default, the Chromium window will be shown up during the test. Specifying `HEADLESS_TEST=1` for terminal environments.
 
 ## Dependencies
 
