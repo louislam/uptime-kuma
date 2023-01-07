@@ -302,7 +302,7 @@
     "lineDevConsoleTo": "Console développeurs Line - {0}",
     "Basic Settings": "Paramètres de base",
     "User ID": "Identifiant utilisateur",
-    "Messaging API": "Messaging API", // Ne pas traduire, il s'agit du type de salon affiché sur la console développeurs Line
+    "Messaging API": "Messaging API",
     "wayToGetLineChannelToken": "Premièrement accédez à {0}, créez un <i>provider</i> et définissez un type de salon à « Messaging API ». Vous pourrez alors avoir  puis vous pourrez avoir le jeton d'accès du salon et l'identifiant utilisateur demandés.",
     "Icon URL": "URL vers l'icône",
     "aboutIconURL": "Vous pouvez mettre un lien vers une image dans « URL vers l'icône » pour remplacer l'image de profil par défaut. Elle ne sera utilisé que si « Icône émoji » n'est pas défini.",
