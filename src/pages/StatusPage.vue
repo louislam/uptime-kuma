@@ -151,7 +151,12 @@
                 <Editable v-model="incident.title" tag="h4" :contenteditable="editIncidentMode" :noNL="true" class="alert-heading" />
 
                 <strong v-if="editIncidentMode">{{ $t("Content") }}:</strong>
-                <Editable v-model="incident.content" tag="div" :contenteditable="editIncidentMode" class="content" />
+                <Editable v-if="editIncidentMode" v-model="incident.content" tag="div" :contenteditable="editIncidentMode" class="content" />
+                <div v-if="editIncidentMode" class="form-text">
+                    {{ $t("markdownSupported") }}
+                </div>
+                <!-- eslint-disable-next-line vue/no-v-html-->
+                <div v-if="! editIncidentMode" class="content" v-html="incidentHTML"></div>
 
                 <!-- Incident Date -->
                 <div class="date mt-3">
@@ -482,6 +487,10 @@ export default {
 
         isMaintenance() {
             return this.overallStatus === STATUS_PAGE_MAINTENANCE;
+        },
+
+        incidentHTML() {
+            return DOMPurify.sanitize(marked(this.incident.content));
         },
 
         footerHTML() {
