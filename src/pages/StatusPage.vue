@@ -244,7 +244,8 @@
                     class="shadow-box alert mb-4 p-3 bg-maintenance mt-4 position-relative" role="alert"
                 >
                     <h4 class="alert-heading">{{ maintenance.title }}</h4>
-                    <div class="content">{{ maintenance.description }}</div>
+                    <!-- eslint-disable-next-line vue/no-v-html-->
+                    <div class="content" v-html="maintenanceHTML(maintenance.description)"></div>
                     <MaintenanceTime :maintenance="maintenance" />
                 </div>
             </template>
@@ -853,6 +854,15 @@ export default {
          */
         removeDomain(index) {
             this.config.domainNameList.splice(index, 1);
+        },
+
+        /**
+         * Generate sanitized HTML from maintenance description
+         * @param {string} description
+         * @returns {string} Sanitized HTML
+         */
+        maintenanceHTML(description) {
+            return DOMPurify.sanitize(marked(description));
         },
 
     }
