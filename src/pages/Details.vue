@@ -219,12 +219,12 @@ export default {
             hours: 0,
             minutes: 0,
             seconds: 0,
-            timestamp: new Date().toString(),
+            rawTimestamp: new Date().toString(),
         };
     },
     computed: {
         timestamp() {
-            return this.timestamp.slice(15, 24);
+            return this.rawTimestamp.slice(15, 24);
         },
         monitor() {
             let id = this.$route.params.id;
@@ -298,17 +298,17 @@ export default {
     },
     mounted() {
         this.interval = setInterval(() => {
-        this.seconds += 1;
+            this.seconds += 1;
 
-      if (this.seconds >= 60) {
-        this.seconds = 0;
-        this.minutes += 1;
-          }
+            if (this.seconds >= 60) {
+                this.seconds = 0;
+                this.minutes += 1;
+            }
 
-      if (this.minutes >= 60) {
-        this.minutes = 0;
-        this.hours += 1;
-        }
+            if (this.minutes >= 60) {
+                this.minutes = 0;
+                this.hours += 1;
+            }
         }, 1000); // Update the time every second
     },
     methods: {
