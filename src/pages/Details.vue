@@ -15,7 +15,8 @@
                 </span>
                 <span v-if="monitor.type === 'dns'">[{{ monitor.dns_resolve_type }}] {{ monitor.hostname }}
                     <br>
-                    <span>{{ $t("Last Result") }}:</span> <span class="keyword">{{ monitor.dns_last_result }}</span>
+                    <span>{{ $t("Last Result") }}:</span>
+                    <span class="keyword">{{ monitor.dns_last_result }}</span>
                 </span>
             </p>
 
@@ -47,7 +48,7 @@
                         <span class="badge rounded-pill" :class=" 'bg-' + status.color " style="font-size: 30px;">{{ status.text }}</span>
                     </div>
                 </div>
-                <div class="timestamp" >{{ timestamp }}</div>
+                <div class="timestamp">{{ timestamp }}</div>
             </div>
 
             <div class="shadow-box big-padding text-center stats">
