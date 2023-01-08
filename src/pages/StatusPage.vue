@@ -64,6 +64,12 @@
                     </ul>
                 </div>
 
+                <!-- Google Analytics -->
+                <div class="my-3">
+                    <label for="googleAnalyticsTag" class="form-label">{{ $t("Google Analytics ID") }}</label>
+                    <input id="googleAnalyticsTag" v-model="config.googleAnalyticsId" type="text" class="form-control">
+                </div>
+
                 <!-- Custom CSS -->
                 <div class="my-3">
                     <div class="mb-1">{{ $t("Custom CSS") }}</div>
@@ -293,6 +299,15 @@
 
         <component is="style" v-if="config.customCSS" type="text/css">
             {{ config.customCSS }}
+        </component>
+
+        <component :is="'script'" v-if="config.googleAnalyticsId" async :src="'https://www.googletagmanager.com/gtag/js?id=' + config.googleAnalyticsId" />
+
+        <component :is="'script'" v-if="config.googleAnalyticsId">
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '{{ config.googleAnalyticsId }}');
         </component>
     </div>
 </template>
