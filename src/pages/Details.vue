@@ -37,6 +37,7 @@
             </div>
 
             <div class="shadow-box">
+                <div class="countdown">    {{ hours }}:{{ minutes }}:{{ seconds }}  </div>
                 <div class="row">
                     <div class="col-md-8">
                         <HeartbeatBar :monitor-id="monitor.id" />
@@ -46,6 +47,7 @@
                         <span class="badge rounded-pill" :class=" 'bg-' + status.color " style="font-size: 30px;">{{ status.text }}</span>
                     </div>
                 </div>
+                <div class="timestamp" >{{ timestamp }}</div>
             </div>
 
             <div class="shadow-box big-padding text-center stats">
@@ -214,9 +216,16 @@ export default {
                 hideCount: true,
                 chunksNavigation: "scroll",
             },
+            hours: 0,
+            minutes: 0,
+            seconds: 0,
+            timestamp: new Date().toString(),
         };
     },
     computed: {
+        timestamp() {
+            return this.timestamp.slice(15, 24);
+        },
         monitor() {
             let id = this.$route.params.id;
             return this.$root.monitorList[id];
@@ -288,7 +297,19 @@ export default {
         },
     },
     mounted() {
+        this.interval = setInterval(() => {
+        this.seconds += 1;
 
+      if (this.seconds >= 60) {
+        this.seconds = 0;
+        this.minutes += 1;
+          }
+
+      if (this.minutes >= 60) {
+        this.minutes = 0;
+        this.hours += 1;
+        }
+        }, 1000); // Update the time every second
     },
     methods: {
         /** Request a test notification be sent for this monitor */
@@ -503,6 +524,16 @@ table {
 
 .tags > div:first-child {
     margin-left: 0 !important;
+}
+.countdown{
+    float: left;
+    margin-top: 16px;
+}
+
+.timestamp{
+    float: right;
+    margin-top: -70px;
+    width: 32%;
 }
 
 </style>
