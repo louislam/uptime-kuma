@@ -143,36 +143,23 @@ router.get("/api/badge/:id/status", cache("5 minutes"), async (request, response
             const heartbeat = await Monitor.getPreviousHeartbeat(requestedMonitorId);
             const state = overrideValue !== undefined ? overrideValue : heartbeat.status;
 
-            badgeValues.label = label ? label : "";
+            badgeValues.label = label ?? "";
             switch (state) {
                 case 1:
                     badgeValues.color = upColor;
+                    badgeValues.message = upLabel;
                     break;
                 case 3:
                     badgeValues.color = maintenanceColor;
+                    badgeValues.message = maintenanceLabel;
                     break;
                 case 0:
                     badgeValues.color = downColor;
+                    badgeValues.message = downLabel;
                     break;
                 default:
                     badgeValues.color = badgeConstants.naColor;
-            }
-            if (label !== undefined) {
-                badgeValues.message = label;
-            } else {
-                switch (state) {
-                    case 1:
-                        badgeValues.message = upLabel;
-                        break;
-                    case 3:
-                        badgeValues.message = maintenanceLabel;
-                        break;
-                    case 0:
-                        badgeValues.message = downLabel;
-                        break;
-                    default:
-                        badgeValues.message = "N/A";
-                }
+                    badgeValues.message = "N/A";
             }
         }
 
