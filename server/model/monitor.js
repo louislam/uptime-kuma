@@ -16,6 +16,7 @@ const { CacheableDnsHttpAgent } = require("../cacheable-dns-http-agent");
 const { DockerHost } = require("../docker");
 const Maintenance = require("./maintenance");
 const { UptimeCacheList } = require("../uptime-cache-list");
+const Gamedig = require("gamedig");
 
 /**
  * status:
@@ -107,6 +108,7 @@ class Monitor extends BeanModel {
             grpcEnableTls: this.getGrpcEnableTls(),
             radiusCalledStationId: this.radiusCalledStationId,
             radiusCallingStationId: this.radiusCallingStationId,
+            game: this.game,
         };
 
         if (includeSensitiveData) {
@@ -486,6 +488,20 @@ class Monitor extends BeanModel {
                         } catch (_) { }
                     } else {
                         throw new Error("Server not found on Steam");
+                    }
+                } else if (this.type === "gamedig") {
+                    try {
+                        const state = await Gamedig.query({
+                            type: this.game,
+                            host: this.hostname,
+                            port: this.port
+                        });
+
+                        bean.msg = state.name;
+                        bean.status = UP;
+                        bean.ping = state.ping;
+                    } catch (e) {
+                        throw new Error("Server is offline");
                     }
                 } else if (this.type === "docker") {
                     log.debug(`[${this.name}] Prepare Options for Axios`);

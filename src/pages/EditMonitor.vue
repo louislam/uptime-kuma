@@ -45,6 +45,9 @@
                                         <option value="steam">
                                             {{ $t("Steam Game Server") }}
                                         </option>
+                                        <option value="gamedig">
+                                            GameDig
+                                        </option>
                                         <option value="mqtt">
                                             MQTT
                                         </option>
@@ -101,16 +104,23 @@
                                 </div>
                             </div>
 
+                            <!-- Game -->
+                            <!-- GameDig only -->
+                            <div v-if="monitor.type === 'gamedig'" class="my-3">
+                                <label for="game" class="form-label"> {{ $t("Game") }} </label>
+                                <input id="game" v-model="monitor.game" type="text" class="form-control" required>
+                            </div>
+
                             <!-- Hostname -->
                             <!-- TCP Port / Ping / DNS / Steam / MQTT / Radius only -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'mqtt' || monitor.type === 'radius'" class="my-3">
+                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'gamedig' ||monitor.type === 'mqtt' || monitor.type === 'radius'" class="my-3">
                                 <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>
                                 <input id="hostname" v-model="monitor.hostname" type="text" class="form-control" :pattern="`${ipRegexPattern}|${hostnameRegexPattern}`" required>
                             </div>
 
                             <!-- Port -->
                             <!-- For TCP Port / Steam / MQTT / Radius Type -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'steam' || monitor.type === 'mqtt' || monitor.type === 'radius'" class="my-3">
+                            <div v-if="monitor.type === 'port' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius'" class="my-3">
                                 <label for="port" class="form-label">{{ $t("Port") }}</label>
                                 <input id="port" v-model="monitor.port" type="number" class="form-control" required min="0" max="65535" step="1">
                             </div>
