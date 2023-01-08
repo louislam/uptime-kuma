@@ -525,12 +525,13 @@ table {
 .tags > div:first-child {
     margin-left: 0 !important;
 }
-.countdown{
+
+.countdown {
     float: left;
     margin-top: 16px;
 }
 
-.timestamp{
+.timestamp {
     float: right;
     margin-top: -70px;
     width: 32%;

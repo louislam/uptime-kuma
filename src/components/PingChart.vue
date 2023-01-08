@@ -15,7 +15,8 @@
                         class="dropdown-item"
                         :class="{ active: chartPeriodHrs == key }"
                         href="#"
-                        @click="chartPeriodHrs = key" >{{ item }}</a>
+                        @click="chartPeriodHrs = key"
+                    >{{ item }}</a>
                 </li>
             </ul>
         </div>
