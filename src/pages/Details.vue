@@ -15,8 +15,7 @@
                 </span>
                 <span v-if="monitor.type === 'dns'">[{{ monitor.dns_resolve_type }}] {{ monitor.hostname }}
                     <br>
-                    <span>{{ $t("Last Result") }}:</span>
-                    <span class="keyword">{{ monitor.dns_last_result }}</span>
+                    <span>{{ $t("Last Result") }}:</span> <span class="keyword">{{ monitor.dns_last_result }}</span>
                 </span>
             </p>
 
