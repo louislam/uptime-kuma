@@ -675,4 +675,5 @@ export default {
     "General Monitor Type": "General Monitor Type",
     "Passive Monitor Type": "Passive Monitor Type",
     "Specific Monitor Type": "Specific Monitor Type",
+    markdownSupported: "Markdown syntax supported",
 };

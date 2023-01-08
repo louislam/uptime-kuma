@@ -26,6 +26,9 @@
                 <div class="my-3">
                     <label for="footer-text" class="form-label">{{ $t("Footer Text") }}</label>
                     <textarea id="footer-text" v-model="config.footerText" class="form-control"></textarea>
+                    <div class="form-text">
+                        {{ $t("markdownSupported") }}
+                    </div>
                 </div>
 
                 <div class="my-3 form-check form-switch">
@@ -279,7 +282,9 @@
                 <div class="custom-footer-text text-start">
                     <strong v-if="enableEditMode">{{ $t("Custom Footer") }}:</strong>
                 </div>
-                <Editable v-model="config.footerText" tag="div" :contenteditable="enableEditMode" :noNL="false" class="alert-heading p-2" />
+                <Editable v-if="enableEditMode" v-model="config.footerText" tag="div" :contenteditable="enableEditMode" :noNL="false" class="alert-heading p-2" />
+                <!-- eslint-disable-next-line vue/no-v-html-->
+                <div v-if="! enableEditMode" class="alert-heading p-2" v-html="footerHTML"></div>
 
                 <p v-if="config.showPoweredBy">
                     {{ $t("Powered by") }} <a target="_blank" rel="noopener noreferrer" href="https://github.com/louislam/uptime-kuma">{{ $t("Uptime Kuma" ) }}</a>
@@ -310,6 +315,8 @@ import ImageCropUpload from "vue-image-crop-upload";
 import { PrismEditor } from "vue-prism-editor";
 import "vue-prism-editor/dist/prismeditor.min.css"; // import the styles somewhere
 import { useToast } from "vue-toastification";
+import { marked } from "marked";
+import DOMPurify from "dompurify";
 import Confirm from "../components/Confirm.vue";
 import PublicGroupList from "../components/PublicGroupList.vue";
 import MaintenanceTime from "../components/MaintenanceTime.vue";
@@ -477,6 +484,9 @@ export default {
             return this.overallStatus === STATUS_PAGE_MAINTENANCE;
         },
 
+        footerHTML() {
+            return DOMPurify.sanitize(marked(this.config.footerText));
+        },
     },
     watch: {
 
