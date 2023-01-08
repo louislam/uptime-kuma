@@ -55,6 +55,14 @@ class UptimeKumaServer {
      */
     pluginsManager = null;
 
+    /**
+     *
+     * @type {{}}
+     */
+    static monitorTypeList = {
+
+    };
+
     static getInstance(args) {
         if (UptimeKumaServer.instance == null) {
             UptimeKumaServer.instance = new UptimeKumaServer(args);
@@ -249,11 +257,34 @@ class UptimeKumaServer {
     }
 
     loadPlugins(dir) {
-        this.pluginsManager = new PluginsManager(this, dir);
+        this.pluginsManager = new PluginsManager(this);
     }
 
+    /**
+     *
+     * @param {MonitorType} monitorType
+     */
     addMonitorType(monitorType) {
-        // TODO
+        if (monitorType instanceof MonitorType && monitorType.name) {
+            if (monitorType.name in UptimeKumaServer.monitorTypeList) {
+                log.error("", "Conflict Monitor Type name");
+            }
+            UptimeKumaServer.monitorTypeList[monitorType.name] = monitorType;
+        } else {
+            log.error("", "Invalid Monitor Type: " + monitorType.name);
+        }
+    }
+
+    /**
+     *
+     * @param {MonitorType} monitorType
+     */
+    removeMonitorType(monitorType) {
+        if (UptimeKumaServer.monitorTypeList[monitorType.name] === monitorType) {
+            delete UptimeKumaServer.monitorTypeList[monitorType.name];
+        } else {
+            log.error("", "Remove MonitorType failed: " + monitorType.name);
+        }
     }
 
 }
@@ -264,3 +295,4 @@ module.exports = {
 
 // Must be at the end
 const MaintenanceTimeslot = require("./model/maintenance_timeslot");
+const { MonitorType } = require("./monitor-types/monitor-type");

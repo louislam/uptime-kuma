@@ -4,9 +4,11 @@ const path = require("path");
 
 class PluginsManager {
 
+    static disable = false;
+
     /**
      * Plugin List
-     * @type {Plugin[]}
+     * @type {PluginWrapper[]}
      */
     pluginList = [];
 
@@ -20,28 +22,34 @@ class PluginsManager {
      * @param {UptimeKumaServer} server
      * @param {string} dir
      */
-    constructor(server, dir) {
-        this.pluginsDir = dir;
+    constructor(server) {
+        if (!PluginsManager.disable) {
+            this.pluginsDir = "./data/plugins/";
 
-        if (! fs.existsSync(this.pluginsDir)) {
-            fs.mkdirSync(this.pluginsDir, { recursive: true });
-        }
-
-        log.debug("plugin", "Scanning plugin directory");
-        let list = fs.readdirSync(this.pluginsDir);
-
-        this.pluginList = [];
-        for (let item of list) {
-            let plugin = new Plugin(server, this.pluginsDir + item);
-
-            try {
-                plugin.load();
-                this.pluginList.push(plugin);
-            } catch (e) {
-                log.error("plugin", "Failed to load plugin: " + this.pluginsDir + item);
-                log.error("plugin", "Reason: " + e.message);
+            if (! fs.existsSync(this.pluginsDir)) {
+                fs.mkdirSync(this.pluginsDir, { recursive: true });
             }
+
+            log.debug("plugin", "Scanning plugin directory");
+            let list = fs.readdirSync(this.pluginsDir);
+
+            this.pluginList = [];
+            for (let item of list) {
+                let plugin = new PluginWrapper(server, this.pluginsDir + item);
+
+                try {
+                    plugin.load();
+                    this.pluginList.push(plugin);
+                } catch (e) {
+                    log.error("plugin", "Failed to load plugin: " + this.pluginsDir + item);
+                    log.error("plugin", "Reason: " + e.message);
+                }
+            }
+
+        } else {
+            log.warn("PLUGIN", "Skip scanning plugin directory");
         }
+
     }
 
     /**
@@ -71,7 +79,7 @@ class PluginsManager {
     }
 }
 
-class Plugin {
+class PluginWrapper {
 
     server = undefined;
     pluginDir = undefined;
@@ -129,5 +137,5 @@ class Plugin {
 
 module.exports = {
     PluginsManager,
-    Plugin
+    PluginWrapper
 };
