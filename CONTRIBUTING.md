@@ -48,6 +48,7 @@ Here are some references:
 - UI/UX is not close to Uptime Kuma 
 - Existing logic is completely modified or deleted for no reason
 - A function that is completely out of scope
+- Convert existing code into other programming languages
 - Unnecessary large code changes (Hard to review, causes code conflicts to other pull requests)
 
 I will mark your pull request in the [milestones](https://github.com/louislam/uptime-kuma/milestones), if I am plan to review and merge it.

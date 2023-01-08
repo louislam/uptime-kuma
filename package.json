@@ -1,6 +1,6 @@
 {
     "name": "uptime-kuma",
-    "version": "1.19.2",
+    "version": "1.19.3",
     "license": "MIT",
     "repository": {
         "type": "git",
@@ -38,7 +38,7 @@
         "build-docker-nightly-amd64": "docker buildx build -f docker/dockerfile --platform linux/amd64 -t louislam/uptime-kuma:nightly-amd64 --target nightly . --push --progress plain",
         "build-docker-pr-test": "docker buildx build -f docker/dockerfile --platform linux/amd64,linux/arm64 -t louislam/uptime-kuma:pr-test --target pr-test . --push",
         "upload-artifacts": "docker buildx build -f docker/dockerfile --platform linux/amd64 -t louislam/uptime-kuma:upload-artifact --build-arg VERSION --build-arg GITHUB_TOKEN --target upload-artifact . --progress plain",
-        "setup": "git checkout 1.19.2 && npm ci --production && npm run download-dist",
+        "setup": "git checkout 1.19.3 && npm ci --production && npm run download-dist",
         "download-dist": "node extra/download-dist.js",
         "mark-as-nightly": "node extra/mark-as-nightly.js",
         "reset-password": "node extra/reset-password.js",
@@ -90,7 +90,7 @@
         "https-proxy-agent": "~5.0.1",
         "iconv-lite": "~0.6.3",
         "jsesc": "~3.0.2",
-        "jsonwebtoken": "~8.5.1",
+        "jsonwebtoken": "~9.0.0",
         "jwt-decode": "~3.1.2",
         "limiter": "~2.1.0",
         "mqtt": "~4.3.7",
@@ -103,6 +103,7 @@
         "password-hash": "~1.2.2",
         "pg": "~8.8.0",
         "pg-connection-string": "~2.5.0",
+        "ping": "~0.4.2",
         "prom-client": "~13.2.0",
         "prometheus-api-metrics": "~3.2.1",
         "protobufjs": "~7.1.1",

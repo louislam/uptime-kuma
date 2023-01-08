@@ -514,7 +514,9 @@ class Monitor extends BeanModel {
                     let res = await axios.request(options);
                     if (res.data.State.Running) {
                         bean.status = UP;
-                        bean.msg = "";
+                        bean.msg = res.data.State.Status;
+                    } else {
+                        throw Error("Container State is " + res.data.State.Status);
                     }
                 } else if (this.type === "mqtt") {
                     bean.msg = await mqttAsync(this.hostname, this.mqttTopic, this.mqttSuccessMessage, {
@@ -548,7 +550,7 @@ class Monitor extends BeanModel {
                     log.debug("monitor:", `gRPC response: ${JSON.stringify(response)}`);
                     let responseData = response.data;
                     if (responseData.length > 50) {
-                        responseData = response.substring(0, 47) + "...";
+                        responseData = responseData.toString().substring(0, 47) + "...";
                     }
                     if (response.code !== 1) {
                         bean.status = DOWN;
@@ -1090,7 +1092,7 @@ class Monitor extends BeanModel {
                     // Prevent if the msg is undefined, notifications such as Discord cannot send out.
                     const heartbeatJSON = bean.toJSON();
                     if (!heartbeatJSON["msg"]) {
-                        heartbeatJSON["msg"] = "";
+                        heartbeatJSON["msg"] = "N/A";
                     }
 
                     await Notification.send(JSON.parse(notification.config), msg, await monitor.toJSON(false), heartbeatJSON);

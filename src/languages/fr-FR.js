@@ -99,7 +99,7 @@ export default {
     pushOptionalParams: "Paramètres facultatifs : {0}",
     Save: "Sauvegarder",
     Notifications: "Notifications",
-    "Not available, please setup.": "Pas de système de notification disponible, merci de le configurer.",
+    "Not available, please setup.": "Non disponible, merci de le configurer.",
     "Setup Notification": "Créer une notification",
     Light: "Clair",
     Dark: "Sombre",

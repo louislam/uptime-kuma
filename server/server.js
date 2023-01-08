@@ -715,6 +715,7 @@ let needSetup = false;
                 bean.authDomain = monitor.authDomain;
                 bean.grpcUrl = monitor.grpcUrl;
                 bean.grpcProtobuf = monitor.grpcProtobuf;
+                bean.grpcServiceName = monitor.grpcServiceName;
                 bean.grpcMethod = monitor.grpcMethod;
                 bean.grpcBody = monitor.grpcBody;
                 bean.grpcMetadata = monitor.grpcMetadata;
