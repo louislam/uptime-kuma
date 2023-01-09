@@ -676,4 +676,6 @@ export default {
     "Passive Monitor Type": "Passive Monitor Type",
     "Specific Monitor Type": "Specific Monitor Type",
     markdownSupported: "Markdown syntax supported",
+    dataRetentionTimeError: "Retention period must be 0 or greater",
+    infiniteRetention: "Set to 0 for infinite retention.",
 };

@@ -10,7 +10,7 @@ class Pushover extends NotificationProvider {
         let pushoverlink = "https://api.pushover.net/1/messages.json";
 
         let data = {
-            "message": "<b>Uptime Kuma Alert</b>\n\n<b>Message</b>:" + msg,
+            "message": "<b>Message</b>:" + msg,
             "user": notification.pushoveruserkey,
             "token": notification.pushoverapptoken,
             "sound": notification.pushoversounds,
