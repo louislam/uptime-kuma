@@ -527,7 +527,9 @@ class Monitor extends BeanModel {
                     let res = await axios.request(options);
                     if (res.data.State.Running) {
                         bean.status = UP;
-                        bean.msg = "";
+                        bean.msg = res.data.State.Status;
+                    } else {
+                        throw Error("Container State is " + res.data.State.Status);
                     }
                 } else if (this.type === "mqtt") {
                     bean.msg = await mqttAsync(this.hostname, this.mqttTopic, this.mqttSuccessMessage, {

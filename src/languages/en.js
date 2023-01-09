@@ -675,5 +675,7 @@ export default {
     "General Monitor Type": "General Monitor Type",
     "Passive Monitor Type": "Passive Monitor Type",
     "Specific Monitor Type": "Specific Monitor Type",
+    dataRetentionTimeError: "Retention period must be 0 or greater",
+    infiniteRetention: "Set to 0 for infinite retention.",
     "Body Encoding": "Body Encoding",
 };
