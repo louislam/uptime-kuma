@@ -243,48 +243,4 @@ router.get("/api/status-page/:slug/badge", cache("5 minutes"), async (request, r
     }
 });
 
-// overallStatus() {
-
-//     if (Object.keys(this.$root.publicLastHeartbeatList).length === 0) {
-//         return -1;
-//     }
-
-//     let status = STATUS_PAGE_ALL_UP;
-//     let hasUp = false;
-
-//     for (let id in this.$root.publicLastHeartbeatList) {
-//         let beat = this.$root.publicLastHeartbeatList[id];
-
-//         if (beat.status === MAINTENANCE) {
-//             return STATUS_PAGE_MAINTENANCE;
-//         } else if (beat.status === UP) {
-//             hasUp = true;
-//         } else {
-//             status = STATUS_PAGE_PARTIAL_DOWN;
-//         }
-//     }
-
-//     if (! hasUp) {
-//         status = STATUS_PAGE_ALL_DOWN;
-//     }
-
-//     return status;
-// },
-
-// allUp() {
-//     return this.overallStatus === STATUS_PAGE_ALL_UP;
-// },
-
-// partialDown() {
-//     return this.overallStatus === STATUS_PAGE_PARTIAL_DOWN;
-// },
-
-// allDown() {
-//     return this.overallStatus === STATUS_PAGE_ALL_DOWN;
-// },
-
-// isMaintenance() {
-//     return this.overallStatus === STATUS_PAGE_MAINTENANCE;
-// },
-
 module.exports = router;
