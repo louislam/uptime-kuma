@@ -186,7 +186,8 @@ class UptimeKumaServer {
     }
 
     async getClientIP(socket) {
-        let clientIP = socket.client.conn.remoteAddress;
+        // Check if cloudflare connecting IP for real IP in proxy tunnels
+        const clientIP = socket.client.conn.request.headers["cf-connecting-ip"] || socket.client.conn.remoteAddress;
 
         if (clientIP === undefined) {
             clientIP = "";
