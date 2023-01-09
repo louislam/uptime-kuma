@@ -18,7 +18,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
-        node: [ 14, 16, 17, 18 ]
+        node: [ 14, 16, 18, 19 ]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
