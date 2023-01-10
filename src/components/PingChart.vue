@@ -227,11 +227,36 @@ export default {
                         type: "bar",
                         data: downData,
                         borderColor: "#00000000",
-                        backgroundColor: colorData,
+                        backgroundColor: "#dc3545",
                         yAxisID: "y1",
                         barThickness: "flex",
                         barPercentage: 1,
                         categoryPercentage: 1,
+                    },
+
+                    {
+                        // Bar Chart
+                        label: this.$t("Maintenance"),
+                        type: "bar",
+                        data: downData,
+                        borderColor: "#00000000",
+                        backgroundColor: "#1747f5   ",
+                        yAxisID: "y1",
+                        barThickness: "flex",
+                        barPercentage: 1,
+                        categorypercentage: 1,
+                    },
+                    {
+                        // Bar Chart
+                        label: this.$t("Pending"),
+                        type: "bar",
+                        data: downData,
+                        borderColor: "#00000000",
+                        backgroundColor: "#f8a306",
+                        yAxisID: "y1",
+                        barThickness: "flex",
+                        barPercentage: 1,
+                        categorypercentage: 1,
                     },
                 ],
             };
