@@ -39,6 +39,7 @@ class Monitor extends BeanModel {
     /**
      * Return an object that ready to parse to JSON for public
      * Only show necessary data to public
+     * @param {boolean} [includeStatus = false] Should the JSON include the status
      * @returns {Object}
      */
     async toPublicJSON(showTags = false, includeStatus = false) {
