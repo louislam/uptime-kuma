@@ -81,4 +81,4 @@ jobs:
         cache: 'npm'
     - run: npm install
     - run: npm run build
-    - run: cy:run:unit
+    - run: npm run cy:run:unit
