@@ -80,8 +80,8 @@ class StatusPage extends BeanModel {
     /**
      * Get all status page data in one call
      * @param {StatusPage} statusPage
-     * @param {boolean} includeStatus whether each monitor should include the status of the monitor ("up" or "down")
-     * @param {boolean} includeConfig whether the config for the status paghe should be included in the returned JSON
+     * @param {boolean} [includeStatus = false] whether each monitor should include the status of the monitor ("up" or "down")
+     * @param {boolean} [includeConfig = true] whether the config for the status paghe should be included in the returned JSON
      */
     static async getStatusPageData(statusPage, includeStatus = false, includeConfig = true) {
         // Incident
