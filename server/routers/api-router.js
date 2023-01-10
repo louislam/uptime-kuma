@@ -145,6 +145,10 @@ router.get("/api/badge/:id/status", cache("5 minutes"), async (request, response
 
             badgeValues.label = label ?? "";
             switch (state) {
+                case 0:
+                    badgeValues.color = downColor;
+                    badgeValues.message = downLabel;
+                    break;
                 case 1:
                     badgeValues.color = upColor;
                     badgeValues.message = upLabel;
@@ -152,10 +156,6 @@ router.get("/api/badge/:id/status", cache("5 minutes"), async (request, response
                 case 3:
                     badgeValues.color = maintenanceColor;
                     badgeValues.message = maintenanceLabel;
-                    break;
-                case 0:
-                    badgeValues.color = downColor;
-                    badgeValues.message = downLabel;
                     break;
                 default:
                     badgeValues.color = badgeConstants.naColor;
