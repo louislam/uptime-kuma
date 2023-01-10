@@ -7,6 +7,7 @@ class Group extends BeanModel {
      * Return an object that ready to parse to JSON for public
      * Only show necessary data to public
      * @param {boolean} [showTags=false] Should the JSON include monitor tags
+     * @param {boolean} [showStatus = false] Should the JSON include the status
      * @returns {Object}
      */
     async toPublicJSON(showTags = false, showStatus = false) {
