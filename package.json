@@ -60,6 +60,7 @@
         "start-pr-test": "node extra/checkout-pr.js && npm install && npm run dev",
         "cy:test": "node test/prepare-test-server.js && node server/server.js --port=3002 --data-dir=./data/test/ --e2e",
         "cy:run": "npx cypress run --browser chrome --headless --config-file ./config/cypress.config.js",
+        "cy:run:unit": "npx cypress run --browser chrome --headless --config-file ./config/cypress.frontend.config.js",
         "cypress-open": "concurrently -k -r \"node test/prepare-test-server.js && node server/server.js --port=3002 --data-dir=./data/test/\" \"cypress open --config-file ./config/cypress.config.js\"",
         "build-healthcheck-armv7": "cross-env GOOS=linux GOARCH=arm GOARM=7 go build -x -o ./extra/healthcheck-armv7 ./extra/healthcheck.go"
     },
