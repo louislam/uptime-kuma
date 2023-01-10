@@ -300,15 +300,6 @@
         <component is="style" v-if="config.customCSS" type="text/css">
             {{ config.customCSS }}
         </component>
-
-        <component :is="'script'" v-if="config.googleAnalyticsId" async :src="'https://www.googletagmanager.com/gtag/js?id=' + config.googleAnalyticsId" />
-
-        <component :is="'script'" v-if="config.googleAnalyticsId">
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', '{{ config.googleAnalyticsId }}');
-        </component>
     </div>
 </template>
 
