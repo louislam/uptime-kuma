@@ -675,4 +675,6 @@ export default {
     "General Monitor Type": "Type de sonde générale",
     "Passive Monitor Type": "Type de sonde passive",
     "Specific Monitor Type": "Type de sonde spécifique",
+    dataRetentionTimeError: "La durée de conservation doit être supérieure ou égale à 0",
+    infiniteRetention: "Définissez la valeur à 0 pour une durée de conservation infinie.",
 };
