@@ -1,7 +1,12 @@
 #!/usr/bin/env sh
 
 # set -e Exit the script if an error happens
-set -e
+set -ex
+
+if [ -f "/app/data/.type" ];then
+	rm -fv "/app/data/.type"
+fi
+
 PUID=${PUID=0}
 PGID=${PGID=0}
 
