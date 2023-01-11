@@ -9,7 +9,7 @@ class PromoSMS extends NotificationProvider {
         let okMsg = "Sent Successfully.";
 
         if (notification.promosmsAllowLongSMS === undefined) {
-            notification.promosmsAllowLongSMS = false
+            notification.promosmsAllowLongSMS = false;
         }
 
         try {
