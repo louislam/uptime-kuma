@@ -473,6 +473,12 @@ table {
 
 .dropdown-clear-data {
     float: right;
+
+    ul {
+        width: 100%;
+        min-width: unset;
+        padding-left: 0;
+    }
 }
 
 .dark {
