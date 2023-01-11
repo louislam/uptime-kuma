@@ -284,6 +284,7 @@ export default {
     promosmsTypeSpeed: "SMS SPEED - wysyłka priorytetowa, ma wszystkie zalety SMS FULL",
     promosmsPhoneNumber: "Numer odbiorcy",
     promosmsSMSSender: "Nadawca SMS (wcześniej zatwierdzone nazwy z panelu PromoSMS)",
+    promosmsAllowLong: "Zezwól na długie wiadomości",
     "Primary Base URL": "Główny URL",
     "Push URL": "Push URL",
     needPushEvery: "Powinieneś wywoływać ten URL co {0} sekund",

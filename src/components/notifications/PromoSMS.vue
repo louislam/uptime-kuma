@@ -26,6 +26,10 @@
         <label for="promosms-sender-name" class="form-label">{{ $t("promosmsSMSSender") }}</label>
         <input id="promosms-sender-name" v-model="$parent.notification.promosmsSenderName" type="text" minlength="3" maxlength="11" class="form-control">
     </div>
+    <div class="mb-3">
+        <label for="promosms-allow-long" class="form-label">{{ $t("promosmsAllowLong") }}</label>
+        <input id="promosms-allow-long" v-model="$parent.notification.promosmsAllowLong" type="checkbox" class="form-control" checked>
+    </div>
 </template>
 
 <script>
