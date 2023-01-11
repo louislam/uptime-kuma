@@ -8,6 +8,10 @@ class PromoSMS extends NotificationProvider {
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
 
+        if (notification.promosmsAllowLongSMS === undefined) {
+            notification.promosmsAllowLongSMS = false
+        }
+
         try {
             let config = {
                 headers: {
@@ -20,7 +24,7 @@ class PromoSMS extends NotificationProvider {
                 "recipients": [ notification.promosmsPhoneNumber ],
                 //Lets remove non ascii char
                 "text": msg.replace(/[^\x00-\x7F]/g, ""),
-                "long-sms": notification.promosmsAllowLong,
+                "long-sms": notification.promosmsAllowLongSMS,
                 "type": Number(notification.promosmsSMSType),
                 "sender": notification.promosmsSenderName
             };
