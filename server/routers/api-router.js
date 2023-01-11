@@ -111,9 +111,11 @@ router.get("/api/badge/:id/status", cache("5 minutes"), async (request, response
         label,
         upLabel = "Up",
         downLabel = "Down",
+        pendingLabel = "Pending",
         maintenanceLabel = "Maintenance",
         upColor = badgeConstants.defaultUpColor,
         downColor = badgeConstants.defaultDownColor,
+        pendingColor = badgeConstants.defaultPendingColor,
         maintenanceColor = badgeConstants.defaultMaintenanceColor,
         style = badgeConstants.defaultStyle,
         value, // for demo purpose only
@@ -152,6 +154,10 @@ router.get("/api/badge/:id/status", cache("5 minutes"), async (request, response
                 case 1:
                     badgeValues.color = upColor;
                     badgeValues.message = upLabel;
+                    break;
+                case 2:
+                    badgeValues.color = pendingColor;
+                    badgeValues.message = pendingLabel;
                     break;
                 case 3:
                     badgeValues.color = maintenanceColor;
