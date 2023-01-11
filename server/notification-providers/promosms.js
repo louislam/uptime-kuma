@@ -20,6 +20,7 @@ class PromoSMS extends NotificationProvider {
                 "recipients": [ notification.promosmsPhoneNumber ],
                 //Lets remove non ascii char
                 "text": msg.replace(/[^\x00-\x7F]/g, ""),
+                "long-sms": true,
                 "type": Number(notification.promosmsSMSType),
                 "sender": notification.promosmsSenderName
             };
