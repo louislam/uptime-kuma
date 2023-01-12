@@ -219,7 +219,7 @@ export default {
     "Silent Notification": "Silent Notification",
     "Silent Notification Description": "If enabled, the notification in Telegram will be without sound.",
     "Protect Forwarding": "Protect Forwarding",
-    "Protect Forwarding Description": "If enabled, the notification in Telegram will be protected from forwarding and saving.",
+    "Protect Forwarding Description": "If enabled, the bot messages in Telegram will be protected from forwarding and saving.",
     "Thread ID": "Thread ID (optional)",
     "Thread ID Description": "Since November 5 2022, bots can send messages to a specific thread. You can get the thread ID by clicking on the thread name in the chat.",
     chatIDNotFound: "Chat ID is not found; please send a message to this bot first",
