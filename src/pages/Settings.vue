@@ -165,6 +165,10 @@ export default {
                     this.settings.keepDataPeriodDays = 180;
                 }
 
+                if (this.settings.toastErrorTimeoutSecs === undefined) {
+                    this.settings.toastErrorTimeoutSecs = 60;
+                }
+
                 if (this.settings.tlsExpiryNotifyDays === undefined) {
                     this.settings.tlsExpiryNotifyDays = [ 7, 14, 21 ];
                 }
