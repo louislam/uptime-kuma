@@ -34,7 +34,7 @@
         <label for="telegram-chat-thread" class="form-label">{{ $t("Thread ID") }}</label>
 
         <div class="input-group mb-3">
-            <input id="telegram-chat-thread" v-model="$parent.notification.telegramChatThread" type="text" class="form-control" required>
+            <input id="telegram-chat-thread" v-model="$parent.notification.telegramChatThread" type="text" class="form-control">
         </div>
 
         <div class="form-text">
