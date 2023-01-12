@@ -21,7 +21,8 @@
         </div>
 
         <div class="my-4 pt-4">
-            <h5 class="my-4 settings-subheading">{{ $t("toastMessagesDescription") }}</h5>
+            <h5 class="my-4 settings-subheading">{{ $t("toastMessagesLabel") }}</h5>
+            <p>{{ $t("toastMessagesDescription") }}</p>
             <label for="toastErrorTimeoutSecs" class="form-label">
                 {{
                     $t("toastErrorTimeoutSecs", [
@@ -34,7 +35,7 @@
                 v-model="settings.toastErrorTimeoutSecs"
                 type="number"
                 class="form-control"
-                min="0"
+                min="-1"
                 step="1"
             />
         </div>

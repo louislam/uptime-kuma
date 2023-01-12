@@ -3,6 +3,8 @@ import { useToast } from "vue-toastification";
 import jwtDecode from "jwt-decode";
 import Favico from "favico.js";
 import dayjs from "dayjs";
+// import { getSettings } from "../../server/util-server";
+
 const toast = useToast();
 
 let socket;
@@ -173,10 +175,19 @@ export default {
                 if (data.important) {
 
                     if (data.status === 0) {
-                        toast.error(`[${this.monitorList[data.monitorID].name}] [DOWN] ${data.msg}`, {
-                            timeout: false,
-                        });
+                        // let timeout = getSettings("toastErrorTimeoutSecs");
+                        let timeout = 10;
+                        if (timeout === -1) {
+                            toast.error(`[${this.monitorList[data.monitorID].name}] [DOWN] ${data.msg}`, {
+                                timeout: false,
+                            });
+                        } else if (timeout > 0) {
+                            toast.error(`[${this.monitorList[data.monitorID].name}] [DOWN] ${data.msg}`, {
+                                timeout: timeout * 1000,
+                            });
+                        }
                     } else if (data.status === 1) {
+                        // TODO toastOkTimeoutSecs
                         toast.success(`[${this.monitorList[data.monitorID].name}] [Up] ${data.msg}`, {
                             timeout: 20000,
                         });
