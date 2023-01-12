@@ -189,13 +189,19 @@ export default {
 
                     if (this.monitorList[data.monitorID] !== undefined) {
                         if (data.status === 0) {
-                            toast.error(`[${this.monitorList[data.monitorID].name}] [DOWN] ${data.msg}`, {
-                                timeout: false,
-                            });
+                            let timeout = this.storage().toastErrorTimeoutSecs;
+                            if (timeout !== 0) {
+                                toast.error(`[${this.monitorList[data.monitorID].name}] [DOWN] ${data.msg}`, {
+                                    timeout: ((timeout === -1) ? false : timeout * 1000),
+                                });
+                            }
                         } else if (data.status === 1) {
-                            toast.success(`[${this.monitorList[data.monitorID].name}] [Up] ${data.msg}`, {
-                                timeout: 20000,
-                            });
+                            let timeout = this.storage().toastOkTimeoutSecs;
+                            if (timeout !== 0) {
+                                toast.success(`[${this.monitorList[data.monitorID].name}] [Up] ${data.msg}`, {
+                                    timeout: ((timeout === -1) ? false : timeout * 1000),
+                                });
+                            }
                         } else {
                             toast(`[${this.monitorList[data.monitorID].name}] ${data.msg}`);
                         }

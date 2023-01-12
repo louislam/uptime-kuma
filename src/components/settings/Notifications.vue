@@ -21,6 +21,43 @@
         </div>
 
         <div class="my-4 pt-4">
+            <h5 class="my-4 settings-subheading">{{ $t("toastMessagesLabel") }}</h5>
+            <p>{{ $t("toastMessagesDescription") }}</p>
+
+            <label for="toastErrorTimeoutSecs" class="form-label">
+                {{
+                    $t("toastErrorTimeoutSecs", [
+                        $root.toastErrorTimeoutSecs,
+                    ])
+                }}
+            </label>
+            <input
+                id="toastErrorTimeoutSecs"
+                v-model="$root.toastErrorTimeoutSecs"
+                type="number"
+                class="form-control"
+                min="-1"
+                step="1"
+            />
+
+            <label for="toastOkTimeoutSecs" class="form-label">
+                {{
+                    $t("toastOkTimeoutSecs", [
+                        $root.toastOkTimeoutSecs,
+                    ])
+                }}
+            </label>
+            <input
+                id="toastOkTimeoutSecs"
+                v-model="$root.toastOkTimeoutSecs"
+                type="number"
+                class="form-control"
+                min="-1"
+                step="1"
+            />
+        </div>
+
+        <div class="my-4 pt-4">
             <h5 class="my-4 settings-subheading">{{ $t("settingsCertificateExpiry") }}</h5>
             <p>{{ $t("certificationExpiryDescription") }}</p>
             <p>{{ $t("notificationDescription") }}</p>
@@ -58,6 +95,8 @@ export default {
 
     data() {
         return {
+            toastOkTimeoutSecs: localStorage.toastOkTimeoutSecs,
+            toastErrorTimeoutSecs: localStorage.toastErrorTimeoutSecs,
             /**
              * Variable to store the input for new certificate expiry day.
              */
@@ -70,11 +109,21 @@ export default {
             return this.$parent.$parent.$parent.settings;
         },
         saveSettings() {
+            localStorage.toastErrorTimeoutSecs = this.$root.toastErrorTimeoutSecs;
+            localStorage.toastOkTimeoutSecs = this.$root.toastOkTimeoutSecs;
             return this.$parent.$parent.$parent.saveSettings;
         },
         settingsLoaded() {
             return this.$parent.$parent.$parent.settingsLoaded;
         },
+    },
+
+    mounted() {
+        this.$root.toastOkTimeoutSecs = (localStorage.toastOkTimeoutSecs ? localStorage.toastOkTimeoutSecs : 20 );
+        localStorage.toastOkTimeoutSecs = this.$root.toastOkTimeoutSecs;
+
+        this.$root.toastErrorTimeoutSecs = (localStorage.toastErrorTimeoutSecs ? localStorage.toastErrorTimeoutSecs : 20 );
+        localStorage.toastErrorTimeoutSecs = this.$root.toastErrorTimeoutSecs;
     },
 
     methods: {
