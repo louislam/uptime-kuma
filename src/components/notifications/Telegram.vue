@@ -29,6 +29,40 @@
             </p>
         </div>
     </div>
+
+    <div class="mb-3">
+        <label for="telegram-chat-thread" class="form-label">{{ $t("Thread ID") }}</label>
+
+        <div class="input-group mb-3">
+            <input id="telegram-chat-thread" v-model="$parent.notification.telegramChatThread" type="text" class="form-control" required>
+        </div>
+
+       <div class="form-text">
+            {{ $t("Thread ID Description") }}
+        </div>
+    </div>
+
+    <div class="mb-3">
+         <div class="form-check form-switch">
+            <input v-model="$parent.notification.telegramSilentNotification" class="form-check-input" type="checkbox">
+            <label class="form-check-label">{{ $t("Silent Notification") }}</label>
+        </div>
+
+        <div class="form-text">
+            {{ $t("Silent Notification Description") }}
+        </div>
+    </div>
+
+    <div class="mb-3">
+         <div class="form-check form-switch">
+            <input v-model="$parent.notification.telegramProtectContent" class="form-check-input" type="checkbox">
+            <label class="form-check-label">{{ $t("Protect Forwarding") }}</label>
+        </div>
+
+        <div class="form-text">
+            {{ $t("Protect Forwarding Description") }}
+        </div>
+    </div>
 </template>
 
 <script>
