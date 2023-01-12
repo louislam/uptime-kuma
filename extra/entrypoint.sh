@@ -8,10 +8,8 @@ PGID=${PGID=0}
 
 files_ownership () {
     # -h Changes the ownership of an encountered symbolic link and not that of the file or directory pointed to by the symbolic link.
-    # -R Recursively descends the specified directories
     # -c Like verbose but report only when a change is made
-#    chown -hRc "$PUID":"$PGID" /app/data
-    find /app/data/ -path '*/.type' -prune -o -name '*' -exec chown -hRc "$PUID":"$PGID" {} \;
+    find /opt/src/app/data/ \( ! -name ".type" \) -exec chown -hc "$PUID":"$PGID" {} \;
 }
 
 echo "==> Performing startup jobs and maintenance tasks"
