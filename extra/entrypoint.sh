@@ -3,10 +3,6 @@
 # set -e Exit the script if an error happens
 set -ex
 
-if [ -f "/app/data/.type" ];then
-	rm -fv "/app/data/.type"
-fi
-
 PUID=${PUID=0}
 PGID=${PGID=0}
 
@@ -14,7 +10,8 @@ files_ownership () {
     # -h Changes the ownership of an encountered symbolic link and not that of the file or directory pointed to by the symbolic link.
     # -R Recursively descends the specified directories
     # -c Like verbose but report only when a change is made
-    chown -hRc "$PUID":"$PGID" /app/data
+#    chown -hRc "$PUID":"$PGID" /app/data
+    find /app/data/ -path '*/.type' -prune -o -name '*' -exec chown -hRc "$PUID":"$PGID" {} \;
 }
 
 echo "==> Performing startup jobs and maintenance tasks"
@@ -24,3 +21,5 @@ echo "==> Starting application with user $PUID group $PGID"
 
 # --clear-groups Clear supplementary groups.
 exec setpriv --reuid "$PUID" --regid "$PGID" --clear-groups "$@"
+
+set +xe
