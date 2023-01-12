@@ -56,7 +56,10 @@ class StatusPage extends BeanModel {
 
         await StatusPage.getStatusPageData(statusPage).then( (page) => {
             if (page.config?.googleAnalyticsId) {
-                head.append($(googleAnalytics.getGoogleAnalyticsScript(page.config.googleAnalyticsId)));
+                let escapedGoogleAnalyticsScript = jsesc(googleAnalytics.getGoogleAnalyticsScript(page.config.googleAnalyticsId), {
+                    "isScriptContext": true
+                });
+                head.append($(escapedGoogleAnalyticsScript));
             }
         });
 
