@@ -322,8 +322,8 @@ class Monitor extends BeanModel {
                             tlsInfo = await this.updateTlsInfo(tlsInfoObject);
 
                             if (!this.getIgnoreTls() && this.isEnabledExpiryNotification()) {
-                                log.debug("monitor", `[${this.name}] call sendCertNotification`);
-                                await this.sendCertNotification(tlsInfoObject);
+                                log.debug("monitor", `[${this.name}] call checkCertExpiryNotifications`);
+                                await this.checkCertExpiryNotifications(tlsInfoObject);
                             }
 
                         } catch (e) {
@@ -1117,12 +1117,18 @@ class Monitor extends BeanModel {
     }
 
     /**
-     * Send notification about a certificate
+     * checks certificate chain for expiring certificates
      * @param {Object} tlsInfoObject Information about certificate
      */
-    async sendCertNotification(tlsInfoObject) {
+    async checkCertExpiryNotifications(tlsInfoObject) {
         if (tlsInfoObject && tlsInfoObject.certInfo && tlsInfoObject.certInfo.daysRemaining) {
             const notificationList = await Monitor.getNotificationList(this);
+
+            if (! notificationList.length > 0) {
+                // fail fast. If no notification is set, all the following checks can be skipped.
+                log.debug("monitor", "No notification, no need to send cert notification");
+                return;
+            }
 
             let notifyDays = await setting("tlsExpiryNotifyDays");
             if (notifyDays == null || !Array.isArray(notifyDays)) {
@@ -1131,10 +1137,19 @@ class Monitor extends BeanModel {
                 notifyDays = [ 7, 14, 21 ];
             }
 
-            if (notifyDays != null && Array.isArray(notifyDays)) {
-                for (const day of notifyDays) {
-                    log.debug("monitor", "call sendCertNotificationByTargetDays", day);
-                    await this.sendCertNotificationByTargetDays(tlsInfoObject.certInfo.daysRemaining, day, notificationList);
+            if (Array.isArray(notifyDays)) {
+                for (const targetDays of notifyDays) {
+                    let certInfo = tlsInfoObject.certInfo;
+                    while (certInfo) {
+                        let subjectCN = certInfo.subject["CN"];
+                        if (certInfo.daysRemaining > targetDays) {
+                            log.debug("monitor", `No need to send cert notification for ${certInfo.certType} certificate "${subjectCN}" (${certInfo.daysRemaining} days valid) on ${targetDays} deadline.`);
+                        } else {
+                            log.debug("monitor", `call sendCertNotificationByTargetDays for ${targetDays} deadline on certificate ${subjectCN}.`);
+                            await this.sendCertNotificationByTargetDays(subjectCN, certInfo.certType, certInfo.daysRemaining, targetDays, notificationList);
+                        }
+                        certInfo = certInfo.issuerCertificate;
+                    }
                 }
             }
         }
@@ -1143,55 +1158,47 @@ class Monitor extends BeanModel {
     /**
      * Send a certificate notification when certificate expires in less
      * than target days
-     * @param {number} daysRemaining Number of days remaining on certifcate
+     * @param {string} certCN  Common Name attribute from the certificate subject
+     * @param {string} certType  certificate type
+     * @param {number} daysRemaining Number of days remaining on certificate
      * @param {number} targetDays Number of days to alert after
      * @param {LooseObject<any>[]} notificationList List of notification providers
      * @returns {Promise<void>}
      */
-    async sendCertNotificationByTargetDays(daysRemaining, targetDays, notificationList) {
+    async sendCertNotificationByTargetDays(certCN, certType, daysRemaining, targetDays, notificationList) {
 
-        if (daysRemaining > targetDays) {
-            log.debug("monitor", `No need to send cert notification. ${daysRemaining} > ${targetDays}`);
+        let row = await R.getRow("SELECT * FROM notification_sent_history WHERE type = ? AND monitor_id = ? AND days = ?", [
+            "certificate",
+            this.id,
+            targetDays,
+        ]);
+
+        // Sent already, no need to send again
+        if (row) {
+            log.debug("monitor", "Sent already, no need to send again");
             return;
         }
 
-        if (notificationList.length > 0) {
+        let sent = false;
+        log.debug("monitor", "Send certificate notification");
 
-            let row = await R.getRow("SELECT * FROM notification_sent_history WHERE type = ? AND monitor_id = ? AND days = ?", [
+        for (let notification of notificationList) {
+            try {
+                log.debug("monitor", "Sending to " + notification.name);
+                await Notification.send(JSON.parse(notification.config), `[${this.name}][${this.url}] ${certType} certificate ${certCN} will be expired in ${daysRemaining} days`);
+                sent = true;
+            } catch (e) {
+                log.error("monitor", "Cannot send cert notification to " + notification.name);
+                log.error("monitor", e);
+            }
+        }
+
+        if (sent) {
+            await R.exec("INSERT INTO notification_sent_history (type, monitor_id, days) VALUES(?, ?, ?)", [
                 "certificate",
                 this.id,
                 targetDays,
             ]);
-
-            // Sent already, no need to send again
-            if (row) {
-                log.debug("monitor", "Sent already, no need to send again");
-                return;
-            }
-
-            let sent = false;
-            log.debug("monitor", "Send certificate notification");
-
-            for (let notification of notificationList) {
-                try {
-                    log.debug("monitor", "Sending to " + notification.name);
-                    await Notification.send(JSON.parse(notification.config), `[${this.name}][${this.url}] Certificate will be expired in ${daysRemaining} days`);
-                    sent = true;
-                } catch (e) {
-                    log.error("monitor", "Cannot send cert notification to " + notification.name);
-                    log.error("monitor", e);
-                }
-            }
-
-            if (sent) {
-                await R.exec("INSERT INTO notification_sent_history (type, monitor_id, days) VALUES(?, ?, ?)", [
-                    "certificate",
-                    this.id,
-                    targetDays,
-                ]);
-            }
-        } else {
-            log.debug("monitor", "No notification, no need to send cert notification");
         }
     }
 
