@@ -37,13 +37,13 @@
             <input id="telegram-chat-thread" v-model="$parent.notification.telegramChatThread" type="text" class="form-control" required>
         </div>
 
-       <div class="form-text">
+        <div class="form-text">
             {{ $t("Thread ID Description") }}
         </div>
     </div>
 
     <div class="mb-3">
-         <div class="form-check form-switch">
+        <div class="form-check form-switch">
             <input v-model="$parent.notification.telegramSilentNotification" class="form-check-input" type="checkbox">
             <label class="form-check-label">{{ $t("Silent Notification") }}</label>
         </div>
@@ -54,7 +54,7 @@
     </div>
 
     <div class="mb-3">
-         <div class="form-check form-switch">
+        <div class="form-check form-switch">
             <input v-model="$parent.notification.telegramProtectContent" class="form-check-input" type="checkbox">
             <label class="form-check-label">{{ $t("Protect Forwarding") }}</label>
         </div>
