@@ -358,14 +358,24 @@ exports.radius = function (
  * Redis server ping
  * @param {string} dsn The redis connection string
  */
-exports.redisPingAsync = async function (dsn) {
-    const client = redis.createClient({
-        url: dsn,
+exports.redisPingAsync = function (dsn) {
+    return new Promise((resolve, reject) => {
+        const client = redis.createClient({
+            url: dsn,
+        });
+        client.on("error", (err) => {
+            reject(err);
+        });
+        client.connect().then(() => {
+            client.ping().then((res, err) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(res);
+                }
+            });
+        });
     });
-    await client.connect();
-    const pong = await client.ping();
-    await client.disconnect();
-    return pong;
 };
 
 /**
