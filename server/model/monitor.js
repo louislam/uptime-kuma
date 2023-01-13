@@ -122,7 +122,6 @@ class Monitor extends BeanModel {
                 basic_auth_pass: this.basic_auth_pass,
                 pushToken: this.pushToken,
                 databaseConnectionString: this.databaseConnectionString,
-                redisConnectionString: this.redisConnectionString,
                 radiusUsername: this.radiusUsername,
                 radiusPassword: this.radiusPassword,
                 radiusSecret: this.radiusSecret,
@@ -623,7 +622,7 @@ class Monitor extends BeanModel {
                 } else if (this.type === "redis") {
                     let startTime = dayjs().valueOf();
 
-                    bean.msg = await redisPingAsync(this.redisConnectionString);
+                    bean.msg = await redisPingAsync(this.databaseConnectionString);
                     bean.status = UP;
                     bean.ping = dayjs().valueOf() - startTime;
                 } else {

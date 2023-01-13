@@ -274,7 +274,7 @@
                             <template v-if="monitor.type === 'redis'">
                                 <div class="my-3">
                                     <label for="redisConnectionString" class="form-label">{{ $t("Connection String") }}</label>
-                                    <input id="redisConnectionString" v-model="monitor.redisConnectionString" type="text" class="form-control" placeholder="redis://user:password@host:port">
+                                    <input id="redisConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="redis://user:password@host:port">
                                 </div>
                             </template>
                             <!-- Interval -->
