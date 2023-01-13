@@ -78,3 +78,29 @@ export function getResBaseURL() {
         return "";
     }
 }
+
+/**
+ * Get the tag color options
+ * Shared between components
+ * @returns {Object[]}
+ */
+export function colorOptions(self) {
+    return [
+        { name: self.$t("Gray"),
+            color: "#4B5563" },
+        { name: self.$t("Red"),
+            color: "#DC2626" },
+        { name: self.$t("Orange"),
+            color: "#D97706" },
+        { name: self.$t("Green"),
+            color: "#059669" },
+        { name: self.$t("Blue"),
+            color: "#2563EB" },
+        { name: self.$t("Indigo"),
+            color: "#4F46E5" },
+        { name: self.$t("Purple"),
+            color: "#7C3AED" },
+        { name: self.$t("Pink"),
+            color: "#DB2777" },
+    ];
+}
