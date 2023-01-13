@@ -192,7 +192,6 @@ export default {
     methods: {
         /**
          * Show confirmation for deleting a tag
-         * @returns {void}
          */
         deleteConfirm() {
             this.$refs.confirmDelete.show();
