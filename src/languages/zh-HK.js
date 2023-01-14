@@ -382,4 +382,7 @@ export default {
     setAsDefaultProxyDescription: "預設情況下，新監測器將啟用此代理伺服器。您仍可分別停用各監測器的代理伺服器。",
     Maintenance: "維護",
     statusMaintenance: "維護中",
+    "Enable DNS Cache": "啟用 DNS 快取",
+    "Enable": "啟用",
+    "Disable": "停用",
 };

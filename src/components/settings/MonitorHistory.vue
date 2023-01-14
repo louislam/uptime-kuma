@@ -7,6 +7,7 @@
                         settings.keepDataPeriodDays,
                     ])
                 }}
+                {{ $t("infiniteRetention") }}
             </label>
             <input
                 id="keepDataPeriodDays"
@@ -14,9 +15,12 @@
                 type="number"
                 class="form-control"
                 required
-                min="1"
+                min="0"
                 step="1"
             />
+            <div v-if="settings.keepDataPeriodDays < 0" class="form-text">
+                {{ $t("dataRetentionTimeError") }}
+            </div>
         </div>
         <div class="my-4">
             <button class="btn btn-primary" type="button" @click="saveSettings()">

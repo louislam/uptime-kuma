@@ -244,6 +244,8 @@ module.exports.maintenanceSocketHandler = (socket) => {
                 socket.userID,
             ]);
 
+            apicache.clear();
+
             callback({
                 ok: true,
                 msg: "Deleted Successfully.",
@@ -269,6 +271,8 @@ module.exports.maintenanceSocketHandler = (socket) => {
                 maintenanceID,
             ]);
 
+            apicache.clear();
+
             callback({
                 ok: true,
                 msg: "Paused Successfully.",
@@ -293,6 +297,8 @@ module.exports.maintenanceSocketHandler = (socket) => {
             await R.exec("UPDATE maintenance SET active = 1 WHERE id = ? ", [
                 maintenanceID,
             ]);
+
+            apicache.clear();
 
             callback({
                 ok: true,

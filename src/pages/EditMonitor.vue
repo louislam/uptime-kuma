@@ -11,7 +11,7 @@
                             <div class="my-3">
                                 <label for="type" class="form-label">{{ $t("Monitor Type") }}</label>
                                 <select id="type" v-model="monitor.type" class="form-select">
-                                    <optgroup label="General Monitor Type">
+                                    <optgroup :label="$t('General Monitor Type')">
                                         <option value="http">
                                             HTTP(s)
                                         </option>
@@ -35,13 +35,13 @@
                                         </option>
                                     </optgroup>
 
-                                    <optgroup label="Passive Monitor Type">
+                                    <optgroup :label="$t('Passive Monitor Type')">
                                         <option value="push">
                                             Push
                                         </option>
                                     </optgroup>
 
-                                    <optgroup label="Specific Monitor Type">
+                                    <optgroup :label="$t('Specific Monitor Type')">
                                         <option value="steam">
                                             {{ $t("Steam Game Server") }}
                                         </option>
@@ -49,16 +49,22 @@
                                             MQTT
                                         </option>
                                         <option value="sqlserver">
-                                            SQL Server
+                                            Microsoft SQL Server
                                         </option>
                                         <option value="postgres">
                                             PostgreSQL
+                                        </option>
+                                        <option value="mysql">
+                                            MySQL/MariaDB
                                         </option>
                                         <option value="mongodb">
                                             MongoDB
                                         </option>
                                         <option value="radius">
                                             Radius
+                                        </option>
+                                        <option value="redis">
+                                            Redis
                                         </option>
                                     </optgroup>
                                 </select>
@@ -247,8 +253,8 @@
                                 </div>
                             </template>
 
-                            <!-- SQL Server and PostgreSQL -->
-                            <template v-if="monitor.type === 'sqlserver' || monitor.type === 'postgres'">
+                            <!-- SQL Server / PostgreSQL / MySQL -->
+                            <template v-if="monitor.type === 'sqlserver' || monitor.type === 'postgres' || monitor.type === 'mysql'">
                                 <div class="my-3">
                                     <label for="sqlConnectionString" class="form-label">{{ $t("Connection String") }}</label>
 
@@ -258,10 +264,20 @@
                                     <template v-if="monitor.type === 'postgres'">
                                         <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="postgres://username:password@host:port/database">
                                     </template>
+                                    <template v-if="monitor.type === 'mysql'">
+                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="mysql://username:password@host:port/database">
+                                    </template>
                                 </div>
                                 <div class="my-3">
                                     <label for="sqlQuery" class="form-label">{{ $t("Query") }}</label>
                                     <textarea id="sqlQuery" v-model="monitor.databaseQuery" class="form-control" placeholder="Example: select getdate()"></textarea>
+                                </div>
+                            </template>
+                            <!-- Redis -->
+                            <template v-if="monitor.type === 'redis'">
+                                <div class="my-3">
+                                    <label for="redisConnectionString" class="form-label">{{ $t("Connection String") }}</label>
+                                    <input id="redisConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="redis://user:password@host:port">
                                 </div>
                             </template>
 
@@ -279,7 +295,7 @@
                             <!-- Interval -->
                             <div class="my-3">
                                 <label for="interval" class="form-label">{{ $t("Heartbeat Interval") }} ({{ $t("checkEverySecond", [ monitor.interval ]) }})</label>
-                                <input id="interval" v-model="monitor.interval" type="number" class="form-control" required min="20" step="1">
+                                <input id="interval" v-model="monitor.interval" type="number" class="form-control" required :min="minInterval" step="1" :max="maxInterval">
                             </div>
 
                             <div class="my-3">
@@ -295,7 +311,7 @@
                                     {{ $t("Heartbeat Retry Interval") }}
                                     <span>({{ $t("retryCheckEverySecond", [ monitor.retryInterval ]) }})</span>
                                 </label>
-                                <input id="retry-interval" v-model="monitor.retryInterval" type="number" class="form-control" required min="20" step="1">
+                                <input id="retry-interval" v-model="monitor.retryInterval" type="number" class="form-control" required :min="minInterval" step="1">
                             </div>
 
                             <div class="my-3">
@@ -583,7 +599,7 @@ import NotificationDialog from "../components/NotificationDialog.vue";
 import DockerHostDialog from "../components/DockerHostDialog.vue";
 import ProxyDialog from "../components/ProxyDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
-import { genSecret, isDev } from "../util.ts";
+import { genSecret, isDev, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND } from "../util.ts";
 
 const toast = useToast();
 
@@ -599,6 +615,8 @@ export default {
 
     data() {
         return {
+            minInterval: MIN_INTERVAL_SECOND,
+            maxInterval: MAX_INTERVAL_SECOND,
             processing: false,
             monitor: {
                 notificationIDList: {},
