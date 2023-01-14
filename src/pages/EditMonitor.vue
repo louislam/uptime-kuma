@@ -453,6 +453,15 @@
                                     </select>
                                 </div>
 
+                                <!-- Encoding -->
+                                <div class="my-3">
+                                    <label for="httpBodyEncoding" class="form-label">{{ $t("Body Encoding") }}</label>
+                                    <select id="httpBodyEncoding" v-model="monitor.httpBodyEncoding" class="form-select">
+                                        <option value="json">JSON</option>
+                                        <option value="xml">XML</option>
+                                    </select>
+                                </div>
+
                                 <!-- Body -->
                                 <div class="my-3">
                                     <label for="body" class="form-label">{{ $t("Body") }}</label>
@@ -789,6 +798,7 @@ message HealthCheckResponse {
                     mqttTopic: "",
                     mqttSuccessMessage: "",
                     authMethod: null,
+                    httpBodyEncoding: "json",
                 };
 
                 if (this.$root.proxyList && !this.monitor.proxyId) {
@@ -826,7 +836,7 @@ message HealthCheckResponse {
          * @returns {boolean} Is the form input valid?
          */
         isInputValid() {
-            if (this.monitor.body) {
+            if (this.monitor.body && (!this.monitor.httpBodyEncoding || this.monitor.httpBodyEncoding === "json")) {
                 try {
                     JSON.parse(this.monitor.body);
                 } catch (err) {
@@ -858,7 +868,7 @@ message HealthCheckResponse {
             }
 
             // Beautify the JSON format
-            if (this.monitor.body) {
+            if (this.monitor.body && (!this.monitor.httpBodyEncoding || this.monitor.httpBodyEncoding === "json")) {
                 this.monitor.body = JSON.stringify(JSON.parse(this.monitor.body), null, 4);
             }
 

@@ -680,4 +680,5 @@ export default {
     dataRetentionTimeError: "Retention period must be 0 or greater",
     infiniteRetention: "Set to 0 for infinite retention.",
     confirmDeleteTagMsg: "Are you sure you want to delete this tag? Monitors associated with this tag will not be deleted.",
+    "Body Encoding": "Body Encoding",
 };
