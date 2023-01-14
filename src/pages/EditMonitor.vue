@@ -57,6 +57,9 @@
                                         <option value="mysql">
                                             MySQL/MariaDB
                                         </option>
+                                        <option value="mongodb">
+                                            MongoDB
+                                        </option>
                                         <option value="radius">
                                             Radius
                                         </option>
@@ -277,6 +280,18 @@
                                     <input id="redisConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="redis://user:password@host:port">
                                 </div>
                             </template>
+
+                            <!-- MongoDB -->
+                            <template v-if="monitor.type === 'mongodb'">
+                                <div class="my-3">
+                                    <label for="sqlConnectionString" class="form-label">{{ $t("Connection String") }}</label>
+
+                                    <template v-if="monitor.type === 'mongodb'">
+                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="mongodb://username:password@host:port/database">
+                                    </template>
+                                </div>
+                            </template>
+
                             <!-- Interval -->
                             <div class="my-3">
                                 <label for="interval" class="form-label">{{ $t("Heartbeat Interval") }} ({{ $t("checkEverySecond", [ monitor.interval ]) }})</label>

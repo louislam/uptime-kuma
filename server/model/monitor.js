@@ -4,7 +4,7 @@ const axios = require("axios");
 const { Prometheus } = require("../prometheus");
 const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, TimeLogger, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND } = require("../../src/util");
 const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, mqttAsync, setSetting, httpNtlm, radius, grpcQuery,
-    redisPingAsync
+    redisPingAsync, mongodbPing,
 } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
@@ -583,6 +583,15 @@ class Monitor extends BeanModel {
                     bean.msg = "";
                     bean.status = UP;
                     bean.ping = dayjs().valueOf() - startTime;
+                } else if (this.type === "mongodb") {
+                    let startTime = dayjs().valueOf();
+
+                    await mongodbPing(this.databaseConnectionString);
+
+                    bean.msg = "";
+                    bean.status = UP;
+                    bean.ping = dayjs().valueOf() - startTime;
+
                 } else if (this.type === "radius") {
                     let startTime = dayjs().valueOf();
 
