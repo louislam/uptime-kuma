@@ -9,10 +9,12 @@ const ClickSendSMS = require("./notification-providers/clicksendsms");
 const DingDing = require("./notification-providers/dingding");
 const Discord = require("./notification-providers/discord");
 const Feishu = require("./notification-providers/feishu");
+const FreeMobile = require("./notification-providers/freemobile");
 const GoogleChat = require("./notification-providers/google-chat");
 const Gorush = require("./notification-providers/gorush");
 const Gotify = require("./notification-providers/gotify");
 const HomeAssistant = require("./notification-providers/home-assistant");
+const Kook = require("./notification-providers/kook");
 const Line = require("./notification-providers/line");
 const LineNotify = require("./notification-providers/linenotify");
 const LunaSea = require("./notification-providers/lunasea");
@@ -31,7 +33,9 @@ const RocketChat = require("./notification-providers/rocket-chat");
 const SerwerSMS = require("./notification-providers/serwersms");
 const Signal = require("./notification-providers/signal");
 const Slack = require("./notification-providers/slack");
+const SMSEagle = require("./notification-providers/smseagle");
 const SMTP = require("./notification-providers/smtp");
+const Squadcast = require("./notification-providers/squadcast");
 const Stackfield = require("./notification-providers/stackfield");
 const Teams = require("./notification-providers/teams");
 const TechulusPush = require("./notification-providers/techulus-push");
@@ -41,6 +45,7 @@ const WeCom = require("./notification-providers/wecom");
 const GoAlert = require("./notification-providers/goalert");
 const SMSManager = require("./notification-providers/smsmanager");
 const ServerChan = require("./notification-providers/serverchan");
+const ZohoCliq = require("./notification-providers/zoho-cliq");
 
 class Notification {
 
@@ -62,10 +67,12 @@ class Notification {
             new DingDing(),
             new Discord(),
             new Feishu(),
+            new FreeMobile(),
             new GoogleChat(),
             new Gorush(),
             new Gotify(),
             new HomeAssistant(),
+            new Kook(),
             new Line(),
             new LineNotify(),
             new LunaSea(),
@@ -86,7 +93,9 @@ class Notification {
             new Signal(),
             new SMSManager(),
             new Slack(),
+            new SMSEagle(),
             new SMTP(),
+            new Squadcast(),
             new Stackfield(),
             new Teams(),
             new TechulusPush(),
@@ -94,6 +103,7 @@ class Notification {
             new Webhook(),
             new WeCom(),
             new GoAlert(),
+            new ZohoCliq()
         ];
 
         for (let item of list) {

@@ -218,11 +218,28 @@
                         {{ $t("Degraded Service") }}
                     </div>
 
+                    <div v-else-if="isMaintenance">
+                        <font-awesome-icon icon="wrench" class="status-maintenance" />
+                        {{ $t("maintenanceStatus-under-maintenance") }}
+                    </div>
+
                     <div v-else>
                         <font-awesome-icon icon="question-circle" style="color: #efefef;" />
                     </div>
                 </template>
             </div>
+
+            <!-- Maintenance -->
+            <template v-if="maintenanceList.length > 0">
+                <div
+                    v-for="maintenance in maintenanceList" :key="maintenance.id"
+                    class="shadow-box alert mb-4 p-3 bg-maintenance mt-4 position-relative" role="alert"
+                >
+                    <h4 class="alert-heading">{{ maintenance.title }}</h4>
+                    <div class="content">{{ maintenance.description }}</div>
+                    <MaintenanceTime :maintenance="maintenance" />
+                </div>
+            </template>
 
             <!-- Description -->
             <strong v-if="editMode">{{ $t("Description") }}:</strong>
@@ -295,8 +312,9 @@ import "vue-prism-editor/dist/prismeditor.min.css"; // import the styles somewhe
 import { useToast } from "vue-toastification";
 import Confirm from "../components/Confirm.vue";
 import PublicGroupList from "../components/PublicGroupList.vue";
+import MaintenanceTime from "../components/MaintenanceTime.vue";
 import { getResBaseURL } from "../util-frontend";
-import { STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_PARTIAL_DOWN, UP } from "../util.ts";
+import { STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_MAINTENANCE, STATUS_PAGE_PARTIAL_DOWN, UP, MAINTENANCE } from "../util.ts";
 
 const toast = useToast();
 
@@ -316,6 +334,7 @@ export default {
         ImageCropUpload,
         Confirm,
         PrismEditor,
+        MaintenanceTime,
     },
 
     // Leave Page for vue route change
@@ -356,6 +375,7 @@ export default {
             loadedData: false,
             baseURL: "",
             clickedEditButton: false,
+            maintenanceList: [],
         };
     },
     computed: {
@@ -409,6 +429,10 @@ export default {
             return "bg-" + this.incident.style;
         },
 
+        maintenanceClass() {
+            return "bg-maintenance";
+        },
+
         overallStatus() {
 
             if (Object.keys(this.$root.publicLastHeartbeatList).length === 0) {
@@ -421,7 +445,9 @@ export default {
             for (let id in this.$root.publicLastHeartbeatList) {
                 let beat = this.$root.publicLastHeartbeatList[id];
 
-                if (beat.status === UP) {
+                if (beat.status === MAINTENANCE) {
+                    return STATUS_PAGE_MAINTENANCE;
+                } else if (beat.status === UP) {
                     hasUp = true;
                 } else {
                     status = STATUS_PAGE_PARTIAL_DOWN;
@@ -445,6 +471,10 @@ export default {
 
         allDown() {
             return this.overallStatus === STATUS_PAGE_ALL_DOWN;
+        },
+
+        isMaintenance() {
+            return this.overallStatus === STATUS_PAGE_MAINTENANCE;
         },
 
     },
@@ -551,6 +581,7 @@ export default {
             }
 
             this.incident = res.data.incident;
+            this.maintenanceList = res.data.maintenanceList;
             this.$root.publicGroupList = res.data.publicGroupList;
         }).catch( function (error) {
             if (error.response.status === 404) {
@@ -946,6 +977,24 @@ footer {
     }
 }
 
+.maintenance-bg-info {
+    color: $maintenance;
+}
+
+.maintenance-icon {
+    font-size: 35px;
+    vertical-align: middle;
+}
+
+.dark .shadow-box {
+    background-color: #0d1117;
+}
+
+.status-maintenance {
+    color: $maintenance;
+    margin-right: 5px;
+}
+
 .mobile {
     h1 {
         font-size: 22px;
@@ -1004,6 +1053,12 @@ footer {
     .dark & {
         background: $dark-bg;
         border: 1px solid $dark-border-color;
+    }
+}
+
+.bg-maintenance {
+    .alert-heading {
+        font-weight: bold;
     }
 }
 

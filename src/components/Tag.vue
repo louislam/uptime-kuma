@@ -41,7 +41,7 @@ export default {
     },
     computed: {
         displayText() {
-            if (this.item.value === "") {
+            if (this.item.value === "" || this.item.value === undefined) {
                 return this.item.name;
             } else {
                 return `${this.item.name}: ${this.item.value}`;

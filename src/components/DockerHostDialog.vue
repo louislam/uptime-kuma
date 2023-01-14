@@ -30,7 +30,8 @@
                                 {{ $t("Examples") }}:
                                 <ul>
                                     <li>/var/run/docker.sock</li>
-                                    <li>tcp://localhost:2375</li>
+                                    <li>http://localhost:2375</li>
+                                    <li>https://localhost:2376 (TLS)</li>
                                 </ul>
                             </div>
                         </div>
@@ -72,7 +73,7 @@ export default {
     emits: [ "added" ],
     data() {
         return {
-            model: null,
+            modal: null,
             processing: false,
             id: null,
             connectionTypes: [ "socket", "tcp" ],
