@@ -438,21 +438,14 @@
                                     </select>
                                 </div>
 
-                                <!-- Encoding -->
-                                <div class="my-3">
-                                    <label for="httpBodyEncoding" class="form-label">{{ $t("Body Encoding") }}</label>
-                                    <select id="httpBodyEncoding" v-model="monitor.httpBodyEncoding" class="form-select">
-                                        <option value="json">
-                                            JSON
-                                        </option>
-                                        <option value="form">
-                                            x-www-form-urlencoded
-                                        </option>
-                                        <option value="xml">
-                                            XML
-                                        </option>
-                                    </select>
-                                </div>
+                              <!-- Encoding -->
+                              <div class="my-3">
+                                <label for="httpBodyEncoding" class="form-label">{{ $t("Body Encoding") }}</label>
+                                <select id="httpBodyEncoding" v-model="monitor.httpBodyEncoding" class="form-select">
+                                  <option value="json">JSON</option>
+                                  <option value="xml">XML</option>
+                                </select>
+                              </div>
 
                                 <!-- Body -->
                                 <div class="my-3">
