@@ -19,6 +19,7 @@ const { Settings } = require("./settings");
 const grpc = require("@grpc/grpc-js");
 const protojs = require("protobufjs");
 const radiusClient = require("node-radius-client");
+const redis = require("redis");
 const {
     dictionaries: {
         rfc2865: { file, attributes },
@@ -351,6 +352,30 @@ exports.radius = function (
             [ attributes.CALLING_STATION_ID, callingStationId ],
             [ attributes.CALLED_STATION_ID, calledStationId ],
         ],
+    });
+};
+
+/**
+ * Redis server ping
+ * @param {string} dsn The redis connection string
+ */
+exports.redisPingAsync = function (dsn) {
+    return new Promise((resolve, reject) => {
+        const client = redis.createClient({
+            url: dsn,
+        });
+        client.on("error", (err) => {
+            reject(err);
+        });
+        client.connect().then(() => {
+            client.ping().then((res, err) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(res);
+                }
+            });
+        });
     });
 };
 
