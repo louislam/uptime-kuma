@@ -8,9 +8,9 @@ ARG TARGETPLATFORM
 COPY ./extra/ ./extra/
 
 # Compile healthcheck.go
-RUN apt update
-RUN apt --yes --no-install-recommends install curl
-RUN curl -sL https://deb.nodesource.com/setup_18.x | bash
-RUN apt --yes --no-install-recommends install nodejs
-RUN node -v
-RUN node ./extra/build-healthcheck.js $TARGETPLATFORM
+RUN apt update && \
+    apt --yes --no-install-recommends install curl && \
+    curl -sL https://deb.nodesource.com/setup_18.x | bash && \
+    apt --yes --no-install-recommends install nodejs && \
+    node ./extra/build-healthcheck.js $TARGETPLATFORM && \
+    apt --yes remove nodejs

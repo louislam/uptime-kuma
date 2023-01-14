@@ -73,7 +73,7 @@ export default {
     emits: [ "added" ],
     data() {
         return {
-            model: null,
+            modal: null,
             processing: false,
             id: null,
             connectionTypes: [ "socket", "tcp" ],
