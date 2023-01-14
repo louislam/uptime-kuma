@@ -280,18 +280,23 @@ exports.postgresQuery = function (connectionString, query) {
 
         const client = new Client({ connectionString });
 
-        client.connect();
-
-        return client.query(query)
-            .then(res => {
-                resolve(res);
-            })
-            .catch(err => {
+        client.connect((err) => {
+            if (err) {
                 reject(err);
-            })
-            .finally(() => {
                 client.end();
-            });
+            } else {
+                // Connected here
+                client.query(query, (err, res) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(res);
+                    }
+                    client.end();
+                });
+            }
+        });
+
     });
 };
 
