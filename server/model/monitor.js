@@ -748,6 +748,13 @@ class Monitor extends BeanModel {
         }
     }
 
+    /**
+     * Make a request using axios
+     * @param {Object} options Options for Axios
+     * @param {boolean} finalCall Should this be the final call i.e
+     * don't retry on faliure
+     * @returns {Object} Axios response
+     */
     async makeAxiosRequest(options, finalCall = false) {
         try {
             let res;
@@ -1229,6 +1236,7 @@ class Monitor extends BeanModel {
         return maintenance.count !== 0;
     }
 
+    /** Make sure monitor interval is between bounds */
     validate() {
         if (this.interval > MAX_INTERVAL_SECOND) {
             throw new Error(`Interval cannot be more than ${MAX_INTERVAL_SECOND} seconds`);
