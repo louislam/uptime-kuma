@@ -74,6 +74,7 @@ export default {
     Current: "Current",
     Uptime: "Uptime",
     "Cert Exp.": "Cert Exp.",
+    Monitor: "Monitor | Monitors",
     day: "day | days",
     "-day": "-day",
     hour: "hour",
@@ -190,6 +191,7 @@ export default {
     Indigo: "Indigo",
     Purple: "Purple",
     Pink: "Pink",
+    Custom: "Custom",
     "Search...": "Search...",
     "Avg. Ping": "Avg. Ping",
     "Avg. Response": "Avg. Response",
@@ -675,4 +677,7 @@ export default {
     "General Monitor Type": "General Monitor Type",
     "Passive Monitor Type": "Passive Monitor Type",
     "Specific Monitor Type": "Specific Monitor Type",
+    dataRetentionTimeError: "Retention period must be 0 or greater",
+    infiniteRetention: "Set to 0 for infinite retention.",
+    confirmDeleteTagMsg: "Are you sure you want to delete this tag? Monitors associated with this tag will not be deleted.",
 };

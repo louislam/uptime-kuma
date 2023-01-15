@@ -57,8 +57,14 @@
                                         <option value="mysql">
                                             MySQL/MariaDB
                                         </option>
+                                        <option value="mongodb">
+                                            MongoDB
+                                        </option>
                                         <option value="radius">
                                             Radius
+                                        </option>
+                                        <option value="redis">
+                                            Redis
                                         </option>
                                     </optgroup>
                                 </select>
@@ -265,6 +271,24 @@
                                 <div class="my-3">
                                     <label for="sqlQuery" class="form-label">{{ $t("Query") }}</label>
                                     <textarea id="sqlQuery" v-model="monitor.databaseQuery" class="form-control" placeholder="Example: select getdate()"></textarea>
+                                </div>
+                            </template>
+                            <!-- Redis -->
+                            <template v-if="monitor.type === 'redis'">
+                                <div class="my-3">
+                                    <label for="redisConnectionString" class="form-label">{{ $t("Connection String") }}</label>
+                                    <input id="redisConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="redis://user:password@host:port">
+                                </div>
+                            </template>
+
+                            <!-- MongoDB -->
+                            <template v-if="monitor.type === 'mongodb'">
+                                <div class="my-3">
+                                    <label for="sqlConnectionString" class="form-label">{{ $t("Connection String") }}</label>
+
+                                    <template v-if="monitor.type === 'mongodb'">
+                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="mongodb://username:password@host:port/database">
+                                    </template>
                                 </div>
                             </template>
 

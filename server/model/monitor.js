@@ -3,7 +3,9 @@ const dayjs = require("dayjs");
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
 const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, TimeLogger, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND } = require("../../src/util");
-const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, mqttAsync, setSetting, httpNtlm, radius, grpcQuery } = require("../util-server");
+const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, mqttAsync, setSetting, httpNtlm, radius, grpcQuery,
+    redisPingAsync, mongodbPing,
+} = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification");
@@ -581,6 +583,15 @@ class Monitor extends BeanModel {
                     bean.msg = "";
                     bean.status = UP;
                     bean.ping = dayjs().valueOf() - startTime;
+                } else if (this.type === "mongodb") {
+                    let startTime = dayjs().valueOf();
+
+                    await mongodbPing(this.databaseConnectionString);
+
+                    bean.msg = "";
+                    bean.status = UP;
+                    bean.ping = dayjs().valueOf() - startTime;
+
                 } else if (this.type === "radius") {
                     let startTime = dayjs().valueOf();
 
@@ -616,6 +627,12 @@ class Monitor extends BeanModel {
                             bean.msg = error.message;
                         }
                     }
+                    bean.ping = dayjs().valueOf() - startTime;
+                } else if (this.type === "redis") {
+                    let startTime = dayjs().valueOf();
+
+                    bean.msg = await redisPingAsync(this.databaseConnectionString);
+                    bean.status = UP;
                     bean.ping = dayjs().valueOf() - startTime;
                 } else {
                     bean.msg = "Unknown Monitor Type";
