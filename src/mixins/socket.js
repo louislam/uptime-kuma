@@ -184,6 +184,10 @@ export default {
                         toast(`[${this.monitorList[data.monitorID].name}] ${data.msg}`);
                     }
 
+                    if (data.status === 3 || this.monitorList[data.monitorID].maintenance) {
+                        this.getMonitorList();
+                    }
+
                     if (! (data.monitorID in this.importantHeartbeatList)) {
                         this.importantHeartbeatList[data.monitorID] = [];
                     }
