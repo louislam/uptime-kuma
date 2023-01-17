@@ -3,6 +3,7 @@ import { useToast } from "vue-toastification";
 import jwtDecode from "jwt-decode";
 import Favico from "favico.js";
 import dayjs from "dayjs";
+import { DOWN, MAINTENANCE, PENDING, UP } from "../util.ts";
 const toast = useToast();
 
 let socket;
@@ -669,17 +670,17 @@ export default {
                 let beat = this.$root.lastHeartbeatList[monitorID];
                 let monitor = this.$root.monitorList[monitorID];
 
-                if (monitor && monitor.maintenance) {
-                    result.maintenance++;
-                } else if (monitor && ! monitor.active) {
+                if (monitor && ! monitor.active) {
                     result.pause++;
                 } else if (beat) {
-                    if (beat.status === 1) {
+                    if (beat.status === UP) {
                         result.up++;
-                    } else if (beat.status === 0) {
+                    } else if (beat.status === DOWN) {
                         result.down++;
-                    } else if (beat.status === 2) {
+                    } else if (beat.status === PENDING) {
                         result.up++;
+                    } else if (beat.status === MAINTENANCE) {
+                        result.maintenance++;
                     } else {
                         result.unknown++;
                     }
