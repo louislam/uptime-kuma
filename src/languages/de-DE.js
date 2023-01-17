@@ -632,6 +632,7 @@ export default {
     "maintenanceStatus-scheduled": "Geplant",
     "maintenanceStatus-ended": "Ende",
     "maintenanceStatus-unknown": "Unbekannt",
+    maintenanceDatePickerRangeInfo: "Wenn die Wartung am gleichen Tag beginnt und endet, dann muss der Tag doppelt ausgewählt werden.",
     "Display Timezone": "Zeitzone anzeigen",
     "Server Timezone": "Server Zeitzone",
     "Date and Time": "Datum und Zeit",

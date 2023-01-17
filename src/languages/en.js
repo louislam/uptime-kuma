@@ -650,6 +650,7 @@ export default {
     "maintenanceStatus-scheduled": "Scheduled",
     "maintenanceStatus-ended": "Ended",
     "maintenanceStatus-unknown": "Unknown",
+    maintenanceDatePickerRangeInfo: "If the maintenance ends again on the same day, then you need to double-click the day.",
     "Display Timezone": "Display Timezone",
     "Server Timezone": "Server Timezone",
     statusPageMaintenanceEndDate: "End",

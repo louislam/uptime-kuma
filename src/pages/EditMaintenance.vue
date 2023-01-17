@@ -101,7 +101,7 @@
                             <template v-if="maintenance.strategy === 'single'">
                                 <!-- DateTime Range -->
                                 <div class="my-3">
-                                    <label class="form-label">{{ $t("DateTime Range") }}</label>
+                                    <label class="form-label">{{ $t("DateTime Range") }} <mark>{{ $t("maintenanceDatePickerRangeInfo") }}</mark></label>
                                     <Datepicker
                                         v-model="maintenance.dateRange"
                                         :dark="$root.isDark"
@@ -192,7 +192,7 @@
 
                                 <!-- Date Range -->
                                 <div class="my-3">
-                                    <label class="form-label">{{ $t("Effective Date Range") }}</label>
+                                    <label class="form-label">{{ $t("Effective Date Range") }} <mark>{{ $t("maintenanceDatePickerRangeInfo") }}</mark></label>
                                     <Datepicker
                                         v-model="maintenance.dateRange"
                                         :dark="$root.isDark"
