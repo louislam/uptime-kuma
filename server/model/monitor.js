@@ -36,7 +36,6 @@ class Monitor extends BeanModel {
             id: this.id,
             name: this.name,
             sendUrl: this.sendUrl,
-            maintenance: await Monitor.isUnderMaintenance(this.id),
         };
 
         if (this.sendUrl) {

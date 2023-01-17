@@ -627,27 +627,27 @@ export default {
             for (let monitorID in this.lastHeartbeatList) {
                 let lastHeartBeat = this.lastHeartbeatList[monitorID];
 
-                if (this.monitorList[monitorID] && this.monitorList[monitorID].maintenance) {
-                    result[monitorID] = {
-                        text: this.$t("statusMaintenance"),
-                        color: "maintenance",
-                    };
-                } else if (! lastHeartBeat) {
+                if (! lastHeartBeat) {
                     result[monitorID] = unknown;
-                } else if (lastHeartBeat.status === 1) {
+                } else if (lastHeartBeat.status === UP) {
                     result[monitorID] = {
                         text: this.$t("Up"),
                         color: "primary",
                     };
-                } else if (lastHeartBeat.status === 0) {
+                } else if (lastHeartBeat.status === DOWN) {
                     result[monitorID] = {
                         text: this.$t("Down"),
                         color: "danger",
                     };
-                } else if (lastHeartBeat.status === 2) {
+                } else if (lastHeartBeat.status === PENDING) {
                     result[monitorID] = {
                         text: this.$t("Pending"),
                         color: "warning",
+                    };
+                } else if (lastHeartBeat.status === MAINTENANCE) {
+                    result[monitorID] = {
+                        text: this.$t("statusMaintenance"),
+                        color: "maintenance",
                     };
                 } else {
                     result[monitorID] = unknown;
