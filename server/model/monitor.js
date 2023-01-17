@@ -4,7 +4,7 @@ const axios = require("axios");
 const { Prometheus } = require("../prometheus");
 const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, TimeLogger, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND } = require("../../src/util");
 const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, mqttAsync, setSetting, httpNtlm, radius, grpcQuery,
-    redisPingAsync
+    redisPingAsync, mongodbPing,
 } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
@@ -38,7 +38,6 @@ class Monitor extends BeanModel {
             id: this.id,
             name: this.name,
             sendUrl: this.sendUrl,
-            maintenance: await Monitor.isUnderMaintenance(this.id),
         };
 
         if (this.sendUrl) {
@@ -583,6 +582,15 @@ class Monitor extends BeanModel {
                     bean.msg = "";
                     bean.status = UP;
                     bean.ping = dayjs().valueOf() - startTime;
+                } else if (this.type === "mongodb") {
+                    let startTime = dayjs().valueOf();
+
+                    await mongodbPing(this.databaseConnectionString);
+
+                    bean.msg = "";
+                    bean.status = UP;
+                    bean.ping = dayjs().valueOf() - startTime;
+
                 } else if (this.type === "radius") {
                     let startTime = dayjs().valueOf();
 
@@ -756,6 +764,13 @@ class Monitor extends BeanModel {
         }
     }
 
+    /**
+     * Make a request using axios
+     * @param {Object} options Options for Axios
+     * @param {boolean} finalCall Should this be the final call i.e
+     * don't retry on faliure
+     * @returns {Object} Axios response
+     */
     async makeAxiosRequest(options, finalCall = false) {
         try {
             let res;
@@ -1237,6 +1252,7 @@ class Monitor extends BeanModel {
         return maintenance.count !== 0;
     }
 
+    /** Make sure monitor interval is between bounds */
     validate() {
         if (this.interval > MAX_INTERVAL_SECOND) {
             throw new Error(`Interval cannot be more than ${MAX_INTERVAL_SECOND} seconds`);

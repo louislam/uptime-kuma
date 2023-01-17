@@ -3,6 +3,8 @@
 </template>
 
 <script>
+import { DOWN, MAINTENANCE, PENDING, UP } from "../util.ts";
+
 export default {
     props: {
         /** Monitor this represents */
@@ -24,7 +26,6 @@ export default {
 
     computed: {
         uptime() {
-
             if (this.type === "maintenance") {
                 return this.$t("statusMaintenance");
             }
@@ -39,19 +40,19 @@ export default {
         },
 
         color() {
-            if (this.type === "maintenance" || this.monitor.maintenance) {
+            if (this.lastHeartBeat.status === MAINTENANCE) {
                 return "maintenance";
             }
 
-            if (this.lastHeartBeat.status === 0) {
+            if (this.lastHeartBeat.status === DOWN) {
                 return "danger";
             }
 
-            if (this.lastHeartBeat.status === 1) {
+            if (this.lastHeartBeat.status === UP) {
                 return "primary";
             }
 
-            if (this.lastHeartBeat.status === 2) {
+            if (this.lastHeartBeat.status === PENDING) {
                 return "warning";
             }
 
