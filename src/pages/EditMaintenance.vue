@@ -108,6 +108,7 @@
                                         range
                                         :monthChangeOnScroll="false"
                                         :minDate="minDate"
+                                        :partial-range="false"
                                         format="yyyy-MM-dd HH:mm"
                                         modelType="yyyy-MM-dd HH:mm:ss"
                                     />
@@ -199,6 +200,7 @@
                                         range datePicker
                                         :monthChangeOnScroll="false"
                                         :minDate="minDate"
+                                        :partial-range="false"
                                         format="yyyy-MM-dd HH:mm:ss"
                                         modelType="yyyy-MM-dd HH:mm:ss"
                                         required
