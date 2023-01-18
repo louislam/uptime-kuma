@@ -2,6 +2,7 @@ import { createI18n } from "vue-i18n/dist/vue-i18n.esm-browser.prod.js";
 import en from "./languages/en";
 
 const languageList = {
+    "ar-SY": "العربية",
     "cs-CZ": "Čeština",
     "zh-HK": "繁體中文 (香港)",
     "bg-BG": "Български",
@@ -48,7 +49,7 @@ for (let lang in languageList) {
     };
 }
 
-const rtlLangs = [ "fa" ];
+const rtlLangs = [ "fa" , "ar-SY"];
 
 export const currentLocale = () => localStorage.locale
     || languageList[navigator.language] && navigator.language
