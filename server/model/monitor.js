@@ -495,13 +495,17 @@ class Monitor extends BeanModel {
 
                     const options = {
                         url: `/containers/${this.docker_container}/json`,
+                        timeout: this.interval * 1000 * 0.8,
                         headers: {
                             "Accept": "*/*",
                             "User-Agent": "Uptime-Kuma/" + version,
                         },
-                        httpsAgent: new https.Agent({
+                        httpsAgent: CacheableDnsHttpAgent.getHttpsAgent({
                             maxCachedSessions: 0,      // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
-                            rejectUnauthorized: ! this.getIgnoreTls(),
+                            rejectUnauthorized: !this.getIgnoreTls(),
+                        }),
+                        httpAgent: CacheableDnsHttpAgent.getHttpAgent({
+                            maxCachedSessions: 0,
                         }),
                     };
 
