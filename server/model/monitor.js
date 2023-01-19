@@ -334,7 +334,7 @@ class Monitor extends BeanModel {
         let previousBeat = null;
         let retries = 0;
 
-        this.prometheus = new Prometheus(this);
+        this.prometheus = await Prometheus.createAndInitMetrics(this);
 
         const beat = async () => {
 
@@ -997,7 +997,7 @@ class Monitor extends BeanModel {
             await R.store(bean);
 
             log.debug("monitor", `[${this.name}] prometheus.update`);
-            this.prometheus?.update(bean, tlsInfo);
+            await this.prometheus?.update(bean, tlsInfo);
 
             previousBeat = bean;
 

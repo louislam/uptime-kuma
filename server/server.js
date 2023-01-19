@@ -1043,6 +1043,8 @@ let needSetup = false;
             try {
                 checkLogin(socket);
 
+                log.debug("manage", `Add Tag: ${tag} User ID: ${socket.userID}`);
+
                 let bean = R.dispense("tag");
                 bean.name = tag.name;
                 bean.color = tag.color;
@@ -1064,6 +1066,8 @@ let needSetup = false;
         socket.on("editTag", async (tag, callback) => {
             try {
                 checkLogin(socket);
+
+                log.debug("manage", `Edit Tag: ${tag} User ID: ${socket.userID}`);
 
                 let bean = await R.findOne("tag", " id = ? ", [ tag.id ]);
                 if (bean == null) {
@@ -1097,6 +1101,8 @@ let needSetup = false;
             try {
                 checkLogin(socket);
 
+                log.debug("manage", `Delete Tag: ${tagID} User ID: ${socket.userID}`);
+
                 await R.exec("DELETE FROM tag WHERE id = ? ", [ tagID ]);
 
                 callback({
@@ -1116,6 +1122,8 @@ let needSetup = false;
         socket.on("addMonitorTag", async (tagID, monitorID, value, callback) => {
             try {
                 checkLogin(socket);
+
+                log.debug("manage", `Add Monitor(${monitorID}) Tag(${tagID}): ${value} User ID: ${socket.userID}`);
 
                 await R.exec("INSERT INTO monitor_tag (tag_id, monitor_id, value) VALUES (?, ?, ?)", [
                     tagID,
@@ -1141,6 +1149,8 @@ let needSetup = false;
             try {
                 checkLogin(socket);
 
+                log.debug("manage", `Edit Monitor(${monitorID}) Tag(${tagID}): ${value} User ID: ${socket.userID}`);
+
                 await R.exec("UPDATE monitor_tag SET value = ? WHERE tag_id = ? AND monitor_id = ?", [
                     value,
                     tagID,
@@ -1164,6 +1174,8 @@ let needSetup = false;
         socket.on("deleteMonitorTag", async (tagID, monitorID, value, callback) => {
             try {
                 checkLogin(socket);
+
+                log.debug("manage", `Delete Monitor(${monitorID}) Tag(${tagID}): ${value} User ID: ${socket.userID}`);
 
                 await R.exec("DELETE FROM monitor_tag WHERE tag_id = ? AND monitor_id = ? AND value = ?", [
                     tagID,
