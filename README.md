@@ -24,7 +24,7 @@ It is a temporary live demo, all data will be deleted after 10 minutes. Use the 
 
 * Monitoring uptime for HTTP(s) / TCP / HTTP(s) Keyword / Ping / DNS Record / Push / Steam Game Server / Docker Containers
 * Fancy, Reactive, Fast UI/UX
-* Notifications via Telegram, Discord, Gotify, Slack, Pushover, Email (SMTP), and [90+ notification services, click here for the full list](https://github.com/louislam/uptime-kuma/tree/master/src/components/notifications)
+* Notifications via Telegram, Discord, Gotify, Slack, Pushover, Email (SMTP), Home Assistant, and [90+ notification services, click here for the full list](https://github.com/louislam/uptime-kuma/tree/master/src/components/notifications)
 * 20 second intervals
 * [Multi Languages](https://github.com/louislam/uptime-kuma/tree/master/src/languages)
 * Multiple status pages
