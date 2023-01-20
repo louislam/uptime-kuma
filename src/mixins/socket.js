@@ -3,7 +3,6 @@ import { useToast } from "vue-toastification";
 import jwtDecode from "jwt-decode";
 import Favico from "favico.js";
 import dayjs from "dayjs";
-// import { getSettings } from "../../server/util-server";
 
 const toast = useToast();
 
