@@ -1,8 +1,10 @@
 <template>
-    <span :class="className" :title="24 + $t('-hour')">{{ uptime }}</span>
+    <span :class="className" :title="title">{{ uptime }}</span>
 </template>
 
 <script>
+import { DOWN, MAINTENANCE, PENDING, UP } from "../util.ts";
+
 export default {
     props: {
         /** Monitor this represents */
@@ -24,6 +26,9 @@ export default {
 
     computed: {
         uptime() {
+            if (this.type === "maintenance") {
+                return this.$t("statusMaintenance");
+            }
 
             let key = this.monitor.id + "_" + this.type;
 
@@ -35,15 +40,19 @@ export default {
         },
 
         color() {
-            if (this.lastHeartBeat.status === 0) {
+            if (this.lastHeartBeat.status === MAINTENANCE) {
+                return "maintenance";
+            }
+
+            if (this.lastHeartBeat.status === DOWN) {
                 return "danger";
             }
 
-            if (this.lastHeartBeat.status === 1) {
+            if (this.lastHeartBeat.status === UP) {
                 return "primary";
             }
 
-            if (this.lastHeartBeat.status === 2) {
+            if (this.lastHeartBeat.status === PENDING) {
                 return "warning";
             }
 
@@ -67,6 +76,14 @@ export default {
 
             return "";
         },
+
+        title() {
+            if (this.type === "720") {
+                return `30${this.$t("-day")}`;
+            }
+
+            return `24${this.$t("-hour")}`;
+        }
     },
 };
 </script>

@@ -2,6 +2,8 @@ import { io } from "socket.io-client";
 import { useToast } from "vue-toastification";
 import jwtDecode from "jwt-decode";
 import Favico from "favico.js";
+import dayjs from "dayjs";
+import { DOWN, MAINTENANCE, PENDING, UP } from "../util.ts";
 const toast = useToast();
 
 let socket;
@@ -33,12 +35,14 @@ export default {
             allowLoginDialog: false,        // Allowed to show login dialog, but "loggedIn" have to be true too. This exists because prevent the login dialog show 0.1s in first before the socket server auth-ed.
             loggedIn: false,
             monitorList: { },
+            maintenanceList: { },
             heartbeatList: { },
             importantHeartbeatList: { },
             avgPingList: { },
             uptimeList: { },
             tlsInfoList: {},
             notificationList: [],
+            dockerHostList: [],
             statusPageListLoaded: false,
             statusPageList: [],
             proxyList: [],
@@ -56,7 +60,6 @@ export default {
     },
 
     created() {
-        window.addEventListener("resize", this.onResize);
         this.initSocketIO();
     },
 
@@ -128,6 +131,10 @@ export default {
                 this.monitorList = data;
             });
 
+            socket.on("maintenanceList", (data) => {
+                this.maintenanceList = data;
+            });
+
             socket.on("notificationList", (data) => {
                 this.notificationList = data;
             });
@@ -145,6 +152,10 @@ export default {
 
                     return item;
                 });
+            });
+
+            socket.on("dockerHostList", (data) => {
+                this.dockerHostList = data;
             });
 
             socket.on("heartbeat", (data) => {
@@ -262,6 +273,10 @@ export default {
             socket.on("cloudflared_message", (res) => this.cloudflared.message = res);
             socket.on("cloudflared_errorMessage", (res) => this.cloudflared.errorMessage = res);
             socket.on("cloudflared_token", (res) => this.cloudflared.cloudflareTunnelToken = res);
+
+            socket.on("initServerTimezone", () => {
+                socket.emit("initServerTimezone", dayjs.tz.guess());
+            });
         },
 
         /**
@@ -441,6 +456,17 @@ export default {
         },
 
         /**
+         * Get list of maintenances
+         * @param {socketCB} callback
+         */
+        getMaintenanceList(callback) {
+            if (! callback) {
+                callback = () => { };
+            }
+            socket.emit("getMaintenanceList", callback);
+        },
+
+        /**
          * Add a monitor
          * @param {Object} monitor Object representing monitor to add
          * @param {socketCB} callback
@@ -450,12 +476,68 @@ export default {
         },
 
         /**
+         * Adds a maintenace
+         * @param {Object} maintenance
+         * @param {socketCB} callback
+         */
+        addMaintenance(maintenance, callback) {
+            socket.emit("addMaintenance", maintenance, callback);
+        },
+
+        /**
+         * Add monitors to maintenance
+         * @param {number} maintenanceID
+         * @param {number[]} monitors
+         * @param {socketCB} callback
+         */
+        addMonitorMaintenance(maintenanceID, monitors, callback) {
+            socket.emit("addMonitorMaintenance", maintenanceID, monitors, callback);
+        },
+
+        /**
+         * Add status page to maintenance
+         * @param {number} maintenanceID
+         * @param {number} statusPages
+         * @param {socketCB} callback
+         */
+        addMaintenanceStatusPage(maintenanceID, statusPages, callback) {
+            socket.emit("addMaintenanceStatusPage", maintenanceID, statusPages, callback);
+        },
+
+        /**
+         * Get monitors affected by maintenance
+         * @param {number} maintenanceID
+         * @param {socketCB} callback
+         */
+        getMonitorMaintenance(maintenanceID, callback) {
+            socket.emit("getMonitorMaintenance", maintenanceID, callback);
+        },
+
+        /**
+         * Get status pages where maintenance is shown
+         * @param {number} maintenanceID
+         * @param {socketCB} callback
+         */
+        getMaintenanceStatusPage(maintenanceID, callback) {
+            socket.emit("getMaintenanceStatusPage", maintenanceID, callback);
+        },
+
+        /**
          * Delete monitor by ID
          * @param {number} monitorID ID of monitor to delete
          * @param {socketCB} callback
          */
         deleteMonitor(monitorID, callback) {
             socket.emit("deleteMonitor", monitorID, callback);
+        },
+
+        /**
+         * Delete specified maintenance
+         * @param {number} maintenanceID
+         * @param {socketCB} callback
+         */
+        deleteMaintenance(maintenanceID, callback) {
+            socket.emit("deleteMaintenance", maintenanceID, callback);
         },
 
         /** Clear the hearbeat list */
@@ -547,20 +629,25 @@ export default {
 
                 if (! lastHeartBeat) {
                     result[monitorID] = unknown;
-                } else if (lastHeartBeat.status === 1) {
+                } else if (lastHeartBeat.status === UP) {
                     result[monitorID] = {
                         text: this.$t("Up"),
                         color: "primary",
                     };
-                } else if (lastHeartBeat.status === 0) {
+                } else if (lastHeartBeat.status === DOWN) {
                     result[monitorID] = {
                         text: this.$t("Down"),
                         color: "danger",
                     };
-                } else if (lastHeartBeat.status === 2) {
+                } else if (lastHeartBeat.status === PENDING) {
                     result[monitorID] = {
                         text: this.$t("Pending"),
                         color: "warning",
+                    };
+                } else if (lastHeartBeat.status === MAINTENANCE) {
+                    result[monitorID] = {
+                        text: this.$t("statusMaintenance"),
+                        color: "maintenance",
                     };
                 } else {
                     result[monitorID] = unknown;
@@ -574,6 +661,7 @@ export default {
             let result = {
                 up: 0,
                 down: 0,
+                maintenance: 0,
                 unknown: 0,
                 pause: 0,
             };
@@ -585,12 +673,14 @@ export default {
                 if (monitor && ! monitor.active) {
                     result.pause++;
                 } else if (beat) {
-                    if (beat.status === 1) {
+                    if (beat.status === UP) {
                         result.up++;
-                    } else if (beat.status === 0) {
+                    } else if (beat.status === DOWN) {
                         result.down++;
-                    } else if (beat.status === 2) {
+                    } else if (beat.status === PENDING) {
                         result.up++;
+                    } else if (beat.status === MAINTENANCE) {
+                        result.maintenance++;
                     } else {
                         result.unknown++;
                     }
@@ -601,6 +691,28 @@ export default {
 
             return result;
         },
+
+        /**
+         *  Frontend Version
+         *  It should be compiled to a static value while building the frontend.
+         *  Please see ./config/vite.config.js, it is defined via vite.js
+         * @returns {string}
+         */
+        frontendVersion() {
+            // eslint-disable-next-line no-undef
+            return FRONTEND_VERSION;
+        },
+
+        /**
+         * Are both frontend and backend in the same version?
+         * @returns {boolean}
+         */
+        isFrontendBackendVersionMatched() {
+            if (!this.info.version) {
+                return true;
+            }
+            return this.info.version === this.frontendVersion;
+        }
     },
 
     watch: {

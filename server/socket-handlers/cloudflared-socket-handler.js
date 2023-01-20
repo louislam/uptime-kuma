@@ -1,6 +1,7 @@
 const { checkLogin, setSetting, setting, doubleCheckPassword } = require("../util-server");
 const { CloudflaredTunnel } = require("node-cloudflared-tunnel");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
+const { log } = require("../../src/util");
 const io = UptimeKumaServer.getInstance().io;
 
 const prefix = "cloudflared_";
@@ -63,7 +64,10 @@ module.exports.cloudflaredSocketHandler = (socket) => {
     socket.on(prefix + "stop", async (currentPassword, callback) => {
         try {
             checkLogin(socket);
-            await doubleCheckPassword(socket, currentPassword);
+            const disabledAuth = await setting("disableAuth");
+            if (!disabledAuth) {
+                await doubleCheckPassword(socket, currentPassword);
+            }
             cloudflared.stop();
         } catch (error) {
             callback({
@@ -104,7 +108,7 @@ module.exports.autoStart = async (token) => {
 
 /** Stop cloudflared */
 module.exports.stop = async () => {
-    console.log("Stop cloudflared");
+    log.info("cloudflared", "Stop cloudflared");
     if (cloudflared) {
         cloudflared.stop();
     }

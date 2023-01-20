@@ -6,6 +6,7 @@ import Dashboard from "./pages/Dashboard.vue";
 import DashboardHome from "./pages/DashboardHome.vue";
 import Details from "./pages/Details.vue";
 import EditMonitor from "./pages/EditMonitor.vue";
+import EditMaintenance from "./pages/EditMaintenance.vue";
 import List from "./pages/List.vue";
 const Settings = () => import("./pages/Settings.vue");
 import Setup from "./pages/Setup.vue";
@@ -14,12 +15,16 @@ import Entry from "./pages/Entry.vue";
 import ManageStatusPage from "./pages/ManageStatusPage.vue";
 import AddStatusPage from "./pages/AddStatusPage.vue";
 import NotFound from "./pages/NotFound.vue";
+import DockerHosts from "./components/settings/Docker.vue";
+import MaintenanceDetails from "./pages/MaintenanceDetails.vue";
+import ManageMaintenance from "./pages/ManageMaintenance.vue";
 
 // Settings - Sub Pages
 import Appearance from "./components/settings/Appearance.vue";
 import General from "./components/settings/General.vue";
 const Notifications = () => import("./components/settings/Notifications.vue");
 import ReverseProxy from "./components/settings/ReverseProxy.vue";
+import Tags from "./components/settings/Tags.vue";
 import MonitorHistory from "./components/settings/MonitorHistory.vue";
 const Security = () => import("./components/settings/Security.vue");
 import Proxies from "./components/settings/Proxies.vue";
@@ -92,8 +97,16 @@ const routes = [
                                 component: ReverseProxy,
                             },
                             {
+                                path: "tags",
+                                component: Tags,
+                            },
+                            {
                                 path: "monitor-history",
                                 component: MonitorHistory,
+                            },
+                            {
+                                path: "docker-hosts",
+                                component: DockerHosts,
                             },
                             {
                                 path: "security",
@@ -120,6 +133,22 @@ const routes = [
                     {
                         path: "/add-status-page",
                         component: AddStatusPage,
+                    },
+                    {
+                        path: "/maintenance",
+                        component: ManageMaintenance,
+                    },
+                    {
+                        path: "/maintenance/:id",
+                        component: MaintenanceDetails,
+                    },
+                    {
+                        path: "/add-maintenance",
+                        component: EditMaintenance,
+                    },
+                    {
+                        path: "/maintenance/edit/:id",
+                        component: EditMaintenance,
                     },
                 ],
             },
