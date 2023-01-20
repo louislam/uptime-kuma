@@ -19,6 +19,9 @@
             <a v-if="hasNewVersion" target="_blank" href="https://github.com/louislam/uptime-kuma/releases" class="btn btn-info me-3">
                 <font-awesome-icon icon="arrow-alt-circle-up" /> {{ $t("New Update") }}
             </a>
+            <a href="#" class="nav-link" @click="deleteNotifications">
+                <font-awesome-icon icon="stream" /> {{ $t("Delete Notifications") }}
+            </a>
 
             <ul class="nav nav-pills">
                 <li v-if="$root.loggedIn" class="nav-item me-2">
@@ -117,6 +120,8 @@
 <script>
 import Login from "../components/Login.vue";
 import compareVersions from "compare-versions";
+import { useToast } from "vue-toastification";
+const toast = useToast();
 
 export default {
 
@@ -157,7 +162,10 @@ export default {
     },
 
     methods: {
-
+        deleteNotifications() {
+            console.log("deleteNotifications()");
+            toast.clear();
+        }
     },
 
 };

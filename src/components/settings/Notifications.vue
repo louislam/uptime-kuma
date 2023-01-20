@@ -23,16 +23,33 @@
         <div class="my-4 pt-4">
             <h5 class="my-4 settings-subheading">{{ $t("toastMessagesLabel") }}</h5>
             <p>{{ $t("toastMessagesDescription") }}</p>
+
             <label for="toastErrorTimeoutSecs" class="form-label">
                 {{
                     $t("toastErrorTimeoutSecs", [
-                        settings.toastErrorTimeoutSecs,
+                        $root.toastErrorTimeoutSecs,
                     ])
                 }}
             </label>
             <input
                 id="toastErrorTimeoutSecs"
-                v-model="settings.toastErrorTimeoutSecs"
+                v-model="$root.toastErrorTimeoutSecs"
+                type="number"
+                class="form-control"
+                min="-1"
+                step="1"
+            />
+
+            <label for="toastOkTimeoutSecs" class="form-label">
+                {{
+                    $t("toastOkTimeoutSecs", [
+                        $root.toastOkTimeoutSecs,
+                    ])
+                }}
+            </label>
+            <input
+                id="toastOkTimeoutSecs"
+                v-model="$root.toastOkTimeoutSecs"
                 type="number"
                 class="form-control"
                 min="-1"
@@ -78,6 +95,8 @@ export default {
 
     data() {
         return {
+            toastOkTimeoutSecs: localStorage.toastOkTimeoutSecs,
+            toastErrorTimeoutSecs: localStorage.toastErrorTimeoutSecs,
             /**
              * Variable to store the input for new certificate expiry day.
              */
@@ -90,11 +109,30 @@ export default {
             return this.$parent.$parent.$parent.settings;
         },
         saveSettings() {
+            localStorage.toastErrorTimeoutSecs = this.$root.toastErrorTimeoutSecs;
+            localStorage.toastOkTimeoutSecs = this.$root.toastOkTimeoutSecs;
             return this.$parent.$parent.$parent.saveSettings;
         },
         settingsLoaded() {
             return this.$parent.$parent.$parent.settingsLoaded;
         },
+    },
+
+    mounted() {
+        if (localStorage.toastOkTimeoutSecs) {
+            this.$root.toastOkTimeoutSecs = localStorage.toastOkTimeoutSecs;
+        }
+        if (!this.$root.toastOkTimeoutSecs) {
+            this.$root.toastOkTimeoutSecs = 10;
+        }
+
+        if (localStorage.toastErrorTimeoutSecs) {
+            this.$root.toastErrorTimeoutSecs = localStorage.toastErrorTimeoutSecs;
+        }
+        if (!this.$root.toastErrorTimeoutSecs) {
+            this.$root.toastErrorTimeoutSecs = 10;
+        }
+
     },
 
     methods: {

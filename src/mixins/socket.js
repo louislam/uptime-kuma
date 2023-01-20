@@ -173,23 +173,15 @@ export default {
                 // Add to important list if it is important
                 // Also toast
                 if (data.important) {
-
                     if (data.status === 0) {
-                        // let timeout = getSettings("toastErrorTimeoutSecs");
-                        let timeout = 10;
-                        if (timeout === -1) {
-                            toast.error(`[${this.monitorList[data.monitorID].name}] [DOWN] ${data.msg}`, {
-                                timeout: false,
-                            });
-                        } else if (timeout > 0) {
-                            toast.error(`[${this.monitorList[data.monitorID].name}] [DOWN] ${data.msg}`, {
-                                timeout: timeout * 1000,
-                            });
-                        }
+                        let timeout = this.storage().toastErrorTimeoutSecs;
+                        toast.error(`[${this.monitorList[data.monitorID].name}] [DOWN] ${data.msg}`, {
+                            timeout: ((timeout === -1) ? false : timeout * 1000),
+                        });
                     } else if (data.status === 1) {
-                        // TODO toastOkTimeoutSecs
+                        let timeout = this.storage().toastOkTimeoutSecs;
                         toast.success(`[${this.monitorList[data.monitorID].name}] [Up] ${data.msg}`, {
-                            timeout: 20000,
+                            timeout: ((timeout === -1) ? false : timeout * 1000),
                         });
                     } else {
                         toast(`[${this.monitorList[data.monitorID].name}] ${data.msg}`);
