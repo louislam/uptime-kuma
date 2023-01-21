@@ -104,7 +104,7 @@ export default {
     "Not available, please setup.": "Not available, please setup.",
     "Setup Notification": "Setup Notification",
     toastMessagesLabel: "Popup notifications",
-    toastMessagesDescription: "The notifications disappear after the given time in seconds. -1: no timeout",
+    toastMessagesDescription: "The notifications disappear after the given time in seconds. -1: no timeout, 0: no notifications",
     toastErrorTimeoutSecs: "Timeout for errors",
     toastOkTimeoutSecs: "Timeout for success",
     Light: "Light",

@@ -168,6 +168,9 @@ export default {
     },
 
     methods: {
+        /**
+         * Delete all toast messages/notifications.
+         */
         deleteNotifications() {
             console.log("deleteNotifications()");
             toast.clear();

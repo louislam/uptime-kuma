@@ -123,14 +123,14 @@ export default {
             this.$root.toastOkTimeoutSecs = localStorage.toastOkTimeoutSecs;
         }
         if (!this.$root.toastOkTimeoutSecs) {
-            this.$root.toastOkTimeoutSecs = 10;
+            this.$root.toastOkTimeoutSecs = 20;
         }
 
         if (localStorage.toastErrorTimeoutSecs) {
             this.$root.toastErrorTimeoutSecs = localStorage.toastErrorTimeoutSecs;
         }
         if (!this.$root.toastErrorTimeoutSecs) {
-            this.$root.toastErrorTimeoutSecs = 10;
+            this.$root.toastErrorTimeoutSecs = 20;
         }
 
     },
