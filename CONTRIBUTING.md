@@ -1,6 +1,6 @@
 # Project Info
 
-First of all, thank you everyone who made pull requests for Uptime Kuma, I never thought GitHub Community can be that nice! And also because of this, I also never thought other people actually read my code and edit my code. It is not structured and commented so well, lol. Sorry about that.
+First of all, I want to thank everyone who made pull requests for Uptime Kuma. I never thought the GitHub Community would be so nice! Because of this, I also never thought that other people would actually read and edit my code. It is not very well structured or commented, sorry about that.
 
 The project was created with vite.js (vue3). Then I created a subdirectory called "server" for server part. Both frontend and backend share the same package.json.
 
@@ -27,7 +27,7 @@ The frontend code build into "dist" directory. The server (express.js) exposes t
 
 ## Can I create a pull request for Uptime Kuma?
 
-Yes or no, it depends on what you will try to do. Since I don't want to waste your time, be sure to **create an empty draft pull request or open an issue, so we can discuss first**. Especially for a large pull request or you don't know it will be merged or not.
+Yes or no, it depends on what you will try to do. Since I don't want to waste your time, be sure to **create an empty draft pull request or open an issue, so we can have a discussion first**. Especially for a large pull request or you don't know it will be merged or not.
 
 Here are some references:
 
@@ -51,6 +51,10 @@ Here are some references:
 - Convert existing code into other programming languages
 - Unnecessary large code changes (Hard to review, causes code conflicts to other pull requests)
 
+The above cases cannot cover all situations.
+
+I (@louislam) have the final say. If your pull request does not meet my expectations, I will reject it, no matter how much time you spend on it. Therefore, it is essential to have a discussion beforehand.
+
 I will mark your pull request in the [milestones](https://github.com/louislam/uptime-kuma/milestones), if I am plan to review and merge it.
 
 Also, please don't rush or ask for ETA, because I have to understand the pull request, make sure it is no breaking changes and stick to my vision of this project, especially for large pull requests.
@@ -73,9 +77,9 @@ Before deep into coding, discussion first is preferred. Creating an empty pull r
 
 ## Project Styles
 
-I personally do not like something need to learn so much and need to config so much before you can finally start the app.
+I personally do not like it when something requires so much learning and configuration before you can finally start the app.
 
-- Easy to install for non-Docker users, no native build dependency is needed (at least for x86_64), no extra config, no extra effort to get it run
+- Easy to install for non-Docker users, no native build dependency is needed (at least for x86_64), no extra config, no extra effort required to get it running
 - Single container for Docker users, no very complex docker-compose file. Just map the volume and expose the port, then good to go
 - Settings should be configurable in the frontend. Environment variable is not encouraged, unless it is related to startup such as `DATA_DIR`.
 - Easy to use
@@ -173,14 +177,10 @@ The data and socket logic are in `src/mixins/socket.js`.
 
 ## Unit Test
 
-It is an end-to-end testing. It is using Jest and Puppeteer.
-
 ```bash
 npm run build
 npm test
 ```
-
-By default, the Chromium window will be shown up during the test. Specifying `HEADLESS_TEST=1` for terminal environments.
 
 ## Dependencies
 
