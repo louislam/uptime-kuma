@@ -119,20 +119,11 @@ export default {
     },
 
     mounted() {
-        if (localStorage.toastOkTimeoutSecs) {
-            this.$root.toastOkTimeoutSecs = localStorage.toastOkTimeoutSecs;
-        }
-        if (!this.$root.toastOkTimeoutSecs) {
-            this.$root.toastOkTimeoutSecs = 20;
-        }
+        this.$root.toastOkTimeoutSecs = (localStorage.toastOkTimeoutSecs ? localStorage.toastOkTimeoutSecs : 20 );
+        localStorage.toastOkTimeoutSecs = this.$root.toastOkTimeoutSecs;
 
-        if (localStorage.toastErrorTimeoutSecs) {
-            this.$root.toastErrorTimeoutSecs = localStorage.toastErrorTimeoutSecs;
-        }
-        if (!this.$root.toastErrorTimeoutSecs) {
-            this.$root.toastErrorTimeoutSecs = 20;
-        }
-
+        this.$root.toastErrorTimeoutSecs = (localStorage.toastErrorTimeoutSecs ? localStorage.toastErrorTimeoutSecs : 20 );
+        localStorage.toastErrorTimeoutSecs = this.$root.toastErrorTimeoutSecs;
     },
 
     methods: {
