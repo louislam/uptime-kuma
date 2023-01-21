@@ -1,0 +1,16 @@
+{{- if .Values.persistence.enabled -}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "uptime-kuma.fullname" . }}-pvc
+  labels:
+    {{- include "uptime-kuma.labels" . | nindent 4 }}
+spec:
+  resources:
+    requests:
+      storage: {{ .Values.persistence.size }}
+  storageClassName: {{ .Values.persistence.storageClass }}
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+{{- end }}

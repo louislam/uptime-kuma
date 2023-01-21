@@ -8,7 +8,7 @@ metadata:
 spec:
   ingressClassName: kong
   rules:
-  - host: uptime.amir.local
+  - host: uptime.example.local
     http:
       paths:
       - pathType: Prefix
