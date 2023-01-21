@@ -669,10 +669,4 @@ export default {
     "General Monitor Type": "Общ тип монитор",
     "Passive Monitor Type": "Пасивет тип монитор",
     "Specific Monitor Type": "Специфичен тип монитор",
-    ZohoCliq: "ZohoCliq",
-    wayToGetZohoCliqURL: "Можете да научите как се създава URL адрес за уеб кука {0}.",
-    Kook: "Kook",
-    wayToGetKookBotToken: "Създайте приложение и вземете вашия бот токен на {0}",
-    wayToGetKookGuildID: "Превключете в 'Developer Mode' в 'Kook' настройките, след което десен клик върху 'guild' за да вземете неговото 'ID'",
-    "Guild ID": "Guild ID",
 };

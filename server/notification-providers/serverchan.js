@@ -21,12 +21,6 @@ class ServerChan extends NotificationProvider {
         }
     }
 
-    /**
-     * Get the formatted title for message
-     * @param {?Object} monitorJSON Monitor details (For Up/Down only)
-     * @param {?Object} heartbeatJSON Heartbeat details (For Up/Down only)
-     * @returns {string} Formatted title
-     */
     checkStatus(heartbeatJSON, monitorJSON) {
         let title = "UptimeKuma Message";
         if (heartbeatJSON != null && heartbeatJSON["status"] === UP) {

@@ -130,7 +130,6 @@
 import { Modal } from "bootstrap";
 import VueMultiselect from "vue-multiselect";
 import { useToast } from "vue-toastification";
-import { colorOptions } from "../util-frontend";
 import Tag from "../components/Tag.vue";
 const toast = useToast();
 
@@ -177,7 +176,24 @@ export default {
             return this.preSelectedTags.concat(this.newTags).filter(tag => !this.deleteTags.find(monitorTag => monitorTag.id === tag.id));
         },
         colorOptions() {
-            return colorOptions(this);
+            return [
+                { name: this.$t("Gray"),
+                    color: "#4B5563" },
+                { name: this.$t("Red"),
+                    color: "#DC2626" },
+                { name: this.$t("Orange"),
+                    color: "#D97706" },
+                { name: this.$t("Green"),
+                    color: "#059669" },
+                { name: this.$t("Blue"),
+                    color: "#2563EB" },
+                { name: this.$t("Indigo"),
+                    color: "#4F46E5" },
+                { name: this.$t("Purple"),
+                    color: "#7C3AED" },
+                { name: this.$t("Pink"),
+                    color: "#DB2777" },
+            ];
         },
         validateDraftTag() {
             let nameInvalid = false;

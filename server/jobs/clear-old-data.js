@@ -25,20 +25,15 @@ const DEFAULT_KEEP_PERIOD = 180;
         parsedPeriod = DEFAULT_KEEP_PERIOD;
     }
 
-    if (parsedPeriod < 1) {
-        log(`Data deletion has been disabled as period is less than 1. Period is ${parsedPeriod} days.`);
-    } else {
+    log(`Clearing Data older than ${parsedPeriod} days...`);
 
-        log(`Clearing Data older than ${parsedPeriod} days...`);
-
-        try {
-            await R.exec(
-                "DELETE FROM heartbeat WHERE time < DATETIME('now', '-' || ? || ' days') ",
-                [ parsedPeriod ]
-            );
-        } catch (e) {
-            log(`Failed to clear old data: ${e.message}`);
-        }
+    try {
+        await R.exec(
+            "DELETE FROM heartbeat WHERE time < DATETIME('now', '-' || ? || ' days') ",
+            [ parsedPeriod ]
+        );
+    } catch (e) {
+        log(`Failed to clear old data: ${e.message}`);
     }
 
     exit();

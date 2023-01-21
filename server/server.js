@@ -941,21 +941,13 @@ let needSetup = false;
             try {
                 checkLogin(socket);
 
-                let bean = await R.findOne("tag", " id = ? ", [ tag.id ]);
-                if (bean == null) {
-                    callback({
-                        ok: false,
-                        msg: "Tag not found",
-                    });
-                    return;
-                }
+                let bean = await R.findOne("monitor", " id = ? ", [ tag.id ]);
                 bean.name = tag.name;
                 bean.color = tag.color;
                 await R.store(bean);
 
                 callback({
                     ok: true,
-                    msg: "Saved",
                     tag: await bean.toJSON(),
                 });
 

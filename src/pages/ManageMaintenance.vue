@@ -133,25 +133,15 @@ export default {
             }
         },
 
-        /**
-         * Get maintenance URL
-         * @param {number} id
-         * @returns {string} Relative URL
-         */
         maintenanceURL(id) {
             return getMaintenanceRelativeURL(id);
         },
 
-        /**
-         * Show delete confirmation
-         * @param {number} maintenanceID
-         */
         deleteDialog(maintenanceID) {
             this.selectedMaintenanceID = maintenanceID;
             this.$refs.confirmDelete.show();
         },
 
-        /** Delete maintenance after showing confirmation dialog */
         deleteMaintenance() {
             this.$root.deleteMaintenance(this.selectedMaintenanceID, (res) => {
                 if (res.ok) {

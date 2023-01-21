@@ -11,7 +11,6 @@ class SimpleMqttServer {
         this.port = port;
     }
 
-    /** Start the MQTT server */
     start() {
         this.server.listen(this.port, () => {
             console.log("server started and listening on port ", this.port);

@@ -44,7 +44,6 @@ import Webhook from "./Webhook.vue";
 import WeCom from "./WeCom.vue";
 import GoAlert from "./GoAlert.vue";
 import ZohoCliq from "./ZohoCliq.vue";
-import Splunk from "./Splunk.vue";
 
 /**
  * Manage all notification form.
@@ -93,7 +92,6 @@ const NotificationFormList = {
     "stackfield": Stackfield,
     "teams": Teams,
     "telegram": Telegram,
-    "Splunk": Splunk,
     "webhook": Webhook,
     "WeCom": WeCom,
     "GoAlert": GoAlert,

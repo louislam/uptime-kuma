@@ -6,11 +6,6 @@ const { UptimeKumaServer } = require("../uptime-kuma-server");
 
 class MaintenanceTimeslot extends BeanModel {
 
-    /**
-     * Return an object that ready to parse to JSON for public
-     * Only show necessary data to public
-     * @returns {Object}
-     */
     async toPublicJSON() {
         const serverTimezoneOffset = UptimeKumaServer.getInstance().getTimezoneOffset();
 
@@ -26,10 +21,6 @@ class MaintenanceTimeslot extends BeanModel {
         return obj;
     }
 
-    /**
-     * Return an object that ready to parse to JSON
-     * @returns {Object}
-     */
     async toJSON() {
         return await this.toPublicJSON();
     }

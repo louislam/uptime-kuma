@@ -591,7 +591,7 @@ export default {
     "You can divide numbers with": "Čísla můžete dělit pomocí",
     "or": "nebo",
     recurringInterval: "Interval",
-    "Recurring": "Opakující se",
+    "Recurring": "Recurring",
     strategyManual: "Aktivní/Neaktivní Ručně",
     warningTimezone: "Používá se časové pásmo serveru",
     weekdayShortMon: "Po",

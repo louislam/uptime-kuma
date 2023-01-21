@@ -352,11 +352,6 @@ export function getMonitorRelativeURL(id: string) {
     return "/dashboard/" + id;
 }
 
-/**
- * Get relative path for maintenance
- * @param id ID of maintenance
- * @returns Formatted relative path
- */
 export function getMaintenanceRelativeURL(id: string) {
     return "/maintenance/" + id;
 }
@@ -410,11 +405,7 @@ export function parseTimeFromTimeObject(obj : any) {
     return result;
 }
 
-/**
- * Convert ISO date to UTC
- * @param input Date
- * @returns ISO Date time
- */
+
 export function isoToUTCDateTime(input : string) {
     return dayjs(input).utc().format(SQL_DATETIME_FORMAT);
 }
@@ -433,12 +424,6 @@ export function utcToLocal(input : string, format = SQL_DATETIME_FORMAT) {
     return dayjs.utc(input).local().format(format);
 }
 
-/**
- * Convert local datetime to UTC
- * @param input Local date
- * @param format Format to return
- * @returns Date in requested format
- */
 export function localToUTC(input : string, format = SQL_DATETIME_FORMAT) {
     return dayjs(input).utc().format(format);
 }

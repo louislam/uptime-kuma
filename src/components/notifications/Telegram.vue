@@ -42,11 +42,6 @@ export default {
         HiddenInput,
     },
     methods: {
-        /**
-         * Get the URL for telegram updates
-         * @param {string} [mode=masked] Should the token be masked?
-         * @returns {string} formatted URL
-         */
         telegramGetUpdatesURL(mode = "masked") {
             let token = `<${this.$t("YOUR BOT TOKEN HERE")}>`;
 
@@ -60,8 +55,6 @@ export default {
 
             return `https://api.telegram.org/bot${token}/getUpdates`;
         },
-
-        /** Get the telegram chat ID */
         async autoGetTelegramChatID() {
             try {
                 let res = await axios.get(this.telegramGetUpdatesURL("withToken"));

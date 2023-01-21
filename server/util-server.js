@@ -1,5 +1,5 @@
 const tcpp = require("tcp-ping");
-const ping = require("@louislam/ping");
+const ping = require("ping");
 const { R } = require("redbean-node");
 const { log, genSecret } = require("../src/util");
 const passwordHash = require("./password-hash");
@@ -14,13 +14,11 @@ const mssql = require("mssql");
 const { Client } = require("pg");
 const postgresConParse = require("pg-connection-string").parse;
 const mysql = require("mysql2");
-const { MongoClient } = require("mongodb");
 const { NtlmClient } = require("axios-ntlm");
 const { Settings } = require("./settings");
 const grpc = require("@grpc/grpc-js");
 const protojs = require("protobufjs");
 const radiusClient = require("node-radius-client");
-const redis = require("redis");
 const {
     dictionaries: {
         rfc2865: { file, attributes },
@@ -105,7 +103,7 @@ exports.pingAsync = function (hostname, ipv6 = false) {
         ping.promise.probe(hostname, {
             v6: ipv6,
             min_reply: 1,
-            deadline: 10,
+            timeout: 10,
         }).then((res) => {
             // If ping failed, it will set field to unknown
             if (res.alive) {
@@ -137,7 +135,7 @@ exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
         const { port, username, password, interval = 20 } = options;
 
         // Adds MQTT protocol to the hostname if not already present
-        if (!/^(?:http|mqtt|ws)s?:\/\//.test(hostname)) {
+        if (!/^(?:http|mqtt)s?:\/\//.test(hostname)) {
             hostname = "mqtt://" + hostname;
         }
 
@@ -147,11 +145,10 @@ exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
             reject(new Error("Timeout"));
         }, interval * 1000 * 0.8);
 
-        const mqttUrl = `${hostname}:${port}`;
+        log.debug("mqtt", "MQTT connecting");
 
-        log.debug("mqtt", `MQTT connecting to ${mqttUrl}`);
-
-        let client = mqtt.connect(mqttUrl, {
+        let client = mqtt.connect(hostname, {
+            port,
             username,
             password
         });
@@ -283,23 +280,18 @@ exports.postgresQuery = function (connectionString, query) {
 
         const client = new Client({ connectionString });
 
-        client.connect((err) => {
-            if (err) {
-                reject(err);
-                client.end();
-            } else {
-                // Connected here
-                client.query(query, (err, res) => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(res);
-                    }
-                    client.end();
-                });
-            }
-        });
+        client.connect();
 
+        return client.query(query)
+            .then(res => {
+                resolve(res);
+            })
+            .catch(err => {
+                reject(err);
+            })
+            .finally(() => {
+                client.end();
+            });
     });
 };
 
@@ -323,23 +315,6 @@ exports.mysqlQuery = function (connectionString, query) {
                 connection.end();
             });
     });
-};
-
-/**
- * Connect to and Ping a MongoDB database
- * @param {string} connectionString The database connection string
- * @returns {Promise<(string[]|Object[]|Object)>}
- */
-exports.mongodbPing = async function (connectionString) {
-    let client = await MongoClient.connect(connectionString);
-    let dbPing = await client.db().command({ ping: 1 });
-    await client.close();
-
-    if (dbPing["ok"] === 1) {
-        return "UP";
-    } else {
-        throw Error("failed");
-    }
 };
 
 /**
@@ -376,30 +351,6 @@ exports.radius = function (
             [ attributes.CALLING_STATION_ID, callingStationId ],
             [ attributes.CALLED_STATION_ID, calledStationId ],
         ],
-    });
-};
-
-/**
- * Redis server ping
- * @param {string} dsn The redis connection string
- */
-exports.redisPingAsync = function (dsn) {
-    return new Promise((resolve, reject) => {
-        const client = redis.createClient({
-            url: dsn,
-        });
-        client.on("error", (err) => {
-            reject(err);
-        });
-        client.connect().then(() => {
-            client.ping().then((res, err) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(res);
-                }
-            });
-        });
     });
 };
 

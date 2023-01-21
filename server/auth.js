@@ -63,12 +63,6 @@ function myAuthorizer(username, password, callback) {
     });
 }
 
-/**
- * Use basic auth if auth is not disabled
- * @param {express.Request} req Express request object
- * @param {express.Response} res Express response object
- * @param {express.NextFunction} next
- */
 exports.basicAuth = async function (req, res, next) {
     const middleware = basicAuth({
         authorizer: myAuthorizer,

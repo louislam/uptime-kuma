@@ -32,7 +32,6 @@ const initBackgroundJobs = function (args) {
     return bree;
 };
 
-/** Stop all background jobs if running */
 const stopBackgroundJobs = function () {
     if (bree) {
         bree.stop();

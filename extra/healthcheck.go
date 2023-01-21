@@ -1,7 +1,3 @@
-/*
- * If changed, have to run `npm run build-docker-builder-go`.
- * This script should be run after a period of time (180s), because the server may need some time to prepare.
- */
 package main
 
 import (

@@ -66,12 +66,6 @@
                                 </router-link>
                             </li>
 
-                            <li>
-                                <a href="https://github.com/louislam/uptime-kuma/wiki" class="dropdown-item" target="_blank">
-                                    <font-awesome-icon icon="info-circle" /> {{ $t("Help") }}
-                                </a>
-                            </li>
-
                             <li v-if="$root.loggedIn && $root.socket.token !== 'autoLogin'">
                                 <button class="dropdown-item" @click="$root.logout">
                                     <font-awesome-icon icon="sign-out-alt" />

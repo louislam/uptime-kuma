@@ -10,10 +10,6 @@ if (!newVersion) {
 
 updateWiki(newVersion);
 
-/**
- * Update the wiki with new version number
- * @param {string} newVersion Version to update to
- */
 function updateWiki(newVersion) {
     const wikiDir = "./tmp/wiki";
     const howToUpdateFilename = "./tmp/wiki/🆙-How-to-Update.md";
@@ -43,10 +39,6 @@ function updateWiki(newVersion) {
     safeDelete(wikiDir);
 }
 
-/**
- * Check if a directory exists and then delete it
- * @param {string} dir Directory to delete
- */
 function safeDelete(dir) {
     if (fs.existsSync(dir)) {
         fs.rm(dir, {

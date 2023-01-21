@@ -8,14 +8,6 @@ class PromoSMS extends NotificationProvider {
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
 
-        if (notification.promosmsAllowLongSMS === undefined) {
-            notification.promosmsAllowLongSMS = false;
-        }
-
-        //TODO: Add option for enabling special characters. It will decrese message max length from 160 to 70 chars.
-        //Lets remove non ascii char
-        let cleanMsg = msg.replace(/[^\x00-\x7F]/g, "");
-
         try {
             let config = {
                 headers: {
@@ -26,9 +18,8 @@ class PromoSMS extends NotificationProvider {
             };
             let data = {
                 "recipients": [ notification.promosmsPhoneNumber ],
-                //Trim message to maximum length of 1 SMS or 4 if we allowed long messages
-                "text": notification.promosmsAllowLongSMS ? cleanMsg.substring(0, 639) : cleanMsg.substring(0, 159),
-                "long-sms": notification.promosmsAllowLongSMS,
+                //Lets remove non ascii char
+                "text": msg.replace(/[^\x00-\x7F]/g, ""),
                 "type": Number(notification.promosmsSMSType),
                 "sender": notification.promosmsSenderName
             };

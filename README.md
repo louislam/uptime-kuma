@@ -7,9 +7,9 @@
     <img src="./public/icon.svg" width="128" alt="" />
 </div>
 
-Uptime Kuma is an easy-to-use self-hosted monitoring tool.
+It is a self-hosted monitoring tool like "Uptime Robot".
 
-<img src="https://user-images.githubusercontent.com/1336778/212262296-e6205815-ad62-488c-83ec-a5b0d0689f7c.jpg" width="700" alt="" />
+<img src="https://uptime.kuma.pet/img/dark.jpg" width="700" alt="" />
 
 ## 🥔 Live Demo
 
