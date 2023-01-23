@@ -35,8 +35,8 @@ export default {
             if (this.$root.uptimeList[key] !== undefined) {
                 let result = Math.round(this.$root.uptimeList[key] * 10000) / 100;
                 // Only perform sanity check on status page. See louislam/uptime-kuma#2628
-                if (this.$route.path.startsWith("/status")) {
-                    return result > 100 ? "100%" : result + "%";
+                if (this.$route.path.startsWith("/status") && result > 100) {
+                    return "100%";
                 } else {
                     return result + "%";
                 }
