@@ -679,5 +679,6 @@
     "high": "高价",
     "General Monitor Type": "常规监控类型",
     "Passive Monitor Type": "被动监控类型",
-    "Specific Monitor Type": "针对监控类型"
+    "Specific Monitor Type": "针对监控类型",
+    "dataRetentionTimeError": "保留期必须为0或更大"
 }
