@@ -1036,5 +1036,10 @@
     "Body Encoding": "",
     "Kafka Producer Message": "",
     "Enable Kafka Producer Auto Topic Creation": "",
-    "setupDatabaseEmbeddedMariaDB": ""
+    "setupDatabaseEmbeddedMariaDB": "",
+    "Add New below or Select...": "",
+    "backupOutdatedWarning": "",
+    "Enable DNS Cache": "",
+    "Search...": "",
+    "trustProxyDescription": ""
 }
