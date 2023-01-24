@@ -181,7 +181,7 @@ export default {
     "Add New below or Select...": "Add New below or Select...",
     "Tag with this name already exist.": "Tag with this name already exists.",
     "Tag with this value already exist.": "Tag with this value already exists.",
-    Color: "Color",
+    color: "Color",
     "value (optional)": "value (optional)",
     Gray: "Gray",
     Red: "Red",
