@@ -16,7 +16,7 @@ Please delete any options that are not relevant.
 - User interface (UI)
 - New feature (non-breaking change which adds functionality)
 - Breaking change (fix or feature that would cause existing functionality to not work as expected)
-- Translation update
+- ~Translation update~ (Do not accept now, as migration to [Weblate](https://weblate.kuma.pet) is WIP, see #2611)
 - Other
 - This change requires a documentation update
 
