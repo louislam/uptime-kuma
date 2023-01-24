@@ -2,7 +2,7 @@
 
 (2023-01-24 Updated)
 
-1. Go to https://weblate.kuma.pet
+1. Go to [https://weblate.kuma.pet](https://weblate.kuma.pet/projects/uptime-kuma/uptime-kuma/)
 
 # How to add a new language in the dropdown
 
