@@ -33,7 +33,6 @@ Here are some references:
 
 ✅ Usually Accept:
 - Bug/Security fix
-- Translations
 - Adding notification providers
 
 ⚠️ Discussion First
@@ -41,6 +40,7 @@ Here are some references:
 - New features
 
 ❌ Won't Merge
+- Translations (You can now translate on https://weblate.kuma.pet)
 - Do not pass auto test
 - Any breaking changes
 - Duplicated pull request
