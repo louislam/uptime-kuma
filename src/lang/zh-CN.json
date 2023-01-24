@@ -686,5 +686,6 @@
     "promosmsAllowLongSMS": "允许长的短信",
     "confirmDeleteTagMsg": "你确定你要删除这个标签？与此标签关联的监视器不会被删除。",
     "infiniteRetention": "设为0表示无限保留期。",
-    "Help": "帮助"
+    "Help": "帮助",
+    "Game": "游戏"
 }
