@@ -1,3 +1,16 @@
 {
-    "languageName": "繁體中文 (廣東話 / 粵語)"
+    "languageName": "繁體中文 (廣東話 / 粵語)",
+    "Settings": "設定",
+    "General": "一般",
+    "Dashboard": "表板",
+    "Help": "幫助",
+    "New Update": "有新版本",
+    "Language": "語言",
+    "Appearance": "外觀",
+    "Theme": "主題",
+    "Game": "遊戲",
+    "Version": "版本",
+    "Check Update On GitHub": "去  GitHub  睇下有冇更新",
+    "List": "列表",
+    "Add": "新增"
 }
