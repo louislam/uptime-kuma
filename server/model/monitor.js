@@ -502,7 +502,7 @@ class Monitor extends BeanModel {
                         bean.status = UP;
                         bean.ping = state.ping;
                     } catch (e) {
-                        throw new Error("Server is offline");
+                        throw new Error(e.message);
                     }
                 } else if (this.type === "docker") {
                     log.debug(`[${this.name}] Prepare Options for Axios`);
