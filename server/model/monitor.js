@@ -200,7 +200,7 @@ class Monitor extends BeanModel {
         let previousBeat = null;
         let retries = 0;
 
-        let prometheus = new Prometheus(this);
+        this.prometheus = new Prometheus(this);
 
         const beat = async () => {
 
@@ -729,7 +729,7 @@ class Monitor extends BeanModel {
             await R.store(bean);
 
             log.debug("monitor", `[${this.name}] prometheus.update`);
-            prometheus.update(bean, tlsInfo);
+            this.prometheus.update(bean, tlsInfo);
 
             previousBeat = bean;
 
@@ -814,15 +814,15 @@ class Monitor extends BeanModel {
         clearTimeout(this.heartbeatInterval);
         this.isStop = true;
 
-        this.prometheus().remove();
+        this.prometheus.remove();
     }
 
     /**
-     * Get a new prometheus instance
-     * @returns {Prometheus}
+     * Get prometheus instance
+     * @returns {Prometheus|undefined}
      */
-    prometheus() {
-        return new Prometheus(this);
+    getPrometheus() {
+        return this.prometheus;
     }
 
     /**
