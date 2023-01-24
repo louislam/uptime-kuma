@@ -9,7 +9,7 @@
     "upsideDownModeDescription": "反转状态监控，如果服务可访问，则认为是故障。",
     "maxRedirectDescription": "允许的最大重定向次数。设置为 0 禁用重定向。",
     "enableGRPCTls": "允许通过 TLS 连接发送 gRPC 请求",
-    "grpcMethodDescription": "方法名会转换为小驼峰格式，例如 sayHello、check 等等",
+    "grpcMethodDescription": "方法名会转换为小驼峰格式，例如 sayHello、check 等等。",
     "acceptedStatusCodesDescription": "选择被视为成功响应的状态码。",
     "Maintenance": "维护",
     "statusMaintenance": "维护",
@@ -680,5 +680,10 @@
     "General Monitor Type": "常规监控类型",
     "Passive Monitor Type": "被动监控类型",
     "Specific Monitor Type": "针对监控类型",
-    "dataRetentionTimeError": "保留期必须为0或更大"
+    "dataRetentionTimeError": "保留期必须为0或更大",
+    "Monitor": "监控项 | 监控项",
+    "Custom": "自定义",
+    "promosmsAllowLongSMS": "允许长的短信",
+    "confirmDeleteTagMsg": "你确定你要删除这个标签？与此标签关联的监视器不会被删除。",
+    "infiniteRetention": "设为0表示无限保留期。"
 }
