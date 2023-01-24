@@ -384,5 +384,6 @@
     "statusMaintenance": "維護中",
     "Enable DNS Cache": "啟用 DNS 快取",
     "Enable": "啟用",
-    "Disable": "停用"
+    "Disable": "停用",
+    "Schedule maintenance": "計劃維護"
 }
