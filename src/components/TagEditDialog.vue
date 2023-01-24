@@ -16,7 +16,7 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="tag-color" class="form-label">{{ $t("color") }}</label>
+                            <label for="tag-color" class="form-label">{{ $t("Color") }}</label>
                             <div class="d-flex">
                                 <div class="col-8 pe-1">
                                     <vue-multiselect
@@ -24,7 +24,7 @@
                                         :options="colorOptions"
                                         :multiple="false"
                                         :searchable="true"
-                                        :placeholder="$t('color')"
+                                        :placeholder="$t('Color')"
                                         track-by="color"
                                         label="name"
                                         select-label=""

@@ -71,7 +71,7 @@
                                     :options="colorOptions"
                                     :multiple="false"
                                     :searchable="true"
-                                    :placeholder="$t('color')"
+                                    :placeholder="$t('Color')"
                                     track-by="color"
                                     label="name"
                                     select-label=""
