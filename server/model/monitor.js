@@ -506,7 +506,7 @@ class Monitor extends BeanModel {
                         throw new Error(e.message);
                     }
                 } else if (this.type === "docker") {
-                    log.debug(`[${this.name}] Prepare Options for Axios`);
+                    log.debug("monitor", `[${this.name}] Prepare Options for Axios`);
 
                     const dockerHost = await R.load("docker_host", this.docker_host);
 
@@ -532,7 +532,7 @@ class Monitor extends BeanModel {
                         options.baseURL = DockerHost.patchDockerURL(dockerHost._dockerDaemon);
                     }
 
-                    log.debug(`[${this.name}] Axios Request`);
+                    log.debug("monitor", `[${this.name}] Axios Request`);
                     let res = await axios.request(options);
                     if (res.data.State.Running) {
                         bean.status = UP;
