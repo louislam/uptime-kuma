@@ -386,5 +386,7 @@
     "Enable": "啟用",
     "Disable": "停用",
     "Schedule maintenance": "計劃維護",
-    "Help": "幫助"
+    "Help": "幫助",
+    "Valid To:": "有效期至：",
+    "Date Created": "新增日期"
 }
