@@ -38,7 +38,6 @@ class Monitor extends BeanModel {
             id: this.id,
             name: this.name,
             sendUrl: this.sendUrl,
-            maintenance: await Monitor.isUnderMaintenance(this.id),
         };
 
         if (this.sendUrl) {
@@ -496,13 +495,17 @@ class Monitor extends BeanModel {
 
                     const options = {
                         url: `/containers/${this.docker_container}/json`,
+                        timeout: this.interval * 1000 * 0.8,
                         headers: {
                             "Accept": "*/*",
                             "User-Agent": "Uptime-Kuma/" + version,
                         },
-                        httpsAgent: new https.Agent({
+                        httpsAgent: CacheableDnsHttpAgent.getHttpsAgent({
                             maxCachedSessions: 0,      // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
-                            rejectUnauthorized: ! this.getIgnoreTls(),
+                            rejectUnauthorized: !this.getIgnoreTls(),
+                        }),
+                        httpAgent: CacheableDnsHttpAgent.getHttpAgent({
+                            maxCachedSessions: 0,
                         }),
                     };
 
@@ -765,6 +768,13 @@ class Monitor extends BeanModel {
         }
     }
 
+    /**
+     * Make a request using axios
+     * @param {Object} options Options for Axios
+     * @param {boolean} finalCall Should this be the final call i.e
+     * don't retry on faliure
+     * @returns {Object} Axios response
+     */
     async makeAxiosRequest(options, finalCall = false) {
         try {
             let res;
@@ -1246,6 +1256,7 @@ class Monitor extends BeanModel {
         return maintenance.count !== 0;
     }
 
+    /** Make sure monitor interval is between bounds */
     validate() {
         if (this.interval > MAX_INTERVAL_SECOND) {
             throw new Error(`Interval cannot be more than ${MAX_INTERVAL_SECOND} seconds`);
