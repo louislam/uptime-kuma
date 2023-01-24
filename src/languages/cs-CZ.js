@@ -242,7 +242,7 @@ export default {
     teams: "Microsoft Teams",
     "Webhook URL": "URL adresa webhooku",
     wayToGetTeamsURL: "Informace o tom, jak vytvořit URL adresu webhooku naleznete {0}.",
-    wayToGetZohoCliqURL: "Informace o tom, jak vytvořit URL adresu webhooku naleznete {0}."
+    wayToGetZohoCliqURL: "Informace o tom, jak vytvořit URL adresu webhooku naleznete {0}.",
     signal: "Signal",
     Number: "Číslo",
     Recipients: "Příjemci",
