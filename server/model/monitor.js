@@ -495,7 +495,8 @@ class Monitor extends BeanModel {
                         const state = await Gamedig.query({
                             type: this.game,
                             host: this.hostname,
-                            port: this.port
+                            port: this.port,
+                            givenPortOnly: true,
                         });
 
                         bean.msg = state.name;
