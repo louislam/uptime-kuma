@@ -668,5 +668,6 @@
     "high": "高",
     "General Monitor Type": "一般監測器類型",
     "Passive Monitor Type": "被動監測器類型",
-    "Specific Monitor Type": "指定監測器類型"
+    "Specific Monitor Type": "指定監測器類型",
+    "ZohoCliq": "ZohoCliq"
 }

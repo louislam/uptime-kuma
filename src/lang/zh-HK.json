@@ -384,5 +384,22 @@
     "statusMaintenance": "維護中",
     "Enable DNS Cache": "啟用 DNS 快取",
     "Enable": "啟用",
-    "Disable": "停用"
+    "Disable": "停用",
+    "Schedule maintenance": "計劃維護",
+    "Help": "幫助",
+    "Valid To:": "有效期至：",
+    "Date Created": "新增日期",
+    "resendEveryXTimes": "每 {0} 次便重新傳送",
+    "resendDisabled": "重新傳送已停用",
+    "enableGRPCTls": "允許以 TLS 連線傳送 gRPC 要求",
+    "recurringIntervalMessage": "每天一次 | 每 {0} 天一次",
+    "affectedMonitorsDescription": "選擇受目前維護影響的監測器",
+    "affectedStatusPages": "在已選取的狀態頁中顯示此維護訊息",
+    "Primary Base URL": "主要 Base URL",
+    "Passive Monitor Type": "被動監測器類型",
+    "Resend Notification if Down X times consequently": "若 X 次心跳皆離線，重新傳送通知",
+    "Game": "遊戲",
+    "Specific Monitor Type": "特定監測器類型",
+    "Monitor": "監測器 | 監測器",
+    "General Monitor Type": "一般監測器類型"
 }

@@ -170,7 +170,7 @@
     "Setup 2FA": "Configurer la double authentification (2FA)",
     "Enable 2FA": "Activer la double authentification (2FA)",
     "Disable 2FA": "Désactiver la double authentification (2FA)",
-    "2FA Settings": "Paramètres de la la double authentification (2FA)",
+    "2FA Settings": "Paramètres de la double authentification (2FA)",
     "Two Factor Authentication": "Double authentification",
     "Active": "Actif",
     "Inactive": "Inactif",
@@ -309,7 +309,7 @@
     "Basic Settings": "Paramètres de base",
     "User ID": "Identifiant utilisateur",
     "Messaging API": "Messaging API",
-    "wayToGetLineChannelToken": "Premièrement accédez à {0}, créez un <i>provider</i> et définissez un type de salon à « Messaging API ». Vous pourrez alors avoir  puis vous pourrez avoir le jeton d'accès du salon et l'identifiant utilisateur demandés.",
+    "wayToGetLineChannelToken": "Premièrement accédez à {0}, créez un <i>provider</i> et définissez un type de salon à «Messaging API». Vous obtiendrez alors le jeton d'accès du salon et l'identifiant utilisateur demandés.",
     "Icon URL": "URL vers l'icône",
     "aboutIconURL": "Vous pouvez mettre un lien vers une image dans « URL vers l'icône » pour remplacer l'image de profil par défaut. Elle ne sera utilisé que si « Icône émoji » n'est pas défini.",
     "aboutMattermostChannelName": "Vous pouvez remplacer le salon par défaut que le webhook utilise en mettant le nom du salon dans le champ « Nom du salon ». Vous aurez besoin de l'activer depuis les paramètres de Mattermost. Ex. : #autre-salon",
@@ -680,5 +680,7 @@
     "Monitor": "Sonde | Sondes",
     "Custom": "Personnalisé",
     "confirmDeleteTagMsg": "Voulez-vous vraiment supprimer cette étiquettes ? Les moniteurs associés ne seront pas supprimés.",
-    "promosmsAllowLongSMS": "Autoriser les longs SMS"
+    "promosmsAllowLongSMS": "Autoriser les longs SMS",
+    "Help": "Aide",
+    "Game": "Jeux"
 }
