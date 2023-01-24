@@ -57,7 +57,7 @@
     "List": "Seznam",
     "Add": "Přidat",
     "Add New Monitor": "Přidat nový dohled",
-    "Quick Stats": "Rychlé statistiky",
+    "Quick Stats": "Rychlý přehled",
     "Up": "Běží",
     "Down": "Nedostupný",
     "Pending": "Čekám",
@@ -681,5 +681,6 @@
     "dataRetentionTimeError": "Doba pro uchování musí být větší nebo rovna 0",
     "infiniteRetention": "Pro nekonečný záznam zadejte 0.",
     "confirmDeleteTagMsg": "Opravdu chcete odstranit tento štítek? Provedením této akce nedojde k odstranění dohledů, které jej mají přiřazeny.",
-    "Help": "Nápověda"
+    "Help": "Nápověda",
+    "Game": "Hra"
 }
