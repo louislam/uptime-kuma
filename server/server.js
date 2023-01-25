@@ -110,7 +110,7 @@ const cloudflaredToken = args["cloudflared-token"] || process.env.UPTIME_KUMA_CL
 
 // 2FA / notp verification defaults
 const twoFAVerifyOptions = {
-    "window": 1,
+    "window": 3,
     "time": 30
 };
 
