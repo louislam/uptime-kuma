@@ -682,6 +682,5 @@
     "infiniteRetention": "Pro nekonečný záznam zadejte 0.",
     "confirmDeleteTagMsg": "Opravdu chcete odstranit tento štítek? Provedením této akce nedojde k odstranění dohledů, které jej mají přiřazeny.",
     "Help": "Nápověda",
-    "Game": "Hra",
-    "Packet Size": "Packet Size"
+    "Game": "Hra"
 }
