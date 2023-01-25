@@ -596,7 +596,5 @@
     "resendEveryXTimes": "Повторная отправка каждые {0} раз",
     "resendDisabled": "Повторная отправка отключена",
     "deleteMaintenanceMsg": "Вы действительно хотите удалить это обслуживание?",
-    "ZohoCliq": "ZohoCliq",
-    "critical": "критично",
-    "smseagle": "SMSEagle"
+    "critical": "критично"
 }

@@ -383,7 +383,7 @@
     "Services": "服务",
     "Discard": "放弃",
     "Cancel": "取消",
-    "Powered by": "Powered by",
+    "Powered by": "技术支持：",
     "shrinkDatabaseDescription": "触发 SQLite 数据库的 VACUUM 命令，如果您的数据库是在 1.10.0 版本之后创建的，则已启用 AUTO_VACUUM，不再需要此操作。",
     "serwersms": "SerwerSMS.pl",
     "serwersmsAPIUser": "API 用户名（包括 webapi_ 前缀）",

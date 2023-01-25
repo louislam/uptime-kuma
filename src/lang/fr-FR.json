@@ -682,5 +682,6 @@
     "confirmDeleteTagMsg": "Voulez-vous vraiment supprimer cette étiquettes ? Les moniteurs associés ne seront pas supprimés.",
     "promosmsAllowLongSMS": "Autoriser les longs SMS",
     "Help": "Aide",
-    "Game": "Jeux"
+    "Game": "Jeux",
+    "Packet Size": "Taille du paquet"
 }

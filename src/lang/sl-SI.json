@@ -352,6 +352,5 @@
     "serwersmsAPIUser": "API uporabniško ime (vključno z webapi_ prefix)",
     "serwersmsAPIPassword": "API geslo",
     "serwersmsPhoneNumber": "Telefonska številka",
-    "serwersmsSenderName": "Ime SMS pošiljatelja (registrirani prek portala za stranke)",
-    "stackfield": "Stackfield"
+    "serwersmsSenderName": "Ime SMS pošiljatelja (registrirani prek portala za stranke)"
 }
