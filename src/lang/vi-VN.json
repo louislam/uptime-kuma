@@ -265,7 +265,7 @@
     "apiCredentials": "API credentials",
     "octopushLegacyHint": "Bạn muốn sử dụng phiên bản cũ của Octopush (2011-2020) hay phiên bản mới?",
     "Check octopush prices": "Kiểm tra giá octopush {0}.",
-    "octopushPhoneNumber": "Số điện thoại (Định dạng intl, vd : +84692341165​) ",
+    "octopushPhoneNumber": "Số điện thoại (Định dạng intl, vd : +84692341165) ",
     "octopushSMSSender": "SMS người gửi : 3-11 ký tự chữ, số và dấu cách (a-zA-Z0-9)",
     "LunaSea Device ID": "LunaSea ID thiết bị",
     "Apprise URL": "Apprise URL",
@@ -459,11 +459,5 @@
     "onebotGroupMessage": "Group",
     "onebotPrivateMessage": "Private",
     "onebotUserOrGroupId": "Group/User ID",
-    "onebotSafetyTips": "Để đảm bảo an toàn, hãy thiết lập access token",
-    "PushDeer Key": "PushDeer Key",
-    "Footer Text": "Footer Text",
-    "Show Powered By": "Show Powered By",
-    "Domain Names": "Domain Names",
-    "signedInDisp": "Signed in as {0}",
-    "signedInDispDisabled": "Auth Disabled."
+    "onebotSafetyTips": "Để đảm bảo an toàn, hãy thiết lập access token"
 }

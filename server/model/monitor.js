@@ -18,6 +18,7 @@ const { CacheableDnsHttpAgent } = require("../cacheable-dns-http-agent");
 const { DockerHost } = require("../docker");
 const Maintenance = require("./maintenance");
 const { UptimeCacheList } = require("../uptime-cache-list");
+const Gamedig = require("gamedig");
 
 /**
  * status:
@@ -86,6 +87,7 @@ class Monitor extends BeanModel {
             expiryNotification: this.isEnabledExpiryNotification(),
             ignoreTls: this.getIgnoreTls(),
             upsideDown: this.isUpsideDown(),
+            packetSize: this.packetSize,
             maxredirects: this.maxredirects,
             accepted_statuscodes: this.getAcceptedStatuscodes(),
             dns_resolve_type: this.dns_resolve_type,
@@ -108,6 +110,7 @@ class Monitor extends BeanModel {
             grpcEnableTls: this.getGrpcEnableTls(),
             radiusCalledStationId: this.radiusCalledStationId,
             radiusCallingStationId: this.radiusCallingStationId,
+            game: this.game,
             httpBodyEncoding: this.httpBodyEncoding
         };
 
@@ -386,7 +389,7 @@ class Monitor extends BeanModel {
                     bean.status = UP;
 
                 } else if (this.type === "ping") {
-                    bean.ping = await ping(this.hostname);
+                    bean.ping = await ping(this.hostname, this.packetSize);
                     bean.msg = "";
                     bean.status = UP;
                 } else if (this.type === "dns") {
@@ -496,13 +499,28 @@ class Monitor extends BeanModel {
                         bean.msg = res.data.response.servers[0].name;
 
                         try {
-                            bean.ping = await ping(this.hostname);
+                            bean.ping = await ping(this.hostname, this.packetSize);
                         } catch (_) { }
                     } else {
                         throw new Error("Server not found on Steam");
                     }
+                } else if (this.type === "gamedig") {
+                    try {
+                        const state = await Gamedig.query({
+                            type: this.game,
+                            host: this.hostname,
+                            port: this.port,
+                            givenPortOnly: true,
+                        });
+
+                        bean.msg = state.name;
+                        bean.status = UP;
+                        bean.ping = state.ping;
+                    } catch (e) {
+                        throw new Error(e.message);
+                    }
                 } else if (this.type === "docker") {
-                    log.debug(`[${this.name}] Prepare Options for Axios`);
+                    log.debug("monitor", `[${this.name}] Prepare Options for Axios`);
 
                     const dockerHost = await R.load("docker_host", this.docker_host);
 
@@ -528,7 +546,7 @@ class Monitor extends BeanModel {
                         options.baseURL = DockerHost.patchDockerURL(dockerHost._dockerDaemon);
                     }
 
-                    log.debug(`[${this.name}] Axios Request`);
+                    log.debug("monitor", `[${this.name}] Axios Request`);
                     let res = await axios.request(options);
                     if (res.data.State.Running) {
                         bean.status = UP;

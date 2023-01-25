@@ -519,7 +519,7 @@
     "Retype the address.": "De URL controleren en/of opnnieuw typen.",
     "Go back to the previous page.": "Terug naar de vorige pagina.",
     "Coming Soon": "Binnenkort beschikbaar",
-    "wayToGetClickSendSMSToken": "Je kan een  API Username en API Key krijgen vanuit {0} .",
+    "wayToGetClickSendSMSToken": "Je kan een API Username en API Key krijgen vanuit {0} .",
     "Connection String": "Connection String",
     "Query": "Query",
     "settingsCertificateExpiry": "TLS Certificate Expiry",

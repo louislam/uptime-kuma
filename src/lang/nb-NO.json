@@ -271,7 +271,7 @@
     "Basic Settings": "Grunnleggende instillinger",
     "User ID": "Bruker-ID",
     "Messaging API": "Meldings-API",
-    "wayToGetLineChannelToken": "Først, få tilgang til {0}, lag en leverandør og kanal (Meldings-API),  deretter kan du hente kanaltilgangs-token og bruker id fra menu-valgene nevnt over.",
+    "wayToGetLineChannelToken": "Først, få tilgang til {0}, lag en leverandør og kanal (Meldings-API), deretter kan du hente kanaltilgangs-token og bruker id fra menu-valgene nevnt over.",
     "Icon URL": "Ikon URL",
     "aboutIconURL": "Du kan gi en link til et bilde i \"Ikon URL\" for å overskrive det standard profilbildet. Vil ikke bli brukt hvis Ikon Emoji ikke er satt.",
     "aboutMattermostChannelName": "Du kan overskrive standardkanalen som webhook-en poster i ved å skrive enn kanalnavnet i \"Kanalnavn\" feltet. Dette må være skrudd på i Mattermost webhook-instillingene. Eks: #other-channel",

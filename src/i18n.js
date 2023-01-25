@@ -37,6 +37,7 @@ const languageList = {
     "uk-UA": "Український",
     "th-TH": "ไทย",
     "el-GR": "Ελληνικά",
+    "yue": "繁體中文 (廣東話 / 粵語)",
 };
 
 let messages = {

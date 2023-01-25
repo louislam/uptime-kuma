@@ -96,7 +96,7 @@
     "Certificate Info": "Certifikatoplysninger",
     "keywordDescription": "Søg efter et søgeord i almindelig HTML- eller JSON -output. Bemærk, at der skelnes mellem store og små bogstaver.",
     "deleteMonitorMsg": "Er du sikker på, at du vil slette overvågeren?",
-    "deleteNotificationMsg": "Er du sikker på, at du vil slette denne underretning for alle overvågere? ",
+    "deleteNotificationMsg": "Er du sikker på, at du vil slette denne underretning for alle overvågere?",
     "resolverserverDescription": "Cloudflare er standardserveren, den kan til enhver tid ændres.",
     "Resolver Server": "Navne-server",
     "rrtypeDescription": "Vælg den type RR, du vil overvåge.",
@@ -350,6 +350,5 @@
     "serwersmsAPIUser": "API Brugernavn (inkl. webapi_ prefix)",
     "serwersmsAPIPassword": "API Adgangskode",
     "serwersmsPhoneNumber": "Telefonnummer",
-    "serwersmsSenderName": "SMS Afsender Navn (registreret via kundeportal)",
-    "stackfield": "Stackfield"
+    "serwersmsSenderName": "SMS Afsender Navn (registreret via kundeportal)"
 }

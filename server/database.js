@@ -65,7 +65,9 @@ class Database {
         "patch-grpc-monitor.sql": true,
         "patch-add-radius-monitor.sql": true,
         "patch-monitor-add-resend-interval.sql": true,
+        "patch-ping-packet-size.sql": true,
         "patch-maintenance-table2.sql": true,
+        "patch-add-gamedig-monitor.sql": true,
         "patch-http-body-encoding.sql": true
     };
 

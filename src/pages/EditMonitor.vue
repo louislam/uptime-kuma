@@ -45,6 +45,9 @@
                                         <option value="steam">
                                             {{ $t("Steam Game Server") }}
                                         </option>
+                                        <option value="gamedig">
+                                            GameDig
+                                        </option>
                                         <option value="mqtt">
                                             MQTT
                                         </option>
@@ -107,16 +110,27 @@
                                 </div>
                             </div>
 
+                            <!-- Game -->
+                            <!-- GameDig only -->
+                            <div v-if="monitor.type === 'gamedig'" class="my-3">
+                                <label for="game" class="form-label"> {{ $t("Game") }} </label>
+                                <select id="game" v-model="monitor.game" class="form-select" required>
+                                    <option v-for="game in gameList" :key="game.keys[0]" :value="game.keys[0]">
+                                        {{ game.pretty }}
+                                    </option>
+                                </select>
+                            </div>
+
                             <!-- Hostname -->
                             <!-- TCP Port / Ping / DNS / Steam / MQTT / Radius only -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'mqtt' || monitor.type === 'radius'" class="my-3">
+                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'gamedig' ||monitor.type === 'mqtt' || monitor.type === 'radius'" class="my-3">
                                 <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>
                                 <input id="hostname" v-model="monitor.hostname" type="text" class="form-control" :pattern="`${monitor.type === 'mqtt' ? mqttIpOrHostnameRegexPattern : ipOrHostnameRegexPattern}`" required>
                             </div>
 
                             <!-- Port -->
                             <!-- For TCP Port / Steam / MQTT / Radius Type -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'steam' || monitor.type === 'mqtt' || monitor.type === 'radius'" class="my-3">
+                            <div v-if="monitor.type === 'port' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius'" class="my-3">
                                 <label for="port" class="form-label">{{ $t("Port") }}</label>
                                 <input id="port" v-model="monitor.port" type="number" class="form-control" required min="0" max="65535" step="1">
                             </div>
@@ -349,6 +363,12 @@
                                 <div class="form-text">
                                     {{ $t("upsideDownModeDescription") }}
                                 </div>
+                            </div>
+
+                            <!-- Ping packet size -->
+                            <div v-if="monitor.type === 'ping'" class="my-3">
+                                <label for="packet-size" class="form-label">{{ $t("Packet Size") }}</label>
+                                <input id="packet-size" v-model="monitor.packetSize" type="number" class="form-control" required min="1" max="65500" step="1">
                             </div>
 
                             <!-- HTTP / Keyword only -->
@@ -635,7 +655,8 @@ export default {
             acceptedStatusCodeOptions: [],
             dnsresolvetypeOptions: [],
             ipOrHostnameRegexPattern: hostNameRegexPattern(),
-            mqttIpOrHostnameRegexPattern: hostNameRegexPattern(true)
+            mqttIpOrHostnameRegexPattern: hostNameRegexPattern(true),
+            gameList: null,
         };
     },
 
@@ -712,7 +733,18 @@ message HealthCheckResponse {
 {
     "HeaderName": "HeaderValue"
 }` ]);
-        }
+        },
+
+        currentGameObject() {
+            if (this.gameList) {
+                for (let game of this.gameList) {
+                    if (game.keys[0] === this.monitor.game) {
+                        return game;
+                    }
+                }
+            }
+            return null;
+        },
 
     },
     watch: {
@@ -756,6 +788,24 @@ message HealthCheckResponse {
                     this.monitor.port = undefined;
                 }
             }
+
+            // Get the game list from server
+            if (this.monitor.type === "gamedig") {
+                this.$root.getSocket().emit("getGameList", (res) => {
+                    if (res.ok) {
+                        this.gameList = res.gameList;
+                    } else {
+                        toast.error(res.msg);
+                    }
+                });
+            }
+        },
+
+        currentGameObject(newGameObject, previousGameObject) {
+            if (!this.monitor.port || (previousGameObject && previousGameObject.options.port === this.monitor.port)) {
+                this.monitor.port = newGameObject.options.port;
+            }
+            this.monitor.game = newGameObject.keys[0];
         }
 
     },
@@ -807,6 +857,7 @@ message HealthCheckResponse {
                     notificationIDList: {},
                     ignoreTls: false,
                     upsideDown: false,
+                    packetSize: 56,
                     expiryNotification: false,
                     maxredirects: 10,
                     accepted_statuscodes: [ "200-299" ],
@@ -947,7 +998,7 @@ message HealthCheckResponse {
         // Enable it if the Docker Host is added in EditMonitor.vue
         addedDockerHost(id) {
             this.monitor.docker_host = id;
-        }
+        },
     },
 };
 </script>
