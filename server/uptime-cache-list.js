@@ -6,10 +6,10 @@ class UptimeCacheList {
     static list = {};
 
     /**
-     *
-     * @param monitorID
-     * @param duration
-     * @return number
+     * Get the uptime for a specific period
+     * @param {number} monitorID
+     * @param {number} duration
+     * @return {number}
      */
     static getUptime(monitorID, duration) {
         if (UptimeCacheList.list[monitorID] && UptimeCacheList.list[monitorID][duration]) {
@@ -20,6 +20,12 @@ class UptimeCacheList {
         }
     }
 
+    /**
+     * Add uptime for specified monitor
+     * @param {number} monitorID
+     * @param {number} duration
+     * @param {number} uptime Uptime to add
+     */
     static addUptime(monitorID, duration, uptime) {
         log.debug("UptimeCacheList", "addUptime: " + monitorID + " " + duration);
         if (!UptimeCacheList.list[monitorID]) {
@@ -28,6 +34,10 @@ class UptimeCacheList {
         UptimeCacheList.list[monitorID][duration] = uptime;
     }
 
+    /**
+     * Clear cache for specified monitor
+     * @param {number} monitorID
+     */
     static clearCache(monitorID) {
         log.debug("UptimeCacheList", "clearCache: " + monitorID);
         delete UptimeCacheList.list[monitorID];

@@ -67,6 +67,7 @@ class Database {
         "patch-monitor-add-resend-interval.sql": true,
         "patch-ping-packet-size.sql": true,
         "patch-maintenance-table2.sql": true,
+        "patch-add-gamedig-monitor.sql": true,
     };
 
     /**

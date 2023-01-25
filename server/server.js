@@ -689,6 +689,7 @@ let needSetup = false;
                 bean.retryInterval = monitor.retryInterval;
                 bean.resendInterval = monitor.resendInterval;
                 bean.hostname = monitor.hostname;
+                bean.game = monitor.game;
                 bean.maxretries = monitor.maxretries;
                 bean.port = parseInt(monitor.port);
                 bean.keyword = monitor.keyword;
@@ -942,13 +943,21 @@ let needSetup = false;
             try {
                 checkLogin(socket);
 
-                let bean = await R.findOne("monitor", " id = ? ", [ tag.id ]);
+                let bean = await R.findOne("tag", " id = ? ", [ tag.id ]);
+                if (bean == null) {
+                    callback({
+                        ok: false,
+                        msg: "Tag not found",
+                    });
+                    return;
+                }
                 bean.name = tag.name;
                 bean.color = tag.color;
                 await R.store(bean);
 
                 callback({
                     ok: true,
+                    msg: "Saved",
                     tag: await bean.toJSON(),
                 });
 
