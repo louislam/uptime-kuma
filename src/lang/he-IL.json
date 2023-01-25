@@ -668,5 +668,20 @@
     "high": "גבוהה",
     "General Monitor Type": "מוניטור כללי",
     "Passive Monitor Type": "מוניטור פסיבי",
-    "Specific Monitor Type": "סוג מוניטור ספציפי"
+    "Specific Monitor Type": "סוג מוניטור ספציפי",
+    "Help": "Help",
+    "Game": "Game",
+    "Monitor": "Monitor | Monitors",
+    "ZohoCliq": "ZohoCliq",
+    "dataRetentionTimeError": "Retention period must be 0 or greater",
+    "infiniteRetention": "Set to 0 for infinite retention.",
+    "confirmDeleteTagMsg": "Are you sure you want to delete this tag? Monitors associated with this tag will not be deleted.",
+    "Kook": "Kook",
+    "wayToGetKookBotToken": "Create application and get your bot token at {0}",
+    "wayToGetKookGuildID": "Switch on 'Developer Mode' in Kook setting, and right click the guild to get its ID",
+    "Guild ID": "Guild ID",
+    "promosmsAllowLongSMS": "Allow long SMS",
+    "Custom": "Custom",
+    "Packet Size": "Packet Size",
+    "wayToGetZohoCliqURL": "You can learn how to create a webhook URL {0}."
 }

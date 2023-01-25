@@ -681,5 +681,7 @@
     "dataRetentionTimeError": "Saklama süresi 0 veya daha büyük olmalıdır",
     "confirmDeleteTagMsg": "Bu etiketi silmek istediğinizden emin misiniz? Bu etiketle ilişkili monitörler silinmez.",
     "promosmsAllowLongSMS": "Uzun SMS'e izin ver",
-    "infiniteRetention": "Sonsuza dek saklamak için 0 giriniz."
+    "infiniteRetention": "Sonsuza dek saklamak için 0 giriniz.",
+    "Game": "Game",
+    "Packet Size": "Packet Size"
 }
