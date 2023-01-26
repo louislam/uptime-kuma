@@ -1058,5 +1058,8 @@
     "signedInDisp": "",
     "Query": "",
     "markdownSupported": "",
-    "Pick a SASL Mechanism...": ""
+    "Pick a SASL Mechanism...": "",
+    "backupOutdatedWarning": "",
+    "trustProxyDescription": "",
+    "Enable DNS Cache": ""
 }
