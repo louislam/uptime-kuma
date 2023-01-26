@@ -1071,5 +1071,7 @@
     "grpcMethodDescription": "",
     "ntfyPriorityHelptextAllExceptDown": "",
     "CopyToClipboardError": "",
-    "pushViewCode": ""
+    "pushViewCode": "",
+    "backupOutdatedWarning": "",
+    "trustProxyDescription": ""
 }
