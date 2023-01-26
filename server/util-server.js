@@ -1,5 +1,5 @@
 const tcpp = require("tcp-ping");
-const ping = require("ping");
+const ping = require("@louislam/ping");
 const { R } = require("redbean-node");
 const { log, genSecret } = require("../src/util");
 const passwordHash = require("./password-hash");
@@ -14,11 +14,13 @@ const mssql = require("mssql");
 const { Client } = require("pg");
 const postgresConParse = require("pg-connection-string").parse;
 const mysql = require("mysql2");
+const { MongoClient } = require("mongodb");
 const { NtlmClient } = require("axios-ntlm");
 const { Settings } = require("./settings");
 const grpc = require("@grpc/grpc-js");
 const protojs = require("protobufjs");
 const radiusClient = require("node-radius-client");
+const redis = require("redis");
 const {
     dictionaries: {
         rfc2865: { file, attributes },
@@ -77,15 +79,16 @@ exports.tcping = function (hostname, port) {
 /**
  * Ping the specified machine
  * @param {string} hostname Hostname / address of machine
+ * @param {number} [size=56] Size of packet to send
  * @returns {Promise<number>} Time for ping in ms rounded to nearest integer
  */
-exports.ping = async (hostname) => {
+exports.ping = async (hostname, size = 56) => {
     try {
-        return await exports.pingAsync(hostname);
+        return await exports.pingAsync(hostname, false, size);
     } catch (e) {
         // If the host cannot be resolved, try again with ipv6
         if (e.message.includes("service not known")) {
-            return await exports.pingAsync(hostname, true);
+            return await exports.pingAsync(hostname, true, size);
         } else {
             throw e;
         }
@@ -96,14 +99,16 @@ exports.ping = async (hostname) => {
  * Ping the specified machine
  * @param {string} hostname Hostname / address of machine to ping
  * @param {boolean} ipv6 Should IPv6 be used?
+ * @param {number} [size = 56] Size of ping packet to send
  * @returns {Promise<number>} Time for ping in ms rounded to nearest integer
  */
-exports.pingAsync = function (hostname, ipv6 = false) {
+exports.pingAsync = function (hostname, ipv6 = false, size = 56) {
     return new Promise((resolve, reject) => {
         ping.promise.probe(hostname, {
             v6: ipv6,
             min_reply: 1,
-            timeout: 10,
+            deadline: 10,
+            packetSize: size,
         }).then((res) => {
             // If ping failed, it will set field to unknown
             if (res.alive) {
@@ -135,7 +140,7 @@ exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
         const { port, username, password, interval = 20 } = options;
 
         // Adds MQTT protocol to the hostname if not already present
-        if (!/^(?:http|mqtt)s?:\/\//.test(hostname)) {
+        if (!/^(?:http|mqtt|ws)s?:\/\//.test(hostname)) {
             hostname = "mqtt://" + hostname;
         }
 
@@ -145,10 +150,11 @@ exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
             reject(new Error("Timeout"));
         }, interval * 1000 * 0.8);
 
-        log.debug("mqtt", "MQTT connecting");
+        const mqttUrl = `${hostname}:${port}`;
 
-        let client = mqtt.connect(hostname, {
-            port,
+        log.debug("mqtt", `MQTT connecting to ${mqttUrl}`);
+
+        let client = mqtt.connect(mqttUrl, {
             username,
             password
         });
@@ -280,18 +286,23 @@ exports.postgresQuery = function (connectionString, query) {
 
         const client = new Client({ connectionString });
 
-        client.connect();
-
-        return client.query(query)
-            .then(res => {
-                resolve(res);
-            })
-            .catch(err => {
+        client.connect((err) => {
+            if (err) {
                 reject(err);
-            })
-            .finally(() => {
                 client.end();
-            });
+            } else {
+                // Connected here
+                client.query(query, (err, res) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(res);
+                    }
+                    client.end();
+                });
+            }
+        });
+
     });
 };
 
@@ -315,6 +326,23 @@ exports.mysqlQuery = function (connectionString, query) {
                 connection.end();
             });
     });
+};
+
+/**
+ * Connect to and Ping a MongoDB database
+ * @param {string} connectionString The database connection string
+ * @returns {Promise<(string[]|Object[]|Object)>}
+ */
+exports.mongodbPing = async function (connectionString) {
+    let client = await MongoClient.connect(connectionString);
+    let dbPing = await client.db().command({ ping: 1 });
+    await client.close();
+
+    if (dbPing["ok"] === 1) {
+        return "UP";
+    } else {
+        throw Error("failed");
+    }
 };
 
 /**
@@ -351,6 +379,30 @@ exports.radius = function (
             [ attributes.CALLING_STATION_ID, callingStationId ],
             [ attributes.CALLED_STATION_ID, calledStationId ],
         ],
+    });
+};
+
+/**
+ * Redis server ping
+ * @param {string} dsn The redis connection string
+ */
+exports.redisPingAsync = function (dsn) {
+    return new Promise((resolve, reject) => {
+        const client = redis.createClient({
+            url: dsn,
+        });
+        client.on("error", (err) => {
+            reject(err);
+        });
+        client.connect().then(() => {
+            client.ping().then((res, err) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(res);
+                }
+            });
+        });
     });
 };
 
