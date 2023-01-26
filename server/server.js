@@ -1502,7 +1502,7 @@ let needSetup = false;
         dockerSocketHandler(socket);
         maintenanceSocketHandler(socket);
         generalSocketHandler(socket, server);
-        pluginsHandler(socket);
+        pluginsHandler(socket, server);
 
         log.debug("server", "added all socket handlers");
 

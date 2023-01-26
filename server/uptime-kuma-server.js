@@ -288,8 +288,16 @@ class UptimeKumaServer {
         clearTimeout(this.generateMaintenanceTimeslotsInterval);
     }
 
-    loadPlugins(dir) {
+    loadPlugins() {
         this.pluginsManager = new PluginsManager(this);
+    }
+
+    /**
+     *
+     * @returns {PluginsManager}
+     */
+    getPluginManager() {
+        return this.pluginsManager;
     }
 
     /**

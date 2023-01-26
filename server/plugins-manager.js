@@ -53,7 +53,7 @@ class PluginsManager {
     }
 
     /**
-     * Install a Plugin
+     * TODO: Install a Plugin
      * @param {string} tarGzFileURL The url of tar.gz file
      * @param {number} userID User ID - Used for streaming installing progress
      */
@@ -62,7 +62,7 @@ class PluginsManager {
     }
 
     /**
-     * Remove a plugin
+     * TODO: Remove a plugin
      * @param pluginID
      */
     removePlugin(pluginID) {
@@ -70,12 +70,16 @@ class PluginsManager {
     }
 
     /**
-     * Update a plugin
+     * TODO: Update a plugin
      * Only available for plugins which were downloaded from the official list
      * @param pluginID
      */
     updatePlugin(pluginID) {
 
+    }
+
+    getPluginList() {
+        return this.pluginList;
     }
 }
 

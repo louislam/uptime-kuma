@@ -1,7 +1,7 @@
 <template>
     <div class="plugin-item pt-4 pb-2">
         <div>
-            <h6>{{ plugin.name }}</h6>
+            <h5>{{ plugin.name }}</h5>
             <p class="description">
                 {{ plugin.description }}
             </p>

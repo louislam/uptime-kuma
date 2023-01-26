@@ -73,7 +73,7 @@
 
                                     <optgroup :label="$t('Custom Monitor Type')">
                                         <option value="browser">
-                                            (Early Access/WIP) HTTP(s) (Browser Engine)
+                                            (Beta) HTTP(s) - Browser Engine (Chrome/Firefox)
                                         </option>
                                     </optgroup>
                                 </select>

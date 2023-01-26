@@ -428,6 +428,8 @@
     "Schedule Maintenance": "Schedule Maintenance",
     "Date and Time": "Date and Time",
     "DateTime Range": "DateTime Range",
+    "loadingError": "Cannot fetch the data, please try again later.",
+    "plugin": "Plugin | Plugins",
     "smtp": "Email (SMTP)",
     "secureOptionNone": "None / STARTTLS (25, 587)",
     "secureOptionTLS": "TLS (465)",
@@ -682,6 +684,5 @@
     "onebotUserOrGroupId": "Group/User ID",
     "onebotSafetyTips": "For safety, must set access token",
     "PushDeer Key": "PushDeer Key",
-    "wayToGetClickSendSMSToken": "You can get API Username and API Key from {0} .",
-    "loadingError": "Cannot fetch the data, please try again later."
+    "wayToGetClickSendSMSToken": "You can get API Username and API Key from {0} ."
 }
