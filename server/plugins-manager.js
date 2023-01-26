@@ -1,6 +1,7 @@
 const fs = require("fs");
 const { log } = require("../src/util");
 const path = require("path");
+const axios = require("axios");
 
 class PluginsManager {
 
@@ -78,8 +79,33 @@ class PluginsManager {
 
     }
 
-    getPluginList() {
-        return this.pluginList;
+    /**
+     * Get the plugin list from server + local installed plugin list
+     * Item will be merged if the `name` is the same.
+     * @returns {Promise<[]>}
+     */
+    async fetchPluginList() {
+        const res = await axios.get("https://uptime.kuma.pet/c/plugins.json");
+        const list = res.data.pluginList;
+
+        for (let plugin of this.pluginList) {
+            let find = false;
+            // Try to merge
+            for (let remotePlugin of list) {
+                if (remotePlugin.name === plugin.name) {
+                    find = true;
+                    remotePlugin.installed = true;
+                    break;
+                }
+            }
+
+            // Local plugin
+            if (!find) {
+                plugin.info.local = true;
+                list.push(plugin.info);
+            }
+        }
+        return list;
     }
 }
 
@@ -134,6 +160,7 @@ class PluginWrapper {
                 this.info.version = "[unknown-version]";
             }
 
+            this.info.installed = true;
             log.info("plugin", `${this.info.fullName} v${this.info.version} loaded`);
         }
     }

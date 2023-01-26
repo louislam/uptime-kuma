@@ -12,12 +12,11 @@ module.exports.pluginsHandler = (socket, server) => {
     socket.on("getPluginList", async (callback) => {
         try {
             checkLogin(socket);
-
-            let list = server.getPluginManager().getPluginList();
-            console.log(list);
-
-            const res = await axios.get("https://uptime.kuma.pet/c/plugins.json");
-            callback(res.data);
+            let pluginList = await server.getPluginManager().fetchPluginList();
+            callback({
+                ok: true,
+                pluginList,
+            });
         } catch (error) {
             callback({
                 ok: false,
@@ -26,4 +25,31 @@ module.exports.pluginsHandler = (socket, server) => {
         }
     });
 
+    socket.on("installPlugin", async (repoURL, callback) => {
+        try {
+            checkLogin(socket);
+            callback({
+                ok: true,
+            });
+        } catch (error) {
+            callback({
+                ok: false,
+                msg: error.message,
+            });
+        }
+    });
+
+    socket.on("uninstallPlugin", async (repoURL, callback) => {
+        try {
+            checkLogin(socket);
+            callback({
+                ok: true,
+            });
+        } catch (error) {
+            callback({
+                ok: false,
+                msg: error.message,
+            });
+        }
+    });
 };

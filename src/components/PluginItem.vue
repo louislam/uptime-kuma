@@ -1,25 +1,76 @@
 <template>
-    <div class="plugin-item pt-4 pb-2">
-        <div>
-            <h5>{{ plugin.name }}</h5>
+    <div v-if="! (uninstalled && plugin.local)" class="plugin-item pt-4 pb-2">
+        <div class="info">
+            <h5>{{ plugin.fullName }}</h5>
             <p class="description">
                 {{ plugin.description }}
             </p>
-            <span class="version">{{ $t("Version") }}: {{ plugin.version }}</span>
+            <span class="version">{{ $t("Version") }}: {{ plugin.version }} <a v-if="plugin.repo" :href="plugin.repo" target="_blank">Repo</a></span>
         </div>
         <div class="buttons">
-            <button class="btn btn-primary">Install</button>
+            <button v-if="status === 'installing'" class="btn btn-primary" disabled>{{ $t("installing") }}</button>
+            <button v-else-if="status === 'uninstalling'" class="btn btn-danger" disabled>{{ $t("uninstalling") }}</button>
+            <button v-else-if="plugin.installed" class="btn btn-danger" @click="deleteConfirm">{{ $t("uninstall") }}</button>
+            <button v-else class="btn btn-primary" @click="install">{{ $t("install") }}</button>
         </div>
+
+        <Confirm ref="confirmDelete" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="uninstall">
+            {{ $t("confirmUninstallPlugin") }}
+        </Confirm>
     </div>
 </template>
 
 <script>
+import Confirm from "./Confirm.vue";
+
 export default {
+    components: {
+        Confirm,
+    },
     props: {
         plugin: {
             type: Object,
             required: true,
         },
+    },
+    data() {
+        return {
+            status: "",
+            uninstalled: false,
+        };
+    },
+    methods: {
+        /**
+         * Show confirmation for deleting a tag
+         */
+        deleteConfirm() {
+            this.$refs.confirmDelete.show();
+        },
+
+        install() {
+            this.status = "installing";
+
+            this.$root.getSocket().emit("installPlugin", this.plugin.repo, (res) => {
+                if (res.ok) {
+                    this.status = "";
+                } else {
+                    this.$root.toastRes(res);
+                }
+            });
+        },
+
+        uninstall() {
+            this.status = "uninstalling";
+
+            this.$root.getSocket().emit("uninstallPlugin", this.plugin.repo, (res) => {
+                if (res.ok) {
+                    this.status = "";
+                    this.uninstalled = true;
+                } else {
+                    this.$root.toastRes(res);
+                }
+            });
+        }
     }
 };
 </script>
@@ -32,6 +83,10 @@ export default {
     justify-content: space-between;
     align-content: center;
     align-items: center;
+
+    .info {
+        margin-right: 10px;
+    }
 
     .description {
         font-size: 13px;

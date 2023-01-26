@@ -36,20 +36,22 @@ export default {
     },
 
     async mounted() {
-        this.remotePluginListMsg = this.$t("Loading") + "...";
-
-        this.$root.getSocket().emit("getPluginList", (res) => {
-            if (res.ok) {
-                this.remotePluginList = res.pluginList;
-                this.remotePluginListMsg = "";
-            } else {
-                this.remotePluginListMsg = this.$t("loadingError") + " " + res.message;
-            }
-        });
+        this.loadList();
     },
 
     methods: {
+        loadList() {
+            this.remotePluginListMsg = this.$t("Loading") + "...";
 
+            this.$root.getSocket().emit("getPluginList", (res) => {
+                if (res.ok) {
+                    this.remotePluginList = res.pluginList;
+                    this.remotePluginListMsg = "";
+                } else {
+                    this.remotePluginListMsg = this.$t("loadingError") + " " + res.message;
+                }
+            });
+        }
     },
 };
 </script>
