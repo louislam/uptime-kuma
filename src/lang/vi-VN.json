@@ -1077,5 +1077,7 @@
     "high": "",
     "Pick a SASL Mechanism...": "",
     "pushViewCode": "",
-    "CopyToClipboardError": ""
+    "CopyToClipboardError": "",
+    "backupOutdatedWarning": "",
+    "Enable DNS Cache": ""
 }
