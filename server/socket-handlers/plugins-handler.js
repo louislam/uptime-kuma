@@ -28,6 +28,7 @@ module.exports.pluginsHandler = (socket, server) => {
     socket.on("installPlugin", async (repoURL, callback) => {
         try {
             checkLogin(socket);
+            //TODO
             callback({
                 ok: true,
             });
@@ -42,6 +43,7 @@ module.exports.pluginsHandler = (socket, server) => {
     socket.on("uninstallPlugin", async (repoURL, callback) => {
         try {
             checkLogin(socket);
+            //TODO
             callback({
                 ok: true,
             });

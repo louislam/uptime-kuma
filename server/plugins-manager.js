@@ -21,7 +21,6 @@ class PluginsManager {
     /**
      *
      * @param {UptimeKumaServer} server
-     * @param {string} dir
      */
     constructor(server) {
         if (!PluginsManager.disable) {
@@ -36,6 +35,7 @@ class PluginsManager {
 
             this.pluginList = [];
             for (let item of list) {
+                // TODO: Not allow plugins with same name but different directory
                 let plugin = new PluginWrapper(server, this.pluginsDir + item);
 
                 try {
