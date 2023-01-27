@@ -95,6 +95,9 @@ export default {
                 "reverse-proxy": {
                     title: this.$t("Reverse Proxy"),
                 },
+                tags: {
+                    title: this.$t("Tags"),
+                },
                 "monitor-history": {
                     title: this.$t("Monitor History"),
                 },
@@ -109,6 +112,9 @@ export default {
                 },
                 backup: {
                     title: this.$t("Backup"),
+                },
+                plugins: {
+                    title: this.$tc("plugin", 2),
                 },
                 about: {
                     title: this.$t("About"),
@@ -189,14 +195,36 @@ export default {
          * @param {string} [currentPassword] Only need for disableAuth to true
          */
         saveSettings(callback, currentPassword) {
-            this.$root.getSocket().emit("setSettings", this.settings, currentPassword, (res) => {
-                this.$root.toastRes(res);
-                this.loadSettings();
+            let valid = this.validateSettings();
+            if (valid.success) {
+                this.$root.getSocket().emit("setSettings", this.settings, currentPassword, (res) => {
+                    this.$root.toastRes(res);
+                    this.loadSettings();
 
-                if (callback) {
-                    callback();
-                }
-            });
+                    if (callback) {
+                        callback();
+                    }
+                });
+            } else {
+                this.$root.toastError(valid.msg);
+            }
+        },
+
+        /**
+         * Ensure settings are valid
+         * @returns {Object} Contains success state and error msg
+         */
+        validateSettings() {
+            if (this.settings.keepDataPeriodDays < 0) {
+                return {
+                    success: false,
+                    msg: this.$t("dataRetentionTimeError"),
+                };
+            }
+            return {
+                success: true,
+                msg: "",
+            };
         },
     }
 };
