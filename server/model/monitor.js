@@ -665,8 +665,7 @@ class Monitor extends BeanModel {
                     }
 
                 } else {
-                    bean.msg = "Unknown Monitor Type";
-                    bean.status = PENDING;
+                    throw new Error("Unknown Monitor Type");
                 }
 
                 if (this.isUpsideDown()) {

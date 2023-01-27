@@ -53,12 +53,12 @@ class PluginsManager {
     /**
      * Install a Plugin
      */
-    loadPlugin(name) {
+    async loadPlugin(name) {
         log.info("plugin", "Load " + name);
         let plugin = new PluginWrapper(this.server, this.pluginsDir + name);
 
         try {
-            plugin.load();
+            await plugin.load();
             this.pluginList.push(plugin);
         } catch (e) {
             log.error("plugin", "Failed to load plugin: " + this.pluginsDir + name);
@@ -78,11 +78,26 @@ class PluginsManager {
     }
 
     /**
-     * TODO: Remove a plugin
-     * @param pluginID
+     * Remove a plugin
+     * @param {string} name
      */
-    removePlugin(pluginID) {
+    async removePlugin(name) {
+        log.info("plugin", "Removing plugin: " + name);
+        for (let plugin of this.pluginList) {
+            if (plugin.info.name === name) {
+                await plugin.unload();
 
+                // Delete the plugin directory
+                fs.rmSync(this.pluginsDir + name, {
+                    recursive: true
+                });
+
+                this.pluginList.splice(this.pluginList.indexOf(plugin), 1);
+                return;
+            }
+        }
+        log.warn("plugin", "Plugin not found: " + name);
+        throw new Error("Plugin not found: " + name);
     }
 
     /**
@@ -153,7 +168,7 @@ class PluginWrapper {
 
     /**
      *
-     * @type {*}
+     * @type {Plugin}
      */
     object = undefined;
     info = {};
@@ -168,7 +183,7 @@ class PluginWrapper {
         this.pluginDir = pluginDir;
     }
 
-    load() {
+    async load() {
         let indexFile = this.pluginDir + "/index.js";
         let packageJSON = this.pluginDir + "/package.json";
 
@@ -177,7 +192,7 @@ class PluginWrapper {
             childProcess.execSync("npm install", {
                 cwd: this.pluginDir,
                 env: {
-                    PLAYWRIGHT_BROWSERS_PATH: "./browsers",    // Special handling for read-browser-monitor
+                    PLAYWRIGHT_BROWSERS_PATH: "../../browsers",    // Special handling for read-browser-monitor
                 }
             });
 
@@ -187,6 +202,7 @@ class PluginWrapper {
 
             if (pluginClassType === "function") {
                 this.object = new this.pluginClass(this.server);
+                await this.object.load();
             } else {
                 throw new Error("Invalid plugin, it does not export a class");
             }
@@ -202,6 +218,10 @@ class PluginWrapper {
             this.info.installed = true;
             log.info("plugin", `${this.info.fullName} v${this.info.version} loaded`);
         }
+    }
+
+    async unload() {
+        await this.object.unload();
     }
 }
 

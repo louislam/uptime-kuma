@@ -1,5 +1,4 @@
 const { checkLogin } = require("../util-server");
-const axios = require("axios");
 
 /**
  * Handlers for plugins
@@ -31,7 +30,7 @@ module.exports.pluginsHandler = (socket, server) => {
         try {
             checkLogin(socket);
             pluginManager.downloadPlugin(repoURL, name);
-            pluginManager.loadPlugin(name);
+            await pluginManager.loadPlugin(name);
             callback({
                 ok: true,
             });
@@ -43,10 +42,10 @@ module.exports.pluginsHandler = (socket, server) => {
         }
     });
 
-    socket.on("uninstallPlugin", async (repoURL, callback) => {
+    socket.on("uninstallPlugin", async (name, callback) => {
         try {
             checkLogin(socket);
-            //TODO
+            await pluginManager.removePlugin(name);
             callback({
                 ok: true,
             });

@@ -1,5 +1,5 @@
 <template>
-    <div v-if="! (uninstalled && plugin.local)" class="plugin-item pt-4 pb-2">
+    <div v-if="! (!plugin.installed && plugin.local)" class="plugin-item pt-4 pb-2">
         <div class="info">
             <h5>{{ plugin.fullName }}</h5>
             <p class="description">
@@ -36,7 +36,6 @@ export default {
     data() {
         return {
             status: "",
-            uninstalled: false,
         };
     },
     methods: {
@@ -52,7 +51,9 @@ export default {
 
             this.$root.getSocket().emit("installPlugin", this.plugin.repo, this.plugin.name, (res) => {
                 if (res.ok) {
-                    this.status = "installed";
+                    this.status = "";
+                    // eslint-disable-next-line vue/no-mutating-props
+                    this.plugin.installed = true;
                 } else {
                     this.$root.toastRes(res);
                 }
@@ -62,10 +63,11 @@ export default {
         uninstall() {
             this.status = "uninstalling";
 
-            this.$root.getSocket().emit("uninstallPlugin", this.plugin.repo, (res) => {
+            this.$root.getSocket().emit("uninstallPlugin", this.plugin.name, (res) => {
                 if (res.ok) {
                     this.status = "";
-                    this.uninstalled = true;
+                    // eslint-disable-next-line vue/no-mutating-props
+                    this.plugin.installed = false;
                 } else {
                     this.$root.toastRes(res);
                 }

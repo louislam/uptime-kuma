@@ -1,9 +1,9 @@
 class Plugin {
-    async install() {
+    async load() {
 
     }
 
-    async uninstall() {
+    async unload() {
 
     }
 }
