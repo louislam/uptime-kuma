@@ -1,4 +1,5 @@
 const { checkLogin } = require("../util-server");
+const { PluginManager } = require("../plugins-manager");
 
 /**
  * Handlers for plugins
@@ -13,6 +14,11 @@ module.exports.pluginsHandler = (socket, server) => {
     socket.on("getPluginList", async (callback) => {
         try {
             checkLogin(socket);
+
+            if (PluginManager.disable) {
+                throw new Error("Plugin Disabled: In order to enable plugin feature, you need to use the default data directory: ./data/");
+            }
+
             let pluginList = await pluginManager.fetchPluginList();
             callback({
                 ok: true,
