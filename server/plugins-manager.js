@@ -125,6 +125,10 @@ class PluginsManager {
                 if (remotePlugin.name === plugin.info.name) {
                     find = true;
                     remotePlugin.installed = true;
+                    remotePlugin.name = plugin.info.name;
+                    remotePlugin.fullName = plugin.info.fullName;
+                    remotePlugin.description = plugin.info.description;
+                    remotePlugin.version = plugin.info.version;
                     break;
                 }
             }
