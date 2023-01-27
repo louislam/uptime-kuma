@@ -10,6 +10,7 @@ const util = require("util");
 const { CacheableDnsHttpAgent } = require("./cacheable-dns-http-agent");
 const { Settings } = require("./settings");
 const dayjs = require("dayjs");
+const { PluginsManager } = require("./plugins-manager");
 // DO NOT IMPORT HERE IF THE MODULES USED `UptimeKumaServer.getInstance()`
 
 /**
@@ -47,6 +48,20 @@ class UptimeKumaServer {
     indexHTML = "";
 
     generateMaintenanceTimeslotsInterval = undefined;
+
+    /**
+     * Plugins Manager
+     * @type {PluginsManager}
+     */
+    pluginsManager = null;
+
+    /**
+     *
+     * @type {{}}
+     */
+    static monitorTypeList = {
+
+    };
 
     static getInstance(args) {
         if (UptimeKumaServer.instance == null) {
@@ -272,6 +287,46 @@ class UptimeKumaServer {
     async stop() {
         clearTimeout(this.generateMaintenanceTimeslotsInterval);
     }
+
+    loadPlugins() {
+        this.pluginsManager = new PluginsManager(this);
+    }
+
+    /**
+     *
+     * @returns {PluginsManager}
+     */
+    getPluginManager() {
+        return this.pluginsManager;
+    }
+
+    /**
+     *
+     * @param {MonitorType} monitorType
+     */
+    addMonitorType(monitorType) {
+        if (monitorType instanceof MonitorType && monitorType.name) {
+            if (monitorType.name in UptimeKumaServer.monitorTypeList) {
+                log.error("", "Conflict Monitor Type name");
+            }
+            UptimeKumaServer.monitorTypeList[monitorType.name] = monitorType;
+        } else {
+            log.error("", "Invalid Monitor Type: " + monitorType.name);
+        }
+    }
+
+    /**
+     *
+     * @param {MonitorType} monitorType
+     */
+    removeMonitorType(monitorType) {
+        if (UptimeKumaServer.monitorTypeList[monitorType.name] === monitorType) {
+            delete UptimeKumaServer.monitorTypeList[monitorType.name];
+        } else {
+            log.error("", "Remove MonitorType failed: " + monitorType.name);
+        }
+    }
+
 }
 
 module.exports = {
@@ -280,3 +335,4 @@ module.exports = {
 
 // Must be at the end
 const MaintenanceTimeslot = require("./model/maintenance_timeslot");
+const { MonitorType } = require("./monitor-types/monitor-type");

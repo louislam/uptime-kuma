@@ -113,6 +113,9 @@ export default {
                 backup: {
                     title: this.$t("Backup"),
                 },
+                plugins: {
+                    title: this.$tc("plugin", 2),
+                },
                 about: {
                     title: this.$t("About"),
                 },
