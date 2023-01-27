@@ -60,6 +60,7 @@
                                                     @click="$refs.monitorSettingDialog.show(group, monitor)"
                                                 />
                                             </span>
+                                            <p v-if="showCertificateExpiry" class="item-name"> Expiry: {{ expiryData.tlsInfoList }} </p>
                                         </div>
                                         <div v-if="showTags" class="tags">
                                             <Tag v-for="tag in monitor.element.tags" :key="tag" :item="tag" :size="'sm'" />
@@ -68,6 +69,7 @@
                                     <div :key="$root.userHeartbeatBar" class="col-3 col-md-4">
                                         <HeartbeatBar size="small" :monitor-id="monitor.element.id" />
                                     </div>
+                                    <!-- <p v-if="showCertificateExpiry" class="item-name"> Expiry: {{ expiryData }} </p> -->
                                 </div>
                             </div>
                         </template>
@@ -103,6 +105,10 @@ export default {
         /** Should tags be shown? */
         showTags: {
             type: Boolean,
+        },
+        /** Should expiry be shown? */
+        showCertificateExpiry: {
+            type: Boolean,
         }
     },
     data() {
@@ -113,6 +119,14 @@ export default {
     computed: {
         showGroupDrag() {
             return (this.$root.publicGroupList.length >= 2);
+        },
+        expiryData() {
+            if (this.expiry === null) {
+                // return this.$root.heartbeatList[this.monitorId];
+                return this.$root;
+            } else {
+                return this.$root;
+            }
         }
     },
     created() {

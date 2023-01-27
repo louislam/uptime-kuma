@@ -234,6 +234,7 @@ class StatusPage extends BeanModel {
             footerText: this.footer_text,
             showPoweredBy: !!this.show_powered_by,
             googleAnalyticsId: this.google_analytics_tag_id,
+            showCertificateExpiry: !!this.show_certificate_expiry,
         };
     }
 
@@ -255,6 +256,7 @@ class StatusPage extends BeanModel {
             footerText: this.footer_text,
             showPoweredBy: !!this.show_powered_by,
             googleAnalyticsId: this.google_analytics_tag_id,
+            showCertificateExpiry: !!this.show_certificate_expiry,
         };
     }
 
