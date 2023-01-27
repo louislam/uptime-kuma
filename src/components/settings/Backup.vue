@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="my-4">
-            <div class="alert alert-warning" role="alert" style="border-radius: 15px;">
+            <div v-if="backupDeprecated" class="alert alert-warning" role="alert" style="border-radius: 15px;">
                 {{ $t("backupOutdatedWarning") }}<br />
                 <br />
                 {{ $t("backupRecommend") }}
@@ -15,7 +15,11 @@
             </p>
 
             <div class="mb-2">
-                <button class="btn btn-primary" @click="downloadBackup">
+                <button
+                    class="btn btn-primary"
+                    :disabled="processing"
+                    @click="downloadBackup"
+                >
                     {{ $t("Export") }}
                 </button>
             </div>
@@ -120,7 +124,6 @@
 
 <script>
 import Confirm from "../../components/Confirm.vue";
-import dayjs from "dayjs";
 import { useToast } from "vue-toastification";
 
 const toast = useToast();
@@ -133,6 +136,7 @@ export default {
     data() {
         return {
             processing: false,
+            backupDeprecated: false,
             importHandle: "skip",
             importAlert: null,
         };
@@ -149,23 +153,26 @@ export default {
 
         /** Download a backup of the configuration */
         downloadBackup() {
-            let time = dayjs().format("YYYY_MM_DD-hh_mm_ss");
-            let fileName = `Uptime_Kuma_Backup_${time}.json`;
-            let monitorList = Object.values(this.$root.monitorList);
-            let exportData = {
-                version: this.$root.info.version,
-                notificationList: this.$root.notificationList,
-                monitorList: monitorList,
-            };
-            exportData = JSON.stringify(exportData, null, 4);
-            let downloadItem = document.createElement("a");
-            downloadItem.setAttribute(
-                "href",
-                "data:application/json;charset=utf-8," +
+            this.processing = true;
+
+            this.$root.downloadBackup((res) => {
+                if (res.ok) {
+                    const exportData = JSON.stringify(res.exportData, null, 4);
+                    let fileName = `Uptime_Kuma_Backup_${res.timestamp}.json`;
+
+                    let downloadItem = document.createElement("a");
+                    downloadItem.setAttribute(
+                        "href",
+                        "data:application/json;charset=utf-8," +
                     encodeURIComponent(exportData)
-            );
-            downloadItem.setAttribute("download", fileName);
-            downloadItem.click();
+                    );
+                    downloadItem.setAttribute("download", fileName);
+                    downloadItem.click();
+                } else {
+                    toast.error(res.msg);
+                }
+                this.processing = false;
+            });
         },
 
         /**

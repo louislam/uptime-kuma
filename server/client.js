@@ -6,34 +6,23 @@ const { R } = require("redbean-node");
 const { UptimeKumaServer } = require("./uptime-kuma-server");
 const server = UptimeKumaServer.getInstance();
 const io = server.io;
+const { Notification } = require("./notification");
 const { setting } = require("./util-server");
 const checkVersion = require("./check-version");
 
 /**
  * Send list of notification providers to client
  * @param {Socket} socket Socket.io socket instance
- * @returns {Promise<Bean[]>}
+ * @returns {Promise<void>}
  */
 async function sendNotificationList(socket) {
     const timeLogger = new TimeLogger();
 
-    let result = [];
-    let list = await R.find("notification", " user_id = ? ", [
-        socket.userID,
-    ]);
+    let list = await Notification.getNotificationList(socket.userID);
 
-    for (let bean of list) {
-        let notificationObject = bean.export();
-        notificationObject.isDefault = (notificationObject.isDefault === 1);
-        notificationObject.active = (notificationObject.active === 1);
-        result.push(notificationObject);
-    }
-
-    io.to(socket.userID).emit("notificationList", result);
+    io.to(socket.userID).emit("notificationList", list.map(notification => notification.toJSON()));
 
     timeLogger.print("Send Notification List");
-
-    return list;
 }
 
 /**

@@ -2,6 +2,7 @@ const { BeanModel } = require("redbean-node/dist/bean-model");
 const { R } = require("redbean-node");
 const cheerio = require("cheerio");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
+const { log } = require("../../src/util");
 const jsesc = require("jsesc");
 const googleAnalytics = require("../google-analytics");
 
@@ -137,12 +138,22 @@ class StatusPage extends BeanModel {
     }
 
     /**
+     * Get status page list
+     * @returns {Promise<Bean[]>} list of status page objects
+     */
+    static async getStatusPageList() {
+        return await R.findAll("status_page", " ORDER BY title ");
+    }
+
+    /**
      * Send status page list to client
      * @param {Server} io io Socket server instance
      * @param {Socket} socket Socket.io instance
      * @returns {Promise<Bean[]>}
      */
     static async sendStatusPageList(io, socket) {
+        log.debug("status_page", `Sending status page list to user: ${socket.userID}`);
+
         let result = {};
 
         let list = await R.findAll("status_page", " ORDER BY title ");
@@ -152,7 +163,6 @@ class StatusPage extends BeanModel {
         }
 
         io.to(socket.userID).emit("statusPageList", result);
-        return list;
     }
 
     /**

@@ -582,6 +582,14 @@ export default {
         },
 
         /**
+         * Download backup from server
+         * @param {socketCB} callback
+         */
+        downloadBackup(callback) {
+            socket.emit("downloadBackup", callback);
+        },
+
+        /**
          * Upload the provided backup
          * @param {string} uploadedJSON JSON to upload
          * @param {string} importHandle Type of import. If set to

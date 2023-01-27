@@ -209,6 +209,15 @@ class Notification {
         return exists;
     }
 
+    /**
+     * Get list of configured notifications
+     * @returns {Promise<Bean[]>} list of configured notifications
+     */
+    static async getNotificationList(userID) {
+        return await R.find("notification", " user_id = ? ", [
+            userID,
+        ]);
+    }
 }
 
 /**
