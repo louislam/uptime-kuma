@@ -2,6 +2,8 @@ const fs = require("fs");
 const { log } = require("../src/util");
 const path = require("path");
 const axios = require("axios");
+const { Git } = require("./git");
+const childProcess = require("child_process");
 
 class PluginsManager {
 
@@ -18,11 +20,15 @@ class PluginsManager {
      */
     pluginsDir;
 
+    server;
+
     /**
      *
      * @param {UptimeKumaServer} server
      */
     constructor(server) {
+        this.server = server;
+
         if (!PluginsManager.disable) {
             this.pluginsDir = "./data/plugins/";
 
@@ -35,16 +41,7 @@ class PluginsManager {
 
             this.pluginList = [];
             for (let item of list) {
-                // TODO: Not allow plugins with same name but different directory
-                let plugin = new PluginWrapper(server, this.pluginsDir + item);
-
-                try {
-                    plugin.load();
-                    this.pluginList.push(plugin);
-                } catch (e) {
-                    log.error("plugin", "Failed to load plugin: " + this.pluginsDir + item);
-                    log.error("plugin", "Reason: " + e.message);
-                }
+                this.loadPlugin(item);
             }
 
         } else {
@@ -54,12 +51,30 @@ class PluginsManager {
     }
 
     /**
-     * TODO: Install a Plugin
-     * @param {string} tarGzFileURL The url of tar.gz file
-     * @param {number} userID User ID - Used for streaming installing progress
+     * Install a Plugin
      */
-    installPlugin(tarGzFileURL, userID = undefined) {
+    loadPlugin(name) {
+        log.info("plugin", "Load " + name);
+        let plugin = new PluginWrapper(this.server, this.pluginsDir + name);
 
+        try {
+            plugin.load();
+            this.pluginList.push(plugin);
+        } catch (e) {
+            log.error("plugin", "Failed to load plugin: " + this.pluginsDir + name);
+            log.error("plugin", "Reason: " + e.message);
+        }
+    }
+
+    /**
+     * Download a Plugin
+     * @param {string} repoURL Git repo url
+     * @param {string} name Directory name, also known as plugin unique name
+     */
+    downloadPlugin(repoURL, name) {
+        log.info("plugin", "Installing plugin: " + name + " " + repoURL);
+        let result = Git.clone(repoURL, this.pluginsDir, name);
+        log.info("plugin", "Install result: " + result);
     }
 
     /**
@@ -92,7 +107,7 @@ class PluginsManager {
             let find = false;
             // Try to merge
             for (let remotePlugin of list) {
-                if (remotePlugin.name === plugin.name) {
+                if (remotePlugin.name === plugin.info.name) {
                     find = true;
                     remotePlugin.installed = true;
                     break;
@@ -105,7 +120,23 @@ class PluginsManager {
                 list.push(plugin.info);
             }
         }
-        return list;
+
+        // Sort Installed first, then sort by name
+        return list.sort((a, b) => {
+            if (a.installed === b.installed) {
+                if ( a.fullName < b.fullName ) {
+                    return -1;
+                }
+                if ( a.fullName > b.fullName ) {
+                    return 1;
+                }
+                return 0;
+            } else if (a.installed) {
+                return -1;
+            } else {
+                return 1;
+            }
+        });
     }
 }
 
@@ -142,6 +173,14 @@ class PluginWrapper {
         let packageJSON = this.pluginDir + "/package.json";
 
         if (fs.existsSync(indexFile)) {
+            // Install dependencies
+            childProcess.execSync("npm install", {
+                cwd: this.pluginDir,
+                env: {
+                    PLAYWRIGHT_BROWSERS_PATH: "./browsers",    // Special handling for read-browser-monitor
+                }
+            });
+
             this.pluginClass = require(path.join(process.cwd(), indexFile));
 
             let pluginClassType = typeof this.pluginClass;

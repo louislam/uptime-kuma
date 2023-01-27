@@ -10,7 +10,7 @@
         <div class="buttons">
             <button v-if="status === 'installing'" class="btn btn-primary" disabled>{{ $t("installing") }}</button>
             <button v-else-if="status === 'uninstalling'" class="btn btn-danger" disabled>{{ $t("uninstalling") }}</button>
-            <button v-else-if="plugin.installed" class="btn btn-danger" @click="deleteConfirm">{{ $t("uninstall") }}</button>
+            <button v-else-if="plugin.installed || status === 'installed'" class="btn btn-danger" @click="deleteConfirm">{{ $t("uninstall") }}</button>
             <button v-else class="btn btn-primary" @click="install">{{ $t("install") }}</button>
         </div>
 
@@ -50,9 +50,9 @@ export default {
         install() {
             this.status = "installing";
 
-            this.$root.getSocket().emit("installPlugin", this.plugin.repo, (res) => {
+            this.$root.getSocket().emit("installPlugin", this.plugin.repo, this.plugin.name, (res) => {
                 if (res.ok) {
-                    this.status = "";
+                    this.status = "installed";
                 } else {
                     this.$root.toastRes(res);
                 }

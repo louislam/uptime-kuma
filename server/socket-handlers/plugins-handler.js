@@ -8,11 +8,13 @@ const axios = require("axios");
  */
 module.exports.pluginsHandler = (socket, server) => {
 
+    const pluginManager = server.getPluginManager();
+
     // Get Plugin List
     socket.on("getPluginList", async (callback) => {
         try {
             checkLogin(socket);
-            let pluginList = await server.getPluginManager().fetchPluginList();
+            let pluginList = await pluginManager.fetchPluginList();
             callback({
                 ok: true,
                 pluginList,
@@ -25,10 +27,11 @@ module.exports.pluginsHandler = (socket, server) => {
         }
     });
 
-    socket.on("installPlugin", async (repoURL, callback) => {
+    socket.on("installPlugin", async (repoURL, name, callback) => {
         try {
             checkLogin(socket);
-            //TODO
+            pluginManager.downloadPlugin(repoURL, name);
+            pluginManager.loadPlugin(name);
             callback({
                 ok: true,
             });
