@@ -102,7 +102,7 @@
         "mysql2": "~2.3.3",
         "node-cloudflared-tunnel": "~1.0.9",
         "node-radius-client": "~1.0.0",
-        "nodemailer": "~6.6.5",
+        "nodemailer": "~6.8.0",
         "notp": "~2.0.3",
         "password-hash": "~1.2.2",
         "pg": "~8.8.0",
