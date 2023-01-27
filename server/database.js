@@ -66,6 +66,7 @@ class Database {
         "patch-add-radius-monitor.sql": true,
         "patch-monitor-add-resend-interval.sql": true,
         "patch-maintenance-table2.sql": true,
+        "patch-add-certificate-expiry-status-page.sql": true,
     };
 
     /**

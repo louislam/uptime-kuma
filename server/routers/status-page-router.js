@@ -107,6 +107,44 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
     }
 });
 
+// Status Page tls Data
+// Can fetch only if published
+router.get("/api/status-page/tls-info/:slug", cache("1 minutes"), async (request, response) => {
+    allowDevAllOrigin(response);
+
+    try {
+        let certList = [];
+
+        let slug = request.params.slug;
+        let statusPageID = await StatusPage.slugToID(slug);
+
+        let monitorIDList = await R.getCol(`
+            SELECT monitor_group.monitor_id FROM monitor_group, \`group\`
+            WHERE monitor_group.group_id = \`group\`.id
+            AND public = 1
+            AND \`group\`.status_page_id = ?
+        `, [
+            statusPageID
+        ]);
+
+        let list = await R.getAll(`
+            SELECT * FROM monitor_tls_info
+            WHERE monitor_id = ?`, [ monitorIDList ]);
+
+        for (let monitor in list) {
+            certList.push({ id: monitor.id,
+                monitor_id: monitor.monitor_id });
+        }
+
+        response.json({
+            certList
+        });
+
+    } catch (error) {
+        send403(response, error.message);
+    }
+});
+
 // Status page's manifest.json
 router.get("/api/status-page/:slug/manifest.json", cache("1440 minutes"), async (request, response) => {
     allowDevAllOrigin(response);
