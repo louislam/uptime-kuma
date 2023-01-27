@@ -111,7 +111,7 @@
                             <div v-if="monitor.type === 'keyword' || monitor.type === 'grpc-keyword'" class="my-3">
                                 <label for="keyword" class="form-label">{{ $t("Keyword") }}</label>
                                 <input id="keyword" v-model="monitor.keyword" type="text" class="form-control" required>
-                                <div v-if="monitor.type === 'keyword' || monitor.type === 'grpc-keyword'" class="form-text">
+                                <div class="form-text">
                                     {{ $t("keywordDescription") }}
                                 </div>
                             </div>
