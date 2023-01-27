@@ -3,6 +3,9 @@
 (2023-01-24 Updated)
 
 1. Go to [https://weblate.kuma.pet](https://weblate.kuma.pet/projects/uptime-kuma/uptime-kuma/)
+2. Register an account on Weblate
+3. Make sure your GitHub email is matched with Weblate's account, so that it could show you as a contributor on GitHub
+4. Choose your language on Weblate and start translating.
 
 # How to add a new language in the dropdown
 
