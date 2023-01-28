@@ -760,9 +760,13 @@ message HealthCheckResponse {
         sortedMonitorList() {
             let result = Object.values(this.$root.monitorList);
             console.log(this.monitor.childrenIDs);
-            result = result.filter(monitor => monitor.type === "group");
-            result = result.filter(monitor => monitor.id !== this.monitor.id);
-            result = result.filter(monitor => !this.monitor.childrenIDs?.includes(monitor.id));
+
+            // Only groups, not itself, not a decendant
+            result = result.filter(
+                monitor => monitor.type === "group" &&
+				monitor.id !== this.monitor.id &&
+				!this.monitor.childrenIDs?.includes(monitor.id)
+            );
 
             result.sort((m1, m2) => {
 
