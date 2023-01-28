@@ -48,7 +48,7 @@ export default {
                     this.remotePluginList = res.pluginList;
                     this.remotePluginListMsg = "";
                 } else {
-                    this.remotePluginListMsg = this.$t("loadingError") + " " + res.message;
+                    this.remotePluginListMsg = this.$t("loadingError") + " " + res.msg;
                 }
             });
         }
