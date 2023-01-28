@@ -1,7 +1,7 @@
 <template>
     <transition name="slide-fade" appear>
         <div v-if="monitor">
-            <span> {{ group }}</span>
+            <router-link v-if="group !== ''" :to="monitorURL(monitor.parent)"> {{ group }}</router-link>
             <h1> {{ monitor.name }}</h1>
             <div class="tags">
                 <Tag v-for="tag in monitor.tags" :key="tag.id" :item="tag" :size="'sm'" />
@@ -190,6 +190,7 @@ import Pagination from "v-pagination-3";
 const PingChart = defineAsyncComponent(() => import("../components/PingChart.vue"));
 import Tag from "../components/Tag.vue";
 import CertificateInfo from "../components/CertificateInfo.vue";
+import { getMonitorRelativeURL } from "../util.ts";
 
 export default {
     components: {
@@ -385,6 +386,15 @@ export default {
             }
 
             return this.$t(translationPrefix + "Ping");
+        },
+
+        /**
+         * Get URL of monitor
+         * @param {number} id ID of monitor
+         * @returns {string} Relative URL of monitor
+         */
+        monitorURL(id) {
+            return getMonitorRelativeURL(id);
         },
     },
 };
