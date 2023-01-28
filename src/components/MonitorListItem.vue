@@ -141,8 +141,8 @@ export default {
     },
     methods: {
         /**
-		 * Changes the collapsed value of the current monitor and saves it to local storage
-		 */
+         * Changes the collapsed value of the current monitor and saves it to local storage
+         */
         changeCollapsed() {
             this.isCollapsed = !this.isCollapsed;
 
@@ -182,7 +182,7 @@ export default {
 
 .collapse-padding {
     padding-left: 8px !important;
-	padding-right: 2px !important;
+    padding-right: 2px !important;
 }
 
 // .monitor-item {
@@ -198,11 +198,11 @@ export default {
 }
 
 .collapsed {
-	transform: rotate(-90deg);
+    transform: rotate(-90deg);
 }
 
 .animated {
-	transition: all 0.2s $easing-in;
+    transition: all 0.2s $easing-in;
 }
 
 </style>
