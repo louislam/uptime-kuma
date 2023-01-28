@@ -643,5 +643,7 @@
     "Custom": "Benutzerdefiniert",
     "Enable DNS Cache": "DNS Cache aktivieren",
     "Enable": "Aktivieren",
-    "Disable": "Deaktivieren"
+    "Disable": "Deaktivieren",
+	"Group": "Gruppe",
+	"Monitor Group": "Monitor Gruppe"
 }

@@ -1,6 +1,7 @@
 <template>
     <transition name="slide-fade" appear>
         <div v-if="monitor">
+            <span> {{ group }}</span>
             <h1> {{ monitor.name }}</h1>
             <div class="tags">
                 <Tag v-for="tag in monitor.tags" :key="tag.id" :item="tag" :size="'sm'" />
@@ -286,6 +287,13 @@ export default {
             const endIndex = startIndex + this.perPage;
             return this.heartBeatList.slice(startIndex, endIndex);
         },
+
+        group() {
+            if (!this.monitor.pathName.includes("/")) {
+                return "";
+            }
+            return this.monitor.pathName.substr(0, this.monitor.pathName.lastIndexOf("/"));
+        }
     },
     mounted() {
 

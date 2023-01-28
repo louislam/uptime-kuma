@@ -254,10 +254,10 @@
                 </div>
 
                 <div class="mt-3">
-                    <div v-if="allMonitorList.length > 0 && loadedData">
+                    <div v-if="sortedMonitorList.length > 0 && loadedData">
                         <label>{{ $t("Add a monitor") }}:</label>
                         <select v-model="selectedMonitor" class="form-control">
-                            <option v-for="monitor in allMonitorList" :key="monitor.id" :value="monitor">{{ monitor.name }}</option>
+                            <option v-for="monitor in sortedMonitorList" :key="monitor.id" :value="monitor">{{ monitor.pathName }}</option>
                         </select>
                     </div>
                     <div v-else class="text-center">
@@ -391,7 +391,7 @@ export default {
         /**
          * If the monitor is added to public list, which will not be in this list.
          */
-        allMonitorList() {
+        sortedMonitorList() {
             let result = [];
 
             for (let id in this.$root.monitorList) {
@@ -400,6 +400,31 @@ export default {
                     result.push(monitor);
                 }
             }
+
+            result.sort((m1, m2) => {
+
+                if (m1.active !== m2.active) {
+                    if (m1.active === 0) {
+                        return 1;
+                    }
+
+                    if (m2.active === 0) {
+                        return -1;
+                    }
+                }
+
+                if (m1.weight !== m2.weight) {
+                    if (m1.weight > m2.weight) {
+                        return -1;
+                    }
+
+                    if (m1.weight < m2.weight) {
+                        return 1;
+                    }
+                }
+
+                return m1.pathName.localeCompare(m2.pathName);
+            });
 
             return result;
         },

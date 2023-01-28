@@ -678,6 +678,7 @@ let needSetup = false;
                 server.monitorList[monitor.id]?.prometheus()?.remove();
 
                 bean.name = monitor.name;
+                bean.parent = monitor.parent;
                 bean.type = monitor.type;
                 bean.url = monitor.url;
                 bean.method = monitor.method;
