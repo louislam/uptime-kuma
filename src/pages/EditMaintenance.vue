@@ -33,7 +33,7 @@
                                     v-model="affectedMonitors"
                                     :options="affectedMonitorsOptions"
                                     track-by="id"
-                                    label="name"
+                                    label="pathName"
                                     :multiple="true"
                                     :close-on-select="false"
                                     :clear-on-select="false"
@@ -342,17 +342,39 @@ export default {
         },
     },
     mounted() {
-        this.init();
-
         this.$root.getMonitorList((res) => {
             if (res.ok) {
-                Object.values(this.$root.monitorList).map(monitor => {
+                Object.values(this.$root.monitorList).sort((m1, m2) => {
+
+                    if (m1.active !== m2.active) {
+                        if (m1.active === 0) {
+                            return 1;
+                        }
+
+                        if (m2.active === 0) {
+                            return -1;
+                        }
+                    }
+
+                    if (m1.weight !== m2.weight) {
+                        if (m1.weight > m2.weight) {
+                            return -1;
+                        }
+
+                        if (m1.weight < m2.weight) {
+                            return 1;
+                        }
+                    }
+
+                    return m1.pathName.localeCompare(m2.pathName);
+                }).map(monitor => {
                     this.affectedMonitorsOptions.push({
                         id: monitor.id,
-                        name: monitor.name,
+                        pathName: monitor.pathName,
                     });
                 });
             }
+            this.init();
         });
     },
     methods: {
@@ -387,7 +409,7 @@ export default {
                         this.$root.getSocket().emit("getMonitorMaintenance", this.$route.params.id, (res) => {
                             if (res.ok) {
                                 Object.values(res.monitors).map(monitor => {
-                                    this.affectedMonitors.push(monitor);
+                                    this.affectedMonitors.push(this.affectedMonitorsOptions.find(item => item.id === monitor.id));
                                 });
                             } else {
                                 toast.error(res.msg);

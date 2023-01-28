@@ -187,7 +187,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
 
             log.debug("maintenance", `Get Monitors for Maintenance: ${maintenanceID} User ID: ${socket.userID}`);
 
-            let monitors = await R.getAll("SELECT monitor.id, monitor.name FROM monitor_maintenance mm JOIN monitor ON mm.monitor_id = monitor.id WHERE mm.maintenance_id = ? ", [
+            let monitors = await R.getAll("SELECT monitor.id FROM monitor_maintenance mm JOIN monitor ON mm.monitor_id = monitor.id WHERE mm.maintenance_id = ? ", [
                 maintenanceID,
             ]);
 

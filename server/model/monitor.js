@@ -1322,7 +1322,17 @@ class Monitor extends BeanModel {
                 ON maintenance_timeslot.maintenance_id = maintenance.id
             WHERE ${activeCondition}
             LIMIT 1`, [ monitorID ]);
-        return maintenance.count !== 0;
+
+        if (maintenance.count !== 0) {
+            return true;
+        }
+
+        // Check if parent is under maintenance
+        const parent = await Monitor.getParent(monitorID);
+        if (parent === null) {
+            return false;
+        }
+        return await Monitor.isUnderMaintenance(parent.id);
     }
 
     /** Make sure monitor interval is between bounds */
