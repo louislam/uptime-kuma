@@ -16,7 +16,7 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="tag-color" class="form-label">{{ $t("Color") }}</label>
+                            <label for="tag-color" class="form-label">{{ $t("color") }}</label>
                             <div class="d-flex">
                                 <div class="col-8 pe-1">
                                     <vue-multiselect
