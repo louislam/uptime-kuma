@@ -117,7 +117,12 @@ export default {
         }
     },
     beforeMount() {
-        // this.isCollapsed = localStorage.getItem(`monitor_${this.monitor.id}_collapsed`) === "true";
+
+        // Always unfold if monitor is accessed directly
+        if (this.monitor.childrenIDs.includes(parseInt(this.$route.params.id))) {
+            this.isCollapsed = false;
+            return;
+        }
 
         let storage = window.localStorage.getItem("monitorCollapsed");
         if (storage === null) {
