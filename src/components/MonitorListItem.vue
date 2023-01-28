@@ -164,10 +164,6 @@ export default {
         monitorURL(id) {
             return getMonitorRelativeURL(id);
         },
-    //     /** Clear the search bar */
-    //     clearSearchText() {
-    //         this.searchText = "";
-    //     }
     },
 };
 </script>
