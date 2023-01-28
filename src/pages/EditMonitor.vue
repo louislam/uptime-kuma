@@ -768,6 +768,7 @@ message HealthCheckResponse {
 				!this.monitor.childrenIDs?.includes(monitor.id)
             );
 
+            // Filter result by active state, weight and alphabetical
             result.sort((m1, m2) => {
 
                 if (m1.active !== m2.active) {
