@@ -25,7 +25,7 @@
                     <button v-if="monitor.active" class="btn btn-normal" @click="pauseDialog">
                         <font-awesome-icon icon="pause" /> {{ $t("Pause") }}
                     </button>
-                    <button v-if="! monitor.active" class="btn btn-primary" @click="resumeMonitor">
+                    <button v-if="! monitor.active" class="btn btn-primary" :disabled="monitor.forceInactive" @click="resumeMonitor">
                         <font-awesome-icon icon="play" /> {{ $t("Resume") }}
                     </button>
                     <router-link :to=" '/edit/' + monitor.id " class="btn btn-normal">

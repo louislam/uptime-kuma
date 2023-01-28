@@ -81,7 +81,8 @@ class Monitor extends BeanModel {
             port: this.port,
             maxretries: this.maxretries,
             weight: this.weight,
-            active: this.active,
+            active: await this.isActive(),
+            forceInactive: !await Monitor.isParentActive(this.id),
             type: this.type,
             interval: this.interval,
             retryInterval: this.retryInterval,
@@ -139,6 +140,16 @@ class Monitor extends BeanModel {
 
         data.includeSensitiveData = includeSensitiveData;
         return data;
+    }
+
+    /**
+	 * Checks if the monitor is active based on itself and its parents
+	 * @returns {Promise<Boolean>}
+	 */
+    async isActive() {
+        const parentActive = await Monitor.isParentActive(this.id);
+
+        return this.active && parentActive;
     }
 
     /**
@@ -259,22 +270,32 @@ class Monitor extends BeanModel {
                 } else if (this.type === "group") {
                     const children = await Monitor.getChildren(this.id);
 
-                    bean.status = UP;
-                    bean.msg = "All childs up and running";
-                    for (const child of children) {
-                        const lastBeat = await Monitor.getPreviousHeartbeat(child.id);
+                    if (children.length > 0) {
+                        bean.status = UP;
+                        bean.msg = "All childs up and running";
+                        for (const child of children) {
+                            if (!child.active) {
+                                // Ignore inactive childs
+                                continue;
+                            }
+                            const lastBeat = await Monitor.getPreviousHeartbeat(child.id);
 
-                        // Only change state if the monitor is in worse conditions then the ones before
-                        if (bean.status === UP && (lastBeat.status === PENDING || lastBeat.status === DOWN)) {
-                            bean.status = lastBeat.status;
-                        } else if (bean.status === PENDING && lastBeat.status === DOWN) {
-                            bean.status = lastBeat.status;
+                            // Only change state if the monitor is in worse conditions then the ones before
+                            if (bean.status === UP && (lastBeat.status === PENDING || lastBeat.status === DOWN)) {
+                                bean.status = lastBeat.status;
+                            } else if (bean.status === PENDING && lastBeat.status === DOWN) {
+                                bean.status = lastBeat.status;
+                            }
                         }
+
+                        if (bean.status !== UP) {
+                            bean.msg = "Child inaccessible";
+                        }
+                    } else {
+                        // Set status pending if group is empty
+                        bean.status = PENDING;
                     }
 
-                    if (bean.status !== UP) {
-                        bean.msg = "Child inaccessible";
-                    }
                 } else if (this.type === "http" || this.type === "keyword") {
                     // Do not do any queries/high loading things before the "bean.ping"
                     let startTime = dayjs().valueOf();
@@ -1366,6 +1387,7 @@ class Monitor extends BeanModel {
 
     /**
      * Gets recursive all child ids
+	 * @param {number} monitorID ID of the monitor to get
      * @returns {Promise<Array>}
      */
     static async getAllChildrenIDs(monitorID) {
@@ -1383,6 +1405,22 @@ class Monitor extends BeanModel {
         }
 
         return childrenIDs;
+    }
+
+    /**
+	 *
+	 * @param {number} monitorID ID of the monitor to get
+	 * @returns {Promise<Boolean>}
+	 */
+    static async isParentActive(monitorID) {
+        const parent = await Monitor.getParent(monitorID);
+
+        if (parent === null) {
+            return true;
+        }
+
+        const parentActive = await Monitor.isParentActive(parent.id);
+        return parent.active && parentActive;
     }
 }
 

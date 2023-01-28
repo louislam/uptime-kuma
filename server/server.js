@@ -734,7 +734,7 @@ let needSetup = false;
 
                 await updateMonitorNotification(bean.id, monitor.notificationIDList);
 
-                if (bean.active) {
+                if (bean.isActive()) {
                     await restartMonitor(socket.userID, bean.id);
                 }
 
@@ -1398,7 +1398,7 @@ let needSetup = false;
                             await updateMonitorNotification(bean.id, notificationIDList);
 
                             // If monitor was active start it immediately, otherwise pause it
-                            if (monitorListData[i].active === 1) {
+                            if (monitorListData[i].isActive === 1) {
                                 await startMonitor(socket.userID, bean.id);
                             } else {
                                 await pauseMonitor(socket.userID, bean.id);
