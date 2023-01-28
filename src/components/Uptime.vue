@@ -33,7 +33,13 @@ export default {
             let key = this.monitor.id + "_" + this.type;
 
             if (this.$root.uptimeList[key] !== undefined) {
-                return Math.round(this.$root.uptimeList[key] * 10000) / 100 + "%";
+                let result = Math.round(this.$root.uptimeList[key] * 10000) / 100;
+                // Only perform sanity check on status page. See louislam/uptime-kuma#2628
+                if (this.$route.path.startsWith("/status") && result > 100) {
+                    return "100%";
+                } else {
+                    return result + "%";
+                }
             }
 
             return this.$t("notAvailableShort");

@@ -677,9 +677,17 @@ class Monitor extends BeanModel {
                     bean.msg = await redisPingAsync(this.databaseConnectionString);
                     bean.status = UP;
                     bean.ping = dayjs().valueOf() - startTime;
+
+                } else if (this.type in UptimeKumaServer.monitorTypeList) {
+                    let startTime = dayjs().valueOf();
+                    const monitorType = UptimeKumaServer.monitorTypeList[this.type];
+                    await monitorType.check(this, bean);
+                    if (!bean.ping) {
+                        bean.ping = dayjs().valueOf() - startTime;
+                    }
+
                 } else {
-                    bean.msg = "Unknown Monitor Type";
-                    bean.status = PENDING;
+                    throw new Error("Unknown Monitor Type");
                 }
 
                 if (this.isUpsideDown()) {
