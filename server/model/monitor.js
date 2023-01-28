@@ -1418,7 +1418,7 @@ class Monitor extends BeanModel {
     }
 
     /**
-	 *
+	 * Checks recursive if parent (ancestors) are active
 	 * @param {number} monitorID ID of the monitor to get
 	 * @returns {Promise<Boolean>}
 	 */

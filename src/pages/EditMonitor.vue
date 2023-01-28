@@ -755,15 +755,9 @@ message HealthCheckResponse {
             return null;
         },
 
+        // Filter result by active state, weight and alphabetical
+        // Only return groups which arent't itself and one of its decendants
         sortedMonitorList() {
-            // return Object.values(this.$root.monitorList).filter(monitor => {
-            //     // Only return monitors which aren't related to the current selected
-            //     if (monitor.id === this.monitor.id || monitor.parent === this.monitor.id) {
-            //         return false;
-            //     }
-            //     return true;
-            // });
-
             let result = Object.values(this.$root.monitorList);
             console.log(this.monitor.childrenIDs);
             result = result.filter(monitor => monitor.type === "group");

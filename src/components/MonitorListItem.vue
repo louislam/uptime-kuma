@@ -53,10 +53,12 @@ export default {
             type: Object,
             default: null,
         },
+        /** If the user is currently searching */
         isSearch: {
             type: Boolean,
             default: false,
         },
+        /** How many ancestors are above this monitor */
         depth: {
             type: Number,
             default: 0,
@@ -124,6 +126,7 @@ export default {
             return;
         }
 
+        // Set collapsed value based on local storage
         let storage = window.localStorage.getItem("monitorCollapsed");
         if (storage === null) {
             return;
@@ -137,9 +140,13 @@ export default {
         this.isCollapsed = storageObject[`monitor_${this.monitor.id}`];
     },
     methods: {
+        /**
+		 * Changes the collapsed value of the current monitor and saves it to local storage
+		 */
         changeCollapsed() {
             this.isCollapsed = !this.isCollapsed;
 
+            // Save collapsed value into local storage
             let storage = window.localStorage.getItem("monitorCollapsed");
             let storageObject = {};
             if (storage !== null) {

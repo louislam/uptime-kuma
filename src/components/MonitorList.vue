@@ -79,6 +79,7 @@ export default {
                 result = result.filter(monitor => monitor.parent === null);
             }
 
+            // Filter result by active state, weight and alphabetical
             result.sort((m1, m2) => {
 
                 if (m1.active !== m2.active) {
