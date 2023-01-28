@@ -1038,5 +1038,10 @@
     "dayOfMonth": "",
     "lastDay": "",
     "Basic Settings": "",
-    "promosmsAllowLongSMS": ""
+    "promosmsAllowLongSMS": "",
+    "Method": "",
+    "trustProxyDescription": "",
+    "backupOutdatedWarning": "",
+    "Enable DNS Cache": "",
+    "Create your admin account": ""
 }
