@@ -1,0 +1,20 @@
+name: 'Check Version Bump'
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - edited
+      - synchronize
+    branches:
+      - main
+      - master
+jobs:
+  check-version-bump:
+    runs-on: ubuntu-latest
+    steps:
+      - name: action-version-check
+        uses: arcblock/action-version-check@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

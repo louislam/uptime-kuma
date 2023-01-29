@@ -7,13 +7,14 @@ logo: logo.png
 author:
   name: wangshijun
 specVersion: 1.2.7
-version: 1.0.0
+version: 1.19.7
 repository:
   type: git
   url: git+https://github.com/blocklet/uptime-kuma.git
 files:
-  - blocklet.md
   - screenshots
+  - dist
+  - server/jobs
 interfaces:
   - type: web
     name: publicUrl
@@ -40,6 +41,7 @@ environments: []
 capabilities:
   clusterMode: false
   component: true
+  navigation: true
 screenshots: []
 components: []
 scripts:

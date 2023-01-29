@@ -1,0 +1,30 @@
+name: Release Blocklet
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  release-blocklet:
+    runs-on: ubuntu-latest
+
+    if: "! contains(toJSON(github.event.commits.*.message), '[skip ci]')"
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: npm i
+
+      - name: Blocklet workflow
+        uses: blocklet/action-workflow@v1
+        with:
+          skip-upload: false
+          skip-deploy: true
+          bundle-command: npm run bundle
+          store-endpoint: ${{ secrets.STORE_ENDPOINT }}
+          store-access-token: ${{ secrets.STORE_ACCESS_TOKEN }}
+          slack-webhook: ${{ secrets.SLACK_WEBHOOK }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}

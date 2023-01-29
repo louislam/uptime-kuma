@@ -1,4 +1,4 @@
-# Uptime Kuma
+# Uptime Kuma Blocklet
 
 <a target="_blank" href="https://github.com/louislam/uptime-kuma"><img src="https://img.shields.io/github/stars/louislam/uptime-kuma" /></a> <a target="_blank" href="https://hub.docker.com/r/louislam/uptime-kuma"><img src="https://img.shields.io/docker/pulls/louislam/uptime-kuma" /></a> <a target="_blank" href="https://hub.docker.com/r/louislam/uptime-kuma"><img src="https://img.shields.io/docker/v/louislam/uptime-kuma/latest?label=docker%20image%20ver." /></a> <a target="_blank" href="https://github.com/louislam/uptime-kuma"><img src="https://img.shields.io/github/last-commit/louislam/uptime-kuma" /></a>  <a target="_blank" href="https://opencollective.com/uptime-kuma"><img src="https://opencollective.com/uptime-kuma/total/badge.svg?label=Open%20Collective%20Backers&color=brightgreen" /></a>
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/louislam?label=GitHub%20Sponsors)](https://github.com/sponsors/louislam) <a href="https://weblate.kuma.pet/engage/uptime-kuma/">
@@ -9,7 +9,7 @@
     <img src="./public/icon.svg" width="128" alt="" />
 </div>
 
-Uptime Kuma is an easy-to-use self-hosted monitoring tool.
+Uptime Kuma is an easy-to-use self-hosted monitoring tool, and this project is a fork that wraps the origin app into a blocklet that anyone can deploy and run in [Blocklet Server](https://www.blocklet.io).
 
 <img src="https://user-images.githubusercontent.com/1336778/212262296-e6205815-ad62-488c-83ec-a5b0d0689f7c.jpg" width="700" alt="" />
 
@@ -50,9 +50,9 @@ Uptime Kuma is now running on http://localhost:3001
 
 ### 💪🏻 Non-Docker
 
-Required Tools: 
+Required Tools:
 - [Node.js](https://nodejs.org/en/download/) >= 14
-- [Git](https://git-scm.com/downloads) 
+- [Git](https://git-scm.com/downloads)
 - [pm2](https://pm2.keymetrics.io/) - For running Uptime Kuma in the background
 
 ```bash
@@ -67,7 +67,7 @@ npm run setup
 node server/server.js
 
 # (Recommended) Option 2. Run in background using PM2
-# Install PM2 if you don't have it: 
+# Install PM2 if you don't have it:
 npm install pm2 -g && pm2 install pm2-logrotate
 
 # Start Server
@@ -152,7 +152,7 @@ You can discuss or ask for help in [issues](https://github.com/louislam/uptime-k
 
 ### Subreddit
 
-My Reddit account: [u/louislamlam](https://reddit.com/u/louislamlam).  
+My Reddit account: [u/louislamlam](https://reddit.com/u/louislamlam).
 You can mention me if you ask a question on Reddit.
 [r/Uptime kuma](https://www.reddit.com/r/UptimeKuma/)
 

@@ -1,0 +1,21 @@
+name: 'Lint PR Title'
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - edited
+      - synchronize
+    branches:
+      - main
+      - dev
+      - master
+
+jobs:
+  lint-pr-title:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ArcBlock/action-lint-pull-request-title@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

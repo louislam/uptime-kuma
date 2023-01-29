@@ -1,6 +1,6 @@
 {
     "name": "uptime-kuma",
-    "version": "1.19.6",
+    "version": "1.19.7",
     "license": "MIT",
     "repository": {
         "type": "git",
@@ -18,11 +18,15 @@
         "lint-fix:style": "stylelint \"**/*.{vue,css,scss}\" --fix --ignore-path .gitignore",
         "lint": "npm run lint:js && npm run lint:style",
         "dev": "cross-env NODE_ENV=development nodemon server/dev.js -w server",
-        "start-frontend-dev": "cross-env NODE_ENV=development vite --host --config ./config/vite.config.js",
+        "start-frontend-dev": "cross-env NODE_ENV=development vite --host",
         "start": "npm run start-server",
         "start-server": "node server/server.js",
         "start-server-dev": "cross-env NODE_ENV=development node server/server.js",
-        "build": "vite build --config ./config/vite.config.js",
+        "build": "vite build",
+        "bundle": "npm run build && npm run bundle:api",
+        "deploy": "npm run bundle && blocklet deploy .blocklet/bundle",
+        "bundle:api": "rm -rf .blocklet && blocklet bundle --zip --create-release",
+        "bump-version": "zx scripts/bump-version.mjs",
         "test": "node test/prepare-test-server.js && npm run jest-backend",
         "test-with-build": "npm run build && npm test",
         "jest-backend": "cross-env TEST_BACKEND=1 jest --runInBand --detectOpenHandles --forceExit --config=./config/jest-backend.config.js",
@@ -137,6 +141,7 @@
         "aedes": "^0.46.3",
         "babel-plugin-rewire": "~1.2.0",
         "bootstrap": "5.1.3",
+        "bumpp": "^8.2.1",
         "chart.js": "~3.6.2",
         "chartjs-adapter-dayjs": "~1.0.0",
         "concurrently": "^7.1.0",
@@ -178,6 +183,7 @@
         "vue-router": "~4.0.14",
         "vue-toastification": "~2.0.0-rc.5",
         "vuedraggable": "~4.1.0",
-        "wait-on": "^6.0.1"
+        "wait-on": "^6.0.1",
+        "zx": "^7.1.1"
     }
 }
