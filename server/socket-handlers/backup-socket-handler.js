@@ -1,6 +1,6 @@
 const { log } = require("../../src/util");
 const { checkLogin } = require("../util-server");
-const { sendNotificationList } = require("../client");
+const { sendNotificationList, sendProxyList } = require("../client");
 const { Notification } = require("../notification");
 const { R } = require("redbean-node");
 const Monitor = require("../model/monitor");
@@ -100,8 +100,10 @@ module.exports.backupSocketHandler = (socket, server) => {
                     }
 
                     let notificationParsed = JSON.parse(notification.config);
-                    await Notification.save(notificationParsed, exists && importHandle === "overwrite" ? notification.id : undefined, notification.userID);
+                    await Notification.save(notificationParsed, exists && importHandle === "overwrite" ? notification.id : undefined, notification.userId);
                 }
+
+                await sendNotificationList(socket);
             }
 
             // Only starts importing if the backup file contains at least one proxy
@@ -119,6 +121,8 @@ module.exports.backupSocketHandler = (socket, server) => {
                     // Save proxy as new entry if exists update exists one
                     await Proxy.save(proxy, exists && importHandle === "overwrite" ? proxy.id : undefined, proxy.userId);
                 }
+
+                await sendProxyList(socket);
             }
 
             // Only starts importing if the backup file contains at least one monitor
@@ -203,7 +207,6 @@ module.exports.backupSocketHandler = (socket, server) => {
                     }
                 }
 
-                await sendNotificationList(socket);
                 await server.sendMonitorList(socket);
             }
 

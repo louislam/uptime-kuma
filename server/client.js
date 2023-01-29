@@ -99,8 +99,6 @@ async function sendProxyList(socket) {
     io.to(socket.userID).emit("proxyList", list.map(bean => bean.export()));
 
     timeLogger.print("Send Proxy List");
-
-    return list;
 }
 
 /**

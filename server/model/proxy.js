@@ -6,19 +6,11 @@ class Proxy extends BeanModel {
      * @returns {Object}
      */
     toJSON() {
-        return {
-            id: this._id,
-            userId: this._user_id,
-            protocol: this._protocol,
-            host: this._host,
-            port: this._port,
-            auth: !!this._auth,
-            username: this._username,
-            password: this._password,
-            active: !!this._active,
-            default: !!this._default,
-            createdDate: this._created_date,
-        };
+        const proxy = this.export();
+        proxy.auth = Boolean(proxy.auth);
+        proxy.active = Boolean(proxy.active);
+        proxy.default = Boolean(proxy.default);
+        return proxy;
     }
 }
 
