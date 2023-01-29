@@ -93,7 +93,7 @@ export default {
             let wsHost;
             const env = process.env.NODE_ENV || "production";
             if (env === "development" || localStorage.dev === "dev") {
-                wsHost = protocol + location.hostname + ":3001";
+                wsHost = protocol + location.host;
             } else {
                 wsHost = protocol + location.host;
             }

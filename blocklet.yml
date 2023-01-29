@@ -1,0 +1,46 @@
+name: uptime-kuma
+title: Uptime Kuma
+description: Uptime Kuma as a blocklet
+group: dapp
+main: server/server.js
+logo: logo.png
+author:
+  name: wangshijun
+specVersion: 1.2.7
+version: 1.0.0
+repository:
+  type: git
+  url: git+https://github.com/blocklet/uptime-kuma.git
+files:
+  - blocklet.md
+  - screenshots
+interfaces:
+  - type: web
+    name: publicUrl
+    path: /
+    prefix: '*'
+    port: BLOCKLET_PORT
+    protocol: http
+did: z8iZngXotuUXxsm6imc7naUUy1G5ycVs7A34H
+community: ''
+documentation: ''
+homepage: ''
+license: ''
+payment:
+  price: []
+  share: []
+timeout:
+  start: 60
+requirements:
+  server: '>=1.7.0'
+  os: '*'
+  cpu: '*'
+  nodejs: '>=14'
+environments: []
+capabilities:
+  clusterMode: false
+  component: true
+screenshots: []
+components: []
+scripts:
+  dev: npm run dev

@@ -1,6 +1,7 @@
 import legacy from "@vitejs/plugin-legacy";
 import vue from "@vitejs/plugin-vue";
 import { defineConfig } from "vite";
+import { createBlockletPlugin } from "vite-plugin-blocklet";
 import visualizer from "rollup-plugin-visualizer";
 import viteCompression from "vite-plugin-compression";
 
@@ -11,14 +12,12 @@ const viteCompressionFilter = /\.(js|mjs|json|css|html|svg)$/i;
 
 // https://vitejs.dev/config/
 export default defineConfig({
-    server: {
-        port: 3000,
-    },
     define: {
         "FRONTEND_VERSION": JSON.stringify(process.env.npm_package_version),
     },
     plugins: [
         vue(),
+        createBlockletPlugin(),
         legacy({
             targets: [ "since 2015" ],
         }),

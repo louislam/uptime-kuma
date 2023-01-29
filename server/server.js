@@ -22,7 +22,7 @@ if (nodeVersion < requiredVersion) {
 }
 
 const args = require("args-parser")(process.argv);
-const { sleep, log, getRandomInt, genSecret, isDev } = require("../src/util");
+const { sleep, log, getRandomInt, genSecret } = require("../src/util");
 const config = require("./config");
 
 log.info("server", "Welcome to Uptime Kuma");
@@ -32,6 +32,8 @@ log.debug("server", args);
 if (! process.env.NODE_ENV) {
     process.env.NODE_ENV = "production";
 }
+
+const isProduction = process.env.NODE_ENV === "production" || process.env.ABT_NODE_SERVICE_ENV === "production";
 
 log.info("server", "Node Env: " + process.env.NODE_ENV);
 
@@ -101,7 +103,7 @@ if (hostname) {
     log.info("server", "Custom hostname: " + hostname);
 }
 
-const port = [ args.port, process.env.UPTIME_KUMA_PORT, process.env.PORT, 3001 ]
+const port = [ args.port, process.env.BLOCKLET_PORT, process.env.UPTIME_KUMA_PORT, process.env.PORT, 3001 ]
     .map(portValue => parseInt(portValue))
     .find(portValue => !isNaN(portValue));
 
@@ -204,7 +206,7 @@ let needSetup = false;
         }
     });
 
-    if (isDev) {
+    if (!isProduction) {
         app.post("/test-webhook", async (request, response) => {
             log.debug("test", request.headers);
             log.debug("test", request.body);
@@ -248,13 +250,20 @@ let needSetup = false;
     app.use(statusPageRouter);
 
     // Universal Route Handler, must be at the end of all express routes.
-    app.get("*", async (_request, response) => {
-        if (_request.originalUrl.startsWith("/upload/")) {
-            response.status(404).send("File not found.");
-        } else {
-            response.send(server.indexHTML);
-        }
-    });
+    if (isProduction) {
+        app.get("*", async (_request, response) => {
+            if (_request.originalUrl.startsWith("/upload/")) {
+                response.status(404).send("File not found.");
+            } else {
+                response.send(server.indexHTML);
+            }
+        });
+    } else {
+        app.use((req, res, next) => {
+            console.log(req.originalUrl);
+            next();
+        });
+    }
 
     log.info("server", "Adding socket handler");
     io.on("connection", async (socket) => {
@@ -1792,3 +1801,7 @@ process.addListener("unhandledRejection", (error, promise) => {
     UptimeKumaServer.errorLog(error, false);
     console.error("If you keep encountering errors, please report to https://github.com/louislam/uptime-kuma/issues");
 });
+
+module.exports = {
+    app,
+};

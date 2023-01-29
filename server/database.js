@@ -85,7 +85,7 @@ class Database {
      */
     static init(args) {
         // Data Directory (must be end with "/")
-        Database.dataDir = process.env.DATA_DIR || args["data-dir"] || "./data/";
+        Database.dataDir = process.env.BLOCKLET_DATA_DIR || process.env.DATA_DIR || args["data-dir"] || "./data/";
 
         // Plugin feature is working only if the dataDir = "./data";
         if (Database.dataDir !== "./data/") {
