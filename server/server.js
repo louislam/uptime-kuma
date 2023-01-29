@@ -258,11 +258,6 @@ let needSetup = false;
                 response.send(server.indexHTML);
             }
         });
-    } else {
-        app.use((req, res, next) => {
-            console.log(req.originalUrl);
-            next();
-        });
     }
 
     log.info("server", "Adding socket handler");
