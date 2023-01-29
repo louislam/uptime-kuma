@@ -71,11 +71,15 @@
                                         </option>
                                     </optgroup>
 
+                                    <!--
+                                    Hidden for now: Reason refer to Setting.vue
                                     <optgroup :label="$t('Custom Monitor Type')">
                                         <option value="browser">
                                             (Beta) HTTP(s) - Browser Engine (Chrome/Firefox)
                                         </option>
                                     </optgroup>
+                                </select>
+                                -->
                                 </select>
                             </div>
 
