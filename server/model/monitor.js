@@ -140,7 +140,6 @@ class Monitor extends BeanModel {
             };
         }
 
-        data.includeSensitiveData = includeSensitiveData;
         return data;
     }
 
@@ -1332,6 +1331,28 @@ class Monitor extends BeanModel {
         }
         if (this.interval < MIN_INTERVAL_SECOND) {
             throw new Error(`Interval cannot be less than ${MIN_INTERVAL_SECOND} seconds`);
+        }
+    }
+
+    /**
+     * Update notifications for a given monitor
+     * @param {number} monitorID ID of monitor to update
+     * @param {number[]} notificationIDList List of new notification
+     * providers to add
+     * @returns {Promise<void>}
+     */
+    static async updateMonitorNotification(monitorID, notificationIDList) {
+        await R.exec("DELETE FROM monitor_notification WHERE monitor_id = ? ", [
+            monitorID,
+        ]);
+
+        for (let notificationID in notificationIDList) {
+            if (notificationIDList[notificationID]) {
+                let relation = R.dispense("monitor_notification");
+                relation.monitor_id = monitorID;
+                relation.notification_id = notificationID;
+                await R.store(relation);
+            }
         }
     }
 }

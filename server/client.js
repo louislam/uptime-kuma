@@ -8,6 +8,7 @@ const server = UptimeKumaServer.getInstance();
 const io = server.io;
 const { Notification } = require("./notification");
 const { setting } = require("./util-server");
+const { Proxy } = require("./proxy");
 const checkVersion = require("./check-version");
 
 /**
@@ -94,7 +95,7 @@ async function sendImportantHeartbeatList(socket, monitorID, toUser = false, ove
 async function sendProxyList(socket) {
     const timeLogger = new TimeLogger();
 
-    const list = await R.find("proxy", " user_id = ? ", [ socket.userID ]);
+    const list = await Proxy.getProxyList(socket.userID);
     io.to(socket.userID).emit("proxyList", list.map(bean => bean.export()));
 
     timeLogger.print("Send Proxy List");

@@ -167,6 +167,15 @@ class Proxy {
             }
         }
     }
+
+    /**
+     * Get list of configured proxies
+     * @param {number} userID ID of user who created proxy
+     * @returns {Promise<Bean[]>} list of configured proxies
+     */
+    static async getProxyList(userID) {
+        return await R.find("proxy", " user_id = ? ", [ userID ]);
+    }
 }
 
 /**

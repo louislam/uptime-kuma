@@ -1,9 +1,11 @@
-const compareVersions = require("compare-versions");
-
 const { log } = require("../../src/util");
 const { checkLogin } = require("../util-server");
+const { sendNotificationList } = require("../client");
 const { Notification } = require("../notification");
 const { R } = require("redbean-node");
+const Monitor = require("../model/monitor");
+const Maintenance = require("../model/maintenance");
+const { Proxy } = require("../proxy");
 const StatusPage = require("../model/status_page");
 const version = require("../../package.json").version;
 const dayjs = require("dayjs");
@@ -23,9 +25,13 @@ module.exports.backupSocketHandler = (socket, server) => {
             const exportData = {
                 version: version,
                 notificationList: (await Notification.getNotificationList(socket.userID)).map(notification => notification.toJSON()),
+                proxyList: (await Proxy.getProxyList(socket.userID)).map(proxy => proxy.toJSON()),
                 monitorList: await Promise.all(Object.entries(server.monitorList).map(async ([ id, monitor ], index) => {
                     return await monitor.toJSON();
                 })),
+                maintenanceList: Object.entries(await server.getMaintenanceJSONList(socket.userID)).map(([ id, maintenance ], index) => {
+                    return maintenance;
+                }),
                 statusPageList: await Promise.all((await StatusPage.getStatusPageList()).map(async (statusPage) => {
                     return await StatusPage.getStatusPageData(statusPage);
                 })),
@@ -40,6 +46,7 @@ module.exports.backupSocketHandler = (socket, server) => {
                 timestamp: timestamp,
             });
         } catch (e) {
+            log.error("backup", e);
             callback({
                 ok: false,
                 msg: e.message,
@@ -51,15 +58,17 @@ module.exports.backupSocketHandler = (socket, server) => {
         try {
             checkLogin(socket);
 
+            await R.exec("PRAGMA foreign_keys = off");
+
             let backupData = JSON.parse(uploadedJSON);
 
             log.debug("backup", `Importing Backup, User ID: ${socket.userID}, Version: ${backupData.version}`);
 
-            let notificationListData = backupData.notificationList;
-            let proxyListData = backupData.proxyList;
-            let monitorListData = backupData.monitorList;
-
-            let version17x = compareVersions.compare(backupData.version, "1.7.0", ">=");
+            let notificationListData = backupData.notificationList || [];
+            let proxyListData = backupData.proxyList || [];
+            let monitorListData = backupData.monitorList || [];
+            let maintenanceListData = backupData.maintenanceList || [];
+            let statusPageListData = backupData.statusPageList || [];
 
             // If the import option is "overwrite" it'll clear most of the tables, except "settings" and "user"
             if (importHandle === "overwrite") {
@@ -80,160 +89,148 @@ module.exports.backupSocketHandler = (socket, server) => {
 
             // Only starts importing if the backup file contains at least one notification
             if (notificationListData.length >= 1) {
-                // Get every existing notification name and puts them in one simple string
-                let notificationNameList = await R.getAll("SELECT name FROM notification");
-                let notificationNameListString = JSON.stringify(notificationNameList);
+                let notifications = await R.findAll("notification");
 
-                for (let i = 0; i < notificationListData.length; i++) {
-                    // Only starts importing the notification if the import option is "overwrite", "keep" or "skip" but the notification doesn't exists
-                    if ((importHandle === "skip" && notificationNameListString.includes(notificationListData[i].name) === false) || importHandle === "keep" || importHandle === "overwrite") {
+                for (const notification of notificationListData) {
+                    const exists = notifications.find(item => item.id === notification.id);
 
-                        let notification = JSON.parse(notificationListData[i].config);
-                        await Notification.save(notification, null, socket.userID);
-
+                    // Do not process when it already exists and importHandle is skip
+                    if (importHandle === "skip" && exists !== undefined) {
+                        continue;
                     }
+
+                    let notificationParsed = JSON.parse(notification.config);
+                    await Notification.save(notificationParsed, exists && importHandle === "overwrite" ? notification.id : undefined, notification.userID);
                 }
             }
 
             // Only starts importing if the backup file contains at least one proxy
-            if (proxyListData && proxyListData.length >= 1) {
+            if (proxyListData.length >= 1) {
                 const proxies = await R.findAll("proxy");
 
-                // Loop over proxy list and save proxies
                 for (const proxy of proxyListData) {
                     const exists = proxies.find(item => item.id === proxy.id);
 
-                    // Do not process when proxy already exists in import handle is skip and keep
-                    if ([ "skip", "keep" ].includes(importHandle) && !exists) {
-                        return;
+                    // Do not process when it already exists and importHandle is skip
+                    if (importHandle === "skip" && exists !== undefined) {
+                        continue;
                     }
 
                     // Save proxy as new entry if exists update exists one
-                    await Proxy.save(proxy, exists ? proxy.id : undefined, proxy.userId);
+                    await Proxy.save(proxy, exists && importHandle === "overwrite" ? proxy.id : undefined, proxy.userId);
                 }
             }
 
             // Only starts importing if the backup file contains at least one monitor
             if (monitorListData.length >= 1) {
-                // Get every existing monitor name and puts them in one simple string
-                let monitorNameList = await R.getAll("SELECT name FROM monitor");
-                let monitorNameListString = JSON.stringify(monitorNameList);
+                const monitors = await R.findAll("monitor");
 
-                for (let i = 0; i < monitorListData.length; i++) {
-                    // Only starts importing the monitor if the import option is "overwrite", "keep" or "skip" but the notification doesn't exists
-                    if ((importHandle === "skip" && monitorNameListString.includes(monitorListData[i].name) === false) || importHandle === "keep" || importHandle === "overwrite") {
+                for (const monitor of monitorListData) {
+                    const exists = monitors.find(item => item.id === monitor.id);
 
-                        // Define in here every new variable for monitors which where implemented after the first version of the Import/Export function (1.6.0)
-                        // --- Start ---
+                    // Do not process when it already exists and importHandle is skip
+                    if (importHandle === "skip" && exists !== undefined) {
+                        continue;
+                    }
 
-                        // Define default values
-                        let retryInterval = 0;
+                    let bean = R.dispense("monitor");
 
-                        /*
-                        Only replace the default value with the backup file data for the specific version, where it appears the first time
-                        More information about that where "let version" will be defined
-                        */
-                        if (version17x) {
-                            retryInterval = monitorListData[i].retryInterval;
-                        }
-
-                        // --- End ---
-
-                        let monitor = {
-                            // Define the new variable from earlier here
-                            name: monitorListData[i].name,
-                            type: monitorListData[i].type,
-                            url: monitorListData[i].url,
-                            method: monitorListData[i].method || "GET",
-                            body: monitorListData[i].body,
-                            headers: monitorListData[i].headers,
-                            authMethod: monitorListData[i].authMethod,
-                            basic_auth_user: monitorListData[i].basic_auth_user,
-                            basic_auth_pass: monitorListData[i].basic_auth_pass,
-                            authWorkstation: monitorListData[i].authWorkstation,
-                            authDomain: monitorListData[i].authDomain,
-                            interval: monitorListData[i].interval,
-                            retryInterval: retryInterval,
-                            resendInterval: monitorListData[i].resendInterval || 0,
-                            hostname: monitorListData[i].hostname,
-                            maxretries: monitorListData[i].maxretries,
-                            port: monitorListData[i].port,
-                            keyword: monitorListData[i].keyword,
-                            ignoreTls: monitorListData[i].ignoreTls,
-                            upsideDown: monitorListData[i].upsideDown,
-                            maxredirects: monitorListData[i].maxredirects,
-                            accepted_statuscodes: monitorListData[i].accepted_statuscodes,
-                            dns_resolve_type: monitorListData[i].dns_resolve_type,
-                            dns_resolve_server: monitorListData[i].dns_resolve_server,
-                            notificationIDList: {},
-                            proxy_id: monitorListData[i].proxy_id || null,
-                        };
-
-                        if (monitorListData[i].pushToken) {
-                            monitor.pushToken = monitorListData[i].pushToken;
-                        }
-
-                        let bean = R.dispense("monitor");
-
-                        let notificationIDList = monitor.notificationIDList;
+                    let notificationIDList = monitor.notificationIDList;
+                    if (notificationIDList !== undefined) {
                         delete monitor.notificationIDList;
+                    }
 
-                        monitor.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
-                        delete monitor.accepted_statuscodes;
+                    let tagsList = monitor.tags;
+                    if (tagsList !== undefined) {
+                        delete monitor.tags;
+                    }
 
-                        bean.import(monitor);
-                        bean.user_id = socket.userID;
-                        await R.store(bean);
+                    let maintenanceList = monitor.maintenance;
+                    if (maintenanceList !== undefined) {
+                        delete monitor.maintenance;
+                    }
 
-                        // Only for backup files with the version 1.7.0 or higher, since there was the tag feature implemented
-                        if (version17x) {
-                            // Only import if the specific monitor has tags assigned
-                            for (const oldTag of monitorListData[i].tags) {
+                    if (monitor.id !== undefined) {
+                        delete monitor.id;
+                    }
 
-                                // Check if tag already exists and get data ->
-                                let tag = await R.findOne("tag", " name = ?", [
-                                    oldTag.name,
-                                ]);
+                    monitor.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
+                    delete monitor.accepted_statuscodes;
 
-                                let tagId;
-                                if (! tag) {
-                                    // -> If it doesn't exist, create new tag from backup file
-                                    let beanTag = R.dispense("tag");
-                                    beanTag.name = oldTag.name;
-                                    beanTag.color = oldTag.color;
-                                    await R.store(beanTag);
+                    bean.import(monitor);
+                    bean.user_id = socket.userID;
+                    await R.store(bean);
 
-                                    tagId = beanTag.id;
-                                } else {
-                                    // -> If it already exist, set tagId to value from database
-                                    tagId = tag.id;
-                                }
+                    if (Array.isArray(tagsList) && tagsList.length > 0) {
+                        // Only import if the specific monitor has tags assigned
+                        for (const oldTag of tagsList) {
 
-                                // Assign the new created tag to the monitor
-                                await R.exec("INSERT INTO monitor_tag (tag_id, monitor_id, value) VALUES (?, ?, ?)", [
-                                    tagId,
-                                    bean.id,
-                                    oldTag.value,
-                                ]);
+                            // Check if tag already exists and get data ->
+                            let tag = await R.findOne("tag", " name = ?", [
+                                oldTag.name,
+                            ]);
 
+                            let tagId;
+                            if (! tag) {
+                                // -> If it doesn't exist, create new tag from backup file
+                                let beanTag = R.dispense("tag");
+                                beanTag.name = oldTag.name;
+                                beanTag.color = oldTag.color;
+                                await R.store(beanTag);
+
+                                tagId = beanTag.id;
+                            } else {
+                                // -> If it already exist, set tagId to value from database
+                                tagId = tag.id;
                             }
+
+                            // Assign the new created tag to the monitor
+                            await R.exec("INSERT INTO monitor_tag (tag_id, monitor_id, value) VALUES (?, ?, ?)", [
+                                tagId,
+                                bean.id,
+                                oldTag.value,
+                            ]);
                         }
+                    }
 
-                        await server.updateMonitorNotification(bean.id, notificationIDList);
+                    await Monitor.updateMonitorNotification(bean.id, notificationIDList);
 
-                        // If monitor was active start it immediately, otherwise pause it
-                        if (monitorListData[i].active === 1) {
-                            await server.startMonitor(socket.userID, bean.id);
-                        } else {
-                            await server.pauseMonitor(socket.userID, bean.id);
-                        }
-
+                    // If monitor was active start it immediately, otherwise pause it
+                    if (monitor.active === 1) {
+                        await bean.start(server.io);
+                    } else {
+                        await bean.stop();
                     }
                 }
 
-                await server.sendNotificationList(socket);
+                await sendNotificationList(socket);
                 await server.sendMonitorList(socket);
             }
+
+            // Only starts importing if the backup file contains at least one maintenance
+            if (maintenanceListData.length >= 1) {
+                const maintenances = await R.findAll("maintenance");
+
+                for (const maintenance of maintenanceListData) {
+                    const exists = maintenances.find(item => item.id === maintenance.id);
+
+                    if (importHandle === "skip" && exists !== undefined) {
+                        continue;
+                    }
+
+                    const maintenanceBean = exists && importHandle === "overwrite" ? exists : R.dispense("maintenance");
+                    Maintenance.jsonToBean(maintenanceBean, maintenance);
+
+                    await R.store(maintenanceBean);
+                }
+            }
+
+            // Only starts importing if the backup file contains at least one status page
+            if (statusPageListData.length >= 1) {
+                // todo()
+            }
+
+            await R.exec("PRAGMA foreign_keys = on");
 
             callback({
                 ok: true,
@@ -241,6 +238,8 @@ module.exports.backupSocketHandler = (socket, server) => {
             });
 
         } catch (e) {
+            log.error("backup", e);
+            await R.exec("PRAGMA foreign_keys = on");
             callback({
                 ok: false,
                 msg: e.message,

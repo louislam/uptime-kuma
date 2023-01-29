@@ -75,9 +75,6 @@ log.debug("server", "Importing Notification");
 const { Notification } = require("./notification");
 Notification.init();
 
-log.debug("server", "Importing Proxy");
-const { Proxy } = require("./proxy");
-
 log.debug("server", "Importing Database");
 const Database = require("./database");
 
@@ -643,7 +640,7 @@ let needSetup = false;
 
                 await R.store(bean);
 
-                await updateMonitorNotification(bean.id, notificationIDList);
+                await Monitor.updateMonitorNotification(bean.id, notificationIDList);
 
                 await server.sendMonitorList(socket);
                 await startMonitor(socket.userID, bean.id);
@@ -737,7 +734,7 @@ let needSetup = false;
 
                 await R.store(bean);
 
-                await updateMonitorNotification(bean.id, monitor.notificationIDList);
+                await Monitor.updateMonitorNotification(bean.id, monitor.notificationIDList);
 
                 if (bean.active) {
                     await restartMonitor(socket.userID, bean.id);
@@ -1361,28 +1358,6 @@ let needSetup = false;
     await cloudflaredAutoStart(cloudflaredToken);
 
 })();
-
-/**
- * Update notifications for a given monitor
- * @param {number} monitorID ID of monitor to update
- * @param {number[]} notificationIDList List of new notification
- * providers to add
- * @returns {Promise<void>}
- */
-async function updateMonitorNotification(monitorID, notificationIDList) {
-    await R.exec("DELETE FROM monitor_notification WHERE monitor_id = ? ", [
-        monitorID,
-    ]);
-
-    for (let notificationID in notificationIDList) {
-        if (notificationIDList[notificationID]) {
-            let relation = R.dispense("monitor_notification");
-            relation.monitor_id = monitorID;
-            relation.notification_id = notificationID;
-            await R.store(relation);
-        }
-    }
-}
 
 /**
  * Check if a given user owns a specific monitor

@@ -211,6 +211,7 @@ class Notification {
 
     /**
      * Get list of configured notifications
+     * @param {number} userID ID of user who created notification
      * @returns {Promise<Bean[]>} list of configured notifications
      */
     static async getNotificationList(userID) {
