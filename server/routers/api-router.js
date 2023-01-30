@@ -111,8 +111,12 @@ router.get("/api/badge/:id/status", cache("5 minutes"), async (request, response
         label,
         upLabel = "Up",
         downLabel = "Down",
+        pendingLabel = "Pending",
+        maintenanceLabel = "Maintenance",
         upColor = badgeConstants.defaultUpColor,
         downColor = badgeConstants.defaultDownColor,
+        pendingColor = badgeConstants.defaultPendingColor,
+        maintenanceColor = badgeConstants.defaultMaintenanceColor,
         style = badgeConstants.defaultStyle,
         value, // for demo purpose only
     } = request.query;
@@ -139,11 +143,30 @@ router.get("/api/badge/:id/status", cache("5 minutes"), async (request, response
             badgeValues.color = badgeConstants.naColor;
         } else {
             const heartbeat = await Monitor.getPreviousHeartbeat(requestedMonitorId);
-            const state = overrideValue !== undefined ? overrideValue : heartbeat.status === 1;
+            const state = overrideValue !== undefined ? overrideValue : heartbeat.status;
 
-            badgeValues.label = label ? label : "";
-            badgeValues.color = state ? upColor : downColor;
-            badgeValues.message = label ?? state ? upLabel : downLabel;
+            badgeValues.label = label ?? "";
+            switch (state) {
+                case 0:
+                    badgeValues.color = downColor;
+                    badgeValues.message = downLabel;
+                    break;
+                case 1:
+                    badgeValues.color = upColor;
+                    badgeValues.message = upLabel;
+                    break;
+                case 2:
+                    badgeValues.color = pendingColor;
+                    badgeValues.message = pendingLabel;
+                    break;
+                case 3:
+                    badgeValues.color = maintenanceColor;
+                    badgeValues.message = maintenanceLabel;
+                    break;
+                default:
+                    badgeValues.color = badgeConstants.naColor;
+                    badgeValues.message = "N/A";
+            }
         }
 
         // build the svg based on given values
