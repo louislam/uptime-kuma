@@ -318,11 +318,6 @@
 
                             <!-- Interval -->
                             <div class="my-3">
-                                <label for="timeoutMs" class="form-label">{{ $t("Heartbeat Timeout") }} ({{ $t("timeoutAfterMs", [ monitor.timeoutMs ]) }})</label>
-                                <input id="timeoutMs" v-model="monitor.timeoutMs" type="number" class="form-control" required min="50" step="50">
-                            </div>
-
-                            <div class="my-3">
                                 <label for="interval" class="form-label">{{ $t("Heartbeat Interval") }} ({{ $t("checkEverySecond", [ monitor.interval ]) }})</label>
                                 <input id="interval" v-model="monitor.interval" type="number" class="form-control" required :min="minInterval" step="1" :max="maxInterval">
                             </div>
@@ -418,6 +413,12 @@
                                     </div>
                                 </div>
                             </template>
+
+                            <!-- Timeout: HTTP / Keyword only -->
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword'" class="my-3">
+                                <label for="timeoutMs" class="form-label">{{ $t("Heartbeat Timeout") }} ({{ $t("timeoutAfterMs", [ monitor.timeoutMs ]) }})</label>
+                                <input id="timeoutMs" v-model="monitor.timeoutMs" type="number" class="form-control" required min="50" step="50">
+                            </div>
 
                             <div class="my-3">
                                 <tags-manager ref="tagsManager" :pre-selected-tags="monitor.tags"></tags-manager>
