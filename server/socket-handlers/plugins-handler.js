@@ -1,5 +1,6 @@
 const { checkLogin } = require("../util-server");
-const { PluginManager } = require("../plugins-manager");
+const { PluginsManager } = require("../plugins-manager");
+const { log } = require("../../src/util.js");
 
 /**
  * Handlers for plugins
@@ -15,7 +16,9 @@ module.exports.pluginsHandler = (socket, server) => {
         try {
             checkLogin(socket);
 
-            if (PluginManager.disable) {
+            log.debug("plugin", "PluginManager.disable: " + PluginsManager.disable);
+
+            if (PluginsManager.disable) {
                 throw new Error("Plugin Disabled: In order to enable plugin feature, you need to use the default data directory: ./data/");
             }
 
@@ -25,6 +28,7 @@ module.exports.pluginsHandler = (socket, server) => {
                 pluginList,
             });
         } catch (error) {
+            log.warn("plugin", "Error: " + error.message);
             callback({
                 ok: false,
                 msg: error.message,
