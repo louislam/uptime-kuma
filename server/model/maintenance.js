@@ -112,6 +112,11 @@ class Maintenance extends BeanModel {
         return this.toPublicJSON(timezone);
     }
 
+    /**
+     * Get a list of weekdays that the maintenance is active for
+     * Monday=1, Tuesday=2 etc.
+     * @returns {number[]} Array of active weekdays
+     */
     getDayOfWeekList() {
         log.debug("timeslot", "List: " + this.weekdays);
         return JSON.parse(this.weekdays).sort(function (a, b) {
@@ -119,12 +124,20 @@ class Maintenance extends BeanModel {
         });
     }
 
+    /**
+     * Get a list of days in month that maintenance is active for
+     * @returns {number[]} Array of active days in month
+     */
     getDayOfMonthList() {
         return JSON.parse(this.days_of_month).sort(function (a, b) {
             return a - b;
         });
     }
 
+    /**
+     * Get the start date and time for maintenance
+     * @returns {dayjs.Dayjs} Start date and time
+     */
     getStartDateTime() {
         let startOfTheDay = dayjs.utc(this.start_date).format("HH:mm");
         log.debug("timeslot", "startOfTheDay: " + startOfTheDay);
@@ -137,6 +150,10 @@ class Maintenance extends BeanModel {
         return dayjs.utc(this.start_date).add(startTimeSecond, "second");
     }
 
+    /**
+     * Get the duraction of maintenance in seconds
+     * @returns {number} Duration of maintenance
+     */
     getDuration() {
         let duration = dayjs.utc(this.end_time, "HH:mm").diff(dayjs.utc(this.start_time, "HH:mm"), "second");
         // Add 24hours if it is across day
@@ -146,6 +163,12 @@ class Maintenance extends BeanModel {
         return duration;
     }
 
+    /**
+     * Convert data from socket to bean
+     * @param {Bean} bean Bean to fill in
+     * @param {Object} obj Data to fill bean with
+     * @returns {Bean} Filled bean
+     */
     static jsonToBean(bean, obj) {
         if (obj.id) {
             bean.id = obj.id;
@@ -188,13 +211,13 @@ class Maintenance extends BeanModel {
      */
     static getActiveMaintenanceSQLCondition() {
         return `
-
-            (maintenance_timeslot.start_date <= DATETIME('now')
-            AND maintenance_timeslot.end_date >= DATETIME('now')
-            AND maintenance.active = 1)
-            OR
-            (maintenance.strategy = 'manual' AND active = 1)
-
+            (
+                (maintenance_timeslot.start_date <= DATETIME('now')
+                AND maintenance_timeslot.end_date >= DATETIME('now')
+                AND maintenance.active = 1)
+                OR
+                (maintenance.strategy = 'manual' AND active = 1)
+            )
         `;
     }
 
@@ -204,10 +227,12 @@ class Maintenance extends BeanModel {
      */
     static getActiveAndFutureMaintenanceSQLCondition() {
         return `
-            ((maintenance_timeslot.end_date >= DATETIME('now')
-            AND maintenance.active = 1)
-            OR
-            (maintenance.strategy = 'manual' AND active = 1))
+            (
+                ((maintenance_timeslot.end_date >= DATETIME('now')
+                AND maintenance.active = 1)
+                OR
+                (maintenance.strategy = 'manual' AND active = 1))
+            )
         `;
     }
 }
