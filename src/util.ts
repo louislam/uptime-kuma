@@ -442,3 +442,66 @@ export function utcToLocal(input : string, format = SQL_DATETIME_FORMAT) {
 export function localToUTC(input : string, format = SQL_DATETIME_FORMAT) {
     return dayjs(input).utc().format(format);
 }
+
+export function splitStringIntoSubstrings(str: string, num: number): string[] {
+    const substrings: string[] = [];
+    for (let i = 0; i < str.length; i += num) {
+      substrings.push(str.slice(i, i + num));
+    }
+    return substrings;
+}
+  
+export function cyclePlaceholderText(STATUS: "right" | "left", inputElement: HTMLInputElement) {
+    if(!inputElement.placeholder || inputElement.value.length >= 1) return;
+
+    const visibleCharacters = Math.floor(+inputElement.offsetWidth / 9);
+
+    if (!inputElement.hasAttribute("index-placeholder") && inputElement.placeholder.length <= visibleCharacters) return;
+
+    const inputElementWidth = inputElement.getAttribute("input-width");
+    const inputElementIndex = inputElement.getAttribute("index-placeholder");
+
+    let placeholderPosition = inputElementIndex ? parseInt(inputElementIndex) : 1;
+
+    if (!inputElement.hasAttribute("index-placeholder")) {
+        inputElement.setAttribute("index-placeholder", "1");
+        inputElement.setAttribute("full-text", inputElement.placeholder);
+        inputElement.setAttribute("input-width", inputElement.offsetWidth.toString());
+    }
+
+    if (inputElementWidth && +inputElementWidth !== inputElement.offsetWidth) {
+        placeholderPosition = 1;
+        inputElement.setAttribute("input-width", inputElement.offsetWidth.toString());
+    }
+
+    let subPlaceholders = splitStringIntoSubstrings(
+        inputElement.getAttribute("full-text") || inputElement.placeholder,
+        visibleCharacters
+    );
+
+    if (STATUS === "right") {
+        placeholderPosition = +placeholderPosition + 1;
+    } else {
+        placeholderPosition = +placeholderPosition - 1;
+    }
+
+    inputElement.placeholder = subPlaceholders[placeholderPosition - 1 < 0 ? 0 : placeholderPosition - 1];
+
+    if (placeholderPosition <= subPlaceholders.length - 1 && placeholderPosition >= 1) {
+        inputElement.setAttribute("index-placeholder", placeholderPosition.toString());
+    }
+};
+
+
+
+export function resetPlaceholderText(inputElement: HTMLInputElement) {
+    const fullPlaceholder = inputElement.getAttribute("full-text");
+    if (!fullPlaceholder) return;
+
+    inputElement.placeholder = fullPlaceholder;
+
+    inputElement.removeAttribute("full-text");
+    inputElement.removeAttribute("index-placeholder");
+    inputElement.removeAttribute("input-width");
+}
+

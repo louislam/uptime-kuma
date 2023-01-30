@@ -283,13 +283,13 @@
                                     <label for="sqlConnectionString" class="form-label">{{ $t("Connection String") }}</label>
 
                                     <template v-if="monitor.type === 'sqlserver'">
-                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="Server=<hostname>,<port>;Database=<your database>;User Id=<your user id>;Password=<your password>;Encrypt=<true/false>;TrustServerCertificate=<Yes/No>;Connection Timeout=<int>">
+                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="Server=<hostname>,<port>;Database=<your database>;User Id=<your user id>;Password=<your password>;Encrypt=<true/false>;TrustServerCertificate=<Yes/No>;Connection Timeout=<int>" @keyup="placeholderSlider" @blur="resetPlaceholder">
                                     </template>
                                     <template v-if="monitor.type === 'postgres'">
-                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="postgres://username:password@host:port/database">
+                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="postgres://username:password@host:port/database" @keyup="placeholderSlider" @blur="resetPlaceholder">
                                     </template>
                                     <template v-if="monitor.type === 'mysql'">
-                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="mysql://username:password@host:port/database">
+                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="mysql://username:password@host:port/database" @keyup="placeholderSlider" @blur="resetPlaceholder">
                                     </template>
                                 </div>
                                 <div class="my-3">
@@ -301,7 +301,7 @@
                             <template v-if="monitor.type === 'redis'">
                                 <div class="my-3">
                                     <label for="redisConnectionString" class="form-label">{{ $t("Connection String") }}</label>
-                                    <input id="redisConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="redis://user:password@host:port">
+                                    <input id="redisConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="redis://user:password@host:port" @keyup="placeholderSlider" @blur="resetPlaceholder">
                                 </div>
                             </template>
 
@@ -311,7 +311,7 @@
                                     <label for="sqlConnectionString" class="form-label">{{ $t("Connection String") }}</label>
 
                                     <template v-if="monitor.type === 'mongodb'">
-                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="mongodb://username:password@host:port/database">
+                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="mongodb://username:password@host:port/database" @keyup="placeholderSlider" @blur="resetPlaceholder">
                                     </template>
                                 </div>
                             </template>
@@ -629,7 +629,7 @@ import NotificationDialog from "../components/NotificationDialog.vue";
 import DockerHostDialog from "../components/DockerHostDialog.vue";
 import ProxyDialog from "../components/ProxyDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
-import { genSecret, isDev, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND } from "../util.ts";
+import { genSecret, isDev, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND, cyclePlaceholderText, resetPlaceholderText } from "../util.ts";
 import { hostNameRegexPattern } from "../util-frontend";
 
 const toast = useToast();
@@ -999,6 +999,18 @@ message HealthCheckResponse {
         addedDockerHost(id) {
             this.monitor.docker_host = id;
         },
+
+        placeholderSlider(event) {
+            if (event.keyCode === 37) {
+                cyclePlaceholderText("left", event.target);
+            } else if (event.keyCode === 39) {
+                cyclePlaceholderText("right", event.target);
+            }
+        },
+
+        resetPlaceholder(event) {
+            resetPlaceholderText(event.target);
+        }
     },
 };
 </script>
