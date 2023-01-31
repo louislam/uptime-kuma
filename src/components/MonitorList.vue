@@ -24,7 +24,9 @@
                     <div class="col-9 col-md-8 small-padding" :class="{ 'monitor-item': $root.userHeartbeatBar == 'bottom' || $root.userHeartbeatBar == 'none' }">
                         <div class="info">
                             <Uptime :monitor="item" type="24" :pill="true" />
-                            {{ item.name }}
+
+                            {{ item.name }} (ID: {{ item.id }})
+
                         </div>
                         <div class="tags">
                             <Tag v-for="tag in item.tags" :key="tag" :item="tag" :size="'sm'" />
