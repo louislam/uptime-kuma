@@ -232,7 +232,6 @@ router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (reques
             badgeValues.label = filterAndJoin([
                 labelPrefix,
                 label ?? `Uptime (${requestedDuration}${labelSuffix})`,
-                
             ]);
             badgeValues.message = filterAndJoin([ prefix, `${cleanUptime * 100}`, suffix ]);
         }
