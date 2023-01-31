@@ -145,7 +145,7 @@ router.get("/api/badge/:id/status", cache("5 minutes"), async (request, response
             const heartbeat = await Monitor.getPreviousHeartbeat(requestedMonitorId);
             const state = overrideValue !== undefined ? overrideValue : heartbeat.status;
 
-            badgeValues.label = label ?? "";
+            badgeValues.label = label ?? "Status";
             switch (state) {
                 case 0:
                     badgeValues.color = downColor;
@@ -212,7 +212,7 @@ router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (reques
         const badgeValues = { style };
 
         if (!publicMonitor) {
-            // return a "N/A" badge in naColor (grey), if monitor is not public / not available / non exsitant
+            // return a "N/A" badge in naColor (grey), if monitor is not public / not available / non existent
             badgeValues.message = "N/A";
             badgeValues.color = badgeConstants.naColor;
         } else {
@@ -228,8 +228,12 @@ router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (reques
             badgeValues.color = color ?? percentageToColor(uptime);
             // use a given, custom labelColor or use the default badge label color (defined by badge-maker)
             badgeValues.labelColor = labelColor ?? "";
-            // build a lable string. If a custom label is given, override the default one (requestedDuration)
-            badgeValues.label = filterAndJoin([ labelPrefix, label ?? requestedDuration, labelSuffix ]);
+            // build a label string. If a custom label is given, override the default one (requestedDuration)
+            badgeValues.label = filterAndJoin([
+                labelPrefix,
+                label ?? `Uptime (${requestedDuration}${labelSuffix})`,
+                
+            ]);
             badgeValues.message = filterAndJoin([ prefix, `${cleanUptime * 100}`, suffix ]);
         }
 
@@ -290,7 +294,7 @@ router.get("/api/badge/:id/ping/:duration?", cache("5 minutes"), async (request,
             // use a given, custom labelColor or use the default badge label color (defined by badge-maker)
             badgeValues.labelColor = labelColor ?? "";
             // build a lable string. If a custom label is given, override the default one (requestedDuration)
-            badgeValues.label = filterAndJoin([ labelPrefix, label ?? requestedDuration, labelSuffix ]);
+            badgeValues.label = filterAndJoin([ labelPrefix, label ?? `Avg. Ping (${requestedDuration}${labelSuffix})` ]);
             badgeValues.message = filterAndJoin([ prefix, avgPing, suffix ]);
         }
 
