@@ -674,6 +674,14 @@ let needSetup = false;
                     throw new Error("Permission denied.");
                 }
 
+                // Check if Parent is Decendant (would cause endless loop)
+                if (monitor.parent !== null) {
+                    const childIDs = await Monitor.getAllChildrenIDs(monitor.id);
+                    if (childIDs.includes(monitor.parent)) {
+                        throw new Error("Invalid Monitor Group");
+                    }
+                }
+
                 // Reset Prometheus labels
                 server.monitorList[monitor.id]?.prometheus()?.remove();
 
