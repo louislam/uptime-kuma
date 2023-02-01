@@ -359,6 +359,7 @@ export default {
         });
     },
     methods: {
+        /** Initialise page */
         init() {
             this.affectedMonitors = [];
             this.selectedStatusPages = [];
@@ -417,6 +418,7 @@ export default {
             }
         },
 
+        /** Create new maintenance */
         async submit() {
             this.processing = true;
 
@@ -461,6 +463,11 @@ export default {
             }
         },
 
+        /**
+         * Add monitor to maintenance
+         * @param {number} maintenanceID
+         * @param {socketCB} callback
+         */
         async addMonitorMaintenance(maintenanceID, callback) {
             await this.$root.addMonitorMaintenance(maintenanceID, this.affectedMonitors, async (res) => {
                 if (!res.ok) {
@@ -473,6 +480,11 @@ export default {
             });
         },
 
+        /**
+         * Add status page to maintenance
+         * @param {number} maintenanceID
+         * @param {socketCB} callback
+         */
         async addMaintenanceStatusPage(maintenanceID, callback) {
             await this.$root.addMaintenanceStatusPage(maintenanceID, (this.showOnAllPages) ? this.selectedStatusPagesOptions : this.selectedStatusPages, async (res) => {
                 if (!res.ok) {

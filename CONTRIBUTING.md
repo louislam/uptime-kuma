@@ -32,15 +32,18 @@ Yes or no, it depends on what you will try to do. Since I don't want to waste yo
 Here are some references:
 
 ✅ Usually Accept:
-- Bug/Security fix
-- Translations
+- Bug fix
+- Security fix
 - Adding notification providers
+- Adding new language files (You should go to https://weblate.kuma.pet for existing languages)
+- Adding new language keys: `$t("...")`
 
 ⚠️ Discussion First
 - Large pull requests
 - New features
 
 ❌ Won't Merge
+- A dedicated pr for translating existing languages (You can now translate on https://weblate.kuma.pet) 
 - Do not pass auto test
 - Any breaking changes
 - Duplicated pull request

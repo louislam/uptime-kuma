@@ -4,7 +4,7 @@ const { R } = require("redbean-node");
 const apicache = require("../modules/apicache");
 const Monitor = require("../model/monitor");
 const dayjs = require("dayjs");
-const { UP, MAINTENANCE, DOWN, flipStatus, log } = require("../../src/util");
+const { UP, MAINTENANCE, DOWN, PENDING, flipStatus, log } = require("../../src/util");
 const StatusPage = require("../model/status_page");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { makeBadge } = require("badge-maker");
@@ -111,8 +111,12 @@ router.get("/api/badge/:id/status", cache("5 minutes"), async (request, response
         label,
         upLabel = "Up",
         downLabel = "Down",
+        pendingLabel = "Pending",
+        maintenanceLabel = "Maintenance",
         upColor = badgeConstants.defaultUpColor,
         downColor = badgeConstants.defaultDownColor,
+        pendingColor = badgeConstants.defaultPendingColor,
+        maintenanceColor = badgeConstants.defaultMaintenanceColor,
         style = badgeConstants.defaultStyle,
         value, // for demo purpose only
     } = request.query;
@@ -139,11 +143,30 @@ router.get("/api/badge/:id/status", cache("5 minutes"), async (request, response
             badgeValues.color = badgeConstants.naColor;
         } else {
             const heartbeat = await Monitor.getPreviousHeartbeat(requestedMonitorId);
-            const state = overrideValue !== undefined ? overrideValue : heartbeat.status === 1;
+            const state = overrideValue !== undefined ? overrideValue : heartbeat.status;
 
-            badgeValues.label = label ? label : "";
-            badgeValues.color = state ? upColor : downColor;
-            badgeValues.message = label ?? state ? upLabel : downLabel;
+            badgeValues.label = label ?? "";
+            switch (state) {
+                case DOWN:
+                    badgeValues.color = downColor;
+                    badgeValues.message = downLabel;
+                    break;
+                case UP:
+                    badgeValues.color = upColor;
+                    badgeValues.message = upLabel;
+                    break;
+                case PENDING:
+                    badgeValues.color = pendingColor;
+                    badgeValues.message = pendingLabel;
+                    break;
+                case MAINTENANCE:
+                    badgeValues.color = maintenanceColor;
+                    badgeValues.message = maintenanceLabel;
+                    break;
+                default:
+                    badgeValues.color = badgeConstants.naColor;
+                    badgeValues.message = "N/A";
+            }
         }
 
         // build the svg based on given values
