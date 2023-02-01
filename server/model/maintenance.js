@@ -50,6 +50,7 @@ class Maintenance extends BeanModel {
             timezone: await this.getTimezone(),
             timezoneOffset: await this.getTimezoneOffset(),
             status: await this.getStatus(),
+            monitors: (await this.getAffectedMonitors()).map(monitor => monitor.id),
         };
 
         if (this.strategy === "manual") {
@@ -136,6 +137,51 @@ class Maintenance extends BeanModel {
             duration += 24 * 3600;
         }
         return duration;
+    }
+
+    /**
+     * Get the monitors affected by a maintenance
+     * @returns {Bean[]} monitors affected by the maintenance
+     */
+    async getAffectedMonitors() {
+        return await R.getAll("SELECT monitor.* FROM monitor_maintenance mm JOIN monitor ON mm.monitor_id = monitor.id WHERE mm.maintenance_id = ? ", [
+            this.id,
+        ]);
+    }
+
+    /**
+     * Saves and updates given maintenance entity
+     *
+     * @param maintenance
+     * @param maintenanceID
+     * @param userID
+     * @return {Promise<Bean>}
+     */
+    static async save(maintenance, maintenanceID, userID) {
+        let bean;
+
+        if (maintenanceID) {
+            bean = await R.findOne("maintenance", " id = ? AND user_id = ? ", [ maintenanceID, userID ]);
+
+            if (!bean) {
+                throw new Error("maintenance not found");
+            }
+
+            Maintenance.jsonToBean(bean, maintenance);
+        } else {
+            bean = R.dispense("maintenance");
+            const data = {
+                ...maintenance,
+                id: undefined,
+            };
+
+            Maintenance.jsonToBean(bean, data);
+        }
+
+        bean.user_id = userID;
+        await R.store(bean);
+
+        return bean;
     }
 
     /**

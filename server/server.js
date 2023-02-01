@@ -628,12 +628,9 @@ let needSetup = false;
                 let bean = R.dispense("monitor");
 
                 let notificationIDList = monitor.notificationIDList;
-                delete monitor.notificationIDList;
 
-                monitor.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
-                delete monitor.accepted_statuscodes;
+                Monitor.jsonToBean(bean, monitor);
 
-                bean.import(monitor);
                 bean.user_id = socket.userID;
 
                 bean.validate();
@@ -675,60 +672,7 @@ let needSetup = false;
                     throw new Error("Permission denied.");
                 }
 
-                bean.name = monitor.name;
-                bean.description = monitor.description;
-                bean.type = monitor.type;
-                bean.url = monitor.url;
-                bean.method = monitor.method;
-                bean.body = monitor.body;
-                bean.headers = monitor.headers;
-                bean.basic_auth_user = monitor.basic_auth_user;
-                bean.basic_auth_pass = monitor.basic_auth_pass;
-                bean.tlsCa = monitor.tlsCa;
-                bean.tlsCert = monitor.tlsCert;
-                bean.tlsKey = monitor.tlsKey;
-                bean.interval = monitor.interval;
-                bean.retryInterval = monitor.retryInterval;
-                bean.resendInterval = monitor.resendInterval;
-                bean.hostname = monitor.hostname;
-                bean.game = monitor.game;
-                bean.maxretries = monitor.maxretries;
-                bean.port = parseInt(monitor.port);
-                bean.keyword = monitor.keyword;
-                bean.ignoreTls = monitor.ignoreTls;
-                bean.expiryNotification = monitor.expiryNotification;
-                bean.upsideDown = monitor.upsideDown;
-                bean.packetSize = monitor.packetSize;
-                bean.maxredirects = monitor.maxredirects;
-                bean.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
-                bean.dns_resolve_type = monitor.dns_resolve_type;
-                bean.dns_resolve_server = monitor.dns_resolve_server;
-                bean.pushToken = monitor.pushToken;
-                bean.docker_container = monitor.docker_container;
-                bean.docker_host = monitor.docker_host;
-                bean.proxyId = Number.isInteger(monitor.proxyId) ? monitor.proxyId : null;
-                bean.mqttUsername = monitor.mqttUsername;
-                bean.mqttPassword = monitor.mqttPassword;
-                bean.mqttTopic = monitor.mqttTopic;
-                bean.mqttSuccessMessage = monitor.mqttSuccessMessage;
-                bean.databaseConnectionString = monitor.databaseConnectionString;
-                bean.databaseQuery = monitor.databaseQuery;
-                bean.authMethod = monitor.authMethod;
-                bean.authWorkstation = monitor.authWorkstation;
-                bean.authDomain = monitor.authDomain;
-                bean.grpcUrl = monitor.grpcUrl;
-                bean.grpcProtobuf = monitor.grpcProtobuf;
-                bean.grpcServiceName = monitor.grpcServiceName;
-                bean.grpcMethod = monitor.grpcMethod;
-                bean.grpcBody = monitor.grpcBody;
-                bean.grpcMetadata = monitor.grpcMetadata;
-                bean.grpcEnableTls = monitor.grpcEnableTls;
-                bean.radiusUsername = monitor.radiusUsername;
-                bean.radiusPassword = monitor.radiusPassword;
-                bean.radiusCalledStationId = monitor.radiusCalledStationId;
-                bean.radiusCallingStationId = monitor.radiusCallingStationId;
-                bean.radiusSecret = monitor.radiusSecret;
-                bean.httpBodyEncoding = monitor.httpBodyEncoding;
+                Monitor.jsonToBean(bean, monitor);
 
                 bean.validate();
 

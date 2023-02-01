@@ -186,9 +186,16 @@ module.exports.maintenanceSocketHandler = (socket) => {
 
             log.debug("maintenance", `Get Monitors for Maintenance: ${maintenanceID} User ID: ${socket.userID}`);
 
-            let monitors = await R.getAll("SELECT monitor.id, monitor.name FROM monitor_maintenance mm JOIN monitor ON mm.monitor_id = monitor.id WHERE mm.maintenance_id = ? ", [
-                maintenanceID,
-            ]);
+            let bean = await R.findOne("maintenance", " id = ? ", [ maintenanceID ]);
+            if (bean == null) {
+                callback({
+                    ok: false,
+                    msg: "Maintenance not found",
+                });
+                return;
+            }
+
+            let monitors = await bean.getAffectedMonitors();
 
             callback({
                 ok: true,

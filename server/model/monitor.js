@@ -144,6 +144,87 @@ class Monitor extends BeanModel {
     }
 
     /**
+     * Convert data from JSON to bean
+     * @param {Bean} bean Bean to fill in
+     * @param {Object} obj Data to fill bean with
+     * @returns {Bean} Filled bean
+     */
+    static async jsonToBean(bean, obj) {
+        try {
+            let data = { ...obj };
+
+            if (obj.port !== undefined) {
+                data.port = Number.isInteger(parseInt(obj.port)) ? parseInt(obj.port) : null;
+            }
+
+            if (obj.accepted_statuscodes !== undefined) {
+                data.accepted_statuscodes_json = JSON.stringify(obj.accepted_statuscodes);
+                delete data.accepted_statuscodes;
+            }
+
+            if (obj.proxyId !== undefined) {
+                data.proxyId = Number.isInteger(obj.proxyId) ? obj.proxyId : null;
+            }
+
+            if (obj.notificationIDList !== undefined) {
+                delete data.notificationIDList;
+            }
+
+            if (obj.maintenance !== undefined) {
+                delete data.maintenance;
+            }
+
+            if (obj.tags !== undefined) {
+                delete data.tags;
+            }
+
+            bean.import(data);
+
+            log.debug("monitor", `Successfully imported monitor data from JSON, ID: ${bean.id}`);
+        } catch (e) {
+            log.error("monitor", "Failed to import data from JSON:");
+            log.error("monitor", e);
+        }
+
+        return bean;
+    }
+
+    /**
+     * Saves and updates given monitor entity
+     *
+     * @param monitor
+     * @param monitorID
+     * @param userID
+     * @return {Promise<Bean>}
+     */
+    static async save(monitor, monitorID, userID) {
+        let bean;
+
+        if (monitorID) {
+            bean = await R.findOne("monitor", " id = ? AND user_id = ? ", [ monitorID, userID ]);
+
+            if (!bean) {
+                throw new Error("monitor not found");
+            }
+
+            Monitor.jsonToBean(bean, monitor);
+        } else {
+            bean = R.dispense("monitor");
+            const data = {
+                ...monitor,
+                id: undefined,
+            };
+
+            Monitor.jsonToBean(bean, data);
+        }
+
+        bean.user_id = userID;
+        await R.store(bean);
+
+        return bean;
+    }
+
+    /**
      * Get all tags applied to this monitor
      * @returns {Promise<LooseObject<any>[]>}
      */
