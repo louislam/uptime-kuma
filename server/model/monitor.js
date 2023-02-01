@@ -294,6 +294,7 @@ class Monitor extends BeanModel {
                     } else {
                         // Set status pending if group is empty
                         bean.status = PENDING;
+                        bean.msg = "Group empty";
                     }
 
                 } else if (this.type === "http" || this.type === "keyword") {
