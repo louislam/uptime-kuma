@@ -32,7 +32,6 @@ import Proxies from "./components/settings/Proxies.vue";
 import Backup from "./components/settings/Backup.vue";
 import About from "./components/settings/About.vue";
 
-
 const routes = [
     {
         path: "/",

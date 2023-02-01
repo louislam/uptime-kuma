@@ -72,6 +72,12 @@ class PluginsManager {
      * @param {string} name Directory name, also known as plugin unique name
      */
     downloadPlugin(repoURL, name) {
+        if (fs.existsSync(this.pluginsDir + name)) {
+            log.info("plugin", "Plugin folder already exists? Removing...");
+            fs.rmSync(this.pluginsDir + name, {
+                recursive: true
+            });
+        }
         log.info("plugin", "Installing plugin: " + name + " " + repoURL);
         let result = Git.clone(repoURL, this.pluginsDir, name);
         log.info("plugin", "Install result: " + result);
@@ -115,13 +121,19 @@ class PluginsManager {
      * @returns {Promise<[]>}
      */
     async fetchPluginList() {
-        const res = await axios.get("https://uptime.kuma.pet/c/plugins.json");
-        const list = res.data.pluginList;
+        let remotePluginList;
+        try {
+            const res = await axios.get("https://uptime.kuma.pet/c/plugins.json");
+            remotePluginList = res.data.pluginList;
+        } catch (e) {
+            log.error("plugin", "Failed to fetch plugin list: " + e.message);
+            remotePluginList = [];
+        }
 
         for (let plugin of this.pluginList) {
             let find = false;
             // Try to merge
-            for (let remotePlugin of list) {
+            for (let remotePlugin of remotePluginList) {
                 if (remotePlugin.name === plugin.info.name) {
                     find = true;
                     remotePlugin.installed = true;
@@ -136,17 +148,17 @@ class PluginsManager {
             // Local plugin
             if (!find) {
                 plugin.info.local = true;
-                list.push(plugin.info);
+                remotePluginList.push(plugin.info);
             }
         }
 
         // Sort Installed first, then sort by name
-        return list.sort((a, b) => {
+        return remotePluginList.sort((a, b) => {
             if (a.installed === b.installed) {
-                if ( a.fullName < b.fullName ) {
+                if (a.fullName < b.fullName) {
                     return -1;
                 }
-                if ( a.fullName > b.fullName ) {
+                if (a.fullName > b.fullName) {
                     return 1;
                 }
                 return 0;
@@ -191,14 +203,23 @@ class PluginWrapper {
         let indexFile = this.pluginDir + "/index.js";
         let packageJSON = this.pluginDir + "/package.json";
 
+        log.info("plugin", "Installing dependencies");
+
         if (fs.existsSync(indexFile)) {
             // Install dependencies
-            childProcess.execSync("npm install", {
+            let result = childProcess.spawnSync("npm", [ "install" ], {
                 cwd: this.pluginDir,
                 env: {
+                    ...process.env,
                     PLAYWRIGHT_BROWSERS_PATH: "../../browsers",    // Special handling for read-browser-monitor
                 }
             });
+
+            if (result.stdout) {
+                log.info("plugin", "Install dependencies result: " + result.stdout.toString("utf-8"));
+            } else {
+                log.warn("plugin", "Install dependencies result: no output");
+            }
 
             this.pluginClass = require(path.join(process.cwd(), indexFile));
 
