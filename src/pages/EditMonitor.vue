@@ -891,6 +891,14 @@ message HealthCheckResponse {
     methods: {
         /** Initialize the edit monitor form */
         init() {
+
+            let defaultValues = {
+                slowResponseNotification: false,
+                slowResponseNotificationThreshold: 5000,
+                slowResponseNotificationRange: 60,
+                slowResponseNotificationMethod: "average",
+            };
+
             if (this.isAdd) {
 
                 this.monitor = {
@@ -919,10 +927,7 @@ message HealthCheckResponse {
                     mqttTopic: "",
                     mqttSuccessMessage: "",
                     authMethod: null,
-                    slowResponseNotification: false,
-                    slowResponseNotificationThreshold: 5000,
-                    slowResponseNotificationRange: 60,
-                    slowResponseNotificationMethod: "average",
+                    ...defaultValues,
                 };
 
                 if (this.$root.proxyList && !this.monitor.proxyId) {
@@ -947,6 +952,15 @@ message HealthCheckResponse {
                         if (this.monitor.retryInterval === 0) {
                             this.monitor.retryInterval = this.monitor.interval;
                         }
+
+                        // (1.20.0) Set default value for slowResponseNotification
+                        if (!this.monitor.slowResponseNotification) {
+                            this.monitor.slowResponseNotification = defaultValues.slowResponseNotification;
+                            this.monitor.slowResponseNotificationThreshold = defaultValues.slowResponseNotificationThreshold;
+                            this.monitor.slowResponseNotificationRange = defaultValues.slowResponseNotificationRange;
+                            this.monitor.slowResponseNotificationMethod = defaultValues.slowResponseNotificationMethod;
+                        }
+
                     } else {
                         toast.error(res.msg);
                     }
