@@ -103,8 +103,6 @@ class Monitor extends BeanModel {
             mqttSuccessMessage: this.mqttSuccessMessage,
             databaseQuery: this.databaseQuery,
             authMethod: this.authMethod,
-            authWorkstation: this.authWorkstation,
-            authDomain: this.authDomain,
             slowResponseNotification: this.isEnabledSlowResponseNotification(),
             slowResponseNotificationThreshold: this.slowResponseNotificationThreshold,
             slowResponseNotificationRange: this.slowResponseNotificationRange,
