@@ -3,7 +3,9 @@ const dayjs = require("dayjs");
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
 const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, TimeLogger, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND } = require("../../src/util");
-const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, mqttAsync, setSetting, httpNtlm, radius, grpcQuery } = require("../util-server");
+const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, mqttAsync, setSetting, httpNtlm, radius, grpcQuery,
+    redisPingAsync, mongodbPing,
+} = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification");
@@ -16,6 +18,7 @@ const { CacheableDnsHttpAgent } = require("../cacheable-dns-http-agent");
 const { DockerHost } = require("../docker");
 const Maintenance = require("./maintenance");
 const { UptimeCacheList } = require("../uptime-cache-list");
+const Gamedig = require("gamedig");
 
 /**
  * status:
@@ -36,7 +39,6 @@ class Monitor extends BeanModel {
             id: this.id,
             name: this.name,
             sendUrl: this.sendUrl,
-            maintenance: await Monitor.isUnderMaintenance(this.id),
         };
 
         if (this.sendUrl) {
@@ -85,6 +87,7 @@ class Monitor extends BeanModel {
             expiryNotification: this.isEnabledExpiryNotification(),
             ignoreTls: this.getIgnoreTls(),
             upsideDown: this.isUpsideDown(),
+            packetSize: this.packetSize,
             maxredirects: this.maxredirects,
             accepted_statuscodes: this.getAcceptedStatuscodes(),
             dns_resolve_type: this.dns_resolve_type,
@@ -113,6 +116,7 @@ class Monitor extends BeanModel {
             grpcEnableTls: this.getGrpcEnableTls(),
             radiusCalledStationId: this.radiusCalledStationId,
             radiusCallingStationId: this.radiusCallingStationId,
+            game: this.game,
         };
 
         if (includeSensitiveData) {
@@ -289,9 +293,6 @@ class Monitor extends BeanModel {
                         ...(this.body ? { data: JSON.parse(this.body) } : {}),
                         timeout: this.interval * 1000 * 0.8,
                         headers: {
-                            // Fix #2253
-                            // Read more: https://stackoverflow.com/questions/1759956/curl-error-18-transfer-closed-with-outstanding-read-data-remaining
-                            "Accept-Encoding": "gzip, deflate",
                             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
                             "User-Agent": "Uptime-Kuma/" + version,
                             ...(this.headers ? JSON.parse(this.headers) : {}),
@@ -324,20 +325,8 @@ class Monitor extends BeanModel {
                     log.debug("monitor", `[${this.name}] Axios Options: ${JSON.stringify(options)}`);
                     log.debug("monitor", `[${this.name}] Axios Request`);
 
-                    let res;
-                    if (this.auth_method === "ntlm") {
-                        options.httpsAgent.keepAlive = true;
-
-                        res = await httpNtlm(options, {
-                            username: this.basic_auth_user,
-                            password: this.basic_auth_pass,
-                            domain: this.authDomain,
-                            workstation: this.authWorkstation ? this.authWorkstation : undefined
-                        });
-
-                    } else {
-                        res = await axios.request(options);
-                    }
+                    // Make Request
+                    let res = await this.makeAxiosRequest(options);
 
                     bean.msg = `${res.status} - ${res.statusText}`;
                     bean.ping = dayjs().valueOf() - startTime;
@@ -401,7 +390,7 @@ class Monitor extends BeanModel {
                     bean.status = UP;
 
                 } else if (this.type === "ping") {
-                    bean.ping = await ping(this.hostname);
+                    bean.ping = await ping(this.hostname, this.packetSize);
                     bean.msg = "";
                     bean.status = UP;
                 } else if (this.type === "dns") {
@@ -511,25 +500,44 @@ class Monitor extends BeanModel {
                         bean.msg = res.data.response.servers[0].name;
 
                         try {
-                            bean.ping = await ping(this.hostname);
+                            bean.ping = await ping(this.hostname, this.packetSize);
                         } catch (_) { }
                     } else {
                         throw new Error("Server not found on Steam");
                     }
+                } else if (this.type === "gamedig") {
+                    try {
+                        const state = await Gamedig.query({
+                            type: this.game,
+                            host: this.hostname,
+                            port: this.port,
+                            givenPortOnly: true,
+                        });
+
+                        bean.msg = state.name;
+                        bean.status = UP;
+                        bean.ping = state.ping;
+                    } catch (e) {
+                        throw new Error(e.message);
+                    }
                 } else if (this.type === "docker") {
-                    log.debug(`[${this.name}] Prepare Options for Axios`);
+                    log.debug("monitor", `[${this.name}] Prepare Options for Axios`);
 
                     const dockerHost = await R.load("docker_host", this.docker_host);
 
                     const options = {
                         url: `/containers/${this.docker_container}/json`,
+                        timeout: this.interval * 1000 * 0.8,
                         headers: {
                             "Accept": "*/*",
                             "User-Agent": "Uptime-Kuma/" + version,
                         },
-                        httpsAgent: new https.Agent({
+                        httpsAgent: CacheableDnsHttpAgent.getHttpsAgent({
                             maxCachedSessions: 0,      // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
-                            rejectUnauthorized: ! this.getIgnoreTls(),
+                            rejectUnauthorized: !this.getIgnoreTls(),
+                        }),
+                        httpAgent: CacheableDnsHttpAgent.getHttpAgent({
+                            maxCachedSessions: 0,
                         }),
                     };
 
@@ -539,11 +547,13 @@ class Monitor extends BeanModel {
                         options.baseURL = DockerHost.patchDockerURL(dockerHost._dockerDaemon);
                     }
 
-                    log.debug(`[${this.name}] Axios Request`);
+                    log.debug("monitor", `[${this.name}] Axios Request`);
                     let res = await axios.request(options);
                     if (res.data.State.Running) {
                         bean.status = UP;
-                        bean.msg = "";
+                        bean.msg = res.data.State.Status;
+                    } else {
+                        throw Error("Container State is " + res.data.State.Status);
                     }
                 } else if (this.type === "mqtt") {
                     bean.msg = await mqttAsync(this.hostname, this.mqttTopic, this.mqttSuccessMessage, {
@@ -577,7 +587,7 @@ class Monitor extends BeanModel {
                     log.debug("monitor:", `gRPC response: ${JSON.stringify(response)}`);
                     let responseData = response.data;
                     if (responseData.length > 50) {
-                        responseData = response.substring(0, 47) + "...";
+                        responseData = responseData.toString().substring(0, 47) + "...";
                     }
                     if (response.code !== 1) {
                         bean.status = DOWN;
@@ -608,6 +618,15 @@ class Monitor extends BeanModel {
                     bean.msg = "";
                     bean.status = UP;
                     bean.ping = dayjs().valueOf() - startTime;
+                } else if (this.type === "mongodb") {
+                    let startTime = dayjs().valueOf();
+
+                    await mongodbPing(this.databaseConnectionString);
+
+                    bean.msg = "";
+                    bean.status = UP;
+                    bean.ping = dayjs().valueOf() - startTime;
+
                 } else if (this.type === "radius") {
                     let startTime = dayjs().valueOf();
 
@@ -644,9 +663,23 @@ class Monitor extends BeanModel {
                         }
                     }
                     bean.ping = dayjs().valueOf() - startTime;
+                } else if (this.type === "redis") {
+                    let startTime = dayjs().valueOf();
+
+                    bean.msg = await redisPingAsync(this.databaseConnectionString);
+                    bean.status = UP;
+                    bean.ping = dayjs().valueOf() - startTime;
+
+                } else if (this.type in UptimeKumaServer.monitorTypeList) {
+                    let startTime = dayjs().valueOf();
+                    const monitorType = UptimeKumaServer.monitorTypeList[this.type];
+                    await monitorType.check(this, bean);
+                    if (!bean.ping) {
+                        bean.ping = dayjs().valueOf() - startTime;
+                    }
+
                 } else {
-                    bean.msg = "Unknown Monitor Type";
-                    bean.status = PENDING;
+                    throw new Error("Unknown Monitor Type");
                 }
 
                 if (this.isUpsideDown()) {
@@ -777,6 +810,47 @@ class Monitor extends BeanModel {
             }, this.interval * 1000);
         } else {
             safeBeat();
+        }
+    }
+
+    /**
+     * Make a request using axios
+     * @param {Object} options Options for Axios
+     * @param {boolean} finalCall Should this be the final call i.e
+     * don't retry on faliure
+     * @returns {Object} Axios response
+     */
+    async makeAxiosRequest(options, finalCall = false) {
+        try {
+            let res;
+            if (this.auth_method === "ntlm") {
+                options.httpsAgent.keepAlive = true;
+
+                res = await httpNtlm(options, {
+                    username: this.basic_auth_user,
+                    password: this.basic_auth_pass,
+                    domain: this.authDomain,
+                    workstation: this.authWorkstation ? this.authWorkstation : undefined
+                });
+
+            } else {
+                res = await axios.request(options);
+            }
+
+            return res;
+        } catch (e) {
+            // Fix #2253
+            // Read more: https://stackoverflow.com/questions/1759956/curl-error-18-transfer-closed-with-outstanding-read-data-remaining
+            if (!finalCall && typeof e.message === "string" && e.message.includes("maxContentLength size of -1 exceeded")) {
+                log.debug("monitor", "makeAxiosRequest with gzip");
+                options.headers["Accept-Encoding"] = "gzip, deflate";
+                return this.makeAxiosRequest(options, true);
+            } else {
+                if (typeof e.message === "string" && e.message.includes("maxContentLength size of -1 exceeded")) {
+                    e.message = "response timeout: incomplete response within a interval";
+                }
+                throw e;
+            }
         }
     }
 
@@ -1087,7 +1161,13 @@ class Monitor extends BeanModel {
 
             for (let notification of notificationList) {
                 try {
-                    await Notification.send(JSON.parse(notification.config), msg, await monitor.toJSON(false), bean.toJSON());
+                    // Prevent if the msg is undefined, notifications such as Discord cannot send out.
+                    const heartbeatJSON = bean.toJSON();
+                    if (!heartbeatJSON["msg"]) {
+                        heartbeatJSON["msg"] = "N/A";
+                    }
+
+                    await Notification.send(JSON.parse(notification.config), msg, await monitor.toJSON(false), heartbeatJSON);
                 } catch (e) {
                     log.error("monitor", "Cannot send notification to " + notification.name);
                     log.error("monitor", e);
@@ -1285,6 +1365,7 @@ class Monitor extends BeanModel {
         return maintenance.count !== 0;
     }
 
+    /** Make sure monitor interval is between bounds */
     validate() {
         if (this.interval > MAX_INTERVAL_SECOND) {
             throw new Error(`Interval cannot be more than ${MAX_INTERVAL_SECOND} seconds`);

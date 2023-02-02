@@ -281,7 +281,7 @@ class StatusPage extends BeanModel {
 
             let activeCondition = Maintenance.getActiveMaintenanceSQLCondition();
             let maintenanceBeanList = R.convertToBeans("maintenance", await R.getAll(`
-                SELECT maintenance.*
+                SELECT DISTINCT maintenance.*
                 FROM maintenance
                 JOIN maintenance_status_page
                     ON maintenance_status_page.maintenance_id = maintenance.id
