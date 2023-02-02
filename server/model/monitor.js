@@ -1276,10 +1276,11 @@ class Monitor extends BeanModel {
         const afterThisDate = new Date(Date.now() - (1000 * monitor.slowResponseNotificationRange));
         const previousBeats = await R.getAll(`
             SELECT * FROM heartbeat
-            WHERE monitor_id = ? AND time > datetime(?) AND status = true`,
+            WHERE monitor_id = ? AND time > datetime(?) AND status = ?`,
         [
             monitor.id,
             afterThisDate.toISOString(),
+            UP,
         ]);
         const method = monitor.slowResponseNotificationMethod;
         const thresholdResponseTime = monitor.slowResponseNotificationThreshold;
