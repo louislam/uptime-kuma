@@ -683,5 +683,13 @@
     "promosmsAllowLongSMS": "Autoriser les longs SMS",
     "Help": "Aide",
     "Game": "Jeux",
-    "Packet Size": "Taille du paquet"
+    "Packet Size": "Taille du paquet",
+    "loadingError": "Impossible de récupérer les données, veuillez réessayer plus tard.",
+    "plugin": "Plugin | Plugins",
+    "install": "Installer",
+    "installing": "Installation",
+    "uninstall": "Désinstaller",
+    "uninstalling": "Désinstallation",
+    "confirmUninstallPlugin": "Voulez-vous vraiment désinstaller ce plugin ?",
+    "Custom Monitor Type": "Type de sonde personnalisé"
 }
