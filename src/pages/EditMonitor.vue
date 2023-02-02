@@ -959,6 +959,14 @@ message HealthCheckResponse {
                 this.monitor.headers = JSON.stringify(JSON.parse(this.monitor.headers), null, 4);
             }
 
+            if (this.monitor.hostname) {
+                this.monitor.hostname = this.monitor.hostname.trim();
+            }
+
+            if (this.monitor.url) {
+                this.monitor.url = this.monitor.url.trim();
+            }
+
             if (this.isAdd) {
                 this.$root.add(this.monitor, async (res) => {
 

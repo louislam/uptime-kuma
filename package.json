@@ -84,6 +84,7 @@
         "compare-versions": "~3.6.0",
         "compression": "~1.7.4",
         "dayjs": "~1.11.5",
+        "dotenv": "~16.0.3",
         "express": "~4.17.3",
         "express-basic-auth": "~1.2.1",
         "express-static-gzip": "~2.1.7",

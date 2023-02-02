@@ -4,7 +4,7 @@ const { R } = require("redbean-node");
 const apicache = require("../modules/apicache");
 const Monitor = require("../model/monitor");
 const dayjs = require("dayjs");
-const { UP, MAINTENANCE, DOWN, flipStatus, log } = require("../../src/util");
+const { UP, MAINTENANCE, DOWN, PENDING, flipStatus, log } = require("../../src/util");
 const StatusPage = require("../model/status_page");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { makeBadge } = require("badge-maker");
@@ -147,19 +147,19 @@ router.get("/api/badge/:id/status", cache("5 minutes"), async (request, response
 
             badgeValues.label = label ?? "";
             switch (state) {
-                case 0:
+                case DOWN:
                     badgeValues.color = downColor;
                     badgeValues.message = downLabel;
                     break;
-                case 1:
+                case UP:
                     badgeValues.color = upColor;
                     badgeValues.message = upLabel;
                     break;
-                case 2:
+                case PENDING:
                     badgeValues.color = pendingColor;
                     badgeValues.message = pendingLabel;
                     break;
-                case 3:
+                case MAINTENANCE:
                     badgeValues.color = maintenanceColor;
                     badgeValues.message = maintenanceLabel;
                     break;
