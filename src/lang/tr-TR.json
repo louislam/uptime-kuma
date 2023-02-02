@@ -578,10 +578,10 @@
     "statusMaintenance": "Bakım",
     "Schedule maintenance": "Bakım Planla",
     "Affected Monitors": "Etkilenen Monitörler",
-    "Pick Affected Monitors...": "Etkilenen Monitörleri Seçin...",
+    "Pick Affected Monitors...": "Etkilenen Monitörleri Seçin…",
     "Start of maintenance": "Bakım başlangıcı",
     "All Status Pages": "Tüm Durum Sayfaları",
-    "Select status pages...": "Durum sayfalarını seçin...",
+    "Select status pages...": "Durum sayfalarını seçin…",
     "recurringIntervalMessage": "Her gün bir kez çalıştırın | {0} günde bir çalıştırın",
     "affectedMonitorsDescription": "Geçerli bakımdan etkilenen monitörleri seçin",
     "affectedStatusPages": "Bu bakım mesajını seçili durum sayfalarında göster",
@@ -671,5 +671,10 @@
     "dataRetentionTimeError": "Saklama süresi 0 veya daha büyük olmalıdır",
     "confirmDeleteTagMsg": "Bu etiketi silmek istediğinizden emin misiniz? Bu etiketle ilişkili monitörler silinmez.",
     "promosmsAllowLongSMS": "Uzun SMS'e izin ver",
-    "infiniteRetention": "Sonsuza dek saklamak için 0 giriniz."
+    "infiniteRetention": "Sonsuza dek saklamak için 0 giriniz.",
+    "rocket.chat": "Rocket.Chat",
+    "slack": "Slack",
+    "pushover": "Pushover",
+    "Game": "Oyun",
+    "Packet Size": "Paket Boyutu"
 }

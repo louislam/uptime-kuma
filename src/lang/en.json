@@ -689,5 +689,6 @@
     "onebotUserOrGroupId": "Group/User ID",
     "onebotSafetyTips": "For safety, must set access token",
     "PushDeer Key": "PushDeer Key",
-    "wayToGetClickSendSMSToken": "You can get API Username and API Key from {0} ."
+    "wayToGetClickSendSMSToken": "You can get API Username and API Key from {0} .",
+    "Custom Monitor Type": "Custom Monitor Type"
 }
