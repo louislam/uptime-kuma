@@ -12,5 +12,9 @@
     "Version": "版本",
     "Check Update On GitHub": "去 GitHub 睇下有冇更新",
     "List": "列表",
-    "Add": "新增"
+    "Add": "新增",
+    "Primary Base URL": "主要 Base URL",
+    "Heartbeat Retry Interval": "確定為離線的重試間隔",
+    "retryCheckEverySecond": "每 {0} 秒重試一次",
+    "add one": "加一個"
 }
