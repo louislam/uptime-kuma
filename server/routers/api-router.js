@@ -145,7 +145,7 @@ router.get("/api/badge/:id/status", cache("5 minutes"), async (request, response
             const heartbeat = await Monitor.getPreviousHeartbeat(requestedMonitorId);
             const state = overrideValue !== undefined ? overrideValue : heartbeat.status;
 
-            badgeValues.label = label ?? "";
+            badgeValues.label = label ?? "Status";
             switch (state) {
                 case DOWN:
                     badgeValues.color = downColor;
@@ -212,7 +212,7 @@ router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (reques
         const badgeValues = { style };
 
         if (!publicMonitor) {
-            // return a "N/A" badge in naColor (grey), if monitor is not public / not available / non exsitant
+            // return a "N/A" badge in naColor (grey), if monitor is not public / not available / non existent
             badgeValues.message = "N/A";
             badgeValues.color = badgeConstants.naColor;
         } else {
@@ -228,8 +228,11 @@ router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (reques
             badgeValues.color = color ?? percentageToColor(uptime);
             // use a given, custom labelColor or use the default badge label color (defined by badge-maker)
             badgeValues.labelColor = labelColor ?? "";
-            // build a lable string. If a custom label is given, override the default one (requestedDuration)
-            badgeValues.label = filterAndJoin([ labelPrefix, label ?? requestedDuration, labelSuffix ]);
+            // build a label string. If a custom label is given, override the default one (requestedDuration)
+            badgeValues.label = filterAndJoin([
+                labelPrefix,
+                label ?? `Uptime (${requestedDuration}${labelSuffix})`,
+            ]);
             badgeValues.message = filterAndJoin([ prefix, `${cleanUptime * 100}`, suffix ]);
         }
 
@@ -290,8 +293,241 @@ router.get("/api/badge/:id/ping/:duration?", cache("5 minutes"), async (request,
             // use a given, custom labelColor or use the default badge label color (defined by badge-maker)
             badgeValues.labelColor = labelColor ?? "";
             // build a lable string. If a custom label is given, override the default one (requestedDuration)
-            badgeValues.label = filterAndJoin([ labelPrefix, label ?? requestedDuration, labelSuffix ]);
+            badgeValues.label = filterAndJoin([ labelPrefix, label ?? `Avg. Ping (${requestedDuration}${labelSuffix})` ]);
             badgeValues.message = filterAndJoin([ prefix, avgPing, suffix ]);
+        }
+
+        // build the SVG based on given values
+        const svg = makeBadge(badgeValues);
+
+        response.type("image/svg+xml");
+        response.send(svg);
+    } catch (error) {
+        send403(response, error.message);
+    }
+});
+
+router.get("/api/badge/:id/avg-response/:duration?", cache("5 minutes"), async (request, response) => {
+    allowAllOrigin(response);
+
+    const {
+        label,
+        labelPrefix,
+        labelSuffix,
+        prefix,
+        suffix = badgeConstants.defaultPingValueSuffix,
+        color = badgeConstants.defaultPingColor,
+        labelColor,
+        style = badgeConstants.defaultStyle,
+        value, // for demo purpose only
+    } = request.query;
+
+    try {
+        const requestedMonitorId = parseInt(request.params.id, 10);
+
+        // Default duration is 24 (h) if not defined in queryParam, limited to 720h (30d)
+        const requestedDuration = Math.min(
+            request.params.duration
+                ? parseInt(request.params.duration, 10)
+                : 24,
+            720
+        );
+        const overrideValue = value && parseFloat(value);
+
+        const publicAvgPing = parseInt(await R.getCell(`
+            SELECT AVG(ping) FROM monitor_group, \`group\`, heartbeat
+            WHERE monitor_group.group_id = \`group\`.id
+            AND heartbeat.time > DATETIME('now', ? || ' hours')
+            AND heartbeat.ping IS NOT NULL
+            AND public = 1
+            AND heartbeat.monitor_id = ?
+            `,
+        [ -requestedDuration, requestedMonitorId ]
+        ));
+
+        const badgeValues = { style };
+
+        if (!publicAvgPing) {
+            // return a "N/A" badge in naColor (grey), if monitor is not public / not available / non existent
+
+            badgeValues.message = "N/A";
+            badgeValues.color = badgeConstants.naColor;
+        } else {
+            const avgPing = parseInt(overrideValue ?? publicAvgPing);
+
+            badgeValues.color = color;
+            // use a given, custom labelColor or use the default badge label color (defined by badge-maker)
+            badgeValues.labelColor = labelColor ?? "";
+            // build a label string. If a custom label is given, override the default one (requestedDuration)
+            badgeValues.label = filterAndJoin([
+                labelPrefix,
+                label ?? `Avg. Response (${requestedDuration}h)`,
+                labelSuffix,
+            ]);
+            badgeValues.message = filterAndJoin([ prefix, avgPing, suffix ]);
+        }
+
+        // build the SVG based on given values
+        const svg = makeBadge(badgeValues);
+
+        response.type("image/svg+xml");
+        response.send(svg);
+    } catch (error) {
+        send403(response, error.message);
+    }
+});
+
+router.get("/api/badge/:id/cert-exp", cache("5 minutes"), async (request, response) => {
+    allowAllOrigin(response);
+
+    const date = request.query.date;
+
+    const {
+        label,
+        labelPrefix,
+        labelSuffix,
+        prefix,
+        suffix = date ? "" : badgeConstants.defaultCertExpValueSuffix,
+        upColor = badgeConstants.defaultUpColor,
+        warnColor = badgeConstants.defaultWarnColor,
+        downColor = badgeConstants.defaultDownColor,
+        warnDays = badgeConstants.defaultCertExpireWarnDays,
+        downDays = badgeConstants.defaultCertExpireDownDays,
+        labelColor,
+        style = badgeConstants.defaultStyle,
+        value, // for demo purpose only
+    } = request.query;
+
+    try {
+        const requestedMonitorId = parseInt(request.params.id, 10);
+
+        const overrideValue = value && parseFloat(value);
+
+        let publicMonitor = await R.getRow(`
+            SELECT monitor_group.monitor_id FROM monitor_group, \`group\`
+            WHERE monitor_group.group_id = \`group\`.id
+            AND monitor_group.monitor_id = ?
+            AND public = 1
+            `,
+        [ requestedMonitorId ]
+        );
+
+        const badgeValues = { style };
+
+        if (!publicMonitor) {
+            // return a "N/A" badge in naColor (grey), if monitor is not public / not available / non existent
+
+            badgeValues.message = "N/A";
+            badgeValues.color = badgeConstants.naColor;
+        } else {
+            const tlsInfoBean = await R.findOne("monitor_tls_info", "monitor_id = ?", [
+                requestedMonitorId,
+            ]);
+
+            if (!tlsInfoBean) {
+                // return a "No/Bad Cert" badge in naColor (grey), if no cert saved (does not save bad certs?)
+                badgeValues.message = "No/Bad Cert";
+                badgeValues.color = badgeConstants.naColor;
+            } else {
+                const tlsInfo = JSON.parse(tlsInfoBean.info_json);
+
+                if (!tlsInfo.valid) {
+                    // return a "Bad Cert" badge in naColor (grey), when cert is not valid
+                    badgeValues.message = "Bad Cert";
+                    badgeValues.color = badgeConstants.downColor;
+                } else {
+                    const daysRemaining = parseInt(overrideValue ?? tlsInfo.certInfo.daysRemaining);
+
+                    if (daysRemaining > warnDays) {
+                        badgeValues.color = upColor;
+                    } else if (daysRemaining > downDays) {
+                        badgeValues.color = warnColor;
+                    } else {
+                        badgeValues.color = downColor;
+                    }
+                    // use a given, custom labelColor or use the default badge label color (defined by badge-maker)
+                    badgeValues.labelColor = labelColor ?? "";
+                    // build a label string. If a custom label is given, override the default one
+                    badgeValues.label = filterAndJoin([
+                        labelPrefix,
+                        label ?? "Cert Exp.",
+                        labelSuffix,
+                    ]);
+                    badgeValues.message = filterAndJoin([ prefix, date ? tlsInfo.certInfo.validTo : daysRemaining, suffix ]);
+                }
+            }
+        }
+
+        // build the SVG based on given values
+        const svg = makeBadge(badgeValues);
+
+        response.type("image/svg+xml");
+        response.send(svg);
+    } catch (error) {
+        send403(response, error.message);
+    }
+});
+
+router.get("/api/badge/:id/response", cache("5 minutes"), async (request, response) => {
+    allowAllOrigin(response);
+
+    const {
+        label,
+        labelPrefix,
+        labelSuffix,
+        prefix,
+        suffix = badgeConstants.defaultPingValueSuffix,
+        color = badgeConstants.defaultPingColor,
+        labelColor,
+        style = badgeConstants.defaultStyle,
+        value, // for demo purpose only
+    } = request.query;
+
+    try {
+        const requestedMonitorId = parseInt(request.params.id, 10);
+
+        const overrideValue = value && parseFloat(value);
+
+        let publicMonitor = await R.getRow(`
+            SELECT monitor_group.monitor_id FROM monitor_group, \`group\`
+            WHERE monitor_group.group_id = \`group\`.id
+            AND monitor_group.monitor_id = ?
+            AND public = 1
+            `,
+        [ requestedMonitorId ]
+        );
+
+        const badgeValues = { style };
+
+        if (!publicMonitor) {
+            // return a "N/A" badge in naColor (grey), if monitor is not public / not available / non existent
+
+            badgeValues.message = "N/A";
+            badgeValues.color = badgeConstants.naColor;
+        } else {
+            const heartbeat = await Monitor.getPreviousHeartbeat(
+                requestedMonitorId
+            );
+
+            if (!heartbeat.ping) {
+                // return a "N/A" badge in naColor (grey), if previous heartbeat has no ping
+
+                badgeValues.message = "N/A";
+                badgeValues.color = badgeConstants.naColor;
+            } else {
+                const ping = parseInt(overrideValue ?? heartbeat.ping);
+
+                badgeValues.color = color;
+                // use a given, custom labelColor or use the default badge label color (defined by badge-maker)
+                badgeValues.labelColor = labelColor ?? "";
+                // build a label string. If a custom label is given, override the default one
+                badgeValues.label = filterAndJoin([
+                    labelPrefix,
+                    label ?? "Response",
+                    labelSuffix,
+                ]);
+                badgeValues.message = filterAndJoin([ prefix, ping, suffix ]);
+            }
         }
 
         // build the SVG based on given values
