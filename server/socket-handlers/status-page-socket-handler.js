@@ -7,7 +7,6 @@ const Database = require("../database");
 const apicache = require("../modules/apicache");
 const StatusPage = require("../model/status_page");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
-const googleAnalytics = require("../modules/google-analytics");
 
 /**
  * Socket handlers for status page
