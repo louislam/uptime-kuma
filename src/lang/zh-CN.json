@@ -213,6 +213,7 @@
     "Bot Token": "机器人令牌",
     "wayToGetTelegramToken": "您可以从 {0} 获取 Token。",
     "Chat ID": "Chat ID",
+    "Message Thread ID": "Message Thread ID",
     "supportTelegramChatID": "支持对话/群组/频道的 Chat ID",
     "wayToGetTelegramChatID": "您可以发送一条消息给您的机器人，然后访问此链接来查看 chat_id：",
     "YOUR BOT TOKEN HERE": "这里替换成您的 BOT TOKEN",

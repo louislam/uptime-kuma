@@ -193,6 +193,7 @@
     "Bot Token": "Bot Token",
     "wayToGetTelegramToken": "Bạn có thể lấy mã token từ",
     "Chat ID": "Chat ID",
+    "Message Thread ID": "Message Thread ID",
     "supportTelegramChatID": "Hỗ trợ chat trực tiếp / Nhóm / Kênh Chat ID",
     "wayToGetTelegramChatID": "Bạn có thể lấy chat id của mình bằng cách gửi tin nhắn tới bot và truy cập url này để xem chat_id:",
     "YOUR BOT TOKEN HERE": "MÃ BOT TOKEN CỦA BẠN",

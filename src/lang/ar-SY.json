@@ -215,6 +215,7 @@
     "Bot Token": "رمز الروبوت",
     "wayToGetTelegramToken": "يمكنك الحصول على رمز من {0}.",
     "Chat ID": "معرف الدردشة",
+    "Message Thread ID": "معرف المواضيع",
     "supportTelegramChatID": "دعم الدردشة المباشرة / معرف الدردشة للقناة",
     "wayToGetTelegramChatID": "يمكنك الحصول على معرف الدردشة الخاص بك عن طريق إرسال رسالة إلى الروبوت والانتقال إلى عنوان URL هذا لعرض Chat_id",
     "YOUR BOT TOKEN HERE": "رمز الروبوت الخاص بك هنا",

@@ -198,6 +198,7 @@
     "Bot Token": "Διακριτικό Bot",
     "wayToGetTelegramToken": "Μπορείτε να πάρετε ένα διακριτικό από {0}.",
     "Chat ID": "Chat ID",
+    "Message Thread ID": "Message Thread ID",
     "supportTelegramChatID": "Support Direct Chat / Group / Channel's Chat ID",
     "wayToGetTelegramChatID": "Μπορείτε να λάβετε το αναγνωριστικό συνομιλίας σας στέλνοντας ένα μήνυμα στο bot και μεταβαίνοντας σε αυτήν τη διεύθυνση URL για να προβάλετε το chat_id:",
     "YOUR BOT TOKEN HERE": "ΤΟ BOT ΣΑΣ ΔΙΑΚΡΙΤΙΚΌ ΕΔΩ",

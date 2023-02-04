@@ -208,6 +208,7 @@
     "Bot Token": "Bot Token",
     "wayToGetTelegramToken": "Du kan få et token fra {0}.",
     "Chat ID": "Chat ID",
+    "Message Thread ID": "Message Thread ID",
     "supportTelegramChatID": "Support Direct Chat / Group / Channel's Chat ID",
     "wayToGetTelegramChatID": "Du kan få dit chat-ID ved at sende en besked til bot'en og gå til denne URL for at se chat_id'et:",
     "YOUR BOT TOKEN HERE": "DIT BOT TOKEN HER",

@@ -189,6 +189,7 @@
     "Bot Token": "Token bota",
     "wayToGetTelegramToken": "Token można uzyskać z {0}.",
     "Chat ID": "Identyfikator czatu",
+    "Message Thread ID": "Message Thread ID",
     "supportTelegramChatID": "Czat wsparcia technicznego / Bezpośrednia rozmowa / Czat grupowy",
     "wayToGetTelegramChatID": "Możesz uzyskać swój identyfikator czatu, wysyłając wiadomość do bota i przechodząc pod ten adres URL, aby wyświetlić identyfikator czatu:",
     "YOUR BOT TOKEN HERE": "TWÓJ TOKEN BOTA",

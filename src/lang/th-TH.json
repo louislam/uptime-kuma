@@ -194,6 +194,7 @@
     "Bot Token": "กุญแจของบอท",
     "wayToGetTelegramToken": "คุณสามารถรับกุญแจได้จาก {0}.",
     "Chat ID": "ไอดีแชท",
+    "Message Thread ID": "Message Thread ID",
     "supportTelegramChatID": "รองรับ แชทส่วนตัว, แชทกลุ่ม, ไอดีแชท",
     "wayToGetTelegramChatID": "คุณสามารถรับ ID แชทของคุณได้โดยส่งข้อความไปยังบอทและไปที่ URL นี้เพื่อดู chat_id :",
     "YOUR BOT TOKEN HERE": "กุญแจของบอทของคุณที่นี่",

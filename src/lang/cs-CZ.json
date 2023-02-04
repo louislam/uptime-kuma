@@ -215,6 +215,7 @@
     "Bot Token": "Token robota",
     "wayToGetTelegramToken": "Token můžete získat od {0}.",
     "Chat ID": "ID chatu",
+    "Message Thread ID": "Message Thread ID",
     "supportTelegramChatID": "Podpora přímého chatu / skupiny / ID chatu kanálu",
     "wayToGetTelegramChatID": "ID chatu můžete získat tak, že robotovi zašlete zprávu a přejdete na tuto adresu URL, kde zobrazíte chat_id:",
     "YOUR BOT TOKEN HERE": "SEM ZADEJTE TOKEN VAŠEHO CHATBOTA",

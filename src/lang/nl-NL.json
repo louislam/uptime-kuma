@@ -217,6 +217,7 @@
     "Bot Token": "Bot Token",
     "wayToGetTelegramToken": "Je kunt een token krijgen van {0}.",
     "Chat ID": "Chat ID",
+    "Message Thread ID": "Message Thread ID",
     "supportTelegramChatID": "Ondersteuning Directe Chat / Groep / Kanaal Chat ID",
     "wayToGetTelegramChatID": "Je kunt je CHAT ID krijgen door een bericht te sturen naar de bot en naar deze URL te gaan om het chat_id te bekijken:",
     "YOUR BOT TOKEN HERE": "DE BOT TOKEN HIER",

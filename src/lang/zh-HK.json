@@ -211,6 +211,7 @@
     "Bot Token": "機器人權杖",
     "wayToGetTelegramToken": "您可以從 {0} 取得 Token。",
     "Chat ID": "聊天 ID",
+    "Message Thread ID": "Message Thread ID",
     "supportTelegramChatID": "支援 對話/群組/頻道的聊天 ID",
     "wayToGetTelegramChatID": "傳送訊息給機器人，並前往以下網址以取得您的 chat ID：",
     "YOUR BOT TOKEN HERE": "在此填入您的機器人權杖",

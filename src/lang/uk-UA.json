@@ -216,6 +216,7 @@
     "Bot Token": "Токен бота",
     "wayToGetTelegramToken": "Ви можете взяти токен тут - {0}.",
     "Chat ID": "ID чату",
+    "Message Thread ID": "Message Thread ID",
     "supportTelegramChatID": "Підтримуються ID чатів, груп та каналів",
     "wayToGetTelegramChatID": "Ви можете взяти ID вашого чату, відправивши повідомлення боту і перейшовши по цьому URL для перегляду chat_id:",
     "YOUR BOT TOKEN HERE": "ВАШ ТОКЕН БОТА ТУТ",

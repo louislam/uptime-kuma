@@ -214,6 +214,7 @@
     "Bot Token": "Bot Token",
     "wayToGetTelegramToken": "Hier kannst du einen Token erhalten {0}.",
     "Chat ID": "Chat ID",
+    "Message Thread ID": "Message Thread ID",
     "supportTelegramChatID": "Unterstützt Direkt Chat / Gruppe / Kanal Chat-ID's",
     "wayToGetTelegramChatID": "Du kannst die Chat-ID erhalten, indem du eine Nachricht an den Bot sendest und zu dieser URL gehst, um die chat_id: zu sehen.",
     "YOUR BOT TOKEN HERE": "HIER DEIN BOT TOKEN",

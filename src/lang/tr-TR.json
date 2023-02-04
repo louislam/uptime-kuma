@@ -197,6 +197,7 @@
     "Bot Token": "Bot Token",
     "wayToGetTelegramToken": "{0} adresinden bir token alabilirsiniz.",
     "Chat ID": "Chat ID",
+    "Message Thread ID": "Message Thread ID",
     "supportTelegramChatID": "Doğrudan Sohbet / Grup / Kanalın Sohbet Kimliğini Destekleyin",
     "wayToGetTelegramChatID": "Bot'a bir mesaj göndererek ve chat_id'yi görüntülemek için bu URL'ye giderek sohbet kimliğinizi alabilirsiniz:",
     "YOUR BOT TOKEN HERE": "BOT TOKENİNİZ BURADA",

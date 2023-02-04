@@ -193,6 +193,7 @@
     "Bot Token": "Robotkov žetonček",
     "wayToGetTelegramToken": "Lahko dobiš žeton od {0}.",
     "Chat ID": "ID pogovora",
+    "Message Thread ID": "Message Thread ID",
     "supportTelegramChatID": "Direkten pogovor pomoči / Skupina / ID kanala",
     "wayToGetTelegramChatID": "Id lahko dobiš, če pošlješ sporočilo robotku in odpreš ta URL, da bi videl chat_id:",
     "YOUR BOT TOKEN HERE": "ROBOTKOV ŽETON TUKAJ",
