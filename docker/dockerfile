@@ -8,7 +8,7 @@ FROM louislam/uptime-kuma:builder-go AS build_healthcheck
 ############################################
 # Build in Node.js
 ############################################
-FROM louislam/uptime-kuma:base-debian AS build
+FROM louislam/uptime-kuma:base2 AS build
 WORKDIR /app
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1
@@ -23,7 +23,7 @@ RUN chmod +x /app/extra/entrypoint.sh
 ############################################
 # ⭐ Main Image (Slim)
 ############################################
-FROM louislam/uptime-kuma:base-debian AS release-slim
+FROM louislam/uptime-kuma:base2 AS release-slim
 WORKDIR /app
 
 # Copy app files from build layer
@@ -57,7 +57,7 @@ RUN npm run mark-as-nightly
 ############################################
 # Build an image for testing pr
 ############################################
-FROM louislam/uptime-kuma:base-debian AS pr-test
+FROM louislam/uptime-kuma:base2 AS pr-test
 
 WORKDIR /app
 
@@ -89,7 +89,7 @@ CMD ["npm", "run", "start-pr-test"]
 ############################################
 # Upload the artifact to Github
 ############################################
-FROM louislam/uptime-kuma:base-debian AS upload-artifact
+FROM louislam/uptime-kuma:base2 AS upload-artifact
 WORKDIR /
 RUN apt update && \
     apt --yes install curl file
