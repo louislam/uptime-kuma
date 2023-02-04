@@ -1,6 +1,6 @@
 # Project Info
 
-First of all, thank you everyone who made pull requests for Uptime Kuma, I never thought GitHub Community can be that nice! And also because of this, I also never thought other people actually read my code and edit my code. It is not structured and commented so well, lol. Sorry about that.
+First of all, I want to thank everyone who made pull requests for Uptime Kuma. I never thought the GitHub Community would be so nice! Because of this, I also never thought that other people would actually read and edit my code. It is not very well structured or commented, sorry about that.
 
 The project was created with vite.js (vue3). Then I created a subdirectory called "server" for server part. Both frontend and backend share the same package.json.
 
@@ -17,8 +17,11 @@ The frontend code build into "dist" directory. The server (express.js) exposes t
 
 ## Directories
 
+- config (dev config files)
 - data (App data)
+- db (Base database and migration scripts)
 - dist (Frontend build)
+- docker (Dockerfiles)
 - extra (Extra useful scripts)
 - public (Frontend resources for dev only)
 - server (Server source code)
@@ -27,20 +30,23 @@ The frontend code build into "dist" directory. The server (express.js) exposes t
 
 ## Can I create a pull request for Uptime Kuma?
 
-Yes or no, it depends on what you will try to do. Since I don't want to waste your time, be sure to **create an empty draft pull request or open an issue, so we can discuss first**. Especially for a large pull request or you don't know it will be merged or not.
+Yes or no, it depends on what you will try to do. Since I don't want to waste your time, be sure to **create an empty draft pull request or open an issue, so we can have a discussion first**. Especially for a large pull request or you don't know it will be merged or not.
 
 Here are some references:
 
 ✅ Usually Accept:
-- Bug/Security fix
-- Translations
+- Bug fix
+- Security fix
 - Adding notification providers
+- Adding new language files (You should go to https://weblate.kuma.pet for existing languages)
+- Adding new language keys: `$t("...")`
 
 ⚠️ Discussion First
 - Large pull requests
 - New features
 
 ❌ Won't Merge
+- A dedicated pr for translating existing languages (You can now translate on https://weblate.kuma.pet) 
 - Do not pass auto test
 - Any breaking changes
 - Duplicated pull request
@@ -48,7 +54,12 @@ Here are some references:
 - UI/UX is not close to Uptime Kuma 
 - Existing logic is completely modified or deleted for no reason
 - A function that is completely out of scope
+- Convert existing code into other programming languages
 - Unnecessary large code changes (Hard to review, causes code conflicts to other pull requests)
+
+The above cases cannot cover all situations.
+
+I (@louislam) have the final say. If your pull request does not meet my expectations, I will reject it, no matter how much time you spend on it. Therefore, it is essential to have a discussion beforehand.
 
 I will mark your pull request in the [milestones](https://github.com/louislam/uptime-kuma/milestones), if I am plan to review and merge it.
 
@@ -72,13 +83,13 @@ Before deep into coding, discussion first is preferred. Creating an empty pull r
 
 ## Project Styles
 
-I personally do not like something need to learn so much and need to config so much before you can finally start the app.
+I personally do not like something that requires so many configurations before you can finally start the app. I hope Uptime Kuma installation could be as easy as like installing a mobile app.
 
-- Easy to install for non-Docker users, no native build dependency is needed (at least for x86_64), no extra config, no extra effort to get it run
+- Easy to install for non-Docker users, no native build dependency is needed (for x86_64/armv7/arm64), no extra config, no extra effort required to get it running
 - Single container for Docker users, no very complex docker-compose file. Just map the volume and expose the port, then good to go
-- Settings should be configurable in the frontend. Environment variable is not encouraged, unless it is related to startup such as `DATA_DIR`.
+- Settings should be configurable in the frontend. Environment variable is not encouraged, unless it is related to startup such as `DATA_DIR`
 - Easy to use
-- The web UI styling should be consistent and nice.
+- The web UI styling should be consistent and nice
 
 ## Coding Styles
 
@@ -87,7 +98,7 @@ I personally do not like something need to learn so much and need to config so m
 - Follow ESLint
 - Methods and functions should be documented with JSDoc
 
-## Name convention
+## Name Conventions
 
 - Javascript/Typescript: camelCaseType
 - SQLite: snake_case (Underscore)
@@ -101,7 +112,7 @@ I personally do not like something need to learn so much and need to config so m
 - IDE that supports ESLint and EditorConfig (I am using IntelliJ IDEA)
 - A SQLite GUI tool (SQLite Expert Personal is suggested)
 
-## Install dependencies
+## Install Dependencies for Development
 
 ```bash
 npm ci
@@ -119,6 +130,12 @@ Port `3000` and port `3001` will be used.
 npm run dev
 ```
 
+But sometimes, you would like to keep restart the server, but not the frontend, you can run these command in two terminals:
+```
+npm run start-frontend-dev
+npm run start-server-dev
+```
+
 ## Backend Server
 
 It binds to `0.0.0.0:3001` by default.
@@ -134,12 +151,15 @@ express.js is used for:
 
 ### Structure in /server/
 
+- jobs/ (Jobs that are running in another process)
 - model/ (Object model, auto mapping to the database table name)
 - modules/ (Modified 3rd-party modules)
+- monitor_types (Monitor Types)
 - notification-providers/ (individual notification logic)
 - routers/ (Express Routers)
 - socket-handler (Socket.io Handlers)
-- server.js (Server entry point and main logic)
+- server.js (Server entry point)
+- uptime-kuma-server.js (UptimeKumaServer class, main logic should be here, but some still in `server.js`)
 
 ## Frontend Dev Server
 
@@ -172,14 +192,10 @@ The data and socket logic are in `src/mixins/socket.js`.
 
 ## Unit Test
 
-It is an end-to-end testing. It is using Jest and Puppeteer.
-
 ```bash
 npm run build
 npm test
 ```
-
-By default, the Chromium window will be shown up during the test. Specifying `HEADLESS_TEST=1` for terminal environments.
 
 ## Dependencies
 
@@ -194,17 +210,11 @@ Both frontend and backend share the same package.json. However, the frontend dep
 
 ### Update Dependencies
 
-Install `ncu`
-https://github.com/raineorshine/npm-check-updates
-
-```bash
-ncu -u -t patch
-npm install
-```
-
 Since previously updating Vite 2.5.10 to 2.6.0 broke the application completely, from now on, it should update patch release version only.
 
 Patch release = the third digit ([Semantic Versioning](https://semver.org/))
+
+If for maybe security reasons, a library must be updated. Then you must need to check if there are any breaking changes.
 
 ## Translations
 
