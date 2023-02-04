@@ -4,7 +4,7 @@ const cheerio = require("cheerio");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const jsesc = require("jsesc");
 const Maintenance = require("./maintenance");
-const googleAnalytics = require("../modules/google-analytics");
+const googleAnalytics = require("../google-analytics");
 
 class StatusPage extends BeanModel {
 
@@ -55,9 +55,7 @@ class StatusPage extends BeanModel {
         const head = $("head");
 
         if (statusPage.googleAnalyticsTagId) {
-            let escapedGoogleAnalyticsScript = jsesc(googleAnalytics.getGoogleAnalyticsScript(statusPage.googleAnalyticsTagId), {
-                "isScriptContext": true
-            });
+            let escapedGoogleAnalyticsScript = googleAnalytics.getGoogleAnalyticsScript(statusPage.googleAnalyticsTagId);
             head.append($(escapedGoogleAnalyticsScript));
         }
 
