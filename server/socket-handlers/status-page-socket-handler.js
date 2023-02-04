@@ -163,6 +163,7 @@ module.exports.statusPageSocketHandler = (socket) => {
             statusPage.custom_css = config.customCSS;
             statusPage.show_powered_by = config.showPoweredBy;
             statusPage.modified_date = R.isoDateTime();
+            statusPage.google_analytics_tag_id = config.googleAnalyticsId;
 
             await R.store(statusPage);
 
