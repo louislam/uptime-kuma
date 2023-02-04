@@ -13,6 +13,7 @@ class Telegram extends NotificationProvider {
                 params: {
                     chat_id: notification.telegramChatID,
                     text: msg,
+                    message_thread_id: notification.telegramMessageThreadID,
                 },
             });
             return okMsg;
