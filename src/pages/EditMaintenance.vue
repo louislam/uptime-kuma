@@ -21,6 +21,9 @@
                                 <textarea
                                     id="description" v-model="maintenance.description" class="form-control"
                                 ></textarea>
+                                <div class="form-text">
+                                    {{ $t("markdownSupported") }}
+                                </div>
                             </div>
 
                             <!-- Affected Monitors -->
