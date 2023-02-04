@@ -17,7 +17,6 @@
             </button>
         </div>
 
-
         <label for="message_thread_id" class="form-label">{{ $t("Message Thread ID") }}</label>
         <input id="message_thread_id" v-model="$parent.notification.telegramMessageThreadID" type="text" class="form-control">
         <p class="form-text">Message Thread ID: Optional Unique identifier for the target message thread (topic) of the forum; for forum supergroups only</p>
