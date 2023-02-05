@@ -191,6 +191,7 @@ export default {
             location.reload();
         },
 
+        /** Show confirmation dialog for disable auth */
         confirmDisableAuth() {
             this.$refs.confirmDisableAuth.show();
         },

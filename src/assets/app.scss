@@ -22,6 +22,24 @@ textarea.form-control {
     width: 10px;
 }
 
+.bg-maintenance {
+    color: white !important;
+    background-color: $maintenance !important;
+}
+
+.bg-dark {
+    color: white;
+}
+
+.text-maintenance {
+    color: $maintenance !important;
+}
+
+.incident a,
+.bg-maintenance a {
+    color: inherit;
+}
+
 .list-group {
     border-radius: 0.75rem;
 
@@ -104,6 +122,19 @@ optgroup {
 
     .dark & {
         color: $dark-font-color2;
+    }
+}
+
+.btn-normal {
+    $bg-color: #F5F5F5;
+
+    background-color: $bg-color;
+    border-color: $bg-color;
+
+    &:hover {
+        $hover-color: darken($bg-color, 3%);
+        background-color: $hover-color;
+        border-color: $hover-color;
     }
 }
 
@@ -222,6 +253,11 @@ optgroup {
         }
     }
 
+    .incident a,
+    .bg-maintenance a {
+        color: inherit;
+    }
+
     .form-control,
     .form-control:focus,
     .form-select,
@@ -254,6 +290,20 @@ optgroup {
 
     .btn-secondary {
         color: white;
+    }
+
+    .btn-normal {
+        $bg-color: $dark-header-bg;
+
+        color: $dark-font-color;
+        background-color: $bg-color;
+        border-color: $bg-color;
+
+        &:hover {
+            $hover-color: darken($bg-color, 3%);
+            background-color: $hover-color;
+            border-color: $hover-color;
+        }
     }
 
     .btn-warning {
@@ -323,6 +373,7 @@ optgroup {
         &.bg-info,
         &.bg-warning,
         &.bg-danger,
+        &.bg-maintenance,
         &.bg-light {
             color: $dark-font-color2;
         }

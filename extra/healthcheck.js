@@ -1,4 +1,5 @@
 /*
+ * ⚠️ Deprecated: Changed to healthcheck.go, it will be deleted in the future.
  * This script should be run after a period of time (180s), because the server may need some time to prepare.
  */
 const { FBSD } = require("../server/util-server");
@@ -18,17 +19,17 @@ if (sslKey && sslCert) {
 
 // If host is omitted, the server will accept connections on the unspecified IPv6 address (::) when IPv6 is available and the unspecified IPv4 address (0.0.0.0) otherwise.
 // Dual-stack support for (::)
-let hostname = process.env.UPTIME_KUMA_HOST;
+let hostname = process.env.UPTIME_KUMA_SERVICE_HOST || process.env.UPTIME_KUMA_HOST || "::";
 
 // Also read HOST if not *BSD, as HOST is a system environment variable in FreeBSD
 if (!hostname && !FBSD) {
     hostname = process.env.HOST;
 }
 
-const port = parseInt(process.env.UPTIME_KUMA_PORT || process.env.PORT || 3001);
+const port = parseInt(process.env.UPTIME_KUMA_SERVICE_PORT || process.env.UPTIME_KUMA_PORT || process.env.PORT || 3001);
 
 let options = {
-    host: hostname || "127.0.0.1",
+    host: hostname,
     port: port,
     timeout: 28 * 1000,
 };

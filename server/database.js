@@ -4,6 +4,9 @@ const { setSetting, setting } = require("./util-server");
 const { log, sleep } = require("../src/util");
 const dayjs = require("dayjs");
 const knex = require("knex");
+const { PluginsManager } = require("./plugins-manager");
+const path = require("path");
+const { EmbeddedMariaDB } = require("./embedded-mariadb");
 
 /**
  * Database & App Data Folder
@@ -62,8 +65,12 @@ class Database {
         "patch-add-clickable-status-page-link.sql": true,
         "patch-add-sqlserver-monitor.sql": true,
         "patch-add-other-auth.sql": { parents: [ "patch-monitor-basic-auth.sql" ] },
+        "patch-grpc-monitor.sql": true,
         "patch-add-radius-monitor.sql": true,
         "patch-monitor-add-resend-interval.sql": true,
+        "patch-ping-packet-size.sql": true,
+        "patch-maintenance-table2.sql": true,
+        "patch-add-gamedig-monitor.sql": true,
     };
 
     /**
@@ -81,6 +88,13 @@ class Database {
     static init(args) {
         // Data Directory (must be end with "/")
         Database.dataDir = process.env.DATA_DIR || args["data-dir"] || "./data/";
+
+        // Plugin feature is working only if the dataDir = "./data";
+        if (Database.dataDir !== "./data/") {
+            log.warn("PLUGIN", "Warning: In order to enable plugin feature, you need to use the default data directory: ./data/");
+            PluginsManager.disable = true;
+        }
+
         Database.path = Database.dataDir + "kuma.db";
         if (! fs.existsSync(Database.dataDir)) {
             fs.mkdirSync(Database.dataDir, { recursive: true });
@@ -107,24 +121,64 @@ class Database {
     static async connect(testMode = false, autoloadModels = true, noLog = false) {
         const acquireConnectionTimeout = 120 * 1000;
 
-        const Dialect = require("knex/lib/dialects/sqlite3/index.js");
-        Dialect.prototype._driver = () => require("@louislam/sqlite3");
+        let dbConfig;
 
-        const knexInstance = knex({
-            client: Dialect,
-            connection: {
-                filename: Database.path,
-                acquireConnectionTimeout: acquireConnectionTimeout,
-            },
-            useNullAsDefault: true,
-            pool: {
-                min: 1,
-                max: 1,
-                idleTimeoutMillis: 120 * 1000,
-                propagateCreateError: false,
-                acquireTimeoutMillis: acquireConnectionTimeout,
+        try {
+            let dbConfigString = fs.readFileSync(path.join(Database.dataDir, "db-config.json")).toString("utf-8");
+            dbConfig = JSON.parse(dbConfigString);
+
+            if (typeof dbConfig !== "object") {
+                throw new Error("Invalid db-config.json, it must be an object");
             }
-        });
+
+            if (typeof dbConfig.type !== "string") {
+                throw new Error("Invalid db-config.json, type must be a string");
+            }
+        } catch (_) {
+            dbConfig = {
+                //type: "sqlite",
+                type: "embedded-mariadb",
+            };
+        }
+
+        let config = {};
+
+        if (dbConfig.type === "sqlite") {
+            const Dialect = require("knex/lib/dialects/sqlite3/index.js");
+            Dialect.prototype._driver = () => require("@louislam/sqlite3");
+
+            config = {
+                client: Dialect,
+                connection: {
+                    filename: Database.path,
+                    acquireConnectionTimeout: acquireConnectionTimeout,
+                },
+                useNullAsDefault: true,
+                pool: {
+                    min: 1,
+                    max: 1,
+                    idleTimeoutMillis: 120 * 1000,
+                    propagateCreateError: false,
+                    acquireTimeoutMillis: acquireConnectionTimeout,
+                }
+            };
+        } else if (dbConfig.type === "embedded-mariadb") {
+            let embeddedMariaDB = EmbeddedMariaDB.getInstance();
+            await embeddedMariaDB.start();
+            log.info("mariadb", "Embedded MariaDB started");
+            config = {
+                client: "mysql2",
+                connection: {
+                    socketPath: embeddedMariaDB.socketPath,
+                    user: "node",
+                    database: "kuma"
+                }
+            };
+        } else {
+            throw new Error("Unknown Database type: " + dbConfig.type);
+        }
+
+        const knexInstance = knex(config);
 
         R.setup(knexInstance);
 
@@ -149,9 +203,6 @@ class Database {
         }
         await R.exec("PRAGMA cache_size = -12000");
         await R.exec("PRAGMA auto_vacuum = FULL");
-
-        // Avoid error "SQLITE_BUSY: database is locked" by allowing SQLITE to wait up to 5 seconds to do a write
-        await R.exec("PRAGMA busy_timeout = 5000");
 
         // This ensures that an operating system crash or power failure will not corrupt the database.
         // FULL synchronous is very safe, but it is also slower.
