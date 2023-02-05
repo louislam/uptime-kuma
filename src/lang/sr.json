@@ -1044,5 +1044,6 @@
     "trustProxyDescription": "",
     "high": "",
     "ntfyPriorityHelptextAllExceptDown": "",
-    "grpcMethodDescription": ""
+    "grpcMethodDescription": "",
+    "wayToGetDiscordURL": ""
 }
