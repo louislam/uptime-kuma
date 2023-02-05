@@ -1068,5 +1068,6 @@
     "pushViewCode": "",
     "setupDatabaseChooseDatabase": "",
     "setupDatabaseEmbeddedMariaDB": "",
-    "ntfyPriorityHelptextAllEvents": ""
+    "ntfyPriorityHelptextAllEvents": "",
+    "wayToGetDiscordURL": ""
 }
