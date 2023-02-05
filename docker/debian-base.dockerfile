@@ -1,6 +1,6 @@
 # DON'T UPDATE TO node:14-bullseye-slim, see #372.
 # If the image changed, the second stage image should be changed too
-FROM node:18-buster-slim
+FROM node:18-buster-slim AS base2-slim
 ARG TARGETPLATFORM
 
 # Install Curl
@@ -23,4 +23,14 @@ RUN node ./extra/download-cloudflared.js $TARGETPLATFORM && \
     rm -rf /var/lib/apt/lists/* && \
     rm -f cloudflared.deb && \
     apt --yes autoremove
+
+FROM base2-slim AS base2
+RUN apt update && \
+    apt --yes --no-install-recommends install curl && \
+    curl -LsS https://r.mariadb.com/downloads/mariadb_repo_setup | bash -s -- --mariadb-server-version="mariadb-10.11" && \
+    apt --yes --no-install-recommends install mariadb-server && \
+    apt --yes remove curl && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt --yes autoremove
+RUN chown -R node:node /var/lib/mysql
 

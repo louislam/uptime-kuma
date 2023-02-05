@@ -6,6 +6,7 @@ const dayjs = require("dayjs");
 const knex = require("knex");
 const { PluginsManager } = require("./plugins-manager");
 const path = require("path");
+const { EmbeddedMariaDB } = require("./embedded-mariadb");
 
 /**
  * Database & App Data Folder
@@ -123,10 +124,20 @@ class Database {
         let dbConfig;
 
         try {
-            dbConfig = fs.readFileSync(path.join(Database.dataDir, "db-config.json"));
+            let dbConfigString = fs.readFileSync(path.join(Database.dataDir, "db-config.json")).toString("utf-8");
+            dbConfig = JSON.parse(dbConfigString);
+
+            if (typeof dbConfig !== "object") {
+                throw new Error("Invalid db-config.json, it must be an object");
+            }
+
+            if (typeof dbConfig.type !== "string") {
+                throw new Error("Invalid db-config.json, type must be a string");
+            }
         } catch (_) {
             dbConfig = {
-                type: "sqlite",
+                //type: "sqlite",
+                type: "embedded-mariadb",
             };
         }
 
@@ -151,19 +162,20 @@ class Database {
                     acquireTimeoutMillis: acquireConnectionTimeout,
                 }
             };
-        } else if (dbConfig === "embedded-mariadb") {
+        } else if (dbConfig.type === "embedded-mariadb") {
+            let embeddedMariaDB = EmbeddedMariaDB.getInstance();
+            await embeddedMariaDB.start();
+            log.info("mariadb", "Embedded MariaDB started");
             config = {
-                client: "mysql",
+                client: "mysql2",
                 connection: {
-                    host: "127.0.0.1",
-                    port: 3306,
-                    user: "your_database_user",
-                    password: "your_database_password",
+                    socketPath: embeddedMariaDB.socketPath,
+                    user: "node",
                     database: "kuma"
                 }
             };
         } else {
-            throw new Error("Unknown Database type");
+            throw new Error("Unknown Database type: " + dbConfig.type);
         }
 
         const knexInstance = knex(config);
