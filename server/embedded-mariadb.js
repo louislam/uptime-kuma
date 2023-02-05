@@ -1,6 +1,7 @@
 const { log } = require("../src/util");
 const childProcess = require("child_process");
 const fs = require("fs");
+const mysql = require("mysql2");
 
 /**
  * It is only used inside the docker container
@@ -46,32 +47,7 @@ class EmbeddedMariaDB {
             return;
         }
 
-        if (!fs.existsSync(this.mariadbDataDir)) {
-            log.info("mariadb", `Embedded MariaDB: ${this.mariadbDataDir} is not found, create one now.`);
-            fs.mkdirSync(this.mariadbDataDir, {
-                recursive: true,
-            });
-
-            let result = childProcess.spawnSync("mysql_install_db", [
-                "--user=node",
-                "--ldata=" + this.mariadbDataDir,
-            ]);
-
-            if (result.status !== 0) {
-                let error = result.stderr.toString("utf-8");
-                log.error("mariadb", error);
-                return;
-            } else {
-                log.info("mariadb", "Embedded MariaDB: mysql_install_db done:" + result.stdout.toString("utf-8"));
-            }
-        }
-
-        if (!fs.existsSync(this.runDir)) {
-            log.info("mariadb", `Embedded MariaDB: ${this.runDir} is not found, create one now.`);
-            fs.mkdirSync(this.runDir, {
-                recursive: true,
-            });
-        }
+        this.initDB();
 
         this.running = true;
         log.info("mariadb", "Starting Embedded MariaDB");
@@ -105,8 +81,7 @@ class EmbeddedMariaDB {
         let handler = (data) => {
             log.debug("mariadb", data.toString("utf-8"));
             if (data.toString("utf-8").includes("ready for connections")) {
-                log.info("mariadb", "Embedded MariaDB is ready for connections");
-                this.started = true;
+                this.initDBAfterStarted();
             }
         };
 
@@ -130,6 +105,49 @@ class EmbeddedMariaDB {
             this.childProcess.kill("SIGINT");
             this.childProcess = null;
         }
+    }
+
+    initDB() {
+        if (!fs.existsSync(this.mariadbDataDir)) {
+            log.info("mariadb", `Embedded MariaDB: ${this.mariadbDataDir} is not found, create one now.`);
+            fs.mkdirSync(this.mariadbDataDir, {
+                recursive: true,
+            });
+
+            let result = childProcess.spawnSync("mysql_install_db", [
+                "--user=node",
+                "--ldata=" + this.mariadbDataDir,
+            ]);
+
+            if (result.status !== 0) {
+                let error = result.stderr.toString("utf-8");
+                log.error("mariadb", error);
+                return;
+            } else {
+                log.info("mariadb", "Embedded MariaDB: mysql_install_db done:" + result.stdout.toString("utf-8"));
+            }
+        }
+
+        if (!fs.existsSync(this.runDir)) {
+            log.info("mariadb", `Embedded MariaDB: ${this.runDir} is not found, create one now.`);
+            fs.mkdirSync(this.runDir, {
+                recursive: true,
+            });
+        }
+
+    }
+
+    async initDBAfterStarted() {
+        const connection = mysql.createConnection({
+            socketPath: this.socketPath,
+            user: "node",
+        });
+
+        let result = await connection.execute("CREATE DATABASE IF NOT EXISTS `kuma`");
+        log.debug("mariadb", "CREATE DATABASE: " + JSON.stringify(result));
+
+        log.info("mariadb", "Embedded MariaDB is ready for connections");
+        this.started = true;
     }
 
 }

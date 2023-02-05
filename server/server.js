@@ -142,6 +142,7 @@ const { generalSocketHandler } = require("./socket-handlers/general-socket-handl
 const { Settings } = require("./settings");
 const { CacheableDnsHttpAgent } = require("./cacheable-dns-http-agent");
 const { pluginsHandler } = require("./socket-handlers/plugins-handler");
+const { EmbeddedMariaDB } = require("./embedded-mariadb");
 
 app.use(express.json());
 
@@ -1769,6 +1770,10 @@ async function shutdownFunction(signal) {
     }
     await sleep(2000);
     await Database.close();
+
+    if (EmbeddedMariaDB.hasInstance()) {
+        EmbeddedMariaDB.getInstance().stop();
+    }
 
     stopBackgroundJobs();
     await cloudflaredStop();
