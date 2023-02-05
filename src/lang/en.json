@@ -692,5 +692,8 @@
     "PushDeer Key": "PushDeer Key",
     "wayToGetClickSendSMSToken": "You can get API Username and API Key from {0} .",
     "Custom Monitor Type": "Custom Monitor Type",
-    "Google Analytics ID": "Google Analytics ID"
+    "Google Analytics ID": "Google Analytics ID",
+    "Edit Tag": "Edit Tag",
+    "Server Address": "Server Address",
+    "Learn More": "Learn More"
 }
