@@ -323,7 +323,7 @@ exports.mysqlQuery = function (connectionString, query) {
                 reject(err);
             })
             .finally(() => {
-                connection.end();
+                connection.destroy();
             });
     });
 };
