@@ -704,5 +704,6 @@
     "pagertreeHigh": "High",
     "pagertreeCritical": "Critical",
     "pagertreeResolve": "Auto Resolve",
-    "pagertreeDoNothing": "Do Nothing"
+    "pagertreeDoNothing": "Do Nothing",
+    "wayToGetPagerTreeIntegrationURL": "After creating the Uptime Kuma integration in PagerTree, copy the Endpoint. See full details {0}"
 }

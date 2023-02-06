@@ -2,6 +2,9 @@
     <div class="mb-3">
         <label for="pagertree-integration-url" class="form-label">{{ $t("pagertreeIntegrationUrl") }}<span style="color: red;"><sup>*</sup></span></label>
         <input id="pagertree-integration-url" v-model="$parent.notification.pagertreeIntegrationUrl" type="text" class="form-control" autocomplete="false">
+        <i18n-t tag="div" keypath="wayToGetPagerTreeIntegrationURL" class="form-text">
+            <a href="https://pagertree.com/docs/integration-guides/introduction#copy-the-endpoint-url" target="_blank">{{ $t("here") }}</a>
+        </i18n-t>
     </div>
     <div class="mb-3">
         <label for="pagertree-urgency" class="form-label">{{ $t("pagertreeUrgency") }}</label>
@@ -23,11 +26,6 @@
 </template>
 
 <script>
-import HiddenInput from "../HiddenInput.vue";
-
 export default {
-    components: {
-        HiddenInput,
-    },
 };
 </script>
