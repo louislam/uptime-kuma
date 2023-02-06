@@ -24,6 +24,7 @@ const Ntfy = require("./notification-providers/ntfy");
 const Octopush = require("./notification-providers/octopush");
 const OneBot = require("./notification-providers/onebot");
 const PagerDuty = require("./notification-providers/pagerduty");
+const PagerTree = require("./notification-providers/pagertree");
 const PromoSMS = require("./notification-providers/promosms");
 const Pushbullet = require("./notification-providers/pushbullet");
 const PushDeer = require("./notification-providers/pushdeer");
@@ -83,6 +84,7 @@ class Notification {
             new Octopush(),
             new OneBot(),
             new PagerDuty(),
+            new PagerTree(),
             new PromoSMS(),
             new Pushbullet(),
             new PushDeer(),

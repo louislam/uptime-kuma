@@ -695,5 +695,14 @@
     "Google Analytics ID": "Google Analytics ID",
     "Edit Tag": "Edit Tag",
     "Server Address": "Server Address",
-    "Learn More": "Learn More"
+    "Learn More": "Learn More",
+    "pagertreeIntegrationUrl": "Integration URL",
+    "pagertreeUrgency": "Urgency",
+    "pagertreeSilent": "Silent",
+    "pagertreeLow": "Low",
+    "pagertreeMedium": "Medium",
+    "pagertreeHigh": "High",
+    "pagertreeCritical": "Critical",
+    "pagertreeResolve": "Auto Resolve",
+    "pagertreeDoNothing": "Do Nothing"
 }
