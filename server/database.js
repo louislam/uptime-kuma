@@ -136,8 +136,8 @@ class Database {
             }
         } catch (_) {
             dbConfig = {
-                //type: "sqlite",
-                type: "embedded-mariadb",
+                type: "sqlite",
+                //type: "embedded-mariadb",
             };
         }
 
