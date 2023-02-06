@@ -2,7 +2,7 @@
 # Build in Golang
 # Run npm run build-healthcheck-armv7 in the host first, another it will be super slow where it is building the armv7 healthcheck
 ############################################
-FROM golang:1.20rc2-bullseye
+FROM golang:1.20-buster
 WORKDIR /app
 ARG TARGETPLATFORM
 COPY ./extra/ ./extra/
