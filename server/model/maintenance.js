@@ -235,10 +235,25 @@ class Maintenance extends BeanModel {
      * Throw error if cron is invalid
      * @param cron
      * @returns {Promise<void>}
-     */
+    */
     static async validateCron(cron) {
         let job = new Cron(cron, () => {});
         job.stop();
+    }
+
+    /**
+     * Assign maintenance to Status Page
+     * @param {number} maintenanceID ID of maintenace
+     * @param {number} statusPageID ID of status page
+     */
+    static async addMaintenanceStatusPage(maintenanceID, statusPageID) {
+        let bean = R.dispense("maintenance_status_page");
+
+        bean.import({
+            status_page_id: statusPageID,
+            maintenance_id: maintenanceID
+        });
+        await R.store(bean);
     }
 
     /**
