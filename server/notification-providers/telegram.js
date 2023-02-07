@@ -64,6 +64,17 @@ class Telegram extends NotificationProvider {
         }
 
         try {
+            // If heartbeatJSON is null, assume we're testing.
+            if (heartbeatJSON == null) {
+                await axios.get(`https://api.telegram.org/bot${notification.telegramBotToken}/sendMessage`, {
+                    params: {
+                        chat_id: notification.telegramChatID,
+                        text: msg,
+                    },
+                });
+                return okMsg;
+            }
+
             // https://core.telegram.org/bots/api#sendmessage
             await axios.get(`https://api.telegram.org/bot${notification.telegramBotToken}/sendMessage`, {
                 params: {
