@@ -492,7 +492,7 @@ export default {
                             await this.addMaintenanceStatusPage(res.maintenanceID, () => {
                                 this.processing = false;
                                 this.$root.toastRes(res);
-                                this.init();
+                                // this.init();
                                 this.$router.push("/maintenance");
                             });
                         });
