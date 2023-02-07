@@ -115,14 +115,8 @@ module.exports.maintenanceSocketHandler = (socket) => {
                 maintenanceID
             ]);
 
-            for await (const statusPage of statusPages) {
-                let bean = R.dispense("maintenance_status_page");
-
-                bean.import({
-                    status_page_id: statusPage.id,
-                    maintenance_id: maintenanceID
-                });
-                await R.store(bean);
+            for (const statusPage of statusPages) {
+                await Maintenance.addMaintenanceStatusPage(maintenanceID, statusPage.id);
             }
 
             apicache.clear();

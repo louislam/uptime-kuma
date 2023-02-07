@@ -7,6 +7,7 @@ const Monitor = require("../model/monitor");
 const Maintenance = require("../model/maintenance");
 const { Proxy } = require("../proxy");
 const StatusPage = require("../model/status_page");
+const Incident = require("../model/incident");
 const MaintenanceTimeslot = require("../model/maintenance_timeslot");
 const apicache = require("../modules/apicache");
 const version = require("../../package.json").version;
@@ -35,7 +36,7 @@ module.exports.backupSocketHandler = (socket, server) => {
                     return maintenance;
                 }),
                 statusPageList: await Promise.all((await StatusPage.getStatusPageList()).map(async (statusPage) => {
-                    return await StatusPage.getStatusPageData(statusPage);
+                    return await StatusPage.getStatusPageBackup(statusPage);
                 })),
             };
 
@@ -74,6 +75,7 @@ module.exports.backupSocketHandler = (socket, server) => {
             let notificationIDMap = {};
             let proxyIDMap = {};
             let monitorIDMap = {};
+            let maintenaceIDMap = {};
 
             // If the import option is "overwrite" it'll clear most of the tables, except "settings" and "user"
             if (importHandle === "overwrite") {
@@ -92,6 +94,8 @@ module.exports.backupSocketHandler = (socket, server) => {
                 await R.exec("DELETE FROM proxy");
                 await R.exec("DELETE FROM maintenance");
                 await R.exec("DELETE FROM monitor_maintenance");
+                await R.exec("DELETE FROM status_page");
+                await R.exec("DELETE FROM `group`");
 
                 await R.exec("PRAGMA wal_checkpoint(TRUNCATE)");
             }
@@ -241,6 +245,8 @@ module.exports.backupSocketHandler = (socket, server) => {
                     // Save maintenance as new entry
                     const bean = await Maintenance.save(maintenance, undefined, socket.userID);
 
+                    maintenaceIDMap[maintenance.id] = bean.id;
+
                     // Assign monitors to maintenance
                     if (Array.isArray(maintenance.monitors) && maintenance.monitors.length > 0) {
                         for (const monitorId of maintenance.monitors) {
@@ -263,7 +269,43 @@ module.exports.backupSocketHandler = (socket, server) => {
 
             // Only starts importing if the backup file contains at least one status page
             if (statusPageListData.length >= 1) {
-                // todo()
+                const statusPages = await R.findAll("status_page");
+
+                for (const statusPage of statusPageListData) {
+                    const exists = statusPages.find(item => item.id === statusPage.id);
+
+                    // Do not process when it already exists and importHandle is skip
+                    if (importHandle === "skip" && exists !== undefined) {
+                        continue;
+                    }
+
+                    // Save status page as new entry
+                    const bean = await StatusPage.create(statusPage.config?.title, statusPage.config?.slug);
+
+                    statusPage.groupList.map((group) => {
+                        delete group.id;
+                        group.monitorList.map((monitor) => {
+                            monitor.id = monitorIDMap[monitor.id];
+                        });
+                    });
+
+                    await StatusPage.save(statusPage.config?.slug, statusPage.config, statusPage.config?.icon, statusPage.groupList);
+
+                    if (statusPage.incidents != null) {
+                        for (const incident of statusPage.incidents) {
+                            delete incident.id;
+                            await Incident.save(statusPage.config?.slug, incident);
+                        }
+                    }
+
+                    if (statusPage.maintenanceList != null) {
+                        for (const maintenance of statusPage.maintenanceList) {
+                            await Maintenance.addMaintenanceStatusPage(maintenaceIDMap[maintenance.id], bean.id);
+                        }
+                    }
+                }
+
+                await StatusPage.sendStatusPageList(server.io, socket);
             }
 
             apicache.clear();

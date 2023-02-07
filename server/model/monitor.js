@@ -192,9 +192,9 @@ class Monitor extends BeanModel {
     /**
      * Saves and updates given monitor entity
      *
-     * @param monitor
-     * @param monitorID
-     * @param userID
+     * @param {Object} monitor JSON data to save
+     * @param {int} monitorID ID of the monitor to save to
+     * @param {int} userID userID of the monitor to save to
      * @return {Promise<Bean>}
      */
     static async save(monitor, monitorID, userID) {
