@@ -33,4 +33,4 @@ RUN apt update && \
     rm -rf /var/lib/apt/lists/* && \
     apt --yes autoremove
 RUN chown -R node:node /var/lib/mysql
-
+ENV UPTIME_KUMA_ENABLE_EMBEDDED_MARIADB=1

@@ -22,36 +22,67 @@
             </p>
 
             <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
-                <input id="btnradio3" v-model="dbType" type="radio" class="btn-check" autocomplete="off" value="embedded-mariadb">
+                <template v-if="isEnabledEmbeddedMariaDB">
+                    <input id="btnradio3" v-model="dbConfig.type" type="radio" class="btn-check" autocomplete="off" value="embedded-mariadb">
 
-                <label class="btn btn-outline-primary" for="btnradio3">
-                    Embedded MariaDB
-                </label>
+                    <label class="btn btn-outline-primary" for="btnradio3">
+                        Embedded MariaDB
+                    </label>
+                </template>
 
-                <input id="btnradio2" v-model="dbType" type="radio" class="btn-check" autocomplete="off" value="mariadb">
+                <input id="btnradio2" v-model="dbConfig.type" type="radio" class="btn-check" autocomplete="off" value="mariadb">
                 <label class="btn btn-outline-primary" for="btnradio2">
-                    MariaDB
+                    MariaDB/MySQL
                 </label>
 
-                <input id="btnradio1" v-model="dbType" type="radio" class="btn-check" autocomplete="off" value="sqlite">
+                <input id="btnradio1" v-model="dbConfig.type" type="radio" class="btn-check" autocomplete="off" value="sqlite">
                 <label class="btn btn-outline-primary" for="btnradio1">
                     SQLite
                 </label>
             </div>
 
-            <p v-if="dbType === 'embedded-mariadb'" class="mt-3">
+            <p v-if="dbConfig.type === 'embedded-mariadb'" class="mt-3">
                 {{ $t("setupDatabaseEmbeddedMariaDB") }}
             </p>
 
-            <p v-if="dbType === 'mariadb'" class="mt-3">
+            <p v-if="dbConfig.type === 'mariadb'" class="mt-3">
                 {{ $t("setupDatabaseMariaDB") }}
             </p>
 
-            <p v-if="dbType === 'sqlite'" class="mt-3">
+            <p v-if="dbConfig.type === 'sqlite'" class="mt-3">
                 {{ $t("setupDatabaseSQLite") }}
             </p>
 
-            <button class="btn btn-primary mt-5 short" type="submit" :disabled="disabledButton">
+            <template v-if="dbConfig.type === 'mariadb'">
+                <div class="form-floating mt-3 short">
+                    <input id="floatingInput" v-model="dbConfig.hostname" type="text" class="form-control" required>
+                    <label for="floatingInput">{{ $t("Hostname") }}</label>
+                </div>
+
+                <div class="form-floating mt-3 short">
+                    <input id="floatingInput" v-model="dbConfig.port" type="text" class="form-control" required>
+                    <label for="floatingInput">{{ $t("Port") }}</label>
+                </div>
+
+                <div class="form-floating mt-3 short">
+                    <input id="floatingInput" v-model="dbConfig.username" type="text" class="form-control" required>
+                    <label for="floatingInput">{{ $t("Username") }}</label>
+                </div>
+
+                <div class="form-floating mt-3 short">
+                    <input id="floatingInput" v-model="dbConfig.password" type="passwrod" class="form-control" required>
+                    <label for="floatingInput">{{ $t("Password") }}</label>
+                </div>
+
+                <div class="form-floating mt-3 short">
+                    <input id="floatingInput" v-model="dbConfig.dbName" type="text" class="form-control" required>
+                    <label for="floatingInput">{{ $t("dbName") }}</label>
+                </div>
+            </template>
+
+            <button v-if="dbConfig.type === 'mariadb'" class="btn btn-warning mt-3" @submit.prevent="test">{{ $t("Test") }}</button>
+
+            <button class="btn btn-primary mt-4 short" type="submit" :disabled="disabledButton">
                 {{ $t("Next") }}
             </button>
         </form>
@@ -59,34 +90,70 @@
 </template>
 
 <script>
+import axios from "axios";
 import { useToast } from "vue-toastification";
+import { sleep } from "../util.ts";
 const toast = useToast();
 
 export default {
     data() {
         return {
             processing: false,
-            dbType: undefined,
+            isEnabledEmbeddedMariaDB: false,
+            dbConfig: {
+                type: undefined,
+                port: 3306,
+                hostname: "",
+                username: "",
+                password: "",
+                dbName: "kuma",
+            },
         };
     },
     computed: {
         disabledButton() {
-            return this.dbType === undefined || this.processing;
+            return this.dbConfig.type === undefined || this.processing;
         },
     },
-    mounted() {
-
+    async mounted() {
+        let res = await axios.get("/info");
+        this.isEnabledEmbeddedMariaDB = res.data.isEnabledEmbeddedMariaDB;
     },
     methods: {
-        submit() {
+        async submit() {
             this.processing = true;
 
-            if (this.password !== this.repeatPassword) {
-                toast.error(this.$t("PasswordsDoNotMatch"));
+            try {
+                let res = await axios.post("/setup-database", {
+                    dbConfig: this.dbConfig,
+                });
+
+                await sleep(2000);
+                // TODO: an interval to check if the main server is ready, it is ready, go to "/" again to continue the setup of admin account
+                await this.goToMainServerWhenReady();
+            } catch (e) {
+                toast.error(e.response.data);
+            } finally {
                 this.processing = false;
-                return;
             }
+
         },
+
+        async goToMainServerWhenReady() {
+            try {
+                console.log("Trying...");
+                let res = await axios.get("/api/entry-page");
+                if (res.data && res.data.type === "entryPage") {
+                    location.href = "/";
+                } else {
+                    throw new Error("not ready");
+                }
+            } catch (e) {
+                console.log("Not ready yet");
+                await sleep(2000);
+                await this.goToMainServerWhenReady();
+            }
+        }
     },
 };
 </script>

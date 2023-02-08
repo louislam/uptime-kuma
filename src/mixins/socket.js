@@ -86,6 +86,11 @@ export default {
                 }
             }
 
+            // Also don't need to connect to the socket.io for setup database page
+            if (location.pathname === "/setup-database") {
+                return;
+            }
+
             this.socket.initedSocketIO = true;
 
             let protocol = (location.protocol === "https:") ? "wss://" : "ws://";
