@@ -3,7 +3,7 @@
         <label for="lunasea-notification-type" class="form-label">{{ $t("Device ID or User ID") }}<span style="color: red;"><sup>*</sup></span></label>
         <div class="form-text">
             <p>
-                <select class="form-select" id="lunasea-notification-type" v-model="$parent.notification.lunaseaNotificationType">
+                <select id="lunasea-notification-type" v-model="$parent.notification.lunaseaNotificationType" class="form-select" required>
                     <option value="device">Device</option>
                     <option value="user">User</option>
                 </select>
