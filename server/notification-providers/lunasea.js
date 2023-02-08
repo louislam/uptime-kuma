@@ -8,15 +8,20 @@ class LunaSea extends NotificationProvider {
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
-        let lunaseadevice = "https://notify.lunasea.app/v1/custom/device/" + notification.lunaseaDevice;
-
+        let lunaseaurl = "";
+        if(notification.lunaseaNotificationType === "device") {
+            lunaseaurl = "https://notify.lunasea.app/v1/custom/device/" + notification.lunaseaId;
+        } else {
+            lunaseaurl = "https://notify.lunasea.app/v1/custom/user/" + notification.lunaseaId;
+        }
+        
         try {
             if (heartbeatJSON == null) {
                 let testdata = {
                     "title": "Uptime Kuma Alert",
                     "body": msg,
                 };
-                await axios.post(lunaseadevice, testdata);
+                await axios.post(lunaseaurl, testdata);
                 return okMsg;
             }
 
@@ -25,7 +30,7 @@ class LunaSea extends NotificationProvider {
                     "title": "UptimeKuma Alert: " + monitorJSON["name"],
                     "body": "[🔴 Down] " + heartbeatJSON["msg"] + "\nTime (UTC): " + heartbeatJSON["time"],
                 };
-                await axios.post(lunaseadevice, downdata);
+                await axios.post(lunaseaurl, downdata);
                 return okMsg;
             }
 
@@ -34,7 +39,7 @@ class LunaSea extends NotificationProvider {
                     "title": "UptimeKuma Alert: " + monitorJSON["name"],
                     "body": "[✅ Up] " + heartbeatJSON["msg"] + "\nTime (UTC): " + heartbeatJSON["time"],
                 };
-                await axios.post(lunaseadevice, updata);
+                await axios.post(lunaseaurl, updata);
                 return okMsg;
             }
 
