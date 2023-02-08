@@ -6,18 +6,17 @@ class Telegram extends NotificationProvider {
 
     name = "telegram";
 
-
     /**
      * @private
      *
      * @param {string} name service name
      * @param {number} status 1 or 0
-     * @return {string} 
+     * @return {string}
      * @memberof Telegram
      */
     getTitle(name, status) {
-        const emoji = status ? "✅" : "❌"
-        return status ? `${emoji} Your Service [${name}] is UP! ${emoji}` : `${emoji} Your Service [${name}] is DOWN! ${emoji}`
+        const emoji = status ? "✅" : "❌";
+        return status ? `${emoji} Your Service [${name}] is UP! ${emoji}` : `${emoji} Your Service [${name}] is DOWN! ${emoji}`;
     }
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
@@ -41,7 +40,7 @@ class Telegram extends NotificationProvider {
                     callback_data: "nothing",
                 }
             ]
-        ]
+        ];
 
         // add error text to message
         if (heartbeatJSON?.status === DOWN) {
@@ -50,7 +49,7 @@ class Telegram extends NotificationProvider {
                     text: `Error: ${heartbeatJSON?.msg}`,
                     callback_data: "nothing"
                 }
-            ])
+            ]);
         }
 
         // Add link to website to message
@@ -60,7 +59,7 @@ class Telegram extends NotificationProvider {
                     text: `Open [${monitorJSON?.name}]`,
                     url: monitorJSON?.url
                 }
-            ])
+            ]);
         }
 
         try {
