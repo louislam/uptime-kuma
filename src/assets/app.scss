@@ -35,6 +35,11 @@ textarea.form-control {
     color: $maintenance !important;
 }
 
+// pause number color
+.text-pause{
+    color:$pause !important;
+}
+
 .incident a,
 .bg-maintenance a {
     color: inherit;
