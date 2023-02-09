@@ -76,7 +76,7 @@
         "bcryptjs": "~2.4.3",
         "bree": "~7.1.5",
         "cacheable-lookup": "~6.0.4",
-        "chardet": "~1.4.0",
+        "chardet": "~1.5.1",
         "check-password-strength": "^2.0.5",
         "cheerio": "~1.0.0-rc.12",
         "chroma-js": "~2.4.2",
