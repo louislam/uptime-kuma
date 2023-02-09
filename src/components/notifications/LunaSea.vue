@@ -10,7 +10,7 @@
             </p>
         </div>
         <label for="lunasea-device" class="form-label">{{ $t("LunaSea ID") }}<span style="color: red;"><sup>*</sup></span></label>
-        <input id="lunasea-device" v-model="$parent.notification.lunaseaId" type="text" class="form-control" required>
+        <input id="lunasea-device" v-model="$parent.notification.lunaseaDevice" type="text" class="form-control" required>
         <div class="form-text">
             <p><span style="color: red;"><sup>*</sup></span>{{ $t("Required") }}</p>
         </div>
