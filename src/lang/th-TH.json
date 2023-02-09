@@ -522,7 +522,7 @@
     "resendEveryXTimes": "ส่งซ้ำทุก {0} ครั้ง",
     "resendDisabled": "การส่งซ้ำถูกปิดใช้งาน",
     "dnsPortDescription": "พอร์ตของเซิร์ฟเวอร์ DNS, ค่าเริ่มต้นคือ 53, คุณสามารถเปลี่ยนพอร์ตตอนไหนก็ได้",
-    "Resend Notification if Down X times consequently": "ส่งการแจ้งเตือนซ้ำถ้าออฟไลน์ครบ X ครั้ง",
+    "Resend Notification if Down X times consecutively": "ส่งการแจ้งเตือนซ้ำถ้าออฟไลน์ครบ X ครั้ง",
     "error": "เกิดข้อผิดพลาด",
     "critical": "วิกฤต",
     "wayToGetPagerDutyKey": "คุณสามารถรับคีย์ได้โดยการไปที่ Service -> Service Directory -> (Select a service) -> Integrations -> Add integration, และค้นหา \"Events API V2\", สำหรับข้อมูลเพิ่มเติม {0}",

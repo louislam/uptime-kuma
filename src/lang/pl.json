@@ -494,7 +494,7 @@
     "atLeastOneMonitor": "Wybierz co najmniej jeden monitor, którego dotyczy problem",
     "deleteMaintenanceMsg": "Czy na pewno chcesz usunąć tę konserwację?",
     "dnsPortDescription": "Port serwera DNS. Domyślnie 53. Możesz zmienić port w dowolnym momencie.",
-    "Resend Notification if Down X times consequently": "Wyślij ponownie powiadomienie, jeśli nie działa X razy pod rząd",
+    "Resend Notification if Down X times consecutively": "Wyślij ponownie powiadomienie, jeśli nie działa X razy pod rząd",
     "error": "błąd",
     "critical": "krytyczny",
     "wayToGetPagerDutyKey": "Możesz to uzyskać, przechodząc do Service -> Service Directory -> (wybierz usługę) -> Integrations -> Add integration. Tutaj możesz wyszukać \"Events API V2\". Więcej informacji {0}",

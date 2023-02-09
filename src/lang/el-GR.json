@@ -74,7 +74,7 @@
     "Heartbeat Interval": "Διάστημα καρδιακών παλμών",
     "Retries": "Επαναλήψεις",
     "Heartbeat Retry Interval": "Διάστημα επανάληψης παλμών καρδιάς",
-    "Resend Notification if Down X times consequently": "Αποστολή νέας ειδοποίησης εάν κατω X φορές κατά συνέχεια",
+    "Resend Notification if Down X times consecutively": "Αποστολή νέας ειδοποίησης εάν κατω X φορές κατά συνέχεια",
     "Advanced": "Προχωρημένα",
     "Upside Down Mode": "Ανάποδη λειτουργία",
     "Max. Redirects": "Μέγιστη. Ανακατευθύνσεις",

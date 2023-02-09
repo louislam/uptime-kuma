@@ -539,7 +539,7 @@
     "wayToGetLineNotifyToken": "Може да получите токен код за достъп от {0}",
     "resendEveryXTimes": "Изпращай повторно на всеки {0} пъти",
     "resendDisabled": "Повторното изпращане е изключено",
-    "Resend Notification if Down X times consequently": "Повторно изпращане на известие, ако е недостъпен X пъти последователно",
+    "Resend Notification if Down X times consecutively": "Повторно изпращане на известие, ако е недостъпен X пъти последователно",
     "Bark Group": "Bark група",
     "Bark Sound": "Bark звук",
     "HTTP Headers": "HTTP хедъри",

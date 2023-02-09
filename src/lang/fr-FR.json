@@ -89,7 +89,7 @@
     "Heartbeat Interval": "Intervalle de vérification",
     "Retries": "Essais",
     "Heartbeat Retry Interval": "Réessayer l'intervalle de vérification",
-    "Resend Notification if Down X times consequently": "Renvoyer une notification si hors ligne X fois",
+    "Resend Notification if Down X times consecutively": "Renvoyer une notification si hors ligne X fois",
     "Advanced": "Avancé",
     "Upside Down Mode": "Mode inversé",
     "Max. Redirects": "Nombre maximum de redirections",
