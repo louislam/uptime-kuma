@@ -6,6 +6,10 @@ Please report security issues to https://github.com/louislam/uptime-kuma/securit
 
 Do not use the public issue tracker or discuss it in the public as it will cause more damage.
 
+## Do you accept other 3rd-party bug bounty platforms?
+
+At this moment, I DO NOT accept other bug bounty platforms, because I am not familiar with these platforms and someone have tried to send a phishing link to me by this already. To minimize my own risk, please report through GitHub Advisories only. I will ignore all 3rd-party bug bounty platforms emails.
+
 ## Supported Versions
 
 ### Uptime Kuma Versions
