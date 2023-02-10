@@ -74,7 +74,7 @@
         "axios-ntlm": "1.3.0",
         "badge-maker": "~3.3.1",
         "bcryptjs": "~2.4.3",
-        "bree": "~7.1.5",
+        "bree": "~7.2.0",
         "cacheable-lookup": "~6.0.4",
         "chardet": "~1.5.1",
         "check-password-strength": "^2.0.5",
