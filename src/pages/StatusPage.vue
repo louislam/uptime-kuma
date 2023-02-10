@@ -67,6 +67,12 @@
                     </ul>
                 </div>
 
+                <!-- Google Analytics -->
+                <div class="my-3">
+                    <label for="googleAnalyticsTag" class="form-label">{{ $t("Google Analytics ID") }}</label>
+                    <input id="googleAnalyticsTag" v-model="config.googleAnalyticsId" type="text" class="form-control">
+                </div>
+
                 <!-- Custom CSS -->
                 <div class="my-3">
                     <div class="mb-1">{{ $t("Custom CSS") }}</div>

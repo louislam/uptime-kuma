@@ -71,6 +71,7 @@ class Database {
         "patch-ping-packet-size.sql": true,
         "patch-maintenance-table2.sql": true,
         "patch-add-gamedig-monitor.sql": true,
+        "patch-add-google-analytics-status-page-tag.sql": true,
     };
 
     /**
