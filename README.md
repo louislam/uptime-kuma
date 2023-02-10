@@ -1,12 +1,10 @@
-<div align="center">
-<h1>Uptime Kuma</h1>
-
+# Uptime Kuma
 
 <a target="_blank" href="https://github.com/louislam/uptime-kuma"><img src="https://img.shields.io/github/stars/louislam/uptime-kuma" /></a> <a target="_blank" href="https://hub.docker.com/r/louislam/uptime-kuma"><img src="https://img.shields.io/docker/pulls/louislam/uptime-kuma" /></a> <a target="_blank" href="https://hub.docker.com/r/louislam/uptime-kuma"><img src="https://img.shields.io/docker/v/louislam/uptime-kuma/latest?label=docker%20image%20ver." /></a> <a target="_blank" href="https://github.com/louislam/uptime-kuma"><img src="https://img.shields.io/github/last-commit/louislam/uptime-kuma" /></a>  <a target="_blank" href="https://opencollective.com/uptime-kuma"><img src="https://opencollective.com/uptime-kuma/total/badge.svg?label=Open%20Collective%20Backers&color=brightgreen" /></a>
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/louislam?label=GitHub%20Sponsors)](https://github.com/sponsors/louislam) <a href="https://weblate.kuma.pet/projects/uptime-kuma/uptime-kuma/">
 <img src="https://weblate.kuma.pet/widgets/uptime-kuma/-/svg-badge.svg" alt="Translation status" />
 </a>
-</div>
+
 <div align="center" width="100%">
     <img src="./public/icon.svg" width="128" alt="" />
 </div>
@@ -28,7 +26,7 @@ It is a temporary live demo, all data will be deleted after 10 minutes. Use the 
 * Monitoring uptime for HTTP(s) / TCP / HTTP(s) Keyword / Ping / DNS Record / Push / Steam Game Server / Docker Containers
 * Fancy, Reactive, Fast UI/UX
 * Notifications via Telegram, Discord, Gotify, Slack, Pushover, Email (SMTP), and [90+ notification services, click here for the full list](https://github.com/louislam/uptime-kuma/tree/master/src/components/notifications)
-* 20-second intervals
+* 20 second intervals
 * [Multi Languages](https://github.com/louislam/uptime-kuma/tree/master/src/lang)
 * Multiple status pages
 * Map status pages to specific domains
@@ -102,7 +100,7 @@ https://github.com/louislam/uptime-kuma/wiki/%F0%9F%86%99-How-to-Update
 
 ## 🆕 What's Next?
 
-I will mark requests/issues for the next milestone.
+I will mark requests/issues to the next milestone.
 
 https://github.com/louislam/uptime-kuma/milestones
 
@@ -136,8 +134,8 @@ Telegram Notification Sample:
 
 ## Motivation
 
-* I was looking for a self-hosted monitoring tool like "Uptime Robot", but it is hard to find a suitable one. One of the close ones is stating. Unfortunately, it is not stable and is no longer maintained.
-* Want to build a fancy UI?
+* I was looking for a self-hosted monitoring tool like "Uptime Robot", but it is hard to find a suitable one. One of the close ones is statping. Unfortunately, it is not stable and no longer maintained.
+* Want to build a fancy UI.
 * Learn Vue 3 and vite.js.
 * Show the power of Bootstrap 5.
 * Try to use WebSocket with SPA instead of REST API.
