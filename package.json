@@ -1,6 +1,6 @@
 {
     "name": "uptime-kuma",
-    "version": "1.19.6",
+    "version": "1.20.0-beta.0",
     "license": "MIT",
     "repository": {
         "type": "git",
@@ -84,6 +84,7 @@
         "compare-versions": "~3.6.0",
         "compression": "~1.7.4",
         "dayjs": "~1.11.5",
+        "dotenv": "~16.0.3",
         "express": "~4.18.2",
         "express-basic-auth": "~1.2.1",
         "express-static-gzip": "~2.1.7",
@@ -145,9 +146,11 @@
         "cypress": "^10.1.0",
         "delay": "^5.0.0",
         "dns2": "~2.0.1",
+        "dompurify": "~2.4.3",
         "eslint": "~8.14.0",
         "eslint-plugin-vue": "~8.7.1",
         "favico.js": "~0.3.10",
+        "marked": "~4.2.5",
         "jest": "~27.2.5",
         "postcss-html": "~1.5.0",
         "postcss-rtlcss": "~3.7.2",
