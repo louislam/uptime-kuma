@@ -4,6 +4,7 @@ const cheerio = require("cheerio");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const jsesc = require("jsesc");
 const Maintenance = require("./maintenance");
+const googleAnalytics = require("../google-analytics");
 
 class StatusPage extends BeanModel {
 
@@ -52,6 +53,11 @@ class StatusPage extends BeanModel {
         }
 
         const head = $("head");
+
+        if (statusPage.googleAnalyticsTagId) {
+            let escapedGoogleAnalyticsScript = googleAnalytics.getGoogleAnalyticsScript(statusPage.googleAnalyticsTagId);
+            head.append($(escapedGoogleAnalyticsScript));
+        }
 
         // OG Meta Tags
         head.append(`<meta property="og:title" content="${statusPage.title}" />`);
@@ -225,6 +231,7 @@ class StatusPage extends BeanModel {
             customCSS: this.custom_css,
             footerText: this.footer_text,
             showPoweredBy: !!this.show_powered_by,
+            googleAnalyticsId: this.google_analytics_tag_id,
         };
     }
 
@@ -245,6 +252,7 @@ class StatusPage extends BeanModel {
             customCSS: this.custom_css,
             footerText: this.footer_text,
             showPoweredBy: !!this.show_powered_by,
+            googleAnalyticsId: this.google_analytics_tag_id,
         };
     }
 

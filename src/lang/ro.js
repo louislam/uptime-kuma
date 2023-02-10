@@ -1,0 +1,5 @@
+{
+
+    "languageName": "Limba română"
+
+}

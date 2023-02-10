@@ -130,7 +130,7 @@
     "Apply on all existing monitors": "Zastosuj do istniejących monitorów",
     "Create": "Stwórz",
     "Clear Data": "Usuń dane",
-    "Events": "Wydarzenia",
+    "Events": "Zdarzenia",
     "Heartbeats": "Bicia serca",
     "Auto Get": "Wykryj",
     "backupDescription": "Możesz wykonać kopię zapasową wszystkich monitorów i wszystkich powiadomień do pliku JSON.",
@@ -584,7 +584,7 @@
     "Domain": "Domena",
     "Workstation": "Stacja robocza",
     "disableCloudflaredNoAuthMsg": "Jesteś w trybie No Auth, hasło nie jest wymagane.",
-    "trustProxyDescription": "Zaufaj nagłówkom 'X-Forwarded-*'. Jeśli chcesz uzyskać poprawne IP klienta, a twój Uptime Kuma jest za Nginx lub Apache, powinieneś to włączyć.",
+    "trustProxyDescription": "Zaufaj nagłówkom 'X-Forwarded-*'. Jeśli chcesz uzyskać poprawne IP klienta, a twój Uptime Kuma jest za proxy, takim jak Nginx lub Apache, powinieneś to włączyć.",
     "wayToGetLineNotifyToken": "Możesz uzyskać token dostępu z {0}",
     "Examples": "Przykłady",
     "Home Assistant URL": "URL Home Assistant",
@@ -682,5 +682,13 @@
     "Free Mobile API Key": "Darmowy mobilny klucz API",
     "Lowcost": "Tani",
     "high": "wysoki",
-    "General Monitor Type": "Ogólny typ monitora"
+    "General Monitor Type": "Ogólny typ monitora",
+    "Packet Size": "Rozmiar pakietu",
+    "uninstalling": "Odinstalowywanie",
+    "loadingError": "Nie można pobrać danych, proszę spróbować ponownie później.",
+    "plugin": "Wtyczka | Wtyczki",
+    "install": "Instaluj",
+    "installing": "Instalowanie",
+    "uninstall": "Odinstaluj",
+    "confirmUninstallPlugin": "Czy na pewno chcesz odinstalować tę wtyczkę?"
 }

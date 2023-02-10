@@ -38,6 +38,8 @@ const languageList = {
     "th-TH": "ไทย",
     "el-GR": "Ελληνικά",
     "yue": "繁體中文 (廣東話 / 粵語)",
+    "ro": "Limba română",
+    "he-IL": "עברית",
 };
 
 let messages = {
