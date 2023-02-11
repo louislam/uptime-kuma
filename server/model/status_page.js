@@ -60,8 +60,11 @@ class StatusPage extends BeanModel {
         }
 
         // OG Meta Tags
-        head.append(`<meta property="og:title" content="${statusPage.title}" />`);
-        head.append(`<meta property="og:description" content="${description155}" />`);
+        let ogTitle = $("<meta property=\"og:title\" content=\"\" />").attr("content", statusPage.title);
+        head.append(ogTitle);
+
+        let ogDescription = $("<meta property=\"og:description\" content=\"\" />").attr("content", description155);
+        head.append(ogDescription);
 
         // Preload data
         // Add jsesc, fix https://github.com/louislam/uptime-kuma/issues/2186
