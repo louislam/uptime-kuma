@@ -180,7 +180,12 @@ let needSetup = false;
     }
 
     // Connect to database
-    await initDatabase(testMode);
+    try {
+        await initDatabase(testMode);
+    } catch (e) {
+        log.error("server", "Failed to prepare your database: " + e.message);
+        process.exit(1);
+    }
 
     // Database should be ready now
     await server.initAfterDatabaseReady();
@@ -1658,11 +1663,6 @@ async function afterLogin(socket, user) {
  * @returns {Promise<void>}
  */
 async function initDatabase(testMode = false) {
-    if (! fs.existsSync(Database.sqlitePath)) {
-        log.info("server", "Copying Database");
-        fs.copyFileSync(Database.templatePath, Database.sqlitePath);
-    }
-
     log.info("server", "Connecting to the Database");
     await Database.connect(testMode);
     log.info("server", "Connected");

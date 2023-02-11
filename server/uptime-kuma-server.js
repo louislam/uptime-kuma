@@ -272,7 +272,7 @@ class UptimeKumaServer {
     /** Load the timeslots for maintenance */
     async generateMaintenanceTimeslots() {
 
-        let list = await R.find("maintenance_timeslot", " generated_next = 0 AND start_date <= DATETIME('now') ");
+        let list = await R.find("maintenance_timeslot", " generated_next = 0 AND start_date <= CURRENT_TIMESTAMP ");
 
         for (let maintenanceTimeslot of list) {
             let maintenance = await maintenanceTimeslot.maintenance;

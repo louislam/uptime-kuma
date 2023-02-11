@@ -38,11 +38,13 @@ class Database {
     static backupPath = null;
 
     /**
+     * SQLite only
      * Add patch filename in key
      * Values:
      *      true: Add it regardless of order
      *      false: Do nothing
      *      { parents: []}: Need parents before add it
+     *  @deprecated
      */
     static patchList = {
         "patch-setting-value-type.sql": true,
@@ -81,6 +83,10 @@ class Database {
     static latestVersion = 10;
 
     static noReject = true;
+
+    static dbConfig = {};
+
+    static knexMigrationsPath = "./db/knex_migrations";
 
     /**
      * Initialize the data directory
@@ -144,17 +150,23 @@ class Database {
         let dbConfig;
         try {
             dbConfig = this.readDBConfig();
+            Database.dbConfig = dbConfig;
         } catch (err) {
             log.warn("db", err.message);
             dbConfig = {
                 type: "sqlite",
-                //type: "embedded-mariadb",
             };
         }
 
         let config = {};
 
         if (dbConfig.type === "sqlite") {
+
+            if (! fs.existsSync(Database.sqlitePath)) {
+                log.info("server", "Copying Database");
+                fs.copyFileSync(Database.templatePath, Database.sqlitePath);
+            }
+
             const Dialect = require("knex/lib/dialects/sqlite3/index.js");
             Dialect.prototype._driver = () => require("@louislam/sqlite3");
 
@@ -173,6 +185,17 @@ class Database {
                     acquireTimeoutMillis: acquireConnectionTimeout,
                 }
             };
+        } else if (dbConfig.type === "mariadb") {
+            config = {
+                client: "mysql2",
+                connection: {
+                    host: dbConfig.hostname,
+                    port: dbConfig.port,
+                    user: dbConfig.username,
+                    password: dbConfig.password,
+                    database: dbConfig.dbName,
+                }
+            };
         } else if (dbConfig.type === "embedded-mariadb") {
             let embeddedMariaDB = EmbeddedMariaDB.getInstance();
             await embeddedMariaDB.start();
@@ -182,11 +205,20 @@ class Database {
                 connection: {
                     socketPath: embeddedMariaDB.socketPath,
                     user: "node",
-                    database: "kuma"
+                    database: "kuma",
                 }
             };
         } else {
             throw new Error("Unknown Database type: " + dbConfig.type);
+        }
+
+        // Set to utf8mb4 for MariaDB
+        if (dbConfig.type.endsWith("mariadb")) {
+            config.pool = {
+                afterCreate(conn, done) {
+                    conn.query("SET CHARACTER SET utf8mb4;", (err) => done(err, conn));
+                },
+            };
         }
 
         const knexInstance = knex(config);
@@ -204,6 +236,14 @@ class Database {
             await R.autoloadModels("./server/model");
         }
 
+        if (dbConfig.type === "sqlite") {
+            await this.initSQLite(testMode, noLog);
+        } else if (dbConfig.type.endsWith("mariadb")) {
+            await this.initMariaDB();
+        }
+    }
+
+    static async initSQLite(testMode, noLog) {
         await R.exec("PRAGMA foreign_keys = ON");
         if (testMode) {
             // Change to MEMORY
@@ -228,8 +268,36 @@ class Database {
         }
     }
 
-    /** Patch the database */
+    static async initMariaDB() {
+        log.debug("db", "Checking if MariaDB database exists...");
+
+        let hasTable = await R.hasTable("docker_host");
+        if (!hasTable) {
+            const { createTables } = require("../db/kuma");
+            await createTables();
+        } else {
+            log.debug("db", "MariaDB database already exists");
+        }
+    }
+
     static async patch() {
+        if (Database.dbConfig.type === "sqlite") {
+            await this.patchSqlite();
+        }
+
+        // TODO: Using knex migrations
+        // https://knexjs.org/guide/migrations.html
+        // https://gist.github.com/NigelEarle/70db130cc040cc2868555b29a0278261
+        await R.knex.migrate.latest({
+            directory: Database.knexMigrationsPath,
+        });
+    }
+
+    /**
+     * Patch the database for SQLite
+     * @deprecated
+     */
+    static async patchSqlite() {
         let version = parseInt(await setting("database_version"));
 
         if (! version) {
@@ -275,17 +343,18 @@ class Database {
             }
         }
 
-        await this.patch2();
+        await this.patchSqlite2();
         await this.migrateNewStatusPage();
     }
 
     /**
      * Patch DB using new process
      * Call it from patch() only
+     * @deprecated
      * @private
      * @returns {Promise<void>}
      */
-    static async patch2() {
+    static async patchSqlite2() {
         log.info("db", "Database Patch 2.0 Process");
         let databasePatchedFiles = await setting("databasePatchedFiles");
 
@@ -321,6 +390,7 @@ class Database {
     }
 
     /**
+     * SQlite only
      * Migrate status page value in setting to "status_page" table
      * @returns {Promise<void>}
      */
