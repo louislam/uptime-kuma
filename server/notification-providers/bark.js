@@ -43,32 +43,6 @@ class Bark extends NotificationProvider {
     }
 
     /**
-     * Add additional parameter for better on device styles (iOS 15
-     * optimized)
-     * @param {string} postUrl URL to append parameters to
-     * @returns {string}
-     */
-    appendAdditionalParameters(notification, postUrl) {
-        // set icon to uptime kuma icon, 11kb should be fine
-        postUrl += "?icon=" + barkNotificationAvatar;
-        // grouping all our notifications
-        if (notification.barkGroup != null) {
-            postUrl += "&group=" + notification.barkGroup;
-        } else {
-            // default name
-            postUrl += "&group=" + "UptimeKuma";
-        }
-        // picked a sound, this should follow system's mute status when arrival
-        if (notification.barkSound != null) {
-            postUrl += "&sound=" + notification.barkSound;
-        } else {
-            // default sound
-            postUrl += "&sound=" + "telegraph";
-        }
-        return postUrl;
-    }
-
-    /**
      * Check if result is successful
      * @param {Object} result Axios response object
      * @throws {Error} The status code is not in range 2xx
@@ -90,12 +64,13 @@ class Bark extends NotificationProvider {
      * @returns {string}
      */
     async postNotification(notification, title, subtitle, endpoint) {
-        // url encode title and subtitle
-        title = encodeURIComponent(title);
-        subtitle = encodeURIComponent(subtitle);
-        let postUrl = endpoint + "/" + title + "/" + subtitle;
-        postUrl = this.appendAdditionalParameters(notification, postUrl);
-        let result = await axios.get(postUrl);
+        let result = await axios.post(endpoint, {
+            title,
+            body: subtitle,
+            icon: barkNotificationAvatar,
+            sound: notification.barkSound || "telegraph", // default sound is telegraph
+            group: notification.barkGroup || "UptimeKuma", // default group is UptimeKuma
+        });
         this.checkResult(result);
         if (result.statusText != null) {
             return "Bark notification succeed: " + result.statusText;
