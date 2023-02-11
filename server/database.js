@@ -25,7 +25,7 @@ class Database {
      */
     static uploadDir;
 
-    static path;
+    static sqlitePath;
 
     /**
      * @type {boolean}
@@ -83,10 +83,10 @@ class Database {
     static noReject = true;
 
     /**
-     * Initialize the database
+     * Initialize the data directory
      * @param {Object} args Arguments to initialize DB with
      */
-    static init(args) {
+    static initDataDir(args) {
         // Data Directory (must be end with "/")
         Database.dataDir = process.env.DATA_DIR || args["data-dir"] || "./data/";
 
@@ -96,7 +96,7 @@ class Database {
             PluginsManager.disable = true;
         }
 
-        Database.path = Database.dataDir + "kuma.db";
+        Database.sqlitePath = Database.dataDir + "kuma.db";
         if (! fs.existsSync(Database.dataDir)) {
             fs.mkdirSync(Database.dataDir, { recursive: true });
         }
@@ -110,6 +110,26 @@ class Database {
         log.info("db", `Data Dir: ${Database.dataDir}`);
     }
 
+    static readDBConfig() {
+        let dbConfig;
+
+        let dbConfigString = fs.readFileSync(path.join(Database.dataDir, "db-config.json")).toString("utf-8");
+        dbConfig = JSON.parse(dbConfigString);
+
+        if (typeof dbConfig !== "object") {
+            throw new Error("Invalid db-config.json, it must be an object");
+        }
+
+        if (typeof dbConfig.type !== "string") {
+            throw new Error("Invalid db-config.json, type must be a string");
+        }
+        return dbConfig;
+    }
+
+    static writeDBConfig(dbConfig) {
+        fs.writeFileSync(path.join(Database.dataDir, "db-config.json"), JSON.stringify(dbConfig, null, 4));
+    }
+
     /**
      * Connect to the database
      * @param {boolean} [testMode=false] Should the connection be
@@ -121,21 +141,11 @@ class Database {
      */
     static async connect(testMode = false, autoloadModels = true, noLog = false) {
         const acquireConnectionTimeout = 120 * 1000;
-
         let dbConfig;
-
         try {
-            let dbConfigString = fs.readFileSync(path.join(Database.dataDir, "db-config.json")).toString("utf-8");
-            dbConfig = JSON.parse(dbConfigString);
-
-            if (typeof dbConfig !== "object") {
-                throw new Error("Invalid db-config.json, it must be an object");
-            }
-
-            if (typeof dbConfig.type !== "string") {
-                throw new Error("Invalid db-config.json, type must be a string");
-            }
-        } catch (_) {
+            dbConfig = this.readDBConfig();
+        } catch (err) {
+            log.warn("db", err.message);
             dbConfig = {
                 type: "sqlite",
                 //type: "embedded-mariadb",
@@ -151,7 +161,7 @@ class Database {
             config = {
                 client: Dialect,
                 connection: {
-                    filename: Database.path,
+                    filename: Database.sqlitePath,
                     acquireConnectionTimeout: acquireConnectionTimeout,
                 },
                 useNullAsDefault: true,
@@ -497,15 +507,15 @@ class Database {
         if (! this.backupPath) {
             log.info("db", "Backing up the database");
             this.backupPath = this.dataDir + "kuma.db.bak" + version;
-            fs.copyFileSync(Database.path, this.backupPath);
+            fs.copyFileSync(Database.sqlitePath, this.backupPath);
 
-            const shmPath = Database.path + "-shm";
+            const shmPath = Database.sqlitePath + "-shm";
             if (fs.existsSync(shmPath)) {
                 this.backupShmPath = shmPath + ".bak" + version;
                 fs.copyFileSync(shmPath, this.backupShmPath);
             }
 
-            const walPath = Database.path + "-wal";
+            const walPath = Database.sqlitePath + "-wal";
             if (fs.existsSync(walPath)) {
                 this.backupWalPath = walPath + ".bak" + version;
                 fs.copyFileSync(walPath, this.backupWalPath);
@@ -535,13 +545,13 @@ class Database {
         if (this.backupPath) {
             log.error("db", "Patching the database failed!!! Restoring the backup");
 
-            const shmPath = Database.path + "-shm";
-            const walPath = Database.path + "-wal";
+            const shmPath = Database.sqlitePath + "-shm";
+            const walPath = Database.sqlitePath + "-wal";
 
             // Delete patch failed db
             try {
-                if (fs.existsSync(Database.path)) {
-                    fs.unlinkSync(Database.path);
+                if (fs.existsSync(Database.sqlitePath)) {
+                    fs.unlinkSync(Database.sqlitePath);
                 }
 
                 if (fs.existsSync(shmPath)) {
@@ -557,7 +567,7 @@ class Database {
             }
 
             // Restore backup
-            fs.copyFileSync(this.backupPath, Database.path);
+            fs.copyFileSync(this.backupPath, Database.sqlitePath);
 
             if (this.backupShmPath) {
                 fs.copyFileSync(this.backupShmPath, shmPath);
@@ -575,7 +585,7 @@ class Database {
     /** Get the size of the database */
     static getSize() {
         log.debug("db", "Database.getSize()");
-        let stats = fs.statSync(Database.path);
+        let stats = fs.statSync(Database.sqlitePath);
         log.debug("db", stats);
         return stats.size;
     }

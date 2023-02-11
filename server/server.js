@@ -143,6 +143,7 @@ const { Settings } = require("./settings");
 const { CacheableDnsHttpAgent } = require("./cacheable-dns-http-agent");
 const { pluginsHandler } = require("./socket-handlers/plugins-handler");
 const { EmbeddedMariaDB } = require("./embedded-mariadb");
+const { SetupDatabase } = require("./setup-database");
 
 app.use(express.json());
 
@@ -168,8 +169,20 @@ let jwtSecret = null;
 let needSetup = false;
 
 (async () => {
-    Database.init(args);
+    // Create a data directory
+    Database.initDataDir(args);
+
+    // Check if is chosen a database type
+    let setupDatabase = new SetupDatabase(args, server);
+    if (setupDatabase.isNeedSetup()) {
+        // Hold here and start a special setup page until user choose a database type
+        await setupDatabase.start(hostname, port);
+    }
+
+    // Connect to database
     await initDatabase(testMode);
+
+    // Database should be ready now
     await server.initAfterDatabaseReady();
     server.loadPlugins();
     server.entryPage = await Settings.get("entryPage");
@@ -334,7 +347,7 @@ let needSetup = false;
             }
 
             // Login Rate Limit
-            if (! await loginRateLimiter.pass(callback)) {
+            if (!await loginRateLimiter.pass(callback)) {
                 log.info("auth", `Too many failed requests for user ${data.username}. IP=${clientIP}`);
                 return;
             }
@@ -407,7 +420,7 @@ let needSetup = false;
 
         socket.on("logout", async (callback) => {
             // Rate Limit
-            if (! await loginRateLimiter.pass(callback)) {
+            if (!await loginRateLimiter.pass(callback)) {
                 return;
             }
 
@@ -421,7 +434,7 @@ let needSetup = false;
 
         socket.on("prepare2FA", async (currentPassword, callback) => {
             try {
-                if (! await twoFaRateLimiter.pass(callback)) {
+                if (!await twoFaRateLimiter.pass(callback)) {
                     return;
                 }
 
@@ -470,7 +483,7 @@ let needSetup = false;
             const clientIP = await server.getClientIP(socket);
 
             try {
-                if (! await twoFaRateLimiter.pass(callback)) {
+                if (!await twoFaRateLimiter.pass(callback)) {
                     return;
                 }
 
@@ -502,7 +515,7 @@ let needSetup = false;
             const clientIP = await server.getClientIP(socket);
 
             try {
-                if (! await twoFaRateLimiter.pass(callback)) {
+                if (!await twoFaRateLimiter.pass(callback)) {
                     return;
                 }
 
@@ -809,9 +822,10 @@ let needSetup = false;
                 }
 
                 let list = await R.getAll(`
-                    SELECT * FROM heartbeat
-                    WHERE monitor_id = ? AND
-                    time > DATETIME('now', '-' || ? || ' hours')
+                    SELECT *
+                    FROM heartbeat
+                    WHERE monitor_id = ?
+                      AND time > DATETIME('now', '-' || ? || ' hours')
                     ORDER BY time ASC
                 `, [
                     monitorID,
@@ -1068,7 +1082,7 @@ let needSetup = false;
             try {
                 checkLogin(socket);
 
-                if (! password.newPassword) {
+                if (!password.newPassword) {
                     throw new Error("Invalid new password");
                 }
 
@@ -1375,7 +1389,7 @@ let needSetup = false;
                                     ]);
 
                                     let tagId;
-                                    if (! tag) {
+                                    if (!tag) {
                                         // -> If it doesn't exist, create new tag from backup file
                                         let beanTag = R.dispense("tag");
                                         beanTag.name = oldTag.name;
@@ -1644,9 +1658,9 @@ async function afterLogin(socket, user) {
  * @returns {Promise<void>}
  */
 async function initDatabase(testMode = false) {
-    if (! fs.existsSync(Database.path)) {
+    if (! fs.existsSync(Database.sqlitePath)) {
         log.info("server", "Copying Database");
-        fs.copyFileSync(Database.templatePath, Database.path);
+        fs.copyFileSync(Database.templatePath, Database.sqlitePath);
     }
 
     log.info("server", "Connecting to the Database");

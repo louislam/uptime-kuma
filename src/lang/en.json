@@ -1,5 +1,10 @@
 {
     "languageName": "English",
+    "setupDatabaseChooseDatabase": "Which database do you want to use?",
+    "setupDatabaseEmbeddedMariaDB": "You don't need to set anything. This docker image have embedded and configured a MariaDB for you automatically. Uptime Kuma will connect to this database via unix socket.",
+    "setupDatabaseMariaDB": "Connect to an external MariaDB database. You need to set the database connection information.",
+    "setupDatabaseSQLite": "A simple database file. It is recommended for small scale deployment. Before 2.0.0, Uptime Kuma used SQLite by default.",
+    "dbName": "Database Name",
     "Settings": "Settings",
     "Dashboard": "Dashboard",
     "Help": "Help",

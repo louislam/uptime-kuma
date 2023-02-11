@@ -235,13 +235,13 @@ describe("The function filterAndJoin", () => {
 
 describe("Test uptimeKumaServer.getClientIP()", () => {
     it("should able to get a correct client IP", async () => {
-        Database.init({
+        Database.initDataDir({
             "data-dir": "./data/test"
         });
 
-        if (! fs.existsSync(Database.path)) {
+        if (! fs.existsSync(Database.sqlitePath)) {
             log.info("server", "Copying Database");
-            fs.copyFileSync(Database.templatePath, Database.path);
+            fs.copyFileSync(Database.templatePath, Database.sqlitePath);
         }
 
         await Database.connect(true);
