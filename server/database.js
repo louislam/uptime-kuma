@@ -160,6 +160,8 @@ class Database {
 
         let config = {};
 
+        log.info("db", `Database Type: ${dbConfig.type}`);
+
         if (dbConfig.type === "sqlite") {
 
             if (! fs.existsSync(Database.sqlitePath)) {
@@ -273,7 +275,7 @@ class Database {
 
         let hasTable = await R.hasTable("docker_host");
         if (!hasTable) {
-            const { createTables } = require("../db/kuma");
+            const { createTables } = require("../db/knex_init_db");
             await createTables();
         } else {
             log.debug("db", "MariaDB database already exists");

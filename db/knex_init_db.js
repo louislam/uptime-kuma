@@ -37,7 +37,7 @@ async function createTables() {
         table.integer("user_id").unsigned().notNullable();
         table.string("protocol", 10).notNullable();
         table.string("host", 255).notNullable();
-        table.smallint("port").notNullable();           // Maybe a issue with MariaDB, need migration to int
+        table.smallint("port").notNullable();           // TODO: Maybe a issue with MariaDB, need migration to int
         table.boolean("auth").notNullable();
         table.string("username", 255).nullable();
         table.string("password", 255).nullable();
@@ -183,15 +183,153 @@ async function createTables() {
         table.index("user_id", "maintenance_user_id");
     });
 
+    // status_page
+    await knex.schema.createTable("status_page", (table) => {
+        table.increments("id");
+        table.string("slug", 255).notNullable().unique().collate("utf8_general_ci");
+        table.string("title", 255).notNullable();
+        table.text("description");
+        table.string("icon", 255).notNullable();
+        table.string("theme", 30).notNullable();
+        table.boolean("published").notNullable().defaultTo(true);
+        table.boolean("search_engine_index").notNullable().defaultTo(true);
+        table.boolean("show_tags").notNullable().defaultTo(false);
+        table.string("password");
+        table.datetime("created_date").notNullable().defaultTo(knex.fn.now());
+        table.datetime("modified_date").notNullable().defaultTo(knex.fn.now());
+        table.text("footer_text");
+        table.text("custom_css");
+        table.boolean("show_powered_by").notNullable().defaultTo(true);
+        table.string("google_analytics_tag_id");
+    });
+
     // maintenance_status_page
+    await knex.schema.createTable("maintenance_status_page", (table) => {
+        table.increments("id");
+
+        table.integer("status_page_id").unsigned().notNullable()
+            .references("id").inTable("status_page")
+            .onDelete("CASCADE")
+            .onUpdate("CASCADE");
+
+        table.integer("maintenance_id").unsigned().notNullable()
+            .references("id").inTable("maintenance")
+            .onDelete("CASCADE")
+            .onUpdate("CASCADE");
+    });
+
     // maintenance_timeslot
+    await knex.schema.createTable("maintenance_timeslot", (table) => {
+        table.increments("id");
+        table.integer("maintenance_id").unsigned().notNullable()
+            .references("id").inTable("maintenance")
+            .onDelete("CASCADE")
+            .onUpdate("CASCADE");
+        table.datetime("start_date").notNullable();
+        table.datetime("end_date");
+        table.boolean("generated_next").defaultTo(false);
+
+        table.index("maintenance_id");
+        table.index([ "maintenance_id", "start_date", "end_date" ], "active_timeslot_index");
+        table.index("generated_next", "generated_next_index");
+    });
+
     // monitor_group
+    await knex.schema.createTable("monitor_group", (table) => {
+        table.increments("id");
+        table.integer("monitor_id").unsigned().notNullable()
+            .references("id").inTable("monitor")
+            .onDelete("CASCADE")
+            .onUpdate("CASCADE");
+        table.integer("group_id").unsigned().notNullable()
+            .references("id").inTable("group")
+            .onDelete("CASCADE")
+            .onUpdate("CASCADE");
+        table.integer("weight").notNullable().defaultTo(1000);
+        table.boolean("send_url").notNullable().defaultTo(false);
+
+        table.index([ "monitor_id", "group_id" ], "fk");
+    });
     // monitor_maintenance
-    // monitor_notification
-    // monitor_tag
-    // monitor_tls_info
+    await knex.schema.createTable("monitor_maintenance", (table) => {
+        table.increments("id");
+        table.integer("monitor_id").unsigned().notNullable()
+            .references("id").inTable("monitor")
+            .onDelete("CASCADE")
+            .onUpdate("CASCADE");
+        table.integer("maintenance_id").unsigned().notNullable()
+            .references("id").inTable("maintenance")
+            .onDelete("CASCADE")
+            .onUpdate("CASCADE");
+
+        table.index("maintenance_id", "maintenance_id_index2");
+        table.index("monitor_id", "monitor_id_index");
+    });
+
     // notification
+    await knex.schema.createTable("notification", (table) => {
+        table.increments("id");
+        table.string("name", 255);
+        table.string("config", 255);        // TODO: should use TEXT!
+        table.boolean("active").notNullable().defaultTo(true);
+        table.integer("user_id").unsigned();
+        table.boolean("is_default").notNullable().defaultTo(false);
+    });
+
+    // monitor_notification
+    await knex.schema.createTable("monitor_notification", (table) => {
+        table.increments("id").unsigned();      // TODO: no auto increment????
+        table.integer("monitor_id").unsigned().notNullable()
+            .references("id").inTable("monitor")
+            .onDelete("CASCADE")
+            .onUpdate("CASCADE");
+        table.integer("notification_id").unsigned().notNullable()
+            .references("id").inTable("notification")
+            .onDelete("CASCADE")
+            .onUpdate("CASCADE");
+
+        table.index([ "monitor_id", "notification_id" ], "monitor_notification_index");
+    });
+
+    // tag
+    await knex.schema.createTable("tag", (table) => {
+        table.increments("id");
+        table.string("name", 255).notNullable();
+        table.string("color", 255).notNullable();
+        table.datetime("created_date").notNullable().defaultTo(knex.fn.now());
+    });
+
+    // monitor_tag
+    await knex.schema.createTable("monitor_tag", (table) => {
+        table.increments("id");
+        table.integer("monitor_id").unsigned().notNullable()
+            .references("id").inTable("monitor")
+            .onDelete("CASCADE")
+            .onUpdate("CASCADE");
+        table.integer("tag_id").unsigned().notNullable()
+            .references("id").inTable("tag")
+            .onDelete("CASCADE")
+            .onUpdate("CASCADE");
+        table.text("value");
+    });
+
+    // monitor_tls_info
+    await knex.schema.createTable("monitor_tls_info", (table) => {
+        table.increments("id");
+        table.integer("monitor_id").unsigned().notNullable();         //TODO: no fk ?
+        table.text("info_json");
+    });
+
     // notification_sent_history
+    await knex.schema.createTable("notification_sent_history", (table) => {
+        table.increments("id");
+        table.string("type", 50).notNullable();
+        table.integer("monitor_id").unsigned().notNullable();
+        table.integer("days").notNullable();
+        table.unique([ "type", "monitor_id", "days" ]);
+        table.index([ "type", "monitor_id", "days" ], "good_index");
+    });
+
     // setting
     await knex.schema.createTable("setting", (table) => {
         table.increments("id");
@@ -200,10 +338,15 @@ async function createTables() {
         table.string("type", 20);
     });
 
-    // status_page
     // status_page_cname
-    // tag
-    // user
+    await knex.schema.createTable("status_page_cname", (table) => {
+        table.increments("id");
+        table.integer("status_page_id").unsigned()
+            .references("id").inTable("status_page")
+            .onDelete("CASCADE")
+            .onUpdate("CASCADE");
+        table.string("domain").notNullable().unique().collate("utf8_general_ci");
+    });
 
     log.info("mariadb", "Created basic tables for MariaDB");
 }
