@@ -1,16 +1,18 @@
 const { R } = require("redbean-node");
-const { log, sleep } = require("../src/util");
+const { log } = require("../src/util");
 
 /**
- * DO NOT ADD ANYTHING HERE!
- * IF YOU NEED TO ADD SOMETHING, ADD IT TO ./db/knex_migrations
+ * ⚠️⚠️⚠️⚠️⚠️⚠️ DO NOT ADD ANYTHING HERE!
+ * IF YOU NEED TO ADD FIELDS, ADD IT TO ./db/knex_migrations
+ * See ./db/knex_migrations/README.md for more information
  * @returns {Promise<void>}
  */
 async function createTables() {
     log.info("mariadb", "Creating basic tables for MariaDB");
     const knex = R.knex;
 
-    // Up to `patch-add-google-analytics-status-page-tag.sql`
+    // Up to `patch-add-google-analytics-status-page-tag.sql` for now
+    // TODO: Should check later if it is really the final patch sql file.
 
     // docker_host
     await knex.schema.createTable("docker_host", (table) => {
