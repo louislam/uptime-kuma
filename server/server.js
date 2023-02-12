@@ -714,6 +714,11 @@ let needSetup = false;
                 bean.game = monitor.game;
                 bean.maxretries = monitor.maxretries;
                 bean.port = parseInt(monitor.port);
+
+                if (isNaN(bean.port)) {
+                    bean.port = null;
+                }
+
                 bean.keyword = monitor.keyword;
                 bean.ignoreTls = monitor.ignoreTls;
                 bean.expiryNotification = monitor.expiryNotification;
