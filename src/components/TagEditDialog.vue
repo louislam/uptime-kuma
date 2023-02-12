@@ -160,7 +160,7 @@ export default {
     watch: {
         // Set color option to "Custom" when a unknown color is entered
         "tag.color"(to, from) {
-            if (colorOptions(this).find(x => x.color === to) == null) {
+            if (to !== "" && colorOptions(this).find(x => x.color === to) == null) {
                 this.selectedColor.name = this.$t("Custom");
                 this.selectedColor.color = to;
             }
@@ -198,6 +198,21 @@ export default {
         },
 
         /**
+         * Reset the editTag form
+         */
+        reset() {
+            this.selectedColor = null;
+            this.tag = {
+                id: null,
+                name: "",
+                color: "",
+            };
+            this.monitors = [];
+            this.removingMonitor = [];
+            this.addingMonitor = [];
+        },
+
+        /**
          * Load tag information for display in the edit dialog
          * @param {Object} tag tag object to edit
          * @returns {void}
@@ -227,6 +242,22 @@ export default {
         async submit() {
             this.processing = true;
             let editResult = true;
+
+            if (this.tag.id == null) {
+                await this.addTagAsync(this.tag).then((res) => {
+                    if (!res.ok) {
+                        this.$root.toastRes(res.msg);
+                        editResult = false;
+                    } else {
+                        this.tag.id = res.tag.id;
+                        this.updated();
+                    }
+                });
+            }
+
+            if (!editResult) {
+                return;
+            }
 
             for (let addId of this.addingMonitor) {
                 await this.addMonitorTagAsync(this.tag.id, addId, "").then((res) => {
@@ -263,9 +294,9 @@ export default {
          * Delete the editing tag from server
          * @returns {void}
          */
-        deleteTag() {
+        async deleteTag() {
             this.processing = true;
-            this.$root.getSocket().emit("deleteTag", this.tag.id, (res) => {
+            await this.deleteTagAsync(this.tag.id).then((res) => {
                 this.$root.toastRes(res);
                 this.processing = false;
 
@@ -307,6 +338,28 @@ export default {
          */
         monitorURL(id) {
             return getMonitorRelativeURL(id);
+        },
+
+        /**
+         * Add a tag asynchronously
+         * @param {Object} newTag Object representing new tag to add
+         * @returns {Promise<void>}
+         */
+        addTagAsync(newTag) {
+            return new Promise((resolve) => {
+                this.$root.getSocket().emit("addTag", newTag, resolve);
+            });
+        },
+
+        /**
+         * Delete a tag asynchronously
+         * @param {number} tagId ID of tag to delete
+         * @returns {Promise<void>}
+         */
+        deleteTagAsync(tagId) {
+            return new Promise((resolve) => {
+                this.$root.getSocket().emit("deleteTag", tagId, resolve);
+            });
         },
 
         /**

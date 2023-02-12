@@ -1,5 +1,9 @@
 <template>
-    <div>
+    <div class="my-4">
+        <div class="mx-4 pt-1 my-3">
+            <button class="btn btn-primary" @click.stop="addTag"><font-awesome-icon icon="plus" /> {{ $t("Add New Tag") }}</button>
+        </div>
+
         <div class="tags-list my-3">
             <div v-for="(tag, index) in tagsList" :key="tag.id" class="d-flex align-items-center mx-4 py-1 tags-list-row" :disabled="processing" @click="editTag(index)">
                 <div class="col-5 ps-1">
@@ -101,6 +105,15 @@ export default {
         },
 
         /**
+         * Show dialog for adding a new tag
+         * @returns {void}
+         */
+        addTag() {
+            this.$refs.tagEditDialog.reset();
+            this.$refs.tagEditDialog.show();
+        },
+
+        /**
          * Show dialog for editing a tag
          * @param {number} index index of the tag to edit in the local tagsList
          * @returns {void}
@@ -149,10 +162,10 @@ export default {
 
 .tags-list .tags-list-row {
     cursor: pointer;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+    border-top: 1px solid rgba(0, 0, 0, 0.125);
 
     .dark & {
-        border-bottom: 1px solid $dark-border-color;
+        border-top: 1px solid $dark-border-color;
     }
 
     &:hover {
@@ -162,10 +175,6 @@ export default {
     .dark &:hover {
         background-color: $dark-bg2;
     }
-}
-
-.tags-list .tags-list-row:last-child {
-    border: none;
 }
 
 </style>
