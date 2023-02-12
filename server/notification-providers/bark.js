@@ -64,7 +64,7 @@ class Bark extends NotificationProvider {
      * @returns {string}
      */
     async postNotification(notification, title, subtitle, endpoint) {
-        let result = await axios.post(endpoint, {
+        let result = await axios.post(`${endpoint}/push`, {
             title,
             body: subtitle,
             icon: barkNotificationAvatar,
