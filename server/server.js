@@ -831,15 +831,17 @@ let needSetup = false;
                     throw new Error("Invalid period.");
                 }
 
+                const sqlHourOffset = Database.sqlHourOffset();
+
                 let list = await R.getAll(`
                     SELECT *
                     FROM heartbeat
                     WHERE monitor_id = ?
-                      AND time > DATETIME('now', '-' || ? || ' hours')
+                      AND time > ${sqlHourOffset}
                     ORDER BY time ASC
                 `, [
                     monitorID,
-                    period,
+                    -period,
                 ]);
 
                 callback({

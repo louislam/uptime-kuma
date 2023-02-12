@@ -31,6 +31,7 @@ async function createTables() {
         table.boolean("public").notNullable().defaultTo(false);
         table.boolean("active").notNullable().defaultTo(true);
         table.integer("weight").notNullable().defaultTo(1000);
+        table.integer("status_page_id").unsigned();
     });
 
     // proxy

@@ -9,6 +9,7 @@ const StatusPage = require("../model/status_page");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { makeBadge } = require("badge-maker");
 const { badgeConstants } = require("../config");
+const Database = require("../database");
 
 let router = express.Router();
 
@@ -268,10 +269,12 @@ router.get("/api/badge/:id/ping/:duration?", cache("5 minutes"), async (request,
         const requestedDuration = Math.min(request.params.duration ? parseInt(request.params.duration, 10) : 24, 720);
         const overrideValue = value && parseFloat(value);
 
+        const sqlHourOffset = Database.sqlHourOffset();
+
         const publicAvgPing = parseInt(await R.getCell(`
                 SELECT AVG(ping) FROM monitor_group, \`group\`, heartbeat
                 WHERE monitor_group.group_id = \`group\`.id
-                AND heartbeat.time > DATETIME('now', ? || ' hours')
+                AND heartbeat.time > ${sqlHourOffset}
                 AND heartbeat.ping IS NOT NULL
                 AND public = 1
                 AND heartbeat.monitor_id = ?
@@ -334,10 +337,12 @@ router.get("/api/badge/:id/avg-response/:duration?", cache("5 minutes"), async (
         );
         const overrideValue = value && parseFloat(value);
 
+        const sqlHourOffset = Database.sqlHourOffset();
+
         const publicAvgPing = parseInt(await R.getCell(`
             SELECT AVG(ping) FROM monitor_group, \`group\`, heartbeat
             WHERE monitor_group.group_id = \`group\`.id
-            AND heartbeat.time > DATETIME('now', ? || ' hours')
+            AND heartbeat.time > ${sqlHourOffset}
             AND heartbeat.ping IS NOT NULL
             AND public = 1
             AND heartbeat.monitor_id = ?

@@ -27,6 +27,9 @@ const {
     },
 } = require("node-radius-utils");
 const dayjs = require("dayjs");
+const readline = require("readline");
+const rl = readline.createInterface({ input: process.stdin,
+    output: process.stdout });
 
 const isWindows = process.platform === /^win/.test(process.platform);
 
@@ -859,3 +862,5 @@ module.exports.grpcQuery = async (options) => {
 
     });
 };
+
+module.exports.prompt = (query) => new Promise((resolve) => rl.question(query, resolve));

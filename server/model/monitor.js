@@ -19,6 +19,7 @@ const { DockerHost } = require("../docker");
 const Maintenance = require("./maintenance");
 const { UptimeCacheList } = require("../uptime-cache-list");
 const Gamedig = require("gamedig");
+const Database = require("../database");
 
 /**
  * status:
@@ -935,11 +936,12 @@ class Monitor extends BeanModel {
      */
     static async sendAvgPing(duration, io, monitorID, userID) {
         const timeLogger = new TimeLogger();
+        const sqlHourOffset = Database.sqlHourOffset();
 
         let avgPing = parseInt(await R.getCell(`
             SELECT AVG(ping)
             FROM heartbeat
-            WHERE time > DATETIME('now', ? || ' hours')
+            WHERE time > ${sqlHourOffset}
             AND ping IS NOT NULL
             AND monitor_id = ? `, [
             -duration,

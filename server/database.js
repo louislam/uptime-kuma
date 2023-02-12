@@ -683,6 +683,15 @@ class Database {
     static async shrink() {
         await R.exec("VACUUM");
     }
+
+    static sqlHourOffset() {
+        if (this.dbConfig.client === "sqlite3") {
+            return "DATETIME('now', ? || ' hours')";
+        } else {
+            return "DATE_ADD(NOW(), INTERVAL ? HOUR)";
+        }
+    }
+
 }
 
 module.exports = Database;
