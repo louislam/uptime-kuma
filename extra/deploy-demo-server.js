@@ -33,6 +33,11 @@ const prompt = (query) => new Promise((resolve) => rl.question(query, resolve));
         });
         console.log(result.stdout + result.stderr);
 
+        result = await ssh.execCommand("npm run download-dist", {
+            cwd,
+        });
+        console.log(result.stdout + result.stderr);
+
         result = await ssh.execCommand("npm install --production", {
             cwd,
         });
