@@ -23,7 +23,7 @@
             </div>
         </div>
 
-        <TagEditDialog ref="tagEditDialog" :updated="tagsUpdated" />
+        <TagEditDialog ref="tagEditDialog" :updated="tagsUpdated" :existing-tags="tagsList" />
         <Confirm ref="confirmDelete" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="deleteTag">
             {{ $t("confirmDeleteTagMsg") }}
         </Confirm>

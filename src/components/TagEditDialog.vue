@@ -12,7 +12,17 @@
                     <div class="modal-body">
                         <div class="mb-3">
                             <label for="tag-name" class="form-label">{{ $t("Name") }}</label>
-                            <input id="tag-name" v-model="tag.name" type="text" class="form-control" required>
+                            <input
+                                id="tag-name"
+                                v-model="tag.name"
+                                type="text"
+                                class="form-control"
+                                :class="{'is-invalid': nameInvalid}"
+                                required
+                            >
+                            <div class="invalid-feedback">
+                                {{ $t("Tag with this name already exist.") }}
+                            </div>
                         </div>
 
                         <div class="mb-3">
@@ -112,7 +122,11 @@ export default {
         updated: {
             type: Function,
             default: () => {},
-        }
+        },
+        existingTags: {
+            type: Array,
+            default: () => [],
+        },
     },
     data() {
         return {
@@ -132,6 +146,7 @@ export default {
             removingMonitor: [],
             addingMonitor: [],
             selectedAddMonitor: null,
+            nameInvalid: false,
         };
     },
 
@@ -163,6 +178,11 @@ export default {
             if (to !== "" && colorOptions(this).find(x => x.color === to) == null) {
                 this.selectedColor.name = this.$t("Custom");
                 this.selectedColor.color = to;
+            }
+        },
+        "tag.name"(to, from) {
+            if (to != null) {
+                this.validate();
             }
         },
         selectedColor(to, from) {
@@ -213,6 +233,20 @@ export default {
         },
 
         /**
+         * Check for existing tags of the same name, set invalid input
+         * @returns {boolean} True if editing tag is valid
+         */
+        validate() {
+            this.nameInvalid = false;
+            const sameName = this.existingTags.find((existingTag) => existingTag.name === this.tag.name);
+            if (sameName != null && sameName.id !== this.tag.id) {
+                this.nameInvalid = true;
+                return false;
+            }
+            return true;
+        },
+
+        /**
          * Load tag information for display in the edit dialog
          * @param {Object} tag tag object to edit
          * @returns {void}
@@ -242,6 +276,11 @@ export default {
         async submit() {
             this.processing = true;
             let editResult = true;
+
+            if (!this.validate()) {
+                this.processing = false;
+                return;
+            }
 
             if (this.tag.id == null) {
                 await this.addTagAsync(this.tag).then((res) => {
