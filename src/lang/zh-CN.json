@@ -681,7 +681,7 @@
     "Passive Monitor Type": "被动监控类型",
     "Specific Monitor Type": "特殊监控类型",
     "dataRetentionTimeError": "保留期必须为0或更大",
-    "Monitor": "监控项 | 监控项",
+    "Monitor": "监控项",
     "Custom": "自定义",
     "promosmsAllowLongSMS": "允许长的短信",
     "confirmDeleteTagMsg": "你确定你要删除这个标签？与此标签关联的监视器不会被删除。",
