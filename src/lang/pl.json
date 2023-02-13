@@ -508,7 +508,7 @@
     "Bark Sound": "Dźwięk Bark",
     "HTTP Headers": "Nagłówki HTTP",
     "Trust Proxy": "Ufaj proxy",
-    "HomeAssistant": "Home Assistant",
+    "HomeAssistant": "Asystent domowy",
     "RadiusSecret": "Sekretny klucz Radius",
     "RadiusSecretDescription": "Współdzielony sekretny klucz pomiędzy klientem a serwerem",
     "RadiusCalledStationId": "Id stacji wywoływanej",
@@ -692,5 +692,9 @@
     "uninstall": "Odinstaluj",
     "confirmUninstallPlugin": "Czy na pewno chcesz odinstalować tę wtyczkę?",
     "Custom Monitor Type": "Własny typ monitora",
-    "markdownSupported": "Obsługiwana składnia Markdown"
+    "markdownSupported": "Obsługiwana składnia Markdown",
+    "Google Analytics ID": "Google Analytics ID",
+    "Edit Tag": "Edytuj Tag",
+    "Server Address": "Adres Serwera",
+    "Learn More": "Dowiedz się więcej"
 }
