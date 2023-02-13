@@ -68,6 +68,7 @@
                                         </option>
                                         <option value="mp-health">
                                             MicroProfile Health Check
+                                        </option>
                                         <option value="redis">
                                             Redis
                                         </option>
