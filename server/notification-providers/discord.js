@@ -91,7 +91,7 @@ class Discord extends NotificationProvider {
                             },
                             {
                                 name: monitorJSON["type"] === "push" ? "Service Type" : "Service URL",
-                                value: monitorJSON["type"] === "push" ? "Heartbeat" : address.startsWith("http") ? "[Visit Service](" + address + ")" : address,
+                                value: monitorJSON["type"] === "push" ? "Heartbeat" : address,
                             },
                             {
                                 name: "Time (UTC)",

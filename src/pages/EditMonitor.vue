@@ -45,6 +45,9 @@
                                         <option value="steam">
                                             {{ $t("Steam Game Server") }}
                                         </option>
+                                        <option value="gamedig">
+                                            GameDig
+                                        </option>
                                         <option value="mqtt">
                                             MQTT
                                         </option>
@@ -57,13 +60,28 @@
                                         <option value="mysql">
                                             MySQL/MariaDB
                                         </option>
+                                        <option value="mongodb">
+                                            MongoDB
+                                        </option>
                                         <option value="radius">
                                             Radius
                                         </option>
                                         <option value="mp-health">
                                             MicroProfile Health Check
+                                        <option value="redis">
+                                            Redis
                                         </option>
                                     </optgroup>
+
+                                    <!--
+                                    Hidden for now: Reason refer to Setting.vue
+                                    <optgroup :label="$t('Custom Monitor Type')">
+                                        <option value="browser">
+                                            (Beta) HTTP(s) - Browser Engine (Chrome/Firefox)
+                                        </option>
+                                    </optgroup>
+                                </select>
+                                -->
                                 </select>
                             </div>
 
@@ -74,7 +92,7 @@
                             </div>
 
                             <!-- URL -->
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'mp-health' " class="my-3">
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'browser' " || monitor.type === 'mp-health' " class="my-3">
                                 <label for="url" class="form-label">{{ $t("URL") }}</label>
                                 <input id="url" v-model="monitor.url" type="url" class="form-control" pattern="https?://.+" required>
                             </div>
@@ -96,7 +114,7 @@
                             </div>
 
                             <!-- Keyword -->
-                            <div v-if="monitor.type === 'keyword' || monitor.type === 'grpc-keyword' " class="my-3">
+                            <div v-if="monitor.type === 'keyword' || monitor.type === 'grpc-keyword'" class="my-3">
                                 <label for="keyword" class="form-label">{{ $t("Keyword") }}</label>
                                 <input id="keyword" v-model="monitor.keyword" type="text" class="form-control" required>
                                 <div class="form-text">
@@ -104,16 +122,27 @@
                                 </div>
                             </div>
 
+                            <!-- Game -->
+                            <!-- GameDig only -->
+                            <div v-if="monitor.type === 'gamedig'" class="my-3">
+                                <label for="game" class="form-label"> {{ $t("Game") }} </label>
+                                <select id="game" v-model="monitor.game" class="form-select" required>
+                                    <option v-for="game in gameList" :key="game.keys[0]" :value="game.keys[0]">
+                                        {{ game.pretty }}
+                                    </option>
+                                </select>
+                            </div>
+
                             <!-- Hostname -->
                             <!-- TCP Port / Ping / DNS / Steam / MQTT / Radius only -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'mqtt' || monitor.type === 'radius'" class="my-3">
+                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'gamedig' ||monitor.type === 'mqtt' || monitor.type === 'radius'" class="my-3">
                                 <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>
-                                <input id="hostname" v-model="monitor.hostname" type="text" class="form-control" :pattern="`${ipRegexPattern}|${hostnameRegexPattern}`" required>
+                                <input id="hostname" v-model="monitor.hostname" type="text" class="form-control" :pattern="`${monitor.type === 'mqtt' ? mqttIpOrHostnameRegexPattern : ipOrHostnameRegexPattern}`" required>
                             </div>
 
                             <!-- Port -->
                             <!-- For TCP Port / Steam / MQTT / Radius Type -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'steam' || monitor.type === 'mqtt' || monitor.type === 'radius'" class="my-3">
+                            <div v-if="monitor.type === 'port' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius'" class="my-3">
                                 <label for="port" class="form-label">{{ $t("Port") }}</label>
                                 <input id="port" v-model="monitor.port" type="number" class="form-control" required min="0" max="65535" step="1">
                             </div>
@@ -270,6 +299,24 @@
                                     <textarea id="sqlQuery" v-model="monitor.databaseQuery" class="form-control" placeholder="Example: select getdate()"></textarea>
                                 </div>
                             </template>
+                            <!-- Redis -->
+                            <template v-if="monitor.type === 'redis'">
+                                <div class="my-3">
+                                    <label for="redisConnectionString" class="form-label">{{ $t("Connection String") }}</label>
+                                    <input id="redisConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="redis://user:password@host:port">
+                                </div>
+                            </template>
+
+                            <!-- MongoDB -->
+                            <template v-if="monitor.type === 'mongodb'">
+                                <div class="my-3">
+                                    <label for="sqlConnectionString" class="form-label">{{ $t("Connection String") }}</label>
+
+                                    <template v-if="monitor.type === 'mongodb'">
+                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="mongodb://username:password@host:port/database">
+                                    </template>
+                                </div>
+                            </template>
 
                             <!-- Interval -->
                             <div class="my-3">
@@ -330,6 +377,12 @@
                                 </div>
                             </div>
 
+                            <!-- Ping packet size -->
+                            <div v-if="monitor.type === 'ping'" class="my-3">
+                                <label for="packet-size" class="form-label">{{ $t("Packet Size") }}</label>
+                                <input id="packet-size" v-model="monitor.packetSize" type="number" class="form-control" required min="1" max="65500" step="1">
+                            </div>
+
                             <!-- HTTP / Keyword only -->
                             <template v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'grpc-keyword' || monitor.type === 'mp-health' ">
                                 <div class="my-3">
@@ -365,10 +418,6 @@
 
                             <div class="my-3">
                                 <tags-manager ref="tagsManager" :pre-selected-tags="monitor.tags"></tags-manager>
-                            </div>
-
-                            <div class="mt-5 mb-1">
-                                <button id="monitor-submit-btn" class="btn btn-primary" type="submit" :disabled="processing">{{ $t("Save") }}</button>
                             </div>
                         </div>
 
@@ -559,6 +608,10 @@
                                 </template>
                             </template>
                         </div>
+
+                        <div class="col-md-12 mt-5 mb-1">
+                            <button id="monitor-submit-btn" class="btn btn-primary" type="submit" :disabled="processing">{{ $t("Save") }}</button>
+                        </div>
                     </div>
                 </div>
             </form>
@@ -579,6 +632,7 @@ import DockerHostDialog from "../components/DockerHostDialog.vue";
 import ProxyDialog from "../components/ProxyDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
 import { genSecret, isDev, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND } from "../util.ts";
+import { hostNameRegexPattern } from "../util-frontend";
 
 const toast = useToast();
 
@@ -603,11 +657,9 @@ export default {
             },
             acceptedStatusCodeOptions: [],
             dnsresolvetypeOptions: [],
-
-            // Source: https://digitalfortress.tech/tips/top-15-commonly-used-regex/
-            ipRegexPattern: "((^\\s*((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\\s*$)|(^\\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:)))(%.+)?\\s*$))",
-            // Source: https://stackoverflow.com/questions/106179/regular-expression-to-match-dns-hostname-or-ip-address
-            hostnameRegexPattern: "^(([a-zA-Z0-9_]|[a-zA-Z0-9_][a-zA-Z0-9\\-_]*[a-zA-Z0-9_])\\.)*([A-Za-z0-9_]|[A-Za-z0-9_][A-Za-z0-9\\-_]*[A-Za-z0-9_])$"
+            ipOrHostnameRegexPattern: hostNameRegexPattern(),
+            mqttIpOrHostnameRegexPattern: hostNameRegexPattern(true),
+            gameList: null,
         };
     },
 
@@ -684,7 +736,18 @@ message HealthCheckResponse {
 {
     "HeaderName": "HeaderValue"
 }` ]);
-        }
+        },
+
+        currentGameObject() {
+            if (this.gameList) {
+                for (let game of this.gameList) {
+                    if (game.keys[0] === this.monitor.game) {
+                        return game;
+                    }
+                }
+            }
+            return null;
+        },
 
     },
     watch: {
@@ -728,6 +791,24 @@ message HealthCheckResponse {
                     this.monitor.port = undefined;
                 }
             }
+
+            // Get the game list from server
+            if (this.monitor.type === "gamedig") {
+                this.$root.getSocket().emit("getGameList", (res) => {
+                    if (res.ok) {
+                        this.gameList = res.gameList;
+                    } else {
+                        toast.error(res.msg);
+                    }
+                });
+            }
+        },
+
+        currentGameObject(newGameObject, previousGameObject) {
+            if (!this.monitor.port || (previousGameObject && previousGameObject.options.port === this.monitor.port)) {
+                this.monitor.port = newGameObject.options.port;
+            }
+            this.monitor.game = newGameObject.keys[0];
         }
 
     },
@@ -779,6 +860,7 @@ message HealthCheckResponse {
                     notificationIDList: {},
                     ignoreTls: false,
                     upsideDown: false,
+                    packetSize: 56,
                     expiryNotification: false,
                     maxredirects: 10,
                     accepted_statuscodes: [ "200-299" ],
@@ -869,6 +951,14 @@ message HealthCheckResponse {
                 this.monitor.headers = JSON.stringify(JSON.parse(this.monitor.headers), null, 4);
             }
 
+            if (this.monitor.hostname) {
+                this.monitor.hostname = this.monitor.hostname.trim();
+            }
+
+            if (this.monitor.url) {
+                this.monitor.url = this.monitor.url.trim();
+            }
+
             if (this.isAdd) {
                 this.$root.add(this.monitor, async (res) => {
 
@@ -918,7 +1008,7 @@ message HealthCheckResponse {
         // Enable it if the Docker Host is added in EditMonitor.vue
         addedDockerHost(id) {
             this.monitor.docker_host = id;
-        }
+        },
     },
 };
 </script>
