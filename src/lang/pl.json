@@ -208,7 +208,7 @@
     "smtpBCC": "UDW",
     "discord": "Discord",
     "Discord Webhook URL": "URL webhook Discorda",
-    "wayToGetDiscordURL": "Możesz go uzyskać, przechodząc do Ustawienia serwera -> Integracje -> Tworzenie webhooka",
+    "wayToGetDiscordURL": "Możesz go uzyskać, przechodząc do Ustawienia serwera -> Integracje -> Webhooki -> Tworzenie webhooka",
     "Bot Display Name": "Wyświetlana nazwa bota",
     "Prefix Custom Message": "Własny początek wiadomości",
     "Hello @everyone is...": "Hej {'@'}everyone…",
@@ -686,9 +686,11 @@
     "Packet Size": "Rozmiar pakietu",
     "uninstalling": "Odinstalowywanie",
     "loadingError": "Nie można pobrać danych, proszę spróbować ponownie później.",
-    "plugin": "Wtyczka | Wtyczki",
+    "plugin": "Plugin | Pluginy",
     "install": "Instaluj",
     "installing": "Instalowanie",
     "uninstall": "Odinstaluj",
-    "confirmUninstallPlugin": "Czy na pewno chcesz odinstalować tę wtyczkę?"
+    "confirmUninstallPlugin": "Czy na pewno chcesz odinstalować tę wtyczkę?",
+    "Custom Monitor Type": "Własny typ monitora",
+    "markdownSupported": "Obsługiwana składnia Markdown"
 }
