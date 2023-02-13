@@ -113,6 +113,7 @@
         "prom-client": "~13.2.0",
         "prometheus-api-metrics": "~3.2.1",
         "protobufjs": "~7.1.1",
+        "qs": "~6.10.4",
         "redbean-node": "~0.2.0",
         "redis": "~4.5.1",
         "socket.io": "~4.5.3",
