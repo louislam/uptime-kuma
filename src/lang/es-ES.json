@@ -304,7 +304,7 @@
     "General Monitor Type": "Monitor Tipo General",
     "Specific Monitor Type": "Monitor Tipo Específico",
     "Monitor": "Monitores",
-    "Resend Notification if Down X times consequently": "Reenviar Notificación si Caído X veces consecutivas",
+    "Resend Notification if Down X times consequently": "Reenviar Notificación si Caído X veces consecutivamente",
     "resendEveryXTimes": "Reenviar cada {0} veces",
     "resendDisabled": "Reenvío deshabilitado",
     "needPushEvery": "Debe llamar a esta URL cada {0} segundos.",
@@ -392,7 +392,7 @@
     "webhookAdditionalHeadersDesc": "Establece encabezados adicionales enviados con el webhook.",
     "appriseInstalled": "Apprise está instalado.",
     "successMessage": "Mensaje de éxito",
-    "Pick Accepted Status Codes...": "Elija códigos de estado aceptados…",
+    "Pick Accepted Status Codes...": "Seleccione Códigos de Estado Aceptados…",
     "Post": "Post",
     "shrinkDatabaseDescription": "Activar ASPIRADORA para SQLite. Si tu base de datos fue creada después 1.10.0, AUTO_ASPIRADORA ya está habilitada y esta acción no es necesaria.",
     "deleteStatusPageMsg": "¿Estas seguro que quieres eliminar esta página de estado?",
@@ -681,5 +681,9 @@
     "smseagleGroup": "Nombre(s) de grupo de Guía Telefónica",
     "Unpin": "Quitar de destacados",
     "Prefix Custom Message": "Prefijo personalizado",
-    "markdownSupported": "Soporta sintaxis Markdown"
+    "markdownSupported": "Soporta sintaxis Markdown",
+    "Server Address": "Dirección del Servidor",
+    "Learn More": "Aprende Más",
+    "Pick a RR-Type...": "Seleccione un Tipo RR",
+    "onebotHttpAddress": "Dirección HTTP OneBot"
 }
