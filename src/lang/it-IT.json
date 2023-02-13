@@ -28,7 +28,7 @@
     "confirmDisableTwoFAMsg": "Sei sicuro di voler disabilitare l'autenticazione a due fattori?",
     "Settings": "Impostazioni",
     "Dashboard": "Dashboard",
-    "New Update": "Nuovo aggiornamento disponibile!",
+    "New Update": "Nuovo aggiornamento disponibile",
     "Language": "Lingua",
     "Appearance": "Aspetto",
     "Theme": "Tema",
@@ -55,7 +55,7 @@
     "Delete": "Elimina",
     "Current": "Corrente",
     "Uptime": "Tempo di attività",
-    "Cert Exp.": "Scadenza certificato",
+    "Cert Exp.": "Scadenza Certificato",
     "day": "giorno | giorni",
     "-day": "-giorni",
     "hour": "ora",
@@ -363,5 +363,13 @@
     "smtpDkimHashAlgo": "Algoritmo di hashing (opzionale)",
     "smtpDkimheaderFieldNames": "Campi Intestazione da firmare (opzionale)",
     "smtpDkimskipFields": "Campi Intestazione da non firmare (opzionale)",
-    "GoogleChat": "Google Chat (solo per Google Workspace)"
+    "GoogleChat": "Google Chat (solo per Google Workspace)",
+    "Help": "Aiuto",
+    "Maintenance": "Manutenzione",
+    "statusMaintenance": "In manutenzione",
+    "General Monitor Type": "Monitor Generico",
+    "Game": "Gioco",
+    "Passive Monitor Type": "Monitor Passivo",
+    "Specific Monitor Type": "Monitor Specifico",
+    "Monitor": "Monitor | Monitor"
 }
