@@ -208,7 +208,7 @@
     "mattermost": "Mattermost",
     "Primary Base URL": "Основной URL",
     "Push URL": "URL пуша",
-    "needPushEvery": "К этому URL необходимо обращаться каждые {0} секунд",
+    "needPushEvery": "К этому URL необходимо обращаться каждые {0} секунд.",
     "pushOptionalParams": "Опциональные параметры: {0}",
     "defaultNotificationName": "Моё уведомление {notification} ({number})",
     "here": "здесь",
@@ -596,5 +596,13 @@
     "resendEveryXTimes": "Повторная отправка каждые {0} раз",
     "resendDisabled": "Повторная отправка отключена",
     "deleteMaintenanceMsg": "Вы действительно хотите удалить это обслуживание?",
-    "critical": "критично"
+    "critical": "критично",
+    "Custom Monitor Type": "Собственный тип монитора",
+    "markdownSupported": "Поддерживает синтаксис Markdown",
+    "Passive Monitor Type": "Пассивный тип монитора",
+    "Specific Monitor Type": "Специфичный тип монитора",
+    "Help": "Помощь",
+    "Game": "Игра",
+    "Resend Notification if Down X times consequently": "Повторно отправить уведомление, если не работает X раз подряд",
+    "General Monitor Type": "Основной тип монитора"
 }
