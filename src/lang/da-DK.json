@@ -350,5 +350,13 @@
     "serwersmsAPIUser": "API Brugernavn (inkl. webapi_ prefix)",
     "serwersmsAPIPassword": "API Adgangskode",
     "serwersmsPhoneNumber": "Telefonnummer",
-    "serwersmsSenderName": "SMS Afsender Navn (registreret via kundeportal)"
+    "serwersmsSenderName": "SMS Afsender Navn (registreret via kundeportal)",
+    "statusMaintenance": "Vedligeholdelse",
+    "Maintenance": "Vedligeholdelse",
+    "No Maintenance": "Ingen vedligeholdelse",
+    "Examples": "Eksempler",
+    "High": "Høj",
+    "Recipient Number": "Modtager Nummer",
+    "From Name/Number": "Fra Navn/Nummer",
+    "Help": "Hjælp"
 }
