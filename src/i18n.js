@@ -15,6 +15,7 @@ const languageList = {
     "fa": "Farsi",
     "pt-PT": "Português (Portugal)",
     "pt-BR": "Português (Brasileiro)",
+    "fi-FI": "Suomi",
     "fr-FR": "Français (France)",
     "hu": "Magyar",
     "hr-HR": "Hrvatski",
