@@ -410,5 +410,9 @@
     "IconUrl": "Ikon URL",
     "successMessage": "Sikeres üzenet",
     "lastDay1": "A hónap utolsó napja",
-    "Guild ID": "Guild ID"
+    "Guild ID": "Guild ID",
+    "Help": "Súgó",
+    "statusMaintenance": "Karbantartás",
+    "Maintenance": "Karbantartás",
+    "Game": "Játék"
 }

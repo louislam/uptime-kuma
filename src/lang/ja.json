@@ -21,7 +21,7 @@
     "Language": "言語",
     "Appearance": "外観",
     "Theme": "テーマ",
-    "General": "General",
+    "General": "全般的",
     "Version": "バージョン",
     "Check Update On GitHub": "GitHubでアップデートを確認する",
     "List": "一覧",
@@ -167,5 +167,14 @@
     "Edit Status Page": "ステータスページ編集",
     "Go to Dashboard": "ダッシュボード",
     "Status Page": "ステータスページ",
-    "Status Pages": "ステータスページ"
+    "Status Pages": "ステータスページ",
+    "Shrink Database": "データベースの縮小",
+    "Start": "始める",
+    "Retry": "リトライ",
+    "Please read": "読んでください",
+    "Orange": "橙",
+    "Gateway Type": "ゲートウェイの種類",
+    "Game": "ゲーム",
+    "Help": "ヘルプ",
+    "Maintenance": "メンテナンス"
 }
