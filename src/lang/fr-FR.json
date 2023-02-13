@@ -73,7 +73,7 @@
     "Delete": "Supprimer",
     "Current": "Actuellement",
     "Uptime": "Disponibilité",
-    "Cert Exp.": "Expiration SSL",
+    "Cert Exp.": "Expiration SSL.",
     "day": "jour | jours",
     "-day": " jours",
     "hour": "heure",
@@ -89,7 +89,7 @@
     "Heartbeat Interval": "Intervalle de vérification",
     "Retries": "Essais",
     "Heartbeat Retry Interval": "Réessayer l'intervalle de vérification",
-    "Resend Notification if Down X times consequently": "Renvoyer une notification si hors ligne X fois",
+    "Resend Notification if Down X times consequently": "Renvoyer la notification si en panne X fois consécutivement",
     "Advanced": "Avancé",
     "Upside Down Mode": "Mode inversé",
     "Max. Redirects": "Nombre maximum de redirections",
@@ -235,7 +235,7 @@
     "smtpBCC": "CCI",
     "discord": "Discord",
     "Discord Webhook URL": "URL vers le webhook Discord",
-    "wayToGetDiscordURL": "Vous pouvez l'obtenir en allant dans « Paramètres du serveur » -> « Intégrations » -> « Créer un Webhook »",
+    "wayToGetDiscordURL": "Vous pouvez l'obtenir en allant dans « Paramètres du serveur » -> « Intégrations » -> « Consulter les webhooks» -> « Nouveau Webhook »",
     "Bot Display Name": "Nom du robot (affiché)",
     "Prefix Custom Message": "Préfixe du message personnalisé",
     "Hello @everyone is...": "Bonjour {'@'}everyone il…",
@@ -692,5 +692,9 @@
     "uninstalling": "Désinstallation",
     "confirmUninstallPlugin": "Voulez-vous vraiment désinstaller ce plugin ?",
     "Custom Monitor Type": "Type de sonde personnalisé",
-    "markdownSupported": "Syntaxe Markdown supportée"
+    "markdownSupported": "Syntaxe Markdown supportée",
+    "Google Analytics ID": "Identifiant Google Analytics",
+    "Server Address": "Adresse du serveur",
+    "Learn More": "En savoir plus",
+    "Edit Tag": "Modifier l'étiquette"
 }
