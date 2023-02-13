@@ -678,5 +678,8 @@
     "alertaRecoverState": "Estado de Recuperación",
     "serwersms": "SerwerSMS.pl",
     "serwersmsAPIUser": "Nombre de usuario de API (inc. webapi_ prefix)",
-    "smseagleGroup": "Nombre(s) de grupo de Guía Telefónica"
+    "smseagleGroup": "Nombre(s) de grupo de Guía Telefónica",
+    "Unpin": "Quitar de destacados",
+    "Prefix Custom Message": "Prefijo personalizado",
+    "markdownSupported": "Soporta sintaxis Markdown"
 }
