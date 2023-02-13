@@ -217,7 +217,7 @@
     "smtpBCC": "BCC",
     "discord": "Discord",
     "Discord Webhook URL": "Discord Webhook URL",
-    "wayToGetDiscordURL": "Bunu Sunucu Ayarları -> Entegrasyonlar -> Webhook Oluştur'a giderek alabilirsiniz.",
+    "wayToGetDiscordURL": "Bunu Sunucu Ayarları -> Entegrasyonlar -> Webhookları Görüntüle -> Yeni Webhook Oluştur adımını izleyerek alabilirsiniz.",
     "Bot Display Name": "Botun Görünecek Adı",
     "Prefix Custom Message": "Önek Özel Mesaj",
     "Hello @everyone is...": "Merhaba {'@'}everyone…",
@@ -692,5 +692,9 @@
     "lunasea": "LunaSea",
     "line": "Line Messenger",
     "mattermost": "Mattermost",
-    "markdownSupported": "Markdown yazım formatı desteklenir"
+    "markdownSupported": "Markdown yazım formatı desteklenir",
+    "Google Analytics ID": "Google Analytics ID",
+    "Edit Tag": "Etiketi Düzenle",
+    "Learn More": "Daha fazla bilgi edin",
+    "Server Address": "Sunucu Adresi"
 }
