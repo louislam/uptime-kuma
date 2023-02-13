@@ -21,11 +21,11 @@
                     </div>
                     <div class="col">
                         <h3>{{ $t("Unknown") }}</h3>
-                        <span class="num text-secondary">{{ $root.stats.unknown }}</span>
+                        <span class="num text-unknown">{{ $root.stats.unknown }}</span>
                     </div>
                     <div class="col">
                         <h3>{{ $t("pauseDashboardHome") }}</h3>
-                        <span class="num text-pause">{{ $root.stats.pause }}</span>
+                        <span class="num text-secondary">{{ $root.stats.pause }}</span>
                     </div>
                 </div>
             </div>
