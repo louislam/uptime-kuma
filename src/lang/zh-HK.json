@@ -573,5 +573,6 @@
     "Maintenance Time Window of a Day": "每日維護時段",
     "Proxy": "Proxy",
     "backupOutdatedWarning": "過時：由於備份功能未顧及新功能的增加，因此備份功能無法產生或復原完整的備份。",
-    "Optional": "可選填"
+    "Optional": "可選填",
+    "markdownSupported": "支援 Markdown"
 }
