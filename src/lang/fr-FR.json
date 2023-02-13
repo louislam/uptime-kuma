@@ -691,5 +691,6 @@
     "uninstall": "Désinstaller",
     "uninstalling": "Désinstallation",
     "confirmUninstallPlugin": "Voulez-vous vraiment désinstaller ce plugin ?",
-    "Custom Monitor Type": "Type de sonde personnalisé"
+    "Custom Monitor Type": "Type de sonde personnalisé",
+    "markdownSupported": "Syntaxe Markdown prise en charge"
 }
