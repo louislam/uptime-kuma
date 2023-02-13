@@ -581,5 +581,7 @@
     "goAlertIntegrationKeyInfo": "Dapatkan kunci integrasi API generik untuk layanan dalam format ini \"aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee\" biasanya nilai parameter token dari URL yang disalin.",
     "goAlert": "GoAlert",
     "backupOutdatedWarning": "Tidak digunakan lagi: Karena banyak fitur ditambahkan dan fitur cadangan ini agak tidak terawat, itu tidak dapat menghasilkan atau memulihkan cadangan lengkap.",
-    "backupRecommend": "Harap cadangkan volume atau folder data (./data/) secara langsung."
+    "backupRecommend": "Harap cadangkan volume atau folder data (./data/) secara langsung.",
+    "Help": "Bantuan",
+    "Game": "Gim/Permainan"
 }
