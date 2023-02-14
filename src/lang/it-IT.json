@@ -1075,5 +1075,6 @@
     "showCertificateExpiry": "",
     "ntfyPriorityHelptextAllExceptDown": "",
     "CopyToClipboardError": "",
-    "ntfyPriorityHelptextAllEvents": ""
+    "ntfyPriorityHelptextAllEvents": "",
+    "high": ""
 }
