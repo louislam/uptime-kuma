@@ -74,7 +74,7 @@
     "Heartbeat Interval": "Servis Test Aralığı",
     "Retries": "Yeniden deneme",
     "Heartbeat Retry Interval": "Sağlık Durumları Tekrar Deneme Sıklığı",
-    "Resend Notification if Down X times consequently": "Sonuç olarak X kez düşerse bildirimi yeniden gönder",
+    "Resend Notification if Down X times consequently": "Art arda X kez düşerse bildirimi yeniden gönder",
     "Advanced": "Gelişmiş",
     "Upside Down Mode": "Ters/Düz Modu",
     "Max. Redirects": "Maksimum Yönlendirme",
