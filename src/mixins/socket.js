@@ -34,7 +34,8 @@ export default {
             allowLoginDialog: false,        // Allowed to show login dialog, but "loggedIn" have to be true too. This exists because prevent the login dialog show 0.1s in first before the socket server auth-ed.
             loggedIn: false,
             monitorList: { },
-            maintenanceList: { },
+            maintenanceList: {},
+            apiKeyList: {},
             heartbeatList: { },
             importantHeartbeatList: { },
             avgPingList: { },
@@ -132,6 +133,10 @@ export default {
 
             socket.on("maintenanceList", (data) => {
                 this.maintenanceList = data;
+            });
+
+            socket.on("apiKeyList", (data) => {
+                this.apiKeyList = data;
             });
 
             socket.on("notificationList", (data) => {
@@ -462,6 +467,17 @@ export default {
         },
 
         /**
+         * Send list of API keys
+         * @param {socketCB} callback
+         */
+        getAPIKeyList(callback) {
+            if (!callback) {
+                callback = () => { };
+            }
+            socket.emit("getAPIKeyList", callback);
+        },
+
+        /**
          * Add a monitor
          * @param {Object} monitor Object representing monitor to add
          * @param {socketCB} callback
@@ -501,6 +517,24 @@ export default {
 
         deleteMaintenance(maintenanceID, callback) {
             socket.emit("deleteMaintenance", maintenanceID, callback);
+        },
+
+        /**
+         * Add an API key
+         * @param {Object} key API key to add
+         * @param {socketCB} callback
+         */
+        addAPIKey(key, callback) {
+            socket.emit("addAPIKey", key, callback);
+        },
+
+        /**
+         * Delete specified API key
+         * @param {int} keyID ID of key to delete
+         * @param {socketCB} callback
+         */
+        deleteAPIKey(keyID, callback) {
+            socket.emit("deleteAPIKey", keyID, callback);
         },
 
         /** Clear the hearbeat list */

@@ -1,0 +1,75 @@
+const { BeanModel } = require("redbean-node/dist/bean-model");
+const { R } = require("redbean-node");
+
+class APIKey extends BeanModel {
+    /**
+     * Get the current status of this API key
+     */
+    getStatus() {
+        let expired = false;
+        if (expired) {
+            return "expired";
+        } else if (this.active) {
+            return "active";
+        } else if (!this.active) {
+            return "inactive";
+        }
+    }
+
+    /**
+     * Returns an object that ready to parse to JSON
+     * @returns {Object}
+     */
+    toJSON() {
+        return {
+            id: this.id,
+            key: this.key,
+            name: this.name,
+            userID: this.user_id,
+            createdDate: this.created_date,
+            active: this.active,
+            expires: this.expires,
+            status: this.getStatus(),
+        };
+    }
+
+    /**
+     * Returns an object that ready to parse to JSON with sensitive fields
+     * removed
+     * @returns {Object}
+     */
+    toPublicJSON() {
+        return {
+            id: this.id,
+            name: this.name,
+            userID: this.user_id,
+            createdDate: this.created_date,
+            active: this.active,
+            expires: this.expires,
+            status: this.getStatus(),
+        };
+    }
+
+    /**
+     * Create a new API Key and store it in the database
+     * @param {Object} key Object sent by client
+     * @param {int} userID ID of socket user
+     * @returns {Promise<bean>}
+     */
+    static async save(key, userID) {
+        let bean;
+        bean = R.dispense("api_key");
+
+        bean.key = key.key;
+        bean.name = key.name;
+        bean.user_id = userID;
+        bean.active = key.active;
+        bean.expires = key.expires;
+
+        await R.store(bean);
+
+        return bean;
+    }
+}
+
+module.exports = APIKey;

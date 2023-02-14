@@ -18,6 +18,8 @@ import NotFound from "./pages/NotFound.vue";
 import DockerHosts from "./components/settings/Docker.vue";
 import MaintenanceDetails from "./pages/MaintenanceDetails.vue";
 import ManageMaintenance from "./pages/ManageMaintenance.vue";
+import ManageAPIKeys from "./pages/ManageAPIKeys.vue";
+import AddAPIKey from "./pages/AddAPIKey.vue";
 
 // Settings - Sub Pages
 import Appearance from "./components/settings/Appearance.vue";
@@ -144,6 +146,14 @@ const routes = [
                     {
                         path: "/maintenance/edit/:id",
                         component: EditMaintenance,
+                    },
+                    {
+                        path: "/apikeys",
+                        component: ManageAPIKeys
+                    },
+                    {
+                        path: "/apikeys/add",
+                        component: AddAPIKey
                     },
                 ],
             },
