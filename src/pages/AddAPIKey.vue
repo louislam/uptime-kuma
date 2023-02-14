@@ -8,7 +8,7 @@
                         <div class="col-xl-10">
                             <!-- Title -->
                             <div class="mb-3">
-                                <label for="name" class="form-label">{{ $t("Title") }}</label>
+                                <label for="name" class="form-label">{{ $t("Name") }}</label>
                                 <input
                                     id="name" v-model="key.name" type="text" class="form-control"
                                     required

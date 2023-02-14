@@ -695,5 +695,19 @@
     "Google Analytics ID": "Google Analytics ID",
     "Edit Tag": "Edit Tag",
     "Server Address": "Server Address",
-    "Learn More": "Learn More"
+    "Learn More": "Learn More",
+    "API Keys": "API Keys",
+    "Expiry": "Expiry",
+    "Expiry date": "Expiry date",
+    "Don't expire": "Don't expire",
+    "Continue": "Continue",
+    "Add Another": "Add Another",
+    "Key Added": "Key Added",
+    "apiKeyAddedMsg": "Your API key has been added. Please make a note of it as it will not be shown again.",
+    "Add API Key": "Add API Key",
+    "No API Keys": "No API Keys",
+    "apiKey-active": "Active",
+    "apiKey-expired": "Expired",
+    "apiKey-inactive": "Inactive",
+    "Expires": "Expires"
 }

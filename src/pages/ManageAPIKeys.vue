@@ -59,7 +59,7 @@
             </div>
 
             <div class="text-center mt-3" style="font-size: 13px;">
-                <a href="https://github.com/louislam/uptime-kuma/wiki/Maintenance" target="_blank">Learn More</a>
+                <a href="https://github.com/louislam/uptime-kuma/wiki/APIKeys" target="_blank">{{ $t("Learn More") }}</a>
             </div>
 
             <Confirm ref="confirmPause" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="disableKey">
