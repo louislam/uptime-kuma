@@ -105,7 +105,7 @@
     "disableauth.message1": "Oletko varma että haluat <strong>poistaa todennuksen käytöstä</strong>?",
     "Please use this option carefully!": "Käytä tätä vaihtoehtoa varoen!",
     "Remember me": "Muista minut",
-    "languageName": "Englanti",
+    "languageName": "Suomi",
     "Primary Base URL": "Ensisijainen perus-URL-osoite",
     "pushOptionalParams": "Valinnaiset parametrit: {0}",
     "Not available, please setup.": "Ei saatavilla, määritä ensin.",
