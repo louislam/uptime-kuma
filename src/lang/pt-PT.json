@@ -1058,5 +1058,6 @@
     "wayToGetDiscordURL": "",
     "CopyToClipboardError": "",
     "grpcMethodDescription": "",
-    "ntfyPriorityHelptextAllExceptDown": ""
+    "ntfyPriorityHelptextAllExceptDown": "",
+    "high": ""
 }
