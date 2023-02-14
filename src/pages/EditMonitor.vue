@@ -846,6 +846,7 @@ message HealthCheckResponse {
                         if (
                             this.monitor.name === this.monitor.url
                             || this.monitor.name === this.monitor.hostname
+                            || this.monitor.name === `${this.monitor.hostname}:${this.monitor.port}`
                             || this.monitor.name === this.monitor.docker_container
                         ) {
                             this.monitor.name = "";
@@ -904,6 +905,9 @@ message HealthCheckResponse {
                     this.monitor.name = this.monitor.name || this.monitor.url;
                     break;
                 case "port":
+                    // Use given name or hostname:port
+                    this.monitor.name = this.monitor.name || `${this.monitor.hostname}:${this.monitor.port}`;
+                    break;
                 case "ping":
                 case "dns":
                 case "steam":
