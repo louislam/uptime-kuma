@@ -1049,5 +1049,6 @@
     "setupDatabaseEmbeddedMariaDB": "",
     "Pick a SASL Mechanism...": "",
     "ntfyPriorityHelptextAllExceptDown": "",
-    "grpcMethodDescription": ""
+    "grpcMethodDescription": "",
+    "high": ""
 }
