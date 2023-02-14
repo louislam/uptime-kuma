@@ -777,6 +777,11 @@ message HealthCheckResponse {
 
         let friendlyNameRequiredOptions = [
             "push",
+            "sqlserver",
+            "postgres",
+            "mysql",
+            "mongodb",
+            "redis",
         ];
 
         for (let i = 100; i <= 999; i++) {
@@ -838,7 +843,11 @@ message HealthCheckResponse {
                         this.monitor = res.monitor;
 
                         // Handling for when friendly name isn't set
-                        if (this.monitor.name === this.monitor.url || this.monitor.name === this.monitor.hostname) {
+                        if (
+                            this.monitor.name === this.monitor.url
+                            || this.monitor.name === this.monitor.hostname
+                            || this.monitor.name === this.monitor.docker_container
+                        ) {
                             this.monitor.name = "";
                         }
 
@@ -887,7 +896,26 @@ message HealthCheckResponse {
 
             // Check if friendly name has been supplied. If not, use URL
             // or hostname
-            this.monitor.name = this.monitor.name || this.monitor.hostname || this.monitor.url;
+            switch (this.monitor.type) {
+                case "http":
+                case "keyword":
+                case "grpc-keyword":
+                    // Use given name or URL
+                    this.monitor.name = this.monitor.name || this.monitor.url;
+                    break;
+                case "port":
+                case "ping":
+                case "dns":
+                case "steam":
+                case "mqtt":
+                case "radius":
+                    // Use given name or hostname
+                    this.monitor.name = this.monitor.name || this.monitor.hostname;
+                    break;
+                case "docker":
+                    this.monitor.name = this.monitor.name || this.monitor.docker_container;
+                    break;
+            }
 
             if (!this.isInputValid()) {
                 this.processing = false;
