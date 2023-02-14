@@ -1,19 +1,19 @@
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { R } = require("redbean-node");
+const dayjs = require("dayjs");
 
 class APIKey extends BeanModel {
     /**
      * Get the current status of this API key
      */
     getStatus() {
-        let expired = false;
-        if (expired) {
+        let current = dayjs();
+        let expiry = dayjs(this.expires);
+        if (expiry.diff(current) < 0) {
             return "expired";
-        } else if (this.active) {
-            return "active";
-        } else if (!this.active) {
-            return "inactive";
         }
+
+        return this.active ? "active" : "inactive";
     }
 
     /**
