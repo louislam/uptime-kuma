@@ -534,7 +534,7 @@
     "smtpCC": "CC",
     "smtpBCC": "CCO",
     "Discord Webhook URL": "URL Webhook de Discord",
-    "wayToGetDiscordURL": "Puede obtener esto yendo a Configuración del servidor -> Integraciones -> Crear webhook",
+    "wayToGetDiscordURL": "Puede obtener esto yendo a Configuración del servidor -> Integraciones -> Ver Webhooks -> Crear Webhook",
     "Bot Display Name": "Nombre para mostrar del Bot",
     "Hello @everyone is...": "Hola {'@'}todos están…",
     "wayToGetTeamsURL": "Puedes aprender cómo crear una URL webhook {0}.",
@@ -591,7 +591,7 @@
     "Kook": "Kook",
     "wayToGetKookBotToken": "Crea aplicación y obtén tu token de bot en {0}",
     "wayToGetKookGuildID": "Activa 'Modo Desarrollador' en los ajustes de Kook, y haz click derecho en la unión para obtener su ID",
-    "Guild ID": "",
+    "Guild ID": "ID de Gremio",
     "User Key": "Key de Usuario",
     "octopushTypePremium": "Premium (Rápido - recomendado para alertas)",
     "octopushTypeLowCost": "Bajo Coste (Lento - algunas veces bloqueado por operador)",
@@ -661,7 +661,7 @@
     "SMSManager": "SMSManager",
     "goAlertInfo": "GoAlert es una aplicación de código abierto para la programación de guardias, escaladas automatizadas y notificaciones (como SMS o llamadas de voz). ¡Involucre automáticamente a la persona adecuada, de la manera correcta y en el momento adecuado! {0}",
     "Free Mobile API Key": "Clave API de Free Mobile",
-    "high": "arriba",
+    "high": "alto",
     "SMSManager API Docs": "Documentación API de SMSManager ",
     "smseagleContact": "Nombre(s) de contacto de Guía Telefónica",
     "smseagleToken": "Token de Acceso a la API",
@@ -685,5 +685,8 @@
     "Server Address": "Dirección del Servidor",
     "Learn More": "Aprende Más",
     "Pick a RR-Type...": "Seleccione un Tipo RR",
-    "onebotHttpAddress": "Dirección HTTP OneBot"
+    "onebotHttpAddress": "Dirección HTTP OneBot",
+    "SendKey": "SendKey",
+    "octopushAPIKey": "\"Clave API\" de las credenciales HTTP API en el panel de control",
+    "octopushLogin": "\"Inicio de Sesión\" a partir de las credenciales API HTTP en el panel de control"
 }
