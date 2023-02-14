@@ -1069,5 +1069,6 @@
     "setupDatabaseChooseDatabase": "",
     "setupDatabaseEmbeddedMariaDB": "",
     "ntfyPriorityHelptextAllEvents": "",
-    "wayToGetDiscordURL": ""
+    "wayToGetDiscordURL": "",
+    "high": ""
 }
