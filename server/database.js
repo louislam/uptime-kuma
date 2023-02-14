@@ -4,6 +4,7 @@ const { setSetting, setting } = require("./util-server");
 const { log, sleep } = require("../src/util");
 const dayjs = require("dayjs");
 const knex = require("knex");
+const { PluginsManager } = require("./plugins-manager");
 
 /**
  * Database & App Data Folder
@@ -65,8 +66,11 @@ class Database {
         "patch-grpc-monitor.sql": true,
         "patch-add-radius-monitor.sql": true,
         "patch-monitor-add-resend-interval.sql": true,
+        "patch-ping-packet-size.sql": true,
         "patch-maintenance-table2.sql": true,
         "patch-api-key-table.sql": true,
+        "patch-add-gamedig-monitor.sql": true,
+        "patch-add-google-analytics-status-page-tag.sql": true,
     };
 
     /**
@@ -84,6 +88,13 @@ class Database {
     static init(args) {
         // Data Directory (must be end with "/")
         Database.dataDir = process.env.DATA_DIR || args["data-dir"] || "./data/";
+
+        // Plugin feature is working only if the dataDir = "./data";
+        if (Database.dataDir !== "./data/") {
+            log.warn("PLUGIN", "Warning: In order to enable plugin feature, you need to use the default data directory: ./data/");
+            PluginsManager.disable = true;
+        }
+
         Database.path = Database.dataDir + "kuma.db";
         if (! fs.existsSync(Database.dataDir)) {
             fs.mkdirSync(Database.dataDir, { recursive: true });
@@ -485,6 +496,16 @@ class Database {
 
             const shmPath = Database.path + "-shm";
             const walPath = Database.path + "-wal";
+
+            // Make sure we have a backup to restore before deleting old db
+            if (
+                !fs.existsSync(this.backupPath)
+                && !fs.existsSync(shmPath)
+                && !fs.existsSync(walPath)
+            ) {
+                log.error("db", "Backup file not found! Leaving database in failed state.");
+                process.exit(1);
+            }
 
             // Delete patch failed db
             try {

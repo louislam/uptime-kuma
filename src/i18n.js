@@ -1,7 +1,8 @@
 import { createI18n } from "vue-i18n/dist/vue-i18n.esm-browser.prod.js";
-import en from "./languages/en";
+import en from "./lang/en.json";
 
 const languageList = {
+    "ar-SY": "العربية",
     "cs-CZ": "Čeština",
     "zh-HK": "繁體中文 (香港)",
     "bg-BG": "Български",
@@ -14,6 +15,7 @@ const languageList = {
     "fa": "Farsi",
     "pt-PT": "Português (Portugal)",
     "pt-BR": "Português (Brasileiro)",
+    "fi": "Suomi",
     "fr-FR": "Français (France)",
     "hu": "Magyar",
     "hr-HR": "Hrvatski",
@@ -36,6 +38,8 @@ const languageList = {
     "uk-UA": "Український",
     "th-TH": "ไทย",
     "el-GR": "Ελληνικά",
+    "yue": "繁體中文 (廣東話 / 粵語)",
+    "ro": "Limba română",
 };
 
 let messages = {
@@ -48,7 +52,7 @@ for (let lang in languageList) {
     };
 }
 
-const rtlLangs = [ "fa" ];
+const rtlLangs = [ "fa", "ar-SY" ];
 
 export const currentLocale = () => localStorage.locale
     || languageList[navigator.language] && navigator.language

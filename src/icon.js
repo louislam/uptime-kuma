@@ -45,6 +45,7 @@ import {
     faHeartbeat,
     faFilter,
     faKey,
+    faInfoCircle,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -90,6 +91,7 @@ library.add(
     faHeartbeat,
     faFilter,
     faKey,
+    faInfoCircle,
 );
 
 export { FontAwesomeIcon };

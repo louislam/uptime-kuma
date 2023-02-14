@@ -1,0 +1,5 @@
+BEGIN TRANSACTION;
+
+ ALTER TABLE monitor
+     ADD game VARCHAR(255);
+ COMMIT

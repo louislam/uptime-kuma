@@ -20,12 +20,14 @@ import MaintenanceDetails from "./pages/MaintenanceDetails.vue";
 import ManageMaintenance from "./pages/ManageMaintenance.vue";
 import ManageAPIKeys from "./pages/ManageAPIKeys.vue";
 import AddAPIKey from "./pages/AddAPIKey.vue";
+import Plugins from "./components/settings/Plugins.vue";
 
 // Settings - Sub Pages
 import Appearance from "./components/settings/Appearance.vue";
 import General from "./components/settings/General.vue";
 const Notifications = () => import("./components/settings/Notifications.vue");
 import ReverseProxy from "./components/settings/ReverseProxy.vue";
+import Tags from "./components/settings/Tags.vue";
 import MonitorHistory from "./components/settings/MonitorHistory.vue";
 const Security = () => import("./components/settings/Security.vue");
 import Proxies from "./components/settings/Proxies.vue";
@@ -98,6 +100,10 @@ const routes = [
                                 component: ReverseProxy,
                             },
                             {
+                                path: "tags",
+                                component: Tags,
+                            },
+                            {
                                 path: "monitor-history",
                                 component: MonitorHistory,
                             },
@@ -116,6 +122,10 @@ const routes = [
                             {
                                 path: "backup",
                                 component: Backup,
+                            },
+                            {
+                                path: "plugins",
+                                component: Plugins,
                             },
                             {
                                 path: "about",
