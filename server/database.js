@@ -434,6 +434,9 @@ class Database {
 
         log.info("db", "Closing the database");
 
+        // Flush WAL to main database
+        await R.exec("PRAGMA wal_checkpoint(TRUNCATE)");
+
         while (true) {
             Database.noReject = true;
             await R.close();
