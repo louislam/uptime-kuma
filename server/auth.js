@@ -2,7 +2,7 @@ const basicAuth = require("express-basic-auth");
 const passwordHash = require("./password-hash");
 const { R } = require("redbean-node");
 const { setting } = require("./util-server");
-const { loginRateLimiter } = require("./rate-limiter");
+const { loginRateLimiter, apiRateLimiter } = require("./rate-limiter");
 const { Settings } = require("./settings");
 const dayjs = require("dayjs");
 
@@ -37,10 +37,9 @@ exports.login = async function (username, password) {
 
 /**
  * Validate a provided API key
- * @param {string} key API Key passed by client
- * @returns {Promise<bool>}
+ * @param {string} key API key to verify
  */
-async function validateAPIKey(key) {
+async function verifyAPIKey(key) {
     if (typeof key !== "string") {
         return false;
     }
@@ -64,8 +63,8 @@ async function validateAPIKey(key) {
 }
 
 /**
- * Callback for myAuthorizer
- * @callback myAuthorizerCB
+ * Callback for basic auth authorizers
+ * @callback authCallback
  * @param {any} err Any error encountered
  * @param {boolean} authorized Is the client authorized?
  */
@@ -74,9 +73,31 @@ async function validateAPIKey(key) {
  * Custom authorizer for express-basic-auth
  * @param {string} username
  * @param {string} password
- * @param {myAuthorizerCB} callback
+ * @param {authCallback} callback
  */
-function myAuthorizer(username, password, callback) {
+function apiAuthorizer(username, password, callback) {
+    // API Rate Limit
+    apiRateLimiter.pass(null, 0).then((pass) => {
+        if (pass) {
+            verifyAPIKey(password).then((valid) => {
+                callback(null, valid);
+                // Only allow a set number of api requests per minute
+                // (currently set to 60)
+                apiRateLimiter.removeTokens(1);
+            });
+        } else {
+            callback(null, false);
+        }
+    });
+}
+
+/**
+ * Custom authorizer for express-basic-auth
+ * @param {string} username
+ * @param {string} password
+ * @param {authCallback} callback
+ */
+function userAuthorizer(username, password, callback) {
     // Login Rate Limit
     loginRateLimiter.pass(null, 0).then((pass) => {
         if (pass) {
@@ -101,7 +122,7 @@ function myAuthorizer(username, password, callback) {
  */
 exports.basicAuth = async function (req, res, next) {
     const middleware = basicAuth({
-        authorizer: myAuthorizer,
+        authorizer: userAuthorizer,
         authorizeAsync: true,
         challenge: true,
     });
@@ -124,25 +145,21 @@ exports.basicAuth = async function (req, res, next) {
 exports.apiAuth = async function (req, res, next) {
     if (!await Settings.get("disableAuth")) {
         let usingAPIKeys = await Settings.get("apiKeysEnabled");
-
-        loginRateLimiter.pass(null, 0).then((pass) => {
-            if (usingAPIKeys) {
-                let pwd = req.get("X-API-Key");
-                if (pwd !== null && pwd !== undefined) {
-                    validateAPIKey(pwd).then((valid) => {
-                        if (valid) {
-                            next();
-                        } else {
-                            res.status(401).send();
-                        }
-                    });
-                } else {
-                    res.status(401).send();
-                }
-            } else {
-                exports.basicAuth(req, res, next);
-            }
-        });
+        let middleware;
+        if (usingAPIKeys) {
+            middleware = basicAuth({
+                authorizer: apiAuthorizer,
+                authorizeAsync: true,
+                challenge: true,
+            });
+        } else {
+            middleware = basicAuth({
+                authorizer: userAuthorizer,
+                authorizeAsync: true,
+                challenge: true,
+            });
+        }
+        middleware(req, res, next);
     } else {
         next();
     }
