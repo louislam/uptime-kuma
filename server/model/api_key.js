@@ -5,6 +5,7 @@ const dayjs = require("dayjs");
 class APIKey extends BeanModel {
     /**
      * Get the current status of this API key
+     * @returns {string} active, inactive or expired
      */
     getStatus() {
         let current = dayjs();
