@@ -5,6 +5,7 @@ const crypto = require("crypto");
 const passwordHash = require("../password-hash");
 const apicache = require("../modules/apicache");
 const APIKey = require("../model/api_key");
+const { Settings } = require("../settings");
 const { sendAPIKeyList } = require("../client");
 
 /**
@@ -28,6 +29,10 @@ module.exports.apiKeySocketHandler = (socket) => {
             // correct hash when validating key.
             let formattedKey = bean.id + "-" + clearKey;
             await sendAPIKeyList(socket);
+
+            // Enable API auth if the user creates a key, otherwise only basic
+            // auth will be used for API.
+            await Settings.set("apiKeysEnabled", true);
 
             callback({
                 ok: true,

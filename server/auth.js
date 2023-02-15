@@ -3,6 +3,8 @@ const passwordHash = require("./password-hash");
 const { R } = require("redbean-node");
 const { setting } = require("./util-server");
 const { loginRateLimiter } = require("./rate-limiter");
+const { Settings } = require("./settings");
+const dayjs = require("dayjs");
 
 /**
  * Login to web app
@@ -32,6 +34,32 @@ exports.login = async function (username, password) {
 
     return null;
 };
+
+/**
+ * Validate a provided API key
+ * @param {string} key API Key passed by client
+ * @returns {Promise<bool>}
+ */
+async function validateAPIKey(key) {
+    if (typeof key !== "string") {
+        return false;
+    }
+
+    let index = key.substring(0, key.indexOf("-"));
+    let clear = key.substring(key.indexOf("-") + 1, key.length);
+    console.log(index);
+    console.log(clear);
+
+    let hash = await R.findOne("api_key", " id=? ", [ index ]);
+
+    let current = dayjs();
+    let expiry = dayjs(hash.expires);
+    if (expiry.diff(current) < 0, !hash.active) {
+        return false;
+    }
+
+    return hash && passwordHash.verify(clear, hash.key);
+}
 
 /**
  * Callback for myAuthorizer
@@ -80,6 +108,39 @@ exports.basicAuth = async function (req, res, next) {
 
     if (!disabledAuth) {
         middleware(req, res, next);
+    } else {
+        next();
+    }
+};
+
+/**
+ * Use X-API-Key header if API keys enabled, else use basic auth
+ * @param {express.Request} req Express request object
+ * @param {express.Response} res Express response object
+ * @param {express.NextFunction} next
+ */
+exports.apiAuth = async function (req, res, next) {
+    if (!await Settings.get("disableAuth")) {
+        let usingAPIKeys = await Settings.get("apiKeysEnabled");
+
+        loginRateLimiter.pass(null, 0).then((pass) => {
+            if (usingAPIKeys) {
+                let pwd = req.get("X-API-Key");
+                if (pwd !== null && pwd !== undefined) {
+                    validateAPIKey(pwd).then((valid) => {
+                        if (valid) {
+                            next();
+                        } else {
+                            res.status(401).send();
+                        }
+                    });
+                } else {
+                    res.status(401).send();
+                }
+            } else {
+                exports.basicAuth(req, res, next);
+            }
+        });
     } else {
         next();
     }
