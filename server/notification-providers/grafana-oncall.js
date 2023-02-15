@@ -15,7 +15,6 @@ class GrafanaOncall extends NotificationProvider {
                 let GrafanaOncallTestData = {
                     title: "This is a test",
                     message: msg,
-                    state: "alerting",
                 };
                 await axios.post(notification.grafanaoncallURL, GrafanaOncallTestData);
                 return okMsg;
@@ -35,7 +34,6 @@ class GrafanaOncall extends NotificationProvider {
                 let grafanaupdata = {
                     title: monitorJSON["name"] + " is up",
                     message: heartbeatJSON["msg"],
-                    alert_uid: "",
                     state: "ok",
                 };
                 await axios.post(
