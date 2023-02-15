@@ -9,7 +9,6 @@ class GrafanaOncall extends NotificationProvider {
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
         try {
-            const GrafanaOncallURL = notification.grafanaoncallURL;
 
             // If heartbeatJSON is null, assume we're testing.
             if (heartbeatJSON == null) {
@@ -44,7 +43,7 @@ class GrafanaOncall extends NotificationProvider {
                     grafanaupdata
                 );
                 return okMsg;
-                }
+            }
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }
