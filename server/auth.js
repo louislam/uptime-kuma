@@ -47,14 +47,16 @@ async function validateAPIKey(key) {
 
     let index = key.substring(0, key.indexOf("-"));
     let clear = key.substring(key.indexOf("-") + 1, key.length);
-    console.log(index);
-    console.log(clear);
 
     let hash = await R.findOne("api_key", " id=? ", [ index ]);
 
+    if (hash === null) {
+        return false;
+    }
+
     let current = dayjs();
     let expiry = dayjs(hash.expires);
-    if (expiry.diff(current) < 0, !hash.active) {
+    if (expiry.diff(current) < 0 || !hash.active) {
         return false;
     }
 

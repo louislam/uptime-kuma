@@ -28,6 +28,7 @@
                                     format="yyyy-MM-dd HH:mm"
                                     modelType="yyyy-MM-dd HH:mm:ss"
                                     :required="!noExpire"
+                                    :disabled="noExpire"
                                 />
 
                                 <div class="form-check mb-2">
@@ -46,7 +47,7 @@
                                     id="monitor-submit-btn" class="btn btn-primary" type="submit"
                                     :disabled="processing"
                                 >
-                                    {{ $t("Save") }}
+                                    {{ $t("Generate") }}
                                 </button>
                             </div>
                         </div>

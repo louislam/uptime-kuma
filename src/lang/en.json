@@ -711,5 +711,6 @@
     "apiKey-inactive": "Inactive",
     "Expires": "Expires",
     "disableAPIKeyMsg": "Are you sure you want to disable this API key?",
-    "deleteAPIKeyMsg": "Are you sure you want to delete this API key?"
+    "deleteAPIKeyMsg": "Are you sure you want to delete this API key?",
+    "Generate": "Generate"
 }
