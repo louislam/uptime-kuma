@@ -40,6 +40,7 @@ const languageList = {
     "el-GR": "Ελληνικά",
     "yue": "繁體中文 (廣東話 / 粵語)",
     "ro": "Limba română",
+    "ur": "Urdu"
 };
 
 let messages = {
