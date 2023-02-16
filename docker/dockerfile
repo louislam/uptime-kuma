@@ -3,12 +3,12 @@
 # Run npm run build-healthcheck-armv7 in the host first, another it will be super slow where it is building the armv7 healthcheck
 # Check file: builder-go.dockerfile
 ############################################
-FROM louislam/uptime-kuma:builder-go AS build_healthcheck
+FROM docker.io/louislam/uptime-kuma:builder-go AS build_healthcheck
 
 ############################################
 # Build in Node.js
 ############################################
-FROM louislam/uptime-kuma:base-debian AS build
+FROM docker.io/louislam/uptime-kuma:base-debian AS build
 WORKDIR /app
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1
@@ -23,7 +23,7 @@ RUN chmod +x /app/extra/entrypoint.sh
 ############################################
 # ⭐ Main Image
 ############################################
-FROM louislam/uptime-kuma:base-debian AS release
+FROM docker.io/louislam/uptime-kuma:base-debian AS release
 WORKDIR /app
 
 # Copy app files from build layer
@@ -45,7 +45,7 @@ RUN npm run mark-as-nightly
 ############################################
 # Build an image for testing pr
 ############################################
-FROM louislam/uptime-kuma:base-debian AS pr-test
+FROM docker.io/louislam/uptime-kuma:base-debian AS pr-test
 
 WORKDIR /app
 
@@ -77,7 +77,7 @@ CMD ["npm", "run", "start-pr-test"]
 ############################################
 # Upload the artifact to Github
 ############################################
-FROM louislam/uptime-kuma:base-debian AS upload-artifact
+FROM docker.io/louislam/uptime-kuma:base-debian AS upload-artifact
 WORKDIR /
 RUN apt update && \
     apt --yes install curl file

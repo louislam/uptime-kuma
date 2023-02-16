@@ -40,7 +40,7 @@ It is a temporary live demo, all data will be deleted after 10 minutes. Use the 
 ### 🐳 Docker
 
 ```bash
-docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name uptime-kuma louislam/uptime-kuma:1
+docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name uptime-kuma docker.io/louislam/uptime-kuma:1
 ```
 
 ⚠️ Please use a **local volume** only. Other types such as NFS are not supported.

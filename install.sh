@@ -198,6 +198,6 @@ fi
   "echo" "-e" "Port: $port"
   "echo" "-e" "Volume: $volume"
   docker volume create $volume
-  docker run -d --restart=always -p $port:3001 -v $volume:/app/data --name uptime-kuma louislam/uptime-kuma:1
+  docker run -d --restart=always -p $port:3001 -v $volume:/app/data --name uptime-kuma docker.io/louislam/uptime-kuma:1
 fi
 "echo" "-e" "http://localhost:$port"
