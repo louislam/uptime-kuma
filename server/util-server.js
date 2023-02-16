@@ -292,14 +292,23 @@ exports.postgresQuery = function (connectionString, query) {
                 client.end();
             } else {
                 // Connected here
-                client.query(query, (err, res) => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(res);
+                try {
+                    // No query provided by user, use SELECT 1
+                    if (!query || (typeof query === "string" && query.trim() === "")) {
+                        query = "SELECT 1";
                     }
-                    client.end();
-                });
+
+                    client.query(query, (err, res) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(res);
+                        }
+                        client.end();
+                    });
+                } catch (e) {
+                    reject(e);
+                }
             }
         });
 
@@ -323,7 +332,7 @@ exports.mysqlQuery = function (connectionString, query) {
                 reject(err);
             })
             .finally(() => {
-                connection.end();
+                connection.destroy();
             });
     });
 };

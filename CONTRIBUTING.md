@@ -240,7 +240,7 @@ https://github.com/louislam/uptime-kuma/issues?q=sort%3Aupdated-desc
 5. `git push`
 6. Publish the release note as 1.X.X 
 7. Press any key to continue
-8. SSH to demo site server and update to 1.X.X
+8. Deploy to the demo server: `npm run deploy-demo-server`
 
 Checking:
 

@@ -249,7 +249,7 @@
     "enabled": "Ativado",
     "setAsDefault": "Definir como padrão",
     "Primary Base URL": "URL base principal",
-    "Resend Notification if Down X times consequently": "Reenviar notificação se OFFLINE X vezes consecutivamente",
+    "Resend Notification if Down X times consequently": "Reenviar Notificação se OFFLINE X vezes consecutivamente",
     "pushOptionalParams": "Parâmetros opcionais: {0}",
     "webhookFormDataDesc": "{multipart} é bom para PHP. O JSON precisará ser analisado com {decodeFunction}",
     "HeadersInvalidFormat": "Os cabeçalhos da solicitação não são um JSON válidos: ",
@@ -269,5 +269,16 @@
     "Start of maintenance": "Iniciar manutenção",
     "All Status Pages": "Todas as Status Pages",
     "Method": "Método",
-    "General Monitor Type": "Tipo de monitoramento geral"
+    "General Monitor Type": "Tipo de monitoramento geral",
+    "markdownSupported": "Sintaxe Markdown suportada",
+    "emojiCheatSheet": "Folha de dicas de emojis: {0}",
+    "topic": "Tema",
+    "topicExplanation": "Tópico MQTT para monitorar",
+    "successMessageExplanation": "Mensagem MQTT que será considerada como sucesso",
+    "Content Type": "Tipo de Conteúdo",
+    "Shrink Database": "Encolher Banco de Dados",
+    "Content": "Conteúdo",
+    "Pick a RR-Type...": "Escolha um tipo RR…",
+    "Pick Accepted Status Codes...": "Escolha Códigos de Status Aceitos…",
+    "Pick Affected Monitors...": "Escolher Monitores Afetados…"
 }
