@@ -604,12 +604,9 @@ class Monitor extends BeanModel {
                     bean.msg = "";
                     bean.status = UP;
                     bean.ping = dayjs().valueOf() - startTime;
-                
                 } else if (this.type === "oracledb") {
                     let startTime = dayjs().valueOf();
-                
                     await oracledbQuery(this.databaseConnectionString, this.databaseQuery);
-                
                     bean.msg = "";
                     bean.status = UP;
                     bean.ping = dayjs().valueOf() - startTime;

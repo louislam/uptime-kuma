@@ -344,21 +344,18 @@ exports.mysqlQuery = function (connectionString, query) {
  * @param {string} query The query to validate the database with
  * @returns {Promise<(string[]|Object[]|Object)>}
  */
- exports.oracledbQuery = async function (connectionString, query) {
+exports.oracledbQuery = async function (connectionString, query) {
 
     try {
 
-        let connectionStringJson=JSON.parse('{' + connectionString + '}');
+        let connectionStringJson = JSON.parse('{' + connectionString + '}');
         let connection = await oracledb.getConnection(connectionStringJson);
-
         await connection.execute(query);
         await connection.close();
-
-    } 
-    catch (err) {
+    }
+    catch(err) {
         throw err;
     } 
-
 };
 
 /**
