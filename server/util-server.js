@@ -14,6 +14,7 @@ const mssql = require("mssql");
 const { Client } = require("pg");
 const postgresConParse = require("pg-connection-string").parse;
 const mysql = require("mysql2");
+const oracledb = require("oracledb");
 const { MongoClient } = require("mongodb");
 const { NtlmClient } = require("axios-ntlm");
 const { Settings } = require("./settings");
@@ -335,6 +336,29 @@ exports.mysqlQuery = function (connectionString, query) {
                 connection.destroy();
             });
     });
+};
+
+/**
+ * Run a query on Oracle DB
+ * @param {string} connectionString The database connection string
+ * @param {string} query The query to validate the database with
+ * @returns {Promise<(string[]|Object[]|Object)>}
+ */
+ exports.oracledbQuery = async function (connectionString, query) {
+
+    try {
+
+        let connectionStringJson=JSON.parse('{' + connectionString + '}');
+        let connection = await oracledb.getConnection(connectionStringJson);
+
+        await connection.execute(query);
+        await connection.close();
+
+    } 
+    catch (err) {
+        throw err;
+    } 
+
 };
 
 /**
