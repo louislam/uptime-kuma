@@ -249,7 +249,7 @@
     "enabled": "Ativado",
     "setAsDefault": "Definir como padrão",
     "Primary Base URL": "URL base principal",
-    "Resend Notification if Down X times consequently": "Reenviar Notificação se OFFLINE X vezes consecutivamente",
+    "Resend Notification if Down X times consecutively": "Reenviar Notificação se OFFLINE X vezes consecutivamente",
     "pushOptionalParams": "Parâmetros opcionais: {0}",
     "webhookFormDataDesc": "{multipart} é bom para PHP. O JSON precisará ser analisado com {decodeFunction}",
     "HeadersInvalidFormat": "Os cabeçalhos da solicitação não são um JSON válidos: ",

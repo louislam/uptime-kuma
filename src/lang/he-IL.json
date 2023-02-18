@@ -89,7 +89,7 @@
     "Heartbeat Interval": "מרווח פעימות",
     "Retries": "נסיונות חוזרים",
     "Heartbeat Retry Interval": "מרווח נסיונות חוזר של פעימות",
-    "Resend Notification if Down X times consequently": "שלח שוב הודעה אם ירד X פעמים כתוצאה מכך",
+    "Resend Notification if Down X times consecutively": "שלח שוב הודעה אם ירד X פעמים כתוצאה מכך",
     "Advanced": "מתקדם",
     "Upside Down Mode": "מצב הפוך",
     "Max. Redirects": "מקסימום הפניות מחדש",

@@ -74,7 +74,7 @@
     "Heartbeat Interval": "Jarak Waktu Heartbeat",
     "Retries": "Coba lagi",
     "Heartbeat Retry Interval": "Jeda Pengulangan Heartbeat",
-    "Resend Notification if Down X times consequently": "Kirim Ulang Notifikasi jika Tidak Aktif X kali",
+    "Resend Notification if Down X times consecutively": "Kirim Ulang Notifikasi jika Tidak Aktif X kali",
     "Advanced": "Tingkat Lanjut",
     "Upside Down Mode": "Mode Terbalik",
     "Max. Redirects": "Maksimal Pengalihan",

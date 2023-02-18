@@ -90,7 +90,7 @@
     "Heartbeat Interval": "Heartbeat interval",
     "Retries": "Počet pokusů",
     "Heartbeat Retry Interval": "Interval opakování heartbeatu",
-    "Resend Notification if Down X times consequently": "Zaslat oznámení znovu, pokud je služba nedostupná Xkrát za sebou",
+    "Resend Notification if Down X times consecutively": "Zaslat oznámení znovu, pokud je služba nedostupná Xkrát za sebou",
     "Advanced": "Rozšířené",
     "Upside Down Mode": "Inverzní režim",
     "Max. Redirects": "Max. přesměrování",
