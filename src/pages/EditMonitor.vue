@@ -952,6 +952,7 @@ message HealthCheckResponse {
          * @returns {void}
          */
         async submit() {
+
             this.processing = true;
 
             if (!this.isInputValid()) {
@@ -962,6 +963,10 @@ message HealthCheckResponse {
             // Beautify the JSON format (only if httpBodyEncoding is not set or === json)
             if (this.monitor.body && (!this.monitor.httpBodyEncoding || this.monitor.httpBodyEncoding === "json")) {
                 this.monitor.body = JSON.stringify(JSON.parse(this.monitor.body), null, 4);
+            }
+
+            if (this.monitor.type && this.monitor.type !== "http" && this.monitor.type !== "keyword") {
+                this.monitor.httpBodyEncoding = null;
             }
 
             if (this.monitor.headers) {
