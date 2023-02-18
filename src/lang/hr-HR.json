@@ -378,7 +378,7 @@
     "resendEveryXTimes": "Ponovno pošalji svakih {0} puta",
     "resendDisabled": "Ponovno slanje je onemogućeno",
     "dnsPortDescription": "Port DNS poslužitelja. Zadana vrijednost je 53. Moguće je promijeniti ga u svakom trenutku.",
-    "Resend Notification if Down X times consequently": "Ponovno pošalji obavijest ako je usluga nedostupna više puta zaredom",
+    "Resend Notification if Down X times consecutively": "Ponovno pošalji obavijest ako je usluga nedostupna više puta zaredom",
     "topic": "Tema",
     "topicExplanation": "MQTT tema koja će se monitorirati",
     "successMessage": "Poruka o uspjehu",

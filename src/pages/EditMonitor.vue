@@ -340,7 +340,7 @@
 
                             <div class="my-3">
                                 <label for="resend-interval" class="form-label">
-                                    {{ $t("Resend Notification if Down X times consequently") }}
+                                    {{ $t("Resend Notification if Down X times consecutively") }}
                                     <span v-if="monitor.resendInterval > 0">({{ $t("resendEveryXTimes", [ monitor.resendInterval ]) }})</span>
                                     <span v-else>({{ $t("resendDisabled") }})</span>
                                 </label>

@@ -680,7 +680,7 @@
     "Passive Monitor Type": "수동 모니터링",
     "Specific Monitor Type": "특정 모니터링",
     "Monitor": "모니터",
-    "Resend Notification if Down X times consequently": "X번 중단될 경우 알림 다시 보내기",
+    "Resend Notification if Down X times consecutively": "X번 중단될 경우 알림 다시 보내기",
     "Schedule maintenance": "점검 예약하기",
     "Affected Monitors": "영향을 받는 모니터링",
     "Pick Affected Monitors...": "영향을 받는 모니터링 선택하기…",
