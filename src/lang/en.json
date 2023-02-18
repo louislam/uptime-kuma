@@ -446,7 +446,7 @@
     "smtpCC": "CC",
     "smtpBCC": "BCC",
     "Discord Webhook URL": "Discord Webhook URL",
-    "wayToGetDiscordURL": "You can get this by going to Server Settings -> Integrations -> Create Webhook",
+    "wayToGetDiscordURL": "You can get this by going to Server Settings -> Integrations -> View Webhooks -> New Webhook",
     "Bot Display Name": "Bot Display Name",
     "Prefix Custom Message": "Prefix Custom Message",
     "Hello @everyone is...": "Hello {'@'}everyone is…",

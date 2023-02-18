@@ -74,7 +74,7 @@
     "Heartbeat Interval": "Servis Test Aralığı",
     "Retries": "Yeniden deneme",
     "Heartbeat Retry Interval": "Sağlık Durumları Tekrar Deneme Sıklığı",
-    "Resend Notification if Down X times consecutively": "Sonuç olarak X kez düşerse bildirimi yeniden gönder",
+    "Resend Notification if Down X times consecutively": "Art arda X kez düşerse bildirimi yeniden gönder",
     "Advanced": "Gelişmiş",
     "Upside Down Mode": "Ters/Düz Modu",
     "Max. Redirects": "Maksimum Yönlendirme",
@@ -217,7 +217,7 @@
     "smtpBCC": "BCC",
     "discord": "Discord",
     "Discord Webhook URL": "Discord Webhook URL",
-    "wayToGetDiscordURL": "Bunu Sunucu Ayarları -> Entegrasyonlar -> Webhook Oluştur'a giderek alabilirsiniz.",
+    "wayToGetDiscordURL": "Bunu Sunucu Ayarları -> Entegrasyonlar -> Webhookları Görüntüle -> Yeni Webhook Oluştur adımını izleyerek alabilirsiniz.",
     "Bot Display Name": "Botun Görünecek Adı",
     "Prefix Custom Message": "Önek Özel Mesaj",
     "Hello @everyone is...": "Merhaba {'@'}everyone…",
@@ -448,7 +448,7 @@
     "Message:": "Mesaj:",
     "Don't know how to get the token? Please read the guide:": "Tokeni nasıl alacağınızı bilmiyor musunuz? Lütfen kılavuzu okuyun:",
     "The current connection may be lost if you are currently connecting via Cloudflare Tunnel. Are you sure want to stop it? Type your current password to confirm it.": "Halihazırda Cloudflare Tüneli üzerinden bağlanıyorsanız mevcut bağlantı kesilebilir. Durdurmak istediğinden emin misin? Onaylamak için mevcut şifrenizi yazın.",
-    "HTTP Headers": "HTTP Headers",
+    "HTTP Headers": "HTTP Başlıkları",
     "Trust Proxy": "Trust Proxy",
     "Other Software": "Diğer Yazılımlar",
     "For example: nginx, Apache and Traefik.": "Örneğin: nginx, Apache ve Traefik.",
@@ -691,5 +691,10 @@
     "promosms": "PromoSMS",
     "lunasea": "LunaSea",
     "line": "Line Messenger",
-    "mattermost": "Mattermost"
+    "mattermost": "Mattermost",
+    "markdownSupported": "Markdown yazım formatı desteklenir",
+    "Google Analytics ID": "Google Analytics ID",
+    "Edit Tag": "Etiketi Düzenle",
+    "Learn More": "Daha fazla bilgi edin",
+    "Server Address": "Sunucu Adresi"
 }

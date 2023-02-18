@@ -154,7 +154,7 @@
     "Token": "توکن",
     "Show URI": "نمایش آدرس (URI) ",
     "Tags": "برچسب‌ها",
-    "Add New below or Select...": "یک مورد جدید اضافه کنید و یا از لیست انتخاب کنید...",
+    "Add New below or Select...": "یک مورد جدید اضافه کنید و یا از لیست انتخاب کنید…",
     "Tag with this name already exist.": "یک برچسب با این «نام» از قبل وجود دارد",
     "Tag with this value already exist.": "یک برچسب با این «مقدار» از قبل وجود دارد.",
     "color": "رنگ",
@@ -187,5 +187,15 @@
     "One record": "یک مورد",
     "Info": "اطلاعات",
     "Powered by": "نیرو گرفته از",
-    "apprise": "Apprise (Support 50+ Notification services)"
+    "apprise": "Apprise (Support 50+ Notification services)",
+    "Monitor": "مانیتور | مانتیور ها",
+    "Help": "کمک",
+    "Game": "بازی",
+    "Primary Base URL": "آدرس URL اصلی",
+    "Passive Monitor Type": "حالت مانیتور غیرفعال",
+    "Specific Monitor Type": "حالت مانیتور شخصی",
+    "statusMaintenance": "در دست تعمیر",
+    "Maintenance": "در حال تعمیر",
+    "General Monitor Type": "حالت مانیتور عمومی",
+    "markdownSupported": "شیوه نگارشی Markdown پشتیبانی می شود"
 }
