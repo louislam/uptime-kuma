@@ -20,6 +20,9 @@
                 <div class="my-3">
                     <label for="description" class="form-label">{{ $t("Description") }}</label>
                     <textarea id="description" v-model="config.description" class="form-control"></textarea>
+                    <div class="form-text">
+                        {{ $t("markdownSupported") }}
+                    </div>
                 </div>
 
                 <!-- Footer Text -->
@@ -258,7 +261,9 @@
 
             <!-- Description -->
             <strong v-if="editMode">{{ $t("Description") }}:</strong>
-            <Editable v-model="config.description" :contenteditable="editMode" tag="div" class="mb-4 description" />
+            <Editable v-if="enableEditMode" v-model="config.description" :contenteditable="editMode" tag="div" class="mb-4 description" />
+            <!-- eslint-disable-next-line vue/no-v-html-->
+            <div v-if="! enableEditMode" class="alert-heading p-2" v-html="descriptionHTML"></div>
 
             <div v-if="editMode" class="mb-4">
                 <div>
@@ -498,6 +503,10 @@ export default {
 
         incidentHTML() {
             return DOMPurify.sanitize(marked(this.incident.content));
+        },
+
+        descriptionHTML() {
+            return DOMPurify.sanitize(marked(this.config.description));
         },
 
         footerHTML() {
