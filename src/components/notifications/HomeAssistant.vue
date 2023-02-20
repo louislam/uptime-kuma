@@ -18,7 +18,7 @@
         <input id="notificationService" v-model="$parent.notification.notificationService" type="text" :placeholder="$t('default: notify all devices')" class="form-control">
 
         <div class="form-text">
-            <p>{{ $t("A list of Notification Services can be found in Home Assistant under \"Developer Tools > Services\" search for \"notification\" to find your device/phone name.") }}</p>
+            <p>{{ $t('A list of Notification Services can be found in Home Assistant under "Developer Tools > Services" search for "notification" to find your device/phone name.') }}</p>
             <p>{{ $t("Automations can optionally be triggered in Home Assistant:") }}</p>
             <p>
                 {{ $t("Trigger type:") }} <code>Event</code><br />

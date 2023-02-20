@@ -8,7 +8,6 @@ class ClickSendSMS extends NotificationProvider {
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
         try {
-            console.log({ notification });
             let config = {
                 headers: {
                     "Content-Type": "application/json",

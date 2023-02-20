@@ -9,6 +9,9 @@ const Database = require("./database");
 const util = require("util");
 const { CacheableDnsHttpAgent } = require("./cacheable-dns-http-agent");
 const { Settings } = require("./settings");
+const dayjs = require("dayjs");
+const { PluginsManager } = require("./plugins-manager");
+// DO NOT IMPORT HERE IF THE MODULES USED `UptimeKumaServer.getInstance()`
 
 /**
  * `module.exports` (alias: `server`) should be inside this class, in order to avoid circular dependency issue.
@@ -26,6 +29,13 @@ class UptimeKumaServer {
      * @type {{}}
      */
     monitorList = {};
+
+    /**
+     * Main maintenance list
+     * @type {{}}
+     */
+    maintenanceList = {};
+
     entryPage = "dashboard";
     app = undefined;
     httpServer = undefined;
@@ -36,6 +46,22 @@ class UptimeKumaServer {
      * @type {string}
      */
     indexHTML = "";
+
+    generateMaintenanceTimeslotsInterval = undefined;
+
+    /**
+     * Plugins Manager
+     * @type {PluginsManager}
+     */
+    pluginsManager = null;
+
+    /**
+     *
+     * @type {{}}
+     */
+    static monitorTypeList = {
+
+    };
 
     static getInstance(args) {
         if (UptimeKumaServer.instance == null) {
@@ -72,11 +98,27 @@ class UptimeKumaServer {
             }
         }
 
-        CacheableDnsHttpAgent.registerGlobalAgent();
-
         this.io = new Server(this.httpServer);
     }
 
+    /** Initialise app after the database has been set up */
+    async initAfterDatabaseReady() {
+        await CacheableDnsHttpAgent.update();
+
+        process.env.TZ = await this.getTimezone();
+        dayjs.tz.setDefault(process.env.TZ);
+        log.debug("DEBUG", "Timezone: " + process.env.TZ);
+        log.debug("DEBUG", "Current Time: " + dayjs.tz().format());
+
+        await this.generateMaintenanceTimeslots();
+        this.generateMaintenanceTimeslotsInterval = setInterval(this.generateMaintenanceTimeslots, 60 * 1000);
+    }
+
+    /**
+     * Send list of monitors to client
+     * @param {Socket} socket
+     * @returns {Object} List of monitors
+     */
     async sendMonitorList(socket) {
         let list = await this.getMonitorJSONList(socket.userID);
         this.io.to(socket.userID).emit("monitorList", list);
@@ -99,6 +141,45 @@ class UptimeKumaServer {
 
         for (let monitor of monitorList) {
             result[monitor.id] = await monitor.toJSON();
+        }
+
+        return result;
+    }
+
+    /**
+     * Send maintenance list to client
+     * @param {Socket} socket Socket.io instance to send to
+     * @returns {Object}
+     */
+    async sendMaintenanceList(socket) {
+        return await this.sendMaintenanceListByUserID(socket.userID);
+    }
+
+    /**
+     * Send list of maintenances to user
+     * @param {number} userID
+     * @returns {Object}
+     */
+    async sendMaintenanceListByUserID(userID) {
+        let list = await this.getMaintenanceJSONList(userID);
+        this.io.to(userID).emit("maintenanceList", list);
+        return list;
+    }
+
+    /**
+     * Get a list of maintenances for the given user.
+     * @param {string} userID - The ID of the user to get maintenances for.
+     * @returns {Promise<Object>} A promise that resolves to an object with maintenance IDs as keys and maintenances objects as values.
+     */
+    async getMaintenanceJSONList(userID) {
+        let result = {};
+
+        let maintenanceList = await R.find("maintenance", " user_id = ? ORDER BY end_date DESC, title", [
+            userID,
+        ]);
+
+        for (let maintenance of maintenanceList) {
+            result[maintenance.id] = await maintenance.toJSON();
         }
 
         return result;
@@ -130,6 +211,11 @@ class UptimeKumaServer {
         errorLogStream.end();
     }
 
+    /**
+     * Get the IP of the client connected to the socket
+     * @param {Socket} socket
+     * @returns {string}
+     */
     async getClientIP(socket) {
         let clientIP = socket.client.conn.remoteAddress;
 
@@ -147,8 +233,106 @@ class UptimeKumaServer {
             return clientIP.replace(/^.*:/, "");
         }
     }
+
+    /**
+     * Attempt to get the current server timezone
+     * If this fails, fall back to environment variables and then make a
+     * guess.
+     * @returns {string}
+     */
+    async getTimezone() {
+        let timezone = await Settings.get("serverTimezone");
+        if (timezone) {
+            return timezone;
+        } else if (process.env.TZ) {
+            return process.env.TZ;
+        } else {
+            return dayjs.tz.guess();
+        }
+    }
+
+    /**
+     * Get the current offset
+     * @returns {string}
+     */
+    getTimezoneOffset() {
+        return dayjs().format("Z");
+    }
+
+    /**
+     * Set the current server timezone and environment variables
+     * @param {string} timezone
+     */
+    async setTimezone(timezone) {
+        await Settings.set("serverTimezone", timezone, "general");
+        process.env.TZ = timezone;
+        dayjs.tz.setDefault(timezone);
+    }
+
+    /** Load the timeslots for maintenance */
+    async generateMaintenanceTimeslots() {
+
+        let list = await R.find("maintenance_timeslot", " generated_next = 0 AND start_date <= DATETIME('now') ");
+
+        for (let maintenanceTimeslot of list) {
+            let maintenance = await maintenanceTimeslot.maintenance;
+            await MaintenanceTimeslot.generateTimeslot(maintenance, maintenanceTimeslot.end_date, false);
+            maintenanceTimeslot.generated_next = true;
+            await R.store(maintenanceTimeslot);
+        }
+
+    }
+
+    /** Stop the server */
+    async stop() {
+        clearTimeout(this.generateMaintenanceTimeslotsInterval);
+    }
+
+    loadPlugins() {
+        this.pluginsManager = new PluginsManager(this);
+    }
+
+    /**
+     *
+     * @returns {PluginsManager}
+     */
+    getPluginManager() {
+        return this.pluginsManager;
+    }
+
+    /**
+     *
+     * @param {MonitorType} monitorType
+     */
+    addMonitorType(monitorType) {
+        if (monitorType instanceof MonitorType && monitorType.name) {
+            if (monitorType.name in UptimeKumaServer.monitorTypeList) {
+                log.error("", "Conflict Monitor Type name");
+            }
+            UptimeKumaServer.monitorTypeList[monitorType.name] = monitorType;
+        } else {
+            log.error("", "Invalid Monitor Type: " + monitorType.name);
+        }
+    }
+
+    /**
+     *
+     * @param {MonitorType} monitorType
+     */
+    removeMonitorType(monitorType) {
+        if (UptimeKumaServer.monitorTypeList[monitorType.name] === monitorType) {
+            delete UptimeKumaServer.monitorTypeList[monitorType.name];
+        } else {
+            log.error("", "Remove MonitorType failed: " + monitorType.name);
+        }
+    }
+
 }
 
 module.exports = {
     UptimeKumaServer
 };
+
+// Must be at the end
+const MaintenanceTimeslot = require("./model/maintenance_timeslot");
+const { MonitorType } = require("./monitor-types/monitor-type");

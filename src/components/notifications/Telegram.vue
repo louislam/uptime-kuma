@@ -1,7 +1,7 @@
 <template>
     <div class="mb-3">
         <label for="telegram-bot-token" class="form-label">{{ $t("Bot Token") }}</label>
-        <HiddenInput id="telegram-bot-token" v-model="$parent.notification.telegramBotToken" :required="true" autocomplete="one-time-code"></HiddenInput>
+        <HiddenInput id="telegram-bot-token" v-model="$parent.notification.telegramBotToken" :required="true" autocomplete="new-password"></HiddenInput>
         <i18n-t tag="div" keypath="wayToGetTelegramToken" class="form-text">
             <a href="https://t.me/BotFather" target="_blank">https://t.me/BotFather</a>
         </i18n-t>
@@ -42,6 +42,11 @@ export default {
         HiddenInput,
     },
     methods: {
+        /**
+         * Get the URL for telegram updates
+         * @param {string} [mode=masked] Should the token be masked?
+         * @returns {string} formatted URL
+         */
         telegramGetUpdatesURL(mode = "masked") {
             let token = `<${this.$t("YOUR BOT TOKEN HERE")}>`;
 
@@ -55,6 +60,8 @@ export default {
 
             return `https://api.telegram.org/bot${token}/getUpdates`;
         },
+
+        /** Get the telegram chat ID */
         async autoGetTelegramChatID() {
             try {
                 let res = await axios.get(this.telegramGetUpdatesURL("withToken"));

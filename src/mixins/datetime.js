@@ -1,10 +1,4 @@
 import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-import timezone from "dayjs/plugin/timezone";
-import utc from "dayjs/plugin/utc";
-dayjs.extend(utc);
-dayjs.extend(timezone);
-dayjs.extend(relativeTime);
 
 /**
  * DateTime Mixin
@@ -19,12 +13,46 @@ export default {
 
     methods: {
         /**
+         * Convert value to UTC
+         * @param {string | number | Date | dayjs.Dayjs} value
+         * @returns {dayjs.Dayjs}
+         */
+        toUTC(value) {
+            return dayjs.tz(value, this.timezone).utc().format();
+        },
+
+        /**
+         * Used for <input type="datetime" />
+         * @param value
+         * @returns {string}
+         */
+        toDateTimeInputFormat(value) {
+            return this.datetimeFormat(value, "YYYY-MM-DDTHH:mm");
+        },
+
+        /**
          * Return a given value in the format YYYY-MM-DD HH:mm:ss
          * @param {any} value Value to format as date time
          * @returns {string}
          */
         datetime(value) {
             return this.datetimeFormat(value, "YYYY-MM-DD HH:mm:ss");
+        },
+
+        /**
+         * Get time for maintenance
+         * @param {string | number | Date | dayjs.Dayjs} value
+         * @returns {string}
+         */
+        datetimeMaintenance(value) {
+            const inputDate = new Date(value);
+            const now = new Date(Date.now());
+
+            if (inputDate.getFullYear() === now.getUTCFullYear() && inputDate.getMonth() === now.getUTCMonth() && inputDate.getDay() === now.getUTCDay()) {
+                return this.datetimeFormat(value, "HH:mm");
+            } else {
+                return this.datetimeFormat(value, "YYYY-MM-DD HH:mm");
+            }
         },
 
         /**
@@ -64,7 +92,7 @@ export default {
                 return dayjs.utc(value).tz(this.timezone).format(format);
             }
             return "";
-        }
+        },
     },
 
     computed: {

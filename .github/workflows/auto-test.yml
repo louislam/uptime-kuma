@@ -6,8 +6,12 @@ name: Auto Test
 on:
   push:
     branches: [ master ]
+    paths-ignore:
+      - '*.md'
   pull_request:
     branches: [ master ]
+    paths-ignore:
+      - '*.md'
 
 jobs:
   auto-test:
@@ -18,7 +22,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
-        node: [ 14, 16, 17, 18 ]
+        node: [ 14, 16, 18, 19 ]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
@@ -36,6 +40,7 @@ jobs:
       env:
         HEADLESS_TEST: 1
         JUST_FOR_TEST: ${{ secrets.JUST_FOR_TEST }}
+
   check-linters:
     runs-on: ubuntu-latest
 
@@ -66,3 +71,19 @@ jobs:
     - run: npm install
     - run: npm run build
     - run: npm run cy:test
+
+  frontend-unit-tests:
+    needs: [ check-linters ]
+    runs-on: ubuntu-latest
+    steps:
+    - run: git config --global core.autocrlf false  # Mainly for Windows
+    - uses: actions/checkout@v3
+
+    - name: Use Node.js 14
+      uses: actions/setup-node@v3
+      with:
+        node-version: 14
+        cache: 'npm'
+    - run: npm install
+    - run: npm run build
+    - run: npm run cy:run:unit
