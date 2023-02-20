@@ -272,7 +272,7 @@ class Monitor extends BeanModel {
 
                     if (children.length > 0) {
                         bean.status = UP;
-                        bean.msg = "All childs up and running";
+                        bean.msg = "All children up and running";
                         for (const child of children) {
                             if (!child.active) {
                                 // Ignore inactive childs
