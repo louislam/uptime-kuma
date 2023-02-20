@@ -8,6 +8,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Newtonsoft.Json;
 
 namespace UptimeKuma {
     public partial class DownloadForm : Form {
@@ -23,9 +24,18 @@ namespace UptimeKuma {
             webClient.DownloadProgressChanged += DownloadProgressChanged;
             webClient.DownloadFileCompleted += DownloadFileCompleted;
 
+            label.Text = "Reading latest version...";
+
+            // Read json from https://uptime.kuma.pet/version
+            var versionObj = JsonConvert.DeserializeObject<Version>(new WebClient().DownloadString("https://uptime.kuma.pet/version"));
+
+
+            var nodeVersion = versionObj.nodejs;
+            var uptimeKumaVersion = versionObj.latest;
+
             if (!Directory.Exists("node")) {
                 downloadQueue.Enqueue(new DownloadItem {
-                    URL = "https://nodejs.org/dist/v16.17.1/node-v16.17.1-win-x64.zip",
+                    URL = $"https://nodejs.org/dist/v{nodeVersion}/node-v{nodeVersion}-win-x64.zip",
                     Filename = "node.zip",
                     TargetFolder = "node"
                 });
@@ -33,7 +43,7 @@ namespace UptimeKuma {
 
             if (!Directory.Exists("node")) {
                 downloadQueue.Enqueue(new DownloadItem {
-                    URL = "https://github.com/louislam/uptime-kuma/archive/refs/tags/1.18.3.zip",
+                    URL = $"https://github.com/louislam/uptime-kuma/archive/refs/tags/{uptimeKumaVersion}.zip",
                     Filename = "core.zip",
                     TargetFolder = "core"
                 });

@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Microsoft.Win32;
 using UptimeKuma.Properties;
 
 namespace UptimeKuma {
@@ -25,17 +26,27 @@ namespace UptimeKuma {
 
     public class UptimeKumaApplicationContext : ApplicationContext
     {
+        const string appName = "Uptime Kuma";
+
         private NotifyIcon trayIcon;
         private Process process;
+
+        private MenuItem runWhenStarts;
+
+        private RegistryKey registryKey = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
 
         public UptimeKumaApplicationContext()
         {
             trayIcon = new NotifyIcon();
 
+            runWhenStarts = new MenuItem("Run when system starts", RunWhenStarts);
+            runWhenStarts.Checked = registryKey.GetValue(appName) != null;
+
             trayIcon.Icon = Icon.ExtractAssociatedIcon(Assembly.GetExecutingAssembly().Location);
             trayIcon.ContextMenu = new ContextMenu(new MenuItem[] {
                 new("Open", Open),
                 //new("Debug Console", DebugConsole),
+                runWhenStarts,
                 new("Check for Update...", CheckForUpdate),
                 new("Visit GitHub...", VisitGitHub),
                 new("About", About),
@@ -57,6 +68,21 @@ namespace UptimeKuma {
             var form = new DownloadForm();
             form.Closed += Exit;
             form.Show();
+        }
+
+        private void RunWhenStarts(object sender, EventArgs e) {
+            if (registryKey == null) {
+                MessageBox.Show("Error: Unable to set startup registry key.");
+                return;
+            }
+
+            if (runWhenStarts.Checked) {
+                registryKey.DeleteValue(appName, false);
+                runWhenStarts.Checked = false;
+            } else {
+                registryKey.SetValue(appName, Application.ExecutablePath);
+                runWhenStarts.Checked = true;
+            }
         }
 
         void StartProcess() {
@@ -103,7 +129,7 @@ namespace UptimeKuma {
 
         void About(object sender, EventArgs e)
         {
-            MessageBox.Show("Uptime Kuma v1.0.0" + Environment.NewLine + "© 2022 Louis Lam", "Info");
+            MessageBox.Show("Uptime Kuma Windows Runtime v1.0.0" + Environment.NewLine + "© 2023 Louis Lam", "Info");
         }
 
         void Exit(object sender, EventArgs e)
