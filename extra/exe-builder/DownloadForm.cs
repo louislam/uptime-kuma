@@ -27,11 +27,12 @@ namespace UptimeKuma {
             label.Text = "Reading latest version...";
 
             // Read json from https://uptime.kuma.pet/version
-            var versionObj = JsonConvert.DeserializeObject<Version>(new WebClient().DownloadString("https://uptime.kuma.pet/version"));
-
+            var versionJson = new WebClient().DownloadString("https://uptime.kuma.pet/version");
+            var versionObj = JsonConvert.DeserializeObject<Version>(versionJson);
 
             var nodeVersion = versionObj.nodejs;
             var uptimeKumaVersion = versionObj.latest;
+            var hasUpdateFile = File.Exists("update");
 
             if (!Directory.Exists("node")) {
                 downloadQueue.Enqueue(new DownloadItem {
@@ -41,12 +42,30 @@ namespace UptimeKuma {
                 });
             }
 
-            if (!Directory.Exists("node")) {
+            if (!Directory.Exists("core") || hasUpdateFile) {
+
+                // It is update, rename the core folder to core.old
+                if (Directory.Exists("core")) {
+                    // Remove the old core.old folder
+                    if (Directory.Exists("core.old")) {
+                        Directory.Delete("core.old", true);
+                    }
+
+                    Directory.Move("core", "core.old");
+                }
+
                 downloadQueue.Enqueue(new DownloadItem {
                     URL = $"https://github.com/louislam/uptime-kuma/archive/refs/tags/{uptimeKumaVersion}.zip",
                     Filename = "core.zip",
                     TargetFolder = "core"
                 });
+
+                File.WriteAllText("version.json", versionJson);
+
+                // Delete the update file
+                if (hasUpdateFile) {
+                    File.Delete("update");
+                }
             }
 
             DownloadNextFile();
@@ -75,9 +94,12 @@ namespace UptimeKuma {
         void npmSetup() {
             labelData.Text = "";
 
+            var npm = "..\\node\\npm.cmd";
+            var cmd = $"{npm} ci --production & {npm} run download-dist & exit";
+
             var startInfo = new ProcessStartInfo {
                 FileName = "cmd.exe",
-                Arguments = "run setup",
+                Arguments = $"/k \"{cmd}\"",
                 RedirectStandardOutput = false,
                 RedirectStandardError = false,
                 RedirectStandardInput = true,
@@ -89,11 +111,11 @@ namespace UptimeKuma {
             var process = new Process();
             process.StartInfo = startInfo;
             process.EnableRaisingEvents = true;
-            process.Exited += (object _, EventArgs e) => {
+            process.Exited += (_, e) => {
                 progressBar.Value = 100;
 
                if (process.ExitCode == 0) {
-                   Task.Delay(2000).ContinueWith((task) => {
+                   Task.Delay(2000).ContinueWith(_ => {
                        Application.Restart();
                    });
                    label.Text = "Done";
@@ -105,10 +127,7 @@ namespace UptimeKuma {
             process.Start();
             label.Text = "Installing dependencies and download dist files";
             progressBar.Value = 50;
-
-            process.StandardInput.WriteLine("\"../node/npm\" ci --production");
-            process.StandardInput.WriteLine("\"../node/npm\" run download-dist");
-            process.StandardInput.WriteLine("exit");
+            process.WaitForExit();
         }
 
         void DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e) {

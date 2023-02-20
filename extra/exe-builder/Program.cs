@@ -4,11 +4,13 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Win32;
+using Newtonsoft.Json;
 using UptimeKuma.Properties;
 
 namespace UptimeKuma {
@@ -56,7 +58,9 @@ namespace UptimeKuma {
             trayIcon.MouseDoubleClick += new MouseEventHandler(Open);
             trayIcon.Visible = true;
 
-            if (Directory.Exists("core") && Directory.Exists("node") && Directory.Exists("core/node_modules") && Directory.Exists("core/dist")) {
+            var hasUpdateFile = File.Exists("update");
+
+            if (!hasUpdateFile && Directory.Exists("core") && Directory.Exists("node") && Directory.Exists("core/node_modules") && Directory.Exists("core/dist")) {
                 // Go go go
                 StartProcess();
             } else {
@@ -110,6 +114,10 @@ namespace UptimeKuma {
             }
         }
 
+        void StopProcess() {
+            process?.Kill();
+        }
+
         void Open(object sender, EventArgs e) {
             Process.Start("http://localhost:3001");
         }
@@ -119,7 +127,35 @@ namespace UptimeKuma {
         }
 
         void CheckForUpdate(object sender, EventArgs e) {
-            Process.Start("https://github.com/louislam/uptime-kuma/releases");
+            var needUpdate = false;
+
+            // Check version.json exists
+            if (File.Exists("version.json")) {
+                // Load version.json and compare with the latest version from GitHub
+                var currentVersionObj = JsonConvert.DeserializeObject<Version>(File.ReadAllText("version.json"));
+
+                var versionJson = new WebClient().DownloadString("https://uptime.kuma.pet/version");
+                var latestVersionObj = JsonConvert.DeserializeObject<Version>(versionJson);
+
+                // Compare version, if the latest version is newer, then update
+                if (new System.Version(latestVersionObj.latest).CompareTo(new System.Version(currentVersionObj.latest)) > 0) {
+                    var result = MessageBox.Show("A new version is available. Do you want to update?", "Update", MessageBoxButtons.YesNo);
+                    if (result == DialogResult.Yes) {
+                        // Create a empty file `update`, so the app will download the core files again at startup
+                        File.Create("update").Close();
+
+                        trayIcon.Visible = false;
+                        process?.Kill();
+
+                        // Restart the app, it will download the core files again at startup
+                        Application.Restart();
+                    }
+                } else {
+                    MessageBox.Show("You are using the latest version.");
+                }
+            }
+
+
         }
 
         void VisitGitHub(object sender, EventArgs e)
