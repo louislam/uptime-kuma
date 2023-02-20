@@ -36,6 +36,9 @@
         <WarningLevel>4</WarningLevel>
     </PropertyGroup>
     <PropertyGroup>
+        <ApplicationManifest>app.manifest</ApplicationManifest>
+    </PropertyGroup>
+    <PropertyGroup>
       <PostBuildEvent>COPY "$(SolutionDir)bin\Debug\uptime-kuma.exe" "%UserProfile%\Desktop\uptime-kuma-win64\"</PostBuildEvent>
     </PropertyGroup>
     <ItemGroup>
@@ -179,6 +182,7 @@
     </ItemGroup>
     <ItemGroup>
       <Content Include=".gitignore" />
+      <Content Include="app.manifest" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
     <Import Project="packages\Fody.6.5.5\build\Fody.targets" Condition="Exists('packages\Fody.6.5.5\build\Fody.targets')" />
