@@ -47,6 +47,7 @@ function download(url) {
                     });
                 }
                 console.log("Done");
+                process.exit(0);
             });
 
             tarStream.on("error", () => {
