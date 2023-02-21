@@ -41,6 +41,27 @@
                                         </option>
                                     </optgroup>
 
+                                    <optgroup :label="$t('databaseMonitorType')">
+                                        <option value="sqlserver">
+                                            Microsoft SQL Server
+                                        </option>
+                                        <option value="mongodb">
+                                            MongoDB
+                                        </option>
+                                        <option value="mysql">
+                                            MySQL/MariaDB
+                                        </option>
+                                        <option value="postgres">
+                                            PostgreSQL
+                                        </option>
+                                        <option value="oracledb">
+                                            Oracle Database
+                                        </option>
+                                        <option value="redis">
+                                            Redis
+                                        </option>
+                                    </optgroup>
+
                                     <optgroup :label="$t('Specific Monitor Type')">
                                         <option value="steam">
                                             {{ $t("Steam Game Server") }}
@@ -51,23 +72,8 @@
                                         <option value="mqtt">
                                             MQTT
                                         </option>
-                                        <option value="sqlserver">
-                                            Microsoft SQL Server
-                                        </option>
-                                        <option value="postgres">
-                                            PostgreSQL
-                                        </option>
-                                        <option value="mysql">
-                                            MySQL/MariaDB
-                                        </option>
-                                        <option value="mongodb">
-                                            MongoDB
-                                        </option>
                                         <option value="radius">
                                             Radius
-                                        </option>
-                                        <option value="redis">
-                                            Redis
                                         </option>
                                     </optgroup>
 
@@ -278,7 +284,7 @@
                             </template>
 
                             <!-- SQL Server / PostgreSQL / MySQL / Oracle -->
-                            <template v-if="monitor.type === 'sqlserver' || monitor.type === 'postgres' || monitor.type === 'mysql'">
+                            <template v-if="monitor.type === 'sqlserver' || monitor.type === 'postgres' || monitor.type === 'mysql' || monitor.type === 'oracledb'">
                                 <div class="my-3">
                                     <label for="sqlConnectionString" class="form-label">{{ $t("Connection String") }}</label>
 
@@ -292,7 +298,7 @@
                                         <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="mysql://username:password@host:port/database">
                                     </template>
                                     <template v-if="monitor.type === 'oracledb'">
-                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder='"user":"<USER>","password":"<PASSWORD>","connectionString":"(DESCRIPTION =(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=<HOSTADDRESS>)(PORT=<PORT>)))(CONNECT_DATA=(SERVER=DEDICATED)(SERVICE_NAME=<SERVICENAME>)))"'>
+                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="&quot;user&quot;:&quot;<USER>&quot;,&quot;password&quot;:&quot;<PASSWORD>&quot;,&quot;connectionString&quot;:&quot;(DESCRIPTION =(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=<HOSTADDRESS>)(PORT=<PORT>)))(CONNECT_DATA=(SERVER=DEDICATED)(SERVICE_NAME=<SERVICENAME>)))&quot;">
                                     </template>
                                 </div>
                                 <div class="my-3">

@@ -436,6 +436,7 @@
     "uninstall": "Uninstall",
     "uninstalling": "Uninstalling",
     "confirmUninstallPlugin": "Are you sure want to uninstall this plugin?",
+    "databaseMonitorType": "Database Monitor Type",
     "smtp": "Email (SMTP)",
     "secureOptionNone": "None / STARTTLS (25, 587)",
     "secureOptionTLS": "TLS (465)",
