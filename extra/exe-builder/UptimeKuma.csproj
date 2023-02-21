@@ -148,6 +148,7 @@
         <Compile Include="DownloadForm.Designer.cs">
           <DependentUpon>DownloadForm.cs</DependentUpon>
         </Compile>
+        <Compile Include="FS.cs" />
         <Compile Include="Program.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
         <Compile Include="Version.cs" />
