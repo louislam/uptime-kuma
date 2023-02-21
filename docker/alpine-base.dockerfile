@@ -1,5 +1,5 @@
 # DON'T UPDATE TO alpine3.13, 1.14, see #41.
-FROM node:16-alpine3.12
+FROM node:19.6.0-bullseye-slim
 WORKDIR /app
 
 # Install apprise, iputils for non-root ping, setpriv
