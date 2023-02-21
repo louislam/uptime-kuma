@@ -1,5 +1,5 @@
 let express = require("express");
-const { allowDevAllOrigin, allowAllOrigin, percentageToColor, filterAndJoin, send403 } = require("../util-server");
+const { allowDevAllOrigin, allowAllOrigin, percentageToColor, filterAndJoin, sendHttpError } = require("../util-server");
 const { R } = require("redbean-node");
 const apicache = require("../modules/apicache");
 const Monitor = require("../model/monitor");
@@ -175,7 +175,7 @@ router.get("/api/badge/:id/status", cache("5 minutes"), async (request, response
         response.type("image/svg+xml");
         response.send(svg);
     } catch (error) {
-        send403(response, error.message);
+        sendHttpError(response, error.message);
     }
 });
 
@@ -242,7 +242,7 @@ router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (reques
         response.type("image/svg+xml");
         response.send(svg);
     } catch (error) {
-        send403(response, error.message);
+        sendHttpError(response, error.message);
     }
 });
 
@@ -303,7 +303,7 @@ router.get("/api/badge/:id/ping/:duration?", cache("5 minutes"), async (request,
         response.type("image/svg+xml");
         response.send(svg);
     } catch (error) {
-        send403(response, error.message);
+        sendHttpError(response, error.message);
     }
 });
 
@@ -373,7 +373,7 @@ router.get("/api/badge/:id/avg-response/:duration?", cache("5 minutes"), async (
         response.type("image/svg+xml");
         response.send(svg);
     } catch (error) {
-        send403(response, error.message);
+        sendHttpError(response, error.message);
     }
 });
 
@@ -464,7 +464,7 @@ router.get("/api/badge/:id/cert-exp", cache("5 minutes"), async (request, respon
         response.type("image/svg+xml");
         response.send(svg);
     } catch (error) {
-        send403(response, error.message);
+        sendHttpError(response, error.message);
     }
 });
 
@@ -536,7 +536,7 @@ router.get("/api/badge/:id/response", cache("5 minutes"), async (request, respon
         response.type("image/svg+xml");
         response.send(svg);
     } catch (error) {
-        send403(response, error.message);
+        sendHttpError(response, error.message);
     }
 });
 
