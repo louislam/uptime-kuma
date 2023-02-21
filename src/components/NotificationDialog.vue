@@ -267,17 +267,16 @@ export default {
          * @return {string}
          */
         getUniqueDefaultName(notificationKey) {
-            /*
+
             let index = 1;
             let name = "";
             do {
                 name = this.$t("defaultNotificationName", {
-                    notification: this.$t(notificationKey).replace(/\(.+\)/, "").trim(),
+                    notification: this.notificationNameList[notificationKey].replace(/\(.+\)/, "").trim(),
                     number: index++
                 });
             } while (this.$root.notificationList.find(it => it.name === name));
-            return name;*/
-            return "123";
+            return name;
         }
     },
 };
