@@ -12,6 +12,35 @@ files_ownership () {
     chown -hRc "$PUID":"$PGID" /app/data
 }
 
+
+# When running as non root, most tests will work just fine, but we are unable
+# to chown (needed if we change the PUID/PGID between runs using the same data
+# volume), and unable to setpriv.
+#
+# This depends on the data volume being created - on first run - with the
+# correct file ownership and permissions.
+#
+# If the container starts as non-root we display a warning and then run
+# "as-is" if it's acknowledged.
+#
+if [ "$(id -u)" -ne "0" ]; then
+  echo "Container is not running as root; this is not yet supported but"
+  echo "a best effort can be made to continue regardless."
+  echo
+
+  if [ "${UNSUPPORTED}" != "yes" ]; then
+    echo "Please set an environment variable UNSUPPORTED=yes to confirm"
+    echo "that you wish to continue in this unsupported configuration."
+    return 1
+  fi
+
+  exec "$@"
+fi
+
+
+
+# ... else continue as normal.
+
 echo "==> Performing startup jobs and maintenance tasks"
 files_ownership
 
