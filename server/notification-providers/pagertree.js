@@ -13,8 +13,8 @@ class PagerTree extends NotificationProvider {
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         try {
             if (heartbeatJSON == null) {
-                const title = "[Test] Uptime Kuma Alert";
-                return this.postNotification(notification, title, monitorJSON, heartbeatJSON);
+                // general messages
+                return this.postNotification(notification, msg, monitorJSON, heartbeatJSON);
             }
 
             if (heartbeatJSON.status === UP && notification.pagertreeAutoResolve === "resolve") {
@@ -64,7 +64,7 @@ class PagerTree extends NotificationProvider {
             headers: { "Content-Type": "application/json" },
             data: {
                 event_type: eventAction,
-                id: heartbeatJSON?.monitorID || "uptime-kuma-test",
+                id: heartbeatJSON?.monitorID || "uptime-kuma",
                 title: title,
                 urgency: notification.pagertreeUrgency,
                 heartbeat: heartbeatJSON,
