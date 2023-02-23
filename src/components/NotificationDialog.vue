@@ -13,7 +13,10 @@
                         <div class="mb-3">
                             <label for="notification-type" class="form-label">{{ $t("Notification Type") }}</label>
                             <select id="notification-type" v-model="notification.type" class="form-select">
-                                <option v-for="(name, type) in notificationNameList" :key="type" :value="type">{{ name }}</option>
+                                <option v-for="(name, type) in notificationNameList.regularList" :key="type" :value="type">{{ name }}</option>
+                                <optgroup :label="$t('notificationRegional')">
+                                    <option v-for="(name, type) in notificationNameList.regionalList" :key="type" :value="type">{{ name }}</option>
+                                </optgroup>
                             </select>
                         </div>
 
@@ -106,17 +109,13 @@ export default {
         },
 
         notificationNameList() {
-            let list = {
+            let regularList = {
                 "alerta": "Alerta",
                 "AlertNow": "AlertNow",
-                "AliyunSMS": "AliyunSMS (阿里云短信服务)",
                 "apprise": this.$t("apprise"),
                 "Bark": "Bark",
                 "clicksendsms": "ClickSend SMS",
-                "DingDing": "DingDing (钉钉自定义机器人)",
                 "discord": "Discord",
-                "Feishu": "Feishu (飞书)",
-                "FreeMobile": "FreeMobile",
                 "GoogleChat": "Google Chat (Google Workspace)",
                 "gorush": "Gorush",
                 "gotify": "Gotify",
@@ -131,16 +130,12 @@ export default {
                 "octopush": "Octopush",
                 "OneBot": "OneBot",
                 "PagerDuty": "PagerDuty",
-                "promosms": "PromoSMS",
                 "pushbullet": "Pushbullet",
                 "PushByTechulus": "Push by Techulus",
-                "PushDeer": "PushDeer",
                 "pushover": "Pushover",
                 "pushy": "Pushy",
                 "rocket.chat": "Rocket.Chat",
-                "serwersms": "SerwerSMS.pl",
                 "signal": "Signal",
-                "SMSManager": "SmsManager (smsmanager.cz)",
                 "slack": "Slack",
                 "squadcast": "SquadCast",
                 "SMSEagle": "SMSEagle",
@@ -150,23 +145,51 @@ export default {
                 "telegram": "Telegram",
                 "Splunk": "Splunk",
                 "webhook": "Webhook",
-                "WeCom": "WeCom (企业微信群机器人)",
                 "GoAlert": "GoAlert",
-                "ServerChan": "ServerChan (Server酱)",
                 "ZohoCliq": "ZohoCliq"
+            };
+
+            // Put notifications here if it's not supported in most regions or its documentation is not in English
+            let regionalList = {
+                "AliyunSMS": "AliyunSMS (阿里云短信服务)",
+                "DingDing": "DingDing (钉钉自定义机器人)",
+                "Feishu": "Feishu (飞书)",
+                "FreeMobile": "FreeMobile (mobile.free.fr)",
+                "PushDeer": "PushDeer",
+                "promosms": "PromoSMS",
+                "serwersms": "SerwerSMS.pl",
+                "SMSManager": "SmsManager (smsmanager.cz)",
+                "WeCom": "WeCom (企业微信群机器人)",
+                "ServerChan": "ServerChan (Server酱)",
             };
 
             // Sort by notification name
             // No idea how, but it works
             // https://stackoverflow.com/questions/1069666/sorting-object-property-by-values
-            const sortable = Object.entries(list)
-                .sort(([ , a ], [ , b ]) => a - b)
-                .reduce((r, [ k, v ]) => ({
-                    ...r,
-                    [k]: v
-                }), {});
+            let sort = (list2) => {
+                return Object.entries(list2)
+                    .sort(([ , a ], [ , b ]) => a.localeCompare(b))
+                    .reduce((r, [ k, v ]) => ({
+                        ...r,
+                        [k]: v
+                    }), {});
+            };
 
-            return sortable;
+            return {
+                regularList: sort(regularList),
+                regionalList: sort(regionalList),
+            };
+        },
+
+        notificationFullNameList() {
+            let list = {};
+            for (let [ key, value ] of Object.entries(this.notificationNameList.regularList)) {
+                list[key] = value;
+            }
+            for (let [ key, value ] of Object.entries(this.notificationNameList.regionalList)) {
+                list[key] = value;
+            }
+            return list;
         },
     },
 
@@ -272,7 +295,7 @@ export default {
             let name = "";
             do {
                 name = this.$t("defaultNotificationName", {
-                    notification: this.notificationNameList[notificationKey].replace(/\(.+\)/, "").trim(),
+                    notification: this.notificationFullNameList[notificationKey].replace(/\(.+\)/, "").trim(),
                     number: index++
                 });
             } while (this.$root.notificationList.find(it => it.name === name));

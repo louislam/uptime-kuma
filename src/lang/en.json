@@ -432,6 +432,7 @@
     "uninstall": "Uninstall",
     "uninstalling": "Uninstalling",
     "confirmUninstallPlugin": "Are you sure want to uninstall this plugin?",
+    "notificationRegional": "Regional",
     "smtp": "Email (SMTP)",
     "secureOptionNone": "None / STARTTLS (25, 587)",
     "secureOptionTLS": "TLS (465)",
