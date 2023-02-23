@@ -496,6 +496,16 @@ class Database {
             const shmPath = Database.path + "-shm";
             const walPath = Database.path + "-wal";
 
+            // Make sure we have a backup to restore before deleting old db
+            if (
+                !fs.existsSync(this.backupPath)
+                && !fs.existsSync(shmPath)
+                && !fs.existsSync(walPath)
+            ) {
+                log.error("db", "Backup file not found! Leaving database in failed state.");
+                process.exit(1);
+            }
+
             // Delete patch failed db
             try {
                 if (fs.existsSync(Database.path)) {

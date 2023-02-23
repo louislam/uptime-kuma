@@ -143,7 +143,7 @@ class Monitor extends BeanModel {
      * @returns {Promise<LooseObject<any>[]>}
      */
     async getTags() {
-        return await R.getAll("SELECT mt.*, tag.name, tag.color FROM monitor_tag mt JOIN tag ON mt.tag_id = tag.id WHERE mt.monitor_id = ?", [ this.id ]);
+        return await R.getAll("SELECT mt.*, tag.name, tag.color FROM monitor_tag mt JOIN tag ON mt.tag_id = tag.id WHERE mt.monitor_id = ? ORDER BY tag.name", [ this.id ]);
     }
 
     /**
@@ -203,7 +203,7 @@ class Monitor extends BeanModel {
         let previousBeat = null;
         let retries = 0;
 
-        let prometheus = new Prometheus(this);
+        this.prometheus = new Prometheus(this);
 
         const beat = async () => {
 
@@ -755,7 +755,7 @@ class Monitor extends BeanModel {
             await R.store(bean);
 
             log.debug("monitor", `[${this.name}] prometheus.update`);
-            prometheus.update(bean, tlsInfo);
+            this.prometheus.update(bean, tlsInfo);
 
             previousBeat = bean;
 
@@ -840,15 +840,15 @@ class Monitor extends BeanModel {
         clearTimeout(this.heartbeatInterval);
         this.isStop = true;
 
-        this.prometheus().remove();
+        this.prometheus.remove();
     }
 
     /**
-     * Get a new prometheus instance
-     * @returns {Prometheus}
+     * Get prometheus instance
+     * @returns {Prometheus|undefined}
      */
-    prometheus() {
-        return new Prometheus(this);
+    getPrometheus() {
+        return this.prometheus;
     }
 
     /**

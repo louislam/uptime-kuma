@@ -1,6 +1,6 @@
 {
     "name": "uptime-kuma",
-    "version": "1.20.0-beta.0",
+    "version": "1.20.1",
     "license": "MIT",
     "repository": {
         "type": "git",
@@ -39,7 +39,7 @@
         "build-docker-nightly-amd64": "docker buildx build -f docker/dockerfile --platform linux/amd64 -t louislam/uptime-kuma:nightly-amd64 --target nightly . --push --progress plain",
         "build-docker-pr-test": "docker buildx build -f docker/dockerfile --platform linux/amd64,linux/arm64 -t louislam/uptime-kuma:pr-test --target pr-test . --push",
         "upload-artifacts": "docker buildx build -f docker/dockerfile --platform linux/amd64 -t louislam/uptime-kuma:upload-artifact --build-arg VERSION --build-arg GITHUB_TOKEN --target upload-artifact . --progress plain",
-        "setup": "git checkout 1.19.6 && npm ci --production && npm run download-dist",
+        "setup": "git checkout 1.20.1 && npm ci --production && npm run download-dist",
         "download-dist": "node extra/download-dist.js",
         "mark-as-nightly": "node extra/mark-as-nightly.js",
         "reset-password": "node extra/reset-password.js",
@@ -63,7 +63,8 @@
         "cy:run": "npx cypress run --browser chrome --headless --config-file ./config/cypress.config.js",
         "cy:run:unit": "npx cypress run --browser chrome --headless --config-file ./config/cypress.frontend.config.js",
         "cypress-open": "concurrently -k -r \"node test/prepare-test-server.js && node server/server.js --port=3002 --data-dir=./data/test/\" \"cypress open --config-file ./config/cypress.config.js\"",
-        "build-healthcheck-armv7": "cross-env GOOS=linux GOARCH=arm GOARM=7 go build -x -o ./extra/healthcheck-armv7 ./extra/healthcheck.go"
+        "build-healthcheck-armv7": "cross-env GOOS=linux GOARCH=arm GOARM=7 go build -x -o ./extra/healthcheck-armv7 ./extra/healthcheck.go",
+        "depoly-demo-server": "node extra/deploy-demo-server.js"
     },
     "dependencies": {
         "@grpc/grpc-js": "~1.7.3",
@@ -112,6 +113,7 @@
         "prom-client": "~13.2.0",
         "prometheus-api-metrics": "~3.2.1",
         "protobufjs": "~7.1.1",
+        "qs": "~6.10.4",
         "redbean-node": "~0.2.0",
         "redis": "~4.5.1",
         "socket.io": "~4.5.3",
@@ -150,8 +152,9 @@
         "eslint": "~8.14.0",
         "eslint-plugin-vue": "~8.7.1",
         "favico.js": "~0.3.10",
-        "marked": "~4.2.5",
         "jest": "~27.2.5",
+        "marked": "~4.2.5",
+        "node-ssh": "~13.0.1",
         "postcss-html": "~1.5.0",
         "postcss-rtlcss": "~3.7.2",
         "postcss-scss": "~4.0.4",

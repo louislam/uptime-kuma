@@ -90,7 +90,7 @@
     "Heartbeat Interval": "فاصل نبضات القلب",
     "Retries": "يحاول مجدداً",
     "Heartbeat Retry Interval": "الفاصل الزمني لإعادة محاكمة نبضات القلب",
-    "Resend Notification if Down X times consequently": "إعادة تقديم الإخطار إذا انخفض x مرات بالتالي",
+    "Resend Notification if Down X times consecutively": "إعادة تقديم الإخطار إذا انخفض x مرات بالتالي",
     "Advanced": "متقدم",
     "Upside Down Mode": "وضع أسفل أسفل",
     "Max. Redirects": "الأعلى. إعادة التوجيه",

@@ -89,7 +89,7 @@
     "Heartbeat Interval": "心跳間隔",
     "Retries": "重試次數",
     "Heartbeat Retry Interval": "心跳重試間隔",
-    "Resend Notification if Down X times consequently": "若 X 次心跳皆離線，重新傳送通知",
+    "Resend Notification if Down X times consecutively": "若 X 次心跳皆離線，重新傳送通知",
     "Advanced": "進階",
     "Upside Down Mode": "顛倒模式",
     "Max. Redirects": "最大重新導向次數",
