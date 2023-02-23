@@ -199,7 +199,7 @@ class Monitor extends BeanModel {
      * Start monitor
      * @param {Server} io Socket server instance
      */
-    start(io) {
+    async start(io) {
         let previousBeat = null;
         let retries = 0;
 
@@ -836,7 +836,7 @@ class Monitor extends BeanModel {
     }
 
     /** Stop monitor */
-    stop() {
+    async stop() {
         clearTimeout(this.heartbeatInterval);
         this.isStop = true;
 
