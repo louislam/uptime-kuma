@@ -28,6 +28,10 @@
                 <a :href="telegramGetUpdatesURL('withToken')" target="_blank" style="word-break: break-word;">{{ telegramGetUpdatesURL("masked") }}</a>
             </p>
         </div>
+
+        <label for="message_thread_id" class="form-label">{{ $t("telegramMessageThreadID") }}</label>
+        <input id="message_thread_id" v-model="$parent.notification.telegramMessageThreadID" type="text" class="form-control">
+        <p class="form-text">{{ $t("telegramMessageThreadIDDescription") }}</p>
     </div>
 </template>
 
@@ -42,6 +46,11 @@ export default {
         HiddenInput,
     },
     methods: {
+        /**
+         * Get the URL for telegram updates
+         * @param {string} [mode=masked] Should the token be masked?
+         * @returns {string} formatted URL
+         */
         telegramGetUpdatesURL(mode = "masked") {
             let token = `<${this.$t("YOUR BOT TOKEN HERE")}>`;
 
@@ -55,6 +64,8 @@ export default {
 
             return `https://api.telegram.org/bot${token}/getUpdates`;
         },
+
+        /** Get the telegram chat ID */
         async autoGetTelegramChatID() {
             try {
                 let res = await axios.get(this.telegramGetUpdatesURL("withToken"));

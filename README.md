@@ -1,38 +1,39 @@
 # Uptime Kuma
 
 <a target="_blank" href="https://github.com/louislam/uptime-kuma"><img src="https://img.shields.io/github/stars/louislam/uptime-kuma" /></a> <a target="_blank" href="https://hub.docker.com/r/louislam/uptime-kuma"><img src="https://img.shields.io/docker/pulls/louislam/uptime-kuma" /></a> <a target="_blank" href="https://hub.docker.com/r/louislam/uptime-kuma"><img src="https://img.shields.io/docker/v/louislam/uptime-kuma/latest?label=docker%20image%20ver." /></a> <a target="_blank" href="https://github.com/louislam/uptime-kuma"><img src="https://img.shields.io/github/last-commit/louislam/uptime-kuma" /></a>  <a target="_blank" href="https://opencollective.com/uptime-kuma"><img src="https://opencollective.com/uptime-kuma/total/badge.svg?label=Open%20Collective%20Backers&color=brightgreen" /></a>
-[![GitHub Sponsors](https://img.shields.io/github/sponsors/louislam?label=GitHub%20Sponsors)](https://github.com/sponsors/louislam)
+[![GitHub Sponsors](https://img.shields.io/github/sponsors/louislam?label=GitHub%20Sponsors)](https://github.com/sponsors/louislam) <a href="https://weblate.kuma.pet/projects/uptime-kuma/uptime-kuma/">
+<img src="https://weblate.kuma.pet/widgets/uptime-kuma/-/svg-badge.svg" alt="Translation status" />
+</a>
 
 <div align="center" width="100%">
     <img src="./public/icon.svg" width="128" alt="" />
 </div>
 
-It is a self-hosted monitoring tool like "Uptime Robot".
+Uptime Kuma is an easy-to-use self-hosted monitoring tool.
 
-<img src="https://uptime.kuma.pet/img/dark.jpg" width="700" alt="" />
+<img src="https://user-images.githubusercontent.com/1336778/212262296-e6205815-ad62-488c-83ec-a5b0d0689f7c.jpg" width="700" alt="" />
 
 ## 🥔 Live Demo
 
 Try it!
 
 - Tokyo Demo Server: https://demo.uptime.kuma.pet (Sponsored by [Uptime Kuma Sponsors](https://github.com/louislam/uptime-kuma#%EF%B8%8F-sponsors))
-- Europe Demo Server: https://demo.uptime-kuma.karimi.dev:27000 (Provided by [@mhkarimi1383](https://github.com/mhkarimi1383))
 
 It is a temporary live demo, all data will be deleted after 10 minutes. Use the one that is closer to you, but I suggest that you should install and try it out for the best demo experience.
 
 ## ⭐ Features
 
-* Monitoring uptime for HTTP(s) / TCP / HTTP(s) Keyword / Ping / DNS Record / Push / Steam Game Server / Docker Containers.
-* Fancy, Reactive, Fast UI/UX.
-* Notifications via Telegram, Discord, Gotify, Slack, Pushover, Email (SMTP), and [90+ notification services, click here for the full list](https://github.com/louislam/uptime-kuma/tree/master/src/components/notifications).
-* 20 second intervals.
-* [Multi Languages](https://github.com/louislam/uptime-kuma/tree/master/src/languages)
-* Multiple Status Pages
-* Map Status Page to Domain
-* Ping Chart
-* Certificate Info
-* Proxy Support
-* 2FA available
+* Monitoring uptime for HTTP(s) / TCP / HTTP(s) Keyword / Ping / DNS Record / Push / Steam Game Server / Docker Containers
+* Fancy, Reactive, Fast UI/UX
+* Notifications via Telegram, Discord, Gotify, Slack, Pushover, Email (SMTP), and [90+ notification services, click here for the full list](https://github.com/louislam/uptime-kuma/tree/master/src/components/notifications)
+* 20 second intervals
+* [Multi Languages](https://github.com/louislam/uptime-kuma/tree/master/src/lang)
+* Multiple status pages
+* Map status pages to specific domains
+* Ping chart
+* Certificate info
+* Proxy support
+* 2FA support
 
 ## 🔧 How to Install
 
@@ -44,14 +45,15 @@ docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name upti
 
 ⚠️ Please use a **local volume** only. Other types such as NFS are not supported.
 
-Browse to http://localhost:3001 after starting.
+Uptime Kuma is now running on http://localhost:3001
 
 ### 💪🏻 Non-Docker
 
 Required Tools: 
 - [Node.js](https://nodejs.org/en/download/) >= 14
+- [npm](https://docs.npmjs.com/cli/) >= 7
 - [Git](https://git-scm.com/downloads) 
-- [pm2](https://pm2.keymetrics.io/) - For run in background
+- [pm2](https://pm2.keymetrics.io/) - For running Uptime Kuma in the background
 
 ```bash
 # Update your npm to the latest version
@@ -73,7 +75,7 @@ pm2 start server/server.js --name uptime-kuma
 
 
 ```
-Browse to http://localhost:3001 after starting.
+Uptime Kuma is now running on http://localhost:3001
 
 More useful PM2 Commands
 
@@ -171,7 +173,7 @@ Check out the latest beta release here: https://github.com/louislam/uptime-kuma/
 If you want to report a bug or request a new feature, feel free to open a [new issue](https://github.com/louislam/uptime-kuma/issues).
 
 ### Translations
-If you want to translate Uptime Kuma into your language, please read: https://github.com/louislam/uptime-kuma/tree/master/src/languages
+If you want to translate Uptime Kuma into your language, please visit [Weblate Readme](https://github.com/louislam/uptime-kuma/blob/master/src/lang/README.md).
 
 Feel free to correct my grammar in this README, source code, or wiki, as my mother language is not English and my grammar is not that great.
 

@@ -14,6 +14,7 @@ const GoogleChat = require("./notification-providers/google-chat");
 const Gorush = require("./notification-providers/gorush");
 const Gotify = require("./notification-providers/gotify");
 const HomeAssistant = require("./notification-providers/home-assistant");
+const Kook = require("./notification-providers/kook");
 const Line = require("./notification-providers/line");
 const LineNotify = require("./notification-providers/linenotify");
 const LunaSea = require("./notification-providers/lunasea");
@@ -39,11 +40,13 @@ const Stackfield = require("./notification-providers/stackfield");
 const Teams = require("./notification-providers/teams");
 const TechulusPush = require("./notification-providers/techulus-push");
 const Telegram = require("./notification-providers/telegram");
+const Splunk = require("./notification-providers/splunk");
 const Webhook = require("./notification-providers/webhook");
 const WeCom = require("./notification-providers/wecom");
 const GoAlert = require("./notification-providers/goalert");
 const SMSManager = require("./notification-providers/smsmanager");
 const ServerChan = require("./notification-providers/serverchan");
+const ZohoCliq = require("./notification-providers/zoho-cliq");
 
 class Notification {
 
@@ -70,6 +73,7 @@ class Notification {
             new Gorush(),
             new Gotify(),
             new HomeAssistant(),
+            new Kook(),
             new Line(),
             new LineNotify(),
             new LunaSea(),
@@ -97,9 +101,11 @@ class Notification {
             new Teams(),
             new TechulusPush(),
             new Telegram(),
+            new Splunk(),
             new Webhook(),
             new WeCom(),
             new GoAlert(),
+            new ZohoCliq()
         ];
 
         for (let item of list) {
