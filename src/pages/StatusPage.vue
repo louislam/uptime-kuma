@@ -502,15 +502,27 @@ export default {
         },
 
         incidentHTML() {
-            return DOMPurify.sanitize(marked(this.incident.content));
+            if (this.incident.content != null) {
+                return DOMPurify.sanitize(marked(this.incident.content));
+            } else {
+                return "";
+            }
         },
 
         descriptionHTML() {
-            return DOMPurify.sanitize(marked(this.config.description));
+            if (this.config.description != null) {
+                return DOMPurify.sanitize(marked(this.config.description));
+            } else {
+                return "";
+            }
         },
 
         footerHTML() {
-            return DOMPurify.sanitize(marked(this.config.footerText));
+            if (this.config.footerText != null) {
+                return DOMPurify.sanitize(marked(this.config.footerText));
+            } else {
+                return "";
+            }
         },
     },
     watch: {
