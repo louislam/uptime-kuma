@@ -63,6 +63,12 @@
                                 </router-link>
                             </li>
 
+                            <li>
+                                <a href="https://github.com/louislam/uptime-kuma/wiki" class="dropdown-item" target="_blank">
+                                    <font-awesome-icon icon="info-circle" /> {{ $t("Help") }}
+                                </a>
+                            </li>
+
                             <li v-if="$root.loggedIn && $root.socket.token !== 'autoLogin'">
                                 <button class="dropdown-item" @click="$root.logout">
                                     <font-awesome-icon icon="sign-out-alt" />
@@ -93,7 +99,7 @@
         <nav v-if="$root.isMobile && $root.loggedIn" class="bottom-nav">
             <router-link to="/dashboard" class="nav-link">
                 <div><font-awesome-icon icon="tachometer-alt" /></div>
-                {{ $t("Dashboard") }}
+                {{ $t("Home") }}
             </router-link>
 
             <router-link to="/list" class="nav-link">

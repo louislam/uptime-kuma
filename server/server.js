@@ -8,8 +8,11 @@ console.log("Welcome to Uptime Kuma");
 // As the log function need to use dayjs, it should be very top
 const dayjs = require("dayjs");
 dayjs.extend(require("dayjs/plugin/utc"));
-dayjs.extend(require("dayjs/plugin/timezone"));
+dayjs.extend(require("./modules/dayjs/plugin/timezone"));
 dayjs.extend(require("dayjs/plugin/customParseFormat"));
+
+// Load environment variables from `.env`
+require("dotenv").config();
 
 // Check Node.js Version
 const nodeVersion = parseInt(process.versions.node.split(".")[0]);
@@ -135,7 +138,10 @@ const { cloudflaredSocketHandler, autoStart: cloudflaredAutoStart, stop: cloudfl
 const { proxySocketHandler } = require("./socket-handlers/proxy-socket-handler");
 const { dockerSocketHandler } = require("./socket-handlers/docker-socket-handler");
 const { maintenanceSocketHandler } = require("./socket-handlers/maintenance-socket-handler");
+const { generalSocketHandler } = require("./socket-handlers/general-socket-handler");
 const { Settings } = require("./settings");
+const { CacheableDnsHttpAgent } = require("./cacheable-dns-http-agent");
+const { pluginsHandler } = require("./socket-handlers/plugins-handler");
 
 app.use(express.json());
 
@@ -164,7 +170,7 @@ let needSetup = false;
     Database.init(args);
     await initDatabase(testMode);
     await server.initAfterDatabaseReady();
-
+    server.loadPlugins();
     server.entryPage = await Settings.get("entryPage");
     await StatusPage.loadDomainMappingList();
 
@@ -203,6 +209,7 @@ let needSetup = false;
 
     if (isDev) {
         app.post("/test-webhook", async (request, response) => {
+            log.debug("test", request.headers);
             log.debug("test", request.body);
             response.send("OK");
         });
@@ -571,7 +578,6 @@ let needSetup = false;
                     });
                 }
             } catch (error) {
-                console.log(error);
                 callback({
                     ok: false,
                     msg: error.message,
@@ -631,6 +637,9 @@ let needSetup = false;
 
                 bean.import(monitor);
                 bean.user_id = socket.userID;
+
+                bean.validate();
+
                 await R.store(bean);
 
                 await updateMonitorNotification(bean.id, notificationIDList);
@@ -668,9 +677,6 @@ let needSetup = false;
                     throw new Error("Permission denied.");
                 }
 
-                // Reset Prometheus labels
-                server.monitorList[monitor.id]?.prometheus()?.remove();
-
                 bean.name = monitor.name;
                 bean.type = monitor.type;
                 bean.url = monitor.url;
@@ -683,12 +689,14 @@ let needSetup = false;
                 bean.retryInterval = monitor.retryInterval;
                 bean.resendInterval = monitor.resendInterval;
                 bean.hostname = monitor.hostname;
+                bean.game = monitor.game;
                 bean.maxretries = monitor.maxretries;
                 bean.port = parseInt(monitor.port);
                 bean.keyword = monitor.keyword;
                 bean.ignoreTls = monitor.ignoreTls;
                 bean.expiryNotification = monitor.expiryNotification;
                 bean.upsideDown = monitor.upsideDown;
+                bean.packetSize = monitor.packetSize;
                 bean.maxredirects = monitor.maxredirects;
                 bean.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
                 bean.dns_resolve_type = monitor.dns_resolve_type;
@@ -708,6 +716,7 @@ let needSetup = false;
                 bean.authDomain = monitor.authDomain;
                 bean.grpcUrl = monitor.grpcUrl;
                 bean.grpcProtobuf = monitor.grpcProtobuf;
+                bean.grpcServiceName = monitor.grpcServiceName;
                 bean.grpcMethod = monitor.grpcMethod;
                 bean.grpcBody = monitor.grpcBody;
                 bean.grpcMetadata = monitor.grpcMetadata;
@@ -717,6 +726,8 @@ let needSetup = false;
                 bean.radiusCalledStationId = monitor.radiusCalledStationId;
                 bean.radiusCallingStationId = monitor.radiusCallingStationId;
                 bean.radiusSecret = monitor.radiusSecret;
+
+                bean.validate();
 
                 await R.store(bean);
 
@@ -932,13 +943,21 @@ let needSetup = false;
             try {
                 checkLogin(socket);
 
-                let bean = await R.findOne("monitor", " id = ? ", [ tag.id ]);
+                let bean = await R.findOne("tag", " id = ? ", [ tag.id ]);
+                if (bean == null) {
+                    callback({
+                        ok: false,
+                        msg: "Tag not found",
+                    });
+                    return;
+                }
                 bean.name = tag.name;
                 bean.color = tag.color;
                 await R.store(bean);
 
                 callback({
                     ok: true,
+                    msg: "Saved",
                     tag: await bean.toJSON(),
                 });
 
@@ -1107,6 +1126,8 @@ let needSetup = false;
 
                 await setSettings("general", data);
                 server.entryPage = data.entryPage;
+
+                await CacheableDnsHttpAgent.update();
 
                 // Also need to apply timezone globally
                 if (data.serverTimezone) {
@@ -1479,6 +1500,8 @@ let needSetup = false;
         proxySocketHandler(socket);
         dockerSocketHandler(socket);
         maintenanceSocketHandler(socket);
+        generalSocketHandler(socket, server);
+        pluginsHandler(socket, server);
 
         log.debug("server", "added all socket handlers");
 
@@ -1600,6 +1623,13 @@ async function afterLogin(socket, user) {
 
     for (let monitorID in monitorList) {
         await Monitor.sendStats(io, monitorID, user.id);
+    }
+
+    // Set server timezone from client browser if not set
+    // It should be run once only
+    if (! await Settings.get("initServerTimezone")) {
+        log.debug("server", "emit initServerTimezone");
+        socket.emit("initServerTimezone");
     }
 }
 
@@ -1739,6 +1769,7 @@ async function shutdownFunction(signal) {
 
     stopBackgroundJobs();
     await cloudflaredStop();
+    Settings.stopCacheCleaner();
 }
 
 /** Final function called before application exits */

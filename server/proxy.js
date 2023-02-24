@@ -7,7 +7,7 @@ const { UptimeKumaServer } = require("./uptime-kuma-server");
 
 class Proxy {
 
-    static SUPPORTED_PROXY_PROTOCOLS = [ "http", "https", "socks", "socks5", "socks4" ];
+    static SUPPORTED_PROXY_PROTOCOLS = [ "http", "https", "socks", "socks5", "socks5h", "socks4" ];
 
     /**
      * Saves and updates given proxy entity
@@ -126,6 +126,7 @@ class Proxy {
                 break;
             case "socks":
             case "socks5":
+            case "socks5h":
             case "socks4":
                 agent = new SocksProxyAgent({
                     ...httpAgentOptions,

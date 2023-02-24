@@ -17,6 +17,7 @@
                                 <option value="http">HTTP</option>
                                 <option value="socks">SOCKS</option>
                                 <option value="socks5">SOCKS v5</option>
+                                <option value="socks5h">SOCKS v5 (+DNS)</option>
                                 <option value="socks4">SOCKS v4</option>
                             </select>
                         </div>

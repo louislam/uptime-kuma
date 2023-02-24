@@ -25,7 +25,7 @@ exports.startInterval = () => {
             let checkBeta = await setting("checkBeta");
 
             if (checkBeta && res.data.beta) {
-                if (compareVersions.compare(res.data.beta, res.data.beta, ">")) {
+                if (compareVersions.compare(res.data.beta, res.data.slow, ">")) {
                     exports.latestVersion = res.data.beta;
                     return;
                 }
