@@ -34,7 +34,7 @@
         <p class="form-text">{{ $t("telegramMessageThreadIDDescription") }}</p>
 
         <div class="form-check form-switch">
-            <input v-model="$parentnotification.telegramSendSilently" class="form-check-input" type="checkbox">
+            <input v-model="$parent.notification.telegramSendSilently" class="form-check-input" type="checkbox">
             <label class="form-check-label">{{ $t("telegramSendSilently") }}</label>
         </div>
 
