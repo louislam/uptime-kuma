@@ -503,6 +503,15 @@
                                     </select>
                                 </div>
 
+                                <!-- Encoding -->
+                                <div class="my-3">
+                                    <label for="httpBodyEncoding" class="form-label">{{ $t("Body Encoding") }}</label>
+                                    <select id="httpBodyEncoding" v-model="monitor.httpBodyEncoding" class="form-select">
+                                        <option value="json">JSON</option>
+                                        <option value="xml">XML</option>
+                                    </select>
+                                </div>
+
                                 <!-- Body -->
                                 <div class="my-3">
                                     <label for="body" class="form-label">{{ $t("Body") }}</label>
@@ -723,6 +732,15 @@ message HealthCheckResponse {
             ` ]);
         },
         bodyPlaceholder() {
+            if (this.monitor && this.monitor.httpBodyEncoding && this.monitor.httpBodyEncoding === "xml") {
+                return this.$t("Example:", [ `
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <Uptime>Kuma</Uptime>
+  </soap:Body>
+</soap:Envelope>` ]);
+            }
             return this.$t("Example:", [ `
 {
     "key": "value"
@@ -872,6 +890,7 @@ message HealthCheckResponse {
                     mqttTopic: "",
                     mqttSuccessMessage: "",
                     authMethod: null,
+                    httpBodyEncoding: "json"
                 };
 
                 if (this.$root.proxyList && !this.monitor.proxyId) {
@@ -909,7 +928,7 @@ message HealthCheckResponse {
          * @returns {boolean} Is the form input valid?
          */
         isInputValid() {
-            if (this.monitor.body) {
+            if (this.monitor.body && (!this.monitor.httpBodyEncoding || this.monitor.httpBodyEncoding === "json")) {
                 try {
                     JSON.parse(this.monitor.body);
                 } catch (err) {
@@ -933,6 +952,7 @@ message HealthCheckResponse {
          * @returns {void}
          */
         async submit() {
+
             this.processing = true;
 
             if (!this.isInputValid()) {
@@ -940,9 +960,13 @@ message HealthCheckResponse {
                 return;
             }
 
-            // Beautify the JSON format
-            if (this.monitor.body) {
+            // Beautify the JSON format (only if httpBodyEncoding is not set or === json)
+            if (this.monitor.body && (!this.monitor.httpBodyEncoding || this.monitor.httpBodyEncoding === "json")) {
                 this.monitor.body = JSON.stringify(JSON.parse(this.monitor.body), null, 4);
+            }
+
+            if (this.monitor.type && this.monitor.type !== "http" && this.monitor.type !== "keyword") {
+                this.monitor.httpBodyEncoding = null;
             }
 
             if (this.monitor.headers) {
