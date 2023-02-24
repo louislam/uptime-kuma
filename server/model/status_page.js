@@ -4,6 +4,7 @@ const cheerio = require("cheerio");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const jsesc = require("jsesc");
 const Maintenance = require("./maintenance");
+const googleAnalytics = require("../google-analytics");
 
 class StatusPage extends BeanModel {
 
@@ -53,9 +54,17 @@ class StatusPage extends BeanModel {
 
         const head = $("head");
 
+        if (statusPage.googleAnalyticsTagId) {
+            let escapedGoogleAnalyticsScript = googleAnalytics.getGoogleAnalyticsScript(statusPage.googleAnalyticsTagId);
+            head.append($(escapedGoogleAnalyticsScript));
+        }
+
         // OG Meta Tags
-        head.append(`<meta property="og:title" content="${statusPage.title}" />`);
-        head.append(`<meta property="og:description" content="${description155}" />`);
+        let ogTitle = $("<meta property=\"og:title\" content=\"\" />").attr("content", statusPage.title);
+        head.append(ogTitle);
+
+        let ogDescription = $("<meta property=\"og:description\" content=\"\" />").attr("content", description155);
+        head.append(ogDescription);
 
         // Preload data
         // Add jsesc, fix https://github.com/louislam/uptime-kuma/issues/2186
@@ -225,6 +234,7 @@ class StatusPage extends BeanModel {
             customCSS: this.custom_css,
             footerText: this.footer_text,
             showPoweredBy: !!this.show_powered_by,
+            googleAnalyticsId: this.google_analytics_tag_id,
         };
     }
 
@@ -245,6 +255,7 @@ class StatusPage extends BeanModel {
             customCSS: this.custom_css,
             footerText: this.footer_text,
             showPoweredBy: !!this.show_powered_by,
+            googleAnalyticsId: this.google_analytics_tag_id,
         };
     }
 

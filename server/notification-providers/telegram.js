@@ -9,20 +9,18 @@ class Telegram extends NotificationProvider {
         let okMsg = "Sent Successfully.";
 
         try {
-            const paramsObj =
-            {
+            let params = {
                 chat_id: notification.telegramChatID,
                 text: msg,
-                disable_notification: notification.telegramSilentNotification ?? false,
+                disable_notification: notification.telegramSendSilently ?? false,
                 protect_content: notification.telegramProtectContent ?? false,
-
             };
-            // if telegramChatThread specified, then add it to paramsObj
-            if (notification.telegramChatThread && notification.telegramChatThread.length > 0) {
-                paramsObj.message_thread_id = notification.telegramChatThread;
+            if (notification.telegramMessageThreadID) {
+                params.message_thread_id = notification.telegramMessageThreadID;
             }
+
             await axios.get(`https://api.telegram.org/bot${notification.telegramBotToken}/sendMessage`, {
-                params: paramsObj
+                params: params,
             });
             return okMsg;
 

@@ -6,8 +6,12 @@ name: Auto Test
 on:
   push:
     branches: [ master ]
+    paths-ignore:
+      - '*.md'
   pull_request:
     branches: [ master ]
+    paths-ignore:
+      - '*.md'
 
 jobs:
   auto-test:
@@ -36,6 +40,7 @@ jobs:
       env:
         HEADLESS_TEST: 1
         JUST_FOR_TEST: ${{ secrets.JUST_FOR_TEST }}
+
   check-linters:
     runs-on: ubuntu-latest
 

@@ -10,7 +10,7 @@ class Pushover extends NotificationProvider {
         let pushoverlink = "https://api.pushover.net/1/messages.json";
 
         let data = {
-            "message": "<b>Message</b>:" + msg,
+            "message": msg,
             "user": notification.pushoveruserkey,
             "token": notification.pushoverapptoken,
             "sound": notification.pushoversounds,
