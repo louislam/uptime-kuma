@@ -71,6 +71,7 @@ class Database {
         "patch-api-key-table.sql": true,
         "patch-add-gamedig-monitor.sql": true,
         "patch-add-google-analytics-status-page-tag.sql": true,
+        "patch-http-body-encoding.sql": true
     };
 
     /**

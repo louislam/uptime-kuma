@@ -235,6 +235,7 @@ https://github.com/louislam/uptime-kuma/issues?q=sort%3Aupdated-desc
 
 1. Draft a release note
 2. Make sure the repo is cleared
+3. If the healthcheck is updated, remember to re-compile it: `npm run build-docker-builder-go`
 3. `npm run release-final with env vars: `VERSION` and `GITHUB_TOKEN`
 4. Wait until the `Press any key to continue`
 5. `git push`
