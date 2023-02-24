@@ -13,6 +13,7 @@ class Telegram extends NotificationProvider {
                 chat_id: notification.telegramChatID,
                 text: msg,
                 disable_notification: notification.telegramSendSilently ?? false,
+                protect_content: notification.telegramProtectContent ?? false,
             };
             if (notification.telegramMessageThreadID) {
                 params.message_thread_id = notification.telegramMessageThreadID;

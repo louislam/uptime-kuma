@@ -42,6 +42,17 @@
             {{ $t("telegramSendSilentlyDescription") }}
         </div>
     </div>
+
+    <div class="mb-3">
+        <div class="form-check form-switch">
+            <input v-model="$parent.notification.telegramProtectContent" class="form-check-input" type="checkbox">
+            <label class="form-check-label">{{ $t("telegramProtectContent") }}</label>
+        </div>
+
+        <div class="form-text">
+            {{ $t("telegramProtectContentDescription") }}
+        </div>
+    </div>
 </template>
 
 <script>
