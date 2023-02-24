@@ -12,7 +12,7 @@ let gameList = null;
  * @returns {any[]}
  */
 function getGameList() {
-    if (!gameList) {
+    if (gameList == null) {
         gameList = gameResolver._readGames().games.sort((a, b) => {
             if ( a.pretty < b.pretty ) {
                 return -1;
@@ -22,9 +22,8 @@ function getGameList() {
             }
             return 0;
         });
-    } else {
-        return gameList;
     }
+    return gameList;
 }
 
 module.exports.generalSocketHandler = (socket, server) => {
