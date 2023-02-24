@@ -476,6 +476,15 @@ export default {
         },
 
         /**
+         * Test a monitor
+         * @param {Object} monitor Object representing monitor to test
+         * @param {socketCB} callback
+         */
+        testMonitor(monitor, callback) {
+            socket.emit("testMonitor", monitor, callback);
+        },
+
+        /**
          * Adds a maintenace
          * @param {Object} maintenance
          * @param {socketCB} callback

@@ -618,6 +618,7 @@
 
                         <div class="col-md-12 mt-5 mb-1">
                             <button id="monitor-submit-btn" class="btn btn-primary" type="submit" :disabled="processing">{{ $t("Save") }}</button>
+                            <button v-if="isEdit && monitor.type !== 'push'" id="monitor-test-btn" class="btn btn-info mx-2" :disabled="processing" type="button" @click="test">{{ $t("Test") }}</button>
                         </div>
                     </div>
                 </div>
@@ -1005,6 +1006,65 @@ message HealthCheckResponse {
                     this.$root.toastRes(res);
                     this.init();
                 });
+            }
+        },
+
+        async test() {
+            this.processing = true;
+
+            if (!this.isInputValid()) {
+                this.processing = false;
+                return;
+            }
+
+            // Beautify the JSON format
+            if (this.monitor.body) {
+                this.monitor.body = JSON.stringify(JSON.parse(this.monitor.body), null, 4);
+            }
+
+            if (this.monitor.headers) {
+                this.monitor.headers = JSON.stringify(JSON.parse(this.monitor.headers), null, 4);
+            }
+
+            if (this.monitor.hostname) {
+                this.monitor.hostname = this.monitor.hostname.trim();
+            }
+
+            if (this.monitor.url) {
+                this.monitor.url = this.monitor.url.trim();
+            }
+
+            this.$root.testMonitor(this.monitor, async (res) => {
+
+                if (res.ok) {
+
+                    const status = this.getStatusText(res.status);
+                    toast.info(`Monitor status: ${status}`);
+
+                    this.processing = false;
+                } else {
+                    toast.error(res.msg);
+                    this.processing = false;
+                }
+
+            });
+        },
+
+        getStatusText(status) {
+            if (status === 0) {
+                return this.$t("Down");
+            }
+
+            if (status === 1) {
+                return this.$t("Up");
+            }
+
+            if (status === 2) {
+                return this.$t("Pending");
+            }
+
+            if (status === 3) {
+                return this.$t("statusMaintenance");
             }
         },
 

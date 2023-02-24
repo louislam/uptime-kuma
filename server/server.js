@@ -899,6 +899,32 @@ let needSetup = false;
             }
         });
 
+        socket.on("testMonitor", async (monitor, callback) => {
+            try {
+                checkLogin(socket);
+
+                monitor.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
+                delete monitor.accepted_statuscodes;
+                const status = await Monitor.test(monitor);
+
+                log.info("monitor", `Tested Monitor: ${monitor.id} User ID: ${socket.userID}`);
+
+                callback({
+                    ok: true,
+                    msg: "Tested Successfully.",
+                    status,
+                });
+            } catch (e) {
+                log.error("monitor", `Error testing Monitor: ${monitor.id} User ID: ${socket.userID}`);
+
+                callback({
+                    ok: false,
+                    msg: e.message,
+                    status: 0,
+                });
+            }
+        });
+
         socket.on("getTags", async (callback) => {
             try {
                 checkLogin(socket);
