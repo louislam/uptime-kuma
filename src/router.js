@@ -65,11 +65,11 @@ const routes = [
                                         path: "/edit/:id",
                                         component: EditMonitor,
                                     },
-                                    {
-                                        path: "/clone/:id",
-                                        component: EditMonitor,
-                                    },
                                 ],
+                            },
+                            {
+                                path: "/clone/:id",
+                                component: EditMonitor,
                             },
                             {
                                 path: "/add",
