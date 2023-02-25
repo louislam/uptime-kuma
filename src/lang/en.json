@@ -441,6 +441,7 @@
     "notificationRegional": "Regional",
     "Clone Monitor": "Clone Monitor",
     "Clone": "Clone",
+    "cloneOf": "Clone of {0}",
     "smtp": "Email (SMTP)",
     "secureOptionNone": "None / STARTTLS (25, 587)",
     "secureOptionTLS": "TLS (465)",

@@ -922,13 +922,14 @@ message HealthCheckResponse {
                         this.monitor = res.monitor;
 
                         if (this.isClone) {
-                            /**
-                             * Cloning a monitor will include properties that can not be posted to backend
-                             * as they are not valid columns in the SQLite table.
-                             */
+                            /*
+                         * Cloning a monitor will include properties that can not be posted to backend
+                         * as they are not valid columns in the SQLite table.
+                         */
                             this.monitor.id = undefined; // Remove id when cloning as we want a new id
                             this.monitor.includeSensitiveData = undefined;
                             this.monitor.maintenance = undefined;
+                            this.monitor.name = this.$t("cloneOf", [ this.monitor.name ]);
                             this.monitor.tags = undefined; // FIXME: Cloning tags does not work yet
                         }
 
