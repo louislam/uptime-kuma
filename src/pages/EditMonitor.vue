@@ -539,37 +539,37 @@
                                 <template v-if="monitor.authMethod && monitor.authMethod !== null ">
                                     <template v-if="monitor.authMethod === 'mtls' ">
                                         <div class="my-3">
-                                            <label for="tls" class="form-label">{{ $t("Cert") }}</label>
+                                            <label for="tls-cert" class="form-label">{{ $t("Cert") }}</label>
                                             <textarea id="tls-cert" v-model="monitor.tlsCert" class="form-control" :placeholder="$t('Cert body')" required></textarea>
                                         </div>
                                         <div class="my-3">
-                                            <label for="tls" class="form-label">{{ $t("Key") }}</label>
+                                            <label for="tls-key" class="form-label">{{ $t("Key") }}</label>
                                             <textarea id="tls-key" v-model="monitor.tlsKey" class="form-control" :placeholder="$t('Key body')" required></textarea>
                                         </div>
                                         <div class="my-3">
-                                            <label for="tls" class="form-label">{{ $t("CA") }}</label>
+                                            <label for="tls-ca" class="form-label">{{ $t("CA") }}</label>
                                             <textarea id="tls-ca" v-model="monitor.tlsCa" class="form-control" :placeholder="$t('Server CA')"></textarea>
                                         </div>
                                     </template>
                                     <template v-else>
                                         <div class="my-3">
-                                            <label for="basicauth" class="form-label">{{ $t("Username") }}</label>
+                                            <label for="basicauth-user" class="form-label">{{ $t("Username") }}</label>
                                             <input id="basicauth-user" v-model="monitor.basic_auth_user" type="text" class="form-control" :placeholder="$t('Username')">
                                         </div>
 
                                         <div class="my-3">
-                                            <label for="basicauth" class="form-label">{{ $t("Password") }}</label>
+                                            <label for="basicauth-pass" class="form-label">{{ $t("Password") }}</label>
                                             <input id="basicauth-pass" v-model="monitor.basic_auth_pass" type="password" autocomplete="new-password" class="form-control" :placeholder="$t('Password')">
                                         </div>
                                         <template v-if="monitor.authMethod === 'ntlm' ">
                                             <div class="my-3">
-                                                <label for="basicauth" class="form-label">{{ $t("Domain") }}</label>
-                                                <input id="basicauth-domain" v-model="monitor.authDomain" type="text" class="form-control" :placeholder="$t('Domain')">
+                                                <label for="ntlm-domain" class="form-label">{{ $t("Domain") }}</label>
+                                                <input id="ntlm-domain" v-model="monitor.authDomain" type="text" class="form-control" :placeholder="$t('Domain')">
                                             </div>
 
                                             <div class="my-3">
-                                                <label for="basicauth" class="form-label">{{ $t("Workstation") }}</label>
-                                                <input id="basicauth-workstation" v-model="monitor.authWorkstation" type="text" class="form-control" :placeholder="$t('Workstation')">
+                                                <label for="ntlm-workstation" class="form-label">{{ $t("Workstation") }}</label>
+                                                <input id="ntlm-workstation" v-model="monitor.authWorkstation" type="text" class="form-control" :placeholder="$t('Workstation')">
                                             </div>
                                         </template>
                                     </template>
