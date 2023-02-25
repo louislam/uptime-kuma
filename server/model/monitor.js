@@ -276,19 +276,24 @@ class Monitor extends BeanModel {
                     let contentType = null;
                     let bodyValue = null;
 
-                    if (this.body && !this.httpBodyEncoding || this.httpBodyEncoding === "json") {
-                        bodyValue = JSON.parse(this.body);
-                        contentType = "application/json";
-                    } else if (this.body && (this.httpBodyEncoding === "xml")) {
-                        bodyValue = this.body;
-                        contentType = "text/xml; charset=utf-8";
+                    if (this.body && (typeof this.body === "string" && this.body.trim().length > 0)) {
+                        if (!this.httpBodyEncoding || this.httpBodyEncoding === "json") {
+                            try {
+                                bodyValue = JSON.parse(this.body);
+                                contentType = "application/json";
+                            } catch (e) {
+                                throw new Error("Your JSON body is invalid. " + e.message);
+                            }
+                        } else if (this.httpBodyEncoding === "xml") {
+                            bodyValue = this.body;
+                            contentType = "text/xml; charset=utf-8";
+                        }
                     }
 
                     // Axios Options
                     const options = {
                         url: this.url,
                         method: (this.method || "get").toLowerCase(),
-                        ...(bodyValue ? { data: bodyValue } : {}),
                         timeout: this.interval * 1000 * 0.8,
                         headers: {
                             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
@@ -302,6 +307,10 @@ class Monitor extends BeanModel {
                             return checkStatusCode(status, this.getAcceptedStatuscodes());
                         },
                     };
+
+                    if (bodyValue) {
+                        options.data = bodyValue;
+                    }
 
                     if (this.proxy_id) {
                         const proxy = await R.load("proxy", this.proxy_id);
