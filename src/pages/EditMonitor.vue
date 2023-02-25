@@ -615,10 +615,10 @@
                                 </template>
                             </template>
                         </div>
+                    </div>
 
-                        <div class="col-md-12 mt-5 mb-1">
-                            <button id="monitor-submit-btn" class="btn btn-primary" type="submit" :disabled="processing">{{ $t("Save") }}</button>
-                        </div>
+                    <div class="fixed-bottom-bar p-3">
+                        <button id="monitor-submit-btn" class="btn btn-primary" type="submit" :disabled="processing">{{ $t("Save") }}</button>
                     </div>
                 </div>
             </form>
@@ -1036,11 +1036,33 @@ message HealthCheckResponse {
 </script>
 
 <style lang="scss" scoped>
+    @import "../assets/vars.scss";
+
+    $padding: 20px;
+
     .shadow-box {
-        padding: 20px;
+        padding-top: $padding;
+        padding-bottom: 0;
+        padding-right: $padding;
+        padding-left: $padding;
     }
 
     textarea {
         min-height: 200px;
+    }
+
+    .fixed-bottom-bar {
+        position: sticky;
+        bottom: 0;
+        margin-left: -$padding;
+        margin-right: -$padding;
+        z-index: 100;
+        background-color: rgba(white, 0.2);
+        backdrop-filter: blur(2px);
+        border-radius: 0 0 10px 10px;
+
+        .dark & {
+            background-color: rgba($dark-header-bg, 0.9);
+        }
     }
 </style>
