@@ -99,6 +99,7 @@ class Prometheus {
         }
     }
 
+    /** Remove monitor from prometheus */
     remove() {
         try {
             monitorCertDaysRemaining.remove(this.monitorLabelValues);

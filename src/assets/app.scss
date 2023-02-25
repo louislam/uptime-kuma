@@ -35,6 +35,11 @@ textarea.form-control {
     color: $maintenance !important;
 }
 
+.incident a,
+.bg-maintenance a {
+    color: inherit;
+}
+
 .list-group {
     border-radius: 0.75rem;
 
@@ -246,6 +251,11 @@ optgroup {
         &.btn-info {
             color: white;
         }
+    }
+
+    .incident a,
+    .bg-maintenance a {
+        color: inherit;
     }
 
     .form-control,

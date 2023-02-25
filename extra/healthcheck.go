@@ -1,3 +1,7 @@
+/*
+ * If changed, have to run `npm run build-docker-builder-go`.
+ * This script should be run after a period of time (180s), because the server may need some time to prepare.
+ */
 package main
 
 import (
@@ -7,11 +11,16 @@ import (
 	"net/http"
 	"os"
 	"runtime"
+	"strings"
 	"time"
 )
 
 func main() {
 	isFreeBSD := runtime.GOOS == "freebsd"
+
+	// Is K8S + uptime-kuma as the container name
+	// See #2083
+	isK8s := strings.HasPrefix(os.Getenv("UPTIME_KUMA_PORT"), "tcp://")
 
 	// process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{
@@ -40,7 +49,11 @@ func main() {
 		hostname = "127.0.0.1"
 	}
 
-	port := os.Getenv("UPTIME_KUMA_PORT")
+	port := ""
+	// UPTIME_KUMA_PORT is override by K8S unexpectedly,
+	if !isK8s {
+		port = os.Getenv("UPTIME_KUMA_PORT")
+	}
 	if len(port) == 0 {
 		port = os.Getenv("PORT")
 	}
