@@ -89,12 +89,6 @@
                                 <input id="name" v-model="monitor.name" type="text" class="form-control" required>
                             </div>
 
-                            <!-- Description -->
-                            <div class="my-3">
-                                <label for="description" class="form-label">{{ $t("Description") }}</label>
-                                <input id="description" v-model="monitor.description" type="text" class="form-control">
-                            </div>
-
                             <!-- URL -->
                             <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'browser' " class="my-3">
                                 <label for="url" class="form-label">{{ $t("URL") }}</label>
@@ -419,6 +413,12 @@
                                     </div>
                                 </div>
                             </template>
+
+                            <!-- Description -->
+                            <div class="my-3">
+                                <label for="description" class="form-label">{{ $t("Description") }}</label>
+                                <input id="description" v-model="monitor.description" type="text" class="form-control">
+                            </div>
 
                             <div class="my-3">
                                 <tags-manager ref="tagsManager" :pre-selected-tags="monitor.tags"></tags-manager>
