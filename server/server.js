@@ -678,6 +678,7 @@ let needSetup = false;
                 }
 
                 bean.name = monitor.name;
+                bean.description = monitor.description;
                 bean.type = monitor.type;
                 bean.url = monitor.url;
                 bean.method = monitor.method;
@@ -1318,6 +1319,7 @@ let needSetup = false;
                             let monitor = {
                                 // Define the new variable from earlier here
                                 name: monitorListData[i].name,
+                                description: monitorListData[i].description,
                                 type: monitorListData[i].type,
                                 url: monitorListData[i].url,
                                 method: monitorListData[i].method || "GET",
