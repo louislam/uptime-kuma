@@ -19,30 +19,30 @@ class Pushbullet extends NotificationProvider {
                 }
             };
             if (heartbeatJSON == null) {
-                let testdata = {
+                let data = {
                     "type": "note",
                     "title": "Uptime Kuma Alert",
-                    "body": "Testing Successful.",
-                }
-                await axios.post(pushbulletUrl, testdata, config)
-            } else if (heartbeatJSON["status"] == DOWN) {
-                let downdata = {
+                    "body": msg,
+                };
+                await axios.post(pushbulletUrl, data, config);
+            } else if (heartbeatJSON["status"] === DOWN) {
+                let downData = {
                     "type": "note",
                     "title": "UptimeKuma Alert: " + monitorJSON["name"],
                     "body": "[🔴 Down] " + heartbeatJSON["msg"] + "\nTime (UTC): " + heartbeatJSON["time"],
-                }
-                await axios.post(pushbulletUrl, downdata, config)
-            } else if (heartbeatJSON["status"] == UP) {
-                let updata = {
+                };
+                await axios.post(pushbulletUrl, downData, config);
+            } else if (heartbeatJSON["status"] === UP) {
+                let upData = {
                     "type": "note",
                     "title": "UptimeKuma Alert: " + monitorJSON["name"],
                     "body": "[✅ Up] " + heartbeatJSON["msg"] + "\nTime (UTC): " + heartbeatJSON["time"],
-                }
-                await axios.post(pushbulletUrl, updata, config)
+                };
+                await axios.post(pushbulletUrl, upData, config);
             }
             return okMsg;
         } catch (error) {
-            this.throwGeneralAxiosError(error)
+            this.throwGeneralAxiosError(error);
         }
     }
 }

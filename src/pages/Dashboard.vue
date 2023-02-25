@@ -1,7 +1,7 @@
 <template>
     <div class="container-fluid">
         <div class="row">
-            <div v-if="! $root.isMobile" class="col-12 col-md-5 col-xl-4">
+            <div v-if="!$root.isMobile" class="col-12 col-md-5 col-xl-4">
                 <div>
                     <router-link to="/add" class="btn btn-primary mb-3"><font-awesome-icon icon="plus" /> {{ $t("Add New Monitor") }}</router-link>
                 </div>
@@ -25,9 +25,9 @@ export default {
         MonitorList,
     },
     data() {
-        return {}
+        return {};
     },
-}
+};
 </script>
 
 <style lang="scss" scoped>

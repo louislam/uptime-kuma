@@ -25,10 +25,12 @@ export default {
         CertificateInfoRow,
     },
     props: {
+        /** Object representing certificate */
         certInfo: {
             type: Object,
             required: true,
         },
+        /** Is the TLS certificate valid? */
         valid: {
             type: Boolean,
             required: true,

@@ -19,10 +19,10 @@ class Pushy extends NotificationProvider {
                     "badge": 1,
                     "sound": "ping.aiff"
                 }
-            })
+            });
             return okMsg;
         } catch (error) {
-            this.throwGeneralAxiosError(error)
+            this.throwGeneralAxiosError(error);
         }
     }
 }

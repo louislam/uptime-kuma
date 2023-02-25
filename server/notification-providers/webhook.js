@@ -16,25 +16,34 @@ class Webhook extends NotificationProvider {
                 msg,
             };
             let finalData;
-            let config = {};
+            let config = {
+                headers: {}
+            };
 
             if (notification.webhookContentType === "form-data") {
                 finalData = new FormData();
                 finalData.append("data", JSON.stringify(data));
-
-                config = {
-                    headers: finalData.getHeaders(),
-                }
-
+                config.headers = finalData.getHeaders();
             } else {
                 finalData = data;
             }
 
-            await axios.post(notification.webhookURL, finalData, config)
+            if (notification.webhookAdditionalHeaders) {
+                try {
+                    config.headers = {
+                        ...config.headers,
+                        ...JSON.parse(notification.webhookAdditionalHeaders)
+                    };
+                } catch (err) {
+                    throw "Additional Headers is not a valid JSON";
+                }
+            }
+
+            await axios.post(notification.webhookURL, finalData, config);
             return okMsg;
 
         } catch (error) {
-            this.throwGeneralAxiosError(error)
+            this.throwGeneralAxiosError(error);
         }
 
     }

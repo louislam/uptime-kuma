@@ -1,15 +1,21 @@
-import { createI18n } from "vue-i18n/index";
-import en from "./languages/en";
+import { createI18n } from "vue-i18n/dist/vue-i18n.esm-browser.prod.js";
+import en from "./lang/en.json";
 
 const languageList = {
+    "ar-SY": "العربية",
+    "cs-CZ": "Čeština",
     "zh-HK": "繁體中文 (香港)",
     "bg-BG": "Български",
     "de-DE": "Deutsch (Deutschland)",
+    "de-CH": "Deutsch (Schweiz)",
     "nl-NL": "Nederlands",
     "nb-NO": "Norsk",
     "es-ES": "Español",
+    "eu": "Euskara",
     "fa": "Farsi",
+    "pt-PT": "Português (Portugal)",
     "pt-BR": "Português (Brasileiro)",
+    "fi": "Suomi",
     "fr-FR": "Français (France)",
     "hu": "Magyar",
     "hr-HR": "Hrvatski",
@@ -18,6 +24,7 @@ const languageList = {
     "ja": "日本語",
     "da-DK": "Danish (Danmark)",
     "sr": "Српски",
+    "sl-SI": "Slovenščina",
     "sr-latn": "Srpski",
     "sv-SE": "Svenska",
     "tr-TR": "Türkçe",
@@ -26,8 +33,13 @@ const languageList = {
     "zh-CN": "简体中文",
     "pl": "Polski",
     "et-EE": "eesti",
-    "vi": "Vietnamese",
-    "zh-TW": "繁體中文 (台灣)"
+    "vi-VN": "Tiếng Việt",
+    "zh-TW": "繁體中文 (台灣)",
+    "uk-UA": "Український",
+    "th-TH": "ไทย",
+    "el-GR": "Ελληνικά",
+    "yue": "繁體中文 (廣東話 / 粵語)",
+    "ro": "Limba română",
 };
 
 let messages = {
@@ -40,7 +52,7 @@ for (let lang in languageList) {
     };
 }
 
-const rtlLangs = ["fa"];
+const rtlLangs = [ "fa", "ar-SY" ];
 
 export const currentLocale = () => localStorage.locale
     || languageList[navigator.language] && navigator.language
