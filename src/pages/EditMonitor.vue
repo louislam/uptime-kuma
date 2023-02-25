@@ -340,7 +340,7 @@
 
                             <div class="my-3">
                                 <label for="resend-interval" class="form-label">
-                                    {{ $t("Resend Notification if Down X times consequently") }}
+                                    {{ $t("Resend Notification if Down X times consecutively") }}
                                     <span v-if="monitor.resendInterval > 0">({{ $t("resendEveryXTimes", [ monitor.resendInterval ]) }})</span>
                                     <span v-else>({{ $t("resendDisabled") }})</span>
                                 </label>
@@ -503,6 +503,15 @@
                                     </select>
                                 </div>
 
+                                <!-- Encoding -->
+                                <div class="my-3">
+                                    <label for="httpBodyEncoding" class="form-label">{{ $t("Body Encoding") }}</label>
+                                    <select id="httpBodyEncoding" v-model="monitor.httpBodyEncoding" class="form-select">
+                                        <option value="json">JSON</option>
+                                        <option value="xml">XML</option>
+                                    </select>
+                                </div>
+
                                 <!-- Body -->
                                 <div class="my-3">
                                     <label for="body" class="form-label">{{ $t("Body") }}</label>
@@ -625,10 +634,10 @@
                                 </template>
                             </template>
                         </div>
+                    </div>
 
-                        <div class="col-md-12 mt-5 mb-1">
-                            <button id="monitor-submit-btn" class="btn btn-primary" type="submit" :disabled="processing">{{ $t("Save") }}</button>
-                        </div>
+                    <div class="fixed-bottom-bar p-3">
+                        <button id="monitor-submit-btn" class="btn btn-primary" type="submit" :disabled="processing">{{ $t("Save") }}</button>
                     </div>
                 </div>
             </form>
@@ -692,11 +701,21 @@ export default {
         },
 
         pageName() {
-            return this.$t((this.isAdd) ? "Add New Monitor" : "Edit");
+            let name = "Add New Monitor";
+            if (this.isClone) {
+                name = "Clone Monitor";
+            } else if (this.isEdit) {
+                name = "Edit";
+            }
+            return this.$t(name);
         },
 
         isAdd() {
             return this.$route.path === "/add";
+        },
+
+        isClone() {
+            return this.$route.path.startsWith("/clone");
         },
 
         isEdit() {
@@ -742,6 +761,15 @@ message HealthCheckResponse {
             ` ]);
         },
         bodyPlaceholder() {
+            if (this.monitor && this.monitor.httpBodyEncoding && this.monitor.httpBodyEncoding === "xml") {
+                return this.$t("Example:", [ `
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <Uptime>Kuma</Uptime>
+  </soap:Body>
+</soap:Envelope>` ]);
+            }
             return this.$t("Example:", [ `
 {
     "key": "value"
@@ -891,6 +919,7 @@ message HealthCheckResponse {
                     mqttTopic: "",
                     mqttSuccessMessage: "",
                     authMethod: null,
+                    httpBodyEncoding: "json"
                 };
 
                 if (this.$root.proxyList && !this.monitor.proxyId) {
@@ -906,10 +935,22 @@ message HealthCheckResponse {
                         this.monitor.notificationIDList[this.$root.notificationList[i].id] = true;
                     }
                 }
-            } else if (this.isEdit) {
+            } else if (this.isEdit || this.isClone) {
                 this.$root.getSocket().emit("getMonitor", this.$route.params.id, (res) => {
                     if (res.ok) {
                         this.monitor = res.monitor;
+
+                        if (this.isClone) {
+                            /*
+                         * Cloning a monitor will include properties that can not be posted to backend
+                         * as they are not valid columns in the SQLite table.
+                         */
+                            this.monitor.id = undefined; // Remove id when cloning as we want a new id
+                            this.monitor.includeSensitiveData = undefined;
+                            this.monitor.maintenance = undefined;
+                            this.monitor.name = this.$t("cloneOf", [ this.monitor.name ]);
+                            this.monitor.tags = undefined; // FIXME: Cloning tags does not work yet
+                        }
 
                         // Handling for monitors that are created before 1.7.0
                         if (this.monitor.retryInterval === 0) {
@@ -928,7 +969,7 @@ message HealthCheckResponse {
          * @returns {boolean} Is the form input valid?
          */
         isInputValid() {
-            if (this.monitor.body) {
+            if (this.monitor.body && (!this.monitor.httpBodyEncoding || this.monitor.httpBodyEncoding === "json")) {
                 try {
                     JSON.parse(this.monitor.body);
                 } catch (err) {
@@ -952,6 +993,7 @@ message HealthCheckResponse {
          * @returns {void}
          */
         async submit() {
+
             this.processing = true;
 
             if (!this.isInputValid()) {
@@ -959,9 +1001,13 @@ message HealthCheckResponse {
                 return;
             }
 
-            // Beautify the JSON format
-            if (this.monitor.body) {
+            // Beautify the JSON format (only if httpBodyEncoding is not set or === json)
+            if (this.monitor.body && (!this.monitor.httpBodyEncoding || this.monitor.httpBodyEncoding === "json")) {
                 this.monitor.body = JSON.stringify(JSON.parse(this.monitor.body), null, 4);
+            }
+
+            if (this.monitor.type && this.monitor.type !== "http" && this.monitor.type !== "keyword") {
+                this.monitor.httpBodyEncoding = null;
             }
 
             if (this.monitor.headers) {
@@ -976,7 +1022,7 @@ message HealthCheckResponse {
                 this.monitor.url = this.monitor.url.trim();
             }
 
-            if (this.isAdd) {
+            if (this.isAdd || this.isClone) {
                 this.$root.add(this.monitor, async (res) => {
 
                     if (res.ok) {
@@ -1031,11 +1077,33 @@ message HealthCheckResponse {
 </script>
 
 <style lang="scss" scoped>
+    @import "../assets/vars.scss";
+
+    $padding: 20px;
+
     .shadow-box {
-        padding: 20px;
+        padding-top: $padding;
+        padding-bottom: 0;
+        padding-right: $padding;
+        padding-left: $padding;
     }
 
     textarea {
         min-height: 200px;
+    }
+
+    .fixed-bottom-bar {
+        position: sticky;
+        bottom: 0;
+        margin-left: -$padding;
+        margin-right: -$padding;
+        z-index: 100;
+        background-color: rgba(white, 0.2);
+        backdrop-filter: blur(2px);
+        border-radius: 0 0 10px 10px;
+
+        .dark & {
+            background-color: rgba($dark-header-bg, 0.9);
+        }
     }
 </style>

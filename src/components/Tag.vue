@@ -18,9 +18,15 @@
 </template>
 
 <script>
+/**
+* @typedef {import('./TagsManager.vue').Tag} Tag
+*/
+
 export default {
     props: {
-        /** Object representing tag */
+        /** Object representing tag
+         * @type {Tag}
+         */
         item: {
             type: Object,
             required: true,
@@ -32,7 +38,7 @@ export default {
         },
         /**
          * Size of tag
-         * @values normal, small
+         * @type {"normal" | "small"}
          */
         size: {
             type: String,

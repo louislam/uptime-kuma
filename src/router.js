@@ -68,6 +68,10 @@ const routes = [
                                 ],
                             },
                             {
+                                path: "/clone/:id",
+                                component: EditMonitor,
+                            },
+                            {
                                 path: "/add",
                                 component: EditMonitor,
                             },
