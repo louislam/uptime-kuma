@@ -1,7 +1,7 @@
 const { checkLogin } = require("../util-server");
 const { log } = require("../../src/util");
 const { R } = require("redbean-node");
-const crypto = require("crypto");
+const { nanoid } = require("nanoid");
 const passwordHash = require("../password-hash");
 const apicache = require("../modules/apicache");
 const APIKey = require("../model/api_key");
@@ -17,7 +17,8 @@ module.exports.apiKeySocketHandler = (socket) => {
     socket.on("addAPIKey", async (key, callback) => {
         try {
             checkLogin(socket);
-            let clearKey = crypto.randomBytes(32).toString("base64url");
+
+            let clearKey = nanoid(40);
             let hashedKey = passwordHash.generate(clearKey);
             key["key"] = hashedKey;
             let bean = await APIKey.save(key, socket.userID);
