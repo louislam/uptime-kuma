@@ -5,6 +5,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -33,19 +34,26 @@ namespace UptimeKuma {
         private NotifyIcon trayIcon;
         private Process process;
 
+        private MenuItem statusMenuItem;
         private MenuItem runWhenStarts;
 
         private RegistryKey registryKey = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
 
-        public UptimeKumaApplicationContext()
-        {
+
+        public UptimeKumaApplicationContext() {
+            var startingText = "Starting server...";
             trayIcon = new NotifyIcon();
+            trayIcon.Text = startingText;
 
             runWhenStarts = new MenuItem("Run when system starts", RunWhenStarts);
             runWhenStarts.Checked = registryKey.GetValue(appName) != null;
 
+            statusMenuItem = new MenuItem(startingText);
+            statusMenuItem.Enabled = false;
+
             trayIcon.Icon = Icon.ExtractAssociatedIcon(Assembly.GetExecutingAssembly().Location);
             trayIcon.ContextMenu = new ContextMenu(new MenuItem[] {
+                statusMenuItem,
                 new("Open", Open),
                 //new("Debug Console", DebugConsole),
                 runWhenStarts,
@@ -108,6 +116,22 @@ namespace UptimeKuma {
             try {
                 process.Start();
                 //Open(null, null);
+
+                // Async task to check if the server is ready
+                Task.Run(() => {
+                    var runningText = "Server is running";
+                    using TcpClient tcpClient = new TcpClient();
+                    while (true) {
+                        try {
+                            tcpClient.Connect("127.0.0.1", 3001);
+                            statusMenuItem.Text = runningText;
+                            trayIcon.Text = runningText;
+                            break;
+                        } catch (Exception) {
+                            System.Threading.Thread.Sleep(2000);
+                        }
+                    }
+                });
 
             } catch (Exception e) {
                 MessageBox.Show("Startup failed: " + e.Message, "Uptime Kuma Error");
