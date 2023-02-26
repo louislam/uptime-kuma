@@ -1,85 +1,83 @@
 <template>
-    <transition name="slide-fade" appear>
+    <div>
+        <div class="add-btn">
+            <button class="btn btn-primary me-2" type="button" @click="$refs.apiKeyDialog.show()">
+                <font-awesome-icon icon="plus" /> {{ $t("Add API Key") }}
+            </button>
+        </div>
+
         <div>
-            <h1 class="mb-3">
-                {{ $t("API Keys") }}
-            </h1>
+            <span v-if="Object.keys(keyList).length === 0" class="d-flex align-items-center justify-content-center my-3">
+                {{ $t("No API Keys") }}
+            </span>
 
-            <div>
-                <router-link to="/apikeys/add" class="btn btn-primary mb-3">
-                    <font-awesome-icon icon="plus" /> {{ $t("Add API Key") }}
-                </router-link>
-            </div>
-
-            <div class="shadow-box">
-                <span v-if="Object.keys(keyList).length === 0" class="d-flex align-items-center justify-content-center my-3">
-                    {{ $t("No API Keys") }}
-                </span>
-
-                <div
-                    v-for="(item, index) in keyList"
-                    :key="index"
-                    class="item"
-                    :class="item.status"
-                >
-                    <div class="left-part">
-                        <div
-                            class="circle"
-                        ></div>
-                        <div class="info">
-                            <div class="title">{{ item.name }}</div>
-                            <div class="status">
-                                {{ $t("apiKey-" + item.status) }}
-                            </div>
-                            <div class="date">
-                                {{ $t("Created") }}: {{ item.createdDate }}
-                            </div>
-                            <div class="date">
-                                {{ $t("Expires") }}: {{ item.expires || $t("Never") }}
-                            </div>
+            <div
+                v-for="(item, index) in keyList"
+                :key="index"
+                class="item"
+                :class="item.status"
+            >
+                <div class="left-part">
+                    <div
+                        class="circle"
+                    ></div>
+                    <div class="info">
+                        <div class="title">{{ item.name }}</div>
+                        <div class="status">
+                            {{ $t("apiKey-" + item.status) }}
                         </div>
-                    </div>
-
-                    <div class="buttons">
-                        <div class="btn-group" role="group">
-                            <button v-if="item.active" class="btn btn-normal" @click="disableDialog(item.id)">
-                                <font-awesome-icon icon="pause" /> {{ $t("Disable") }}
-                            </button>
-
-                            <button v-if="!item.active" class="btn btn-primary" @click="enableKey(item.id)">
-                                <font-awesome-icon icon="play" /> {{ $t("Enable") }}
-                            </button>
-
-                            <button class="btn btn-danger" @click="deleteDialog(item.id)">
-                                <font-awesome-icon icon="trash" /> {{ $t("Delete") }}
-                            </button>
+                        <div class="date">
+                            {{ $t("Created") }}: {{ item.createdDate }}
+                        </div>
+                        <div class="date">
+                            {{ $t("Expires") }}: {{ item.expires || $t("Never") }}
                         </div>
                     </div>
                 </div>
+
+                <div class="buttons">
+                    <div class="btn-group" role="group">
+                        <button v-if="item.active" class="btn btn-normal" @click="disableDialog(item.id)">
+                            <font-awesome-icon icon="pause" /> {{ $t("Disable") }}
+                        </button>
+
+                        <button v-if="!item.active" class="btn btn-primary" @click="enableKey(item.id)">
+                            <font-awesome-icon icon="play" /> {{ $t("Enable") }}
+                        </button>
+
+                        <button class="btn btn-danger" @click="deleteDialog(item.id)">
+                            <font-awesome-icon icon="trash" /> {{ $t("Delete") }}
+                        </button>
+                    </div>
+                </div>
             </div>
-
-            <div class="text-center mt-3" style="font-size: 13px;">
-                <a href="https://github.com/louislam/uptime-kuma/wiki/API-Keys" target="_blank">{{ $t("Learn More") }}</a>
-            </div>
-
-            <Confirm ref="confirmPause" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="disableKey">
-                {{ $t("disableAPIKeyMsg") }}
-            </Confirm>
-
-            <Confirm ref="confirmDelete" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="deleteKey">
-                {{ $t("deleteAPIKeyMsg") }}
-            </Confirm>
         </div>
-    </transition>
+
+        <div class="text-center mt-3" style="font-size: 13px;">
+            <a href="https://github.com/louislam/uptime-kuma/wiki/API-Keys" target="_blank">{{ $t("Learn More") }}</a>
+        </div>
+
+        <Confirm ref="confirmPause" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="disableKey">
+            {{ $t("disableAPIKeyMsg") }}
+        </Confirm>
+
+        <Confirm ref="confirmDelete" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="deleteKey">
+            {{ $t("deleteAPIKeyMsg") }}
+        </Confirm>
+
+        <APIKeyDialog ref="apiKeyDialog" />
+    </div>
 </template>
 
 <script>
-import Confirm from "../components/Confirm.vue";
+import APIKeyDialog from "../../components/APIKeyDialog.vue";
+import Confirm from "../Confirm.vue";
 import { useToast } from "vue-toastification";
 const toast = useToast();
 
 export default {
     components: {
+        APIKeyDialog,
         Confirm,
     },
     data() {
@@ -111,7 +109,6 @@ export default {
             this.$root.deleteAPIKey(this.selectedKeyID, (res) => {
                 if (res.ok) {
                     toast.success(res.msg);
-                    this.$router.push("/apikeys");
                 } else {
                     toast.error(res.msg);
                 }
@@ -148,7 +145,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-    @import "../assets/vars.scss";
+    @import "../../assets/vars.scss";
 
     .mobile {
         .item {
@@ -156,6 +153,10 @@ export default {
             align-items: flex-start;
             margin-bottom: 20px;
         }
+    }
+
+    .add-btn {
+        padding-top: 20px;
     }
 
     .item {

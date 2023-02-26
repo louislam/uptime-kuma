@@ -58,12 +58,6 @@
                             </li>
 
                             <li>
-                                <router-link to="/apikeys" class="dropdown-item" :class="{ active: $route.path.includes('manage-apikeys') }">
-                                    <font-awesome-icon icon="key" /> {{ $t("API Keys") }}
-                                </router-link>
-                            </li>
-
-                            <li>
                                 <router-link to="/settings/general" class="dropdown-item" :class="{ active: $route.path.includes('settings') }">
                                     <font-awesome-icon icon="cog" /> {{ $t("Settings") }}
                                 </router-link>

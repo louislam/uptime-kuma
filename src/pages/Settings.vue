@@ -7,9 +7,6 @@
             <router-link to="/maintenance" class="nav-link">
                 <font-awesome-icon icon="wrench" /> {{ $t("Maintenance") }}
             </router-link>
-            <router-link to="/apikeys" class="nav-link" :class="{ active: $route.path.includes('manage-apikeys') }">
-                <font-awesome-icon icon="key" /> {{ $t("API Keys") }}
-            </router-link>
         </div>
 
         <h1 v-show="show" class="mb-3">
@@ -109,6 +106,9 @@ export default {
                 },
                 security: {
                     title: this.$t("Security"),
+                },
+                "api-keys": {
+                    title: this.$t("API Keys")
                 },
                 proxies: {
                     title: this.$t("Proxies"),
