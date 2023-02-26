@@ -165,7 +165,7 @@
     "Pink": "Pink",
     "Search...": "Suchen…",
     "Heartbeat Retry Interval": "Überprüfungsintervall",
-    "Resend Notification if Down X times consequently": "Benachrichtigung erneut senden, wenn inaktiv X Mal hintereinander",
+    "Resend Notification if Down X times consecutively": "Benachrichtigung erneut senden, wenn inaktiv X Mal hintereinander",
     "retryCheckEverySecond": "Alle {0} Sekunden neu versuchen",
     "resendEveryXTimes": "Erneut versenden alle {0} mal",
     "resendDisabled": "Erneut versenden deaktiviert",
