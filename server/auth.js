@@ -44,8 +44,9 @@ async function verifyAPIKey(key) {
         return false;
     }
 
-    let index = key.substring(0, key.indexOf("-"));
-    let clear = key.substring(key.indexOf("-") + 1, key.length);
+    // uk prefix + key ID is before _
+    let index = key.substring(2, key.indexOf("_"));
+    let clear = key.substring(key.indexOf("_") + 1, key.length);
 
     let hash = await R.findOne("api_key", " id=? ", [ index ]);
 
@@ -137,7 +138,7 @@ exports.basicAuth = async function (req, res, next) {
 };
 
 /**
- * Use X-API-Key header if API keys enabled, else use basic auth
+ * Use use API Key if API keys enabled, else use basic auth
  * @param {express.Request} req Express request object
  * @param {express.Response} res Express response object
  * @param {express.NextFunction} next

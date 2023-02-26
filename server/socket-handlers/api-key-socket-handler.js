@@ -17,7 +17,7 @@ module.exports.apiKeySocketHandler = (socket) => {
     socket.on("addAPIKey", async (key, callback) => {
         try {
             checkLogin(socket);
-            let clearKey = crypto.randomUUID();
+            let clearKey = crypto.randomBytes(32).toString("base64url");
             let hashedKey = passwordHash.generate(clearKey);
             key["key"] = hashedKey;
             let bean = await APIKey.save(key, socket.userID);
@@ -25,9 +25,9 @@ module.exports.apiKeySocketHandler = (socket) => {
             log.debug("apikeys", "Added API Key");
             log.debug("apikeys", key);
 
-            // Append key ID to start of key seperated by -, used to get
+            // Append key ID and prefix to start of key seperated by _, used to get
             // correct hash when validating key.
-            let formattedKey = bean.id + "-" + clearKey;
+            let formattedKey = "uk" + bean.id + "_" + clearKey;
             await sendAPIKeyList(socket);
 
             // Enable API auth if the user creates a key, otherwise only basic
