@@ -6,10 +6,10 @@ const fs = require("fs");
 
 class DockerHost {
 
-    static CertificateBasePath     = process.env.DOCKER_TLS_DIR_PATH ||  "data/docker-tls/";
-    static CertificateFileNameCA   = process.env.DOCKER_TLS_FILE_NAME_CA ||  "ca.pem";
-    static CertificateFileNameCert = process.env.DOCKER_TLS_FILE_NAME_CA ||  "cert.pem";
-    static CertificateFileNameKey  = process.env.DOCKER_TLS_FILE_NAME_CA ||  "key.pem";
+    static CertificateBasePath = process.env.DOCKER_TLS_DIR_PATH || "data/docker-tls/";
+    static CertificateFileNameCA = process.env.DOCKER_TLS_FILE_NAME_CA || "ca.pem";
+    static CertificateFileNameCert = process.env.DOCKER_TLS_FILE_NAME_CA || "cert.pem";
+    static CertificateFileNameKey = process.env.DOCKER_TLS_FILE_NAME_CA || "key.pem";
 
     /**
      * Save a docker host
@@ -135,20 +135,27 @@ class DockerHost {
      * @return {Object}
      * */
     static getHttpsAgentOptions(dockerType, url) {
-        let baseOptions = { maxCachedSessions: 0, rejectUnauthorized: true },
-            certOptions = {};
+        let baseOptions = {
+            maxCachedSessions: 0,
+            rejectUnauthorized: true
+        };
+        let certOptions = {};
 
-        let dirName  = url.replace(/^https:\/\/([^\/:]+)(\/|:).*$/, "$1"),
-            dirPath  = DockerHost.CertificateBasePath + dirName + "/",
-            caPath   = dirPath + DockerHost.CertificateFileNameCA,
-            certPath = dirPath + DockerHost.CertificateFileNameCert,
-            keyPath  = dirPath + DockerHost.CertificateFileNameKey;
+        let dirName = url.replace(/^https:\/\/([^/:]+)(\/|:).*$/, "$1");
+        let dirPath = DockerHost.CertificateBasePath + dirName + "/";
+        let caPath = dirPath + DockerHost.CertificateFileNameCA;
+        let certPath = dirPath + DockerHost.CertificateFileNameCert;
+        let keyPath = dirPath + DockerHost.CertificateFileNameKey;
 
         if (dockerType === "tcp" && fs.existsSync(caPath) && fs.existsSync(certPath) && fs.existsSync(keyPath)) {
-            let ca   = fs.readFileSync(caPath),
-                key  = fs.readFileSync(keyPath),
-                cert = fs.readFileSync(certPath);
-            certOptions = { ca, key, cert };
+            let ca = fs.readFileSync(caPath);
+            let key = fs.readFileSync(keyPath);
+            let cert = fs.readFileSync(certPath);
+            certOptions = {
+                ca,
+                key,
+                cert
+            };
         }
 
         return { ...baseOptions, ...certOptions };
