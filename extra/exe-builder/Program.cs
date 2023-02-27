@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Win32;
@@ -35,6 +36,8 @@ namespace UptimeKuma {
 
     public class UptimeKumaApplicationContext : ApplicationContext
     {
+        private static Mutex mutex = null;
+
         const string appName = "Uptime Kuma";
 
         private NotifyIcon trayIcon;
@@ -48,6 +51,14 @@ namespace UptimeKuma {
 
 
         public UptimeKumaApplicationContext() {
+
+            // Single instance only
+            bool createdNew;
+            mutex = new Mutex(true, appName, out createdNew);
+            if (!createdNew) {
+                return;
+            }
+
             var startingText = "Starting server...";
             trayIcon = new NotifyIcon();
             trayIcon.Text = startingText;
