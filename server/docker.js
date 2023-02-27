@@ -2,8 +2,15 @@ const axios = require("axios");
 const { R } = require("redbean-node");
 const version = require("../package.json").version;
 const https = require("https");
+const fs = require("fs");
 
 class DockerHost {
+
+    static CertificateBasePath     = process.env.DOCKER_TLS_DIR_PATH ||  "data/docker-tls/";
+    static CertificateFileNameCA   = process.env.DOCKER_TLS_FILE_NAME_CA ||  "ca.pem";
+    static CertificateFileNameCert = process.env.DOCKER_TLS_FILE_NAME_CA ||  "cert.pem";
+    static CertificateFileNameKey  = process.env.DOCKER_TLS_FILE_NAME_CA ||  "key.pem";
+
     /**
      * Save a docker host
      * @param {Object} dockerHost Docker host to save
@@ -60,16 +67,13 @@ class DockerHost {
      * @returns {number} Total amount of containers on the host
      */
     static async testDockerHost(dockerHost) {
+
         const options = {
             url: "/containers/json?all=true",
             headers: {
                 "Accept": "*/*",
                 "User-Agent": "Uptime-Kuma/" + version
             },
-            httpsAgent: new https.Agent({
-                maxCachedSessions: 0,      // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
-                rejectUnauthorized: false,
-            }),
         };
 
         if (dockerHost.dockerType === "socket") {
@@ -77,6 +81,7 @@ class DockerHost {
         } else if (dockerHost.dockerType === "tcp") {
             options.baseURL = DockerHost.patchDockerURL(dockerHost.dockerDaemon);
         }
+        options.httpsAgent = new https.Agent(DockerHost.getHttpsAgentOptions(dockerHost.dockerType, options.baseURL));
 
         let res = await axios.request(options);
 
@@ -110,6 +115,43 @@ class DockerHost {
             return url.replace(/tcp:\/\//g, "http://");
         }
         return url;
+    }
+
+    /**
+     * Returns HTTPS agent options with client side TLS parameters if certificate files
+     * for the given host are available under a predefined directory path.
+     *
+     * The base path where certificates are looked for can be set with the
+     * 'DOCKER_TLS_DIR_PATH' environmental variable or defaults to 'data/docker-tls/'.
+     *
+     * If a directory in this path exists with a name matching the FQDN of the docker host
+     * (e.g. the FQDN of 'https://example.com:2376' is 'example.com' so the directory
+     * 'data/docker-tls/example.com/' would be searched for certificate files),
+     * then 'ca.pem', 'key.pem' and 'cert.pem' files are included in the agent options.
+     * File names can also be overridden via 'DOCKER_TLS_FILE_NAME_(CA|KEY|CERT)'.
+     *
+     * @param {String} dockerType i.e. "tcp" or "socket"
+     * @param {String} url The docker host URL rewritten to https://
+     * @return {Object}
+     * */
+    static getHttpsAgentOptions(dockerType, url) {
+        let baseOptions = { maxCachedSessions: 0, rejectUnauthorized: true },
+            certOptions = {};
+
+        let dirName  = url.replace(/^https:\/\/([^\/:]+)(\/|:).*$/, "$1"),
+            dirPath  = DockerHost.CertificateBasePath + dirName + "/",
+            caPath   = dirPath + DockerHost.CertificateFileNameCA,
+            certPath = dirPath + DockerHost.CertificateFileNameCert,
+            keyPath  = dirPath + DockerHost.CertificateFileNameKey;
+
+        if (dockerType === "tcp" && fs.existsSync(caPath) && fs.existsSync(certPath) && fs.existsSync(keyPath)) {
+            let ca   = fs.readFileSync(caPath),
+                key  = fs.readFileSync(keyPath),
+                cert = fs.readFileSync(certPath);
+            certOptions = { ca, key, cert };
+        }
+
+        return { ...baseOptions, ...certOptions };
     }
 }
 
