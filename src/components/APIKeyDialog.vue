@@ -144,6 +144,7 @@ export default {
 
             this.$root.addAPIKey(this.key, async (res) => {
                 this.keyaddmodal.hide();
+                this.processing = false;
                 if (res.ok) {
                     this.clearKey = res.key;
                     this.keymodal.show();
@@ -151,7 +152,6 @@ export default {
                 } else {
                     toast.error(res.msg);
                 }
-                this.processing = false;
             });
         },
     }

@@ -157,6 +157,7 @@ export default {
 
     .add-btn {
         padding-top: 20px;
+        padding-bottom: 20px;
     }
 
     .item {
