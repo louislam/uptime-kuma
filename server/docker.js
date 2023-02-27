@@ -158,7 +158,10 @@ class DockerHost {
             };
         }
 
-        return { ...baseOptions, ...certOptions };
+        return {
+            ...baseOptions,
+            ...certOptions
+        };
     }
 }
 
