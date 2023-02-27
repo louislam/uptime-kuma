@@ -26,7 +26,7 @@ namespace UptimeKuma {
             if (cwd != null) {
                 Environment.CurrentDirectory = cwd;
             }
-            
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new UptimeKumaApplicationContext());
@@ -42,6 +42,7 @@ namespace UptimeKuma {
 
         private MenuItem statusMenuItem;
         private MenuItem runWhenStarts;
+        private MenuItem openMenuItem;
 
         private RegistryKey registryKey = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
 
@@ -57,10 +58,13 @@ namespace UptimeKuma {
             statusMenuItem = new MenuItem(startingText);
             statusMenuItem.Enabled = false;
 
+            openMenuItem = new MenuItem("Open", Open);
+            openMenuItem.Enabled = false;
+
             trayIcon.Icon = Icon.ExtractAssociatedIcon(Assembly.GetExecutingAssembly().Location);
             trayIcon.ContextMenu = new ContextMenu(new MenuItem[] {
                 statusMenuItem,
-                new("Open", Open),
+                openMenuItem,
                 //new("Debug Console", DebugConsole),
                 runWhenStarts,
                 new("Check for Update...", CheckForUpdate),
@@ -131,6 +135,7 @@ namespace UptimeKuma {
                         try {
                             tcpClient.Connect("127.0.0.1", 3001);
                             statusMenuItem.Text = runningText;
+                            openMenuItem.Enabled = true;
                             trayIcon.Text = runningText;
                             break;
                         } catch (Exception) {
