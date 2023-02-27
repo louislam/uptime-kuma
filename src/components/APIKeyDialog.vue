@@ -22,25 +22,30 @@
                         <!-- Expiry -->
                         <div class="my-3">
                             <label class="form-label">{{ $t("Expiry date") }}</label>
-                            <Datepicker
-                                v-model="key.expires"
-                                :dark="$root.isDark"
-                                :monthChangeOnScroll="false"
-                                :minDate="minDate"
-                                format="yyyy-MM-dd HH:mm"
-                                modelType="yyyy-MM-dd HH:mm:ss"
-                                :required="!noExpire"
-                                :disabled="noExpire"
-                            />
-
-                            <div class="form-check mb-2">
-                                <input
-                                    id="no-expire" v-model="noExpire" class="form-check-input"
-                                    type="checkbox"
-                                >
-                                <label class="form-check-label" for="no-expire">{{
-                                    $t("Don't expire")
-                                }}</label>
+                            <div class="d-flex flex-row align-items-center">
+                                <div class="col-6">
+                                    <Datepicker
+                                        v-model="key.expires"
+                                        :dark="$root.isDark"
+                                        :monthChangeOnScroll="false"
+                                        :minDate="minDate"
+                                        format="yyyy-MM-dd HH:mm"
+                                        modelType="yyyy-MM-dd HH:mm:ss"
+                                        :required="!noExpire"
+                                        :disabled="noExpire"
+                                    />
+                                </div>
+                                <div class="col-6 ms-3">
+                                    <div class="form-check mb-0">
+                                        <input
+                                            id="no-expire" v-model="noExpire" class="form-check-input"
+                                            type="checkbox"
+                                        >
+                                        <label class="form-check-label" for="no-expire">{{
+                                            $t("Don't expire")
+                                        }}</label>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
