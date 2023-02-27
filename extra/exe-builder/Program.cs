@@ -21,6 +21,12 @@ namespace UptimeKuma {
         /// </summary>
         [STAThread]
         static void Main(string[] args) {
+            var cwd = Path.GetDirectoryName(Application.ExecutablePath);
+
+            if (cwd != null) {
+                Environment.CurrentDirectory = cwd;
+            }
+            
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new UptimeKumaApplicationContext());
