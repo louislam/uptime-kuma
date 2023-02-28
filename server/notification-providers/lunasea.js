@@ -9,8 +9,8 @@ class LunaSea extends NotificationProvider {
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
         let lunaseaurl = "";
-        if (notification.lunaseaNotificationType === "user") {
-            lunaseaurl = "https://notify.lunasea.app/v1/custom/user/" + notification.lunaseaDevice;
+        if (notification.lunaseaTarget === "user") {
+            lunaseaurl = "https://notify.lunasea.app/v1/custom/user/" + notification.lunaseaUserID;
         } else {
             lunaseaurl = "https://notify.lunasea.app/v1/custom/device/" + notification.lunaseaDevice;
         }
