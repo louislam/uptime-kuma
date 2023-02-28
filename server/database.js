@@ -68,11 +68,11 @@ class Database {
         "patch-monitor-add-resend-interval.sql": true,
         "patch-ping-packet-size.sql": true,
         "patch-maintenance-table2.sql": true,
-        "patch-api-key-table.sql": true,
         "patch-add-gamedig-monitor.sql": true,
         "patch-add-google-analytics-status-page-tag.sql": true,
         "patch-http-body-encoding.sql": true,
         "patch-add-description-monitor.sql": true,
+        "patch-api-key-table.sql": true,
     };
 
     /**
