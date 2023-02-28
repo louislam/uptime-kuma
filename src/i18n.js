@@ -17,6 +17,7 @@ const languageList = {
     "pt-BR": "Português (Brasileiro)",
     "fi": "Suomi",
     "fr-FR": "Français (France)",
+    "he-IL": "עברית",
     "hu": "Magyar",
     "hr-HR": "Hrvatski",
     "it-IT": "Italiano (Italian)",
