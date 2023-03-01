@@ -22,7 +22,7 @@ class Ntfy extends NotificationProvider {
                     "title": (monitorJSON?.name || notification.ntfytopic) + " [Uptime-Kuma]",
                     "message": msg,
                     "priority": notification.ntfyPriority,
-                    "tags": [ "test_tube" ]
+                    "tags": [ "test_tube" ],
                 };
                 await axios.post(`${notification.ntfyserverurl}`, ntfyTestData, { headers: headers });
                 return okMsg;
@@ -51,7 +51,7 @@ class Ntfy extends NotificationProvider {
                     {
                         "action": "view",
                         "label": "Open " + monitorJSON.name,
-                        "url": monitorJSON.url
+                        "url": monitorJSON.url,
                     }
                 ]
             };
