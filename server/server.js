@@ -87,7 +87,7 @@ log.debug("server", "Importing Background Jobs");
 const { initBackgroundJobs, stopBackgroundJobs } = require("./jobs");
 const { loginRateLimiter, twoFaRateLimiter } = require("./rate-limiter");
 
-const { basicAuth } = require("./auth");
+const { apiAuth } = require("./auth");
 const { login } = require("./auth");
 const passwordHash = require("./password-hash");
 
@@ -129,7 +129,7 @@ if (config.demoMode) {
 }
 
 // Must be after io instantiation
-const { sendNotificationList, sendHeartbeatList, sendImportantHeartbeatList, sendInfo, sendProxyList, sendDockerHostList } = require("./client");
+const { sendNotificationList, sendHeartbeatList, sendImportantHeartbeatList, sendInfo, sendProxyList, sendDockerHostList, sendAPIKeyList } = require("./client");
 const { statusPageSocketHandler } = require("./socket-handlers/status-page-socket-handler");
 const databaseSocketHandler = require("./socket-handlers/database-socket-handler");
 const TwoFA = require("./2fa");
@@ -138,6 +138,7 @@ const { cloudflaredSocketHandler, autoStart: cloudflaredAutoStart, stop: cloudfl
 const { proxySocketHandler } = require("./socket-handlers/proxy-socket-handler");
 const { dockerSocketHandler } = require("./socket-handlers/docker-socket-handler");
 const { maintenanceSocketHandler } = require("./socket-handlers/maintenance-socket-handler");
+const { apiKeySocketHandler } = require("./socket-handlers/api-key-socket-handler");
 const { generalSocketHandler } = require("./socket-handlers/general-socket-handler");
 const { Settings } = require("./settings");
 const { CacheableDnsHttpAgent } = require("./cacheable-dns-http-agent");
@@ -229,7 +230,7 @@ let needSetup = false;
 
     // Prometheus API metrics  /metrics
     // With Basic Auth using the first user's username/password
-    app.get("/metrics", basicAuth, prometheusAPIMetrics());
+    app.get("/metrics", apiAuth, prometheusAPIMetrics());
 
     app.use("/", expressStaticGzip("dist", {
         enableBrotli: true,
@@ -678,6 +679,7 @@ let needSetup = false;
                 }
 
                 bean.name = monitor.name;
+                bean.description = monitor.description;
                 bean.type = monitor.type;
                 bean.url = monitor.url;
                 bean.method = monitor.method;
@@ -903,16 +905,70 @@ let needSetup = false;
             try {
                 checkLogin(socket);
 
-                monitor.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
-                delete monitor.accepted_statuscodes;
-                const status = await Monitor.test(monitor);
+                let bean = await R.findOne("monitor", " id = ? ", [ monitor.id ]);
+
+                if (bean.user_id !== socket.userID) {
+                    throw new Error("Permission denied.");
+                }
+
+                bean.name = monitor.name;
+                bean.type = monitor.type;
+                bean.url = monitor.url;
+                bean.method = monitor.method;
+                bean.body = monitor.body;
+                bean.headers = monitor.headers;
+                bean.basic_auth_user = monitor.basic_auth_user;
+                bean.basic_auth_pass = monitor.basic_auth_pass;
+                bean.interval = monitor.interval;
+                bean.retryInterval = monitor.retryInterval;
+                bean.resendInterval = monitor.resendInterval;
+                bean.hostname = monitor.hostname;
+                bean.game = monitor.game;
+                bean.maxretries = monitor.maxretries;
+                bean.port = parseInt(monitor.port);
+                bean.keyword = monitor.keyword;
+                bean.ignoreTls = monitor.ignoreTls;
+                bean.expiryNotification = monitor.expiryNotification;
+                bean.upsideDown = monitor.upsideDown;
+                bean.packetSize = monitor.packetSize;
+                bean.maxredirects = monitor.maxredirects;
+                bean.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
+                bean.dns_resolve_type = monitor.dns_resolve_type;
+                bean.dns_resolve_server = monitor.dns_resolve_server;
+                bean.pushToken = monitor.pushToken;
+                bean.docker_container = monitor.docker_container;
+                bean.docker_host = monitor.docker_host;
+                bean.proxyId = Number.isInteger(monitor.proxyId) ? monitor.proxyId : null;
+                bean.mqttUsername = monitor.mqttUsername;
+                bean.mqttPassword = monitor.mqttPassword;
+                bean.mqttTopic = monitor.mqttTopic;
+                bean.mqttSuccessMessage = monitor.mqttSuccessMessage;
+                bean.databaseConnectionString = monitor.databaseConnectionString;
+                bean.databaseQuery = monitor.databaseQuery;
+                bean.authMethod = monitor.authMethod;
+                bean.authWorkstation = monitor.authWorkstation;
+                bean.authDomain = monitor.authDomain;
+                bean.grpcUrl = monitor.grpcUrl;
+                bean.grpcProtobuf = monitor.grpcProtobuf;
+                bean.grpcServiceName = monitor.grpcServiceName;
+                bean.grpcMethod = monitor.grpcMethod;
+                bean.grpcBody = monitor.grpcBody;
+                bean.grpcMetadata = monitor.grpcMetadata;
+                bean.grpcEnableTls = monitor.grpcEnableTls;
+                bean.radiusUsername = monitor.radiusUsername;
+                bean.radiusPassword = monitor.radiusPassword;
+                bean.radiusCalledStationId = monitor.radiusCalledStationId;
+                bean.radiusCallingStationId = monitor.radiusCallingStationId;
+                bean.radiusSecret = monitor.radiusSecret;
+
+                bean.validate();
+                bean.test(io);
 
                 log.info("monitor", `Tested Monitor: ${monitor.id} User ID: ${socket.userID}`);
 
                 callback({
                     ok: true,
-                    msg: "Tested Successfully.",
-                    status,
+                    msg: "Monitor test started",
                 });
             } catch (e) {
                 log.error("monitor", `Error testing Monitor: ${monitor.id} User ID: ${socket.userID}`);
@@ -920,7 +976,6 @@ let needSetup = false;
                 callback({
                     ok: false,
                     msg: e.message,
-                    status: 0,
                 });
             }
         });
@@ -1344,6 +1399,7 @@ let needSetup = false;
                             let monitor = {
                                 // Define the new variable from earlier here
                                 name: monitorListData[i].name,
+                                description: monitorListData[i].description,
                                 type: monitorListData[i].type,
                                 url: monitorListData[i].url,
                                 method: monitorListData[i].method || "GET",
@@ -1527,6 +1583,7 @@ let needSetup = false;
         proxySocketHandler(socket);
         dockerSocketHandler(socket);
         maintenanceSocketHandler(socket);
+        apiKeySocketHandler(socket);
         generalSocketHandler(socket, server);
         pluginsHandler(socket, server);
 
@@ -1635,6 +1692,7 @@ async function afterLogin(socket, user) {
     sendNotificationList(socket);
     sendProxyList(socket);
     sendDockerHostList(socket);
+    sendAPIKeyList(socket);
 
     await sleep(500);
 

@@ -35,7 +35,8 @@ export default {
             allowLoginDialog: false,        // Allowed to show login dialog, but "loggedIn" have to be true too. This exists because prevent the login dialog show 0.1s in first before the socket server auth-ed.
             loggedIn: false,
             monitorList: { },
-            maintenanceList: { },
+            maintenanceList: {},
+            apiKeyList: {},
             heartbeatList: { },
             importantHeartbeatList: { },
             avgPingList: { },
@@ -135,6 +136,10 @@ export default {
                 this.maintenanceList = data;
             });
 
+            socket.on("apiKeyList", (data) => {
+                this.apiKeyList = data;
+            });
+
             socket.on("notificationList", (data) => {
                 this.notificationList = data;
             });
@@ -191,6 +196,11 @@ export default {
 
                     this.importantHeartbeatList[data.monitorID].unshift(data);
                 }
+            });
+
+            socket.on("testMonitorResponse", data => {
+                const status = this.getMonitorStatusText(data.status)
+                toast.info(`Monitor status: ${status}`);
             });
 
             socket.on("heartbeatList", (monitorID, data, overwrite = false) => {
@@ -467,6 +477,17 @@ export default {
         },
 
         /**
+         * Send list of API keys
+         * @param {socketCB} callback
+         */
+        getAPIKeyList(callback) {
+            if (!callback) {
+                callback = () => { };
+            }
+            socket.emit("getAPIKeyList", callback);
+        },
+
+        /**
          * Add a monitor
          * @param {Object} monitor Object representing monitor to add
          * @param {socketCB} callback
@@ -482,6 +503,28 @@ export default {
          */
         testMonitor(monitor, callback) {
             socket.emit("testMonitor", monitor, callback);
+        },
+
+        /**
+         * Get monitor status text
+         * @param {Number} status monitor status number
+         */
+        getMonitorStatusText(status) {
+            if (status === 0) {
+                return this.$t("Down");
+            }
+
+            if (status === 1) {
+                return this.$t("Up");
+            }
+
+            if (status === 2) {
+                return this.$t("Pending");
+            }
+
+            if (status === 3) {
+                return this.$t("statusMaintenance");
+            }
         },
 
         /**
@@ -547,6 +590,24 @@ export default {
          */
         deleteMaintenance(maintenanceID, callback) {
             socket.emit("deleteMaintenance", maintenanceID, callback);
+        },
+
+        /**
+         * Add an API key
+         * @param {Object} key API key to add
+         * @param {socketCB} callback
+         */
+        addAPIKey(key, callback) {
+            socket.emit("addAPIKey", key, callback);
+        },
+
+        /**
+         * Delete specified API key
+         * @param {int} keyID ID of key to delete
+         * @param {socketCB} callback
+         */
+        deleteAPIKey(keyID, callback) {
+            socket.emit("deleteAPIKey", keyID, callback);
         },
 
         /** Clear the hearbeat list */

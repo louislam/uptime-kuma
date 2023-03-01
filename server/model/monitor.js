@@ -72,6 +72,7 @@ class Monitor extends BeanModel {
         let data = {
             id: this.id,
             name: this.name,
+            description: this.description,
             url: this.url,
             method: this.method,
             hostname: this.hostname,
@@ -200,7 +201,15 @@ class Monitor extends BeanModel {
      * Start monitor
      * @param {Server} io Socket server instance
      */
-    start(io) {
+    test(io) {
+        this.start(io, true);
+    } 
+
+    /**
+     * Start monitor
+     * @param {Server} io Socket server instance
+     */
+    start(io, dryRun = false) {
         let previousBeat = null;
         let retries = 0;
 
@@ -276,19 +285,24 @@ class Monitor extends BeanModel {
                     let contentType = null;
                     let bodyValue = null;
 
-                    if (this.body && !this.httpBodyEncoding || this.httpBodyEncoding === "json") {
-                        bodyValue = JSON.parse(this.body);
-                        contentType = "application/json";
-                    } else if (this.body && (this.httpBodyEncoding === "xml")) {
-                        bodyValue = this.body;
-                        contentType = "text/xml; charset=utf-8";
+                    if (this.body && (typeof this.body === "string" && this.body.trim().length > 0)) {
+                        if (!this.httpBodyEncoding || this.httpBodyEncoding === "json") {
+                            try {
+                                bodyValue = JSON.parse(this.body);
+                                contentType = "application/json";
+                            } catch (e) {
+                                throw new Error("Your JSON body is invalid. " + e.message);
+                            }
+                        } else if (this.httpBodyEncoding === "xml") {
+                            bodyValue = this.body;
+                            contentType = "text/xml; charset=utf-8";
+                        }
                     }
 
                     // Axios Options
                     const options = {
                         url: this.url,
                         method: (this.method || "get").toLowerCase(),
-                        ...(bodyValue ? { data: bodyValue } : {}),
                         timeout: this.interval * 1000 * 0.8,
                         headers: {
                             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
@@ -302,6 +316,10 @@ class Monitor extends BeanModel {
                             return checkStatusCode(status, this.getAcceptedStatuscodes());
                         },
                     };
+
+                    if (bodyValue) {
+                        options.data = bodyValue;
+                    }
 
                     if (this.proxy_id) {
                         const proxy = await R.load("proxy", this.proxy_id);
@@ -711,7 +729,7 @@ class Monitor extends BeanModel {
 
             // Mark as important if status changed, ignore pending pings,
             // Don't notify if disrupted changes to up
-            if (isImportant) {
+            if (isImportant && !dryRun) {
                 bean.important = true;
 
                 if (Monitor.isImportantForNotification(isFirstBeat, previousBeat?.status, bean.status)) {
@@ -760,19 +778,23 @@ class Monitor extends BeanModel {
             }
 
             log.debug("monitor", `[${this.name}] Send to socket`);
-            UptimeCacheList.clearCache(this.id);
-            io.to(this.user_id).emit("heartbeat", bean.toJSON());
-            Monitor.sendStats(io, this.id, this.user_id);
+            if(!dryRun){
+                UptimeCacheList.clearCache(this.id);
+                io.to(this.user_id).emit("heartbeat", bean.toJSON());
+                Monitor.sendStats(io, this.id, this.user_id);
+    
+                log.debug("monitor", `[${this.name}] Store`);
+                await R.store(bean);
+    
+                log.debug("monitor", `[${this.name}] prometheus.update`);
+                prometheus.update(bean, tlsInfo);
+    
+                previousBeat = bean;
+            }else {
+                io.to(this.user_id).emit("testMonitorResponse", {status: bean.status} )
+            }   
 
-            log.debug("monitor", `[${this.name}] Store`);
-            await R.store(bean);
-
-            log.debug("monitor", `[${this.name}] prometheus.update`);
-            this.prometheus?.update(bean, tlsInfo);
-
-            previousBeat = bean;
-
-            if (! this.isStop) {
+            if (! this.isStop && !dryRun) {
                 log.debug("monitor", `[${this.name}] SetTimeout for next check.`);
                 this.heartbeatInterval = setTimeout(safeBeat, beatInterval * 1000);
             } else {
@@ -798,321 +820,13 @@ class Monitor extends BeanModel {
         };
 
         // Delay Push Type
-        if (this.type === "push") {
+        if (this.type === "push" && !dryRun) {
             setTimeout(() => {
                 safeBeat();
             }, this.interval * 1000);
         } else {
             safeBeat();
         }
-    }
-
-    /**
-     * Test monitor
-     * @param {Object} monitor Object to test
-     */
-    static async test(monitor) {
-        let status = DOWN;
-        const monitorObj = await R.findOne("monitor", " id = ? ", [ monitor.id ]);
-
-        try {
-            if (await Monitor.isUnderMaintenance(monitor.id)) {
-                status = MAINTENANCE;
-            } else if (monitor.type === "http" || monitor.type === "keyword") {
-
-                // HTTP basic auth
-                let basicAuthHeader = {};
-                if (monitor.auth_method === "basic") {
-                    basicAuthHeader = {
-                        "Authorization": "Basic " + monitorObj.encodeBase64.call(monitor, monitor.basic_auth_user, monitor.basic_auth_pass),
-                    };
-                }
-
-                const httpsAgentOptions = {
-                    maxCachedSessions: 0, // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
-                    rejectUnauthorized: !monitorObj.getIgnoreTls.call(monitor),
-                };
-
-                log.debug("monitor", `[${monitor.name}] Prepare Options for axios`);
-
-                // Axios Options
-                const options = {
-                    url: monitor.url,
-                    method: (monitor.method || "get").toLowerCase(),
-                    ...(monitor.body ? { data: JSON.parse(monitor.body) } : {}),
-                    timeout: monitor.interval * 1000 * 0.8,
-                    headers: {
-                        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-                        "User-Agent": "Uptime-Kuma/" + version,
-                        ...(monitor.headers ? JSON.parse(monitor.headers) : {}),
-                        ...(basicAuthHeader),
-                    },
-                    maxRedirects: monitor.maxredirects,
-                    validateStatus: (status) => {
-                        return checkStatusCode(status, monitorObj.getAcceptedStatuscodes.call(monitor));
-                    },
-                };
-
-                if (monitor.proxy_id) {
-                    const proxy = await R.load("proxy", monitor.proxy_id);
-
-                    if (proxy && proxy.active) {
-                        const { httpAgent, httpsAgent } = Proxy.createAgents(proxy, {
-                            httpsAgentOptions: httpsAgentOptions,
-                        });
-
-                        options.proxy = false;
-                        options.httpAgent = httpAgent;
-                        options.httpsAgent = httpsAgent;
-                    }
-                }
-
-                if (!options.httpsAgent) {
-                    options.httpsAgent = new https.Agent(httpsAgentOptions);
-                }
-
-                log.debug("monitor", `[${monitor.name}] Axios Options: ${JSON.stringify(options)}`);
-                log.debug("monitor", `[${monitor.name}] Axios Request`);
-
-                // Make Request
-                let res = await monitorObj.makeAxiosRequest.call(monitor, options);
-
-                if (monitor.type === "http") {
-                    status = UP;
-                } else {
-                    let data = res.data;
-
-                    // Convert to string for object/array
-                    if (typeof data !== "string") {
-                        data = JSON.stringify(data);
-                    }
-
-                    if (data.includes(monitor.keyword)) {
-                        status = UP;
-                    } else {
-                        data = data.replace(/<[^>]*>?|[\n\r]|\s+/gm, " ");
-                        if (data.length > 50) {
-                            data = data.substring(0, 47) + "...";
-                        }
-                        throw new Error("Keyword is not in [" + data + "]");
-                    }
-
-                }
-
-            } else if (monitor.type === "port") {
-                await tcping(monitor.hostname, monitor.port);
-                status = UP;
-
-            } else if (monitor.type === "ping") {
-                await ping(monitor.hostname, monitor.packetSize);
-                status = UP;
-
-            } else if (monitor.type === "dns") {
-
-                await dnsResolve(monitor.hostname, monitor.dns_resolve_server, monitor.port, monitor.dns_resolve_type);
-                status = UP;
-
-            } else if (monitor.type === "steam") {
-                const steamApiUrl = "https://api.steampowered.com/IGameServersService/GetServerList/v1/";
-                const steamAPIKey = await setting("steamAPIKey");
-                const filter = `addr\\${monitor.hostname}:${monitor.port}`;
-
-                if (!steamAPIKey) {
-                    throw new Error("Steam API Key not found");
-                }
-
-                let res = await axios.get(steamApiUrl, {
-                    timeout: monitor.interval * 1000 * 0.8,
-                    headers: {
-                        "Accept": "*/*",
-                        "User-Agent": "Uptime-Kuma/" + version,
-                    },
-                    httpsAgent: CacheableDnsHttpAgent.getHttpsAgent({
-                        maxCachedSessions: 0,      // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
-                        rejectUnauthorized: !monitorObj.getIgnoreTls.cal(monitor),
-                    }),
-                    httpAgent: CacheableDnsHttpAgent.getHttpAgent({
-                        maxCachedSessions: 0,
-                    }),
-                    maxRedirects: monitor.maxredirects,
-                    validateStatus: (status) => {
-                        return checkStatusCode(status, monitorObj.getAcceptedStatuscodes.call(monitor));
-                    },
-                    params: {
-                        filter: filter,
-                        key: steamAPIKey,
-                    }
-                });
-
-                if (res.data.response && res.data.response.servers && res.data.response.servers.length > 0) {
-                    status = UP;
-
-                    try {
-                        await ping(monitor.hostname, monitor.packetSize);
-                    } catch (_) { }
-                } else {
-                    throw new Error("Server not found on Steam");
-                }
-            } else if (monitor.type === "gamedig") {
-
-                try {
-                    await Gamedig.query({
-                        type: monitor.game,
-                        host: monitor.hostname,
-                        port: monitor.port,
-                        givenPortOnly: true,
-                    });
-
-                    status = UP;
-
-                } catch (e) {
-                    throw new Error(e.message);
-                }
-
-            } else if (monitor.type === "docker") {
-                log.debug("monitor", `[${monitor.name}] Prepare Options for Axios`);
-
-                const dockerHost = await R.load("docker_host", monitor.docker_host);
-
-                const options = {
-                    url: `/containers/${monitor.docker_container}/json`,
-                    timeout: monitor.interval * 1000 * 0.8,
-                    headers: {
-                        "Accept": "*/*",
-                        "User-Agent": "Uptime-Kuma/" + version,
-                    },
-                    httpsAgent: CacheableDnsHttpAgent.getHttpsAgent({
-                        maxCachedSessions: 0,      // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
-                        rejectUnauthorized: !monitorObj.getIgnoreTls.call(monitor),
-                    }),
-                    httpAgent: CacheableDnsHttpAgent.getHttpAgent({
-                        maxCachedSessions: 0,
-                    }),
-                };
-
-                if (dockerHost._dockerType === "socket") {
-                    options.socketPath = dockerHost._dockerDaemon;
-                } else if (dockerHost._dockerType === "tcp") {
-                    options.baseURL = DockerHost.patchDockerURL(dockerHost._dockerDaemon);
-                }
-
-                log.debug("monitor", `[${monitor.name}] Axios Request`);
-                let res = await axios.request(options);
-                if (res.data.State.Running) {
-                    status = UP;
-                } else {
-                    throw Error("Container State is " + res.data.State.Status);
-                }
-            } else if (monitor.type === "mqtt") {
-                await mqttAsync(monitor.hostname, monitor.mqttTopic, monitor.mqttSuccessMessage, {
-                    port: monitor.port,
-                    username: monitor.mqttUsername,
-                    password: monitor.mqttPassword,
-                    interval: monitor.interval,
-                });
-                status = UP;
-
-            } else if (monitor.type === "sqlserver") {
-
-                await mssqlQuery(monitor.databaseConnectionString, monitor.databaseQuery);
-                status = UP;
-
-            } else if (monitor.type === "grpc-keyword") {
-                const options = {
-                    grpcUrl: monitor.grpcUrl,
-                    grpcProtobufData: monitor.grpcProtobuf,
-                    grpcServiceName: monitor.grpcServiceName,
-                    grpcEnableTls: monitor.grpcEnableTls,
-                    grpcMethod: monitor.grpcMethod,
-                    grpcBody: monitor.grpcBody,
-                    keyword: monitor.keyword
-                };
-                const response = await grpcQuery(options);
-                log.debug("monitor:", `gRPC response: ${JSON.stringify(response)}`);
-                let responseData = response.data;
-                if (responseData.length > 50) {
-                    responseData = responseData.toString().substring(0, 47) + "...";
-                }
-                if (response.code !== 1) {
-                    status = DOWN;
-                } else {
-                    if (response.data.toString().includes(monitor.keyword)) {
-                        status = UP;
-
-                    } else {
-                        log.debug("monitor:", `GRPC response [${response.data}] + ", but keyword [${monitor.keyword}] is not in [" + ${response.data} + "]"`);
-                        status = DOWN;
-                    }
-                }
-            } else if (monitor.type === "postgres") {
-
-                await postgresQuery(monitor.databaseConnectionString, monitor.databaseQuery);
-                status = UP;
-
-            } else if (monitor.type === "mysql") {
-
-                await mysqlQuery(monitor.databaseConnectionString, monitor.databaseQuery);
-
-                status = UP;
-            } else if (monitor.type === "mongodb") {
-
-                await mongodbPing(monitor.databaseConnectionString);
-
-                status = UP;
-
-            } else if (monitor.type === "radius") {
-
-                // Handle monitors that were created before the
-                // update and as such don't have a value for
-                // this.port.
-                let port;
-                if (monitor.port == null) {
-                    port = 1812;
-                } else {
-                    port = monitor.port;
-                }
-
-                try {
-                    await radius(
-                        monitor.hostname,
-                        monitor.radiusUsername,
-                        monitor.radiusPassword,
-                        monitor.radiusCalledStationId,
-                        monitor.radiusCallingStationId,
-                        monitor.radiusSecret,
-                        port
-                    );
-
-                    status = UP;
-                } catch (error) {
-                    status = DOWN;
-                }
-            } else if (monitor.type === "redis") {
-
-                await redisPingAsync(monitor.databaseConnectionString);
-                status = UP;
-
-            } else if (monitor.type in UptimeKumaServer.monitorTypeList) {
-                const monitorType = UptimeKumaServer.monitorTypeList[monitor.type];
-                await monitorType.check(monitorObj, monitor);
-
-            } else {
-                throw new Error("Unknown Monitor Type");
-            }
-
-            if (monitorObj.isUpsideDown.call(monitor)) {
-                status = flipStatus(monitor.status);
-
-                if (status === DOWN) {
-                    throw new Error("Flip UP to DOWN");
-                }
-            }
-
-        } catch (error) {
-            status = DOWN;
-        }
-
-        return status;
     }
 
     /**

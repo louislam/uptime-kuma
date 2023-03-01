@@ -5,8 +5,10 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Win32;
@@ -20,6 +22,12 @@ namespace UptimeKuma {
         /// </summary>
         [STAThread]
         static void Main(string[] args) {
+            var cwd = Path.GetDirectoryName(Application.ExecutablePath);
+
+            if (cwd != null) {
+                Environment.CurrentDirectory = cwd;
+            }
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new UptimeKumaApplicationContext());
@@ -28,25 +36,46 @@ namespace UptimeKuma {
 
     public class UptimeKumaApplicationContext : ApplicationContext
     {
+        private static Mutex mutex = null;
+
         const string appName = "Uptime Kuma";
 
         private NotifyIcon trayIcon;
         private Process process;
 
+        private MenuItem statusMenuItem;
         private MenuItem runWhenStarts;
+        private MenuItem openMenuItem;
 
         private RegistryKey registryKey = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
 
-        public UptimeKumaApplicationContext()
-        {
+
+        public UptimeKumaApplicationContext() {
+
+            // Single instance only
+            bool createdNew;
+            mutex = new Mutex(true, appName, out createdNew);
+            if (!createdNew) {
+                return;
+            }
+
+            var startingText = "Starting server...";
             trayIcon = new NotifyIcon();
+            trayIcon.Text = startingText;
 
             runWhenStarts = new MenuItem("Run when system starts", RunWhenStarts);
             runWhenStarts.Checked = registryKey.GetValue(appName) != null;
 
+            statusMenuItem = new MenuItem(startingText);
+            statusMenuItem.Enabled = false;
+
+            openMenuItem = new MenuItem("Open", Open);
+            openMenuItem.Enabled = false;
+
             trayIcon.Icon = Icon.ExtractAssociatedIcon(Assembly.GetExecutingAssembly().Location);
             trayIcon.ContextMenu = new ContextMenu(new MenuItem[] {
-                new("Open", Open),
+                statusMenuItem,
+                openMenuItem,
                 //new("Debug Console", DebugConsole),
                 runWhenStarts,
                 new("Check for Update...", CheckForUpdate),
@@ -108,6 +137,23 @@ namespace UptimeKuma {
             try {
                 process.Start();
                 //Open(null, null);
+
+                // Async task to check if the server is ready
+                Task.Run(() => {
+                    var runningText = "Server is running";
+                    using TcpClient tcpClient = new TcpClient();
+                    while (true) {
+                        try {
+                            tcpClient.Connect("127.0.0.1", 3001);
+                            statusMenuItem.Text = runningText;
+                            openMenuItem.Enabled = true;
+                            trayIcon.Text = runningText;
+                            break;
+                        } catch (Exception) {
+                            System.Threading.Thread.Sleep(2000);
+                        }
+                    }
+                });
 
             } catch (Exception e) {
                 MessageBox.Show("Startup failed: " + e.Message, "Uptime Kuma Error");
