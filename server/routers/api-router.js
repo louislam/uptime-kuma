@@ -7,6 +7,7 @@ const dayjs = require("dayjs");
 const { UP, MAINTENANCE, DOWN, PENDING, flipStatus, log } = require("../../src/util");
 const StatusPage = require("../model/status_page");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
+const { UptimeCacheList } = require("../uptime-cache-list");
 const { makeBadge } = require("badge-maker");
 const { badgeConstants } = require("../config");
 
@@ -86,6 +87,7 @@ router.get("/api/push/:pushToken", async (request, response) => {
         await R.store(bean);
 
         io.to(monitor.user_id).emit("heartbeat", bean.toJSON());
+        UptimeCacheList.clearCache(monitor.id);
         Monitor.sendStats(io, monitor.id, monitor.user_id);
 
         response.json({
