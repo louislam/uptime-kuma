@@ -235,10 +235,10 @@
     "smtpBCC": "密送",
     "discord": "Discord",
     "Discord Webhook URL": "Discord Webhook 网址",
-    "wayToGetDiscordURL": "要获取，可以前往服务器设置 -> 整合 -> 创建 Webhook",
+    "wayToGetDiscordURL": "可在服务器设置 -> 整合 -> 创建 Webhook中获取",
     "Bot Display Name": "机器人显示名称",
     "Prefix Custom Message": "自定义消息前缀",
-    "Hello @everyone is...": "{'@'}everyone，…",
+    "Hello @everyone is...": "{'@'}everyone，……",
     "teams": "Microsoft Teams",
     "Webhook URL": "Webhook 网址",
     "wayToGetTeamsURL": "您可以在{0}了解如何获取 Webhook URL。",
@@ -703,8 +703,11 @@
     "telegramMessageThreadIDDescription": "可选的唯一标识符，用以向该标识符对应的话题发送消息，仅限启用了话题功能的超级群组可用",
     "notificationRegional": "地区性通知平台",
     "telegramSendSilently": "静默发送",
-    "Body Encoding": "响应体编码",
+    "Body Encoding": "请求体编码",
     "telegramSendSilentlyDescription": "静默地发送消息。消息发布后用户会收到无声通知。",
     "telegramProtectContent": "阻止转发/保存",
-    "telegramProtectContentDescription": "如果启用，Telegram 中的机器人消息将受到保护，不会被转发和保存。"
+    "telegramProtectContentDescription": "如果启用，Telegram 中的机器人消息将受到保护，不会被转发和保存。",
+    "Clone Monitor": "克隆监控项",
+    "Clone": "克隆",
+    "cloneOf": "{0} 的克隆"
 }
