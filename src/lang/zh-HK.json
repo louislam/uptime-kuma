@@ -656,5 +656,6 @@
     "PushDeer Key": "PushDeer Key",
     "onebotSafetyTips": "為了安全起見，必須設置存取 Token",
     "onebotUserOrGroupId": "群組/使用者 ID",
-    "onebotPrivateMessage": "私人"
+    "onebotPrivateMessage": "私人",
+    "notificationRegional": "地區性"
 }

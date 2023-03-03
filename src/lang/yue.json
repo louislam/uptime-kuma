@@ -97,5 +97,6 @@
     "Monitor Type": "監測器類型",
     "Heartbeat Interval": "檢查間距",
     "Add New Monitor": "新增監測器",
-    "Quick Stats": "綜合數據"
+    "Quick Stats": "綜合數據",
+    "markdownSupported": "可以用 Markdown"
 }
