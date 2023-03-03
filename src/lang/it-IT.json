@@ -416,5 +416,6 @@
     "Page Not Found": "Pagina non trovata",
     "Affected Monitors": "Monitoraggi interessati",
     "Pick Affected Monitors...": "Seleziona i monitoraggi interessati…",
-    "Valid": "Valido"
+    "Valid": "Valido",
+    "Certificate Expiry Notification": "Notifica scadenza certificato"
 }
