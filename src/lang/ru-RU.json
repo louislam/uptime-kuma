@@ -670,7 +670,7 @@
     "Google Analytics ID": "ID Google Аналитики",
     "wayToGetZohoCliqURL": "Вы можете узнать как создать webhook URL тут {0}.",
     "Effective Date Range": "Даты действия",
-    "wayToGetKookGuildID": "Включите \"Developer mode\" в настройках Kook, а затем нажмите правой кнопкой по гильдии чтобы скопировать её ID.",
+    "wayToGetKookGuildID": "Включите \"Режим разработчика\" в настройках Kook, а затем нажмите правой кнопкой по гильдии чтобы скопировать её ID.",
     "Enable TLS": "Включить TLS",
     "Integration Key": "Ключ интеграции",
     "Integration URL": "URL интеграции",
