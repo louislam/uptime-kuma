@@ -709,5 +709,22 @@
     "telegramProtectContentDescription": "如果启用，Telegram 中的机器人消息将受到保护，不会被转发和保存。",
     "Clone Monitor": "克隆监控项",
     "Clone": "克隆",
-    "cloneOf": "{0} 的克隆"
+    "cloneOf": "{0} 的克隆",
+    "Expiry": "过期",
+    "Expiry date": "过期时间",
+    "Continue": "继续",
+    "Add Another": "添加另一个",
+    "Add API Key": "添加 API 密钥",
+    "No API Keys": "没有 API 密钥",
+    "apiKey-active": "有效",
+    "apiKey-expired": "已过期",
+    "Expires": "过期时间",
+    "apiKey-inactive": "已禁用",
+    "disableAPIKeyMsg": "你确定要禁用这个 API 密钥？",
+    "deleteAPIKeyMsg": "你确定要删除这个 API 密钥？",
+    "Generate": "生成",
+    "API Keys": "API 密钥",
+    "Don't expire": "从不过期",
+    "Key Added": "API 密钥已生成",
+    "apiKeyAddedMsg": "你的 API 密钥已生成。此页只会显示一次，请妥当保存。"
 }
