@@ -699,7 +699,7 @@
     "Google Analytics ID": "Google Analytics（分析）ID",
     "Learn More": "了解更多",
     "Edit Tag": "编辑标签",
-    "telegramMessageThreadID": "（可选）消息线程 ID",
-    "telegramMessageThreadIDDescription": "Optional Unique identifier for the target message thread (topic) of the forum; for forum supergroups only",
-    "notificationRegional": "地区性"
+    "telegramMessageThreadID": "（可选）话题 ID",
+    "telegramMessageThreadIDDescription": "可选的唯一标识符，用以向该标识符对应的话题发送消息，仅限启用了话题功能的超级群组可用",
+    "notificationRegional": "地区性通知平台"
 }
