@@ -690,5 +690,9 @@
     "Guild ID": "ID гильдии",
     "Kook": "Kook",
     "wayToGetKookBotToken": "Создайте приложение и получите токен вашего бота тут {0}.",
-    "Resend Notification if Down X times consecutively": "Повторная отправка уведомления при падении несколько раз"
+    "Resend Notification if Down X times consecutively": "Повторная отправка уведомления при падении несколько раз",
+    "telegramProtectContent": "Запретить пересылку/сохранение",
+    "telegramProtectContentDescription": "Если включено, сообщения бота в Telegram будут запрещены для пересылки и сохранения.",
+    "telegramSendSilently": "Отправить без звука",
+    "telegramSendSilentlyDescription": "Пользователи получат уведомление без звука."
 }
