@@ -379,7 +379,7 @@
     "alerta": "Alerta",
     "alertaApiEndpoint": "API Endpoint",
     "alertaEnvironment": "Environment",
-    "alertaApiKey": "API Key",
+    "alertaApiKey": "API Anahtarı",
     "alertaAlertState": "Uyarı Durumu",
     "alertaRecoverState": "Kurtarma Durumu",
     "deleteStatusPageMsg": "Bu durum sayfasını silmek istediğinizden emin misiniz?",
@@ -693,11 +693,16 @@
     "line": "Line Messenger",
     "mattermost": "Mattermost",
     "markdownSupported": "Markdown yazım formatı desteklenir",
-    "Google Analytics ID": "Google Analytics ID",
+    "Google Analytics ID": "Google Analytics Kodu",
     "Edit Tag": "Etiketi Düzenle",
     "Learn More": "Daha fazla bilgi edin",
     "Server Address": "Sunucu Adresi",
     "telegramMessageThreadIDDescription": "Forumun hedef ileti dizisi (konusu) için isteğe bağlı benzersiz kimlik; yalnızca forum üst grupları için geçerli",
     "telegramMessageThreadID": "(İsteğe bağlı) Mesaj Thread ID",
-    "notificationRegional": "Bölgesel"
+    "notificationRegional": "Bölgesel",
+    "telegramSendSilently": "Sessizce Gönder",
+    "telegramSendSilentlyDescription": "Mesajı sessizce gönderir. Kullanıcılar sessiz bir bildirim alacaktır.",
+    "telegramProtectContent": "Yönlendirmeyi/Kaydetmeyi Koru",
+    "telegramProtectContentDescription": "Etkinleştirilirse, Telegram'daki bot mesajları iletilmeye ve kaydedilmeye karşı korunacaktır.",
+    "Body Encoding": "JSON veya XML olabilen HTTP İstek Gövdesinin Kodlaması. İstek İçeriği Türü olarak da bilinir: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type"
 }
