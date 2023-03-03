@@ -546,7 +546,7 @@
     "pushoversounds cashregister": "Cash Register",
     "pushoversounds classical": "Classical",
     "pushoversounds cosmic": "Cosmic",
-    "pushoversounds falling": "Falling",
+    "pushoversounds falling": "下落",
     "pushoversounds gamelan": "Gamelan",
     "pushoversounds incoming": "Incoming",
     "pushoversounds intermission": "Intermission",
@@ -698,5 +698,8 @@
     "markdownSupported": "支持 Markdown 语法",
     "Google Analytics ID": "Google Analytics（分析）ID",
     "Learn More": "了解更多",
-    "Edit Tag": "编辑标签"
+    "Edit Tag": "编辑标签",
+    "telegramMessageThreadID": "（可选）消息线程 ID",
+    "telegramMessageThreadIDDescription": "Optional Unique identifier for the target message thread (topic) of the forum; for forum supergroups only",
+    "notificationRegional": "地区性"
 }
