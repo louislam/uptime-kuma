@@ -701,5 +701,10 @@
     "Edit Tag": "编辑标签",
     "telegramMessageThreadID": "（可选）话题 ID",
     "telegramMessageThreadIDDescription": "可选的唯一标识符，用以向该标识符对应的话题发送消息，仅限启用了话题功能的超级群组可用",
-    "notificationRegional": "地区性通知平台"
+    "notificationRegional": "地区性通知平台",
+    "telegramSendSilently": "静默发送",
+    "Body Encoding": "响应体编码",
+    "telegramSendSilentlyDescription": "静默地发送消息。消息发布后用户会收到无声通知。",
+    "telegramProtectContent": "阻止转发/保存",
+    "telegramProtectContentDescription": "如果启用，Telegram 中的机器人消息将受到保护，不会被转发和保存。"
 }
