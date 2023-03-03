@@ -724,5 +724,15 @@
     "Generate": "Générer",
     "API Keys": "Clés API",
     "apiKeyAddedMsg": "Votre clé API a été ajoutée. Veuillez la noter car elle ne pourra plus être affichée.",
-    "Don't expire": "N'expire pas"
+    "Don't expire": "N'expire pas",
+    "pagertreeUrgency": "Urgence",
+    "pagertreeSilent": "Silencieux",
+    "pagertreeLow": "Faible",
+    "pagertreeMedium": "Moyen",
+    "pagertreeHigh": "Haut",
+    "pagertreeResolve": "Résolution automatique",
+    "pagertreeDoNothing": "Ne fais rien",
+    "pagertreeIntegrationUrl": "URL d'intégration",
+    "pagertreeCritical": "Critique",
+    "wayToGetPagerTreeIntegrationURL": "Après avoir créé l'intégration Uptime Kuma dans PagerTree, copiez le fichier Endpoint. Voir tous les détails {0}"
 }
