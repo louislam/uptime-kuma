@@ -191,5 +191,6 @@
     "Search...": "تلاش کریں…",
     "Avg. Ping": "دسمبر پنگ",
     "Entry Page": "داخلہ صفحہ",
-    "statusPageNothing": "یہاں کچھ نہیں، براہ کرم ایک گروپ یا مانیٹر شامل کریں۔"
+    "statusPageNothing": "یہاں کچھ نہیں، براہ کرم ایک گروپ یا مانیٹر شامل کریں۔",
+    "Resend Notification if Down X times consecutively": "نوٹیفکیشن دوبارہ بھیجیں اگر X بار لگاتار نیچے جائیں"
 }
