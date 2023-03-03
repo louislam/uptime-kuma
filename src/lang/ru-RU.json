@@ -233,7 +233,7 @@
     "smtpCC": "Копия",
     "smtpBCC": "Скрытая копия",
     "Discord Webhook URL": "Discord вебхук URL",
-    "wayToGetDiscordURL": "Вы можете создать его в  настройках канала \"Настройки -> Интеграции -> Создать Вебхук\"",
+    "wayToGetDiscordURL": "Вы можете создать его в настройках канала \"Настройки -> Интеграции -> Создать Вебхук\"",
     "Bot Display Name": "Отображаемое имя бота",
     "Prefix Custom Message": "Свой префикс сообщения",
     "Hello @everyone is...": "Привет {'@'}everyone это…",
@@ -669,7 +669,7 @@
     "smseagle": "SMSEagle",
     "Google Analytics ID": "ID Google Аналитики",
     "wayToGetZohoCliqURL": "Вы можете узнать как создать webhook URL тут {0}.",
-    "Effective Date Range": "Эффективный период",
+    "Effective Date Range": "Даты действия",
     "wayToGetKookGuildID": "Включите \"Developer mode\" в настройках Kook, а затем нажмите правой кнопкой по гильдии чтобы скопировать её ID.",
     "Enable TLS": "Включить TLS",
     "Integration Key": "Ключ интеграции",
@@ -694,5 +694,10 @@
     "telegramProtectContent": "Запретить пересылку/сохранение",
     "telegramProtectContentDescription": "Если включено, сообщения бота в Telegram будут запрещены для пересылки и сохранения.",
     "telegramSendSilently": "Отправить без звука",
-    "telegramSendSilentlyDescription": "Пользователи получат уведомление без звука."
+    "telegramSendSilentlyDescription": "Пользователи получат уведомление без звука.",
+    "Maintenance Time Window of a Day": "Суточный интервал для обслуживания",
+    "Clone Monitor": "Копия",
+    "Clone": "Копия",
+    "cloneOf": "Копия {0}",
+    "notificationRegional": "Региональный"
 }
