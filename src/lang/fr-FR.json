@@ -696,5 +696,16 @@
     "Google Analytics ID": "Identifiant Google Analytics",
     "Server Address": "Adresse du serveur",
     "Learn More": "En savoir plus",
-    "Edit Tag": "Modifier l'étiquette"
+    "Edit Tag": "Modifier l'étiquette",
+    "Body Encoding": "Encodage du corps",
+    "telegramMessageThreadID": "(Facultatif) ID du fil de message",
+    "telegramMessageThreadIDDescription": "(Facultatif) Identifiant unique pour le fil de discussion cible (sujet) du forum; pour les supergroupes du forum uniquement",
+    "telegramProtectContent": "Protéger le transfert/l'enregistrement",
+    "telegramProtectContentDescription": "S'il est activé, les messages du robot dans Telegram seront protégés contre le transfert et l'enregistrement.",
+    "telegramSendSilently": "Envoyer silencieusement",
+    "telegramSendSilentlyDescription": "Envoie le message silencieusement. Les utilisateurs recevront une notification sans son.",
+    "notificationRegional": "Régional",
+    "Clone Monitor": "Cloner la sonde",
+    "Clone": "Cloner",
+    "cloneOf": "Clone de {0}"
 }
