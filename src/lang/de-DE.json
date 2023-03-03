@@ -388,7 +388,7 @@
     "Valid": "Gültig",
     "Invalid": "Ungültig",
     "AccessKeyId": "AccessKey ID",
-    "SecretAccessKey": "AccessKey Secret",
+    "SecretAccessKey": "Geheimer Zugangsschlüssel",
     "PhoneNumbers": "Telefonnummern",
     "TemplateCode": "Vorlagencode",
     "SignName": "Signaturname",
