@@ -730,11 +730,11 @@
     "pagertreeUrgency": "紧急程度",
     "pagertreeLow": "低",
     "pagertreeCritical": "严重",
-    "pagertreeIntegrationUrl": "集成URL",
+    "pagertreeIntegrationUrl": "集成 URL 地址",
     "pagertreeSilent": "静默",
     "pagertreeMedium": "中",
     "pagertreeHigh": "高",
     "pagertreeResolve": "自动解除",
     "pagertreeDoNothing": "什么都不做",
-    "wayToGetPagerTreeIntegrationURL": "在 PagerTree 中创建 Uptime Kuma 集成后，复制 Endpoint。在 {0} 查看详情"
+    "wayToGetPagerTreeIntegrationURL": "在 PagerTree 中创建 Uptime Kuma 集成后，复制端点 URL 到此处。在 {0} 查看详情"
 }
