@@ -704,5 +704,8 @@
     "telegramSendSilentlyDescription": "Mesajı sessizce gönderir. Kullanıcılar sessiz bir bildirim alacaktır.",
     "telegramProtectContent": "Yönlendirmeyi/Kaydetmeyi Koru",
     "telegramProtectContentDescription": "Etkinleştirilirse, Telegram'daki bot mesajları iletilmeye ve kaydedilmeye karşı korunacaktır.",
-    "Body Encoding": "JSON veya XML olabilen HTTP İstek Gövdesinin Kodlaması. İstek İçeriği Türü olarak da bilinir: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type"
+    "Body Encoding": "JSON veya XML olabilen HTTP İstek Gövdesinin Kodlaması. İstek İçeriği Türü olarak da bilinir: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type",
+    "Clone Monitor": "Klon Monitör",
+    "Clone": "Klon",
+    "cloneOf": "{0} Monitörünün Klonu"
 }
