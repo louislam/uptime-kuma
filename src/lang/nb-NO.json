@@ -289,5 +289,6 @@
     "Passive Monitor Type": "Passiv Monitor Type",
     "Specific Monitor Type": "Spesifik Monitor Type",
     "General Monitor Type": "Generisk Monitor Type",
-    "markdownSupported": "Markdown syntax støttet"
+    "markdownSupported": "Markdown syntax støttet",
+    "Resend Notification if Down X times consecutively": "Send notifikasjon på nytt dersom nede X antall ganger på rad"
 }
