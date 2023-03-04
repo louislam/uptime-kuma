@@ -41,6 +41,7 @@ const languageList = {
     "el-GR": "Ελληνικά",
     "yue": "繁體中文 (廣東話 / 粵語)",
     "ro": "Limba română",
+    "ur": "Urdu"
 };
 
 let messages = {
@@ -53,7 +54,7 @@ for (let lang in languageList) {
     };
 }
 
-const rtlLangs = [ "fa", "ar-SY" ];
+const rtlLangs = [ "fa", "ar-SY", "ur" ];
 
 export const currentLocale = () => localStorage.locale
     || languageList[navigator.language] && navigator.language
