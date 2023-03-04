@@ -4,8 +4,8 @@
         <div class="form-text">
             <p>
                 <select id="lunasea-notification-target" v-model="$parent.notification.lunaseaTarget" class="form-select" required>
-                    <option value="device">Device</option>
-                    <option value="user">User</option>
+                    <option value="device">{{ $t("Device") }}</option>
+                    <option value="user">{{ $t("User") }}</option>
                 </select>
             </p>
         </div>
