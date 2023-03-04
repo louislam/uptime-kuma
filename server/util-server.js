@@ -87,11 +87,8 @@ exports.ping = async (hostname, size = 56) => {
         return await exports.pingAsync(hostname, false, size);
     } catch (e) {
         // If the host cannot be resolved, try again with ipv6
-        if (e.message.includes("service not known")) {
-            return await exports.pingAsync(hostname, true, size);
-        } else {
-            throw e;
-        }
+        // As node-ping does not report a specific error for this, try again with ipv6 no matter what.
+        return await exports.pingAsync(hostname, true, size);
     }
 };
 
