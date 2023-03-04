@@ -88,7 +88,14 @@ exports.ping = async (hostname, size = 56) => {
     } catch (e) {
         // If the host cannot be resolved, try again with ipv6
         // As node-ping does not report a specific error for this, try again with ipv6 no matter what.
-        return await exports.pingAsync(hostname, true, size);
+        console.debug("ping", "IPv6 error message: " + e.message);
+
+        if (!e.message) {
+            // TODO: Problem, the error message is always from the ipv6 ping! Misleading!
+            return await exports.pingAsync(hostname, true, size);
+        } else {
+            throw e;
+        }
     }
 };
 
