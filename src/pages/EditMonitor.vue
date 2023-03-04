@@ -936,7 +936,16 @@ message HealthCheckResponse {
                             this.monitor.includeSensitiveData = undefined;
                             this.monitor.maintenance = undefined;
                             this.monitor.name = this.$t("cloneOf", [ this.monitor.name ]);
-                            this.monitor.tags = undefined; // FIXME: Cloning tags does not work yet
+                            this.$refs.tagsManager.newTags = this.monitor.tags.map((monitorTag) => {
+                                return {
+                                    id: monitorTag.tag_id,
+                                    name: monitorTag.name,
+                                    color: monitorTag.color,
+                                    value: monitorTag.value,
+                                    new: true,
+                                };
+                            });
+                            this.monitor.tags = undefined;
                         }
 
                         // Handling for monitors that are created before 1.7.0
