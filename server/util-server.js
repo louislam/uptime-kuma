@@ -87,7 +87,10 @@ exports.ping = async (hostname, size = 56) => {
         return await exports.pingAsync(hostname, false, size);
     } catch (e) {
         // If the host cannot be resolved, try again with ipv6
-        if (e.message.includes("service not known")) {
+        console.debug("ping", "IPv6 error message: " + e.message);
+
+        // As node-ping does not report a specific error for this, try again if it is an empty message with ipv6 no matter what.
+        if (!e.message) {
             return await exports.pingAsync(hostname, true, size);
         } else {
             throw e;
@@ -292,14 +295,23 @@ exports.postgresQuery = function (connectionString, query) {
                 client.end();
             } else {
                 // Connected here
-                client.query(query, (err, res) => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(res);
+                try {
+                    // No query provided by user, use SELECT 1
+                    if (!query || (typeof query === "string" && query.trim() === "")) {
+                        query = "SELECT 1";
                     }
-                    client.end();
-                });
+
+                    client.query(query, (err, res) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(res);
+                        }
+                        client.end();
+                    });
+                } catch (e) {
+                    reject(e);
+                }
             }
         });
 
@@ -730,15 +742,27 @@ exports.filterAndJoin = (parts, connector = "") => {
 };
 
 /**
- * Send a 403 response
+ * Send an Error response
  * @param {Object} res Express response object
  * @param {string} [msg=""] Message to send
  */
-module.exports.send403 = (res, msg = "") => {
-    res.status(403).json({
-        "status": "fail",
-        "msg": msg,
-    });
+module.exports.sendHttpError = (res, msg = "") => {
+    if (msg.includes("SQLITE_BUSY") || msg.includes("SQLITE_LOCKED")) {
+        res.status(503).json({
+            "status": "fail",
+            "msg": msg,
+        });
+    } else if (msg.toLowerCase().includes("not found")) {
+        res.status(404).json({
+            "status": "fail",
+            "msg": msg,
+        });
+    } else {
+        res.status(403).json({
+            "status": "fail",
+            "msg": msg,
+        });
+    }
 };
 
 function timeObjectConvertTimezone(obj, timezone, timeObjectToUTC = true) {

@@ -2,7 +2,7 @@ let express = require("express");
 const apicache = require("../modules/apicache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const StatusPage = require("../model/status_page");
-const { allowDevAllOrigin, send403 } = require("../util-server");
+const { allowDevAllOrigin, sendHttpError } = require("../util-server");
 const { R } = require("redbean-node");
 const Monitor = require("../model/monitor");
 
@@ -44,10 +44,7 @@ router.get("/api/status-page/:slug", cache("5 minutes"), async (request, respons
         let statusPageData = await StatusPage.getStatusPageData(statusPage);
 
         if (!statusPageData) {
-            response.statusCode = 404;
-            response.json({
-                msg: "Not Found"
-            });
+            sendHttpError(response, "Not Found");
             return;
         }
 
@@ -55,7 +52,7 @@ router.get("/api/status-page/:slug", cache("5 minutes"), async (request, respons
         response.json(statusPageData);
 
     } catch (error) {
-        send403(response, error.message);
+        sendHttpError(response, error.message);
     }
 });
 
@@ -103,7 +100,7 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
         });
 
     } catch (error) {
-        send403(response, error.message);
+        sendHttpError(response, error.message);
     }
 });
 
@@ -119,10 +116,7 @@ router.get("/api/status-page/:slug/manifest.json", cache("1440 minutes"), async 
         ]);
 
         if (!statusPage) {
-            response.statusCode = 404;
-            response.json({
-                msg: "Not Found"
-            });
+            sendHttpError(response, "Not Found");
             return;
         }
 
@@ -141,7 +135,7 @@ router.get("/api/status-page/:slug/manifest.json", cache("1440 minutes"), async 
         });
 
     } catch (error) {
-        send403(response, error.message);
+        sendHttpError(response, error.message);
     }
 });
 

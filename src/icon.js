@@ -3,6 +3,9 @@ import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
 // Add Free Font Awesome Icons
 // https://fontawesome.com/v5.15/icons?d=gallery&p=2&s=solid&m=free
+// In order to add an icon, you have to:
+// 1) add the icon name in the import statement below;
+// 2) add the icon name to the library.add() statement below.
 import {
     faArrowAltCircleUp,
     faCog,
@@ -45,6 +48,7 @@ import {
     faHeartbeat,
     faFilter,
     faInfoCircle,
+    faClone,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -90,6 +94,7 @@ library.add(
     faHeartbeat,
     faFilter,
     faInfoCircle,
+    faClone,
 );
 
 export { FontAwesomeIcon };

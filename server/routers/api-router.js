@@ -1,5 +1,5 @@
 let express = require("express");
-const { allowDevAllOrigin, allowAllOrigin, percentageToColor, filterAndJoin, send403 } = require("../util-server");
+const { allowDevAllOrigin, allowAllOrigin, percentageToColor, filterAndJoin, sendHttpError } = require("../util-server");
 const { R } = require("redbean-node");
 const apicache = require("../modules/apicache");
 const Monitor = require("../model/monitor");
@@ -7,6 +7,7 @@ const dayjs = require("dayjs");
 const { UP, MAINTENANCE, DOWN, PENDING, flipStatus, log } = require("../../src/util");
 const StatusPage = require("../model/status_page");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
+const { UptimeCacheList } = require("../uptime-cache-list");
 const { makeBadge } = require("badge-maker");
 const { badgeConstants } = require("../config");
 
@@ -86,6 +87,7 @@ router.get("/api/push/:pushToken", async (request, response) => {
         await R.store(bean);
 
         io.to(monitor.user_id).emit("heartbeat", bean.toJSON());
+        UptimeCacheList.clearCache(monitor.id);
         Monitor.sendStats(io, monitor.id, monitor.user_id);
 
         response.json({
@@ -175,7 +177,7 @@ router.get("/api/badge/:id/status", cache("5 minutes"), async (request, response
         response.type("image/svg+xml");
         response.send(svg);
     } catch (error) {
-        send403(response, error.message);
+        sendHttpError(response, error.message);
     }
 });
 
@@ -242,7 +244,7 @@ router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (reques
         response.type("image/svg+xml");
         response.send(svg);
     } catch (error) {
-        send403(response, error.message);
+        sendHttpError(response, error.message);
     }
 });
 
@@ -303,7 +305,7 @@ router.get("/api/badge/:id/ping/:duration?", cache("5 minutes"), async (request,
         response.type("image/svg+xml");
         response.send(svg);
     } catch (error) {
-        send403(response, error.message);
+        sendHttpError(response, error.message);
     }
 });
 
@@ -373,7 +375,7 @@ router.get("/api/badge/:id/avg-response/:duration?", cache("5 minutes"), async (
         response.type("image/svg+xml");
         response.send(svg);
     } catch (error) {
-        send403(response, error.message);
+        sendHttpError(response, error.message);
     }
 });
 
@@ -464,7 +466,7 @@ router.get("/api/badge/:id/cert-exp", cache("5 minutes"), async (request, respon
         response.type("image/svg+xml");
         response.send(svg);
     } catch (error) {
-        send403(response, error.message);
+        sendHttpError(response, error.message);
     }
 });
 
@@ -536,7 +538,7 @@ router.get("/api/badge/:id/response", cache("5 minutes"), async (request, respon
         response.type("image/svg+xml");
         response.send(svg);
     } catch (error) {
-        send403(response, error.message);
+        sendHttpError(response, error.message);
     }
 });
 
