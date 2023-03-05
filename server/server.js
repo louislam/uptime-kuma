@@ -143,6 +143,7 @@ const { generalSocketHandler } = require("./socket-handlers/general-socket-handl
 const { Settings } = require("./settings");
 const { CacheableDnsHttpAgent } = require("./cacheable-dns-http-agent");
 const { pluginsHandler } = require("./socket-handlers/plugins-handler");
+const apicache = require("./modules/apicache");
 
 app.use(express.json());
 
@@ -883,6 +884,9 @@ let needSetup = false;
                     monitorID,
                     socket.userID,
                 ]);
+
+                // Fix #2880
+                apicache.clear();
 
                 callback({
                     ok: true,
