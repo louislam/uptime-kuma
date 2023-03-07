@@ -41,6 +41,8 @@ class MaintenanceTimeslot extends BeanModel {
      * @returns {Promise<MaintenanceTimeslot>}
      */
     static async generateTimeslot(maintenance, minDate = null, removeExist = false) {
+        log.info("maintenance", "Generate Timeslot for maintenance id: " + maintenance.id);
+
         if (removeExist) {
             await R.exec("DELETE FROM maintenance_timeslot WHERE maintenance_id = ? ", [
                 maintenance.id
