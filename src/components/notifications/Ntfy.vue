@@ -28,6 +28,12 @@
         </div>
     </div>
     <div class="mb-3">
+        <label for="ntfy-access-token" class="form-label">{{ $t("Access Token") }} ({{ $t("Optional") }})</label>
+        <div class="input-group mb-3">
+            <HiddenInput id="ntfy-access-token" v-model="$parent.notification.ntfyaccesstoken"></HiddenInput>
+        </div>
+    </div>
+    <div class="mb-3">
         <label for="ntfy-icon" class="form-label">{{ $t("IconUrl") }}</label>
         <input id="ntfy-icon" v-model="$parent.notification.ntfyIcon" type="text" class="form-control">
     </div>

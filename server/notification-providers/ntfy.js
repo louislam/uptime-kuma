@@ -13,6 +13,10 @@ class Ntfy extends NotificationProvider {
                 headers = {
                     "Authorization": "Basic " + Buffer.from(notification.ntfyusername + ":" + notification.ntfypassword).toString("base64"),
                 };
+            } else if (notification.ntfyaccesstoken) {
+                headers = {
+                    "Authorization": "Bearer " + notification.ntfyaccesstoken,
+                };
             }
             let data = {
                 "topic": notification.ntfytopic,
