@@ -1,7 +1,6 @@
 const NotificationProvider = require("./notification-provider");
-const axios = require("axios");
+const request = require("request");
 const { DOWN, UP } = require("../../src/util");
-const request = require('request');
 
 class Teams extends NotificationProvider {
     name = "teams";
@@ -114,6 +113,7 @@ class Teams extends NotificationProvider {
             if (error) {
                 console.log(options);
                 console.log(error);
+                throw error;
             } else {
                 console.log(response.body);
             }
@@ -168,7 +168,7 @@ class Teams extends NotificationProvider {
             await this._sendNotification(notification.webhookUrl, payload);
             return okMsg;
         } catch (error) {
-            this.throwGeneralAxiosError(error);
+            throw error;
         }
     }
 }
