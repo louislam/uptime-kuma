@@ -408,6 +408,9 @@ exports.redisPingAsync = function (dsn) {
         });
         client.connect().then(() => {
             client.ping().then((res, err) => {
+                if (client.isOpen) {
+                    client.disconnect();
+                }
                 if (err) {
                     reject(err);
                 } else {
