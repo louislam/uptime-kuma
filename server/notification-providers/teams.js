@@ -137,39 +137,35 @@ class Teams extends NotificationProvider {
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
 
-        try {
-            if (heartbeatJSON == null) {
-                await this._handleGeneralNotification(notification.webhookUrl, msg);
-                return okMsg;
-            }
-
-            let url;
-
-            switch (monitorJSON["type"]) {
-                case "http":
-                case "keywork":
-                    url = monitorJSON["url"];
-                    break;
-                case "docker":
-                    url = monitorJSON["docker_host"];
-                    break;
-                default:
-                    url = monitorJSON["hostname"];
-                    break;
-            }
-
-            const payload = this._notificationPayloadFactory({
-                monitorMessage: heartbeatJSON.msg,
-                monitorName: monitorJSON.name,
-                monitorUrl: url,
-                status: heartbeatJSON.status,
-            });
-
-            await this._sendNotification(notification.webhookUrl, payload);
+        if (heartbeatJSON == null) {
+            await this._handleGeneralNotification(notification.webhookUrl, msg);
             return okMsg;
-        } catch (error) {
-            throw error;
         }
+
+        let url;
+
+        switch (monitorJSON["type"]) {
+            case "http":
+            case "keywork":
+                url = monitorJSON["url"];
+                break;
+            case "docker":
+                url = monitorJSON["docker_host"];
+                break;
+            default:
+                url = monitorJSON["hostname"];
+                break;
+        }
+
+        const payload = this._notificationPayloadFactory({
+            monitorMessage: heartbeatJSON.msg,
+            monitorName: monitorJSON.name,
+            monitorUrl: url,
+            status: heartbeatJSON.status,
+        });
+
+        await this._sendNotification(notification.webhookUrl, payload);
+        return okMsg;
     }
 }
 
