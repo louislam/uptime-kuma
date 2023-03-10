@@ -4,17 +4,17 @@
         <div class="form-text">
             <p>
                 <select id="lunasea-notification-target" v-model="$parent.notification.lunaseaTarget" class="form-select" required>
-                    <option value="device">Device</option>
-                    <option value="user">User</option>
+                    <option value="device">{{ $t("lunaseaDeviceID") }}</option>
+                    <option value="user">{{ $t("lunaseaUserID") }}</option>
                 </select>
             </p>
         </div>
         <div v-if="$parent.notification.lunaseaTarget === 'device'">
-            <label for="lunasea-device" class="form-label">{{ $t("Device ID") }}<span style="color: red;"><sup>*</sup></span></label>
+            <label for="lunasea-device" class="form-label">{{ $t("lunaseaDeviceID") }}<span style="color: red;"><sup>*</sup></span></label>
             <input id="lunasea-device" v-model="$parent.notification.lunaseaDevice" type="text" class="form-control">
         </div>
         <div v-if="$parent.notification.lunaseaTarget === 'user'">
-            <label for="lunasea-device" class="form-label">{{ $t("User ID") }}<span style="color: red;"><sup>*</sup></span></label>
+            <label for="lunasea-device" class="form-label">{{ $t("lunaseaUserID") }}<span style="color: red;"><sup>*</sup></span></label>
             <input id="lunasea-device" v-model="$parent.notification.lunaseaUserID" type="text" class="form-control">
         </div>
     </div>
