@@ -57,8 +57,17 @@
                                                     v-if="editMode"
                                                     :class="{'link-active': monitor.element.sendUrl, 'btn-link': true}"
                                                     icon="link" class="action me-3"
-
                                                     @click="toggleLink(group.index, monitor.index)"
+                                                />
+                                            </span>
+
+                                            <span
+                                                title="Badge Generator"
+                                            >
+                                                <font-awesome-icon
+                                                    :class="{'link-active': true, 'btn-link': true}"
+                                                    icon="eye" class="action me-3"
+                                                    @click="$refs.badgeGeneratorDialog.show(monitor.element.id, monitor.element.name)"
                                                 />
                                             </span>
                                         </div>
@@ -70,6 +79,7 @@
                                         <HeartbeatBar size="small" :monitor-id="monitor.element.id" />
                                     </div>
                                 </div>
+                                <BadgeGeneratorDialog ref="badgeGeneratorDialog" />
                             </div>
                         </template>
                     </Draggable>
@@ -80,6 +90,7 @@
 </template>
 
 <script>
+import BadgeGeneratorDialog from "./BadgeGeneratorDialog.vue";
 import Draggable from "vuedraggable";
 import HeartbeatBar from "./HeartbeatBar.vue";
 import Uptime from "./Uptime.vue";
@@ -87,6 +98,7 @@ import Tag from "./Tag.vue";
 
 export default {
     components: {
+        BadgeGeneratorDialog,
         Draggable,
         HeartbeatBar,
         Uptime,

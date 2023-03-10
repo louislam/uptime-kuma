@@ -1,3 +1,4 @@
+/api/badge/:id/status
 ```
     label,
     upLabel = "Up",
