@@ -154,6 +154,7 @@
     "Token": "Token",
     "Show URI": "Show URI",
     "Tags": "Tags",
+    "Add New Tag": "Add New Tag",
     "Add New below or Select...": "Add New below or Select…",
     "Tag with this name already exist.": "Tag with this name already exists.",
     "Tag with this value already exist.": "Tag with this value already exists.",
@@ -703,7 +704,7 @@
     "pagertreeResolve": "Auto Resolve",
     "pagertreeDoNothing": "Do Nothing",
     "wayToGetPagerTreeIntegrationURL": "After creating the Uptime Kuma integration in PagerTree, copy the Endpoint. See full details {0}",
-    "Add New Tag": "Add new tag",
-    "Target": "target",
-    "Device ID": "Device ID"
+    "lunaseaTarget": "target",
+    "lunaseaDeviceID": "Device ID",
+    "lunaseaUserID": "User ID"
 }
