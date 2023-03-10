@@ -65,8 +65,9 @@
                                                 title="Badge Generator"
                                             >
                                                 <font-awesome-icon
+                                                    v-if="editMode"
                                                     :class="{'link-active': true, 'btn-link': true}"
-                                                    icon="eye" class="action me-3"
+                                                    icon="certificate" class="action me-3"
                                                     @click="$refs.badgeGeneratorDialog.show(monitor.element.id, monitor.element.name)"
                                                 />
                                             </span>
