@@ -473,8 +473,8 @@
     "Recipient Number": "หมายเลขผู้รับ",
     "From Name/Number": "จาก ชื่อ / หมายเลข",
     "Leave blank to use a shared sender number.": "ไม่ต้องกรอกเพื่อใช้ชื่อผู้ส่งร่วมกัน",
-    "Octopush API Version": "Octopush API Version",
-    "Legacy Octopush-DM": "Legacy Octopush-DM",
+    "Octopush API Version": "เวอร์ชั่น API Octopush",
+    "Legacy Octopush-DM": "Octopush-DM  แบบเก่า",
     "endpoint": "endpoint",
     "octopushAPIKey": "\"API key\" จากข้อมูลยืนยันตัวตน HTTP API ในแผงควบคุม",
     "octopushLogin": "\"Login\" จากข้อมูลยืนยันตัวตน HTTP API ในแผงควบคุม",
@@ -558,7 +558,7 @@
     "Container Name / ID": "Container Name / ID",
     "Docker Host": "Docker Host",
     "Docker Hosts": "Docker Hosts",
-    "ntfy Topic": "ntfy Topic",
+    "ntfy Topic": "หัวข้อ ntfy",
     "Domain": "โดเมน",
     "Workstation": "Workstation",
     "disableCloudflaredNoAuthMsg": "คุณอยู่ในโหมดไม่มีการตรวจสอบสิทธิ์, ไม่จำเป็นต้องมีรหัสผ่าน",
@@ -601,5 +601,9 @@
     "or": "หรือ",
     "recurringInterval": "ช่วงเวลา",
     "Recurring": "ทำซ้ำ",
-    "General Monitor Type": "ชนิดมอนิเตอร์ทั่วไป"
+    "General Monitor Type": "ชนิดมอนิเตอร์ทั่วไป",
+    "pagertreeCritical": "วิกฤต",
+    "pagertreeDoNothing": "ไม่ต้องทำอะไร",
+    "pagertreeResolve": "แก้ไขอัตโนมัติ",
+    "wayToGetPagerTreeIntegrationURL": "หลังจากสร้างการรวม Uptime Kuma ใน PagerTree แล้ว ให้คัดลอก Endpoint, ดูรายละเอียดทั้งหมด {0}"
 }
