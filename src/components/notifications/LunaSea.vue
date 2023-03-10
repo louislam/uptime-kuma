@@ -1,6 +1,6 @@
 <template>
     <div class="mb-3">
-        <label for="lunasea-notification-target" class="form-label">{{ $t("Target") }}<span style="color: red;"><sup>*</sup></span></label>
+        <label for="lunasea-notification-target" class="form-label">{{ $t("lunaseaTarget") }}<span style="color: red;"><sup>*</sup></span></label>
         <div class="form-text">
             <p>
                 <select id="lunasea-notification-target" v-model="$parent.notification.lunaseaTarget" class="form-select" required>
