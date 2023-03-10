@@ -156,7 +156,6 @@ export default {
                 suffix: null,
                 labelColor: null,
 
-
                 style: "plastic",
                 value: null,
             },
@@ -223,28 +222,36 @@ export default {
 
     computed: {
         badgeURL() {
-            if(!this.monitor.id || !this.badge.type) return null;
+            if (!this.monitor.id || !this.badge.type) {
+                return null;
+            }
             let badgeURL = this.$root.baseURL + "/api/badge/" + this.monitor.id + "/" + this.badge.type;
 
+            // eslint-disable-next-line camelcase
             let parameter_list = {};
-            for(let parameter of this.parameters[this.badge.type] || []) {
-                if(parameter == "duration" && this.badge.duration) {
+
+            for (let parameter of this.parameters[this.badge.type] || []) {
+                if (parameter === "duration" && this.badge.duration) {
                     badgeURL += "/" + this.badge.duration;
                     continue;
                 }
-                
-                if(this.badge[parameter]) {
-                    parameter_list[parameter] = this.badge[parameter]
+
+                if (this.badge[parameter]) {
+                    // eslint-disable-next-line camelcase
+                    parameter_list[parameter] = this.badge[parameter];
                 }
             }
 
-            for(let parameter of ["label", "style", "value"]) {
-                if(this.badge[parameter]) {
-                    parameter_list[parameter] = this.badge[parameter]
+            for (let parameter of [ "label", "style", "value" ]) {
+                if (this.badge[parameter]) {
+                    // eslint-disable-next-line camelcase
+                    parameter_list[parameter] = this.badge[parameter];
                 }
             }
 
-            if(Object.keys(parameter_list).length > 0) return badgeURL + "?" + new URLSearchParams(parameter_list);
+            if (Object.keys(parameter_list).length > 0) {
+                return badgeURL + "?" + new URLSearchParams(parameter_list);
+            }
 
             return badgeURL;
         },
