@@ -72,6 +72,7 @@ class Monitor extends BeanModel {
         let data = {
             id: this.id,
             name: this.name,
+            description: this.description,
             url: this.url,
             method: this.method,
             hostname: this.hostname,

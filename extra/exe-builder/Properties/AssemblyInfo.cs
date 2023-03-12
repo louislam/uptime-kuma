@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Uptime Kuma")]
-[assembly: AssemblyCopyright("Copyright © 2022 Louis Lam")]
+[assembly: AssemblyCopyright("Copyright © 2023 Louis Lam")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
