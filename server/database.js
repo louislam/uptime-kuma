@@ -73,6 +73,7 @@ class Database {
         "patch-http-body-encoding.sql": true,
         "patch-add-description-monitor.sql": true,
         "patch-api-key-table.sql": true,
+        "patch-monitor-tls.sql": true,
     };
 
     /**
