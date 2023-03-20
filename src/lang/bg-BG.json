@@ -681,7 +681,7 @@
     "infiniteRetention": "Задайте стойност 0 за безкрайно съхранение.",
     "Monitor": "Монитор | Монитори",
     "dataRetentionTimeError": "Периодът на съхранение трябва да е 0 или по-голям",
-    "confirmDeleteTagMsg": "Сигурни ли сте, че желаете да изтриете този таг? Мониторите, свързани с него, няма да бъдат изтрити.",
+    "confirmDeleteTagMsg": "Сигурни ли сте, че желаете да изтриете този етикет? Мониторите, свързани с него, няма да бъдат изтрити.",
     "promosmsAllowLongSMS": "Позволи дълъг SMS",
     "Packet Size": "Размер на пакет",
     "Custom Monitor Type": "Потребителски тип монитор",
@@ -694,7 +694,7 @@
     "confirmUninstallPlugin": "Сигурни ли сте, че желаете да деинсталирате този плъгин?",
     "markdownSupported": "Поддържа се Markdown синтаксис",
     "Google Analytics ID": "Google Analytics ID",
-    "Edit Tag": "Редактиране на таг",
+    "Edit Tag": "Редактиране на етикет",
     "Learn More": "Научете повече",
     "Server Address": "Сървър адрес",
     "notificationRegional": "Регионални",
@@ -734,5 +734,9 @@
     "wayToGetPagerTreeIntegrationURL": "След като създадете интеграция на Uptime Kuma в PagerTree, копирайте крайната точка. За пълни подробности вижте {0}",
     "pagertreeIntegrationUrl": "URL Адрес за интеграция",
     "pagertreeMedium": "Средна",
-    "pagertreeCritical": "Критична"
+    "pagertreeCritical": "Критична",
+    "Add New Tag": "Добави нов етикет",
+    "lunaseaTarget": "Цел",
+    "lunaseaDeviceID": "ID на устройството",
+    "lunaseaUserID": "ID на потребител"
 }
