@@ -731,5 +731,9 @@
     "smseagleGroup": "Telefonbuch Gruppenname(n)",
     "smseagleRecipient": "Empfänger (mehrere müssen durch Komma getrennt werden)",
     "API Keys": "API Schlüssel",
-    "Continue": "Weiter"
+    "Continue": "Weiter",
+    "Add New Tag": "Neuen Tag hinzufügen",
+    "lunaseaTarget": "Ziel",
+    "lunaseaDeviceID": "Geräte-ID",
+    "lunaseaUserID": "Benutzer-ID"
 }
