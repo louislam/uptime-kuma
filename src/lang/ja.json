@@ -510,5 +510,7 @@
     "Android": "Android",
     "Huawei": "Huawei",
     "Device Token": "デバイストークン",
-    "recurringIntervalMessage": "毎日1回実行する｜{0} 日に1回実行する"
+    "recurringIntervalMessage": "毎日1回実行する｜{0} 日に1回実行する",
+    "Add New Tag": "新しいタグを追加",
+    "statusPageMaintenanceEndDate": "終了日"
 }
