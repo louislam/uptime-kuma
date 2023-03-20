@@ -696,5 +696,12 @@
     "markdownSupported": "Markdown syntax ondersteund",
     "Resend Notification if Down X times consecutively": "Melding x keer opnieuw sturen als monitor offline is",
     "loadingError": "Kan de data niet ophalen, probeer het later opnieuw.",
-    "smseagleContact": "Telefoonboek contact namen"
+    "smseagleContact": "Telefoonboek contact namen",
+    "apiKey-active": "Actief",
+    "apiKey-expired": "Verlopen",
+    "pagertreeLow": "Laag",
+    "pagertreeHigh": "Hoog",
+    "Clone": "Dupliceer",
+    "cloneOf": "Duplicaat van {0}",
+    "Add New Tag": "Voeg nieuw label toe"
 }

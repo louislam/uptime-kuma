@@ -73,11 +73,11 @@
     "Delete": "Supprimer",
     "Current": "Actuellement",
     "Uptime": "Disponibilité",
-    "Cert Exp.": "Expiration SSL.",
+    "Cert Exp.": "Expiration SSL",
     "day": "jour | jours",
     "-day": "-jour",
     "hour": "heure",
-    "-hour": "-heure",
+    "-hour": "heures",
     "Response": "Temps de réponse",
     "Ping": "Ping",
     "Monitor Type": "Type de sonde",
@@ -734,5 +734,9 @@
     "pagertreeDoNothing": "Ne fais rien",
     "pagertreeIntegrationUrl": "URL d'intégration",
     "pagertreeCritical": "Critique",
-    "wayToGetPagerTreeIntegrationURL": "Après avoir créé l'intégration Uptime Kuma dans PagerTree, copiez le fichier Endpoint. Voir tous les détails {0}"
+    "wayToGetPagerTreeIntegrationURL": "Après avoir créé l'intégration Uptime Kuma dans PagerTree, copiez le fichier Endpoint. Voir tous les détails {0}",
+    "lunaseaDeviceID": "Identifiant de l'appareil",
+    "lunaseaUserID": "Identifiant de l'utilisateur",
+    "Add New Tag": "Ajouter une étiquette",
+    "lunaseaTarget": "Cible"
 }
