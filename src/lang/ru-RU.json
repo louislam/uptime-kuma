@@ -699,5 +699,6 @@
     "Clone Monitor": "Копия",
     "Clone": "Копия",
     "cloneOf": "Копия {0}",
-    "notificationRegional": "Региональный"
+    "notificationRegional": "Региональный",
+    "Add New Tag": "Добавить тег"
 }
