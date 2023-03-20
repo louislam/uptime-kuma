@@ -734,5 +734,7 @@
     "pagertreeDoNothing": "Ne fais rien",
     "pagertreeIntegrationUrl": "URL d'intégration",
     "pagertreeCritical": "Critique",
-    "wayToGetPagerTreeIntegrationURL": "Après avoir créé l'intégration Uptime Kuma dans PagerTree, copiez le fichier Endpoint. Voir tous les détails {0}"
+    "wayToGetPagerTreeIntegrationURL": "Après avoir créé l'intégration Uptime Kuma dans PagerTree, copiez le fichier Endpoint. Voir tous les détails {0}",
+    "lunaseaDeviceID": "Identifiant de l'appareil",
+    "lunaseaUserID": "Identifiant de l'utilisateur"
 }
