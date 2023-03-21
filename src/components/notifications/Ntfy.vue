@@ -21,19 +21,19 @@
             <option v-for="(name, type) in authenticationMethods" :key="type" :value="type">{{ name }}</option>
         </select>
     </div>
-    <div class="mb-3" v-if="$parent.notification.ntfyAuthenticationMethod === 'usernamePassword'">
+    <div v-if="$parent.notification.ntfyAuthenticationMethod === 'usernamePassword'" class="mb-3">
         <label for="ntfy-username" class="form-label">{{ $t("Username") }}</label>
         <div class="input-group mb-3">
             <input id="ntfy-username" v-model="$parent.notification.ntfyusername" type="text" class="form-control">
         </div>
     </div>
-    <div class="mb-3" v-if="$parent.notification.ntfyAuthenticationMethod === 'usernamePassword'">
+    <div v-if="$parent.notification.ntfyAuthenticationMethod === 'usernamePassword'" class="mb-3">
         <label for="ntfy-password" class="form-label">{{ $t("Password") }}</label>
         <div class="input-group mb-3">
             <HiddenInput id="ntfy-password" v-model="$parent.notification.ntfypassword" autocomplete="new-password"></HiddenInput>
         </div>
     </div>
-    <div class="mb-3" v-if="$parent.notification.ntfyAuthenticationMethod === 'accessToken'">
+    <div v-if="$parent.notification.ntfyAuthenticationMethod === 'accessToken'" class="mb-3">
         <label for="ntfy-access-token" class="form-label">{{ $t("Access Token") }}</label>
         <div class="input-group mb-3">
             <HiddenInput id="ntfy-access-token" v-model="$parent.notification.ntfyaccesstoken"></HiddenInput>
@@ -58,7 +58,7 @@ export default {
                 none: this.$t("None"),
                 usernamePassword: this.$t("UsernameAndPassword"),
                 accessToken: this.$t("Access Token")
-            }
+            };
         }
     },
     mounted() {
