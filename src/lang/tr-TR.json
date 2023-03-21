@@ -724,5 +724,19 @@
     "Generate": "oluştur",
     "API Keys": "api anahtarları",
     "Add Another": "Başka birtane ekle",
-    "apiKeyAddedMsg": "API anahtarınız eklendi. Bir daha gösterilmeyeceği için lütfen not edin."
+    "apiKeyAddedMsg": "API anahtarınız eklendi. Bir daha gösterilmeyeceği için lütfen not edin.",
+    "pagertreeUrgency": "Önem",
+    "pagertreeSilent": "Sessiz",
+    "pagertreeLow": "Düşük",
+    "pagertreeMedium": "Orta",
+    "pagertreeHigh": "Yüksek",
+    "pagertreeCritical": "Kritik",
+    "pagertreeDoNothing": "Hiçbir şey yapma",
+    "wayToGetPagerTreeIntegrationURL": "PagerTree'de Uptime Kuma entegrasyonunu oluşturduktan sonra Endpoint'i kopyalayın. Tüm ayrıntıları görün {0}",
+    "pagertreeIntegrationUrl": "Entegrasyon URL",
+    "pagertreeResolve": "Otomatik Çöz",
+    "lunaseaTarget": "Hedef",
+    "Add New Tag": "Yeni Etiket Ekle",
+    "lunaseaDeviceID": "Cihaz ID",
+    "lunaseaUserID": "Kullanıcı ID"
 }

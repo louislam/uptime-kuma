@@ -43,10 +43,11 @@ const prompt = (query) => new Promise((resolve) => rl.question(query, resolve));
         });
         console.log(result.stdout + result.stderr);
 
+        /*
         result = await ssh.execCommand("pm2 restart 1", {
             cwd,
         });
-        console.log(result.stdout + result.stderr);
+        console.log(result.stdout + result.stderr);*/
 
     } catch (e) {
         console.log(e);

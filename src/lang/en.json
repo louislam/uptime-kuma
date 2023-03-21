@@ -154,6 +154,7 @@
     "Token": "Token",
     "Show URI": "Show URI",
     "Tags": "Tags",
+    "Add New Tag": "Add New Tag",
     "Add New below or Select...": "Add New below or Select…",
     "Tag with this name already exist.": "Tag with this name already exists.",
     "Tag with this value already exist.": "Tag with this value already exists.",
@@ -442,7 +443,6 @@
     "Clone Monitor": "Clone Monitor",
     "Clone": "Clone",
     "cloneOf": "Clone of {0}",
-    "Description": "Description",
     "smtp": "Email (SMTP)",
     "secureOptionNone": "None / STARTTLS (25, 587)",
     "secureOptionTLS": "TLS (465)",
@@ -703,5 +703,8 @@
     "pagertreeCritical": "Critical",
     "pagertreeResolve": "Auto Resolve",
     "pagertreeDoNothing": "Do Nothing",
-    "wayToGetPagerTreeIntegrationURL": "After creating the Uptime Kuma integration in PagerTree, copy the Endpoint. See full details {0}"
+    "wayToGetPagerTreeIntegrationURL": "After creating the Uptime Kuma integration in PagerTree, copy the Endpoint. See full details {0}",
+    "lunaseaTarget": "Target",
+    "lunaseaDeviceID": "Device ID",
+    "lunaseaUserID": "User ID"
 }

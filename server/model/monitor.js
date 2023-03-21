@@ -133,6 +133,9 @@ class Monitor extends BeanModel {
                 mqttPassword: this.mqttPassword,
                 authWorkstation: this.authWorkstation,
                 authDomain: this.authDomain,
+                tlsCa: this.tlsCa,
+                tlsCert: this.tlsCert,
+                tlsKey: this.tlsKey,
             };
         }
 
@@ -329,6 +332,18 @@ class Monitor extends BeanModel {
 
                     if (!options.httpsAgent) {
                         options.httpsAgent = new https.Agent(httpsAgentOptions);
+                    }
+
+                    if (this.auth_method === "mtls") {
+                        if (this.tlsCert !== null && this.tlsCert !== "") {
+                            options.httpsAgent.options.cert = Buffer.from(this.tlsCert);
+                        }
+                        if (this.tlsCa !== null && this.tlsCa !== "") {
+                            options.httpsAgent.options.ca = Buffer.from(this.tlsCa);
+                        }
+                        if (this.tlsKey !== null && this.tlsKey !== "") {
+                            options.httpsAgent.options.key = Buffer.from(this.tlsKey);
+                        }
                     }
 
                     log.debug("monitor", `[${this.name}] Axios Options: ${JSON.stringify(options)}`);
@@ -836,7 +851,6 @@ class Monitor extends BeanModel {
                     domain: this.authDomain,
                     workstation: this.authWorkstation ? this.authWorkstation : undefined
                 });
-
             } else {
                 res = await axios.request(options);
             }
@@ -1251,7 +1265,7 @@ class Monitor extends BeanModel {
             for (let notification of notificationList) {
                 try {
                     log.debug("monitor", "Sending to " + notification.name);
-                    await Notification.send(JSON.parse(notification.config), `[${this.name}][${this.url}] Certificate will be expired in ${daysRemaining} days`);
+                    await Notification.send(JSON.parse(notification.config), `[${this.name}][${this.url}] Certificate will expire in ${daysRemaining} days`);
                     sent = true;
                 } catch (e) {
                     log.error("monitor", "Cannot send cert notification to " + notification.name);

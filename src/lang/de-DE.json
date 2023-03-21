@@ -734,5 +734,9 @@
     "telegramMessageThreadID": "(Optional) Nachrichten Thread ID",
     "telegramMessageThreadIDDescription": "Optionale eindeutige Kennung für den Ziel-Thread (Thema) des Forums; nur für Forum-Supergroups",
     "telegramSendSilently": "Stumm Senden",
-    "telegramSendSilentlyDescription": "Sende die Nachricht stumm. Nutzer bekommen eine Benachrichtigung ohne Ton."
+    "telegramSendSilentlyDescription": "Sende die Nachricht stumm. Nutzer bekommen eine Benachrichtigung ohne Ton.",
+    "Add New Tag": "Neuen Tag hinzufügen",
+    "lunaseaDeviceID": "Geräte-ID",
+    "lunaseaTarget": "Ziel",
+    "lunaseaUserID": "Benutzer-ID"
 }

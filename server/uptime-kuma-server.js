@@ -271,6 +271,7 @@ class UptimeKumaServer {
 
     /** Load the timeslots for maintenance */
     async generateMaintenanceTimeslots() {
+        log.debug("maintenance", "Routine: Generating Maintenance Timeslots");
 
         // Prevent #2776
         // Remove duplicate maintenance_timeslot with same start_date, end_date and maintenance_id

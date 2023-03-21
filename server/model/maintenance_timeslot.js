@@ -58,7 +58,14 @@ class MaintenanceTimeslot extends BeanModel {
             bean.start_date = maintenance.start_date;
             bean.end_date = maintenance.end_date;
             bean.generated_next = true;
-            return await R.store(bean);
+
+            if (!await this.isDuplicateTimeslot(bean)) {
+                await R.store(bean);
+                return bean;
+            } else {
+                log.debug("maintenance", "Duplicate timeslot, skip");
+                return null;
+            }
 
         } else if (maintenance.strategy === "recurring-interval") {
             // Prevent dead loop, in case interval_day is not set
@@ -144,6 +151,15 @@ class MaintenanceTimeslot extends BeanModel {
         }
     }
 
+    static async isDuplicateTimeslot(timeslot) {
+        let bean = await R.findOne("maintenance_timeslot", "maintenance_id = ? AND start_date = ? AND end_date = ?", [
+            timeslot.maintenance_id,
+            timeslot.start_date,
+            timeslot.end_date
+        ]);
+        return bean !== null;
+    }
+
     /**
      * Generate a next timeslot for all recurring types
      * @param maintenance
@@ -161,7 +177,7 @@ class MaintenanceTimeslot extends BeanModel {
 
         // Keep generating from the first possible date, until it is ok
         while (true) {
-            log.debug("timeslot", "startDateTime: " + startDateTime.format());
+            //log.debug("timeslot", "startDateTime: " + startDateTime.format());
 
             // Handling out of effective date range
             if (startDateTime.diff(dayjs.utc(maintenance.end_date)) > 0) {
@@ -193,7 +209,14 @@ class MaintenanceTimeslot extends BeanModel {
         bean.start_date = localToUTC(startDateTime);
         bean.end_date = localToUTC(endDateTime);
         bean.generated_next = false;
-        return await R.store(bean);
+
+        if (!await this.isDuplicateTimeslot(bean)) {
+            await R.store(bean);
+            return bean;
+        } else {
+            log.debug("maintenance", "Duplicate timeslot, skip");
+            return null;
+        }
     }
 }
 

@@ -736,5 +736,9 @@
     "pagertreeHigh": "高",
     "pagertreeResolve": "自动解除",
     "pagertreeDoNothing": "什么都不做",
-    "wayToGetPagerTreeIntegrationURL": "在 PagerTree 中创建 Uptime Kuma 集成后，复制端点 URL 到此处。在 {0} 查看详情"
+    "wayToGetPagerTreeIntegrationURL": "在 PagerTree 中创建 Uptime Kuma 集成后，复制端点 URL 到此处。在 {0} 查看详情",
+    "Add New Tag": "添加新标签",
+    "lunaseaDeviceID": "设备ID",
+    "lunaseaTarget": "目标",
+    "lunaseaUserID": "用户ID"
 }
