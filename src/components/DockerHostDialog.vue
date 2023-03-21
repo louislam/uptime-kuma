@@ -30,7 +30,8 @@
                                 {{ $t("Examples") }}:
                                 <ul>
                                     <li>/var/run/docker.sock</li>
-                                    <li>tcp://localhost:2375</li>
+                                    <li>http://localhost:2375</li>
+                                    <li>https://localhost:2376 (TLS)</li>
                                 </ul>
                             </div>
                         </div>
@@ -72,7 +73,7 @@ export default {
     emits: [ "added" ],
     data() {
         return {
-            model: null,
+            modal: null,
             processing: false,
             id: null,
             connectionTypes: [ "socket", "tcp" ],
@@ -90,11 +91,16 @@ export default {
     },
     methods: {
 
+        /** Confirm deletion of docker host */
         deleteConfirm() {
             this.modal.hide();
             this.$refs.confirmDelete.show();
         },
 
+        /**
+         * Show specified docker host
+         * @param {number} dockerHostID
+         */
         show(dockerHostID) {
             if (dockerHostID) {
                 let found = false;
@@ -125,6 +131,7 @@ export default {
             this.modal.show();
         },
 
+        /** Add docker host */
         submit() {
             this.processing = true;
             this.$root.getSocket().emit("addDockerHost", this.dockerHost, this.id, (res) => {
@@ -143,6 +150,7 @@ export default {
             });
         },
 
+        /** Test the docker host */
         test() {
             this.processing = true;
             this.$root.getSocket().emit("testDockerHost", this.dockerHost, (res) => {
@@ -151,6 +159,7 @@ export default {
             });
         },
 
+        /** Delete this docker host */
         deleteDockerHost() {
             this.processing = true;
             this.$root.getSocket().emit("deleteDockerHost", this.id, (res) => {

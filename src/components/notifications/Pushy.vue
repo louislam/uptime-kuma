@@ -1,13 +1,13 @@
 <template>
     <div class="mb-3">
         <label for="pushy-app-token" class="form-label">{{ $t("pushyAPIKey") }}</label>
-        <HiddenInput id="pushy-app-token" v-model="$parent.notification.pushyAPIKey" :required="true" autocomplete="one-time-code"></HiddenInput>
+        <HiddenInput id="pushy-app-token" v-model="$parent.notification.pushyAPIKey" :required="true" autocomplete="new-password"></HiddenInput>
     </div>
 
     <div class="mb-3">
         <label for="pushy-user-key" class="form-label">{{ $t("pushyToken") }}</label>
         <div class="input-group mb-3">
-            <HiddenInput id="pushy-user-key" v-model="$parent.notification.pushyToken" :required="true" autocomplete="one-time-code"></HiddenInput>
+            <HiddenInput id="pushy-user-key" v-model="$parent.notification.pushyToken" :required="true" autocomplete="new-password"></HiddenInput>
         </div>
     </div>
     <i18n-t tag="p" keypath="More info on:" style="margin-top: 8px;">

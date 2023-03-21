@@ -1,9 +1,9 @@
 <template>
     <div class="mb-3">
         <label for="pushover-user" class="form-label">{{ $t("User Key") }}<span style="color: red;"><sup>*</sup></span></label>
-        <HiddenInput id="pushover-user" v-model="$parent.notification.pushoveruserkey" :required="true" autocomplete="one-time-code"></HiddenInput>
+        <HiddenInput id="pushover-user" v-model="$parent.notification.pushoveruserkey" :required="true" autocomplete="new-password"></HiddenInput>
         <label for="pushover-app-token" class="form-label">{{ $t("Application Token") }}<span style="color: red;"><sup>*</sup></span></label>
-        <HiddenInput id="pushover-app-token" v-model="$parent.notification.pushoverapptoken" :required="true" autocomplete="one-time-code"></HiddenInput>
+        <HiddenInput id="pushover-app-token" v-model="$parent.notification.pushoverapptoken" :required="true" autocomplete="new-password"></HiddenInput>
         <label for="pushover-device" class="form-label">{{ $t("Device") }}</label>
         <input id="pushover-device" v-model="$parent.notification.pushoverdevice" type="text" class="form-control">
         <label for="pushover-device" class="form-label">{{ $t("Message Title") }}</label>

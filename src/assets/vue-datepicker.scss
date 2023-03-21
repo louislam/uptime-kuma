@@ -1,0 +1,39 @@
+@import "@vuepic/vue-datepicker/dist/main.css";
+@import "vars.scss";
+
+// Must use #{ }
+// Remark: https://stackoverflow.com/questions/50202991/unable-to-set-scss-variable-to-css-variable
+.dp__theme_dark {
+    --dp-background-color: #{$dark-bg2};
+    --dp-text-color: #{$dark-font-color};
+    --dp-hover-color: #484848;
+    --dp-hover-text-color: #ffffff;
+    --dp-hover-icon-color: #959595;
+    --dp-primary-color: #{#5cdd8b};
+    --dp-primary-text-color: #ffffff;
+    --dp-secondary-color: #494949;
+    --dp-border-color: #{$dark-border-color};
+    --dp-menu-border-color: #2d2d2d;
+    --dp-border-color-hover: #{$dark-border-color};
+    --dp-disabled-color: #212121;
+    --dp-scroll-bar-background: #212121;
+    --dp-scroll-bar-color: #484848;
+    --dp-success-color: #{$primary};
+    --dp-success-color-disabled: #428f59;
+    --dp-icon-color: #959595;
+    --dp-danger-color: #e53935;
+    --dp-highlight-color: rgba(0, 92, 178, 0.2);
+}
+
+.dp__input {
+    border-radius: $border-radius;
+}
+
+// Fix: Full width of text input when using "inline textInput inlineWithInput" mode
+.dp__main > div[aria-label="Datepicker input"] {
+    width: 100%;
+}
+
+.dp__main > div[aria-label="Datepicker menu"]:nth-child(2) {
+    margin-top: 20px;
+}

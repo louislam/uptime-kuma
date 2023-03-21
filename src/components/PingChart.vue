@@ -16,18 +16,14 @@
     </div>
 </template>
 
-<script lang="ts">
+<script lang="js">
 import { BarController, BarElement, Chart, Filler, LinearScale, LineController, LineElement, PointElement, TimeScale, Tooltip } from "chart.js";
 import "chartjs-adapter-dayjs";
 import dayjs from "dayjs";
-import timezone from "dayjs/plugin/timezone";
-import utc from "dayjs/plugin/utc";
 import { LineChart } from "vue-chart-3";
 import { useToast } from "vue-toastification";
-import { DOWN, log } from "../util.ts";
+import { DOWN, PENDING, MAINTENANCE, log } from "../util.ts";
 
-dayjs.extend(utc);
-dayjs.extend(timezone);
 const toast = useToast();
 
 Chart.register(LineController, BarController, LineElement, PointElement, TimeScale, BarElement, LinearScale, Tooltip, Filler);
@@ -163,7 +159,8 @@ export default {
         },
         chartData() {
             let pingData = [];  // Ping Data for Line Chart, y-axis contains ping time
-            let downData = [];  // Down Data for Bar Chart, y-axis is 1 if target is down, 0 if target is up
+            let downData = [];  // Down Data for Bar Chart, y-axis is 1 if target is down (red color), under maintenance (blue color) or pending (orange color), 0 if target is up
+            let colorData = []; // Color Data for Bar Chart
 
             let heartbeatList = this.heartbeatList ||
              (this.monitorId in this.$root.heartbeatList && this.$root.heartbeatList[this.monitorId]) ||
@@ -185,8 +182,9 @@ export default {
                     });
                     downData.push({
                         x,
-                        y: beat.status === DOWN ? 1 : 0,
+                        y: (beat.status === DOWN || beat.status === MAINTENANCE || beat.status === PENDING) ? 1 : 0,
                     });
+                    colorData.push((beat.status === MAINTENANCE) ? "rgba(23,71,245,0.41)" : ((beat.status === PENDING) ? "rgba(245,182,23,0.41)" : "#DC354568"));
                 });
 
             return {
@@ -205,7 +203,7 @@ export default {
                         type: "bar",
                         data: downData,
                         borderColor: "#00000000",
-                        backgroundColor: "#DC354568",
+                        backgroundColor: colorData,
                         yAxisID: "y1",
                         barThickness: "flex",
                         barPercentage: 1,

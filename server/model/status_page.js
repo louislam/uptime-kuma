@@ -2,6 +2,9 @@ const { BeanModel } = require("redbean-node/dist/bean-model");
 const { R } = require("redbean-node");
 const cheerio = require("cheerio");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
+const jsesc = require("jsesc");
+const Maintenance = require("./maintenance");
+const googleAnalytics = require("../google-analytics");
 
 class StatusPage extends BeanModel {
 
@@ -36,7 +39,7 @@ class StatusPage extends BeanModel {
      */
     static async renderHTML(indexHTML, statusPage) {
         const $ = cheerio.load(indexHTML);
-        const description155 = statusPage.description?.substring(0, 155);
+        const description155 = statusPage.description?.substring(0, 155) ?? "";
 
         $("title").text(statusPage.title);
         $("meta[name=description]").attr("content", description155);
@@ -51,17 +54,31 @@ class StatusPage extends BeanModel {
 
         const head = $("head");
 
+        if (statusPage.googleAnalyticsTagId) {
+            let escapedGoogleAnalyticsScript = googleAnalytics.getGoogleAnalyticsScript(statusPage.googleAnalyticsTagId);
+            head.append($(escapedGoogleAnalyticsScript));
+        }
+
         // OG Meta Tags
-        head.append(`<meta property="og:title" content="${statusPage.title}" />`);
-        head.append(`<meta property="og:description" content="${description155}" />`);
+        let ogTitle = $("<meta property=\"og:title\" content=\"\" />").attr("content", statusPage.title);
+        head.append(ogTitle);
+
+        let ogDescription = $("<meta property=\"og:description\" content=\"\" />").attr("content", description155);
+        head.append(ogDescription);
 
         // Preload data
-        const json = JSON.stringify(await StatusPage.getStatusPageData(statusPage));
-        head.append(`
-            <script>
-                window.preloadData = ${json}
+        // Add jsesc, fix https://github.com/louislam/uptime-kuma/issues/2186
+        const escapedJSONObject = jsesc(await StatusPage.getStatusPageData(statusPage), {
+            "isScriptContext": true
+        });
+
+        const script = $(`
+            <script id="preload-data" data-json="{}">
+                window.preloadData = ${escapedJSONObject};
             </script>
         `);
+
+        head.append(script);
 
         // manifest.json
         $("link[rel=manifest]").attr("href", `/api/status-page/${statusPage.slug}/manifest.json`);
@@ -83,6 +100,8 @@ class StatusPage extends BeanModel {
             incident = incident.toPublicJSON();
         }
 
+        let maintenanceList = await StatusPage.getMaintenanceList(statusPage.id);
+
         // Public Group List
         const publicGroupList = [];
         const showTags = !!statusPage.show_tags;
@@ -100,7 +119,8 @@ class StatusPage extends BeanModel {
         return {
             config: await statusPage.toPublicJSON(),
             incident,
-            publicGroupList
+            publicGroupList,
+            maintenanceList,
         };
     }
 
@@ -214,6 +234,7 @@ class StatusPage extends BeanModel {
             customCSS: this.custom_css,
             footerText: this.footer_text,
             showPoweredBy: !!this.show_powered_by,
+            googleAnalyticsId: this.google_analytics_tag_id,
         };
     }
 
@@ -234,6 +255,7 @@ class StatusPage extends BeanModel {
             customCSS: this.custom_css,
             footerText: this.footer_text,
             showPoweredBy: !!this.show_powered_by,
+            googleAnalyticsId: this.google_analytics_tag_id,
         };
     }
 
@@ -259,6 +281,38 @@ class StatusPage extends BeanModel {
         }
     }
 
+    /**
+     * Get list of maintenances
+     * @param {number} statusPageId ID of status page to get maintenance for
+     * @returns {Object} Object representing maintenances sanitized for public
+     */
+    static async getMaintenanceList(statusPageId) {
+        try {
+            const publicMaintenanceList = [];
+
+            let activeCondition = Maintenance.getActiveMaintenanceSQLCondition();
+            let maintenanceBeanList = R.convertToBeans("maintenance", await R.getAll(`
+                SELECT DISTINCT maintenance.*
+                FROM maintenance
+                JOIN maintenance_status_page
+                    ON maintenance_status_page.maintenance_id = maintenance.id
+                    AND maintenance_status_page.status_page_id = ?
+                LEFT JOIN maintenance_timeslot
+                    ON maintenance_timeslot.maintenance_id = maintenance.id
+                WHERE ${activeCondition}
+                ORDER BY maintenance.end_date
+            `, [ statusPageId ]));
+
+            for (const bean of maintenanceBeanList) {
+                publicMaintenanceList.push(await bean.toPublicJSON());
+            }
+
+            return publicMaintenanceList;
+
+        } catch (error) {
+            return [];
+        }
+    }
 }
 
 module.exports = StatusPage;

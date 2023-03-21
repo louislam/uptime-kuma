@@ -6,7 +6,7 @@
         "module": "commonjs",
         "lib": [
             "es2020",
-            "DOM",
+            "DOM"
         ],
         "removeComments": false,
         "preserveConstEnums": true,

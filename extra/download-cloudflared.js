@@ -25,6 +25,10 @@ if (platform === "linux/amd64") {
 const file = fs.createWriteStream("cloudflared.deb");
 get("https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-" + arch + ".deb");
 
+/**
+ * Download specified file
+ * @param {string} url URL to request
+ */
 function get(url) {
     http.get(url, function (res) {
         if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {

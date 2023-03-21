@@ -44,6 +44,7 @@
                                                 :href="monitor.element.url"
                                                 class="item-name"
                                                 target="_blank"
+                                                rel="noopener noreferrer"
                                             >
                                                 {{ monitor.element.name }}
                                             </a>
@@ -222,6 +223,10 @@ export default {
     .item {
         padding: 13px 0 10px;
     }
+}
+
+.bg-maintenance {
+    background-color: $maintenance;
 }
 
 </style>

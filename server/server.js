@@ -5,6 +5,15 @@
  */
 console.log("Welcome to Uptime Kuma");
 
+// As the log function need to use dayjs, it should be very top
+const dayjs = require("dayjs");
+dayjs.extend(require("dayjs/plugin/utc"));
+dayjs.extend(require("./modules/dayjs/plugin/timezone"));
+dayjs.extend(require("dayjs/plugin/customParseFormat"));
+
+// Load environment variables from `.env`
+require("dotenv").config();
+
 // Check Node.js Version
 const nodeVersion = parseInt(process.versions.node.split(".")[0]);
 const requiredVersion = 14;
@@ -33,6 +42,7 @@ log.info("server", "Importing Node libraries");
 const fs = require("fs");
 
 log.info("server", "Importing 3rd-party libraries");
+
 log.debug("server", "Importing express");
 const express = require("express");
 const expressStaticGzip = require("express-static-gzip");
@@ -61,7 +71,7 @@ log.info("server", "Importing this project modules");
 log.debug("server", "Importing Monitor");
 const Monitor = require("./model/monitor");
 log.debug("server", "Importing Settings");
-const { getSettings, setSettings, setting, initJWTSecret, checkLogin, startUnitTest, FBSD, doubleCheckPassword } = require("./util-server");
+const { getSettings, setSettings, setting, initJWTSecret, checkLogin, startUnitTest, FBSD, doubleCheckPassword, startE2eTests } = require("./util-server");
 
 log.debug("server", "Importing Notification");
 const { Notification } = require("./notification");
@@ -77,7 +87,7 @@ log.debug("server", "Importing Background Jobs");
 const { initBackgroundJobs, stopBackgroundJobs } = require("./jobs");
 const { loginRateLimiter, twoFaRateLimiter } = require("./rate-limiter");
 
-const { basicAuth } = require("./auth");
+const { apiAuth } = require("./auth");
 const { login } = require("./auth");
 const passwordHash = require("./password-hash");
 
@@ -112,13 +122,14 @@ const twoFAVerifyOptions = {
  * @type {boolean}
  */
 const testMode = !!args["test"] || false;
+const e2eTestMode = !!args["e2e"] || false;
 
 if (config.demoMode) {
     log.info("server", "==== Demo Mode ====");
 }
 
 // Must be after io instantiation
-const { sendNotificationList, sendHeartbeatList, sendImportantHeartbeatList, sendInfo, sendProxyList, sendDockerHostList } = require("./client");
+const { sendNotificationList, sendHeartbeatList, sendImportantHeartbeatList, sendInfo, sendProxyList, sendDockerHostList, sendAPIKeyList } = require("./client");
 const { statusPageSocketHandler } = require("./socket-handlers/status-page-socket-handler");
 const databaseSocketHandler = require("./socket-handlers/database-socket-handler");
 const TwoFA = require("./2fa");
@@ -126,6 +137,13 @@ const StatusPage = require("./model/status_page");
 const { cloudflaredSocketHandler, autoStart: cloudflaredAutoStart, stop: cloudflaredStop } = require("./socket-handlers/cloudflared-socket-handler");
 const { proxySocketHandler } = require("./socket-handlers/proxy-socket-handler");
 const { dockerSocketHandler } = require("./socket-handlers/docker-socket-handler");
+const { maintenanceSocketHandler } = require("./socket-handlers/maintenance-socket-handler");
+const { apiKeySocketHandler } = require("./socket-handlers/api-key-socket-handler");
+const { generalSocketHandler } = require("./socket-handlers/general-socket-handler");
+const { Settings } = require("./settings");
+const { CacheableDnsHttpAgent } = require("./cacheable-dns-http-agent");
+const { pluginsHandler } = require("./socket-handlers/plugins-handler");
+const apicache = require("./modules/apicache");
 
 app.use(express.json());
 
@@ -153,8 +171,9 @@ let needSetup = false;
 (async () => {
     Database.init(args);
     await initDatabase(testMode);
-
-    exports.entryPage = await setting("entryPage");
+    await server.initAfterDatabaseReady();
+    server.loadPlugins();
+    server.entryPage = await Settings.get("entryPage");
     await StatusPage.loadDomainMappingList();
 
     log.info("server", "Adding route");
@@ -175,14 +194,15 @@ let needSetup = false;
 
         log.debug("entry", `Request Domain: ${hostname}`);
 
+        const uptimeKumaEntryPage = server.entryPage;
         if (hostname in StatusPage.domainMappingList) {
             log.debug("entry", "This is a status page domain");
 
             let slug = StatusPage.domainMappingList[hostname];
             await StatusPage.handleStatusPageResponse(response, server.indexHTML, slug);
 
-        } else if (exports.entryPage && exports.entryPage.startsWith("statusPage-")) {
-            response.redirect("/status/" + exports.entryPage.replace("statusPage-", ""));
+        } else if (uptimeKumaEntryPage && uptimeKumaEntryPage.startsWith("statusPage-")) {
+            response.redirect("/status/" + uptimeKumaEntryPage.replace("statusPage-", ""));
 
         } else {
             response.redirect("/dashboard");
@@ -191,6 +211,7 @@ let needSetup = false;
 
     if (isDev) {
         app.post("/test-webhook", async (request, response) => {
+            log.debug("test", request.headers);
             log.debug("test", request.body);
             response.send("OK");
         });
@@ -199,7 +220,7 @@ let needSetup = false;
     // Robots.txt
     app.get("/robots.txt", async (_request, response) => {
         let txt = "User-agent: *\nDisallow:";
-        if (! await setting("searchEngineIndex")) {
+        if (!await setting("searchEngineIndex")) {
             txt += " /";
         }
         response.setHeader("Content-Type", "text/plain");
@@ -210,7 +231,7 @@ let needSetup = false;
 
     // Prometheus API metrics  /metrics
     // With Basic Auth using the first user's username/password
-    app.get("/metrics", basicAuth, prometheusAPIMetrics());
+    app.get("/metrics", apiAuth, prometheusAPIMetrics());
 
     app.use("/", expressStaticGzip("dist", {
         enableBrotli: true,
@@ -559,7 +580,6 @@ let needSetup = false;
                     });
                 }
             } catch (error) {
-                console.log(error);
                 callback({
                     ok: false,
                     msg: error.message,
@@ -619,6 +639,9 @@ let needSetup = false;
 
                 bean.import(monitor);
                 bean.user_id = socket.userID;
+
+                bean.validate();
+
                 await R.store(bean);
 
                 await updateMonitorNotification(bean.id, notificationIDList);
@@ -656,10 +679,8 @@ let needSetup = false;
                     throw new Error("Permission denied.");
                 }
 
-                // Reset Prometheus labels
-                server.monitorList[monitor.id]?.prometheus()?.remove();
-
                 bean.name = monitor.name;
+                bean.description = monitor.description;
                 bean.type = monitor.type;
                 bean.url = monitor.url;
                 bean.method = monitor.method;
@@ -667,15 +688,21 @@ let needSetup = false;
                 bean.headers = monitor.headers;
                 bean.basic_auth_user = monitor.basic_auth_user;
                 bean.basic_auth_pass = monitor.basic_auth_pass;
+                bean.tlsCa = monitor.tlsCa;
+                bean.tlsCert = monitor.tlsCert;
+                bean.tlsKey = monitor.tlsKey;
                 bean.interval = monitor.interval;
                 bean.retryInterval = monitor.retryInterval;
+                bean.resendInterval = monitor.resendInterval;
                 bean.hostname = monitor.hostname;
+                bean.game = monitor.game;
                 bean.maxretries = monitor.maxretries;
                 bean.port = parseInt(monitor.port);
                 bean.keyword = monitor.keyword;
                 bean.ignoreTls = monitor.ignoreTls;
                 bean.expiryNotification = monitor.expiryNotification;
                 bean.upsideDown = monitor.upsideDown;
+                bean.packetSize = monitor.packetSize;
                 bean.maxredirects = monitor.maxredirects;
                 bean.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
                 bean.dns_resolve_type = monitor.dns_resolve_type;
@@ -693,6 +720,21 @@ let needSetup = false;
                 bean.authMethod = monitor.authMethod;
                 bean.authWorkstation = monitor.authWorkstation;
                 bean.authDomain = monitor.authDomain;
+                bean.grpcUrl = monitor.grpcUrl;
+                bean.grpcProtobuf = monitor.grpcProtobuf;
+                bean.grpcServiceName = monitor.grpcServiceName;
+                bean.grpcMethod = monitor.grpcMethod;
+                bean.grpcBody = monitor.grpcBody;
+                bean.grpcMetadata = monitor.grpcMetadata;
+                bean.grpcEnableTls = monitor.grpcEnableTls;
+                bean.radiusUsername = monitor.radiusUsername;
+                bean.radiusPassword = monitor.radiusPassword;
+                bean.radiusCalledStationId = monitor.radiusCalledStationId;
+                bean.radiusCallingStationId = monitor.radiusCallingStationId;
+                bean.radiusSecret = monitor.radiusSecret;
+                bean.httpBodyEncoding = monitor.httpBodyEncoding;
+
+                bean.validate();
 
                 await R.store(bean);
 
@@ -846,6 +888,9 @@ let needSetup = false;
                     socket.userID,
                 ]);
 
+                // Fix #2880
+                apicache.clear();
+
                 callback({
                     ok: true,
                     msg: "Deleted Successfully.",
@@ -908,13 +953,21 @@ let needSetup = false;
             try {
                 checkLogin(socket);
 
-                let bean = await R.findOne("monitor", " id = ? ", [ tag.id ]);
+                let bean = await R.findOne("tag", " id = ? ", [ tag.id ]);
+                if (bean == null) {
+                    callback({
+                        ok: false,
+                        msg: "Tag not found",
+                    });
+                    return;
+                }
                 bean.name = tag.name;
                 bean.color = tag.color;
                 await R.store(bean);
 
                 callback({
                     ok: true,
+                    msg: "Saved",
                     tag: await bean.toJSON(),
                 });
 
@@ -1048,10 +1101,15 @@ let needSetup = false;
         socket.on("getSettings", async (callback) => {
             try {
                 checkLogin(socket);
+                const data = await getSettings("general");
+
+                if (!data.serverTimezone) {
+                    data.serverTimezone = await server.getTimezone();
+                }
 
                 callback({
                     ok: true,
-                    data: await getSettings("general"),
+                    data: data,
                 });
 
             } catch (e) {
@@ -1077,7 +1135,14 @@ let needSetup = false;
                 }
 
                 await setSettings("general", data);
-                exports.entryPage = data.entryPage;
+                server.entryPage = data.entryPage;
+
+                await CacheableDnsHttpAgent.update();
+
+                // Also need to apply timezone globally
+                if (data.serverTimezone) {
+                    await server.setTimezone(data.serverTimezone);
+                }
 
                 callback({
                     ok: true,
@@ -1085,6 +1150,7 @@ let needSetup = false;
                 });
 
                 sendInfo(socket);
+                server.sendMaintenanceList(socket);
 
             } catch (e) {
                 callback({
@@ -1261,6 +1327,7 @@ let needSetup = false;
                             let monitor = {
                                 // Define the new variable from earlier here
                                 name: monitorListData[i].name,
+                                description: monitorListData[i].description,
                                 type: monitorListData[i].type,
                                 url: monitorListData[i].url,
                                 method: monitorListData[i].method || "GET",
@@ -1273,6 +1340,7 @@ let needSetup = false;
                                 authDomain: monitorListData[i].authDomain,
                                 interval: monitorListData[i].interval,
                                 retryInterval: retryInterval,
+                                resendInterval: monitorListData[i].resendInterval || 0,
                                 hostname: monitorListData[i].hostname,
                                 maxretries: monitorListData[i].maxretries,
                                 port: monitorListData[i].port,
@@ -1442,6 +1510,10 @@ let needSetup = false;
         databaseSocketHandler(socket);
         proxySocketHandler(socket);
         dockerSocketHandler(socket);
+        maintenanceSocketHandler(socket);
+        apiKeySocketHandler(socket);
+        generalSocketHandler(socket, server);
+        pluginsHandler(socket, server);
 
         log.debug("server", "added all socket handlers");
 
@@ -1478,6 +1550,10 @@ let needSetup = false;
 
         if (testMode) {
             startUnitTest();
+        }
+
+        if (e2eTestMode) {
+            startE2eTests();
         }
     });
 
@@ -1540,9 +1616,11 @@ async function afterLogin(socket, user) {
     socket.join(user.id);
 
     let monitorList = await server.sendMonitorList(socket);
+    server.sendMaintenanceList(socket);
     sendNotificationList(socket);
     sendProxyList(socket);
     sendDockerHostList(socket);
+    sendAPIKeyList(socket);
 
     await sleep(500);
 
@@ -1558,6 +1636,13 @@ async function afterLogin(socket, user) {
 
     for (let monitorID in monitorList) {
         await Monitor.sendStats(io, monitorID, user.id);
+    }
+
+    // Set server timezone from client browser if not set
+    // It should be run once only
+    if (! await Settings.get("initServerTimezone")) {
+        log.debug("server", "emit initServerTimezone");
+        socket.emit("initServerTimezone");
     }
 }
 
@@ -1685,6 +1770,8 @@ async function shutdownFunction(signal) {
     log.info("server", "Shutdown requested");
     log.info("server", "Called signal: " + signal);
 
+    await server.stop();
+
     log.info("server", "Stopping all monitors");
     for (let id in server.monitorList) {
         let monitor = server.monitorList[id];
@@ -1695,6 +1782,7 @@ async function shutdownFunction(signal) {
 
     stopBackgroundJobs();
     await cloudflaredStop();
+    Settings.stopCacheCleaner();
 }
 
 /** Final function called before application exits */

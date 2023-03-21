@@ -1,4 +1,8 @@
-👉 Delete this line if you have read and agree our pull request rules and guidelines: https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md#can-i-create-a-pull-request-for-uptime-kuma
+⚠️⚠️⚠️ Since we do not accept all types of pull requests and do not want to waste your time. Please be sure that you have read pull request rules:
+https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md#can-i-create-a-pull-request-for-uptime-kuma
+
+Tick the checkbox if you understand [x]: 
+- [ ] I have read and understand the pull request rules.
 
 # Description
 
@@ -12,7 +16,6 @@ Please delete any options that are not relevant.
 - User interface (UI)
 - New feature (non-breaking change which adds functionality)
 - Breaking change (fix or feature that would cause existing functionality to not work as expected)
-- Translation update
 - Other
 - This change requires a documentation update
 
