@@ -65,6 +65,7 @@ export default {
         if (typeof this.$parent.notification.ntfyPriority === "undefined") {
             this.$parent.notification.ntfyserverurl = "https://ntfy.sh";
             this.$parent.notification.ntfyPriority = 5;
+            this.$parent.notification.ntfyAuthenticationMethod = "none";
         }
     },
 };
