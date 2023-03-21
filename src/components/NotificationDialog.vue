@@ -129,6 +129,7 @@ export default {
                 "ntfy": "Ntfy",
                 "octopush": "Octopush",
                 "OneBot": "OneBot",
+                "Opsgenie": "Opsgenie",
                 "PagerDuty": "PagerDuty",
                 "pushbullet": "Pushbullet",
                 "PushByTechulus": "Push by Techulus",
