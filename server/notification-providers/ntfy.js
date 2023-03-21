@@ -9,11 +9,11 @@ class Ntfy extends NotificationProvider {
         let okMsg = "Sent Successfully.";
         try {
             let headers = {};
-            if (notification.ntfyusername) {
+            if (notification.ntfyAuthenticationMethod === "usernamePassword") {
                 headers = {
                     "Authorization": "Basic " + Buffer.from(notification.ntfyusername + ":" + notification.ntfypassword).toString("base64"),
                 };
-            } else if (notification.ntfyaccesstoken) {
+            } else if (notification.ntfyAuthenticationMethod === "accessToken") {
                 headers = {
                     "Authorization": "Bearer " + notification.ntfyaccesstoken,
                 };
