@@ -20,6 +20,7 @@ const Mattermost = require("./notification-providers/mattermost");
 const Ntfy = require("./notification-providers/ntfy");
 const Octopush = require("./notification-providers/octopush");
 const OneBot = require("./notification-providers/onebot");
+const Opsgenie = require("./notification-providers/opsgenie");
 const PagerDuty = require("./notification-providers/pagerduty");
 const PromoSMS = require("./notification-providers/promosms");
 const Pushbullet = require("./notification-providers/pushbullet");
@@ -69,6 +70,7 @@ class Notification {
             new Ntfy(),
             new Octopush(),
             new OneBot(),
+			new Opsgenie(),
             new PagerDuty(),
             new PromoSMS(),
             new Pushbullet(),
