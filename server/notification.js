@@ -84,7 +84,7 @@ class Notification {
             new Ntfy(),
             new Octopush(),
             new OneBot(),
-			new Opsgenie(),
+            new Opsgenie(),
             new PagerDuty(),
             new PagerTree(),
             new PromoSMS(),

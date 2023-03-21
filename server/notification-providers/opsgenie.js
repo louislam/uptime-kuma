@@ -2,14 +2,14 @@ const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 const { UP, DOWN } = require("../../src/util");
 
-const opsgenieAlertsUrlEU = "https://api.eu.opsgenie.com/v2/alerts"
-const opsgenieAlertsUrlUS = "https://api.opsgenie.com/v2/alerts"
+const opsgenieAlertsUrlEU = "https://api.eu.opsgenie.com/v2/alerts";
+const opsgenieAlertsUrlUS = "https://api.opsgenie.com/v2/alerts";
 let okMsg = "Sent Successfully.";
 
 class Opsgenie extends NotificationProvider {
-    
+
     name = "Opsgenie";
-    
+
     /**
      * @inheritdoc
      */
@@ -17,7 +17,7 @@ class Opsgenie extends NotificationProvider {
         let opsgenieAlertsUrl;
         let priority = (notification.opsgeniePriority == "") ? 3 : notification.opsgeniePriority;
         const textMsg = "Uptime Kuma Alert";
- 
+
         try {
             switch (notification.opsgenieRegion) {
                 case "US":
@@ -28,7 +28,7 @@ class Opsgenie extends NotificationProvider {
                     break;
                 default:
                     opsgenieAlertsUrl = opsgenieAlertsUrlUS;
-            };
+            }
 
             if (heartbeatJSON == null) {
                 let notificationTestAlias = "uptime-kuma-notification-test";
@@ -38,12 +38,12 @@ class Opsgenie extends NotificationProvider {
                     "source": "Uptime Kuma",
                     "priority": "P5"
                 };
-                
-                return this.post(notification, opsgenieAlertsUrl, data)
-            };
+
+                return this.post(notification, opsgenieAlertsUrl, data);
+            }
 
             if (heartbeatJSON.status === DOWN) {
-                let data = {    
+                let data = {
                     "message": monitorJSON ? textMsg + `: ${monitorJSON.name}` : textMsg,
                     "alias": monitorJSON.name,
                     "description": msg,
@@ -51,24 +51,24 @@ class Opsgenie extends NotificationProvider {
                     "priority": `P${priority}`
                 };
 
-                return this.post(notification, opsgenieAlertsUrl, data)
-            };
+                return this.post(notification, opsgenieAlertsUrl, data);
+            }
 
             if (heartbeatJSON.status === UP) {
                 let opsgenieAlertsCloseUrl = `${opsgenieAlertsUrl}/${encodeURIComponent(monitorJSON.name)}/close?identifierType=alias`;
-                let data = {    
+                let data = {
                     "source": "Uptime Kuma",
                 };
 
-                return this.post(notification, opsgenieAlertsCloseUrl, data)
-            };
+                return this.post(notification, opsgenieAlertsCloseUrl, data);
+            }
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }
     }
 
     /**
-     * 
+     *
      * @param {BeanModel} notification
      * @param {string} url Request url
      * @param {Object} data Request body
@@ -85,12 +85,12 @@ class Opsgenie extends NotificationProvider {
         let res = await axios.post(url, data, config);
         if (res.status == null) {
             return "Opsgenie notification failed with invalid response!";
-        };
+        }
         if (res.status < 200 || res.status >= 300) {
             return `Opsgenie notification failed with status code ${res.status}`;
-        };
+        }
 
-        return okMsg
+        return okMsg;
     }
 }
 
