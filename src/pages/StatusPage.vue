@@ -308,8 +308,8 @@
                 </p>
 
                 <div class="refresh-info mb-2">
-                    <div>{{ $t("last update") }}: <date-time :value="lastUpdateTime" /></div>
-                    <div>{{ $t("refresh in") }}: {{ updateCountdownText }}</div>
+                    <div>{{ $t("Last Updated") }}: <date-time :value="lastUpdateTime" /></div>
+                    <div>{{ $tc("statusPageRefreshIn", [ updateCountdownText]) }}</div>
                 </div>
             </footer>
         </div>
