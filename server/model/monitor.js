@@ -637,9 +637,7 @@ class Monitor extends BeanModel {
                 } else if (this.type === "mysql") {
                     let startTime = dayjs().valueOf();
 
-                    await mysqlQuery(this.databaseConnectionString, this.databaseQuery);
-
-                    bean.msg = "";
+                    bean.msg = await mysqlQuery(this.databaseConnectionString, this.databaseQuery);
                     bean.status = UP;
                     bean.ping = dayjs().valueOf() - startTime;
                 } else if (this.type === "mongodb") {
