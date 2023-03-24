@@ -322,21 +322,30 @@ exports.postgresQuery = function (connectionString, query) {
  * Run a query on MySQL/MariaDB
  * @param {string} connectionString The database connection string
  * @param {string} query The query to validate the database with
- * @returns {Promise<(string[]|Object[]|Object)>}
+ * @returns {Promise<(string)>}
  */
 exports.mysqlQuery = function (connectionString, query) {
     return new Promise((resolve, reject) => {
         const connection = mysql.createConnection(connectionString);
-        connection.promise().query(query)
-            .then(res => {
-                resolve(res);
-            })
-            .catch(err => {
+
+        connection.on("error", (err) => {
+            reject(err);
+        });
+
+        connection.query(query, (err, res) => {
+            if (err) {
                 reject(err);
-            })
-            .finally(() => {
-                connection.destroy();
-            });
+            }
+
+            // Check if res is an array
+            if (Array.isArray(res)) {
+                resolve("Rows: " + res.length);
+            } else {
+                resolve("No Error, but the result is not an array. Type: " + typeof res);
+            }
+
+            connection.destroy();
+        });
     });
 };
 
