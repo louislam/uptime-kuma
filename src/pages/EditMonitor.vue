@@ -944,6 +944,14 @@ message HealthCheckResponse {
             } else if (this.isEdit || this.isClone) {
                 this.$root.getSocket().emit("getMonitor", this.$route.params.id, (res) => {
                     if (res.ok) {
+
+                        if (this.isClone) {
+                            // Reset push token for cloned monitors
+                            if (res.monitor.type === "push") {
+                                res.monitor.pushToken = undefined;
+                            }
+                        }
+
                         this.monitor = res.monitor;
 
                         if (this.isClone) {
