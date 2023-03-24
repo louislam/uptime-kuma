@@ -335,15 +335,13 @@ exports.mysqlQuery = function (connectionString, query) {
         connection.query(query, (err, res) => {
             if (err) {
                 reject(err);
-            }
-
-            // Check if res is an array
-            if (Array.isArray(res)) {
-                resolve("Rows: " + res.length);
             } else {
-                resolve("No Error, but the result is not an array. Type: " + typeof res);
+                if (Array.isArray(res)) {
+                    resolve("Rows: " + res.length);
+                } else {
+                    resolve("No Error, but the result is not an array. Type: " + typeof res);
+                }
             }
-
             connection.destroy();
         });
     });
