@@ -147,7 +147,11 @@ router.get("/api/badge/:id/status", cache("5 minutes"), async (request, response
             const heartbeat = await Monitor.getPreviousHeartbeat(requestedMonitorId);
             const state = overrideValue !== undefined ? overrideValue : heartbeat.status;
 
-            badgeValues.label = label ?? "Status";
+            if (label === undefined) {
+                badgeValues.label = "Status";
+            } else {
+                badgeValues.label = label;
+            }
             switch (state) {
                 case DOWN:
                     badgeValues.color = downColor;
