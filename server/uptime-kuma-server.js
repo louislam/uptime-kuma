@@ -74,6 +74,7 @@ class UptimeKumaServer {
         // SSL
         const sslKey = args["ssl-key"] || process.env.UPTIME_KUMA_SSL_KEY || process.env.SSL_KEY || undefined;
         const sslCert = args["ssl-cert"] || process.env.UPTIME_KUMA_SSL_CERT || process.env.SSL_CERT || undefined;
+        const sslKeyPassphrase = args["ssl-key-passphrase"] || process.env.UPTIME_KUMA_SSL_KEY_PASSPHRASE || process.env.SSL_KEY_PASSPHRASE || undefined;
 
         log.info("server", "Creating express and socket.io instance");
         this.app = express();
@@ -81,7 +82,8 @@ class UptimeKumaServer {
             log.info("server", "Server Type: HTTPS");
             this.httpServer = https.createServer({
                 key: fs.readFileSync(sslKey),
-                cert: fs.readFileSync(sslCert)
+                cert: fs.readFileSync(sslCert),
+                passphrase: sslKeyPassphrase,
             }, this.app);
         } else {
             log.info("server", "Server Type: HTTP");
