@@ -41,6 +41,7 @@ const Stackfield = require("./notification-providers/stackfield");
 const Teams = require("./notification-providers/teams");
 const TechulusPush = require("./notification-providers/techulus-push");
 const Telegram = require("./notification-providers/telegram");
+const Twilio = require("./notification-providers/twilio");
 const Splunk = require("./notification-providers/splunk");
 const Webhook = require("./notification-providers/webhook");
 const WeCom = require("./notification-providers/wecom");
@@ -103,6 +104,7 @@ class Notification {
             new Teams(),
             new TechulusPush(),
             new Telegram(),
+            new Twilio(),
             new Splunk(),
             new Webhook(),
             new WeCom(),
