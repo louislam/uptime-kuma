@@ -29,10 +29,9 @@ body:
   - type: textarea
     id: error-msg
     validations:
-      required: true
+      required: false
     attributes:
       label: "📝 Error Message(s) or Log"
-      placeholder: ""
   - type: input
     id: uptime-kuma-version
     attributes:
