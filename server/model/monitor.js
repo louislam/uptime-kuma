@@ -1245,7 +1245,7 @@ class Monitor extends BeanModel {
 
         if (notificationList.length > 0) {
 
-            let row = await R.getRow("SELECT * FROM notification_sent_history WHERE type = ? AND monitor_id = ? AND days = ?", [
+            let row = await R.getRow("SELECT * FROM notification_sent_history WHERE type = ? AND monitor_id = ? AND days <= ?", [
                 "certificate",
                 this.id,
                 targetDays,
