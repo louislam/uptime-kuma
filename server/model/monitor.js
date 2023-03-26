@@ -637,9 +637,7 @@ class Monitor extends BeanModel {
                 } else if (this.type === "mysql") {
                     let startTime = dayjs().valueOf();
 
-                    await mysqlQuery(this.databaseConnectionString, this.databaseQuery);
-
-                    bean.msg = "";
+                    bean.msg = await mysqlQuery(this.databaseConnectionString, this.databaseQuery);
                     bean.status = UP;
                     bean.ping = dayjs().valueOf() - startTime;
                 } else if (this.type === "mongodb") {
@@ -1247,7 +1245,7 @@ class Monitor extends BeanModel {
 
         if (notificationList.length > 0) {
 
-            let row = await R.getRow("SELECT * FROM notification_sent_history WHERE type = ? AND monitor_id = ? AND days = ?", [
+            let row = await R.getRow("SELECT * FROM notification_sent_history WHERE type = ? AND monitor_id = ? AND days <= ?", [
                 "certificate",
                 this.id,
                 targetDays,

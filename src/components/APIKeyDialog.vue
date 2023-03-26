@@ -159,6 +159,16 @@ export default {
                 }
             });
         },
+
+        /** Clear Form inputs */
+        clearForm() {
+            this.key = {
+                name: "",
+                expires: this.minDate,
+                active: 1,
+            };
+            this.noExpire = false;
+        },
     }
 };
 </script>

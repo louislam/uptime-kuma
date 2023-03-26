@@ -174,6 +174,7 @@
     "Avg. Response": "Avg. Response",
     "Entry Page": "Entry Page",
     "statusPageNothing": "Nothing here, please add a group or a monitor.",
+    "statusPageRefreshIn": "Refresh in: {0}",
     "No Services": "No Services",
     "All Systems Operational": "All Systems Operational",
     "Partially Degraded Service": "Partially Degraded Service",
@@ -708,5 +709,9 @@
     "lunaseaDeviceID": "Device ID",
     "lunaseaUserID": "User ID",
     "AuthenticationMethod": "Authentication Method",
-    "UsernameAndPassword": "Username and Password"
+    "UsernameAndPassword": "Username and Password",
+    "twilioAccountSID": "Account SID",
+    "twilioAuthToken": "Auth Token",
+    "twilioFromNumber": "From Number",
+    "twilioToNumber": "To Number"
 }
