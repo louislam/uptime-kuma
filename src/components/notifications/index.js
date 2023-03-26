@@ -21,6 +21,7 @@ import Mattermost from "./Mattermost.vue";
 import Ntfy from "./Ntfy.vue";
 import Octopush from "./Octopush.vue";
 import OneBot from "./OneBot.vue";
+import Opsgenie from "./Opsgenie.vue";
 import PagerDuty from "./PagerDuty.vue";
 import PagerTree from "./PagerTree.vue";
 import PromoSMS from "./PromoSMS.vue";
@@ -76,6 +77,7 @@ const NotificationFormList = {
     "ntfy": Ntfy,
     "octopush": Octopush,
     "OneBot": OneBot,
+    "Opsgenie": Opsgenie,
     "PagerDuty": PagerDuty,
     "PagerTree": PagerTree,
     "promosms": PromoSMS,
