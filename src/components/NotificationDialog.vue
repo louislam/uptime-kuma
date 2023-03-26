@@ -144,6 +144,7 @@ export default {
                 "stackfield": "Stackfield",
                 "teams": "Microsoft Teams",
                 "telegram": "Telegram",
+                "twilio": "Twilio",
                 "Splunk": "Splunk",
                 "webhook": "Webhook",
                 "GoAlert": "GoAlert",
