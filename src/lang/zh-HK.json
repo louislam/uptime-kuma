@@ -228,7 +228,7 @@
     "smtpCC": "CC",
     "smtpBCC": "BCC",
     "Discord Webhook URL": "Discord Webhook 網址",
-    "wayToGetDiscordURL": "您可以前往伺服器設定 -> 整合 -> Webhook -> 新 Webhook 以取得",
+    "wayToGetDiscordURL": "您可以前往 伺服器設定 -> 整合 -> Webhook -> 新 Webhook 以取得",
     "Bot Display Name": "機器人顯示名稱",
     "Prefix Custom Message": "前綴自訂訊息",
     "Webhook URL": "Webhook 網址",
@@ -706,5 +706,8 @@
     "Add New Tag": "加新標籤",
     "Economy": "經濟",
     "Lowcost": "平價",
-    "high": "高價"
+    "high": "高價",
+    "statusPageRefreshIn": "將於 {0} 後重新整理",
+    "SendKey": "SendKey",
+    "SMSManager API Docs": "SMSManager API 文件 "
 }
