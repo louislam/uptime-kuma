@@ -747,5 +747,6 @@
     "Proto Service Name": "название службы Proto",
     "Proto Method": "Метод Proto",
     "Proto Content": "Содержание Proto",
-    "telegramMessageThreadID": "(Необязательно) ID цепочки сообщений"
+    "telegramMessageThreadID": "(Необязательно) ID цепочки сообщений",
+    "statusPageRefreshIn": "Обновлять каждые: {0}"
 }
