@@ -707,5 +707,9 @@
     "wayToGetPagerTreeIntegrationURL": "After creating the Uptime Kuma integration in PagerTree, copy the Endpoint. See full details {0}",
     "lunaseaTarget": "Target",
     "lunaseaDeviceID": "Device ID",
-    "lunaseaUserID": "User ID"
+    "lunaseaUserID": "User ID",
+    "twilioAccountSID": "Account SID",
+    "twilioAuthToken": "Auth Token",
+    "twilioFromNumber": "From Number",
+    "twilioToNumber": "To Number"
 }
