@@ -746,5 +746,6 @@
     "grpcMethodDescription": "Название метода - преобразовать в формат cammelCase, такой как sayHello, check и т.д.",
     "Proto Service Name": "название службы Proto",
     "Proto Method": "Метод Proto",
-    "Proto Content": "Содержание Proto"
+    "Proto Content": "Содержание Proto",
+    "telegramMessageThreadID": "(Необязательно) ID цепочки сообщений"
 }
