@@ -738,5 +738,6 @@
     "Add New Tag": "Přidat nový štítek",
     "lunaseaTarget": "Cíl",
     "lunaseaDeviceID": "ID zařízení",
-    "lunaseaUserID": "ID uživatele"
+    "lunaseaUserID": "ID uživatele",
+    "statusPageRefreshIn": "Obnovení za: {0}"
 }
