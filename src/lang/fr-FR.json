@@ -738,5 +738,10 @@
     "lunaseaDeviceID": "Identifiant de l'appareil",
     "lunaseaUserID": "Identifiant de l'utilisateur",
     "Add New Tag": "Ajouter une étiquette",
-    "lunaseaTarget": "Cible"
+    "lunaseaTarget": "Cible",
+    "statusPageRefreshIn": "Actualisation dans : {0}",
+    "twilioFromNumber": "Du Nombre",
+    "twilioToNumber": "Au Nombre",
+    "twilioAccountSID": "ID du compte",
+    "twilioAuthToken": "Jeton d'authentification"
 }
