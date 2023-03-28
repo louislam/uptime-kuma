@@ -719,5 +719,10 @@
     "notificationRegional": "지역별",
     "Google Analytics ID": "Google Analytics ID",
     "Add API Key": "API 키 추가",
-    "apiKeyAddedMsg": "API 키가 추가되었습니다. 다시 표시되지 않을 것이므로 메모해 두세요."
+    "apiKeyAddedMsg": "API 키가 추가되었습니다. 다시 표시되지 않을 것이므로 메모해 두세요.",
+    "pagertreeCritical": "치명적인",
+    "apiKey-active": "사용 가능",
+    "lunaseaUserID": "사용자 ID",
+    "apiKey-expired": "만료됨",
+    "Expires": "만료일"
 }
