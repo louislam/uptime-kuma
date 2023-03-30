@@ -10,5 +10,5 @@ services:
     volumes:
       - ./uptime-kuma-data:/app/data
     ports:
-      - 3001:3001  # <Host Port>:<Container Port>
+      - 127.0.0.1:3001:3001  # <Host Port>:<Container Port>
     restart: always
