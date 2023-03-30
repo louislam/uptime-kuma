@@ -85,14 +85,13 @@
 
                             <h2 class="mt-5">{{ $t("Date and Time") }}</h2>
 
-                            <div>⚠️ {{ $t("warningTimezone") }}: <mark>{{ $root.info.serverTimezone }} ({{ $root.info.serverTimezoneOffset }})</mark></div>
-
                             <!-- Strategy -->
                             <div class="my-3">
                                 <label for="strategy" class="form-label">{{ $t("Strategy") }}</label>
                                 <select id="strategy" v-model="maintenance.strategy" class="form-select">
                                     <option value="manual">{{ $t("strategyManual") }}</option>
                                     <option value="single">{{ $t("Single Maintenance Window") }}</option>
+                                    <option value="cron">{{ $t("cronExpression") }}</option>
                                     <option value="recurring-interval">{{ $t("Recurring") }} - {{ $t("recurringInterval") }}</option>
                                     <option value="recurring-weekday">{{ $t("Recurring") }} - {{ $t("dayOfWeek") }}</option>
                                     <option value="recurring-day-of-month">{{ $t("Recurring") }} - {{ $t("dayOfMonth") }}</option>
@@ -102,19 +101,6 @@
 
                             <!-- Single Maintenance Window -->
                             <template v-if="maintenance.strategy === 'single'">
-                                <!-- DateTime Range -->
-                                <div class="my-3">
-                                    <label class="form-label">{{ $t("DateTime Range") }}</label>
-                                    <Datepicker
-                                        v-model="maintenance.dateRange"
-                                        :dark="$root.isDark"
-                                        range
-                                        :monthChangeOnScroll="false"
-                                        :minDate="minDate"
-                                        format="yyyy-MM-dd HH:mm"
-                                        modelType="yyyy-MM-dd HH:mm:ss"
-                                    />
-                                </div>
                             </template>
 
                             <!-- Recurring - Interval -->
@@ -180,7 +166,6 @@
                                 </div>
                             </template>
 
-                            <!-- For any recurring types -->
                             <template v-if="maintenance.strategy === 'recurring-interval' || maintenance.strategy === 'recurring-weekday' || maintenance.strategy === 'recurring-day-of-month'">
                                 <!-- Maintenance Time Window of a Day -->
                                 <div class="my-3">
@@ -192,20 +177,56 @@
                                         disableTimeRangeValidation range
                                     />
                                 </div>
+                            </template>
+
+                            <template v-if="maintenance.strategy === 'recurring-interval' || maintenance.strategy === 'recurring-weekday' || maintenance.strategy === 'recurring-day-of-month' || maintenance.strategy === 'cron' || maintenance.strategy === 'single'">
+                                <!-- Timezone -->
+                                <div class="mb-4">
+                                    <label for="timezone" class="form-label">
+                                        {{ $t("Timezone") }}
+                                    </label>
+                                    <select id="timezone" v-model="maintenance.timezone" class="form-select">
+                                        <option :value="null">{{ $t("sameAsServerTimezone") }}</option>
+                                        <option value="UTC">UTC</option>
+                                        <option
+                                            v-for="(timezone, index) in timezoneList"
+                                            :key="index"
+                                            :value="timezone.value"
+                                        >
+                                            {{ timezone.name }}
+                                        </option>
+                                    </select>
+                                </div>
 
                                 <!-- Date Range -->
                                 <div class="my-3">
                                     <label class="form-label">{{ $t("Effective Date Range") }}</label>
-                                    <Datepicker
-                                        v-model="maintenance.dateRange"
-                                        :dark="$root.isDark"
-                                        range datePicker
-                                        :monthChangeOnScroll="false"
-                                        :minDate="minDate"
-                                        format="yyyy-MM-dd HH:mm:ss"
-                                        modelType="yyyy-MM-dd HH:mm:ss"
-                                        required
-                                    />
+
+                                    <div class="row">
+                                        <div class="col">
+                                            <div class="mb-2">{{ $t("startDateTime") }}</div>
+                                            <Datepicker
+                                                v-model="maintenance.dateRange[0]"
+                                                :dark="$root.isDark"
+                                                datePicker
+                                                :monthChangeOnScroll="false"
+                                                format="yyyy-MM-dd HH:mm:ss"
+                                                modelType="yyyy-MM-dd HH:mm:ss"
+                                            />
+                                        </div>
+
+                                        <div class="col">
+                                            <div class="mb-2">{{ $t("endDateTime") }}</div>
+                                            <Datepicker
+                                                v-model="maintenance.dateRange[1]"
+                                                :dark="$root.isDark"
+                                                datePicker
+                                                :monthChangeOnScroll="false"
+                                                format="yyyy-MM-dd HH:mm:ss"
+                                                modelType="yyyy-MM-dd HH:mm:ss"
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
                             </template>
 
@@ -231,6 +252,7 @@ import { useToast } from "vue-toastification";
 import VueMultiselect from "vue-multiselect";
 import dayjs from "dayjs";
 import Datepicker from "@vuepic/vue-datepicker";
+import { timezoneList } from "../util-frontend";
 
 const toast = useToast();
 
@@ -242,6 +264,7 @@ export default {
 
     data() {
         return {
+            timezoneList: timezoneList(),
             processing: false,
             maintenance: {},
             affectedMonitors: [],
@@ -381,6 +404,7 @@ export default {
                     }],
                     weekdays: [],
                     daysOfMonth: [],
+                    timezone: null,
                 };
             } else if (this.isEdit) {
                 this.$root.getSocket().emit("getMaintenance", this.$route.params.id, (res) => {

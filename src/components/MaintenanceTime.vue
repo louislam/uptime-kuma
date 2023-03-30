@@ -4,10 +4,10 @@
             {{ $t("Manual") }}
         </div>
         <div v-else-if="maintenance.timeslotList.length > 0" class="timeslot">
-            {{ maintenance.timeslotList[0].startDateServerTimezone }}
+            {{ maintenance.timeslotList[0].startDate }}
             <span class="to">-</span>
-            {{ maintenance.timeslotList[0].endDateServerTimezone }}
-            (UTC{{ maintenance.timeslotList[0].serverTimezoneOffset }})
+            {{ maintenance.timeslotList[0].endDate }}
+            (UTC{{ maintenance.timezoneOffset }})
         </div>
     </div>
 </template>
