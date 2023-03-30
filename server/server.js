@@ -1253,13 +1253,29 @@ let needSetup = false;
                         let monitor = server.monitorList[id];
                         await monitor.stop();
                     }
-                    await R.exec("DELETE FROM heartbeat");
                     await R.exec("DELETE FROM monitor_notification");
                     await R.exec("DELETE FROM monitor_tls_info");
                     await R.exec("DELETE FROM notification");
                     await R.exec("DELETE FROM monitor_tag");
                     await R.exec("DELETE FROM tag");
-                    await R.exec("DELETE FROM monitor");
+                    // for keep heartbeat record.
+                    // now keep monitors which in import backup list.(just for keep heartbeat records, because heartbeat table ddl set `ON DELETE CASCADE` )
+                    let monitorsIdList = await R.getAll("SELECT id FROM monitor");
+                    monitorsIdList = monitorsIdList.map((item) => {
+                        return item.id;
+                    });
+                    log.info("manage", "Import Backup with 'overwrite mode. now remove the monitors which is not in backup json'");
+                    // filter monitors which is not in backup monitorList
+                    for (let i = 0; i < monitorListData.length; i++) {
+                        let backupMonitorId = monitorListData[i].id;
+                        let idx = monitorsIdList.indexOf(backupMonitorId);
+                        if (idx > -1) {
+                            monitorsIdList.splice(idx, 1);
+                        }
+                    }
+                    // del expired monitors record (heartbeat records will delete on the same time)
+                    await R.exec(`DELETE FROM monitor where id in (${Array(monitorsIdList.length).fill("?").join(",")})`, monitorsIdList);
+                    log.info("manage", `Deleted monitors Id list: ${JSON.stringify(monitorsIdList)}`);
                     await R.exec("DELETE FROM proxy");
                 }
 
@@ -1274,7 +1290,19 @@ let needSetup = false;
                         if ((importHandle === "skip" && notificationNameListString.includes(notificationListData[i].name) === false) || importHandle === "keep" || importHandle === "overwrite") {
 
                             let notification = JSON.parse(notificationListData[i].config);
-                            await Notification.save(notification, null, socket.userID);
+                            if (importHandle === "overwrite") {
+                                // keep the notification id when the import ioption is "overwrite"
+                                await R.exec("INSERT INTO notification (id, name, config, active, user_id, is_default) VALUES (?, ?, ?, ?, ?, ?)", [
+                                    notificationListData[i].id,
+                                    notificationListData[i].name,
+                                    notificationListData[i].config,
+                                    notificationListData[i].active,
+                                    notificationListData[i].userId,
+                                    notificationListData[i].isDefault
+                                ]);
+                            } else {
+                                await Notification.save(notification, null, socket.userID);
+                            }
 
                         }
                     }
@@ -1351,7 +1379,7 @@ let needSetup = false;
                                 accepted_statuscodes: monitorListData[i].accepted_statuscodes,
                                 dns_resolve_type: monitorListData[i].dns_resolve_type,
                                 dns_resolve_server: monitorListData[i].dns_resolve_server,
-                                notificationIDList: {},
+                                notificationIDList: monitorListData[i].notificationIDList,
                                 proxy_id: monitorListData[i].proxy_id || null,
                             };
 
@@ -1370,6 +1398,21 @@ let needSetup = false;
                             bean.import(monitor);
                             bean.user_id = socket.userID;
                             await R.store(bean);
+                            // b.t.w. It's not work when bean set id with redbean-node's method 'store()'
+                            // what's the param 'changedFieldsOnly' means?
+
+                            // relink monitors heartbeat records
+                            await R.exec("UPDATE `heartbeat` SET monitor_id = ? WHERE monitor_id = ? ", [
+                                bean.id,
+                                monitorListData[i].id
+                            ]);
+                            // delete old same monitor item with expired id
+                            await R.exec("DELETE FROM monitor where id= ? ", monitorListData[i].id);
+                            // reset new stor monitor's id to import backup item's id
+                            await R.exec("UPDATE `monitor` SET id = ? WHERE id = ? ", [
+                                monitorListData[i].id,
+                                bean.id
+                            ]);
 
                             // Only for backup files with the version 1.7.0 or higher, since there was the tag feature implemented
                             if (version17x) {
@@ -1398,20 +1441,20 @@ let needSetup = false;
                                     // Assign the new created tag to the monitor
                                     await R.exec("INSERT INTO monitor_tag (tag_id, monitor_id, value) VALUES (?, ?, ?)", [
                                         tagId,
-                                        bean.id,
+                                        monitorListData[i].id,
                                         oldTag.value,
                                     ]);
 
                                 }
                             }
 
-                            await updateMonitorNotification(bean.id, notificationIDList);
+                            await updateMonitorNotification(monitorListData[i].id, notificationIDList);
 
                             // If monitor was active start it immediately, otherwise pause it
                             if (monitorListData[i].active === 1) {
-                                await startMonitor(socket.userID, bean.id);
+                                await startMonitor(socket.userID, monitorListData[i].id);
                             } else {
-                                await pauseMonitor(socket.userID, bean.id);
+                                await pauseMonitor(socket.userID, monitorListData[i].id);
                             }
 
                         }
