@@ -433,7 +433,7 @@
     "dnsCacheDescription": "It may be not working in some IPv6 environments, disable it if you encounter any issues.",
     "Single Maintenance Window": "Single Maintenance Window",
     "Maintenance Time Window of a Day": "Maintenance Time Window of a Day",
-    "Effective Date Range": "Effective Date Range",
+    "Effective Date Range": "Effective Date Range (Optional)",
     "Schedule Maintenance": "Schedule Maintenance",
     "Date and Time": "Date and Time",
     "DateTime Range": "DateTime Range",

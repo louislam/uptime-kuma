@@ -147,6 +147,7 @@
         "chartjs-adapter-dayjs": "~1.0.0",
         "concurrently": "^7.1.0",
         "core-js": "~3.26.1",
+        "cronstrue": "~2.24.0",
         "cross-env": "~7.0.3",
         "cypress": "^10.1.0",
         "delay": "^5.0.0",

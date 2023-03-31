@@ -23,7 +23,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
             let maintenanceID = await R.store(bean);
 
             server.maintenanceList[maintenanceID] = bean;
-            bean.run();
+            await bean.run(true);
 
             await server.sendMaintenanceList(socket);
 
@@ -54,7 +54,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
 
             await Maintenance.jsonToBean(bean, maintenance);
             await R.store(bean);
-            await bean.run();
+            await bean.run(true);
             await server.sendMaintenanceList(socket);
 
             callback({
@@ -274,7 +274,6 @@ module.exports.maintenanceSocketHandler = (socket) => {
             }
 
             maintenance.active = false;
-            maintenance.setStatus("inactive");
             await R.store(maintenance);
             maintenance.stop();
 

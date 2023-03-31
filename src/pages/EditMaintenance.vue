@@ -95,12 +95,30 @@
                                     <option value="recurring-interval">{{ $t("Recurring") }} - {{ $t("recurringInterval") }}</option>
                                     <option value="recurring-weekday">{{ $t("Recurring") }} - {{ $t("dayOfWeek") }}</option>
                                     <option value="recurring-day-of-month">{{ $t("Recurring") }} - {{ $t("dayOfMonth") }}</option>
-                                    <option v-if="false" value="recurring-day-of-year">{{ $t("Recurring") }} - Day of Year</option>
                                 </select>
                             </div>
 
                             <!-- Single Maintenance Window -->
                             <template v-if="maintenance.strategy === 'single'">
+                            </template>
+
+                            <template v-if="maintenance.strategy === 'cron'">
+                                <!-- Cron -->
+                                <div class="my-3">
+                                    <label for="cron" class="form-label">
+                                        {{ $t("cronExpression") }}
+                                    </label>
+                                    <p>Run: {{ cronDescription }}</p>
+                                    <input id="cron" v-model="maintenance.cron" type="text" class="form-control" required>
+                                </div>
+
+                                <div class="my-3">
+                                    <!-- Duration -->
+                                    <label for="duration" class="form-label">
+                                        {{ $t("Duration (Minutes)") }}
+                                    </label>
+                                    <input id="duration" v-model="maintenance.durationMinutes" type="number" class="form-control" required min="1" step="1">
+                                </div>
                             </template>
 
                             <!-- Recurring - Interval -->
@@ -205,26 +223,12 @@
                                     <div class="row">
                                         <div class="col">
                                             <div class="mb-2">{{ $t("startDateTime") }}</div>
-                                            <Datepicker
-                                                v-model="maintenance.dateRange[0]"
-                                                :dark="$root.isDark"
-                                                datePicker
-                                                :monthChangeOnScroll="false"
-                                                format="yyyy-MM-dd HH:mm:ss"
-                                                modelType="yyyy-MM-dd HH:mm:ss"
-                                            />
+                                            <input v-model="maintenance.dateRange[0]" type="datetime-local" class="form-control">
                                         </div>
 
                                         <div class="col">
                                             <div class="mb-2">{{ $t("endDateTime") }}</div>
-                                            <Datepicker
-                                                v-model="maintenance.dateRange[1]"
-                                                :dark="$root.isDark"
-                                                datePicker
-                                                :monthChangeOnScroll="false"
-                                                format="yyyy-MM-dd HH:mm:ss"
-                                                modelType="yyyy-MM-dd HH:mm:ss"
-                                            />
+                                            <input v-model="maintenance.dateRange[1]" type="datetime-local" class="form-control">
                                         </div>
                                     </div>
                                 </div>
@@ -247,12 +251,12 @@
 </template>
 
 <script>
-
 import { useToast } from "vue-toastification";
 import VueMultiselect from "vue-multiselect";
 import dayjs from "dayjs";
 import Datepicker from "@vuepic/vue-datepicker";
 import { timezoneList } from "../util-frontend";
+import cronstrue from "cronstrue";
 
 const toast = useToast();
 
@@ -279,18 +283,6 @@ export default {
                     langKey: "lastDay1",
                     value: "lastDay1",
                 },
-                {
-                    langKey: "lastDay2",
-                    value: "lastDay2",
-                },
-                {
-                    langKey: "lastDay3",
-                    value: "lastDay3",
-                },
-                {
-                    langKey: "lastDay4",
-                    value: "lastDay4",
-                }
             ],
             weekdays: [
                 {
@@ -333,6 +325,15 @@ export default {
     },
 
     computed: {
+
+        cronDescription() {
+            if (! this.maintenance.cron) {
+                return "";
+            }
+            return cronstrue.toString(this.maintenance.cron, {
+                locale: "zh-TW",
+            });
+        },
 
         selectedStatusPagesOptions() {
             return Object.values(this.$root.statusPageList).map(statusPage => {
@@ -393,6 +394,8 @@ export default {
                     description: "",
                     strategy: "single",
                     active: 1,
+                    cron: "30 3 * * *",
+                    durationMinutes: 60,
                     intervalDay: 1,
                     dateRange: [ this.minDate ],
                     timeRange: [{
