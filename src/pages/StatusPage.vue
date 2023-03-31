@@ -923,7 +923,11 @@ export default {
          * @returns {string} Sanitized HTML
          */
         maintenanceHTML(description) {
-            return DOMPurify.sanitize(marked(description));
+            if (description) {
+                return DOMPurify.sanitize(marked(description));
+            } else {
+                return "";
+            }
         },
 
     }
