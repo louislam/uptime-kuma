@@ -738,5 +738,6 @@
     "lunaseaTarget": "Hedef",
     "Add New Tag": "Yeni Etiket Ekle",
     "lunaseaDeviceID": "Cihaz ID",
-    "lunaseaUserID": "Kullanıcı ID"
+    "lunaseaUserID": "Kullanıcı ID",
+    "statusPageRefreshIn": "{0} içinde yenilenecek"
 }
