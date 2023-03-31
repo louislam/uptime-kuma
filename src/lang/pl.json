@@ -727,5 +727,21 @@
     "Key Added": "Klucz dodany",
     "pagertreeDoNothing": "Nie rób nic",
     "wayToGetPagerTreeIntegrationURL": "Po utworzeniu integracji Uptime Kuma w PagerTree, należy skopiować Endpoint. Zobacz pełne szczegóły {0}",
-    "notificationRegional": "Regionalne"
+    "notificationRegional": "Regionalne",
+    "twilioFromNumber": "Z numeru",
+    "twilioToNumber": "Do numeru",
+    "lunaseaTarget": "Cel",
+    "twilioAccountSID": "SID konta",
+    "twilioAuthToken": "Token autoryzacyjny",
+    "apiKeyAddedMsg": "Twój klucz API został dodany. Prosimy o zanotowanie go, ponieważ nie będzie on już więcej pokazywany.",
+    "telegramMessageThreadID": "(Opcjonalne) ID wątku wiadomości",
+    "telegramMessageThreadIDDescription": "Opcjonalny Unikalny identyfikator dla docelowego wątku wiadomości (tematu) forum; tylko dla supergrup forum",
+    "telegramProtectContent": "Ochrona przekazywania/zapisywania",
+    "telegramProtectContentDescription": "Jeśli włączona, wiadomości bota w Telegramie będą chronione przed przekazywaniem i zapisywaniem.",
+    "telegramSendSilently": "Wyślij po cichu",
+    "telegramSendSilentlyDescription": "Wysyła wiadomość po cichu. Użytkownicy otrzymają powiadomienie bez dźwięku.",
+    "statusPageRefreshIn": "Odświeżenie w ciągu: {0}",
+    "lunaseaDeviceID": "ID urządzenia",
+    "lunaseaUserID": "ID użytkownika",
+    "Add New Tag": "Dodaj nowy tag"
 }
