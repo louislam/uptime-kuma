@@ -74,6 +74,7 @@ class Database {
         "patch-add-description-monitor.sql": true,
         "patch-api-key-table.sql": true,
         "patch-monitor-tls.sql": true,
+        "patch-maintenance-cron.sql": true,
     };
 
     /**
