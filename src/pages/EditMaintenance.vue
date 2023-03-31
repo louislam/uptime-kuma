@@ -3,7 +3,7 @@
         <div>
             <h1 class="mb-3">{{ pageName }}</h1>
             <form @submit.prevent="submit">
-                <div class="shadow-box">
+                <div class="shadow-box shadow-box-with-fixed-bottom-bar">
                     <div class="row">
                         <div class="col-xl-10">
                             <!-- Title -->
@@ -108,7 +108,7 @@
                                     <label for="cron" class="form-label">
                                         {{ $t("cronExpression") }}
                                     </label>
-                                    <p>Run: {{ cronDescription }}</p>
+                                    <p>{{ $t("cronSchedule") }}{{ cronDescription }}</p>
                                     <input id="cron" v-model="maintenance.cron" type="text" class="form-control" required>
                                 </div>
 
@@ -233,16 +233,11 @@
                                     </div>
                                 </div>
                             </template>
-
-                            <div class="mt-4 mb-1">
-                                <button
-                                    id="monitor-submit-btn" class="btn btn-primary" type="submit"
-                                    :disabled="processing"
-                                >
-                                    {{ $t("Save") }}
-                                </button>
-                            </div>
                         </div>
+                    </div>
+
+                    <div class="fixed-bottom-bar p-3">
+                        <button id="monitor-submit-btn" class="btn btn-primary" type="submit" :disabled="processing">{{ $t("Save") }}</button>
                     </div>
                 </div>
             </form>
@@ -256,7 +251,7 @@ import VueMultiselect from "vue-multiselect";
 import dayjs from "dayjs";
 import Datepicker from "@vuepic/vue-datepicker";
 import { timezoneList } from "../util-frontend";
-import cronstrue from "cronstrue";
+import cronstrue from "cronstrue/i18n";
 
 const toast = useToast();
 
@@ -330,9 +325,28 @@ export default {
             if (! this.maintenance.cron) {
                 return "";
             }
-            return cronstrue.toString(this.maintenance.cron, {
-                locale: "zh-TW",
-            });
+
+            let locale = "";
+
+            if (this.$root.language) {
+                locale = this.$root.language.replace("-", "_");
+            }
+
+            // Special handling
+            // If locale is also not working in your language, you can map it here
+            // https://github.com/bradymholt/cRonstrue/tree/master/src/i18n/locales
+            if (locale === "zh_HK") {
+                locale = "zh_TW";
+            }
+
+            try {
+                return cronstrue.toString(this.maintenance.cron, {
+                    locale,
+                });
+            } catch (e) {
+                return this.$t("invalidCronExpression", e.message);
+            }
+
         },
 
         selectedStatusPagesOptions() {
@@ -528,10 +542,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.shadow-box {
-    padding: 20px;
-}
-
 textarea {
     min-height: 150px;
 }

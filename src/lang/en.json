@@ -398,6 +398,8 @@
     "startDateTime": "Start Date/Time",
     "endDateTime": "End Date/Time",
     "cronExpression": "Cron Expression",
+    "cronSchedule": "Schedule: ",
+    "invalidCronExpression": "Invalid Cron Expression: {0}",
     "recurringInterval": "Interval",
     "Recurring": "Recurring",
     "strategyManual": "Active/Inactive Manually",

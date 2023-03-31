@@ -10,7 +10,7 @@
                 {{ endDateTime }}
             </div>
             <div class="timeslot">
-                UTC{{ maintenance.timezoneOffset }} {{ maintenance.timezone }}
+                UTC{{ maintenance.timezoneOffset }} <span v-if="maintenance.timezone !== 'UTC'">{{ maintenance.timezone }}</span>
             </div>
         </div>
     </div>

@@ -3,7 +3,7 @@
         <div>
             <h1 class="mb-3">{{ pageName }}</h1>
             <form @submit.prevent="submit">
-                <div class="shadow-box">
+                <div class="shadow-box shadow-box-with-fixed-bottom-bar">
                     <div class="row">
                         <div class="col-md-6">
                             <h2 class="mb-2">{{ $t("General") }}</h2>
@@ -1102,31 +1102,7 @@ message HealthCheckResponse {
 <style lang="scss" scoped>
     @import "../assets/vars.scss";
 
-    $padding: 20px;
-
-    .shadow-box {
-        padding-top: $padding;
-        padding-bottom: 0;
-        padding-right: $padding;
-        padding-left: $padding;
-    }
-
     textarea {
         min-height: 200px;
-    }
-
-    .fixed-bottom-bar {
-        position: sticky;
-        bottom: 0;
-        margin-left: -$padding;
-        margin-right: -$padding;
-        z-index: 100;
-        background-color: rgba(white, 0.2);
-        backdrop-filter: blur(2px);
-        border-radius: 0 0 10px 10px;
-
-        .dark & {
-            background-color: rgba($dark-header-bg, 0.9);
-        }
     }
 </style>
