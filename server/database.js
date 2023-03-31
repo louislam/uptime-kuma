@@ -31,11 +31,6 @@ class Database {
     static patched = false;
 
     /**
-     * For Backup only
-     */
-    static backupPath = null;
-
-    /**
      * Add patch filename in key
      * Values:
      *      true: Add it regardless of order
@@ -356,8 +351,6 @@ class Database {
                     await this.patch2Recursion(parentSQLFilename, databasePatchedFiles);
                 }
             }
-
-            this.backup(dayjs().format("YYYYMMDDHHmmss"));
 
             log.info("db", sqlFilename + " is patching");
             this.patched = true;
