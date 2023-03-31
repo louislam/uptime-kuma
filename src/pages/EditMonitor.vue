@@ -907,7 +907,7 @@ message HealthCheckResponse {
                     interval: 60,
                     retryInterval: this.interval,
                     resendInterval: 0,
-                    maxretries: 0,
+                    maxretries: 1,
                     notificationIDList: {},
                     ignoreTls: false,
                     upsideDown: false,
