@@ -164,6 +164,7 @@ class Maintenance extends BeanModel {
         if (bean.strategy === "cron") {
             bean.duration = obj.durationMinutes * 60;
             bean.cron = obj.cron;
+            this.validateCron(bean.cron);
         }
 
         if (bean.strategy.startsWith("recurring-")) {
@@ -172,9 +173,19 @@ class Maintenance extends BeanModel {
             bean.weekdays = JSON.stringify(obj.weekdays);
             bean.days_of_month = JSON.stringify(obj.daysOfMonth);
             await bean.generateCron();
+            this.validateCron(bean.cron);
         }
-
         return bean;
+    }
+
+    /**
+     * Throw error if cron is invalid
+     * @param cron
+     * @returns {Promise<void>}
+     */
+    static async validateCron(cron) {
+        let job = new Cron(cron, () => {});
+        job.stop();
     }
 
     /**
