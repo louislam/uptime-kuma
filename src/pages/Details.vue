@@ -18,6 +18,21 @@
                     <br>
                     <span>{{ $t("Last Result") }}:</span> <span class="keyword">{{ monitor.dns_last_result }}</span>
                 </span>
+                <span v-if="monitor.type === 'docker'">Docker container: {{ monitor.docker_container }}</span>
+                <span v-if="monitor.type === 'gamedig'">Gamedig - {{ monitor.game }}: {{ monitor.hostname }}:{{ monitor.port }}</span>
+                <span v-if="monitor.type === 'grpc-keyword'">gRPC - {{ monitor.grpcUrl }}
+                    <br>
+                    <span>{{ $t("Keyword") }}:</span> <span class="keyword">{{ monitor.keyword }}</span>
+                </span>
+                <span v-if="monitor.type === 'mongodb'">{{ monitor.databaseConnectionString }}</span>
+                <span v-if="monitor.type === 'mqtt'">MQTT: {{ monitor.hostname }}:{{ monitor.port }}/{{ monitor.mqttTopic }}</span>
+                <span v-if="monitor.type === 'mysql'">{{ monitor.databaseConnectionString }}</span>
+                <span v-if="monitor.type === 'postgres'">{{ monitor.databaseConnectionString }}</span>
+                <span v-if="monitor.type === 'push'">Push: <a :href="pushURL" target="_blank" rel="noopener noreferrer">{{ pushURL }}</a></span>
+                <span v-if="monitor.type === 'radius'">Radius: {{ monitor.hostname }}</span>
+                <span v-if="monitor.type === 'redis'">{{ monitor.databaseConnectionString }}</span>
+                <span v-if="monitor.type === 'sqlserver'">SQL Server: {{ monitor.databaseConnectionString }}</span>
+                <span v-if="monitor.type === 'steam'">Steam Game Server: {{ monitor.hostname }}:{{ monitor.port }}</span>
             </p>
 
             <div class="functions">
@@ -289,6 +304,10 @@ export default {
             const startIndex = this.perPage * (this.page - 1);
             const endIndex = startIndex + this.perPage;
             return this.heartBeatList.slice(startIndex, endIndex);
+        },
+
+        pushURL() {
+            return this.$root.baseURL + "/api/push/" + this.monitor.pushToken + "?status=up&msg=OK&ping=";
         },
     },
     mounted() {
