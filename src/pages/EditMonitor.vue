@@ -98,7 +98,7 @@
                             <!-- gRPC URL -->
                             <div v-if="monitor.type === 'grpc-keyword' " class="my-3">
                                 <label for="grpc-url" class="form-label">{{ $t("URL") }}</label>
-                                <input id="grpc-url" v-model="monitor.grpcUrl" type="url" class="form-control" pattern="[^\:]+:[0-9]{5}" required>
+                                <input id="grpc-url" v-model="monitor.grpcUrl" type="url" class="form-control" required>
                             </div>
 
                             <!-- Push URL -->
