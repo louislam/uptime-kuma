@@ -601,8 +601,6 @@
     "For safety, must use secret key": "For safety, must use secret key",
     "Device Token": "Device Token",
     "Platform": "Platform",
-    "Android": "Android",
-    "Huawei": "Huawei",
     "High": "High",
     "Retry": "Retry",
     "Topic": "Topic",
