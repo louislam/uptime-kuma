@@ -8,7 +8,6 @@ const Maintenance = require("../model/maintenance");
 const { Proxy } = require("../proxy");
 const StatusPage = require("../model/status_page");
 const Incident = require("../model/incident");
-const MaintenanceTimeslot = require("../model/maintenance_timeslot");
 const apicache = require("../modules/apicache");
 const version = require("../../package.json").version;
 const dayjs = require("dayjs");
@@ -261,7 +260,6 @@ module.exports.backupSocketHandler = (socket, server) => {
                         }
                     }
 
-                    await MaintenanceTimeslot.generateTimeslot(bean, null, true);
                 }
 
                 await server.sendMaintenanceList(socket);
