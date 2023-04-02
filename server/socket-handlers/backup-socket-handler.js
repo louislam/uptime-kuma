@@ -315,7 +315,6 @@ module.exports.backupSocketHandler = (socket, server) => {
 
         } catch (e) {
             log.error("backup", e);
-            await R.exec("PRAGMA foreign_keys = on");
             callback({
                 ok: false,
                 msg: e.message,
