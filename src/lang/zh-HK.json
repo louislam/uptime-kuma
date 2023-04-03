@@ -549,7 +549,7 @@
     "confirmUninstallPlugin": "你確定要解除安裝？",
     "dataRetentionTimeError": "保留限期必需為 0 或正數",
     "infiniteRetention": "設定為 0 以作無限期保留。",
-    "Effective Date Range": "有效日期範圍",
+    "Effective Date Range": "有效日期範圍 (可選)",
     "Hello @everyone is...": "Hello {'@'}everyone is…",
     "Packet Size": "Packet 大小",
     "Event type:": "事件類型：",
@@ -709,5 +709,15 @@
     "high": "高價",
     "statusPageRefreshIn": "將於 {0} 後重新整理",
     "SendKey": "SendKey",
-    "SMSManager API Docs": "SMSManager API 文件 "
+    "SMSManager API Docs": "SMSManager API 文件 ",
+    "startDateTime": "開始時間",
+    "pagertreeLow": "低",
+    "endDateTime": "結束時間",
+    "cronExpression": "Cron 表達式",
+    "cronSchedule": "排程： ",
+    "invalidCronExpression": "無效 Cron 表達式：{0}",
+    "sameAsServerTimezone": "使用伺服器時區",
+    "WeCom Bot Key": "WeCom 機器人 Key",
+    "pagertreeMedium": "中",
+    "pagertreeHigh": "高"
 }
