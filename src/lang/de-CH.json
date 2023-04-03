@@ -645,7 +645,7 @@
     "Single Maintenance Window": "Einmaliges Wartungsfenster",
     "dnsCacheDescription": "In einigen IPv6-Umgebungen funktioniert es möglicherweise nicht. Deaktiviere es, wenn Probleme auftreten.",
     "Maintenance Time Window of a Day": "Wartungszeitfenster eines Tages",
-    "Effective Date Range": "Gültigkeitsbereich",
+    "Effective Date Range": "Gültigkeitsbereich (Optional)",
     "Schedule Maintenance": "Wartung planen",
     "Date and Time": "Datum und Uhrzeit",
     "DateTime Range": "Datums- und Zeitbereich",
@@ -740,5 +740,11 @@
     "twilioFromNumber": "Absender",
     "twilioToNumber": "Empfänger",
     "twilioAuthToken": "Auth Token",
-    "statusPageRefreshIn": "Aktualisierung in: {0}"
+    "statusPageRefreshIn": "Aktualisierung in: {0}",
+    "sameAsServerTimezone": "Gleiche Zeitzone wie Server",
+    "startDateTime": "Start Datum/Uhrzeit",
+    "endDateTime": "Ende Datum/Uhrzeit",
+    "cronExpression": "Cron-Ausdruck",
+    "cronSchedule": "Zeitplan: ",
+    "invalidCronExpression": "Ungültiger Cron-Ausdruck: {0}"
 }
