@@ -18,9 +18,12 @@ class Maintenance extends BeanModel {
         let dateRange = [];
         if (this.start_date) {
             dateRange.push(this.start_date);
-            if (this.end_date) {
-                dateRange.push(this.end_date);
-            }
+        } else {
+            dateRange.push(null);
+        }
+
+        if (this.end_date) {
+            dateRange.push(this.end_date);
         }
 
         let timeRange = [];
@@ -155,10 +158,14 @@ class Maintenance extends BeanModel {
 
         if (obj.dateRange[0]) {
             bean.start_date = obj.dateRange[0];
+        } else {
+            bean.start_date = null;
+        }
 
-            if (obj.dateRange[1]) {
-                bean.end_date = obj.dateRange[1];
-            }
+        if (obj.dateRange[1]) {
+            bean.end_date = obj.dateRange[1];
+        } else {
+            bean.end_date = null;
         }
 
         if (bean.strategy === "cron") {
