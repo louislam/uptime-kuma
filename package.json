@@ -1,6 +1,6 @@
 {
     "name": "uptime-kuma",
-    "version": "1.21.1",
+    "version": "1.21.2-beta.0",
     "license": "MIT",
     "repository": {
         "type": "git",
@@ -85,6 +85,7 @@
         "command-exists": "~1.2.9",
         "compare-versions": "~3.6.0",
         "compression": "~1.7.4",
+        "croner": "^6.0.3",
         "dayjs": "~1.11.5",
         "dotenv": "~16.0.3",
         "express": "~4.17.3",
@@ -146,6 +147,7 @@
         "chartjs-adapter-dayjs": "~1.0.0",
         "concurrently": "^7.1.0",
         "core-js": "~3.26.1",
+        "cronstrue": "~2.24.0",
         "cross-env": "~7.0.3",
         "cypress": "^10.1.0",
         "delay": "^5.0.0",

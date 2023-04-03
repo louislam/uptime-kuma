@@ -16,7 +16,6 @@ const apicache = require("../modules/apicache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { CacheableDnsHttpAgent } = require("../cacheable-dns-http-agent");
 const { DockerHost } = require("../docker");
-const Maintenance = require("./maintenance");
 const { UptimeCacheList } = require("../uptime-cache-list");
 const Gamedig = require("gamedig");
 
@@ -1303,18 +1302,19 @@ class Monitor extends BeanModel {
      * @returns {Promise<boolean>}
      */
     static async isUnderMaintenance(monitorID) {
-        let activeCondition = Maintenance.getActiveMaintenanceSQLCondition();
-        const maintenance = await R.getRow(`
-            SELECT COUNT(*) AS count
-            FROM monitor_maintenance mm
-            JOIN maintenance
-                ON mm.maintenance_id = maintenance.id
-                AND mm.monitor_id = ?
-            LEFT JOIN maintenance_timeslot
-                ON maintenance_timeslot.maintenance_id = maintenance.id
-            WHERE ${activeCondition}
-            LIMIT 1`, [ monitorID ]);
-        return maintenance.count !== 0;
+        const maintenanceIDList = await R.getCol(`
+            SELECT maintenance_id FROM monitor_maintenance
+            WHERE monitor_id = ?
+        `, [ monitorID ]);
+
+        for (const maintenanceID of maintenanceIDList) {
+            const maintenance = await UptimeKumaServer.getInstance().getMaintenance(maintenanceID);
+            if (maintenance && await maintenance.isUnderMaintenance()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /** Make sure monitor interval is between bounds */
