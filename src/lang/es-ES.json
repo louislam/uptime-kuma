@@ -687,7 +687,7 @@
     "Pick a RR-Type...": "Seleccione un Tipo RR",
     "onebotHttpAddress": "Dirección HTTP OneBot",
     "SendKey": "Clave de Envío",
-    "octopushAPIKey": "\"Key de API\" desde credenciales API HTTP en panel de control",
+    "octopushAPIKey": "\"Clave API\" desde credenciales API HTTP en panel de control",
     "octopushLogin": "\"Inicio de Sesión\" a partir de las credenciales API HTTP en el panel de control",
     "ntfy Topic": "Tema ntfy",
     "Google Analytics ID": "ID Analíticas de Google",
