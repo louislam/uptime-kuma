@@ -607,7 +607,7 @@
     "Recurring": "Wiederkehrend",
     "Single Maintenance Window": "Einmaliges Wartungsfenster",
     "Maintenance Time Window of a Day": "Zeitfenster für die Wartung",
-    "Effective Date Range": "Bereich der Wirksamkeitsdaten",
+    "Effective Date Range": "Bereich der Wirksamkeitsdaten (Optional)",
     "strategyManual": "Aktiv/Inaktiv Manuell",
     "warningTimezone": "Es wird die Zeitzone des Servers verwendet",
     "weekdayShortMon": "Mo",
@@ -745,5 +745,11 @@
     "twilioFromNumber": "Absender",
     "twilioToNumber": "Empfänger",
     "twilioAuthToken": "Auth Token",
-    "statusPageRefreshIn": "Aktualisierung in: {0}"
+    "statusPageRefreshIn": "Aktualisierung in: {0}",
+    "sameAsServerTimezone": "Gleiche Zeitzone wie Server",
+    "startDateTime": "Start Datum/Uhrzeit",
+    "endDateTime": "Ende Datum/Uhrzeit",
+    "cronExpression": "Cron-Ausdruck",
+    "cronSchedule": "Zeitplan: ",
+    "invalidCronExpression": "Ungültiger Cron-Ausdruck: {0}"
 }

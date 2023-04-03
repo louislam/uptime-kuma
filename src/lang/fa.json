@@ -346,7 +346,7 @@
     "Security": "امنیت",
     "light": "روشن",
     "Query": "کوئری",
-    "Effective Date Range": "محدوده تاریخ مورد تاثیر",
+    "Effective Date Range": "محدوده تاریخ مورد تاثیر (اختیاری)",
     "statusPageRefreshIn": "بارگذاری مجدد در هر:‌ {0}",
     "Content Type": "نوع محتوا (Content Type)",
     "Server URL": "آدرس سرور",
@@ -712,5 +712,11 @@
     "endpoint": "نقطه پایانی",
     "Status:": "وضعیت: {0}",
     "Strategy": "استراتژی",
-    "Icon Emoji": "ایموجی آیکون"
+    "Icon Emoji": "ایموجی آیکون",
+    "sameAsServerTimezone": "مشابه با منطقه زمانی سرور",
+    "startDateTime": "ساعت/روز شروع",
+    "endDateTime": "ساعت/روز پایان",
+    "cronSchedule": "برنامه زمانی: ",
+    "invalidCronExpression": "حالت کرون نامعتبر است: {0}",
+    "cronExpression": "حالت کرون"
 }
