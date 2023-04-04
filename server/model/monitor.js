@@ -16,7 +16,6 @@ const apicache = require("../modules/apicache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { CacheableDnsHttpAgent } = require("../cacheable-dns-http-agent");
 const { DockerHost } = require("../docker");
-const Maintenance = require("./maintenance");
 const { UptimeCacheList } = require("../uptime-cache-list");
 const Gamedig = require("gamedig");
 
@@ -133,6 +132,9 @@ class Monitor extends BeanModel {
                 mqttPassword: this.mqttPassword,
                 authWorkstation: this.authWorkstation,
                 authDomain: this.authDomain,
+                tlsCa: this.tlsCa,
+                tlsCert: this.tlsCert,
+                tlsKey: this.tlsKey,
             };
         }
 
@@ -329,6 +331,18 @@ class Monitor extends BeanModel {
 
                     if (!options.httpsAgent) {
                         options.httpsAgent = new https.Agent(httpsAgentOptions);
+                    }
+
+                    if (this.auth_method === "mtls") {
+                        if (this.tlsCert !== null && this.tlsCert !== "") {
+                            options.httpsAgent.options.cert = Buffer.from(this.tlsCert);
+                        }
+                        if (this.tlsCa !== null && this.tlsCa !== "") {
+                            options.httpsAgent.options.ca = Buffer.from(this.tlsCa);
+                        }
+                        if (this.tlsKey !== null && this.tlsKey !== "") {
+                            options.httpsAgent.options.key = Buffer.from(this.tlsKey);
+                        }
                     }
 
                     log.debug("monitor", `[${this.name}] Axios Options: ${JSON.stringify(options)}`);
@@ -622,9 +636,7 @@ class Monitor extends BeanModel {
                 } else if (this.type === "mysql") {
                     let startTime = dayjs().valueOf();
 
-                    await mysqlQuery(this.databaseConnectionString, this.databaseQuery);
-
-                    bean.msg = "";
+                    bean.msg = await mysqlQuery(this.databaseConnectionString, this.databaseQuery);
                     bean.status = UP;
                     bean.ping = dayjs().valueOf() - startTime;
                 } else if (this.type === "mongodb") {
@@ -836,7 +848,6 @@ class Monitor extends BeanModel {
                     domain: this.authDomain,
                     workstation: this.authWorkstation ? this.authWorkstation : undefined
                 });
-
             } else {
                 res = await axios.request(options);
             }
@@ -1233,7 +1244,7 @@ class Monitor extends BeanModel {
 
         if (notificationList.length > 0) {
 
-            let row = await R.getRow("SELECT * FROM notification_sent_history WHERE type = ? AND monitor_id = ? AND days = ?", [
+            let row = await R.getRow("SELECT * FROM notification_sent_history WHERE type = ? AND monitor_id = ? AND days <= ?", [
                 "certificate",
                 this.id,
                 targetDays,
@@ -1251,7 +1262,7 @@ class Monitor extends BeanModel {
             for (let notification of notificationList) {
                 try {
                     log.debug("monitor", "Sending to " + notification.name);
-                    await Notification.send(JSON.parse(notification.config), `[${this.name}][${this.url}] Certificate will be expired in ${daysRemaining} days`);
+                    await Notification.send(JSON.parse(notification.config), `[${this.name}][${this.url}] Certificate will expire in ${daysRemaining} days`);
                     sent = true;
                 } catch (e) {
                     log.error("monitor", "Cannot send cert notification to " + notification.name);
@@ -1291,18 +1302,19 @@ class Monitor extends BeanModel {
      * @returns {Promise<boolean>}
      */
     static async isUnderMaintenance(monitorID) {
-        let activeCondition = Maintenance.getActiveMaintenanceSQLCondition();
-        const maintenance = await R.getRow(`
-            SELECT COUNT(*) AS count
-            FROM monitor_maintenance mm
-            JOIN maintenance
-                ON mm.maintenance_id = maintenance.id
-                AND mm.monitor_id = ?
-            LEFT JOIN maintenance_timeslot
-                ON maintenance_timeslot.maintenance_id = maintenance.id
-            WHERE ${activeCondition}
-            LIMIT 1`, [ monitorID ]);
-        return maintenance.count !== 0;
+        const maintenanceIDList = await R.getCol(`
+            SELECT maintenance_id FROM monitor_maintenance
+            WHERE monitor_id = ?
+        `, [ monitorID ]);
+
+        for (const maintenanceID of maintenanceIDList) {
+            const maintenance = await UptimeKumaServer.getInstance().getMaintenance(maintenanceID);
+            if (maintenance && await maintenance.isUnderMaintenance()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /** Make sure monitor interval is between bounds */

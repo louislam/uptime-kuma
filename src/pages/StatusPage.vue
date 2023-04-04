@@ -34,9 +34,13 @@
                     </div>
                 </div>
 
-                <div class="my-3 form-check form-switch">
-                    <input id="switch-theme" v-model="config.theme" class="form-check-input" type="checkbox" true-value="dark" false-value="light">
-                    <label class="form-check-label" for="switch-theme">{{ $t("Switch to Dark Theme") }}</label>
+                <div class="my-3">
+                    <label for="switch-theme" class="form-label">{{ $t("Theme") }}</label>
+                    <select id="switch-theme" v-model="config.theme" class="form-select">
+                        <option value="auto">{{ $t("Auto") }}</option>
+                        <option value="light">{{ $t("Light") }}</option>
+                        <option value="dark">{{ $t("Dark") }}</option>
+                    </select>
                 </div>
 
                 <div class="my-3 form-check form-switch">
@@ -320,6 +324,11 @@
                 <p v-if="config.showPoweredBy">
                     {{ $t("Powered by") }} <a target="_blank" rel="noopener noreferrer" href="https://github.com/louislam/uptime-kuma">{{ $t("Uptime Kuma" ) }}</a>
                 </p>
+
+                <div class="refresh-info mb-2">
+                    <div>{{ $t("Last Updated") }}: <date-time :value="lastUpdateTime" /></div>
+                    <div>{{ $tc("statusPageRefreshIn", [ updateCountdownText]) }}</div>
+                </div>
             </footer>
         </div>
 
@@ -336,6 +345,7 @@
 <script>
 import axios from "axios";
 import dayjs from "dayjs";
+import duration from "dayjs/plugin/duration";
 import Favico from "favico.js";
 // import highlighting library (you can use any library you want just return html string)
 import { highlight, languages } from "prismjs/components/prism-core";
@@ -351,12 +361,14 @@ import DOMPurify from "dompurify";
 import Confirm from "../components/Confirm.vue";
 import PublicGroupList from "../components/PublicGroupList.vue";
 import MaintenanceTime from "../components/MaintenanceTime.vue";
+import DateTime from "../components/Datetime.vue";
 import { getResBaseURL } from "../util-frontend";
 import { STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_MAINTENANCE, STATUS_PAGE_PARTIAL_DOWN, UP, MAINTENANCE } from "../util.ts";
 import Tag from "../components/Tag.vue";
 import VueMultiselect from "vue-multiselect";
 
 const toast = useToast();
+dayjs.extend(duration);
 
 const leavePageMsg = "Do you really want to leave? you have unsaved changes!";
 
@@ -375,6 +387,7 @@ export default {
         Confirm,
         PrismEditor,
         MaintenanceTime,
+        DateTime,
         Tag,
         VueMultiselect
     },
@@ -418,6 +431,10 @@ export default {
             baseURL: "",
             clickedEditButton: false,
             maintenanceList: [],
+            autoRefreshInterval: 5,
+            lastUpdateTime: dayjs(),
+            updateCountdown: null,
+            updateCountdownText: null,
         };
     },
     computed: {
@@ -655,11 +672,13 @@ export default {
             console.log(error);
         });
 
-        // 5mins a loop
+        // Configure auto-refresh loop
         this.updateHeartbeatList();
         feedInterval = setInterval(() => {
             this.updateHeartbeatList();
-        }, (300 + 10) * 1000);
+        }, (this.autoRefreshInterval * 60 + 10) * 1000);
+
+        this.updateUpdateTimer();
 
         // Go to edit page if ?edit present
         // null means ?edit present, but no value
@@ -718,8 +737,27 @@ export default {
                     favicon.badge(downMonitors);
 
                     this.loadedData = true;
+                    this.lastUpdateTime = dayjs();
+                    this.updateUpdateTimer();
                 });
             }
+        },
+
+        /**
+         * Setup timer to display countdown to refresh
+         * @returns {void}
+         */
+        updateUpdateTimer() {
+            clearInterval(this.updateCountdown);
+
+            this.updateCountdown = setInterval(() => {
+                const countdown = dayjs.duration(this.lastUpdateTime.add(this.autoRefreshInterval, "minutes").add(10, "seconds").diff(dayjs()));
+                if (countdown.as("seconds") < 0) {
+                    clearInterval(this.updateCountdown);
+                } else {
+                    this.updateCountdownText = countdown.format("mm:ss");
+                }
+            }, 1000);
         },
 
         /** Enable editing mode */
@@ -907,7 +945,11 @@ export default {
          * @returns {string} Sanitized HTML
          */
         maintenanceHTML(description) {
-            return DOMPurify.sanitize(marked(description));
+            if (description) {
+                return DOMPurify.sanitize(marked(description));
+            } else {
+                return "";
+            }
         },
 
     }
@@ -1134,6 +1176,10 @@ footer {
     .alert-heading {
         font-weight: bold;
     }
+}
+
+.refresh-info {
+    opacity: 0.7;
 }
 
 </style>

@@ -18,6 +18,7 @@ import NotFound from "./pages/NotFound.vue";
 import DockerHosts from "./components/settings/Docker.vue";
 import MaintenanceDetails from "./pages/MaintenanceDetails.vue";
 import ManageMaintenance from "./pages/ManageMaintenance.vue";
+import APIKeys from "./components/settings/APIKeys.vue";
 import Plugins from "./components/settings/Plugins.vue";
 
 // Settings - Sub Pages
@@ -116,6 +117,10 @@ const routes = [
                             {
                                 path: "security",
                                 component: Security,
+                            },
+                            {
+                                path: "api-keys",
+                                component: APIKeys,
                             },
                             {
                                 path: "proxies",

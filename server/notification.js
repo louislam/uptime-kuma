@@ -23,7 +23,9 @@ const Mattermost = require("./notification-providers/mattermost");
 const Ntfy = require("./notification-providers/ntfy");
 const Octopush = require("./notification-providers/octopush");
 const OneBot = require("./notification-providers/onebot");
+const Opsgenie = require("./notification-providers/opsgenie");
 const PagerDuty = require("./notification-providers/pagerduty");
+const PagerTree = require("./notification-providers/pagertree");
 const PromoSMS = require("./notification-providers/promosms");
 const Pushbullet = require("./notification-providers/pushbullet");
 const PushDeer = require("./notification-providers/pushdeer");
@@ -40,6 +42,7 @@ const Stackfield = require("./notification-providers/stackfield");
 const Teams = require("./notification-providers/teams");
 const TechulusPush = require("./notification-providers/techulus-push");
 const Telegram = require("./notification-providers/telegram");
+const Twilio = require("./notification-providers/twilio");
 const Splunk = require("./notification-providers/splunk");
 const Webhook = require("./notification-providers/webhook");
 const WeCom = require("./notification-providers/wecom");
@@ -82,7 +85,9 @@ class Notification {
             new Ntfy(),
             new Octopush(),
             new OneBot(),
+            new Opsgenie(),
             new PagerDuty(),
+            new PagerTree(),
             new PromoSMS(),
             new Pushbullet(),
             new PushDeer(),
@@ -101,6 +106,7 @@ class Notification {
             new Teams(),
             new TechulusPush(),
             new Telegram(),
+            new Twilio(),
             new Splunk(),
             new Webhook(),
             new WeCom(),

@@ -276,7 +276,7 @@ module.exports.statusPageSocketHandler = (socket) => {
             let statusPage = R.dispense("status_page");
             statusPage.slug = slug;
             statusPage.title = title;
-            statusPage.theme = "light";
+            statusPage.theme = "auto";
             statusPage.icon = "";
             await R.store(statusPage);
 
