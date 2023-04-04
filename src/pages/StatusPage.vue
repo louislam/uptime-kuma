@@ -280,9 +280,24 @@
                 <div class="mt-3">
                     <div v-if="allMonitorList.length > 0 && loadedData">
                         <label>{{ $t("Add a monitor") }}:</label>
-                        <select v-model="selectedMonitor" class="form-control">
-                            <option v-for="monitor in allMonitorList" :key="monitor.id" :value="monitor">{{ monitor.name }}</option>
-                        </select>
+                        <VueMultiselect
+                            v-model="selectedMonitor"
+                            :options="allMonitorList"
+                            :multiple="false"
+                            :searchable="true"
+                            :placeholder="$t('Add a monitor')"
+                            label="name"
+                            trackBy="name"
+                            class="mt-3"
+                        >
+                            <template #option="{ option }">
+                                <div
+                                    class="d-inline-flex"
+                                >
+                                    <span>{{ option.name }} <Tag v-for="tag in option.tags" :key="tag" :item="tag" :size="'sm'" /></span>
+                                </div>
+                            </template>
+                        </VueMultiselect>
                     </div>
                     <div v-else class="text-center">
                         {{ $t("No monitors available.") }}  <router-link to="/add">{{ $t("Add one") }}</router-link>
@@ -350,6 +365,8 @@ import MaintenanceTime from "../components/MaintenanceTime.vue";
 import DateTime from "../components/Datetime.vue";
 import { getResBaseURL } from "../util-frontend";
 import { STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_MAINTENANCE, STATUS_PAGE_PARTIAL_DOWN, UP, MAINTENANCE } from "../util.ts";
+import Tag from "../components/Tag.vue";
+import VueMultiselect from "vue-multiselect";
 
 const toast = useToast();
 dayjs.extend(duration);
@@ -372,6 +389,8 @@ export default {
         PrismEditor,
         MaintenanceTime,
         DateTime,
+        Tag,
+        VueMultiselect
     },
 
     // Leave Page for vue route change
