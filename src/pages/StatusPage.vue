@@ -285,9 +285,10 @@
                             :options="allMonitorList"
                             :multiple="false"
                             :searchable="true"
-                            :placeholder="$t('Select')"
+                            :placeholder="$t('Add a monitor')"
                             label="name"
                             trackBy="name"
+                            class="mt-3"
                         >
                             <template #option="{ option }">
                                 <div
