@@ -89,9 +89,7 @@
                                     class="mt-1"
                                 >
                                     <template #option="{ option }">
-                                        <div
-                                            class="d-inline-flex"
-                                        >
+                                        <div class="d-inline-flex">
                                             <span>{{ option.name }} <Tag v-for="monitorTag in option.tags" :key="monitorTag" :item="monitorTag" :size="'sm'" /></span>
                                         </div>
                                     </template>
