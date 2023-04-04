@@ -34,9 +34,13 @@
                     </div>
                 </div>
 
-                <div class="my-3 form-check form-switch">
-                    <input id="switch-theme" v-model="config.theme" class="form-check-input" type="checkbox" true-value="dark" false-value="light">
-                    <label class="form-check-label" for="switch-theme">{{ $t("Switch to Dark Theme") }}</label>
+                <div class="my-3">
+                    <label for="switch-theme" class="form-label">{{ $t("Theme") }}</label>
+                    <select id="switch-theme" v-model="config.theme" class="form-select">
+                        <option value="auto">{{ $t("Auto") }}</option>
+                        <option value="light">{{ $t("Light") }}</option>
+                        <option value="dark">{{ $t("Dark") }}</option>
+                    </select>
                 </div>
 
                 <div class="my-3 form-check form-switch">
