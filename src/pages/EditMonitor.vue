@@ -283,13 +283,13 @@
                                     <label for="sqlConnectionString" class="form-label">{{ $t("Connection String") }}</label>
 
                                     <template v-if="monitor.type === 'sqlserver'">
-                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="Server=<hostname>,<port>;Database=<your database>;User Id=<your user id>;Password=<your password>;Encrypt=<true/false>;TrustServerCertificate=<Yes/No>;Connection Timeout=<int>">
+                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control">
                                     </template>
                                     <template v-if="monitor.type === 'postgres'">
-                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="postgres://username:password@host:port/database">
+                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control">
                                     </template>
                                     <template v-if="monitor.type === 'mysql'">
-                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="mysql://username:password@host:port/database">
+                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control">
                                     </template>
                                 </div>
                                 <div class="my-3">
@@ -301,7 +301,7 @@
                             <template v-if="monitor.type === 'redis'">
                                 <div class="my-3">
                                     <label for="redisConnectionString" class="form-label">{{ $t("Connection String") }}</label>
-                                    <input id="redisConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="redis://user:password@host:port">
+                                    <input id="redisConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control">
                                 </div>
                             </template>
 
@@ -311,7 +311,7 @@
                                     <label for="sqlConnectionString" class="form-label">{{ $t("Connection String") }}</label>
 
                                     <template v-if="monitor.type === 'mongodb'">
-                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="mongodb://username:password@host:port/database">
+                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control">
                                     </template>
                                 </div>
                             </template>
@@ -692,6 +692,13 @@ export default {
             ipOrHostnameRegexPattern: hostNameRegexPattern(),
             mqttIpOrHostnameRegexPattern: hostNameRegexPattern(true),
             gameList: null,
+            connectionStringTemplates: {
+                "sqlserver": "Server=<hostname>,<port>;Database=<your database>;User Id=<your user id>;Password=<your password>;Encrypt=<true/false>;TrustServerCertificate=<Yes/No>;Connection Timeout=<int>",
+                "postgres": "postgres://username:password@host:port/database",
+                "mysql": "mysql://username:password@host:port/database",
+                "redis": "redis://user:password@host:port",
+                "mongodb": "mongodb://username:password@host:port/database",
+            }
         };
     },
 
@@ -853,6 +860,24 @@ message HealthCheckResponse {
                     }
                 });
             }
+
+            // Set default database connection string if empty or it is a template from another database monitor type
+            for (let monitorType in this.connectionStringTemplates) {
+                if (this.monitor.type === monitorType) {
+                    let isTemplate = false;
+                    for (let key in this.connectionStringTemplates) {
+                        if (this.monitor.databaseConnectionString === this.connectionStringTemplates[key]) {
+                            isTemplate = true;
+                            break;
+                        }
+                    }
+                    if (!this.monitor.databaseConnectionString || isTemplate) {
+                        this.monitor.databaseConnectionString = this.connectionStringTemplates[monitorType];
+                    }
+                    break;
+                }
+            }
+
         },
 
         currentGameObject(newGameObject, previousGameObject) {
@@ -860,8 +885,7 @@ message HealthCheckResponse {
                 this.monitor.port = newGameObject.options.port;
             }
             this.monitor.game = newGameObject.keys[0];
-        }
-
+        },
     },
     mounted() {
         this.init();

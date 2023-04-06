@@ -10,6 +10,7 @@ const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { UptimeCacheList } = require("../uptime-cache-list");
 const { makeBadge } = require("badge-maker");
 const { badgeConstants } = require("../config");
+const { Prometheus } = require("../prometheus");
 
 let router = express.Router();
 
@@ -37,7 +38,7 @@ router.get("/api/push/:pushToken", async (request, response) => {
 
         let pushToken = request.params.pushToken;
         let msg = request.query.msg || "OK";
-        let ping = request.query.ping || null;
+        let ping = parseInt(request.query.ping) || null;
         let statusString = request.query.status || "up";
         let status = (statusString === "up") ? UP : DOWN;
 
@@ -89,6 +90,7 @@ router.get("/api/push/:pushToken", async (request, response) => {
         io.to(monitor.user_id).emit("heartbeat", bean.toJSON());
         UptimeCacheList.clearCache(monitor.id);
         Monitor.sendStats(io, monitor.id, monitor.user_id);
+        new Prometheus(monitor).update(bean, undefined);
 
         response.json({
             ok: true,
