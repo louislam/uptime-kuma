@@ -70,6 +70,7 @@ class Database {
         "patch-api-key-table.sql": true,
         "patch-monitor-tls.sql": true,
         "patch-maintenance-cron.sql": true,
+        "patch-add-invert-keyword.sql": true,
     };
 
     /**

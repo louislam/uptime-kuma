@@ -84,6 +84,7 @@ class Monitor extends BeanModel {
             retryInterval: this.retryInterval,
             resendInterval: this.resendInterval,
             keyword: this.keyword,
+            invertKeyword: this.isInvertKeyword(),
             expiryNotification: this.isEnabledExpiryNotification(),
             ignoreTls: this.getIgnoreTls(),
             upsideDown: this.isUpsideDown(),
@@ -181,6 +182,14 @@ class Monitor extends BeanModel {
      */
     isUpsideDown() {
         return Boolean(this.upsideDown);
+    }
+
+    /**
+     * Parse to boolean
+     * @returns {boolean}
+     */
+    isInvertKeyword() {
+        return Boolean(this.invertKeyword);
     }
 
     /**
@@ -394,15 +403,17 @@ class Monitor extends BeanModel {
                             data = JSON.stringify(data);
                         }
 
-                        if (data.includes(this.keyword)) {
-                            bean.msg += ", keyword is found";
+                        let keyword_found = data.includes(this.keyword);
+                        if (keyword_found == !this.isInvertKeyword()) {
+                            bean.msg += ", keyword " + (keyword_found ? "is" : "not") + " found";
                             bean.status = UP;
                         } else {
                             data = data.replace(/<[^>]*>?|[\n\r]|\s+/gm, " ");
                             if (data.length > 50) {
                                 data = data.substring(0, 47) + "...";
                             }
-                            throw new Error(bean.msg + ", but keyword is not in [" + data + "]");
+                            throw new Error(bean.msg + ", but keyword is " +
+                                (keyword_found ? "present" : "not") + " in [" + data + "]");
                         }
 
                     }
@@ -603,7 +614,6 @@ class Monitor extends BeanModel {
                         grpcEnableTls: this.grpcEnableTls,
                         grpcMethod: this.grpcMethod,
                         grpcBody: this.grpcBody,
-                        keyword: this.keyword
                     };
                     const response = await grpcQuery(options);
                     bean.ping = dayjs().valueOf() - startTime;
@@ -616,13 +626,14 @@ class Monitor extends BeanModel {
                         bean.status = DOWN;
                         bean.msg = `Error in send gRPC ${response.code} ${response.errorMessage}`;
                     } else {
-                        if (response.data.toString().includes(this.keyword)) {
+                        let keyword_found = response.data.toString().includes(this.keyword)
+                        if (keyword_found == !this.isInvertKeyword()) {
                             bean.status = UP;
-                            bean.msg = `${responseData}, keyword [${this.keyword}] is found`;
+                            bean.msg = `${responseData}, keyword [${this.keyword}] ${keyword_found ? "is" : "not"} found`;
                         } else {
-                            log.debug("monitor:", `GRPC response [${response.data}] + ", but keyword [${this.keyword}] is not in [" + ${response.data} + "]"`);
+                            log.debug("monitor:", `GRPC response [${response.data}] + ", but keyword [${this.keyword}] is ${keyword_found ? "present" : "not"} in [" + ${response.data} + "]"`);
                             bean.status = DOWN;
-                            bean.msg = `, but keyword [${this.keyword}] is not in [" + ${responseData} + "]`;
+                            bean.msg = `, but keyword [${this.keyword}] is ${keyword_found ? "present" : "not"} in [" + ${responseData} + "]`;
                         }
                     }
                 } else if (this.type === "postgres") {
