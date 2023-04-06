@@ -403,9 +403,9 @@ class Monitor extends BeanModel {
                             data = JSON.stringify(data);
                         }
 
-                        let keyword_found = data.includes(this.keyword);
-                        if (keyword_found == !this.isInvertKeyword()) {
-                            bean.msg += ", keyword " + (keyword_found ? "is" : "not") + " found";
+                        let keywordFound = data.includes(this.keyword);
+                        if (keywordFound === !this.isInvertKeyword()) {
+                            bean.msg += ", keyword " + (keywordFound ? "is" : "not") + " found";
                             bean.status = UP;
                         } else {
                             data = data.replace(/<[^>]*>?|[\n\r]|\s+/gm, " ");
@@ -413,7 +413,7 @@ class Monitor extends BeanModel {
                                 data = data.substring(0, 47) + "...";
                             }
                             throw new Error(bean.msg + ", but keyword is " +
-                                (keyword_found ? "present" : "not") + " in [" + data + "]");
+                                (keywordFound ? "present" : "not") + " in [" + data + "]");
                         }
 
                     }
@@ -626,14 +626,14 @@ class Monitor extends BeanModel {
                         bean.status = DOWN;
                         bean.msg = `Error in send gRPC ${response.code} ${response.errorMessage}`;
                     } else {
-                        let keyword_found = response.data.toString().includes(this.keyword)
-                        if (keyword_found == !this.isInvertKeyword()) {
+                        let keywordFound = response.data.toString().includes(this.keyword);
+                        if (keywordFound === !this.isInvertKeyword()) {
                             bean.status = UP;
-                            bean.msg = `${responseData}, keyword [${this.keyword}] ${keyword_found ? "is" : "not"} found`;
+                            bean.msg = `${responseData}, keyword [${this.keyword}] ${keywordFound ? "is" : "not"} found`;
                         } else {
-                            log.debug("monitor:", `GRPC response [${response.data}] + ", but keyword [${this.keyword}] is ${keyword_found ? "present" : "not"} in [" + ${response.data} + "]"`);
+                            log.debug("monitor:", `GRPC response [${response.data}] + ", but keyword [${this.keyword}] is ${keywordFound ? "present" : "not"} in [" + ${response.data} + "]"`);
                             bean.status = DOWN;
-                            bean.msg = `, but keyword [${this.keyword}] is ${keyword_found ? "present" : "not"} in [" + ${responseData} + "]`;
+                            bean.msg = `, but keyword [${this.keyword}] is ${keywordFound ? "present" : "not"} in [" + ${responseData} + "]`;
                         }
                     }
                 } else if (this.type === "postgres") {
