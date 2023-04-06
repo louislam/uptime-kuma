@@ -1,4 +1,5 @@
 const NotificationProvider = require("./notification-provider");
+global.crypto = require("crypto");
 
 const {
     relayInit,
@@ -91,7 +92,7 @@ class Nostr extends NotificationProvider {
             try {
                 const recipientDecodeResult = await nip19.decode(recipient);
                 const { type, data } = recipientDecodeResult;
-                if (type == "npub") {
+                if (type === "npub") {
                     publicKeys.push(data);
                 } else {
                     throw new Error("not an npub");
