@@ -64,7 +64,7 @@
         "cy:run:unit": "npx cypress run --browser chrome --headless --config-file ./config/cypress.frontend.config.js",
         "cypress-open": "concurrently -k -r \"node test/prepare-test-server.js && node server/server.js --port=3002 --data-dir=./data/test/\" \"cypress open --config-file ./config/cypress.config.js\"",
         "build-healthcheck-armv7": "cross-env GOOS=linux GOARCH=arm GOARM=7 go build -x -o ./extra/healthcheck-armv7 ./extra/healthcheck.go",
-        "depoly-demo-server": "node extra/deploy-demo-server.js",
+        "deploy-demo-server": "node extra/deploy-demo-server.js",
         "sort-contributors": "node extra/sort-contributors.js"
     },
     "dependencies": {
