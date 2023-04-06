@@ -711,5 +711,10 @@
     "twilioAccountSID": "Account SID",
     "twilioAuthToken": "Auth Token",
     "twilioFromNumber": "From Number",
-    "twilioToNumber": "To Number"
+    "twilioToNumber": "To Number",
+    "nostrRelays": "Nostr relays",
+    "nostrRelaysHelp": "One relay URL per line",
+    "nostrSender": "Sender Private Key (nsec)",
+    "nostrRecipients": "Recipients Public Keys (npub)",
+    "nostrRecipientsHelp": "npub format, one per line"
 }
