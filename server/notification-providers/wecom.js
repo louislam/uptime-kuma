@@ -3,50 +3,49 @@ const axios = require("axios");
 const { DOWN, UP } = require("../../src/util");
 
 class WeCom extends NotificationProvider {
-
     name = "WeCom";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
-
+        let okMsg = "测试成功";
+        let WeComUrl = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=" + notification.weComBotKey;
         try {
-            let WeComUrl = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=" + notification.weComBotKey;
-            let config = {
-                headers: {
-                    "Content-Type": "application/json"
-                }
-            };
-            let body = this.composeMessage(heartbeatJSON, msg);
-            await axios.post(WeComUrl, body, config);
-            return okMsg;
+            if (heartbeatJSON == null) {
+				let currentTime = new Date().toLocaleString('zh-CN', { hour12: false }); // 获取当前时间，并格式化为字符串
+                let testdata1 = {
+    "msgtype": "markdown",
+    "markdown": {
+        "content": "监测到" + "某个业务系统" + "故障\n>故障时间为：" + currentTime + "\n>业务状态：" + "寄了！",
+    }
+};
+                await axios.post(WeComUrl, testdata1);
+                return okMsg;
+            }
+
+            if (heartbeatJSON["status"] == DOWN) {
+				let currentTime = new Date().toLocaleString('zh-CN', { hour12: false }); // 获取当前时间，并格式化为字符串
+                let downdata1 = {
+    "msgtype": "markdown",
+    "markdown": {
+        "content": "监测发现" + monitorJSON["name"] + "故障\n>故障时间为：" + currentTime + "\n>业务状态：" + heartbeatJSON["msg"],
+    }
+};
+                await axios.post(WeComUrl, downdata1);
+                return okMsg;
+            }
+
+            if (heartbeatJSON["status"] == UP) {
+                let updata = {
+    "msgtype": "markdown",
+    "markdown": {
+        "content": "监测发现" + monitorJSON["name"] + "故障恢复了\n>恢复时间为:" + heartbeatJSON["time"] + "\n>业务状态：" + heartbeatJSON["msg"],
+    }
+};
+                await axios.post(WeComUrl, updata);
+                return okMsg;
+            }
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }
-    }
-
-    /**
-     * Generate the message to send
-     * @param {Object} heartbeatJSON Heartbeat details (For Up/Down only)
-     * @param {string} msg General message
-     * @returns {Object}
-     */
-    composeMessage(heartbeatJSON, msg) {
-        let title;
-        if (msg != null && heartbeatJSON != null && heartbeatJSON["status"] === UP) {
-            title = "UptimeKuma Monitor Up";
-        }
-        if (msg != null && heartbeatJSON != null && heartbeatJSON["status"] === DOWN) {
-            title = "UptimeKuma Monitor Down";
-        }
-        if (msg != null) {
-            title = "UptimeKuma Message";
-        }
-        return {
-            msgtype: "text",
-            text: {
-                content: title + msg
-            }
-        };
     }
 }
 
