@@ -76,6 +76,7 @@ import Datetime from "../components/Datetime.vue";
 import Pagination from "v-pagination-3";
 
 export default {
+    props: ['monitorStatusFilter'],
     components: {
         Datetime,
         Status,
@@ -109,7 +110,11 @@ export default {
                     beat.name = monitor.name;
                 }
             }
-
+            if (this.monitorStatusFilter !== -1 && this.monitorStatusFilter !== null) {
+                result = result.filter((beat) => {
+                    return beat.status === this.monitorStatusFilter;
+                });
+            }
             result.sort((a, b) => {
                 if (a.time > b.time) {
                     return -1;
