@@ -648,7 +648,7 @@
     "dnsCacheDescription": "Bazı IPv6 ortamlarında çalışmıyor olabilir, herhangi bir sorunla karşılaşırsanız devre dışı bırakın.",
     "Single Maintenance Window": "Tek Seferlik Bakım",
     "Maintenance Time Window of a Day": "Bür Günlük Bakım",
-    "Effective Date Range": "Bakim Tarih Aralığı",
+    "Effective Date Range": "Geçerlilik Tarihi Aralığı (Opsiyonel)",
     "Schedule Maintenance": "Bakım Planla",
     "Date and Time": "Tarih ve Saat",
     "DateTime Range": "Tarih ve Saat Aralığı",
@@ -739,5 +739,15 @@
     "Add New Tag": "Yeni Etiket Ekle",
     "lunaseaDeviceID": "Cihaz ID",
     "lunaseaUserID": "Kullanıcı ID",
-    "statusPageRefreshIn": "{0} içinde yenilenecek"
+    "statusPageRefreshIn": "{0} içinde yenilenecek",
+    "twilioAuthToken": "Kimlik Doğrulama Jetonu",
+    "twilioFromNumber": "Gönderen Numara",
+    "twilioToNumber": "Alıcı Numara",
+    "twilioAccountSID": "Hesap ID",
+    "sameAsServerTimezone": "Sunucu Saat Dilimi ile aynı",
+    "startDateTime": "Başlangıç Tarihi/Saati",
+    "endDateTime": "Bitiş Tarihi/Saati",
+    "cronExpression": "Cron İfadesi",
+    "cronSchedule": "Zamanlama: ",
+    "invalidCronExpression": "Geçersiz Cron İfadesi: {0}"
 }

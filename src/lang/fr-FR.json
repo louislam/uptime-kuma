@@ -658,7 +658,7 @@
     "dnsCacheDescription": "Il peut ne pas fonctionner dans certains environnements IPv6, désactivez-le si vous rencontrez des problèmes.",
     "Single Maintenance Window": "Créneau de maintenance unique",
     "Maintenance Time Window of a Day": "Créneau de la maintenance",
-    "Effective Date Range": "Plage de dates d'effet",
+    "Effective Date Range": "Plage de dates d'effet (facultatif)",
     "Schedule Maintenance": "Créer une maintenance",
     "Date and Time": "Date et heure",
     "DateTime Range": "Plage de dates et d'heures",
@@ -739,5 +739,15 @@
     "lunaseaUserID": "Identifiant de l'utilisateur",
     "Add New Tag": "Ajouter une étiquette",
     "lunaseaTarget": "Cible",
-    "statusPageRefreshIn": "Actualisation dans : {0}"
+    "statusPageRefreshIn": "Actualisation dans : {0}",
+    "twilioFromNumber": "Du Nombre",
+    "twilioToNumber": "Au Nombre",
+    "twilioAccountSID": "ID du compte",
+    "twilioAuthToken": "Jeton d'authentification",
+    "sameAsServerTimezone": "Identique au fuseau horaire du serveur",
+    "startDateTime": "Date/heure de début",
+    "endDateTime": "Date/heure de fin",
+    "cronExpression": "Expression cron",
+    "cronSchedule": "Calendrier : ",
+    "invalidCronExpression": "Expression Cron non valide : {0}"
 }

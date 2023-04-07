@@ -47,8 +47,6 @@ class UptimeKumaServer {
      */
     indexHTML = "";
 
-    generateMaintenanceTimeslotsInterval = undefined;
-
     /**
      * Plugins Manager
      * @type {PluginsManager}
@@ -112,8 +110,7 @@ class UptimeKumaServer {
         log.debug("DEBUG", "Timezone: " + process.env.TZ);
         log.debug("DEBUG", "Current Time: " + dayjs.tz().format());
 
-        await this.generateMaintenanceTimeslots();
-        this.generateMaintenanceTimeslotsInterval = setInterval(this.generateMaintenanceTimeslots, 60 * 1000);
+        await this.loadMaintenanceList();
     }
 
     /**
@@ -175,16 +172,33 @@ class UptimeKumaServer {
      */
     async getMaintenanceJSONList(userID) {
         let result = {};
+        for (let maintenanceID in this.maintenanceList) {
+            result[maintenanceID] = await this.maintenanceList[maintenanceID].toJSON();
+        }
+        return result;
+    }
 
-        let maintenanceList = await R.find("maintenance", " user_id = ? ORDER BY end_date DESC, title", [
-            userID,
+    /**
+     * Load maintenance list and run
+     * @param userID
+     * @returns {Promise<void>}
+     */
+    async loadMaintenanceList(userID) {
+        let maintenanceList = await R.findAll("maintenance", " ORDER BY end_date DESC, title", [
+
         ]);
 
         for (let maintenance of maintenanceList) {
-            result[maintenance.id] = await maintenance.toJSON();
+            this.maintenanceList[maintenance.id] = maintenance;
+            maintenance.run(this);
         }
+    }
 
-        return result;
+    getMaintenance(maintenanceID) {
+        if (this.maintenanceList[maintenanceID]) {
+            return this.maintenanceList[maintenanceID];
+        }
+        return null;
     }
 
     /**
@@ -240,7 +254,7 @@ class UptimeKumaServer {
      * Attempt to get the current server timezone
      * If this fails, fall back to environment variables and then make a
      * guess.
-     * @returns {string}
+     * @returns {Promise<string>}
      */
     async getTimezone() {
         let timezone = await Settings.get("serverTimezone");
@@ -271,28 +285,9 @@ class UptimeKumaServer {
         dayjs.tz.setDefault(timezone);
     }
 
-    /** Load the timeslots for maintenance */
-    async generateMaintenanceTimeslots() {
-        log.debug("maintenance", "Routine: Generating Maintenance Timeslots");
-
-        // Prevent #2776
-        // Remove duplicate maintenance_timeslot with same start_date, end_date and maintenance_id
-        await R.exec("DELETE FROM maintenance_timeslot WHERE id NOT IN (SELECT MIN(id) FROM maintenance_timeslot GROUP BY start_date, end_date, maintenance_id)");
-
-        let list = await R.find("maintenance_timeslot", " generated_next = 0 AND start_date <= DATETIME('now') ");
-
-        for (let maintenanceTimeslot of list) {
-            let maintenance = await maintenanceTimeslot.maintenance;
-            await MaintenanceTimeslot.generateTimeslot(maintenance, maintenanceTimeslot.end_date, false);
-            maintenanceTimeslot.generated_next = true;
-            await R.store(maintenanceTimeslot);
-        }
-
-    }
-
     /** Stop the server */
     async stop() {
-        clearTimeout(this.generateMaintenanceTimeslotsInterval);
+
     }
 
     loadPlugins() {
@@ -341,5 +336,4 @@ module.exports = {
 };
 
 // Must be at the end
-const MaintenanceTimeslot = require("./model/maintenance_timeslot");
 const { MonitorType } = require("./monitor-types/monitor-type");
