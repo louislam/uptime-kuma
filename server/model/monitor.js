@@ -2,7 +2,9 @@ const https = require("https");
 const dayjs = require("dayjs");
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
-const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, TimeLogger, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND } = require("../../src/util");
+const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, TimeLogger, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND,
+    SQL_DATETIME_FORMAT
+} = require("../../src/util");
 const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, mqttAsync, setSetting, httpNtlm, radius, grpcQuery,
     redisPingAsync, mongodbPing,
 } = require("../util-server");
@@ -1176,11 +1178,17 @@ class Monitor extends BeanModel {
 
             for (let notification of notificationList) {
                 try {
-                    // Prevent if the msg is undefined, notifications such as Discord cannot send out.
                     const heartbeatJSON = bean.toJSON();
+
+                    // Prevent if the msg is undefined, notifications such as Discord cannot send out.
                     if (!heartbeatJSON["msg"]) {
                         heartbeatJSON["msg"] = "N/A";
                     }
+
+                    // Also provide the time in server timezone
+                    heartbeatJSON["timezone"] = await UptimeKumaServer.getInstance().getTimezone();
+                    heartbeatJSON["timezoneOffset"] = UptimeKumaServer.getInstance().getTimezoneOffset();
+                    heartbeatJSON["localDateTime"] = dayjs.utc(heartbeatJSON["time"]).tz(heartbeatJSON["timezone"]).format(SQL_DATETIME_FORMAT);
 
                     await Notification.send(JSON.parse(notification.config), msg, await monitor.toJSON(false), heartbeatJSON);
                 } catch (e) {
