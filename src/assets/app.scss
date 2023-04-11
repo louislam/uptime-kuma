@@ -556,6 +556,31 @@ h5.settings-subheading::after {
     border-bottom: 1px solid $dark-border-color;
 }
 
+
+$shadow-box-padding: 20px;
+
+.shadow-box-with-fixed-bottom-bar {
+    padding-top: $shadow-box-padding;
+    padding-bottom: 0;
+    padding-right: $shadow-box-padding;
+    padding-left: $shadow-box-padding;
+}
+
+.fixed-bottom-bar {
+    position: sticky;
+    bottom: 0;
+    margin-left: -$shadow-box-padding;
+    margin-right: -$shadow-box-padding;
+    z-index: 100;
+    background-color: rgba(white, 0.2);
+    backdrop-filter: blur(2px);
+    border-radius: 0 0 10px 10px;
+
+    .dark & {
+        background-color: rgba($dark-header-bg, 0.9);
+    }
+}
+
 // Localization
 
 @import "localization.scss";

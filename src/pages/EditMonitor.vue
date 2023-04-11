@@ -3,7 +3,7 @@
         <div>
             <h1 class="mb-3">{{ pageName }}</h1>
             <form @submit.prevent="submit">
-                <div class="shadow-box">
+                <div class="shadow-box shadow-box-with-fixed-bottom-bar">
                     <div class="row">
                         <div class="col-md-6">
                             <h2 class="mb-2">{{ $t("General") }}</h2>
@@ -98,7 +98,7 @@
                             <!-- gRPC URL -->
                             <div v-if="monitor.type === 'grpc-keyword' " class="my-3">
                                 <label for="grpc-url" class="form-label">{{ $t("URL") }}</label>
-                                <input id="grpc-url" v-model="monitor.grpcUrl" type="url" class="form-control" pattern="[^\:]+:[0-9]{5}" required>
+                                <input id="grpc-url" v-model="monitor.grpcUrl" type="text" class="form-control" required>
                             </div>
 
                             <!-- Push URL -->
@@ -283,13 +283,13 @@
                                     <label for="sqlConnectionString" class="form-label">{{ $t("Connection String") }}</label>
 
                                     <template v-if="monitor.type === 'sqlserver'">
-                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="Server=<hostname>,<port>;Database=<your database>;User Id=<your user id>;Password=<your password>;Encrypt=<true/false>;TrustServerCertificate=<Yes/No>;Connection Timeout=<int>">
+                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control">
                                     </template>
                                     <template v-if="monitor.type === 'postgres'">
-                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="postgres://username:password@host:port/database">
+                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control">
                                     </template>
                                     <template v-if="monitor.type === 'mysql'">
-                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="mysql://username:password@host:port/database">
+                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control">
                                     </template>
                                 </div>
                                 <div class="my-3">
@@ -301,7 +301,7 @@
                             <template v-if="monitor.type === 'redis'">
                                 <div class="my-3">
                                     <label for="redisConnectionString" class="form-label">{{ $t("Connection String") }}</label>
-                                    <input id="redisConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="redis://user:password@host:port">
+                                    <input id="redisConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control">
                                 </div>
                             </template>
 
@@ -311,7 +311,7 @@
                                     <label for="sqlConnectionString" class="form-label">{{ $t("Connection String") }}</label>
 
                                     <template v-if="monitor.type === 'mongodb'">
-                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="mongodb://username:password@host:port/database">
+                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control">
                                     </template>
                                 </div>
                             </template>
@@ -546,28 +546,47 @@
                                         <option value="ntlm">
                                             NTLM
                                         </option>
+                                        <option value="mtls">
+                                            mTLS
+                                        </option>
                                     </select>
                                 </div>
                                 <template v-if="monitor.authMethod && monitor.authMethod !== null ">
-                                    <div class="my-3">
-                                        <label for="basicauth" class="form-label">{{ $t("Username") }}</label>
-                                        <input id="basicauth-user" v-model="monitor.basic_auth_user" type="text" class="form-control" :placeholder="$t('Username')">
-                                    </div>
-
-                                    <div class="my-3">
-                                        <label for="basicauth" class="form-label">{{ $t("Password") }}</label>
-                                        <input id="basicauth-pass" v-model="monitor.basic_auth_pass" type="password" autocomplete="new-password" class="form-control" :placeholder="$t('Password')">
-                                    </div>
-                                    <template v-if="monitor.authMethod === 'ntlm' ">
+                                    <template v-if="monitor.authMethod === 'mtls' ">
                                         <div class="my-3">
-                                            <label for="basicauth" class="form-label">{{ $t("Domain") }}</label>
-                                            <input id="basicauth-domain" v-model="monitor.authDomain" type="text" class="form-control" :placeholder="$t('Domain')">
+                                            <label for="tls-cert" class="form-label">{{ $t("Cert") }}</label>
+                                            <textarea id="tls-cert" v-model="monitor.tlsCert" class="form-control" :placeholder="$t('Cert body')" required></textarea>
+                                        </div>
+                                        <div class="my-3">
+                                            <label for="tls-key" class="form-label">{{ $t("Key") }}</label>
+                                            <textarea id="tls-key" v-model="monitor.tlsKey" class="form-control" :placeholder="$t('Key body')" required></textarea>
+                                        </div>
+                                        <div class="my-3">
+                                            <label for="tls-ca" class="form-label">{{ $t("CA") }}</label>
+                                            <textarea id="tls-ca" v-model="monitor.tlsCa" class="form-control" :placeholder="$t('Server CA')"></textarea>
+                                        </div>
+                                    </template>
+                                    <template v-else>
+                                        <div class="my-3">
+                                            <label for="basicauth-user" class="form-label">{{ $t("Username") }}</label>
+                                            <input id="basicauth-user" v-model="monitor.basic_auth_user" type="text" class="form-control" :placeholder="$t('Username')">
                                         </div>
 
                                         <div class="my-3">
-                                            <label for="basicauth" class="form-label">{{ $t("Workstation") }}</label>
-                                            <input id="basicauth-workstation" v-model="monitor.authWorkstation" type="text" class="form-control" :placeholder="$t('Workstation')">
+                                            <label for="basicauth-pass" class="form-label">{{ $t("Password") }}</label>
+                                            <input id="basicauth-pass" v-model="monitor.basic_auth_pass" type="password" autocomplete="new-password" class="form-control" :placeholder="$t('Password')">
                                         </div>
+                                        <template v-if="monitor.authMethod === 'ntlm' ">
+                                            <div class="my-3">
+                                                <label for="ntlm-domain" class="form-label">{{ $t("Domain") }}</label>
+                                                <input id="ntlm-domain" v-model="monitor.authDomain" type="text" class="form-control" :placeholder="$t('Domain')">
+                                            </div>
+
+                                            <div class="my-3">
+                                                <label for="ntlm-workstation" class="form-label">{{ $t("Workstation") }}</label>
+                                                <input id="ntlm-workstation" v-model="monitor.authWorkstation" type="text" class="form-control" :placeholder="$t('Workstation')">
+                                            </div>
+                                        </template>
                                     </template>
                                 </template>
                             </template>
@@ -673,6 +692,13 @@ export default {
             ipOrHostnameRegexPattern: hostNameRegexPattern(),
             mqttIpOrHostnameRegexPattern: hostNameRegexPattern(true),
             gameList: null,
+            connectionStringTemplates: {
+                "sqlserver": "Server=<hostname>,<port>;Database=<your database>;User Id=<your user id>;Password=<your password>;Encrypt=<true/false>;TrustServerCertificate=<Yes/No>;Connection Timeout=<int>",
+                "postgres": "postgres://username:password@host:port/database",
+                "mysql": "mysql://username:password@host:port/database",
+                "redis": "redis://user:password@host:port",
+                "mongodb": "mongodb://username:password@host:port/database",
+            }
         };
     },
 
@@ -834,6 +860,24 @@ message HealthCheckResponse {
                     }
                 });
             }
+
+            // Set default database connection string if empty or it is a template from another database monitor type
+            for (let monitorType in this.connectionStringTemplates) {
+                if (this.monitor.type === monitorType) {
+                    let isTemplate = false;
+                    for (let key in this.connectionStringTemplates) {
+                        if (this.monitor.databaseConnectionString === this.connectionStringTemplates[key]) {
+                            isTemplate = true;
+                            break;
+                        }
+                    }
+                    if (!this.monitor.databaseConnectionString || isTemplate) {
+                        this.monitor.databaseConnectionString = this.connectionStringTemplates[monitorType];
+                    }
+                    break;
+                }
+            }
+
         },
 
         currentGameObject(newGameObject, previousGameObject) {
@@ -841,8 +885,7 @@ message HealthCheckResponse {
                 this.monitor.port = newGameObject.options.port;
             }
             this.monitor.game = newGameObject.keys[0];
-        }
-
+        },
     },
     mounted() {
         this.init();
@@ -888,7 +931,7 @@ message HealthCheckResponse {
                     interval: 60,
                     retryInterval: this.interval,
                     resendInterval: 0,
-                    maxretries: 0,
+                    maxretries: 1,
                     notificationIDList: {},
                     ignoreTls: false,
                     upsideDown: false,
@@ -925,6 +968,14 @@ message HealthCheckResponse {
             } else if (this.isEdit || this.isClone) {
                 this.$root.getSocket().emit("getMonitor", this.$route.params.id, (res) => {
                     if (res.ok) {
+
+                        if (this.isClone) {
+                            // Reset push token for cloned monitors
+                            if (res.monitor.type === "push") {
+                                res.monitor.pushToken = undefined;
+                            }
+                        }
+
                         this.monitor = res.monitor;
 
                         if (this.isClone) {
@@ -936,7 +987,16 @@ message HealthCheckResponse {
                             this.monitor.includeSensitiveData = undefined;
                             this.monitor.maintenance = undefined;
                             this.monitor.name = this.$t("cloneOf", [ this.monitor.name ]);
-                            this.monitor.tags = undefined; // FIXME: Cloning tags does not work yet
+                            this.$refs.tagsManager.newTags = this.monitor.tags.map((monitorTag) => {
+                                return {
+                                    id: monitorTag.tag_id,
+                                    name: monitorTag.name,
+                                    color: monitorTag.color,
+                                    value: monitorTag.value,
+                                    new: true,
+                                };
+                            });
+                            this.monitor.tags = undefined;
                         }
 
                         // Handling for monitors that are created before 1.7.0
@@ -1066,31 +1126,7 @@ message HealthCheckResponse {
 <style lang="scss" scoped>
     @import "../assets/vars.scss";
 
-    $padding: 20px;
-
-    .shadow-box {
-        padding-top: $padding;
-        padding-bottom: 0;
-        padding-right: $padding;
-        padding-left: $padding;
-    }
-
     textarea {
         min-height: 200px;
-    }
-
-    .fixed-bottom-bar {
-        position: sticky;
-        bottom: 0;
-        margin-left: -$padding;
-        margin-right: -$padding;
-        z-index: 100;
-        background-color: rgba(white, 0.2);
-        backdrop-filter: blur(2px);
-        border-radius: 0 0 10px 10px;
-
-        .dark & {
-            background-color: rgba($dark-header-bg, 0.9);
-        }
     }
 </style>

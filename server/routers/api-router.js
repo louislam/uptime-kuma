@@ -7,8 +7,10 @@ const dayjs = require("dayjs");
 const { UP, MAINTENANCE, DOWN, PENDING, flipStatus, log } = require("../../src/util");
 const StatusPage = require("../model/status_page");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
+const { UptimeCacheList } = require("../uptime-cache-list");
 const { makeBadge } = require("badge-maker");
 const { badgeConstants } = require("../config");
+const { Prometheus } = require("../prometheus");
 
 let router = express.Router();
 
@@ -36,7 +38,7 @@ router.get("/api/push/:pushToken", async (request, response) => {
 
         let pushToken = request.params.pushToken;
         let msg = request.query.msg || "OK";
-        let ping = request.query.ping || null;
+        let ping = parseInt(request.query.ping) || null;
         let statusString = request.query.status || "up";
         let status = (statusString === "up") ? UP : DOWN;
 
@@ -86,7 +88,9 @@ router.get("/api/push/:pushToken", async (request, response) => {
         await R.store(bean);
 
         io.to(monitor.user_id).emit("heartbeat", bean.toJSON());
+        UptimeCacheList.clearCache(monitor.id);
         Monitor.sendStats(io, monitor.id, monitor.user_id);
+        new Prometheus(monitor).update(bean, undefined);
 
         response.json({
             ok: true,
@@ -145,7 +149,11 @@ router.get("/api/badge/:id/status", cache("5 minutes"), async (request, response
             const heartbeat = await Monitor.getPreviousHeartbeat(requestedMonitorId);
             const state = overrideValue !== undefined ? overrideValue : heartbeat.status;
 
-            badgeValues.label = label ?? "Status";
+            if (label === undefined) {
+                badgeValues.label = "Status";
+            } else {
+                badgeValues.label = label;
+            }
             switch (state) {
                 case DOWN:
                     badgeValues.color = downColor;
@@ -222,7 +230,7 @@ router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (reques
             );
 
             // limit the displayed uptime percentage to four (two, when displayed as percent) decimal digits
-            const cleanUptime = parseFloat(uptime.toPrecision(4));
+            const cleanUptime = (uptime * 100).toPrecision(4);
 
             // use a given, custom color or calculate one based on the uptime value
             badgeValues.color = color ?? percentageToColor(uptime);
@@ -233,7 +241,7 @@ router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (reques
                 labelPrefix,
                 label ?? `Uptime (${requestedDuration}${labelSuffix})`,
             ]);
-            badgeValues.message = filterAndJoin([ prefix, `${cleanUptime * 100}`, suffix ]);
+            badgeValues.message = filterAndJoin([ prefix, cleanUptime, suffix ]);
         }
 
         // build the SVG based on given values
