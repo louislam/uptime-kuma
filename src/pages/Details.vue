@@ -483,6 +483,7 @@ table {
         .col {
             margin: 10px 0 !important;
         }
+
         h4 {
             font-size: 1.1rem;
         }
