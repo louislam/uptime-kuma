@@ -54,35 +54,41 @@
 
             <div class="shadow-box big-padding text-center stats">
                 <div class="row">
-                    <div class="col">
-                        <h4>{{ pingTitle() }}</h4>
-                        <p>({{ $t("Current") }})</p>
-                        <span class="num">
+                    <div class="col-12 col-sm col row d-flex align-items-center d-sm-block">
+                        <h4 class="col-4 col-sm-12">{{ pingTitle() }}</h4>
+                        <p class="col-4 col-sm-12 mb-0 mb-sm-2">({{ $t("Current") }})</p>
+                        <span class="col-4 col-sm-12 num">
                             <a href="#" @click.prevent="showPingChartBox = !showPingChartBox">
                                 <CountUp :value="ping" />
                             </a>
                         </span>
                     </div>
-                    <div class="col">
-                        <h4>{{ pingTitle(true) }}</h4>
-                        <p>(24{{ $t("-hour") }})</p>
-                        <span class="num"><CountUp :value="avgPing" /></span>
+                    <div class="col-12 col-sm col row d-flex align-items-center d-sm-block">
+                        <h4 class="col-4 col-sm-12">{{ pingTitle(true) }}</h4>
+                        <p class="col-4 col-sm-12 mb-0 mb-sm-2">(24{{ $t("-hour") }})</p>
+                        <span class="col-4 col-sm-12 num">
+                            <CountUp :value="avgPing" />
+                        </span>
                     </div>
-                    <div class="col">
-                        <h4>{{ $t("Uptime") }}</h4>
-                        <p>(24{{ $t("-hour") }})</p>
-                        <span class="num"><Uptime :monitor="monitor" type="24" /></span>
+                    <div class="col-12 col-sm col row d-flex align-items-center d-sm-block">
+                        <h4 class="col-4 col-sm-12">{{ $t("Uptime") }}</h4>
+                        <p class="col-4 col-sm-12 mb-0 mb-sm-2">(24{{ $t("-hour") }})</p>
+                        <span class="col-4 col-sm-12 num">
+                            <Uptime :monitor="monitor" type="24" />
+                        </span>
                     </div>
-                    <div class="col">
-                        <h4>{{ $t("Uptime") }}</h4>
-                        <p>(30{{ $t("-day") }})</p>
-                        <span class="num"><Uptime :monitor="monitor" type="720" /></span>
+                    <div class="col-12 col-sm col row d-flex align-items-center d-sm-block">
+                        <h4 class="col-4 col-sm-12">{{ $t("Uptime") }}</h4>
+                        <p class="col-4 col-sm-12 mb-0 mb-sm-2">(30{{ $t("-day") }})</p>
+                        <span class="col-4 col-sm-12 num">
+                            <Uptime :monitor="monitor" type="720" />
+                        </span>
                     </div>
 
-                    <div v-if="tlsInfo" class="col">
-                        <h4>{{ $t("Cert Exp.") }}</h4>
-                        <p>(<Datetime :value="tlsInfo.certInfo.validTo" date-only />)</p>
-                        <span class="num">
+                    <div v-if="tlsInfo" class="col-12 col-sm col row d-flex align-items-center d-sm-block">
+                        <h4 class="col-4 col-sm-12">{{ $t("Cert Exp.") }}</h4>
+                        <p class="col-4 col-sm-12 mb-0 mb-sm-2">(<Datetime :value="tlsInfo.certInfo.validTo" date-only />)</p>
+                        <span class="col-4 col-sm-12 num">
                             <a href="#" @click.prevent="toggleCertInfoBox = !toggleCertInfoBox">{{ tlsInfo.certInfo.daysRemaining }} {{ $tc("day", tlsInfo.certInfo.daysRemaining) }}</a>
                         </span>
                     </div>
@@ -136,7 +142,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(beat, index) in displayedRecords" :key="index" :class="{ 'shadow-box': $root.windowWidth <= 550}" style="padding: 10px;">
+                        <tr v-for="(beat, index) in displayedRecords" :key="index" style="padding: 10px;">
                             <td><Status :status="beat.status" /></td>
                             <td :class="{ 'border-0':! beat.msg}"><Datetime :value="beat.time" /></td>
                             <td class="border-0">{{ beat.msg }}</td>
@@ -376,7 +382,7 @@ export default {
                 translationPrefix = "Avg. ";
             }
 
-            if (this.monitor.type === "http") {
+            if (this.monitor.type === "http" || this.monitor.type === "keyword") {
                 return this.$t(translationPrefix + "Response");
             }
 
@@ -415,6 +421,7 @@ export default {
         flex-direction: column;
         align-items: center;
         padding-top: 10px;
+        font-size: 0.9em;
     }
 
     a.btn {
@@ -468,6 +475,17 @@ table {
 
     .col {
         margin: 20px 0;
+    }
+}
+
+@media (max-width: 550px) {
+    .stats {
+        .col {
+            margin: 10px 0 !important;
+        }
+        h4 {
+            font-size: 1.1rem;
+        }
     }
 }
 
