@@ -740,5 +740,9 @@
     "Long-Lived Access Token can be created by clicking on your profile name (bottom left) and scrolling to the bottom then click Create Token. ": "Довготривалий токен доступу можна створити, натиснувши на ім'я вашого профілю (внизу ліворуч), прокрутивши його донизу і натиснувши кнопку Створити токен. ",
     "high": "високий",
     "Disable": "Вимкнути",
-    "Resend Notification if Down X times consecutively": "Повторно надіслати сповіщення, якщо було падіння X разів поспіль"
+    "Resend Notification if Down X times consecutively": "Повторно надіслати сповіщення, якщо було падіння X разів поспіль",
+    "lunaseaTarget": "Ціль",
+    "Add New Tag": "Додати новий тег",
+    "lunaseaDeviceID": "ID пристрою",
+    "lunaseaUserID": "ID користувача"
 }
