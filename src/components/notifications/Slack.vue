@@ -29,6 +29,5 @@
             <input id="slack-channel-mention" v-model="$parent.notification.slackchannelmention" type="checkbox" class="form-check-input">
             <label for="slack-channel-mention" class="form-label">{{ $t("Mention Channel") }}</label>
         </div>
-
     </div>
 </template>
