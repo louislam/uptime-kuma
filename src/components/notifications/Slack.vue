@@ -24,5 +24,11 @@
                 <a href="https://www.webfx.com/tools/emoji-cheat-sheet/" target="_blank">https://www.webfx.com/tools/emoji-cheat-sheet/</a>
             </i18n-t>
         </div>
+
+        <div class="form-check form-switch">
+            <input id="slack-channel-mention" v-model="$parent.notification.slackchannelmention" type="checkbox" class="form-check-input">
+            <label for="slack-channel-mention" class="form-label">{{ $t("Mention Channel") }}</label>
+        </div>
+
     </div>
 </template>
