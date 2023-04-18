@@ -7,7 +7,7 @@
                 <Tag v-for="tag in monitor.tags" :key="tag.id" :item="tag" :size="'sm'" />
             </div>
             <p class="url">
-                <a v-if="monitor.type === 'http' || monitor.type === 'keyword' " :href="monitor.url" target="_blank" rel="noopener noreferrer">{{ monitor.url }}</a>
+                <a v-if="monitor.type === 'http' || monitor.type === 'keyword' " :href="monitor.url" target="_blank" rel="noopener noreferrer">{{ filterPassword(monitor.url) }}</a>
                 <span v-if="monitor.type === 'port'">TCP Port {{ monitor.hostname }}:{{ monitor.port }}</span>
                 <span v-if="monitor.type === 'ping'">Ping: {{ monitor.hostname }}</span>
                 <span v-if="monitor.type === 'keyword'">
@@ -20,18 +20,18 @@
                 </span>
                 <span v-if="monitor.type === 'docker'">Docker container: {{ monitor.docker_container }}</span>
                 <span v-if="monitor.type === 'gamedig'">Gamedig - {{ monitor.game }}: {{ monitor.hostname }}:{{ monitor.port }}</span>
-                <span v-if="monitor.type === 'grpc-keyword'">gRPC - {{ monitor.grpcUrl }}
+                <span v-if="monitor.type === 'grpc-keyword'">gRPC - {{ filterPassword(monitor.grpcUrl) }}
                     <br>
                     <span>{{ $t("Keyword") }}:</span> <span class="keyword">{{ monitor.keyword }}</span>
                 </span>
-                <span v-if="monitor.type === 'mongodb'">{{ monitor.databaseConnectionString }}</span>
+                <span v-if="monitor.type === 'mongodb'">{{ filterPassword(monitor.databaseConnectionString) }}</span>
                 <span v-if="monitor.type === 'mqtt'">MQTT: {{ monitor.hostname }}:{{ monitor.port }}/{{ monitor.mqttTopic }}</span>
-                <span v-if="monitor.type === 'mysql'">{{ monitor.databaseConnectionString }}</span>
-                <span v-if="monitor.type === 'postgres'">{{ monitor.databaseConnectionString }}</span>
+                <span v-if="monitor.type === 'mysql'">{{ filterPassword(monitor.databaseConnectionString) }}</span>
+                <span v-if="monitor.type === 'postgres'">{{ filterPassword(monitor.databaseConnectionString) }}</span>
                 <span v-if="monitor.type === 'push'">Push: <a :href="pushURL" target="_blank" rel="noopener noreferrer">{{ pushURL }}</a></span>
-                <span v-if="monitor.type === 'radius'">Radius: {{ monitor.hostname }}</span>
-                <span v-if="monitor.type === 'redis'">{{ monitor.databaseConnectionString }}</span>
-                <span v-if="monitor.type === 'sqlserver'">SQL Server: {{ monitor.databaseConnectionString }}</span>
+                <span v-if="monitor.type === 'radius'">Radius: {{ filterPassword(monitor.hostname) }}</span>
+                <span v-if="monitor.type === 'redis'">{{ filterPassword(monitor.databaseConnectionString) }}</span>
+                <span v-if="monitor.type === 'sqlserver'">SQL Server: {{ filterPassword(monitor.databaseConnectionString) }}</span>
                 <span v-if="monitor.type === 'steam'">Steam Game Server: {{ monitor.hostname }}:{{ monitor.port }}</span>
             </p>
 
@@ -208,6 +208,7 @@ import Pagination from "v-pagination-3";
 const PingChart = defineAsyncComponent(() => import("../components/PingChart.vue"));
 import Tag from "../components/Tag.vue";
 import CertificateInfo from "../components/CertificateInfo.vue";
+import { URL } from "whatwg-url";
 
 export default {
     components: {
@@ -401,6 +402,20 @@ export default {
 
             return this.$t(translationPrefix + "Ping");
         },
+
+        /** Filter and hide password in URL for display */
+        filterPassword(urlString) {
+            try {
+                let parsedUrl = new URL(urlString);
+                if (parsedUrl.password !== "") {
+                    parsedUrl.password = "******";
+                }
+                return parsedUrl.toString();
+            } catch (e) {
+                // Handle SQL Server
+                return urlString.replaceAll(/Password=(.+);/ig, "Password=******;");
+            }
+        }
     },
 };
 </script>
