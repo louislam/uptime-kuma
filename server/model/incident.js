@@ -8,6 +8,7 @@ class Incident extends BeanModel {
      * @returns {Object}
      */
     toPublicJSON() {
+        log.debug("server/model/incident.js/Incident/toPublicJSON()",``);
         return {
             id: this.id,
             style: this.style,

@@ -6,6 +6,9 @@ class Proxy extends BeanModel {
      * @returns {Object}
      */
     toJSON() {
+
+        log.debug("server/model/proxy.js/Proxy/toJSON()",``);
+
         return {
             id: this._id,
             userId: this._user_id,

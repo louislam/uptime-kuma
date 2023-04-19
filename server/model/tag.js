@@ -7,6 +7,9 @@ class Tag extends BeanModel {
      * @returns {Object}
      */
     toJSON() {
+
+        log.debug("server/model/tags.js/Tags/toJSON()",``);
+
         return {
             id: this._id,
             name: this._name,

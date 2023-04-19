@@ -36,6 +36,9 @@ class Monitor extends BeanModel {
      * @returns {Object}
      */
     async toPublicJSON(showTags = false) {
+
+        log.debug("server/model/monitor.js/Montitor/toPublicJSON()",``);
+
         let obj = {
             id: this.id,
             name: this.name,
@@ -58,12 +61,14 @@ class Monitor extends BeanModel {
      */
     async toJSON(includeSensitiveData = true) {
 
+        log.debug("server/model/monitor.js/Montitor/toJSON()",``);
+
         let notificationIDList = {};
 
         let list = await R.find("monitor_notification", " monitor_id = ? ", [
             this.id,
         ]);
-        log.debug("sever/model/monitor.js/Monitor/toJSON(...)","R.find('monitor_notification','monitor_id = " + this.id + "')");
+        log.debug("server/model/monitor.js/Monitor/toJSON(...)","R.find('monitor_notification','monitor_id = " + this.id + "')");
 
         for (let bean of list) {
             notificationIDList[bean.notification_id] = true;
@@ -150,7 +155,10 @@ class Monitor extends BeanModel {
      * @returns {Promise<LooseObject<any>[]>}
      */
     async getTags() {
-        log.debug("sever/model/monitor.js/Monitor/getTags(...)","R.getAll('SELECT mt.*, tag.name, tag.color FROM monitor_tag mt JOIN tag ON my.tag.id = tag.id WHERE monitor.id = " + this.id + " ORDER BY tag.name')");
+
+        log.debug("server/model/monitor.js/Montitor/getTags()",``);
+
+        log.debug("server/model/monitor.js/Monitor/getTags(...)","R.getAll('SELECT mt.*, tag.name, tag.color FROM monitor_tag mt JOIN tag ON my.tag.id = tag.id WHERE monitor.id = " + this.id + " ORDER BY tag.name')");
         return await R.getAll("SELECT mt.*, tag.name, tag.color FROM monitor_tag mt JOIN tag ON mt.tag_id = tag.id WHERE mt.monitor_id = ? ORDER BY tag.name", [ this.id ]);
     }
 
@@ -160,6 +168,9 @@ class Monitor extends BeanModel {
      * @returns {string}
      */
     encodeBase64(user, pass) {
+
+        log.debug("server/model/monitor.js/Montitor/encodeBase64(user, pass)",``);
+
         return Buffer.from(user + ":" + pass).toString("base64");
     }
 
@@ -168,6 +179,9 @@ class Monitor extends BeanModel {
      * @returns {boolean}
      */
     isEnabledExpiryNotification() {
+
+        log.debug("server/model/monitor.js/Montitor/isEnabledExpiryNotification()",``);
+
         return Boolean(this.expiryNotification);
     }
 
@@ -176,6 +190,9 @@ class Monitor extends BeanModel {
      * @returns {boolean}
      */
     getIgnoreTls() {
+
+        log.debug("server/model/monitor.js/Montitor/getIgnoreTls()",``);
+
         return Boolean(this.ignoreTls);
     }
 
@@ -184,6 +201,9 @@ class Monitor extends BeanModel {
      * @returns {boolean}
      */
     isUpsideDown() {
+
+        log.debug("server/model/monitor.js/Montitor/isUpsideDown()",``);
+
         return Boolean(this.upsideDown);
     }
 
@@ -192,6 +212,9 @@ class Monitor extends BeanModel {
      * @returns {boolean}
      */
     getGrpcEnableTls() {
+
+        log.debug("server/model/monitor.js/Montitor/getGrpcEnableTls()",``);
+
         return Boolean(this.grpcEnableTls);
     }
 
@@ -200,6 +223,9 @@ class Monitor extends BeanModel {
      * @returns {Object}
      */
     getAcceptedStatuscodes() {
+
+        log.debug("server/model/monitor.js/Montitor/getAcceptedStatuscodes()",``);
+
         return JSON.parse(this.accepted_statuscodes_json);
     }
 
@@ -208,6 +234,9 @@ class Monitor extends BeanModel {
      * @param {Server} io Socket server instance
      */
     start(io) {
+
+        log.debug("server/model/monitor.js/Montitor/getAcceptedStatuscodesstart(io)",``);
+
         let previousBeat = null;
         let retries = 0;
 
@@ -236,16 +265,16 @@ class Monitor extends BeanModel {
                 previousBeat = await R.findOne("heartbeat", " monitor_id = ? ORDER BY time DESC", [
                     this.id,
                 ]);
-                log.debug("sever/model/monitor.js/Monitor/start(io)","R.findOne('hreartbeat','monitor_id = ' " + this.id + " ORDER BY time DESC)");
+                log.debug("server/model/monitor.js/Monitor/start(io)","R.findOne('hreartbeat','monitor_id = ' " + this.id + " ORDER BY time DESC)");
             }
 
             const isFirstBeat = !previousBeat;
 
             let bean = R.dispense("heartbeat");
-            log.debug("sever/model/monitor.js/Monitor/start(io)","R.dispense('heartbeat')");
+            log.debug("server/model/monitor.js/Monitor/start(io)","R.dispense('heartbeat')");
             bean.monitor_id = this.id;
             bean.time = R.isoDateTimeMillis(dayjs.utc());
-            log.debug("sever/model/monitor.js/Monitor/start(io)","R.isoDateTimeMillis('dayjs.utc()')");
+            log.debug("server/model/monitor.js/Monitor/start(io)","R.isoDateTimeMillis('dayjs.utc()')");
             bean.status = DOWN;
             bean.downCount = previousBeat?.downCount || 0;
 
@@ -324,7 +353,7 @@ class Monitor extends BeanModel {
 
                     if (this.proxy_id) {
                         const proxy = await R.load("proxy", this.proxy_id);
-                        log.debug("sever/model/monitor.js/Monitor/start(io)","R.load('proxy','" + this.proxy.id + "')");
+                        log.debug("server/model/monitor.js/Monitor/start(io)","R.load('proxy','" + this.proxy.id + "')");
 
                         if (proxy && proxy.active) {
                             const { httpAgent, httpsAgent } = Proxy.createAgents(proxy, {
@@ -460,7 +489,7 @@ class Monitor extends BeanModel {
                             dnsMessage,
                             this.id
                         ]);
-                        log.debug("sever/model/monitor.js/Monitor/start(io)","R.exec('UPDATE monitor SER dns_last_result = " + dnsMessage +  " WHERE id = " + this.id + "')");
+                        log.debug("server/model/monitor.js/Monitor/start(io)","R.exec('UPDATE monitor SER dns_last_result = " + dnsMessage +  " WHERE id = " + this.id + "')");
                     }
 
                     bean.msg = dnsMessage;
@@ -816,6 +845,9 @@ class Monitor extends BeanModel {
 
         /** Get a heartbeat and handle errors */
         const safeBeat = async () => {
+
+            log.debug("server/model/monitor.js/Montitor/safeBeat()",``);
+
             try {
                 await beat();
             } catch (e) {
@@ -848,6 +880,9 @@ class Monitor extends BeanModel {
      * @returns {Object} Axios response
      */
     async makeAxiosRequest(options, finalCall = false) {
+
+        log.debug("server/model/monitor.js/Montitor/makeAxiosRequest(...)",``);
+
         try {
             let res;
             if (this.auth_method === "ntlm") {
@@ -882,6 +917,9 @@ class Monitor extends BeanModel {
 
     /** Stop monitor */
     stop() {
+
+        log.debug("server/model/monitor.js/Montitor/stop()",``);
+
         clearTimeout(this.heartbeatInterval);
         this.isStop = true;
 
@@ -892,7 +930,10 @@ class Monitor extends BeanModel {
      * Get prometheus instance
      * @returns {Prometheus|undefined}
      */
-    getPrometheus() {
+
+     getPrometheus() {
+        log.debug("server/model/monitor.js/Montitor/getPrometheus()",``);
+
         return this.prometheus;
     }
 
@@ -903,6 +944,9 @@ class Monitor extends BeanModel {
      * @returns {(null|URL)}
      */
     getUrl() {
+
+        log.debug("server/model/monitor.js/Montitor/getUrl()",``);
+
         try {
             return new URL(this.url);
         } catch (_) {
@@ -916,6 +960,9 @@ class Monitor extends BeanModel {
      * @returns {Promise<Object>}
      */
     async updateTlsInfo(checkCertificateResult) {
+
+        log.debug("server/model/monitor.js/Montitor/updateTlsInfo(checkCertificateResult)",``);
+
         let tlsInfoBean = await R.findOne("monitor_tls_info", "monitor_id = ?", [
             this.id,
         ]);
@@ -966,6 +1013,9 @@ class Monitor extends BeanModel {
      * @param {number} userID ID of user to send to
      */
     static async sendStats(io, monitorID, userID) {
+
+        log.debug("server/model/monitor.js/Montitor/sendStats(io, monitorID, userID)",``);
+
         const hasClients = getTotalClientInRoom(io, userID) > 0;
 
         if (hasClients) {
@@ -983,6 +1033,9 @@ class Monitor extends BeanModel {
      * @param {number} duration Hours
      */
     static async sendAvgPing(duration, io, monitorID, userID) {
+
+        log.debug("server/model/monitor.js/Montitor/sendAvgPing(duration, io, monitorID, userID)",``);
+
         const timeLogger = new TimeLogger();
 
         let avgPing = parseInt(await R.getCell(`
@@ -1013,6 +1066,9 @@ class Monitor extends BeanModel {
      * @param {number} userID ID of user to send to
      */
     static async sendCertInfo(io, monitorID, userID) {
+
+        log.debug("server/model/monitor.js/Montitor/sendCertInfo(io, monitorID, userID)",``);
+
         let tlsInfo = await R.findOne("monitor_tls_info", "monitor_id = ?", [
             monitorID,
         ]);
@@ -1031,6 +1087,8 @@ class Monitor extends BeanModel {
      * @param {number} monitorID ID of monitor to calculate
      */
     static async calcUptime(duration, monitorID, forceNoCache = false) {
+
+        log.debug("server/model/monitor.js/Montitor/calcUptime(...)",``);
 
         if (!forceNoCache) {
             let cachedUptime = UptimeCacheList.getUptime(monitorID, duration);
@@ -1143,6 +1201,9 @@ class Monitor extends BeanModel {
      * @param {number} userID ID of user to send to
      */
     static async sendUptime(duration, io, monitorID, userID) {
+
+        log.debug("server/model/monitor.js/Montitor/sendUptime(duration, io, monitorID, userID)",``);
+
         const uptime = await this.calcUptime(duration, monitorID);
         io.to(userID).emit("uptime", monitorID, duration, uptime);
     }
@@ -1155,6 +1216,9 @@ class Monitor extends BeanModel {
      * @returns {boolean} True if is an important beat else false
      */
     static isImportantBeat(isFirstBeat, previousBeatStatus, currentBeatStatus) {
+
+        log.debug("server/model/monitor.js/Montitor/isImportantBeat(isFirstBeat, previousBeatStatus, currentBeatStatus)",``);
+
         // * ? -> ANY STATUS = important [isFirstBeat]
         // UP -> PENDING = not important
         // * UP -> DOWN = important
@@ -1188,6 +1252,9 @@ class Monitor extends BeanModel {
      * @returns {boolean} True if is an important beat else false
      */
     static isImportantForNotification(isFirstBeat, previousBeatStatus, currentBeatStatus) {
+
+        log.debug("server/model/monitor.js/Montitor/isImportantForNotification(isFirstBeat, previousBeatStatus, currentBeatStatus)",``);
+
         // * ? -> ANY STATUS = important [isFirstBeat]
         // UP -> PENDING = not important
         // * UP -> DOWN = important
@@ -1217,6 +1284,9 @@ class Monitor extends BeanModel {
      * @param {Bean} bean Status information about monitor
      */
     static async sendNotification(isFirstBeat, monitor, bean) {
+
+        log.debug("server/model/monitor.js/Montitor/sendNotification(isFirstBeat, monitor, bean)",``);
+
         if (!isFirstBeat || bean.status === DOWN) {
             const notificationList = await Monitor.getNotificationList(monitor);
 
@@ -1258,6 +1328,9 @@ class Monitor extends BeanModel {
      * @returns {Promise<LooseObject<any>[]>}
      */
     static async getNotificationList(monitor) {
+
+        log.debug("server/model/monitor.js/Montitor/getNotificationList(monitor)",``);
+
         let notificationList = await R.getAll("SELECT notification.* FROM notification, monitor_notification WHERE monitor_id = ? AND monitor_notification.notification_id = notification.id ", [
             monitor.id,
         ]);
@@ -1271,6 +1344,9 @@ class Monitor extends BeanModel {
      * @param {Object} tlsInfoObject Information about certificate
      */
     async sendCertNotification(tlsInfoObject) {
+
+        log.debug("server/model/monitor.js/Montitor/sendCertNotification(tlsInfoObject)",``);
+
         if (tlsInfoObject && tlsInfoObject.certInfo && tlsInfoObject.certInfo.daysRemaining) {
             const notificationList = await Monitor.getNotificationList(this);
 
@@ -1299,6 +1375,8 @@ class Monitor extends BeanModel {
      * @returns {Promise<void>}
      */
     async sendCertNotificationByTargetDays(daysRemaining, targetDays, notificationList) {
+
+        log.debug("server/model/monitor.js/Montitor/sendCertNotificationByTargetDays(daysRemaining, targetDays, notificationList)",``);
 
         if (daysRemaining > targetDays) {
             log.debug("server/model/monitor.js/Monitor/sendCertNotificationByTargetDays(tlsInfodaysRemaining, targetDays, notificationListObject)", `No need to send cert notification. ${daysRemaining} > ${targetDays}`);
@@ -1355,6 +1433,9 @@ class Monitor extends BeanModel {
      * @returns {Promise<LooseObject<any>>}
      */
     static async getPreviousHeartbeat(monitorID) {
+
+      log.debug("server/model/monitor.js/Montitor/getPreviousHeartbeat(monitorID)",``);
+
       log.debug("server/model/monitor.js/Monitor/getPreviousHeartbeat(monitorID)",
       `R.getRow(
           SELECT ping, status, time FROM heartbeat
@@ -1374,6 +1455,9 @@ class Monitor extends BeanModel {
      * @returns {Promise<boolean>}
      */
     static async isUnderMaintenance(monitorID) {
+
+        log.debug("server/model/monitor.js/Montitor/isUnderMaintenance(monitorID)",``);
+
         const maintenanceIDList = await R.getCol(`
             SELECT maintenance_id FROM monitor_maintenance
             WHERE monitor_id = ?
@@ -1395,6 +1479,9 @@ class Monitor extends BeanModel {
 
     /** Make sure monitor interval is between bounds */
     validate() {
+
+        log.debug("server/model/monitor.js/Montitor/validate()",``);
+
         if (this.interval > MAX_INTERVAL_SECOND) {
             throw new Error(`Interval cannot be more than ${MAX_INTERVAL_SECOND} seconds`);
         }

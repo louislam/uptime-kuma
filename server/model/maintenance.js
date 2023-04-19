@@ -15,6 +15,8 @@ class Maintenance extends BeanModel {
      */
     async toPublicJSON() {
 
+        log.debug("server/model/maintenance.js/Maintenance/toPublicJSON()",``);
+
         let dateRange = [];
         if (this.start_date) {
             dateRange.push(this.start_date);
@@ -100,6 +102,9 @@ class Maintenance extends BeanModel {
      * @returns {Object}
      */
     async toJSON(timezone = null) {
+
+        log.debug("server/model/maintenance.js/Maintenance/toJSON()",``);
+
         return this.toPublicJSON(timezone);
     }
 
@@ -109,6 +114,9 @@ class Maintenance extends BeanModel {
      * @returns {number[]} Array of active weekdays
      */
     getDayOfWeekList() {
+
+        log.debug("server/model/maintenance.js/Maintenance/getDayOfWeekList()",``);
+
         log.debug("timeslot", "List: " + this.weekdays);
         return JSON.parse(this.weekdays).sort(function (a, b) {
             return a - b;
@@ -120,6 +128,9 @@ class Maintenance extends BeanModel {
      * @returns {number[]|string[]} Array of active days in month
      */
     getDayOfMonthList() {
+
+        log.debug("server/model/maintenance.js/Maintenance/getDayOfMonthList()",``);
+
         return JSON.parse(this.days_of_month).sort(function (a, b) {
             return a - b;
         });
@@ -130,6 +141,9 @@ class Maintenance extends BeanModel {
      * @returns {number} Duration of maintenance
      */
     calcDuration() {
+
+        log.debug("server/model/maintenance.js/Maintenance/calcDuration()",``);
+
         let duration = dayjs.utc(this.end_time, "HH:mm").diff(dayjs.utc(this.start_time, "HH:mm"), "second");
         // Add 24hours if it is across day
         if (duration < 0) {
@@ -145,6 +159,9 @@ class Maintenance extends BeanModel {
      * @returns {Bean} Filled bean
      */
     static async jsonToBean(bean, obj) {
+
+        log.debug("server/model/maintenance.js/Maintenance/jsonToBean(bean, obj)",``);
+
         if (obj.id) {
             bean.id = obj.id;
         }
@@ -199,12 +216,15 @@ class Maintenance extends BeanModel {
      * Run the cron
      */
     async run(throwError = false) {
+
+        log.debug("server/model/maintenance.js/Maintenance/run(...)",``);
+
         if (this.beanMeta.job) {
-            log.debug("maintenance", "Maintenance is already running, stop it first. id: " + this.id);
+            log.debug("server/model/maintenance.js/Maintenance/run(...)", "Maintenance is already running, stop it first. id: " + this.id);
             this.stop();
         }
 
-        log.debug("maintenance", "Run maintenance id: " + this.id);
+        log.debug("server/model/maintenance.js/Maintenance/run(...)", "Run maintenance id: " + this.id);
 
         // 1.21.2 migration
         if (!this.cron) {
@@ -222,7 +242,7 @@ class Maintenance extends BeanModel {
             // Do nothing, because it is controlled by the user
         } else if (this.strategy === "single") {
             this.beanMeta.job = new Cron(this.start_date, { timezone: await this.getTimezone() }, () => {
-                log.info("maintenance", "Maintenance id: " + this.id + " is under maintenance now");
+                log.info("server/model/maintenance.js/run(...)", "Maintenance id: " + this.id + " is under maintenance now");
                 UptimeKumaServer.getInstance().sendMaintenanceListByUserID(this.user_id);
                 apicache.clear();
             });
@@ -232,7 +252,7 @@ class Maintenance extends BeanModel {
                 this.beanMeta.status = "scheduled";
 
                 let startEvent = (customDuration = 0) => {
-                    log.info("maintenance", "Maintenance id: " + this.id + " is under maintenance now");
+                    log.info("server/model/maintenance.js/run(...)", "Maintenance id: " + this.id + " is under maintenance now");
 
                     this.beanMeta.status = "under-maintenance";
                     clearTimeout(this.beanMeta.durationTimeout);
@@ -291,6 +311,9 @@ class Maintenance extends BeanModel {
     }
 
     getRunningTimeslot() {
+
+        log.debug("server/model/maintenance.js/Maintenance/getRunningTimeslot(...)",``);
+
         let start = dayjs(this.beanMeta.job.nextRun(dayjs().add(-this.duration, "second").format("YYYY-MM-DD HH:mm:ss")));
         let end = start.add(this.duration, "second");
         let current = dayjs();
@@ -306,6 +329,9 @@ class Maintenance extends BeanModel {
     }
 
     stop() {
+
+        log.debug("server/model/maintenance.js/Maintenance/stop()",``);
+
         if (this.beanMeta.job) {
             this.beanMeta.job.stop();
             delete this.beanMeta.job;
@@ -313,10 +339,16 @@ class Maintenance extends BeanModel {
     }
 
     async isUnderMaintenance() {
+
+        log.debug("server/model/maintenance.js/Maintenance/isUnderMaintenance()",``);
+
         return (await this.getStatus()) === "under-maintenance";
     }
 
     async getTimezone() {
+
+        log.debug("server/model/maintenance.js/Maintenance/getTimezone()",``);
+
         if (!this.timezone) {
             return await UptimeKumaServer.getInstance().getTimezone();
         }
@@ -324,10 +356,16 @@ class Maintenance extends BeanModel {
     }
 
     async getTimezoneOffset() {
+
+        log.debug("server/model/maintenance.js/Maintenance/getTimezoneOffset()",``);
+
         return dayjs.tz(dayjs(), await this.getTimezone()).format("Z");
     }
 
     async getStatus() {
+
+        log.debug("server/model/maintenance.js/Maintenance/getStatus()",``);
+
         if (!this.active) {
             return "inactive";
         }
@@ -362,7 +400,10 @@ class Maintenance extends BeanModel {
      * @returns {Promise<void>}
      */
     async generateCron() {
-        log.info("maintenance", "Generate cron for maintenance id: " + this.id);
+
+        log.debug("server/model/maintenance.js/Maintenance/generateCron()",``);
+
+        log.info("server/model/maintenance.js/Maintenance/generateCron()", "Generate cron for maintenance id: " + this.id);
 
         if (this.strategy === "cron") {
             // Do nothing for cron

@@ -15,6 +15,9 @@ class Heartbeat extends BeanModel {
      * @returns {Object}
      */
     toPublicJSON() {
+
+        log.debug("server/model/heartbeat.js/Heartbeat/toPublicJSON()",``);
+
         return {
             status: this.status,
             time: this.time,
@@ -28,6 +31,7 @@ class Heartbeat extends BeanModel {
      * @returns {Object}
      */
     toJSON() {
+        log.debug("server/model/heartbeat.js/Heartbeat/toJSON()",``);
         return {
             monitorID: this.monitor_id,
             status: this.status,

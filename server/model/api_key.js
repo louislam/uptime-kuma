@@ -8,6 +8,9 @@ class APIKey extends BeanModel {
      * @returns {string} active, inactive or expired
      */
     getStatus() {
+
+        log.debug("server/model/api_key.js/APIKey/getStatus()",``);
+
         let current = dayjs();
         let expiry = dayjs(this.expires);
         if (expiry.diff(current) < 0) {
@@ -22,6 +25,7 @@ class APIKey extends BeanModel {
      * @returns {Object}
      */
     toJSON() {
+        log.debug("server/model/api_key.js/APIKey/toJSON()",``);
         return {
             id: this.id,
             key: this.key,
@@ -40,6 +44,7 @@ class APIKey extends BeanModel {
      * @returns {Object}
      */
     toPublicJSON() {
+        log.debug("server/model/api_key.js/APIKey/toPublicJSON()",``);
         return {
             id: this.id,
             name: this.name,
@@ -58,6 +63,7 @@ class APIKey extends BeanModel {
      * @returns {Promise<bean>}
      */
     static async save(key, userID) {
+        log.debug("server/model/api_key.js/APIKey/save(key, userID)",``);
         let bean;
         bean = R.dispense("api_key");
         log.debug("server/model/api_keys.js/save(key,userID)","R.dispense('api_key')");

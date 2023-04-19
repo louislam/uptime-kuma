@@ -6,6 +6,7 @@ class DockerHost extends BeanModel {
      * @returns {Object}
      */
     toJSON() {
+        log.debug("server/model/docker_host.js/OdckerHost/toJSON()",``);
         return {
             id: this.id,
             userID: this.user_id,
