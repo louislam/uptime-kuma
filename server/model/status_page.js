@@ -21,6 +21,9 @@ class StatusPage extends BeanModel {
      * @param {string} slug
      */
     static async handleStatusPageResponse(response, indexHTML, slug) {
+
+      log.debug("server/model/status_page.js/StatusPage/handleStatusPageResponse(response, indexHTML, slug)",``);
+
         let statusPage = await R.findOne("status_page", " slug = ? ", [
             slug
         ]);
@@ -40,6 +43,9 @@ class StatusPage extends BeanModel {
      * @param {StatusPage} statusPage
      */
     static async renderHTML(indexHTML, statusPage) {
+
+        log.debug("server/model/status_page.js/StatusPage/renderHTML(indexHTML, statusPage)",``);
+
         const $ = cheerio.load(indexHTML);
         const description155 = statusPage.description?.substring(0, 155) ?? "";
 
@@ -93,6 +99,9 @@ class StatusPage extends BeanModel {
      * @param {StatusPage} statusPage
      */
     static async getStatusPageData(statusPage) {
+
+        log.debug("server/model/status_page.js/StatusPage/getStatusPageData(statusPage)",``);
+
         // Incident
         let incident = await R.findOne("incident", " pin = 1 AND active = 1 AND status_page_id = ? ", [
             statusPage.id,
@@ -136,6 +145,9 @@ class StatusPage extends BeanModel {
      * @returns {Promise<void>}
      */
     static async loadDomainMappingList() {
+
+       log.debug("server/model/status_page.js/StatusPage/loadDomainMappingList()",``);
+
         StatusPage.domainMappingList = await R.getAssoc(`
             SELECT domain, slug
             FROM status_page, status_page_cname
@@ -156,6 +168,9 @@ class StatusPage extends BeanModel {
      * @returns {Promise<Bean[]>}
      */
     static async sendStatusPageList(io, socket) {
+
+        log.debug("server/model/status_page.js/StatusPage/sendStatusPageList(io, socket)",``);
+
         let result = {};
 
         let list = await R.findAll("status_page", " ORDER BY title ");
@@ -176,6 +191,8 @@ class StatusPage extends BeanModel {
      * @returns {Promise<void>}
      */
     async updateDomainNameList(domainNameList) {
+
+        log.debug("server/model/status_page.js/StatusPage/updateDomainNameList(domainNameList)",``);
 
         if (!Array.isArray(domainNameList)) {
             throw new Error("Invalid array");
@@ -230,6 +247,9 @@ class StatusPage extends BeanModel {
      * @returns {Object[]}
      */
     getDomainNameList() {
+
+        log.debug("server/model/status_page.js/StatusPage/getDomainNameList()",``);
+
         let domainList = [];
         for (let domain in StatusPage.domainMappingList) {
             let s = StatusPage.domainMappingList[domain];
@@ -246,6 +266,7 @@ class StatusPage extends BeanModel {
      * @returns {Object}
      */
     async toJSON() {
+        log.debug("server/model/status_page.js/StatusPage/toJSON()",``);
         return {
             id: this.id,
             slug: this.slug,
@@ -269,6 +290,7 @@ class StatusPage extends BeanModel {
      * @returns {Object}
      */
     async toPublicJSON() {
+        log.debug("server/model/status_page.js/StatusPage/toPublicJSON()",``);
         return {
             slug: this.slug,
             title: this.title,
@@ -289,6 +311,7 @@ class StatusPage extends BeanModel {
      * @param {string} slug
      */
     static async slugToID(slug) {
+        log.debug("server/model/status_page.js/StatusPage/slugToID(slug)",``);
         log.debug("server/model/status_page.js/StatusPage/slugToID(slug)",
         `R.getCell("SELECT id FROM status_page WHERE slug = ${slug}"`);
         return await R.getCell("SELECT id FROM status_page WHERE slug = ? ", [
@@ -301,6 +324,9 @@ class StatusPage extends BeanModel {
      * @returns {string}
      */
     getIcon() {
+
+        log.debug("server/model/status_page.js/StatusPage/getIcon()",``);
+
         if (!this.icon) {
             return "/icon.svg";
         } else {
@@ -314,6 +340,9 @@ class StatusPage extends BeanModel {
      * @returns {Object} Object representing maintenances sanitized for public
      */
     static async getMaintenanceList(statusPageId) {
+
+        log.debug("server/model/status_page.js/StatusPage/getMaintenanceList(statusPageId)",``);
+
         try {
             const publicMaintenanceList = [];
 

@@ -13,10 +13,13 @@ module.exports.pluginsHandler = (socket, server) => {
 
     // Get Plugin List
     socket.on("getPluginList", async (callback) => {
+
+        log.debug("server/socket-handlers/plugins-handler.js/pluginsHandler(socket)/socket.on(getPluginList)","");
+
         try {
             checkLogin(socket);
 
-            log.debug("plugin", "PluginManager.disable: " + PluginsManager.disable);
+            log.debug("server/socket-handlers/plugins-handler.js/pluginsHandler(socket)/socket.on(getPluginList)", "PluginManager.disable: " + PluginsManager.disable);
 
             if (PluginsManager.disable) {
                 throw new Error("Plugin Disabled: In order to enable plugin feature, you need to use the default data directory: ./data/");
@@ -28,7 +31,7 @@ module.exports.pluginsHandler = (socket, server) => {
                 pluginList,
             });
         } catch (error) {
-            log.warn("plugin", "Error: " + error.message);
+            log.warn("server/socket-handlers/plugins-handler.js/pluginsHandler(socket)/socket.on(getPluginList)", "Error: " + error.message);
             callback({
                 ok: false,
                 msg: error.message,
@@ -37,6 +40,9 @@ module.exports.pluginsHandler = (socket, server) => {
     });
 
     socket.on("installPlugin", async (repoURL, name, callback) => {
+
+        log.debug("server/socket-handlers/plugins-handler.js/pluginsHandler(socket)/socket.on(installPlugin)","");
+
         try {
             checkLogin(socket);
             pluginManager.downloadPlugin(repoURL, name);
@@ -53,6 +59,9 @@ module.exports.pluginsHandler = (socket, server) => {
     });
 
     socket.on("uninstallPlugin", async (name, callback) => {
+
+        log.debug("server/socket-handlers/plugins-handler.js/pluginsHandler(socket)/socket.on(uninstallPlugin)","");
+
         try {
             checkLogin(socket);
             await pluginManager.removePlugin(name);

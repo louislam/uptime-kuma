@@ -415,6 +415,9 @@ module.exports.statusPageSocketHandler = (socket) => {
  * @param {string} slug Slug to test
  */
 function checkSlug(slug) {
+
+  log.debug("server/socket-handlers/status-page-socket-handler.js/checkSlug(slug)",``);
+
     if (typeof slug !== "string") {
         throw new Error("Slug must be string");
     }

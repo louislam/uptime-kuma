@@ -32,6 +32,9 @@ cloudflared.error = (errorMessage) => {
 module.exports.cloudflaredSocketHandler = (socket) => {
 
     socket.on(prefix + "join", async () => {
+
+        log.debug("server/socket-handlers/cloudflared-socket-handler.js/cloudflaredSocketHandler(socket)/socket.on(" + prefix + "join)","");
+
         try {
             checkLogin(socket);
             socket.join("cloudflared");
@@ -42,6 +45,9 @@ module.exports.cloudflaredSocketHandler = (socket) => {
     });
 
     socket.on(prefix + "leave", async () => {
+
+        log.debug("server/socket-handlers/cloudflared-socket-handler.js/cloudflaredSocketHandler(socket)/socket.on(" + prefix + "leave)","");
+
         try {
             checkLogin(socket);
             socket.leave("cloudflared");
@@ -49,6 +55,9 @@ module.exports.cloudflaredSocketHandler = (socket) => {
     });
 
     socket.on(prefix + "start", async (token) => {
+
+        log.debug("server/socket-handlers/cloudflared-socket-handler.js/cloudflaredSocketHandler(socket)/socket.on(" + prefix + "start)","");
+
         try {
             checkLogin(socket);
             if (token && typeof token === "string") {
@@ -62,6 +71,9 @@ module.exports.cloudflaredSocketHandler = (socket) => {
     });
 
     socket.on(prefix + "stop", async (currentPassword, callback) => {
+
+        log.debug("server/socket-handlers/cloudflared-socket-handler.js/cloudflaredSocketHandler(socket)/socket.on(" + prefix + "stop)","");
+
         try {
             checkLogin(socket);
             const disabledAuth = await setting("disableAuth");
@@ -78,6 +90,9 @@ module.exports.cloudflaredSocketHandler = (socket) => {
     });
 
     socket.on(prefix + "removeToken", async () => {
+
+        log.debug("server/socket-handlers/cloudflared-socket-handler.js/cloudflaredSocketHandler(socket)/socket.on(" + prefix + "removeToken)","");
+
         try {
             checkLogin(socket);
             await setSetting("cloudflaredTunnelToken", "");
@@ -91,6 +106,9 @@ module.exports.cloudflaredSocketHandler = (socket) => {
  * @param {string} token Cloudflared tunnel token
  */
 module.exports.autoStart = async (token) => {
+
+    log.debug("server/socket-handlers/cloudflared-socket-handler.js/autoStart","");
+
     if (!token) {
         token = await setting("cloudflaredTunnelToken");
     } else {
@@ -108,6 +126,7 @@ module.exports.autoStart = async (token) => {
 
 /** Stop cloudflared */
 module.exports.stop = async () => {
+    log.debug("server/socket-handlers/cloudflared-socket-handler.js/stop","");
     log.info("cloudflared", "Stop cloudflared");
     if (cloudflared) {
         cloudflared.stop();

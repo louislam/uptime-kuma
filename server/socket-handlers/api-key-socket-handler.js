@@ -37,6 +37,8 @@ module.exports.apiKeySocketHandler = (socket) => {
             // Enable API auth if the user creates a key, otherwise only basic
             // auth will be used for API.
             await Settings.set("apiKeysEnabled", true);
+            log.debug("server/socket-handlers/api-key-socket-handler.js/apiKeySocketHandler(socket)/socket.on(enableAPIKey)",
+            `Settings.set("apiKeysEnabled", true)`);
 
             callback({
                 ok: true,

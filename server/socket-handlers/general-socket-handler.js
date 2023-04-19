@@ -12,6 +12,9 @@ let gameList = null;
  * @returns {Object[]} list of games supported by GameDig
  */
 function getGameList() {
+
+    log.debug("server/socket-handlers/docker-socket-handler.js/getGameList","");
+
     if (gameList == null) {
         gameList = gameResolver._readGames().games.sort((a, b) => {
             if ( a.pretty < b.pretty ) {
@@ -29,6 +32,9 @@ function getGameList() {
 module.exports.generalSocketHandler = (socket, server) => {
 
     socket.on("initServerTimezone", async (timezone) => {
+
+        log.debug("server/socket-handlers/general-socket-handler.js/generalSocketHandler(socket)/socket.on(initServerTimezone)","");
+
         try {
             checkLogin(socket);
             log.debug("generalSocketHandler", "Timezone: " + timezone);
@@ -41,6 +47,9 @@ module.exports.generalSocketHandler = (socket, server) => {
     });
 
     socket.on("getGameList", async (callback) => {
+
+        log.debug("server/socket-handlers/general-socket-handler.js/generalSocketHandler(socket)/socket.on(getGameList)","");
+
         callback({
             ok: true,
             gameList: getGameList(),

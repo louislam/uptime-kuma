@@ -10,6 +10,9 @@ const server = UptimeKumaServer.getInstance();
  */
 module.exports.proxySocketHandler = (socket) => {
     socket.on("addProxy", async (proxy, proxyID, callback) => {
+
+        log.debug("server/socket-handlers/proxy-socket-handler.js/proxySocketHandler(socket)/socket.on(addProxy)","");
+
         try {
             checkLogin(socket);
 
@@ -36,6 +39,9 @@ module.exports.proxySocketHandler = (socket) => {
     });
 
     socket.on("deleteProxy", async (proxyID, callback) => {
+
+        log.debug("server/socket-handlers/proxy-socket-handler.js/proxySocketHandler(socket)/socket.on(deleteProxy)","");
+
         try {
             checkLogin(socket);
 

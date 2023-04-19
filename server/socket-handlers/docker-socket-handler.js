@@ -9,6 +9,9 @@ const { log } = require("../../src/util");
  */
 module.exports.dockerSocketHandler = (socket) => {
     socket.on("addDockerHost", async (dockerHost, dockerHostID, callback) => {
+
+        log.debug("server/socket-handlers/docker-socket-handler.js/dockerSocketHandler(socket)/socket.on(addDockerHost)","");
+
         try {
             checkLogin(socket);
 
@@ -30,6 +33,9 @@ module.exports.dockerSocketHandler = (socket) => {
     });
 
     socket.on("deleteDockerHost", async (dockerHostID, callback) => {
+
+        log.debug("server/socket-handlers/docker-socket-handler.js/dockerSocketHandler(socket)/socket.on(deleteDockerHost)","");
+
         try {
             checkLogin(socket);
 
@@ -50,6 +56,9 @@ module.exports.dockerSocketHandler = (socket) => {
     });
 
     socket.on("testDockerHost", async (dockerHost, callback) => {
+
+        log.debug("server/socket-handlers/docker-socket-handler.js/dockerSocketHandler(socket)/socket.on(testDockerHost)","");
+
         try {
             checkLogin(socket);
 
