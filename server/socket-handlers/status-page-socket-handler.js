@@ -271,7 +271,7 @@ module.exports.statusPageSocketHandler = (socket) => {
             ];
             await R.exec(`DELETE FROM \`group\` WHERE id NOT IN (${slots}) AND status_page_id = ?`, data);
             log.debug("server/socket-handlers/status-page-socket-handler.js/statusPageSocketHandler(socket)/socket.on(saveStatusPage)",
-            `R.exec(DELETE FROM group WHERE id NOT IN (${JSON.stringify(slots)}) AND status_page_id = ${tatusPage.id}`);
+            `R.exec(DELETE FROM group WHERE id NOT IN (${JSON.stringify(slots)}) AND status_page_id = ${statusPage.id}`);
 
             const server = UptimeKumaServer.getInstance();
 

@@ -313,12 +313,12 @@ class StatusPage extends BeanModel {
     static async slugToID(slug) {
         log.debug("server/model/status_page.js/StatusPage/slugToID(slug)",``);
 
-        let debugData = await R.findAll("SELECT * FROM status_page");
-        log.debug("server/model/status_page.js/StatusPage/handleStatusPageResponse(response, indexHTML, slug)",
-        `R.findAll("SELECT * FROM status_page")`);
+        // let debugData = await R.findAll("SELECT * FROM status_page");
+        // log.debug("server/model/status_page.js/StatusPage/handleStatusPageResponse(response, indexHTML, slug)",
+        // `R.findAll("SELECT * FROM status_page")`);
 
-        log.debug("server/model/status_page.js/StatusPage/slugToID(slug)",
-        "debug data: " + JSON.stringify(debugData));
+        // log.debug("server/model/status_page.js/StatusPage/slugToID(slug)",
+        // "debug data: " + JSON.stringify(debugData));
 
         log.debug("server/model/status_page.js/StatusPage/slugToID(slug)",
         `R.getCell("SELECT id FROM status_page WHERE slug = ${slug}"`);
