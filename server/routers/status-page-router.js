@@ -5,6 +5,7 @@ const StatusPage = require("../model/status_page");
 const { allowDevAllOrigin, sendHttpError } = require("../util-server");
 const { R } = require("redbean-node");
 const Monitor = require("../model/monitor");
+const { log } = require("../../src/util");
 
 let router = express.Router();
 
@@ -12,22 +13,28 @@ let cache = apicache.middleware;
 const server = UptimeKumaServer.getInstance();
 
 router.get("/status/:slug", cache("5 minutes"), async (request, response) => {
+    log.debug("server/routers/status-page-router.js/router.get(/status/:slug)",``);
     let slug = request.params.slug;
     await StatusPage.handleStatusPageResponse(response, server.indexHTML, slug);
 });
 
 router.get("/status", cache("5 minutes"), async (request, response) => {
+    log.debug("server/routers/status-page-router.js/router.get(/status)",``);
     let slug = "default";
     await StatusPage.handleStatusPageResponse(response, server.indexHTML, slug);
 });
 
 router.get("/status-page", cache("5 minutes"), async (request, response) => {
+    log.debug("server/routers/status-page-router.js/router.get(/status-page)",``);
     let slug = "default";
     await StatusPage.handleStatusPageResponse(response, server.indexHTML, slug);
 });
 
 // Status page config, incident, monitor list
 router.get("/api/status-page/:slug", cache("5 minutes"), async (request, response) => {
+
+    log.debug("server/routers/status-page-router.js/router.get(/api/status-page/:slug)",``);
+
     allowDevAllOrigin(response);
     let slug = request.params.slug;
 
@@ -62,6 +69,9 @@ router.get("/api/status-page/:slug", cache("5 minutes"), async (request, respons
 // Status Page Polling Data
 // Can fetch only if published
 router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (request, response) => {
+
+    log.debug("server/routers/status-page-router.js/router.get(/api/status-page/heartbeat/:slug)",``);
+
     allowDevAllOrigin(response);
 
     try {
@@ -127,6 +137,9 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
 
 // Status page's manifest.json
 router.get("/api/status-page/:slug/manifest.json", cache("1440 minutes"), async (request, response) => {
+
+    log.debug("server/routers/status-page-router.js/router.get(/api/status-page/:slug/manifest.json)",``);
+
     allowDevAllOrigin(response);
     let slug = request.params.slug;
 

@@ -19,7 +19,9 @@ const server = UptimeKumaServer.getInstance();
 let io = server.io;
 
 router.get("/api/entry-page", async (request, response) => {
+
     log.debug("server/routers/api-router.js/router.get( /api/entry-page)","");
+
     allowDevAllOrigin(response);
 
     let result = { };
@@ -35,6 +37,9 @@ router.get("/api/entry-page", async (request, response) => {
 });
 
 router.get("/api/push/:pushToken", async (request, response) => {
+
+    log.debug("server/routers/api-router.js/router.get(/api/push/:pushToken)","");
+
     try {
 
         let pushToken = request.params.pushToken;
@@ -118,6 +123,9 @@ router.get("/api/push/:pushToken", async (request, response) => {
 });
 
 router.get("/api/badge/:id/status", cache("5 minutes"), async (request, response) => {
+
+    log.debug("server/routers/api-router.js/router.get(/api/badge/:id/status)","");
+
     allowAllOrigin(response);
 
     const {
@@ -204,6 +212,9 @@ router.get("/api/badge/:id/status", cache("5 minutes"), async (request, response
 });
 
 router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (request, response) => {
+
+    log.debug("server/routers/api-router.js/router.get(/api/badge/:id/uptime/:duration?)","");
+
     allowAllOrigin(response);
 
     const {
@@ -278,6 +289,9 @@ router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (reques
 });
 
 router.get("/api/badge/:id/ping/:duration?", cache("5 minutes"), async (request, response) => {
+
+    log.debug("server/routers/api-router.js/router.get(/api/badge/:id/ping/:duration?)","");
+
     allowAllOrigin(response);
 
     const {
@@ -348,6 +362,9 @@ router.get("/api/badge/:id/ping/:duration?", cache("5 minutes"), async (request,
 });
 
 router.get("/api/badge/:id/avg-response/:duration?", cache("5 minutes"), async (request, response) => {
+
+    log.debug("server/routers/api-router.js/router.get(/api/badge/:id/avg-response/:duration?)","");
+
     allowAllOrigin(response);
 
     const {
@@ -427,6 +444,9 @@ router.get("/api/badge/:id/avg-response/:duration?", cache("5 minutes"), async (
 });
 
 router.get("/api/badge/:id/cert-exp", cache("5 minutes"), async (request, response) => {
+
+    log.debug("server/routers/api-router.js/router.get(/api/badge/:id/cert-exp)","");
+
     allowAllOrigin(response);
 
     const date = request.query.date;
@@ -527,6 +547,9 @@ router.get("/api/badge/:id/cert-exp", cache("5 minutes"), async (request, respon
 });
 
 router.get("/api/badge/:id/response", cache("5 minutes"), async (request, response) => {
+
+    log.debug("server/routers/api-router.js/router.get(/api/badge/:id/responsep)","");
+
     allowAllOrigin(response);
 
     const {

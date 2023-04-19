@@ -1,4 +1,5 @@
 const { BeanModel } = require("redbean-node/dist/bean-model");
+const { log } = require("../../src/util");
 
 /**
  * status:
