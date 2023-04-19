@@ -20,6 +20,7 @@ const main = async () => {
         // No need to actually reset the password for testing, just make sure no connection problem. It is ok for now.
         if (!process.env.TEST_BACKEND) {
             const user = await R.findOne("user");
+            log.debug("extra/reset-password.js","R.findOne('user')");
             if (! user) {
                 throw new Error("user not found, have you installed?");
             }

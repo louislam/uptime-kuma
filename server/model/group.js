@@ -1,5 +1,6 @@
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { R } = require("redbean-node");
+const { log } = require("../../src/util");
 
 class Group extends BeanModel {
 
@@ -30,6 +31,7 @@ class Group extends BeanModel {
      * @returns {Bean[]}
      */
     async getMonitorList() {
+        log.debug("server/model/group.js/getMonitorList()","R.convertToBeans('monitor', R.getAll('SELECT monitor.*, monitor_group.send_url FROM monitor, monitor_group WHERE monitor.id = monitor_group.monitor_id AND group_id = " + this.id + " ORDER BY monitor_group.weight'))");
         return R.convertToBeans("monitor", await R.getAll(`
             SELECT monitor.*, monitor_group.send_url FROM monitor, monitor_group
             WHERE monitor.id = monitor_group.monitor_id

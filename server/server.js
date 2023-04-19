@@ -3,7 +3,7 @@
  * node "server/server.js"
  * DO NOT require("./server") in other modules, it likely creates circular dependency!
  */
-console.log("Welcome to Uptime Kuma");
+console.log("[server/server.js/] Welcome to Uptime Kuma");
 
 // As the log function need to use dayjs, it should be very top
 const dayjs = require("dayjs");
@@ -17,7 +17,7 @@ require("dotenv").config();
 // Check Node.js Version
 const nodeVersion = parseInt(process.versions.node.split(".")[0]);
 const requiredVersion = 14;
-console.log(`Your Node.js version: ${nodeVersion}`);
+console.log(`[server/server.js/] Your Node.js version: ${nodeVersion}`);
 
 if (nodeVersion < requiredVersion) {
     console.error(`Error: Your Node.js version is not supported, please upgrade to Node.js >= ${requiredVersion}.`);
@@ -29,36 +29,36 @@ const { sleep, log, getRandomInt, genSecret, isDev } = require("../src/util");
 const config = require("./config");
 
 log.info("server", "Welcome to Uptime Kuma");
-log.debug("server", "Arguments");
-log.debug("server", args);
+log.debug("server/server.js/", "Arguments");
+log.debug("server/server.js/", args);
 
 if (! process.env.NODE_ENV) {
     process.env.NODE_ENV = "production";
 }
 
-log.info("server", "Node Env: " + process.env.NODE_ENV);
+log.info("server/server.js/", "Node Env: " + process.env.NODE_ENV);
 
-log.info("server", "Importing Node libraries");
+log.info("server/server.js/", "Importing Node libraries");
 const fs = require("fs");
 
-log.info("server", "Importing 3rd-party libraries");
+log.info("server/server.js/", "Importing 3rd-party libraries");
 
-log.debug("server", "Importing express");
+log.debug("server/server.js/", "Importing express");
 const express = require("express");
 const expressStaticGzip = require("express-static-gzip");
-log.debug("server", "Importing redbean-node");
+log.debug("server/server.js/", "Importing redbean-node");
 const { R } = require("redbean-node");
-log.debug("server", "Importing jsonwebtoken");
+log.debug("server/server.js/", "Importing jsonwebtoken");
 const jwt = require("jsonwebtoken");
-log.debug("server", "Importing http-graceful-shutdown");
+log.debug("server/server.js/", "Importing http-graceful-shutdown");
 const gracefulShutdown = require("http-graceful-shutdown");
-log.debug("server", "Importing prometheus-api-metrics");
+log.debug("server/server.js/", "Importing prometheus-api-metrics");
 const prometheusAPIMetrics = require("prometheus-api-metrics");
-log.debug("server", "Importing compare-versions");
+log.debug("server/server.js/", "Importing compare-versions");
 const compareVersions = require("compare-versions");
 const { passwordStrength } = require("check-password-strength");
 
-log.debug("server", "Importing 2FA Modules");
+log.debug("server/server.js/", "Importing 2FA Modules");
 const notp = require("notp");
 const base32 = require("thirty-two");
 
@@ -67,23 +67,23 @@ const server = UptimeKumaServer.getInstance(args);
 const io = module.exports.io = server.io;
 const app = server.app;
 
-log.info("server", "Importing this project modules");
-log.debug("server", "Importing Monitor");
+log.info("server/server.js/", "Importing this project modules");
+log.debug("server/server.js/", "Importing Monitor");
 const Monitor = require("./model/monitor");
-log.debug("server", "Importing Settings");
+log.debug("server/server.js/", "Importing Settings");
 const { getSettings, setSettings, setting, initJWTSecret, checkLogin, startUnitTest, FBSD, doubleCheckPassword, startE2eTests } = require("./util-server");
 
-log.debug("server", "Importing Notification");
+log.debug("server/server.js/", "Importing Notification");
 const { Notification } = require("./notification");
 Notification.init();
 
-log.debug("server", "Importing Proxy");
+log.debug("server/server.js/", "Importing Proxy");
 const { Proxy } = require("./proxy");
 
-log.debug("server", "Importing Database");
+log.debug("server/server.js/", "Importing Database");
 const Database = require("./database");
 
-log.debug("server", "Importing Background Jobs");
+log.debug("server/server.js/", "Importing Background Jobs");
 const { initBackgroundJobs, stopBackgroundJobs } = require("./jobs");
 const { loginRateLimiter, twoFaRateLimiter } = require("./rate-limiter");
 
@@ -92,7 +92,7 @@ const { login } = require("./auth");
 const passwordHash = require("./password-hash");
 
 const checkVersion = require("./check-version");
-log.info("server", "Version: " + checkVersion.version);
+log.info("server/server.js/", "Version: " + checkVersion.version);
 
 // If host is omitted, the server will accept connections on the unspecified IPv6 address (::) when IPv6 is available and the unspecified IPv4 address (0.0.0.0) otherwise.
 // Dual-stack support for (::)
@@ -101,7 +101,7 @@ let hostEnv = FBSD ? null : process.env.HOST;
 let hostname = args.host || process.env.UPTIME_KUMA_HOST || hostEnv;
 
 if (hostname) {
-    log.info("server", "Custom hostname: " + hostname);
+    log.info("server/server.js/", "Custom hostname: " + hostname);
 }
 
 const port = [ args.port, process.env.UPTIME_KUMA_PORT, process.env.PORT, 3001 ]
@@ -125,7 +125,7 @@ const testMode = !!args["test"] || false;
 const e2eTestMode = !!args["e2e"] || false;
 
 if (config.demoMode) {
-    log.info("server", "==== Demo Mode ====");
+    log.info("server/server.js/", "==== Demo Mode ====");
 }
 
 // Must be after io instantiation
@@ -169,6 +169,9 @@ let jwtSecret = null;
 let needSetup = false;
 
 (async () => {
+
+    log.debug("server/server.js/","Start db, api init")
+
     Database.init(args);
     await initDatabase(testMode);
     await server.initAfterDatabaseReady();
@@ -176,7 +179,7 @@ let needSetup = false;
     server.entryPage = await Settings.get("entryPage");
     await StatusPage.loadDomainMappingList();
 
-    log.info("server", "Adding route");
+    log.info("server/server.js/", "Adding route");
 
     // ***************************
     // Normal Router here
@@ -184,6 +187,9 @@ let needSetup = false;
 
     // Entry Page
     app.get("/", async (request, response) => {
+
+        log.info("server/server.js/api.get(/)","");
+
         let hostname = request.hostname;
         if (await setting("trustProxy")) {
             const proxy = request.headers["x-forwarded-host"];
@@ -192,24 +198,27 @@ let needSetup = false;
             }
         }
 
-        log.debug("entry", `Request Domain: ${hostname}`);
+        log.debug("server/server.js/", `Request Domain: ${hostname}`);
 
         const uptimeKumaEntryPage = server.entryPage;
         if (hostname in StatusPage.domainMappingList) {
-            log.debug("entry", "This is a status page domain");
+
+            log.debug("server/server.js/", "This is a status page domain w hostname: " + hostname);
 
             let slug = StatusPage.domainMappingList[hostname];
             await StatusPage.handleStatusPageResponse(response, server.indexHTML, slug);
 
         } else if (uptimeKumaEntryPage && uptimeKumaEntryPage.startsWith("statusPage-")) {
+            log.debug("server/server.js/", "Redirect to status page");
             response.redirect("/status/" + uptimeKumaEntryPage.replace("statusPage-", ""));
-
         } else {
+            log.debug("server/server.js/", "Redirect to dasboard");
             response.redirect("/dashboard");
         }
     });
 
     if (isDev) {
+        log.debug("server/server.js/isDev: true","");
         app.post("/test-webhook", async (request, response) => {
             log.debug("test", request.headers);
             log.debug("test", request.body);
@@ -219,6 +228,7 @@ let needSetup = false;
 
     // Robots.txt
     app.get("/robots.txt", async (_request, response) => {
+        log.debug("server/server.js/app.get(.robots.txt)","");
         let txt = "User-agent: *\nDisallow:";
         if (!await setting("searchEngineIndex")) {
             txt += " /";
@@ -247,13 +257,17 @@ let needSetup = false;
     // API Router
     const apiRouter = require("./routers/api-router");
     app.use(apiRouter);
+    log.debug("server/server.js/app.use(apiRouter)","");
+
 
     // Status Page Router
     const statusPageRouter = require("./routers/status-page-router");
     app.use(statusPageRouter);
+    log.debug("server/server.js/app.use(statusPageRouter)","");
 
     // Universal Route Handler, must be at the end of all express routes.
     app.get("*", async (_request, response) => {
+        log.debug("server/server.js/app.get(*)","");
         if (_request.originalUrl.startsWith("/upload/")) {
             response.status(404).send("File not found.");
         } else {
@@ -261,14 +275,17 @@ let needSetup = false;
         }
     });
 
-    log.info("server", "Adding socket handler");
+    log.info("server/server.js/", "Adding socket handler");
     io.on("connection", async (socket) => {
+
+        log.info("server/server.js/io.on(connection)","");
 
         sendInfo(socket);
 
         if (needSetup) {
-            log.info("server", "Redirect to setup page");
+            log.info("server/server.js/", "Redirect to setup page");
             socket.emit("setup");
+            log.info("server/server.js/", "socket.emit(setup)");
         }
 
         // ***************************
@@ -276,32 +293,38 @@ let needSetup = false;
         // ***************************
 
         socket.on("loginByToken", async (token, callback) => {
+
+            log.info("server/server.js/socket.on.loginByToken(token,callback)","");
+
             const clientIP = await server.getClientIP(socket);
 
-            log.info("auth", `Login by token. IP=${clientIP}`);
+            log.info("server/server.js/socket.on(loginByToken)", `Login by token. IP=${clientIP}`);
 
             try {
                 let decoded = jwt.verify(token, jwtSecret);
 
-                log.info("auth", "Username from JWT: " + decoded.username);
+                log.info("server/server.js/socket.on(loginByToken)", "Username from JWT: " + decoded.username);
 
                 let user = await R.findOne("user", " username = ? AND active = 1 ", [
                     decoded.username,
                 ]);
+                log.debug("server/server.js/socket.on(loginByToken)",
+                `R.findOne("user", " username = ${decoded.username} AND active = 1 "`
+                );
 
                 if (user) {
-                    log.debug("auth", "afterLogin");
+                    log.debug("server/server.js/socket.on(loginByToken)", "afterLogin");
                     afterLogin(socket, user);
-                    log.debug("auth", "afterLogin ok");
+                    log.debug("server/server.js/socket.on(loginByToken)", "afterLogin ok");
 
-                    log.info("auth", `Successfully logged in user ${decoded.username}. IP=${clientIP}`);
+                    log.info("server/server.js/socket.on(loginByToken)", `Successfully logged in user ${decoded.username}. IP=${clientIP}`);
 
                     callback({
                         ok: true,
                     });
                 } else {
 
-                    log.info("auth", `Inactive or deleted user ${decoded.username}. IP=${clientIP}`);
+                    log.info("server/server.js/socket.on(loginByToken)", `Inactive or deleted user ${decoded.username}. IP=${clientIP}`);
 
                     callback({
                         ok: false,
@@ -310,7 +333,7 @@ let needSetup = false;
                 }
             } catch (error) {
 
-                log.error("auth", `Invalid token. IP=${clientIP}`);
+                log.error("server/server.js/socket.on(loginByToken)", `Invalid token. IP=${clientIP}`);
 
                 callback({
                     ok: false,
@@ -321,9 +344,12 @@ let needSetup = false;
         });
 
         socket.on("login", async (data, callback) => {
+
+            log.error("server/server.js/socket.on.login(data,callback)","");
+
             const clientIP = await server.getClientIP(socket);
 
-            log.info("auth", `Login by username + password. IP=${clientIP}`);
+            log.info("server/server.js/socket.on.login(...)", `Login by username + password. IP=${clientIP}`);
 
             // Checking
             if (typeof callback !== "function") {
@@ -336,7 +362,7 @@ let needSetup = false;
 
             // Login Rate Limit
             if (! await loginRateLimiter.pass(callback)) {
-                log.info("auth", `Too many failed requests for user ${data.username}. IP=${clientIP}`);
+                log.info("server/server.js/socket.on.login(...)", `Too many failed requests for user ${data.username}. IP=${clientIP}`);
                 return;
             }
 
@@ -346,7 +372,7 @@ let needSetup = false;
                 if (user.twofa_status === 0) {
                     afterLogin(socket, user);
 
-                    log.info("auth", `Successfully logged in user ${data.username}. IP=${clientIP}`);
+                    log.info("server/server.js/socket.on.login(...)", `Successfully logged in user ${data.username}. IP=${clientIP}`);
 
                     callback({
                         ok: true,
@@ -358,7 +384,7 @@ let needSetup = false;
 
                 if (user.twofa_status === 1 && !data.token) {
 
-                    log.info("auth", `2FA token required for user ${data.username}. IP=${clientIP}`);
+                    log.info("server/server.js/socket.on.login(...)", `2FA token required for user ${data.username}. IP=${clientIP}`);
 
                     callback({
                         tokenRequired: true,
@@ -375,8 +401,11 @@ let needSetup = false;
                             data.token,
                             socket.userID,
                         ]);
+                        log.debug("server/server.js/socket.on.login(...)",
+                        `R.exec("UPDATE user SET twofa_last_token = ${data.token} WHERE id = ${socket.userID} ")`
+                        );
 
-                        log.info("auth", `Successfully logged in user ${data.username}. IP=${clientIP}`);
+                        log.info("server/server.js/socket.on.login(...)", `Successfully logged in user ${data.username}. IP=${clientIP}`);
 
                         callback({
                             ok: true,
@@ -386,7 +415,7 @@ let needSetup = false;
                         });
                     } else {
 
-                        log.warn("auth", `Invalid token provided for user ${data.username}. IP=${clientIP}`);
+                        log.warn("server/server.js/socket.on.login(...)", `Invalid token provided for user ${data.username}. IP=${clientIP}`);
 
                         callback({
                             ok: false,
@@ -396,7 +425,7 @@ let needSetup = false;
                 }
             } else {
 
-                log.warn("auth", `Incorrect username or password for user ${data.username}. IP=${clientIP}`);
+                log.warn("server/server.js/socket.on.login(...)", `Incorrect username or password for user ${data.username}. IP=${clientIP}`);
 
                 callback({
                     ok: false,
@@ -407,6 +436,9 @@ let needSetup = false;
         });
 
         socket.on("logout", async (callback) => {
+
+            log.info("server/server.js/socket.on.logout(callback)","");
+
             // Rate Limit
             if (! await loginRateLimiter.pass(callback)) {
                 return;
@@ -421,6 +453,9 @@ let needSetup = false;
         });
 
         socket.on("prepare2FA", async (currentPassword, callback) => {
+
+            log.info("server/server.js/socket.on.prepare2FA(currentPassword, callback)","");
+
             try {
                 if (! await twoFaRateLimiter.pass(callback)) {
                     return;
@@ -432,6 +467,11 @@ let needSetup = false;
                 let user = await R.findOne("user", " id = ? AND active = 1 ", [
                     socket.userID,
                 ]);
+                log.info("server/server.js/socket.on.prepare2FA(...)","look for user @ db");
+                log.debug("server/server.js/socket.on.prepare2FA(...)",
+                `R.findOne("user", " id = ${socket.userID} AND active = 1 ")`
+                );
+
 
                 if (user.twofa_status === 0) {
                     let newSecret = genSecret();
@@ -448,6 +488,10 @@ let needSetup = false;
                         newSecret,
                         socket.userID,
                     ]);
+                    log.debug("server/server.js/socket.on.prepare2FA(...)",
+                      `R.exec("UPDATE user SET twofa_secret = ${newSecret} WHERE id = ${socket.userID} ")`
+                    );
+                    log.info("server/server.js/socket.on.prepare2FA(...)","update user 2fa secret ? @ db");
 
                     callback({
                         ok: true,
@@ -468,6 +512,9 @@ let needSetup = false;
         });
 
         socket.on("save2FA", async (currentPassword, callback) => {
+
+            log.debug("server/server.js/socket.on.save2Fa(currentPassword, callback)");
+
             const clientIP = await server.getClientIP(socket);
 
             try {
@@ -481,8 +528,11 @@ let needSetup = false;
                 await R.exec("UPDATE `user` SET twofa_status = 1 WHERE id = ? ", [
                     socket.userID,
                 ]);
+                log.debug("server/server.js/socket.on.save2FA(...)",
+                  `R.exec("UPDATE user SET twofa_status = 1 WHERE id = ${socket.userID} ")`
+                );
 
-                log.info("auth", `Saved 2FA token. IP=${clientIP}`);
+                log.info("server/server.js/socket.on.save2Fa(...)", `Saved 2FA token. IP=${clientIP}`);
 
                 callback({
                     ok: true,
@@ -490,7 +540,7 @@ let needSetup = false;
                 });
             } catch (error) {
 
-                log.error("auth", `Error changing 2FA token. IP=${clientIP}`);
+                log.error("server/server.js/socket.on.save2Fa(...)", `Error changing 2FA token. IP=${clientIP}`);
 
                 callback({
                     ok: false,
@@ -500,6 +550,9 @@ let needSetup = false;
         });
 
         socket.on("disable2FA", async (currentPassword, callback) => {
+
+            log.debug("server/server.js/socket.on.disable2FA(currentPassword, callback)");
+
             const clientIP = await server.getClientIP(socket);
 
             try {
@@ -511,7 +564,7 @@ let needSetup = false;
                 await doubleCheckPassword(socket, currentPassword);
                 await TwoFA.disable2FA(socket.userID);
 
-                log.info("auth", `Disabled 2FA token. IP=${clientIP}`);
+                log.info("server/server.js/socket.on.disable2FA(...)", `Disabled 2FA token. IP=${clientIP}`);
 
                 callback({
                     ok: true,
@@ -519,7 +572,7 @@ let needSetup = false;
                 });
             } catch (error) {
 
-                log.error("auth", `Error disabling 2FA token. IP=${clientIP}`);
+                log.error("server/server.js/socket.on.disable2FA(...)", `Error disabling 2FA token. IP=${clientIP}`);
 
                 callback({
                     ok: false,
@@ -529,6 +582,9 @@ let needSetup = false;
         });
 
         socket.on("verifyToken", async (token, currentPassword, callback) => {
+
+            log.debug("server/server.js/socket.on.verifyToken(token, currentPassword, callback)");
+
             try {
                 checkLogin(socket);
                 await doubleCheckPassword(socket, currentPassword);
@@ -536,6 +592,9 @@ let needSetup = false;
                 let user = await R.findOne("user", " id = ? AND active = 1 ", [
                     socket.userID,
                 ]);
+                log.debug("server/server.js/socket.on.verifyToken(token, currentPassword, callback)",
+                  `R.findOne("user", " id = ${socket.userID} AND active = 1 ")`
+                );
 
                 let verify = notp.totp.verify(token, user.twofa_secret, twoFAVerifyOptions);
 
@@ -561,12 +620,18 @@ let needSetup = false;
         });
 
         socket.on("twoFAStatus", async (callback) => {
+
+            log.debug("server/server.js/socket.on.twoFAStatus(callback)");
+
             try {
                 checkLogin(socket);
 
                 let user = await R.findOne("user", " id = ? AND active = 1 ", [
                     socket.userID,
                 ]);
+                log.debug("server/server.js/socket.on.twoFAStatus(callback)",
+                  `R.findOne("user", " id = ${socket.userID} AND active = 1 ")`
+                );
 
                 if (user.twofa_status === 1) {
                     callback({
@@ -588,10 +653,12 @@ let needSetup = false;
         });
 
         socket.on("needSetup", async (callback) => {
+            log.debug("server/server.js/socket.on.needSetup(callback)");
             callback(needSetup);
         });
 
         socket.on("setup", async (username, password, callback) => {
+            log.debug("server/server.js/socket.on.setup(username, password, callback)");
             try {
                 if (passwordStrength(password).value === "Too weak") {
                     throw new Error("Password is too weak. It should contain alphabetic and numeric characters. It must be at least 6 characters in length.");
@@ -600,11 +667,20 @@ let needSetup = false;
                 if ((await R.count("user")) !== 0) {
                     throw new Error("Uptime Kuma has been initialized. If you want to run setup again, please delete the database.");
                 }
+                log.debug("server/server.js/socket.on.setup(username, password, callback)",
+                  `R.count("user")) !== 0)`
+                );
 
                 let user = R.dispense("user");
+                log.debug("server/server.js/socket.on.setup(username, password, callback)",
+                  `R.dispense("user")`
+                );
                 user.username = username;
                 user.password = passwordHash.generate(password);
                 await R.store(user);
+                log.debug("server/server.js/socket.on.setup(username, password, callback)",
+                  `R.store(user)`
+                );
 
                 needSetup = false;
 
@@ -627,9 +703,13 @@ let needSetup = false;
 
         // Add a new monitor
         socket.on("add", async (monitor, callback) => {
+            log.debug("server/server.js/socket.on.add(monitor,callback)");
             try {
                 checkLogin(socket);
                 let bean = R.dispense("monitor");
+                log.debug("server/server.js/socket.on.add(monitor,callback)",
+                  `R.dispense("monitor")`
+                );
 
                 let notificationIDList = monitor.notificationIDList;
                 delete monitor.notificationIDList;
@@ -643,6 +723,9 @@ let needSetup = false;
                 bean.validate();
 
                 await R.store(bean);
+                log.debug("server/server.js/socket.on.add(monitor,callback)",
+                  `R.store(bean)`
+                );
 
                 await updateMonitorNotification(bean.id, notificationIDList);
 
@@ -659,7 +742,7 @@ let needSetup = false;
 
             } catch (e) {
 
-                log.error("monitor", `Error adding Monitor: ${monitor.id} User ID: ${socket.userID}`);
+                log.error("server/server.js/socket.on.add(...)", `Error adding Monitor: ${monitor.id} User ID: ${socket.userID}`);
 
                 callback({
                     ok: false,
@@ -670,10 +753,14 @@ let needSetup = false;
 
         // Edit a monitor
         socket.on("editMonitor", async (monitor, callback) => {
+            log.error("server/server.js/socket.on.editMonitor(monitor,callback)","");
             try {
                 checkLogin(socket);
 
                 let bean = await R.findOne("monitor", " id = ? ", [ monitor.id ]);
+                log.debug("server/server.js/socket.on.editMonitor(monitor,callback)",
+                  `R.findOne("monitor", " id = ${monitor.id} ")`
+                );
 
                 if (bean.user_id !== socket.userID) {
                     throw new Error("Permission denied.");
@@ -737,6 +824,9 @@ let needSetup = false;
                 bean.validate();
 
                 await R.store(bean);
+                log.debug("server/server.js/socket.on.editMonitor(monitor,callback)",
+                  `R.store(bean)`
+                );
 
                 await updateMonitorNotification(bean.id, monitor.notificationIDList);
 
@@ -762,6 +852,7 @@ let needSetup = false;
         });
 
         socket.on("getMonitorList", async (callback) => {
+            log.debug("server/server.js/socket.on.getMonitorList(callback)","");
             try {
                 checkLogin(socket);
                 await server.sendMonitorList(socket);
@@ -778,15 +869,19 @@ let needSetup = false;
         });
 
         socket.on("getMonitor", async (monitorID, callback) => {
+            log.debug("server/server.js/socket.on.getMonitor(monitorID,callback)","");
             try {
                 checkLogin(socket);
 
-                log.info("monitor", `Get Monitor: ${monitorID} User ID: ${socket.userID}`);
+                log.info("server/server.js/socket.on.getMonitor(...)", `Get Monitor: ${monitorID} User ID: ${socket.userID}`);
 
                 let bean = await R.findOne("monitor", " id = ? AND user_id = ? ", [
                     monitorID,
                     socket.userID,
                 ]);
+                log.debug("server/server.js/socket.on.getMonitor(monitorID,callback)",
+                  `R.findOne("monitor", " id = ${monitorID} AND user_id = ${socket.userID} ")`
+                );
 
                 callback({
                     ok: true,
@@ -802,10 +897,11 @@ let needSetup = false;
         });
 
         socket.on("getMonitorBeats", async (monitorID, period, callback) => {
+            log.debug("server/server.js/socket.on.getMonitorBeats(monitorID,period,callback)","");
             try {
                 checkLogin(socket);
 
-                log.info("monitor", `Get Monitor Beats: ${monitorID} User ID: ${socket.userID}`);
+                log.info("server/server.js/socket.on.getMonitorBeats(...)", `Get Monitor Beats: ${monitorID} User ID: ${socket.userID}`);
 
                 if (period == null) {
                     throw new Error("Invalid period.");
@@ -820,6 +916,13 @@ let needSetup = false;
                     monitorID,
                     period,
                 ]);
+                log.debug("server/server.js/socket.on.getMonitorBeats(monitorID,period,callback)",
+                `R.getAll(
+                    SELECT * FROM heartbeat
+                    WHERE monitor_id = ${monitorID} AND
+                    time > DATETIME('now', '-' || ${period} || ' hours')
+                    ORDER BY time ASC
+                `);
 
                 callback({
                     ok: true,
@@ -835,6 +938,7 @@ let needSetup = false;
 
         // Start or Resume the monitor
         socket.on("resumeMonitor", async (monitorID, callback) => {
+            log.debug("server/server.js/socket.on.resumeMonitor(monitorID,callback)","");
             try {
                 checkLogin(socket);
                 await startMonitor(socket.userID, monitorID);
@@ -854,6 +958,7 @@ let needSetup = false;
         });
 
         socket.on("pauseMonitor", async (monitorID, callback) => {
+            log.debug("server/server.js/socket.on.pauseMonitor(monitorID,callback)","");
             try {
                 checkLogin(socket);
                 await pauseMonitor(socket.userID, monitorID);
@@ -873,10 +978,11 @@ let needSetup = false;
         });
 
         socket.on("deleteMonitor", async (monitorID, callback) => {
+            log.debug("server/server.js/socket.on.deleteMonitor(monitorID,callback)","");
             try {
                 checkLogin(socket);
 
-                log.info("manage", `Delete Monitor: ${monitorID} User ID: ${socket.userID}`);
+                log.info("server/server.js/socket.on.deleteMonitor(...)", `Delete Monitor: ${monitorID} User ID: ${socket.userID}`);
 
                 if (monitorID in server.monitorList) {
                     server.monitorList[monitorID].stop();
@@ -887,6 +993,8 @@ let needSetup = false;
                     monitorID,
                     socket.userID,
                 ]);
+                log.debug("server/server.js/socket.on.deleteMonitor(monitorID,callback)",
+                `R.exec("DELETE FROM monitor WHERE id = ${monitorID} AND user_id = ${socket.userID} ")`);
 
                 // Fix #2880
                 apicache.clear();
@@ -909,10 +1017,13 @@ let needSetup = false;
         });
 
         socket.on("getTags", async (callback) => {
+            log.debug("server/server.js/socket.on.getTags(callback)","");
             try {
                 checkLogin(socket);
 
                 const list = await R.findAll("tag");
+                log.debug("server/server.js/socket.on.getTags(callback)",
+                `R.findAll("tag")`);
 
                 callback({
                     ok: true,
@@ -928,13 +1039,18 @@ let needSetup = false;
         });
 
         socket.on("addTag", async (tag, callback) => {
+            log.debug("server/server.js/socket.on.addTag(tag,callback)","");
             try {
                 checkLogin(socket);
 
                 let bean = R.dispense("tag");
+                log.debug("server/server.js/socket.on.addTag(tag,callback)",
+                `R.findAll("tag")`);
                 bean.name = tag.name;
                 bean.color = tag.color;
                 await R.store(bean);
+                log.debug("server/server.js/socket.on.addTag(tag,callback)",
+                `R.store(bean)`);
 
                 callback({
                     ok: true,
@@ -950,10 +1066,13 @@ let needSetup = false;
         });
 
         socket.on("editTag", async (tag, callback) => {
+            log.debug("server/server.js/socket.on.editTag(tag,callback)","");
             try {
                 checkLogin(socket);
 
                 let bean = await R.findOne("tag", " id = ? ", [ tag.id ]);
+                log.debug("server/server.js/socket.on.editTag(tag,callback)",
+                `R.findOne("tag", " id = ${tag.id} ")`);
                 if (bean == null) {
                     callback({
                         ok: false,
@@ -964,6 +1083,8 @@ let needSetup = false;
                 bean.name = tag.name;
                 bean.color = tag.color;
                 await R.store(bean);
+                log.debug("server/server.js/socket.on.editTag(tag,callback)",
+                `R.store(bean)`);
 
                 callback({
                     ok: true,
@@ -980,10 +1101,13 @@ let needSetup = false;
         });
 
         socket.on("deleteTag", async (tagID, callback) => {
+            log.debug("server/server.js/socket.on.deleteTag(tag,callback)","");
             try {
                 checkLogin(socket);
 
                 await R.exec("DELETE FROM tag WHERE id = ? ", [ tagID ]);
+                log.debug("server/server.js/socket.on.deleteTag(tag,callback)",
+                ` R.exec("DELETE FROM tag WHERE id = ${tagID} ")`);
 
                 callback({
                     ok: true,
@@ -999,6 +1123,7 @@ let needSetup = false;
         });
 
         socket.on("addMonitorTag", async (tagID, monitorID, value, callback) => {
+            log.debug("server/server.js/socket.on.addMonitorTag(tagID, monitorID, value, callback)","");
             try {
                 checkLogin(socket);
 
@@ -1007,6 +1132,8 @@ let needSetup = false;
                     monitorID,
                     value,
                 ]);
+                log.debug("server/server.js/socket.on.addMonitorTag(tagID, monitorID, value, callback)",
+                `R.exec("INSERT INTO monitor_tag (tag_id, monitor_id, value) VALUES (${tagId}, ${monitorID}, ${value}))"`);
 
                 callback({
                     ok: true,
@@ -1022,6 +1149,7 @@ let needSetup = false;
         });
 
         socket.on("editMonitorTag", async (tagID, monitorID, value, callback) => {
+            log.debug("server/server.js/socket.on.editMonitorTag(tagID, monitorID, value, callback)","");
             try {
                 checkLogin(socket);
 
@@ -1030,6 +1158,8 @@ let needSetup = false;
                     tagID,
                     monitorID,
                 ]);
+                log.debug("server/server.js/socket.on.editMonitorTag(tagID, monitorID, value, callback)",
+                `R.exec("UPDATE monitor_tag SET value = ${value} WHERE tag_id = ${tagID} AND monitor_id = ${monitorID}")`);
 
                 callback({
                     ok: true,
@@ -1045,6 +1175,7 @@ let needSetup = false;
         });
 
         socket.on("deleteMonitorTag", async (tagID, monitorID, value, callback) => {
+            log.debug("server/server.js/socket.on.deleteMonitorTag(tagID, monitorID, value, callback)","");
             try {
                 checkLogin(socket);
 
@@ -1053,9 +1184,13 @@ let needSetup = false;
                     monitorID,
                     value,
                 ]);
+                log.debug("server/server.js/socket.on.deleteMonitorTag(tagID, monitorID, value, callback)",
+                `R.exec("DELETE FROM monitor_tag WHERE tag_id = ${tagID} AND monitor_id = ${monitorID} AND value = ${value})`);
 
                 // Cleanup unused Tags
                 await R.exec("delete from tag where ( select count(*) from monitor_tag mt where tag.id = mt.tag_id ) = 0");
+                log.debug("server/server.js/socket.on.deleteMonitorTag(tagID, monitorID, value, callback)",
+                `R.exec("delete from tag where ( select count(*) from monitor_tag mt where tag.id = mt.tag_id ) = 0")`);
 
                 callback({
                     ok: true,
@@ -1071,6 +1206,7 @@ let needSetup = false;
         });
 
         socket.on("changePassword", async (password, callback) => {
+            log.debug("server/server.js/socket.on.changePassword(password, callback)","");
             try {
                 checkLogin(socket);
 
@@ -1099,6 +1235,7 @@ let needSetup = false;
         });
 
         socket.on("getSettings", async (callback) => {
+            log.debug("server/server.js/socket.on.getSettings(callback)","");
             try {
                 checkLogin(socket);
                 const data = await getSettings("general");
@@ -1121,6 +1258,7 @@ let needSetup = false;
         });
 
         socket.on("setSettings", async (data, currentPassword, callback) => {
+            log.debug("server/server.js/socket.on.setSettings(data, currentPassword, callback)","");
             try {
                 checkLogin(socket);
 
@@ -1162,6 +1300,7 @@ let needSetup = false;
 
         // Add or Edit
         socket.on("addNotification", async (notification, notificationID, callback) => {
+            log.debug("server/server.js/socket.on.addNotification(notification, notificationID, callback)","");
             try {
                 checkLogin(socket);
 
@@ -1183,6 +1322,7 @@ let needSetup = false;
         });
 
         socket.on("deleteNotification", async (notificationID, callback) => {
+            log.debug("server/server.js/socket.on.deleteNotification(notificationID, callback)","");
             try {
                 checkLogin(socket);
 
@@ -1203,6 +1343,7 @@ let needSetup = false;
         });
 
         socket.on("testNotification", async (notification, callback) => {
+            log.debug("server/server.js/socket.on.testNotification(notification, callback)","");
             try {
                 checkLogin(socket);
 
@@ -1224,6 +1365,7 @@ let needSetup = false;
         });
 
         socket.on("checkApprise", async (callback) => {
+            log.debug("server/server.js/socket.on.checkApprise(callback)","");
             try {
                 checkLogin(socket);
                 callback(Notification.checkApprise());
@@ -1233,12 +1375,13 @@ let needSetup = false;
         });
 
         socket.on("uploadBackup", async (uploadedJSON, importHandle, callback) => {
+            log.debug("server/server.js/socket.on.uploadBackup(uploadedJSON, importHandle, callback)","");
             try {
                 checkLogin(socket);
 
                 let backupData = JSON.parse(uploadedJSON);
 
-                log.info("manage", `Importing Backup, User ID: ${socket.userID}, Version: ${backupData.version}`);
+                log.info("server/server.js/socket.on.uploadBackup(...)", `Importing Backup, User ID: ${socket.userID}, Version: ${backupData.version}`);
 
                 let notificationListData = backupData.notificationList;
                 let proxyListData = backupData.proxyList;
@@ -1254,19 +1397,37 @@ let needSetup = false;
                         await monitor.stop();
                     }
                     await R.exec("DELETE FROM heartbeat");
+                    log.debug("server/server.js/socket.on.uploadBackup(uploadedJSON, importHandle, callback)",
+                    `R.exec("DELETE FROM heartbeat")`);
                     await R.exec("DELETE FROM monitor_notification");
+                    log.debug("server/server.js/socket.on.uploadBackup(uploadedJSON, importHandle, callback)",
+                    `R.exec("DELETE FROM monitor_notification")`);
                     await R.exec("DELETE FROM monitor_tls_info");
+                    log.debug("server/server.js/socket.on.uploadBackup(uploadedJSON, importHandle, callback)",
+                    `R.exec("DELETE FROM monitor_tls_info")`);
                     await R.exec("DELETE FROM notification");
+                    log.debug("server/server.js/socket.on.uploadBackup(uploadedJSON, importHandle, callback)",
+                    `R.exec("DELETE FROM notification")`);
                     await R.exec("DELETE FROM monitor_tag");
+                    log.debug("server/server.js/socket.on.uploadBackup(uploadedJSON, importHandle, callback)",
+                    `R.exec("DELETE FROM monitor_tag")`);
                     await R.exec("DELETE FROM tag");
+                    log.debug("server/server.js/socket.on.uploadBackup(uploadedJSON, importHandle, callback)",
+                    `R.exec("DELETE FROM tag")`);
                     await R.exec("DELETE FROM monitor");
+                    log.debug("server/server.js/socket.on.uploadBackup(uploadedJSON, importHandle, callback)",
+                    `R.exec("DELETE FROM monitor")`);
                     await R.exec("DELETE FROM proxy");
+                    log.debug("server/server.js/socket.on.uploadBackup(uploadedJSON, importHandle, callback)",
+                    `R.exec("DELETE FROM proxy")`);
                 }
 
                 // Only starts importing if the backup file contains at least one notification
                 if (notificationListData.length >= 1) {
                     // Get every existing notification name and puts them in one simple string
                     let notificationNameList = await R.getAll("SELECT name FROM notification");
+                    log.debug("server/server.js/socket.on.uploadBackup(uploadedJSON, importHandle, callback)",
+                    `R.getAll("SELECT name FROM notification")`);
                     let notificationNameListString = JSON.stringify(notificationNameList);
 
                     for (let i = 0; i < notificationListData.length; i++) {
@@ -1283,6 +1444,8 @@ let needSetup = false;
                 // Only starts importing if the backup file contains at least one proxy
                 if (proxyListData && proxyListData.length >= 1) {
                     const proxies = await R.findAll("proxy");
+                    log.debug("server/server.js/socket.on.uploadBackup(uploadedJSON, importHandle, callback)",
+                    `R.findAll("proxy")`);
 
                     // Loop over proxy list and save proxies
                     for (const proxy of proxyListData) {
@@ -1302,6 +1465,8 @@ let needSetup = false;
                 if (monitorListData.length >= 1) {
                     // Get every existing monitor name and puts them in one simple string
                     let monitorNameList = await R.getAll("SELECT name FROM monitor");
+                    log.debug("server/server.js/socket.on.uploadBackup(uploadedJSON, importHandle, callback)",
+                    `R.getAll("SELECT name FROM monitor")`);
                     let monitorNameListString = JSON.stringify(monitorNameList);
 
                     for (let i = 0; i < monitorListData.length; i++) {
@@ -1360,6 +1525,8 @@ let needSetup = false;
                             }
 
                             let bean = R.dispense("monitor");
+                            log.debug("server/server.js/socket.on.uploadBackup(uploadedJSON, importHandle, callback)",
+                            `R.dispense("monitor")`);
 
                             let notificationIDList = monitor.notificationIDList;
                             delete monitor.notificationIDList;
@@ -1370,6 +1537,8 @@ let needSetup = false;
                             bean.import(monitor);
                             bean.user_id = socket.userID;
                             await R.store(bean);
+                            log.debug("server/server.js/socket.on.uploadBackup(uploadedJSON, importHandle, callback)",
+                            `R.store(bean)`);
 
                             // Only for backup files with the version 1.7.0 or higher, since there was the tag feature implemented
                             if (version17x) {
@@ -1380,14 +1549,20 @@ let needSetup = false;
                                     let tag = await R.findOne("tag", " name = ?", [
                                         oldTag.name,
                                     ]);
+                                    log.debug("server/server.js/socket.on.uploadBackup(uploadedJSON, importHandle, callback)",
+                                    `R.findOne("tag", " name = ${oldTag.name}")`);
 
                                     let tagId;
                                     if (! tag) {
                                         // -> If it doesn't exist, create new tag from backup file
                                         let beanTag = R.dispense("tag");
+                                        log.debug("server/server.js/socket.on.uploadBackup(uploadedJSON, importHandle, callback)",
+                                        `R.dispense("tag")`);
                                         beanTag.name = oldTag.name;
                                         beanTag.color = oldTag.color;
                                         await R.store(beanTag);
+                                        log.debug("server/server.js/socket.on.uploadBackup(uploadedJSON, importHandle, callback)",
+                                        `R.store(beanTag)`);
 
                                         tagId = beanTag.id;
                                     } else {
@@ -1401,6 +1576,8 @@ let needSetup = false;
                                         bean.id,
                                         oldTag.value,
                                     ]);
+                                    log.debug("server/server.js/socket.on.uploadBackup(uploadedJSON, importHandle, callback)",
+                                    `R.exec("INSERT INTO monitor_tag (tag_id, monitor_id, value) VALUES (${tagId}, ${bean.id}, ${oldTag.value})")`);
 
                                 }
                             }
@@ -1435,16 +1612,20 @@ let needSetup = false;
         });
 
         socket.on("clearEvents", async (monitorID, callback) => {
+            log.debug("server/server.js/socket.on.clearEvents(monitorID, callback)","");
             try {
                 checkLogin(socket);
 
-                log.info("manage", `Clear Events Monitor: ${monitorID} User ID: ${socket.userID}`);
+                log.info("server/server.js/socket.on.clearEvents(...)", `Clear Events Monitor: ${monitorID} User ID: ${socket.userID}`);
 
                 await R.exec("UPDATE heartbeat SET msg = ?, important = ? WHERE monitor_id = ? ", [
                     "",
                     "0",
                     monitorID,
                 ]);
+                log.debug("server/server.js/socket.on.clearEvents(monitorID, callback)",
+                `await R.exec("UPDATE heartbeat SET msg = "", important = 0 WHERE monitor_id = ${monitorID}")`
+                );
 
                 await sendImportantHeartbeatList(socket, monitorID, true, true);
 
@@ -1461,14 +1642,17 @@ let needSetup = false;
         });
 
         socket.on("clearHeartbeats", async (monitorID, callback) => {
+            log.debug("server/server.js/socket.on.clearHeartbeats(monitorID, callback)","");
             try {
                 checkLogin(socket);
 
-                log.info("manage", `Clear Heartbeats Monitor: ${monitorID} User ID: ${socket.userID}`);
+                log.info("server/server.js/socket.on.clearHeartbeats(...)", `Clear Heartbeats Monitor: ${monitorID} User ID: ${socket.userID}`);
 
                 await R.exec("DELETE FROM heartbeat WHERE monitor_id = ?", [
                     monitorID
                 ]);
+                log.debug("server/server.js/socket.on.clearHeartbeats(monitorID, callback)",
+                ` R.exec("DELETE FROM heartbeat WHERE monitor_id = ${monitorID}")`);
 
                 await sendHeartbeatList(socket, monitorID, true, true);
 
@@ -1485,12 +1669,15 @@ let needSetup = false;
         });
 
         socket.on("clearStatistics", async (callback) => {
+            log.debug("server/server.js/socket.on.clearStatistics(callback)","");
             try {
                 checkLogin(socket);
 
-                log.info("manage", `Clear Statistics User ID: ${socket.userID}`);
+                log.info("server/server.js/socket.on.clearStatistics(...)", `Clear Statistics User ID: ${socket.userID}`);
 
                 await R.exec("DELETE FROM heartbeat");
+                log.debug("server/server.js/socket.on.clearStatistics(callback)",
+                `R.exec("DELETE FROM heartbeat")`);
 
                 callback({
                     ok: true,
@@ -1515,35 +1702,38 @@ let needSetup = false;
         generalSocketHandler(socket, server);
         pluginsHandler(socket, server);
 
-        log.debug("server", "added all socket handlers");
+        log.debug("server/server.js", "added all socket handlers");
 
         // ***************************
         // Better do anything after added all socket handlers here
         // ***************************
 
-        log.debug("auth", "check auto login");
+        log.debug("server/server.js", "check auto login");
         if (await setting("disableAuth")) {
-            log.info("auth", "Disabled Auth: auto login to admin");
+            log.info("server/server.js", "Disabled Auth: auto login to admin");
             afterLogin(socket, await R.findOne("user"));
+            log.debug("server/server.js",
+            `R.findOne("user")`
+            );
             socket.emit("autoLogin");
         } else {
-            log.debug("auth", "need auth");
+            log.debug("server/server.js", "need auth");
         }
 
     });
 
-    log.info("server", "Init the server");
+    log.info("server/server.js", "Init the server");
 
     server.httpServer.once("error", async (err) => {
-        console.error("Cannot listen: " + err.message);
+        console.error("[server/server.js] Cannot listen: " + err.message);
         await shutdownFunction();
     });
 
     server.httpServer.listen(port, hostname, () => {
         if (hostname) {
-            log.info("server", `Listening on ${hostname}:${port}`);
+            log.info("server/server.js", `Listening on ${hostname}:${port}`);
         } else {
-            log.info("server", `Listening on ${port}`);
+            log.info("server/server.js", `Listening on ${port}`);
         }
         startMonitors();
         checkVersion.startInterval();
@@ -1572,16 +1762,23 @@ let needSetup = false;
  * @returns {Promise<void>}
  */
 async function updateMonitorNotification(monitorID, notificationIDList) {
+    log.info("server/server.js/updateMonitorNotification(monitorID, notificationIDList)", "");
     await R.exec("DELETE FROM monitor_notification WHERE monitor_id = ? ", [
         monitorID,
     ]);
+    log.info("server/server.js/updateMonitorNotification(monitorID, notificationIDList)",
+    `R.exec("DELETE FROM monitor_notification WHERE monitor_id = ${monitorID} ")`);
 
     for (let notificationID in notificationIDList) {
         if (notificationIDList[notificationID]) {
             let relation = R.dispense("monitor_notification");
+            log.info("server/server.js/updateMonitorNotification(monitorID, notificationIDList)",
+            `R.dispense("monitor_notification")`);
             relation.monitor_id = monitorID;
             relation.notification_id = notificationID;
             await R.store(relation);
+            log.info("server/server.js/updateMonitorNotification(monitorID, notificationIDList)",
+            `R.store(relation)`);
         }
     }
 }
@@ -1594,10 +1791,13 @@ async function updateMonitorNotification(monitorID, notificationIDList) {
  * @throws {Error} The specified user does not own the monitor
  */
 async function checkOwner(userID, monitorID) {
+    log.info("server/server.js/checkOwner(userID, monitorID)", "");
     let row = await R.getRow("SELECT id FROM monitor WHERE id = ? AND user_id = ? ", [
         monitorID,
         userID,
     ]);
+    log.info("server/server.js/checkOwner(userID, monitorID)",
+    `R.getRow("SELECT id FROM monitor WHERE id = ${monitorID} AND user_id = ${userID} ")`);
 
     if (! row) {
         throw new Error("You do not own this monitor.");
@@ -1612,6 +1812,7 @@ async function checkOwner(userID, monitorID) {
  * @returns {Promise<void>}
  */
 async function afterLogin(socket, user) {
+    log.info("server/server.js/afterLogin(socket, user)", "");
     socket.userID = user.id;
     socket.join(user.id);
 
@@ -1641,7 +1842,7 @@ async function afterLogin(socket, user) {
     // Set server timezone from client browser if not set
     // It should be run once only
     if (! await Settings.get("initServerTimezone")) {
-        log.debug("server", "emit initServerTimezone");
+        log.debug("server/server.js/afterLogin(...)", "emit initServerTimezone");
         socket.emit("initServerTimezone");
     }
 }
@@ -1653,14 +1854,15 @@ async function afterLogin(socket, user) {
  * @returns {Promise<void>}
  */
 async function initDatabase(testMode = false) {
+    log.info("server/server.js/initDatabase(...)", "");
     if (! fs.existsSync(Database.path)) {
-        log.info("server", "Copying Database");
+        log.info("server/server.js/initDatabase(...)", "Copying Database");
         fs.copyFileSync(Database.templatePath, Database.path);
     }
 
-    log.info("server", "Connecting to the Database");
+    log.info("server/server.js/initDatabase(...)", "Connecting to the Database");
     await Database.connect(testMode);
-    log.info("server", "Connected");
+    log.info("server/server.js/initDatabase(...)", "Connected");
 
     // Patch the database
     await Database.patch();
@@ -1668,20 +1870,24 @@ async function initDatabase(testMode = false) {
     let jwtSecretBean = await R.findOne("setting", " `key` = ? ", [
         "jwtSecret",
     ]);
+    log.info("server/server.js/initDatabase(...)",
+    `R.findOne("setting", " key = jwtSecret ")`);
 
     if (! jwtSecretBean) {
-        log.info("server", "JWT secret is not found, generate one.");
+        log.info("server/server.js/initDatabase(...)", "JWT secret is not found, generate one.");
         jwtSecretBean = await initJWTSecret();
-        log.info("server", "Stored JWT secret into database");
+        log.info("server/server.js/initDatabase(...)", "Stored JWT secret into database");
     } else {
-        log.info("server", "Load JWT secret from database.");
+        log.info("server/server.js/initDatabase(...)", "Load JWT secret from database.");
     }
 
     // If there is no record in user table, it is a new Uptime Kuma instance, need to setup
     if ((await R.count("user")) === 0) {
-        log.info("server", "No user, need setup");
+        log.info("server/server.js/initDatabase(...)", "No user, need setup");
         needSetup = true;
     }
+    log.info("server/server.js/initDatabase(...)",
+    `R.count("user")) === 0`);
 
     jwtSecret = jwtSecretBean.value;
 }
@@ -1693,18 +1899,23 @@ async function initDatabase(testMode = false) {
  * @returns {Promise<void>}
  */
 async function startMonitor(userID, monitorID) {
+    log.info("server/server.js/startMonitor(userID, monitorID)", "");
     await checkOwner(userID, monitorID);
 
-    log.info("manage", `Resume Monitor: ${monitorID} User ID: ${userID}`);
+    log.info("server/server.js/startMonitor(...)", `Resume Monitor: ${monitorID} User ID: ${userID}`);
 
     await R.exec("UPDATE monitor SET active = 1 WHERE id = ? AND user_id = ? ", [
         monitorID,
         userID,
     ]);
+    log.info("server/server.js/startMonitor(userID, monitorID)",
+    ` R.exec("UPDATE monitor SET active = 1 WHERE id = ${monitorID} AND user_id = ${userID} ")`);
 
     let monitor = await R.findOne("monitor", " id = ? ", [
         monitorID,
     ]);
+    log.info("server/server.js/startMonitor(userID, monitorID)",
+    `R.findOne("monitor", " id = ${monitorID} ")`);
 
     if (monitor.id in server.monitorList) {
         server.monitorList[monitor.id].stop();
@@ -1721,6 +1932,7 @@ async function startMonitor(userID, monitorID) {
  * @returns {Promise<void>}
  */
 async function restartMonitor(userID, monitorID) {
+    log.info("server/server.js/restartMonitor(userID, monitorID)", "");
     return await startMonitor(userID, monitorID);
 }
 
@@ -1731,14 +1943,17 @@ async function restartMonitor(userID, monitorID) {
  * @returns {Promise<void>}
  */
 async function pauseMonitor(userID, monitorID) {
+    log.info("server/server.js/pauseMonitor(userID, monitorID)", "");
     await checkOwner(userID, monitorID);
 
-    log.info("manage", `Pause Monitor: ${monitorID} User ID: ${userID}`);
+    log.info("server/server.js/pauseMonitor(...)", `Pause Monitor: ${monitorID} User ID: ${userID}`);
 
     await R.exec("UPDATE monitor SET active = 0 WHERE id = ? AND user_id = ? ", [
         monitorID,
         userID,
     ]);
+    log.info("server/server.js/pauseMonitor(userID, monitorID)",
+    ` R.exec("UPDATE monitor SET active = 0 WHERE id = ${monitorID} AND user_id = ${userID} ")`);
 
     if (monitorID in server.monitorList) {
         server.monitorList[monitorID].stop();
@@ -1747,7 +1962,10 @@ async function pauseMonitor(userID, monitorID) {
 
 /** Resume active monitors */
 async function startMonitors() {
+    log.info("server/server.js/startMonitors()", "");
     let list = await R.find("monitor", " active = 1 ");
+      log.info("server/server.js/startMonitors()",
+      `R.find("monitor", " active = 1 ")`);
 
     for (let monitor of list) {
         server.monitorList[monitor.id] = monitor;
@@ -1767,12 +1985,13 @@ async function startMonitors() {
  * @returns {Promise<void>}
  */
 async function shutdownFunction(signal) {
-    log.info("server", "Shutdown requested");
-    log.info("server", "Called signal: " + signal);
+    log.info("server/server.js/shutdownFunction(signal)", "");
+    log.info("server/server.js/shutdownFunction(...)", "Shutdown requested");
+    log.info("server/server.js/shutdownFunction(...)", "Called signal: " + signal);
 
     await server.stop();
 
-    log.info("server", "Stopping all monitors");
+    log.info("server/server.js/shutdownFunction(...)", "Stopping all monitors");
     for (let id in server.monitorList) {
         let monitor = server.monitorList[id];
         monitor.stop();
@@ -1787,7 +2006,7 @@ async function shutdownFunction(signal) {
 
 /** Final function called before application exits */
 function finalFunction() {
-    log.info("server", "Graceful shutdown successful!");
+    log.info("server/server.js/finalFunction()", "Graceful shutdown successful!");
 }
 
 gracefulShutdown(server.httpServer, {
@@ -1801,7 +2020,8 @@ gracefulShutdown(server.httpServer, {
 
 // Catch unexpected errors here
 process.addListener("unhandledRejection", (error, promise) => {
+    log.info("server/server.js/process.addListener.unhandledRejection(error, promise)", "");
     console.trace(error);
     UptimeKumaServer.errorLog(error, false);
-    console.error("If you keep encountering errors, please report to https://github.com/louislam/uptime-kuma/issues");
+    console.error("[server/server.js/process.addListener.unhandledRejection(...)] If you keep encountering errors, please report to https://github.com/louislam/uptime-kuma/issues");
 });

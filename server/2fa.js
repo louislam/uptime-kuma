@@ -8,6 +8,7 @@ class TwoFA {
      * @returns {Promise<void>}
      */
     static async disable2FA(userID) {
+       log.debug("server/2fa.js/TwoFA/disable2FA","R.exec('UPDATE user SET twofa_status = 0 WHERE id = " + userID);
         return await R.exec("UPDATE `user` SET twofa_status = 0 WHERE id = ? ", [
             userID,
         ]);

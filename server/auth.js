@@ -17,6 +17,7 @@ exports.login = async function (username, password) {
         return null;
     }
 
+    log.debug("server/auth.js/login", "R.findOne('user', 'username = " + username +  " AND active = 1'");
     let user = await R.findOne("user", " username = ? AND active = 1 ", [
         username,
     ]);
@@ -24,8 +25,10 @@ exports.login = async function (username, password) {
     if (user && passwordHash.verify(password, user.password)) {
         // Upgrade the hash to bcrypt
         if (passwordHash.needRehash(user.password)) {
+            let password = passwordHash.generate(password);
+            log.debug("server/auth.js/login", "R.findOne('UPDATE user SET password = '" + password + " WHERE id = " + user.id  + ")");
             await R.exec("UPDATE `user` SET password = ? WHERE id = ? ", [
-                passwordHash.generate(password),
+                password,
                 user.id,
             ]);
         }
@@ -49,6 +52,7 @@ async function verifyAPIKey(key) {
     let clear = key.substring(key.indexOf("_") + 1, key.length);
 
     let hash = await R.findOne("api_key", " id=? ", [ index ]);
+    log.debug("server/auth.js/verifyAPIKey(key)","R.findOne('api_key', ' id= " + index + " ')");
 
     if (hash === null) {
         return false;

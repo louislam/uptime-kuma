@@ -22,6 +22,8 @@ class Proxy {
 
         if (proxyID) {
             bean = await R.findOne("proxy", " id = ? AND user_id = ? ", [ proxyID, userID ]);
+            log.debug("server/proxy.js/Proxy/save(proxy, proxyID, userID)",
+            `R.findOne("proxy", " id = ${proxyID} AND user_id = ${userID} "`);
 
             if (!bean) {
                 throw new Error("proxy not found");
@@ -29,6 +31,8 @@ class Proxy {
 
         } else {
             bean = R.dispense("proxy");
+            log.debug("server/proxy.js/Proxy/save(proxy, proxyID, userID)",
+            `R.dispense("proxy")`);
         }
 
         // Make sure given proxy protocol is supported
@@ -42,6 +46,8 @@ class Proxy {
         // When proxy is default update deactivate old default proxy
         if (proxy.default) {
             await R.exec("UPDATE proxy SET `default` = 0 WHERE `default` = 1");
+            log.debug("server/proxy.js/Proxy/save(proxy, proxyID, userID)",
+            `R.exec("UPDATE proxy SET default = 0 WHERE default = 1")`);
         }
 
         bean.user_id = userID;
@@ -55,6 +61,8 @@ class Proxy {
         bean.default = proxy.default || false;
 
         await R.store(bean);
+        log.debug("server/proxy.js/Proxy/save(proxy, proxyID, userID)",
+        `R.store("bean")`);
 
         if (proxy.applyExisting) {
             await applyProxyEveryMonitor(bean.id, userID);
@@ -72,6 +80,8 @@ class Proxy {
      */
     static async delete(proxyID, userID) {
         const bean = await R.findOne("proxy", " id = ? AND user_id = ? ", [ proxyID, userID ]);
+        log.debug("server/proxy.js/Proxy/delete(proxyID, userID)",
+        `R.findOne("proxy", " id = ${proxyID} AND user_id = ${userID})"`);
 
         if (!bean) {
             throw new Error("proxy not found");
@@ -79,9 +89,13 @@ class Proxy {
 
         // Delete removed proxy from monitors if exists
         await R.exec("UPDATE monitor SET proxy_id = null WHERE proxy_id = ?", [ proxyID ]);
+        log.debug("server/proxy.js/Proxy/delete(proxyID, userID)",
+        `R.exec("UPDATE monitor SET proxy_id = null WHERE proxy_id = ${proxyID}")`);
 
         // Delete proxy from list
         await R.trash(bean);
+        log.debug("server/proxy.js/Proxy/delete(proxyID, userID)",
+        `R.trash("bean")`);
     }
 
     /**
@@ -158,6 +172,8 @@ class Proxy {
         const server = UptimeKumaServer.getInstance();
 
         let updatedList = await R.getAssoc("SELECT id, proxy_id FROM monitor");
+        log.debug("server/proxy.js/Proxy/reloadProxy()",
+        `R.getAssoc("SELECT id, proxy_id FROM monitor")`);
 
         for (let monitorID in server.monitorList) {
             let monitor = server.monitorList[monitorID];
@@ -179,11 +195,15 @@ class Proxy {
 async function applyProxyEveryMonitor(proxyID, userID) {
     // Find all monitors with id and proxy id
     const monitors = await R.getAll("SELECT id, proxy_id FROM monitor WHERE user_id = ?", [ userID ]);
+    log.debug("server/proxy.js/Proxy/applyProxyEveryMonitor(proxyID, userID)",
+    `R.getAll("SELECT id, proxy_id FROM monitor WHERE user_id = ${userID}")`);
 
     // Update proxy id not match with given proxy id
     for (const monitor of monitors) {
         if (monitor.proxy_id !== proxyID) {
             await R.exec("UPDATE monitor SET proxy_id = ? WHERE id = ?", [ proxyID, monitor.id ]);
+            log.debug("server/proxy.js/Proxy/applyProxyEveryMonitor(proxyID, userID)",
+            `R.exec("UPDATE monitor SET proxy_id = ${proxyID} WHERE id = ${monitor.id}",`);
         }
     }
 }

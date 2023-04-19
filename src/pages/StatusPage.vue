@@ -671,6 +671,7 @@ export default {
                 location.href = "/page-not-found";
             }
             console.log(error);
+            console.log("Root publicGroupList res: ", );
         });
 
         // Configure auto-refresh loop
@@ -700,6 +701,7 @@ export default {
                     data: window.preloadData
                 }));
             } else {
+                console.log("/pages/StatusPage.js/getData()",`axios.get("/api/status-page/")`);
                 return axios.get("/api/status-page/" + this.slug);
             }
         },
@@ -717,6 +719,7 @@ export default {
         updateHeartbeatList() {
             // If editMode, it will use the data from websocket.
             if (! this.editMode) {
+                console.log("/pages/StatusPage.js/updateHeartbeatList()",`axios.get("/api/status-page/heartbeat/")`);
                 axios.get("/api/status-page/heartbeat/" + this.slug).then((res) => {
                     const { heartbeatList, uptimeList } = res.data;
 

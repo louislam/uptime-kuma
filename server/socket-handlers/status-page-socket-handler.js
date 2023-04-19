@@ -16,6 +16,9 @@ module.exports.statusPageSocketHandler = (socket) => {
 
     // Post or edit incident
     socket.on("postIncident", async (slug, incident, callback) => {
+
+        log.debug("server/socket-handlers/status-page-socket-handler.js/statusPageSocketHandler(socket)/socket.on(postIncident)","");
+
         try {
             checkLogin(socket);
 
@@ -28,6 +31,8 @@ module.exports.statusPageSocketHandler = (socket) => {
             await R.exec("UPDATE incident SET pin = 0 WHERE status_page_id = ? ", [
                 statusPageID
             ]);
+            log.debug("server/socket-handlers/status-page-socket-handler.js/statusPageSocketHandler(socket)/socket.on(postIncident)",
+            `R.exec("UPDATE incident SET pin = 0 WHERE status_page_id = ${statusPageID} ")`);
 
             let incidentBean;
 
@@ -37,9 +42,13 @@ module.exports.statusPageSocketHandler = (socket) => {
                     statusPageID
                 ]);
             }
+            log.debug("server/socket-handlers/status-page-socket-handler.js/statusPageSocketHandler(socket)/socket.on(postIncident)",
+            ` R.findOne("incident", " id = ${incident.id} AND status_page_id = ${statusPageID} ")`);
 
             if (incidentBean == null) {
                 incidentBean = R.dispense("incident");
+                log.debug("server/socket-handlers/status-page-socket-handler.js/statusPageSocketHandler(socket)/socket.on(postIncident)",
+                `R.dispense("incident")`);
             }
 
             incidentBean.title = incident.title;
@@ -50,11 +59,17 @@ module.exports.statusPageSocketHandler = (socket) => {
 
             if (incident.id) {
                 incidentBean.lastUpdatedDate = R.isoDateTime(dayjs.utc());
+                log.debug("server/socket-handlers/status-page-socket-handler.js/statusPageSocketHandler(socket)/socket.on(postIncident)",
+                `R.isoDateTime(dayjs.utc())`);
             } else {
                 incidentBean.createdDate = R.isoDateTime(dayjs.utc());
+                log.debug("server/socket-handlers/status-page-socket-handler.js/statusPageSocketHandler(socket)/socket.on(postIncident)",
+                `R.isoDateTime(dayjs.utc())`);
             }
 
             await R.store(incidentBean);
+            log.debug("server/socket-handlers/status-page-socket-handler.js/statusPageSocketHandler(socket)/socket.on(postIncident)",
+            `R.store(incidentBean)`);
 
             callback({
                 ok: true,
@@ -69,6 +84,9 @@ module.exports.statusPageSocketHandler = (socket) => {
     });
 
     socket.on("unpinIncident", async (slug, callback) => {
+
+        log.debug("server/socket-handlers/status-page-socket-handler.js/statusPageSocketHandler(socket)/socket.on(unpinIncident)","");
+
         try {
             checkLogin(socket);
 
@@ -77,6 +95,8 @@ module.exports.statusPageSocketHandler = (socket) => {
             await R.exec("UPDATE incident SET pin = 0 WHERE pin = 1 AND status_page_id = ? ", [
                 statusPageID
             ]);
+            log.debug("server/socket-handlers/status-page-socket-handler.js/statusPageSocketHandler(socket)/socket.on(unpinIncident)",
+            `R.exec("UPDATE incident SET pin = 0 WHERE pin = 1 AND status_page_id = ${statusPageID} ")`);
 
             callback({
                 ok: true,
@@ -90,12 +110,17 @@ module.exports.statusPageSocketHandler = (socket) => {
     });
 
     socket.on("getStatusPage", async (slug, callback) => {
+
+        log.debug("server/socket-handlers/status-page-socket-handler.js/statusPageSocketHandler(socket)/socket.on(getStatusPage)","");
+
         try {
             checkLogin(socket);
 
             let statusPage = await R.findOne("status_page", " slug = ? ", [
                 slug
             ]);
+            log.debug("server/socket-handlers/status-page-socket-handler.js/statusPageSocketHandler(socket)/socket.on(getStatusPage)",
+            ` R.findOne("status_page", " slug = ${slug} ")`);
 
             if (!statusPage) {
                 throw new Error("No slug?");
@@ -116,6 +141,9 @@ module.exports.statusPageSocketHandler = (socket) => {
     // Save Status Page
     // imgDataUrl Only Accept PNG!
     socket.on("saveStatusPage", async (slug, config, imgDataUrl, publicGroupList, callback) => {
+
+        log.debug("server/socket-handlers/status-page-socket-handler.js/statusPageSocketHandler(socket)/socket.on(saveStatusPage)","");
+
         try {
             checkLogin(socket);
 
@@ -123,6 +151,8 @@ module.exports.statusPageSocketHandler = (socket) => {
             let statusPage = await R.findOne("status_page", " slug = ? ", [
                 slug
             ]);
+            log.debug("server/socket-handlers/status-page-socket-handler.js/statusPageSocketHandler(socket)/socket.on(saveStatusPage)",
+            `R.findOne("status_page", " slug = ${slug} ")`);
 
             if (!statusPage) {
                 throw new Error("No slug?");
@@ -163,9 +193,13 @@ module.exports.statusPageSocketHandler = (socket) => {
             statusPage.custom_css = config.customCSS;
             statusPage.show_powered_by = config.showPoweredBy;
             statusPage.modified_date = R.isoDateTime();
+            log.debug("server/socket-handlers/status-page-socket-handler.js/statusPageSocketHandler(socket)/socket.on(saveStatusPage)",
+            `R.isoDateTime()`);
             statusPage.google_analytics_tag_id = config.googleAnalyticsId;
 
             await R.store(statusPage);
+            log.debug("server/socket-handlers/status-page-socket-handler.js/statusPageSocketHandler(socket)/socket.on(saveStatusPage)",
+            `R.store(statusPage)`);
 
             await statusPage.updateDomainNameList(config.domainNameList);
             await StatusPage.loadDomainMappingList();
@@ -181,8 +215,12 @@ module.exports.statusPageSocketHandler = (socket) => {
                         group.id,
                         statusPage.id
                     ]);
+                    log.debug("server/socket-handlers/status-page-socket-handler.js/statusPageSocketHandler(socket)/socket.on(saveStatusPage)",
+                    `R.findOne("group", " id = ${group.id} AND public = 1 AND status_page_id = ${statusPage.id} ")`);
                 } else {
                     groupBean = R.dispense("group");
+                    log.debug("server/socket-handlers/status-page-socket-handler.js/statusPageSocketHandler(socket)/socket.on(saveStatusPage)",
+                    `R.dispense("group")`);
                 }
 
                 groupBean.status_page_id = statusPage.id;
@@ -191,15 +229,21 @@ module.exports.statusPageSocketHandler = (socket) => {
                 groupBean.weight = groupOrder++;
 
                 await R.store(groupBean);
+                log.debug("server/socket-handlers/status-page-socket-handler.js/statusPageSocketHandler(socket)/socket.on(saveStatusPage)",
+                `R.store(groupBean)`);
 
                 await R.exec("DELETE FROM monitor_group WHERE group_id = ? ", [
                     groupBean.id
                 ]);
+                log.debug("server/socket-handlers/status-page-socket-handler.js/statusPageSocketHandler(socket)/socket.on(saveStatusPage)",
+                `R.exec("DELETE FROM monitor_group WHERE group_id = ${groupBean.id} ")`);
 
                 let monitorOrder = 1;
 
                 for (let monitor of group.monitorList) {
                     let relationBean = R.dispense("monitor_group");
+                    log.debug("server/socket-handlers/status-page-socket-handler.js/statusPageSocketHandler(socket)/socket.on(saveStatusPage)",
+                    `R.dispense("monitor_group")`);
                     relationBean.weight = monitorOrder++;
                     relationBean.group_id = groupBean.id;
                     relationBean.monitor_id = monitor.id;
@@ -209,6 +253,8 @@ module.exports.statusPageSocketHandler = (socket) => {
                     }
 
                     await R.store(relationBean);
+                    log.debug("server/socket-handlers/status-page-socket-handler.js/statusPageSocketHandler(socket)/socket.on(saveStatusPage)",
+                    `R.store(relationBean)`);
                 }
 
                 groupIDList.push(groupBean.id);
@@ -216,7 +262,7 @@ module.exports.statusPageSocketHandler = (socket) => {
             }
 
             // Delete groups that are not in the list
-            log.debug("socket", "Delete groups that are not in the list");
+            log.debug("server/socket-handlers/status-page-socket-handler.js/statusPageSocketHandler(socket)/socket.on(saveStatusPage)", "Delete groups that are not in the list");
             const slots = groupIDList.map(() => "?").join(",");
 
             const data = [
@@ -224,6 +270,8 @@ module.exports.statusPageSocketHandler = (socket) => {
                 statusPage.id
             ];
             await R.exec(`DELETE FROM \`group\` WHERE id NOT IN (${slots}) AND status_page_id = ?`, data);
+            log.debug("server/socket-handlers/status-page-socket-handler.js/statusPageSocketHandler(socket)/socket.on(saveStatusPage)",
+            `R.exec(DELETE FROM group WHERE id NOT IN (${JSON.stringify(slots)}) AND status_page_id = ${tatusPage.id}`);
 
             const server = UptimeKumaServer.getInstance();
 
@@ -241,7 +289,7 @@ module.exports.statusPageSocketHandler = (socket) => {
             });
 
         } catch (error) {
-            log.error("socket", error);
+            log.error("server/socket-handlers/status-page-socket-handler.js/statusPageSocketHandler(socket)/socket.on(saveStatusPage)", error);
 
             callback({
                 ok: false,
@@ -252,6 +300,9 @@ module.exports.statusPageSocketHandler = (socket) => {
 
     // Add a new status page
     socket.on("addStatusPage", async (title, slug, callback) => {
+
+        log.debug("server/socket-handlers/status-page-socket-handler.js/statusPageSocketHandler(socket)/socket.on(addStatusPage)","");
+
         try {
             checkLogin(socket);
 
@@ -274,11 +325,15 @@ module.exports.statusPageSocketHandler = (socket) => {
             checkSlug(slug);
 
             let statusPage = R.dispense("status_page");
+            log.debug("server/socket-handlers/status-page-socket-handler.js/statusPageSocketHandler(socket)/socket.on(addStatusPage)",
+            `R.dispense("status_page")`);
             statusPage.slug = slug;
             statusPage.title = title;
             statusPage.theme = "auto";
             statusPage.icon = "";
             await R.store(statusPage);
+            log.debug("server/socket-handlers/status-page-socket-handler.js/statusPageSocketHandler(socket)/socket.on(addStatusPage)",
+            `R.store(statusPage)`);
 
             callback({
                 ok: true,
@@ -296,6 +351,9 @@ module.exports.statusPageSocketHandler = (socket) => {
 
     // Delete a status page
     socket.on("deleteStatusPage", async (slug, callback) => {
+
+        log.debug("server/socket-handlers/status-page-socket-handler.js/statusPageSocketHandler(socket)/socket.on(deleteStatusPage)","");
+
         const server = UptimeKumaServer.getInstance();
 
         try {
@@ -318,16 +376,22 @@ module.exports.statusPageSocketHandler = (socket) => {
                 await R.exec("DELETE FROM incident WHERE status_page_id = ? ", [
                     statusPageID
                 ]);
+                log.debug("server/socket-handlers/status-page-socket-handler.js/statusPageSocketHandler(socket)/socket.on(deleteStatusPage)",
+                `R.exec("DELETE FROM incident WHERE status_page_id = ${statusPageID} ")`);
 
                 // Delete group
                 await R.exec("DELETE FROM `group` WHERE status_page_id = ? ", [
                     statusPageID
                 ]);
+                log.debug("server/socket-handlers/status-page-socket-handler.js/statusPageSocketHandler(socket)/socket.on(deleteStatusPage)",
+                `R.exec("DELETE FROM group WHERE status_page_id = ${statusPageID} ")`);
 
                 // Delete status_page
                 await R.exec("DELETE FROM status_page WHERE id = ? ", [
                     statusPageID
                 ]);
+                log.debug("server/socket-handlers/status-page-socket-handler.js/statusPageSocketHandler(socket)/socket.on(deleteStatusPage)",
+                `R.exec("DELETE FROM status_page WHERE id = ${statusPageID} ")`);
 
             } else {
                 throw new Error("Status Page is not found");

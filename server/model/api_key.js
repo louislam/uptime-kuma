@@ -60,6 +60,7 @@ class APIKey extends BeanModel {
     static async save(key, userID) {
         let bean;
         bean = R.dispense("api_key");
+        log.debug("server/model/api_keys.js/save(key,userID)","R.dispense('api_key')");
 
         bean.key = key.key;
         bean.name = key.name;
@@ -68,6 +69,7 @@ class APIKey extends BeanModel {
         bean.expires = key.expires;
 
         await R.store(bean);
+        log.debug("server/model/api_keys.js/save(key,userID)","R.store('bean')");
 
         return bean;
     }

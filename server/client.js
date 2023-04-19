@@ -8,6 +8,7 @@ const server = UptimeKumaServer.getInstance();
 const io = server.io;
 const { setting } = require("./util-server");
 const checkVersion = require("./check-version");
+const { log } = require("../src/util");
 
 /**
  * Send list of notification providers to client
@@ -18,6 +19,7 @@ async function sendNotificationList(socket) {
     const timeLogger = new TimeLogger();
 
     let result = [];
+    log.debug("server/client.js/sendNotificationList(socket)","R.find('notification','user_id='" + socket.userID +")")
     let list = await R.find("notification", " user_id = ? ", [
         socket.userID,
     ]);
@@ -55,6 +57,7 @@ async function sendHeartbeatList(socket, monitorID, toUser = false, overwrite = 
     `, [
         monitorID,
     ]);
+    log.debug("server/client.js/sendHeartbeatList(...)","R.getAll('SELECT * FROM heastbeat WHERE monitor_id='" + monitorID + " ORDER BY tine DESC LIMIT 100)");
 
     let result = list.reverse();
 
@@ -78,6 +81,7 @@ async function sendHeartbeatList(socket, monitorID, toUser = false, overwrite = 
 async function sendImportantHeartbeatList(socket, monitorID, toUser = false, overwrite = false) {
     const timeLogger = new TimeLogger();
 
+    log.debug("server/client.js/sendImportantHeartbeatList(...)", "R.find('heartbeat','monitorID=" + monitorID +" AND important = 1 ORDER BY time DESC LIMIT 500')");
     let list = await R.find("heartbeat", `
         monitor_id = ?
         AND important = 1
@@ -106,6 +110,7 @@ async function sendProxyList(socket) {
     const timeLogger = new TimeLogger();
 
     const list = await R.find("proxy", " user_id = ? ", [ socket.userID ]);
+    log.debug("server/client.js/sendProxyList(socket)","R.find('proxy','user_id='" + socket.userID + ")");
     io.to(socket.userID).emit("proxyList", list.map(bean => bean.export()));
 
     timeLogger.print("Send Proxy List");
@@ -120,6 +125,8 @@ async function sendProxyList(socket) {
  */
 async function sendAPIKeyList(socket) {
     const timeLogger = new TimeLogger();
+
+    log.debug("server/client.js/sendAPIKeyList(socket)","R.find('api-key','user_id='" + socket.userID + ")");
 
     let result = [];
     const list = await R.find(
@@ -162,6 +169,7 @@ async function sendDockerHostList(socket) {
     const timeLogger = new TimeLogger();
 
     let result = [];
+    log.debug("server/client.js/sendAPIKeyList(socket)","R.find('docker_host-key','user_id='" + socket.userID + ")");
     let list = await R.find("docker_host", " user_id = ? ", [
         socket.userID,
     ]);

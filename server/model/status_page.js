@@ -4,6 +4,7 @@ const cheerio = require("cheerio");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const jsesc = require("jsesc");
 const googleAnalytics = require("../google-analytics");
+const { log } = require("../../src/util");
 
 class StatusPage extends BeanModel {
 
@@ -23,6 +24,8 @@ class StatusPage extends BeanModel {
         let statusPage = await R.findOne("status_page", " slug = ? ", [
             slug
         ]);
+        log.debug("server/model/status_page.js/StatusPage/handleStatusPageResponse(response, indexHTML, slug)",
+        `R.findOne("status_page", " slug = ${slug} ")`);
 
         if (statusPage) {
             response.send(await StatusPage.renderHTML(indexHTML, statusPage));
@@ -94,6 +97,8 @@ class StatusPage extends BeanModel {
         let incident = await R.findOne("incident", " pin = 1 AND active = 1 AND status_page_id = ? ", [
             statusPage.id,
         ]);
+        log.debug("server/model/status_page.js/StatusPage/getStatusPageData(statusPage)",
+        ` R.findOne("incident", " pin = 1 AND active = 1 AND status_page_id = ${statusPage.id} ")`);
 
         if (incident) {
             incident = incident.toPublicJSON();
@@ -108,6 +113,8 @@ class StatusPage extends BeanModel {
         const list = await R.find("group", " public = 1 AND status_page_id = ? ORDER BY weight ", [
             statusPage.id
         ]);
+        log.debug("server/model/status_page.js/StatusPage/getStatusPageData(statusPage)",
+        `R.find("group", " public = 1 AND status_page_id = ${statusPage.id} ORDER BY weight ")`);
 
         for (let groupBean of list) {
             let monitorGroup = await groupBean.toPublicJSON(showTags);
@@ -134,6 +141,12 @@ class StatusPage extends BeanModel {
             FROM status_page, status_page_cname
             WHERE status_page.id = status_page_cname.status_page_id
         `);
+        log.debug("server/model/status_page.js/StatusPage/loadDomainMappingList()",
+        `R.getAssoc(
+            SELECT domain, slug
+            FROM status_page, status_page_cname
+            WHERE status_page.id = status_page_cname.status_page_id
+        )`);
     }
 
     /**
@@ -146,6 +159,8 @@ class StatusPage extends BeanModel {
         let result = {};
 
         let list = await R.findAll("status_page", " ORDER BY title ");
+        log.debug("server/model/status_page.js/StatusPage/sendStatusPageList(io,socket)",
+        `R.findAll("status_page", " ORDER BY title ")`);
 
         for (let item of list) {
             result[item.id] = await item.toJSON();
@@ -167,10 +182,14 @@ class StatusPage extends BeanModel {
         }
 
         let trx = await R.begin();
+        log.debug("server/model/status_page.js/StatusPage/updateDomainNameList(domainNameList)",
+        `R.begin()`);
 
         await trx.exec("DELETE FROM status_page_cname WHERE status_page_id = ?", [
             this.id,
         ]);
+        log.debug("server/model/status_page.js/StatusPage/updateDomainNameList(domainNameList)",
+        `trx.exec("DELETE FROM status_page_cname WHERE status_page_id = ${this.id}")`);
 
         try {
             for (let domain of domainNameList) {
@@ -186,11 +205,18 @@ class StatusPage extends BeanModel {
                 await trx.exec("DELETE FROM status_page_cname WHERE domain = ?", [
                     domain,
                 ]);
+                log.debug("server/model/status_page.js/StatusPage/updateDomainNameList(domainNameList)",
+                `trx.exec("DELETE FROM status_page_cname WHERE domain = ${domain}")`);
 
                 let mapping = trx.dispense("status_page_cname");
+                log.debug("server/model/status_page.js/StatusPage/updateDomainNameList(domainNameList)",
+                `trx.dispense("status_page_cname")`);
+
                 mapping.status_page_id = this.id;
                 mapping.domain = domain;
                 await trx.store(mapping);
+                log.debug("server/model/status_page.js/StatusPage/updateDomainNameList(domainNameList)",
+                `trx.store(mapping)`);
             }
             await trx.commit();
         } catch (error) {
@@ -263,6 +289,8 @@ class StatusPage extends BeanModel {
      * @param {string} slug
      */
     static async slugToID(slug) {
+        log.debug("server/model/status_page.js/StatusPage/slugToID(slug)",
+        `R.getCell("SELECT id FROM status_page WHERE slug = ${slug}"`);
         return await R.getCell("SELECT id FROM status_page WHERE slug = ? ", [
             slug
         ]);
@@ -294,6 +322,12 @@ class StatusPage extends BeanModel {
                 FROM maintenance_status_page
                 WHERE status_page_id = ?
             `, [ statusPageId ]);
+            log.debug("server/model/status_page.js/StatusPage/getMaintenanceList(statusPageId",
+            `R.getCol(
+                SELECT DISTINCT maintenance_id
+                FROM maintenance_status_page
+                WHERE status_page_id = ${statusPageId}
+            `);
 
             for (const maintenanceID of maintenanceIDList) {
                 let maintenance = UptimeKumaServer.getInstance().getMaintenance(maintenanceID);

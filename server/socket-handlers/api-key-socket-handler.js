@@ -15,6 +15,9 @@ const { sendAPIKeyList } = require("../client");
 module.exports.apiKeySocketHandler = (socket) => {
     // Add a new api key
     socket.on("addAPIKey", async (key, callback) => {
+
+        log.debug("server/socket-handlers/api-key-socket-handler.js/apiKeySocketHandler(socket)/socket.on(addAPIKey)","");
+
         try {
             checkLogin(socket);
 
@@ -23,8 +26,8 @@ module.exports.apiKeySocketHandler = (socket) => {
             key["key"] = hashedKey;
             let bean = await APIKey.save(key, socket.userID);
 
-            log.debug("apikeys", "Added API Key");
-            log.debug("apikeys", key);
+            log.debug("server/socket-handlers/api-key-socket-handler.js/apiKeySocketHandler(socket)/socket.on(enableAPIKey)", "Added API Key");
+            log.debug("server/socket-handlers/api-key-socket-handler.js/apiKeySocketHandler(socket)/socket.on(enableAPIKey)", key);
 
             // Append key ID and prefix to start of key seperated by _, used to get
             // correct hash when validating key.
@@ -51,6 +54,7 @@ module.exports.apiKeySocketHandler = (socket) => {
     });
 
     socket.on("getAPIKeyList", async (callback) => {
+        log.debug("server/socket-handlers/api-key-socket-handler.js/apiKeySocketHandler(socket)/socket.on(getAPIKeyList)","");
         try {
             checkLogin(socket);
             await sendAPIKeyList(socket);
@@ -67,15 +71,18 @@ module.exports.apiKeySocketHandler = (socket) => {
     });
 
     socket.on("deleteAPIKey", async (keyID, callback) => {
+        log.debug("server/socket-handlers/api-key-socket-handler.js/apiKeySocketHandler(socket)/socket.on(deleteAPIKey)","");
         try {
             checkLogin(socket);
 
-            log.debug("apikeys", `Deleted API Key: ${keyID} User ID: ${socket.userID}`);
+            log.debug("server/socket-handlers/api-key-socket-handler.js/apiKeySocketHandler(socket)/socket.on(enableAPIKey)", `Deleted API Key: ${keyID} User ID: ${socket.userID}`);
 
             await R.exec("DELETE FROM api_key WHERE id = ? AND user_id = ? ", [
                 keyID,
                 socket.userID,
             ]);
+            log.debug("server/socket-handlers/api-key-socket-handler.js/apiKeySocketHandler(socket)/socket.on(deleteAPIKey)",
+            `R.exec("DELETE FROM api_key WHERE id = ${keyID} AND user_id = ${socket.userID} ")`);
 
             apicache.clear();
 
@@ -95,14 +102,17 @@ module.exports.apiKeySocketHandler = (socket) => {
     });
 
     socket.on("disableAPIKey", async (keyID, callback) => {
+        log.debug("server/socket-handlers/api-key-socket-handler.js/apiKeySocketHandler(socket)/socket.on(disableAPIKey)","");
         try {
             checkLogin(socket);
 
-            log.debug("apikeys", `Disabled Key: ${keyID} User ID: ${socket.userID}`);
+            log.debug("server/socket-handlers/api-key-socket-handler.js/apiKeySocketHandler(socket)/socket.on(enableAPIKey)", `Disabled Key: ${keyID} User ID: ${socket.userID}`);
 
             await R.exec("UPDATE api_key SET active = 0 WHERE id = ? ", [
                 keyID,
             ]);
+            log.debug("server/socket-handlers/api-key-socket-handler.js/apiKeySocketHandler(socket)/socket.on(disableAPIKey)",
+            ` R.exec("UPDATE api_key SET active = 0 WHERE id = ${keyId} ")`);
 
             apicache.clear();
 
@@ -122,14 +132,17 @@ module.exports.apiKeySocketHandler = (socket) => {
     });
 
     socket.on("enableAPIKey", async (keyID, callback) => {
+        log.debug("server/socket-handlers/api-key-socket-handler.js/apiKeySocketHandler(socket)/socket.on(enableAPIKey)","");
         try {
             checkLogin(socket);
 
-            log.debug("apikeys", `Enabled Key: ${keyID} User ID: ${socket.userID}`);
+            log.debug("server/socket-handlers/api-key-socket-handler.js/apiKeySocketHandler(socket)/socket.on(enableAPIKey)", `Enabled Key: ${keyID} User ID: ${socket.userID}`);
 
             await R.exec("UPDATE api_key SET active = 1 WHERE id = ? ", [
                 keyID,
             ]);
+              log.debug("server/socket-handlers/api-key-socket-handler.js/apiKeySocketHandler(socket)/socket.on(enableAPIKey)",
+              ` R.exec("UPDATE api_key SET active = 1 WHERE id = ${keyID} ")`);
 
             apicache.clear();
 

@@ -16,6 +16,7 @@ class DockerHost {
 
         if (dockerHostID) {
             bean = await R.findOne("docker_host", " id = ? AND user_id = ? ", [ dockerHostID, userID ]);
+            log.debug("server/docker.js/DOCKERHOST/save(dockerLost,dockerHostID,userID)","R.findOne('docker_host','id=" + dockerHostID + " AND user_id=" + userID + "')")
 
             if (!bean) {
                 throw new Error("docker host not found");
@@ -23,6 +24,7 @@ class DockerHost {
 
         } else {
             bean = R.dispense("docker_host");
+            log.debug("server/docker.js/DOCKERHOST/save(dockerHost,dockerHostID,userID)","R.dispense('docker_host')");
         }
 
         bean.user_id = userID;
@@ -31,6 +33,7 @@ class DockerHost {
         bean.name = dockerHost.name;
 
         await R.store(bean);
+        log.debug("server/docker.js/DOCKERHOST/save(dockerHost,dockerHostID,userID)","R.store('bean')");
 
         return bean;
     }
@@ -43,6 +46,7 @@ class DockerHost {
      */
     static async delete(dockerHostID, userID) {
         let bean = await R.findOne("docker_host", " id = ? AND user_id = ? ", [ dockerHostID, userID ]);
+        log.debug("server/docker.js/DOCKERHOST/delete(dockerHostID,userID)","R.findOne('docker_host','id=" + dockerHostID + " AND user_id=" + userID + "')");
 
         if (!bean) {
             throw new Error("docker host not found");
@@ -50,8 +54,10 @@ class DockerHost {
 
         // Delete removed proxy from monitors if exists
         await R.exec("UPDATE monitor SET docker_host = null WHERE docker_host = ?", [ dockerHostID ]);
+        log.debug("server/docker.js/DOCKERHOST/delete(dockerHostID,userID)","R.exec(UPDATE monitor SET docker_host = null WHERE docker_host = " + dockerHostID + ")");
 
         await R.trash(bean);
+        log.debug("server/docker.js/DOCKERHOST/delete(dockerHostID,userID)","R.trash('bean')");
     }
 
     /**

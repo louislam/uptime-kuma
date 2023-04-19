@@ -19,6 +19,7 @@ const server = UptimeKumaServer.getInstance();
 let io = server.io;
 
 router.get("/api/entry-page", async (request, response) => {
+    log.debug("server/routers/api-router.js/router.get( /api/entry-page)","");
     allowDevAllOrigin(response);
 
     let result = { };
@@ -45,6 +46,8 @@ router.get("/api/push/:pushToken", async (request, response) => {
         let monitor = await R.findOne("monitor", " push_token = ? AND active = 1 ", [
             pushToken
         ]);
+        log.debug("server/routers/api-router.js/router.get(/api/push/:pushToken)",
+        `R.findOne("monitor", " push_token = ${pushToken} AND active = 1 ")`);
 
         if (! monitor) {
             throw new Error("Monitor not found or not active.");
@@ -61,7 +64,11 @@ router.get("/api/push/:pushToken", async (request, response) => {
         let duration = 0;
 
         let bean = R.dispense("heartbeat");
+        log.debug("server/routers/api-router.js/router.get(/api/push/:pushToken)",
+        `R.dispense("heartbeat")`);
         bean.time = R.isoDateTimeMillis(dayjs.utc());
+        log.debug("server/routers/api-router.js/router.get(/api/push/:pushToken)",
+        `R.isoDateTimeMillis(dayjs.utc())`);
 
         if (previousHeartbeat) {
             isFirstBeat = false;
@@ -74,9 +81,9 @@ router.get("/api/push/:pushToken", async (request, response) => {
             status = MAINTENANCE;
         }
 
-        log.debug("router", `/api/push/ called at ${dayjs().format("YYYY-MM-DD HH:mm:ss.SSS")}`);
-        log.debug("router", "PreviousStatus: " + previousStatus);
-        log.debug("router", "Current Status: " + status);
+        log.debug("server/routers/api-router.js/router.get(/api/push/:pushToken)", `/api/push/ called at ${dayjs().format("YYYY-MM-DD HH:mm:ss.SSS")}`);
+        log.debug("server/routers/api-router.js/router.get(/api/push/:pushToken)", "PreviousStatus: " + previousStatus);
+        log.debug("server/routers/api-router.js/router.get(/api/push/:pushToken)", "Current Status: " + status);
 
         bean.important = Monitor.isImportantBeat(isFirstBeat, previousStatus, status);
         bean.monitor_id = monitor.id;
@@ -86,6 +93,8 @@ router.get("/api/push/:pushToken", async (request, response) => {
         bean.duration = duration;
 
         await R.store(bean);
+        log.debug("server/routers/api-router.js/router.get(/api/push/:pushToken)",
+        `R.store(bean)`);
 
         io.to(monitor.user_id).emit("heartbeat", bean.toJSON());
         UptimeCacheList.clearCache(monitor.id);
@@ -137,6 +146,13 @@ router.get("/api/badge/:id/status", cache("5 minutes"), async (request, response
             `,
         [ requestedMonitorId ]
         );
+        log.debug("server/routers/api-router.js/router.get(/api/badge/:id/status)",
+        `R.getRow(
+                SELECT monitor_group.monitor_id FROM monitor_group, \`group\`
+                WHERE monitor_group.group_id = \`group\`.id
+                AND monitor_group.monitor_id = ${requestedMonitorId}
+                AND public = 1
+        `);
 
         const badgeValues = { style };
 
@@ -216,6 +232,13 @@ router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (reques
             `,
         [ requestedMonitorId ]
         );
+        log.debug("server/routers/api-router.js/router.get(/api/badge/:id/uptime/:duration?)",
+        `R.getRow(
+              SELECT monitor_group.monitor_id FROM monitor_group, \`group\`
+              WHERE monitor_group.group_id = \`group\`.id
+              AND monitor_group.monitor_id = ${requestedMonitorId}
+              AND public = 1
+          `);
 
         const badgeValues = { style };
 
@@ -286,6 +309,15 @@ router.get("/api/badge/:id/ping/:duration?", cache("5 minutes"), async (request,
             `,
         [ -requestedDuration, requestedMonitorId ]
         ));
+        log.debug("server/routers/api-router.js/router.get(/api/badge/:id/ping/:duration?)",
+        `R.getCell(
+              SELECT AVG(ping) FROM monitor_group, \`group\`, heartbeat
+              WHERE monitor_group.group_id = \`group\`.id
+              AND heartbeat.time > DATETIME('now', ${-requestedDuration} || ' hours')
+              AND heartbeat.ping IS NOT NULL
+              AND public = 1
+              AND heartbeat.monitor_id = ${requestedMonitorId}
+          `);
 
         const badgeValues = { style };
 
@@ -352,6 +384,15 @@ router.get("/api/badge/:id/avg-response/:duration?", cache("5 minutes"), async (
             `,
         [ -requestedDuration, requestedMonitorId ]
         ));
+        log.debug("server/routers/api-router.js/router.get(/api/badge/:id/avg-response/:duration?)",
+        `R.getCell(
+            SELECT AVG(ping) FROM monitor_group, \`group\`, heartbeat
+            WHERE monitor_group.group_id = \`group\`.id
+            AND heartbeat.time > DATETIME('now', ${-requestedDuration} || ' hours')
+            AND heartbeat.ping IS NOT NULL
+            AND public = 1
+            AND heartbeat.monitor_id = ${requestedMonitorId}
+          `);
 
         const badgeValues = { style };
 
@@ -419,6 +460,13 @@ router.get("/api/badge/:id/cert-exp", cache("5 minutes"), async (request, respon
             `,
         [ requestedMonitorId ]
         );
+        log.debug("server/routers/api-router.js/router.get(/api/badge/:id/cert-exp)",
+        `R.getRow(
+            SELECT monitor_group.monitor_id FROM monitor_group, \`group\`
+            WHERE monitor_group.group_id = \`group\`.id
+            AND monitor_group.monitor_id = ${requestedMonitorId}
+            AND public = 1
+            `);
 
         const badgeValues = { style };
 
@@ -431,6 +479,8 @@ router.get("/api/badge/:id/cert-exp", cache("5 minutes"), async (request, respon
             const tlsInfoBean = await R.findOne("monitor_tls_info", "monitor_id = ?", [
                 requestedMonitorId,
             ]);
+            log.debug("server/routers/api-router.js/router.get(/api/badge/:id/cert-exp)",
+            `R.findOne("monitor_tls_info", "monitor_id = ${requestedMonitorId}")`);
 
             if (!tlsInfoBean) {
                 // return a "No/Bad Cert" badge in naColor (grey), if no cert saved (does not save bad certs?)
@@ -504,6 +554,13 @@ router.get("/api/badge/:id/response", cache("5 minutes"), async (request, respon
             `,
         [ requestedMonitorId ]
         );
+        log.debug("server/routers/api-router.js/router.get(/api/badge/:id/response)",
+        `R.getRow(
+            SELECT monitor_group.monitor_id FROM monitor_group, \`group\`
+            WHERE monitor_group.group_id = \`group\`.id
+            AND monitor_group.monitor_id = ${requestedMonitorId}
+            AND public = 1
+        `);
 
         const badgeValues = { style };
 

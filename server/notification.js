@@ -158,6 +158,8 @@ class Notification {
                 notificationID,
                 userID,
             ]);
+            log.debug("server/notification.js/Notification/save(notification, notificationID, userID)",
+            `R.findOne("notification", " id = ${notificationID} AND user_id = ${userID} "`);
 
             if (! bean) {
                 throw new Error("notification not found");
@@ -165,6 +167,8 @@ class Notification {
 
         } else {
             bean = R.dispense("notification");
+            log.debug("server/notification.js/Notification/save(notification, notificationID, userID)",
+            `R.dispense("notification")`);
         }
 
         bean.name = notification.name;
@@ -172,6 +176,8 @@ class Notification {
         bean.config = JSON.stringify(notification);
         bean.is_default = notification.isDefault || false;
         await R.store(bean);
+        log.debug("server/notification.js/Notification",
+        `R.store("bean")`);
 
         if (notification.applyExisting) {
             await applyNotificationEveryMonitor(bean.id, userID);
@@ -191,12 +197,16 @@ class Notification {
             notificationID,
             userID,
         ]);
+        log.debug("server/notification.js/Notification/delete(notificationID, userID)",
+        `R.findOne("notification", " id = ${notificationID} AND user_id = ${userID} "`);
 
         if (! bean) {
             throw new Error("notification not found");
         }
 
         await R.trash(bean);
+        log.debug("server/notification.js/Notification/delete(notificationID, userID)",
+        `R.trash("bean")`);
     }
 
     /**
@@ -221,18 +231,26 @@ async function applyNotificationEveryMonitor(notificationID, userID) {
     let monitors = await R.getAll("SELECT id FROM monitor WHERE user_id = ?", [
         userID
     ]);
+    log.debug("server/notification.js/Notification/applyNotificationEveryMonitor(notificationID, userID)",
+    `R.getAll("SELECT id FROM monitor WHERE user_id = ${userID}")`);
 
     for (let i = 0; i < monitors.length; i++) {
         let checkNotification = await R.findOne("monitor_notification", " monitor_id = ? AND notification_id = ? ", [
             monitors[i].id,
             notificationID,
         ]);
+        log.debug("server/notification.js/Notification/applyNotificationEveryMonitor(notificationID, userID)",
+        `R.findOne("monitor_notification", " monitor_id = ${monitors[i].id} AND notification_id = ${notificationID} ")`);
 
         if (! checkNotification) {
             let relation = R.dispense("monitor_notification");
+            log.debug("server/notification.js/Notification/applyNotificationEveryMonitor(notificationID, userID)",
+            `R.dispense("monitor_notification")`);
             relation.monitor_id = monitors[i].id;
             relation.notification_id = notificationID;
             await R.store(relation);
+            log.debug("server/notification.js/Notification/applyNotificationEveryMonitor(notificationID, userID)",
+            `R.store(relation)`);
         }
     }
 }

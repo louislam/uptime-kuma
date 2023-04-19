@@ -35,17 +35,26 @@ const isWindows = process.platform === /^win/.test(process.platform);
  * @returns {Promise<Bean>}
  */
 exports.initJWTSecret = async () => {
+
+    log.info("server/util-server.js/initJWTSecret()","");
+
     let jwtSecretBean = await R.findOne("setting", " `key` = ? ", [
         "jwtSecret",
     ]);
+    log.info("server/util-server.js/initJWTSecret()",
+    `R.findOne("setting", " key = ${"jwtSecret"} ")`);
 
     if (!jwtSecretBean) {
         jwtSecretBean = R.dispense("setting");
+        log.info("server/util-server.js/initJWTSecret()",
+        `R.dispense("setting")`);
         jwtSecretBean.key = "jwtSecret";
     }
 
     jwtSecretBean.value = passwordHash.generate(genSecret());
     await R.store(jwtSecretBean);
+    log.info("server/util-server.js/initJWTSecret()",
+    `R.store(jwtSecretBean)`);
     return jwtSecretBean;
 };
 
@@ -56,6 +65,7 @@ exports.initJWTSecret = async () => {
  * @returns {Promise<number>} Maximum time in ms rounded to nearest integer
  */
 exports.tcping = function (hostname, port) {
+    log.info("server/util-server.js/tcping(hostname, port)","");
     return new Promise((resolve, reject) => {
         tcpp.ping({
             address: hostname,
@@ -83,11 +93,12 @@ exports.tcping = function (hostname, port) {
  * @returns {Promise<number>} Time for ping in ms rounded to nearest integer
  */
 exports.ping = async (hostname, size = 56) => {
+    log.info("server/util-server.js/tcping(hostname,size)","");
     try {
         return await exports.pingAsync(hostname, false, size);
     } catch (e) {
         // If the host cannot be resolved, try again with ipv6
-        console.debug("ping", "IPv6 error message: " + e.message);
+        log.debug("server/util-server.js/tcping(hostname,size)", "IPv6 error message: " + e.message);
 
         // As node-ping does not report a specific error for this, try again if it is an empty message with ipv6 no matter what.
         if (!e.message) {
@@ -106,6 +117,7 @@ exports.ping = async (hostname, size = 56) => {
  * @returns {Promise<number>} Time for ping in ms rounded to nearest integer
  */
 exports.pingAsync = function (hostname, ipv6 = false, size = 56) {
+    log.info("server/util-server.js/pingAsync(...)","");
     return new Promise((resolve, reject) => {
         ping.promise.probe(hostname, {
             v6: ipv6,
@@ -139,6 +151,7 @@ exports.pingAsync = function (hostname, ipv6 = false, size = 56) {
  * @returns {Promise<string>}
  */
 exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
+    log.info("server/util-server.js/mqttAsync(...)","");
     return new Promise((resolve, reject) => {
         const { port, username, password, interval = 20 } = options;
 
@@ -203,6 +216,7 @@ exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
  * @returns {Promise<(string[]|Object[]|Object)>}
  */
 exports.httpNtlm = function (options, ntlmOptions) {
+    log.info("server/util-server.js/httpNtlm(...)","");
     return new Promise((resolve, reject) => {
         let client = NtlmClient(ntlmOptions);
 
@@ -225,6 +239,7 @@ exports.httpNtlm = function (options, ntlmOptions) {
  * @returns {Promise<(string[]|Object[]|Object)>}
  */
 exports.dnsResolve = function (hostname, resolverServer, resolverPort, rrtype) {
+    log.info("server/util-server.js/dnsResolve(...)","");
     const resolver = new Resolver();
     // Remove brackets from IPv6 addresses so we can re-add them to
     // prevent issues with ::1:5300 (::1 port 5300)
@@ -258,6 +273,7 @@ exports.dnsResolve = function (hostname, resolverServer, resolverPort, rrtype) {
  * @returns {Promise<(string[]|Object[]|Object)>}
  */
 exports.mssqlQuery = async function (connectionString, query) {
+    log.info("server/util-server.js/mssqlQuery(...)","");
     let pool;
     try {
         pool = new mssql.ConnectionPool(connectionString);
@@ -279,6 +295,7 @@ exports.mssqlQuery = async function (connectionString, query) {
  * @returns {Promise<(string[]|Object[]|Object)>}
  */
 exports.postgresQuery = function (connectionString, query) {
+    log.info("server/util-server.js/postgresQuery(...)","");
     return new Promise((resolve, reject) => {
         const config = postgresConParse(connectionString);
 
@@ -325,6 +342,7 @@ exports.postgresQuery = function (connectionString, query) {
  * @returns {Promise<(string)>}
  */
 exports.mysqlQuery = function (connectionString, query) {
+    log.info("server/util-server.js/mysqlQuery(...)","");
     return new Promise((resolve, reject) => {
         const connection = mysql.createConnection(connectionString);
 
@@ -353,6 +371,7 @@ exports.mysqlQuery = function (connectionString, query) {
  * @returns {Promise<(string[]|Object[]|Object)>}
  */
 exports.mongodbPing = async function (connectionString) {
+    log.info("server/util-server.js/mongodbPing(...)","");
     let client = await MongoClient.connect(connectionString);
     let dbPing = await client.db().command({ ping: 1 });
     await client.close();
@@ -384,6 +403,8 @@ exports.radius = function (
     secret,
     port = 1812,
 ) {
+
+    log.info("server/util-server.js/radius(...)","");
     const client = new radiusClient({
         host: hostname,
         hostPort: port,
@@ -406,6 +427,7 @@ exports.radius = function (
  * @param {string} dsn The redis connection string
  */
 exports.redisPingAsync = function (dsn) {
+    log.info("server/util-server.js/redisPingAsync(...)","");
     return new Promise((resolve, reject) => {
         const client = redis.createClient({
             url: dsn,
@@ -435,6 +457,7 @@ exports.redisPingAsync = function (dsn) {
  * @deprecated Use await Settings.get(key)
  */
 exports.setting = async function (key) {
+    log.info("server/util-server.js/setting(...)","");
     return await Settings.get(key);
 };
 
@@ -446,6 +469,7 @@ exports.setting = async function (key) {
  * @returns {Promise<void>}
  */
 exports.setSetting = async function (key, value, type = null) {
+    log.info("server/util-server.js/setSetting(...)","");
     await Settings.set(key, value, type);
 };
 
@@ -455,6 +479,7 @@ exports.setSetting = async function (key, value, type = null) {
  * @returns {Promise<Bean>}
  */
 exports.getSettings = async function (type) {
+    log.info("server/util-server.js/getSettings(...)","");
     return await Settings.getSettings(type);
 };
 
@@ -465,6 +490,7 @@ exports.getSettings = async function (type) {
  * @returns {Promise<void>}
  */
 exports.setSettings = async function (type, data) {
+    log.info("server/util-server.js/setSettings(...)","");
     await Settings.setSettings(type, data);
 };
 
@@ -477,8 +503,10 @@ exports.setSettings = async function (type, data) {
  * @param {Date} validTo End date
  * @returns {number}
  */
-const getDaysBetween = (validFrom, validTo) =>
-    Math.round(Math.abs(+validFrom - +validTo) / 8.64e7);
+const getDaysBetween = (validFrom, validTo) => {
+    log.info("server/util-server.js/getDaysBetween(...)","");
+    return Math.round(Math.abs(+validFrom - +validTo) / 8.64e7);
+}
 
 /**
  * Get days remaining from a time range
@@ -487,6 +515,7 @@ const getDaysBetween = (validFrom, validTo) =>
  * @returns {number}
  */
 const getDaysRemaining = (validFrom, validTo) => {
+    log.info("server/util-server.js/getDaysRemaining(...)","");
     const daysRemaining = getDaysBetween(validFrom, validTo);
     if (new Date(validTo).getTime() < new Date().getTime()) {
         return -daysRemaining;
@@ -500,6 +529,7 @@ const getDaysRemaining = (validFrom, validTo) => {
  * @returns {Object} An object representing certificate information
  */
 const parseCertificateInfo = function (info) {
+    log.info("server/util-server.js/parseCertificateInfo(...)","");
     let link = info;
     let i = 0;
 
@@ -544,6 +574,7 @@ const parseCertificateInfo = function (info) {
  * @returns {Object} Object containing certificate information
  */
 exports.checkCertificate = function (res) {
+    log.info("server/util-server.js/checkCertificate(...)","");
     if (!res.request.res.socket) {
         throw new Error("No socket found");
     }
@@ -551,7 +582,7 @@ exports.checkCertificate = function (res) {
     const info = res.request.res.socket.getPeerCertificate(true);
     const valid = res.request.res.socket.authorized || false;
 
-    log.debug("cert", "Parsing Certificate Info");
+    log.debug("server/util-server.js/checkCertificate(...)", "Parsing Certificate Info");
     const parsedInfo = parseCertificateInfo(info);
 
     return {
@@ -568,6 +599,7 @@ exports.checkCertificate = function (res) {
  * @throws {Error} Will throw an error if the provided status code is not a valid range string or code string
  */
 exports.checkStatusCode = function (status, acceptedCodes) {
+    log.info("server/util-server.js/checkStatusCode(...)","");
     if (acceptedCodes == null || acceptedCodes.length === 0) {
         return false;
     }
@@ -597,7 +629,7 @@ exports.checkStatusCode = function (status, acceptedCodes) {
  * @returns {number}
  */
 exports.getTotalClientInRoom = (io, roomName) => {
-
+    log.info("server/util-server.js/getTotalClientInRoom(...)","");
     const sockets = io.sockets;
 
     if (!sockets) {
@@ -624,6 +656,7 @@ exports.getTotalClientInRoom = (io, roomName) => {
  * @param {Object} res Response object from axios
  */
 exports.allowDevAllOrigin = (res) => {
+    log.info("server/util-server.js/allowDevAllOrigin(res)","");
     if (process.env.NODE_ENV === "development") {
         exports.allowAllOrigin(res);
     }
@@ -634,6 +667,7 @@ exports.allowDevAllOrigin = (res) => {
  * @param {Object} res Response object from axios
  */
 exports.allowAllOrigin = (res) => {
+    log.info("server/util-server.js/allowAllOrigin(res)","");
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
 };
@@ -643,6 +677,7 @@ exports.allowAllOrigin = (res) => {
  * @param {Socket} socket Socket instance
  */
 exports.checkLogin = (socket) => {
+    log.info("server/util-server.js/checkLogin(socket)","");
     if (!socket.userID) {
         throw new Error("You are not logged in.");
     }
@@ -655,6 +690,7 @@ exports.checkLogin = (socket) => {
  * @returns {Promise<Bean>}
  */
 exports.doubleCheckPassword = async (socket, currentPassword) => {
+    log.info("server/util-server.js/doubleCheckPassword(...)","");
     if (typeof currentPassword !== "string") {
         throw new Error("Wrong data type?");
     }
@@ -662,6 +698,8 @@ exports.doubleCheckPassword = async (socket, currentPassword) => {
     let user = await R.findOne("user", " id = ? AND active = 1 ", [
         socket.userID,
     ]);
+    log.info("server/util-server.js/doubleCheckPassword(...)",
+    `R.findOne("user", " id = ${socket.userID} AND active = 1 ")`);
 
     if (!user || !passwordHash.verify(currentPassword, user.password)) {
         throw new Error("Incorrect current password");
@@ -672,40 +710,43 @@ exports.doubleCheckPassword = async (socket, currentPassword) => {
 
 /** Start Unit tests */
 exports.startUnitTest = async () => {
-    console.log("Starting unit test...");
+    log.info("server/util-server.js/startUnitTes(...)","Starting unit test...");
     const npm = /^win/.test(process.platform) ? "npm.cmd" : "npm";
     const child = childProcess.spawn(npm, [ "run", "jest-backend" ]);
 
     child.stdout.on("data", (data) => {
-        console.log(data.toString());
+        log.info("server/util-server.js/startUnitTes(...)", data.toString());
     });
 
     child.stderr.on("data", (data) => {
         console.log(data.toString());
+        log.info("server/util-server.js/startUnitTes(...)", data.toString());
     });
 
     child.on("close", function (code) {
-        console.log("Jest exit code: " + code);
+        log.info("server/util-server.js/startUnitTes(...)","Jest exit code: " + code);
         process.exit(code);
     });
 };
 
 /** Start end-to-end tests */
 exports.startE2eTests = async () => {
-    console.log("Starting unit test...");
+    log.info("server/util-server.js/startE2eTests(...)","Starting e2e test...");
     const npm = /^win/.test(process.platform) ? "npm.cmd" : "npm";
     const child = childProcess.spawn(npm, [ "run", "cy:run" ]);
 
     child.stdout.on("data", (data) => {
         console.log(data.toString());
+        log.info("server/util-server.js/startE2eTests(...)", data.toString());
     });
 
     child.stderr.on("data", (data) => {
         console.log(data.toString());
+        log.info("server/util-server.js/startE2eTests(...)", data.toString());
     });
 
     child.on("close", function (code) {
-        console.log("Jest exit code: " + code);
+        log.info("server/util-server.js/startE2eTests(...)", "Jest exit code: " + code);
         process.exit(code);
     });
 };
@@ -716,6 +757,7 @@ exports.startE2eTests = async () => {
  * @returns {string}
  */
 exports.convertToUTF8 = (body) => {
+    log.info("server/util-server.js/convertToUTF8(body)","");
     const guessEncoding = chardet.detect(body);
     const str = iconv.decode(body, guessEncoding);
     return str.toString();
@@ -732,6 +774,7 @@ exports.convertToUTF8 = (body) => {
  * @returns {string}, hex value
  */
 exports.percentageToColor = (percentage, maxHue = 90, minHue = 10) => {
+    log.info("server/util-server.js/percentageToColor(...)","");
     const hue = percentage * (maxHue - minHue) + minHue;
     try {
         return chroma(`hsl(${hue}, 90%, 40%)`).hex();
@@ -748,6 +791,7 @@ exports.percentageToColor = (percentage, maxHue = 90, minHue = 10) => {
  * @returns {string}
  */
 exports.filterAndJoin = (parts, connector = "") => {
+    log.info("server/util-server.js/filterAndJoin(...)","");
     return parts.filter((part) => !!part && part !== "").join(connector);
 };
 
@@ -757,6 +801,7 @@ exports.filterAndJoin = (parts, connector = "") => {
  * @param {string} [msg=""] Message to send
  */
 module.exports.sendHttpError = (res, msg = "") => {
+    log.info("server/util-server.js/sendHttpError(...)","");
     if (msg.includes("SQLITE_BUSY") || msg.includes("SQLITE_LOCKED")) {
         res.status(503).json({
             "status": "fail",
@@ -776,6 +821,7 @@ module.exports.sendHttpError = (res, msg = "") => {
 };
 
 function timeObjectConvertTimezone(obj, timezone, timeObjectToUTC = true) {
+    log.info("server/util-server.js/timeObjectConvertTimezone(...)","");
     let offsetString;
 
     if (timezone) {
@@ -823,6 +869,7 @@ function timeObjectConvertTimezone(obj, timezone, timeObjectToUTC = true) {
  * @returns {object}
  */
 module.exports.timeObjectToUTC = (obj, timezone = undefined) => {
+    log.info("server/util-server.js/timeObjectToUTC(...)","");
     return timeObjectConvertTimezone(obj, timezone, true);
 };
 
@@ -833,6 +880,7 @@ module.exports.timeObjectToUTC = (obj, timezone = undefined) => {
  * @returns {object}
  */
 module.exports.timeObjectToLocal = (obj, timezone = undefined) => {
+    log.info("server/util-server.js/timeObjectToLocal(...)","");
     return timeObjectConvertTimezone(obj, timezone, false);
 };
 
@@ -841,6 +889,7 @@ module.exports.timeObjectToLocal = (obj, timezone = undefined) => {
  * @param {Object} options from gRPC client
  */
 module.exports.grpcQuery = async (options) => {
+    log.info("server/util-server.js/grpcQuery(...)","");
     const { grpcUrl, grpcProtobufData, grpcServiceName, grpcEnableTls, grpcMethod, grpcBody } = options;
     const protocObject = protojs.parse(grpcProtobufData);
     const protoServiceObject = protocObject.root.lookupService(grpcServiceName);
@@ -855,7 +904,7 @@ module.exports.grpcQuery = async (options) => {
         const serviceFQDN = fullServiceName.split(".");
         const serviceMethod = serviceFQDN.pop();
         const serviceMethodClientImpl = `/${serviceFQDN.slice(1).join(".")}/${serviceMethod}`;
-        log.debug("monitor", `gRPC method ${serviceMethodClientImpl}`);
+        log.debug("server/util-server.js/grpcQuery(...)", `gRPC method ${serviceMethodClientImpl}`);
         client.makeUnaryRequest(
             serviceMethodClientImpl,
             arg => arg,
@@ -874,7 +923,7 @@ module.exports.grpcQuery = async (options) => {
                         data: ""
                     });
                 } else {
-                    log.debug("monitor:", `gRPC response: ${JSON.stringify(response)}`);
+                    log.debug("server/util-server.js/grpcQuery(...):", `gRPC response: ${JSON.stringify(response)}`);
                     return resolve({
                         code: 1,
                         errorMessage: "",

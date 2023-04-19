@@ -36,6 +36,7 @@ const DEFAULT_KEEP_PERIOD = 180;
                 "DELETE FROM heartbeat WHERE time < DATETIME('now', '-' || ? || ' days') ",
                 [ parsedPeriod ]
             );
+            log.debug("server/jobs/clear-old-data.js","R.exec(DELETE FROM heartbeat WHERE time < DATETIME('now', '-' || " + parsePeriod + " || ' days'))");
         } catch (e) {
             log(`Failed to clear old data: ${e.message}`);
         }

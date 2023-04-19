@@ -30,13 +30,15 @@ class Settings {
      */
     static async get(key) {
 
+        log.debug("server/settings.js/Settings/get(key)", "");
+
         // Start cache clear if not started yet
         if (!Settings.cacheCleaner) {
             Settings.cacheCleaner = setInterval(() => {
-                log.debug("settings", "Cache Cleaner is just started.");
+                log.debug("server/settings.js/Settings/get(key)", "Cache Cleaner is just started.");
                 for (key in Settings.cacheList) {
                     if (Date.now() - Settings.cacheList[key].timestamp > 60 * 1000) {
-                        log.debug("settings", "Cache Cleaner deleted: " + key);
+                        log.debug("server/settings.js/Settings/get(key)", "Cache Cleaner deleted: " + key);
                         delete Settings.cacheList[key];
                     }
                 }
@@ -47,17 +49,19 @@ class Settings {
         // Query from cache
         if (key in Settings.cacheList) {
             const v = Settings.cacheList[key].value;
-            log.debug("settings", `Get Setting (cache): ${key}: ${v}`);
+            log.debug("server/settings.js/Settings/get(key)", `Get Setting (cache): ${key}: ${v}`);
             return v;
         }
 
         let value = await R.getCell("SELECT `value` FROM setting WHERE `key` = ? ", [
             key,
         ]);
+        log.debug("server/settings.js/Settings/get(key)",
+        `R.getCell("SELECT value FROM setting WHERE key = ${key} ")`);
 
         try {
             const v = JSON.parse(value);
-            log.debug("settings", `Get Setting: ${key}: ${v}`);
+            log.debug("server/settings.js/Settings/get(key)", `Get Setting: ${key}: ${v}`);
 
             Settings.cacheList[key] = {
                 value: v,
@@ -79,16 +83,24 @@ class Settings {
      */
     static async set(key, value, type = null) {
 
+      log.debug("server/settings.js/Settings/set(key, value, type = null)", "");
+
         let bean = await R.findOne("setting", " `key` = ? ", [
             key,
         ]);
+        log.debug("server/settings.js/Settings/set(key, value, type = null)",
+        `R.findOne("setting", " key = ${key} ")`);
         if (!bean) {
             bean = R.dispense("setting");
+            log.debug("server/settings.js/Settings/set(key, value, type = null)",
+            `R.dispense("setting")`);
             bean.key = key;
         }
         bean.type = type;
         bean.value = JSON.stringify(value);
         await R.store(bean);
+        log.debug("server/settings.js/Settings/set(key, value, type = null)",
+        `R.store(bean)`);
 
         Settings.deleteCache([ key ]);
     }
@@ -99,9 +111,14 @@ class Settings {
      * @returns {Promise<Bean>}
      */
     static async getSettings(type) {
+
+        log.debug("server/settings.js/Settings/getSettings(type)", "");
+
         let list = await R.getAll("SELECT `key`, `value` FROM setting WHERE `type` = ? ", [
             type,
         ]);
+        log.debug("server/settings.js/Settings/getSettings(type)",
+        `R.getAll("SELECT key, value FROM setting WHERE type = ${type} ")`);
 
         let result = {};
 
@@ -123,6 +140,9 @@ class Settings {
      * @returns {Promise<void>}
      */
     static async setSettings(type, data) {
+
+        log.debug("server/settings.js/Settings/setSettings(type, data)", "");
+
         let keyList = Object.keys(data);
 
         let promiseList = [];
@@ -131,9 +151,13 @@ class Settings {
             let bean = await R.findOne("setting", " `key` = ? ", [
                 key
             ]);
+            log.debug("server/settings.js/Settings/setSettings(type, data)",
+            `R.findOne("setting", " key = ${key} ")`);
 
             if (bean == null) {
                 bean = R.dispense("setting");
+                log.debug("server/settings.js/Settings/setSettings(type, data)",
+                `R.dispense("setting")`);
                 bean.type = type;
                 bean.key = key;
             }
@@ -141,6 +165,8 @@ class Settings {
             if (bean.type === type) {
                 bean.value = JSON.stringify(data[key]);
                 promiseList.push(R.store(bean));
+                log.debug("server/settings.js/Settings/setSettings(type, data)",
+                `R.store(bean)`);
             }
         }
 
@@ -154,12 +180,18 @@ class Settings {
      * @param {string[]} keyList
      */
     static deleteCache(keyList) {
+
+        log.debug("server/settings.js/Settings/deleteCache(keyList)", "");
+
         for (let key of keyList) {
             delete Settings.cacheList[key];
         }
     }
 
     static stopCacheCleaner() {
+
+        log.debug("server/settings.js/Settings/stopCacheCleaner()", "");
+
         if (Settings.cacheCleaner) {
             clearInterval(Settings.cacheCleaner);
             Settings.cacheCleaner = null;

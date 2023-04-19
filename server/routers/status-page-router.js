@@ -36,6 +36,9 @@ router.get("/api/status-page/:slug", cache("5 minutes"), async (request, respons
         let statusPage = await R.findOne("status_page", " slug = ? ", [
             slug
         ]);
+        log.debug("server/routers/status-page-router.js/router.get(/api/badge/:id/response)",
+        `R.findOne("status_page", " slug = ${slug}"`
+        );
 
         if (!statusPage) {
             return null;
@@ -76,6 +79,14 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
         `, [
             statusPageID
         ]);
+        log.debug("server/routers/status-page-router.js/router.get(/api/status-page/heartbeat/:slug)",
+        `R.getCol(
+            SELECT monitor_group.monitor_id FROM monitor_group, \`group\`
+            WHERE monitor_group.group_id = \`group\`.id
+            AND public = 1
+            AND \`group\`.status_page_id = ${statusPageID}
+        `
+        );
 
         for (let monitorID of monitorIDList) {
             let list = await R.getAll(`
@@ -86,8 +97,18 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
             `, [
                 monitorID,
             ]);
+            log.debug("server/routers/status-page-router.js/router.get(/api/status-page/heartbeat/:slug)",
+            `R.getAll(
+                   SELECT * FROM heartbeat
+                   WHERE monitor_id = ${monitorID}
+                   ORDER BY time DESC
+                   LIMIT 50
+           `
+            );
 
             list = R.convertToBeans("heartbeat", list);
+            log.debug("server/routers/status-page-router.js/router.get(/api/status-page/heartbeat/:slug)",
+            `R.convertToBeans("heartbeat", ${JSON.stringify(list)})`);
             heartbeatList[monitorID] = list.reverse().map(row => row.toPublicJSON());
 
             const type = 24;
@@ -114,6 +135,8 @@ router.get("/api/status-page/:slug/manifest.json", cache("1440 minutes"), async 
         let statusPage = await R.findOne("status_page", " slug = ? ", [
             slug
         ]);
+        log.debug("server/routers/status-page-router.js/router.get(/api/status-page/:slug/manifest.json)",
+        `R.findOne("status_page", " slug = ${slug} "`);
 
         if (!statusPage) {
             sendHttpError(response, "Not Found");

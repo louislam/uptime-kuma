@@ -63,6 +63,7 @@ class Monitor extends BeanModel {
         let list = await R.find("monitor_notification", " monitor_id = ? ", [
             this.id,
         ]);
+        log.debug("sever/model/monitor.js/Monitor/toJSON(...)","R.find('monitor_notification','monitor_id = " + this.id + "')");
 
         for (let bean of list) {
             notificationIDList[bean.notification_id] = true;
@@ -149,6 +150,7 @@ class Monitor extends BeanModel {
      * @returns {Promise<LooseObject<any>[]>}
      */
     async getTags() {
+        log.debug("sever/model/monitor.js/Monitor/getTags(...)","R.getAll('SELECT mt.*, tag.name, tag.color FROM monitor_tag mt JOIN tag ON my.tag.id = tag.id WHERE monitor.id = " + this.id + " ORDER BY tag.name')");
         return await R.getAll("SELECT mt.*, tag.name, tag.color FROM monitor_tag mt JOIN tag ON mt.tag_id = tag.id WHERE mt.monitor_id = ? ORDER BY tag.name", [ this.id ]);
     }
 
@@ -234,13 +236,16 @@ class Monitor extends BeanModel {
                 previousBeat = await R.findOne("heartbeat", " monitor_id = ? ORDER BY time DESC", [
                     this.id,
                 ]);
+                log.debug("sever/model/monitor.js/Monitor/start(io)","R.findOne('hreartbeat','monitor_id = ' " + this.id + " ORDER BY time DESC)");
             }
 
             const isFirstBeat = !previousBeat;
 
             let bean = R.dispense("heartbeat");
+            log.debug("sever/model/monitor.js/Monitor/start(io)","R.dispense('heartbeat')");
             bean.monitor_id = this.id;
             bean.time = R.isoDateTimeMillis(dayjs.utc());
+            log.debug("sever/model/monitor.js/Monitor/start(io)","R.isoDateTimeMillis('dayjs.utc()')");
             bean.status = DOWN;
             bean.downCount = previousBeat?.downCount || 0;
 
@@ -319,6 +324,7 @@ class Monitor extends BeanModel {
 
                     if (this.proxy_id) {
                         const proxy = await R.load("proxy", this.proxy_id);
+                        log.debug("sever/model/monitor.js/Monitor/start(io)","R.load('proxy','" + this.proxy.id + "')");
 
                         if (proxy && proxy.active) {
                             const { httpAgent, httpsAgent } = Proxy.createAgents(proxy, {
@@ -454,6 +460,7 @@ class Monitor extends BeanModel {
                             dnsMessage,
                             this.id
                         ]);
+                        log.debug("sever/model/monitor.js/Monitor/start(io)","R.exec('UPDATE monitor SER dns_last_result = " + dnsMessage +  " WHERE id = " + this.id + "')");
                     }
 
                     bean.msg = dnsMessage;
@@ -549,6 +556,7 @@ class Monitor extends BeanModel {
                     log.debug("monitor", `[${this.name}] Prepare Options for Axios`);
 
                     const dockerHost = await R.load("docker_host", this.docker_host);
+                    log.debug("server/model/monitor.js/Monitor/start(io)","R.load('docker_host','" + this.docker_host + "')");
 
                     const options = {
                         url: `/containers/${this.docker_container}/json`,
@@ -790,6 +798,7 @@ class Monitor extends BeanModel {
 
             log.debug("monitor", `[${this.name}] Store`);
             await R.store(bean);
+            log.debug("server/model/monitor.js/Monitor/start(io)","R.store('bean')");
 
             log.debug("monitor", `[${this.name}] prometheus.update`);
             this.prometheus?.update(bean, tlsInfo);
@@ -910,9 +919,11 @@ class Monitor extends BeanModel {
         let tlsInfoBean = await R.findOne("monitor_tls_info", "monitor_id = ?", [
             this.id,
         ]);
+        log.debug("server/model/monitor.js/Monitor/updateTlsInfo(checkCertificateResult)","R.findOne('monitor_tls_info','monitor_id = ' " + this.id + ")");
 
         if (tlsInfoBean == null) {
             tlsInfoBean = R.dispense("monitor_tls_info");
+            log.debug("server/model/monitor.js/Monitor/updateTlsInfo(checkCertificateResult)","R.dispense('monitor_tls_info')");
             tlsInfoBean.monitor_id = this.id;
         } else {
 
@@ -924,17 +935,18 @@ class Monitor extends BeanModel {
 
                 if (isValidObjects) {
                     if (oldCertInfo.certInfo.fingerprint256 !== checkCertificateResult.certInfo.fingerprint256) {
-                        log.debug("monitor", "Resetting sent_history");
+                        log.debug("server/model/monitor.js/Monitor/updateTlsInfo(checkCertificateResult)", "Resetting sent_history");
                         await R.exec("DELETE FROM notification_sent_history WHERE type = 'certificate' AND monitor_id = ?", [
                             this.id
                         ]);
+                        log.debug("server/model/monitor.js/Monitor/updateTlsInfo(checkCertificateResult)","R.exec(DELETE FROM notification_sent_history WHERE type = 'certificate' AND monitor_id = " + this.id + "')");
                     } else {
-                        log.debug("monitor", "No need to reset sent_history");
-                        log.debug("monitor", oldCertInfo.certInfo.fingerprint256);
-                        log.debug("monitor", checkCertificateResult.certInfo.fingerprint256);
+                        log.debug("server/model/monitor.js/Monitor/updateTlsInfo(checkCertificateResult)", "No need to reset sent_history");
+                        log.debug("server/model/monitor.js/Monitor/updateTlsInfo(checkCertificateResult)", oldCertInfo.certInfo.fingerprint256);
+                        log.debug("server/model/monitor.js/Monitor/updateTlsInfo(checkCertificateResult)", checkCertificateResult.certInfo.fingerprint256);
                     }
                 } else {
-                    log.debug("monitor", "Not valid object");
+                    log.debug("server/model/monitor.js/Monitor/updateTlsInfo(checkCertificateResult)", "Not valid object");
                 }
             } catch (e) { }
 
@@ -942,6 +954,7 @@ class Monitor extends BeanModel {
 
         tlsInfoBean.info_json = JSON.stringify(checkCertificateResult);
         await R.store(tlsInfoBean);
+        log.debug("server/model/monitor.js/Monitor/updateTlsInfo(checkCertificateResult)", "R.store(tlsInfoBean)");
 
         return checkCertificateResult;
     }
@@ -961,7 +974,7 @@ class Monitor extends BeanModel {
             await Monitor.sendUptime(24 * 30, io, monitorID, userID);
             await Monitor.sendCertInfo(io, monitorID, userID);
         } else {
-            log.debug("monitor", "No clients in the room, no need to send stats");
+            log.debug("server/model/monitor.js/Monitor/sendStats(io, monitorID, userID)", "No clients in the room, no need to send stats");
         }
     }
 
@@ -981,8 +994,14 @@ class Monitor extends BeanModel {
             -duration,
             monitorID,
         ]));
+        log.debug("server/model/monitor.js/Monitor/sendAvgPing(duration, io, monitorID, userID)",
+          `R.getCell(SELECT AVG(ping)
+          FROM heartbeat
+          WHERE time > DATETIME('now', ${-duration} || ' hours')
+          AND ping IS NOT NULL
+          AND monitor_id = ${monitorID})`);
 
-        timeLogger.print(`[Monitor: ${monitorID}] avgPing`);
+        timeLogger.print(`[Monitor: ${monitorID}] avgPing`); // ?
 
         io.to(userID).emit("avgPing", monitorID, avgPing);
     }
@@ -997,6 +1016,8 @@ class Monitor extends BeanModel {
         let tlsInfo = await R.findOne("monitor_tls_info", "monitor_id = ?", [
             monitorID,
         ]);
+        log.debug("server/model/monitor.js/Monitor/sendCertInfo(io, monitorID, userID)",
+        `R.findOne("monitor_tls_info","monitor_id=${monitorID}")`);
         if (tlsInfo != null) {
             io.to(userID).emit("certInfo", monitorID, tlsInfo.info_json);
         }
@@ -1021,6 +1042,8 @@ class Monitor extends BeanModel {
         const timeLogger = new TimeLogger();
 
         const startTime = R.isoDateTime(dayjs.utc().subtract(duration, "hour"));
+        log.debug("server/model/monitor.js/Monitor/calcUptime(io, monitorID, userID)",
+        `R.isoDateTime(dayjs.utc().subtract(duration, "hour"))`);
 
         // Handle if heartbeat duration longer than the target duration
         // e.g. If the last beat's duration is bigger that the 24hrs window, it will use the duration between the (beat time - window margin) (THEN case in SQL)
@@ -1054,6 +1077,34 @@ class Monitor extends BeanModel {
             startTime, startTime, startTime, startTime, startTime,
             monitorID,
         ]);
+        log.debug("server/model/monitor.js/Monitor/calcUptime(io, monitorID, userID)",
+        `R.getRow(
+            SELECT
+               -- SUM all duration, also trim off the beat out of time window
+                SUM(
+                    CASE
+                        WHEN (JULIANDAY(\`time\`) - JULIANDAY(${startTime})) * 86400 < duration
+                        THEN (JULIANDAY(\`time\`) - JULIANDAY(${startTime})) * 86400
+                        ELSE duration
+                    END
+                ) AS total_duration,
+
+               -- SUM all uptime duration, also trim off the beat out of time window
+                SUM(
+                    CASE
+                        WHEN (status = 1 OR status = 3)
+                        THEN
+                            CASE
+                                WHEN (JULIANDAY(\`time\`) - JULIANDAY(${startTime})) * 86400 < duration
+                                    THEN (JULIANDAY(\`time\`) - JULIANDAY(${startTime})) * 86400
+                                ELSE duration
+                            END
+                        END
+                ) AS uptime_duration
+            FROM heartbeat
+            WHERE time > ${startTime}
+            AND monitor_id = ${monitorID}
+        `);
 
         timeLogger.print(`[Monitor: ${monitorID}][${duration}] sendUptime`);
 
@@ -1070,6 +1121,8 @@ class Monitor extends BeanModel {
         } else {
             // Handle new monitor with only one beat, because the beat's duration = 0
             let status = parseInt(await R.getCell("SELECT `status` FROM heartbeat WHERE monitor_id = ?", [ monitorID ]));
+            log.debug("server/model/monitor.js/Monitor/calcUptime(io, monitorID, userID)",
+            `R.getCell("SELECT status FROM heartbeat WHERE monitor_id = ${monitorID}",`);
 
             if (status === UP) {
                 uptime = 1;
@@ -1192,8 +1245,8 @@ class Monitor extends BeanModel {
 
                     await Notification.send(JSON.parse(notification.config), msg, await monitor.toJSON(false), heartbeatJSON);
                 } catch (e) {
-                    log.error("monitor", "Cannot send notification to " + notification.name);
-                    log.error("monitor", e);
+                    log.error("server/model/monitor.js/Monitor/sendNotification(isFirstBeat, monitor, bean)", "Cannot send notification to " + notification.name);
+                    log.error("server/model/monitor.js/Monitor/sendNotification(isFirstBeat, monitor, bean)", e);
                 }
             }
         }
@@ -1208,6 +1261,8 @@ class Monitor extends BeanModel {
         let notificationList = await R.getAll("SELECT notification.* FROM notification, monitor_notification WHERE monitor_id = ? AND monitor_notification.notification_id = notification.id ", [
             monitor.id,
         ]);
+        log.debug("server/model/monitor.js/Monitor/getNotificationList(monitor)",
+        `R.getAll("SELECT notification.* FROM notification, monitor_notification WHERE monitor_id = monitor.id AND monitor_notification.notification_id = notification.id`);
         return notificationList;
     }
 
@@ -1228,7 +1283,7 @@ class Monitor extends BeanModel {
 
             if (notifyDays != null && Array.isArray(notifyDays)) {
                 for (const day of notifyDays) {
-                    log.debug("monitor", "call sendCertNotificationByTargetDays", day);
+                    log.debug("server/model/monitor.js/Monitor/sendCertNotification(tlsInfoObject)", "call sendCertNotificationByTargetDays", day);
                     await this.sendCertNotificationByTargetDays(tlsInfoObject.certInfo.daysRemaining, day, notificationList);
                 }
             }
@@ -1246,7 +1301,7 @@ class Monitor extends BeanModel {
     async sendCertNotificationByTargetDays(daysRemaining, targetDays, notificationList) {
 
         if (daysRemaining > targetDays) {
-            log.debug("monitor", `No need to send cert notification. ${daysRemaining} > ${targetDays}`);
+            log.debug("server/model/monitor.js/Monitor/sendCertNotificationByTargetDays(tlsInfodaysRemaining, targetDays, notificationListObject)", `No need to send cert notification. ${daysRemaining} > ${targetDays}`);
             return;
         }
 
@@ -1257,24 +1312,26 @@ class Monitor extends BeanModel {
                 this.id,
                 targetDays,
             ]);
+            log.debug("server/model/monitor.js/Monitor/sendCertNotificationByTargetDays(tlsInfodaysRemaining, targetDays, notificationListObject)",
+            `R.getRow("SELECT * FROM notification_sent_history WHERE type = "certificate" AND monitor_id = ${this.id} AND days <= ${targetDays}"`);
 
             // Sent already, no need to send again
             if (row) {
-                log.debug("monitor", "Sent already, no need to send again");
+                log.debug("server/model/monitor.js/Monitor/sendCertNotificationByTargetDays(tlsInfodaysRemaining, targetDays, notificationListObject)", "Sent already, no need to send again");
                 return;
             }
 
             let sent = false;
-            log.debug("monitor", "Send certificate notification");
+            log.debug("server/model/monitor.js/Monitor/sendCertNotificationByTargetDays(tlsInfodaysRemaining, targetDays, notificationListObject)", "Send certificate notification");
 
             for (let notification of notificationList) {
                 try {
-                    log.debug("monitor", "Sending to " + notification.name);
+                    log.debug("server/model/monitor.js/Monitor/sendCertNotificationByTargetDays(tlsInfodaysRemaining, targetDays, notificationListObject)", "Sending to " + notification.name);
                     await Notification.send(JSON.parse(notification.config), `[${this.name}][${this.url}] Certificate will expire in ${daysRemaining} days`);
                     sent = true;
                 } catch (e) {
-                    log.error("monitor", "Cannot send cert notification to " + notification.name);
-                    log.error("monitor", e);
+                    log.error("server/model/monitor.js/Monitor/sendCertNotificationByTargetDays(tlsInfodaysRemaining, targetDays, notificationListObject)", "Cannot send cert notification to " + notification.name);
+                    log.error("server/model/monitor.js/Monitor/sendCertNotificationByTargetDays(tlsInfodaysRemaining, targetDays, notificationListObject)", e);
                 }
             }
 
@@ -1284,9 +1341,11 @@ class Monitor extends BeanModel {
                     this.id,
                     targetDays,
                 ]);
+                log.debug("server/model/monitor.js/Monitor/sendCertNotificationByTargetDays(tlsInfodaysRemaining, targetDays, notificationListObject)",
+                `R.exec("INSERT INTO notification_sent_history (type, monitor_id, days) VALUES("certificate", ${this.id}, ${targetDays})"`);
             }
         } else {
-            log.debug("monitor", "No notification, no need to send cert notification");
+            log.debug("server/model/monitor.js/Monitor/sendCertNotificationByTargetDays(tlsInfodaysRemaining, targetDays, notificationListObject)", "No notification, no need to send cert notification");
         }
     }
 
@@ -1296,6 +1355,11 @@ class Monitor extends BeanModel {
      * @returns {Promise<LooseObject<any>>}
      */
     static async getPreviousHeartbeat(monitorID) {
+      log.debug("server/model/monitor.js/Monitor/getPreviousHeartbeat(monitorID)",
+      `R.getRow(
+          SELECT ping, status, time FROM heartbeat
+          WHERE id = (select MAX(id) from heartbeat where monitor_id = ${monitorID}
+      )`);
         return await R.getRow(`
             SELECT ping, status, time FROM heartbeat
             WHERE id = (select MAX(id) from heartbeat where monitor_id = ?)
@@ -1314,7 +1378,11 @@ class Monitor extends BeanModel {
             SELECT maintenance_id FROM monitor_maintenance
             WHERE monitor_id = ?
         `, [ monitorID ]);
-
+        log.debug("server/model/monitor.js/Monitor/isUnderMaintenance(monitorID)",
+        `R.getCol(
+            SELECT maintenance_id FROM monitor_maintenance
+            WHERE monitor_id = ${monitorID}
+        )`);
         for (const maintenanceID of maintenanceIDList) {
             const maintenance = await UptimeKumaServer.getInstance().getMaintenance(maintenanceID);
             if (maintenance && await maintenance.isUnderMaintenance()) {

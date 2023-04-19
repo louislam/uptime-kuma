@@ -214,6 +214,7 @@ class Maintenance extends BeanModel {
             }
             if (this.cron) {
                 await R.store(this);
+                log.debug("server/model/maintenance.js/run(...)","R.store('this')");
             }
         }
 
