@@ -16,7 +16,7 @@
         <input id="ntfy-priority" v-model="$parent.notification.ntfyPriority" type="number" class="form-control" required min="1" max="5" step="1">
     </div>
     <div class="mb-3">
-        <label for="authentication-method" class="form-label">{{ $t("AuthenticationMethod") }}</label>
+        <label for="authentication-method" class="form-label">{{ $t("ntfyAuthenticationMethod") }}</label>
         <select id="authentication-method" v-model="$parent.notification.ntfyAuthenticationMethod" class="form-select">
             <option v-for="(name, type) in authenticationMethods" :key="type" :value="type">{{ name }}</option>
         </select>
@@ -56,7 +56,7 @@ export default {
         authenticationMethods() {
             return {
                 none: this.$t("None"),
-                usernamePassword: this.$t("UsernameAndPassword"),
+                usernamePassword: this.$t("ntfyUsernameAndPassword"),
                 accessToken: this.$t("Access Token")
             };
         }
