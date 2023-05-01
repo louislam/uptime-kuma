@@ -736,6 +736,8 @@
     "lunaseaTarget": "Ziel",
     "lunaseaDeviceID": "Geräte-ID",
     "lunaseaUserID": "Benutzer-ID",
+    "ntfyAuthenticationMethod": "Authentifizierungsmethode",
+    "ntfyUsernameAndPassword": "Benutzername und Passwort",
     "twilioAccountSID": "Account SID",
     "twilioFromNumber": "Absender",
     "twilioToNumber": "Empfänger",
