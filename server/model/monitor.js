@@ -6,7 +6,7 @@ const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, TimeLogger, MAX_INTERVA
     SQL_DATETIME_FORMAT
 } = require("../../src/util");
 const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, mqttAsync, setSetting, httpNtlm, radius, grpcQuery,
-    redisPingAsync, mongodbPing,
+    redisPingAsync, mongodbPing, getOidcToken,
 } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
@@ -125,6 +125,10 @@ class Monitor extends BeanModel {
                 grpcMetadata: this.grpcMetadata,
                 basic_auth_user: this.basic_auth_user,
                 basic_auth_pass: this.basic_auth_pass,
+                oauth_client_id: this.oauth_client_id,
+                oauth_client_secret: this.oauth_client_secret,
+                oauth_token_url: this.oauth_token_url,
+                oauth_scopes: this.oauth_scopes,
                 pushToken: this.pushToken,
                 databaseConnectionString: this.databaseConnectionString,
                 radiusUsername: this.radiusUsername,
@@ -271,6 +275,20 @@ class Monitor extends BeanModel {
                         };
                     }
 
+                    // OIDC auth
+                    let oauth2AuthHeader = {};
+                    if (this.auth_method === "oauth2") {
+                        log.debug("monitor", `[${this.name}] ${this.oauth_client_id} ${this.oauth_scopes} ${this.oauth_client_secret} ${this.oauth_token_url}`);
+                        if (this.oauthAccessToken === undefined || new Date(this.oauthAccessToken.expires_at * 1000) <= new Date()) {
+                            log.debug("monitor", `[${this.name}] Oauth access-token undefined or expired. Requesting a new one`);
+                            this.oauthAccessToken = await getOidcToken(this.oauth_token_url, this.oauth_client_id, this.oauth_client_secret, this.oauth_scopes);
+                            log.debug("monitor", `[${this.name}] Obtained oauth access-token. Expires at ${new Date(this.oauthAccessToken.expires_at * 1000)}`);
+                        }
+                        oauth2AuthHeader = {
+                            "Authorization": this.oauthAccessToken.token_type + " " + this.oauthAccessToken.access_token,
+                        };
+                    }
+
                     const httpsAgentOptions = {
                         maxCachedSessions: 0, // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
                         rejectUnauthorized: !this.getIgnoreTls(),
@@ -305,6 +323,7 @@ class Monitor extends BeanModel {
                             "User-Agent": "Uptime-Kuma/" + version,
                             ...(contentType ? { "Content-Type": contentType } : {}),
                             ...(basicAuthHeader),
+                            ...(oauth2AuthHeader),
                             ...(this.headers ? JSON.parse(this.headers) : {})
                         },
                         maxRedirects: this.maxredirects,

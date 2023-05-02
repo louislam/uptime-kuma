@@ -688,6 +688,10 @@ let needSetup = false;
                 bean.headers = monitor.headers;
                 bean.basic_auth_user = monitor.basic_auth_user;
                 bean.basic_auth_pass = monitor.basic_auth_pass;
+                bean.oauth_client_id = monitor.oauth_client_id,
+                bean.oauth_client_secret = monitor.oauth_client_secret,
+                bean.oauth_token_url = monitor.oauth_token_url,
+                bean.oauth_scopes = monitor.oauth_scopes,
                 bean.tlsCa = monitor.tlsCa;
                 bean.tlsCert = monitor.tlsCert;
                 bean.tlsKey = monitor.tlsKey;
@@ -1232,6 +1236,7 @@ let needSetup = false;
             }
         });
 
+        // TODO: Add oauth to backup
         socket.on("uploadBackup", async (uploadedJSON, importHandle, callback) => {
             try {
                 checkLogin(socket);

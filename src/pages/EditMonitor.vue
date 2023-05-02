@@ -543,6 +543,9 @@
                                         <option value="basic">
                                             {{ $t("HTTP Basic Auth") }}
                                         </option>
+                                        <option value="oauth2">
+                                            {{ $t("Oauth2") }}
+                                        </option>
                                         <option value="ntlm">
                                             NTLM
                                         </option>
@@ -564,6 +567,24 @@
                                         <div class="my-3">
                                             <label for="tls-ca" class="form-label">{{ $t("CA") }}</label>
                                             <textarea id="tls-ca" v-model="monitor.tlsCa" class="form-control" :placeholder="$t('Server CA')"></textarea>
+                                        </div>
+                                    </template>
+                                    <template v-else-if="monitor.authMethod === 'oauth2' ">
+                                        <div class="my-3">
+                                            <label for="oauth_client_id" class="form-label">{{ $t("Client ID") }}</label>
+                                            <input id="oauth_client_id" v-model="monitor.oauth_client_id" type="text" class="form-control" :placeholder="$t('Client ID')" required>
+                                        </div>
+                                        <div class="my-3">
+                                            <label for="oauth_client_secret" class="form-label">{{ $t("Client Secret") }}</label>
+                                            <input id="oauth_client_secret" v-model="monitor.oauth_client_secret" type="password" class="form-control" :placeholder="$t('Client Secret')" required>
+                                        </div>
+                                        <div class="my-3">
+                                            <label for="oauth_token_url" class="form-label">{{ $t("Oauth Token URL") }}</label>
+                                            <input id="oauth_token_url" v-model="monitor.oauth_token_url" type="text" class="form-control" :placeholder="$t('Oauth Token URL')" required>
+                                        </div>
+                                        <div class="my-3">
+                                            <label for="oauth_scopes" class="form-label">{{ $t("Oauth Scope") }}</label>
+                                            <input id="oauth_scopes" v-model="monitor.oauth_scopes" type="text" class="form-control" :placeholder="$t('Optional: Space separated list of scopes')" required>
                                         </div>
                                     </template>
                                     <template v-else>

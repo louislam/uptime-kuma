@@ -21,6 +21,8 @@ const grpc = require("@grpc/grpc-js");
 const protojs = require("protobufjs");
 const radiusClient = require("node-radius-client");
 const redis = require("redis");
+const oidc = require("openid-client");
+
 const {
     dictionaries: {
         rfc2865: { file, attributes },
@@ -47,6 +49,41 @@ exports.initJWTSecret = async () => {
     jwtSecretBean.value = passwordHash.generate(genSecret());
     await R.store(jwtSecretBean);
     return jwtSecretBean;
+};
+
+/**
+ * Decodes a jwt and returns the payload portion
+ * @param {string} jwt The input jwt as a string
+ * @returns Decodes jwt payload
+ */
+exports.decodeJwt = (jwt) => {
+    return JSON.parse(Buffer.from(jwt.split(".")[1], "base64").toString());
+};
+
+/**
+ * Gets a Access Token form a oidc/oauth2 provider
+ * @param {string} tokenEndpoint The token URI form the auth service provider
+ * @param {string} clientId The oidc/oauth application client id
+ * @param {string} clientSecret The oidc/oauth application client secret
+ * @param {String} scope The scope the for wich the token should be issued for
+ * @returns Promise<TokenSet> if the token request was successful
+ */
+exports.getOidcToken = async (tokenEndpoint, clientId, clientSecret, scope) => {
+    const oauthProvider = new oidc.Issuer({ token_endpoint: tokenEndpoint });
+    let client = new oauthProvider.Client({
+        client_id: clientId,
+        client_secret: clientSecret,
+    });
+
+    // Increase default timeout and clock tolerance
+    client[oidc.custom.http_options] = () => ({ timeout: 10000 });
+    client[oidc.custom.clock_tolerance] = 5;
+
+    let token = await client.grant({
+        grant_type: "client_credentials",
+        scope: scope
+    });
+    return token;
 };
 
 /**

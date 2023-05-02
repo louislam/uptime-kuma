@@ -70,6 +70,7 @@ class Database {
         "patch-api-key-table.sql": true,
         "patch-monitor-tls.sql": true,
         "patch-maintenance-cron.sql": true,
+        "patch-monitor-oauth.sql": true,
     };
 
     /**
