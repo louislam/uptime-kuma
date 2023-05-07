@@ -15,7 +15,7 @@ class Opsgenie extends NotificationProvider {
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let opsgenieAlertsUrl;
-        let priority = (notification.opsgeniePriority == "") ? 3 : notification.opsgeniePriority;
+        let priority = (!notification.opsgeniePriority) ? 3 : notification.opsgeniePriority;
         const textMsg = "Uptime Kuma Alert";
 
         try {

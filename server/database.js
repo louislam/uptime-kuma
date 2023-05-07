@@ -2,7 +2,6 @@ const fs = require("fs");
 const { R } = require("redbean-node");
 const { setSetting, setting } = require("./util-server");
 const { log, sleep } = require("../src/util");
-const dayjs = require("dayjs");
 const knex = require("knex");
 const { PluginsManager } = require("./plugins-manager");
 
