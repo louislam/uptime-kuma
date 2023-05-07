@@ -218,17 +218,17 @@
 
                                 <!-- Date Range -->
                                 <div class="my-3">
-                                    <label class="form-label">{{ $t("Effective Date Range") }}</label>
+                                    <label v-if="maintenance.strategy !== 'single'" class="form-label">{{ $t("Effective Date Range") }}</label>
 
                                     <div class="row">
                                         <div class="col">
                                             <div class="mb-2">{{ $t("startDateTime") }}</div>
-                                            <input v-model="maintenance.dateRange[0]" type="datetime-local" class="form-control">
+                                            <input v-model="maintenance.dateRange[0]" type="datetime-local" class="form-control" :required="maintenance.strategy === 'single'">
                                         </div>
 
                                         <div class="col">
                                             <div class="mb-2">{{ $t("endDateTime") }}</div>
-                                            <input v-model="maintenance.dateRange[1]" type="datetime-local" class="form-control">
+                                            <input v-model="maintenance.dateRange[1]" type="datetime-local" class="form-control" :required="maintenance.strategy === 'single'">
                                         </div>
                                     </div>
                                 </div>
@@ -272,7 +272,6 @@ export default {
             selectedStatusPages: [],
             dark: (this.$root.theme === "dark"),
             neverEnd: false,
-            minDate: this.$root.date(dayjs()) + " 00:00",
             lastDays: [
                 {
                     langKey: "lastDay1",
@@ -411,7 +410,7 @@ export default {
                     cron: "30 3 * * *",
                     durationMinutes: 60,
                     intervalDay: 1,
-                    dateRange: [ this.minDate ],
+                    dateRange: [],
                     timeRange: [{
                         hours: 2,
                         minutes: 0,
