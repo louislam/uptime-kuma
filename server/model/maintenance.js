@@ -290,7 +290,7 @@ class Maintenance extends BeanModel {
     }
 
     getRunningTimeslot() {
-        let start = dayjs(this.beanMeta.job.nextRun(dayjs().add(-this.duration, "second").format("YYYY-MM-DD HH:mm:ss")));
+        let start = dayjs(this.beanMeta.job.nextRun(dayjs().add(-this.duration, "second").toDate()));
         let end = start.add(this.duration, "second");
         let current = dayjs();
 
