@@ -203,8 +203,8 @@
                                     <label for="timezone" class="form-label">
                                         {{ $t("Timezone") }}
                                     </label>
-                                    <select id="timezone" v-model="maintenance.timezone" class="form-select">
-                                        <option :value="null">{{ $t("sameAsServerTimezone") }}</option>
+                                    <select id="timezone" v-model="maintenance.timezoneOption" class="form-select">
+                                        <option value="SAME_AS_SERVER">{{ $t("sameAsServerTimezone") }}</option>
                                         <option value="UTC">UTC</option>
                                         <option
                                             v-for="(timezone, index) in timezoneList"
@@ -419,7 +419,7 @@ export default {
                     }],
                     weekdays: [],
                     daysOfMonth: [],
-                    timezone: null,
+                    timezoneOption: null,
                 };
             } else if (this.isEdit) {
                 this.$root.getSocket().emit("getMaintenance", this.$route.params.id, (res) => {

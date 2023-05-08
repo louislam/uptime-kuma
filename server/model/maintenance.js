@@ -47,7 +47,8 @@ class Maintenance extends BeanModel {
             cron: this.cron,
             duration: this.duration,
             durationMinutes: parseInt(this.duration / 60),
-            timezone: await this.getTimezone(),
+            timezone: await this.getTimezone(),         // Only valid timezone
+            timezoneOption: this.timezone,               // Mainly for dropdown menu, because there is a option "SAME_AS_SERVER"
             timezoneOffset: await this.getTimezoneOffset(),
             status: await this.getStatus(),
         };
@@ -153,7 +154,7 @@ class Maintenance extends BeanModel {
         bean.description = obj.description;
         bean.strategy = obj.strategy;
         bean.interval_day = obj.intervalDay;
-        bean.timezone = obj.timezone;
+        bean.timezone = obj.timezoneOption;
         bean.active = obj.active;
 
         if (obj.dateRange[0]) {
@@ -316,7 +317,7 @@ class Maintenance extends BeanModel {
     }
 
     async getTimezone() {
-        if (!this.timezone) {
+        if (!this.timezone || this.timezone === "SAME_AS_SERVER") {
             return await UptimeKumaServer.getInstance().getTimezone();
         }
         return this.timezone;
