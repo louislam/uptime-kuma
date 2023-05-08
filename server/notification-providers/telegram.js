@@ -25,7 +25,7 @@ class Telegram extends NotificationProvider {
             return okMsg;
 
         } catch (error) {
-            let msg = (error.response.data.description) ? error.response.data.description : "Error without description";
+            let msg = (error.response && error.response.data && error.response.data.description) ? error.response.data.description : "Error without description";
             throw new Error(msg);
         }
     }
