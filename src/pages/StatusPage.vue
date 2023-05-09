@@ -291,9 +291,7 @@
                             class="mt-3"
                         >
                             <template #option="{ option }">
-                                <div
-                                    class="d-inline-flex"
-                                >
+                                <div class="d-inline-flex">
                                     <span>{{ option.name }} <Tag v-for="tag in option.tags" :key="tag" :item="tag" :size="'sm'" /></span>
                                 </div>
                             </template>
