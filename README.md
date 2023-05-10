@@ -87,6 +87,10 @@ pm2 monit
 pm2 save && pm2 startup
 ```
 
+### Winodws Portable (x64)
+
+https://github.com/louislam/uptime-kuma/releases/download/1.21.0/uptime-kuma-win64-portable-1.0.0.zip
+
 ### Advanced Installation
 
 If you need more options or need to browse via a reverse proxy, please read:
