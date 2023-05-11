@@ -55,21 +55,31 @@
                 </div>
 
                 <div v-if="false" class="my-3">
-                    <label for="password" class="form-label">{{ $t("Password") }} <sup>{{ $t("Coming Soon") }}</sup></label>
-                    <input id="password" v-model="config.password" disabled type="password" autocomplete="new-password" class="form-control">
+                    <label for="password" class="form-label">{{ $t("Password") }} <sup>{{
+                            $t("Coming Soon")
+                        }}</sup></label>
+                    <input id="password" v-model="config.password" disabled type="password" autocomplete="new-password"
+                           class="form-control"
+                    >
                 </div>
 
                 <!-- Domain Name List -->
                 <div class="my-3">
                     <label class="form-label">
                         {{ $t("Domain Names") }}
-                        <font-awesome-icon icon="plus-circle" class="btn-add-domain action text-primary" @click="addDomainField" />
+                        <font-awesome-icon icon="plus-circle" class="btn-add-domain action text-primary"
+                                           @click="addDomainField"
+                        />
                     </label>
 
                     <ul class="list-group domain-name-list">
                         <li v-for="(domain, index) in config.domainNameList" :key="index" class="list-group-item">
-                            <input v-model="config.domainNameList[index]" type="text" class="no-bg domain-input" placeholder="example.com" />
-                            <font-awesome-icon icon="times" class="action remove ms-2 me-3 text-danger" @click="removeDomain(index)" />
+                            <input v-model="config.domainNameList[index]" type="text" class="no-bg domain-input"
+                                   placeholder="example.com"
+                            />
+                            <font-awesome-icon icon="times" class="action remove ms-2 me-3 text-danger"
+                                               @click="removeDomain(index)"
+                            />
                         </li>
                     </ul>
                 </div>
@@ -83,12 +93,13 @@
                 <!-- Custom CSS -->
                 <div class="my-3">
                     <div class="mb-1">{{ $t("Custom CSS") }}</div>
-                    <prism-editor v-model="config.customCSS" class="css-editor" :highlight="highlighter" line-numbers></prism-editor>
+                    <prism-editor v-model="config.customCSS" class="css-editor" :highlight="highlighter" line-numbers
+                    ></prism-editor>
                 </div>
 
                 <div class="danger-zone">
                     <button class="btn btn-danger me-2" @click="deleteDialog">
-                        <font-awesome-icon icon="trash" />
+                        <font-awesome-icon icon="trash"/>
                         {{ $t("Delete") }}
                     </button>
                 </div>
@@ -97,12 +108,12 @@
             <!-- Sidebar Footer -->
             <div class="sidebar-footer">
                 <button class="btn btn-success me-2" @click="save">
-                    <font-awesome-icon icon="save" />
+                    <font-awesome-icon icon="save"/>
                     {{ $t("Save") }}
                 </button>
 
                 <button class="btn btn-danger me-2" @click="discard">
-                    <font-awesome-icon icon="undo" />
+                    <font-awesome-icon icon="undo"/>
                     {{ $t("Discard") }}
                 </button>
             </div>
@@ -114,8 +125,8 @@
             <h1 class="mb-4 title-flex">
                 <!-- Logo -->
                 <span class="logo-wrapper" @click="showImageCropUploadMethod">
-                    <img :src="logoURL" alt class="logo me-2" :class="logoClass" />
-                    <font-awesome-icon v-if="enableEditMode" class="icon-upload" icon="upload" />
+                    <img :src="logoURL" alt class="logo me-2" :class="logoClass"/>
+                    <font-awesome-icon v-if="enableEditMode" class="icon-upload" icon="upload"/>
                 </span>
 
                 <!-- Uploader -->
@@ -133,38 +144,44 @@
                 />
 
                 <!-- Title -->
-                <Editable v-model="config.title" tag="span" :contenteditable="editMode" :noNL="true" />
+                <Editable v-model="config.title" tag="span" :contenteditable="editMode" :noNL="true"/>
             </h1>
 
             <!-- Admin functions -->
             <div v-if="hasToken" class="mb-4">
                 <div v-if="!enableEditMode">
                     <button class="btn btn-info me-2" @click="edit">
-                        <font-awesome-icon icon="edit" />
+                        <font-awesome-icon icon="edit"/>
                         {{ $t("Edit Status Page") }}
                     </button>
 
                     <a href="/manage-status-page" class="btn btn-info">
-                        <font-awesome-icon icon="tachometer-alt" />
+                        <font-awesome-icon icon="tachometer-alt"/>
                         {{ $t("Go to Dashboard") }}
                     </a>
                 </div>
 
                 <div v-else>
                     <button class="btn btn-primary btn-add-group me-2" @click="createIncident">
-                        <font-awesome-icon icon="bullhorn" />
+                        <font-awesome-icon icon="bullhorn"/>
                         {{ $t("Create Incident") }}
                     </button>
                 </div>
             </div>
 
             <!-- Incident -->
-            <div v-if="incident !== null" class="shadow-box alert mb-4 p-4 incident" role="alert" :class="incidentClass">
+            <div v-if="incident !== null" class="shadow-box alert mb-4 p-4 incident" role="alert"
+                 :class="incidentClass"
+            >
                 <strong v-if="editIncidentMode">{{ $t("Title") }}:</strong>
-                <Editable v-model="incident.title" tag="h4" :contenteditable="editIncidentMode" :noNL="true" class="alert-heading" />
+                <Editable v-model="incident.title" tag="h4" :contenteditable="editIncidentMode" :noNL="true"
+                          class="alert-heading"
+                />
 
                 <strong v-if="editIncidentMode">{{ $t("Content") }}:</strong>
-                <Editable v-if="editIncidentMode" v-model="incident.content" tag="div" :contenteditable="editIncidentMode" class="content" />
+                <Editable v-if="editIncidentMode" v-model="incident.content" tag="div"
+                          :contenteditable="editIncidentMode" class="content"
+                />
                 <div v-if="editIncidentMode" class="form-text">
                     {{ $t("markdownSupported") }}
                 </div>
@@ -173,44 +190,59 @@
 
                 <!-- Incident Date -->
                 <div class="date mt-3">
-                    {{ $t("Date Created") }}: {{ $root.datetime(incident.createdDate) }} ({{ dateFromNow(incident.createdDate) }})<br />
+                    {{ $t("Date Created") }}: {{ $root.datetime(incident.createdDate) }}
+                    ({{ dateFromNow(incident.createdDate) }})<br/>
                     <span v-if="incident.lastUpdatedDate">
-                        {{ $t("Last Updated") }}: {{ $root.datetime(incident.lastUpdatedDate) }} ({{ dateFromNow(incident.lastUpdatedDate) }})
+                        {{ $t("Last Updated") }}: {{
+                            $root.datetime(incident.lastUpdatedDate)
+                        }} ({{ dateFromNow(incident.lastUpdatedDate) }})
                     </span>
                 </div>
 
                 <div v-if="editMode" class="mt-3">
                     <button v-if="editIncidentMode" class="btn btn-light me-2" @click="postIncident">
-                        <font-awesome-icon icon="bullhorn" />
+                        <font-awesome-icon icon="bullhorn"/>
                         {{ $t("Post") }}
                     </button>
 
                     <button v-if="!editIncidentMode && incident.id" class="btn btn-light me-2" @click="editIncident">
-                        <font-awesome-icon icon="edit" />
+                        <font-awesome-icon icon="edit"/>
                         {{ $t("Edit") }}
                     </button>
 
                     <button v-if="editIncidentMode" class="btn btn-light me-2" @click="cancelIncident">
-                        <font-awesome-icon icon="times" />
+                        <font-awesome-icon icon="times"/>
                         {{ $t("Cancel") }}
                     </button>
 
                     <div v-if="editIncidentMode" class="dropdown d-inline-block me-2">
-                        <button id="dropdownMenuButton1" class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <button id="dropdownMenuButton1" class="btn btn-secondary dropdown-toggle" type="button"
+                                data-bs-toggle="dropdown" aria-expanded="false"
+                        >
                             {{ $t("Style") }}: {{ $t(incident.style) }}
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                            <li><a class="dropdown-item" href="#" @click="incident.style = 'info'">{{ $t("info") }}</a></li>
-                            <li><a class="dropdown-item" href="#" @click="incident.style = 'warning'">{{ $t("warning") }}</a></li>
-                            <li><a class="dropdown-item" href="#" @click="incident.style = 'danger'">{{ $t("danger") }}</a></li>
-                            <li><a class="dropdown-item" href="#" @click="incident.style = 'primary'">{{ $t("primary") }}</a></li>
-                            <li><a class="dropdown-item" href="#" @click="incident.style = 'light'">{{ $t("light") }}</a></li>
-                            <li><a class="dropdown-item" href="#" @click="incident.style = 'dark'">{{ $t("dark") }}</a></li>
+                            <li><a class="dropdown-item" href="#" @click="incident.style = 'info'">{{ $t("info") }}</a>
+                            </li>
+                            <li><a class="dropdown-item" href="#" @click="incident.style = 'warning'">{{
+                                    $t("warning")
+                                }}</a></li>
+                            <li><a class="dropdown-item" href="#" @click="incident.style = 'danger'">{{
+                                    $t("danger")
+                                }}</a></li>
+                            <li><a class="dropdown-item" href="#" @click="incident.style = 'primary'">{{
+                                    $t("primary")
+                                }}</a></li>
+                            <li><a class="dropdown-item" href="#" @click="incident.style = 'light'">{{
+                                    $t("light")
+                                }}</a></li>
+                            <li><a class="dropdown-item" href="#" @click="incident.style = 'dark'">{{ $t("dark") }}</a>
+                            </li>
                         </ul>
                     </div>
 
                     <button v-if="!editIncidentMode && incident.id" class="btn btn-light me-2" @click="unpinIncident">
-                        <font-awesome-icon icon="unlink" />
+                        <font-awesome-icon icon="unlink"/>
                         {{ $t("Unpin") }}
                     </button>
                 </div>
@@ -219,33 +251,33 @@
             <!-- Overall Status -->
             <div class="shadow-box list  p-4 overall-status mb-4">
                 <div v-if="Object.keys($root.publicMonitorList).length === 0 && loadedData">
-                    <font-awesome-icon icon="question-circle" class="ok" />
+                    <font-awesome-icon icon="question-circle" class="ok"/>
                     {{ $t("No Services") }}
                 </div>
 
                 <template v-else>
                     <div v-if="allUp">
-                        <font-awesome-icon icon="check-circle" class="ok" />
+                        <font-awesome-icon icon="check-circle" class="ok"/>
                         {{ $t("All Systems Operational") }}
                     </div>
 
                     <div v-else-if="partialDown">
-                        <font-awesome-icon icon="exclamation-circle" class="warning" />
+                        <font-awesome-icon icon="exclamation-circle" class="warning"/>
                         {{ $t("Partially Degraded Service") }}
                     </div>
 
                     <div v-else-if="allDown">
-                        <font-awesome-icon icon="times-circle" class="danger" />
+                        <font-awesome-icon icon="times-circle" class="danger"/>
                         {{ $t("Degraded Service") }}
                     </div>
 
                     <div v-else-if="isMaintenance">
-                        <font-awesome-icon icon="wrench" class="status-maintenance" />
+                        <font-awesome-icon icon="wrench" class="status-maintenance"/>
                         {{ $t("maintenanceStatus-under-maintenance") }}
                     </div>
 
                     <div v-else>
-                        <font-awesome-icon icon="question-circle" style="color: #efefef;" />
+                        <font-awesome-icon icon="question-circle" style="color: #efefef;"/>
                     </div>
                 </template>
             </div>
@@ -259,20 +291,22 @@
                     <h4 class="alert-heading">{{ maintenance.title }}</h4>
                     <!-- eslint-disable-next-line vue/no-v-html-->
                     <div class="content" v-html="maintenanceHTML(maintenance.description)"></div>
-                    <MaintenanceTime :maintenance="maintenance" />
+                    <MaintenanceTime :maintenance="maintenance"/>
                 </div>
             </template>
 
             <!-- Description -->
             <strong v-if="editMode">{{ $t("Description") }}:</strong>
-            <Editable v-if="enableEditMode" v-model="config.description" :contenteditable="editMode" tag="div" class="mb-4 description" />
+            <Editable v-if="enableEditMode" v-model="config.description" :contenteditable="editMode" tag="div"
+                      class="mb-4 description"
+            />
             <!-- eslint-disable-next-line vue/no-v-html-->
             <div v-if="! enableEditMode" class="alert-heading p-2" v-html="descriptionHTML"></div>
 
             <div v-if="editMode" class="mb-4">
                 <div>
                     <button class="btn btn-primary btn-add-group me-2" @click="addGroup">
-                        <font-awesome-icon icon="plus" />
+                        <font-awesome-icon icon="plus"/>
                         {{ $t("Add Group") }}
                     </button>
                 </div>
@@ -294,13 +328,16 @@
                                 <div
                                     class="d-inline-flex"
                                 >
-                                    <span>{{ option.name }} <Tag v-for="tag in option.tags" :key="tag" :item="tag" :size="'sm'" /></span>
+                                    <span>{{ option.name }} <Tag v-for="tag in option.tags" :key="tag" :item="tag"
+                                                                 :size="'sm'"
+                                    /></span>
                                 </div>
                             </template>
                         </VueMultiselect>
                     </div>
                     <div v-else class="text-center">
-                        {{ $t("No monitors available.") }}  <router-link to="/add">{{ $t("Add one") }}</router-link>
+                        {{ $t("No monitors available.") }}
+                        <router-link to="/add">{{ $t("Add one") }}</router-link>
                     </div>
                 </div>
             </div>
@@ -311,29 +348,42 @@
                     👀 {{ $t("statusPageNothing") }}
                 </div>
 
-                <PublicGroupList :edit-mode="enableEditMode" :show-tags="config.showTags" />
+                <div>
+                    Indicators
+                </div>
+                <PublicGroupList :edit-mode="enableEditMode" :show-tags="config.showTags"/>
+                <div>
+                    <iframe src="https://logs-stage-lax-public.dexguru.biz/goto/fe4d16e0-f023-11ed-afcb-55f45afb9c6f" height="600" width="800"></iframe>                </div>
             </div>
 
             <footer class="mt-5 mb-4">
                 <div class="custom-footer-text text-start">
                     <strong v-if="enableEditMode">{{ $t("Custom Footer") }}:</strong>
                 </div>
-                <Editable v-if="enableEditMode" v-model="config.footerText" tag="div" :contenteditable="enableEditMode" :noNL="false" class="alert-heading p-2" />
+                <Editable v-if="enableEditMode" v-model="config.footerText" tag="div" :contenteditable="enableEditMode"
+                          :noNL="false" class="alert-heading p-2"
+                />
                 <!-- eslint-disable-next-line vue/no-v-html-->
                 <div v-if="! enableEditMode" class="alert-heading p-2" v-html="footerHTML"></div>
 
                 <p v-if="config.showPoweredBy">
-                    {{ $t("Powered by") }} <a target="_blank" rel="noopener noreferrer" href="https://github.com/louislam/uptime-kuma">{{ $t("Uptime Kuma" ) }}</a>
+                    {{ $t("Powered by") }} <a target="_blank" rel="noopener noreferrer"
+                                              href="https://github.com/louislam/uptime-kuma"
+                >{{ $t("Uptime Kuma") }}</a>
                 </p>
 
                 <div class="refresh-info mb-2">
-                    <div>{{ $t("Last Updated") }}: <date-time :value="lastUpdateTime" /></div>
-                    <div>{{ $tc("statusPageRefreshIn", [ updateCountdownText]) }}</div>
+                    <div>{{ $t("Last Updated") }}:
+                        <date-time :value="lastUpdateTime"/>
+                    </div>
+                    <div>{{ $tc("statusPageRefreshIn", [ updateCountdownText ]) }}</div>
                 </div>
             </footer>
         </div>
 
-        <Confirm ref="confirmDelete" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="deleteStatusPage">
+        <Confirm ref="confirmDelete" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')"
+                 @yes="deleteStatusPage"
+        >
             {{ $t("deleteStatusPageMsg") }}
         </Confirm>
 
@@ -364,7 +414,15 @@ import PublicGroupList from "../components/PublicGroupList.vue";
 import MaintenanceTime from "../components/MaintenanceTime.vue";
 import DateTime from "../components/Datetime.vue";
 import { getResBaseURL } from "../util-frontend";
-import { STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_MAINTENANCE, STATUS_PAGE_PARTIAL_DOWN, UP, MAINTENANCE } from "../util.ts";
+import {
+    STATUS_PAGE_ALL_DOWN,
+    STATUS_PAGE_ALL_UP,
+    STATUS_PAGE_MAINTENANCE,
+    STATUS_PAGE_PARTIAL_DOWN,
+    UP,
+    MAINTENANCE,
+    DOWN, PENDING,
+} from "../util.ts";
 import Tag from "../components/Tag.vue";
 import VueMultiselect from "vue-multiselect";
 
@@ -377,7 +435,7 @@ const leavePageMsg = "Do you really want to leave? you have unsaved changes!";
 let feedInterval;
 
 const favicon = new Favico({
-    animation: "none"
+    animation: "none",
 });
 
 export default {
@@ -390,7 +448,7 @@ export default {
         MaintenanceTime,
         DateTime,
         Tag,
-        VueMultiselect
+        VueMultiselect,
     },
 
     // Leave Page for vue route change
@@ -455,7 +513,7 @@ export default {
             let result = [];
 
             for (let id in this.$root.monitorList) {
-                if (this.$root.monitorList[id] && ! (id in this.$root.publicMonitorList)) {
+                if (this.$root.monitorList[id] && !(id in this.$root.publicMonitorList)) {
                     let monitor = this.$root.monitorList[id];
                     result.push(monitor);
                 }
@@ -492,6 +550,7 @@ export default {
         maintenanceClass() {
             return "bg-maintenance";
         },
+        
 
         overallStatus() {
 
@@ -514,7 +573,7 @@ export default {
                 }
             }
 
-            if (! hasUp) {
+            if (!hasUp) {
                 status = STATUS_PAGE_ALL_DOWN;
             }
 
@@ -625,7 +684,7 @@ export default {
                     }
                 }
             }
-        }
+        },
 
     },
     async created() {
@@ -666,12 +725,12 @@ export default {
             this.incident = res.data.incident;
             this.maintenanceList = res.data.maintenanceList;
             this.$root.publicGroupList = res.data.publicGroupList;
-        }).catch( function (error) {
+        }).catch(function (error) {
             if (error.response.status === 404) {
                 location.href = "/page-not-found";
             }
             console.log(error);
-            console.log("Root publicGroupList res: ", );
+            console.log("Root publicGroupList res: ");
         });
 
         // Configure auto-refresh loop
@@ -698,10 +757,10 @@ export default {
         getData: function () {
             if (window.preloadData) {
                 return new Promise(resolve => resolve({
-                    data: window.preloadData
+                    data: window.preloadData,
                 }));
             } else {
-                console.log("/pages/StatusPage.js/getData()",`axios.get("/api/status-page/")`);
+                console.log("/pages/StatusPage.js/getData()", `axios.get("/api/status-page/")`);
                 return axios.get("/api/status-page/" + this.slug);
             }
         },
@@ -718,10 +777,13 @@ export default {
         /** Update the heartbeat list and update favicon if neccessary */
         updateHeartbeatList() {
             // If editMode, it will use the data from websocket.
-            if (! this.editMode) {
-                console.log("/pages/StatusPage.js/updateHeartbeatList()",`axios.get("/api/status-page/heartbeat/")`);
+            if (!this.editMode) {
+                console.log("/pages/StatusPage.js/updateHeartbeatList()", "axios.get(\"/api/status-page/heartbeat/\")");
                 axios.get("/api/status-page/heartbeat/" + this.slug).then((res) => {
-                    const { heartbeatList, uptimeList } = res.data;
+                    const {
+                        heartbeatList,
+                        uptimeList,
+                    } = res.data;
 
                     this.$root.heartbeatList = heartbeatList;
                     this.$root.uptimeList = uptimeList;
@@ -729,6 +791,34 @@ export default {
                     const heartbeatIds = Object.keys(heartbeatList);
                     const downMonitors = heartbeatIds.reduce((downMonitorsAmount, currentId) => {
                         const monitorHeartbeats = heartbeatList[currentId];
+
+                        let pingData = [];  // Ping Data for Line Chart, y-axis contains ping time
+                        let downData = [];  // Down Data for Bar Chart, y-axis is 1 if target is down (red color), under maintenance (blue color) or pending (orange color), 0 if target is up
+                        let colorData = []; // Color Data for Bar Chart
+
+                        heartbeatList[currentId].filter(
+                            // Filtering as data gets appended
+                            // not the most efficient, but works for now
+                            (beat) => dayjs.utc(beat.time).tz(this.$root.timezone).isAfter(
+                                dayjs().subtract(Math.max(72, 6), "hours"),
+                            ),
+                        )
+                            .map((beat) => {
+                                const x = this.$root.datetime(beat.time);
+                                pingData.push({
+                                    x,
+                                    y: beat.ping,
+                                });
+                                downData.push({
+                                    x,
+                                    y: (beat.status === DOWN || beat.status === MAINTENANCE || beat.status === PENDING) ? 1 : 0,
+                                });
+                                colorData.push((beat.status === MAINTENANCE) ? "rgba(23,71,245,0.41)" : ((beat.status === PENDING) ? "rgba(245,182,23,0.41)" : "#DC354568"));
+                            });
+                        
+                        console.log(pingData);
+                        console.log(downData);
+
                         const lastHeartbeat = monitorHeartbeats.at(-1);
 
                         if (lastHeartbeat) {
@@ -956,7 +1046,7 @@ export default {
             }
         },
 
-    }
+    },
 };
 </script>
 

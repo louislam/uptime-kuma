@@ -66,9 +66,16 @@
                                             <Tag v-for="tag in monitor.element.tags" :key="tag" :item="tag" :size="'sm'" />
                                         </div>
                                     </div>
+
                                     <div :key="$root.userHeartbeatBar" class="col-3 col-md-4">
                                         <HeartbeatBar size="small" :monitor-id="monitor.element.id" />
                                     </div>
+                                </div>
+                                <div class="col">
+                                    <PingChart :monitor-id="monitor.element.id" />
+                                </div>
+                                <div class="col">
+                                    <p>{{ monitor }}</p>
                                 </div>
                             </div>
                         </template>
@@ -84,12 +91,15 @@ import Draggable from "vuedraggable";
 import HeartbeatBar from "./HeartbeatBar.vue";
 import Uptime from "./Uptime.vue";
 import Tag from "./Tag.vue";
+import { defineAsyncComponent } from "vue";
+const PingChart = defineAsyncComponent(() => import("../components/PingChart.vue"));
 
 export default {
     components: {
         Draggable,
         HeartbeatBar,
         Uptime,
+        PingChart,
         Tag,
     },
     props: {

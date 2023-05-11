@@ -5,6 +5,7 @@ const { setting } = require("./util-server");
 const { loginRateLimiter, apiRateLimiter } = require("./rate-limiter");
 const { Settings } = require("./settings");
 const dayjs = require("dayjs");
+const { log } = require("../src/util");
 
 /**
  * Login to web app
