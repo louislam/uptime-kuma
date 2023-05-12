@@ -1557,7 +1557,7 @@ let needSetup = false;
         }
     });
 
-    initBackgroundJobs(args);
+    await initBackgroundJobs();
 
     // Start cloudflared at the end if configured
     await cloudflaredAutoStart(cloudflaredToken);
