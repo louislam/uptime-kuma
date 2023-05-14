@@ -42,6 +42,8 @@
             <option value="vibrate">{{ $t("pushoversounds vibrate") }}</option>
             <option value="none">{{ $t("pushoversounds none") }}</option>
         </select>
+        <label for="pushover-ttl" class="form-label">{{ $t("pushoverMessageTtl") }}</label>
+        <input id="pushover-ttl" v-model="$parent.notification.pushoverttl" type="number" min="0" step="1" class="form-control">
         <div class="form-text">
             <span style="color: red;"><sup>*</sup></span>{{ $t("Required") }}
             <i18n-t tag="p" keypath="More info on:" style="margin-top: 8px;">

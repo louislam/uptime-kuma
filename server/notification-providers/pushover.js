@@ -16,6 +16,7 @@ class Pushover extends NotificationProvider {
             "sound": notification.pushoversounds,
             "priority": notification.pushoverpriority,
             "title": notification.pushovertitle,
+            "ttl": notification.pushoverttl,
             "retry": "30",
             "expire": "3600",
             "html": 1,

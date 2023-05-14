@@ -556,6 +556,7 @@
     "More info on:": "More info on: {0}",
     "pushoverDesc1": "Emergency priority (2) has default 30 second timeout between retries and will expire after 1 hour.",
     "pushoverDesc2": "If you want to send notifications to different devices, fill out Device field.",
+    "pushoverMessageTtl": "Message TTL (Seconds)",
     "SMS Type": "SMS Type",
     "octopushTypePremium": "Premium (Fast - recommended for alerting)",
     "octopushTypeLowCost": "Low Cost (Slow - sometimes blocked by operator)",
