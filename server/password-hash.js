@@ -1,7 +1,5 @@
 const passwordHashOld = require("password-hash");
 const bcrypt = require("bcryptjs");
-
-
 const saltRounds = bcrypt.genSaltSync();
 
 /**
@@ -24,7 +22,6 @@ exports.verify = function (password, hash) {
     match = isSHA1(hash) ? passwordHashOld.verify(password, hash) : bcrypt.compareSync(password, hash);
     return match;
 };
-
 
 /**
  * Is the hash a SHA1 hash
