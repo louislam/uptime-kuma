@@ -21,7 +21,7 @@ exports.generate = function (password) {
  */
 exports.verify = function (password, hash) {
     let match;
-    match = isSHA1(hash) ?  passwordHashOld.verify(password, hash) : bcrypt.compareSync(password, hash);
+    match = isSHA1(hash) ? passwordHashOld.verify(password, hash) : bcrypt.compareSync(password, hash);
     return match;
 };
 
