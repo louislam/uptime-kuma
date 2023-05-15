@@ -122,9 +122,7 @@ export default {
                 plugins: {
                     title: this.$tc("plugin", 2),
                 },*/
-                about: {
-                    title: this.$t("About"),
-                },
+              
             };
         },
     },

@@ -436,7 +436,7 @@
     "Remove Token": "Удалить токен",
     "Start": "Запустить",
     "Stop": "Остановить",
-    "Uptime Kuma": "Uptime Kuma",
+    "Server health": "Состояние сервера",
     "Slug": "Slug",
     "Accept characters:": "Принимаемые символы:",
     "startOrEndWithOnly": "Начинается или кончается только {0}",
