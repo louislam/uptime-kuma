@@ -3,7 +3,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 id="exampleModalLabel" class="modal-title">
+                    <h5 class="modal-title">
                         {{ $t("Badge Generator", [monitor.name]) }}
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" />
