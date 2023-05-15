@@ -1,6 +1,8 @@
 const passwordHashOld = require("password-hash");
 const bcrypt = require("bcryptjs");
-const saltRounds = 10;
+
+
+const saltRounds = bcrypt.genSalt();
 
 /**
  * Hash a password
