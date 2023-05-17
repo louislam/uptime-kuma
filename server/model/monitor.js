@@ -574,10 +574,17 @@ class Monitor extends BeanModel {
 
                     log.debug("monitor", `[${this.name}] Axios Request`);
                     let res = await axios.request(options);
-                    if (res.data.State.Running) {
+
+                    if (res.data.State.Health && res.data.State.Health.Status !== "healthy"){
+                        bean.status = PENDING;
+                        bean.msg = res.data.State.Health.Status;
+                        log.debug("monitor", `[${this.name}] Monitor is ${res.data.State.Health.Status}`);
+                    }
+                    else if (res.data.State.Running) {
                         bean.status = UP;
-                        bean.msg = res.data.State.Status;
-                    } else {
+                        bean.msg = res.data.State.Health? res.data.State.Health.Status:res.data.State.Status;
+                    }
+                    else {
                         throw Error("Container State is " + res.data.State.Status);
                     }
                 } else if (this.type === "mqtt") {
