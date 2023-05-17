@@ -575,7 +575,7 @@ class Monitor extends BeanModel {
                     log.debug("monitor", `[${this.name}] Axios Request`);
                     let res = await axios.request(options);
 
-                    if (res.data.State.Health && res.data.State.Health.Status !== "healthy") {
+                    if (res.data.State.Health && res.data.State.Health.Status !== "healthy" && res.data.State.Running) {
                         bean.status = PENDING;
                         bean.msg = res.data.State.Health.Status;
                     } else if (res.data.State.Running) {
