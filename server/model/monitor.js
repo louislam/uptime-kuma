@@ -578,7 +578,6 @@ class Monitor extends BeanModel {
                     if (res.data.State.Health && res.data.State.Health.Status !== "healthy") {
                         bean.status = PENDING;
                         bean.msg = res.data.State.Health.Status;
-                        log.debug("monitor", `[${this.name}] Monitor is ${res.data.State.Health.Status}`);
                     } else if (res.data.State.Running) {
                         bean.status = UP;
                         bean.msg = res.data.State.Health ? res.data.State.Health.Status : res.data.State.Status;
