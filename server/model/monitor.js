@@ -6,7 +6,7 @@ const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, TimeLogger, MAX_INTERVA
     SQL_DATETIME_FORMAT
 } = require("../../src/util");
 const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, mqttAsync, setSetting, httpNtlm, radius, grpcQuery,
-    redisPingAsync, mongodbPing, getOidcToken,
+    redisPingAsync, mongodbPing, getOidcTokenClientCredentials,
 } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
@@ -129,6 +129,7 @@ class Monitor extends BeanModel {
                 oauth_client_secret: this.oauth_client_secret,
                 oauth_token_url: this.oauth_token_url,
                 oauth_scopes: this.oauth_scopes,
+                oauth_auth_method: this.oauth_auth_method,
                 pushToken: this.pushToken,
                 databaseConnectionString: this.databaseConnectionString,
                 radiusUsername: this.radiusUsername,
@@ -275,18 +276,22 @@ class Monitor extends BeanModel {
                         };
                     }
 
-                    // OIDC auth
+                    // OIDC: Basic client credential flow.
+                    // Additional grants might be implemented in the future
                     let oauth2AuthHeader = {};
-                    if (this.auth_method === "oauth2") {
-                        log.debug("monitor", `[${this.name}] ${this.oauth_client_id} ${this.oauth_scopes} ${this.oauth_client_secret} ${this.oauth_token_url}`);
-                        if (this.oauthAccessToken === undefined || new Date(this.oauthAccessToken.expires_at * 1000) <= new Date()) {
-                            log.debug("monitor", `[${this.name}] Oauth access-token undefined or expired. Requesting a new one`);
-                            this.oauthAccessToken = await getOidcToken(this.oauth_token_url, this.oauth_client_id, this.oauth_client_secret, this.oauth_scopes);
-                            log.debug("monitor", `[${this.name}] Obtained oauth access-token. Expires at ${new Date(this.oauthAccessToken.expires_at * 1000)}`);
+                    if (this.auth_method === "oauth2-cc") {
+                        try {
+                            if (this.oauthAccessToken === undefined || new Date(this.oauthAccessToken.expires_at * 1000) <= new Date()) {
+                                log.debug("monitor", `[${this.name}] Oauth access-token undefined or expired. Requesting a new one`);
+                                this.oauthAccessToken = await getOidcTokenClientCredentials(this.oauth_token_url, this.oauth_client_id, this.oauth_client_secret, this.oauth_scopes, this.oauth_auth_method);
+                                log.debug("monitor", `[${this.name}] Obtained oauth access-token. Expires at ${new Date(this.oauthAccessToken.expires_at * 1000)}`);
+                            }
+                            oauth2AuthHeader = {
+                                "Authorization": this.oauthAccessToken.token_type + " " + this.oauthAccessToken.access_token,
+                            };
+                        } catch (e) {
+                            throw new Error("Oauth config is invalid. " + e.message);
                         }
-                        oauth2AuthHeader = {
-                            "Authorization": this.oauthAccessToken.token_type + " " + this.oauthAccessToken.access_token,
-                        };
                     }
 
                     const httpsAgentOptions = {

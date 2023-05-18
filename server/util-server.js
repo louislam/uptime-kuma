@@ -66,13 +66,15 @@ exports.decodeJwt = (jwt) => {
  * @param {string} clientId The oidc/oauth application client id
  * @param {string} clientSecret The oidc/oauth application client secret
  * @param {String} scope The scope the for wich the token should be issued for
+ * @param {String} authMethod The method on how to sent the credentials. Default client_secret_basic
  * @returns Promise<TokenSet> if the token request was successful
  */
-exports.getOidcToken = async (tokenEndpoint, clientId, clientSecret, scope) => {
+exports.getOidcTokenClientCredentials = async (tokenEndpoint, clientId, clientSecret, scope, authMethod = "client_secret_basic") => {
     const oauthProvider = new oidc.Issuer({ token_endpoint: tokenEndpoint });
     let client = new oauthProvider.Client({
         client_id: clientId,
         client_secret: clientSecret,
+        token_endpoint_auth_method: authMethod
     });
 
     // Increase default timeout and clock tolerance
