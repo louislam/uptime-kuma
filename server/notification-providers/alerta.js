@@ -3,7 +3,6 @@ const { DOWN, UP } = require("../../src/util");
 const axios = require("axios");
 
 class Alerta extends NotificationProvider {
-
     name = "alerta";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {

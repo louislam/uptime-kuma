@@ -1,5 +1,4 @@
 class MonitorType {
-
     name = undefined;
 
     /**

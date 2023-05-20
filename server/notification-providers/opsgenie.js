@@ -7,7 +7,6 @@ const opsgenieAlertsUrlUS = "https://api.opsgenie.com/v2/alerts";
 let okMsg = "Sent Successfully.";
 
 class Opsgenie extends NotificationProvider {
-
     name = "Opsgenie";
 
     /**

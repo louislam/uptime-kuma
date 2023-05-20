@@ -4,7 +4,6 @@ const { setting } = require("../util-server");
 const { getMonitorRelativeURL } = require("../../src/util");
 
 class Stackfield extends NotificationProvider {
-
     name = "stackfield";
 
     async send(notification, msg, monitorJSON = null) {

@@ -3,7 +3,6 @@ const axios = require("axios");
 const { UP } = require("../../src/util");
 
 class GoAlert extends NotificationProvider {
-
     name = "GoAlert";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {

@@ -2,7 +2,6 @@ const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 
 class TechulusPush extends NotificationProvider {
-
     name = "PushByTechulus";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {

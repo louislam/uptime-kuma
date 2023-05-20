@@ -2,7 +2,6 @@ const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 
 class Telegram extends NotificationProvider {
-
     name = "telegram";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {

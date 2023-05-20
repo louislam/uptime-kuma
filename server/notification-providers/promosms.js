@@ -2,7 +2,6 @@ const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 
 class PromoSMS extends NotificationProvider {
-
     name = "promosms";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {

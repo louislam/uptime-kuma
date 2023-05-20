@@ -2,7 +2,6 @@ const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 
 class Gorush extends NotificationProvider {
-
     name = "gorush";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {

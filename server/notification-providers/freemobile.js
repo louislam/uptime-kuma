@@ -2,7 +2,6 @@ const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 
 class FreeMobile extends NotificationProvider {
-
     name = "FreeMobile";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {

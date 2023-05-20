@@ -5,7 +5,6 @@ const { getMonitorRelativeURL } = require("../../src/util");
 const { DOWN, UP } = require("../../src/util");
 
 class GoogleChat extends NotificationProvider {
-
     name = "GoogleChat";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {

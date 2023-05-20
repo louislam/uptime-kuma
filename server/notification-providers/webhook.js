@@ -3,7 +3,6 @@ const axios = require("axios");
 const FormData = require("form-data");
 
 class Webhook extends NotificationProvider {
-
     name = "webhook";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {

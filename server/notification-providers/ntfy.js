@@ -3,7 +3,6 @@ const axios = require("axios");
 const { DOWN, UP } = require("../../src/util");
 
 class Ntfy extends NotificationProvider {
-
     name = "ntfy";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {

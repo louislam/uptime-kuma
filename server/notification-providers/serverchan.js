@@ -3,7 +3,6 @@ const axios = require("axios");
 const { DOWN, UP } = require("../../src/util");
 
 class ServerChan extends NotificationProvider {
-
     name = "ServerChan";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {

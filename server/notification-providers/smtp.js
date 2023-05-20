@@ -3,7 +3,6 @@ const NotificationProvider = require("./notification-provider");
 const { DOWN } = require("../../src/util");
 
 class SMTP extends NotificationProvider {
-
     name = "smtp";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {

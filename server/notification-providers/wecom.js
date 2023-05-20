@@ -3,7 +3,6 @@ const axios = require("axios");
 const { DOWN, UP } = require("../../src/util");
 
 class WeCom extends NotificationProvider {
-
     name = "WeCom";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {

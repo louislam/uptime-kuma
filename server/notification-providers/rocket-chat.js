@@ -5,7 +5,6 @@ const { setting } = require("../util-server");
 const { getMonitorRelativeURL, DOWN } = require("../../src/util");
 
 class RocketChat extends NotificationProvider {
-
     name = "rocket.chat";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {

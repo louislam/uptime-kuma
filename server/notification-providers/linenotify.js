@@ -4,7 +4,6 @@ const qs = require("qs");
 const { DOWN, UP } = require("../../src/util");
 
 class LineNotify extends NotificationProvider {
-
     name = "LineNotify";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {

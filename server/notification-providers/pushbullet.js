@@ -4,7 +4,6 @@ const axios = require("axios");
 const { DOWN, UP } = require("../../src/util");
 
 class Pushbullet extends NotificationProvider {
-
     name = "pushbullet";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {

@@ -2,7 +2,6 @@ const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 
 class Pushover extends NotificationProvider {
-
     name = "pushover";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {

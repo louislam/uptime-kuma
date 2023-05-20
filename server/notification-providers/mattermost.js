@@ -3,7 +3,6 @@ const axios = require("axios");
 const { DOWN, UP } = require("../../src/util");
 
 class Mattermost extends NotificationProvider {
-
     name = "mattermost";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {

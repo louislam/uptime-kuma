@@ -2,7 +2,6 @@ const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 
 class ClickSendSMS extends NotificationProvider {
-
     name = "clicksendsms";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {

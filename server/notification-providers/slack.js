@@ -4,7 +4,6 @@ const { setSettings, setting } = require("../util-server");
 const { getMonitorRelativeURL, UP } = require("../../src/util");
 
 class Slack extends NotificationProvider {
-
     name = "slack";
 
     /**

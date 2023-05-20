@@ -3,7 +3,6 @@ const axios = require("axios");
 const { DOWN } = require("../../src/util");
 
 class Squadcast extends NotificationProvider {
-
     name = "squadcast";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {

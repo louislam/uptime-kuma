@@ -3,7 +3,6 @@ const axios = require("axios");
 const { DOWN, UP } = require("../../src/util");
 
 class ZohoCliq extends NotificationProvider {
-
     name = "ZohoCliq";
 
     /**

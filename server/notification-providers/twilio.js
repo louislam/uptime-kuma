@@ -2,7 +2,6 @@ const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 
 class Twilio extends NotificationProvider {
-
     name = "twilio";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {

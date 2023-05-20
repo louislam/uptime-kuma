@@ -2,7 +2,6 @@ const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 
 class Octopush extends NotificationProvider {
-
     name = "octopush";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {

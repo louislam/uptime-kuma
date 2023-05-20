@@ -4,7 +4,6 @@ const { setting } = require("../util-server");
 const { getMonitorRelativeURL, UP, DOWN } = require("../../src/util");
 
 class AlertNow extends NotificationProvider {
-
     name = "AlertNow";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {

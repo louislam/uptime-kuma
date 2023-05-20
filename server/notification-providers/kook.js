@@ -2,7 +2,6 @@ const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 
 class Kook extends NotificationProvider {
-
     name = "Kook";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
