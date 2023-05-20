@@ -5,7 +5,8 @@ class ClickSendSMS extends NotificationProvider {
     name = "clicksendsms";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
+
         try {
             let config = {
                 headers: {

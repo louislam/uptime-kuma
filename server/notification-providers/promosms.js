@@ -5,7 +5,7 @@ class PromoSMS extends NotificationProvider {
     name = "promosms";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
 
         if (notification.promosmsAllowLongSMS === undefined) {
             notification.promosmsAllowLongSMS = false;

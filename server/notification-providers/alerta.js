@@ -6,7 +6,7 @@ class Alerta extends NotificationProvider {
     name = "alerta";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
 
         try {
             let alertaUrl = `${notification.alertaApiEndpoint}`;

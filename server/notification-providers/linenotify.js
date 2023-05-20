@@ -7,7 +7,8 @@ class LineNotify extends NotificationProvider {
     name = "LineNotify";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
+
         try {
             let lineAPIUrl = "https://notify-api.line.me/api/notify";
             let config = {

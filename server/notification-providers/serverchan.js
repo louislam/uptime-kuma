@@ -6,7 +6,8 @@ class ServerChan extends NotificationProvider {
     name = "ServerChan";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
+
         try {
             await axios.post(`https://sctapi.ftqq.com/${notification.serverChanSendKey}.send`, {
                 "title": this.checkStatus(heartbeatJSON, monitorJSON),

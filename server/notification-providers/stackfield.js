@@ -7,7 +7,8 @@ class Stackfield extends NotificationProvider {
     name = "stackfield";
 
     async send(notification, msg, monitorJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
+
         try {
             // Stackfield message formatting: https://www.stackfield.com/help/formatting-messages-2001
 

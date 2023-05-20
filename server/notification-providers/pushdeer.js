@@ -6,7 +6,8 @@ class PushDeer extends NotificationProvider {
     name = "PushDeer";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
+
         let pushdeerlink = "https://api2.pushdeer.com/message/push";
 
         let valid = msg != null && monitorJSON != null && heartbeatJSON != null;

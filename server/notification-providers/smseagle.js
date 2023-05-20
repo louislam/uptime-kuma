@@ -5,7 +5,7 @@ class SMSEagle extends NotificationProvider {
     name = "SMSEagle";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
 
         try {
             let config = {

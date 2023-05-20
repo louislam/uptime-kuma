@@ -6,7 +6,8 @@ class Ntfy extends NotificationProvider {
     name = "ntfy";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
+
         try {
             let headers = {};
             if (notification.ntfyAuthenticationMethod === "usernamePassword") {

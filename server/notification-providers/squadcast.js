@@ -6,7 +6,7 @@ class Squadcast extends NotificationProvider {
     name = "squadcast";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
 
         try {
 

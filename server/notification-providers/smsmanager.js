@@ -5,6 +5,8 @@ class SMSManager extends NotificationProvider {
     name = "SMSManager";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
+        const okMsg = "Sent Successfully.";
+
         try {
             let data = {
                 apikey: notification.smsmanagerApiKey,
@@ -14,7 +16,7 @@ class SMSManager extends NotificationProvider {
                 messageType: notification.messageType,
             };
             await axios.get(`${data.endpoint}?apikey=${data.apikey}&message=${data.message}&number=${data.to}&gateway=${data.messageType}`);
-            return "SMS sent sucessfully.";
+            return okMsg;
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }

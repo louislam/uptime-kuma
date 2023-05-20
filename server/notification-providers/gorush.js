@@ -5,7 +5,7 @@ class Gorush extends NotificationProvider {
     name = "gorush";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
 
         let platformMapping = {
             "ios": 1,

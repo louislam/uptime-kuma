@@ -6,7 +6,8 @@ class Feishu extends NotificationProvider {
     name = "Feishu";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
+
         let feishuWebHookUrl = notification.feishuWebHookUrl;
 
         try {

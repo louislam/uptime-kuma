@@ -7,7 +7,8 @@ class AlertNow extends NotificationProvider {
     name = "AlertNow";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
+
         try {
             let textMsg = "";
             let status = "open";

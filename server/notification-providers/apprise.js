@@ -5,6 +5,8 @@ class Apprise extends NotificationProvider {
     name = "apprise";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
+        const okMsg = "Sent Successfully.";
+
         const args = [ "-vv", "-b", msg, notification.appriseURL ];
         if (notification.title) {
             args.push("-t");
@@ -17,7 +19,7 @@ class Apprise extends NotificationProvider {
         if (output) {
 
             if (! output.includes("ERROR")) {
-                return "Sent Successfully";
+                return okMsg;
             }
 
             throw new Error(output);

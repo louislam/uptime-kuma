@@ -5,7 +5,8 @@ class OneBot extends NotificationProvider {
     name = "OneBot";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
+
         try {
             let httpAddr = notification.httpAddr;
             if (!httpAddr.startsWith("http")) {

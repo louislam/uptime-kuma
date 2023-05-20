@@ -7,7 +7,7 @@ class Pushbullet extends NotificationProvider {
     name = "pushbullet";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
 
         try {
             let pushbulletUrl = "https://api.pushbullet.com/v2/pushes";

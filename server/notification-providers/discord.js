@@ -6,7 +6,7 @@ class Discord extends NotificationProvider {
     name = "discord";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
 
         try {
             const discordDisplayName = notification.discordUsername || "Uptime Kuma";

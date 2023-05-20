@@ -7,6 +7,8 @@ class HomeAssistant extends NotificationProvider {
     name = "HomeAssistant";
 
     async send(notification, message, monitor = null, heartbeat = null) {
+        const okMsg = "Sent Successfully.";
+
         const notificationService = notification?.notificationService || defaultNotificationService;
 
         try {
@@ -28,7 +30,7 @@ class HomeAssistant extends NotificationProvider {
                 }
             );
 
-            return "Sent Successfully.";
+            return okMsg;
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }

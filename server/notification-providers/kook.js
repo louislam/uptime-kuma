@@ -5,7 +5,8 @@ class Kook extends NotificationProvider {
     name = "Kook";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
+
         let url = "https://www.kookapp.cn/api/v3/message/create";
         let data = {
             target_id: notification.kookGuildID,

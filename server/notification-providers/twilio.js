@@ -6,7 +6,7 @@ class Twilio extends NotificationProvider {
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
 
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
 
         let accountSID = notification.twilioAccountSID;
         let authToken = notification.twilioAuthToken;
