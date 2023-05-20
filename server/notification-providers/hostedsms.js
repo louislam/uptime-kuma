@@ -1,6 +1,6 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
-const { getMonitorRelativeURL, UP, DOWN } = require("../../src/util");
+const { UP, DOWN } = require("../../src/util");
 
 class HostedSMS extends NotificationProvider {
 
@@ -19,7 +19,7 @@ class HostedSMS extends NotificationProvider {
             let textMsg = "";
             if (heartbeatJSON && heartbeatJSON.status === UP) {
                 textMsg = `✅ [${monitorJSON.name}] is back online`;
-            } else if (heartbeatJSON && heartbeatJSON.status === DOWN) {
+            } else {
                 textMsg = `🔴 [${monitorJSON.name}] went down`;
             }
 
@@ -34,13 +34,8 @@ class HostedSMS extends NotificationProvider {
             let resp = await axios.post("https://api.hostedsms.pl/SimpleApi", data, config);
 
             if (!resp.data.MessageId) {
-                if (resp.data.ErrorMessage) {
-                    let error = `HostedSMS.pl API returned error message: ${resp.data.ErrorMessage}`;
-                    this.throwGeneralAxiosError(error);
-                } else {
-                    let error = "HostedSMS.pl API returned an unexpected response";
-                    this.throwGeneralAxiosError(error);
-                }
+                const errorMessage = resp.data.ErrorMessage ? `error message: ${resp.data.ErrorMessage}` : "an unexpected response";
+                this.throwGeneralAxiosError(`HostedSMS.pl API returned ${errorMessage}`);
             }
 
             return okMsg;

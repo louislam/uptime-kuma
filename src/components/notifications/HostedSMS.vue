@@ -5,15 +5,15 @@
     </div>
     <div class="mb-3">
         <label for="hostedsms-key" class="form-label">{{ $t('hostedsmsAPIPassword') }}</label>
-        <HiddenInput id="hostedsms-key" v-model="$parent.notification.hostedsmsPassword" :required="true" autocomplete="new-password"></HiddenInput>
+        <HiddenInput id="hostedsms-key" v-model="$parent.notification.hostedsmsPassword" :required="true"></HiddenInput>
     </div>
     <div class="mb-3">
         <label for="hostedsms-phone-number" class="form-label">{{ $t("hostedsmsPhoneNumber") }}</label>
-        <input id="hostedsms-phone-number" v-model="$parent.notification.hostedsmsPhoneNumber" type="text" class="form-control" required>
+        <input id="hostedsms-phone-number" v-model="$parent.notification.hostedsmsPhoneNumber" type="tel" class="form-control" required>
     </div>
     <div class="mb-3">
         <label for="hostedsms-sender-name" class="form-label">{{ $t("hostedsmsSenderName") }}</label>
-        <input id="hostedsms-sender-name" v-model="$parent.notification.hostedsmsSenderName" type="text" minlength="3" maxlength="11" class="form-control">
+        <input id="hostedsms-sender-name" v-model="$parent.notification.hostedsmsSenderName" type="text" class="form-control">
     </div>
 </template>
 
