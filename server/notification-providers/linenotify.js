@@ -10,7 +10,6 @@ class LineNotify extends NotificationProvider {
         const okMsg = "Sent Successfully.";
 
         try {
-            let lineAPIUrl = "https://notify-api.line.me/api/notify";
             let config = {
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded",
@@ -21,17 +20,17 @@ class LineNotify extends NotificationProvider {
                 let testMessage = {
                     "message": msg,
                 };
-                await axios.post(lineAPIUrl, qs.stringify(testMessage), config);
+                await axios.post("https://notify-api.line.me/api/notify", qs.stringify(testMessage), config);
             } else if (heartbeatJSON["status"] === DOWN) {
                 let downMessage = {
                     "message": "\n[🔴 Down]\n" + "Name: " + monitorJSON["name"] + " \n" + heartbeatJSON["msg"] + "\nTime (UTC): " + heartbeatJSON["time"]
                 };
-                await axios.post(lineAPIUrl, qs.stringify(downMessage), config);
+                await axios.post("https://notify-api.line.me/api/notify", qs.stringify(downMessage), config);
             } else if (heartbeatJSON["status"] === UP) {
                 let upMessage = {
                     "message": "\n[✅ Up]\n" + "Name: " + monitorJSON["name"] + " \n" + heartbeatJSON["msg"] + "\nTime (UTC): " + heartbeatJSON["time"]
                 };
-                await axios.post(lineAPIUrl, qs.stringify(upMessage), config);
+                await axios.post("https://notify-api.line.me/api/notify", qs.stringify(upMessage), config);
             }
             return okMsg;
         } catch (error) {

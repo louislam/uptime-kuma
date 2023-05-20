@@ -45,27 +45,27 @@ class Bark extends NotificationProvider {
     /**
      * Add additional parameter for better on device styles (iOS 15
      * optimized)
-     * @param {string} postUrl URL to append parameters to
+     * @param {BeanModel} notification
      * @returns {string}
      */
-    appendAdditionalParameters(notification, postUrl) {
+    additionalParameters(notification) {
         // set icon to uptime kuma icon, 11kb should be fine
-        postUrl += "?icon=" + barkNotificationAvatar;
+        let params = "?icon=" + barkNotificationAvatar;
         // grouping all our notifications
         if (notification.barkGroup != null) {
-            postUrl += "&group=" + notification.barkGroup;
+            params += "&group=" + notification.barkGroup;
         } else {
             // default name
-            postUrl += "&group=" + "UptimeKuma";
+            params += "&group=" + "UptimeKuma";
         }
         // picked a sound, this should follow system's mute status when arrival
         if (notification.barkSound != null) {
-            postUrl += "&sound=" + notification.barkSound;
+            params += "&sound=" + notification.barkSound;
         } else {
             // default sound
-            postUrl += "&sound=" + "telegraph";
+            params += "&sound=" + "telegraph";
         }
-        return postUrl;
+        return params;
     }
 
     /**
@@ -84,6 +84,7 @@ class Bark extends NotificationProvider {
 
     /**
      * Send the message
+     * @param {BeanModel} notification
      * @param {string} title Message title
      * @param {string} subtitle Message
      * @param {string} endpoint Endpoint to send request to
@@ -93,9 +94,8 @@ class Bark extends NotificationProvider {
         // url encode title and subtitle
         title = encodeURIComponent(title);
         subtitle = encodeURIComponent(subtitle);
-        let postUrl = endpoint + "/" + title + "/" + subtitle;
-        postUrl = this.appendAdditionalParameters(notification, postUrl);
-        let result = await axios.get(postUrl);
+        let params = this.additionalParameters(notification);
+        let result = await axios.get(`${endpoint}/${title}/${subtitle}${params}`);
         this.checkResult(result);
         if (result.statusText != null) {
             return "Bark notification succeed: " + result.statusText;

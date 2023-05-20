@@ -7,7 +7,6 @@ class Kook extends NotificationProvider {
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
 
-        let url = "https://www.kookapp.cn/api/v3/message/create";
         let data = {
             target_id: notification.kookGuildID,
             content: msg,
@@ -19,7 +18,7 @@ class Kook extends NotificationProvider {
             },
         };
         try {
-            await axios.post(url, data, config);
+            await axios.post("https://www.kookapp.cn/api/v3/message/create", data, config);
             return okMsg;
 
         } catch (error) {

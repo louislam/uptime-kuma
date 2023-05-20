@@ -9,7 +9,6 @@ class Line extends NotificationProvider {
         const okMsg = "Sent Successfully.";
 
         try {
-            let lineAPIUrl = "https://api.line.me/v2/bot/message/push";
             let config = {
                 headers: {
                     "Content-Type": "application/json",
@@ -26,7 +25,7 @@ class Line extends NotificationProvider {
                         }
                     ]
                 };
-                await axios.post(lineAPIUrl, testMessage, config);
+                await axios.post("https://api.line.me/v2/bot/message/push", testMessage, config);
             } else if (heartbeatJSON["status"] === DOWN) {
                 let downMessage = {
                     "to": notification.lineUserID,
@@ -37,7 +36,7 @@ class Line extends NotificationProvider {
                         }
                     ]
                 };
-                await axios.post(lineAPIUrl, downMessage, config);
+                await axios.post("https://api.line.me/v2/bot/message/push", downMessage, config);
             } else if (heartbeatJSON["status"] === UP) {
                 let upMessage = {
                     "to": notification.lineUserID,
@@ -48,7 +47,7 @@ class Line extends NotificationProvider {
                         }
                     ]
                 };
-                await axios.post(lineAPIUrl, upMessage, config);
+                await axios.post("https://api.line.me/v2/bot/message/push", upMessage, config);
             }
             return okMsg;
         } catch (error) {

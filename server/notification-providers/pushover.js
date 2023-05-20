@@ -7,8 +7,6 @@ class Pushover extends NotificationProvider {
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
 
-        let pushoverlink = "https://api.pushover.net/1/messages.json";
-
         let data = {
             "message": msg,
             "user": notification.pushoveruserkey,
@@ -27,11 +25,11 @@ class Pushover extends NotificationProvider {
 
         try {
             if (heartbeatJSON == null) {
-                await axios.post(pushoverlink, data);
+                await axios.post("https://api.pushover.net/1/messages.json", data);
                 return okMsg;
             } else {
                 data.message += "\n<b>Time (UTC)</b>:" + heartbeatJSON["time"];
-                await axios.post(pushoverlink, data);
+                await axios.post("https://api.pushover.net/1/messages.json", data);
                 return okMsg;
             }
         } catch (error) {

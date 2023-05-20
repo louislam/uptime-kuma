@@ -10,12 +10,11 @@ class SMSManager extends NotificationProvider {
         try {
             let data = {
                 apikey: notification.smsmanagerApiKey,
-                endpoint: "https://http-api.smsmanager.cz/Send",
                 message: msg.replace(/[^\x00-\x7F]/g, ""),
-                to: notification.numbers,
-                messageType: notification.messageType,
+                number: notification.numbers,
+                gateway: notification.messageType,
             };
-            await axios.get(`${data.endpoint}?apikey=${data.apikey}&message=${data.message}&number=${data.to}&gateway=${data.messageType}`);
+            await axios.get(`https://http-api.smsmanager.cz/Send?apikey=${data.apikey}&message=${data.message}&number=${data.number}&gateway=${data.messageType}`);
             return okMsg;
         } catch (error) {
             this.throwGeneralAxiosError(error);

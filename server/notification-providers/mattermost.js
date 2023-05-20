@@ -95,10 +95,7 @@ class Mattermost extends NotificationProvider {
                     },
                 ],
             };
-            await axios.post(
-                notification.mattermostWebhookUrl,
-                mattermostdata
-            );
+            await axios.post(notification.mattermostWebhookUrl, mattermostdata);
             return okMsg;
         } catch (error) {
             this.throwGeneralAxiosError(error);

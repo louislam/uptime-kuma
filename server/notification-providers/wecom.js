@@ -9,14 +9,13 @@ class WeCom extends NotificationProvider {
         const okMsg = "Sent Successfully.";
 
         try {
-            let WeComUrl = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=" + notification.weComBotKey;
             let config = {
                 headers: {
                     "Content-Type": "application/json"
                 }
             };
             let body = this.composeMessage(heartbeatJSON, msg);
-            await axios.post(WeComUrl, body, config);
+            await axios.post(`https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=${notification.weComBotKey}`, body, config);
             return okMsg;
         } catch (error) {
             this.throwGeneralAxiosError(error);

@@ -10,7 +10,6 @@ class Pushbullet extends NotificationProvider {
         const okMsg = "Sent Successfully.";
 
         try {
-            let pushbulletUrl = "https://api.pushbullet.com/v2/pushes";
             let config = {
                 headers: {
                     "Access-Token": notification.pushbulletAccessToken,
@@ -23,21 +22,21 @@ class Pushbullet extends NotificationProvider {
                     "title": "Uptime Kuma Alert",
                     "body": msg,
                 };
-                await axios.post(pushbulletUrl, data, config);
+                await axios.post("https://api.pushbullet.com/v2/pushes", data, config);
             } else if (heartbeatJSON["status"] === DOWN) {
                 let downData = {
                     "type": "note",
                     "title": "UptimeKuma Alert: " + monitorJSON["name"],
                     "body": "[🔴 Down] " + heartbeatJSON["msg"] + "\nTime (UTC): " + heartbeatJSON["time"],
                 };
-                await axios.post(pushbulletUrl, downData, config);
+                await axios.post("https://api.pushbullet.com/v2/pushes", downData, config);
             } else if (heartbeatJSON["status"] === UP) {
                 let upData = {
                     "type": "note",
                     "title": "UptimeKuma Alert: " + monitorJSON["name"],
                     "body": "[✅ Up] " + heartbeatJSON["msg"] + "\nTime (UTC): " + heartbeatJSON["time"],
                 };
-                await axios.post(pushbulletUrl, upData, config);
+                await axios.post("https://api.pushbullet.com/v2/pushes", upData, config);
             }
             return okMsg;
         } catch (error) {

@@ -28,7 +28,7 @@ class Ntfy extends NotificationProvider {
                     "priority": notification.ntfyPriority,
                     "tags": [ "test_tube" ],
                 };
-                await axios.post(`${notification.ntfyserverurl}`, ntfyTestData, { headers: headers });
+                await axios.post(notification.ntfyserverurl, ntfyTestData, { headers: headers });
                 return okMsg;
             }
             let tags = [];
@@ -64,7 +64,7 @@ class Ntfy extends NotificationProvider {
                 data.icon = notification.ntfyIcon;
             }
 
-            await axios.post(`${notification.ntfyserverurl}`, data, { headers: headers });
+            await axios.post(notification.ntfyserverurl, data, { headers: headers });
 
             return okMsg;
 
