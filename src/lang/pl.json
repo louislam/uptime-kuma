@@ -743,5 +743,10 @@
     "statusPageRefreshIn": "Odświeżenie w ciągu: {0}",
     "lunaseaDeviceID": "ID urządzenia",
     "lunaseaUserID": "ID użytkownika",
-    "Add New Tag": "Dodaj nowy tag"
+    "Add New Tag": "Dodaj nowy tag",
+    "hostedsms": "HostedSMS.pl",
+    "hostedsmsAPIUser": "Nazwa użytkownika API (e-mail)",
+    "hostedsmsAPIPassword": "Hasło API",
+    "hostedsmsPhoneNumber": "Numer telefonu (np. 48XXXXXXXXX)",
+    "hostedsmsSenderName": "Nazwa nadawcy (zatwierdzona w panelu klienta)"
 }

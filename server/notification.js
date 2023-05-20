@@ -14,6 +14,7 @@ const GoogleChat = require("./notification-providers/google-chat");
 const Gorush = require("./notification-providers/gorush");
 const Gotify = require("./notification-providers/gotify");
 const HomeAssistant = require("./notification-providers/home-assistant");
+const HostedSMS = require("./notification-providers/hostedsms");
 const Kook = require("./notification-providers/kook");
 const Line = require("./notification-providers/line");
 const LineNotify = require("./notification-providers/linenotify");
@@ -76,6 +77,7 @@ class Notification {
             new Gorush(),
             new Gotify(),
             new HomeAssistant(),
+            new HostedSMS(),
             new Kook(),
             new Line(),
             new LineNotify(),

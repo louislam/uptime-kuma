@@ -719,5 +719,10 @@
     "twilioAccountSID": "Account SID",
     "twilioAuthToken": "Auth Token",
     "twilioFromNumber": "From Number",
-    "twilioToNumber": "To Number"
+    "twilioToNumber": "To Number",
+    "hostedsms": "HostedSMS.pl",
+    "hostedsmsAPIUser": "API Username (e-mail)",
+    "hostedsmsAPIPassword": "API Password",
+    "hostedsmsPhoneNumber": "Phone number (eg. 48XXXXXXXXX)",
+    "hostedsmsSenderName": "SMS Sender Name (registered via customer portal)"
 }
