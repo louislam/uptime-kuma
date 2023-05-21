@@ -1,6 +1,6 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
-const { UP, DOWN } = require("../../src/util");
+const { UP } = require("../../src/util");
 
 class HostedSMS extends NotificationProvider {
 
@@ -16,6 +16,10 @@ class HostedSMS extends NotificationProvider {
                 }
             };
 
+            /*
+                Create shorter alert message to avoid extra SMS costs (1 SMS with unicode has limit to 70 characters)
+                https://github.com/louislam/uptime-kuma/pull/3176#discussion_r1199601497
+            */
             let textMsg = "";
             if (heartbeatJSON && heartbeatJSON.status === UP) {
                 textMsg = `✅ [${monitorJSON.name}] is back online`;
