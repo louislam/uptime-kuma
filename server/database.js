@@ -190,7 +190,7 @@ class Database {
             };
         } else if (dbConfig.type === "mariadb") {
             if (!/^\w+$/.test(dbConfig.dbName)) {
-                throw Error("Invalid Database name");
+                throw Error("Invalid database name. A database name can only consist of letters, numbers and underscores");
             }
 
             const connection = await mysql.createConnection({
