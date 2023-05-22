@@ -159,7 +159,7 @@ fi
   check=$(pm2 --version)
   if [ "$check" == "" ]; then
     "echo" "-e" "Installing PM2"
-    npm install pm2 -g
+    npm install pm2 -g && pm2 install pm2-logrotate
     pm2 startup  
 fi
   mkdir -p $installPath

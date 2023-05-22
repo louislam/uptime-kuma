@@ -1,31 +1,48 @@
-const path = require("path");
-const Bree = require("bree");
-const { SHARE_ENV } = require("worker_threads");
+const { UptimeKumaServer } = require("./uptime-kuma-server");
+const { clearOldData } = require("./jobs/clear-old-data");
+const Cron = require("croner");
 
 const jobs = [
     {
         name: "clear-old-data",
-        interval: "at 03:14",
+        interval: "14 03 * * *",
+        jobFunc: clearOldData,
+        croner: null,
     },
 ];
 
-const initBackgroundJobs = function (args) {
-    const bree = new Bree({
-        root: path.resolve("server", "jobs"),
-        jobs,
-        worker: {
-            env: SHARE_ENV,
-            workerData: args,
-        },
-        workerMessageHandler: (message) => {
-            console.log("[Background Job]:", message);
-        }
-    });
+/**
+ * Initialize background jobs
+ * @returns {Promise<void>}
+ */
+const initBackgroundJobs = async function () {
+    const timezone = await UptimeKumaServer.getInstance().getTimezone();
 
-    bree.start();
-    return bree;
+    for (const job of jobs) {
+        const cornerJob = new Cron(
+            job.interval,
+            {
+                name: job.name,
+                timezone,
+            },
+            job.jobFunc,
+        );
+        job.croner = cornerJob;
+    }
+
+};
+
+/** Stop all background jobs if running */
+const stopBackgroundJobs = function () {
+    for (const job of jobs) {
+        if (job.croner) {
+            job.croner.stop();
+            job.croner = null;
+        }
+    }
 };
 
 module.exports = {
-    initBackgroundJobs
+    initBackgroundJobs,
+    stopBackgroundJobs
 };

@@ -1,9 +1,9 @@
 const fs = require("fs");
 const { R } = require("redbean-node");
 const { setSetting, setting } = require("./util-server");
-const { debug, sleep } = require("../src/util");
-const dayjs = require("dayjs");
+const { log, sleep } = require("../src/util");
 const knex = require("knex");
+const { PluginsManager } = require("./plugins-manager");
 
 /**
  * Database & App Data Folder
@@ -30,11 +30,6 @@ class Database {
     static patched = false;
 
     /**
-     * For Backup only
-     */
-    static backupPath = null;
-
-    /**
      * Add patch filename in key
      * Values:
      *      true: Add it regardless of order
@@ -52,7 +47,29 @@ class Database {
         "patch-http-monitor-method-body-and-headers.sql": true,
         "patch-2fa-invalidate-used-token.sql": true,
         "patch-notification_sent_history.sql": true,
-    }
+        "patch-monitor-basic-auth.sql": true,
+        "patch-add-docker-columns.sql": true,
+        "patch-status-page.sql": true,
+        "patch-proxy.sql": true,
+        "patch-monitor-expiry-notification.sql": true,
+        "patch-status-page-footer-css.sql": true,
+        "patch-added-mqtt-monitor.sql": true,
+        "patch-add-clickable-status-page-link.sql": true,
+        "patch-add-sqlserver-monitor.sql": true,
+        "patch-add-other-auth.sql": { parents: [ "patch-monitor-basic-auth.sql" ] },
+        "patch-grpc-monitor.sql": true,
+        "patch-add-radius-monitor.sql": true,
+        "patch-monitor-add-resend-interval.sql": true,
+        "patch-ping-packet-size.sql": true,
+        "patch-maintenance-table2.sql": true,
+        "patch-add-gamedig-monitor.sql": true,
+        "patch-add-google-analytics-status-page-tag.sql": true,
+        "patch-http-body-encoding.sql": true,
+        "patch-add-description-monitor.sql": true,
+        "patch-api-key-table.sql": true,
+        "patch-monitor-tls.sql": true,
+        "patch-maintenance-cron.sql": true,
+    };
 
     /**
      * The final version should be 10 after merged tag feature
@@ -62,9 +79,20 @@ class Database {
 
     static noReject = true;
 
+    /**
+     * Initialize the database
+     * @param {Object} args Arguments to initialize DB with
+     */
     static init(args) {
         // Data Directory (must be end with "/")
         Database.dataDir = process.env.DATA_DIR || args["data-dir"] || "./data/";
+
+        // Plugin feature is working only if the dataDir = "./data";
+        if (Database.dataDir !== "./data/") {
+            log.warn("PLUGIN", "Warning: In order to enable plugin feature, you need to use the default data directory: ./data/");
+            PluginsManager.disable = true;
+        }
+
         Database.path = Database.dataDir + "kuma.db";
         if (! fs.existsSync(Database.dataDir)) {
             fs.mkdirSync(Database.dataDir, { recursive: true });
@@ -76,10 +104,19 @@ class Database {
             fs.mkdirSync(Database.uploadDir, { recursive: true });
         }
 
-        console.log(`Data Dir: ${Database.dataDir}`);
+        log.info("db", `Data Dir: ${Database.dataDir}`);
     }
 
-    static async connect() {
+    /**
+     * Connect to the database
+     * @param {boolean} [testMode=false] Should the connection be
+     * started in test mode?
+     * @param {boolean} [autoloadModels=true] Should models be
+     * automatically loaded?
+     * @param {boolean} [noLog=false] Should logs not be output?
+     * @returns {Promise<void>}
+     */
+    static async connect(testMode = false, autoloadModels = true, noLog = false) {
         const acquireConnectionTimeout = 120 * 1000;
 
         const Dialect = require("knex/lib/dialects/sqlite3/index.js");
@@ -109,20 +146,36 @@ class Database {
 
         // Auto map the model to a bean object
         R.freeze(true);
-        await R.autoloadModels("./server/model");
+
+        if (autoloadModels) {
+            await R.autoloadModels("./server/model");
+        }
 
         await R.exec("PRAGMA foreign_keys = ON");
-        // Change to WAL
-        await R.exec("PRAGMA journal_mode = WAL");
+        if (testMode) {
+            // Change to MEMORY
+            await R.exec("PRAGMA journal_mode = MEMORY");
+        } else {
+            // Change to WAL
+            await R.exec("PRAGMA journal_mode = WAL");
+        }
         await R.exec("PRAGMA cache_size = -12000");
         await R.exec("PRAGMA auto_vacuum = FULL");
 
-        console.log("SQLite config:");
-        console.log(await R.getAll("PRAGMA journal_mode"));
-        console.log(await R.getAll("PRAGMA cache_size"));
-        console.log("SQLite Version: " + await R.getCell("SELECT sqlite_version()"));
+        // This ensures that an operating system crash or power failure will not corrupt the database.
+        // FULL synchronous is very safe, but it is also slower.
+        // Read more: https://sqlite.org/pragma.html#pragma_synchronous
+        await R.exec("PRAGMA synchronous = FULL");
+
+        if (!noLog) {
+            log.info("db", "SQLite config:");
+            log.info("db", await R.getAll("PRAGMA journal_mode"));
+            log.info("db", await R.getAll("PRAGMA cache_size"));
+            log.info("db", "SQLite Version: " + await R.getCell("SELECT sqlite_version()"));
+        }
     }
 
+    /** Patch the database */
     static async patch() {
         let version = parseInt(await setting("database_version"));
 
@@ -130,56 +183,56 @@ class Database {
             version = 0;
         }
 
-        console.info("Your database version: " + version);
-        console.info("Latest database version: " + this.latestVersion);
+        log.info("db", "Your database version: " + version);
+        log.info("db", "Latest database version: " + this.latestVersion);
 
         if (version === this.latestVersion) {
-            console.info("Database patch not needed");
+            log.info("db", "Database patch not needed");
         } else if (version > this.latestVersion) {
-            console.info("Warning: Database version is newer than expected");
+            log.info("db", "Warning: Database version is newer than expected");
         } else {
-            console.info("Database patch is needed");
+            log.info("db", "Database patch is needed");
 
-            this.backup(version);
-
-            // Try catch anything here, if gone wrong, restore the backup
+            // Try catch anything here
             try {
                 for (let i = version + 1; i <= this.latestVersion; i++) {
                     const sqlFile = `./db/patch${i}.sql`;
-                    console.info(`Patching ${sqlFile}`);
+                    log.info("db", `Patching ${sqlFile}`);
                     await Database.importSQLFile(sqlFile);
-                    console.info(`Patched ${sqlFile}`);
+                    log.info("db", `Patched ${sqlFile}`);
                     await setSetting("database_version", i);
                 }
             } catch (ex) {
                 await Database.close();
 
-                console.error(ex);
-                console.error("Start Uptime-Kuma failed due to issue patching the database");
-                console.error("Please submit a bug report if you still encounter the problem after restart: https://github.com/louislam/uptime-kuma/issues");
+                log.error("db", ex);
+                log.error("db", "Start Uptime-Kuma failed due to issue patching the database");
+                log.error("db", "Please submit a bug report if you still encounter the problem after restart: https://github.com/louislam/uptime-kuma/issues");
 
-                this.restore();
                 process.exit(1);
             }
         }
 
         await this.patch2();
+        await this.migrateNewStatusPage();
     }
 
     /**
+     * Patch DB using new process
      * Call it from patch() only
+     * @private
      * @returns {Promise<void>}
      */
     static async patch2() {
-        console.log("Database Patch 2.0 Process");
+        log.info("db", "Database Patch 2.0 Process");
         let databasePatchedFiles = await setting("databasePatchedFiles");
 
         if (! databasePatchedFiles) {
             databasePatchedFiles = {};
         }
 
-        debug("Patched files:");
-        debug(databasePatchedFiles);
+        log.debug("db", "Patched files:");
+        log.debug("db", databasePatchedFiles);
 
         try {
             for (let sqlFilename in this.patchList) {
@@ -187,17 +240,15 @@ class Database {
             }
 
             if (this.patched) {
-                console.log("Database Patched Successfully");
+                log.info("db", "Database Patched Successfully");
             }
 
         } catch (ex) {
             await Database.close();
 
-            console.error(ex);
-            console.error("Start Uptime-Kuma failed due to issue patching the database");
-            console.error("Please submit the bug report if you still encounter the problem after restart: https://github.com/louislam/uptime-kuma/issues");
-
-            this.restore();
+            log.error("db", ex);
+            log.error("db", "Start Uptime-Kuma failed due to issue patching the database");
+            log.error("db", "Please submit the bug report if you still encounter the problem after restart: https://github.com/louislam/uptime-kuma/issues");
 
             process.exit(1);
         }
@@ -206,49 +257,118 @@ class Database {
     }
 
     /**
+     * Migrate status page value in setting to "status_page" table
+     * @returns {Promise<void>}
+     */
+    static async migrateNewStatusPage() {
+
+        // Fix 1.13.0 empty slug bug
+        await R.exec("UPDATE status_page SET slug = 'empty-slug-recover' WHERE TRIM(slug) = ''");
+
+        let title = await setting("title");
+
+        if (title) {
+            console.log("Migrating Status Page");
+
+            let statusPageCheck = await R.findOne("status_page", " slug = 'default' ");
+
+            if (statusPageCheck !== null) {
+                console.log("Migrating Status Page - Skip, default slug record is already existing");
+                return;
+            }
+
+            let statusPage = R.dispense("status_page");
+            statusPage.slug = "default";
+            statusPage.title = title;
+            statusPage.description = await setting("description");
+            statusPage.icon = await setting("icon");
+            statusPage.theme = await setting("statusPageTheme");
+            statusPage.published = !!await setting("statusPagePublished");
+            statusPage.search_engine_index = !!await setting("searchEngineIndex");
+            statusPage.show_tags = !!await setting("statusPageTags");
+            statusPage.password = null;
+
+            if (!statusPage.title) {
+                statusPage.title = "My Status Page";
+            }
+
+            if (!statusPage.icon) {
+                statusPage.icon = "";
+            }
+
+            if (!statusPage.theme) {
+                statusPage.theme = "light";
+            }
+
+            let id = await R.store(statusPage);
+
+            await R.exec("UPDATE incident SET status_page_id = ? WHERE status_page_id IS NULL", [
+                id
+            ]);
+
+            await R.exec("UPDATE [group] SET status_page_id = ? WHERE status_page_id IS NULL", [
+                id
+            ]);
+
+            await R.exec("DELETE FROM setting WHERE type = 'statusPage'");
+
+            // Migrate Entry Page if it is status page
+            let entryPage = await setting("entryPage");
+
+            if (entryPage === "statusPage") {
+                await setSetting("entryPage", "statusPage-default", "general");
+            }
+
+            console.log("Migrating Status Page - Done");
+        }
+
+    }
+
+    /**
+     * Patch database using new patching process
      * Used it patch2() only
+     * @private
      * @param sqlFilename
      * @param databasePatchedFiles
+     * @returns {Promise<void>}
      */
     static async patch2Recursion(sqlFilename, databasePatchedFiles) {
         let value = this.patchList[sqlFilename];
 
         if (! value) {
-            console.log(sqlFilename + " skip");
+            log.info("db", sqlFilename + " skip");
             return;
         }
 
         // Check if patched
         if (! databasePatchedFiles[sqlFilename]) {
-            console.log(sqlFilename + " is not patched");
+            log.info("db", sqlFilename + " is not patched");
 
             if (value.parents) {
-                console.log(sqlFilename + " need parents");
+                log.info("db", sqlFilename + " need parents");
                 for (let parentSQLFilename of value.parents) {
                     await this.patch2Recursion(parentSQLFilename, databasePatchedFiles);
                 }
             }
 
-            this.backup(dayjs().format("YYYYMMDDHHmmss"));
-
-            console.log(sqlFilename + " is patching");
+            log.info("db", sqlFilename + " is patching");
             this.patched = true;
             await this.importSQLFile("./db/" + sqlFilename);
             databasePatchedFiles[sqlFilename] = true;
-            console.log(sqlFilename + " was patched successfully");
+            log.info("db", sqlFilename + " was patched successfully");
 
         } else {
-            debug(sqlFilename + " is already patched, skip");
+            log.debug("db", sqlFilename + " is already patched, skip");
         }
     }
 
     /**
-     * Sadly, multi sql statements is not supported by many sqlite libraries, I have to implement it myself
-     * @param filename
+     * Load an SQL file and execute it
+     * @param filename Filename of SQL file to import
      * @returns {Promise<void>}
      */
     static async importSQLFile(filename) {
-
+        // Sadly, multi sql statements is not supported by many sqlite libraries, I have to implement it myself
         await R.getCell("SELECT 1");
 
         let text = fs.readFileSync(filename).toString();
@@ -276,6 +396,10 @@ class Database {
         }
     }
 
+    /**
+     * Aquire a direct connection to database
+     * @returns {any}
+     */
     static getBetterSQLite3Database() {
         return R.knex.client.acquireConnection();
     }
@@ -290,7 +414,10 @@ class Database {
         };
         process.addListener("unhandledRejection", listener);
 
-        console.log("Closing the database");
+        log.info("db", "Closing the database");
+
+        // Flush WAL to main database
+        await R.exec("PRAGMA wal_checkpoint(TRUNCATE)");
 
         while (true) {
             Database.noReject = true;
@@ -300,90 +427,26 @@ class Database {
             if (Database.noReject) {
                 break;
             } else {
-                console.log("Waiting to close the database");
+                log.info("db", "Waiting to close the database");
             }
         }
-        console.log("SQLite closed");
+        log.info("db", "SQLite closed");
 
         process.removeListener("unhandledRejection", listener);
     }
 
-    /**
-     * One backup one time in this process.
-     * Reset this.backupPath if you want to backup again
-     * @param version
-     */
-    static backup(version) {
-        if (! this.backupPath) {
-            console.info("Backing up the database");
-            this.backupPath = this.dataDir + "kuma.db.bak" + version;
-            fs.copyFileSync(Database.path, this.backupPath);
-
-            const shmPath = Database.path + "-shm";
-            if (fs.existsSync(shmPath)) {
-                this.backupShmPath = shmPath + ".bak" + version;
-                fs.copyFileSync(shmPath, this.backupShmPath);
-            }
-
-            const walPath = Database.path + "-wal";
-            if (fs.existsSync(walPath)) {
-                this.backupWalPath = walPath + ".bak" + version;
-                fs.copyFileSync(walPath, this.backupWalPath);
-            }
-        }
-    }
-
-    /**
-     *
-     */
-    static restore() {
-        if (this.backupPath) {
-            console.error("Patching the database failed!!! Restoring the backup");
-
-            const shmPath = Database.path + "-shm";
-            const walPath = Database.path + "-wal";
-
-            // Delete patch failed db
-            try {
-                if (fs.existsSync(Database.path)) {
-                    fs.unlinkSync(Database.path);
-                }
-
-                if (fs.existsSync(shmPath)) {
-                    fs.unlinkSync(shmPath);
-                }
-
-                if (fs.existsSync(walPath)) {
-                    fs.unlinkSync(walPath);
-                }
-            } catch (e) {
-                console.log("Restore failed; you may need to restore the backup manually");
-                process.exit(1);
-            }
-
-            // Restore backup
-            fs.copyFileSync(this.backupPath, Database.path);
-
-            if (this.backupShmPath) {
-                fs.copyFileSync(this.backupShmPath, shmPath);
-            }
-
-            if (this.backupWalPath) {
-                fs.copyFileSync(this.backupWalPath, walPath);
-            }
-
-        } else {
-            console.log("Nothing to restore");
-        }
-    }
-
+    /** Get the size of the database */
     static getSize() {
-        debug("Database.getSize()");
+        log.debug("db", "Database.getSize()");
         let stats = fs.statSync(Database.path);
-        debug(stats);
+        log.debug("db", stats);
         return stats.size;
     }
 
+    /**
+     * Shrink the database
+     * @returns {Promise<void>}
+     */
     static async shrink() {
         await R.exec("VACUUM");
     }

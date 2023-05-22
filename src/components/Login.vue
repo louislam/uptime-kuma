@@ -16,8 +16,8 @@
 
                 <div v-if="tokenRequired">
                     <div class="form-floating mt-3">
-                        <input id="floatingToken" v-model="token" type="text" maxlength="6" class="form-control" placeholder="123456">
-                        <label for="floatingToken">{{ $t("Token") }}</label>
+                        <input id="otp" v-model="token" type="text" maxlength="6" class="form-control" placeholder="123456">
+                        <label for="otp">{{ $t("Token") }}</label>
                     </div>
                 </div>
 
@@ -54,7 +54,17 @@ export default {
             tokenRequired: false,
         };
     },
+
+    mounted() {
+        document.title += " - Login";
+    },
+
+    unmounted() {
+        document.title = document.title.replace(" - Login", "");
+    },
+
     methods: {
+        /** Submit the user details and attempt to log in */
         submit() {
             this.processing = true;
 

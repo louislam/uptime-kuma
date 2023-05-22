@@ -1,18 +1,18 @@
 <template>
     <div class="mb-3">
-        <label for="octopush-version" class="form-label">Octopush API Version</label>
+        <label for="octopush-version" class="form-label">{{ $t("Octopush API Version") }}</label>
         <select id="octopush-version" v-model="$parent.notification.octopushVersion" class="form-select">
-            <option value="2">Octopush (endpoint: api.octopush.com)</option>
-            <option value="1">Legacy Octopush-DM (endpoint: www.octopush-dm.com)</option>
+            <option value="2">{{ $t("octopush") }} ({{ $t("endpoint") }}: api.octopush.com)</option>
+            <option value="1">{{ $t("Legacy Octopush-DM") }} ({{ $t("endpoint") }}: www.octopush-dm.com)</option>
         </select>
         <div class="form-text">
             {{ $t("octopushLegacyHint") }}
         </div>
     </div>
     <div class="mb-3">
-        <label for="octopush-key" class="form-label">API KEY</label>
-        <HiddenInput id="octopush-key" v-model="$parent.notification.octopushAPIKey" :required="true" autocomplete="one-time-code"></HiddenInput>
-        <label for="octopush-login" class="form-label">API LOGIN</label>
+        <label for="octopush-key" class="form-label">{{ $t("octopushAPIKey") }}</label>
+        <HiddenInput id="octopush-key" v-model="$parent.notification.octopushAPIKey" :required="true" autocomplete="new-password"></HiddenInput>
+        <label for="octopush-login" class="form-label">{{ $t("octopushLogin") }}</label>
         <input id="octopush-login" v-model="$parent.notification.octopushLogin" type="text" class="form-control" required>
     </div>
     <div class="mb-3">

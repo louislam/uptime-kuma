@@ -21,13 +21,13 @@ class Feishu extends NotificationProvider {
                 return okMsg;
             }
 
-            if (heartbeatJSON["status"] == DOWN) {
+            if (heartbeatJSON["status"] === DOWN) {
                 let downdata = {
                     msg_type: "post",
                     content: {
                         post: {
                             zh_cn: {
-                                title: "UptimeKuma Alert: " + monitorJSON["name"],
+                                title: "UptimeKuma Alert: [Down] " + monitorJSON["name"],
                                 content: [
                                     [
                                         {
@@ -48,13 +48,13 @@ class Feishu extends NotificationProvider {
                 return okMsg;
             }
 
-            if (heartbeatJSON["status"] == UP) {
+            if (heartbeatJSON["status"] === UP) {
                 let updata = {
                     msg_type: "post",
                     content: {
                         post: {
                             zh_cn: {
-                                title: "UptimeKuma Alert: " + monitorJSON["name"],
+                                title: "UptimeKuma Alert: [Up] " + monitorJSON["name"],
                                 content: [
                                     [
                                         {

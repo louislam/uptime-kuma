@@ -189,7 +189,7 @@ if (type == "local") {
    bash("check=$(pm2 --version)");
    if (check == "") {
        println("Installing PM2");
-       bash("npm install pm2 -g");
+       bash("npm install pm2 -g && pm2 install pm2-logrotate");
        bash("pm2 startup");
    }
 

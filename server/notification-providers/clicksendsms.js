@@ -8,11 +8,10 @@ class ClickSendSMS extends NotificationProvider {
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
         try {
-            console.log({ notification });
             let config = {
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": "Basic " + Buffer.from(notification.clicksendsmsLogin + ":" + notification.clicksendsmsPassword).toString('base64'),
+                    "Authorization": "Basic " + Buffer.from(notification.clicksendsmsLogin + ":" + notification.clicksendsmsPassword).toString("base64"),
                     "Accept": "text/json",
                 }
             };

@@ -1,6 +1,6 @@
 <template>
     <transition name="slide-fade" appear>
-        <MonitorList />
+        <MonitorList :scrollbar="true" />
     </transition>
 </template>
 
@@ -11,6 +11,14 @@ export default {
     components: {
         MonitorList,
     },
-}
+};
 </script>
 
+<style lang="scss" scoped>
+@import "../assets/vars";
+
+.shadow-box {
+    padding: 20px;
+}
+
+</style>

@@ -15,7 +15,7 @@ class Gotify extends NotificationProvider {
                 "message": msg,
                 "priority": notification.gotifyPriority || 8,
                 "title": "Uptime-Kuma",
-            })
+            });
 
             return okMsg;
 

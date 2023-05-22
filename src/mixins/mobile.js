@@ -12,11 +12,13 @@ export default {
     },
 
     methods: {
+        /** Handle screen resize */
         onResize() {
             this.windowWidth = window.innerWidth;
             this.updateBody();
         },
 
+        /** Add css-class "mobile" to body if needed */
         updateBody() {
             if (this.isMobile) {
                 document.body.classList.add("mobile");
