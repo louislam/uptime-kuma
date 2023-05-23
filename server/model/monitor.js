@@ -671,7 +671,8 @@ class Monitor extends BeanModel {
                             this.radiusCalledStationId,
                             this.radiusCallingStationId,
                             this.radiusSecret,
-                            port
+                            port,
+                            this.interval * 1000 * 0.8,
                         );
                         if (resp.code) {
                             bean.msg = resp.code;
