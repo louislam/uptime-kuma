@@ -27,14 +27,15 @@ class Slack extends NotificationProvider {
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
-        const finalMsg = notification.slackchannelmention
-            ? `${msg} <!channel>`
-            : msg;
+
+        if (notification.slackchannelmention) {
+            msg += " <!channel>";
+        }
 
         try {
             if (heartbeatJSON == null) {
                 let data = {
-                    "text": finalMsg,
+                    "text": msg,
                     "channel": notification.slackchannel,
                     "username": notification.slackusername,
                     "icon_emoji": notification.slackiconemo,
@@ -46,7 +47,7 @@ class Slack extends NotificationProvider {
             const time = heartbeatJSON["time"];
             const textMsg = "Uptime Kuma Alert";
             let data = {
-                "text": `${textMsg}\n${finalMsg}`,
+                "text": `${textMsg}\n${msg}`,
                 "channel": notification.slackchannel,
                 "username": notification.slackusername,
                 "icon_emoji": notification.slackiconemo,
@@ -65,7 +66,7 @@ class Slack extends NotificationProvider {
                                 "type": "section",
                                 "fields": [{
                                     "type": "mrkdwn",
-                                    "text": "*Message*\n" + finalMsg,
+                                    "text": "*Message*\n" + msg,
                                 },
                                 {
                                     "type": "mrkdwn",
