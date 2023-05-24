@@ -123,7 +123,8 @@
         "socks-proxy-agent": "6.1.1",
         "tar": "~6.1.11",
         "tcp-ping": "~0.1.1",
-        "thirty-two": "~1.0.2"
+        "thirty-two": "~1.0.2",
+        "whatwg-url": "^12.0.1"
     },
     "devDependencies": {
         "@actions/github": "~5.0.1",
