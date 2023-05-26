@@ -1262,11 +1262,11 @@ class Monitor extends BeanModel {
      */
     async sendCertNotificationByTargetDays(certCN, certType, daysRemaining, targetDays, notificationList) {
 
-            let row = await R.getRow("SELECT * FROM notification_sent_history WHERE type = ? AND monitor_id = ? AND days <= ?", [
-                "certificate",
-                this.id,
-                targetDays,
-            ]);
+        let row = await R.getRow("SELECT * FROM notification_sent_history WHERE type = ? AND monitor_id = ? AND days <= ?", [
+            "certificate",
+            this.id,
+            targetDays,
+        ]);
 
         // Sent already, no need to send again
         if (row) {
