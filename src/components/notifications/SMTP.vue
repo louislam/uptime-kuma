@@ -97,7 +97,6 @@
                 (leave blank for default one)<br />
                 {{NAME}}: Service Name<br />
                 {{HOSTNAME_OR_URL}}: Hostname or URL<br />
-                {{URL}}: URL<br />
                 {{STATUS}}: Status<br />
             </div>
         </div>

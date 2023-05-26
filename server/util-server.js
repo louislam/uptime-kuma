@@ -14,11 +14,13 @@ const mssql = require("mssql");
 const { Client } = require("pg");
 const postgresConParse = require("pg-connection-string").parse;
 const mysql = require("mysql2");
+const { MongoClient } = require("mongodb");
 const { NtlmClient } = require("axios-ntlm");
 const { Settings } = require("./settings");
 const grpc = require("@grpc/grpc-js");
 const protojs = require("protobufjs");
 const radiusClient = require("node-radius-client");
+const redis = require("redis");
 const {
     dictionaries: {
         rfc2865: { file, attributes },
@@ -77,15 +79,19 @@ exports.tcping = function (hostname, port) {
 /**
  * Ping the specified machine
  * @param {string} hostname Hostname / address of machine
+ * @param {number} [size=56] Size of packet to send
  * @returns {Promise<number>} Time for ping in ms rounded to nearest integer
  */
-exports.ping = async (hostname) => {
+exports.ping = async (hostname, size = 56) => {
     try {
-        return await exports.pingAsync(hostname);
+        return await exports.pingAsync(hostname, false, size);
     } catch (e) {
         // If the host cannot be resolved, try again with ipv6
-        if (e.message.includes("service not known")) {
-            return await exports.pingAsync(hostname, true);
+        console.debug("ping", "IPv6 error message: " + e.message);
+
+        // As node-ping does not report a specific error for this, try again if it is an empty message with ipv6 no matter what.
+        if (!e.message) {
+            return await exports.pingAsync(hostname, true, size);
         } else {
             throw e;
         }
@@ -96,14 +102,16 @@ exports.ping = async (hostname) => {
  * Ping the specified machine
  * @param {string} hostname Hostname / address of machine to ping
  * @param {boolean} ipv6 Should IPv6 be used?
+ * @param {number} [size = 56] Size of ping packet to send
  * @returns {Promise<number>} Time for ping in ms rounded to nearest integer
  */
-exports.pingAsync = function (hostname, ipv6 = false) {
+exports.pingAsync = function (hostname, ipv6 = false, size = 56) {
     return new Promise((resolve, reject) => {
         ping.promise.probe(hostname, {
             v6: ipv6,
             min_reply: 1,
-            timeout: 10,
+            deadline: 10,
+            packetSize: size,
         }).then((res) => {
             // If ping failed, it will set field to unknown
             if (res.alive) {
@@ -135,7 +143,7 @@ exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
         const { port, username, password, interval = 20 } = options;
 
         // Adds MQTT protocol to the hostname if not already present
-        if (!/^(?:http|mqtt)s?:\/\//.test(hostname)) {
+        if (!/^(?:http|mqtt|ws)s?:\/\//.test(hostname)) {
             hostname = "mqtt://" + hostname;
         }
 
@@ -145,10 +153,11 @@ exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
             reject(new Error("Timeout"));
         }, interval * 1000 * 0.8);
 
-        log.debug("mqtt", "MQTT connecting");
+        const mqttUrl = `${hostname}:${port}`;
 
-        let client = mqtt.connect(hostname, {
-            port,
+        log.debug("mqtt", `MQTT connecting to ${mqttUrl}`);
+
+        let client = mqtt.connect(mqttUrl, {
             username,
             password
         });
@@ -280,18 +289,32 @@ exports.postgresQuery = function (connectionString, query) {
 
         const client = new Client({ connectionString });
 
-        client.connect();
-
-        return client.query(query)
-            .then(res => {
-                resolve(res);
-            })
-            .catch(err => {
+        client.connect((err) => {
+            if (err) {
                 reject(err);
-            })
-            .finally(() => {
                 client.end();
-            });
+            } else {
+                // Connected here
+                try {
+                    // No query provided by user, use SELECT 1
+                    if (!query || (typeof query === "string" && query.trim() === "")) {
+                        query = "SELECT 1";
+                    }
+
+                    client.query(query, (err, res) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(res);
+                        }
+                        client.end();
+                    });
+                } catch (e) {
+                    reject(e);
+                }
+            }
+        });
+
     });
 };
 
@@ -299,22 +322,46 @@ exports.postgresQuery = function (connectionString, query) {
  * Run a query on MySQL/MariaDB
  * @param {string} connectionString The database connection string
  * @param {string} query The query to validate the database with
- * @returns {Promise<(string[]|Object[]|Object)>}
+ * @returns {Promise<(string)>}
  */
 exports.mysqlQuery = function (connectionString, query) {
     return new Promise((resolve, reject) => {
         const connection = mysql.createConnection(connectionString);
-        connection.promise().query(query)
-            .then(res => {
-                resolve(res);
-            })
-            .catch(err => {
+
+        connection.on("error", (err) => {
+            reject(err);
+        });
+
+        connection.query(query, (err, res) => {
+            if (err) {
                 reject(err);
-            })
-            .finally(() => {
-                connection.end();
-            });
+            } else {
+                if (Array.isArray(res)) {
+                    resolve("Rows: " + res.length);
+                } else {
+                    resolve("No Error, but the result is not an array. Type: " + typeof res);
+                }
+            }
+            connection.destroy();
+        });
     });
+};
+
+/**
+ * Connect to and Ping a MongoDB database
+ * @param {string} connectionString The database connection string
+ * @returns {Promise<(string[]|Object[]|Object)>}
+ */
+exports.mongodbPing = async function (connectionString) {
+    let client = await MongoClient.connect(connectionString);
+    let dbPing = await client.db().command({ ping: 1 });
+    await client.close();
+
+    if (dbPing["ok"] === 1) {
+        return "UP";
+    } else {
+        throw Error("failed");
+    }
 };
 
 /**
@@ -351,6 +398,33 @@ exports.radius = function (
             [ attributes.CALLING_STATION_ID, callingStationId ],
             [ attributes.CALLED_STATION_ID, calledStationId ],
         ],
+    });
+};
+
+/**
+ * Redis server ping
+ * @param {string} dsn The redis connection string
+ */
+exports.redisPingAsync = function (dsn) {
+    return new Promise((resolve, reject) => {
+        const client = redis.createClient({
+            url: dsn,
+        });
+        client.on("error", (err) => {
+            reject(err);
+        });
+        client.connect().then(() => {
+            client.ping().then((res, err) => {
+                if (client.isOpen) {
+                    client.disconnect();
+                }
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(res);
+                }
+            });
+        });
     });
 };
 
@@ -682,15 +756,27 @@ exports.filterAndJoin = (parts, connector = "") => {
 };
 
 /**
- * Send a 403 response
+ * Send an Error response
  * @param {Object} res Express response object
  * @param {string} [msg=""] Message to send
  */
-module.exports.send403 = (res, msg = "") => {
-    res.status(403).json({
-        "status": "fail",
-        "msg": msg,
-    });
+module.exports.sendHttpError = (res, msg = "") => {
+    if (msg.includes("SQLITE_BUSY") || msg.includes("SQLITE_LOCKED")) {
+        res.status(503).json({
+            "status": "fail",
+            "msg": msg,
+        });
+    } else if (msg.toLowerCase().includes("not found")) {
+        res.status(404).json({
+            "status": "fail",
+            "msg": msg,
+        });
+    } else {
+        res.status(403).json({
+            "status": "fail",
+            "msg": msg,
+        });
+    }
 };
 
 function timeObjectConvertTimezone(obj, timezone, timeObjectToUTC = true) {

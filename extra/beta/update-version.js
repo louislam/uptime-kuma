@@ -22,7 +22,8 @@ if (! exists) {
     fs.writeFileSync("package.json", JSON.stringify(pkg, null, 4) + "\n");
 
     // Also update package-lock.json
-    childProcess.spawnSync("npm", [ "install" ]);
+    const npm = /^win/.test(process.platform) ? "npm.cmd" : "npm";
+    childProcess.spawnSync(npm, [ "install" ]);
 
     commit(version);
     tag(version);
@@ -32,6 +33,10 @@ if (! exists) {
     process.exit(1);
 }
 
+/**
+ * Commit updated files
+ * @param {string} version Version to update to
+ */
 function commit(version) {
     let msg = "Update to " + version;
 
@@ -47,6 +52,10 @@ function commit(version) {
     console.log(res.stdout.toString().trim());
 }
 
+/**
+ * Create a tag with the specified version
+ * @param {string} version Tag to create
+ */
 function tag(version) {
     let res = childProcess.spawnSync("git", [ "tag", version ]);
     console.log(res.stdout.toString().trim());
@@ -55,6 +64,11 @@ function tag(version) {
     console.log(res.stdout.toString().trim());
 }
 
+/**
+ * Check if a tag exists for the specified version
+ * @param {string} version Version to check
+ * @returns {boolean} Does the tag already exist
+ */
 function tagExists(version) {
     if (! version) {
         throw new Error("invalid version");
