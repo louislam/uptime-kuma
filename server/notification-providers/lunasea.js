@@ -28,7 +28,9 @@ class LunaSea extends NotificationProvider {
             if (heartbeatJSON["status"] === DOWN) {
                 let downdata = {
                     "title": "UptimeKuma Alert: " + monitorJSON["name"],
-                    "body": "[🔴 Down] " + heartbeatJSON["msg"] + "\nTime (UTC): " + heartbeatJSON["time"],
+                    "body": "[🔴 Down] " +
+                        heartbeatJSON["msg"] +
+                        `\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`
                 };
                 await axios.post(lunaseaurl, downdata);
                 return okMsg;
@@ -37,7 +39,9 @@ class LunaSea extends NotificationProvider {
             if (heartbeatJSON["status"] === UP) {
                 let updata = {
                     "title": "UptimeKuma Alert: " + monitorJSON["name"],
-                    "body": "[✅ Up] " + heartbeatJSON["msg"] + "\nTime (UTC): " + heartbeatJSON["time"],
+                    "body": "[✅ Up] " +
+                        heartbeatJSON["msg"] +
+                        `\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`
                 };
                 await axios.post(lunaseaurl, updata);
                 return okMsg;
