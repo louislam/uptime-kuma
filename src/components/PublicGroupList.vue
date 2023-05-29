@@ -49,26 +49,15 @@
                                                 {{ monitor.element.name }}
                                             </a>
                                             <p v-else class="item-name"> {{ monitor.element.name }} </p>
-                                            <span
-                                                v-if="showLink(monitor, true)"
-                                                title="Toggle Clickable Link"
-                                            >
-                                                <font-awesome-icon
-                                                    v-if="editMode"
-                                                    :class="{'link-active': monitor.element.sendUrl, 'btn-link': true}"
-                                                    icon="link" class="action me-3"
-                                                    @click="toggleLink(group.index, monitor.index)"
-                                                />
-                                            </span>
 
                                             <span
-                                                title="Badge Generator"
+                                                title="Setting"
                                             >
                                                 <font-awesome-icon
                                                     v-if="editMode"
                                                     :class="{'link-active': true, 'btn-link': true}"
-                                                    icon="certificate" class="action me-3"
-                                                    @click="$refs.badgeGeneratorDialog.show(monitor.element.id, monitor.element.name)"
+                                                    icon="cog" class="action me-3"
+                                                    @click="$refs.monitorSettingDialog.show(group, monitor)"
                                                 />
                                             </span>
                                         </div>
@@ -80,7 +69,7 @@
                                         <HeartbeatBar size="small" :monitor-id="monitor.element.id" />
                                     </div>
                                 </div>
-                                <BadgeGeneratorDialog ref="badgeGeneratorDialog" />
+                                <MonitorSettingDialog ref="monitorSettingDialog" />
                             </div>
                         </template>
                     </Draggable>
@@ -91,7 +80,7 @@
 </template>
 
 <script>
-import BadgeGeneratorDialog from "./BadgeGeneratorDialog.vue";
+import MonitorSettingDialog from "./MonitorSettingDialog.vue";
 import Draggable from "vuedraggable";
 import HeartbeatBar from "./HeartbeatBar.vue";
 import Uptime from "./Uptime.vue";
@@ -99,7 +88,7 @@ import Tag from "./Tag.vue";
 
 export default {
     components: {
-        BadgeGeneratorDialog,
+        MonitorSettingDialog,
         Draggable,
         HeartbeatBar,
         Uptime,
@@ -146,15 +135,6 @@ export default {
          */
         removeMonitor(groupIndex, index) {
             this.$root.publicGroupList[groupIndex].monitorList.splice(index, 1);
-        },
-
-        /**
-         * Toggle the value of sendUrl
-         * @param {number} groupIndex Index of group monitor is member of
-         * @param {number} index Index of monitor within group
-         */
-        toggleLink(groupIndex, index) {
-            this.$root.publicGroupList[groupIndex].monitorList[index].sendUrl = !this.$root.publicGroupList[groupIndex].monitorList[index].sendUrl;
         },
 
         /**
