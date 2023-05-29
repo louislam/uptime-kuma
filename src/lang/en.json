@@ -718,7 +718,8 @@
     "ntfyAuthenticationMethod": "Authentication Method",
     "ntfyUsernameAndPassword": "Username and Password",
     "twilioAccountSID": "Account SID",
-    "twilioAuthToken": "Auth Token",
+    "twilioApiKey": "Api Key (optional)",
+    "twilioAuthToken": "Auth Token / Api Key Secret",
     "twilioFromNumber": "From Number",
     "twilioToNumber": "To Number"
 }
