@@ -417,7 +417,7 @@
                             <!-- Timeout: HTTP / Keyword only -->
                             <div v-if="monitor.type === 'http' || monitor.type === 'keyword'" class="my-3">
                                 <label for="timeout" class="form-label">{{ $t("Request Timeout") }} ({{ $t("timeoutAfter", [ monitor.timeout ]) }})</label>
-                                <input id="timeout" v-model="monitor.timeout" type="number" class="form-control" required min="50" step="50">
+                                <input id="timeout" v-model="monitor.timeout" type="number" class="form-control" required min="0" step="0.1">
                             </div>
 
                             <!-- Description -->
