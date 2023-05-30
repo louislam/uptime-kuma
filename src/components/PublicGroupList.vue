@@ -69,7 +69,6 @@
                                         <HeartbeatBar size="small" :monitor-id="monitor.element.id" />
                                     </div>
                                 </div>
-                                <MonitorSettingDialog ref="monitorSettingDialog" />
                             </div>
                         </template>
                     </Draggable>
@@ -77,6 +76,7 @@
             </div>
         </template>
     </Draggable>
+    <MonitorSettingDialog ref="monitorSettingDialog" />
 </template>
 
 <script>
