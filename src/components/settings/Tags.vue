@@ -1,17 +1,18 @@
 <template>
-    <div>
+    <div class="my-4">
+        <div class="mx-0 mx-lg-4 pt-1 mb-4">
+            <button class="btn btn-primary" @click.stop="addTag"><font-awesome-icon icon="plus" /> {{ $t("Add New Tag") }}</button>
+        </div>
+
         <div class="tags-list my-3">
-            <div v-for="(tag, index) in tagsList" :key="tag.id" class="d-flex align-items-center mx-4 py-1 tags-list-row" :disabled="processing" @click="editTag(index)">
-                <div class="col-5 ps-1">
+            <div v-for="(tag, index) in tagsList" :key="tag.id" class="d-flex align-items-center mx-0 mx-lg-4 py-1 tags-list-row" :disabled="processing" @click="editTag(index)">
+                <div class="col-10 col-sm-5">
                     <Tag :item="tag" />
                 </div>
-                <div class="col-5 px-1">
+                <div class="col-5 px-1 d-none d-sm-block">
                     <div>{{ monitorsByTag(tag.id).length }} {{ $tc("Monitor", monitorsByTag(tag.id).length) }}</div>
                 </div>
-                <div class="col-2 pe-3 d-flex justify-content-end">
-                    <button type="button" class="btn ms-2 py-1">
-                        <font-awesome-icon class="" icon="edit" />
-                    </button>
+                <div class="col-2 pe-2 pe-lg-3 d-flex justify-content-end">
                     <button type="button" class="btn-rm-tag btn btn-outline-danger ms-2 py-1" :disabled="processing" @click.stop="deleteConfirm(index)">
                         <font-awesome-icon class="" icon="trash" />
                     </button>
@@ -19,7 +20,7 @@
             </div>
         </div>
 
-        <TagEditDialog ref="tagEditDialog" :updated="tagsUpdated" />
+        <TagEditDialog ref="tagEditDialog" :updated="tagsUpdated" :existing-tags="tagsList" />
         <Confirm ref="confirmDelete" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="deleteTag">
             {{ $t("confirmDeleteTagMsg") }}
         </Confirm>
@@ -101,6 +102,15 @@ export default {
         },
 
         /**
+         * Show dialog for adding a new tag
+         * @returns {void}
+         */
+        addTag() {
+            this.$refs.tagEditDialog.reset();
+            this.$refs.tagEditDialog.show();
+        },
+
+        /**
          * Show dialog for editing a tag
          * @param {number} index index of the tag to edit in the local tagsList
          * @returns {void}
@@ -143,16 +153,16 @@ export default {
 @import "../../assets/vars.scss";
 
 .btn-rm-tag {
-    padding-left: 11px;
-    padding-right: 11px;
+    padding-left: 9px;
+    padding-right: 9px;
 }
 
 .tags-list .tags-list-row {
     cursor: pointer;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+    border-top: 1px solid rgba(0, 0, 0, 0.125);
 
     .dark & {
-        border-bottom: 1px solid $dark-border-color;
+        border-top: 1px solid $dark-border-color;
     }
 
     &:hover {
@@ -162,10 +172,6 @@ export default {
     .dark &:hover {
         background-color: $dark-bg2;
     }
-}
-
-.tags-list .tags-list-row:last-child {
-    border: none;
 }
 
 </style>

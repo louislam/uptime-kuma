@@ -24,6 +24,9 @@ class Pushover extends NotificationProvider {
         if (notification.pushoverdevice) {
             data.device = notification.pushoverdevice;
         }
+        if (notification.pushoverttl) {
+            data.ttl = notification.pushoverttl;
+        }
 
         try {
             if (heartbeatJSON == null) {

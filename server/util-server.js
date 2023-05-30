@@ -87,7 +87,10 @@ exports.ping = async (hostname, size = 56) => {
         return await exports.pingAsync(hostname, false, size);
     } catch (e) {
         // If the host cannot be resolved, try again with ipv6
-        if (e.message.includes("service not known")) {
+        console.debug("ping", "IPv6 error message: " + e.message);
+
+        // As node-ping does not report a specific error for this, try again if it is an empty message with ipv6 no matter what.
+        if (!e.message) {
             return await exports.pingAsync(hostname, true, size);
         } else {
             throw e;
@@ -292,14 +295,23 @@ exports.postgresQuery = function (connectionString, query) {
                 client.end();
             } else {
                 // Connected here
-                client.query(query, (err, res) => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(res);
+                try {
+                    // No query provided by user, use SELECT 1
+                    if (!query || (typeof query === "string" && query.trim() === "")) {
+                        query = "SELECT 1";
                     }
-                    client.end();
-                });
+
+                    client.query(query, (err, res) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(res);
+                        }
+                        client.end();
+                    });
+                } catch (e) {
+                    reject(e);
+                }
             }
         });
 
@@ -310,21 +322,28 @@ exports.postgresQuery = function (connectionString, query) {
  * Run a query on MySQL/MariaDB
  * @param {string} connectionString The database connection string
  * @param {string} query The query to validate the database with
- * @returns {Promise<(string[]|Object[]|Object)>}
+ * @returns {Promise<(string)>}
  */
 exports.mysqlQuery = function (connectionString, query) {
     return new Promise((resolve, reject) => {
         const connection = mysql.createConnection(connectionString);
-        connection.promise().query(query)
-            .then(res => {
-                resolve(res);
-            })
-            .catch(err => {
+
+        connection.on("error", (err) => {
+            reject(err);
+        });
+
+        connection.query(query, (err, res) => {
+            if (err) {
                 reject(err);
-            })
-            .finally(() => {
-                connection.end();
-            });
+            } else {
+                if (Array.isArray(res)) {
+                    resolve("Rows: " + res.length);
+                } else {
+                    resolve("No Error, but the result is not an array. Type: " + typeof res);
+                }
+            }
+            connection.destroy();
+        });
     });
 };
 
@@ -396,6 +415,9 @@ exports.redisPingAsync = function (dsn) {
         });
         client.connect().then(() => {
             client.ping().then((res, err) => {
+                if (client.isOpen) {
+                    client.disconnect();
+                }
                 if (err) {
                     reject(err);
                 } else {
@@ -497,12 +519,16 @@ const parseCertificateInfo = function (info) {
 
         // Move up the chain until loop is encountered
         if (link.issuerCertificate == null) {
+            link.certType = (i === 0) ? "self-signed" : "root CA";
             break;
         } else if (link.issuerCertificate.fingerprint in existingList) {
+            // a root CA certificate is typically "signed by itself"  (=> "self signed certificate") and thus the "issuerCertificate" is a reference to itself.
             log.debug("cert", `[Last] ${link.issuerCertificate.fingerprint}`);
+            link.certType = (i === 0) ? "self-signed" : "root CA";
             link.issuerCertificate = null;
             break;
         } else {
+            link.certType = (i === 0) ? "server" : "intermediate CA";
             link = link.issuerCertificate;
         }
 
@@ -730,15 +756,27 @@ exports.filterAndJoin = (parts, connector = "") => {
 };
 
 /**
- * Send a 403 response
+ * Send an Error response
  * @param {Object} res Express response object
  * @param {string} [msg=""] Message to send
  */
-module.exports.send403 = (res, msg = "") => {
-    res.status(403).json({
-        "status": "fail",
-        "msg": msg,
-    });
+module.exports.sendHttpError = (res, msg = "") => {
+    if (msg.includes("SQLITE_BUSY") || msg.includes("SQLITE_LOCKED")) {
+        res.status(503).json({
+            "status": "fail",
+            "msg": msg,
+        });
+    } else if (msg.toLowerCase().includes("not found")) {
+        res.status(404).json({
+            "status": "fail",
+            "msg": msg,
+        });
+    } else {
+        res.status(403).json({
+            "status": "fail",
+            "msg": msg,
+        });
+    }
 };
 
 function timeObjectConvertTimezone(obj, timezone, timeObjectToUTC = true) {

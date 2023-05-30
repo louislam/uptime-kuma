@@ -9,7 +9,11 @@ describe("Test util-frontend.js", () => {
             expect(regex.test("www.test.com")).to.be.true;
             expect(regex.test("127.0.0.1")).to.be.true;
             expect(regex.test("192.168.1.156")).to.be.true;
-            
+            expect(regex.test(" 192.168.1.145")).to.be.false;
+            expect(regex.test("192.168.1.145 ")).to.be.false;
+            expect(regex.test(" fe80::3282:3ff:ae28:592")).to.be.false;
+            expect(regex.test("fe80::3282:3ff:ae28:592 ")).to.be.false;
+
             ["mqtt", "mqtts", "ws", "wss"].forEach(schema => {
                 expect(regex.test(`${schema}://www.test.com`)).to.be.false;
                 expect(regex.test(`${schema}://127.0.0.1`)).to.be.false;
@@ -23,7 +27,11 @@ describe("Test util-frontend.js", () => {
             expect(regex.test("www.test.com")).to.be.true;
             expect(regex.test("127.0.0.1")).to.be.true;
             expect(regex.test("192.168.1.156")).to.be.true;
-            
+            expect(regex.test(" 192.168.1.145")).to.be.false;
+            expect(regex.test("192.168.1.145 ")).to.be.false;
+            expect(regex.test(" fe80::3282:3ff:ae28:592")).to.be.false;
+            expect(regex.test("fe80::3282:3ff:ae28:592 ")).to.be.false;
+
             ["mqtt", "mqtts", "ws", "wss"].forEach(schema => {
                 expect(regex.test(`${schema}://www.test.com`)).to.be.true;
                 expect(regex.test(`${schema}://127.0.0.1`)).to.be.true;

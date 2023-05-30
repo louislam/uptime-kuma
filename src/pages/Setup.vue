@@ -14,7 +14,7 @@
                 </p>
 
                 <div class="form-floating">
-                    <select id="language" v-model="$i18n.locale" class="form-select">
+                    <select id="language" v-model="$root.language" class="form-select">
                         <option v-for="(lang, i) in $i18n.availableLocales" :key="`Lang${i}`" :value="lang">
                             {{ $i18n.messages[lang].languageName }}
                         </option>
@@ -59,9 +59,7 @@ export default {
         };
     },
     watch: {
-        "$i18n.locale"() {
-            localStorage.locale = this.$i18n.locale;
-        },
+
     },
     mounted() {
         this.$root.getSocket().emit("needSetup", (needSetup) => {

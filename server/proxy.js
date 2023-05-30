@@ -132,6 +132,9 @@ class Proxy {
                     ...httpAgentOptions,
                     ...httpsAgentOptions,
                     ...proxyOptions,
+                    tls: {
+                        rejectUnauthorized: httpsAgentOptions.rejectUnauthorized,
+                    },
                 });
 
                 httpAgent = agent;

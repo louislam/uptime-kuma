@@ -1,0 +1,1 @@
+# This is a .gitignore style file for 'GrantBirki/json-yaml-validate' Action workflow
