@@ -148,17 +148,18 @@ Telegram Notification Sample:
 
 If you love this project, please consider giving me a ⭐.
 
-## 🗣️ Discussion
+## 🗣️ Discussion / Ask for Help
 
-### Issues Page
+⚠️ For any general or technical questions, please don't send me an email, as I am unable to provide support in that manner. I will not response if you asked such questions.
 
-You can discuss or ask for help in [issues](https://github.com/louislam/uptime-kuma/issues).
+I recommend using Google, GitHub Issues, or Uptime Kuma's Subreddit for finding answers to your question. If you cannot find the information you need, feel free to ask:
 
-### Subreddit
+- [GitHub Issues](https://github.com/louislam/uptime-kuma/issues)
+- [Subreddit r/Uptime kuma](https://www.reddit.com/r/UptimeKuma/)
 
 My Reddit account: [u/louislamlam](https://reddit.com/u/louislamlam).  
 You can mention me if you ask a question on Reddit.
-[r/Uptime kuma](https://www.reddit.com/r/UptimeKuma/)
+
 
 ## Contribute
 
