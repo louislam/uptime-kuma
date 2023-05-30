@@ -749,6 +749,6 @@
     "lunaseaDeviceID": "기기 ID",
     "statusPageRefreshIn": "{0} 후 새로고침",
     "telegramMessageThreadIDDescription": "포럼의 대상 메시지 쓰레드(주제)에 대한 선택적 고유 식별인, 포럼 관리자 그룹에만 해당",
-    "timeoutAfterMs": "{0}ms 후 타임아웃",
-    "Heartbeat Timeout": "하트비트 타임아웃"
+    "timeoutAfter": "{0}초 후 타임아웃",
+    "Request Timeout": "요청 타임아웃"
 }

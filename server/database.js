@@ -63,7 +63,7 @@ class Database {
         "patch-ping-packet-size.sql": true,
         "patch-maintenance-table2.sql": true,
         "patch-add-gamedig-monitor.sql": true,
-        "patch-add-timeout-ms-monitor.sql": true,
+        "patch-add-timeout-monitor.sql": true,
         "patch-add-google-analytics-status-page-tag.sql": true,
         "patch-http-body-encoding.sql": true,
         "patch-add-description-monitor.sql": true,

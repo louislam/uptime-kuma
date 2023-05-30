@@ -416,8 +416,8 @@
 
                             <!-- Timeout: HTTP / Keyword only -->
                             <div v-if="monitor.type === 'http' || monitor.type === 'keyword'" class="my-3">
-                                <label for="timeoutMs" class="form-label">{{ $t("Heartbeat Timeout") }} ({{ $t("timeoutAfterMs", [ monitor.timeoutMs ]) }})</label>
-                                <input id="timeoutMs" v-model="monitor.timeoutMs" type="number" class="form-control" required min="50" step="50">
+                                <label for="timeout" class="form-label">{{ $t("Request Timeout") }} ({{ $t("timeoutAfter", [ monitor.timeout ]) }})</label>
+                                <input id="timeout" v-model="monitor.timeout" type="number" class="form-control" required min="50" step="50">
                             </div>
 
                             <!-- Description -->
@@ -836,10 +836,13 @@ message HealthCheckResponse {
             if (this.monitor.retryInterval === oldValue) {
                 this.monitor.retryInterval = value;
             }
-            // keep timeoutMs below interval, minding the unit conversion
-            if (!this.monitor.timeoutMs || this.monitor.timeoutMs >= value * 1000) {
-                this.monitor.timeoutMs = value * 1000 * 0.8;
-            }
+            // keep timeout within 80% range
+            this.clampTimeout(this.monitor.timeout);
+        },
+
+        "monitor.timeout"(value, oldValue) {
+            // keep timeout within 80% range
+            this.clampTimeout(value);
         },
 
         "monitor.type"() {
@@ -939,7 +942,7 @@ message HealthCheckResponse {
                     url: "https://",
                     method: "GET",
                     interval: 60,
-                    timeoutMs: this.interval * 1000 * 0.8, // previous default value
+                    timeout: this.interval * 0.8, // previous default value
                     retryInterval: this.interval,
                     resendInterval: 0,
                     maxretries: 1,
@@ -1014,9 +1017,9 @@ message HealthCheckResponse {
                         if (this.monitor.retryInterval === 0) {
                             this.monitor.retryInterval = this.monitor.interval;
                         }
-                        // Handling for monitors that are missing timeoutMs
-                        if (!this.monitor.timeoutMs) {
-                            this.monitor.timeoutMs = this.monitor.interval * 1000 * 0.8;
+                        // Handling for monitors that are missing/zeroed timeout
+                        if (!this.monitor.timeout) {
+                            this.monitor.timeout = this.monitor.interval * 0.8;
                         }
                     } else {
                         toast.error(res.msg);
@@ -1134,6 +1137,14 @@ message HealthCheckResponse {
         addedDockerHost(id) {
             this.monitor.docker_host = id;
         },
+
+        // Clamp timeout
+        clampTimeout(timeout) {
+            // limit to 80% of interval
+            const maxTimeout = this.monitor.interval * 0.8;
+            // 0 will be treated as 80% of interval
+            this.monitor.timeout = Math.Max(0, Math.min(timeout, maxTimeout));
+        }
     },
 };
 </script>
