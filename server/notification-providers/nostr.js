@@ -44,7 +44,6 @@ class Nostr extends NotificationProvider {
 
         // Publish events to each relay
         const relays = notification.relays.split("\n");
-        const relayCount = relays.length;
         let successfulRelays = 0;
 
         // Connect to each relay
@@ -66,11 +65,10 @@ class Nostr extends NotificationProvider {
         }
 
         // Report success or failure
-        if (successfulRelays > 0) {
-            return `${successfulRelays}/${relayCount} relays connected.`;
-        } else {
+        if (successfulRelays == 0) {
             throw Error("Failed to connect to any relays.");
         }
+        return `${successfulRelays}/${relays.length} relays connected.`;
     }
 
     async getPrivateKey(sender) {
