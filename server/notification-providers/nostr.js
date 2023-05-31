@@ -61,7 +61,7 @@ class Nostr extends NotificationProvider {
         }
 
         // Report success or failure
-        if (successfulRelays == 0) {
+        if (successfulRelays === 0) {
             throw Error("Failed to connect to any relays.");
         }
         return `${successfulRelays}/${relays.length} relays connected.`;
