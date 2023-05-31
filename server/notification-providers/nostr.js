@@ -12,11 +12,9 @@ const {
 require("websocket-polyfill");
 
 class Nostr extends NotificationProvider {
-
     name = "nostr";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-
         // All DMs should have same timestamp
         const createdAt = Math.floor(Date.now() / 1000);
 
