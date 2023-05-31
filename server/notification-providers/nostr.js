@@ -1,6 +1,6 @@
 const NotificationProvider = require("./notification-provider");
+// polyfill for node <= 18
 global.crypto = require("crypto");
-
 const {
     relayInit,
     getPublicKey,
@@ -9,6 +9,7 @@ const {
     nip04,
     nip19
 } = require("nostr-tools");
+// polyfill for node <= 18
 require("websocket-polyfill");
 
 class Nostr extends NotificationProvider {
