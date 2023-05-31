@@ -19,6 +19,11 @@ const nodeVersion = parseInt(process.versions.node.split(".")[0]);
 const requiredVersion = 14;
 console.log(`Your Node.js version: ${nodeVersion}`);
 
+// See more: https://github.com/louislam/uptime-kuma/issues/3138
+if (nodeVersion >= 20) {
+    console.warn("\x1b[31m%s\x1b[0m", "Warning: Uptime Kuma is currently not stable on Node.js >= 20, please use Node.js 18.");
+}
+
 if (nodeVersion < requiredVersion) {
     console.error(`Error: Your Node.js version is not supported, please upgrade to Node.js >= ${requiredVersion}.`);
     process.exit(-1);
@@ -87,7 +92,7 @@ log.debug("server", "Importing Background Jobs");
 const { initBackgroundJobs, stopBackgroundJobs } = require("./jobs");
 const { loginRateLimiter, twoFaRateLimiter } = require("./rate-limiter");
 
-const { basicAuth } = require("./auth");
+const { apiAuth } = require("./auth");
 const { login } = require("./auth");
 const passwordHash = require("./password-hash");
 
@@ -129,7 +134,7 @@ if (config.demoMode) {
 }
 
 // Must be after io instantiation
-const { sendNotificationList, sendHeartbeatList, sendImportantHeartbeatList, sendInfo, sendProxyList, sendDockerHostList } = require("./client");
+const { sendNotificationList, sendHeartbeatList, sendImportantHeartbeatList, sendInfo, sendProxyList, sendDockerHostList, sendAPIKeyList } = require("./client");
 const { statusPageSocketHandler } = require("./socket-handlers/status-page-socket-handler");
 const databaseSocketHandler = require("./socket-handlers/database-socket-handler");
 const TwoFA = require("./2fa");
@@ -138,10 +143,12 @@ const { cloudflaredSocketHandler, autoStart: cloudflaredAutoStart, stop: cloudfl
 const { proxySocketHandler } = require("./socket-handlers/proxy-socket-handler");
 const { dockerSocketHandler } = require("./socket-handlers/docker-socket-handler");
 const { maintenanceSocketHandler } = require("./socket-handlers/maintenance-socket-handler");
+const { apiKeySocketHandler } = require("./socket-handlers/api-key-socket-handler");
 const { generalSocketHandler } = require("./socket-handlers/general-socket-handler");
 const { Settings } = require("./settings");
 const { CacheableDnsHttpAgent } = require("./cacheable-dns-http-agent");
 const { pluginsHandler } = require("./socket-handlers/plugins-handler");
+const apicache = require("./modules/apicache");
 
 app.use(express.json());
 
@@ -229,7 +236,7 @@ let needSetup = false;
 
     // Prometheus API metrics  /metrics
     // With Basic Auth using the first user's username/password
-    app.get("/metrics", basicAuth, prometheusAPIMetrics());
+    app.get("/metrics", apiAuth, prometheusAPIMetrics());
 
     app.use("/", expressStaticGzip("dist", {
         enableBrotli: true,
@@ -685,10 +692,8 @@ let needSetup = false;
                     }
                 }
 
-                // Reset Prometheus labels
-                server.monitorList[monitor.id]?.prometheus()?.remove();
-
                 bean.name = monitor.name;
+                bean.description = monitor.description;
                 bean.parent = monitor.parent;
                 bean.type = monitor.type;
                 bean.url = monitor.url;
@@ -697,6 +702,9 @@ let needSetup = false;
                 bean.headers = monitor.headers;
                 bean.basic_auth_user = monitor.basic_auth_user;
                 bean.basic_auth_pass = monitor.basic_auth_pass;
+                bean.tlsCa = monitor.tlsCa;
+                bean.tlsCert = monitor.tlsCert;
+                bean.tlsKey = monitor.tlsKey;
                 bean.interval = monitor.interval;
                 bean.retryInterval = monitor.retryInterval;
                 bean.resendInterval = monitor.resendInterval;
@@ -738,6 +746,7 @@ let needSetup = false;
                 bean.radiusCalledStationId = monitor.radiusCalledStationId;
                 bean.radiusCallingStationId = monitor.radiusCallingStationId;
                 bean.radiusSecret = monitor.radiusSecret;
+                bean.httpBodyEncoding = monitor.httpBodyEncoding;
 
                 bean.validate();
 
@@ -892,6 +901,9 @@ let needSetup = false;
                     monitorID,
                     socket.userID,
                 ]);
+
+                // Fix #2880
+                apicache.clear();
 
                 callback({
                     ok: true,
@@ -1329,6 +1341,7 @@ let needSetup = false;
                             let monitor = {
                                 // Define the new variable from earlier here
                                 name: monitorListData[i].name,
+                                description: monitorListData[i].description,
                                 type: monitorListData[i].type,
                                 url: monitorListData[i].url,
                                 method: monitorListData[i].method || "GET",
@@ -1512,6 +1525,7 @@ let needSetup = false;
         proxySocketHandler(socket);
         dockerSocketHandler(socket);
         maintenanceSocketHandler(socket);
+        apiKeySocketHandler(socket);
         generalSocketHandler(socket, server);
         pluginsHandler(socket, server);
 
@@ -1557,7 +1571,7 @@ let needSetup = false;
         }
     });
 
-    initBackgroundJobs(args);
+    await initBackgroundJobs();
 
     // Start cloudflared at the end if configured
     await cloudflaredAutoStart(cloudflaredToken);
@@ -1620,6 +1634,7 @@ async function afterLogin(socket, user) {
     sendNotificationList(socket);
     sendProxyList(socket);
     sendDockerHostList(socket);
+    sendAPIKeyList(socket);
 
     await sleep(500);
 

@@ -3,7 +3,7 @@
         <div>
             <h1 class="mb-3">{{ pageName }}</h1>
             <form @submit.prevent="submit">
-                <div class="shadow-box">
+                <div class="shadow-box shadow-box-with-fixed-bottom-bar">
                     <div class="row">
                         <div class="col-md-6">
                             <h2 class="mb-2">{{ $t("General") }}</h2>
@@ -110,7 +110,7 @@
                             <!-- gRPC URL -->
                             <div v-if="monitor.type === 'grpc-keyword' " class="my-3">
                                 <label for="grpc-url" class="form-label">{{ $t("URL") }}</label>
-                                <input id="grpc-url" v-model="monitor.grpcUrl" type="url" class="form-control" pattern="[^\:]+:[0-9]{5}" required>
+                                <input id="grpc-url" v-model="monitor.grpcUrl" type="text" class="form-control" required>
                             </div>
 
                             <!-- Push URL -->
@@ -295,13 +295,13 @@
                                     <label for="sqlConnectionString" class="form-label">{{ $t("Connection String") }}</label>
 
                                     <template v-if="monitor.type === 'sqlserver'">
-                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="Server=<hostname>,<port>;Database=<your database>;User Id=<your user id>;Password=<your password>;Encrypt=<true/false>;TrustServerCertificate=<Yes/No>;Connection Timeout=<int>">
+                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control">
                                     </template>
                                     <template v-if="monitor.type === 'postgres'">
-                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="postgres://username:password@host:port/database">
+                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control">
                                     </template>
                                     <template v-if="monitor.type === 'mysql'">
-                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="mysql://username:password@host:port/database">
+                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control">
                                     </template>
                                 </div>
                                 <div class="my-3">
@@ -313,7 +313,7 @@
                             <template v-if="monitor.type === 'redis'">
                                 <div class="my-3">
                                     <label for="redisConnectionString" class="form-label">{{ $t("Connection String") }}</label>
-                                    <input id="redisConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="redis://user:password@host:port">
+                                    <input id="redisConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control">
                                 </div>
                             </template>
 
@@ -323,7 +323,7 @@
                                     <label for="sqlConnectionString" class="form-label">{{ $t("Connection String") }}</label>
 
                                     <template v-if="monitor.type === 'mongodb'">
-                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="mongodb://username:password@host:port/database">
+                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control">
                                     </template>
                                 </div>
                             </template>
@@ -352,7 +352,7 @@
 
                             <div class="my-3">
                                 <label for="resend-interval" class="form-label">
-                                    {{ $t("Resend Notification if Down X times consequently") }}
+                                    {{ $t("Resend Notification if Down X times consecutively") }}
                                     <span v-if="monitor.resendInterval > 0">({{ $t("resendEveryXTimes", [ monitor.resendInterval ]) }})</span>
                                     <span v-else>({{ $t("resendDisabled") }})</span>
                                 </label>
@@ -425,6 +425,12 @@
                                     </div>
                                 </div>
                             </template>
+
+                            <!-- Description -->
+                            <div class="my-3">
+                                <label for="description" class="form-label">{{ $t("Description") }}</label>
+                                <input id="description" v-model="monitor.description" type="text" class="form-control">
+                            </div>
 
                             <div class="my-3">
                                 <tags-manager ref="tagsManager" :pre-selected-tags="monitor.tags"></tags-manager>
@@ -515,6 +521,15 @@
                                     </select>
                                 </div>
 
+                                <!-- Encoding -->
+                                <div class="my-3">
+                                    <label for="httpBodyEncoding" class="form-label">{{ $t("Body Encoding") }}</label>
+                                    <select id="httpBodyEncoding" v-model="monitor.httpBodyEncoding" class="form-select">
+                                        <option value="json">JSON</option>
+                                        <option value="xml">XML</option>
+                                    </select>
+                                </div>
+
                                 <!-- Body -->
                                 <div class="my-3">
                                     <label for="body" class="form-label">{{ $t("Body") }}</label>
@@ -543,28 +558,47 @@
                                         <option value="ntlm">
                                             NTLM
                                         </option>
+                                        <option value="mtls">
+                                            mTLS
+                                        </option>
                                     </select>
                                 </div>
                                 <template v-if="monitor.authMethod && monitor.authMethod !== null ">
-                                    <div class="my-3">
-                                        <label for="basicauth" class="form-label">{{ $t("Username") }}</label>
-                                        <input id="basicauth-user" v-model="monitor.basic_auth_user" type="text" class="form-control" :placeholder="$t('Username')">
-                                    </div>
-
-                                    <div class="my-3">
-                                        <label for="basicauth" class="form-label">{{ $t("Password") }}</label>
-                                        <input id="basicauth-pass" v-model="monitor.basic_auth_pass" type="password" autocomplete="new-password" class="form-control" :placeholder="$t('Password')">
-                                    </div>
-                                    <template v-if="monitor.authMethod === 'ntlm' ">
+                                    <template v-if="monitor.authMethod === 'mtls' ">
                                         <div class="my-3">
-                                            <label for="basicauth" class="form-label">{{ $t("Domain") }}</label>
-                                            <input id="basicauth-domain" v-model="monitor.authDomain" type="text" class="form-control" :placeholder="$t('Domain')">
+                                            <label for="tls-cert" class="form-label">{{ $t("Cert") }}</label>
+                                            <textarea id="tls-cert" v-model="monitor.tlsCert" class="form-control" :placeholder="$t('Cert body')" required></textarea>
+                                        </div>
+                                        <div class="my-3">
+                                            <label for="tls-key" class="form-label">{{ $t("Key") }}</label>
+                                            <textarea id="tls-key" v-model="monitor.tlsKey" class="form-control" :placeholder="$t('Key body')" required></textarea>
+                                        </div>
+                                        <div class="my-3">
+                                            <label for="tls-ca" class="form-label">{{ $t("CA") }}</label>
+                                            <textarea id="tls-ca" v-model="monitor.tlsCa" class="form-control" :placeholder="$t('Server CA')"></textarea>
+                                        </div>
+                                    </template>
+                                    <template v-else>
+                                        <div class="my-3">
+                                            <label for="basicauth-user" class="form-label">{{ $t("Username") }}</label>
+                                            <input id="basicauth-user" v-model="monitor.basic_auth_user" type="text" class="form-control" :placeholder="$t('Username')">
                                         </div>
 
                                         <div class="my-3">
-                                            <label for="basicauth" class="form-label">{{ $t("Workstation") }}</label>
-                                            <input id="basicauth-workstation" v-model="monitor.authWorkstation" type="text" class="form-control" :placeholder="$t('Workstation')">
+                                            <label for="basicauth-pass" class="form-label">{{ $t("Password") }}</label>
+                                            <input id="basicauth-pass" v-model="monitor.basic_auth_pass" type="password" autocomplete="new-password" class="form-control" :placeholder="$t('Password')">
                                         </div>
+                                        <template v-if="monitor.authMethod === 'ntlm' ">
+                                            <div class="my-3">
+                                                <label for="ntlm-domain" class="form-label">{{ $t("Domain") }}</label>
+                                                <input id="ntlm-domain" v-model="monitor.authDomain" type="text" class="form-control" :placeholder="$t('Domain')">
+                                            </div>
+
+                                            <div class="my-3">
+                                                <label for="ntlm-workstation" class="form-label">{{ $t("Workstation") }}</label>
+                                                <input id="ntlm-workstation" v-model="monitor.authWorkstation" type="text" class="form-control" :placeholder="$t('Workstation')">
+                                            </div>
+                                        </template>
                                     </template>
                                 </template>
                             </template>
@@ -618,10 +652,10 @@
                                 </template>
                             </template>
                         </div>
+                    </div>
 
-                        <div class="col-md-12 mt-5 mb-1">
-                            <button id="monitor-submit-btn" class="btn btn-primary" type="submit" :disabled="processing">{{ $t("Save") }}</button>
-                        </div>
+                    <div class="fixed-bottom-bar p-3">
+                        <button id="monitor-submit-btn" class="btn btn-primary" type="submit" :disabled="processing">{{ $t("Save") }}</button>
                     </div>
                 </div>
             </form>
@@ -670,6 +704,13 @@ export default {
             ipOrHostnameRegexPattern: hostNameRegexPattern(),
             mqttIpOrHostnameRegexPattern: hostNameRegexPattern(true),
             gameList: null,
+            connectionStringTemplates: {
+                "sqlserver": "Server=<hostname>,<port>;Database=<your database>;User Id=<your user id>;Password=<your password>;Encrypt=<true/false>;TrustServerCertificate=<Yes/No>;Connection Timeout=<int>",
+                "postgres": "postgres://username:password@host:port/database",
+                "mysql": "mysql://username:password@host:port/database",
+                "redis": "redis://user:password@host:port",
+                "mongodb": "mongodb://username:password@host:port/database",
+            }
         };
     },
 
@@ -685,11 +726,21 @@ export default {
         },
 
         pageName() {
-            return this.$t((this.isAdd) ? "Add New Monitor" : "Edit");
+            let name = "Add New Monitor";
+            if (this.isClone) {
+                name = "Clone Monitor";
+            } else if (this.isEdit) {
+                name = "Edit";
+            }
+            return this.$t(name);
         },
 
         isAdd() {
             return this.$route.path === "/add";
+        },
+
+        isClone() {
+            return this.$route.path.startsWith("/clone");
         },
 
         isEdit() {
@@ -735,6 +786,15 @@ message HealthCheckResponse {
             ` ]);
         },
         bodyPlaceholder() {
+            if (this.monitor && this.monitor.httpBodyEncoding && this.monitor.httpBodyEncoding === "xml") {
+                return this.$t("Example:", [ `
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <Uptime>Kuma</Uptime>
+  </soap:Body>
+</soap:Envelope>` ]);
+            }
             return this.$t("Example:", [ `
 {
     "key": "value"
@@ -854,6 +914,24 @@ message HealthCheckResponse {
                     }
                 });
             }
+
+            // Set default database connection string if empty or it is a template from another database monitor type
+            for (let monitorType in this.connectionStringTemplates) {
+                if (this.monitor.type === monitorType) {
+                    let isTemplate = false;
+                    for (let key in this.connectionStringTemplates) {
+                        if (this.monitor.databaseConnectionString === this.connectionStringTemplates[key]) {
+                            isTemplate = true;
+                            break;
+                        }
+                    }
+                    if (!this.monitor.databaseConnectionString || isTemplate) {
+                        this.monitor.databaseConnectionString = this.connectionStringTemplates[monitorType];
+                    }
+                    break;
+                }
+            }
+
         },
 
         currentGameObject(newGameObject, previousGameObject) {
@@ -861,8 +939,7 @@ message HealthCheckResponse {
                 this.monitor.port = newGameObject.options.port;
             }
             this.monitor.game = newGameObject.keys[0];
-        }
-
+        },
     },
     mounted() {
         this.init();
@@ -909,7 +986,7 @@ message HealthCheckResponse {
                     interval: 60,
                     retryInterval: this.interval,
                     resendInterval: 0,
-                    maxretries: 0,
+                    maxretries: 1,
                     notificationIDList: {},
                     ignoreTls: false,
                     upsideDown: false,
@@ -927,6 +1004,7 @@ message HealthCheckResponse {
                     mqttTopic: "",
                     mqttSuccessMessage: "",
                     authMethod: null,
+                    httpBodyEncoding: "json"
                 };
 
                 if (this.$root.proxyList && !this.monitor.proxyId) {
@@ -942,10 +1020,39 @@ message HealthCheckResponse {
                         this.monitor.notificationIDList[this.$root.notificationList[i].id] = true;
                     }
                 }
-            } else if (this.isEdit) {
+            } else if (this.isEdit || this.isClone) {
                 this.$root.getSocket().emit("getMonitor", this.$route.params.id, (res) => {
                     if (res.ok) {
+
+                        if (this.isClone) {
+                            // Reset push token for cloned monitors
+                            if (res.monitor.type === "push") {
+                                res.monitor.pushToken = undefined;
+                            }
+                        }
+
                         this.monitor = res.monitor;
+
+                        if (this.isClone) {
+                            /*
+                         * Cloning a monitor will include properties that can not be posted to backend
+                         * as they are not valid columns in the SQLite table.
+                         */
+                            this.monitor.id = undefined; // Remove id when cloning as we want a new id
+                            this.monitor.includeSensitiveData = undefined;
+                            this.monitor.maintenance = undefined;
+                            this.monitor.name = this.$t("cloneOf", [ this.monitor.name ]);
+                            this.$refs.tagsManager.newTags = this.monitor.tags.map((monitorTag) => {
+                                return {
+                                    id: monitorTag.tag_id,
+                                    name: monitorTag.name,
+                                    color: monitorTag.color,
+                                    value: monitorTag.value,
+                                    new: true,
+                                };
+                            });
+                            this.monitor.tags = undefined;
+                        }
 
                         // Handling for monitors that are created before 1.7.0
                         if (this.monitor.retryInterval === 0) {
@@ -964,7 +1071,7 @@ message HealthCheckResponse {
          * @returns {boolean} Is the form input valid?
          */
         isInputValid() {
-            if (this.monitor.body) {
+            if (this.monitor.body && (!this.monitor.httpBodyEncoding || this.monitor.httpBodyEncoding === "json")) {
                 try {
                     JSON.parse(this.monitor.body);
                 } catch (err) {
@@ -988,6 +1095,7 @@ message HealthCheckResponse {
          * @returns {void}
          */
         async submit() {
+
             this.processing = true;
 
             if (!this.isInputValid()) {
@@ -995,9 +1103,13 @@ message HealthCheckResponse {
                 return;
             }
 
-            // Beautify the JSON format
-            if (this.monitor.body) {
+            // Beautify the JSON format (only if httpBodyEncoding is not set or === json)
+            if (this.monitor.body && (!this.monitor.httpBodyEncoding || this.monitor.httpBodyEncoding === "json")) {
                 this.monitor.body = JSON.stringify(JSON.parse(this.monitor.body), null, 4);
+            }
+
+            if (this.monitor.type && this.monitor.type !== "http" && this.monitor.type !== "keyword") {
+                this.monitor.httpBodyEncoding = null;
             }
 
             if (this.monitor.headers) {
@@ -1012,7 +1124,7 @@ message HealthCheckResponse {
                 this.monitor.url = this.monitor.url.trim();
             }
 
-            if (this.isAdd) {
+            if (this.isAdd || this.isClone) {
                 this.$root.add(this.monitor, async (res) => {
 
                     if (res.ok) {
@@ -1067,9 +1179,7 @@ message HealthCheckResponse {
 </script>
 
 <style lang="scss" scoped>
-    .shadow-box {
-        padding: 20px;
-    }
+    @import "../assets/vars.scss";
 
     textarea {
         min-height: 200px;

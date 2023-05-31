@@ -2,7 +2,6 @@ const fs = require("fs");
 const { R } = require("redbean-node");
 const { setSetting, setting } = require("./util-server");
 const { log, sleep } = require("../src/util");
-const dayjs = require("dayjs");
 const knex = require("knex");
 const { PluginsManager } = require("./plugins-manager");
 
@@ -29,11 +28,6 @@ class Database {
      * @type {boolean}
      */
     static patched = false;
-
-    /**
-     * For Backup only
-     */
-    static backupPath = null;
 
     /**
      * Add patch filename in key
@@ -70,6 +64,11 @@ class Database {
         "patch-maintenance-table2.sql": true,
         "patch-add-gamedig-monitor.sql": true,
         "patch-add-google-analytics-status-page-tag.sql": true,
+        "patch-http-body-encoding.sql": true,
+        "patch-add-description-monitor.sql": true,
+        "patch-api-key-table.sql": true,
+        "patch-monitor-tls.sql": true,
+        "patch-maintenance-cron.sql": true,
         "patch-add-parent-monitor.sql": true,
     };
 
@@ -195,15 +194,7 @@ class Database {
         } else {
             log.info("db", "Database patch is needed");
 
-            try {
-                this.backup(version);
-            } catch (e) {
-                log.error("db", e);
-                log.error("db", "Unable to create a backup before patching the database. Please make sure you have enough space and permission.");
-                process.exit(1);
-            }
-
-            // Try catch anything here, if gone wrong, restore the backup
+            // Try catch anything here
             try {
                 for (let i = version + 1; i <= this.latestVersion; i++) {
                     const sqlFile = `./db/patch${i}.sql`;
@@ -219,7 +210,6 @@ class Database {
                 log.error("db", "Start Uptime-Kuma failed due to issue patching the database");
                 log.error("db", "Please submit a bug report if you still encounter the problem after restart: https://github.com/louislam/uptime-kuma/issues");
 
-                this.restore();
                 process.exit(1);
             }
         }
@@ -260,8 +250,6 @@ class Database {
             log.error("db", ex);
             log.error("db", "Start Uptime-Kuma failed due to issue patching the database");
             log.error("db", "Please submit the bug report if you still encounter the problem after restart: https://github.com/louislam/uptime-kuma/issues");
-
-            this.restore();
 
             process.exit(1);
         }
@@ -364,8 +352,6 @@ class Database {
                 }
             }
 
-            this.backup(dayjs().format("YYYYMMDDHHmmss"));
-
             log.info("db", sqlFilename + " is patching");
             this.patched = true;
             await this.importSQLFile("./db/" + sqlFilename);
@@ -431,6 +417,9 @@ class Database {
 
         log.info("db", "Closing the database");
 
+        // Flush WAL to main database
+        await R.exec("PRAGMA wal_checkpoint(TRUNCATE)");
+
         while (true) {
             Database.noReject = true;
             await R.close();
@@ -445,100 +434,6 @@ class Database {
         log.info("db", "SQLite closed");
 
         process.removeListener("unhandledRejection", listener);
-    }
-
-    /**
-     * One backup one time in this process.
-     * Reset this.backupPath if you want to backup again
-     * @param {string} version Version code of backup
-     */
-    static backup(version) {
-        if (! this.backupPath) {
-            log.info("db", "Backing up the database");
-            this.backupPath = this.dataDir + "kuma.db.bak" + version;
-            fs.copyFileSync(Database.path, this.backupPath);
-
-            const shmPath = Database.path + "-shm";
-            if (fs.existsSync(shmPath)) {
-                this.backupShmPath = shmPath + ".bak" + version;
-                fs.copyFileSync(shmPath, this.backupShmPath);
-            }
-
-            const walPath = Database.path + "-wal";
-            if (fs.existsSync(walPath)) {
-                this.backupWalPath = walPath + ".bak" + version;
-                fs.copyFileSync(walPath, this.backupWalPath);
-            }
-
-            // Double confirm if all files actually backup
-            if (!fs.existsSync(this.backupPath)) {
-                throw new Error("Backup failed! " + this.backupPath);
-            }
-
-            if (fs.existsSync(shmPath)) {
-                if (!fs.existsSync(this.backupShmPath)) {
-                    throw new Error("Backup failed! " + this.backupShmPath);
-                }
-            }
-
-            if (fs.existsSync(walPath)) {
-                if (!fs.existsSync(this.backupWalPath)) {
-                    throw new Error("Backup failed! " + this.backupWalPath);
-                }
-            }
-        }
-    }
-
-    /** Restore from most recent backup */
-    static restore() {
-        if (this.backupPath) {
-            log.error("db", "Patching the database failed!!! Restoring the backup");
-
-            const shmPath = Database.path + "-shm";
-            const walPath = Database.path + "-wal";
-
-            // Make sure we have a backup to restore before deleting old db
-            if (
-                !fs.existsSync(this.backupPath)
-                && !fs.existsSync(shmPath)
-                && !fs.existsSync(walPath)
-            ) {
-                log.error("db", "Backup file not found! Leaving database in failed state.");
-                process.exit(1);
-            }
-
-            // Delete patch failed db
-            try {
-                if (fs.existsSync(Database.path)) {
-                    fs.unlinkSync(Database.path);
-                }
-
-                if (fs.existsSync(shmPath)) {
-                    fs.unlinkSync(shmPath);
-                }
-
-                if (fs.existsSync(walPath)) {
-                    fs.unlinkSync(walPath);
-                }
-            } catch (e) {
-                log.error("db", "Restore failed; you may need to restore the backup manually");
-                process.exit(1);
-            }
-
-            // Restore backup
-            fs.copyFileSync(this.backupPath, Database.path);
-
-            if (this.backupShmPath) {
-                fs.copyFileSync(this.backupShmPath, shmPath);
-            }
-
-            if (this.backupWalPath) {
-                fs.copyFileSync(this.backupWalPath, walPath);
-            }
-
-        } else {
-            log.info("db", "Nothing to restore");
-        }
     }
 
     /** Get the size of the database */

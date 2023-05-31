@@ -114,6 +114,31 @@ async function sendProxyList(socket) {
 }
 
 /**
+ * Emit API key list to client
+ * @param {Socket} socket Socket.io socket instance
+ * @returns {Promise<void>}
+ */
+async function sendAPIKeyList(socket) {
+    const timeLogger = new TimeLogger();
+
+    let result = [];
+    const list = await R.find(
+        "api_key",
+        "user_id=?",
+        [ socket.userID ],
+    );
+
+    for (let bean of list) {
+        result.push(bean.toPublicJSON());
+    }
+
+    io.to(socket.userID).emit("apiKeyList", result);
+    timeLogger.print("Sent API Key List");
+
+    return list;
+}
+
+/**
  * Emits the version information to the client.
  * @param {Socket} socket Socket.io socket instance
  * @returns {Promise<void>}
@@ -157,6 +182,7 @@ module.exports = {
     sendImportantHeartbeatList,
     sendHeartbeatList,
     sendProxyList,
+    sendAPIKeyList,
     sendInfo,
     sendDockerHostList
 };

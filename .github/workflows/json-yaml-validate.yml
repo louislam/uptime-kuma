@@ -1,0 +1,26 @@
+name: json-yaml-validate 
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write # enable write permissions for pull request comments
+
+jobs:
+  json-yaml-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: json-yaml-validate
+        id: json-yaml-validate
+        uses: GrantBirki/json-yaml-validate@v1.3.0
+        with:
+          comment: "true" # enable comment mode
+          exclude_file: ".github/config/exclude.txt" # gitignore style file for exclusions
