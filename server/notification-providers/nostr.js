@@ -15,16 +15,16 @@ class Nostr extends NotificationProvider {
     name = "nostr";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
+        if (heartbeatJSON == null) {
+            msg = `🤙💜 Test Notification for [${notification.name}]`;
+        }
+        
         // All DMs should have same timestamp
         const createdAt = Math.floor(Date.now() / 1000);
 
         const senderPrivateKey = await this.getPrivateKey(notification.sender);
         const senderPublicKey = getPublicKey(senderPrivateKey);
         const recipientsPublicKeys = await this.getPublicKeys(notification.recipients);
-
-        if (heartbeatJSON == null) {
-            msg = `🤙💜 Test Notification for [${notification.name}]`;
-        }
 
         // Create NIP-04 encrypted direct message event for each recipient
         const events = [];
