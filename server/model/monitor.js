@@ -1371,7 +1371,7 @@ class Monitor extends BeanModel {
             if (maintenance && await maintenance.isUnderMaintenance()) {
                 return true;
             }
-          
+
             const parent = await Monitor.getParent(monitorID);
             if (parent != null) {
                 return await Monitor.isUnderMaintenance(parent.id);

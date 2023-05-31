@@ -320,8 +320,8 @@ export default {
                 return "";
             }
             return this.monitor.pathName.substr(0, this.monitor.pathName.lastIndexOf("/"));
-        }
-        
+        },
+
         pushURL() {
             return this.$root.baseURL + "/api/push/" + this.monitor.pushToken + "?status=up&msg=OK&ping=";
         },
@@ -426,7 +426,7 @@ export default {
         monitorURL(id) {
             return getMonitorRelativeURL(id);
         },
-        
+
         /** Filter and hide password in URL for display */
         filterPassword(urlString) {
             try {
