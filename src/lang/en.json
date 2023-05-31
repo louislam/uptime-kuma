@@ -755,5 +755,6 @@
     "Group": "Group",
     "Monitor Group": "Monitor Group",
     "noGroupMonitorMsg": "Not Available. Create a Group Monitor First.",
-    "Close": "Close"
+    "Close": "Close",
+    "Request Body": "Request Body"
 }

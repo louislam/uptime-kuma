@@ -12,11 +12,11 @@
     </div>
 
     <div class="mb-3">
-        <label for="webhook-content-type" class="form-label">{{
+        <label for="webhook-request-body" class="form-label">{{
             $t("Request Body")
         }}</label>
         <select
-            id="webhook-content-type"
+            id="webhook-request-body"
             v-model="$parent.notification.webhookContentType"
             class="form-select"
             required
