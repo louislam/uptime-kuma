@@ -31,13 +31,12 @@ class Webhook extends NotificationProvider {
                 const tpl = engine.parse(notification.webhookCustomBody);
 
                 // Insert templated values into Body
-                const parsedBody = await engine.render(tpl,
+                data = await engine.render(tpl,
                     {
                         msg,
                         heartbeatJSON,
                         monitorJSON
                     });
-                data = parsedBody;
             }
 
             if (notification.webhookAdditionalHeaders) {
