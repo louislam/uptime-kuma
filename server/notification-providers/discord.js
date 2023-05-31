@@ -59,8 +59,8 @@ class Discord extends NotificationProvider {
                                 value: monitorJSON["type"] === "push" ? "Heartbeat" : address,
                             },
                             {
-                                name: "Time (UTC)",
-                                value: heartbeatJSON["time"],
+                                name: `Time (${heartbeatJSON["timezone"]})`,
+                                value: heartbeatJSON["localDateTime"],
                             },
                             {
                                 name: "Error",
@@ -94,8 +94,8 @@ class Discord extends NotificationProvider {
                                 value: monitorJSON["type"] === "push" ? "Heartbeat" : address,
                             },
                             {
-                                name: "Time (UTC)",
-                                value: heartbeatJSON["time"],
+                                name: `Time (${heartbeatJSON["timezone"]})`,
+                                value: heartbeatJSON["localDateTime"],
                             },
                             {
                                 name: "Ping",

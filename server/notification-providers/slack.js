@@ -44,7 +44,6 @@ class Slack extends NotificationProvider {
                 return okMsg;
             }
 
-            const time = heartbeatJSON["time"];
             const textMsg = "Uptime Kuma Alert";
             let data = {
                 "text": `${textMsg}\n${msg}`,
@@ -70,7 +69,7 @@ class Slack extends NotificationProvider {
                                 },
                                 {
                                     "type": "mrkdwn",
-                                    "text": "*Time (UTC)*\n" + time,
+                                    "text": `*Time (${heartbeatJSON["timezone"]})*\n${heartbeatJSON["localDateTime"]}`,
                                 }],
                             }
                         ],

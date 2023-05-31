@@ -49,6 +49,7 @@ import {
     faFilter,
     faInfoCircle,
     faClone,
+    faCertificate,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -95,6 +96,7 @@ library.add(
     faFilter,
     faInfoCircle,
     faClone,
+    faCertificate,
 );
 
 export { FontAwesomeIcon };

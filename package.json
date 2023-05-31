@@ -185,6 +185,7 @@
         "vue-router": "~4.0.14",
         "vue-toastification": "~2.0.0-rc.5",
         "vuedraggable": "~4.1.0",
-        "wait-on": "^6.0.1"
+        "wait-on": "^6.0.1",
+        "whatwg-url": "~12.0.1"
     }
 }
