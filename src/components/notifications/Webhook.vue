@@ -21,9 +21,9 @@
             class="form-select"
             required
         >
-            <option value="json">Preset - application/json</option>
-            <option value="form-data">Preset - multipart/form-data</option>
-            <option value="custom">Custom Body</option>
+            <option value="json">{{ $t("webhookBodyPresetOption", ["application/json"]) }}</option>
+            <option value="form-data">{{ $t("webhookBodyPresetOption", ["multipart/form-data"]) }}</option>
+            <option value="custom">{{ $t("webhookBodyCustomOption") }}</option>
         </select>
 
         <div class="form-text">

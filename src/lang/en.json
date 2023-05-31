@@ -198,6 +198,8 @@
     "webhookCustomBodyDesc": "Define a custom HTTP Body for the request. Template variables {msg}, {heartbeat}, {monitor} are accepted.",
     "webhookAdditionalHeadersTitle": "Additional Headers",
     "webhookAdditionalHeadersDesc": "Sets additional headers sent with the webhook. Each header should be defined as a JSON key/value.",
+    "webhookBodyPresetOption": "Preset - {0}",
+    "webhookBodyCustomOption": "Custom Body",
     "Webhook URL": "Webhook URL",
     "Application Token": "Application Token",
     "Server URL": "Server URL",
