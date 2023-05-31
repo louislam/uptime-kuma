@@ -203,8 +203,8 @@
                                     <label for="timezone" class="form-label">
                                         {{ $t("Timezone") }}
                                     </label>
-                                    <select id="timezone" v-model="maintenance.timezone" class="form-select">
-                                        <option :value="null">{{ $t("sameAsServerTimezone") }}</option>
+                                    <select id="timezone" v-model="maintenance.timezoneOption" class="form-select">
+                                        <option value="SAME_AS_SERVER">{{ $t("sameAsServerTimezone") }}</option>
                                         <option value="UTC">UTC</option>
                                         <option
                                             v-for="(timezone, index) in timezoneList"
@@ -218,17 +218,17 @@
 
                                 <!-- Date Range -->
                                 <div class="my-3">
-                                    <label class="form-label">{{ $t("Effective Date Range") }}</label>
+                                    <label v-if="maintenance.strategy !== 'single'" class="form-label">{{ $t("Effective Date Range") }}</label>
 
                                     <div class="row">
                                         <div class="col">
                                             <div class="mb-2">{{ $t("startDateTime") }}</div>
-                                            <input v-model="maintenance.dateRange[0]" type="datetime-local" class="form-control">
+                                            <input v-model="maintenance.dateRange[0]" type="datetime-local" class="form-control" :required="maintenance.strategy === 'single'">
                                         </div>
 
                                         <div class="col">
                                             <div class="mb-2">{{ $t("endDateTime") }}</div>
-                                            <input v-model="maintenance.dateRange[1]" type="datetime-local" class="form-control">
+                                            <input v-model="maintenance.dateRange[1]" type="datetime-local" class="form-control" :required="maintenance.strategy === 'single'">
                                         </div>
                                     </div>
                                 </div>
@@ -248,7 +248,6 @@
 <script>
 import { useToast } from "vue-toastification";
 import VueMultiselect from "vue-multiselect";
-import dayjs from "dayjs";
 import Datepicker from "@vuepic/vue-datepicker";
 import { timezoneList } from "../util-frontend";
 import cronstrue from "cronstrue/i18n";
@@ -272,7 +271,6 @@ export default {
             selectedStatusPages: [],
             dark: (this.$root.theme === "dark"),
             neverEnd: false,
-            minDate: this.$root.date(dayjs()) + " 00:00",
             lastDays: [
                 {
                     langKey: "lastDay1",
@@ -411,7 +409,7 @@ export default {
                     cron: "30 3 * * *",
                     durationMinutes: 60,
                     intervalDay: 1,
-                    dateRange: [ this.minDate ],
+                    dateRange: [],
                     timeRange: [{
                         hours: 2,
                         minutes: 0,
@@ -421,7 +419,7 @@ export default {
                     }],
                     weekdays: [],
                     daysOfMonth: [],
-                    timezone: null,
+                    timezoneOption: null,
                 };
             } else if (this.isEdit) {
                 this.$root.getSocket().emit("getMaintenance", this.$route.params.id, (res) => {
