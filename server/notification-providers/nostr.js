@@ -15,10 +15,6 @@ class Nostr extends NotificationProvider {
     name = "nostr";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        if (heartbeatJSON == null) {
-            msg = `🤙💜 Test Notification for [${notification.name}]`;
-        }
-        
         // All DMs should have same timestamp
         const createdAt = Math.floor(Date.now() / 1000);
 
