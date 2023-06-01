@@ -28,7 +28,7 @@ class Slack extends NotificationProvider {
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
 
-        if (notification.slackchannelmention) {
+        if (notification.slackchannelnotify) {
             msg += " <!channel>";
         }
 
