@@ -70,7 +70,7 @@
 
             <div class="shadow-box big-padding text-center stats">
                 <div class="row">
-                    <div class="col-12 col-sm col row d-flex align-items-center d-sm-block">
+                    <div v-if="monitor.type !== 'group'" class="col-12 col-sm col row d-flex align-items-center d-sm-block">
                         <h4 class="col-4 col-sm-12">{{ pingTitle() }}</h4>
                         <p class="col-4 col-sm-12 mb-0 mb-sm-2">({{ $t("Current") }})</p>
                         <span class="col-4 col-sm-12 num">
@@ -79,7 +79,7 @@
                             </a>
                         </span>
                     </div>
-                    <div class="col-12 col-sm col row d-flex align-items-center d-sm-block">
+                    <div v-if="monitor.type !== 'group'" class="col-12 col-sm col row d-flex align-items-center d-sm-block">
                         <h4 class="col-4 col-sm-12">{{ pingTitle(true) }}</h4>
                         <p class="col-4 col-sm-12 mb-0 mb-sm-2">(24{{ $t("-hour") }})</p>
                         <span class="col-4 col-sm-12 num">
