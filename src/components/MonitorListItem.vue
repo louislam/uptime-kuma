@@ -133,7 +133,7 @@ export default {
         }
 
         let storageObject = JSON.parse(storage);
-        if (storageObject[`monitor_${this.monitor.id}`] === null) {
+        if (storageObject[`monitor_${this.monitor.id}`] == null) {
             return;
         }
 
