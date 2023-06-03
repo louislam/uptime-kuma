@@ -62,7 +62,7 @@ body:
     attributes:
       label: "💻 Operating System and Arch"
       description: "Which OS is your server/device running on?"
-      placeholder: "Ex. Ubuntu 20.04 x86"
+      placeholder: "Ex. Ubuntu 20.04 x64 (If your platform is not supported by Uptime Kuma such as Replit, please do not report this bug)"
     validations:
       required: true
   - type: input
