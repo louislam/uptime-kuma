@@ -260,12 +260,9 @@ export default {
 }
 
 .connecting-line {
-    flex-grow: 1;
-    /* To make the line expand and fill the available space */
+    flex-grow: 1;  // To make the line expand and fill the available space
     height: 1px;
-    /* Set the height of the line */
     background-color: #aaa;
-    /* Set the color of the line */
     margin-left: 10px;
     margin-right: 10px;
     margin-top: 2px;
