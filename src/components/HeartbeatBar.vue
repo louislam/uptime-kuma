@@ -5,15 +5,24 @@
                 v-for="(beat, index) in shortBeatList"
                 :key="index"
                 class="beat"
-                :class="{ 'empty' : (beat === 0), 'down' : (beat.status === 0), 'pending' : (beat.status === 2), 'maintenance' : (beat.status === 3) }"
+                :class="{ 'empty': (beat === 0), 'down': (beat.status === 0), 'pending': (beat.status === 2), 'maintenance': (beat.status === 3) }"
                 :style="beatStyle"
                 :title="getBeatTitle(beat)"
             />
+        </div>
+        <div
+            v-if="size !== 'small' && beatList.length > 4"
+            class="d-flex justify-content-between align-items-center word" :style="timeStyle"
+        >
+            <div>{{ firstBeatTime }} ago</div>
+            <div class="connecting-line"></div>
+            <div>now</div>
         </div>
     </div>
 </template>
 
 <script>
+import dayjs from "dayjs";
 
 export default {
     props: {
@@ -57,7 +66,7 @@ export default {
         },
 
         shortBeatList() {
-            if (! this.beatList) {
+            if (!this.beatList) {
                 return [];
             }
 
@@ -115,6 +124,22 @@ export default {
             };
         },
 
+        timeStyle() {
+            const emptyBeats = this.shortBeatList.filter((beat) => beat?.time == null).length;
+            return {
+                "margin-left": emptyBeats * (this.beatWidth + this.beatMargin * 2) + "px",
+            };
+        },
+
+        firstBeatTime() {
+            const firstValidBeat = this.shortBeatList.find((beat) => beat?.time != null);
+            const minutes = dayjs().diff(dayjs(firstValidBeat?.time), "minutes");
+            if (minutes > 60) {
+                return (minutes / 60).toFixed(0) + "h";
+            } else {
+                return minutes + "m";
+            }
+        }
     },
     watch: {
         beatList: {
@@ -133,14 +158,14 @@ export default {
     },
     beforeMount() {
         if (this.heartbeatList === null) {
-            if (! (this.monitorId in this.$root.heartbeatList)) {
+            if (!(this.monitorId in this.$root.heartbeatList)) {
                 this.$root.heartbeatList[this.monitorId] = [];
             }
         }
     },
 
     mounted() {
-        if (this.size === "small") {
+        if (this.size !== "big") {
             this.beatWidth = 5;
             this.beatHeight = 16;
             this.beatMargin = 2;
@@ -151,11 +176,11 @@ export default {
         const actualWidth = this.beatWidth * window.devicePixelRatio;
         const actualMargin = this.beatMargin * window.devicePixelRatio;
 
-        if (! Number.isInteger(actualWidth)) {
+        if (!Number.isInteger(actualWidth)) {
             this.beatWidth = Math.round(actualWidth) / window.devicePixelRatio;
         }
 
-        if (! Number.isInteger(actualMargin)) {
+        if (!Number.isInteger(actualMargin)) {
             this.beatMargin = Math.round(actualMargin) / window.devicePixelRatio;
         }
 
@@ -229,4 +254,20 @@ export default {
     }
 }
 
+.word {
+    color: #aaa;
+    font-size: 12px;
+}
+
+.connecting-line {
+    flex-grow: 1;
+    /* To make the line expand and fill the available space */
+    height: 1px;
+    /* Set the height of the line */
+    background-color: #aaa;
+    /* Set the color of the line */
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-top: 2px;
+}
 </style>
