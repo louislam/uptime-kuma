@@ -14,9 +14,9 @@
             v-if="size !== 'small' && beatList.length > 4"
             class="d-flex justify-content-between align-items-center word" :style="timeStyle"
         >
-            <div>{{ firstBeatTime }} ago</div>
+            <div>{{ firstBeatElapsed }} ago</div>
             <div class="connecting-line"></div>
-            <div>now</div>
+            <div>{{ lastBeatElapsed }}</div>
         </div>
     </div>
 </template>
@@ -63,6 +63,28 @@ export default {
             } else {
                 return this.heartbeatList;
             }
+        },
+
+        /**
+         * Calculates the amount of beats of padding needed to fill the length of shortBeatList.
+         *
+         * @return {number} The amount of beats of padding needed to fill the length of shortBeatList.
+         */
+        numPadding() {
+            if (!this.beatList) {
+                return 0;
+            }
+            let num = this.beatList.length - this.maxBeat;
+
+            if (this.move) {
+                num = num - 1;
+            }
+
+            if (num > 0) {
+                return 0;
+            }
+
+            return -1 * num;
         },
 
         shortBeatList() {
@@ -125,19 +147,40 @@ export default {
         },
 
         timeStyle() {
-            const emptyBeats = this.shortBeatList.filter((beat) => beat?.time == null).length;
             return {
-                "margin-left": emptyBeats * (this.beatWidth + this.beatMargin * 2) + "px",
+                "margin-left": this.numPadding * (this.beatWidth + this.beatMargin * 2) + "px",
             };
         },
 
-        firstBeatTime() {
-            const firstValidBeat = this.shortBeatList.find((beat) => beat?.time != null);
-            const minutes = dayjs().diff(dayjs(firstValidBeat?.time), "minutes");
+        /**
+         * Calculates the time elapsed since the first valid beat.
+         *
+         * @return {string} The time elapsed in minutes or hours.
+         */
+        firstBeatElapsed() {
+            const firstValidBeat = this.shortBeatList.at(this.numPadding);
+            const minutes = dayjs().diff(dayjs.utc(firstValidBeat?.time), "minutes");
             if (minutes > 60) {
                 return (minutes / 60).toFixed(0) + "h";
             } else {
                 return minutes + "m";
+            }
+        },
+
+        /**
+         * Calculates the elapsed time since the last valid beat was registered.
+         *
+         * @return {string} The elapsed time in a human-readable format.
+         */
+        lastBeatElapsed() {
+            const lastValidBeat = this.shortBeatList.at(-1);
+            const seconds = dayjs().diff(dayjs.utc(lastValidBeat?.time), "seconds");
+            if (seconds < this.$root.monitorList[this.monitorId].interval * 2) {
+                return "now";
+            } else if (seconds < 60 * 60) {
+                return (seconds / 60).toFixed(0) + "m ago";
+            } else {
+                return (seconds / 60 / 60).toFixed(0) + "h ago";
             }
         }
     },
