@@ -175,7 +175,13 @@ export default {
         lastBeatElapsed() {
             const lastValidBeat = this.shortBeatList.at(-1);
             const seconds = dayjs().diff(dayjs.utc(lastValidBeat?.time), "seconds");
-            if (seconds < this.$root.monitorList[this.monitorId].interval * 2) {
+
+            let tolerance = 60 * 2; // default for when monitorList not available
+            if (this.$root.monitorList[this.monitorId] != null) {
+                tolerance = this.$root.monitorList[this.monitorId].interval * 2;
+            }
+
+            if (seconds < tolerance) {
                 return "now";
             } else if (seconds < 60 * 60) {
                 return (seconds / 60).toFixed(0) + "m ago";
