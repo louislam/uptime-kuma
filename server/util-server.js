@@ -342,7 +342,12 @@ exports.mysqlQuery = function (connectionString, query) {
                     resolve("No Error, but the result is not an array. Type: " + typeof res);
                 }
             }
-            connection.destroy();
+
+            try {
+                connection.end();
+            } catch (_) {
+                connection.destroy();
+            }
         });
     });
 };
