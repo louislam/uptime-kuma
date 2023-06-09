@@ -430,7 +430,7 @@ exports.redisPingAsync = function (dsn) {
                     } else {
                         resolve(res);
                     }
-                });
+                }).catch(error => reject(error));
             }   
         });
     });
