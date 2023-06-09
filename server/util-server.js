@@ -420,7 +420,7 @@ exports.redisPingAsync = function (dsn) {
             reject(err);
         });
         client.connect().then(() => {
-            if(client.isOpen){
+            if (client.isOpen) {
                 client.ping().then((res, err) => {
                     if (client.isOpen) {
                         client.disconnect();
@@ -430,8 +430,8 @@ exports.redisPingAsync = function (dsn) {
                     } else {
                         resolve(res);
                     }
-                }).catch(error => reject(error));
-            }   
+                }).catch(error => reject);
+            }
         });
     });
 };
