@@ -413,22 +413,25 @@ exports.radius = function (
 exports.redisPingAsync = function (dsn) {
     return new Promise((resolve, reject) => {
         const client = redis.createClient({
-            url: dsn,
+            url: dsn
         });
         client.on("error", (err) => {
+            client.disconnect();
             reject(err);
         });
         client.connect().then(() => {
-            client.ping().then((res, err) => {
-                if (client.isOpen) {
-                    client.disconnect();
-                }
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(res);
-                }
-            });
+            if(client.isOpen){
+                client.ping().then((res, err) => {
+                    if (client.isOpen) {
+                        client.disconnect();
+                    }
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(res);
+                    }
+                });
+            }   
         });
     });
 };
