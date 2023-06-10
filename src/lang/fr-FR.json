@@ -73,7 +73,7 @@
     "Delete": "Supprimer",
     "Current": "Actuellement",
     "Uptime": "Disponibilité",
-    "Cert Exp.": "Expiration SSL",
+    "Cert Exp.": "Expiration Cert SSL",
     "day": "jour | jours",
     "-day": "-jour",
     "hour": "heure",
@@ -329,7 +329,7 @@
     "Body": "Corps",
     "Headers": "En-têtes",
     "PushUrl": "URL Push",
-    "HeadersInvalidFormat": "Les en-têtes de la requête ne sont pas dans un format JSON valide : ",
+    "HeadersInvalidFormat": "Les en-têtes de la requête ne sont pas dans un format JSON valide : ",
     "BodyInvalidFormat": "Le corps de la requête n'est pas dans un format JSON valide : ",
     "Monitor History": "Historique de la sonde",
     "clearDataOlderThan": "Conserver l'historique des données de la sonde durant {0} jours.",
@@ -338,7 +338,7 @@
     "One record": "Un enregistrement",
     "steamApiKeyDescription": "Pour surveiller un serveur Steam, vous avez besoin d'une clé Steam Web-API. Vous pouvez enregistrer votre clé ici : ",
     "Current User": "Utilisateur actuel",
-    "topic": "Topic",
+    "topic": "Sujet",
     "topicExplanation": "Topic MQTT à surveiller",
     "successMessage": "Message de réussite",
     "successMessageExplanation": "Message MQTT qui sera considéré comme un succès",
@@ -699,7 +699,7 @@
     "Edit Tag": "Modifier l'étiquette",
     "Body Encoding": "Encodage du corps",
     "telegramMessageThreadID": "(Facultatif) ID du fil de message",
-    "telegramMessageThreadIDDescription": "(Facultatif) Identifiant unique pour le fil de discussion cible (sujet) du forum; pour les supergroupes du forum uniquement",
+    "telegramMessageThreadIDDescription": "(Facultatif) Identifiant unique pour le fil de discussion ciblé (sujet) du forum; pour les supergroupes du forum uniquement",
     "telegramProtectContent": "Protéger le transfert/l'enregistrement",
     "telegramProtectContentDescription": "S'il est activé, les messages du robot dans Telegram seront protégés contre le transfert et l'enregistrement.",
     "telegramSendSilently": "Envoyer silencieusement",
@@ -751,5 +751,6 @@
     "cronSchedule": "Calendrier : ",
     "invalidCronExpression": "Expression Cron non valide : {0}",
     "ntfyUsernameAndPassword": "Nom d'utilisateur et mot de passe",
-    "ntfyAuthenticationMethod": "Méthode d'authentification"
+    "ntfyAuthenticationMethod": "Méthode d'authentification",
+    "pushoverMessageTtl": "TTL Message (Secondes)"
 }
