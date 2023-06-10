@@ -749,5 +749,7 @@
     "invalidCronExpression": "Nieprawidłowe sformułowanie Cron: {0}",
     "sameAsServerTimezone": "Tak jak strefa czasowa serwera",
     "endDateTime": "Data/godzina zakończenia",
-    "cronExpression": "Wyrażenie Cron"
+    "cronExpression": "Wyrażenie Cron",
+    "ntfyAuthenticationMethod": "Metoda Uwierzytelnienia",
+    "ntfyUsernameAndPassword": "Nazwa użytkownika i hasło"
 }
