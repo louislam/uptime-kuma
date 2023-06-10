@@ -760,7 +760,7 @@
     "Badge Suffix": "徽章内容后缀",
     "Badge Prefix": "徽章内容前缀",
     "Badge Label": "徽章标签",
-    "Badge Duration": "徽章显示周期",
+    "Badge Duration": "徽章显示时段",
     "Badge Type": "徽章类型",
     "Badge Generator": "{0} 徽章生成器",
     "Open Badge Generator": "打开徽章生成器",
@@ -777,6 +777,6 @@
     "Badge Pending Color": "重试中状态下徽章颜色",
     "Badge Label Prefix": "徽章标签前缀",
     "Badge Label Color": "徽章标签颜色",
-    "Show Clickable Link Description": "勾选后所有能访问本状态页的游客均可查看该监控项网址。",
-    "Show Clickable Link": "显示可点击的监控项网址链接"
+    "Show Clickable Link Description": "勾选后所有能访问本状态页的访客均可查看该监控项网址。",
+    "Show Clickable Link": "显示可点击的监控项链接"
 }
