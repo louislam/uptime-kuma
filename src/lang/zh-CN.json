@@ -661,7 +661,7 @@
     "dnsCacheDescription": "可能无法在某些 IPv6 环境工作，如果遇到问题请禁用。",
     "Single Maintenance Window": "单一时间窗口",
     "Maintenance Time Window of a Day": "每日维护时间窗口",
-    "Effective Date Range": "生效日期范围",
+    "Effective Date Range": "生效日期范围（可选）",
     "Schedule Maintenance": "计划维护",
     "Date and Time": "日期时间",
     "DateTime Range": "日期时间范围",
@@ -741,5 +741,17 @@
     "lunaseaDeviceID": "设备ID",
     "lunaseaTarget": "目标",
     "lunaseaUserID": "用户ID",
-    "statusPageRefreshIn": "将于 {0} 后刷新"
+    "statusPageRefreshIn": "将于 {0} 后刷新",
+    "twilioAccountSID": "账户 SID",
+    "twilioAuthToken": "验证 token",
+    "twilioFromNumber": "发信号码",
+    "twilioToNumber": "收信号码",
+    "sameAsServerTimezone": "使用服务器时区",
+    "startDateTime": "开始日期/时间",
+    "invalidCronExpression": "无效的 Cron 表达式：{0}",
+    "endDateTime": "结束日期/时间",
+    "cronExpression": "Cron 表达式",
+    "cronSchedule": "计划： ",
+    "ntfyAuthenticationMethod": "鉴权方式",
+    "ntfyUsernameAndPassword": "用户名和密码"
 }
