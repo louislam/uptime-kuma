@@ -191,5 +191,15 @@
     "Tag with this name already exist.": "Značka s týmto názvom už existuje.",
     "Blue": "Modrá",
     "Search...": "Hľadať…",
-    "statusPageNothing": "Nič tu nie je, pridajte skupinu alebo sledovanie."
+    "statusPageNothing": "Nič tu nie je, pridajte skupinu alebo sledovanie.",
+    "webhookAdditionalHeadersTitle": "Ďalšie položky",
+    "webhookAdditionalHeadersDesc": "Nastaví ďalšie hlavičky odoslané s webovým hákom.",
+    "Webhook URL": "Webhook URL",
+    "Application Token": "Token aplikácie",
+    "Server URL": "Server URL",
+    "Priority": "Priorita",
+    "statusPageRefreshIn": "Obnovenie za: {0}",
+    "emojiCheatSheet": "Emotikony: {0}",
+    "Read more": "Prečítajte si viac",
+    "appriseInstalled": "Apprise je nainštalovaný."
 }
