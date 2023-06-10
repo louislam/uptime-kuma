@@ -695,5 +695,6 @@
     "markdownSupported": "支持Markdown語法",
     "Packet Size": "數據包大小",
     "statusPageRefreshIn": "將於 {0} 後刷新",
-    "confirmUninstallPlugin": "是否要卸載這個插件?"
+    "confirmUninstallPlugin": "是否要卸載這個插件?",
+    "Key Added": "已創建金鑰"
 }
