@@ -749,5 +749,7 @@
     "endDateTime": "Date/heure de fin",
     "cronExpression": "Expression cron",
     "cronSchedule": "Calendrier : ",
-    "invalidCronExpression": "Expression Cron non valide : {0}"
+    "invalidCronExpression": "Expression Cron non valide : {0}",
+    "ntfyUsernameAndPassword": "Nom d'utilisateur et mot de passe",
+    "ntfyAuthenticationMethod": "Méthode d'authentification"
 }
