@@ -12,6 +12,9 @@
                                 <label for="type" class="form-label">{{ $t("Monitor Type") }}</label>
                                 <select id="type" v-model="monitor.type" class="form-select">
                                     <optgroup :label="$t('General Monitor Type')">
+                                        <option value="group">
+                                            {{ $t("Group") }}
+                                        </option>
                                         <option value="http">
                                             HTTP(s)
                                         </option>
@@ -87,6 +90,15 @@
                             <div class="my-3">
                                 <label for="name" class="form-label">{{ $t("Friendly Name") }}</label>
                                 <input id="name" v-model="monitor.name" type="text" class="form-control" required>
+                            </div>
+
+                            <!-- Parent Monitor -->
+                            <div class="my-3">
+                                <label for="parent" class="form-label">{{ $t("Monitor Group") }}</label>
+                                <select v-model="monitor.parent" class="form-select" :disabled="sortedMonitorList.length === 0">
+                                    <option :value="null" selected>{{ $t("None") }}</option>
+                                    <option v-for="parentMonitor in sortedMonitorList" :key="parentMonitor.id" :value="parentMonitor.id">{{ parentMonitor.pathName }}</option>
+                                </select>
                             </div>
 
                             <!-- URL -->
@@ -807,6 +819,48 @@ message HealthCheckResponse {
             return null;
         },
 
+        // Filter result by active state, weight and alphabetical
+        // Only return groups which arent't itself and one of its decendants
+        sortedMonitorList() {
+            let result = Object.values(this.$root.monitorList);
+            console.log(this.monitor.childrenIDs);
+
+            // Only groups, not itself, not a decendant
+            result = result.filter(
+                monitor => monitor.type === "group" &&
+				monitor.id !== this.monitor.id &&
+				!this.monitor.childrenIDs?.includes(monitor.id)
+            );
+
+            // Filter result by active state, weight and alphabetical
+            result.sort((m1, m2) => {
+
+                if (m1.active !== m2.active) {
+                    if (m1.active === 0) {
+                        return 1;
+                    }
+
+                    if (m2.active === 0) {
+                        return -1;
+                    }
+                }
+
+                if (m1.weight !== m2.weight) {
+                    if (m1.weight > m2.weight) {
+                        return -1;
+                    }
+
+                    if (m1.weight < m2.weight) {
+                        return 1;
+                    }
+                }
+
+                return m1.pathName.localeCompare(m2.pathName);
+            });
+
+            return result;
+        },
+
     },
     watch: {
         "$root.proxyList"() {
@@ -926,6 +980,7 @@ message HealthCheckResponse {
                 this.monitor = {
                     type: "http",
                     name: "",
+                    parent: null,
                     url: "https://",
                     method: "GET",
                     interval: 60,

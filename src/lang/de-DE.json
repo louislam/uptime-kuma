@@ -752,5 +752,7 @@
     "endDateTime": "Ende Datum/Uhrzeit",
     "cronExpression": "Cron-Ausdruck",
     "cronSchedule": "Zeitplan: ",
-    "invalidCronExpression": "Ungültiger Cron-Ausdruck: {0}"
+    "invalidCronExpression": "Ungültiger Cron-Ausdruck: {0}",
+    "Group": "Gruppe",
+    "Monitor Group": "Monitor Gruppe"
 }
