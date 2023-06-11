@@ -776,5 +776,7 @@
     "Monitor Setting": "{0}'s Monitor Einstellung",
     "Badge Prefix": "Badge Präfix",
     "Badge Suffix": "Badge Suffix",
-    "Badge Warn Days": "Badge Warnung Tage"
+    "Badge Warn Days": "Badge Warnung Tage",
+    "Group": "Gruppe",
+    "Monitor Group": "Monitor Gruppe"
 }
