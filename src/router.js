@@ -62,12 +62,14 @@ const routes = [
                                         path: "",
                                         component: Details,
                                     },
-                                    {
-                                        path: "/edit/:id",
-                                        component: EditMonitor,
-                                    },
                                 ],
                             },
+                        ],
+                    },
+                    {
+                        path: "/edit/:id",
+                        component: EditMonitor,
+                        children: [
                             {
                                 path: "/clone/:id",
                                 component: EditMonitor,
@@ -76,7 +78,8 @@ const routes = [
                                 path: "/add",
                                 component: EditMonitor,
                             },
-                        ],
+
+                        ]
                     },
                     {
                         path: "/list",
