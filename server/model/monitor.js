@@ -6,7 +6,7 @@ const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, TimeLogger, MAX_INTERVA
     SQL_DATETIME_FORMAT
 } = require("../../src/util");
 const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, mqttAsync, setSetting, httpNtlm, radius, grpcQuery,
-    redisPingAsync, mongodbPing,
+    redisPingAsync, mongodbPing, kafkaProducerAsync
 } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
@@ -117,7 +117,12 @@ class Monitor extends BeanModel {
             radiusCalledStationId: this.radiusCalledStationId,
             radiusCallingStationId: this.radiusCallingStationId,
             game: this.game,
-            httpBodyEncoding: this.httpBodyEncoding
+            httpBodyEncoding: this.httpBodyEncoding,
+            kafkaProducerTopic: this.kafkaProducerTopic,
+            kafkaProducerBrokers: this.kafkaProducerBrokers,
+            kafkaProducerSsl: this.kafkaProducerSsl,
+            kafkaProducerAllowAutoTopicCreation: this.kafkaProducerAllowAutoTopicCreation,
+            kafkaProducerMessage: this.kafkaProducerMessage,
         };
 
         if (includeSensitiveData) {
@@ -141,6 +146,7 @@ class Monitor extends BeanModel {
                 tlsCa: this.tlsCa,
                 tlsCert: this.tlsCert,
                 tlsKey: this.tlsKey,
+                kafkaProducerSaslOptions: this.kafkaProducerSaslOptions,
             };
         }
 
@@ -744,6 +750,24 @@ class Monitor extends BeanModel {
                     if (!bean.ping) {
                         bean.ping = dayjs().valueOf() - startTime;
                     }
+
+                } else if (this.type === "kafka-producer") {
+                    let startTime = dayjs().valueOf();
+
+                    bean.msg = await kafkaProducerAsync(
+                        this.kafkaProducerBrokers,
+                        this.kafkaProducerTopic,
+                        this.kafkaProducerMessage,
+                        {
+                            allowAutoTopicCreation: this.kafkaProducerAllowAutoTopicCreation,
+                            ssl: this.kafkaProducerSsl,
+                            clientId: `Uptime-Kuma/${version}`,
+                            interval: this.interval,
+                        },
+                        this.kafkaProducerSaslOptions,
+                    );
+                    bean.status = UP;
+                    bean.ping = dayjs().valueOf() - startTime;
 
                 } else {
                     throw new Error("Unknown Monitor Type");

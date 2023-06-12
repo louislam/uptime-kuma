@@ -28,8 +28,12 @@ const {
 } = require("node-radius-utils");
 const dayjs = require("dayjs");
 
-const isWindows = process.platform === /^win/.test(process.platform);
+// SASLOptions used in JSDoc
+// eslint-disable-next-line no-unused-vars
+const { Kafka, SASLOptions } = require("kafkajs");
 
+
+const isWindows = process.platform === /^win/.test(process.platform);
 /**
  * Init or reset JWT secret
  * @returns {Promise<Bean>}
@@ -193,6 +197,80 @@ exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
             }
         });
 
+    });
+};
+
+/**
+ * Monitor Kafka using Producer
+ * @param {string} topic Topic name to produce into
+ * @param {string} message Message to produce
+ * @param {Object} [options={interval = 20, allowAutoTopicCreation = false, ssl = false, clientId = "Uptime-Kuma"}]
+ * Kafka client options. Contains ssl, clientId, allowAutoTopicCreation and
+ * interval (interval defaults to 20, allowAutoTopicCreation defaults to false, clientId defaults to "Uptime-Kuma"
+ * and ssl defaults to false)
+ * @param {string[]} brokers List of kafka brokers to connect, host and port joined by ':'
+ * @param {SASLOptions} [saslOptions={mechanism: "plain"}] Options for kafka client Authentication (SASL) (defaults to
+ * {mechanism: "plain"})
+ * @returns {Promise<string>}
+ */
+exports.kafkaProducerAsync = function (brokers, topic, message, options = {}, saslOptions = {
+    mechanism: "plain",
+}) {
+    return new Promise((resolve, reject) => {
+        const { interval = 20, allowAutoTopicCreation = false, ssl = false, clientId = "Uptime-Kuma" } = options;
+
+        // Used to track manual disconnect calls
+        let success = false;
+
+        const timeoutID = setTimeout(() => {
+            log.debug("kafkaProducer", "KafkaProducer timeout triggered");
+            success = true;
+            producer.disconnect();
+            reject(new Error("Timeout"));
+        }, interval * 1000 * 0.8);
+
+        let client = new Kafka({
+            brokers: brokers,
+            clientId: clientId,
+            sasl: saslOptions,
+            ssl: ssl,
+        });
+
+        let producer = client.producer({
+            allowAutoTopicCreation: allowAutoTopicCreation,
+        });
+
+        producer.on("producer.network.request_timeout", (_) => {
+            clearTimeout(timeoutID);
+            reject(new Error("producer.network.request_timeout"));
+        });
+
+        producer.on("producer.disconnect", (_) => {
+            if (!success) {
+                clearTimeout(timeoutID);
+                reject(new Error("producer.disconnect"));
+            }
+        });
+
+        producer.on("producer.connect", (_) => {
+            try {
+                producer.send({
+                    topic: topic,
+                    messages: [{
+                        value: message,
+                    }],
+                });
+                success = true;
+                producer.disconnect();
+                clearTimeout(timeoutID);
+                resolve("Message sent successfully");
+            } catch (e) {
+                success = true;
+                producer.disconnect();
+                clearTimeout(timeoutID);
+                reject(new Error("Error sending message: " + e.message));
+            }
+        });
     });
 };
 
