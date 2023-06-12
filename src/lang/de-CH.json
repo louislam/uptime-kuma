@@ -17,6 +17,8 @@
     "Down": "Inaktiv",
     "Pending": "Ausstehend",
     "Unknown": "Unbekannt",
+    "Cannot connect to the socket server": "Es kann keine Verbindung zum Socket-Server hergestellt werden",
+    "Reconnecting...": "Die Verbindung wird wiederhergestellt...",
     "Pause": "Pausieren",
     "pauseDashboardHome": "Pausiert",
     "Name": "Name",
