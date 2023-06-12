@@ -20,7 +20,6 @@ const { CacheableDnsHttpAgent } = require("../cacheable-dns-http-agent");
 const { DockerHost } = require("../docker");
 const { UptimeCacheList } = require("../uptime-cache-list");
 const Gamedig = require("gamedig");
-const { throws } = require("assert");
 const jsonQuery = require("json-query");
 
 /**
