@@ -465,7 +465,8 @@ class Monitor extends BeanModel {
                         let result = jsonQuery(this.jsonPath, {
                             data: data,
                         });
-                        if (result.value === this.expectedValue) {
+
+                        if (result.value.toString() === this.expectedValue) {
                             bean.msg += ", expected value is found";
                             bean.status = UP;
                         } else {
