@@ -139,9 +139,11 @@
                             <div v-if="monitor.type === 'json-query'" class="my-3">
                                 <label for="jsonPath" class="form-label">{{ $t("Json Query") }}</label>
                                 <input id="jsonPath" v-model="monitor.jsonPath" type="text" class="form-control" required>
-                                <div class="form-text">
-                                    {{ $t("jsonQueryDescription") }}
+
+                                <!-- eslint-disable-next-line vue/no-v-html -->
+                                <div class="form-text" v-html="$t('jsonQueryDescription')">
                                 </div>
+                                <br>
 
                                 <label for="expectedValue" class="form-label">{{ $t("Expected Value") }}</label>
                                 <input id="expectedValue" v-model="monitor.expectedValue" type="text" class="form-control" required>
