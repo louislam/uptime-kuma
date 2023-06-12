@@ -416,7 +416,7 @@ exports.redisPingAsync = function (dsn) {
             url: dsn
         });
         client.on("error", (err) => {
-            client.disconnect();
+            if (client.isOpen) client.disconnect();
             reject(err);
         });
         client.connect().then(() => {
