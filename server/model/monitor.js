@@ -470,7 +470,7 @@ class Monitor extends BeanModel {
                             bean.msg += ", expected value is found";
                             bean.status = UP;
                         } else {
-                            throw new Error(bean.msg + ", but value is not equal to expected value, value was: [" + result.value + "]");
+                            throw new Error(bean.msg + ", but value is not equal to expected value, value was: [" + result + "]");
                         }
                     }
 
