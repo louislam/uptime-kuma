@@ -18,8 +18,7 @@
                 <span v-if="monitor.type === 'json-query'">
                     <br>
                     <span>{{ $t("Json Query") }}:</span> <span class="keyword">{{ monitor.jsonPath }}</span>
-                    <!-- &nbsp; -->
-                    <br />
+                    <br>
                     <span>{{ $t("Expected Value") }}:</span> <span class="keyword">{{ monitor.expectedValue }}</span>
                 </span>
                 <span v-if="monitor.type === 'dns'">[{{ monitor.dns_resolve_type }}] {{ monitor.hostname }}
