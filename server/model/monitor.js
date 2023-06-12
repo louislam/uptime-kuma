@@ -20,7 +20,7 @@ const { CacheableDnsHttpAgent } = require("../cacheable-dns-http-agent");
 const { DockerHost } = require("../docker");
 const { UptimeCacheList } = require("../uptime-cache-list");
 const Gamedig = require("gamedig");
-const jsonQuery = require("json-query");
+const jsonata = require("jsonata");
 
 /**
  * status:
@@ -462,11 +462,11 @@ class Monitor extends BeanModel {
                             data = JSON.parse(data);
                         }
 
-                        let result = jsonQuery(this.jsonPath, {
-                            data: data,
-                        });
+                        let expression = jsonata(this.jsonPath);
 
-                        if (result.value.toString() === this.expectedValue) {
+                        let result = await expression.evaluate(data);
+
+                        if (result.toString() === this.expectedValue) {
                             bean.msg += ", expected value is found";
                             bean.status = UP;
                         } else {
