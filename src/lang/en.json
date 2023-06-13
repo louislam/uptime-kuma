@@ -811,5 +811,6 @@
     "showCertificateExpiry": "Show Certificate Expiry",
     "noOrBadCertificate": "No/Bad Certificate",
     "gamedigGuessPort": "Gamedig: Guess Port",
-    "gamedigGuessPortDescription": "The port used by Valve Server Query Protocol may be different from the client port. Try this if the monitor cannot connect to your server."
+    "gamedigGuessPortDescription": "The port used by Valve Server Query Protocol may be different from the client port. Try this if the monitor cannot connect to your server.",
+    "Saved.": "Saved."
 }

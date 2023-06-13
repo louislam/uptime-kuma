@@ -24,7 +24,8 @@ module.exports.proxySocketHandler = (socket) => {
 
             callback({
                 ok: true,
-                msg: "Saved",
+                msg: "Saved.",
+                msgTranslated: true,
                 id: proxyBean.id,
             });
 

@@ -839,6 +839,7 @@ let needSetup = false;
                 callback({
                     ok: true,
                     msg: "Saved.",
+                    msgTranslated: true,
                     monitorID: bean.id,
                 });
 
@@ -1067,6 +1068,7 @@ let needSetup = false;
                 callback({
                     ok: true,
                     msg: "Saved",
+                    msgTranslated: true,
                     tag: await bean.toJSON(),
                 });
 
@@ -1253,7 +1255,8 @@ let needSetup = false;
 
                 callback({
                     ok: true,
-                    msg: "Saved"
+                    msg: "Saved",
+                    msgTranslated: true,
                 });
 
                 sendInfo(socket);
@@ -1278,6 +1281,7 @@ let needSetup = false;
                 callback({
                     ok: true,
                     msg: "Saved",
+                    msgTranslated: true,
                     id: notificationBean.id,
                 });
 

@@ -330,10 +330,15 @@ export default {
          * @returns {void}
          */
         toastRes(res) {
+            let msg = res.msg;
+            if (res.msgTranslated) {
+                msg = this.$t(msg);
+            }
+
             if (res.ok) {
-                toast.success(res.msg);
+                toast.success(msg);
             } else {
-                toast.error(res.msg);
+                toast.error(msg);
             }
         },
 
