@@ -32,7 +32,6 @@ const dayjs = require("dayjs");
 // eslint-disable-next-line no-unused-vars
 const { Kafka, SASLOptions } = require("kafkajs");
 
-
 const isWindows = process.platform === /^win/.test(process.platform);
 /**
  * Init or reset JWT secret
