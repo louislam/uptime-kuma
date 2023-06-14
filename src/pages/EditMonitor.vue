@@ -823,7 +823,6 @@ message HealthCheckResponse {
         // Only return groups which arent't itself and one of its decendants
         sortedMonitorList() {
             let result = Object.values(this.$root.monitorList);
-            console.log(this.monitor.childrenIDs);
 
             // Only groups, not itself, not a decendant
             result = result.filter(
@@ -1035,12 +1034,17 @@ message HealthCheckResponse {
 
                         if (this.isClone) {
                             /*
-                         * Cloning a monitor will include properties that can not be posted to backend
-                         * as they are not valid columns in the SQLite table.
-                         */
+                            * Cloning a monitor will include properties that can not be posted to backend
+                            * as they are not valid columns in the SQLite table.
+                            */
                             this.monitor.id = undefined; // Remove id when cloning as we want a new id
                             this.monitor.includeSensitiveData = undefined;
                             this.monitor.maintenance = undefined;
+                            // group monitor fields
+                            this.monitor.childrenIDs = undefined;
+                            this.monitor.forceInactive = undefined;
+                            this.monitor.pathName = undefined;
+
                             this.monitor.name = this.$t("cloneOf", [ this.monitor.name ]);
                             this.$refs.tagsManager.newTags = this.monitor.tags.map((monitorTag) => {
                                 return {
