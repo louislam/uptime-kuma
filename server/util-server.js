@@ -416,22 +416,25 @@ exports.redisPingAsync = function (dsn) {
             url: dsn
         });
         client.on("error", (err) => {
-            if (client.isOpen) client.disconnect();
+            if (client.isOpen) {
+                client.disconnect();
+            }
             reject(err);
         });
         client.connect().then(() => {
-            if (client.isOpen) {
-                client.ping().then((res, err) => {
-                    if (client.isOpen) {
-                        client.disconnect();
-                    }
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(res);
-                    }
-                }).catch(error => reject);
+            if (!client.isOpen) {
+                client.emit("error", new Error("connection isn't open"));
             }
+            client.ping().then((res, err) => {
+                if (client.isOpen) {
+                    client.disconnect();
+                }
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(res);
+                }
+            }).catch(error => reject(error));
         });
     });
 };
