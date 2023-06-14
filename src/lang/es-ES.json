@@ -748,5 +748,8 @@
     "cronExpression": "Expresión Cron",
     "cronSchedule": "Cronograma: ",
     "invalidCronExpression": "Expresión Cron invalida:{0}",
-    "statusPageRefreshIn": "Reinicio en: {0}"
+    "statusPageRefreshIn": "Reinicio en: {0}",
+    "twilioAuthToken": "Token de Autentificación",
+    "ntfyUsernameAndPassword": "Nombre de Usuario y Contraseña",
+    "ntfyAuthenticationMethod": "Método de Autentificación"
 }

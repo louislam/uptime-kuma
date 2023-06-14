@@ -74,13 +74,17 @@ class Monitor extends BeanModel {
             id: this.id,
             name: this.name,
             description: this.description,
+            pathName: await this.getPathName(),
+            parent: this.parent,
+            childrenIDs: await Monitor.getAllChildrenIDs(this.id),
             url: this.url,
             method: this.method,
             hostname: this.hostname,
             port: this.port,
             maxretries: this.maxretries,
             weight: this.weight,
-            active: this.active,
+            active: await this.isActive(),
+            forceInactive: !await Monitor.isParentActive(this.id),
             type: this.type,
             interval: this.interval,
             retryInterval: this.retryInterval,
@@ -142,6 +146,16 @@ class Monitor extends BeanModel {
 
         data.includeSensitiveData = includeSensitiveData;
         return data;
+    }
+
+    /**
+	 * Checks if the monitor is active based on itself and its parents
+	 * @returns {Promise<Boolean>}
+	 */
+    async isActive() {
+        const parentActive = await Monitor.isParentActive(this.id);
+
+        return this.active && parentActive;
     }
 
     /**
@@ -259,6 +273,36 @@ class Monitor extends BeanModel {
                 if (await Monitor.isUnderMaintenance(this.id)) {
                     bean.msg = "Monitor under maintenance";
                     bean.status = MAINTENANCE;
+                } else if (this.type === "group") {
+                    const children = await Monitor.getChildren(this.id);
+
+                    if (children.length > 0) {
+                        bean.status = UP;
+                        bean.msg = "All children up and running";
+                        for (const child of children) {
+                            if (!child.active) {
+                                // Ignore inactive childs
+                                continue;
+                            }
+                            const lastBeat = await Monitor.getPreviousHeartbeat(child.id);
+
+                            // Only change state if the monitor is in worse conditions then the ones before
+                            if (bean.status === UP && (lastBeat.status === PENDING || lastBeat.status === DOWN)) {
+                                bean.status = lastBeat.status;
+                            } else if (bean.status === PENDING && lastBeat.status === DOWN) {
+                                bean.status = lastBeat.status;
+                            }
+                        }
+
+                        if (bean.status !== UP) {
+                            bean.msg = "Child inaccessible";
+                        }
+                    } else {
+                        // Set status pending if group is empty
+                        bean.status = PENDING;
+                        bean.msg = "Group empty";
+                    }
+
                 } else if (this.type === "http" || this.type === "keyword") {
                     // Do not do any queries/high loading things before the "bean.ping"
                     let startTime = dayjs().valueOf();
@@ -1329,6 +1373,11 @@ class Monitor extends BeanModel {
             }
         }
 
+        const parent = await Monitor.getParent(monitorID);
+        if (parent != null) {
+            return await Monitor.isUnderMaintenance(parent.id);
+        }
+
         return false;
     }
 
@@ -1340,6 +1389,94 @@ class Monitor extends BeanModel {
         if (this.interval < MIN_INTERVAL_SECOND) {
             throw new Error(`Interval cannot be less than ${MIN_INTERVAL_SECOND} seconds`);
         }
+    }
+
+    /**
+     * Gets Parent of the monitor
+     * @param {number} monitorID ID of monitor to get
+     * @returns {Promise<LooseObject<any>>}
+     */
+    static async getParent(monitorID) {
+        return await R.getRow(`
+            SELECT parent.* FROM monitor parent
+    		LEFT JOIN monitor child
+    			ON child.parent = parent.id
+            WHERE child.id = ?
+        `, [
+            monitorID,
+        ]);
+    }
+
+    /**
+     * Gets all Children of the monitor
+     * @param {number} monitorID ID of monitor to get
+     * @returns {Promise<LooseObject<any>>}
+     */
+    static async getChildren(monitorID) {
+        return await R.getAll(`
+            SELECT * FROM monitor
+            WHERE parent = ?
+        `, [
+            monitorID,
+        ]);
+    }
+
+    /**
+     * Gets Full Path-Name (Groups and Name)
+     * @returns {Promise<String>}
+     */
+    async getPathName() {
+        let path = this.name;
+
+        if (this.parent === null) {
+            return path;
+        }
+
+        let parent = await Monitor.getParent(this.id);
+        while (parent !== null) {
+            path = `${parent.name} / ${path}`;
+            parent = await Monitor.getParent(parent.id);
+        }
+
+        return path;
+    }
+
+    /**
+     * Gets recursive all child ids
+	 * @param {number} monitorID ID of the monitor to get
+     * @returns {Promise<Array>}
+     */
+    static async getAllChildrenIDs(monitorID) {
+        const childs = await Monitor.getChildren(monitorID);
+
+        if (childs === null) {
+            return [];
+        }
+
+        let childrenIDs = [];
+
+        for (const child of childs) {
+            childrenIDs.push(child.id);
+            childrenIDs = childrenIDs.concat(await Monitor.getAllChildrenIDs(child.id));
+        }
+
+        return childrenIDs;
+    }
+
+    /**
+	 * Checks recursive if parent (ancestors) are active
+	 * @param {number} monitorID ID of the monitor to get
+	 * @returns {Promise<Boolean>}
+	 */
+    static async isParentActive(monitorID) {
+        const parent = await Monitor.getParent(monitorID);
+
+        if (parent === null) {
+            return true;
+        }
+
+        const parentActive = await Monitor.isParentActive(parent.id);
+        return parent.active && parentActive;
     }
 }
 

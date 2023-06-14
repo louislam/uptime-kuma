@@ -1,6 +1,7 @@
 <template>
     <transition name="slide-fade" appear>
         <div v-if="monitor">
+            <router-link v-if="group !== ''" :to="monitorURL(monitor.parent)"> {{ group }}</router-link>
             <h1> {{ monitor.name }}</h1>
             <p v-if="monitor.description">{{ monitor.description }}</p>
             <div class="tags">
@@ -40,7 +41,7 @@
                     <button v-if="monitor.active" class="btn btn-normal" @click="pauseDialog">
                         <font-awesome-icon icon="pause" /> {{ $t("Pause") }}
                     </button>
-                    <button v-if="! monitor.active" class="btn btn-primary" @click="resumeMonitor">
+                    <button v-if="! monitor.active" class="btn btn-primary" :disabled="monitor.forceInactive" @click="resumeMonitor">
                         <font-awesome-icon icon="play" /> {{ $t("Resume") }}
                     </button>
                     <router-link :to=" '/edit/' + monitor.id " class="btn btn-normal">
@@ -69,7 +70,7 @@
 
             <div class="shadow-box big-padding text-center stats">
                 <div class="row">
-                    <div class="col-12 col-sm col row d-flex align-items-center d-sm-block">
+                    <div v-if="monitor.type !== 'group'" class="col-12 col-sm col row d-flex align-items-center d-sm-block">
                         <h4 class="col-4 col-sm-12">{{ pingTitle() }}</h4>
                         <p class="col-4 col-sm-12 mb-0 mb-sm-2">({{ $t("Current") }})</p>
                         <span class="col-4 col-sm-12 num">
@@ -78,7 +79,7 @@
                             </a>
                         </span>
                     </div>
-                    <div class="col-12 col-sm col row d-flex align-items-center d-sm-block">
+                    <div v-if="monitor.type !== 'group'" class="col-12 col-sm col row d-flex align-items-center d-sm-block">
                         <h4 class="col-4 col-sm-12">{{ pingTitle(true) }}</h4>
                         <p class="col-4 col-sm-12 mb-0 mb-sm-2">(24{{ $t("-hour") }})</p>
                         <span class="col-4 col-sm-12 num">
@@ -214,6 +215,7 @@ import Pagination from "v-pagination-3";
 const PingChart = defineAsyncComponent(() => import("../components/PingChart.vue"));
 import Tag from "../components/Tag.vue";
 import CertificateInfo from "../components/CertificateInfo.vue";
+import { getMonitorRelativeURL } from "../util.ts";
 import { URL } from "whatwg-url";
 
 export default {
@@ -313,6 +315,13 @@ export default {
             return this.heartBeatList.slice(startIndex, endIndex);
         },
 
+        group() {
+            if (!this.monitor.pathName.includes("/")) {
+                return "";
+            }
+            return this.monitor.pathName.substr(0, this.monitor.pathName.lastIndexOf("/"));
+        },
+
         pushURL() {
             return this.$root.baseURL + "/api/push/" + this.monitor.pushToken + "?status=up&msg=OK&ping=";
         },
@@ -407,6 +416,15 @@ export default {
             }
 
             return this.$t(translationPrefix + "Ping");
+        },
+
+        /**
+         * Get URL of monitor
+         * @param {number} id ID of monitor
+         * @returns {string} Relative URL of monitor
+         */
+        monitorURL(id) {
+            return getMonitorRelativeURL(id);
         },
 
         /** Filter and hide password in URL for display */

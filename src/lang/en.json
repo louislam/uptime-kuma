@@ -13,6 +13,7 @@
     "Version": "Version",
     "Check Update On GitHub": "Check Update On GitHub",
     "List": "List",
+    "Home": "Home",
     "Add": "Add",
     "Add New Monitor": "Add New Monitor",
     "Quick Stats": "Quick Stats",
@@ -22,6 +23,8 @@
     "statusMaintenance": "Maintenance",
     "Maintenance": "Maintenance",
     "Unknown": "Unknown",
+    "Cannot connect to the socket server": "Cannot connect to the socket server",
+    "Reconnecting...": "Reconnecting...",
     "General Monitor Type": "General Monitor Type",
     "Passive Monitor Type": "Passive Monitor Type",
     "Specific Monitor Type": "Specific Monitor Type",
@@ -437,6 +440,7 @@
     "Maintenance Time Window of a Day": "Maintenance Time Window of a Day",
     "Effective Date Range": "Effective Date Range (Optional)",
     "Schedule Maintenance": "Schedule Maintenance",
+    "Edit Maintenance": "Edit Maintenance",
     "Date and Time": "Date and Time",
     "DateTime Range": "DateTime Range",
     "loadingError": "Cannot fetch the data, please try again later.",
@@ -744,5 +748,7 @@
     "Badge Down Days": "Badge Down Days",
     "Badge Style": "Badge Style",
     "Badge value (For Testing only.)": "Badge value (For Testing only.)",
-    "Badge URL": "Badge URL"
+    "Badge URL": "Badge URL",
+    "Group": "Group",
+    "Monitor Group": "Monitor Group"
 }
