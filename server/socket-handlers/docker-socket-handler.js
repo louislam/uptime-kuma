@@ -18,7 +18,7 @@ module.exports.dockerSocketHandler = (socket) => {
 
             callback({
                 ok: true,
-                msg: "Saved",
+                msg: "Saved.",
                 msgTranslated: true,
                 id: dockerHostBean.id,
             });

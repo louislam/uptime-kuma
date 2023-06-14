@@ -1067,7 +1067,7 @@ let needSetup = false;
 
                 callback({
                     ok: true,
-                    msg: "Saved",
+                    msg: "Saved.",
                     msgTranslated: true,
                     tag: await bean.toJSON(),
                 });
@@ -1255,7 +1255,7 @@ let needSetup = false;
 
                 callback({
                     ok: true,
-                    msg: "Saved",
+                    msg: "Saved.",
                     msgTranslated: true,
                 });
 
@@ -1280,7 +1280,7 @@ let needSetup = false;
 
                 callback({
                     ok: true,
-                    msg: "Saved",
+                    msg: "Saved.",
                     msgTranslated: true,
                     id: notificationBean.id,
                 });
