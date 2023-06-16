@@ -642,6 +642,9 @@ let needSetup = false;
                 monitor.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
                 delete monitor.accepted_statuscodes;
 
+                monitor.kafkaProducerBrokers = JSON.stringify(monitor.kafkaProducerBrokers);
+                monitor.kafkaProducerSaslOptions = JSON.stringify(monitor.kafkaProducerSaslOptions);
+
                 bean.import(monitor);
                 bean.user_id = socket.userID;
 
@@ -747,6 +750,11 @@ let needSetup = false;
                 bean.radiusCallingStationId = monitor.radiusCallingStationId;
                 bean.radiusSecret = monitor.radiusSecret;
                 bean.httpBodyEncoding = monitor.httpBodyEncoding;
+                bean.kafkaProducerTopic = monitor.kafkaProducerTopic;
+                bean.kafkaProducerBrokers = JSON.stringify(monitor.kafkaProducerBrokers);
+                bean.kafkaProducerAllowAutoTopicCreation = monitor.kafkaProducerAllowAutoTopicCreation;
+                bean.kafkaProducerSaslOptions = JSON.stringify(monitor.kafkaProducerSaslOptions);
+                bean.kafkaProducerMessage = monitor.kafkaProducerMessage;
 
                 bean.validate();
 

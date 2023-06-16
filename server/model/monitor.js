@@ -119,9 +119,9 @@ class Monitor extends BeanModel {
             game: this.game,
             httpBodyEncoding: this.httpBodyEncoding,
             kafkaProducerTopic: this.kafkaProducerTopic,
-            kafkaProducerBrokers: this.kafkaProducerBrokers,
-            kafkaProducerSsl: this.kafkaProducerSsl,
-            kafkaProducerAllowAutoTopicCreation: this.kafkaProducerAllowAutoTopicCreation,
+            kafkaProducerBrokers: JSON.parse(this.kafkaProducerBrokers),
+            kafkaProducerSsl: this.kafkaProducerSsl === "1" && true || false,
+            kafkaProducerAllowAutoTopicCreation: this.kafkaProducerAllowAutoTopicCreation === "1" && true || false,
             kafkaProducerMessage: this.kafkaProducerMessage,
         };
 
@@ -146,7 +146,7 @@ class Monitor extends BeanModel {
                 tlsCa: this.tlsCa,
                 tlsCert: this.tlsCert,
                 tlsKey: this.tlsKey,
-                kafkaProducerSaslOptions: this.kafkaProducerSaslOptions,
+                kafkaProducerSaslOptions: JSON.parse(this.kafkaProducerSaslOptions),
             };
         }
 
@@ -755,7 +755,7 @@ class Monitor extends BeanModel {
                     let startTime = dayjs().valueOf();
 
                     bean.msg = await kafkaProducerAsync(
-                        this.kafkaProducerBrokers,
+                        JSON.parse(this.kafkaProducerBrokers),
                         this.kafkaProducerTopic,
                         this.kafkaProducerMessage,
                         {
@@ -764,7 +764,7 @@ class Monitor extends BeanModel {
                             clientId: `Uptime-Kuma/${version}`,
                             interval: this.interval,
                         },
-                        this.kafkaProducerSaslOptions,
+                        JSON.parse(this.kafkaProducerSaslOptions),
                     );
                     bean.status = UP;
                     bean.ping = dayjs().valueOf() - startTime;

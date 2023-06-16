@@ -175,6 +175,13 @@
                                 <input id="kafkaProducerTopic" v-model="monitor.kafkaProducerTopic" type="text" class="form-control" required>
                             </div>
 
+                            <!-- Kafka Producer Message -->
+                            <!-- Kafka Producer Only -->
+                            <div v-if="monitor.type === 'kafka-producer'" class="my-3">
+                                <label for="kafkaProducerMessage" class="form-label">{{ $t("Kafka Producer Message") }}</label>
+                                <input id="kafkaProducerMessage" v-model="monitor.kafkaProducerMessage" type="text" class="form-control" required>
+                            </div>
+
                             <!-- Kafka SSL -->
                             <!-- Kafka Producer only -->
                             <div v-if="monitor.type === 'kafka-producer'" class="my-3 form-check">
@@ -552,38 +559,40 @@
                                         v-model="monitor.kafkaProducerSaslOptions.mechanism"
                                         :options="kafkaSaslMechanismOptions"
                                         :multiple="false"
-                                        :close-on-select="true"
                                         :clear-on-select="false"
                                         :preserve-search="false"
                                         :placeholder="$t('Pick a SASL Mechanism...')"
                                         :preselect-first="false"
                                         :max-height="500"
+                                        :allow-empty="false"
                                         :taggable="false"
                                     ></VueMultiselect>
                                 </div>
-                                <div v-if="monitor.kafkaProducerSaslOptions.mechanism !== 'aws'" class="my-3">
-                                    <label for="kafkaProducerSaslUsername" class="form-label">{{ $t("Username") }}</label>
-                                    <input id="kafkaProducerSaslUsername" v-model="monitor.kafkaProducerSaslOptions.username" type="text" autocomplete="kafkaProducerSaslUsername" class="form-control">
-                                </div>
-                                <div v-if="monitor.kafkaProducerSaslOptions.mechanism !== 'aws'" class="my-3">
-                                    <label for="kafkaProducerSaslPassword" class="form-label">{{ $t("Password") }}</label>
-                                    <input id="kafkaProducerSaslPassword" v-model="monitor.kafkaProducerSaslOptions.password" type="password" autocomplete="kafkaProducerSaslPassword" class="form-control">
-                                </div>
-                                <div v-if="monitor.kafkaProducerSaslOptions.mechanism === 'aws'" class="my-3">
-                                    <label for="kafkaProducerSaslAuthorizationIdentity" class="form-label">{{ $t("Authorization Identity") }}</label>
-                                    <input id="kafkaProducerSaslAuthorizationIdentity" v-model="monitor.kafkaProducerSaslOptions.authorizationIdentity" type="text" autocomplete="kafkaProducerSaslAuthorizationIdentity" class="form-control" required>
-                                </div>
-                                <div v-if="monitor.kafkaProducerSaslOptions.mechanism === 'aws'" class="my-3">
-                                    <label for="kafkaProducerSaslAccessKeyId" class="form-label">{{ $t("AccessKey Id") }}</label>
-                                    <input id="kafkaProducerSaslAccessKeyId" v-model="monitor.kafkaProducerSaslOptions.accessKeyId" type="text" autocomplete="kafkaProducerSaslAccessKeyId" class="form-control" required>
-                                </div>
-                                <div v-if="monitor.kafkaProducerSaslOptions.mechanism === 'aws'" class="my-3">
-                                    <label for="kafkaProducerSaslSecretAccessKey" class="form-label">{{ $t("Secret AccessKey") }}</label>
-                                    <input id="kafkaProducerSaslSecretAccessKey" v-model="monitor.kafkaProducerSaslOptions.secretAccessKey" type="password" autocomplete="kafkaProducerSaslSecretAccessKey" class="form-control" required>
-                                </div>
-                                <div v-if="monitor.kafkaProducerSaslOptions.mechanism === 'aws'" class="my-3">
-                                    <label for="kafkaProducerSaslSessionToken" class="form-label">{{ $t("Session Token") }}</label>
-                                    <input id="kafkaProducerSaslSessionToken" v-model="monitor.kafkaProducerSaslOptions.sessionToken" type="password" autocomplete="kafkaProducerSaslSessionToken" class="form-control">
+                                <div v-if="monitor.kafkaProducerSaslOptions.mechanism !== 'None'">
+                                    <div v-if="monitor.kafkaProducerSaslOptions.mechanism !== 'aws'" class="my-3">
+                                        <label for="kafkaProducerSaslUsername" class="form-label">{{ $t("Username") }}</label>
+                                        <input id="kafkaProducerSaslUsername" v-model="monitor.kafkaProducerSaslOptions.username" type="text" autocomplete="kafkaProducerSaslUsername" class="form-control">
+                                    </div>
+                                    <div v-if="monitor.kafkaProducerSaslOptions.mechanism !== 'aws'" class="my-3">
+                                        <label for="kafkaProducerSaslPassword" class="form-label">{{ $t("Password") }}</label>
+                                        <input id="kafkaProducerSaslPassword" v-model="monitor.kafkaProducerSaslOptions.password" type="password" autocomplete="kafkaProducerSaslPassword" class="form-control">
+                                    </div>
+                                    <div v-if="monitor.kafkaProducerSaslOptions.mechanism === 'aws'" class="my-3">
+                                        <label for="kafkaProducerSaslAuthorizationIdentity" class="form-label">{{ $t("Authorization Identity") }}</label>
+                                        <input id="kafkaProducerSaslAuthorizationIdentity" v-model="monitor.kafkaProducerSaslOptions.authorizationIdentity" type="text" autocomplete="kafkaProducerSaslAuthorizationIdentity" class="form-control" required>
+                                    </div>
+                                    <div v-if="monitor.kafkaProducerSaslOptions.mechanism === 'aws'" class="my-3">
+                                        <label for="kafkaProducerSaslAccessKeyId" class="form-label">{{ $t("AccessKey Id") }}</label>
+                                        <input id="kafkaProducerSaslAccessKeyId" v-model="monitor.kafkaProducerSaslOptions.accessKeyId" type="text" autocomplete="kafkaProducerSaslAccessKeyId" class="form-control" required>
+                                    </div>
+                                    <div v-if="monitor.kafkaProducerSaslOptions.mechanism === 'aws'" class="my-3">
+                                        <label for="kafkaProducerSaslSecretAccessKey" class="form-label">{{ $t("Secret AccessKey") }}</label>
+                                        <input id="kafkaProducerSaslSecretAccessKey" v-model="monitor.kafkaProducerSaslOptions.secretAccessKey" type="password" autocomplete="kafkaProducerSaslSecretAccessKey" class="form-control" required>
+                                    </div>
+                                    <div v-if="monitor.kafkaProducerSaslOptions.mechanism === 'aws'" class="my-3">
+                                        <label for="kafkaProducerSaslSessionToken" class="form-label">{{ $t("Session Token") }}</label>
+                                        <input id="kafkaProducerSaslSessionToken" v-model="monitor.kafkaProducerSaslOptions.sessionToken" type="password" autocomplete="kafkaProducerSaslSessionToken" class="form-control">
+                                    </div>
                                 </div>
                             </template>
 
@@ -1065,6 +1074,7 @@ message HealthCheckResponse {
         ];
 
         let kafkaSaslMechanismOptions = [
+            "None",
             "plain",
             "scram-sha-256",
             "scram-sha-512",
@@ -1114,7 +1124,7 @@ message HealthCheckResponse {
                     httpBodyEncoding: "json",
                     kafkaProducerBrokers: [],
                     kafkaProducerSaslOptions: {
-                        mechanism: "plain",
+                        mechanism: "None",
                     },
                 };
 

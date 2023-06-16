@@ -208,13 +208,11 @@ exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
  * interval (interval defaults to 20, allowAutoTopicCreation defaults to false, clientId defaults to "Uptime-Kuma"
  * and ssl defaults to false)
  * @param {string[]} brokers List of kafka brokers to connect, host and port joined by ':'
- * @param {SASLOptions} [saslOptions={mechanism: "plain"}] Options for kafka client Authentication (SASL) (defaults to
- * {mechanism: "plain"})
+ * @param {SASLOptions} [saslOptions={}] Options for kafka client Authentication (SASL) (defaults to
+ * {})
  * @returns {Promise<string>}
  */
-exports.kafkaProducerAsync = function (brokers, topic, message, options = {}, saslOptions = {
-    mechanism: "plain",
-}) {
+exports.kafkaProducerAsync = function (brokers, topic, message, options = {}, saslOptions = {}) {
     return new Promise((resolve, reject) => {
         const { interval = 20, allowAutoTopicCreation = false, ssl = false, clientId = "Uptime-Kuma" } = options;
 
@@ -224,20 +222,57 @@ exports.kafkaProducerAsync = function (brokers, topic, message, options = {}, sa
         const timeoutID = setTimeout(() => {
             log.debug("kafkaProducer", "KafkaProducer timeout triggered");
             success = true;
-            producer.disconnect();
             reject(new Error("Timeout"));
         }, interval * 1000 * 0.8);
+
+        if (saslOptions.mechanism === "None") {
+            saslOptions = undefined;
+        }
 
         let client = new Kafka({
             brokers: brokers,
             clientId: clientId,
             sasl: saslOptions,
+            retry: {
+                retries: 0,
+            },
             ssl: ssl,
         });
 
         let producer = client.producer({
             allowAutoTopicCreation: allowAutoTopicCreation,
+            retry: {
+                retries: 0,
+            }
         });
+
+        producer.connect().then(
+            () => {
+                try {
+                    producer.send({
+                        topic: topic,
+                        messages: [{
+                            value: message,
+                        }],
+                    });
+                    success = true;
+                    clearTimeout(timeoutID);
+                    resolve("Message sent successfully");
+                } catch (e) {
+                    success = true;
+                    producer.disconnect();
+                    clearTimeout(timeoutID);
+                    reject(new Error("Error sending message: " + e.message));
+                }
+            }
+        ).catch(
+            (e) => {
+                success = true;
+                producer.disconnect();
+                clearTimeout(timeoutID);
+                reject(new Error("Error in producer connection: " + e.message));
+            }
+        );
 
         producer.on("producer.network.request_timeout", (_) => {
             clearTimeout(timeoutID);
@@ -248,26 +283,6 @@ exports.kafkaProducerAsync = function (brokers, topic, message, options = {}, sa
             if (!success) {
                 clearTimeout(timeoutID);
                 reject(new Error("producer.disconnect"));
-            }
-        });
-
-        producer.on("producer.connect", (_) => {
-            try {
-                producer.send({
-                    topic: topic,
-                    messages: [{
-                        value: message,
-                    }],
-                });
-                success = true;
-                producer.disconnect();
-                clearTimeout(timeoutID);
-                resolve("Message sent successfully");
-            } catch (e) {
-                success = true;
-                producer.disconnect();
-                clearTimeout(timeoutID);
-                reject(new Error("Error sending message: " + e.message));
             }
         });
     });
