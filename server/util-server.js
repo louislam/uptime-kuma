@@ -216,12 +216,11 @@ exports.kafkaProducerAsync = function (brokers, topic, message, options = {}, sa
     return new Promise((resolve, reject) => {
         const { interval = 20, allowAutoTopicCreation = false, ssl = false, clientId = "Uptime-Kuma" } = options;
 
-        // Used to track manual disconnect calls
-        let success = false;
+        let connectedToKafka = false;
 
         const timeoutID = setTimeout(() => {
             log.debug("kafkaProducer", "KafkaProducer timeout triggered");
-            success = true;
+            connectedToKafka = true;
             reject(new Error("Timeout"));
         }, interval * 1000 * 0.8);
 
@@ -255,11 +254,11 @@ exports.kafkaProducerAsync = function (brokers, topic, message, options = {}, sa
                             value: message,
                         }],
                     });
-                    success = true;
+                    connectedToKafka = true;
                     clearTimeout(timeoutID);
                     resolve("Message sent successfully");
                 } catch (e) {
-                    success = true;
+                    connectedToKafka = true;
                     producer.disconnect();
                     clearTimeout(timeoutID);
                     reject(new Error("Error sending message: " + e.message));
@@ -267,7 +266,7 @@ exports.kafkaProducerAsync = function (brokers, topic, message, options = {}, sa
             }
         ).catch(
             (e) => {
-                success = true;
+                connectedToKafka = true;
                 producer.disconnect();
                 clearTimeout(timeoutID);
                 reject(new Error("Error in producer connection: " + e.message));
@@ -280,7 +279,7 @@ exports.kafkaProducerAsync = function (brokers, topic, message, options = {}, sa
         });
 
         producer.on("producer.disconnect", (_) => {
-            if (!success) {
+            if (!connectedToKafka) {
                 clearTimeout(timeoutID);
                 reject(new Error("producer.disconnect"));
             }
