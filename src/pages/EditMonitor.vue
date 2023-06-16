@@ -160,7 +160,7 @@
                                         :max-height="500"
                                         :taggable="true"
                                         :show-no-options="false"
-                                        :close-on-select="true"
+                                        :close-on-select="false"
                                         :clear-on-select="false"
                                         :preserve-search="false"
                                         :preselect-first="false"
