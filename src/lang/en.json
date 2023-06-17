@@ -750,5 +750,6 @@
     "Badge value (For Testing only.)": "Badge value (For Testing only.)",
     "Badge URL": "Badge URL",
     "Group": "Group",
-    "Monitor Group": "Monitor Group"
+    "Monitor Group": "Monitor Group",
+    "noGroupMonitorMsg": "Not Available. Create a Group Monitor First."
 }

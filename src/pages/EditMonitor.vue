@@ -96,7 +96,8 @@
                             <div class="my-3">
                                 <label for="parent" class="form-label">{{ $t("Monitor Group") }}</label>
                                 <select v-model="monitor.parent" class="form-select" :disabled="sortedMonitorList.length === 0">
-                                    <option :value="null" selected>{{ $t("None") }}</option>
+                                    <option v-if="sortedMonitorList.length === 0" :value="null" selected>{{ $t("noGroupMonitorMsg") }}</option>
+                                    <option v-else :value="null" selected>{{ $t("None") }}</option>
                                     <option v-for="parentMonitor in sortedMonitorList" :key="parentMonitor.id" :value="parentMonitor.id">{{ parentMonitor.pathName }}</option>
                                 </select>
                             </div>

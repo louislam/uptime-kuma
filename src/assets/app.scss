@@ -266,6 +266,11 @@ optgroup {
         background-color: $dark-bg2;
     }
 
+    .form-select:disabled {
+        color: rgba($dark-font-color, 0.7);
+        background-color: $dark-bg;
+    }
+
     .form-control, .form-select {
         border-color: $dark-border-color;
     }
