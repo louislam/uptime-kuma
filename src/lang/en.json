@@ -764,6 +764,6 @@
     "Authorization Identity": "Authorization Identity",
     "AccessKey Id": "AccessKey Id",
     "Secret AccessKey": "Secret AccessKey",
-    "Session Token": "Session Token"
+    "Session Token": "Session Token",
     "noGroupMonitorMsg": "Not Available. Create a Group Monitor First."
 }
