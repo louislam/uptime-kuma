@@ -751,5 +751,6 @@
     "Badge URL": "Badge URL",
     "Group": "Group",
     "Monitor Group": "Monitor Group",
-    "noGroupMonitorMsg": "Not Available. Create a Group Monitor First."
+    "noGroupMonitorMsg": "Not Available. Create a Group Monitor First.",
+    "Close": "Close"
 }
