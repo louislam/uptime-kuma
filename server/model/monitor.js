@@ -440,6 +440,19 @@ class Monitor extends BeanModel {
                             data = JSON.stringify(data);
                         }
 
+                        if (this.keyword.startsWith('##') && this.keyword.endsWith('##')) {
+                            // remove the '##' from start and end
+                            let regexString = this.keyword.slice(2, -2);
+                            // create regular expression object
+                            let regex = new RegExp(regexString);
+                            // do regular check
+                            if (regex.test(data)) {
+                                bean.msg += ", keyword is found";
+                                bean.status = UP;
+                            }else{
+                                 throw new Error(bean.msg + ", but regEx check is failed [" + regexString + "]");
+                            }
+                        } else {
                         if (data.includes(this.keyword)) {
                             bean.msg += ", keyword is found";
                             bean.status = UP;
@@ -450,6 +463,7 @@ class Monitor extends BeanModel {
                             }
                             throw new Error(bean.msg + ", but keyword is not in [" + data + "]");
                         }
+                    }
 
                     }
 
