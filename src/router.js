@@ -69,16 +69,15 @@ const routes = [
                     {
                         path: "/edit/:id",
                         component: EditMonitor,
+                    },
+                    {
+                        path: "/add",
+                        component: EditMonitor,
                         children: [
                             {
                                 path: "/clone/:id",
                                 component: EditMonitor,
                             },
-                            {
-                                path: "/add",
-                                component: EditMonitor,
-                            },
-
                         ]
                     },
                     {
