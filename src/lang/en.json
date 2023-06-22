@@ -765,5 +765,6 @@
     "AccessKey Id": "AccessKey Id",
     "Secret AccessKey": "Secret AccessKey",
     "Session Token": "Session Token",
-    "noGroupMonitorMsg": "Not Available. Create a Group Monitor First."
+    "noGroupMonitorMsg": "Not Available. Create a Group Monitor First.",
+    "Close": "Close"
 }

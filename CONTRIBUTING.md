@@ -47,17 +47,17 @@ Here are some references:
 
 ❌ Won't Merge
 - A dedicated pr for translating existing languages (You can now translate on https://weblate.kuma.pet) 
-- Do not pass auto test
+- Do not pass the auto test
 - Any breaking changes
-- Duplicated pull request
+- Duplicated pull requests
 - Buggy
 - UI/UX is not close to Uptime Kuma 
-- Existing logic is completely modified or deleted for no reason
-- A function that is completely out of scope
-- Convert existing code into other programming languages
-- Unnecessary large code changes (Hard to review, causes code conflicts to other pull requests)
+- Modifications or deletions of existing logic without a valid reason.
+- Adding functions that is completely out of scope
+- Converting existing code into other programming languages
+- Unnecessarily large code changes that are hard to review and cause conflicts with other PRs.
 
-The above cases cannot cover all situations.
+The above cases may not cover all possible situations.
 
 I (@louislam) have the final say. If your pull request does not meet my expectations, I will reject it, no matter how much time you spend on it. Therefore, it is essential to have a discussion beforehand.
 
