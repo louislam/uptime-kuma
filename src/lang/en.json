@@ -436,6 +436,7 @@
     "Enable": "Enable",
     "Disable": "Disable",
     "chromeExecutable": "Chrome/Chromium Executable",
+    "chromeExecutableAutoDetect": "Auto Detect",
     "dnsCacheDescription": "It may be not working in some IPv6 environments, disable it if you encounter any issues.",
     "Single Maintenance Window": "Single Maintenance Window",
     "Maintenance Time Window of a Day": "Maintenance Time Window of a Day",

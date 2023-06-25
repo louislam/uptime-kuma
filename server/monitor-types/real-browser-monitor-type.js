@@ -134,7 +134,7 @@ class RealBrowserMonitorType extends MonitorType {
 
         const res = await page.goto(monitor.url, {
             waitUntil: "networkidle",
-            timeout: this.interval * 1000 * 0.8,
+            timeout: monitor.interval * 1000 * 0.8,
         });
 
         let filename = jwt.sign(monitor.id, server.jwtSecret) + ".png";

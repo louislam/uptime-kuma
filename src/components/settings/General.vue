@@ -202,6 +202,7 @@
                         v-model="settings.chromeExecutable"
                         class="form-control"
                         name="primaryBaseURL"
+                        :placeholder="$t('chromeExecutableAutoDetect')"
                     />
                     <button class="btn btn-outline-primary" type="button" @click="testChrome">
                         {{ $t("Test") }}
