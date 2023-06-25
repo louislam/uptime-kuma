@@ -98,6 +98,9 @@ class UptimeKumaServer {
             }
         }
 
+        // Set Monitor Types
+        UptimeKumaServer.monitorTypeList["real-browser"] = new RealBrowserMonitorType();
+
         this.io = new Server(this.httpServer);
     }
 
@@ -337,3 +340,4 @@ module.exports = {
 
 // Must be at the end
 const { MonitorType } = require("./monitor-types/monitor-type");
+const { RealBrowserMonitorType } = require("./monitor-types/real-browser-monitor-type");

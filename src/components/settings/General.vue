@@ -190,6 +190,27 @@
                 </div>
             </div>
 
+            <!-- Chrome Executable -->
+            <div class="mb-4">
+                <label class="form-label" for="primaryBaseURL">
+                    {{ $t("chromeExecutable") }}
+                </label>
+
+                <div class="input-group mb-3">
+                    <input
+                        id="primaryBaseURL"
+                        v-model="settings.chromeExecutable"
+                        class="form-control"
+                        name="primaryBaseURL"
+                    />
+                    <button class="btn btn-outline-primary" type="button" @click="testChrome">
+                        {{ $t("Test") }}
+                    </button>
+                </div>
+
+                <div class="form-text"></div>
+            </div>
+
             <!-- Save Button -->
             <div>
                 <button class="btn btn-primary" type="submit">
@@ -240,6 +261,10 @@ export default {
         /** Get the base URL of the application */
         autoGetPrimaryBaseURL() {
             this.settings.primaryBaseURL = location.protocol + "//" + location.host;
+        },
+
+        testChrome() {
+            this.$root.send("testChrome", this.settings.chromeExecutable);
         },
     },
 };

@@ -113,6 +113,7 @@
         "password-hash": "~1.2.2",
         "pg": "~8.8.0",
         "pg-connection-string": "~2.5.0",
+        "playwright-core": "~1.35.1",
         "prom-client": "~13.2.0",
         "prometheus-api-metrics": "~3.2.1",
         "protobufjs": "~7.1.1",
@@ -125,6 +126,9 @@
         "tar": "~6.1.11",
         "tcp-ping": "~0.1.1",
         "thirty-two": "~1.0.2"
+    },
+    "optionalDependencies": {
+        "playwright-chromium": "~1.35.1"
     },
     "devDependencies": {
         "@actions/github": "~5.0.1",
