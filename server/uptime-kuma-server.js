@@ -61,6 +61,12 @@ class UptimeKumaServer {
 
     };
 
+    /**
+     * Use for decode the auth object
+     * @type {null}
+     */
+    jwtSecret = null;
+
     static getInstance(args) {
         if (UptimeKumaServer.instance == null) {
             UptimeKumaServer.instance = new UptimeKumaServer(args);
@@ -106,6 +112,9 @@ class UptimeKumaServer {
 
     /** Initialise app after the database has been set up */
     async initAfterDatabaseReady() {
+        // Static
+        this.app.use("/screenshots", express.static(Database.screenshotDir));
+
         await CacheableDnsHttpAgent.update();
 
         process.env.TZ = await this.getTimezone();

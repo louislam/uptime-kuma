@@ -4,6 +4,9 @@ const { UP, log } = require("../../src/util");
 const { Settings } = require("../settings");
 const commandExistsSync = require("command-exists").sync;
 const childProcess = require("child_process");
+const path = require("path");
+const Database = require("../database");
+const jwt = require("jsonwebtoken");
 
 /**
  *
@@ -124,7 +127,7 @@ class RealBrowserMonitorType extends MonitorType {
 
     name = "real-browser";
 
-    async check(monitor, heartbeat) {
+    async check(monitor, heartbeat, server) {
         const browser = await getBrowser();
         const context = await browser.newContext();
         const page = await context.newPage();
@@ -134,11 +137,11 @@ class RealBrowserMonitorType extends MonitorType {
             timeout: this.interval * 1000 * 0.8,
         });
 
-        /*
-        TODO: screenshot?
+        let filename = jwt.sign(monitor.id, server.jwtSecret) + ".png";
+
         await page.screenshot({
-            path: "example.png",
-        });*/
+            path: path.join(Database.screenshotDir, filename),
+        });
 
         await context.close();
 
