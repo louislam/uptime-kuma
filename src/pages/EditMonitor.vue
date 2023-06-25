@@ -33,7 +33,7 @@
                                         <option value="dns">
                                             DNS
                                         </option>
-                                        <option value="docker" disabled>
+                                        <option value="docker">
                                             {{ $t("Docker Container") }}
                                         </option>
 
