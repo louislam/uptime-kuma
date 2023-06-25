@@ -227,7 +227,6 @@
 import HiddenInput from "../../components/HiddenInput.vue";
 import dayjs from "dayjs";
 import { timezoneList } from "../../util-frontend";
-import { useToast } from "vue-toastification";
 
 export default {
     components: {
