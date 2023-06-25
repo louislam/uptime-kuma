@@ -98,6 +98,9 @@ class UptimeKumaServer {
             }
         }
 
+        // Set Monitor Types
+        UptimeKumaServer.monitorTypeList["tailscale-ping"] = new TailscalePing();
+
         this.io = new Server(this.httpServer);
     }
 
@@ -337,3 +340,4 @@ module.exports = {
 
 // Must be at the end
 const { MonitorType } = require("./monitor-types/monitor-type");
+const { TailscalePing } = require("./monitor-types/tailscale-ping");
