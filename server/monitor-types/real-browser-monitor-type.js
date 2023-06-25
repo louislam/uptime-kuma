@@ -40,7 +40,7 @@ async function prepareChromeExecutable(executablePath) {
             if ( !commandExistsSync(executablePath)) {
                 await new Promise((resolve, reject) => {
                     log.info("Chromium", "Installing Chromium...");
-                    let child = childProcess.exec("apt update && apt --yes --no-install-recommends install chromium");
+                    let child = childProcess.exec("apt update && apt --yes --no-install-recommends install chromium fonts-indic fonts-noto fonts-noto-cjk");
 
                     // On exit
                     child.on("exit", (code) => {

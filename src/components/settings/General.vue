@@ -210,7 +210,7 @@
                 </div>
 
                 <div class="form-text">
-                    For Docker users, if Chromium is not yet installed, it may take a few minutes to install and display the test result.
+                    {{ $t("chromeExecutableDescription") }}
                 </div>
             </div>
 
