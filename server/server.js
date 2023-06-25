@@ -149,6 +149,7 @@ const { Settings } = require("./settings");
 const { CacheableDnsHttpAgent } = require("./cacheable-dns-http-agent");
 const { pluginsHandler } = require("./socket-handlers/plugins-handler");
 const apicache = require("./modules/apicache");
+const { resetChrome } = require("./monitor-types/real-browser-monitor-type");
 
 app.use(express.json());
 
@@ -1148,6 +1149,8 @@ let needSetup = false;
                     await doubleCheckPassword(socket, currentPassword);
                 }
 
+                const previousChromeExecutable = await Settings.get("chromeExecutable");
+
                 await setSettings("general", data);
                 server.entryPage = data.entryPage;
 
@@ -1156,6 +1159,12 @@ let needSetup = false;
                 // Also need to apply timezone globally
                 if (data.serverTimezone) {
                     await server.setTimezone(data.serverTimezone);
+                }
+
+                // If Chrome Executable is changed, need to reset the browser
+                if (previousChromeExecutable !== data.chromeExecutable) {
+                    log.info("settings", "Chrome executable is changed. Resetting Chrome...");
+                    await resetChrome();
                 }
 
                 callback({

@@ -127,9 +127,6 @@
         "tcp-ping": "~0.1.1",
         "thirty-two": "~1.0.2"
     },
-    "optionalDependencies": {
-        "playwright-chromium": "~1.35.1"
-    },
     "devDependencies": {
         "@actions/github": "~5.0.1",
         "@babel/eslint-parser": "~7.17.0",

@@ -208,7 +208,9 @@
                     </button>
                 </div>
 
-                <div class="form-text"></div>
+                <div class="form-text">
+                    For Docker users, if Chromium is not yet installed, it may take a few minutes to install and display the test result.
+                </div>
             </div>
 
             <!-- Save Button -->
@@ -225,6 +227,7 @@
 import HiddenInput from "../../components/HiddenInput.vue";
 import dayjs from "dayjs";
 import { timezoneList } from "../../util-frontend";
+import { useToast } from "vue-toastification";
 
 export default {
     components: {
@@ -264,7 +267,9 @@ export default {
         },
 
         testChrome() {
-            this.$root.send("testChrome", this.settings.chromeExecutable);
+            this.$root.getSocket().emit("testChrome", this.settings.chromeExecutable, (res) => {
+                this.$root.toastRes(res);
+            });
         },
     },
 };

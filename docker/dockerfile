@@ -26,6 +26,8 @@ RUN chmod +x /app/extra/entrypoint.sh
 FROM louislam/uptime-kuma:base-debian AS release
 WORKDIR /app
 
+ENV UPTIME_KUMA_IS_CONTAINER=1
+
 # Copy app files from build layer
 COPY --from=build /app /app
 
