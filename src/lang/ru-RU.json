@@ -467,7 +467,7 @@
     "onebotMessageType": "Тип сообщения OneBot",
     "onebotGroupMessage": "Группа",
     "onebotPrivateMessage": "Private",
-    "onebotUserOrGroupId": "ID группы или пользователя",
+    "onebotUserOrGroupId": "ID группы/пользователя",
     "onebotSafetyTips": "В целях безопасности необходимо установить токен доступа",
     "PushDeer Key": "ключ PushDeer",
     "Footer Text": "Текст нижнего колонтитула",
