@@ -751,5 +751,13 @@
     "endDateTime": "Data/godzina zakończenia",
     "cronExpression": "Wyrażenie Cron",
     "ntfyAuthenticationMethod": "Metoda Uwierzytelnienia",
-    "ntfyUsernameAndPassword": "Nazwa użytkownika i hasło"
+    "ntfyUsernameAndPassword": "Nazwa użytkownika i hasło",
+    "noGroupMonitorMsg": "Niedostępna. Stwórz najpierw grupę monitorów.",
+    "Close": "Zamknij",
+    "pushoverMessageTtl": "TTL wiadomości (sekundy)",
+    "Home": "Strona główna",
+    "Group": "Grupa",
+    "Monitor Group": "Grupa monitora",
+    "Reconnecting...": "Ponowne łączenie...",
+    "Cannot connect to the socket server": "Nie można połączyć się z serwerem gniazda"
 }
