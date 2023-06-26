@@ -785,5 +785,6 @@
     "Reconnecting...": "重连中……",
     "Edit Maintenance": "编辑维护计划",
     "Home": "首页",
-    "noGroupMonitorMsg": "暂无可用，请先创建一个监控项组。"
+    "noGroupMonitorMsg": "暂无可用，请先创建一个监控项组。",
+    "Close": "关闭"
 }
