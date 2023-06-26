@@ -12,6 +12,9 @@
                                 <label for="type" class="form-label">{{ $t("Monitor Type") }}</label>
                                 <select id="type" v-model="monitor.type" class="form-select">
                                     <optgroup :label="$t('General Monitor Type')">
+                                        <option value="group">
+                                            {{ $t("Group") }}
+                                        </option>
                                         <option value="http">
                                             HTTP(s)
                                         </option>
@@ -87,6 +90,16 @@
                             <div class="my-3">
                                 <label for="name" class="form-label">{{ $t("Friendly Name") }}</label>
                                 <input id="name" v-model="monitor.name" type="text" class="form-control" required>
+                            </div>
+
+                            <!-- Parent Monitor -->
+                            <div class="my-3">
+                                <label for="parent" class="form-label">{{ $t("Monitor Group") }}</label>
+                                <select v-model="monitor.parent" class="form-select" :disabled="sortedMonitorList.length === 0">
+                                    <option v-if="sortedMonitorList.length === 0" :value="null" selected>{{ $t("noGroupMonitorMsg") }}</option>
+                                    <option v-else :value="null" selected>{{ $t("None") }}</option>
+                                    <option v-for="parentMonitor in sortedMonitorList" :key="parentMonitor.id" :value="parentMonitor.id">{{ parentMonitor.pathName }}</option>
+                                </select>
                             </div>
 
                             <!-- URL -->
@@ -807,6 +820,47 @@ message HealthCheckResponse {
             return null;
         },
 
+        // Filter result by active state, weight and alphabetical
+        // Only return groups which arent't itself and one of its decendants
+        sortedMonitorList() {
+            let result = Object.values(this.$root.monitorList);
+
+            // Only groups, not itself, not a decendant
+            result = result.filter(
+                monitor => monitor.type === "group" &&
+				monitor.id !== this.monitor.id &&
+				!this.monitor.childrenIDs?.includes(monitor.id)
+            );
+
+            // Filter result by active state, weight and alphabetical
+            result.sort((m1, m2) => {
+
+                if (m1.active !== m2.active) {
+                    if (m1.active === 0) {
+                        return 1;
+                    }
+
+                    if (m2.active === 0) {
+                        return -1;
+                    }
+                }
+
+                if (m1.weight !== m2.weight) {
+                    if (m1.weight > m2.weight) {
+                        return -1;
+                    }
+
+                    if (m1.weight < m2.weight) {
+                        return 1;
+                    }
+                }
+
+                return m1.pathName.localeCompare(m2.pathName);
+            });
+
+            return result;
+        },
+
     },
     watch: {
         "$root.proxyList"() {
@@ -926,6 +980,7 @@ message HealthCheckResponse {
                 this.monitor = {
                     type: "http",
                     name: "",
+                    parent: null,
                     url: "https://",
                     method: "GET",
                     interval: 60,
@@ -980,12 +1035,17 @@ message HealthCheckResponse {
 
                         if (this.isClone) {
                             /*
-                         * Cloning a monitor will include properties that can not be posted to backend
-                         * as they are not valid columns in the SQLite table.
-                         */
+                            * Cloning a monitor will include properties that can not be posted to backend
+                            * as they are not valid columns in the SQLite table.
+                            */
                             this.monitor.id = undefined; // Remove id when cloning as we want a new id
                             this.monitor.includeSensitiveData = undefined;
                             this.monitor.maintenance = undefined;
+                            // group monitor fields
+                            this.monitor.childrenIDs = undefined;
+                            this.monitor.forceInactive = undefined;
+                            this.monitor.pathName = undefined;
+
                             this.monitor.name = this.$t("cloneOf", [ this.monitor.name ]);
                             this.$refs.tagsManager.newTags = this.monitor.tags.map((monitorTag) => {
                                 return {

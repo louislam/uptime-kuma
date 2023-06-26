@@ -19,6 +19,11 @@ const nodeVersion = parseInt(process.versions.node.split(".")[0]);
 const requiredVersion = 14;
 console.log(`Your Node.js version: ${nodeVersion}`);
 
+// See more: https://github.com/louislam/uptime-kuma/issues/3138
+if (nodeVersion >= 20) {
+    console.warn("\x1b[31m%s\x1b[0m", "Warning: Uptime Kuma is currently not stable on Node.js >= 20, please use Node.js 18.");
+}
+
 if (nodeVersion < requiredVersion) {
     console.error(`Error: Your Node.js version is not supported, please upgrade to Node.js >= ${requiredVersion}.`);
     process.exit(-1);
@@ -671,6 +676,7 @@ let needSetup = false;
         // Edit a monitor
         socket.on("editMonitor", async (monitor, callback) => {
             try {
+                let removeGroupChildren = false;
                 checkLogin(socket);
 
                 let bean = await R.findOne("monitor", " id = ? ", [ monitor.id ]);
@@ -679,8 +685,22 @@ let needSetup = false;
                     throw new Error("Permission denied.");
                 }
 
+                // Check if Parent is Descendant (would cause endless loop)
+                if (monitor.parent !== null) {
+                    const childIDs = await Monitor.getAllChildrenIDs(monitor.id);
+                    if (childIDs.includes(monitor.parent)) {
+                        throw new Error("Invalid Monitor Group");
+                    }
+                }
+
+                // Remove children if monitor type has changed (from group to non-group)
+                if (bean.type === "group" && monitor.type !== bean.type) {
+                    removeGroupChildren = true;
+                }
+
                 bean.name = monitor.name;
                 bean.description = monitor.description;
+                bean.parent = monitor.parent;
                 bean.type = monitor.type;
                 bean.url = monitor.url;
                 bean.method = monitor.method;
@@ -738,9 +758,13 @@ let needSetup = false;
 
                 await R.store(bean);
 
+                if (removeGroupChildren) {
+                    await Monitor.unlinkAllChildren(monitor.id);
+                }
+
                 await updateMonitorNotification(bean.id, monitor.notificationIDList);
 
-                if (bean.active) {
+                if (bean.isActive()) {
                     await restartMonitor(socket.userID, bean.id);
                 }
 

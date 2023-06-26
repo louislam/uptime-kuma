@@ -88,8 +88,8 @@ class Mattermost extends NotificationProvider {
                             statusField,
                             {
                                 short: true,
-                                title: "Time (UTC)",
-                                value: heartbeatJSON.time,
+                                title: `Time (${heartbeatJSON["timezone"]})`,
+                                value: heartbeatJSON.localDateTime,
                             },
                         ],
                     },

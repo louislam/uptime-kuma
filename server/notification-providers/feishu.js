@@ -34,8 +34,7 @@ class Feishu extends NotificationProvider {
                                             text:
                                                 "[Down] " +
                                                 heartbeatJSON["msg"] +
-                                                "\nTime (UTC): " +
-                                                heartbeatJSON["time"],
+                                                `\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`
                                         },
                                     ],
                                 ],
@@ -61,8 +60,7 @@ class Feishu extends NotificationProvider {
                                             text:
                                                 "[Up] " +
                                                 heartbeatJSON["msg"] +
-                                                "\nTime (UTC): " +
-                                                heartbeatJSON["time"],
+                                                `\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`,
                                         },
                                     ],
                                 ],

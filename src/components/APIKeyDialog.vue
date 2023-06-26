@@ -48,15 +48,14 @@
                                 </div>
                             </div>
                         </div>
-
-                        <div class="modal-footer">
-                            <button
-                                id="monitor-submit-btn" class="btn btn-primary" type="submit"
-                                :disabled="processing"
-                            >
-                                {{ $t("Generate") }}
-                            </button>
-                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button
+                            id="monitor-submit-btn" class="btn btn-primary" type="submit"
+                            :disabled="processing"
+                        >
+                            {{ $t("Generate") }}
+                        </button>
                     </div>
                 </div>
             </div>

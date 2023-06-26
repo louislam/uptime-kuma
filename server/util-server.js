@@ -342,7 +342,12 @@ exports.mysqlQuery = function (connectionString, query) {
                     resolve("No Error, but the result is not an array. Type: " + typeof res);
                 }
             }
-            connection.destroy();
+
+            try {
+                connection.end();
+            } catch (_) {
+                connection.destroy();
+            }
         });
     });
 };
@@ -519,12 +524,16 @@ const parseCertificateInfo = function (info) {
 
         // Move up the chain until loop is encountered
         if (link.issuerCertificate == null) {
+            link.certType = (i === 0) ? "self-signed" : "root CA";
             break;
         } else if (link.issuerCertificate.fingerprint in existingList) {
+            // a root CA certificate is typically "signed by itself"  (=> "self signed certificate") and thus the "issuerCertificate" is a reference to itself.
             log.debug("cert", `[Last] ${link.issuerCertificate.fingerprint}`);
+            link.certType = (i === 0) ? "self-signed" : "root CA";
             link.issuerCertificate = null;
             break;
         } else {
+            link.certType = (i === 0) ? "server" : "intermediate CA";
             link = link.issuerCertificate;
         }
 
