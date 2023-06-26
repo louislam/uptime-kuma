@@ -462,7 +462,7 @@
     "onebotMessageType": "OneBot тип повідомлення",
     "onebotGroupMessage": "Група",
     "onebotPrivateMessage": "Приватне",
-    "onebotUserOrGroupId": "Група/Користувач ID",
+    "onebotUserOrGroupId": "Група/ID користувача",
     "onebotSafetyTips": "Для безпеки необхідно встановити маркер доступу",
     "PushDeer Key": "PushDeer ключ",
     "Footer Text": "Текст нижнього колонтитула",
@@ -782,5 +782,13 @@
     "Badge Warn Color": "Колір бейджа \"Попередження\"",
     "Badge Warn Days": "Бейдж \"Днів попередження\"",
     "Badge Maintenance Color": "Колір бейджа \"Обслуговування\"",
-    "Badge Down Days": "Бейдж \"Днів недоступний\""
+    "Badge Down Days": "Бейдж \"Днів недоступний\"",
+    "Group": "Група",
+    "Monitor Group": "Група моніторів",
+    "Edit Maintenance": "Редагувати обслуговування",
+    "Cannot connect to the socket server": "Не вдається підключитися до сервера сокетів",
+    "Reconnecting...": "Повторне підключення...",
+    "Home": "Головна",
+    "noGroupMonitorMsg": "Недоступно. Спочатку створіть групу моніторів.",
+    "Close": "Закрити"
 }
