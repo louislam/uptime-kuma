@@ -773,5 +773,14 @@
     "Badge Down Color": "Barva odznaku při Nedostupné",
     "Badge Pending Color": "Barva odznaku při Pauze",
     "Badge Maintenance Color": "Barva odznaku při Údržbě",
-    "Badge Warn Color": "Barva odznaku při Upozornění"
+    "Badge Warn Color": "Barva odznaku při Upozornění",
+    "Reconnecting...": "Obnovení spojení...",
+    "Cannot connect to the socket server": "Nelze se připojit k soketovému serveru",
+    "Edit Maintenance": "Upravit Údržbu",
+    "Home": "Hlavní stránka",
+    "Badge Down Days": "Odznak nedostupných dní",
+    "Group": "Skupina",
+    "Monitor Group": "Sledovaná skupina",
+    "noGroupMonitorMsg": "Není k dispozici. Nejprve vytvořte skupin dohledů.",
+    "Close": "Zavřít"
 }
