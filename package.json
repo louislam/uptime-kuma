@@ -68,6 +68,7 @@
         "sort-contributors": "node extra/sort-contributors.js"
     },
     "dependencies": {
+        "@elastic/elasticsearch": "^8.8.1",
         "@grpc/grpc-js": "~1.7.3",
         "@louislam/ping": "~0.4.4-mod.0",
         "@louislam/sqlite3": "15.1.6",

@@ -16,6 +16,7 @@ const postgresConParse = require("pg-connection-string").parse;
 const mysql = require("mysql2");
 const { MongoClient } = require("mongodb");
 const { NtlmClient } = require("axios-ntlm");
+const { esClient } = require("@elastic/elasticsearch");
 const { Settings } = require("./settings");
 const grpc = require("@grpc/grpc-js");
 const protojs = require("protobufjs");
@@ -125,6 +126,14 @@ exports.pingAsync = function (hostname, ipv6 = false, size = 56) {
             }
         }).catch((err) => {
             reject(err);
+        });
+    });
+};
+
+exports.elasticSearchQueryAsync = function () {
+    return new Promise((resolve, reject) => {
+        const client = new esClient({
+
         });
     });
 };
