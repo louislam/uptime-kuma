@@ -6,6 +6,7 @@
             class="clear-filters-btn btn"
             :class="{ 'active': numFiltersActive > 0}"
             tabindex="0"
+            :disabled="numFiltersActive === 0"
             @click="clearFilters"
         >
             <font-awesome-icon icon="stream" />
