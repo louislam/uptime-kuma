@@ -778,5 +778,12 @@
     "Badge Label Prefix": "徽章标签前缀",
     "Badge Label Color": "徽章标签颜色",
     "Show Clickable Link Description": "勾选后所有能访问本状态页的访客均可查看该监控项网址。",
-    "Show Clickable Link": "显示可点击的监控项链接"
+    "Show Clickable Link": "显示可点击的监控项链接",
+    "Group": "组",
+    "Monitor Group": "监控项组",
+    "Cannot connect to the socket server": "无法连接到后端服务器",
+    "Reconnecting...": "重连中……",
+    "Edit Maintenance": "编辑维护计划",
+    "Home": "首页",
+    "noGroupMonitorMsg": "暂无可用，请先创建一个监控项组。"
 }
