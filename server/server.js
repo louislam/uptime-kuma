@@ -676,6 +676,7 @@ let needSetup = false;
         // Edit a monitor
         socket.on("editMonitor", async (monitor, callback) => {
             try {
+                let removeGroupChildren = false;
                 checkLogin(socket);
 
                 let bean = await R.findOne("monitor", " id = ? ", [ monitor.id ]);
@@ -684,12 +685,17 @@ let needSetup = false;
                     throw new Error("Permission denied.");
                 }
 
-                // Check if Parent is Decendant (would cause endless loop)
+                // Check if Parent is Descendant (would cause endless loop)
                 if (monitor.parent !== null) {
                     const childIDs = await Monitor.getAllChildrenIDs(monitor.id);
                     if (childIDs.includes(monitor.parent)) {
                         throw new Error("Invalid Monitor Group");
                     }
+                }
+
+                // Remove children if monitor type has changed (from group to non-group)
+                if (bean.type === "group" && monitor.type !== bean.type) {
+                    removeGroupChildren = true;
                 }
 
                 bean.name = monitor.name;
@@ -753,6 +759,10 @@ let needSetup = false;
                 bean.validate();
 
                 await R.store(bean);
+
+                if (removeGroupChildren) {
+                    await Monitor.unlinkAllChildren(monitor.id);
+                }
 
                 await updateMonitorNotification(bean.id, monitor.notificationIDList);
 

@@ -1485,6 +1485,17 @@ class Monitor extends BeanModel {
     }
 
     /**
+     * Unlinks all children of the the group monitor
+     * @param {number} groupID ID of group to remove children of
+     * @returns {Promise<void>}
+     */
+    static async unlinkAllChildren(groupID) {
+        return await R.exec("UPDATE `monitor` SET parent = ? WHERE parent = ? ", [
+            null, groupID
+        ]);
+    }
+
+    /**
 	 * Checks recursive if parent (ancestors) are active
 	 * @param {number} monitorID ID of the monitor to get
 	 * @returns {Promise<Boolean>}
