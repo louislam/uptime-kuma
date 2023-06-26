@@ -782,5 +782,7 @@
     "Monitor Group": "Groupe de sonde | Groupe de sondes",
     "Badge Down Days": "Badge hors ligne",
     "Group": "Groupe",
-    "Home": "Accueil"
+    "Home": "Accueil",
+    "noGroupMonitorMsg": "Pas disponible. Créez d'abord une sonde de groupe.",
+    "Close": "Fermer"
 }
