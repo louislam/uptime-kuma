@@ -751,5 +751,7 @@
     "statusPageRefreshIn": "Reinicio en: {0}",
     "twilioAuthToken": "Token de Autentificación",
     "ntfyUsernameAndPassword": "Nombre de Usuario y Contraseña",
-    "ntfyAuthenticationMethod": "Método de Autentificación"
+    "ntfyAuthenticationMethod": "Método de Autentificación",
+    "Cannot connect to the socket server": "No se puede conectar al servidor socket",
+    "Reconnecting...": "Reconectando..."
 }
