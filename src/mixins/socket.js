@@ -693,9 +693,11 @@ export default {
 
         stats() {
             let result = {
+                active: 0,
                 up: 0,
                 down: 0,
                 maintenance: 0,
+                pending: 0,
                 unknown: 0,
                 pause: 0,
             };
@@ -707,12 +709,13 @@ export default {
                 if (monitor && ! monitor.active) {
                     result.pause++;
                 } else if (beat) {
+                    result.active++;
                     if (beat.status === UP) {
                         result.up++;
                     } else if (beat.status === DOWN) {
                         result.down++;
                     } else if (beat.status === PENDING) {
-                        result.up++;
+                        result.pending++;
                     } else if (beat.status === MAINTENANCE) {
                         result.maintenance++;
                     } else {
