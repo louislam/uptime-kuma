@@ -59,7 +59,7 @@
     "Add New Monitor": "Ajouter une nouvelle sonde",
     "Quick Stats": "Résumé",
     "Up": "En ligne",
-    "Down": "Bas",
+    "Down": "Hors ligne",
     "Pending": "En attente",
     "Unknown": "Inconnu",
     "Pause": "En pause",
@@ -88,8 +88,8 @@
     "Port": "Port",
     "Heartbeat Interval": "Intervalle de vérification",
     "Retries": "Essais",
-    "Heartbeat Retry Interval": "Réessayer l'intervalle de vérification",
-    "Resend Notification if Down X times consecutively": "Renvoyer la notification si en panne X fois consécutivement",
+    "Heartbeat Retry Interval": "Intervalle de ré-essaie",
+    "Resend Notification if Down X times consecutively": "Renvoyer la notification si hors ligne X fois consécutivement",
     "Advanced": "Avancé",
     "Upside Down Mode": "Mode inversé",
     "Max. Redirects": "Nombre maximum de redirections",
@@ -781,5 +781,6 @@
     "Edit Maintenance": "Modifier la maintenance",
     "Monitor Group": "Groupe de sonde | Groupe de sondes",
     "Badge Down Days": "Badge hors ligne",
-    "Group": "Groupe"
+    "Group": "Groupe",
+    "Home": "Accueil"
 }
