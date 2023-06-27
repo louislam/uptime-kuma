@@ -132,9 +132,19 @@ exports.pingAsync = function (hostname, ipv6 = false, size = 56) {
     });
 };
 
-exports.elasticSearchQueryAsync = function (version, nodes, headers, index, query, options) {
+/**
+ * Run a query against the elasticsearch
+ * @param {number} version Elasticsearch major version
+ * @param {[]string} nodes Should IPv6 be used?
+ * @param {Object} [headers = {}] Header to set for elasticsearch client
+ * @param {string} index name of the index to run query against
+ * @param {Object} query query to run
+ * @param {Object} [options = { interval = 20, ssl = true, headers = {} }] Options for elasticsearch, interval, ssl, headers
+ * @returns {Promise<string>} Time for ping in ms rounded to nearest integer
+ */
+exports.elasticSearchQueryAsync = function (version, nodes, index, query, options) {
     return new Promise((resolve, reject) => {
-        const { interval = 20, ssl = true } = options;
+        const { interval = 20, ssl = true, headers = {} } = options;
 
         const timeoutID = setTimeout(() => {
             log.debug("elasticSearchQuery", "ElasticSearchQuery timeout triggered");
