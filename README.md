@@ -161,7 +161,7 @@ I recommend using Google, GitHub Issues, or Uptime Kuma's Subreddit for finding 
 - [GitHub Issues](https://github.com/louislam/uptime-kuma/issues)
 - [Subreddit r/Uptime kuma](https://www.reddit.com/r/UptimeKuma/)
 
-My Reddit account: [u/louislamlam](https://reddit.com/u/louislamlam).
+My Reddit account: [u/louislamlam](https://reddit.com/u/louislamlam).  
 You can mention me if you ask a question on Reddit.
 
 
