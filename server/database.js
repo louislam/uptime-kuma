@@ -7,6 +7,7 @@ const knex = require("knex");
 const { PluginsManager } = require("./plugins-manager");
 const path = require("path");
 const { EmbeddedMariaDB } = require("./embedded-mariadb");
+const mysql = require("mysql2/promise");
 
 /**
  * Database & App Data Folder
@@ -188,6 +189,19 @@ class Database {
                 }
             };
         } else if (dbConfig.type === "mariadb") {
+            if (!/^\w+$/.test(dbConfig.dbName)) {
+                throw Error("Invalid database name. A database name can only consist of letters, numbers and underscores");
+            }
+
+            const connection = await mysql.createConnection({
+                host: dbConfig.hostname,
+                port: dbConfig.port,
+                user: dbConfig.username,
+                password: dbConfig.password,
+            });
+
+            await connection.execute("CREATE DATABASE IF NOT EXISTS " + dbConfig.dbName + " CHARACTER SET utf8mb4");
+
             config = {
                 client: "mysql2",
                 connection: {
