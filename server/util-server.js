@@ -16,7 +16,9 @@ const postgresConParse = require("pg-connection-string").parse;
 const mysql = require("mysql2");
 const { MongoClient } = require("mongodb");
 const { NtlmClient } = require("axios-ntlm");
-const { esClient } = require("@elastic/elasticsearch");
+const { Client: esClient6 } = require("es6");
+const { Client: esClient7 } = require("es7");
+const { Client: esClient8 } = require("es8");
 const { Settings } = require("./settings");
 const grpc = require("@grpc/grpc-js");
 const protojs = require("protobufjs");
@@ -130,10 +132,34 @@ exports.pingAsync = function (hostname, ipv6 = false, size = 56) {
     });
 };
 
-exports.elasticSearchQueryAsync = function () {
+exports.elasticSearchQueryAsync = function (version, nodes, headers, index, query) {
     return new Promise((resolve, reject) => {
-        const client = new esClient({
-
+        let client;
+        switch (version) {
+            case 6:
+                client = new esClient6({
+                    headers: headers,
+                    nodes: nodes,
+                });
+                break;
+            case 7:
+                client = new esClient7({
+                    headers: headers,
+                    nodes: nodes,
+                });
+                break;
+            case 8:
+                client = new esClient8({
+                    headers: headers,
+                    nodes: nodes,
+                });
+                break;
+            default:
+                throw new Error("Invalid Elasticsearch version");
+        }
+        client.search({
+            index: index,
+            query: query,
         });
     });
 };
