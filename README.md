@@ -49,7 +49,11 @@ Uptime Kuma is now running on http://localhost:3001
 
 ### 💪🏻 Non-Docker
 
-Required Tools: 
+Requirements: 
+- Platform
+  - ✅ Major Linux distros such as Debian, Ubuntu, CentOS, Fedora and ArchLinux etc. 
+  - ✅ Windows 10 (x64), Windows Server 2012 R2 (x64) or higher
+  - ❌ Replit / Heroku
 - [Node.js](https://nodejs.org/en/download/) 14 / 16 / 18 (20 is not supported)
 - [npm](https://docs.npmjs.com/cli/) >= 7
 - [Git](https://git-scm.com/downloads) 

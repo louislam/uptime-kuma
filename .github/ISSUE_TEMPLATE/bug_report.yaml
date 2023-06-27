@@ -61,8 +61,8 @@ body:
     id: operating-system
     attributes:
       label: "💻 Operating System and Arch"
-      description: "Which OS is your server/device running on?"
-      placeholder: "Ex. Ubuntu 20.04 x86"
+      description: "Which OS is your server/device running on? (For Replit, please do not report this bug)"
+      placeholder: "Ex. Ubuntu 20.04 x64 "
     validations:
       required: true
   - type: input
