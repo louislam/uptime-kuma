@@ -109,10 +109,12 @@
         "node-cloudflared-tunnel": "~1.0.9",
         "node-radius-client": "~1.0.0",
         "nodemailer": "~6.6.5",
+        "nostr-tools": "^1.8.1",
         "notp": "~2.0.3",
         "password-hash": "~1.2.2",
         "pg": "~8.8.0",
         "pg-connection-string": "~2.5.0",
+        "playwright-core": "~1.35.1",
         "prom-client": "~13.2.0",
         "prometheus-api-metrics": "~3.2.1",
         "protobufjs": "~7.1.1",
@@ -124,7 +126,8 @@
         "socks-proxy-agent": "6.1.1",
         "tar": "~6.1.11",
         "tcp-ping": "~0.1.1",
-        "thirty-two": "~1.0.2"
+        "thirty-two": "~1.0.2",
+        "websocket-polyfill": "^0.0.3"
     },
     "devDependencies": {
         "@actions/github": "~5.0.1",

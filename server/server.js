@@ -149,6 +149,7 @@ const { Settings } = require("./settings");
 const { CacheableDnsHttpAgent } = require("./cacheable-dns-http-agent");
 const { pluginsHandler } = require("./socket-handlers/plugins-handler");
 const apicache = require("./modules/apicache");
+const { resetChrome } = require("./monitor-types/real-browser-monitor-type");
 
 app.use(express.json());
 
@@ -160,12 +161,6 @@ app.use(function (req, res, next) {
     res.removeHeader("X-Powered-By");
     next();
 });
-
-/**
- * Use for decode the auth object
- * @type {null}
- */
-let jwtSecret = null;
 
 /**
  * Show Setup Page
@@ -286,7 +281,7 @@ let needSetup = false;
             log.info("auth", `Login by token. IP=${clientIP}`);
 
             try {
-                let decoded = jwt.verify(token, jwtSecret);
+                let decoded = jwt.verify(token, server.jwtSecret);
 
                 log.info("auth", "Username from JWT: " + decoded.username);
 
@@ -357,7 +352,7 @@ let needSetup = false;
                         ok: true,
                         token: jwt.sign({
                             username: data.username,
-                        }, jwtSecret),
+                        }, server.jwtSecret),
                     });
                 }
 
@@ -387,7 +382,7 @@ let needSetup = false;
                             ok: true,
                             token: jwt.sign({
                                 username: data.username,
-                            }, jwtSecret),
+                            }, server.jwtSecret),
                         });
                     } else {
 
@@ -1160,6 +1155,8 @@ let needSetup = false;
                     await doubleCheckPassword(socket, currentPassword);
                 }
 
+                const previousChromeExecutable = await Settings.get("chromeExecutable");
+
                 await setSettings("general", data);
                 server.entryPage = data.entryPage;
 
@@ -1168,6 +1165,12 @@ let needSetup = false;
                 // Also need to apply timezone globally
                 if (data.serverTimezone) {
                     await server.setTimezone(data.serverTimezone);
+                }
+
+                // If Chrome Executable is changed, need to reset the browser
+                if (previousChromeExecutable !== data.chromeExecutable) {
+                    log.info("settings", "Chrome executable is changed. Resetting Chrome...");
+                    await resetChrome();
                 }
 
                 callback({
@@ -1709,7 +1712,7 @@ async function initDatabase(testMode = false) {
         needSetup = true;
     }
 
-    jwtSecret = jwtSecretBean.value;
+    server.jwtSecret = jwtSecretBean.value;
 }
 
 /**
