@@ -132,35 +132,48 @@ exports.pingAsync = function (hostname, ipv6 = false, size = 56) {
     });
 };
 
-exports.elasticSearchQueryAsync = function (version, nodes, headers, index, query) {
+exports.elasticSearchQueryAsync = function (version, nodes, headers, index, query, options) {
     return new Promise((resolve, reject) => {
+        const { interval = 20, ssl = true } = options;
+
+        const timeoutID = setTimeout(() => {
+            log.debug("elasticSearchQuery", "ElasticSearchQuery timeout triggered");
+            reject(new Error("Timeout"));
+        }, interval * 1000 * 0.8);
+
+        const opts = {
+            headers: headers,
+            nodes: nodes,
+            ssl: {
+                rejectUnauthorized: ssl !== false,
+            },
+        };
+
         let client;
         switch (version) {
             case 6:
-                client = new esClient6({
-                    headers: headers,
-                    nodes: nodes,
-                });
+                client = new esClient6(opts);
                 break;
             case 7:
-                client = new esClient7({
-                    headers: headers,
-                    nodes: nodes,
-                });
+                client = new esClient7(opts);
                 break;
             case 8:
-                client = new esClient8({
-                    headers: headers,
-                    nodes: nodes,
-                });
+                client = new esClient8(opts);
                 break;
             default:
-                throw new Error("Invalid Elasticsearch version");
+                throw new Error("Elasticsearch version is not valid");
         }
-        client.search({
-            index: index,
-            query: query,
-        });
+        try {
+            client.search({
+                index: index,
+                query: query,
+            });
+            clearTimeout(timeoutID);
+            resolve("Successfully ran query");
+        } catch (e) {
+            clearTimeout(timeoutID);
+            reject(new Error("Error querying data: " + e.message));
+        }
     });
 };
 
