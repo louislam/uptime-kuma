@@ -71,6 +71,12 @@ class Monitor extends BeanModel {
 
         const tags = await this.getTags();
 
+        let screenshot = null;
+
+        if (this.type === "real-browser") {
+            screenshot = "/screenshots/" + jwt.sign(this.id, UptimeKumaServer.getInstance().jwtSecret) + ".png";
+        }
+
         let data = {
             id: this.id,
             name: this.name,
@@ -119,7 +125,7 @@ class Monitor extends BeanModel {
             radiusCallingStationId: this.radiusCallingStationId,
             game: this.game,
             httpBodyEncoding: this.httpBodyEncoding,
-            screenshot: "/screenshots/" + jwt.sign(this.id, UptimeKumaServer.getInstance().jwtSecret) + ".png",
+            screenshot,
         };
 
         if (includeSensitiveData) {
