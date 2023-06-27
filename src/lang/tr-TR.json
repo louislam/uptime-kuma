@@ -776,5 +776,13 @@
     "Badge value (For Testing only.)": "Rozet değeri (Yalnızca Test için.)",
     "Badge URL": "Rozet URL'i",
     "Monitor Setting": "{0}'nin Monitör Ayarı",
-    "Show Clickable Link Description": "Eğer işaretlenirse, bu durum sayfasına erişimi olan herkes monitor URL'ine erişebilir."
+    "Show Clickable Link Description": "Eğer işaretlenirse, bu durum sayfasına erişimi olan herkes monitor URL'ine erişebilir.",
+    "Group": "Grup",
+    "Monitor Group": "Monitor Grup",
+    "Cannot connect to the socket server": "Soket sunucusuna bağlanılamıyor",
+    "Edit Maintenance": "Bakımı Düzenle",
+    "Reconnecting...": "Yeniden bağlanılıyor...",
+    "Home": "Anasayfa",
+    "noGroupMonitorMsg": "Uygun değil. Önce bir Grup Monitörü oluşturun.",
+    "Close": "Kapalı"
 }

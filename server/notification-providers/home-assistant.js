@@ -11,7 +11,7 @@ class HomeAssistant extends NotificationProvider {
 
         try {
             await axios.post(
-                `${notification.homeAssistantUrl}/api/services/notify/${notificationService}`,
+                `${notification.homeAssistantUrl.trim().replace(/\/*$/, "")}/api/services/notify/${notificationService}`,
                 {
                     title: "Uptime Kuma",
                     message,

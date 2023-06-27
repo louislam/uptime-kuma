@@ -435,6 +435,9 @@
     "Enable DNS Cache": "Enable DNS Cache",
     "Enable": "Enable",
     "Disable": "Disable",
+    "chromeExecutable": "Chrome/Chromium Executable",
+    "chromeExecutableAutoDetect": "Auto Detect",
+    "chromeExecutableDescription": "For Docker users, if Chromium is not yet installed, it may take a few minutes to install and display the test result. It takes 1GB of disk space.",
     "dnsCacheDescription": "It may be not working in some IPv6 environments, disable it if you encounter any issues.",
     "Single Maintenance Window": "Single Maintenance Window",
     "Maintenance Time Window of a Day": "Maintenance Time Window of a Day",
@@ -766,5 +769,10 @@
     "Secret AccessKey": "Secret AccessKey",
     "Session Token": "Session Token",
     "noGroupMonitorMsg": "Not Available. Create a Group Monitor First.",
-    "Close": "Close"
+    "Close": "Close",
+    "nostrRelays": "Nostr relays",
+    "nostrRelaysHelp": "One relay URL per line",
+    "nostrSender": "Sender Private Key (nsec)",
+    "nostrRecipients": "Recipients Public Keys (npub)",
+    "nostrRecipientsHelp": "npub format, one per line"
 }

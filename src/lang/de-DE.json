@@ -782,5 +782,7 @@
     "Badge Suffix": "Badge Suffix",
     "Badge Warn Days": "Badge Warnung Tage",
     "Group": "Gruppe",
-    "Monitor Group": "Monitor Gruppe"
+    "Monitor Group": "Monitor Gruppe",
+    "noGroupMonitorMsg": "Nicht verfügbar. Erstelle zunächst einen Gruppenmonitor.",
+    "Close": "Schließen"
 }

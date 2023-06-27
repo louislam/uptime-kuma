@@ -20,6 +20,7 @@ const { CacheableDnsHttpAgent } = require("../cacheable-dns-http-agent");
 const { DockerHost } = require("../docker");
 const { UptimeCacheList } = require("../uptime-cache-list");
 const Gamedig = require("gamedig");
+const jwt = require("jsonwebtoken");
 
 /**
  * status:
@@ -69,6 +70,12 @@ class Monitor extends BeanModel {
         }
 
         const tags = await this.getTags();
+
+        let screenshot = null;
+
+        if (this.type === "real-browser") {
+            screenshot = "/screenshots/" + jwt.sign(this.id, UptimeKumaServer.getInstance().jwtSecret) + ".png";
+        }
 
         let data = {
             id: this.id,
@@ -123,6 +130,7 @@ class Monitor extends BeanModel {
             kafkaProducerSsl: this.kafkaProducerSsl === "1" && true || false,
             kafkaProducerAllowAutoTopicCreation: this.kafkaProducerAllowAutoTopicCreation === "1" && true || false,
             kafkaProducerMessage: this.kafkaProducerMessage,
+            screenshot,
         };
 
         if (includeSensitiveData) {
@@ -746,7 +754,7 @@ class Monitor extends BeanModel {
                 } else if (this.type in UptimeKumaServer.monitorTypeList) {
                     let startTime = dayjs().valueOf();
                     const monitorType = UptimeKumaServer.monitorTypeList[this.type];
-                    await monitorType.check(this, bean);
+                    await monitorType.check(this, bean, UptimeKumaServer.getInstance());
                     if (!bean.ping) {
                         bean.ping = dayjs().valueOf() - startTime;
                     }
