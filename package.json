@@ -112,6 +112,7 @@
         "password-hash": "~1.2.2",
         "pg": "~8.8.0",
         "pg-connection-string": "~2.5.0",
+        "playwright-core": "~1.35.1",
         "prom-client": "~13.2.0",
         "prometheus-api-metrics": "~3.2.1",
         "protobufjs": "~7.1.1",
