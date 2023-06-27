@@ -776,5 +776,13 @@
     "Badge Suffix": "Суфикс на баджа",
     "Badge Label Prefix": "Префикс на етикета на значката",
     "Badge Pending Color": "Цвят на баджа за изчакващ",
-    "Badge Down Days": "Колко дни баджът да не се показва"
+    "Badge Down Days": "Колко дни баджът да не се показва",
+    "Group": "Група",
+    "Monitor Group": "Монитор група",
+    "Cannot connect to the socket server": "Не може да се свърже със сокет сървъра",
+    "Reconnecting...": "Повторно свързване...",
+    "Edit Maintenance": "Редактиране на поддръжка",
+    "Home": "Главна страница",
+    "noGroupMonitorMsg": "Не е налично. Първо създайте групов монитор.",
+    "Close": "Затвори"
 }

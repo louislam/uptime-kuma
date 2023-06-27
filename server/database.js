@@ -22,6 +22,8 @@ class Database {
      */
     static uploadDir;
 
+    static screenshotDir;
+
     static path;
 
     /**
@@ -103,6 +105,12 @@ class Database {
 
         if (! fs.existsSync(Database.uploadDir)) {
             fs.mkdirSync(Database.uploadDir, { recursive: true });
+        }
+
+        // Create screenshot dir
+        Database.screenshotDir = Database.dataDir + "screenshots/";
+        if (! fs.existsSync(Database.screenshotDir)) {
+            fs.mkdirSync(Database.screenshotDir, { recursive: true });
         }
 
         log.info("db", `Data Dir: ${Database.dataDir}`);

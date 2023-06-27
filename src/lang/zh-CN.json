@@ -528,8 +528,8 @@
     "RadiusCallingStationId": "呼叫方号码（Calling Station Id）",
     "RadiusCallingStationIdDescription": "发出请求的设备的标识",
     "Certificate Expiry Notification": "证书到期时通知",
-    "API Username": "API  用户名",
-    "API Key": "API  密钥",
+    "API Username": "API 用户名",
+    "API Key": "API 密钥",
     "Recipient Number": "收件人手机号码",
     "From Name/Number": "发件人名称/手机号码",
     "Leave blank to use a shared sender number.": "留空以使用平台共享的发件人手机号码。",
@@ -778,5 +778,13 @@
     "Badge Label Prefix": "徽章标签前缀",
     "Badge Label Color": "徽章标签颜色",
     "Show Clickable Link Description": "勾选后所有能访问本状态页的访客均可查看该监控项网址。",
-    "Show Clickable Link": "显示可点击的监控项链接"
+    "Show Clickable Link": "显示可点击的监控项链接",
+    "Group": "组",
+    "Monitor Group": "监控项组",
+    "Cannot connect to the socket server": "无法连接到后端服务器",
+    "Reconnecting...": "重连中……",
+    "Edit Maintenance": "编辑维护计划",
+    "Home": "首页",
+    "noGroupMonitorMsg": "暂无可用，请先创建一个监控项组。",
+    "Close": "关闭"
 }

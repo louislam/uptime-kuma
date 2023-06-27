@@ -724,5 +724,22 @@
     "Edit Tag": "עריכת תגית",
     "Learn More": "לקריאה נוספת",
     "telegramSendSilently": "שליחה שקטה",
-    "telegramSendSilentlyDescription": "שליחת הודעות שקטה. משתמשים יקבלו ההתראה ללא צליל."
+    "telegramSendSilentlyDescription": "שליחת הודעות שקטה. משתמשים יקבלו ההתראה ללא צליל.",
+    "Add New Tag": "הוסף תג חדש",
+    "Home": "ראשי",
+    "sameAsServerTimezone": "אותו איזור זמן כמו השרת",
+    "cronSchedule": "לו\"ז: ",
+    "twilioToNumber": "למספר",
+    "startDateTime": "תאריך\\זמן התחלה",
+    "pagertreeSilent": "שקט",
+    "Reconnecting...": "מתחבר מחדש...",
+    "statusPageRefreshIn": "רענון תוך: {0}",
+    "Edit Maintenance": "ערוך תחזוקה",
+    "pagertreeUrgency": "דחיפות",
+    "pagertreeLow": "נמוכה",
+    "pagertreeMedium": "בינונית",
+    "pagertreeHigh": "גבוהה",
+    "pagertreeCritical": "קריטי",
+    "pagertreeResolve": "הגדרה אוטומטית",
+    "ntfyUsernameAndPassword": "שם משתמש וסיסמא"
 }

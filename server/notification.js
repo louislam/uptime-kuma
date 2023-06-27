@@ -20,6 +20,7 @@ const LineNotify = require("./notification-providers/linenotify");
 const LunaSea = require("./notification-providers/lunasea");
 const Matrix = require("./notification-providers/matrix");
 const Mattermost = require("./notification-providers/mattermost");
+const Nostr = require("./notification-providers/nostr");
 const Ntfy = require("./notification-providers/ntfy");
 const Octopush = require("./notification-providers/octopush");
 const OneBot = require("./notification-providers/onebot");
@@ -82,6 +83,7 @@ class Notification {
             new LunaSea(),
             new Matrix(),
             new Mattermost(),
+            new Nostr(),
             new Ntfy(),
             new Octopush(),
             new OneBot(),
