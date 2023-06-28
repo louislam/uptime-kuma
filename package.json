@@ -187,8 +187,5 @@
         "vuedraggable": "~4.1.0",
         "wait-on": "^6.0.1",
         "whatwg-url": "~12.0.1"
-    },
-    "optionalDependencies": {
-        "node-ssh": "~13.0.1"
     }
 }
