@@ -14,9 +14,9 @@
             v-if="size !== 'small' && beatList.length > 4"
             class="d-flex justify-content-between align-items-center word" :style="timeStyle"
         >
-            <div>{{ firstBeatElapsed }} ago</div>
+            <div>{{ timeSinceFirstBeat }} ago</div>
             <div class="connecting-line"></div>
-            <div>{{ lastBeatElapsed }}</div>
+            <div>{{ timeSinceLastBeat }}</div>
         </div>
     </div>
 </template>
@@ -146,6 +146,10 @@ export default {
             };
         },
 
+        /**
+         * Returns the style object for positioning the time element.
+         * @return {Object} The style object containing the CSS properties for positioning the time element.
+         */
         timeStyle() {
             return {
                 "margin-left": this.numPadding * (this.beatWidth + this.beatMargin * 2) + "px",
@@ -157,7 +161,7 @@ export default {
          *
          * @return {string} The time elapsed in minutes or hours.
          */
-        firstBeatElapsed() {
+        timeSinceFirstBeat() {
             const firstValidBeat = this.shortBeatList.at(this.numPadding);
             const minutes = dayjs().diff(dayjs.utc(firstValidBeat?.time), "minutes");
             if (minutes > 60) {
@@ -170,9 +174,9 @@ export default {
         /**
          * Calculates the elapsed time since the last valid beat was registered.
          *
-         * @return {string} The elapsed time in a human-readable format.
+         * @return {string} The elapsed time in a minutes, hours or "now".
          */
-        lastBeatElapsed() {
+        timeSinceLastBeat() {
             const lastValidBeat = this.shortBeatList.at(-1);
             const seconds = dayjs().diff(dayjs.utc(lastValidBeat?.time), "seconds");
 
@@ -309,7 +313,7 @@ export default {
 }
 
 .connecting-line {
-    flex-grow: 1;  // To make the line expand and fill the available space
+    flex-grow: 1;
     height: 1px;
     background-color: #aaa;
     margin-left: 10px;
