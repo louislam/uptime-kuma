@@ -15,6 +15,7 @@ on:
 
 jobs:
   auto-test:
+    needs: [ check-linters ]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
 
@@ -43,7 +44,7 @@ jobs:
 
   # As a lot of dev dependencies are not supported on ARMv7, we have to test it separately and just test if `npm ci --production` works
   armv7-simple-test:
-    #needs: [ check-linters ]
+    needs: [ check-linters ]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
 
@@ -65,3 +66,49 @@ jobs:
       - run: npm install npm@latest -g
       - run: npm ci --production
 
+  check-linters:
+    runs-on: ubuntu-latest
+
+    steps:
+    - run: git config --global core.autocrlf false  # Mainly for Windows
+    - uses: actions/checkout@v3
+
+    - name: Use Node.js 14
+      uses: actions/setup-node@v3
+      with:
+        node-version: 14
+        cache: 'npm'
+    - run: npm install
+    - run: npm run lint
+
+  e2e-tests:
+    needs: [ check-linters ]
+    runs-on: ubuntu-latest
+    steps:
+    - run: git config --global core.autocrlf false  # Mainly for Windows
+    - uses: actions/checkout@v3
+
+    - name: Use Node.js 14
+      uses: actions/setup-node@v3
+      with:
+        node-version: 14
+        cache: 'npm'
+    - run: npm install
+    - run: npm run build
+    - run: npm run cy:test
+
+  frontend-unit-tests:
+    needs: [ check-linters ]
+    runs-on: ubuntu-latest
+    steps:
+    - run: git config --global core.autocrlf false  # Mainly for Windows
+    - uses: actions/checkout@v3
+
+    - name: Use Node.js 14
+      uses: actions/setup-node@v3
+      with:
+        node-version: 14
+        cache: 'npm'
+    - run: npm install
+    - run: npm run build
+    - run: npm run cy:run:unit
