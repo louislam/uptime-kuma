@@ -158,6 +158,7 @@
         "favico.js": "~0.3.10",
         "jest": "~27.2.5",
         "marked": "~4.2.5",
+        "node-ssh": "~13.0.1",
         "postcss-html": "~1.5.0",
         "postcss-rtlcss": "~3.7.2",
         "postcss-scss": "~4.0.4",
