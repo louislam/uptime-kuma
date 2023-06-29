@@ -769,10 +769,5 @@
     "Secret AccessKey": "Secret AccessKey",
     "Session Token": "Session Token",
     "noGroupMonitorMsg": "Not Available. Create a Group Monitor First.",
-    "Close": "Close",
-    "nostrRelays": "Nostr relays",
-    "nostrRelaysHelp": "One relay URL per line",
-    "nostrSender": "Sender Private Key (nsec)",
-    "nostrRecipients": "Recipients Public Keys (npub)",
-    "nostrRecipientsHelp": "npub format, one per line"
+    "Close": "Close"
 }
