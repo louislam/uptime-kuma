@@ -169,12 +169,12 @@ class Database {
             await R.exec("PRAGMA journal_mode = WAL");
         }
         await R.exec("PRAGMA cache_size = -12000");
-        await R.exec("PRAGMA auto_vacuum = FULL");
+        await R.exec("PRAGMA auto_vacuum = INCREMENTAL");
 
         // This ensures that an operating system crash or power failure will not corrupt the database.
         // FULL synchronous is very safe, but it is also slower.
         // Read more: https://sqlite.org/pragma.html#pragma_synchronous
-        await R.exec("PRAGMA synchronous = FULL");
+        await R.exec("PRAGMA synchronous = NORMAL");
 
         if (!noLog) {
             log.info("db", "SQLite config:");
