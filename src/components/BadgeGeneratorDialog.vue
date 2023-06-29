@@ -22,7 +22,7 @@
                     </div>
 
                     <div v-if=" (parameters[badge.type || 'null'] || [] ).includes('duration') " class="mb-3">
-                        <label for="duration" class="form-label">{{ $t("Badge Duration") }} (h)</label>
+                        <label for="duration" class="form-label">{{ $t("Badge Duration (in hours)") }}</label>
                         <input id="duration" v-model="badge.duration" type="number" min="0" placeholder="24" class="form-control">
                     </div>
 
