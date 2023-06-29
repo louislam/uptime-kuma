@@ -113,7 +113,7 @@
                     </div>
 
                     <div class="mb-3 pt-3 d-flex justify-content-center">
-                        <img :src="badgeURL" alt="Badge Preview">
+                        <img :src="badgeURL" :alt="$t('Badge Preview')">
                     </div>
 
                     <div class="my-3">
