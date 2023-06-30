@@ -11,7 +11,6 @@ async function createTables() {
     log.info("mariadb", "Creating basic tables for MariaDB");
     const knex = R.knex;
 
-    // Up to `patch-add-google-analytics-status-page-tag.sql` for now
     // TODO: Should check later if it is really the final patch sql file.
 
     // docker_host

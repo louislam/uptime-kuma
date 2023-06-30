@@ -76,7 +76,7 @@ class Database {
         "patch-api-key-table.sql": true,
         "patch-monitor-tls.sql": true,
         "patch-maintenance-cron.sql": true,
-        "patch-add-parent-monitor.sql": true,
+        "patch-add-parent-monitor.sql": true,   // The last file so far converted to a knex migration file
     };
 
     /**
@@ -305,16 +305,30 @@ class Database {
     }
 
     static async patch() {
+        // Still need to keep this for old versions of Uptime Kuma
         if (Database.dbConfig.type === "sqlite") {
             await this.patchSqlite();
         }
 
-        // TODO: Using knex migrations
+        // Using knex migrations
         // https://knexjs.org/guide/migrations.html
         // https://gist.github.com/NigelEarle/70db130cc040cc2868555b29a0278261
-        await R.knex.migrate.latest({
-            directory: Database.knexMigrationsPath,
-        });
+        try {
+            await R.knex.migrate.latest({
+                directory: Database.knexMigrationsPath,
+            });
+        } catch (e) {
+            log.error("db", "Database migration failed");
+            throw e;
+        }
+    }
+
+    /**
+     *
+     * @returns {Promise<void>}
+     */
+    static async rollbackLatestPatch() {
+
     }
 
     /**

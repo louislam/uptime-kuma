@@ -21,7 +21,9 @@ exports.down = function(knex) {
 
 ## Example
 
-20230211120000_create_users_products.js
+YYYY-MM-DD-HHMM-create-users-products.js
+
+2023-06-30-1348-create-users-products.js
 
 ```js
 exports.up = function(knex) {
@@ -44,3 +46,5 @@ exports.down = function(knex) {
       .dropTable("users");
 };
 ```
+
+https://knexjs.org/guide/migrations.html#transactions-in-migrations
