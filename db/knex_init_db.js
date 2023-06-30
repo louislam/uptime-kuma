@@ -350,6 +350,103 @@ async function createTables() {
         table.string("domain").notNullable().unique().collate("utf8_general_ci");
     });
 
+    /*********************
+    * Converted Patch here
+    *********************/
+
+    // 2023-06-30-1348-http-body-encoding.js
+    // ALTER TABLE monitor ADD http_body_encoding VARCHAR(25);
+    // UPDATE monitor SET http_body_encoding = 'json' WHERE (type = 'http' or type = 'keyword') AND http_body_encoding IS NULL;
+    await knex.schema.table("monitor", function (table) {
+        table.string("http_body_encoding", 25);
+    });
+
+    await knex("monitor")
+        .where(function () {
+            this.where("type", "http").orWhere("type", "keyword");
+        })
+        .whereNull("http_body_encoding")
+        .update({
+            http_body_encoding: "json",
+        });
+
+    // 2023-06-30-1354-add-description-monitor.js
+    // ALTER TABLE monitor ADD description TEXT default null;
+    await knex.schema.table("monitor", function (table) {
+        table.text("description").defaultTo(null);
+    });
+
+    // 2023-06-30-1357-api-key-table.js
+    /*
+        CREATE TABLE [api_key] (
+            [id] INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+            [key] VARCHAR(255) NOT NULL,
+            [name] VARCHAR(255) NOT NULL,
+            [user_id] INTEGER NOT NULL,
+            [created_date] DATETIME DEFAULT (DATETIME('now')) NOT NULL,
+            [active] BOOLEAN DEFAULT 1 NOT NULL,
+            [expires] DATETIME DEFAULT NULL,
+            CONSTRAINT FK_user FOREIGN KEY ([user_id]) REFERENCES [user]([id]) ON DELETE CASCADE ON UPDATE CASCADE
+        );
+     */
+    await knex.schema.createTable("api_key", function (table) {
+        table.increments("id").primary();
+        table.string("key", 255).notNullable();
+        table.string("name", 255).notNullable();
+        table.integer("user_id").unsigned().notNullable()
+            .references("id").inTable("user")
+            .onDelete("CASCADE")
+            .onUpdate("CASCADE");
+        table.dateTime("created_date").defaultTo(knex.fn.now()).notNullable();
+        table.boolean("active").defaultTo(1).notNullable();
+        table.dateTime("expires").defaultTo(null);
+    });
+
+    // 2023-06-30-1400-monitor-tls.js
+    /*
+    ALTER TABLE monitor
+        ADD tls_ca TEXT default null;
+
+    ALTER TABLE monitor
+        ADD tls_cert TEXT default null;
+
+    ALTER TABLE monitor
+        ADD tls_key TEXT default null;
+    */
+    await knex.schema.table("monitor", function (table) {
+        table.text("tls_ca").defaultTo(null);
+        table.text("tls_cert").defaultTo(null);
+        table.text("tls_key").defaultTo(null);
+    });
+
+    // 2023-06-30-1401-maintenance-cron.js
+    /*
+        -- 999 characters. https://stackoverflow.com/questions/46134830/maximum-length-for-cron-job
+        DROP TABLE maintenance_timeslot;
+        ALTER TABLE maintenance ADD cron TEXT;
+        ALTER TABLE maintenance ADD timezone VARCHAR(255);
+        ALTER TABLE maintenance ADD duration INTEGER;
+    */
+    await knex.schema
+        .dropTableIfExists("maintenance_timeslot")
+        .table("maintenance", function (table) {
+            table.text("cron");
+            table.string("timezone", 255);
+            table.integer("duration");
+        });
+
+    // 2023-06-30-1413-add-parent-monitor.js.
+    /*
+        ALTER TABLE monitor
+        ADD parent INTEGER REFERENCES [monitor] ([id]) ON DELETE SET NULL ON UPDATE CASCADE;
+    */
+    await knex.schema.table("monitor", function (table) {
+        table.integer("parent").unsigned()
+            .references("id").inTable("monitor")
+            .onDelete("SET NULL")
+            .onUpdate("CASCADE");
+    });
+
     log.info("mariadb", "Created basic tables for MariaDB");
 }
 

@@ -90,8 +90,6 @@
                     </div>
                 </template>
 
-                <button v-if="dbConfig.type === 'mariadb'" class="btn btn-warning mt-3" @submit.prevent="test">{{ $t("Test") }}</button>
-
                 <button class="btn btn-primary mt-4 short" type="submit" :disabled="disabledButton">
                     {{ $t("Next") }}
                 </button>
@@ -145,10 +143,9 @@ export default {
             this.info.runningSetup = true;
 
             try {
-                let res = await axios.post("/setup-database", {
+                await axios.post("/setup-database", {
                     dbConfig: this.dbConfig,
                 });
-
                 await sleep(2000);
                 await this.goToMainServerWhenReady();
             } catch (e) {

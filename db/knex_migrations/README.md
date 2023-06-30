@@ -37,6 +37,11 @@ exports.up = function(knex) {
         table.increments('id');
         table.decimal('price').notNullable();
         table.string('name', 1000).notNullable();
+    }).then(() => {
+        knex("products").insert([
+            { price: 10, name: "Apple" },
+            { price: 20, name: "Orange" },
+        ]);
     });
 };
 

@@ -5,6 +5,7 @@ const fs = require("fs");
 const path = require("path");
 const Database = require("./database");
 const { allowDevAllOrigin } = require("./util-server");
+const mysql = require("mysql2/promise");
 
 /**
  *  A standalone express app that is used to setup database
@@ -145,6 +146,7 @@ class SetupDatabase {
                     return;
                 }
 
+                // External MariaDB
                 if (dbConfig.type === "mariadb") {
                     if (!dbConfig.hostname) {
                         response.status(400).json("Hostname is required");
@@ -172,6 +174,22 @@ class SetupDatabase {
 
                     if (!dbConfig.password) {
                         response.status(400).json("Password is required");
+                        this.runningSetup = false;
+                        return;
+                    }
+
+                    // Test connection
+                    try {
+                        const connection = await mysql.createConnection({
+                            host: dbConfig.hostname,
+                            port: dbConfig.port,
+                            user: dbConfig.username,
+                            password: dbConfig.password,
+                        });
+                        await connection.execute("SELECT 1");
+                        connection.end();
+                    } catch (e) {
+                        response.status(400).json("Cannot connect to the database: " + e.message);
                         this.runningSetup = false;
                         return;
                     }

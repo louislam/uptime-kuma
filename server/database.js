@@ -209,6 +209,7 @@ class Database {
             });
 
             await connection.execute("CREATE DATABASE IF NOT EXISTS " + dbConfig.dbName + " CHARACTER SET utf8mb4");
+            connection.end();
 
             config = {
                 client: "mysql2",
