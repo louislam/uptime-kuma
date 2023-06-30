@@ -23,6 +23,7 @@ RUN curl https://pkg.cloudflare.com/cloudflare-main.gpg --output /usr/share/keyr
 # Not working for armv7, so use the older version (10.5) of MariaDB from the debian repo
 # curl -LsS https://r.mariadb.com/downloads/mariadb_repo_setup | bash -s -- --mariadb-server-version="mariadb-11.1" && \
 FROM base2-slim AS base2
+ENV UPTIME_KUMA_ENABLE_EMBEDDED_MARIADB=1
 RUN apt update && \
     apt --yes --no-install-recommends install chromium fonts-indic fonts-noto fonts-noto-cjk mariadb-server && \
     apt --yes remove curl && \
@@ -30,4 +31,4 @@ RUN apt update && \
     apt --yes autoremove && \
     chown -R node:node /var/lib/mysql
 
-ENV UPTIME_KUMA_ENABLE_EMBEDDED_MARIADB=1
+

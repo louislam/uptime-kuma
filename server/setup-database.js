@@ -18,6 +18,7 @@ class SetupDatabase {
      * @type {boolean}
      */
     needSetup = true;
+    runningSetup = false;
 
     server;
 
@@ -80,6 +81,12 @@ class SetupDatabase {
             let tempServer;
             app.use(express.json());
 
+            // Disable Keep Alive, otherwise the server will not shutdown, as the client will keep the connection alive
+            app.use(function (req, res, next) {
+                res.setHeader("Connection", "close");
+                next();
+            });
+
             app.get("/", async (request, response) => {
                 response.redirect("/setup-database");
             });
@@ -91,9 +98,12 @@ class SetupDatabase {
                 });
             });
 
-            app.get("/info", (request, response) => {
+            app.get("/setup-database-info", (request, response) => {
                 allowDevAllOrigin(response);
+                console.log("Request /setup-database-info");
                 response.json({
+                    runningSetup: this.runningSetup,
+                    needSetup: this.needSetup,
                     isEnabledEmbeddedMariaDB: this.isEnabledEmbeddedMariaDB(),
                 });
             });
@@ -101,7 +111,12 @@ class SetupDatabase {
             app.post("/setup-database", async (request, response) => {
                 allowDevAllOrigin(response);
 
-                console.log(request);
+                if (this.runningSetup) {
+                    response.status(400).json("Setup is already running");
+                    return;
+                }
+
+                this.runningSetup = true;
 
                 let dbConfig = request.body.dbConfig;
 
@@ -114,42 +129,50 @@ class SetupDatabase {
                 // Validate input
                 if (typeof dbConfig !== "object") {
                     response.status(400).json("Invalid dbConfig");
+                    this.runningSetup = false;
                     return;
                 }
 
                 if (!dbConfig.type) {
                     response.status(400).json("Database Type is required");
+                    this.runningSetup = false;
                     return;
                 }
 
                 if (!supportedDBTypes.includes(dbConfig.type)) {
                     response.status(400).json("Unsupported Database Type");
+                    this.runningSetup = false;
                     return;
                 }
 
                 if (dbConfig.type === "mariadb") {
                     if (!dbConfig.hostname) {
                         response.status(400).json("Hostname is required");
+                        this.runningSetup = false;
                         return;
                     }
 
                     if (!dbConfig.port) {
                         response.status(400).json("Port is required");
+                        this.runningSetup = false;
                         return;
                     }
 
                     if (!dbConfig.dbName) {
                         response.status(400).json("Database name is required");
+                        this.runningSetup = false;
                         return;
                     }
 
                     if (!dbConfig.username) {
                         response.status(400).json("Username is required");
+                        this.runningSetup = false;
                         return;
                     }
 
                     if (!dbConfig.password) {
                         response.status(400).json("Password is required");
+                        this.runningSetup = false;
                         return;
                     }
                 }
@@ -162,11 +185,16 @@ class SetupDatabase {
                 });
 
                 // Shutdown down this express and start the main server
-                log.info("setup-database", "Database is configured, close setup-database server and start the main server now.");
+                log.info("setup-database", "Database is configured, close the setup-database server and start the main server now.");
                 if (tempServer) {
-                    tempServer.close();
+                    tempServer.close(() => {
+                        log.info("setup-database", "The setup-database server is closed");
+                        resolve();
+                    });
+                } else {
+                    resolve();
                 }
-                resolve();
+
             });
 
             app.use("/", expressStaticGzip("dist", {

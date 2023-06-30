@@ -5,7 +5,7 @@ services:
     container_name: uptime-kuma-dev
     image: louislam/uptime-kuma:nightly2
     volumes:
-      - ./data:/app/data
+      #- ./data:/app/data
       - ../server:/app/server
     ports:
       - "3001:3001"  # <Host Port>:<Container Port>

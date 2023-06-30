@@ -1,5 +1,5 @@
 <template>
-    <div class="form-container">
+    <div v-if="show" class="form-container">
         <form @submit.prevent="submit">
             <div>
                 <object width="64" height="64" data="/icon.svg" />
@@ -8,83 +8,94 @@
                 </div>
             </div>
 
-            <div class="form-floating short mt-3">
-                <select id="language" v-model="$root.language" class="form-select">
-                    <option v-for="(lang, i) in $i18n.availableLocales" :key="`Lang${i}`" :value="lang">
-                        {{ $i18n.messages[lang].languageName }}
-                    </option>
-                </select>
-                <label for="language" class="form-label">{{ $t("Language") }}</label>
+            <div v-if="info.runningSetup" class="mt-5">
+                <div class="alert alert-success" role="alert">
+                    <div class="d-flex align-items-center">
+                        <strong>Setting up the database. It may take a while, please be patient.</strong>
+                        <div class="spinner-border ml-auto" role="status" aria-hidden="true"></div>
+                    </div>
+                </div>
             </div>
 
-            <p class="mt-5 short">
-                {{ $t("setupDatabaseChooseDatabase") }}
-            </p>
+            <template v-if="!info.runningSetup">
+                <div class="form-floating short mt-3">
+                    <select id="language" v-model="$root.language" class="form-select">
+                        <option v-for="(lang, i) in $i18n.availableLocales" :key="`Lang${i}`" :value="lang">
+                            {{ $i18n.messages[lang].languageName }}
+                        </option>
+                    </select>
+                    <label for="language" class="form-label">{{ $t("Language") }}</label>
+                </div>
 
-            <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
-                <template v-if="isEnabledEmbeddedMariaDB">
-                    <input id="btnradio3" v-model="dbConfig.type" type="radio" class="btn-check" autocomplete="off" value="embedded-mariadb">
+                <p class="mt-5 short">
+                    {{ $t("setupDatabaseChooseDatabase") }}
+                </p>
 
-                    <label class="btn btn-outline-primary" for="btnradio3">
-                        Embedded MariaDB
+                <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+                    <template v-if="info.isEnabledEmbeddedMariaDB">
+                        <input id="btnradio3" v-model="dbConfig.type" type="radio" class="btn-check" autocomplete="off" value="embedded-mariadb">
+
+                        <label class="btn btn-outline-primary" for="btnradio3">
+                            Embedded MariaDB
+                        </label>
+                    </template>
+
+                    <input id="btnradio2" v-model="dbConfig.type" type="radio" class="btn-check" autocomplete="off" value="mariadb">
+                    <label class="btn btn-outline-primary" for="btnradio2">
+                        MariaDB/MySQL
                     </label>
+
+                    <input id="btnradio1" v-model="dbConfig.type" type="radio" class="btn-check" autocomplete="off" value="sqlite">
+                    <label class="btn btn-outline-primary" for="btnradio1">
+                        SQLite
+                    </label>
+                </div>
+
+                <p v-if="dbConfig.type === 'embedded-mariadb'" class="mt-3">
+                    {{ $t("setupDatabaseEmbeddedMariaDB") }}
+                </p>
+
+                <p v-if="dbConfig.type === 'mariadb'" class="mt-3">
+                    {{ $t("setupDatabaseMariaDB") }}
+                </p>
+
+                <p v-if="dbConfig.type === 'sqlite'" class="mt-3">
+                    {{ $t("setupDatabaseSQLite") }}
+                </p>
+
+                <template v-if="dbConfig.type === 'mariadb'">
+                    <div class="form-floating mt-3 short">
+                        <input id="floatingInput" v-model="dbConfig.hostname" type="text" class="form-control" required>
+                        <label for="floatingInput">{{ $t("Hostname") }}</label>
+                    </div>
+
+                    <div class="form-floating mt-3 short">
+                        <input id="floatingInput" v-model="dbConfig.port" type="text" class="form-control" required>
+                        <label for="floatingInput">{{ $t("Port") }}</label>
+                    </div>
+
+                    <div class="form-floating mt-3 short">
+                        <input id="floatingInput" v-model="dbConfig.username" type="text" class="form-control" required>
+                        <label for="floatingInput">{{ $t("Username") }}</label>
+                    </div>
+
+                    <div class="form-floating mt-3 short">
+                        <input id="floatingInput" v-model="dbConfig.password" type="passwrod" class="form-control" required>
+                        <label for="floatingInput">{{ $t("Password") }}</label>
+                    </div>
+
+                    <div class="form-floating mt-3 short">
+                        <input id="floatingInput" v-model="dbConfig.dbName" type="text" class="form-control" required>
+                        <label for="floatingInput">{{ $t("dbName") }}</label>
+                    </div>
                 </template>
 
-                <input id="btnradio2" v-model="dbConfig.type" type="radio" class="btn-check" autocomplete="off" value="mariadb">
-                <label class="btn btn-outline-primary" for="btnradio2">
-                    MariaDB/MySQL
-                </label>
+                <button v-if="dbConfig.type === 'mariadb'" class="btn btn-warning mt-3" @submit.prevent="test">{{ $t("Test") }}</button>
 
-                <input id="btnradio1" v-model="dbConfig.type" type="radio" class="btn-check" autocomplete="off" value="sqlite">
-                <label class="btn btn-outline-primary" for="btnradio1">
-                    SQLite
-                </label>
-            </div>
-
-            <p v-if="dbConfig.type === 'embedded-mariadb'" class="mt-3">
-                {{ $t("setupDatabaseEmbeddedMariaDB") }}
-            </p>
-
-            <p v-if="dbConfig.type === 'mariadb'" class="mt-3">
-                {{ $t("setupDatabaseMariaDB") }}
-            </p>
-
-            <p v-if="dbConfig.type === 'sqlite'" class="mt-3">
-                {{ $t("setupDatabaseSQLite") }}
-            </p>
-
-            <template v-if="dbConfig.type === 'mariadb'">
-                <div class="form-floating mt-3 short">
-                    <input id="floatingInput" v-model="dbConfig.hostname" type="text" class="form-control" required>
-                    <label for="floatingInput">{{ $t("Hostname") }}</label>
-                </div>
-
-                <div class="form-floating mt-3 short">
-                    <input id="floatingInput" v-model="dbConfig.port" type="text" class="form-control" required>
-                    <label for="floatingInput">{{ $t("Port") }}</label>
-                </div>
-
-                <div class="form-floating mt-3 short">
-                    <input id="floatingInput" v-model="dbConfig.username" type="text" class="form-control" required>
-                    <label for="floatingInput">{{ $t("Username") }}</label>
-                </div>
-
-                <div class="form-floating mt-3 short">
-                    <input id="floatingInput" v-model="dbConfig.password" type="passwrod" class="form-control" required>
-                    <label for="floatingInput">{{ $t("Password") }}</label>
-                </div>
-
-                <div class="form-floating mt-3 short">
-                    <input id="floatingInput" v-model="dbConfig.dbName" type="text" class="form-control" required>
-                    <label for="floatingInput">{{ $t("dbName") }}</label>
-                </div>
+                <button class="btn btn-primary mt-4 short" type="submit" :disabled="disabledButton">
+                    {{ $t("Next") }}
+                </button>
             </template>
-
-            <button v-if="dbConfig.type === 'mariadb'" class="btn btn-warning mt-3" @submit.prevent="test">{{ $t("Test") }}</button>
-
-            <button class="btn btn-primary mt-4 short" type="submit" :disabled="disabledButton">
-                {{ $t("Next") }}
-            </button>
         </form>
     </div>
 </template>
@@ -98,8 +109,7 @@ const toast = useToast();
 export default {
     data() {
         return {
-            processing: false,
-            isEnabledEmbeddedMariaDB: false,
+            show: false,
             dbConfig: {
                 type: undefined,
                 port: 3306,
@@ -108,20 +118,31 @@ export default {
                 password: "",
                 dbName: "kuma",
             },
+            info: {
+                needSetup: false,
+                runningSetup: false,
+                isEnabledEmbeddedMariaDB: false,
+            },
         };
     },
     computed: {
         disabledButton() {
-            return this.dbConfig.type === undefined || this.processing;
+            return this.dbConfig.type === undefined || this.info.runningSetup;
         },
     },
     async mounted() {
-        let res = await axios.get("/info");
-        this.isEnabledEmbeddedMariaDB = res.data.isEnabledEmbeddedMariaDB;
+        let res = await axios.get("/setup-database-info");
+        this.info = res.data;
+
+        if (this.info && this.info.needSetup === false) {
+            location.href = "/setup";
+        } else {
+            this.show = true;
+        }
     },
     methods: {
         async submit() {
-            this.processing = true;
+            this.info.runningSetup = true;
 
             try {
                 let res = await axios.post("/setup-database", {
@@ -129,12 +150,11 @@ export default {
                 });
 
                 await sleep(2000);
-                // TODO: an interval to check if the main server is ready, it is ready, go to "/" again to continue the setup of admin account
                 await this.goToMainServerWhenReady();
             } catch (e) {
                 toast.error(e.response.data);
             } finally {
-                this.processing = false;
+                this.info.runningSetup = false;
             }
 
         },
@@ -142,10 +162,14 @@ export default {
         async goToMainServerWhenReady() {
             try {
                 console.log("Trying...");
-                let res = await axios.get("/api/entry-page");
-                if (res.data && res.data.type === "entryPage") {
-                    location.href = "/";
+                let res = await axios.get("/setup-database-info");
+                if (res.data && res.data.needSetup === false) {
+                    this.show = false;
+                    location.href = "/setup";
                 } else {
+                    if (res.data) {
+                        this.info = res.data;
+                    }
                     throw new Error("not ready");
                 }
             } catch (e) {
@@ -153,6 +177,10 @@ export default {
                 await sleep(2000);
                 await this.goToMainServerWhenReady();
             }
+        },
+
+        test() {
+            toast.error("not implemented");
         }
     },
 };

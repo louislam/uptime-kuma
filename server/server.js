@@ -76,7 +76,9 @@ log.info("server", "Importing this project modules");
 log.debug("server", "Importing Monitor");
 const Monitor = require("./model/monitor");
 log.debug("server", "Importing Settings");
-const { getSettings, setSettings, setting, initJWTSecret, checkLogin, startUnitTest, FBSD, doubleCheckPassword, startE2eTests } = require("./util-server");
+const { getSettings, setSettings, setting, initJWTSecret, checkLogin, startUnitTest, FBSD, doubleCheckPassword, startE2eTests,
+    allowDevAllOrigin
+} = require("./util-server");
 
 log.debug("server", "Importing Notification");
 const { Notification } = require("./notification");
@@ -226,6 +228,14 @@ let needSetup = false;
         } else {
             response.redirect("/dashboard");
         }
+    });
+
+    app.get("/setup-database-info", (request, response) => {
+        allowDevAllOrigin(response);
+        response.json({
+            runningSetup: false,
+            needSetup: false,
+        });
     });
 
     if (isDev) {
