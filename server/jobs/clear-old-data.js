@@ -1,13 +1,16 @@
-const { log, exit, connectDb } = require("./util-worker");
 const { R } = require("redbean-node");
+const { log } = require("../../src/util");
 const { setSetting, setting } = require("../util-server");
 const Database = require("../database");
 
 const DEFAULT_KEEP_PERIOD = 180;
 
-(async () => {
-    await connectDb();
+/**
+ * Clears old data from the heartbeat table of the database.
+ * @return {Promise<void>} A promise that resolves when the data has been cleared.
+ */
 
+const clearOldData = async () => {
     let period = await setting("keepDataPeriodDays");
 
     // Set Default Period
@@ -21,16 +24,16 @@ const DEFAULT_KEEP_PERIOD = 180;
     try {
         parsedPeriod = parseInt(period);
     } catch (_) {
-        log("Failed to parse setting, resetting to default..");
+        log.warn("clearOldData", "Failed to parse setting, resetting to default..");
         await setSetting("keepDataPeriodDays", DEFAULT_KEEP_PERIOD, "general");
         parsedPeriod = DEFAULT_KEEP_PERIOD;
     }
 
     if (parsedPeriod < 1) {
-        log(`Data deletion has been disabled as period is less than 1. Period is ${parsedPeriod} days.`);
+        log.info("clearOldData", `Data deletion has been disabled as period is less than 1. Period is ${parsedPeriod} days.`);
     } else {
 
-        log(`Clearing Data older than ${parsedPeriod} days...`);
+        log.debug("clearOldData", `Clearing Data older than ${parsedPeriod} days...`);
 
         const sqlHourOffset = Database.sqlHourOffset();
 
@@ -40,9 +43,11 @@ const DEFAULT_KEEP_PERIOD = 180;
                 [ parsedPeriod * -24 ]
             );
         } catch (e) {
-            log(`Failed to clear old data: ${e.message}`);
+            log.error("clearOldData", `Failed to clear old data: ${e.message}`);
         }
     }
+};
 
-    exit();
-})();
+module.exports = {
+    clearOldData,
+};

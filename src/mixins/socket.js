@@ -35,7 +35,8 @@ export default {
             allowLoginDialog: false,        // Allowed to show login dialog, but "loggedIn" have to be true too. This exists because prevent the login dialog show 0.1s in first before the socket server auth-ed.
             loggedIn: false,
             monitorList: { },
-            maintenanceList: { },
+            maintenanceList: {},
+            apiKeyList: {},
             heartbeatList: { },
             importantHeartbeatList: { },
             avgPingList: { },
@@ -46,7 +47,7 @@ export default {
             statusPageListLoaded: false,
             statusPageList: [],
             proxyList: [],
-            connectionErrorMsg: "Cannot connect to the socket server. Reconnecting...",
+            connectionErrorMsg: `${this.$t("Cannot connect to the socket server.")} ${this.$t("Reconnecting...")}`,
             showReverseProxyGuide: true,
             cloudflared: {
                 cloudflareTunnelToken: "",
@@ -140,6 +141,10 @@ export default {
                 this.maintenanceList = data;
             });
 
+            socket.on("apiKeyList", (data) => {
+                this.apiKeyList = data;
+            });
+
             socket.on("notificationList", (data) => {
                 this.notificationList = data;
             });
@@ -228,7 +233,7 @@ export default {
 
             socket.on("connect_error", (err) => {
                 console.error(`Failed to connect to the backend. Socket.io connect_error: ${err.message}`);
-                this.connectionErrorMsg = `Cannot connect to the socket server. [${err}] Reconnecting...`;
+                this.connectionErrorMsg = `${this.$t("Cannot connect to the socket server.")} [${err}] ${this.$t("Reconnecting...")}`;
                 this.showReverseProxyGuide = true;
                 this.socket.connected = false;
                 this.socket.firstConnect = false;
@@ -472,6 +477,17 @@ export default {
         },
 
         /**
+         * Send list of API keys
+         * @param {socketCB} callback
+         */
+        getAPIKeyList(callback) {
+            if (!callback) {
+                callback = () => { };
+            }
+            socket.emit("getAPIKeyList", callback);
+        },
+
+        /**
          * Add a monitor
          * @param {Object} monitor Object representing monitor to add
          * @param {socketCB} callback
@@ -543,6 +559,24 @@ export default {
          */
         deleteMaintenance(maintenanceID, callback) {
             socket.emit("deleteMaintenance", maintenanceID, callback);
+        },
+
+        /**
+         * Add an API key
+         * @param {Object} key API key to add
+         * @param {socketCB} callback
+         */
+        addAPIKey(key, callback) {
+            socket.emit("addAPIKey", key, callback);
+        },
+
+        /**
+         * Delete specified API key
+         * @param {int} keyID ID of key to delete
+         * @param {socketCB} callback
+         */
+        deleteAPIKey(keyID, callback) {
+            socket.emit("deleteAPIKey", keyID, callback);
         },
 
         /** Clear the hearbeat list */

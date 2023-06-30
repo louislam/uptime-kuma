@@ -21,7 +21,9 @@ import Mattermost from "./Mattermost.vue";
 import Ntfy from "./Ntfy.vue";
 import Octopush from "./Octopush.vue";
 import OneBot from "./OneBot.vue";
+import Opsgenie from "./Opsgenie.vue";
 import PagerDuty from "./PagerDuty.vue";
+import PagerTree from "./PagerTree.vue";
 import PromoSMS from "./PromoSMS.vue";
 import Pushbullet from "./Pushbullet.vue";
 import PushDeer from "./PushDeer.vue";
@@ -40,6 +42,7 @@ import STMP from "./SMTP.vue";
 import Teams from "./Teams.vue";
 import TechulusPush from "./TechulusPush.vue";
 import Telegram from "./Telegram.vue";
+import Twilio from "./Twilio.vue";
 import Webhook from "./Webhook.vue";
 import WeCom from "./WeCom.vue";
 import GoAlert from "./GoAlert.vue";
@@ -75,7 +78,9 @@ const NotificationFormList = {
     "ntfy": Ntfy,
     "octopush": Octopush,
     "OneBot": OneBot,
+    "Opsgenie": Opsgenie,
     "PagerDuty": PagerDuty,
+    "PagerTree": PagerTree,
     "promosms": PromoSMS,
     "pushbullet": Pushbullet,
     "PushByTechulus": TechulusPush,
@@ -93,6 +98,7 @@ const NotificationFormList = {
     "stackfield": Stackfield,
     "teams": Teams,
     "telegram": Telegram,
+    "twilio": Twilio,
     "Splunk": Splunk,
     "webhook": Webhook,
     "WeCom": WeCom,

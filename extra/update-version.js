@@ -26,7 +26,8 @@ if (! exists) {
     fs.writeFileSync("package.json", JSON.stringify(pkg, null, 4) + "\n");
 
     // Also update package-lock.json
-    childProcess.spawnSync("npm", [ "install" ]);
+    const npm = /^win/.test(process.platform) ? "npm.cmd" : "npm";
+    childProcess.spawnSync(npm, [ "install" ]);
 
     commit(newVersion);
     tag(newVersion);
