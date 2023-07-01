@@ -356,7 +356,7 @@ class Database {
             // Try catch anything here
             try {
                 for (let i = version + 1; i <= this.latestVersion; i++) {
-                    const sqlFile = `./db/patch${i}.sql`;
+                    const sqlFile = `./db/old_migrations/patch${i}.sql`;
                     log.info("db", `Patching ${sqlFile}`);
                     await Database.importSQLFile(sqlFile);
                     log.info("db", `Patched ${sqlFile}`);
@@ -515,7 +515,7 @@ class Database {
 
             log.info("db", sqlFilename + " is patching");
             this.patched = true;
-            await this.importSQLFile("./db/" + sqlFilename);
+            await this.importSQLFile("./db/old_migrations/" + sqlFilename);
             databasePatchedFiles[sqlFilename] = true;
             log.info("db", sqlFilename + " was patched successfully");
 
