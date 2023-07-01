@@ -61,6 +61,12 @@ class UptimeKumaServer {
 
     };
 
+    /**
+     * Use for decode the auth object
+     * @type {null}
+     */
+    jwtSecret = null;
+
     static getInstance(args) {
         if (UptimeKumaServer.instance == null) {
             UptimeKumaServer.instance = new UptimeKumaServer(args);
@@ -98,11 +104,17 @@ class UptimeKumaServer {
             }
         }
 
+        // Set Monitor Types
+        UptimeKumaServer.monitorTypeList["real-browser"] = new RealBrowserMonitorType();
+
         this.io = new Server(this.httpServer);
     }
 
     /** Initialise app after the database has been set up */
     async initAfterDatabaseReady() {
+        // Static
+        this.app.use("/screenshots", express.static(Database.screenshotDir));
+
         await CacheableDnsHttpAgent.update();
 
         process.env.TZ = await this.getTimezone();
@@ -337,3 +349,4 @@ module.exports = {
 
 // Must be at the end
 const { MonitorType } = require("./monitor-types/monitor-type");
+const { RealBrowserMonitorType } = require("./monitor-types/real-browser-monitor-type");
