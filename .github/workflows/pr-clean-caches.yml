@@ -2,7 +2,8 @@ name: Cleanup branch caches
 
 on:
   pull_request:
-    types: [opened, closed, reopened, synchronize]
+    types:
+      - closed
   push:
   workflow_dispatch:
 
