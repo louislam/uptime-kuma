@@ -734,7 +734,7 @@
     "Open Badge Generator": "Open Badge Generator",
     "Badge Generator": "{0}'s Badge Generator",
     "Badge Type": "Badge Type",
-    "Badge Duration": "Badge Duration",
+    "Badge Duration (in hours)": "Badge Duration (in hours)",
     "Badge Label": "Badge Label",
     "Badge Prefix": "Badge Value Prefix",
     "Badge Suffix": "Badge Value Suffix",
