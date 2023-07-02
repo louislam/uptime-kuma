@@ -117,8 +117,8 @@
                     </div>
 
                     <div class="my-3">
-                        <label for="push-url" class="form-label">{{ $t("Badge URL") }}</label>
-                        <CopyableInput id="push-url" v-model="badgeURL" type="url" disabled="disabled" />
+                        <label for="badge-url" class="form-label">{{ $t("Badge URL") }}</label>
+                        <CopyableInput id="badge-url" v-model="badgeURL" type="url" disabled="disabled" />
                     </div>
                 </div>
 
