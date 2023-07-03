@@ -1,25 +1,31 @@
 const { setSetting, setting } = require("./util-server");
 const axios = require("axios");
 const compareVersions = require("compare-versions");
+const { log } = require("../src/util");
 
 exports.version = require("../package.json").version;
 exports.latestVersion = null;
 
+// How much time in ms to wait between update checks
+const UPDATE_CHECKER_INTERVAL_MS = 1000 * 60 * 60 * 48;
+const UPDATE_CHECKER_LATEST_VERSION_URL = "https://uptime.kuma.pet/version";
+
 let interval;
 
-/** Start 48 hour check interval */
 exports.startInterval = () => {
     let check = async () => {
+        if (await setting("checkUpdate") === false) {
+            return;
+        }
+
+        log.debug("update-checker", "Retrieving latest versions");
+
         try {
-            const res = await axios.get("https://uptime.kuma.pet/version");
+            const res = await axios.get(UPDATE_CHECKER_LATEST_VERSION_URL);
 
             // For debug
             if (process.env.TEST_CHECK_VERSION === "1") {
                 res.data.slow = "1000.0.0";
-            }
-
-            if (await setting("checkUpdate") === false) {
-                return;
             }
 
             let checkBeta = await setting("checkBeta");
@@ -35,12 +41,14 @@ exports.startInterval = () => {
                 exports.latestVersion = res.data.slow;
             }
 
-        } catch (_) { }
+        } catch (_) {
+            log.info("update-checker", "Failed to check for new versions");
+        }
 
     };
 
     check();
-    interval = setInterval(check, 3600 * 1000 * 48);
+    interval = setInterval(check, UPDATE_CHECKER_INTERVAL_MS);
 };
 
 /**
