@@ -19,7 +19,6 @@ import DockerHosts from "./components/settings/Docker.vue";
 import MaintenanceDetails from "./pages/MaintenanceDetails.vue";
 import ManageMaintenance from "./pages/ManageMaintenance.vue";
 import APIKeys from "./components/settings/APIKeys.vue";
-import Plugins from "./components/settings/Plugins.vue";
 
 // Settings - Sub Pages
 import Appearance from "./components/settings/Appearance.vue";
@@ -129,10 +128,6 @@ const routes = [
                             {
                                 path: "backup",
                                 component: Backup,
-                            },
-                            {
-                                path: "plugins",
-                                component: Plugins,
                             },
                             {
                                 path: "about",
