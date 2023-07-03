@@ -1,5 +1,5 @@
 const { MonitorType } = require("./monitor-type");
-const { chromium, Browser } = require("playwright-core");
+const { chromium } = require("playwright-core");
 const { UP, log } = require("../../src/util");
 const { Settings } = require("../settings");
 const commandExistsSync = require("command-exists").sync;
@@ -8,10 +8,6 @@ const path = require("path");
 const Database = require("../database");
 const jwt = require("jsonwebtoken");
 
-/**
- *
- * @type {Browser}
- */
 let browser = null;
 
 async function getBrowser() {
