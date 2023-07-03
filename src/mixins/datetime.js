@@ -12,6 +12,11 @@ export default {
     },
 
     methods: {
+        /**
+         * Convert value to UTC
+         * @param {string | number | Date | dayjs.Dayjs} value
+         * @returns {dayjs.Dayjs}
+         */
         toUTC(value) {
             return dayjs.tz(value, this.timezone).utc().format();
         },
@@ -34,6 +39,11 @@ export default {
             return this.datetimeFormat(value, "YYYY-MM-DD HH:mm:ss");
         },
 
+        /**
+         * Get time for maintenance
+         * @param {string | number | Date | dayjs.Dayjs} value
+         * @returns {string}
+         */
         datetimeMaintenance(value) {
             const inputDate = new Date(value);
             const now = new Date(Date.now());

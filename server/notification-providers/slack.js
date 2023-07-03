@@ -1,7 +1,7 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 const { setSettings, setting } = require("../util-server");
-const { getMonitorRelativeURL } = require("../../src/util");
+const { getMonitorRelativeURL, UP } = require("../../src/util");
 
 class Slack extends NotificationProvider {
 
@@ -39,31 +39,37 @@ class Slack extends NotificationProvider {
                 return okMsg;
             }
 
-            const time = heartbeatJSON["time"];
             const textMsg = "Uptime Kuma Alert";
             let data = {
-                "text": monitorJSON ? textMsg + `: ${monitorJSON.name}` : textMsg,
+                "text": `${textMsg}\n${msg}`,
                 "channel": notification.slackchannel,
                 "username": notification.slackusername,
                 "icon_emoji": notification.slackiconemo,
-                "blocks": [{
-                    "type": "header",
-                    "text": {
-                        "type": "plain_text",
-                        "text": "Uptime Kuma Alert",
-                    },
-                },
-                {
-                    "type": "section",
-                    "fields": [{
-                        "type": "mrkdwn",
-                        "text": "*Message*\n" + msg,
-                    },
+                "attachments": [
                     {
-                        "type": "mrkdwn",
-                        "text": "*Time (UTC)*\n" + time,
-                    }],
-                }],
+                        "color": (heartbeatJSON["status"] === UP) ? "#2eb886" : "#e01e5a",
+                        "blocks": [
+                            {
+                                "type": "header",
+                                "text": {
+                                    "type": "plain_text",
+                                    "text": "Uptime Kuma Alert",
+                                },
+                            },
+                            {
+                                "type": "section",
+                                "fields": [{
+                                    "type": "mrkdwn",
+                                    "text": "*Message*\n" + msg,
+                                },
+                                {
+                                    "type": "mrkdwn",
+                                    "text": `*Time (${heartbeatJSON["timezone"]})*\n${heartbeatJSON["localDateTime"]}`,
+                                }],
+                            }
+                        ],
+                    }
+                ]
             };
 
             if (notification.slackbutton) {
@@ -74,17 +80,19 @@ class Slack extends NotificationProvider {
 
             // Button
             if (baseURL) {
-                data.blocks.push({
-                    "type": "actions",
-                    "elements": [{
-                        "type": "button",
-                        "text": {
-                            "type": "plain_text",
-                            "text": "Visit Uptime Kuma",
-                        },
-                        "value": "Uptime-Kuma",
-                        "url": baseURL + getMonitorRelativeURL(monitorJSON.id),
-                    }],
+                data.attachments.forEach(element => {
+                    element.blocks.push({
+                        "type": "actions",
+                        "elements": [{
+                            "type": "button",
+                            "text": {
+                                "type": "plain_text",
+                                "text": "Visit Uptime Kuma",
+                            },
+                            "value": "Uptime-Kuma",
+                            "url": baseURL + getMonitorRelativeURL(monitorJSON.id),
+                        }],
+                    });
                 });
             }
 

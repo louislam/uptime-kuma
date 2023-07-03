@@ -28,7 +28,7 @@ const monitorResponseTime = new PrometheusClient.Gauge({
 
 const monitorStatus = new PrometheusClient.Gauge({
     name: "monitor_status",
-    help: "Monitor Status (1 = UP, 0= DOWN)",
+    help: "Monitor Status (1 = UP, 0= DOWN, 2= PENDING, 3= MAINTENANCE)",
     labelNames: commonLabels
 });
 
@@ -99,6 +99,7 @@ class Prometheus {
         }
     }
 
+    /** Remove monitor from prometheus */
     remove() {
         try {
             monitorCertDaysRemaining.remove(this.monitorLabelValues);

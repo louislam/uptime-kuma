@@ -1,5 +1,5 @@
 const tcpp = require("tcp-ping");
-const Ping = require("./ping-lite");
+const ping = require("@louislam/ping");
 const { R } = require("redbean-node");
 const { log, genSecret } = require("../src/util");
 const passwordHash = require("./password-hash");
@@ -13,11 +13,14 @@ const { badgeConstants } = require("./config");
 const mssql = require("mssql");
 const { Client } = require("pg");
 const postgresConParse = require("pg-connection-string").parse;
+const mysql = require("mysql2");
+const { MongoClient } = require("mongodb");
 const { NtlmClient } = require("axios-ntlm");
 const { Settings } = require("./settings");
 const grpc = require("@grpc/grpc-js");
 const protojs = require("protobufjs");
 const radiusClient = require("node-radius-client");
+const redis = require("redis");
 const {
     dictionaries: {
         rfc2865: { file, attributes },
@@ -25,12 +28,7 @@ const {
 } = require("node-radius-utils");
 const dayjs = require("dayjs");
 
-// From ping-lite
-exports.WIN = /^win/.test(process.platform);
-exports.LIN = /^linux/.test(process.platform);
-exports.MAC = /^darwin/.test(process.platform);
-exports.FBSD = /^freebsd/.test(process.platform);
-exports.BSD = /bsd$/.test(process.platform);
+const isWindows = process.platform === /^win/.test(process.platform);
 
 /**
  * Init or reset JWT secret
@@ -81,15 +79,19 @@ exports.tcping = function (hostname, port) {
 /**
  * Ping the specified machine
  * @param {string} hostname Hostname / address of machine
+ * @param {number} [size=56] Size of packet to send
  * @returns {Promise<number>} Time for ping in ms rounded to nearest integer
  */
-exports.ping = async (hostname) => {
+exports.ping = async (hostname, size = 56) => {
     try {
-        return await exports.pingAsync(hostname);
+        return await exports.pingAsync(hostname, false, size);
     } catch (e) {
         // If the host cannot be resolved, try again with ipv6
-        if (e.message.includes("service not known")) {
-            return await exports.pingAsync(hostname, true);
+        console.debug("ping", "IPv6 error message: " + e.message);
+
+        // As node-ping does not report a specific error for this, try again if it is an empty message with ipv6 no matter what.
+        if (!e.message) {
+            return await exports.pingAsync(hostname, true, size);
         } else {
             throw e;
         }
@@ -100,22 +102,29 @@ exports.ping = async (hostname) => {
  * Ping the specified machine
  * @param {string} hostname Hostname / address of machine to ping
  * @param {boolean} ipv6 Should IPv6 be used?
+ * @param {number} [size = 56] Size of ping packet to send
  * @returns {Promise<number>} Time for ping in ms rounded to nearest integer
  */
-exports.pingAsync = function (hostname, ipv6 = false) {
+exports.pingAsync = function (hostname, ipv6 = false, size = 56) {
     return new Promise((resolve, reject) => {
-        const ping = new Ping(hostname, {
-            ipv6
-        });
-
-        ping.send(function (err, ms, stdout) {
-            if (err) {
-                reject(err);
-            } else if (ms === null) {
-                reject(new Error(stdout));
+        ping.promise.probe(hostname, {
+            v6: ipv6,
+            min_reply: 1,
+            deadline: 10,
+            packetSize: size,
+        }).then((res) => {
+            // If ping failed, it will set field to unknown
+            if (res.alive) {
+                resolve(res.time);
             } else {
-                resolve(Math.round(ms));
+                if (isWindows) {
+                    reject(new Error(exports.convertToUTF8(res.output)));
+                } else {
+                    reject(new Error(res.output));
+                }
             }
+        }).catch((err) => {
+            reject(err);
         });
     });
 };
@@ -134,7 +143,7 @@ exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
         const { port, username, password, interval = 20 } = options;
 
         // Adds MQTT protocol to the hostname if not already present
-        if (!/^(?:http|mqtt)s?:\/\//.test(hostname)) {
+        if (!/^(?:http|mqtt|ws)s?:\/\//.test(hostname)) {
             hostname = "mqtt://" + hostname;
         }
 
@@ -144,10 +153,11 @@ exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
             reject(new Error("Timeout"));
         }, interval * 1000 * 0.8);
 
-        log.debug("mqtt", "MQTT connecting");
+        const mqttUrl = `${hostname}:${port}`;
 
-        let client = mqtt.connect(hostname, {
-            port,
+        log.debug("mqtt", `MQTT connecting to ${mqttUrl}`);
+
+        let client = mqtt.connect(mqttUrl, {
             username,
             password
         });
@@ -247,19 +257,19 @@ exports.dnsResolve = function (hostname, resolverServer, resolverPort, rrtype) {
  * @param {string} query The query to validate the database with
  * @returns {Promise<(string[]|Object[]|Object)>}
  */
-exports.mssqlQuery = function (connectionString, query) {
-    return new Promise((resolve, reject) => {
-        mssql.connect(connectionString).then(pool => {
-            return pool.request()
-                .query(query);
-        }).then(result => {
-            resolve(result);
-        }).catch(err => {
-            reject(err);
-        }).finally(() => {
-            mssql.close();
-        });
-    });
+exports.mssqlQuery = async function (connectionString, query) {
+    let pool;
+    try {
+        pool = new mssql.ConnectionPool(connectionString);
+        await pool.connect();
+        await pool.request().query(query);
+        pool.close();
+    } catch (e) {
+        if (pool) {
+            pool.close();
+        }
+        throw e;
+    }
 };
 
 /**
@@ -279,19 +289,84 @@ exports.postgresQuery = function (connectionString, query) {
 
         const client = new Client({ connectionString });
 
-        client.connect();
-
-        return client.query(query)
-            .then(res => {
-                resolve(res);
-            })
-            .catch(err => {
+        client.connect((err) => {
+            if (err) {
                 reject(err);
-            })
-            .finally(() => {
                 client.end();
-            });
+            } else {
+                // Connected here
+                try {
+                    // No query provided by user, use SELECT 1
+                    if (!query || (typeof query === "string" && query.trim() === "")) {
+                        query = "SELECT 1";
+                    }
+
+                    client.query(query, (err, res) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(res);
+                        }
+                        client.end();
+                    });
+                } catch (e) {
+                    reject(e);
+                }
+            }
+        });
+
     });
+};
+
+/**
+ * Run a query on MySQL/MariaDB
+ * @param {string} connectionString The database connection string
+ * @param {string} query The query to validate the database with
+ * @returns {Promise<(string)>}
+ */
+exports.mysqlQuery = function (connectionString, query) {
+    return new Promise((resolve, reject) => {
+        const connection = mysql.createConnection(connectionString);
+
+        connection.on("error", (err) => {
+            reject(err);
+        });
+
+        connection.query(query, (err, res) => {
+            if (err) {
+                reject(err);
+            } else {
+                if (Array.isArray(res)) {
+                    resolve("Rows: " + res.length);
+                } else {
+                    resolve("No Error, but the result is not an array. Type: " + typeof res);
+                }
+            }
+
+            try {
+                connection.end();
+            } catch (_) {
+                connection.destroy();
+            }
+        });
+    });
+};
+
+/**
+ * Connect to and Ping a MongoDB database
+ * @param {string} connectionString The database connection string
+ * @returns {Promise<(string[]|Object[]|Object)>}
+ */
+exports.mongodbPing = async function (connectionString) {
+    let client = await MongoClient.connect(connectionString);
+    let dbPing = await client.db().command({ ping: 1 });
+    await client.close();
+
+    if (dbPing["ok"] === 1) {
+        return "UP";
+    } else {
+        throw Error("failed");
+    }
 };
 
 /**
@@ -328,6 +403,33 @@ exports.radius = function (
             [ attributes.CALLING_STATION_ID, callingStationId ],
             [ attributes.CALLED_STATION_ID, calledStationId ],
         ],
+    });
+};
+
+/**
+ * Redis server ping
+ * @param {string} dsn The redis connection string
+ */
+exports.redisPingAsync = function (dsn) {
+    return new Promise((resolve, reject) => {
+        const client = redis.createClient({
+            url: dsn,
+        });
+        client.on("error", (err) => {
+            reject(err);
+        });
+        client.connect().then(() => {
+            client.ping().then((res, err) => {
+                if (client.isOpen) {
+                    client.disconnect();
+                }
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(res);
+                }
+            });
+        });
     });
 };
 
@@ -422,12 +524,16 @@ const parseCertificateInfo = function (info) {
 
         // Move up the chain until loop is encountered
         if (link.issuerCertificate == null) {
+            link.certType = (i === 0) ? "self-signed" : "root CA";
             break;
         } else if (link.issuerCertificate.fingerprint in existingList) {
+            // a root CA certificate is typically "signed by itself"  (=> "self signed certificate") and thus the "issuerCertificate" is a reference to itself.
             log.debug("cert", `[Last] ${link.issuerCertificate.fingerprint}`);
+            link.certType = (i === 0) ? "self-signed" : "root CA";
             link.issuerCertificate = null;
             break;
         } else {
+            link.certType = (i === 0) ? "server" : "intermediate CA";
             link = link.issuerCertificate;
         }
 
@@ -447,6 +553,10 @@ const parseCertificateInfo = function (info) {
  * @returns {Object} Object containing certificate information
  */
 exports.checkCertificate = function (res) {
+    if (!res.request.res.socket) {
+        throw new Error("No socket found");
+    }
+
     const info = res.request.res.socket.getPeerCertificate(true);
     const valid = res.request.res.socket.authorized || false;
 
@@ -651,15 +761,27 @@ exports.filterAndJoin = (parts, connector = "") => {
 };
 
 /**
- * Send a 403 response
+ * Send an Error response
  * @param {Object} res Express response object
  * @param {string} [msg=""] Message to send
  */
-module.exports.send403 = (res, msg = "") => {
-    res.status(403).json({
-        "status": "fail",
-        "msg": msg,
-    });
+module.exports.sendHttpError = (res, msg = "") => {
+    if (msg.includes("SQLITE_BUSY") || msg.includes("SQLITE_LOCKED")) {
+        res.status(503).json({
+            "status": "fail",
+            "msg": msg,
+        });
+    } else if (msg.toLowerCase().includes("not found")) {
+        res.status(404).json({
+            "status": "fail",
+            "msg": msg,
+        });
+    } else {
+        res.status(403).json({
+            "status": "fail",
+            "msg": msg,
+        });
+    }
 };
 
 function timeObjectConvertTimezone(obj, timezone, timeObjectToUTC = true) {
@@ -751,22 +873,31 @@ module.exports.grpcQuery = async (options) => {
             cb);
     }, false, false);
     return new Promise((resolve, _) => {
-        return grpcService[`${grpcMethod}`](JSON.parse(grpcBody), function (err, response) {
-            const responseData = JSON.stringify(response);
-            if (err) {
-                return resolve({
-                    code: err.code,
-                    errorMessage: err.details,
-                    data: ""
-                });
-            } else {
-                log.debug("monitor:", `gRPC response: ${response}`);
-                return resolve({
-                    code: 1,
-                    errorMessage: "",
-                    data: responseData
-                });
-            }
-        });
+        try {
+            return grpcService[`${grpcMethod}`](JSON.parse(grpcBody), function (err, response) {
+                const responseData = JSON.stringify(response);
+                if (err) {
+                    return resolve({
+                        code: err.code,
+                        errorMessage: err.details,
+                        data: ""
+                    });
+                } else {
+                    log.debug("monitor:", `gRPC response: ${JSON.stringify(response)}`);
+                    return resolve({
+                        code: 1,
+                        errorMessage: "",
+                        data: responseData
+                    });
+                }
+            });
+        } catch (err) {
+            return resolve({
+                code: -1,
+                errorMessage: `Error ${err}. Please review your gRPC configuration option. The service name must not include package name value, and the method name must follow camelCase format`,
+                data: ""
+            });
+        }
+
     });
 };

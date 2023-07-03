@@ -1,8 +1,10 @@
 const { BeanModel } = require("redbean-node/dist/bean-model");
-const { parseTimeObject, parseTimeFromTimeObject, utcToLocal, localToUTC, log } = require("../../src/util");
-const { timeObjectToUTC, timeObjectToLocal } = require("../util-server");
+const { parseTimeObject, parseTimeFromTimeObject, log } = require("../../src/util");
 const { R } = require("redbean-node");
 const dayjs = require("dayjs");
+const Cron = require("croner");
+const { UptimeKumaServer } = require("../uptime-kuma-server");
+const apicache = require("../modules/apicache");
 
 class Maintenance extends BeanModel {
 
@@ -15,16 +17,19 @@ class Maintenance extends BeanModel {
 
         let dateRange = [];
         if (this.start_date) {
-            dateRange.push(utcToLocal(this.start_date));
-            if (this.end_date) {
-                dateRange.push(utcToLocal(this.end_date));
-            }
+            dateRange.push(this.start_date);
+        } else {
+            dateRange.push(null);
+        }
+
+        if (this.end_date) {
+            dateRange.push(this.end_date);
         }
 
         let timeRange = [];
-        let startTime = timeObjectToLocal(parseTimeObject(this.start_time));
+        let startTime = parseTimeObject(this.start_time);
         timeRange.push(startTime);
-        let endTime = timeObjectToLocal(parseTimeObject(this.end_time));
+        let endTime = parseTimeObject(this.end_time);
         timeRange.push(endTime);
 
         let obj = {
@@ -39,12 +44,44 @@ class Maintenance extends BeanModel {
             weekdays: (this.weekdays) ? JSON.parse(this.weekdays) : [],
             daysOfMonth: (this.days_of_month) ? JSON.parse(this.days_of_month) : [],
             timeslotList: [],
+            cron: this.cron,
+            duration: this.duration,
+            durationMinutes: parseInt(this.duration / 60),
+            timezone: await this.getTimezone(),         // Only valid timezone
+            timezoneOption: this.timezone,               // Mainly for dropdown menu, because there is a option "SAME_AS_SERVER"
+            timezoneOffset: await this.getTimezoneOffset(),
+            status: await this.getStatus(),
         };
 
-        const timeslotList = await this.getTimeslotList();
+        if (this.strategy === "manual") {
+            // Do nothing, no timeslots
+        } else if (this.strategy === "single") {
+            obj.timeslotList.push({
+                startDate: this.start_date,
+                endDate: this.end_date,
+            });
+        } else {
+            // Should be cron or recurring here
+            if (this.beanMeta.job) {
+                let runningTimeslot = this.getRunningTimeslot();
 
-        for (let timeslot of timeslotList) {
-            obj.timeslotList.push(await timeslot.toPublicJSON());
+                if (runningTimeslot) {
+                    obj.timeslotList.push(runningTimeslot);
+                }
+
+                let nextRunDate = this.beanMeta.job.nextRun();
+                if (nextRunDate) {
+                    let startDateDayjs = dayjs(nextRunDate);
+
+                    let startDate = startDateDayjs.toISOString();
+                    let endDate = startDateDayjs.add(this.duration, "second").toISOString();
+
+                    obj.timeslotList.push({
+                        startDate,
+                        endDate,
+                    });
+                }
+            }
         }
 
         if (!Array.isArray(obj.weekdays)) {
@@ -55,52 +92,7 @@ class Maintenance extends BeanModel {
             obj.daysOfMonth = [];
         }
 
-        // Maintenance Status
-        if (!obj.active) {
-            obj.status = "inactive";
-        } else if (obj.strategy === "manual") {
-            obj.status = "under-maintenance";
-        } else if (obj.timeslotList.length > 0) {
-            let currentTimestamp = dayjs().unix();
-
-            for (let timeslot of obj.timeslotList) {
-                if (dayjs.utc(timeslot.startDate).unix() <= currentTimestamp && dayjs.utc(timeslot.endDate).unix() >= currentTimestamp) {
-                    log.debug("timeslot", "Timeslot ID: " + timeslot.id);
-                    log.debug("timeslot", "currentTimestamp:" + currentTimestamp);
-                    log.debug("timeslot", "timeslot.start_date:" + dayjs.utc(timeslot.startDate).unix());
-                    log.debug("timeslot", "timeslot.end_date:" + dayjs.utc(timeslot.endDate).unix());
-
-                    obj.status = "under-maintenance";
-                    break;
-                }
-            }
-
-            if (!obj.status) {
-                obj.status = "scheduled";
-            }
-        } else if (obj.timeslotList.length === 0) {
-            obj.status = "ended";
-        } else {
-            obj.status = "unknown";
-        }
-
         return obj;
-    }
-
-    /**
-     * Only get future or current timeslots only
-     * @returns {Promise<[]>}
-     */
-    async getTimeslotList() {
-        return R.convertToBeans("maintenance_timeslot", await R.getAll(`
-            SELECT maintenance_timeslot.*
-            FROM maintenance_timeslot, maintenance
-            WHERE maintenance_timeslot.maintenance_id = maintenance.id
-            AND maintenance.id = ?
-            AND ${Maintenance.getActiveAndFutureMaintenanceSQLCondition()}
-        `, [
-            this.id
-        ]));
     }
 
     /**
@@ -112,6 +104,11 @@ class Maintenance extends BeanModel {
         return this.toPublicJSON(timezone);
     }
 
+    /**
+     * Get a list of weekdays that the maintenance is active for
+     * Monday=1, Tuesday=2 etc.
+     * @returns {number[]} Array of active weekdays
+     */
     getDayOfWeekList() {
         log.debug("timeslot", "List: " + this.weekdays);
         return JSON.parse(this.weekdays).sort(function (a, b) {
@@ -119,25 +116,21 @@ class Maintenance extends BeanModel {
         });
     }
 
+    /**
+     * Get a list of days in month that maintenance is active for
+     * @returns {number[]|string[]} Array of active days in month
+     */
     getDayOfMonthList() {
         return JSON.parse(this.days_of_month).sort(function (a, b) {
             return a - b;
         });
     }
 
-    getStartDateTime() {
-        let startOfTheDay = dayjs.utc(this.start_date).format("HH:mm");
-        log.debug("timeslot", "startOfTheDay: " + startOfTheDay);
-
-        // Start Time
-        let startTimeSecond = dayjs.utc(this.start_time, "HH:mm").diff(dayjs.utc(startOfTheDay, "HH:mm"), "second");
-        log.debug("timeslot", "startTime: " + startTimeSecond);
-
-        // Bake StartDate + StartTime = Start DateTime
-        return dayjs.utc(this.start_date).add(startTimeSecond, "second");
-    }
-
-    getDuration() {
+    /**
+     * Get the duration of maintenance in seconds
+     * @returns {number} Duration of maintenance
+     */
+    calcDuration() {
         let duration = dayjs.utc(this.end_time, "HH:mm").diff(dayjs.utc(this.start_time, "HH:mm"), "second");
         // Add 24hours if it is across day
         if (duration < 0) {
@@ -146,69 +139,276 @@ class Maintenance extends BeanModel {
         return duration;
     }
 
-    static jsonToBean(bean, obj) {
+    /**
+     * Convert data from socket to bean
+     * @param {Bean} bean Bean to fill in
+     * @param {Object} obj Data to fill bean with
+     * @returns {Bean} Filled bean
+     */
+    static async jsonToBean(bean, obj) {
         if (obj.id) {
             bean.id = obj.id;
-        }
-
-        // Apply timezone offset to timeRange, as it cannot apply automatically.
-        if (obj.timeRange[0]) {
-            timeObjectToUTC(obj.timeRange[0]);
-            if (obj.timeRange[1]) {
-                timeObjectToUTC(obj.timeRange[1]);
-            }
         }
 
         bean.title = obj.title;
         bean.description = obj.description;
         bean.strategy = obj.strategy;
         bean.interval_day = obj.intervalDay;
+        bean.timezone = obj.timezoneOption;
         bean.active = obj.active;
 
         if (obj.dateRange[0]) {
-            bean.start_date = localToUTC(obj.dateRange[0]);
-
-            if (obj.dateRange[1]) {
-                bean.end_date = localToUTC(obj.dateRange[1]);
-            }
+            bean.start_date = obj.dateRange[0];
+        } else {
+            bean.start_date = null;
         }
 
-        bean.start_time = parseTimeFromTimeObject(obj.timeRange[0]);
-        bean.end_time = parseTimeFromTimeObject(obj.timeRange[1]);
+        if (obj.dateRange[1]) {
+            bean.end_date = obj.dateRange[1];
+        } else {
+            bean.end_date = null;
+        }
 
-        bean.weekdays = JSON.stringify(obj.weekdays);
-        bean.days_of_month = JSON.stringify(obj.daysOfMonth);
+        if (bean.strategy === "cron") {
+            bean.duration = obj.durationMinutes * 60;
+            bean.cron = obj.cron;
+            this.validateCron(bean.cron);
+        }
 
+        if (bean.strategy.startsWith("recurring-")) {
+            bean.start_time = parseTimeFromTimeObject(obj.timeRange[0]);
+            bean.end_time = parseTimeFromTimeObject(obj.timeRange[1]);
+            bean.weekdays = JSON.stringify(obj.weekdays);
+            bean.days_of_month = JSON.stringify(obj.daysOfMonth);
+            await bean.generateCron();
+            this.validateCron(bean.cron);
+        }
         return bean;
     }
 
     /**
-     * SQL conditions for active maintenance
-     * @returns {string}
+     * Throw error if cron is invalid
+     * @param cron
+     * @returns {Promise<void>}
      */
-    static getActiveMaintenanceSQLCondition() {
-        return `
-
-            (maintenance_timeslot.start_date <= DATETIME('now')
-            AND maintenance_timeslot.end_date >= DATETIME('now')
-            AND maintenance.active = 1)
-            OR
-            (maintenance.strategy = 'manual' AND active = 1)
-
-        `;
+    static async validateCron(cron) {
+        let job = new Cron(cron, () => {});
+        job.stop();
     }
 
     /**
-     * SQL conditions for active and future maintenance
-     * @returns {string}
+     * Run the cron
      */
-    static getActiveAndFutureMaintenanceSQLCondition() {
-        return `
-            ((maintenance_timeslot.end_date >= DATETIME('now')
-            AND maintenance.active = 1)
-            OR
-            (maintenance.strategy = 'manual' AND active = 1))
-        `;
+    async run(throwError = false) {
+        if (this.beanMeta.job) {
+            log.debug("maintenance", "Maintenance is already running, stop it first. id: " + this.id);
+            this.stop();
+        }
+
+        log.debug("maintenance", "Run maintenance id: " + this.id);
+
+        // 1.21.2 migration
+        if (!this.cron) {
+            await this.generateCron();
+            if (!this.timezone) {
+                this.timezone = "UTC";
+            }
+            if (this.cron) {
+                await R.store(this);
+            }
+        }
+
+        if (this.strategy === "manual") {
+            // Do nothing, because it is controlled by the user
+        } else if (this.strategy === "single") {
+            this.beanMeta.job = new Cron(this.start_date, { timezone: await this.getTimezone() }, () => {
+                log.info("maintenance", "Maintenance id: " + this.id + " is under maintenance now");
+                UptimeKumaServer.getInstance().sendMaintenanceListByUserID(this.user_id);
+                apicache.clear();
+            });
+        } else if (this.cron != null) {
+            // Here should be cron or recurring
+            try {
+                this.beanMeta.status = "scheduled";
+
+                let startEvent = (customDuration = 0) => {
+                    log.info("maintenance", "Maintenance id: " + this.id + " is under maintenance now");
+
+                    this.beanMeta.status = "under-maintenance";
+                    clearTimeout(this.beanMeta.durationTimeout);
+
+                    // Check if duration is still in the window. If not, use the duration from the current time to the end of the window
+                    let duration;
+
+                    if (customDuration > 0) {
+                        duration = customDuration;
+                    } else if (this.end_date) {
+                        let d = dayjs(this.end_date).diff(dayjs(), "second");
+                        if (d < this.duration) {
+                            duration = d * 1000;
+                        }
+                    } else {
+                        duration = this.duration * 1000;
+                    }
+
+                    UptimeKumaServer.getInstance().sendMaintenanceListByUserID(this.user_id);
+
+                    this.beanMeta.durationTimeout = setTimeout(() => {
+                        // End of maintenance for this timeslot
+                        this.beanMeta.status = "scheduled";
+                        UptimeKumaServer.getInstance().sendMaintenanceListByUserID(this.user_id);
+                    }, duration);
+                };
+
+                // Create Cron
+                this.beanMeta.job = new Cron(this.cron, {
+                    timezone: await this.getTimezone(),
+                }, startEvent);
+
+                // Continue if the maintenance is still in the window
+                let runningTimeslot = this.getRunningTimeslot();
+                let current = dayjs();
+
+                if (runningTimeslot) {
+                    let duration = dayjs(runningTimeslot.endDate).diff(current, "second") * 1000;
+                    log.debug("maintenance", "Maintenance id: " + this.id + " Remaining duration: " + duration + "ms");
+                    startEvent(duration);
+                }
+
+            } catch (e) {
+                log.error("maintenance", "Error in maintenance id: " + this.id);
+                log.error("maintenance", "Cron: " + this.cron);
+                log.error("maintenance", e);
+
+                if (throwError) {
+                    throw e;
+                }
+            }
+
+        } else {
+            log.error("maintenance", "Maintenance id: " + this.id + " has no cron");
+        }
+    }
+
+    getRunningTimeslot() {
+        let start = dayjs(this.beanMeta.job.nextRun(dayjs().add(-this.duration, "second").toDate()));
+        let end = start.add(this.duration, "second");
+        let current = dayjs();
+
+        if (current.isAfter(start) && current.isBefore(end)) {
+            return {
+                startDate: start.toISOString(),
+                endDate: end.toISOString(),
+            };
+        } else {
+            return null;
+        }
+    }
+
+    stop() {
+        if (this.beanMeta.job) {
+            this.beanMeta.job.stop();
+            delete this.beanMeta.job;
+        }
+    }
+
+    async isUnderMaintenance() {
+        return (await this.getStatus()) === "under-maintenance";
+    }
+
+    async getTimezone() {
+        if (!this.timezone || this.timezone === "SAME_AS_SERVER") {
+            return await UptimeKumaServer.getInstance().getTimezone();
+        }
+        return this.timezone;
+    }
+
+    async getTimezoneOffset() {
+        return dayjs.tz(dayjs(), await this.getTimezone()).format("Z");
+    }
+
+    async getStatus() {
+        if (!this.active) {
+            return "inactive";
+        }
+
+        if (this.strategy === "manual") {
+            return "under-maintenance";
+        }
+
+        // Check if the maintenance is started
+        if (this.start_date && dayjs().isBefore(dayjs.tz(this.start_date, await this.getTimezone()))) {
+            return "scheduled";
+        }
+
+        // Check if the maintenance is ended
+        if (this.end_date && dayjs().isAfter(dayjs.tz(this.end_date, await this.getTimezone()))) {
+            return "ended";
+        }
+
+        if (this.strategy === "single") {
+            return "under-maintenance";
+        }
+
+        if (!this.beanMeta.status) {
+            return "unknown";
+        }
+
+        return this.beanMeta.status;
+    }
+
+    /**
+     * Generate Cron for recurring maintenance
+     * @returns {Promise<void>}
+     */
+    async generateCron() {
+        log.info("maintenance", "Generate cron for maintenance id: " + this.id);
+
+        if (this.strategy === "cron") {
+            // Do nothing for cron
+        } else if (!this.strategy.startsWith("recurring-")) {
+            this.cron = "";
+        } else if (this.strategy === "recurring-interval") {
+            let array = this.start_time.split(":");
+            let hour = parseInt(array[0]);
+            let minute = parseInt(array[1]);
+            this.cron = minute + " " + hour + " */" + this.interval_day + " * *";
+            this.duration = this.calcDuration();
+            log.debug("maintenance", "Cron: " + this.cron);
+            log.debug("maintenance", "Duration: " + this.duration);
+        } else if (this.strategy === "recurring-weekday") {
+            let list = this.getDayOfWeekList();
+            let array = this.start_time.split(":");
+            let hour = parseInt(array[0]);
+            let minute = parseInt(array[1]);
+            this.cron = minute + " " + hour + " * * " + list.join(",");
+            this.duration = this.calcDuration();
+        } else if (this.strategy === "recurring-day-of-month") {
+            let list = this.getDayOfMonthList();
+            let array = this.start_time.split(":");
+            let hour = parseInt(array[0]);
+            let minute = parseInt(array[1]);
+
+            let dayList = [];
+
+            for (let day of list) {
+                if (typeof day === "string" && day.startsWith("lastDay")) {
+                    if (day === "lastDay1") {
+                        dayList.push("L");
+                    }
+                    // Unfortunately, lastDay2-4 is not supported by cron
+                } else {
+                    dayList.push(day);
+                }
+            }
+
+            // Remove duplicate
+            dayList = [ ...new Set(dayList) ];
+
+            this.cron = minute + " " + hour + " " + dayList.join(",") + " * *";
+            this.duration = this.calcDuration();
+        }
+
     }
 }
 

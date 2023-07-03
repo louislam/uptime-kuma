@@ -1,6 +1,6 @@
 <template>
     <div class="mb-3">
-        <label for="smsmanager-key" class="form-label">API Key</label>
+        <label for="smsmanager-key" class="form-label">{{ $t("API Key") }}</label>
         <div class="form-text">
             {{ $t("SMSManager API Docs") }}
             <a href="https://smsmanager.cz/api/http#send" target="_blank">{{ $t("here") }}</a>
@@ -17,9 +17,9 @@
     <div class="mb-3">
         <label for="smsmanager-messageType" class="form-label">{{ $t("Gateway Type") }}</label>
         <select id="smsmanager-messageType" v-model="$parent.notification.messageType" class="form-select">
-            <option value="economy">Economy</option>
-            <option value="lowcost">Lowcost</option>
-            <option value="high" selected>High</option>
+            <option value="economy">{{ $t("Economy") }}</option>
+            <option value="lowcost">{{ $t("Lowcost") }}</option>
+            <option value="high" selected>{{ $t("High") }}</option>
         </select>
     </div>
     <div class="mb-3">

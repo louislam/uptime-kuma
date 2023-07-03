@@ -31,6 +31,9 @@ tsconfig.json
 /tmp
 /babel.config.js
 /ecosystem.config.js
+/extra/healthcheck.exe
+/extra/healthcheck
+extra/exe-builder
 
 ### .gitignore content (commented rules are duplicated)
 
@@ -44,7 +47,5 @@ dist-ssr
 #/data
 #!/data/.gitkeep
 #.vscode
-
-
 
 ### End of .gitignore content

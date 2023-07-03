@@ -62,7 +62,7 @@
             </div>
 
             <div class="text-center mt-3" style="font-size: 13px;">
-                <a href="https://github.com/louislam/uptime-kuma/wiki/Maintenance" target="_blank">Learn More</a>
+                <a href="https://github.com/louislam/uptime-kuma/wiki/Maintenance" target="_blank">{{ $t("Learn More") }}</a>
             </div>
 
             <Confirm ref="confirmPause" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="pauseMaintenance">
@@ -133,15 +133,25 @@ export default {
             }
         },
 
+        /**
+         * Get maintenance URL
+         * @param {number} id
+         * @returns {string} Relative URL
+         */
         maintenanceURL(id) {
             return getMaintenanceRelativeURL(id);
         },
 
+        /**
+         * Show delete confirmation
+         * @param {number} maintenanceID
+         */
         deleteDialog(maintenanceID) {
             this.selectedMaintenanceID = maintenanceID;
             this.$refs.confirmDelete.show();
         },
 
+        /** Delete maintenance after showing confirmation dialog */
         deleteMaintenance() {
             this.$root.deleteMaintenance(this.selectedMaintenanceID, (res) => {
                 if (res.ok) {
@@ -184,6 +194,14 @@ export default {
 
 <style lang="scss" scoped>
     @import "../assets/vars.scss";
+
+    .mobile {
+        .item {
+            flex-direction: column;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+    }
 
     .item {
         display: flex;
@@ -267,6 +285,11 @@ export default {
         .buttons {
             display: flex;
             gap: 8px;
+            flex-direction: row-reverse;
+
+            .btn-group {
+                width: 310px;
+            }
         }
     }
 
