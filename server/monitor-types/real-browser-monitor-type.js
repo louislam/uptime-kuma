@@ -10,6 +10,14 @@ const jwt = require("jsonwebtoken");
 
 let browser = null;
 
+async function isAllowedChromeExecutable(executablePath) {
+    if (process.env.UPTIME_KUMA_ALLOW_ALL_CHROME_EXECUTABLES === "1") {
+        return true;
+    }
+
+    // TODO: Check if the executablePath is in the list of allowed executables
+}
+
 async function getBrowser() {
     if (!browser) {
         let executablePath = await Settings.get("chromeExecutable");
