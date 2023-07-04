@@ -491,5 +491,8 @@
     "Check how to config it for WebSocket": "Kiểm tra cách cấu hình nó cho WebSocket",
     "Go back to the previous page.": "Quay trở lại trang trước.",
     "wayToGetLineNotifyToken": "Bạn có thể lấy access token từ {0}",
-    "Resend Notification if Down X times consecutively": "Gửi lại thông báo nếu Down X lần liên tiếp"
+    "Resend Notification if Down X times consecutively": "Gửi lại thông báo nếu Down X lần liên tiếp",
+    "Cannot connect to the socket server": "Không thể kết nối đến máy chủ socket",
+    "Home": "Trang chủ",
+    "Reconnecting...": "Đang kết nối lại..."
 }
