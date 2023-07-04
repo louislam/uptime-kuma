@@ -61,7 +61,7 @@
                                                     @click="toggleLink(group.index, monitor.index)"
                                                 />
                                             </span>
-                                            <p v-if="showCertificateExpiry" class="item-name"> Expiry: {{ expiryData.tlsInfoList }} </p>
+                                            <p v-if="showCertificateExpiry" class="item-name"> Expiry: {{ formatExpiry(monitor) }} </p>
                                         </div>
                                         <div v-if="showTags" class="tags">
                                             <Tag v-for="tag in monitor.element.tags" :key="tag" :item="tag" :size="'sm'" />
@@ -174,6 +174,19 @@ export default {
                 return this.$root.monitorList[monitor.element.id].type === "http" || this.$root.monitorList[monitor.element.id].type === "keyword";
             }
             return monitor.element.sendUrl && monitor.element.url && monitor.element.url !== "https://" && !this.editMode;
+        },
+
+        /**
+         * Returns formatted certificate expiry or Bad cert message
+         * @param {Object} monitor Monitor to show expiry for
+         * @returns {string}
+         */
+        formatExpiry(monitor) {
+            if (monitor?.element?.validCert) {
+                return monitor.element.certExpiryDaysRemaining + " days";
+            } else {
+                return monitor.element.certExpiryDaysRemaining;
+            }
         },
     }
 };
