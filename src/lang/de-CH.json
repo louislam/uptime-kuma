@@ -781,5 +781,8 @@
     "Group": "Gruppe",
     "Monitor Group": "Monitor Gruppe",
     "noGroupMonitorMsg": "Nicht verfügbar. Erstelle zunächst einen Gruppenmonitor.",
-    "Close": "Schliessen"
+    "Close": "Schliessen",
+    "chromeExecutableAutoDetect": "Automatische Erkennung",
+    "chromeExecutableDescription": "Für Docker-Benutzer, die Chromium noch nicht installiert haben, kann es ein paar Minuten dauern, bis es installiert ist und das Testergebnis angezeigt wird. Es benötigt 1 GB Speicherplatz.",
+    "chromeExecutable": "Chrome/Chromium Ausführbare Datei"
 }
