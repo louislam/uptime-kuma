@@ -784,5 +784,12 @@
     "noGroupMonitorMsg": "Není k dispozici. Nejprve vytvořte skupin dohledů.",
     "Close": "Zavřít",
     "Badge value (For Testing only.)": "Hodnota odznaku (pouze pro testování)",
-    "Badge Warn Days": "Odznak dní s upozorněním"
+    "Badge Warn Days": "Odznak dní s upozorněním",
+    "nostrSender": "Privátní klíč odesílatele (nsec)",
+    "nostrRelaysHelp": "Jedno relay URL na řádku",
+    "nostrRecipients": "Privátní klíče příjemců (npub)",
+    "nostrRecipientsHelp": "formát npub, jeden na řádku",
+    "chromeExecutable": "Spustitelný soubor Chrome/Chromium",
+    "chromeExecutableAutoDetect": "Automatická detekce",
+    "chromeExecutableDescription": "Pokud uživatelé nástroje Docker ještě nemají nainstalovanou aplikaci Chromium, může instalace a zobrazení výsledku testu trvat několik minut. Zabere 1 GB místa na disku."
 }
