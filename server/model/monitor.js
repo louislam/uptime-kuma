@@ -207,6 +207,31 @@ class Monitor extends BeanModel {
     }
 
     /**
+     * Gets certificate expiry for this monitor
+     * @param {number} monitorID ID of monitor to send
+     * @returns {Promise<LooseObject<any>>}
+     */
+    async getCertExpiry(monitorID) {
+        let tlsInfoBean = await R.findOne("monitor_tls_info", "monitor_id = ?", [
+            monitorID,
+        ]);
+        let tlsInfo;
+        if (tlsInfoBean) {
+            tlsInfo = JSON.parse(tlsInfoBean?.info_json);
+            if (tlsInfo?.valid && tlsInfo?.certInfo?.daysRemaining) {
+                return {
+                    certExpiryDaysRemaining: tlsInfo.certInfo.daysRemaining,
+                    validCert: true
+                };
+            }
+        }
+        return {
+            certExpiryDaysRemaining: "No/Bad Cert",
+            validCert: false
+        };
+    }
+
+    /**
      * Encode user and password to Base64 encoding
      * for HTTP "basic" auth, as per RFC-7617
      * @returns {string}
