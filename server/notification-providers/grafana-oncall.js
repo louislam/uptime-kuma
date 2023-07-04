@@ -15,7 +15,7 @@ class GrafanaOncall extends NotificationProvider {
                     message: heartbeatJSON["msg"],
                 };
                 await axios.post(
-                    notification.grafanaoncallURL,
+                    notification.GrafanaOncallURL,
                     grafanadowndata
                 );
                 return okMsg;
@@ -26,7 +26,7 @@ class GrafanaOncall extends NotificationProvider {
                     state: "ok",
                 };
                 await axios.post(
-                    notification.grafanaoncallURL,
+                    notification.GrafanaOncallURL,
                     grafanaupdata
                 );
                 return okMsg;
