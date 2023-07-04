@@ -790,5 +790,8 @@
     "Reconnecting...": "Повторне підключення...",
     "Home": "Головна",
     "noGroupMonitorMsg": "Недоступно. Спочатку створіть групу моніторів.",
-    "Close": "Закрити"
+    "Close": "Закрити",
+    "chromeExecutableDescription": "Для користувачів Docker, якщо Chromium ще не встановлено, встановлення та відображення результатів тесту може зайняти кілька хвилин. Потрібно 1 ГБ дискового простору.",
+    "chromeExecutableAutoDetect": "Автоматичне визначення",
+    "chromeExecutable": "Виконуваний файл Chrome/Chromium"
 }
