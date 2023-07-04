@@ -28,7 +28,7 @@ class SMSC extends NotificationProvider {
 
             let resp = await axios.get("https://smsc.kz/sys/send.php?" + getArray.join("&"), config);
             if (resp.data.id === undefined) {
-                let error = "Something gone wrong. Api returned " + resp.data.error + ". Code " + resp.data.error_code;
+                let error = `Something gone wrong. Api returned code ${resp.data.error_code}: ${resp.data.error}`;
                 this.throwGeneralAxiosError(error);
             }
 
