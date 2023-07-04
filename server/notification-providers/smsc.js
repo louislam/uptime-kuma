@@ -11,7 +11,6 @@ class SMSC extends NotificationProvider {
             let config = {
                 headers: {
                     "Content-Type": "application/json",
-                    // "Authorization": "Basic " + Buffer.from(notification.smscLogin + ":" + notification.smscPassword).toString("base64"),
                     "Accept": "text/json",
                 }
             };
