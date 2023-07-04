@@ -784,5 +784,8 @@
     "Reconnecting...": "Yeniden bağlanılıyor...",
     "Home": "Anasayfa",
     "noGroupMonitorMsg": "Uygun değil. Önce bir Grup Monitörü oluşturun.",
-    "Close": "Kapalı"
+    "Close": "Kapalı",
+    "chromeExecutable": "Çalıştırılabilir Chrome/Chromium",
+    "chromeExecutableAutoDetect": "Otomatik algılama",
+    "chromeExecutableDescription": "Docker kullanıcıları için Chromium henüz kurulmamışsa, yüklenmesi ve test sonucunun görüntülenmesi birkaç dakika sürebilir. 1 GB disk alanı gerektirir."
 }
