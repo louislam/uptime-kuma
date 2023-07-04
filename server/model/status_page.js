@@ -90,6 +90,9 @@ class StatusPage extends BeanModel {
      * @param {StatusPage} statusPage
      */
     static async getStatusPageData(statusPage) {
+
+        const config = await statusPage.toPublicJSON();
+
         // Incident
         let incident = await R.findOne("incident", " pin = 1 AND active = 1 AND status_page_id = ? ", [
             statusPage.id,
@@ -110,13 +113,13 @@ class StatusPage extends BeanModel {
         ]);
 
         for (let groupBean of list) {
-            let monitorGroup = await groupBean.toPublicJSON(showTags);
+            let monitorGroup = await groupBean.toPublicJSON(showTags, config?.showCertificateExpiry);
             publicGroupList.push(monitorGroup);
         }
 
         // Response
         return {
-            config: await statusPage.toPublicJSON(),
+            config,
             incident,
             publicGroupList,
             maintenanceList,
