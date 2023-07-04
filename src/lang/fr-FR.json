@@ -784,5 +784,8 @@
     "Group": "Groupe",
     "Home": "Accueil",
     "noGroupMonitorMsg": "Pas disponible. Créez d'abord une sonde de groupe.",
-    "Close": "Fermer"
+    "Close": "Fermer",
+    "chromeExecutableDescription": "Pour les utilisateurs sous Docker, si Chromium n'est pas encore installé, quelques minutes seront nécessaires pour installer et afficher le résultat du test. Cela peut prendre 1 Go d'espace disque.",
+    "chromeExecutableAutoDetect": "Auto-détecter",
+    "chromeExecutable": "Exécutable Chrome/Chromium"
 }
