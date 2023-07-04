@@ -4,7 +4,6 @@ const { setSetting, setting } = require("./util-server");
 const { log, sleep } = require("../src/util");
 const knex = require("knex");
 
-
 /**
  * Database & App Data Folder
  */
