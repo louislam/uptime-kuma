@@ -60,6 +60,7 @@
                                                     @click="$refs.monitorSettingDialog.show(group, monitor)"
                                                 />
                                             </span>
+                                            <p v-if="showCertificateExpiry" class="item-name"> Expiry: {{ formatExpiry(monitor) }} </p>
                                         </div>
                                         <div v-if="showTags" class="tags">
                                             <Tag v-for="tag in monitor.element.tags" :key="tag" :item="tag" :size="'sm'" />
@@ -102,6 +103,10 @@ export default {
         },
         /** Should tags be shown? */
         showTags: {
+            type: Boolean,
+        },
+        /** Should expiry be shown? */
+        showCertificateExpiry: {
             type: Boolean,
         }
     },
@@ -153,6 +158,19 @@ export default {
                 return this.$root.monitorList[monitor.element.id].type === "http" || this.$root.monitorList[monitor.element.id].type === "keyword";
             }
             return monitor.element.sendUrl && monitor.element.url && monitor.element.url !== "https://" && !this.editMode;
+        },
+
+        /**
+         * Returns formatted certificate expiry or Bad cert message
+         * @param {Object} monitor Monitor to show expiry for
+         * @returns {string}
+         */
+        formatExpiry(monitor) {
+            if (monitor?.element?.validCert) {
+                return monitor.element.certExpiryDaysRemaining + " days";
+            } else {
+                return monitor.element.certExpiryDaysRemaining;
+            }
         },
     }
 };
