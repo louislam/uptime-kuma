@@ -670,5 +670,9 @@
     "uninstalling": "กำลังถอนการติดตั้ง",
     "confirmUninstallPlugin": "แน่ใจหรือไม่ว่าต้องการถอนการติดตั้งปลั้กอินนี้?",
     "Schedule Maintenance": "กำหนดเวลาซ่อมแซม",
-    "Edit Maintenance": "แก้ใขการบำรุงรักษา"
+    "Edit Maintenance": "แก้ใขการบำรุงรักษา",
+    "recurringIntervalMessage": "ดำเนินการทุกวัน | ดำเนินการทุก {0} วัน",
+    "chromeExecutableAutoDetect": "ตรวจจับอัตโนมัติ",
+    "chromeExecutableDescription": "สำหรับผู้ใช้งาน Docker, ถ้ายังไม่ได้ติดตั่ง Chromium, อาจจะเสียเวลาในการติดตั่งและแสดงผลการทดสอบเพิ่มเติม, ใช้พื้นที่ประมาณ 1GB",
+    "notificationRegional": "ภูมิภาค"
 }
