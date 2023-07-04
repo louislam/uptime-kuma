@@ -28,9 +28,17 @@ namespace UptimeKuma {
                 Environment.CurrentDirectory = cwd;
             }
 
+            bool isIntranet = args.Contains("--intranet");
+
+            if (isIntranet)
+            {
+                Console.WriteLine("The --intranet argument was provided, so we will not try to access the internet.");
+                // Perform actions specific to the --intranet argument
+            }
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new UptimeKumaApplicationContext());
+            Application.Run(new UptimeKumaApplicationContext(isIntranet));
         }
     }
 
@@ -49,8 +57,9 @@ namespace UptimeKuma {
 
         private RegistryKey registryKey = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
 
+        private readonly bool intranetOnly = false;
 
-        public UptimeKumaApplicationContext() {
+        public UptimeKumaApplicationContext(bool intranetOnly = false) {
 
             // Single instance only
             bool createdNew;
@@ -58,6 +67,8 @@ namespace UptimeKuma {
             if (!createdNew) {
                 return;
             }
+
+            this.intranetOnly = intranetOnly;
 
             var startingText = "Starting server...";
             trayIcon = new NotifyIcon();
@@ -98,6 +109,12 @@ namespace UptimeKuma {
         }
 
         void DownloadFiles() {
+            if (intranetOnly)
+            {
+                MessageBox.Show("You have parsed in --intranet so we will not download any files from the internet. If you run into issues remember that the initial run needs to be without --intranet.");
+                return;
+            }
+
             var form = new DownloadForm();
             form.Closed += Exit;
             form.Show();
@@ -173,7 +190,11 @@ namespace UptimeKuma {
         }
 
         void CheckForUpdate(object sender, EventArgs e) {
-            var needUpdate = false;
+            if (intranetOnly)
+            {
+                MessageBox.Show("You have parsed in --intranet so we will not try to access the internet.");
+                return;
+            }
 
             // Check version.json exists
             if (File.Exists("version.json")) {
@@ -204,8 +225,13 @@ namespace UptimeKuma {
 
         }
 
-        void VisitGitHub(object sender, EventArgs e)
-        {
+        void VisitGitHub(object sender, EventArgs e) {
+            if (intranetOnly)
+            {
+                MessageBox.Show("You have parsed in --intranet so we will not try to access the internet.");
+                return;
+            }
+
             Process.Start("https://github.com/louislam/uptime-kuma");
         }
 
