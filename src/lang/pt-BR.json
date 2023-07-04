@@ -482,7 +482,7 @@
     "Coming Soon": "Em Breve",
     "Connection String": "String De Conexão",
     "Docker Daemon": "Daemon Do Docker",
-    "Show Powered By": "Mostrar Distribuído Por",
+    "Show Powered By": "Mostrar Fornecido Por",
     "RadiusSecret": "Segredo Radius",
     "RadiusCalledStationId": "ID Da Estação Chamada",
     "deleteDockerHostMsg": "Você tem certeza que quer deletar esse host do Docker para todos os monitores?",
@@ -588,5 +588,6 @@
     "backupOutdatedWarning": "Obsoleto: Já que muitos recursos foram adicionados e este recurso de backup não foi atualizado, ele não consegue gerar ou restaurar um backup completo.",
     "wayToGetDiscordURL": "Voce pode configurar isso indo à Configurações do Servidor -> Integrações -> Ver Webhooks -> Novo Webhook",
     "Home": "Início",
-    "Reconnecting...": "Reconectando..."
+    "Reconnecting...": "Reconectando...",
+    "Cannot connect to the socket server": "Não foi possível conectar ao servidor socket"
 }
