@@ -9,17 +9,6 @@ class GrafanaOncall extends NotificationProvider {
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
         try {
-
-            // If heartbeatJSON is null, assume we're testing.
-            if (heartbeatJSON == null) {
-                let GrafanaOncallTestData = {
-                    title: "This is a test",
-                    message: msg,
-                };
-                await axios.post(notification.grafanaoncallURL, GrafanaOncallTestData);
-                return okMsg;
-            }
-
             if (heartbeatJSON["status"] === DOWN) {
                 let grafanadowndata = {
                     title: monitorJSON["name"] + " is down",
