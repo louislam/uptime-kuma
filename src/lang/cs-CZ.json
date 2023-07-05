@@ -527,7 +527,7 @@
     "RadiusCalledStationIdDescription": "Identifikátor volaného zařízení",
     "RadiusCallingStationId": "ID volajícího zařízení",
     "RadiusCallingStationIdDescription": "Identifikátor volajícího zařízení",
-    "Certificate Expiry Notification": "Oznámení na blížící se konec platnosti certifikátu",
+    "Certificate Expiry Notification": "Upozornění na blížící se konec platnosti certifikátu",
     "API Username": "Uživatelské jména API",
     "API Key": "API klíč",
     "Recipient Number": "Číslo příjemce",
