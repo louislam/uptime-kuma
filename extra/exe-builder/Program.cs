@@ -30,10 +30,8 @@ namespace UptimeKuma {
 
             bool isIntranet = args.Contains("--intranet");
 
-            if (isIntranet)
-            {
-                Console.WriteLine("The --intranet argument was provided, so we will not try to access the internet.");
-                // Perform actions specific to the --intranet argument
+            if (isIntranet) {
+                Console.WriteLine("The --intranet argument was provided, so we will not try to access the internet. The first time this application runs you'll need to run it without the --intranet param or copy the result from another machine to the intranet server.");
             }
 
             Application.EnableVisualStyles();
@@ -57,9 +55,9 @@ namespace UptimeKuma {
 
         private RegistryKey registryKey = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
 
-        private readonly bool intranetOnly = false;
+        private readonly bool intranetOnly;
 
-        public UptimeKumaApplicationContext(bool intranetOnly = false) {
+        public UptimeKumaApplicationContext(bool intranetOnly) {
 
             // Single instance only
             bool createdNew;
@@ -109,9 +107,7 @@ namespace UptimeKuma {
         }
 
         void DownloadFiles() {
-            if (intranetOnly)
-            {
-                MessageBox.Show("You have parsed in --intranet so we will not download any files from the internet. If you run into issues remember that the initial run needs to be without --intranet.");
+            if (intranetOnly) {
                 return;
             }
 
@@ -190,9 +186,7 @@ namespace UptimeKuma {
         }
 
         void CheckForUpdate(object sender, EventArgs e) {
-            if (intranetOnly)
-            {
-                MessageBox.Show("You have parsed in --intranet so we will not try to access the internet.");
+            if (intranetOnly) {
                 return;
             }
 
@@ -226,9 +220,8 @@ namespace UptimeKuma {
         }
 
         void VisitGitHub(object sender, EventArgs e) {
-            if (intranetOnly)
-            {
-                MessageBox.Show("You have parsed in --intranet so we will not try to access the internet.");
+            if (intranetOnly) {
+                MessageBox.Show("You have parsed in --intranet so we will not try to access the internet or visit github.com, please go to https://github.com/louislam/uptime-kuma if you want to visit github.");
                 return;
             }
 
