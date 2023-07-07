@@ -55,14 +55,18 @@
                         </tr>
                     </tbody>
                 </table>
-
-                <div class="d-flex justify-content-center kuma_pagination">
+                <div v-if="!showAll" class="d-flex justify-content-center kuma_pagination">
                     <pagination
                         v-model="page"
                         :records="importantHeartBeatList.length"
                         :per-page="perPage"
                         :options="paginationConfig"
                     />
+                </div>
+                <div v-if="importantHeartBeatList.length > perPage" class="d-flex justify-content-center my-1">
+                    <button class="btn btn-link" @click="toggleShowAllRecords">
+                        {{ showAll ? $t("Show Less") : $t("Show All") }}
+                    </button>
                 </div>
             </div>
         </div>
@@ -85,6 +89,7 @@ export default {
         return {
             page: 1,
             perPage: 25,
+            showAll: false,
             heartBeatList: [],
             paginationConfig: {
                 hideCount: true,
@@ -129,9 +134,17 @@ export default {
         },
 
         displayedRecords() {
+            if (this.showAll) {
+                return this.heartBeatList;
+            }
             const startIndex = this.perPage * (this.page - 1);
             const endIndex = startIndex + this.perPage;
             return this.heartBeatList.slice(startIndex, endIndex);
+        },
+    },
+    methods: {
+        toggleShowAllRecords() {
+            this.showAll = !this.showAll;
         },
     },
 };
