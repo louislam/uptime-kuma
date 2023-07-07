@@ -1,4 +1,4 @@
-# This workflow will do a clean install of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
 
 name: Auto Test
@@ -33,7 +33,6 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node }}
-        cache: 'npm'
     - run: npm install npm@latest -g
     - run: npm install
     - run: npm run build
@@ -51,7 +50,7 @@ jobs:
     strategy:
       matrix:
         os: [ ARMv7 ]
-        node: [ 14, 18 ]
+        node: [ 14.21.3, 18.16.1 ]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
@@ -62,7 +61,6 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
-          cache: 'npm'
       - run: npm install npm@latest -g
       - run: npm ci --production
 
@@ -77,7 +75,6 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: 14
-        cache: 'npm'
     - run: npm install
     - run: npm run lint
 
@@ -92,7 +89,6 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: 14
-        cache: 'npm'
     - run: npm install
     - run: npm run build
     - run: npm run cy:test
@@ -108,7 +104,6 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: 14
-        cache: 'npm'
     - run: npm install
     - run: npm run build
     - run: npm run cy:run:unit

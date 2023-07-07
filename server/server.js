@@ -147,7 +147,6 @@ const { apiKeySocketHandler } = require("./socket-handlers/api-key-socket-handle
 const { generalSocketHandler } = require("./socket-handlers/general-socket-handler");
 const { Settings } = require("./settings");
 const { CacheableDnsHttpAgent } = require("./cacheable-dns-http-agent");
-const { pluginsHandler } = require("./socket-handlers/plugins-handler");
 const apicache = require("./modules/apicache");
 const { resetChrome } = require("./monitor-types/real-browser-monitor-type");
 
@@ -172,7 +171,6 @@ let needSetup = false;
     Database.init(args);
     await initDatabase(testMode);
     await server.initAfterDatabaseReady();
-    server.loadPlugins();
     server.entryPage = await Settings.get("entryPage");
     await StatusPage.loadDomainMappingList();
 
@@ -1548,7 +1546,6 @@ let needSetup = false;
         maintenanceSocketHandler(socket);
         apiKeySocketHandler(socket);
         generalSocketHandler(socket, server);
-        pluginsHandler(socket, server);
 
         log.debug("server", "added all socket handlers");
 
