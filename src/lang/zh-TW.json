@@ -749,5 +749,6 @@
     "promosmsAllowLongSMS": "允許長 SMS 訊息",
     "Home": "首頁",
     "chromeExecutable": "Chrome/Chromium 執行檔",
-    "chromeExecutableAutoDetect": "自動偵測"
+    "chromeExecutableAutoDetect": "自動偵測",
+    "pagertreeCritical": "緊急"
 }
