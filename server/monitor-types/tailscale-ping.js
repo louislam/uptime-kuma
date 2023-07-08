@@ -63,9 +63,6 @@ class TailscalePing extends MonitorType {
         let lines = tailscaleOutput.split('\n');
 
         for (let line of lines) {
-            // "pong from" counts as UP, and we update heartbeat status and ping time
-            // otherwise if "no matching peer" (nonexistant or inaccessible due to ACLs) or "is local Tailscale IP" (ping self), throw error
-            // otherwise throw error and the unexpected output itself
             if (line.includes("pong from")) {
                 heartbeat.status = UP;
                 let time = line.split(" in ")[1].split(" ")[0];
