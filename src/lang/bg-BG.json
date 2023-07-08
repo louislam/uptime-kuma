@@ -792,5 +792,7 @@
     "nostrRecipientsHelp": "npub формат, по един на ред",
     "chromeExecutable": "Chrome/Chromium изпълним файл",
     "chromeExecutableAutoDetect": "Автоматично откриване",
-    "chromeExecutableDescription": "За потребителите на Docker, ако Chromium все още не е инсталиран, инсталирането и показването на резултата от теста може да отнеме няколко минути. Заема 1GB дисково пространство."
+    "chromeExecutableDescription": "За потребителите на Docker, ако Chromium все още не е инсталиран, инсталирането и показването на резултата от теста може да отнеме няколко минути. Заема 1GB дисково пространство.",
+    "Invert Keyword": "Обърнат режим за ключова дума",
+    "invertKeywordDescription": "При търсене ключовата дума трябва да отсъства, а не да присъства."
 }
