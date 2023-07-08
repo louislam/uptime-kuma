@@ -233,7 +233,7 @@ router.get("/api/status-page/:slug/badge", cache("5 minutes"), async (request, r
         response.send(svg);
 
     } catch (error) {
-        send403(response, error.message);
+        sendHttpError(response, error.message);
     }
 });
 
