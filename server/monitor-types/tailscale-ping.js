@@ -3,8 +3,6 @@
 
 const { MonitorType } = require("./monitor-type");
 const { UP } = require("../../src/util");
-
-// child_process
 const exec = require('child_process').exec;
 
 // cases accounted for
