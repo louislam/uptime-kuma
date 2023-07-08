@@ -787,5 +787,7 @@
     "Close": "Kapalı",
     "chromeExecutable": "Çalıştırılabilir Chrome/Chromium",
     "chromeExecutableAutoDetect": "Otomatik algılama",
-    "chromeExecutableDescription": "Docker kullanıcıları için Chromium henüz kurulmamışsa, yüklenmesi ve test sonucunun görüntülenmesi birkaç dakika sürebilir. 1 GB disk alanı gerektirir."
+    "chromeExecutableDescription": "Docker kullanıcıları için Chromium henüz kurulmamışsa, yüklenmesi ve test sonucunun görüntülenmesi birkaç dakika sürebilir. 1 GB disk alanı gerektirir.",
+    "Invert Keyword": "Anahtar Kelimeyi Ters Çevir",
+    "invertKeywordDescription": "Anahtar kelimenin mevcut olmasından ziyade mevcut olmamasına bakın."
 }
