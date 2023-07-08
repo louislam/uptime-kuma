@@ -787,5 +787,7 @@
     "Close": "Fermer",
     "chromeExecutableDescription": "Pour les utilisateurs sous Docker, si Chromium n'est pas encore installé, quelques minutes seront nécessaires pour installer et afficher le résultat du test. Cela peut prendre 1 Go d'espace disque.",
     "chromeExecutableAutoDetect": "Auto-détecter",
-    "chromeExecutable": "Exécutable Chrome/Chromium"
+    "chromeExecutable": "Exécutable Chrome/Chromium",
+    "Invert Keyword": "Inverser le mot-clé",
+    "invertKeywordDescription": "Recherchez le mot-clé absent plutôt que présent."
 }
