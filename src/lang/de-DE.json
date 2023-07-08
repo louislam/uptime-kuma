@@ -787,5 +787,7 @@
     "Close": "Schließen",
     "chromeExecutableAutoDetect": "Automatische Erkennung",
     "chromeExecutableDescription": "Für Docker-Benutzer, die Chromium noch nicht installiert haben, kann es ein paar Minuten dauern, bis es installiert ist und das Testergebnis angezeigt wird. Es benötigt 1 GB Speicherplatz.",
-    "chromeExecutable": "Chrome/Chromium Ausführbare Datei"
+    "chromeExecutable": "Chrome/Chromium Ausführbare Datei",
+    "Invert Keyword": "Schlüsselwort invertieren",
+    "invertKeywordDescription": "Achte darauf, dass das Schlüsselwort eher fehlt als vorhanden ist."
 }
