@@ -1,3 +1,6 @@
+// TODO: Handle Case 5
+// In cases where offline peers are not pingable, how should he handle timeout messages? Do we break out of the "ping (ip) timed out" loop and let the server re-call the check function? or do we include the "timed out" string in the expected error messages line and throw the error? (along with "no matching peer" and "is local Tailscale IP")
+
 const { MonitorType } = require("./monitor-type");
 const { UP } = require("../../src/util");
 
@@ -16,8 +19,12 @@ const exec = require('child_process').exec;
 // no matching peer
 // 4 ping a peer that you cannot make a outgoing connection to
 // CMD: tailscale ping 100.100.100.4
-// multiple 'pong from' lines (pong from hostname (100.100.100.4) via DERP(tok) in 123ms) and a 'direct connection not established' line
-// We only care about the first 'pong from' line for the purpose of checking uptime.
+// multiple 'pong from' lines (pong from hostname (100.100.100.4) via DERP(tok) in 123ms) then ends with a 'direct connection not established' line
+// We only care about the first 'pong from' line for the purpose of checking uptime. (this is a good example use of "tailscale ping" becasue traditional ICMP pings would not be able to check the uptime of peers if outgoing connections to that specified peer are blocked)
+// 5 pinging a offline peer
+// CMD: tailscale ping 100.100.100.5
+// multiple 'timed out' lines (ping "100.100.100.5" timed out) then ends with a 'no reply' line
+// This needs to be worked on
 
 class TailscalePing extends MonitorType {
 
