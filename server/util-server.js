@@ -342,7 +342,12 @@ exports.mysqlQuery = function (connectionString, query) {
                     resolve("No Error, but the result is not an array. Type: " + typeof res);
                 }
             }
-            connection.destroy();
+
+            try {
+                connection.end();
+            } catch (_) {
+                connection.destroy();
+            }
         });
     });
 };
@@ -408,12 +413,18 @@ exports.radius = function (
 exports.redisPingAsync = function (dsn) {
     return new Promise((resolve, reject) => {
         const client = redis.createClient({
-            url: dsn,
+            url: dsn
         });
         client.on("error", (err) => {
+            if (client.isOpen) {
+                client.disconnect();
+            }
             reject(err);
         });
         client.connect().then(() => {
+            if (!client.isOpen) {
+                client.emit("error", new Error("connection isn't open"));
+            }
             client.ping().then((res, err) => {
                 if (client.isOpen) {
                     client.disconnect();
@@ -423,7 +434,7 @@ exports.redisPingAsync = function (dsn) {
                 } else {
                     resolve(res);
                 }
-            });
+            }).catch(error => reject(error));
         });
     });
 };
@@ -519,12 +530,16 @@ const parseCertificateInfo = function (info) {
 
         // Move up the chain until loop is encountered
         if (link.issuerCertificate == null) {
+            link.certType = (i === 0) ? "self-signed" : "root CA";
             break;
         } else if (link.issuerCertificate.fingerprint in existingList) {
+            // a root CA certificate is typically "signed by itself"  (=> "self signed certificate") and thus the "issuerCertificate" is a reference to itself.
             log.debug("cert", `[Last] ${link.issuerCertificate.fingerprint}`);
+            link.certType = (i === 0) ? "self-signed" : "root CA";
             link.issuerCertificate = null;
             break;
         } else {
+            link.certType = (i === 0) ? "server" : "intermediate CA";
             link = link.issuerCertificate;
         }
 

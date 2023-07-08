@@ -695,5 +695,7 @@
     "Learn More": "Μάθετε περισσότερα",
     "Free Mobile User Identifier": "Free Mobile User Identifier",
     "Free Mobile API Key": "Free Mobile API Key",
-    "smseaglePriority": "Προτεραιότητα μηνύματος (0-9, προεπιλογή = 0)"
+    "smseaglePriority": "Προτεραιότητα μηνύματος (0-9, προεπιλογή = 0)",
+    "statusPageRefreshIn": "Ανανέωση σε {0}",
+    "Add New Tag": "Πρόσθεσε νέα ετικέτα"
 }

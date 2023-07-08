@@ -131,6 +131,7 @@ export default {
                 "OneBot": "OneBot",
                 "Opsgenie": "Opsgenie",
                 "PagerDuty": "PagerDuty",
+                "PagerTree": "PagerTree",
                 "pushbullet": "Pushbullet",
                 "PushByTechulus": "Push by Techulus",
                 "pushover": "Pushover",

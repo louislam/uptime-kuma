@@ -278,11 +278,11 @@
                 </div>
 
                 <div class="mt-3">
-                    <div v-if="allMonitorList.length > 0 && loadedData">
+                    <div v-if="sortedMonitorList.length > 0 && loadedData">
                         <label>{{ $t("Add a monitor") }}:</label>
                         <VueMultiselect
                             v-model="selectedMonitor"
-                            :options="allMonitorList"
+                            :options="sortedMonitorList"
                             :multiple="false"
                             :searchable="true"
                             :placeholder="$t('Add a monitor')"
@@ -291,10 +291,8 @@
                             class="mt-3"
                         >
                             <template #option="{ option }">
-                                <div
-                                    class="d-inline-flex"
-                                >
-                                    <span>{{ option.name }} <Tag v-for="tag in option.tags" :key="tag" :item="tag" :size="'sm'" /></span>
+                                <div class="d-inline-flex">
+                                    <span>{{ option.pathName }} <Tag v-for="tag in option.tags" :key="tag" :item="tag" :size="'sm'" /></span>
                                 </div>
                             </template>
                         </VueMultiselect>
@@ -451,7 +449,7 @@ export default {
         /**
          * If the monitor is added to public list, which will not be in this list.
          */
-        allMonitorList() {
+        sortedMonitorList() {
             let result = [];
 
             for (let id in this.$root.monitorList) {
@@ -460,6 +458,31 @@ export default {
                     result.push(monitor);
                 }
             }
+
+            result.sort((m1, m2) => {
+
+                if (m1.active !== m2.active) {
+                    if (m1.active === 0) {
+                        return 1;
+                    }
+
+                    if (m2.active === 0) {
+                        return -1;
+                    }
+                }
+
+                if (m1.weight !== m2.weight) {
+                    if (m1.weight > m2.weight) {
+                        return -1;
+                    }
+
+                    if (m1.weight < m2.weight) {
+                        return 1;
+                    }
+                }
+
+                return m1.pathName.localeCompare(m2.pathName);
+            });
 
             return result;
         },
