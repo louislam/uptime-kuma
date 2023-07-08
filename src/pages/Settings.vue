@@ -95,6 +95,9 @@ export default {
                 "reverse-proxy": {
                     title: this.$t("Reverse Proxy"),
                 },
+                tags: {
+                    title: this.$t("Tags"),
+                },
                 "monitor-history": {
                     title: this.$t("Monitor History"),
                 },
@@ -103,6 +106,9 @@ export default {
                 },
                 security: {
                     title: this.$t("Security"),
+                },
+                "api-keys": {
+                    title: this.$t("API Keys")
                 },
                 proxies: {
                     title: this.$t("Proxies"),

@@ -11,10 +11,18 @@ dayjs.extend(require("dayjs/plugin/utc"));
 dayjs.extend(require("./modules/dayjs/plugin/timezone"));
 dayjs.extend(require("dayjs/plugin/customParseFormat"));
 
+// Load environment variables from `.env`
+require("dotenv").config();
+
 // Check Node.js Version
 const nodeVersion = parseInt(process.versions.node.split(".")[0]);
 const requiredVersion = 14;
 console.log(`Your Node.js version: ${nodeVersion}`);
+
+// See more: https://github.com/louislam/uptime-kuma/issues/3138
+if (nodeVersion >= 20) {
+    console.warn("\x1b[31m%s\x1b[0m", "Warning: Uptime Kuma is currently not stable on Node.js >= 20, please use Node.js 18.");
+}
 
 if (nodeVersion < requiredVersion) {
     console.error(`Error: Your Node.js version is not supported, please upgrade to Node.js >= ${requiredVersion}.`);
@@ -84,7 +92,7 @@ log.debug("server", "Importing Background Jobs");
 const { initBackgroundJobs, stopBackgroundJobs } = require("./jobs");
 const { loginRateLimiter, twoFaRateLimiter } = require("./rate-limiter");
 
-const { basicAuth } = require("./auth");
+const { apiAuth } = require("./auth");
 const { login } = require("./auth");
 const passwordHash = require("./password-hash");
 
@@ -126,7 +134,7 @@ if (config.demoMode) {
 }
 
 // Must be after io instantiation
-const { sendNotificationList, sendHeartbeatList, sendImportantHeartbeatList, sendInfo, sendProxyList, sendDockerHostList } = require("./client");
+const { sendNotificationList, sendHeartbeatList, sendImportantHeartbeatList, sendInfo, sendProxyList, sendDockerHostList, sendAPIKeyList } = require("./client");
 const { statusPageSocketHandler } = require("./socket-handlers/status-page-socket-handler");
 const databaseSocketHandler = require("./socket-handlers/database-socket-handler");
 const TwoFA = require("./2fa");
@@ -135,9 +143,12 @@ const { cloudflaredSocketHandler, autoStart: cloudflaredAutoStart, stop: cloudfl
 const { proxySocketHandler } = require("./socket-handlers/proxy-socket-handler");
 const { dockerSocketHandler } = require("./socket-handlers/docker-socket-handler");
 const { maintenanceSocketHandler } = require("./socket-handlers/maintenance-socket-handler");
+const { apiKeySocketHandler } = require("./socket-handlers/api-key-socket-handler");
 const { generalSocketHandler } = require("./socket-handlers/general-socket-handler");
 const { Settings } = require("./settings");
 const { CacheableDnsHttpAgent } = require("./cacheable-dns-http-agent");
+const apicache = require("./modules/apicache");
+const { resetChrome } = require("./monitor-types/real-browser-monitor-type");
 
 app.use(express.json());
 
@@ -151,12 +162,6 @@ app.use(function (req, res, next) {
 });
 
 /**
- * Use for decode the auth object
- * @type {null}
- */
-let jwtSecret = null;
-
-/**
  * Show Setup Page
  * @type {boolean}
  */
@@ -166,7 +171,6 @@ let needSetup = false;
     Database.init(args);
     await initDatabase(testMode);
     await server.initAfterDatabaseReady();
-
     server.entryPage = await Settings.get("entryPage");
     await StatusPage.loadDomainMappingList();
 
@@ -225,7 +229,7 @@ let needSetup = false;
 
     // Prometheus API metrics  /metrics
     // With Basic Auth using the first user's username/password
-    app.get("/metrics", basicAuth, prometheusAPIMetrics());
+    app.get("/metrics", apiAuth, prometheusAPIMetrics());
 
     app.use("/", expressStaticGzip("dist", {
         enableBrotli: true,
@@ -275,7 +279,7 @@ let needSetup = false;
             log.info("auth", `Login by token. IP=${clientIP}`);
 
             try {
-                let decoded = jwt.verify(token, jwtSecret);
+                let decoded = jwt.verify(token, server.jwtSecret);
 
                 log.info("auth", "Username from JWT: " + decoded.username);
 
@@ -346,7 +350,7 @@ let needSetup = false;
                         ok: true,
                         token: jwt.sign({
                             username: data.username,
-                        }, jwtSecret),
+                        }, server.jwtSecret),
                     });
                 }
 
@@ -376,7 +380,7 @@ let needSetup = false;
                             ok: true,
                             token: jwt.sign({
                                 username: data.username,
-                            }, jwtSecret),
+                            }, server.jwtSecret),
                         });
                     } else {
 
@@ -574,7 +578,6 @@ let needSetup = false;
                     });
                 }
             } catch (error) {
-                console.log(error);
                 callback({
                     ok: false,
                     msg: error.message,
@@ -666,6 +669,7 @@ let needSetup = false;
         // Edit a monitor
         socket.on("editMonitor", async (monitor, callback) => {
             try {
+                let removeGroupChildren = false;
                 checkLogin(socket);
 
                 let bean = await R.findOne("monitor", " id = ? ", [ monitor.id ]);
@@ -674,10 +678,22 @@ let needSetup = false;
                     throw new Error("Permission denied.");
                 }
 
-                // Reset Prometheus labels
-                server.monitorList[monitor.id]?.prometheus()?.remove();
+                // Check if Parent is Descendant (would cause endless loop)
+                if (monitor.parent !== null) {
+                    const childIDs = await Monitor.getAllChildrenIDs(monitor.id);
+                    if (childIDs.includes(monitor.parent)) {
+                        throw new Error("Invalid Monitor Group");
+                    }
+                }
+
+                // Remove children if monitor type has changed (from group to non-group)
+                if (bean.type === "group" && monitor.type !== bean.type) {
+                    removeGroupChildren = true;
+                }
 
                 bean.name = monitor.name;
+                bean.description = monitor.description;
+                bean.parent = monitor.parent;
                 bean.type = monitor.type;
                 bean.url = monitor.url;
                 bean.method = monitor.method;
@@ -685,16 +701,22 @@ let needSetup = false;
                 bean.headers = monitor.headers;
                 bean.basic_auth_user = monitor.basic_auth_user;
                 bean.basic_auth_pass = monitor.basic_auth_pass;
+                bean.tlsCa = monitor.tlsCa;
+                bean.tlsCert = monitor.tlsCert;
+                bean.tlsKey = monitor.tlsKey;
                 bean.interval = monitor.interval;
                 bean.retryInterval = monitor.retryInterval;
                 bean.resendInterval = monitor.resendInterval;
                 bean.hostname = monitor.hostname;
+                bean.game = monitor.game;
                 bean.maxretries = monitor.maxretries;
                 bean.port = parseInt(monitor.port);
                 bean.keyword = monitor.keyword;
+                bean.invertKeyword = monitor.invertKeyword;
                 bean.ignoreTls = monitor.ignoreTls;
                 bean.expiryNotification = monitor.expiryNotification;
                 bean.upsideDown = monitor.upsideDown;
+                bean.packetSize = monitor.packetSize;
                 bean.maxredirects = monitor.maxredirects;
                 bean.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
                 bean.dns_resolve_type = monitor.dns_resolve_type;
@@ -724,14 +746,19 @@ let needSetup = false;
                 bean.radiusCalledStationId = monitor.radiusCalledStationId;
                 bean.radiusCallingStationId = monitor.radiusCallingStationId;
                 bean.radiusSecret = monitor.radiusSecret;
+                bean.httpBodyEncoding = monitor.httpBodyEncoding;
 
                 bean.validate();
 
                 await R.store(bean);
 
+                if (removeGroupChildren) {
+                    await Monitor.unlinkAllChildren(monitor.id);
+                }
+
                 await updateMonitorNotification(bean.id, monitor.notificationIDList);
 
-                if (bean.active) {
+                if (bean.isActive()) {
                     await restartMonitor(socket.userID, bean.id);
                 }
 
@@ -874,10 +901,19 @@ let needSetup = false;
                     delete server.monitorList[monitorID];
                 }
 
+                const startTime = Date.now();
+
                 await R.exec("DELETE FROM monitor WHERE id = ? AND user_id = ? ", [
                     monitorID,
                     socket.userID,
                 ]);
+
+                // Fix #2880
+                apicache.clear();
+
+                const endTime = Date.now();
+
+                log.info("DB", `Delete Monitor completed in : ${endTime - startTime} ms`);
 
                 callback({
                     ok: true,
@@ -941,13 +977,21 @@ let needSetup = false;
             try {
                 checkLogin(socket);
 
-                let bean = await R.findOne("monitor", " id = ? ", [ tag.id ]);
+                let bean = await R.findOne("tag", " id = ? ", [ tag.id ]);
+                if (bean == null) {
+                    callback({
+                        ok: false,
+                        msg: "Tag not found",
+                    });
+                    return;
+                }
                 bean.name = tag.name;
                 bean.color = tag.color;
                 await R.store(bean);
 
                 callback({
                     ok: true,
+                    msg: "Saved",
                     tag: await bean.toJSON(),
                 });
 
@@ -1114,6 +1158,8 @@ let needSetup = false;
                     await doubleCheckPassword(socket, currentPassword);
                 }
 
+                const previousChromeExecutable = await Settings.get("chromeExecutable");
+
                 await setSettings("general", data);
                 server.entryPage = data.entryPage;
 
@@ -1122,6 +1168,12 @@ let needSetup = false;
                 // Also need to apply timezone globally
                 if (data.serverTimezone) {
                     await server.setTimezone(data.serverTimezone);
+                }
+
+                // If Chrome Executable is changed, need to reset the browser
+                if (previousChromeExecutable !== data.chromeExecutable) {
+                    log.info("settings", "Chrome executable is changed. Resetting Chrome...");
+                    await resetChrome();
                 }
 
                 callback({
@@ -1307,6 +1359,7 @@ let needSetup = false;
                             let monitor = {
                                 // Define the new variable from earlier here
                                 name: monitorListData[i].name,
+                                description: monitorListData[i].description,
                                 type: monitorListData[i].type,
                                 url: monitorListData[i].url,
                                 method: monitorListData[i].method || "GET",
@@ -1324,13 +1377,14 @@ let needSetup = false;
                                 maxretries: monitorListData[i].maxretries,
                                 port: monitorListData[i].port,
                                 keyword: monitorListData[i].keyword,
+                                invertKeyword: monitorListData[i].invertKeyword,
                                 ignoreTls: monitorListData[i].ignoreTls,
                                 upsideDown: monitorListData[i].upsideDown,
                                 maxredirects: monitorListData[i].maxredirects,
                                 accepted_statuscodes: monitorListData[i].accepted_statuscodes,
                                 dns_resolve_type: monitorListData[i].dns_resolve_type,
                                 dns_resolve_server: monitorListData[i].dns_resolve_server,
-                                notificationIDList: {},
+                                notificationIDList: monitorListData[i].notificationIDList,
                                 proxy_id: monitorListData[i].proxy_id || null,
                             };
 
@@ -1490,6 +1544,7 @@ let needSetup = false;
         proxySocketHandler(socket);
         dockerSocketHandler(socket);
         maintenanceSocketHandler(socket);
+        apiKeySocketHandler(socket);
         generalSocketHandler(socket, server);
 
         log.debug("server", "added all socket handlers");
@@ -1534,7 +1589,7 @@ let needSetup = false;
         }
     });
 
-    initBackgroundJobs(args);
+    await initBackgroundJobs();
 
     // Start cloudflared at the end if configured
     await cloudflaredAutoStart(cloudflaredToken);
@@ -1597,6 +1652,7 @@ async function afterLogin(socket, user) {
     sendNotificationList(socket);
     sendProxyList(socket);
     sendDockerHostList(socket);
+    sendAPIKeyList(socket);
 
     await sleep(500);
 
@@ -1659,7 +1715,7 @@ async function initDatabase(testMode = false) {
         needSetup = true;
     }
 
-    jwtSecret = jwtSecretBean.value;
+    server.jwtSecret = jwtSecretBean.value;
 }
 
 /**

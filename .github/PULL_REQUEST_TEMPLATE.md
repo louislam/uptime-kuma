@@ -16,7 +16,6 @@ Please delete any options that are not relevant.
 - User interface (UI)
 - New feature (non-breaking change which adds functionality)
 - Breaking change (fix or feature that would cause existing functionality to not work as expected)
-- Translation update
 - Other
 - This change requires a documentation update
 

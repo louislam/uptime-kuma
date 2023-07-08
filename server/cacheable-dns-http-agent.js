@@ -37,6 +37,10 @@ class CacheableDnsHttpAgent {
         this.enable = isEnable;
     }
 
+    /**
+     * Attach cacheable to HTTP agent
+     * @param {http.Agent} agent Agent to install
+     */
     static install(agent) {
         this.cacheable.install(agent);
     }

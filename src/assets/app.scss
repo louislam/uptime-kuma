@@ -35,6 +35,11 @@ textarea.form-control {
     color: $maintenance !important;
 }
 
+.incident a,
+.bg-maintenance a {
+    color: inherit;
+}
+
 .list-group {
     border-radius: 0.75rem;
 
@@ -248,12 +253,22 @@ optgroup {
         }
     }
 
+    .incident a,
+    .bg-maintenance a {
+        color: inherit;
+    }
+
     .form-control,
     .form-control:focus,
     .form-select,
     .form-select:focus {
         color: $dark-font-color;
         background-color: $dark-bg2;
+    }
+
+    .form-select:disabled {
+        color: rgba($dark-font-color, 0.7);
+        background-color: $dark-bg;
     }
 
     .form-control, .form-select {
@@ -544,6 +559,31 @@ h5.settings-subheading::after {
     width: 50%;
     padding-top: 8px;
     border-bottom: 1px solid $dark-border-color;
+}
+
+
+$shadow-box-padding: 20px;
+
+.shadow-box-with-fixed-bottom-bar {
+    padding-top: $shadow-box-padding;
+    padding-bottom: 0;
+    padding-right: $shadow-box-padding;
+    padding-left: $shadow-box-padding;
+}
+
+.fixed-bottom-bar {
+    position: sticky;
+    bottom: 0;
+    margin-left: -$shadow-box-padding;
+    margin-right: -$shadow-box-padding;
+    z-index: 100;
+    background-color: rgba(white, 0.2);
+    backdrop-filter: blur(2px);
+    border-radius: 0 0 10px 10px;
+
+    .dark & {
+        background-color: rgba($dark-header-bg, 0.9);
+    }
 }
 
 // Localization

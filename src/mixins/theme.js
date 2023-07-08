@@ -30,6 +30,9 @@ export default {
         theme() {
             // As entry can be status page now, set forceStatusPageTheme to true to use status page theme
             if (this.forceStatusPageTheme) {
+                if (this.statusPageTheme === "auto") {
+                    return this.system;
+                }
                 return this.statusPageTheme;
             }
 
@@ -39,6 +42,9 @@ export default {
             }
 
             if (this.path.startsWith("/status-page") || this.path.startsWith("/status")) {
+                if (this.statusPageTheme === "auto") {
+                    return this.system;
+                }
                 return this.statusPageTheme;
             } else {
                 if (this.userTheme === "auto") {

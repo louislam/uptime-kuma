@@ -21,4 +21,8 @@ cypress/screenshots
 /extra/healthcheck
 /extra/healthcheck-armv7
 
-yarn.lock
+extra/exe-builder/bin
+extra/exe-builder/obj
+
+.vs
+.vscode
