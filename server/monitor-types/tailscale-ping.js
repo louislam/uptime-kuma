@@ -44,7 +44,6 @@ class TailscalePing extends MonitorType {
         return new Promise((resolve, reject) => {
             //set a timeout here just incase tailscale ping hangs
             exec(cmd, {timeout: 10000}, (error, stdout, stderr) => {
-                // Also to trigger a function here of error.message or stderr in the web gui 
                 // we may need to handle more cases if tailscale reports an error that isn't necessarily an error (such as not-logged in or DERP health-related issues) 
                 if (error) {
                     reject(`Execution error: ${error.message}`);
