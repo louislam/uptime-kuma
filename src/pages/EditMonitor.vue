@@ -127,6 +127,17 @@
                                 </div>
                             </div>
 
+                            <!-- Invert keyword -->
+                            <div v-if="monitor.type === 'keyword' || monitor.type === 'grpc-keyword'" class="my-3 form-check">
+                                <input id="invert-keyword" v-model="monitor.invertKeyword" class="form-check-input" type="checkbox">
+                                <label class="form-check-label" for="invert-keyword">
+                                    {{ $t("Invert Keyword") }}
+                                </label>
+                                <div class="form-text">
+                                    {{ $t("invertKeywordDescription") }}
+                                </div>
+                            </div>
+
                             <!-- Game -->
                             <!-- GameDig only -->
                             <div v-if="monitor.type === 'gamedig'" class="my-3">
