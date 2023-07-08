@@ -69,8 +69,10 @@ class TailscalePing extends MonitorType {
                 heartbeat.ping = parseInt(time);
                 heartbeat.msg = line;
                 break;
-            } else if (line.includes("no matching peer") || line.includes("is local Tailscale IP")) {
-                throw new Error(`"${line}"`);
+            } else if (line.includes("no matching peer")) {
+                throw new Error(`Nonexistant or inaccessible due to ACLs: "${line}"`);
+            } else if (line.includes("is local Tailscale IP")) {
+                throw new Error(`Tailscale only works if used on other machines: "${line}"`);
             } else if (line !== '') {
                 throw new Error(`Unexpected output: "${line}"`);
             }
