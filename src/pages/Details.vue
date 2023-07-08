@@ -1,6 +1,7 @@
 <template>
     <transition name="slide-fade" appear>
         <div v-if="monitor">
+            <router-link v-if="group !== ''" :to="monitorURL(monitor.parent)"> {{ group }}</router-link>
             <h1> {{ monitor.name }}</h1>
             <p v-if="monitor.description">{{ monitor.description }}</p>
             <div class="tags">
@@ -12,7 +13,9 @@
                 <span v-if="monitor.type === 'ping'">Ping: {{ monitor.hostname }}</span>
                 <span v-if="monitor.type === 'keyword'">
                     <br>
-                    <span>{{ $t("Keyword") }}:</span> <span class="keyword">{{ monitor.keyword }}</span>
+                    <span>{{ $t("Keyword") }}: </span>
+                    <span class="keyword">{{ monitor.keyword }}</span>
+                    <span v-if="monitor.invertKeyword" alt="Inverted keyword" class="keyword-inverted"> ↧</span>
                 </span>
                 <span v-if="monitor.type === 'dns'">[{{ monitor.dns_resolve_type }}] {{ monitor.hostname }}
                     <br>
@@ -40,7 +43,7 @@
                     <button v-if="monitor.active" class="btn btn-normal" @click="pauseDialog">
                         <font-awesome-icon icon="pause" /> {{ $t("Pause") }}
                     </button>
-                    <button v-if="! monitor.active" class="btn btn-primary" @click="resumeMonitor">
+                    <button v-if="! monitor.active" class="btn btn-primary" :disabled="monitor.forceInactive" @click="resumeMonitor">
                         <font-awesome-icon icon="play" /> {{ $t("Resume") }}
                     </button>
                     <router-link :to=" '/edit/' + monitor.id " class="btn btn-normal">
@@ -67,9 +70,10 @@
                 </div>
             </div>
 
+            <!-- Stats -->
             <div class="shadow-box big-padding text-center stats">
                 <div class="row">
-                    <div class="col-12 col-sm col row d-flex align-items-center d-sm-block">
+                    <div v-if="monitor.type !== 'group'" class="col-12 col-sm col row d-flex align-items-center d-sm-block">
                         <h4 class="col-4 col-sm-12">{{ pingTitle() }}</h4>
                         <p class="col-4 col-sm-12 mb-0 mb-sm-2">({{ $t("Current") }})</p>
                         <span class="col-4 col-sm-12 num">
@@ -78,7 +82,7 @@
                             </a>
                         </span>
                     </div>
-                    <div class="col-12 col-sm col row d-flex align-items-center d-sm-block">
+                    <div v-if="monitor.type !== 'group'" class="col-12 col-sm col row d-flex align-items-center d-sm-block">
                         <h4 class="col-4 col-sm-12">{{ pingTitle(true) }}</h4>
                         <p class="col-4 col-sm-12 mb-0 mb-sm-2">(24{{ $t("-hour") }})</p>
                         <span class="col-4 col-sm-12 num">
@@ -126,6 +130,15 @@
                 <div class="row">
                     <div class="col">
                         <PingChart :monitor-id="monitor.id" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Screenshot -->
+            <div v-if="monitor.type === 'real-browser'" class="shadow-box">
+                <div class="row">
+                    <div class="col-md-6">
+                        <img :src="screenshotURL" alt style="width: 100%;">
                     </div>
                 </div>
             </div>
@@ -214,7 +227,9 @@ import Pagination from "v-pagination-3";
 const PingChart = defineAsyncComponent(() => import("../components/PingChart.vue"));
 import Tag from "../components/Tag.vue";
 import CertificateInfo from "../components/CertificateInfo.vue";
+import { getMonitorRelativeURL } from "../util.ts";
 import { URL } from "whatwg-url";
+import { getResBaseURL } from "../util-frontend";
 
 export default {
     components: {
@@ -240,6 +255,7 @@ export default {
                 hideCount: true,
                 chunksNavigation: "scroll",
             },
+            cacheTime: Date.now(),
         };
     },
     computed: {
@@ -249,6 +265,10 @@ export default {
         },
 
         lastHeartBeat() {
+            // Also trigger screenshot refresh here
+            // eslint-disable-next-line vue/no-side-effects-in-computed-properties
+            this.cacheTime = Date.now();
+
             if (this.monitor.id in this.$root.lastHeartbeatList && this.$root.lastHeartbeatList[this.monitor.id]) {
                 return this.$root.lastHeartbeatList[this.monitor.id];
             }
@@ -313,14 +333,26 @@ export default {
             return this.heartBeatList.slice(startIndex, endIndex);
         },
 
+        group() {
+            if (!this.monitor.pathName.includes("/")) {
+                return "";
+            }
+            return this.monitor.pathName.substr(0, this.monitor.pathName.lastIndexOf("/"));
+        },
+
         pushURL() {
             return this.$root.baseURL + "/api/push/" + this.monitor.pushToken + "?status=up&msg=OK&ping=";
         },
+
+        screenshotURL() {
+            return getResBaseURL() + this.monitor.screenshot + "?time=" + this.cacheTime;
+        }
     },
     mounted() {
 
     },
     methods: {
+        getResBaseURL,
         /** Request a test notification be sent for this monitor */
         testNotification() {
             this.$root.getSocket().emit("testNotification", this.monitor.id);
@@ -407,6 +439,15 @@ export default {
             }
 
             return this.$t(translationPrefix + "Ping");
+        },
+
+        /**
+         * Get URL of monitor
+         * @param {number} id ID of monitor
+         * @returns {string} Relative URL of monitor
+         */
+        monitorURL(id) {
+            return getMonitorRelativeURL(id);
         },
 
         /** Filter and hide password in URL for display */
@@ -540,6 +581,10 @@ table {
 
 .dark {
     .keyword {
+        color: $dark-font-color;
+    }
+
+    .keyword-inverted {
         color: $dark-font-color;
     }
 

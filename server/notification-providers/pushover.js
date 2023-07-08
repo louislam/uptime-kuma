@@ -33,7 +33,7 @@ class Pushover extends NotificationProvider {
                 await axios.post(pushoverlink, data);
                 return okMsg;
             } else {
-                data.message += "\n<b>Time (UTC)</b>:" + heartbeatJSON["time"];
+                data.message += `\n<b>Time (${heartbeatJSON["timezone"]})</b>:${heartbeatJSON["localDateTime"]}`;
                 await axios.post(pushoverlink, data);
                 return okMsg;
             }

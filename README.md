@@ -49,7 +49,11 @@ Uptime Kuma is now running on http://localhost:3001
 
 ### 💪🏻 Non-Docker
 
-Required Tools: 
+Requirements: 
+- Platform
+  - ✅ Major Linux distros such as Debian, Ubuntu, CentOS, Fedora and ArchLinux etc. 
+  - ✅ Windows 10 (x64), Windows Server 2012 R2 (x64) or higher
+  - ❌ Replit / Heroku
 - [Node.js](https://nodejs.org/en/download/) 14 / 16 / 18 (20 is not supported)
 - [npm](https://docs.npmjs.com/cli/) >= 7
 - [Git](https://git-scm.com/downloads) 
@@ -89,7 +93,7 @@ pm2 save && pm2 startup
 
 ### Windows Portable (x64)
 
-https://github.com/louislam/uptime-kuma/releases/download/1.21.0/uptime-kuma-win64-portable-1.0.0.zip
+https://github.com/louislam/uptime-kuma/files/11886108/uptime-kuma-win64-portable-1.0.1.zip
 
 ### Advanced Installation
 
@@ -148,17 +152,18 @@ Telegram Notification Sample:
 
 If you love this project, please consider giving me a ⭐.
 
-## 🗣️ Discussion
+## 🗣️ Discussion / Ask for Help
 
-### Issues Page
+⚠️ For any general or technical questions, please don't send me an email, as I am unable to provide support in that manner. I will not response if you asked such questions.
 
-You can discuss or ask for help in [issues](https://github.com/louislam/uptime-kuma/issues).
+I recommend using Google, GitHub Issues, or Uptime Kuma's Subreddit for finding answers to your question. If you cannot find the information you need, feel free to ask:
 
-### Subreddit
+- [GitHub Issues](https://github.com/louislam/uptime-kuma/issues)
+- [Subreddit r/Uptime kuma](https://www.reddit.com/r/UptimeKuma/)
 
 My Reddit account: [u/louislamlam](https://reddit.com/u/louislamlam).  
 You can mention me if you ask a question on Reddit.
-[r/Uptime kuma](https://www.reddit.com/r/UptimeKuma/)
+
 
 ## Contribute
 

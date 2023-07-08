@@ -147,8 +147,8 @@ const { apiKeySocketHandler } = require("./socket-handlers/api-key-socket-handle
 const { generalSocketHandler } = require("./socket-handlers/general-socket-handler");
 const { Settings } = require("./settings");
 const { CacheableDnsHttpAgent } = require("./cacheable-dns-http-agent");
-const { pluginsHandler } = require("./socket-handlers/plugins-handler");
 const apicache = require("./modules/apicache");
+const { resetChrome } = require("./monitor-types/real-browser-monitor-type");
 
 app.use(express.json());
 
@@ -162,12 +162,6 @@ app.use(function (req, res, next) {
 });
 
 /**
- * Use for decode the auth object
- * @type {null}
- */
-let jwtSecret = null;
-
-/**
  * Show Setup Page
  * @type {boolean}
  */
@@ -177,7 +171,6 @@ let needSetup = false;
     Database.init(args);
     await initDatabase(testMode);
     await server.initAfterDatabaseReady();
-    server.loadPlugins();
     server.entryPage = await Settings.get("entryPage");
     await StatusPage.loadDomainMappingList();
 
@@ -286,7 +279,7 @@ let needSetup = false;
             log.info("auth", `Login by token. IP=${clientIP}`);
 
             try {
-                let decoded = jwt.verify(token, jwtSecret);
+                let decoded = jwt.verify(token, server.jwtSecret);
 
                 log.info("auth", "Username from JWT: " + decoded.username);
 
@@ -357,7 +350,7 @@ let needSetup = false;
                         ok: true,
                         token: jwt.sign({
                             username: data.username,
-                        }, jwtSecret),
+                        }, server.jwtSecret),
                     });
                 }
 
@@ -387,7 +380,7 @@ let needSetup = false;
                             ok: true,
                             token: jwt.sign({
                                 username: data.username,
-                            }, jwtSecret),
+                            }, server.jwtSecret),
                         });
                     } else {
 
@@ -676,6 +669,7 @@ let needSetup = false;
         // Edit a monitor
         socket.on("editMonitor", async (monitor, callback) => {
             try {
+                let removeGroupChildren = false;
                 checkLogin(socket);
 
                 let bean = await R.findOne("monitor", " id = ? ", [ monitor.id ]);
@@ -684,8 +678,22 @@ let needSetup = false;
                     throw new Error("Permission denied.");
                 }
 
+                // Check if Parent is Descendant (would cause endless loop)
+                if (monitor.parent !== null) {
+                    const childIDs = await Monitor.getAllChildrenIDs(monitor.id);
+                    if (childIDs.includes(monitor.parent)) {
+                        throw new Error("Invalid Monitor Group");
+                    }
+                }
+
+                // Remove children if monitor type has changed (from group to non-group)
+                if (bean.type === "group" && monitor.type !== bean.type) {
+                    removeGroupChildren = true;
+                }
+
                 bean.name = monitor.name;
                 bean.description = monitor.description;
+                bean.parent = monitor.parent;
                 bean.type = monitor.type;
                 bean.url = monitor.url;
                 bean.method = monitor.method;
@@ -705,6 +713,7 @@ let needSetup = false;
                 bean.maxretries = monitor.maxretries;
                 bean.port = parseInt(monitor.port);
                 bean.keyword = monitor.keyword;
+                bean.invertKeyword = monitor.invertKeyword;
                 bean.ignoreTls = monitor.ignoreTls;
                 bean.expiryNotification = monitor.expiryNotification;
                 bean.upsideDown = monitor.upsideDown;
@@ -744,9 +753,13 @@ let needSetup = false;
 
                 await R.store(bean);
 
+                if (removeGroupChildren) {
+                    await Monitor.unlinkAllChildren(monitor.id);
+                }
+
                 await updateMonitorNotification(bean.id, monitor.notificationIDList);
 
-                if (bean.active) {
+                if (bean.isActive()) {
                     await restartMonitor(socket.userID, bean.id);
                 }
 
@@ -889,6 +902,8 @@ let needSetup = false;
                     delete server.monitorList[monitorID];
                 }
 
+                const startTime = Date.now();
+
                 await R.exec("DELETE FROM monitor WHERE id = ? AND user_id = ? ", [
                     monitorID,
                     socket.userID,
@@ -896,6 +911,10 @@ let needSetup = false;
 
                 // Fix #2880
                 apicache.clear();
+
+                const endTime = Date.now();
+
+                log.info("DB", `Delete Monitor completed in : ${endTime - startTime} ms`);
 
                 callback({
                     ok: true,
@@ -1140,6 +1159,8 @@ let needSetup = false;
                     await doubleCheckPassword(socket, currentPassword);
                 }
 
+                const previousChromeExecutable = await Settings.get("chromeExecutable");
+
                 await setSettings("general", data);
                 server.entryPage = data.entryPage;
 
@@ -1148,6 +1169,12 @@ let needSetup = false;
                 // Also need to apply timezone globally
                 if (data.serverTimezone) {
                     await server.setTimezone(data.serverTimezone);
+                }
+
+                // If Chrome Executable is changed, need to reset the browser
+                if (previousChromeExecutable !== data.chromeExecutable) {
+                    log.info("settings", "Chrome executable is changed. Resetting Chrome...");
+                    await resetChrome();
                 }
 
                 callback({
@@ -1353,13 +1380,14 @@ let needSetup = false;
                                 maxretries: monitorListData[i].maxretries,
                                 port: monitorListData[i].port,
                                 keyword: monitorListData[i].keyword,
+                                invertKeyword: monitorListData[i].invertKeyword,
                                 ignoreTls: monitorListData[i].ignoreTls,
                                 upsideDown: monitorListData[i].upsideDown,
                                 maxredirects: monitorListData[i].maxredirects,
                                 accepted_statuscodes: monitorListData[i].accepted_statuscodes,
                                 dns_resolve_type: monitorListData[i].dns_resolve_type,
                                 dns_resolve_server: monitorListData[i].dns_resolve_server,
-                                notificationIDList: {},
+                                notificationIDList: monitorListData[i].notificationIDList,
                                 proxy_id: monitorListData[i].proxy_id || null,
                             };
 
@@ -1521,7 +1549,6 @@ let needSetup = false;
         maintenanceSocketHandler(socket);
         apiKeySocketHandler(socket);
         generalSocketHandler(socket, server);
-        pluginsHandler(socket, server);
 
         log.debug("server", "added all socket handlers");
 
@@ -1691,7 +1718,7 @@ async function initDatabase(testMode = false) {
         needSetup = true;
     }
 
-    jwtSecret = jwtSecretBean.value;
+    server.jwtSecret = jwtSecretBean.value;
 }
 
 /**

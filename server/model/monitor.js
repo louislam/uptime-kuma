@@ -20,6 +20,7 @@ const { CacheableDnsHttpAgent } = require("../cacheable-dns-http-agent");
 const { DockerHost } = require("../docker");
 const { UptimeCacheList } = require("../uptime-cache-list");
 const Gamedig = require("gamedig");
+const jwt = require("jsonwebtoken");
 
 /**
  * status:
@@ -70,23 +71,34 @@ class Monitor extends BeanModel {
 
         const tags = await this.getTags();
 
+        let screenshot = null;
+
+        if (this.type === "real-browser") {
+            screenshot = "/screenshots/" + jwt.sign(this.id, UptimeKumaServer.getInstance().jwtSecret) + ".png";
+        }
+
         let data = {
             id: this.id,
             name: this.name,
             description: this.description,
+            pathName: await this.getPathName(),
+            parent: this.parent,
+            childrenIDs: await Monitor.getAllChildrenIDs(this.id),
             url: this.url,
             method: this.method,
             hostname: this.hostname,
             port: this.port,
             maxretries: this.maxretries,
             weight: this.weight,
-            active: this.active,
+            active: await this.isActive(),
+            forceInactive: !await Monitor.isParentActive(this.id),
             type: this.type,
             timeout: this.timeout,
             interval: this.interval,
             retryInterval: this.retryInterval,
             resendInterval: this.resendInterval,
             keyword: this.keyword,
+            invertKeyword: this.isInvertKeyword(),
             expiryNotification: this.isEnabledExpiryNotification(),
             ignoreTls: this.getIgnoreTls(),
             upsideDown: this.isUpsideDown(),
@@ -114,7 +126,8 @@ class Monitor extends BeanModel {
             radiusCalledStationId: this.radiusCalledStationId,
             radiusCallingStationId: this.radiusCallingStationId,
             game: this.game,
-            httpBodyEncoding: this.httpBodyEncoding
+            httpBodyEncoding: this.httpBodyEncoding,
+            screenshot,
         };
 
         if (includeSensitiveData) {
@@ -143,6 +156,16 @@ class Monitor extends BeanModel {
 
         data.includeSensitiveData = includeSensitiveData;
         return data;
+    }
+
+    /**
+	 * Checks if the monitor is active based on itself and its parents
+	 * @returns {Promise<Boolean>}
+	 */
+    async isActive() {
+        const parentActive = await Monitor.isParentActive(this.id);
+
+        return this.active && parentActive;
     }
 
     /**
@@ -184,6 +207,14 @@ class Monitor extends BeanModel {
      */
     isUpsideDown() {
         return Boolean(this.upsideDown);
+    }
+
+    /**
+     * Parse to boolean
+     * @returns {boolean}
+     */
+    isInvertKeyword() {
+        return Boolean(this.invertKeyword);
     }
 
     /**
@@ -260,6 +291,36 @@ class Monitor extends BeanModel {
                 if (await Monitor.isUnderMaintenance(this.id)) {
                     bean.msg = "Monitor under maintenance";
                     bean.status = MAINTENANCE;
+                } else if (this.type === "group") {
+                    const children = await Monitor.getChildren(this.id);
+
+                    if (children.length > 0) {
+                        bean.status = UP;
+                        bean.msg = "All children up and running";
+                        for (const child of children) {
+                            if (!child.active) {
+                                // Ignore inactive childs
+                                continue;
+                            }
+                            const lastBeat = await Monitor.getPreviousHeartbeat(child.id);
+
+                            // Only change state if the monitor is in worse conditions then the ones before
+                            if (bean.status === UP && (lastBeat.status === PENDING || lastBeat.status === DOWN)) {
+                                bean.status = lastBeat.status;
+                            } else if (bean.status === PENDING && lastBeat.status === DOWN) {
+                                bean.status = lastBeat.status;
+                            }
+                        }
+
+                        if (bean.status !== UP) {
+                            bean.msg = "Child inaccessible";
+                        }
+                    } else {
+                        // Set status pending if group is empty
+                        bean.status = PENDING;
+                        bean.msg = "Group empty";
+                    }
+
                 } else if (this.type === "http" || this.type === "keyword") {
                     // Do not do any queries/high loading things before the "bean.ping"
                     let startTime = dayjs().valueOf();
@@ -397,15 +458,17 @@ class Monitor extends BeanModel {
                             data = JSON.stringify(data);
                         }
 
-                        if (data.includes(this.keyword)) {
-                            bean.msg += ", keyword is found";
+                        let keywordFound = data.includes(this.keyword);
+                        if (keywordFound === !this.isInvertKeyword()) {
+                            bean.msg += ", keyword " + (keywordFound ? "is" : "not") + " found";
                             bean.status = UP;
                         } else {
                             data = data.replace(/<[^>]*>?|[\n\r]|\s+/gm, " ").trim();
                             if (data.length > 50) {
                                 data = data.substring(0, 47) + "...";
                             }
-                            throw new Error(bean.msg + ", but keyword is not in [" + data + "]");
+                            throw new Error(bean.msg + ", but keyword is " +
+                                (keywordFound ? "present" : "not") + " in [" + data + "]");
                         }
 
                     }
@@ -575,9 +638,15 @@ class Monitor extends BeanModel {
 
                     log.debug("monitor", `[${this.name}] Axios Request`);
                     let res = await axios.request(options);
+
                     if (res.data.State.Running) {
-                        bean.status = UP;
-                        bean.msg = res.data.State.Status;
+                        if (res.data.State.Health && res.data.State.Health.Status !== "healthy") {
+                            bean.status = PENDING;
+                            bean.msg = res.data.State.Health.Status;
+                        } else {
+                            bean.status = UP;
+                            bean.msg = res.data.State.Health ? res.data.State.Health.Status : res.data.State.Status;
+                        }
                     } else {
                         throw Error("Container State is " + res.data.State.Status);
                     }
@@ -606,7 +675,6 @@ class Monitor extends BeanModel {
                         grpcEnableTls: this.grpcEnableTls,
                         grpcMethod: this.grpcMethod,
                         grpcBody: this.grpcBody,
-                        keyword: this.keyword
                     };
                     const response = await grpcQuery(options);
                     bean.ping = dayjs().valueOf() - startTime;
@@ -619,13 +687,14 @@ class Monitor extends BeanModel {
                         bean.status = DOWN;
                         bean.msg = `Error in send gRPC ${response.code} ${response.errorMessage}`;
                     } else {
-                        if (response.data.toString().includes(this.keyword)) {
+                        let keywordFound = response.data.toString().includes(this.keyword);
+                        if (keywordFound === !this.isInvertKeyword()) {
                             bean.status = UP;
-                            bean.msg = `${responseData}, keyword [${this.keyword}] is found`;
+                            bean.msg = `${responseData}, keyword [${this.keyword}] ${keywordFound ? "is" : "not"} found`;
                         } else {
-                            log.debug("monitor:", `GRPC response [${response.data}] + ", but keyword [${this.keyword}] is not in [" + ${response.data} + "]"`);
+                            log.debug("monitor:", `GRPC response [${response.data}] + ", but keyword [${this.keyword}] is ${keywordFound ? "present" : "not"} in [" + ${response.data} + "]"`);
                             bean.status = DOWN;
-                            bean.msg = `, but keyword [${this.keyword}] is not in [" + ${responseData} + "]`;
+                            bean.msg = `, but keyword [${this.keyword}] is ${keywordFound ? "present" : "not"} in [" + ${responseData} + "]`;
                         }
                     }
                 } else if (this.type === "postgres") {
@@ -697,7 +766,7 @@ class Monitor extends BeanModel {
                 } else if (this.type in UptimeKumaServer.monitorTypeList) {
                     let startTime = dayjs().valueOf();
                     const monitorType = UptimeKumaServer.monitorTypeList[this.type];
-                    await monitorType.check(this, bean);
+                    await monitorType.check(this, bean, UptimeKumaServer.getInstance());
                     if (!bean.ping) {
                         bean.ping = dayjs().valueOf() - startTime;
                     }
@@ -1330,6 +1399,11 @@ class Monitor extends BeanModel {
             }
         }
 
+        const parent = await Monitor.getParent(monitorID);
+        if (parent != null) {
+            return await Monitor.isUnderMaintenance(parent.id);
+        }
+
         return false;
     }
 
@@ -1341,6 +1415,105 @@ class Monitor extends BeanModel {
         if (this.interval < MIN_INTERVAL_SECOND) {
             throw new Error(`Interval cannot be less than ${MIN_INTERVAL_SECOND} seconds`);
         }
+    }
+
+    /**
+     * Gets Parent of the monitor
+     * @param {number} monitorID ID of monitor to get
+     * @returns {Promise<LooseObject<any>>}
+     */
+    static async getParent(monitorID) {
+        return await R.getRow(`
+            SELECT parent.* FROM monitor parent
+    		LEFT JOIN monitor child
+    			ON child.parent = parent.id
+            WHERE child.id = ?
+        `, [
+            monitorID,
+        ]);
+    }
+
+    /**
+     * Gets all Children of the monitor
+     * @param {number} monitorID ID of monitor to get
+     * @returns {Promise<LooseObject<any>>}
+     */
+    static async getChildren(monitorID) {
+        return await R.getAll(`
+            SELECT * FROM monitor
+            WHERE parent = ?
+        `, [
+            monitorID,
+        ]);
+    }
+
+    /**
+     * Gets Full Path-Name (Groups and Name)
+     * @returns {Promise<String>}
+     */
+    async getPathName() {
+        let path = this.name;
+
+        if (this.parent === null) {
+            return path;
+        }
+
+        let parent = await Monitor.getParent(this.id);
+        while (parent !== null) {
+            path = `${parent.name} / ${path}`;
+            parent = await Monitor.getParent(parent.id);
+        }
+
+        return path;
+    }
+
+    /**
+     * Gets recursive all child ids
+	 * @param {number} monitorID ID of the monitor to get
+     * @returns {Promise<Array>}
+     */
+    static async getAllChildrenIDs(monitorID) {
+        const childs = await Monitor.getChildren(monitorID);
+
+        if (childs === null) {
+            return [];
+        }
+
+        let childrenIDs = [];
+
+        for (const child of childs) {
+            childrenIDs.push(child.id);
+            childrenIDs = childrenIDs.concat(await Monitor.getAllChildrenIDs(child.id));
+        }
+
+        return childrenIDs;
+    }
+
+    /**
+     * Unlinks all children of the the group monitor
+     * @param {number} groupID ID of group to remove children of
+     * @returns {Promise<void>}
+     */
+    static async unlinkAllChildren(groupID) {
+        return await R.exec("UPDATE `monitor` SET parent = ? WHERE parent = ? ", [
+            null, groupID
+        ]);
+    }
+
+    /**
+	 * Checks recursive if parent (ancestors) are active
+	 * @param {number} monitorID ID of the monitor to get
+	 * @returns {Promise<Boolean>}
+	 */
+    static async isParentActive(monitorID) {
+        const parent = await Monitor.getParent(monitorID);
+
+        if (parent === null) {
+            return true;
+        }
+
+        const parentActive = await Monitor.isParentActive(parent.id);
+        return parent.active && parentActive;
     }
 }
 

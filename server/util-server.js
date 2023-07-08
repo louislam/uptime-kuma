@@ -342,7 +342,12 @@ exports.mysqlQuery = function (connectionString, query) {
                     resolve("No Error, but the result is not an array. Type: " + typeof res);
                 }
             }
-            connection.destroy();
+
+            try {
+                connection.end();
+            } catch (_) {
+                connection.destroy();
+            }
         });
     });
 };
@@ -408,12 +413,18 @@ exports.radius = function (
 exports.redisPingAsync = function (dsn) {
     return new Promise((resolve, reject) => {
         const client = redis.createClient({
-            url: dsn,
+            url: dsn
         });
         client.on("error", (err) => {
+            if (client.isOpen) {
+                client.disconnect();
+            }
             reject(err);
         });
         client.connect().then(() => {
+            if (!client.isOpen) {
+                client.emit("error", new Error("connection isn't open"));
+            }
             client.ping().then((res, err) => {
                 if (client.isOpen) {
                     client.disconnect();
@@ -423,7 +434,7 @@ exports.redisPingAsync = function (dsn) {
                 } else {
                     resolve(res);
                 }
-            });
+            }).catch(error => reject(error));
         });
     });
 };
