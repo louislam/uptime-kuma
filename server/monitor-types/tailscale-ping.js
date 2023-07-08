@@ -14,7 +14,7 @@ const exec = require('child_process').exec;
 // 3 ping a nonexistent IP or inaccessible node
 // CMD: tailscale ping 100.100.100.3
 // no matching peer
-// 4 ping a peer that can only receive incoming connections
+// 4 ping a peer that you cannot make a outgoing connection to
 // CMD: tailscale ping 100.100.100.4
 // multiple 'pong from' lines (pong from hostname (100.100.100.4) via DERP(tok) in 123ms) and a 'direct connection not established' line
 // We only care about the first 'pong from' line for the purpose of checking uptime.
