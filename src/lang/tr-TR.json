@@ -589,7 +589,7 @@
     "deleteMaintenanceMsg": "Bu bakımı silmek istediğinizden emin misiniz?",
     "ZohoCliq": "ZohoCliq",
     "webhookAdditionalHeadersTitle": "Ek Başlıklar",
-    "webhookAdditionalHeadersDesc": "Webhook ile gönderilen ek başlıkları ayarlar.",
+    "webhookAdditionalHeadersDesc": "Webhook ile gönderilen ek başlıkları ayarlar. Her başlık bir JSON anahtarı/değeri olarak tanımlanmalıdır.",
     "wayToGetZohoCliqURL": "Bir webhook URL'sinin nasıl oluşturulacağını öğrenebilirsiniz {0}.",
     "Kook": "Kook",
     "wayToGetKookBotToken": "Uygulama oluşturun ve {0} adresinde bot tokenı alın",
@@ -789,5 +789,9 @@
     "chromeExecutableAutoDetect": "Otomatik algılama",
     "chromeExecutableDescription": "Docker kullanıcıları için Chromium henüz kurulmamışsa, yüklenmesi ve test sonucunun görüntülenmesi birkaç dakika sürebilir. 1 GB disk alanı gerektirir.",
     "Invert Keyword": "Anahtar Kelimeyi Ters Çevir",
-    "invertKeywordDescription": "Anahtar kelimenin mevcut olmasından ziyade mevcut olmamasına bakın."
+    "invertKeywordDescription": "Anahtar kelimenin mevcut olmasından ziyade mevcut olmamasına bakın.",
+    "webhookCustomBodyDesc": "İstek için özel bir HTTP Gövdesi tanımlayın. {msg}, {heartbeat}, {monitor} şablon değişkenleri kabul edilir.",
+    "webhookBodyPresetOption": "Ön ayar - {0}",
+    "webhookBodyCustomOption": "Özel Gövde",
+    "Request Body": "İstek Gövdesi"
 }
