@@ -196,8 +196,11 @@
     "Content Type": "Content Type",
     "webhookJsonDesc": "{0} is good for any modern HTTP servers such as Express.js",
     "webhookFormDataDesc": "{multipart} is good for PHP. The JSON will need to be parsed with {decodeFunction}",
+    "webhookCustomBodyDesc": "Define a custom HTTP Body for the request. Template variables {msg}, {heartbeat}, {monitor} are accepted.",
     "webhookAdditionalHeadersTitle": "Additional Headers",
-    "webhookAdditionalHeadersDesc": "Sets additional headers sent with the webhook.",
+    "webhookAdditionalHeadersDesc": "Sets additional headers sent with the webhook. Each header should be defined as a JSON key/value.",
+    "webhookBodyPresetOption": "Preset - {0}",
+    "webhookBodyCustomOption": "Custom Body",
     "Webhook URL": "Webhook URL",
     "Application Token": "Application Token",
     "Server URL": "Server URL",
@@ -757,5 +760,6 @@
     "Group": "Group",
     "Monitor Group": "Monitor Group",
     "noGroupMonitorMsg": "Not Available. Create a Group Monitor First.",
-    "Close": "Close"
+    "Close": "Close",
+    "Request Body": "Request Body"
 }
