@@ -794,5 +794,9 @@
     "chromeExecutableAutoDetect": "Автоматично откриване",
     "chromeExecutableDescription": "За потребителите на Docker, ако Chromium все още не е инсталиран, инсталирането и показването на резултата от теста може да отнеме няколко минути. Заема 1GB дисково пространство.",
     "Invert Keyword": "Обърнат режим за ключова дума",
-    "invertKeywordDescription": "При търсене ключовата дума трябва да отсъства, а не да присъства."
+    "invertKeywordDescription": "При търсене ключовата дума трябва да отсъства, а не да присъства.",
+    "webhookBodyPresetOption": "Предварителна настройка - {0}",
+    "webhookBodyCustomOption": "Персонализирано тяло",
+    "webhookCustomBodyDesc": "Дефинирайте персонализирано HTTP тяло за заявката. Приемат се шаблонни променливи {msg}, {heartbeat}, {monitor}.",
+    "Request Body": "Тяло на заявката"
 }
