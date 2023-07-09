@@ -223,7 +223,7 @@
     "webhookJsonDesc": "{0} est bien pour tous les serveurs HTTP modernes comme Express.js",
     "webhookFormDataDesc": "{multipart} est bien pour du PHP. Le JSON aura besoin d'être parsé avec {decodeFunction}",
     "webhookAdditionalHeadersTitle": "En-têtes supplémentaires",
-    "webhookAdditionalHeadersDesc": "Définit des en-têtes supplémentaires envoyés avec le webhook.",
+    "webhookAdditionalHeadersDesc": "Définit des en-têtes supplémentaires envoyés avec le webhook. Chaque en-tête doit être défini comme une clé/valeur JSON.",
     "smtp": "Courriel (SMTP)",
     "secureOptionNone": "Aucun / STARTTLS (25, 587)",
     "secureOptionTLS": "TLS (465)",
@@ -789,5 +789,9 @@
     "chromeExecutableAutoDetect": "Auto-détecter",
     "chromeExecutable": "Exécutable Chrome/Chromium",
     "Invert Keyword": "Inverser le mot-clé",
-    "invertKeywordDescription": "Recherchez le mot-clé absent plutôt que présent."
+    "invertKeywordDescription": "Recherchez le mot-clé absent plutôt que présent.",
+    "webhookCustomBodyDesc": "Définissez un corps HTTP personnalisé pour la requête. Les variables de modèle {msg}, {heartbeat}, {monitor} sont acceptées.",
+    "webhookBodyCustomOption": "Corps personnalisé",
+    "webhookBodyPresetOption": "Préréglages - {0}",
+    "Request Body": "Corps de la requête"
 }
