@@ -809,6 +809,24 @@ class Monitor extends BeanModel {
                 bean.important = true;
 
                 if (Monitor.isImportantForNotification(isFirstBeat, previousBeat?.status, bean.status)) {
+                    // Change the notification msg if status becomes UP from DOWN
+                    // Adding msg for the downtime
+                    if (bean.status === UP) {
+                        const downAfterPreviousUpBeat = await R.findOne("heartbeat", " monitor_id = ? AND status = ? AND time > ( SELECT time from heartbeat WHERE monitor_id = ? AND status = ? ORDER BY time DESC ) ORDER BY time ASC", [
+                            this.id,
+                            0,
+                            this.id,
+                            1
+                        ]);
+                        if (downAfterPreviousUpBeat) {
+                            const mostRecentDownBeat = await R.findOne("heartbeat", " monitor_id = ? AND status = ? ORDER BY time DESC", [
+                                this.id,
+                                0
+                            ]);
+                            const downTime = dayjs(mostRecentDownBeat?.time).diff(dayjs(downAfterPreviousUpBeat?.time), "minutes", true);
+                            bean.msg = `${bean.msg} <Down for ${Math.floor(downTime)} mintue(s) ${(downTime % 1).toFixed(2).replace(/^0\./, "")} second(s)>`;
+                        }
+                    }
                     log.debug("monitor", `[${this.name}] sendNotification`);
                     await Monitor.sendNotification(isFirstBeat, this, bean);
                 } else {
