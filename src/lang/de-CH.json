@@ -776,5 +776,10 @@
     "Badge Label Suffix": "Badge Label Suffix",
     "Badge value (For Testing only.)": "Badge Wert (nur für Tests)",
     "Show Clickable Link Description": "Wenn diese Option aktiviert ist, kann jeder, der Zugriff auf diese Statusseite hat, auf die Monitor URL zugreifen.",
-    "Badge Down Color": "Badge Down Farbe"
+    "Badge Down Color": "Badge Down Farbe",
+    "Edit Maintenance": "Wartung bearbeiten",
+    "Group": "Gruppe",
+    "Monitor Group": "Monitor Gruppe",
+    "noGroupMonitorMsg": "Nicht verfügbar. Erstelle zunächst einen Gruppenmonitor.",
+    "Close": "Schliessen"
 }

@@ -3,6 +3,7 @@ const { Settings } = require("../settings");
 const { sendInfo } = require("../client");
 const { checkLogin } = require("../util-server");
 const GameResolver = require("gamedig/lib/GameResolver");
+const { testChrome } = require("../monitor-types/real-browser-monitor-type");
 
 let gameResolver = new GameResolver();
 let gameList = null;
@@ -47,4 +48,18 @@ module.exports.generalSocketHandler = (socket, server) => {
         });
     });
 
+    socket.on("testChrome", (executable, callback) => {
+        // Just noticed that await call could block the whole socket.io server!!! Use pure promise instead.
+        testChrome(executable).then((version) => {
+            callback({
+                ok: true,
+                msg: "Found Chromium/Chrome. Version: " + version,
+            });
+        }).catch((e) => {
+            callback({
+                ok: false,
+                msg: e.message,
+            });
+        });
+    });
 };

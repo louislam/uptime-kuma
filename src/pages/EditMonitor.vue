@@ -36,6 +36,10 @@
                                         <option value="docker">
                                             {{ $t("Docker Container") }}
                                         </option>
+
+                                        <option value="real-browser">
+                                            HTTP(s) - Browser Engine (Chrome/Chromium) (Beta)
+                                        </option>
                                     </optgroup>
 
                                     <optgroup :label="$t('Passive Monitor Type')">
@@ -73,16 +77,6 @@
                                             Redis
                                         </option>
                                     </optgroup>
-
-                                    <!--
-                                    Hidden for now: Reason refer to Setting.vue
-                                    <optgroup :label="$t('Custom Monitor Type')">
-                                        <option value="browser">
-                                            (Beta) HTTP(s) - Browser Engine (Chrome/Firefox)
-                                        </option>
-                                    </optgroup>
-                                </select>
-                                -->
                                 </select>
                             </div>
 
@@ -103,7 +97,7 @@
                             </div>
 
                             <!-- URL -->
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'browser' " class="my-3">
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'real-browser' " class="my-3">
                                 <label for="url" class="form-label">{{ $t("URL") }}</label>
                                 <input id="url" v-model="monitor.url" type="url" class="form-control" pattern="https?://.+" required>
                             </div>
@@ -130,6 +124,17 @@
                                 <input id="keyword" v-model="monitor.keyword" type="text" class="form-control" required>
                                 <div class="form-text">
                                     {{ $t("keywordDescription") }}
+                                </div>
+                            </div>
+
+                            <!-- Invert keyword -->
+                            <div v-if="monitor.type === 'keyword' || monitor.type === 'grpc-keyword'" class="my-3 form-check">
+                                <input id="invert-keyword" v-model="monitor.invertKeyword" class="form-check-input" type="checkbox">
+                                <label class="form-check-label" for="invert-keyword">
+                                    {{ $t("Invert Keyword") }}
+                                </label>
+                                <div class="form-text">
+                                    {{ $t("invertKeywordDescription") }}
                                 </div>
                             </div>
 
