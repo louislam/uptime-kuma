@@ -2,6 +2,7 @@ const basicAuth = require("express-basic-auth");
 const passwordHash = require("./password-hash");
 const { R } = require("redbean-node");
 const { setting } = require("./util-server");
+const { log } = require("../src/util");
 const { loginRateLimiter, apiRateLimiter } = require("./rate-limiter");
 const { Settings } = require("./settings");
 const dayjs = require("dayjs");
@@ -81,12 +82,16 @@ function apiAuthorizer(username, password, callback) {
     apiRateLimiter.pass(null, 0).then((pass) => {
         if (pass) {
             verifyAPIKey(password).then((valid) => {
+                if (!valid) {
+                    log.warn("api-auth", "Failed API auth attempt: invalid API Key");
+                }
                 callback(null, valid);
                 // Only allow a set number of api requests per minute
                 // (currently set to 60)
                 apiRateLimiter.removeTokens(1);
             });
         } else {
+            log.warn("api-auth", "Failed API auth attempt: rate limit exceeded");
             callback(null, false);
         }
     });
@@ -106,10 +111,12 @@ function userAuthorizer(username, password, callback) {
                 callback(null, user != null);
 
                 if (user == null) {
+                    log.warn("basic-auth", "Failed basic auth attempt: invalid username/password");
                     loginRateLimiter.removeTokens(1);
                 }
             });
         } else {
+            log.warn("basic-auth", "Failed basic auth attempt: rate limit exceeded");
             callback(null, false);
         }
     });

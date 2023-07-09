@@ -47,7 +47,7 @@ export default {
             statusPageListLoaded: false,
             statusPageList: [],
             proxyList: [],
-            connectionErrorMsg: "Cannot connect to the socket server. Reconnecting...",
+            connectionErrorMsg: `${this.$t("Cannot connect to the socket server.")} ${this.$t("Reconnecting...")}`,
             showReverseProxyGuide: true,
             cloudflared: {
                 cloudflareTunnelToken: "",
@@ -228,7 +228,7 @@ export default {
 
             socket.on("connect_error", (err) => {
                 console.error(`Failed to connect to the backend. Socket.io connect_error: ${err.message}`);
-                this.connectionErrorMsg = `Cannot connect to the socket server. [${err}] Reconnecting...`;
+                this.connectionErrorMsg = `${this.$t("Cannot connect to the socket server.")} [${err}] ${this.$t("Reconnecting...")}`;
                 this.showReverseProxyGuide = true;
                 this.socket.connected = false;
                 this.socket.firstConnect = false;

@@ -748,5 +748,6 @@
     "lunaseaTarget": "대상",
     "lunaseaDeviceID": "기기 ID",
     "statusPageRefreshIn": "{0} 후 새로고침",
-    "telegramMessageThreadIDDescription": "포럼의 대상 메시지 쓰레드(주제)에 대한 선택적 고유 식별인, 포럼 관리자 그룹에만 해당"
+    "telegramMessageThreadIDDescription": "포럼의 대상 메시지 쓰레드(주제)에 대한 선택적 고유 식별인, 포럼 관리자 그룹에만 해당",
+    "pagertreeSilent": "없음"
 }
