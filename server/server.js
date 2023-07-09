@@ -208,6 +208,7 @@ let needSetup = false;
     });
 
     if (isDev) {
+        app.use(express.urlencoded({ extended: true }));
         app.post("/test-webhook", async (request, response) => {
             log.debug("test", request.headers);
             log.debug("test", request.body);
