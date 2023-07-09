@@ -796,5 +796,9 @@
     "chromeExecutableAutoDetect": "自动检测",
     "chromeExecutable": "Chrome/Chromium 可执行文件",
     "Invert Keyword": "反转模式",
-    "invertKeywordDescription": "出现关键词将令检测结果为失败，而不是成功。"
+    "invertKeywordDescription": "出现关键词将令检测结果为失败，而非成功。",
+    "webhookBodyCustomOption": "自定义内容",
+    "webhookCustomBodyDesc": "为 webhook 设定一个自定义 HTTP 请求体。可在模板内使用 {msg}、{heartbeat}和{monitor} 变量。",
+    "webhookBodyPresetOption": "预设 - {0}",
+    "Request Body": "请求体"
 }
