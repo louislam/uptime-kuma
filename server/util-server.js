@@ -378,6 +378,7 @@ exports.mongodbPing = async function (connectionString) {
  * @param {string} callingStationId ID of calling station
  * @param {string} secret Secret to use
  * @param {number} [port=1812] Port to contact radius server on
+ * @param {number} [timeout=2500] Timeout for connection to use
  * @returns {Promise<any>}
  */
 exports.radius = function (
@@ -388,10 +389,12 @@ exports.radius = function (
     callingStationId,
     secret,
     port = 1812,
+    timeout = 2500,
 ) {
     const client = new radiusClient({
         host: hostname,
         hostPort: port,
+        timeout: timeout,
         dictionaries: [ file ],
     });
 
