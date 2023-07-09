@@ -794,5 +794,7 @@
     "nostrRelays": "Nostr relay 服务",
     "chromeExecutableDescription": "至 Docker 用户，如果 Chromium 尚未安装，则需要几分钟时间来安装并显示测试结果。这需要 1 GB 硬盘空间。",
     "chromeExecutableAutoDetect": "自动检测",
-    "chromeExecutable": "Chrome/Chromium 可执行文件"
+    "chromeExecutable": "Chrome/Chromium 可执行文件",
+    "Invert Keyword": "反转模式",
+    "invertKeywordDescription": "出现关键词将令检测结果为失败，而不是成功。"
 }
