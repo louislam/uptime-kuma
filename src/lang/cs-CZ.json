@@ -794,5 +794,8 @@
     "chromeExecutableDescription": "Pokud uživatelé nástroje Docker ještě nemají nainstalovanou aplikaci Chromium, může instalace a zobrazení výsledku testu trvat několik minut. Zabere 1 GB místa na disku.",
     "Invert Keyword": "Inverzní klíčové slovo",
     "webhookBodyPresetOption": "Uložená hodnota - {0}",
-    "webhookBodyCustomOption": "Vlastní tělo"
+    "webhookBodyCustomOption": "Vlastní tělo",
+    "invertKeywordDescription": "Hledá se klíčové slovo, které je spíše nepřítomné než přítomné.",
+    "webhookCustomBodyDesc": "Nastaví vlastní tělo HTTP pro požadavek. Akceptovány jsou proměnné {msg}, {heartbeat}, {monitor}.",
+    "Request Body": "Tělo požadavku"
 }
