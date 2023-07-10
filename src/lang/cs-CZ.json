@@ -225,7 +225,7 @@
     "webhookJsonDesc": "{0} je vhodný pro všechny moderní servery HTTP, jako je Express.js",
     "webhookFormDataDesc": "{multipart} je vhodné pro PHP. JSON bude nutné analyzovat prostřednictvím {decodeFunction}",
     "webhookAdditionalHeadersTitle": "Dodatečné hlavičky",
-    "webhookAdditionalHeadersDesc": "Nastavte dodatečné hlavičky, které se odešlou společně s webhookem.",
+    "webhookAdditionalHeadersDesc": "Nastavte dodatečné hlavičky, které se odešlou společně s webhookem. Každá hlavička by měla být definována jako klíč/hodnota v JSON.",
     "smtp": "E-mail (SMTP)",
     "secureOptionNone": "Žádné / STARTTLS (25, 587)",
     "secureOptionTLS": "TLS (465)",
@@ -791,5 +791,8 @@
     "nostrRecipientsHelp": "formát npub, jeden na řádku",
     "chromeExecutable": "Spustitelný soubor Chrome/Chromium",
     "chromeExecutableAutoDetect": "Automatická detekce",
-    "chromeExecutableDescription": "Pokud uživatelé nástroje Docker ještě nemají nainstalovanou aplikaci Chromium, může instalace a zobrazení výsledku testu trvat několik minut. Zabere 1 GB místa na disku."
+    "chromeExecutableDescription": "Pokud uživatelé nástroje Docker ještě nemají nainstalovanou aplikaci Chromium, může instalace a zobrazení výsledku testu trvat několik minut. Zabere 1 GB místa na disku.",
+    "Invert Keyword": "Inverzní klíčové slovo",
+    "webhookBodyPresetOption": "Uložená hodnota - {0}",
+    "webhookBodyCustomOption": "Vlastní tělo"
 }
