@@ -24,10 +24,22 @@ const exec = require('child_process').exec;
 // multiple 'timed out' lines (ping "100.100.100.5" timed out) then ends with a 'no reply' line
 // This needs to be worked on
 
+/**
+ * A TailscalePing class extends the MonitorType.
+ * It runs Tailscale ping to monitor the status of a specific node.
+ */
 class TailscalePing extends MonitorType {
 
     name = "tailscale-ping";
-
+    
+    /**
+     * Checks the ping status of the URL associated with the monitor.
+     * It then parses the Tailscale ping command output to update the heatrbeat.
+     * 
+     * @param {Object} monitor - The monitor object associated with the check.
+     * @param {Object} heartbeat - The heartbeat object to update.
+     * @throws Will throw an error if checking Tailscale ping encounters any error
+     */
     async check(monitor, heartbeat) {
         try {
             let tailscaleOutput = await this.runTailscalePing(monitor.url);
@@ -38,7 +50,13 @@ class TailscalePing extends MonitorType {
         }
     }
 
-// runTailscalePing is now marked as async
+    /**
+     * Runs the Tailscale ping command to the given URL.
+     * 
+     * @param {string} url - The URL to ping.
+     * @returns {Promise<string>} - A Promise that resolves to the output of the Tailscale ping command
+     * @throws Will throw an error if the command execution encounters any error.
+     */
     async runTailscalePing(url) {
         let cmd = `tailscale ping ${url}`;
         return new Promise((resolve, reject) => {
@@ -58,7 +76,13 @@ class TailscalePing extends MonitorType {
         });
     }
 
-// logic for handling stdout is now moved to parseTailscaleOutput
+    /**
+     * Parses the output of the Tailscale ping command to update the heartbeat.
+     * 
+     * @param {string} tailscaleOutput - The output of the Tailscale ping command.
+     * @param {Object} heartbeat - The heartbeat object to update.
+     * @throws Will throw an eror if the output contains any unexpected string.
+     */
     parseTailscaleOutput(tailscaleOutput, heartbeat) {
         let lines = tailscaleOutput.split('\n');
 
