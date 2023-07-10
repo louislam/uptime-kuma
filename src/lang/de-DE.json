@@ -650,7 +650,7 @@
     "Enable": "Aktivieren",
     "Disable": "Deaktivieren",
     "Custom Monitor Type": "Benutzerdefinierter Monitortyp",
-    "webhookAdditionalHeadersDesc": "Legt zusätzliche Header fest, die mit der Webhook gesendet wurden.",
+    "webhookAdditionalHeadersDesc": "Legt zusätzliche Kopfzeilen fest, die mit dem Webhook gesendet werden. Jede Kopfzeile sollte als JSON Schlüssel/Wert definiert werden.",
     "dnsCacheDescription": "In einigen IPv6-Umgebungen funktioniert es möglicherweise nicht. Deaktiviere es, wenn Probleme auftreten.",
     "loadingError": "Die Daten konnten nicht abgerufen werden, bitte später noch einmal versuchen.",
     "confirmUninstallPlugin": "Möchtest du dieses Plugin wirklich deinstallieren?",
@@ -789,5 +789,9 @@
     "chromeExecutableDescription": "Für Docker-Benutzer, die Chromium noch nicht installiert haben, kann es ein paar Minuten dauern, bis es installiert ist und das Testergebnis angezeigt wird. Es benötigt 1 GB Speicherplatz.",
     "chromeExecutable": "Chrome/Chromium Ausführbare Datei",
     "Invert Keyword": "Schlüsselwort invertieren",
-    "invertKeywordDescription": "Achte darauf, dass das Schlüsselwort eher fehlt als vorhanden ist."
+    "invertKeywordDescription": "Achte darauf, dass das Schlüsselwort eher fehlt als vorhanden ist.",
+    "webhookCustomBodyDesc": "Definiere einen benutzerdefinierten HTTP-Body für die Anfrage. Die Template-Variablen {msg}, {heartbeat} und {monitor} werden akzeptiert.",
+    "webhookBodyPresetOption": "Voreinstellung - {0}",
+    "webhookBodyCustomOption": "Benutzerdefinierter Body",
+    "Request Body": "Anforderungstext"
 }
