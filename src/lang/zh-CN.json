@@ -223,7 +223,7 @@
     "webhookJsonDesc": "{0} 适合现代的 HTTP 服务器，例如 Express.js",
     "webhookFormDataDesc": "{multipart} 适合 PHP，其中 JSON 需要使用 {decodeFunction} 解码",
     "webhookAdditionalHeadersTitle": "额外 Header",
-    "webhookAdditionalHeadersDesc": "设置通过此 Webhook 发送的额外 Header。",
+    "webhookAdditionalHeadersDesc": "设置 webhook 请求的额外 Header。每一个 Header 应被定义为一对 JSON 键值对。",
     "smtp": "电子邮件（SMTP）",
     "secureOptionNone": "无 / STARTTLS（常用端口 25、587）",
     "secureOptionTLS": "TLS（常用端口 465）",
