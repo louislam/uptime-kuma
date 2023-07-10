@@ -42,8 +42,8 @@ class TailscalePing extends MonitorType {
     async runTailscalePing(url) {
         let cmd = `tailscale ping ${url}`;
         return new Promise((resolve, reject) => {
-            //set a timeout here just incase tailscale ping hangs
-            exec(cmd, {timeout: 10000}, (error, stdout, stderr) => {
+            let timeout = this.interval * 1000 * 0.8;
+            exec(cmd, {timeout: timeout}, (error, stdout, stderr) => {
                 // we may need to handle more cases if tailscale reports an error that isn't necessarily an error (such as not-logged in or DERP health-related issues) 
                 if (error) {
                     reject(`Execution error: ${error.message}`);
@@ -69,6 +69,8 @@ class TailscalePing extends MonitorType {
                 heartbeat.ping = parseInt(time);
                 heartbeat.msg = line;
                 break;
+            } else if (line.includes("ping timed out")) {
+                throw new Error(`Ping timed out: "${line}"`);
             } else if (line.includes("no matching peer")) {
                 throw new Error(`Nonexistant or inaccessible due to ACLs: "${line}"`);
             } else if (line.includes("is local Tailscale IP")) {
