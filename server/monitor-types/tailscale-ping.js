@@ -1,28 +1,6 @@
-// TODO: Handle Case 5
-// In cases where offline peers are not pingable, how should he handle timeout messages? Do we break out of the "ping (ip) timed out" loop and let the server re-call the check function? or do we include the "timed out" string in the expected error messages line and throw the error? (along with "no matching peer" and "is local Tailscale IP")
-
 const { MonitorType } = require("./monitor-type");
 const { UP } = require("../../src/util");
 const exec = require('child_process').exec;
-
-// cases accounted for
-// 1 calling tailscale ping to local
-// CMD: tailscale ping 100.100.100.1
-// 100.100.100.1 is local Tailscale IP
-// 2 the normal scenario
-// CMD: tailscale ping 100.100.100.2
-// pong from (hostname) (100.100.100.2) via [2001:1245:1234:1234::abc]:12345 in 123ms
-// 3 ping a nonexistent IP or inaccessible node
-// CMD: tailscale ping 100.100.100.3
-// no matching peer
-// 4 ping a peer that you cannot make a outgoing connection to
-// CMD: tailscale ping 100.100.100.4
-// multiple 'pong from' lines (pong from hostname (100.100.100.4) via DERP(tok) in 123ms) then ends with a 'direct connection not established' line
-// We only care about the first 'pong from' line for the purpose of checking uptime. (this is a good example use of "tailscale ping" becasue traditional ICMP pings would not be able to check the uptime of peers if outgoing connections to that specified peer are blocked)
-// 5 pinging a offline peer
-// CMD: tailscale ping 100.100.100.5
-// multiple 'timed out' lines (ping "100.100.100.5" timed out) then ends with a 'no reply' line
-// This needs to be worked on
 
 /**
  * A TailscalePing class extends the MonitorType.
@@ -93,8 +71,9 @@ class TailscalePing extends MonitorType {
                 heartbeat.ping = parseInt(time);
                 heartbeat.msg = line;
                 break;
-            } else if (line.includes("ping timed out")) {
+            } else if (line.includes("timed out")) {
                 throw new Error(`Ping timed out: "${line}"`);
+                // Immediately throws upon "timed out" message, the server is expected to re-call the check function
             } else if (line.includes("no matching peer")) {
                 throw new Error(`Nonexistant or inaccessible due to ACLs: "${line}"`);
             } else if (line.includes("is local Tailscale IP")) {
