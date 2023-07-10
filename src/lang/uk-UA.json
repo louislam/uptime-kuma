@@ -558,7 +558,7 @@
     "General Monitor Type": "Основний моніторинг",
     "error": "Помилка",
     "webhookAdditionalHeadersTitle": "Додаткові заголовки",
-    "webhookAdditionalHeadersDesc": "Задати додаткові заголовки, що за допомогою вебхука.",
+    "webhookAdditionalHeadersDesc": "Задати додаткові заголовки, що за допомогою вебхука. Кожен заголовок має бути заданий у вигляді JSON ключа/значення.",
     "critical": "Критичний",
     "Custom": "Нестандартний",
     "successMessage": "Повідомлення про успіх",
@@ -795,5 +795,9 @@
     "chromeExecutableAutoDetect": "Автоматичне визначення",
     "chromeExecutable": "Виконуваний файл Chrome/Chromium",
     "Invert Keyword": "Інвертоване ключове слово",
-    "invertKeywordDescription": "Слідкувати за тим, щоб ключове слово було відсутнім, а не присутнім."
+    "invertKeywordDescription": "Слідкувати за тим, щоб ключове слово було відсутнім, а не присутнім.",
+    "webhookCustomBodyDesc": "Задати користувацьке HTTP-тіло для запиту. Приймаються шаблонні змінні {msg}, {heartbeat}, {monitor}.",
+    "webhookBodyPresetOption": "Пресет - {0}",
+    "webhookBodyCustomOption": "Користувацьке тіло",
+    "Request Body": "Тіло запиту"
 }
