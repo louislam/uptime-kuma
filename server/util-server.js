@@ -52,9 +52,9 @@ exports.initJWTSecret = async () => {
 };
 
 /**
- * Decodes a jwt and returns the payload portion
+ * Decodes a jwt and returns the payload portion without verifying the jqt.
  * @param {string} jwt The input jwt as a string
- * @returns Decodes jwt payload
+ * @returns {Object} Decoded jwt payload object
  */
 exports.decodeJwt = (jwt) => {
     return JSON.parse(Buffer.from(jwt.split(".")[1], "base64").toString());
@@ -65,9 +65,9 @@ exports.decodeJwt = (jwt) => {
  * @param {string} tokenEndpoint The token URI form the auth service provider
  * @param {string} clientId The oidc/oauth application client id
  * @param {string} clientSecret The oidc/oauth application client secret
- * @param {String} scope The scope the for wich the token should be issued for
- * @param {String} authMethod The method on how to sent the credentials. Default client_secret_basic
- * @returns Promise<TokenSet> if the token request was successful
+ * @param {string} scope The scope the for which the token should be issued for
+ * @param {string} authMethod The method on how to sent the credentials. Default client_secret_basic
+ * @returns {Promise<oidc.TokenSet>} TokenSet promise if the token request was successful
  */
 exports.getOidcTokenClientCredentials = async (tokenEndpoint, clientId, clientSecret, scope, authMethod = "client_secret_basic") => {
     const oauthProvider = new oidc.Issuer({ token_endpoint: tokenEndpoint });
@@ -81,11 +81,11 @@ exports.getOidcTokenClientCredentials = async (tokenEndpoint, clientId, clientSe
     client[oidc.custom.http_options] = () => ({ timeout: 10000 });
     client[oidc.custom.clock_tolerance] = 5;
 
-    let token = await client.grant({
-        grant_type: "client_credentials",
-        scope: scope
-    });
-    return token;
+    let grantParams = { grant_type: "client_credentials" };
+    if (scope) {
+        grantParams.scope = scope;
+    }
+    return await client.grant(grantParams);
 };
 
 /**

@@ -343,7 +343,7 @@ class Monitor extends BeanModel {
                     if (this.auth_method === "oauth2-cc") {
                         try {
                             if (this.oauthAccessToken === undefined || new Date(this.oauthAccessToken.expires_at * 1000) <= new Date()) {
-                                log.debug("monitor", `[${this.name}] Oauth access-token undefined or expired. Requesting a new one`);
+                                log.debug("monitor", `[${this.name}] The oauth access-token undefined or expired. Requesting a new one`);
                                 this.oauthAccessToken = await getOidcTokenClientCredentials(this.oauth_token_url, this.oauth_client_id, this.oauth_client_secret, this.oauth_scopes, this.oauth_auth_method);
                                 log.debug("monitor", `[${this.name}] Obtained oauth access-token. Expires at ${new Date(this.oauthAccessToken.expires_at * 1000)}`);
                             }
@@ -351,7 +351,7 @@ class Monitor extends BeanModel {
                                 "Authorization": this.oauthAccessToken.token_type + " " + this.oauthAccessToken.access_token,
                             };
                         } catch (e) {
-                            throw new Error("Oauth config is invalid. " + e.message);
+                            throw new Error("The oauth config is invalid. " + e.message);
                         }
                     }
 
