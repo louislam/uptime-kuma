@@ -812,19 +812,33 @@ class Monitor extends BeanModel {
                     // Change the notification msg if status becomes UP from DOWN
                     // Adding msg for the downtime
                     if (bean.status === UP) {
-                        const downAfterPreviousUpBeat = await R.findOne("heartbeat", " monitor_id = ? AND status = ? AND time > ( SELECT time from heartbeat WHERE monitor_id = ? AND status = ? ORDER BY time DESC ) ORDER BY time ASC", [
+                        const downAfterPreviousUpBeat = await R.findOne("heartbeat", " monitor_id = ? AND status = ? AND time > ( SELECT time from heartbeat WHERE monitor_id = ? AND status = ? ORDER BY time DESC LIMIT 1 ) ORDER BY time ASC", [
                             this.id,
-                            0,
+                            DOWN,
                             this.id,
-                            1
+                            UP
                         ]);
                         if (downAfterPreviousUpBeat) {
                             const mostRecentDownBeat = await R.findOne("heartbeat", " monitor_id = ? AND status = ? ORDER BY time DESC", [
                                 this.id,
-                                0
+                                DOWN
                             ]);
-                            const downTime = dayjs(mostRecentDownBeat?.time).diff(dayjs(downAfterPreviousUpBeat?.time), "minutes", true);
-                            bean.msg = `${bean.msg} <Down for ${Math.floor(downTime)} mintue(s) ${(downTime % 1).toFixed(2).replace(/^0\./, "")} second(s)>`;
+                            if (mostRecentDownBeat) {
+                                const downTimeInSeconds = await R.getRow("SELECT SUM(duration) AS duration FROM heartbeat WHERE monitor_id = ? AND status = ? AND time > ? OR time = ? AND time < ? OR time = ?", [
+                                    this.id,
+                                    DOWN,
+                                    downAfterPreviousUpBeat.time,
+                                    downAfterPreviousUpBeat.time,
+                                    mostRecentDownBeat.time,
+                                    mostRecentDownBeat.time,
+                                ]);
+
+                                const downTimeInMilliSec = downTimeInSeconds.duration * 1000;
+
+                                // Convert the downTime to minutes and seconds format
+                                const downTimeFormatted = dayjs.duration(downTimeInMilliSec).format("mm:ss");
+                                bean.msg = `${bean.msg} (Down for ${downTimeFormatted} minutes)`;
+                            }
                         }
                     }
                     log.debug("monitor", `[${this.name}] sendNotification`);

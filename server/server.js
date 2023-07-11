@@ -10,6 +10,7 @@ const dayjs = require("dayjs");
 dayjs.extend(require("dayjs/plugin/utc"));
 dayjs.extend(require("./modules/dayjs/plugin/timezone"));
 dayjs.extend(require("dayjs/plugin/customParseFormat"));
+dayjs.extend(require("dayjs/plugin/duration"));
 
 // Load environment variables from `.env`
 require("dotenv").config();
