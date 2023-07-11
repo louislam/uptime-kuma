@@ -10,7 +10,6 @@ const util = require("util");
 const { CacheableDnsHttpAgent } = require("./cacheable-dns-http-agent");
 const { Settings } = require("./settings");
 const dayjs = require("dayjs");
-const { PluginsManager } = require("./plugins-manager");
 // DO NOT IMPORT HERE IF THE MODULES USED `UptimeKumaServer.getInstance()`
 
 /**
@@ -47,14 +46,6 @@ class UptimeKumaServer {
      */
     indexHTML = "";
 
-    generateMaintenanceTimeslotsInterval = undefined;
-
-    /**
-     * Plugins Manager
-     * @type {PluginsManager}
-     */
-    pluginsManager = null;
-
     /**
      *
      * @type {{}}
@@ -62,6 +53,12 @@ class UptimeKumaServer {
     static monitorTypeList = {
 
     };
+
+    /**
+     * Use for decode the auth object
+     * @type {null}
+     */
+    jwtSecret = null;
 
     static getInstance(args) {
         if (UptimeKumaServer.instance == null) {
@@ -74,6 +71,7 @@ class UptimeKumaServer {
         // SSL
         const sslKey = args["ssl-key"] || process.env.UPTIME_KUMA_SSL_KEY || process.env.SSL_KEY || undefined;
         const sslCert = args["ssl-cert"] || process.env.UPTIME_KUMA_SSL_CERT || process.env.SSL_CERT || undefined;
+        const sslKeyPassphrase = args["ssl-key-passphrase"] || process.env.UPTIME_KUMA_SSL_KEY_PASSPHRASE || process.env.SSL_KEY_PASSPHRASE || undefined;
 
         log.info("server", "Creating express and socket.io instance");
         this.app = express();
@@ -81,7 +79,8 @@ class UptimeKumaServer {
             log.info("server", "Server Type: HTTPS");
             this.httpServer = https.createServer({
                 key: fs.readFileSync(sslKey),
-                cert: fs.readFileSync(sslCert)
+                cert: fs.readFileSync(sslCert),
+                passphrase: sslKeyPassphrase,
             }, this.app);
         } else {
             log.info("server", "Server Type: HTTP");
@@ -98,11 +97,17 @@ class UptimeKumaServer {
             }
         }
 
+        // Set Monitor Types
+        UptimeKumaServer.monitorTypeList["real-browser"] = new RealBrowserMonitorType();
+
         this.io = new Server(this.httpServer);
     }
 
     /** Initialise app after the database has been set up */
     async initAfterDatabaseReady() {
+        // Static
+        this.app.use("/screenshots", express.static(Database.screenshotDir));
+
         await CacheableDnsHttpAgent.update();
 
         process.env.TZ = await this.getTimezone();
@@ -110,8 +115,7 @@ class UptimeKumaServer {
         log.debug("DEBUG", "Timezone: " + process.env.TZ);
         log.debug("DEBUG", "Current Time: " + dayjs.tz().format());
 
-        await this.generateMaintenanceTimeslots();
-        this.generateMaintenanceTimeslotsInterval = setInterval(this.generateMaintenanceTimeslots, 60 * 1000);
+        await this.loadMaintenanceList();
     }
 
     /**
@@ -173,16 +177,33 @@ class UptimeKumaServer {
      */
     async getMaintenanceJSONList(userID) {
         let result = {};
+        for (let maintenanceID in this.maintenanceList) {
+            result[maintenanceID] = await this.maintenanceList[maintenanceID].toJSON();
+        }
+        return result;
+    }
 
-        let maintenanceList = await R.find("maintenance", " user_id = ? ORDER BY end_date DESC, title", [
-            userID,
+    /**
+     * Load maintenance list and run
+     * @param userID
+     * @returns {Promise<void>}
+     */
+    async loadMaintenanceList(userID) {
+        let maintenanceList = await R.findAll("maintenance", " ORDER BY end_date DESC, title", [
+
         ]);
 
         for (let maintenance of maintenanceList) {
-            result[maintenance.id] = await maintenance.toJSON();
+            this.maintenanceList[maintenance.id] = maintenance;
+            maintenance.run(this);
         }
+    }
 
-        return result;
+    getMaintenance(maintenanceID) {
+        if (this.maintenanceList[maintenanceID]) {
+            return this.maintenanceList[maintenanceID];
+        }
+        return null;
     }
 
     /**
@@ -238,7 +259,7 @@ class UptimeKumaServer {
      * Attempt to get the current server timezone
      * If this fails, fall back to environment variables and then make a
      * guess.
-     * @returns {string}
+     * @returns {Promise<string>}
      */
     async getTimezone() {
         let timezone = await Settings.get("serverTimezone");
@@ -269,64 +290,10 @@ class UptimeKumaServer {
         dayjs.tz.setDefault(timezone);
     }
 
-    /** Load the timeslots for maintenance */
-    async generateMaintenanceTimeslots() {
-
-        let list = await R.find("maintenance_timeslot", " generated_next = 0 AND start_date <= DATETIME('now') ");
-
-        for (let maintenanceTimeslot of list) {
-            let maintenance = await maintenanceTimeslot.maintenance;
-            await MaintenanceTimeslot.generateTimeslot(maintenance, maintenanceTimeslot.end_date, false);
-            maintenanceTimeslot.generated_next = true;
-            await R.store(maintenanceTimeslot);
-        }
-
-    }
-
     /** Stop the server */
     async stop() {
-        clearTimeout(this.generateMaintenanceTimeslotsInterval);
-    }
 
-    loadPlugins() {
-        this.pluginsManager = new PluginsManager(this);
     }
-
-    /**
-     *
-     * @returns {PluginsManager}
-     */
-    getPluginManager() {
-        return this.pluginsManager;
-    }
-
-    /**
-     *
-     * @param {MonitorType} monitorType
-     */
-    addMonitorType(monitorType) {
-        if (monitorType instanceof MonitorType && monitorType.name) {
-            if (monitorType.name in UptimeKumaServer.monitorTypeList) {
-                log.error("", "Conflict Monitor Type name");
-            }
-            UptimeKumaServer.monitorTypeList[monitorType.name] = monitorType;
-        } else {
-            log.error("", "Invalid Monitor Type: " + monitorType.name);
-        }
-    }
-
-    /**
-     *
-     * @param {MonitorType} monitorType
-     */
-    removeMonitorType(monitorType) {
-        if (UptimeKumaServer.monitorTypeList[monitorType.name] === monitorType) {
-            delete UptimeKumaServer.monitorTypeList[monitorType.name];
-        } else {
-            log.error("", "Remove MonitorType failed: " + monitorType.name);
-        }
-    }
-
 }
 
 module.exports = {
@@ -334,5 +301,5 @@ module.exports = {
 };
 
 // Must be at the end
-const MaintenanceTimeslot = require("./model/maintenance_timeslot");
 const { MonitorType } = require("./monitor-types/monitor-type");
+const { RealBrowserMonitorType } = require("./monitor-types/real-browser-monitor-type");

@@ -11,16 +11,16 @@
             </ul>
         </div>
         <div class="chart-wrapper" :class="{ loading : loading}">
-            <LineChart :chart-data="chartData" :options="chartOptions" />
+            <Line :data="chartData" :options="chartOptions" />
         </div>
     </div>
 </template>
 
 <script lang="js">
 import { BarController, BarElement, Chart, Filler, LinearScale, LineController, LineElement, PointElement, TimeScale, Tooltip } from "chart.js";
-import "chartjs-adapter-dayjs";
+import "chartjs-adapter-dayjs-4";
 import dayjs from "dayjs";
-import { LineChart } from "vue-chart-3";
+import { Line } from "vue-chartjs";
 import { useToast } from "vue-toastification";
 import { DOWN, PENDING, MAINTENANCE, log } from "../util.ts";
 
@@ -29,7 +29,7 @@ const toast = useToast();
 Chart.register(LineController, BarController, LineElement, PointElement, TimeScale, BarElement, LinearScale, Tooltip, Filler);
 
 export default {
-    components: { LineChart },
+    components: { Line },
     props: {
         /** ID of monitor */
         monitorId: {
@@ -104,8 +104,10 @@ export default {
                             }
                         },
                         ticks: {
+                            sampleSize: 3,
                             maxRotation: 0,
                             autoSkipPadding: 30,
+                            padding: 3,
                         },
                         grid: {
                             color: this.$root.theme === "light" ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.1)",
@@ -197,6 +199,7 @@ export default {
                         borderColor: "#5CDD8B",
                         backgroundColor: "#5CDD8B38",
                         yAxisID: "y",
+                        label: "ping",
                     },
                     {
                         // Bar Chart
@@ -208,6 +211,8 @@ export default {
                         barThickness: "flex",
                         barPercentage: 1,
                         categoryPercentage: 1,
+                        inflateAmount: 0.05,
+                        label: "status",
                     },
                 ],
             };

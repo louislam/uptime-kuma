@@ -281,5 +281,14 @@
     "promosmsTypeFull": "SMS FULL - Premuimnivå SMS. Du kan bruke dit avsendernavn (Du må registerere et navn først). Pålitelig for alle varslinger.",
     "promosmsTypeSpeed": "SMS SPEED - Høyest prioritet i systemet.Veldig rask på pålitelig, men dyrt (omtrent det dobbeltet av SMS FULL pris).",
     "promosmsPhoneNumber": "Telefonnummber (for polske mottakere. Du trenger ikke områdekode.)",
-    "promosmsSMSSender": "SMS Avsendernavn : Forhåndsregistert navn eller en av standardnavnene: InfoSMS, SMS Info, MaxSMS, INFO, SMS"
+    "promosmsSMSSender": "SMS Avsendernavn : Forhåndsregistert navn eller en av standardnavnene: InfoSMS, SMS Info, MaxSMS, INFO, SMS",
+    "Help": "Hjelp",
+    "Game": "Spill",
+    "statusMaintenance": "Vedlikehold",
+    "Maintenance": "Maintenance",
+    "Passive Monitor Type": "Passiv Monitor Type",
+    "Specific Monitor Type": "Spesifik Monitor Type",
+    "General Monitor Type": "Generisk Monitor Type",
+    "markdownSupported": "Markdown syntax støttet",
+    "Resend Notification if Down X times consecutively": "Send notifikasjon på nytt dersom nede X antall ganger på rad"
 }
