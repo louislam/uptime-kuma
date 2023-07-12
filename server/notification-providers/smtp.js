@@ -1,6 +1,7 @@
 const nodemailer = require("nodemailer");
 const NotificationProvider = require("./notification-provider");
 const { DOWN } = require("../../src/util");
+const { Liquid } = require("liquidjs");
 
 class SMTP extends NotificationProvider {
 
@@ -54,12 +55,7 @@ class SMTP extends NotificationProvider {
             // If custom subject is not empty, change subject for notification
             if (customSubject !== "") {
 
-                // Replace "MACROS" with corresponding variable
-                let replaceName = new RegExp("{{NAME}}", "g");
-                let replaceHostnameOrURL = new RegExp("{{HOSTNAME_OR_URL}}", "g");
-                let replaceStatus = new RegExp("{{STATUS}}", "g");
-
-                // Lets start with dummy values to simplify code
+                // Let's start with dummy values to simplify code
                 let monitorName = "Test";
                 let monitorHostnameOrURL = "testing.hostname";
                 let serviceStatus = "⚠️ Test";
@@ -78,12 +74,17 @@ class SMTP extends NotificationProvider {
                     serviceStatus = (heartbeatJSON["status"] === DOWN) ? "🔴 Down" : "✅ Up";
                 }
 
-                // Break replace to one by line for better readability
-                customSubject = customSubject.replace(replaceStatus, serviceStatus);
-                customSubject = customSubject.replace(replaceName, monitorName);
-                customSubject = customSubject.replace(replaceHostnameOrURL, monitorHostnameOrURL);
+                // Initialize LiquidJS and parse the custom Body Template
+                const engine = new Liquid();
+                const tpl = engine.parse(customSubject);
 
-                subject = customSubject;
+                // Insert templated values into Body
+                subject = await engine.render(tpl,
+                    {
+                        "STATUS": serviceStatus,
+                        "NAME": monitorName,
+                        "HOSTNAME_OR_URL": monitorHostnameOrURL,
+                    });
             }
         }
 
