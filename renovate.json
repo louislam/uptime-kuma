@@ -3,4 +3,15 @@
     "extends": [
         "config:base"
     ]
+    "labels": ["dependencies"],
+    "packageRules": [
+        {
+          "matchPackagePatterns": ["eslint"],
+          "labels": ["linting"]
+        },
+        {
+          "matchDepTypes": ["optionalDependencies"],
+          "addLabels": ["optional"]
+        }
+    ]
 }
