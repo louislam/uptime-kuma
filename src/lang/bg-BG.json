@@ -645,7 +645,7 @@
     "smseaglePriority": "Приоритет на съобщението (0-9, по подразбиране = 0)",
     "IconUrl": "Икона URL адрес",
     "webhookAdditionalHeadersTitle": "Допълнителни хедъри",
-    "webhookAdditionalHeadersDesc": "Задава допълнителни хедъри, изпратени с уеб куката.",
+    "webhookAdditionalHeadersDesc": "Задава допълнителни хедъри, изпратени с уеб куката. Всеки хедър трябва да бъде дефиниран като JSON ключ/стойност.",
     "Enable DNS Cache": "Активирай DNS кеширане",
     "Enable": "Активирай",
     "Disable": "Деактивирай",
