@@ -51,6 +51,7 @@
     "Ping": "Ping",
     "Monitor Type": "Monitor Type",
     "Keyword": "Keyword",
+    "Invert Keyword": "Invert Keyword",
     "Friendly Name": "Friendly Name",
     "URL": "URL",
     "Hostname": "Hostname",
@@ -195,8 +196,11 @@
     "Content Type": "Content Type",
     "webhookJsonDesc": "{0} is good for any modern HTTP servers such as Express.js",
     "webhookFormDataDesc": "{multipart} is good for PHP. The JSON will need to be parsed with {decodeFunction}",
+    "webhookCustomBodyDesc": "Define a custom HTTP Body for the request. Template variables {msg}, {heartbeat}, {monitor} are accepted.",
     "webhookAdditionalHeadersTitle": "Additional Headers",
-    "webhookAdditionalHeadersDesc": "Sets additional headers sent with the webhook.",
+    "webhookAdditionalHeadersDesc": "Sets additional headers sent with the webhook. Each header should be defined as a JSON key/value.",
+    "webhookBodyPresetOption": "Preset - {0}",
+    "webhookBodyCustomOption": "Custom Body",
     "Webhook URL": "Webhook URL",
     "Application Token": "Application Token",
     "Server URL": "Server URL",
@@ -518,6 +522,7 @@
     "passwordNotMatchMsg": "The repeat password does not match.",
     "notificationDescription": "Notifications must be assigned to a monitor to function.",
     "keywordDescription": "Search keyword in plain HTML or JSON response. The search is case-sensitive.",
+    "invertKeywordDescription": "Look for the keyword to be absent rather than present.",
     "backupDescription": "You can backup all monitors and notifications into a JSON file.",
     "backupDescription2": "Note: history and event data is not included.",
     "backupDescription3": "Sensitive data such as notification tokens are included in the export file; please store export securely.",
@@ -755,5 +760,6 @@
     "Group": "Group",
     "Monitor Group": "Monitor Group",
     "noGroupMonitorMsg": "Not Available. Create a Group Monitor First.",
-    "Close": "Close"
+    "Close": "Close",
+    "Request Body": "Request Body"
 }

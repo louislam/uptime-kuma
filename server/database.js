@@ -3,7 +3,6 @@ const { R } = require("redbean-node");
 const { setSetting, setting } = require("./util-server");
 const { log, sleep } = require("../src/util");
 const knex = require("knex");
-const { PluginsManager } = require("./plugins-manager");
 
 /**
  * Database & App Data Folder
@@ -72,6 +71,7 @@ class Database {
         "patch-monitor-tls.sql": true,
         "patch-maintenance-cron.sql": true,
         "patch-add-parent-monitor.sql": true,
+        "patch-add-invert-keyword.sql": true,
     };
 
     /**
@@ -89,12 +89,6 @@ class Database {
     static init(args) {
         // Data Directory (must be end with "/")
         Database.dataDir = process.env.DATA_DIR || args["data-dir"] || "./data/";
-
-        // Plugin feature is working only if the dataDir = "./data";
-        if (Database.dataDir !== "./data/") {
-            log.warn("PLUGIN", "Warning: In order to enable plugin feature, you need to use the default data directory: ./data/");
-            PluginsManager.disable = true;
-        }
 
         Database.path = Database.dataDir + "kuma.db";
         if (! fs.existsSync(Database.dataDir)) {
