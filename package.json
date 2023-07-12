@@ -141,7 +141,7 @@
         "@vitejs/plugin-vue": "~4.2.3",
         "@vue/compiler-sfc": "~3.3.4",
         "@vuepic/vue-datepicker": "~3.4.8",
-        "aedes": "^0.46.3",
+        "aedes": "^0.49.0",
         "babel-plugin-rewire": "~1.2.0",
         "bootstrap": "5.1.3",
         "chart.js": "~4.2.1",
