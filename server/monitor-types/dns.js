@@ -1,8 +1,8 @@
-const {MonitorType} = require("./monitor-type");
-const {UP} = require("../../src/util");
+const { MonitorType } = require("./monitor-type");
+const { UP } = require("../../src/util");
 const dayjs = require("dayjs");
-const {dnsResolve} = require("../util-server");
-const {R} = require("redbean-node");
+const { dnsResolve } = require("../util-server");
+const { R } = require("redbean-node");
 
 class DnsMonitorType extends MonitorType {
 
@@ -40,7 +40,7 @@ class DnsMonitorType extends MonitorType {
         }
 
         if (monitor.dns_last_result !== dnsMessage) {
-            R.exec("UPDATE `monitor` SET dns_last_result = ? WHERE id = ? ", [dnsMessage, monitor.id]);
+            R.exec("UPDATE `monitor` SET dns_last_result = ? WHERE id = ? ", [ dnsMessage, monitor.id ]);
         }
 
         heartbeat.msg = dnsMessage;
