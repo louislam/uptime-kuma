@@ -740,7 +740,7 @@
     "lunaseaDeviceID": "Cihaz ID",
     "lunaseaUserID": "Kullanıcı ID",
     "statusPageRefreshIn": "{0} içinde yenilenecek",
-    "twilioAuthToken": "Kimlik Doğrulama Jetonu",
+    "twilioAuthToken": "Kimlik Doğrulama Jetonu / Gizli Api Anahtarı",
     "twilioFromNumber": "Gönderen Numara",
     "twilioToNumber": "Alıcı Numara",
     "twilioAccountSID": "Hesap ID",
@@ -793,5 +793,9 @@
     "webhookCustomBodyDesc": "İstek için özel bir HTTP Gövdesi tanımlayın. {msg}, {heartbeat}, {monitor} şablon değişkenleri kabul edilir.",
     "webhookBodyPresetOption": "Ön ayar - {0}",
     "webhookBodyCustomOption": "Özel Gövde",
-    "Request Body": "İstek Gövdesi"
+    "Request Body": "İstek Gövdesi",
+    "jsonQueryDescription": "Yanıta karşı bir json sorgusu yapın ve beklenen değeri kontrol edin (Dönüş değeri, karşılaştırma için dizgeye dönüştürülür). Sorgu diliyle ilgili belgeler için <a href='https://jsonata.org/'>jsonata.org</a>'a bakın. Bir oyun alanı <a href='https://try.jsonata.org/'>burada</a> bulunabilir.",
+    "twilioApiKey": "Api Anahtarı (isteğe bağlı)",
+    "Expected Value": "Beklenen Değer",
+    "Json Query": "Json Sorgusu"
 }
