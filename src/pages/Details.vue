@@ -13,7 +13,9 @@
                 <span v-if="monitor.type === 'ping'">Ping: {{ monitor.hostname }}</span>
                 <span v-if="monitor.type === 'keyword'">
                     <br>
-                    <span>{{ $t("Keyword") }}:</span> <span class="keyword">{{ monitor.keyword }}</span>
+                    <span>{{ $t("Keyword") }}: </span>
+                    <span class="keyword">{{ monitor.keyword }}</span>
+                    <span v-if="monitor.invertKeyword" alt="Inverted keyword" class="keyword-inverted"> ↧</span>
                 </span>
                 <span v-if="monitor.type === 'json-query'">
                     <br>
@@ -585,6 +587,10 @@ table {
 
 .dark {
     .keyword {
+        color: $dark-font-color;
+    }
+
+    .keyword-inverted {
         color: $dark-font-color;
     }
 
