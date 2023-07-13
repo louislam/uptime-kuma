@@ -12,6 +12,10 @@ on:
     branches: [ master ]
     paths-ignore:
       - '*.md'
+      
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   auto-test:

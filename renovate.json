@@ -2,5 +2,16 @@
     "$schema": "https://docs.renovatebot.com/renovate-schema.json",
     "extends": [
         "config:base"
+    ],
+    "labels": ["dependencies"],
+    "packageRules": [
+        {
+          "matchPackagePatterns": ["eslint"],
+          "labels": ["linting"]
+        },
+        {
+          "matchDepTypes": ["optionalDependencies"],
+          "addLabels": ["optional"]
+        }
     ]
 }
