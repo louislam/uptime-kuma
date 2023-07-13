@@ -544,7 +544,7 @@ class Monitor extends BeanModel {
                             // No need to insert successful heartbeat for push type, so end here
                             retries = 0;
                             log.debug("monitor", `[${this.name}] timeout = ${timeout}`);
-                            this.heartbeatInterval = setTimeout(beat, timeout);
+                            this.heartbeatInterval = setTimeout(safeBeat, timeout);
                             return;
                         }
                     } else {
