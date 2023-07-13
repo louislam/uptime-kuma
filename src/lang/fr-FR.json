@@ -743,7 +743,7 @@
     "twilioFromNumber": "Du Nombre",
     "twilioToNumber": "Au Nombre",
     "twilioAccountSID": "ID du compte",
-    "twilioAuthToken": "Jeton d'authentification",
+    "twilioAuthToken": "Jeton d'authentification / Clé secrète de l'API",
     "sameAsServerTimezone": "Identique au fuseau horaire du serveur",
     "startDateTime": "Date/heure de début",
     "endDateTime": "Date/heure de fin",
@@ -793,5 +793,9 @@
     "webhookCustomBodyDesc": "Définissez un corps HTTP personnalisé pour la requête. Les variables de modèle {msg}, {heartbeat}, {monitor} sont acceptées.",
     "webhookBodyCustomOption": "Corps personnalisé",
     "webhookBodyPresetOption": "Préréglages - {0}",
-    "Request Body": "Corps de la requête"
+    "Request Body": "Corps de la requête",
+    "twilioApiKey": "Clé API (facultatif)",
+    "Expected Value": "Valeur attendue",
+    "Json Query": "Requête Json",
+    "jsonQueryDescription": "Faites une requête json contre la réponse et vérifiez la valeur attendue (la valeur de retour sera convertie en chaîne pour comparaison). Consultez <a href='https://jsonata.org/'>jsonata.org</a> pour la documentation sur le langage de requête. Une aire de jeux peut être trouvée <a href='https://try.jsonata.org/'>ici</a>."
 }
