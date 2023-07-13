@@ -72,6 +72,7 @@ class Database {
         "patch-maintenance-cron.sql": true,
         "patch-add-parent-monitor.sql": true,
         "patch-add-invert-keyword.sql": true,
+        "patch-added-json-query.sql": true,
     };
 
     /**
