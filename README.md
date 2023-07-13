@@ -23,7 +23,7 @@ It is a temporary live demo, all data will be deleted after 10 minutes. Use the 
 
 ## ⭐ Features
 
-* Monitoring uptime for HTTP(s) / TCP / HTTP(s) Keyword / Ping / DNS Record / Push / Steam Game Server / Docker Containers
+* Monitoring uptime for HTTP(s) / TCP / HTTP(s) Keyword / HTTP(s) Json Query / Ping / DNS Record / Push / Steam Game Server / Docker Containers
 * Fancy, Reactive, Fast UI/UX
 * Notifications via Telegram, Discord, Gotify, Slack, Pushover, Email (SMTP), and [90+ notification services, click here for the full list](https://github.com/louislam/uptime-kuma/tree/master/src/components/notifications)
 * 20 second intervals
@@ -49,14 +49,14 @@ Uptime Kuma is now running on http://localhost:3001
 
 ### 💪🏻 Non-Docker
 
-Requirements: 
+Requirements:
 - Platform
-  - ✅ Major Linux distros such as Debian, Ubuntu, CentOS, Fedora and ArchLinux etc. 
+  - ✅ Major Linux distros such as Debian, Ubuntu, CentOS, Fedora and ArchLinux etc.
   - ✅ Windows 10 (x64), Windows Server 2012 R2 (x64) or higher
   - ❌ Replit / Heroku
 - [Node.js](https://nodejs.org/en/download/) 14 / 16 / 18 (20 is not supported)
 - [npm](https://docs.npmjs.com/cli/) >= 7
-- [Git](https://git-scm.com/downloads) 
+- [Git](https://git-scm.com/downloads)
 - [pm2](https://pm2.keymetrics.io/) - For running Uptime Kuma in the background
 
 ```bash
@@ -71,7 +71,7 @@ npm run setup
 node server/server.js
 
 # (Recommended) Option 2. Run in background using PM2
-# Install PM2 if you don't have it: 
+# Install PM2 if you don't have it:
 npm install pm2 -g && pm2 install pm2-logrotate
 
 # Start Server
