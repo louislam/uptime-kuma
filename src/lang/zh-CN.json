@@ -743,7 +743,7 @@
     "lunaseaUserID": "用户 ID",
     "statusPageRefreshIn": "将于 {0} 后刷新",
     "twilioAccountSID": "账户 SID",
-    "twilioAuthToken": "验证 Token",
+    "twilioAuthToken": "鉴权 Token / API Key Secret",
     "twilioFromNumber": "发信号码",
     "twilioToNumber": "收信号码",
     "sameAsServerTimezone": "使用服务器时区",
@@ -800,5 +800,9 @@
     "webhookBodyCustomOption": "自定义内容",
     "webhookCustomBodyDesc": "为 webhook 设定一个自定义 HTTP 请求体。可在模板内使用 {msg}、{heartbeat}和{monitor} 变量。",
     "webhookBodyPresetOption": "预设 - {0}",
-    "Request Body": "请求体"
+    "Request Body": "请求体",
+    "jsonQueryDescription": "对响应结果执行一次 JSON 查询，并将返回值转换为字符串与预期值进行比较以得到结果。在 <a href='https://jsonata.org/'>jsonata.org</a> 有 JSON 查询语言的文档。可在<a href='https://try.jsonata.org/'> 此处</a>测试你的查询条件。",
+    "Json Query": "JSON 查询",
+    "twilioApiKey": "API Key（可选）",
+    "Expected Value": "预期值"
 }
