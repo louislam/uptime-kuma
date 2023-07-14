@@ -16,11 +16,11 @@
     </div>
     <div class="mb-3">
         <label for="smsc-to-number" class="form-label">{{ $t("Recipient Number") }}</label>
-        <input id="smsc-to-number" v-model="$parent.notification.smscToNumber" type="text" minlength="8" maxlength="14" class="form-control" required>
+        <input id="smsc-to-number" v-model="$parent.notification.smscToNumber" type="text" minlength="11" class="form-control" required>
     </div>
     <div class="mb-3">
         <label for="smsc-sender-name" class="form-label">{{ $t("From Name/Number") }}</label>
-        <input id="smsc-sender-name" v-model="$parent.notification.smscSenderName" type="text" minlength="3" maxlength="11" class="form-control">
+        <input id="smsc-sender-name" v-model="$parent.notification.smscSenderName" type="text" minlength="1" maxlength="15" class="form-control">
         <div class="form-text">{{ $t("Leave blank to use a shared sender number.") }}</div>
     </div>
     <div class="mb-3">
