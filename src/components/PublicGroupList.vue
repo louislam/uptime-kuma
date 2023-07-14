@@ -181,8 +181,8 @@ export default {
          * @returns {string}
          */
         certExpiryColor(monitor) {
-            if (monitor?.element?.validCert) {
-                return monitor.element.certExpiryDaysRemaining > 7 ? "primary" : "danger";
+            if (monitor?.element?.validCert && monitor.element.certExpiryDaysRemaining > 7) {
+                return "primary";
             }
             return "danger";
         },
