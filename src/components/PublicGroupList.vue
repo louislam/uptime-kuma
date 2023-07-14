@@ -60,7 +60,7 @@
                                                     @click="$refs.monitorSettingDialog.show(group, monitor)"
                                                 />
                                             </span>
-                                            <span class="badge rounded-pill" :class=" 'bg-' + certExpiryColor(monitor)"> {{ $t("Expiry") }}: {{ formattedCertExpiryMessage(monitor) }} </span>
+                                            <span v-if="showCertificateExpiry" class="badge rounded-pill" :class=" 'bg-' + certExpiryColor(monitor)"> {{ $t("Expiry") }}: {{ formattedCertExpiryMessage(monitor) }} </span>
                                         </div>
                                         <div v-if="showTags" class="tags">
                                             <Tag v-for="tag in monitor.element.tags" :key="tag" :item="tag" :size="'sm'" />
@@ -171,7 +171,7 @@ export default {
             } else if (monitor?.element?.validCert === false) {
                 return this.$t("noOrBadCertificate");
             } else {
-                return "";
+                return this.$t("Unknown") + " " + this.$tc("day", 2);
             }
         },
 
