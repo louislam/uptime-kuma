@@ -743,7 +743,7 @@
     "twilioAccountSID": "SID účtu",
     "twilioFromNumber": "Číslo odesílatele",
     "twilioToNumber": "Číslo příjemce",
-    "twilioAuthToken": "Autorizační token",
+    "twilioAuthToken": "Autorizační token / Tajemství API klíče",
     "sameAsServerTimezone": "Stejné jako časové pásmo serveru",
     "cronExpression": "Cron výraz",
     "cronSchedule": "Plán: ",
@@ -797,5 +797,6 @@
     "webhookBodyCustomOption": "Vlastní tělo",
     "invertKeywordDescription": "Hledá se klíčové slovo, které je spíše nepřítomné než přítomné.",
     "webhookCustomBodyDesc": "Nastaví vlastní tělo HTTP pro požadavek. Akceptovány jsou proměnné {msg}, {heartbeat}, {monitor}.",
-    "Request Body": "Tělo požadavku"
+    "Request Body": "Tělo požadavku",
+    "twilioApiKey": "Klíč k API (volitelný)"
 }
