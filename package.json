@@ -175,6 +175,7 @@
         "typescript": "~4.4.4",
         "v-pagination-3": "~0.1.7",
         "vite": "~4.4.1",
+        "vite-plugin-commonjs": "^0.8.0",
         "vite-plugin-compression": "^0.5.1",
         "vue": "~3.3.4",
         "vue-chartjs": "~5.2.0",
