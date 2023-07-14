@@ -758,8 +758,8 @@
     "Open Badge Generator": "Ouvrir le générateur de badges",
     "Badge Type": "Type de badge",
     "Badge Duration": "Durée du badge",
-    "Badge Prefix": "Préfixe de badge",
-    "Badge Suffix": "Suffixe de badge",
+    "Badge Prefix": "Préfixe de la valeur du badge",
+    "Badge Suffix": "Suffixe de la valeur du badge",
     "Badge Label Color": "Couleur de l'étiquette du badge",
     "Badge Color": "Couleur du badge",
     "Badge Label Prefix": "Préfixe d'étiquette de badge",
@@ -797,5 +797,7 @@
     "twilioApiKey": "Clé API (facultatif)",
     "Expected Value": "Valeur attendue",
     "Json Query": "Requête Json",
-    "jsonQueryDescription": "Faites une requête json contre la réponse et vérifiez la valeur attendue (la valeur de retour sera convertie en chaîne pour comparaison). Consultez <a href='https://jsonata.org/'>jsonata.org</a> pour la documentation sur le langage de requête. Une aire de jeux peut être trouvée <a href='https://try.jsonata.org/'>ici</a>."
+    "jsonQueryDescription": "Faites une requête json contre la réponse et vérifiez la valeur attendue (la valeur de retour sera convertie en chaîne pour comparaison). Consultez <a href='https://jsonata.org/'>jsonata.org</a> pour la documentation sur le langage de requête. Une aire de jeux peut être trouvée <a href='https://try.jsonata.org/'>ici</a>.",
+    "Badge Duration (in hours)": "Durée du badge (en heures)",
+    "Badge Preview": "Aperçu du badge"
 }
