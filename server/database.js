@@ -3,7 +3,6 @@ const { R } = require("redbean-node");
 const { setSetting, setting } = require("./util-server");
 const { log, sleep } = require("../src/util");
 const knex = require("knex");
-const { PluginsManager } = require("./plugins-manager");
 
 /**
  * Database & App Data Folder
@@ -72,6 +71,8 @@ class Database {
         "patch-monitor-tls.sql": true,
         "patch-maintenance-cron.sql": true,
         "patch-add-parent-monitor.sql": true,
+        "patch-add-invert-keyword.sql": true,
+        "patch-added-json-query.sql": true,
     };
 
     /**
@@ -89,12 +90,6 @@ class Database {
     static init(args) {
         // Data Directory (must be end with "/")
         Database.dataDir = process.env.DATA_DIR || args["data-dir"] || "./data/";
-
-        // Plugin feature is working only if the dataDir = "./data";
-        if (Database.dataDir !== "./data/") {
-            log.warn("PLUGIN", "Warning: In order to enable plugin feature, you need to use the default data directory: ./data/");
-            PluginsManager.disable = true;
-        }
 
         Database.path = Database.dataDir + "kuma.db";
         if (! fs.existsSync(Database.dataDir)) {
@@ -169,12 +164,12 @@ class Database {
             await R.exec("PRAGMA journal_mode = WAL");
         }
         await R.exec("PRAGMA cache_size = -12000");
-        await R.exec("PRAGMA auto_vacuum = FULL");
+        await R.exec("PRAGMA auto_vacuum = INCREMENTAL");
 
         // This ensures that an operating system crash or power failure will not corrupt the database.
         // FULL synchronous is very safe, but it is also slower.
         // Read more: https://sqlite.org/pragma.html#pragma_synchronous
-        await R.exec("PRAGMA synchronous = FULL");
+        await R.exec("PRAGMA synchronous = NORMAL");
 
         if (!noLog) {
             log.info("db", "SQLite config:");

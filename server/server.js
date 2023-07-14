@@ -147,7 +147,6 @@ const { apiKeySocketHandler } = require("./socket-handlers/api-key-socket-handle
 const { generalSocketHandler } = require("./socket-handlers/general-socket-handler");
 const { Settings } = require("./settings");
 const { CacheableDnsHttpAgent } = require("./cacheable-dns-http-agent");
-const { pluginsHandler } = require("./socket-handlers/plugins-handler");
 const apicache = require("./modules/apicache");
 const { resetChrome } = require("./monitor-types/real-browser-monitor-type");
 
@@ -172,7 +171,6 @@ let needSetup = false;
     Database.init(args);
     await initDatabase(testMode);
     await server.initAfterDatabaseReady();
-    server.loadPlugins();
     server.entryPage = await Settings.get("entryPage");
     await StatusPage.loadDomainMappingList();
 
@@ -210,6 +208,7 @@ let needSetup = false;
     });
 
     if (isDev) {
+        app.use(express.urlencoded({ extended: true }));
         app.post("/test-webhook", async (request, response) => {
             log.debug("test", request.headers);
             log.debug("test", request.body);
@@ -264,7 +263,7 @@ let needSetup = false;
     log.info("server", "Adding socket handler");
     io.on("connection", async (socket) => {
 
-        sendInfo(socket);
+        sendInfo(socket, true);
 
         if (needSetup) {
             log.info("server", "Redirect to setup page");
@@ -714,6 +713,7 @@ let needSetup = false;
                 bean.maxretries = monitor.maxretries;
                 bean.port = parseInt(monitor.port);
                 bean.keyword = monitor.keyword;
+                bean.invertKeyword = monitor.invertKeyword;
                 bean.ignoreTls = monitor.ignoreTls;
                 bean.expiryNotification = monitor.expiryNotification;
                 bean.upsideDown = monitor.upsideDown;
@@ -748,6 +748,8 @@ let needSetup = false;
                 bean.radiusCallingStationId = monitor.radiusCallingStationId;
                 bean.radiusSecret = monitor.radiusSecret;
                 bean.httpBodyEncoding = monitor.httpBodyEncoding;
+                bean.expectedValue = monitor.expectedValue;
+                bean.jsonPath = monitor.jsonPath;
 
                 bean.validate();
 
@@ -902,6 +904,8 @@ let needSetup = false;
                     delete server.monitorList[monitorID];
                 }
 
+                const startTime = Date.now();
+
                 await R.exec("DELETE FROM monitor WHERE id = ? AND user_id = ? ", [
                     monitorID,
                     socket.userID,
@@ -909,6 +913,10 @@ let needSetup = false;
 
                 // Fix #2880
                 apicache.clear();
+
+                const endTime = Date.now();
+
+                log.info("DB", `Delete Monitor completed in : ${endTime - startTime} ms`);
 
                 callback({
                     ok: true,
@@ -1372,13 +1380,14 @@ let needSetup = false;
                                 maxretries: monitorListData[i].maxretries,
                                 port: monitorListData[i].port,
                                 keyword: monitorListData[i].keyword,
+                                invertKeyword: monitorListData[i].invertKeyword,
                                 ignoreTls: monitorListData[i].ignoreTls,
                                 upsideDown: monitorListData[i].upsideDown,
                                 maxredirects: monitorListData[i].maxredirects,
                                 accepted_statuscodes: monitorListData[i].accepted_statuscodes,
                                 dns_resolve_type: monitorListData[i].dns_resolve_type,
                                 dns_resolve_server: monitorListData[i].dns_resolve_server,
-                                notificationIDList: {},
+                                notificationIDList: monitorListData[i].notificationIDList,
                                 proxy_id: monitorListData[i].proxy_id || null,
                             };
 
@@ -1540,7 +1549,6 @@ let needSetup = false;
         maintenanceSocketHandler(socket);
         apiKeySocketHandler(socket);
         generalSocketHandler(socket, server);
-        pluginsHandler(socket, server);
 
         log.debug("server", "added all socket handlers");
 
@@ -1643,6 +1651,7 @@ async function afterLogin(socket, user) {
     socket.join(user.id);
 
     let monitorList = await server.sendMonitorList(socket);
+    sendInfo(socket);
     server.sendMaintenanceList(socket);
     sendNotificationList(socket);
     sendProxyList(socket);
