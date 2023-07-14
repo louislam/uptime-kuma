@@ -135,9 +135,9 @@ class Notification {
      * @returns {Promise<string>} Successful msg
      * @throws Error with fail msg
      */
-    static async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
+    static async send(notification, msg, monitorJSON = null, heartbeatJSON = null, downTime = null) {
         if (this.providerList[notification.type]) {
-            return this.providerList[notification.type].send(notification, msg, monitorJSON, heartbeatJSON);
+            return this.providerList[notification.type].send(notification, msg, monitorJSON, heartbeatJSON, downTime);
         } else {
             throw new Error("Notification type is not supported");
         }

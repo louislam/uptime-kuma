@@ -811,6 +811,7 @@ class Monitor extends BeanModel {
                 if (Monitor.isImportantForNotification(isFirstBeat, previousBeat?.status, bean.status)) {
                     // Change the notification msg if status becomes UP from DOWN
                     // Adding msg for the downtime
+                    let downTimeInSeconds;
                     if (bean.status === UP) {
                         const downAfterPreviousUpBeat = await R.findOne("heartbeat", " monitor_id = ? AND status = ? AND time > ( SELECT time from heartbeat WHERE monitor_id = ? AND status = ? ORDER BY time DESC LIMIT 1 ) ORDER BY time ASC", [
                             this.id,
@@ -824,7 +825,7 @@ class Monitor extends BeanModel {
                                 DOWN
                             ]);
                             if (mostRecentDownBeat) {
-                                const downTimeInSeconds = await R.getRow("SELECT SUM(duration) AS duration FROM heartbeat WHERE monitor_id = ? AND status = ? AND time > ? OR time = ? AND time < ? OR time = ?", [
+                                downTimeInSeconds = await R.getRow("SELECT SUM(duration) AS duration FROM heartbeat WHERE monitor_id = ? AND status = ? AND time > ? OR time = ? AND time < ? OR time = ?", [
                                     this.id,
                                     DOWN,
                                     downAfterPreviousUpBeat.time,
@@ -832,16 +833,13 @@ class Monitor extends BeanModel {
                                     mostRecentDownBeat.time,
                                     mostRecentDownBeat.time,
                                 ]);
-
-                                const downTimeInMilliSec = downTimeInSeconds.duration * 1000;
-
-                                // Convert the downTime to minutes and seconds format
-                                const downTimeFormatted = dayjs.duration(downTimeInMilliSec).format("mm:ss");
-                                bean.msg = `${bean.msg} (Down for ${downTimeFormatted} minutes)`;
                             }
                         }
                     }
                     log.debug("monitor", `[${this.name}] sendNotification`);
+                    if (downTimeInSeconds) {
+                        await Monitor.sendNotification(isFirstBeat, this, bean, downTimeInSeconds.duration);
+                    }
                     await Monitor.sendNotification(isFirstBeat, this, bean);
                 } else {
                     log.debug("monitor", `[${this.name}] will not sendNotification because it is (or was) under maintenance`);
@@ -1265,7 +1263,7 @@ class Monitor extends BeanModel {
      * @param {Monitor} monitor The monitor to send a notificaton about
      * @param {Bean} bean Status information about monitor
      */
-    static async sendNotification(isFirstBeat, monitor, bean) {
+    static async sendNotification(isFirstBeat, monitor, bean, downTime = null) {
         if (!isFirstBeat || bean.status === DOWN) {
             const notificationList = await Monitor.getNotificationList(monitor);
 
@@ -1292,7 +1290,7 @@ class Monitor extends BeanModel {
                     heartbeatJSON["timezoneOffset"] = UptimeKumaServer.getInstance().getTimezoneOffset();
                     heartbeatJSON["localDateTime"] = dayjs.utc(heartbeatJSON["time"]).tz(heartbeatJSON["timezone"]).format(SQL_DATETIME_FORMAT);
 
-                    await Notification.send(JSON.parse(notification.config), msg, await monitor.toJSON(false), heartbeatJSON);
+                    await Notification.send(JSON.parse(notification.config), msg, await monitor.toJSON(false), heartbeatJSON, downTime);
                 } catch (e) {
                     log.error("monitor", "Cannot send notification to " + notification.name);
                     log.error("monitor", e);
