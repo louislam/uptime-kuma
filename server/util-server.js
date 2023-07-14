@@ -378,6 +378,7 @@ exports.mongodbPing = async function (connectionString) {
  * @param {string} callingStationId ID of calling station
  * @param {string} secret Secret to use
  * @param {number} [port=1812] Port to contact radius server on
+ * @param {number} [timeout=2500] Timeout for connection to use
  * @returns {Promise<any>}
  */
 exports.radius = function (
@@ -388,10 +389,12 @@ exports.radius = function (
     callingStationId,
     secret,
     port = 1812,
+    timeout = 2500,
 ) {
     const client = new radiusClient({
         host: hostname,
         hostPort: port,
+        timeout: timeout,
         dictionaries: [ file ],
     });
 
@@ -413,12 +416,18 @@ exports.radius = function (
 exports.redisPingAsync = function (dsn) {
     return new Promise((resolve, reject) => {
         const client = redis.createClient({
-            url: dsn,
+            url: dsn
         });
         client.on("error", (err) => {
+            if (client.isOpen) {
+                client.disconnect();
+            }
             reject(err);
         });
         client.connect().then(() => {
+            if (!client.isOpen) {
+                client.emit("error", new Error("connection isn't open"));
+            }
             client.ping().then((res, err) => {
                 if (client.isOpen) {
                     client.disconnect();
@@ -428,7 +437,7 @@ exports.redisPingAsync = function (dsn) {
                 } else {
                     resolve(res);
                 }
-            });
+            }).catch(error => reject(error));
         });
     });
 };

@@ -27,6 +27,9 @@
                                         <option value="keyword">
                                             HTTP(s) - {{ $t("Keyword") }}
                                         </option>
+                                        <option value="json-query">
+                                            HTTP(s) - {{ $t("Json Query") }}
+                                        </option>
                                         <option value="grpc-keyword">
                                             gRPC(s) - {{ $t("Keyword") }}
                                         </option>
@@ -35,6 +38,10 @@
                                         </option>
                                         <option value="docker">
                                             {{ $t("Docker Container") }}
+                                        </option>
+
+                                        <option value="real-browser">
+                                            HTTP(s) - Browser Engine (Chrome/Chromium) (Beta)
                                         </option>
                                     </optgroup>
 
@@ -76,16 +83,6 @@
                                             Tailscale Ping
                                         </option>
                                     </optgroup>
-
-                                    <!--
-                                    Hidden for now: Reason refer to Setting.vue
-                                    <optgroup :label="$t('Custom Monitor Type')">
-                                        <option value="browser">
-                                            (Beta) HTTP(s) - Browser Engine (Chrome/Firefox)
-                                        </option>
-                                    </optgroup>
-                                </select>
-                                -->
                                 </select>
                             </div>
 
@@ -106,7 +103,7 @@
                             </div>
 
                             <!-- URL -->
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'browser' " class="my-3">
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'real-browser' " class="my-3">
                                 <label for="url" class="form-label">{{ $t("URL") }}</label>
                                 <input id="url" v-model="monitor.url" type="url" class="form-control" pattern="https?://.+" required>
                             </div>
@@ -134,6 +131,31 @@
                                 <div class="form-text">
                                     {{ $t("keywordDescription") }}
                                 </div>
+                            </div>
+
+                            <!-- Invert keyword -->
+                            <div v-if="monitor.type === 'keyword' || monitor.type === 'grpc-keyword'" class="my-3 form-check">
+                                <input id="invert-keyword" v-model="monitor.invertKeyword" class="form-check-input" type="checkbox">
+                                <label class="form-check-label" for="invert-keyword">
+                                    {{ $t("Invert Keyword") }}
+                                </label>
+                                <div class="form-text">
+                                    {{ $t("invertKeywordDescription") }}
+                                </div>
+                            </div>
+
+                            <!-- Json Query -->
+                            <div v-if="monitor.type === 'json-query'" class="my-3">
+                                <label for="jsonPath" class="form-label">{{ $t("Json Query") }}</label>
+                                <input id="jsonPath" v-model="monitor.jsonPath" type="text" class="form-control" required>
+
+                                <!-- eslint-disable-next-line vue/no-v-html -->
+                                <div class="form-text" v-html="$t('jsonQueryDescription')">
+                                </div>
+                                <br>
+
+                                <label for="expectedValue" class="form-label">{{ $t("Expected Value") }}</label>
+                                <input id="expectedValue" v-model="monitor.expectedValue" type="text" class="form-control" required>
                             </div>
 
                             <!-- Game -->
@@ -365,7 +387,7 @@
 
                             <h2 v-if="monitor.type !== 'push'" class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
 
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' " class="my-3 form-check">
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' " class="my-3 form-check">
                                 <input id="expiry-notification" v-model="monitor.expiryNotification" class="form-check-input" type="checkbox">
                                 <label class="form-check-label" for="expiry-notification">
                                     {{ $t("Certificate Expiry Notification") }}
@@ -374,7 +396,7 @@
                                 </div>
                             </div>
 
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' " class="my-3 form-check">
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' " class="my-3 form-check">
                                 <input id="ignore-tls" v-model="monitor.ignoreTls" class="form-check-input" type="checkbox" value="">
                                 <label class="form-check-label" for="ignore-tls">
                                     {{ $t("ignoreTLSError") }}
@@ -466,7 +488,7 @@
                             </button>
 
                             <!-- Proxies -->
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword'">
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query'">
                                 <h2 class="mt-5 mb-2">{{ $t("Proxy") }}</h2>
                                 <p v-if="$root.proxyList.length === 0">
                                     {{ $t("Not available, please setup.") }}
@@ -494,7 +516,7 @@
                             </div>
 
                             <!-- HTTP Options -->
-                            <template v-if="monitor.type === 'http' || monitor.type === 'keyword' ">
+                            <template v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' ">
                                 <h2 class="mt-5 mb-2">{{ $t("HTTP Options") }}</h2>
 
                                 <!-- Method -->
@@ -1116,7 +1138,7 @@ message HealthCheckResponse {
                 this.monitor.body = JSON.stringify(JSON.parse(this.monitor.body), null, 4);
             }
 
-            if (this.monitor.type && this.monitor.type !== "http" && this.monitor.type !== "keyword") {
+            if (this.monitor.type && this.monitor.type !== "http" && (this.monitor.type !== "keyword" || this.monitor.type !== "json-query")) {
                 this.monitor.httpBodyEncoding = null;
             }
 
