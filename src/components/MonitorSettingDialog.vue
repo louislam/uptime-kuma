@@ -104,7 +104,7 @@ export default {
             // We must check if there are any elements in monitorList to
             // prevent undefined errors if it hasn't been loaded yet
             if (this.$parent.editMode && ignoreSendUrl && Object.keys(this.$root.monitorList).length) {
-                return this.$root.monitorList[monitor.element.id].type === "http" || this.$root.monitorList[monitor.element.id].type === "keyword";
+                return this.$root.monitorList[monitor.element.id].type === "http" || this.$root.monitorList[monitor.element.id].type === "keyword" || this.$root.monitorList[monitor.element.id].type === "json-query";
             }
             return monitor.element.sendUrl && monitor.element.url && monitor.element.url !== "https://" && !this.editMode;
         },

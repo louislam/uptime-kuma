@@ -8,7 +8,7 @@
                 <Tag v-for="tag in monitor.tags" :key="tag.id" :item="tag" :size="'sm'" />
             </div>
             <p class="url">
-                <a v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'mp-health' " :href="monitor.url" target="_blank" rel="noopener noreferrer">{{ filterPassword(monitor.url) }}</a>
+                <a v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'mp-health' " :href="monitor.url" target="_blank" rel="noopener noreferrer">{{ filterPassword(monitor.url) }}</a>
                 <span v-if="monitor.type === 'port'">TCP Port {{ monitor.hostname }}:{{ monitor.port }}</span>
                 <span v-if="monitor.type === 'ping'">Ping: {{ monitor.hostname }}</span>
                 <span v-if="monitor.type === 'keyword'">
@@ -16,6 +16,12 @@
                     <span>{{ $t("Keyword") }}: </span>
                     <span class="keyword">{{ monitor.keyword }}</span>
                     <span v-if="monitor.invertKeyword" alt="Inverted keyword" class="keyword-inverted"> ↧</span>
+                </span>
+                <span v-if="monitor.type === 'json-query'">
+                    <br>
+                    <span>{{ $t("Json Query") }}:</span> <span class="keyword">{{ monitor.jsonPath }}</span>
+                    <br>
+                    <span>{{ $t("Expected Value") }}:</span> <span class="keyword">{{ monitor.expectedValue }}</span>
                 </span>
                 <span v-if="monitor.type === 'dns'">[{{ monitor.dns_resolve_type }}] {{ monitor.hostname }}
                     <br>
@@ -434,7 +440,7 @@ export default {
                 translationPrefix = "Avg. ";
             }
 
-            if (this.monitor.type === "http" || this.monitor.type === "keyword") {
+            if (this.monitor.type === "http" || this.monitor.type === "keyword" || this.monitor.type === "json-query") {
                 return this.$t(translationPrefix + "Response");
             }
 

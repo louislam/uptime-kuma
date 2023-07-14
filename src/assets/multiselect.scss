@@ -69,6 +69,7 @@
     .multiselect__content-wrapper {
         background-color: $dark-bg2;
         border-color: $dark-border-color;
+        z-index: 150;
     }
 
     .multiselect--above .multiselect__content-wrapper {

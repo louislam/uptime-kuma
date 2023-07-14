@@ -208,6 +208,7 @@ let needSetup = false;
     });
 
     if (isDev) {
+        app.use(express.urlencoded({ extended: true }));
         app.post("/test-webhook", async (request, response) => {
             log.debug("test", request.headers);
             log.debug("test", request.body);
@@ -748,6 +749,8 @@ let needSetup = false;
                 bean.radiusCallingStationId = monitor.radiusCallingStationId;
                 bean.radiusSecret = monitor.radiusSecret;
                 bean.httpBodyEncoding = monitor.httpBodyEncoding;
+                bean.expectedValue = monitor.expectedValue;
+                bean.jsonPath = monitor.jsonPath;
 
                 bean.validate();
 
