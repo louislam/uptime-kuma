@@ -740,7 +740,7 @@
     "lunaseaDeviceID": "ID на устройството",
     "lunaseaUserID": "ID на потребител",
     "twilioAccountSID": "Профил SID",
-    "twilioAuthToken": "Удостоверяващ токен",
+    "twilioAuthToken": "Удостоверяващ токен / Тайна на API ключа",
     "twilioFromNumber": "От номер",
     "twilioToNumber": "Към номер",
     "sameAsServerTimezone": "Kато часовата зона на сървъра",
@@ -798,5 +798,9 @@
     "webhookBodyPresetOption": "Предварителна настройка - {0}",
     "webhookBodyCustomOption": "Персонализирано тяло",
     "webhookCustomBodyDesc": "Дефинирайте персонализирано HTTP тяло за заявката. Приемат се шаблонни променливи {msg}, {heartbeat}, {monitor}.",
-    "Request Body": "Тяло на заявката"
+    "Request Body": "Тяло на заявката",
+    "twilioApiKey": "API ключ (по избор)",
+    "Expected Value": "Очаквана стойност",
+    "Json Query": "Заявка тип JSON",
+    "jsonQueryDescription": "Прави JSON заявка срещу отговора и проверява за очаквана стойност (Върнатата стойност ще бъде преобразувана в низ за сравнение). Разгледайте <a href='https://jsonata.org/'>jsonata.org</a> за документация относно езика на заявката. Имате възможност да тествате <a href='https://try.jsonata.org/'>тук</a>."
 }
