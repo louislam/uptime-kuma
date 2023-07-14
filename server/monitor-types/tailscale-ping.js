@@ -1,5 +1,5 @@
 const { MonitorType } = require("./monitor-type");
-const { UP } = require("../../src/util");
+const { UP, log } = require("../../src/util");
 const exec = require("child_process").exec;
 
 /**
@@ -20,9 +20,10 @@ class TailscalePing extends MonitorType {
      */
     async check(monitor, heartbeat) {
         try {
-            let tailscaleOutput = await this.runTailscalePing(monitor.url);
+            let tailscaleOutput = await this.runTailscalePing(monitor.hostname);
             this.parseTailscaleOutput(tailscaleOutput, heartbeat);
         } catch (err) {
+            log.debug("Tailscale", err);
             // trigger log function somewhere to display a notification or alert to the user (but how?)
             throw new Error(`Error checking Tailscale ping: ${err}`);
         }
@@ -31,12 +32,15 @@ class TailscalePing extends MonitorType {
     /**
      * Runs the Tailscale ping command to the given URL.
      *
-     * @param {string} url - The URL to ping.
+     * @param {string} hostname - The hostname to ping.
      * @returns {Promise<string>} - A Promise that resolves to the output of the Tailscale ping command
      * @throws Will throw an error if the command execution encounters any error.
      */
-    async runTailscalePing(url) {
-        let cmd = `tailscale ping ${url}`;
+    async runTailscalePing(hostname) {
+        let cmd = `tailscale ping ${hostname}`;
+
+        log.debug("Tailscale", cmd);
+
         return new Promise((resolve, reject) => {
             let timeout = this.interval * 1000 * 0.8;
             exec(cmd, { timeout: timeout }, (error, stdout, stderr) => {
@@ -49,6 +53,7 @@ class TailscalePing extends MonitorType {
                     reject(`Error in output: ${stderr}`);
                     return;
                 }
+
                 resolve(stdout);
             });
         });
