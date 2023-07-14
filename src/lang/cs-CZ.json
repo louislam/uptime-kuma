@@ -798,5 +798,7 @@
     "invertKeywordDescription": "Hledá se klíčové slovo, které je spíše nepřítomné než přítomné.",
     "webhookCustomBodyDesc": "Nastaví vlastní tělo HTTP pro požadavek. Akceptovány jsou proměnné {msg}, {heartbeat}, {monitor}.",
     "Request Body": "Tělo požadavku",
-    "twilioApiKey": "Klíč k API (volitelný)"
+    "twilioApiKey": "Klíč k API (volitelný)",
+    "Expected Value": "Očekávaná hodnota",
+    "Json Query": "Json Query"
 }
