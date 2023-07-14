@@ -1,6 +1,7 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 const FormData = require("form-data");
+const { Liquid } = require("liquidjs");
 
 class Webhook extends NotificationProvider {
 
@@ -15,17 +16,27 @@ class Webhook extends NotificationProvider {
                 monitor: monitorJSON,
                 msg,
             };
-            let finalData;
             let config = {
                 headers: {}
             };
 
             if (notification.webhookContentType === "form-data") {
-                finalData = new FormData();
-                finalData.append("data", JSON.stringify(data));
-                config.headers = finalData.getHeaders();
-            } else {
-                finalData = data;
+                const formData = new FormData();
+                formData.append("data", JSON.stringify(data));
+                config.headers = formData.getHeaders();
+                data = formData;
+            } else if (notification.webhookContentType === "custom") {
+                // Initialize LiquidJS and parse the custom Body Template
+                const engine = new Liquid();
+                const tpl = engine.parse(notification.webhookCustomBody);
+
+                // Insert templated values into Body
+                data = await engine.render(tpl,
+                    {
+                        msg,
+                        heartbeatJSON,
+                        monitorJSON
+                    });
             }
 
             if (notification.webhookAdditionalHeaders) {
@@ -39,7 +50,7 @@ class Webhook extends NotificationProvider {
                 }
             }
 
-            await axios.post(notification.webhookURL, finalData, config);
+            await axios.post(notification.webhookURL, data, config);
             return okMsg;
 
         } catch (error) {
