@@ -759,8 +759,8 @@
     "Badge Type": "Rozet Türü",
     "Badge Duration": "Rozet Süresi",
     "Badge Label": "Rozet Etiketi",
-    "Badge Prefix": "Rozet Öneki",
-    "Badge Suffix": "Rozet Eki",
+    "Badge Prefix": "Rozet Değer Öneki",
+    "Badge Suffix": "Rozet Değer Soneki",
     "Badge Label Color": "Rozet Etiket Rengi",
     "Badge Color": "Rozet Rengi",
     "Badge Label Prefix": "Rozet Etiket Öneki",
@@ -797,5 +797,7 @@
     "jsonQueryDescription": "Yanıta karşı bir json sorgusu yapın ve beklenen değeri kontrol edin (Dönüş değeri, karşılaştırma için dizgeye dönüştürülür). Sorgu diliyle ilgili belgeler için <a href='https://jsonata.org/'>jsonata.org</a>'a bakın. Bir oyun alanı <a href='https://try.jsonata.org/'>burada</a> bulunabilir.",
     "twilioApiKey": "Api Anahtarı (isteğe bağlı)",
     "Expected Value": "Beklenen Değer",
-    "Json Query": "Json Sorgusu"
+    "Json Query": "Json Sorgusu",
+    "Badge Duration (in hours)": "Rozet Süresi (saat cinsinden)",
+    "Badge Preview": "Rozet Önizlemesi"
 }
