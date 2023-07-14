@@ -115,7 +115,6 @@ export default {
                 "apprise": this.$t("apprise"),
                 "Bark": "Bark",
                 "clicksendsms": "ClickSend SMS",
-                "smsc": "SMSC",
                 "discord": "Discord",
                 "GoogleChat": "Google Chat (Google Workspace)",
                 "gorush": "Gorush",
@@ -165,6 +164,7 @@ export default {
                 "SMSManager": "SmsManager (smsmanager.cz)",
                 "WeCom": "WeCom (企业微信群机器人)",
                 "ServerChan": "ServerChan (Server酱)",
+                "smsc": "SMSC",
             };
 
             // Sort by notification name
