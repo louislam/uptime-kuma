@@ -1225,7 +1225,7 @@ message HealthCheckResponse {
             // limit to 80% of interval
             const maxTimeout = this.monitor.interval * 0.8;
             // 0 will be treated as 80% of interval
-            this.monitor.timeout = Math.Max(0, Math.min(timeout, maxTimeout));
+            this.monitor.timeout = Math.max(0, Math.min(timeout, maxTimeout));
         }
     },
 };
