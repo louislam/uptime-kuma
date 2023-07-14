@@ -746,7 +746,7 @@
     "lunaseaDeviceID": "ID пристрою",
     "lunaseaUserID": "ID користувача",
     "twilioAccountSID": "SID облікового запису",
-    "twilioAuthToken": "Токен авторизації",
+    "twilioAuthToken": "Токен авторизації / Секретний ключ Api",
     "twilioFromNumber": "З номера",
     "twilioToNumber": "На номер",
     "sameAsServerTimezone": "Такий самий, як часовий пояс сервера",
@@ -767,8 +767,8 @@
     "Badge Type": "Тип бейджа",
     "Badge Duration": "Тривалість бейджа",
     "Badge Label": "Ярлик бейджа",
-    "Badge Prefix": "Префікс бейджа",
-    "Badge Suffix": "Суфікс бейджа",
+    "Badge Prefix": "Префікс значення бейджа",
+    "Badge Suffix": "Суфікс значення бейджа",
     "Badge Label Color": "Колір ярлика бейджа",
     "Badge Color": "Колір бейджа",
     "Badge Label Prefix": "Префікс ярлика бейджа",
@@ -799,5 +799,11 @@
     "webhookCustomBodyDesc": "Задати користувацьке HTTP-тіло для запиту. Приймаються шаблонні змінні {msg}, {heartbeat}, {monitor}.",
     "webhookBodyPresetOption": "Пресет - {0}",
     "webhookBodyCustomOption": "Користувацьке тіло",
-    "Request Body": "Тіло запиту"
+    "Request Body": "Тіло запиту",
+    "Badge Preview": "Попередній перегляд бейджа",
+    "Badge Duration (in hours)": "Тривалість бейджа (у годинах)",
+    "jsonQueryDescription": "Виконувати json-запит до відповіді та перевірити очікуване значення (значення, що повертається, буде перетворено в рядок для порівняння). Зверніться до <a href='https://jsonata.org/'>jsonata.org</a> щоб ознайомитися з документацією про мову запитів. Навчальний майданчик можна знайти <a href='https://try.jsonata.org/'>тут</a>.",
+    "twilioApiKey": "Api ключ (необов'язково)",
+    "Expected Value": "Очікуване значення",
+    "Json Query": "Json-запит"
 }
