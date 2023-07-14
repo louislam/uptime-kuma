@@ -249,9 +249,9 @@ class UptimeKumaServer {
 
             return (typeof forwardedFor === "string" ? forwardedFor.split(",")[0].trim() : null)
                 || socket.client.conn.request.headers["x-real-ip"]
-                || clientIP.replace(/^.*:/, "");
+                || clientIP.replace(/^::ffff:/, "");
         } else {
-            return clientIP.replace(/^.*:/, "");
+            return clientIP.replace(/^::ffff:/, "");
         }
     }
 
