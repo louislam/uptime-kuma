@@ -755,5 +755,7 @@
     "Group": "Group",
     "Monitor Group": "Monitor Group",
     "noGroupMonitorMsg": "Not Available. Create a Group Monitor First.",
-    "Close": "Close"
+    "Close": "Close",
+    "showCertificateExpiry": "Show Certificate Expiry",
+    "noOrBadCertificate": "No/Bad Certificate"
 }

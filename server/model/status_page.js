@@ -90,7 +90,6 @@ class StatusPage extends BeanModel {
      * @param {StatusPage} statusPage
      */
     static async getStatusPageData(statusPage) {
-
         const config = await statusPage.toPublicJSON();
 
         // Incident

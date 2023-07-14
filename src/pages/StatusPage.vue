@@ -57,7 +57,7 @@
                 <!-- Show certificate expiry -->
                 <div class="my-3 form-check form-switch">
                     <input id="show-certificate-expiry" v-model="config.showCertificateExpiry" class="form-check-input" type="checkbox">
-                    <label class="form-check-label" for="show-certificate-expiry">{{ $t("Show Certificate Expiry") }}</label>
+                    <label class="form-check-label" for="show-certificate-expiry">{{ $t("showCertificateExpiry") }}</label>
                 </div>
 
                 <div v-if="false" class="my-3">

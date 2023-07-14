@@ -60,7 +60,7 @@
                                                     @click="$refs.monitorSettingDialog.show(group, monitor)"
                                                 />
                                             </span>
-                                            <p v-if="showCertificateExpiry" class="item-name"> Expiry: {{ formatExpiry(monitor) }} </p>
+                                            <span class="badge rounded-pill" :class=" 'bg-' + certExpiryColor(monitor)"> {{ $t("Expiry") }}: {{ formattedCertExpiryMessage(monitor) }} </span>
                                         </div>
                                         <div v-if="showTags" class="tags">
                                             <Tag v-for="tag in monitor.element.tags" :key="tag" :item="tag" :size="'sm'" />
@@ -165,12 +165,26 @@ export default {
          * @param {Object} monitor Monitor to show expiry for
          * @returns {string}
          */
-        formatExpiry(monitor) {
-            if (monitor?.element?.validCert) {
-                return monitor.element.certExpiryDaysRemaining + " days";
+        formattedCertExpiryMessage(monitor) {
+            if (monitor?.element?.validCert && monitor?.element?.certExpiryDaysRemaining) {
+                return monitor.element.certExpiryDaysRemaining + " " + this.$tc("day", monitor.element.certExpiryDaysRemaining);
+            } else if (monitor?.element?.validCert === false) {
+                return this.$t("noOrBadCertificate");
             } else {
-                return monitor.element.certExpiryDaysRemaining;
+                return "";
             }
+        },
+
+        /**
+         * Returns certificate expiry based on days remaining
+         * @param {Object} monitor Monitor to show expiry for
+         * @returns {string}
+         */
+        certExpiryColor(monitor) {
+            if (monitor?.element?.validCert) {
+                return monitor.element.certExpiryDaysRemaining > 7 ? "primary" : "danger";
+            }
+            return "danger";
         },
     }
 };

@@ -39,5 +39,6 @@
     "Reconnecting...": "पुनः कनेक्ट किया जा रहा है...",
     "Down": "बंद",
     "Passive Monitor Type": "निष्क्रिय मॉनिटर प्रकार",
-    "Status": "स्थिति"
+    "Status": "स्थिति",
+    "showCertificateExpiry": "प्रमाणपत्र समाप्ति दिखाएँ"
 }

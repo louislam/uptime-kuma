@@ -201,7 +201,7 @@ class Monitor extends BeanModel {
             }
         }
         return {
-            certExpiryDaysRemaining: "No/Bad Cert",
+            certExpiryDaysRemaining: "",
             validCert: false
         };
     }
