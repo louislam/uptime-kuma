@@ -263,7 +263,7 @@ let needSetup = false;
     log.info("server", "Adding socket handler");
     io.on("connection", async (socket) => {
 
-        sendInfo(socket);
+        sendInfo(socket, true);
 
         if (needSetup) {
             log.info("server", "Redirect to setup page");
@@ -1651,6 +1651,7 @@ async function afterLogin(socket, user) {
     socket.join(user.id);
 
     let monitorList = await server.sendMonitorList(socket);
+    sendInfo(socket);
     server.sendMaintenanceList(socket);
     sendNotificationList(socket);
     sendProxyList(socket);
