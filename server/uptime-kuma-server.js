@@ -276,6 +276,7 @@ class UptimeKumaServer {
 
         // From Settings
         try {
+            log.debug("timezone", "Using timezone from settings: " + timezone);
             if (timezone) {
                 this.checkTimezone(timezone);
                 return timezone;
