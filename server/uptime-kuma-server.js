@@ -301,5 +301,4 @@ module.exports = {
 };
 
 // Must be at the end
-const { MonitorType } = require("./monitor-types/monitor-type");
 const { RealBrowserMonitorType } = require("./monitor-types/real-browser-monitor-type");
