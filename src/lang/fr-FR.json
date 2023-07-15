@@ -799,5 +799,7 @@
     "Json Query": "Requête Json",
     "jsonQueryDescription": "Faites une requête json contre la réponse et vérifiez la valeur attendue (la valeur de retour sera convertie en chaîne pour comparaison). Consultez <a href='https://jsonata.org/'>jsonata.org</a> pour la documentation sur le langage de requête. Une aire de jeux peut être trouvée <a href='https://try.jsonata.org/'>ici</a>.",
     "Badge Duration (in hours)": "Durée du badge (en heures)",
-    "Badge Preview": "Aperçu du badge"
+    "Badge Preview": "Aperçu du badge",
+    "aboutNotifyChannel": "Notifier le canal déclenchera une notification de bureau ou mobile pour tous les membres du canal, que leur disponibilité soit active ou absente.",
+    "Notify Channel": "Notifier le canal"
 }
