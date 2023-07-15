@@ -799,5 +799,7 @@
     "Expected Value": "Beklenen Değer",
     "Json Query": "Json Sorgusu",
     "Badge Duration (in hours)": "Rozet Süresi (saat cinsinden)",
-    "Badge Preview": "Rozet Önizlemesi"
+    "Badge Preview": "Rozet Önizlemesi",
+    "Notify Channel": "Bildirim Kanalı",
+    "aboutNotifyChannel": "Bildirim kanalı, müsaitlik durumu etkin veya uzakta olarak ayarlanmış olsun, kanalın tüm üyeleri için bir masaüstü veya mobil bildirimi tetikler."
 }
