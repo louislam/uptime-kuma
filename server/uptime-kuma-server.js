@@ -10,7 +10,7 @@ const util = require("util");
 const { CacheableDnsHttpAgent } = require("./cacheable-dns-http-agent");
 const { Settings } = require("./settings");
 const dayjs = require("dayjs");
-// DO NOT IMPORT HERE IF THE MODULES USED `UptimeKumaServer.getInstance()`
+// DO NOT IMPORT HERE IF THE MODULES USED `UptimeKumaServer.getInstance()`, put at the bottom of this file instead.
 
 /**
  * `module.exports` (alias: `server`) should be inside this class, in order to avoid circular dependency issue.
@@ -300,6 +300,5 @@ module.exports = {
     UptimeKumaServer
 };
 
-// Must be at the end
-const { MonitorType } = require("./monitor-types/monitor-type");
+// Must be at the end to avoid circular dependencies
 const { RealBrowserMonitorType } = require("./monitor-types/real-browser-monitor-type");
