@@ -287,8 +287,10 @@ class UptimeKumaServer {
         // Guess
         try {
             let guess = dayjs.tz.guess();
-            this.checkTimezone(guess);
-            return guess;
+            if (guess) {
+                this.checkTimezone(guess);
+                return guess;
+            }
         } catch (e) {
             // Guess failed, fall back to UTC
             return "UTC";
