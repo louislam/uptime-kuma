@@ -262,6 +262,16 @@ class UptimeKumaServer {
      * @returns {Promise<string>}
      */
     async getTimezone() {
+        // From process.env.TZ
+        try {
+            if (process.env.TZ) {
+                this.checkTimezone(process.env.TZ);
+                return process.env.TZ;
+            }
+        } catch (e) {
+            log.warn("timezone", e.message + " in process.env.TZ");
+        }
+
         let timezone = await Settings.get("serverTimezone");
 
         // From Settings
@@ -274,17 +284,15 @@ class UptimeKumaServer {
             log.warn("timezone", e.message + " in settings");
         }
 
-        // From process.env.TZ
+        // Guess
         try {
-            if (process.env.TZ) {
-                this.checkTimezone(process.env.TZ);
-                return process.env.TZ;
-            }
+            let guess = dayjs.tz.guess();
+            this.checkTimezone(guess);
+            return guess;
         } catch (e) {
-            log.warn("timezone", e.message + " in process.env.TZ");
+            // Guess failed, fall back to UTC
+            return "UTC";
         }
-
-        return dayjs.tz.guess();
     }
 
     /**
