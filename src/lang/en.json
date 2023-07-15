@@ -640,6 +640,8 @@
     "matrixDesc1": "You can find the internal room ID by looking in the advanced section of the room settings in your Matrix client. It should look like !QMdRCpUIfLwsfjxye6:home.server.",
     "matrixDesc2": "It is highly recommended you create a new user and do not use your own Matrix user's access token as it will allow full access to your account and all the rooms you joined. Instead, create a new user and only invite it to the room that you want to receive the notification in. You can get the access token by running {0}",
     "Channel Name": "Channel Name",
+    "Notify Channel": "Notify Channel",
+    "aboutNotifyChannel": "Notify channel will trigger a desktop or mobile notification for all members of the channel, whether their availability is set to active or away.",
     "Uptime Kuma URL": "Uptime Kuma URL",
     "Icon Emoji": "Icon Emoji",
     "signalImportant": "IMPORTANT: You cannot mix groups and numbers in recipients!",
