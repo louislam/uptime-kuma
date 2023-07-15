@@ -292,10 +292,12 @@ class UptimeKumaServer {
             if (guess) {
                 this.checkTimezone(guess);
                 return guess;
+            } else {
+                return "UTC";
             }
         } catch (e) {
             // Guess failed, fall back to UTC
-            log.debug("timezone", "Use UTC as fallback");
+            log.debug("timezone", "Guessed an invalid timezone. Use UTC as fallback");
             return "UTC";
         }
     }
