@@ -262,13 +262,43 @@ class UptimeKumaServer {
      * @returns {Promise<string>}
      */
     async getTimezone() {
+        // From process.env.TZ
+        try {
+            if (process.env.TZ) {
+                this.checkTimezone(process.env.TZ);
+                return process.env.TZ;
+            }
+        } catch (e) {
+            log.warn("timezone", e.message + " in process.env.TZ");
+        }
+
         let timezone = await Settings.get("serverTimezone");
-        if (timezone) {
-            return timezone;
-        } else if (process.env.TZ) {
-            return process.env.TZ;
-        } else {
-            return dayjs.tz.guess();
+
+        // From Settings
+        try {
+            log.debug("timezone", "Using timezone from settings: " + timezone);
+            if (timezone) {
+                this.checkTimezone(timezone);
+                return timezone;
+            }
+        } catch (e) {
+            log.warn("timezone", e.message + " in settings");
+        }
+
+        // Guess
+        try {
+            let guess = dayjs.tz.guess();
+            log.debug("timezone", "Guessing timezone: " + guess);
+            if (guess) {
+                this.checkTimezone(guess);
+                return guess;
+            } else {
+                return "UTC";
+            }
+        } catch (e) {
+            // Guess failed, fall back to UTC
+            log.debug("timezone", "Guessed an invalid timezone. Use UTC as fallback");
+            return "UTC";
         }
     }
 
@@ -281,10 +311,23 @@ class UptimeKumaServer {
     }
 
     /**
+     * Throw an error if the timezone is invalid
+     * @param timezone
+     */
+    checkTimezone(timezone) {
+        try {
+            dayjs.utc("2013-11-18 11:55").tz(timezone).format();
+        } catch (e) {
+            throw new Error("Invalid timezone:" + timezone);
+        }
+    }
+
+    /**
      * Set the current server timezone and environment variables
      * @param {string} timezone
      */
     async setTimezone(timezone) {
+        this.checkTimezone(timezone);
         await Settings.set("serverTimezone", timezone, "general");
         process.env.TZ = timezone;
         dayjs.tz.setDefault(timezone);
