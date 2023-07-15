@@ -287,12 +287,14 @@ class UptimeKumaServer {
         // Guess
         try {
             let guess = dayjs.tz.guess();
+            log.debug("timezone", "Guessing timezone: " + guess);
             if (guess) {
                 this.checkTimezone(guess);
                 return guess;
             }
         } catch (e) {
             // Guess failed, fall back to UTC
+            log.debug("timezone", "Use UTC as fallback");
             return "UTC";
         }
     }
