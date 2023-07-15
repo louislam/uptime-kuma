@@ -800,5 +800,7 @@
     "Request Body": "Tělo požadavku",
     "twilioApiKey": "Klíč k API (volitelný)",
     "Expected Value": "Očekávaná hodnota",
-    "Json Query": "Json Query"
+    "Json Query": "Json Query",
+    "Badge Duration (in hours)": "Zobrazení odznaku (v hodinách)",
+    "Badge Preview": "Náhled odznaku"
 }
