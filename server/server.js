@@ -19,11 +19,6 @@ const nodeVersion = parseInt(process.versions.node.split(".")[0]);
 const requiredVersion = 14;
 console.log(`Your Node.js version: ${nodeVersion}`);
 
-// See more: https://github.com/louislam/uptime-kuma/issues/3138
-if (nodeVersion >= 20) {
-    console.warn("\x1b[31m%s\x1b[0m", "Warning: Uptime Kuma is currently not stable on Node.js >= 20, please use Node.js 18.");
-}
-
 if (nodeVersion < requiredVersion) {
     console.error(`Error: Your Node.js version is not supported, please upgrade to Node.js >= ${requiredVersion}.`);
     process.exit(-1);
