@@ -1185,6 +1185,7 @@ message HealthCheckResponse {
                             this.monitor.childrenIDs = undefined;
                             this.monitor.forceInactive = undefined;
                             this.monitor.pathName = undefined;
+                            this.monitor.screenshot = undefined;
 
                             this.monitor.name = this.$t("cloneOf", [ this.monitor.name ]);
                             this.$refs.tagsManager.newTags = this.monitor.tags.map((monitorTag) => {
