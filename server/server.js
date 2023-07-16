@@ -32,7 +32,7 @@ if (semver.satisfies(nodeVersion, bannedNodeVersions)) {
 }
 
 // Warning if the Node.js version is not in the support list, but it maybe still works
-if (! semver.satisfies(nodeVersion, requiredNodeVersions)) {
+if (!semver.satisfies(nodeVersion, requiredNodeVersions)) {
     console.warn("\x1b[31m%s\x1b[0m", `Warning: Your Node.js version: ${nodeVersion} is not officially supported, please upgrade your Node.js to ${requiredNodeVersionsComma}.`);
 }
 
