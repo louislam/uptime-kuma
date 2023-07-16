@@ -15,13 +15,25 @@ dayjs.extend(require("dayjs/plugin/customParseFormat"));
 require("dotenv").config();
 
 // Check Node.js Version
-const nodeVersion = parseInt(process.versions.node.split(".")[0]);
-const requiredVersion = 14;
+const nodeVersion = process.versions.node;
+
+// Get the required Node.js version from package.json
+const requiredNodeVersions = require("../package.json").engines.node;
+const bannedNodeVersions = " < 14 || 20.0.* || 20.1.* || 20.2.* || 20.3.* ";
 console.log(`Your Node.js version: ${nodeVersion}`);
 
-if (nodeVersion < requiredVersion) {
-    console.error(`Error: Your Node.js version is not supported, please upgrade to Node.js >= ${requiredVersion}.`);
+const semver = require("semver");
+const requiredNodeVersionsComma = requiredNodeVersions.split("||").map((version) => version.trim()).join(", ");
+
+// Exit Uptime Kuma immediately if the Node.js version is banned
+if (semver.satisfies(nodeVersion, bannedNodeVersions)) {
+    console.error("\x1b[31m%s\x1b[0m", `Error: Your Node.js version: ${nodeVersion} is not supported, please upgrade your Node.js to ${requiredNodeVersionsComma}.`);
     process.exit(-1);
+}
+
+// Warning if the Node.js version is not in the support list, but it maybe still works
+if (! semver.satisfies(nodeVersion, requiredNodeVersions)) {
+    console.warn("\x1b[31m%s\x1b[0m", `Warning: Your Node.js version: ${nodeVersion} is not officially supported, please upgrade your Node.js to ${requiredNodeVersionsComma}.`);
 }
 
 const args = require("args-parser")(process.argv);
