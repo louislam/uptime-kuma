@@ -325,7 +325,7 @@
                 </p>
 
                 <div class="refresh-info mb-2">
-                    <div>{{ $t("Last Updated") }}: <date-time :value="lastUpdateTime" /></div>
+                    <div>{{ $t("Last Updated") }}:  {{ lastUpdateTimeDisplay }}</div>
                     <div>{{ $tc("statusPageRefreshIn", [ updateCountdownText]) }}</div>
                 </div>
             </footer>
@@ -360,7 +360,6 @@ import DOMPurify from "dompurify";
 import Confirm from "../components/Confirm.vue";
 import PublicGroupList from "../components/PublicGroupList.vue";
 import MaintenanceTime from "../components/MaintenanceTime.vue";
-import DateTime from "../components/Datetime.vue";
 import { getResBaseURL } from "../util-frontend";
 import { STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_MAINTENANCE, STATUS_PAGE_PARTIAL_DOWN, UP, MAINTENANCE } from "../util.ts";
 import Tag from "../components/Tag.vue";
@@ -386,7 +385,6 @@ export default {
         Confirm,
         PrismEditor,
         MaintenanceTime,
-        DateTime,
         Tag,
         VueMultiselect
     },
@@ -583,6 +581,10 @@ export default {
                 return "";
             }
         },
+
+        lastUpdateTimeDisplay() {
+            return this.$root.datetime(this.lastUpdateTime);
+        }
     },
     watch: {
 

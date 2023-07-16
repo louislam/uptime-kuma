@@ -20,6 +20,8 @@ const { CacheableDnsHttpAgent } = require("../cacheable-dns-http-agent");
 const { DockerHost } = require("../docker");
 const { UptimeCacheList } = require("../uptime-cache-list");
 const Gamedig = require("gamedig");
+const jsonata = require("jsonata");
+const jwt = require("jsonwebtoken");
 
 /**
  * status:
@@ -70,6 +72,12 @@ class Monitor extends BeanModel {
 
         const tags = await this.getTags();
 
+        let screenshot = null;
+
+        if (this.type === "real-browser") {
+            screenshot = "/screenshots/" + jwt.sign(this.id, UptimeKumaServer.getInstance().jwtSecret) + ".png";
+        }
+
         let data = {
             id: this.id,
             name: this.name,
@@ -90,6 +98,7 @@ class Monitor extends BeanModel {
             retryInterval: this.retryInterval,
             resendInterval: this.resendInterval,
             keyword: this.keyword,
+            invertKeyword: this.isInvertKeyword(),
             expiryNotification: this.isEnabledExpiryNotification(),
             ignoreTls: this.getIgnoreTls(),
             upsideDown: this.isUpsideDown(),
@@ -117,7 +126,10 @@ class Monitor extends BeanModel {
             radiusCalledStationId: this.radiusCalledStationId,
             radiusCallingStationId: this.radiusCallingStationId,
             game: this.game,
-            httpBodyEncoding: this.httpBodyEncoding
+            httpBodyEncoding: this.httpBodyEncoding,
+            jsonPath: this.jsonPath,
+            expectedValue: this.expectedValue,
+            screenshot,
         };
 
         if (includeSensitiveData) {
@@ -197,6 +209,14 @@ class Monitor extends BeanModel {
      */
     isUpsideDown() {
         return Boolean(this.upsideDown);
+    }
+
+    /**
+     * Parse to boolean
+     * @returns {boolean}
+     */
+    isInvertKeyword() {
+        return Boolean(this.invertKeyword);
     }
 
     /**
@@ -303,7 +323,7 @@ class Monitor extends BeanModel {
                         bean.msg = "Group empty";
                     }
 
-                } else if (this.type === "http" || this.type === "keyword") {
+                } else if (this.type === "http" || this.type === "keyword" || this.type === "json-query") {
                     // Do not do any queries/high loading things before the "bean.ping"
                     let startTime = dayjs().valueOf();
 
@@ -431,7 +451,7 @@ class Monitor extends BeanModel {
 
                     if (this.type === "http") {
                         bean.status = UP;
-                    } else {
+                    } else if (this.type === "keyword") {
 
                         let data = res.data;
 
@@ -440,17 +460,37 @@ class Monitor extends BeanModel {
                             data = JSON.stringify(data);
                         }
 
-                        if (data.includes(this.keyword)) {
-                            bean.msg += ", keyword is found";
+                        let keywordFound = data.includes(this.keyword);
+                        if (keywordFound === !this.isInvertKeyword()) {
+                            bean.msg += ", keyword " + (keywordFound ? "is" : "not") + " found";
                             bean.status = UP;
                         } else {
                             data = data.replace(/<[^>]*>?|[\n\r]|\s+/gm, " ").trim();
                             if (data.length > 50) {
                                 data = data.substring(0, 47) + "...";
                             }
-                            throw new Error(bean.msg + ", but keyword is not in [" + data + "]");
+                            throw new Error(bean.msg + ", but keyword is " +
+                                (keywordFound ? "present" : "not") + " in [" + data + "]");
                         }
 
+                    } else if (this.type === "json-query") {
+                        let data = res.data;
+
+                        // convert data to object
+                        if (typeof data === "string") {
+                            data = JSON.parse(data);
+                        }
+
+                        let expression = jsonata(this.jsonPath);
+
+                        let result = await expression.evaluate(data);
+
+                        if (result.toString() === this.expectedValue) {
+                            bean.msg += ", expected value is found";
+                            bean.status = UP;
+                        } else {
+                            throw new Error(bean.msg + ", but value is not equal to expected value, value was: [" + result + "]");
+                        }
                     }
 
                 } else if (this.type === "port") {
@@ -525,7 +565,7 @@ class Monitor extends BeanModel {
                             // No need to insert successful heartbeat for push type, so end here
                             retries = 0;
                             log.debug("monitor", `[${this.name}] timeout = ${timeout}`);
-                            this.heartbeatInterval = setTimeout(beat, timeout);
+                            this.heartbeatInterval = setTimeout(safeBeat, timeout);
                             return;
                         }
                     } else {
@@ -618,9 +658,15 @@ class Monitor extends BeanModel {
 
                     log.debug("monitor", `[${this.name}] Axios Request`);
                     let res = await axios.request(options);
+
                     if (res.data.State.Running) {
-                        bean.status = UP;
-                        bean.msg = res.data.State.Status;
+                        if (res.data.State.Health && res.data.State.Health.Status !== "healthy") {
+                            bean.status = PENDING;
+                            bean.msg = res.data.State.Health.Status;
+                        } else {
+                            bean.status = UP;
+                            bean.msg = res.data.State.Health ? res.data.State.Health.Status : res.data.State.Status;
+                        }
                     } else {
                         throw Error("Container State is " + res.data.State.Status);
                     }
@@ -649,7 +695,6 @@ class Monitor extends BeanModel {
                         grpcEnableTls: this.grpcEnableTls,
                         grpcMethod: this.grpcMethod,
                         grpcBody: this.grpcBody,
-                        keyword: this.keyword
                     };
                     const response = await grpcQuery(options);
                     bean.ping = dayjs().valueOf() - startTime;
@@ -662,13 +707,14 @@ class Monitor extends BeanModel {
                         bean.status = DOWN;
                         bean.msg = `Error in send gRPC ${response.code} ${response.errorMessage}`;
                     } else {
-                        if (response.data.toString().includes(this.keyword)) {
+                        let keywordFound = response.data.toString().includes(this.keyword);
+                        if (keywordFound === !this.isInvertKeyword()) {
                             bean.status = UP;
-                            bean.msg = `${responseData}, keyword [${this.keyword}] is found`;
+                            bean.msg = `${responseData}, keyword [${this.keyword}] ${keywordFound ? "is" : "not"} found`;
                         } else {
-                            log.debug("monitor:", `GRPC response [${response.data}] + ", but keyword [${this.keyword}] is not in [" + ${response.data} + "]"`);
+                            log.debug("monitor:", `GRPC response [${response.data}] + ", but keyword [${this.keyword}] is ${keywordFound ? "present" : "not"} in [" + ${response.data} + "]"`);
                             bean.status = DOWN;
-                            bean.msg = `, but keyword [${this.keyword}] is not in [" + ${responseData} + "]`;
+                            bean.msg = `, but keyword [${this.keyword}] is ${keywordFound ? "present" : "not"} in [" + ${responseData} + "]`;
                         }
                     }
                 } else if (this.type === "postgres") {
@@ -715,7 +761,8 @@ class Monitor extends BeanModel {
                             this.radiusCalledStationId,
                             this.radiusCallingStationId,
                             this.radiusSecret,
-                            port
+                            port,
+                            this.interval * 1000 * 0.8,
                         );
                         if (resp.code) {
                             bean.msg = resp.code;
@@ -740,7 +787,7 @@ class Monitor extends BeanModel {
                 } else if (this.type in UptimeKumaServer.monitorTypeList) {
                     let startTime = dayjs().valueOf();
                     const monitorType = UptimeKumaServer.monitorTypeList[this.type];
-                    await monitorType.check(this, bean);
+                    await monitorType.check(this, bean, UptimeKumaServer.getInstance());
                     if (!bean.ping) {
                         bean.ping = dayjs().valueOf() - startTime;
                     }
@@ -1461,6 +1508,17 @@ class Monitor extends BeanModel {
         }
 
         return childrenIDs;
+    }
+
+    /**
+     * Unlinks all children of the the group monitor
+     * @param {number} groupID ID of group to remove children of
+     * @returns {Promise<void>}
+     */
+    static async unlinkAllChildren(groupID) {
+        return await R.exec("UPDATE `monitor` SET parent = ? WHERE parent = ? ", [
+            null, groupID
+        ]);
     }
 
     /**

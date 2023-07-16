@@ -3,6 +3,7 @@ import vue from "@vitejs/plugin-vue";
 import { defineConfig } from "vite";
 import visualizer from "rollup-plugin-visualizer";
 import viteCompression from "vite-plugin-compression";
+import commonjs from "vite-plugin-commonjs";
 
 const postCssScss = require("postcss-scss");
 const postcssRTLCSS = require("postcss-rtlcss");
@@ -18,6 +19,7 @@ export default defineConfig({
         "FRONTEND_VERSION": JSON.stringify(process.env.npm_package_version),
     },
     plugins: [
+        commonjs(),
         vue(),
         legacy({
             targets: [ "since 2015" ],
@@ -42,6 +44,9 @@ export default defineConfig({
         }
     },
     build: {
+        commonjsOptions: {
+            include: [ /.js$/ ],
+        },
         rollupOptions: {
             output: {
                 manualChunks(id, { getModuleInfo, getModuleIds }) {
