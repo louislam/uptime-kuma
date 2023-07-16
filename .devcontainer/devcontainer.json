@@ -1,0 +1,10 @@
+{
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:20-bullseye",
+
+  "customizations": {
+    "vscode": {
+      "extensions": ["streetsidesoftware.code-spell-checker"]
+    }
+  },
+  "forwardPorts": [3000,3001]
+}
