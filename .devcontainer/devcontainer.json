@@ -3,12 +3,11 @@
     "features": {
         "ghcr.io/devcontainers/features/github-cli:1": {}
     },
-    "waitFor": "onCreateCommand",
     "updateContentCommand": "npm ci",
     "postCreateCommand": "",
     "postAttachCommand": {
         "frontend-dev": "npm run start-frontend-devcontainer",
-        "backend-dev": "npm run start-backend-dev",
+        "server-dev": "npm run start-server-dev",
         "open-port": "gh codespace ports visibility 3001:public -c $CODESPACE_NAME"
     },
     "customizations": {
