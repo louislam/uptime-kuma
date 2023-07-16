@@ -17,11 +17,11 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal" :disabled="groupName == '' || groupName == null" @click="confirm">
-                        {{ $t("Confirm") }}
-                    </button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                         {{ $t("Cancel") }}
+                    </button>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal" :disabled="groupName == '' || groupName == null" @click="confirm">
+                        {{ $t("Confirm") }}
                     </button>
                 </div>
             </div>
