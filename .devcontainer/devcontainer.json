@@ -1,10 +1,16 @@
 {
-  "image": "mcr.microsoft.com/devcontainers/typescript-node:20-bullseye",
-
-  "customizations": {
-    "vscode": {
-      "extensions": ["streetsidesoftware.code-spell-checker"]
-    }
-  },
-  "forwardPorts": [3000,3001]
+    "image": "mcr.microsoft.com/devcontainers/typescript-node:20-bullseye",
+    "waitFor": "onCreateCommand",
+    "updateContentCommand": "npm ci",
+    "postCreateCommand": "",
+    "postAttachCommand": {
+        "frontend-dev": "npm run start-frontend-dev",
+        "backend-dev": "npm run start-backend-dev",
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": ["streetsidesoftware.code-spell-checker"]
+        }
+    },
+    "forwardPorts": [3000, 3001]
 }
