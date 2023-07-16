@@ -71,8 +71,8 @@ class Database {
         "patch-monitor-tls.sql": true,
         "patch-maintenance-cron.sql": true,
         "patch-add-parent-monitor.sql": true,
-        "patch-added-kafka-producer.sql": true,
         "patch-add-invert-keyword.sql": true,
+        "patch-added-kafka-producer.sql": true,
     };
 
     /**
