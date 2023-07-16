@@ -99,7 +99,7 @@
                     </div>
 
                     <div class="modal-footer">
-                        <button v-if="tag" type="button" class="btn btn-danger" :disabled="processing" @click="deleteConfirm">
+                        <button v-if="tag && tag.id !== null" type="button" class="btn btn-danger" :disabled="processing" @click="deleteConfirm">
                             {{ $t("Delete") }}
                         </button>
                         <button type="submit" class="btn btn-primary" :disabled="processing">
