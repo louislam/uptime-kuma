@@ -20,6 +20,7 @@ const { CacheableDnsHttpAgent } = require("../cacheable-dns-http-agent");
 const { DockerHost } = require("../docker");
 const { UptimeCacheList } = require("../uptime-cache-list");
 const Gamedig = require("gamedig");
+const jsonata = require("jsonata");
 const jwt = require("jsonwebtoken");
 
 /**
@@ -126,6 +127,8 @@ class Monitor extends BeanModel {
             radiusCallingStationId: this.radiusCallingStationId,
             game: this.game,
             httpBodyEncoding: this.httpBodyEncoding,
+            jsonPath: this.jsonPath,
+            expectedValue: this.expectedValue,
             kafkaProducerTopic: this.kafkaProducerTopic,
             kafkaProducerBrokers: JSON.parse(this.kafkaProducerBrokers),
             kafkaProducerSsl: this.kafkaProducerSsl === "1" && true || false,
@@ -326,7 +329,7 @@ class Monitor extends BeanModel {
                         bean.msg = "Group empty";
                     }
 
-                } else if (this.type === "http" || this.type === "keyword") {
+                } else if (this.type === "http" || this.type === "keyword" || this.type === "json-query") {
                     // Do not do any queries/high loading things before the "bean.ping"
                     let startTime = dayjs().valueOf();
 
@@ -454,7 +457,7 @@ class Monitor extends BeanModel {
 
                     if (this.type === "http") {
                         bean.status = UP;
-                    } else {
+                    } else if (this.type === "keyword") {
 
                         let data = res.data;
 
@@ -476,6 +479,24 @@ class Monitor extends BeanModel {
                                 (keywordFound ? "present" : "not") + " in [" + data + "]");
                         }
 
+                    } else if (this.type === "json-query") {
+                        let data = res.data;
+
+                        // convert data to object
+                        if (typeof data === "string") {
+                            data = JSON.parse(data);
+                        }
+
+                        let expression = jsonata(this.jsonPath);
+
+                        let result = await expression.evaluate(data);
+
+                        if (result.toString() === this.expectedValue) {
+                            bean.msg += ", expected value is found";
+                            bean.status = UP;
+                        } else {
+                            throw new Error(bean.msg + ", but value is not equal to expected value, value was: [" + result + "]");
+                        }
                     }
 
                 } else if (this.type === "port") {
@@ -550,7 +571,7 @@ class Monitor extends BeanModel {
                             // No need to insert successful heartbeat for push type, so end here
                             retries = 0;
                             log.debug("monitor", `[${this.name}] timeout = ${timeout}`);
-                            this.heartbeatInterval = setTimeout(beat, timeout);
+                            this.heartbeatInterval = setTimeout(safeBeat, timeout);
                             return;
                         }
                     } else {
