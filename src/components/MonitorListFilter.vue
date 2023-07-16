@@ -81,10 +81,10 @@
             <template #status>
                 <span v-if="filterState.active?.length === 1">
                     <span v-if="filterState.active[0]">{{ $t("Running") }}</span>
-                    <span v-else>{{ $t("Paused") }}</span>
+                    <span v-else>{{ $t("filterActivePaused") }}</span>
                 </span>
                 <span v-else>
-                    {{ $t('Active') }}
+                    {{ $t("filterActive") }}
                 </span>
             </template>
             <template #dropdown>
@@ -104,7 +104,7 @@
                 <li>
                     <div class="dropdown-item" tabindex="0" @click.stop="toggleActiveFilter(false)">
                         <div class="d-flex align-items-center justify-content-between">
-                            <span>{{ $t("Paused") }}</span>
+                            <span>{{ $t("filterActivePaused") }}</span>
                             <span class="ps-3">
                                 {{ $root.stats.pause }}
                                 <span v-if="filterState.active?.includes(false)" class="px-1 filter-active">

@@ -155,6 +155,8 @@
     "Disable 2FA": "Disable 2FA",
     "2FA Settings": "2FA Settings",
     "Two Factor Authentication": "Two Factor Authentication",
+    "filterActive": "Active",
+    "filterActivePaused": "Paused",
     "Active": "Active",
     "Inactive": "Inactive",
     "Token": "Token",
