@@ -1345,6 +1345,8 @@ message HealthCheckResponse {
                 this.monitor.url = this.monitor.url.trim();
             }
 
+            let createdNewParent = false;
+
             if (this.draftGroupName && this.monitor.parent === -1) {
                 // Create Monitor with name of draft group
                 const res = await new Promise((resolve) => {
@@ -1353,12 +1355,12 @@ message HealthCheckResponse {
                         type: "group",
                         name: this.draftGroupName,
                         interval: this.monitor.interval,
+                        active: false,
                     }, resolve);
                 });
 
-                console.log(res);
-
                 if (res.ok) {
+                    createdNewParent = true;
                     this.monitor.parent = res.monitorID;
                 } else {
                     toast.error(res.msg);
@@ -1391,6 +1393,11 @@ message HealthCheckResponse {
                     this.$root.toastRes(res);
                     this.init();
                 });
+            }
+
+            // Start the new parent monitor after edit is done
+            if (createdNewParent) {
+                await this.$root.getSocket().emit("resumeMonitor", this.monitor.parent, () => {});
             }
         },
 

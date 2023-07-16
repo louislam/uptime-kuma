@@ -657,7 +657,10 @@ let needSetup = false;
                 await updateMonitorNotification(bean.id, notificationIDList);
 
                 await server.sendMonitorList(socket);
-                await startMonitor(socket.userID, bean.id);
+
+                if (monitor.active !== false) {
+                    await startMonitor(socket.userID, bean.id);
+                }
 
                 log.info("monitor", `Added Monitor: ${monitor.id} User ID: ${socket.userID}`);
 
