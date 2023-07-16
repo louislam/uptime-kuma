@@ -331,8 +331,12 @@ export default {
          */
         toastRes(res) {
             let msg = res.msg;
-            if (res.msgTranslated) {
-                msg = this.$t(msg);
+            if (res.msgi18n) {
+                if (msg != null && typeof msg === "object") {
+                    msg = this.$t(msg.key, msg.values);
+                } else {
+                    msg = this.$t(msg);
+                }
             }
 
             if (res.ok) {

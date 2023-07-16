@@ -61,7 +61,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
             callback({
                 ok: true,
                 msg: "Saved.",
-                msgTranslated: true,
+                msgi18n: true,
                 maintenanceID: bean.id,
             });
 
