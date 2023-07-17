@@ -73,6 +73,9 @@
                                         <option value="mysql">
                                             MySQL/MariaDB
                                         </option>
+                                        <option value="db2">
+                                            DB2
+                                        </option>
                                         <option value="mongodb">
                                             MongoDB
                                         </option>
@@ -367,7 +370,7 @@
                             </template>
 
                             <!-- SQL Server / PostgreSQL / MySQL -->
-                            <template v-if="monitor.type === 'sqlserver' || monitor.type === 'postgres' || monitor.type === 'mysql'">
+                            <template v-if="monitor.type === 'sqlserver' || monitor.type === 'postgres' || monitor.type === 'mysql' || monitor.type === 'db2'">
                                 <div class="my-3">
                                     <label for="sqlConnectionString" class="form-label">{{ $t("Connection String") }}</label>
 
@@ -378,6 +381,9 @@
                                         <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control">
                                     </template>
                                     <template v-if="monitor.type === 'mysql'">
+                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control">
+                                    </template>
+                                    <template v-if="monitor.type === 'db2'">
                                         <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control">
                                     </template>
                                 </div>
