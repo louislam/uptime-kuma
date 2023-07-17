@@ -1,5 +1,5 @@
 <template>
-    <transition name="slide-fade" appear>
+    <transition ref="tableContainer" name="slide-fade" appear>
         <div v-if="$route.name === 'DashboardHome'">
             <h1 class="mb-3">
                 {{ $t("Quick Stats") }}
@@ -55,7 +55,6 @@
                         </tr>
                     </tbody>
                 </table>
-
                 <div class="d-flex justify-content-center kuma_pagination">
                     <pagination
                         v-model="page"
@@ -80,6 +79,12 @@ export default {
         Datetime,
         Status,
         Pagination,
+    },
+    props: {
+        calculatedHeight: {
+            type: Number,
+            default: 0
+        }
     },
     data() {
         return {
@@ -132,6 +137,19 @@ export default {
             const startIndex = this.perPage * (this.page - 1);
             const endIndex = startIndex + this.perPage;
             return this.heartBeatList.slice(startIndex, endIndex);
+        },
+    },
+    watch: {
+        importantHeartBeatList() {
+            this.$nextTick(() => {
+                const tableContainer = this.$refs.tableContainer;
+                const tableContainerHeight = tableContainer.offsetHeight;
+                const availableHeight = this.calculatedHeight - tableContainerHeight;
+                const additionalPerPage = Math.floor(availableHeight / 58);
+                if (additionalPerPage > 0) {
+                    this.perPage = Math.max(25, this.perPage + additionalPerPage);
+                }
+            });
         },
     },
 };
