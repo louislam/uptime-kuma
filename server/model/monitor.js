@@ -42,6 +42,7 @@ class Monitor extends BeanModel {
             id: this.id,
             name: this.name,
             sendUrl: this.sendUrl,
+            type: this.type,
         };
 
         if (this.sendUrl) {
@@ -52,7 +53,7 @@ class Monitor extends BeanModel {
             obj.tags = await this.getTags();
         }
 
-        if (certExpiry) {
+        if (certExpiry && this.type === "http") {
             const { certExpiryDaysRemaining, validCert } = await this.getCertExpiry(this.id);
             obj.certExpiryDaysRemaining = certExpiryDaysRemaining;
             obj.validCert = validCert;

@@ -60,10 +60,14 @@
                                                     @click="$refs.monitorSettingDialog.show(group, monitor)"
                                                 />
                                             </span>
-                                            <span v-if="showCertificateExpiry" class="badge rounded-pill" :class=" 'bg-' + certExpiryColor(monitor)"> {{ $t("Expiry") }}: {{ formattedCertExpiryMessage(monitor) }} </span>
                                         </div>
-                                        <div v-if="showTags" class="tags">
-                                            <Tag v-for="tag in monitor.element.tags" :key="tag" :item="tag" :size="'sm'" />
+                                        <div class="extra-info">
+                                            <div v-if="showCertificateExpiry && monitor.element.type === 'http'">
+                                                <Tag :item="{name: $t('Cert Exp.'), value: formattedCertExpiryMessage(monitor), color: certExpiryColor(monitor)}" :size="'sm'" />
+                                            </div>
+                                            <div v-if="showTags">
+                                                <Tag v-for="tag in monitor.element.tags" :key="tag" :item="tag" :size="'sm'" />
+                                            </div>
                                         </div>
                                     </div>
                                     <div :key="$root.userHeartbeatBar" class="col-3 col-md-4">
@@ -182,9 +186,9 @@ export default {
          */
         certExpiryColor(monitor) {
             if (monitor?.element?.validCert && monitor.element.certExpiryDaysRemaining > 7) {
-                return "primary";
+                return "#059669";
             }
-            return "danger";
+            return "#DC2626";
         },
     }
 };
@@ -192,6 +196,15 @@ export default {
 
 <style lang="scss" scoped>
 @import "../assets/vars";
+
+.extra-info {
+    display: flex;
+    margin-bottom: 0.5rem;
+}
+
+.extra-info > div > div:first-child {
+    margin-left: 0 !important;
+}
 
 .no-monitor-msg {
     position: absolute;
