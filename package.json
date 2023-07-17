@@ -19,6 +19,7 @@
         "lint": "npm run lint:js && npm run lint:style",
         "dev": "concurrently -k -r \"wait-on tcp:3000 && npm run start-server-dev \" \"npm run start-frontend-dev\"",
         "start-frontend-dev": "cross-env NODE_ENV=development vite --host --config ./config/vite.config.js",
+        "start-frontend-devcontainer": "cross-env NODE_ENV=development DEVCONTAINER=1 vite --host --config ./config/vite.config.js",
         "start": "npm run start-server",
         "start-server": "node server/server.js",
         "start-server-dev": "cross-env NODE_ENV=development node server/server.js",

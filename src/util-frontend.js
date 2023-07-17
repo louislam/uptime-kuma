@@ -72,11 +72,23 @@ export function setPageLocale() {
  */
 export function getResBaseURL() {
     const env = process.env.NODE_ENV;
-    if (env === "development" || localStorage.dev === "dev") {
+    if (env === "development" && isDevContainer()) {
+        return location.protocol + "//" + getDevContainerServerHostname();
+    } else if (env === "development" || localStorage.dev === "dev") {
         return location.protocol + "//" + location.hostname + ":3001";
     } else {
         return "";
     }
+}
+
+export function isDevContainer() {
+    // eslint-disable-next-line no-undef
+    return (typeof DEVCONTAINER === "number" && DEVCONTAINER === 1);
+}
+
+export function getDevContainerServerHostname() {
+    // replace -3000 with -3001
+    return location.hostname.replace(/-3000\.preview\.app\.github\.dev/, "-3001.preview.app.github.dev");
 }
 
 /**
