@@ -168,7 +168,7 @@ class Monitor extends BeanModel {
     async isActive() {
         const parentActive = await Monitor.isParentActive(this.id);
 
-        return this.active && parentActive;
+        return (this.active === 1) && parentActive;
     }
 
     /**

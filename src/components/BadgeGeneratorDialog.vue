@@ -22,78 +22,78 @@
                     </div>
 
                     <div v-if=" (parameters[badge.type || 'null'] || [] ).includes('duration') " class="mb-3">
-                        <label for="duration" class="form-label">{{ $t("Badge Duration") }}</label>
-                        <input id="duration" v-model="badge.duration" type="number" min="0" class="form-control" required>
+                        <label for="duration" class="form-label">{{ $t("Badge Duration (in hours)") }}</label>
+                        <input id="duration" v-model="badge.duration" type="number" min="0" placeholder="24" class="form-control">
                     </div>
 
                     <div v-if=" (parameters[badge.type || 'null'] || [] ).includes('label') " class="mb-3">
                         <label for="label" class="form-label">{{ $t("Badge Label") }}</label>
-                        <input id="label" v-model="badge.label" type="text" class="form-control" required>
+                        <input id="label" v-model="badge.label" type="text" class="form-control">
                     </div>
 
                     <div v-if=" (parameters[badge.type || 'null'] || [] ).includes('prefix') " class="mb-3">
                         <label for="prefix" class="form-label">{{ $t("Badge Prefix") }}</label>
-                        <input id="prefix" v-model="badge.prefix" type="text" class="form-control" required>
+                        <input id="prefix" v-model="badge.prefix" type="text" class="form-control">
                     </div>
 
                     <div v-if=" (parameters[badge.type || 'null'] || [] ).includes('suffix') " class="mb-3">
                         <label for="suffix" class="form-label">{{ $t("Badge Suffix") }}</label>
-                        <input id="suffix" v-model="badge.suffix" type="text" class="form-control" required>
+                        <input id="suffix" v-model="badge.suffix" type="text" placeholder="%" class="form-control">
                     </div>
 
                     <div v-if=" (parameters[badge.type || 'null'] || [] ).includes('labelColor') " class="mb-3">
                         <label for="labelColor" class="form-label">{{ $t("Badge Label Color") }}</label>
-                        <input id="labelColor" v-model="badge.labelColor" type="text" class="form-control" required>
+                        <input id="labelColor" v-model="badge.labelColor" type="text" placeholder="#555" class="form-control">
                     </div>
 
                     <div v-if=" (parameters[badge.type || 'null'] || [] ).includes('color') " class="mb-3">
                         <label for="color" class="form-label">{{ $t("Badge Color") }}</label>
-                        <input id="color" v-model="badge.color" type="text" class="form-control" required>
+                        <input id="color" v-model="badge.color" type="text" :placeholder="badgeConstants.defaultUpColor" class="form-control">
                     </div>
 
                     <div v-if=" (parameters[badge.type || 'null'] || [] ).includes('labelPrefix') " class="mb-3">
                         <label for="labelPrefix" class="form-label">{{ $t("Badge Label Prefix") }}</label>
-                        <input id="labelPrefix" v-model="badge.labelPrefix" type="text" class="form-control" required>
+                        <input id="labelPrefix" v-model="badge.labelPrefix" type="text" class="form-control">
                     </div>
 
                     <div v-if=" (parameters[badge.type || 'null'] || [] ).includes('labelSuffix') " class="mb-3">
                         <label for="labelSuffix" class="form-label">{{ $t("Badge Label Suffix") }}</label>
-                        <input id="labelSuffix" v-model="badge.labelSuffix" type="text" class="form-control" required>
+                        <input id="labelSuffix" v-model="badge.labelSuffix" type="text" placeholder="h" class="form-control">
                     </div>
 
                     <div v-if=" (parameters[badge.type || 'null'] || [] ).includes('upColor') " class="mb-3">
                         <label for="upColor" class="form-label">{{ $t("Badge Up Color") }}</label>
-                        <input id="upColor" v-model="badge.upColor" type="text" class="form-control" required>
+                        <input id="upColor" v-model="badge.upColor" type="text" class="form-control" :placeholder="badgeConstants.defaultUpColor">
                     </div>
 
                     <div v-if=" (parameters[badge.type || 'null'] || [] ).includes('downColor') " class="mb-3">
                         <label for="downColor" class="form-label">{{ $t("Badge Down Color") }}</label>
-                        <input id="downColor" v-model="badge.downColor" type="text" class="form-control" required>
+                        <input id="downColor" v-model="badge.downColor" type="text" class="form-control" :placeholder="badgeConstants.defaultDownColor">
                     </div>
 
                     <div v-if=" (parameters[badge.type || 'null'] || [] ).includes('pendingColor') " class="mb-3">
                         <label for="pendingColor" class="form-label">{{ $t("Badge Pending Color") }}</label>
-                        <input id="pendingColor" v-model="badge.pendingColor" type="text" class="form-control" required>
+                        <input id="pendingColor" v-model="badge.pendingColor" type="text" class="form-control" :placeholder="badgeConstants.defaultPendingColor">
                     </div>
 
                     <div v-if=" (parameters[badge.type || 'null'] || [] ).includes('maintenanceColor') " class="mb-3">
                         <label for="maintenanceColor" class="form-label">{{ $t("Badge Maintenance Color") }}</label>
-                        <input id="maintenanceColor" v-model="badge.maintenanceColor" type="text" class="form-control" required>
+                        <input id="maintenanceColor" v-model="badge.maintenanceColor" type="text" class="form-control" :placeholder="badgeConstants.defaultMaintenanceColor">
                     </div>
 
                     <div v-if=" (parameters[badge.type || 'null'] || [] ).includes('warnColor') " class="mb-3">
                         <label for="warnColor" class="form-label">{{ $t("Badge Warn Color") }}</label>
-                        <input id="warnColor" v-model="badge.warnColor" type="number" min="0" class="form-control" required>
+                        <input id="warnColor" v-model="badge.warnColor" type="text" class="form-control" :placeholder="badgeConstants.defaultMaintenanceColor">
                     </div>
 
                     <div v-if=" (parameters[badge.type || 'null'] || [] ).includes('warnDays') " class="mb-3">
                         <label for="warnDays" class="form-label">{{ $t("Badge Warn Days") }}</label>
-                        <input id="warnDays" v-model="badge.warnDays" type="number" min="0" class="form-control" required>
+                        <input id="warnDays" v-model="badge.warnDays" type="number" min="0" class="form-control" :placeholder="badgeConstants.defaultCertExpireWarnDays">
                     </div>
 
                     <div v-if=" (parameters[badge.type || 'null'] || [] ).includes('downDays') " class="mb-3">
                         <label for="downDays" class="form-label">{{ $t("Badge Down Days") }}</label>
-                        <input id="downDays" v-model="badge.downDays" type="number" min="0" class="form-control" required>
+                        <input id="downDays" v-model="badge.downDays" type="number" min="0" class="form-control" :placeholder="badgeConstants.defaultCertExpireDownDays">
                     </div>
 
                     <div class="mb-3">
@@ -109,12 +109,16 @@
 
                     <div class="mb-3">
                         <label for="value" class="form-label">{{ $t("Badge value (For Testing only.)") }}</label>
-                        <input id="value" v-model="badge.value" type="text" class="form-control" required>
+                        <input id="value" v-model="badge.value" type="text" class="form-control">
+                    </div>
+
+                    <div class="mb-3 pt-3 d-flex justify-content-center">
+                        <img :src="badgeURL" :alt="$t('Badge Preview')">
                     </div>
 
                     <div class="my-3">
-                        <label for="push-url" class="form-label">{{ $t("Badge URL") }}</label>
-                        <CopyableInput id="push-url" v-model="badgeURL" type="url" disabled="disabled" />
+                        <label for="badge-url" class="form-label">{{ $t("Badge URL") }}</label>
+                        <CopyableInput id="badge-url" v-model="badgeURL" type="url" disabled="disabled" />
                     </div>
                 </div>
 
@@ -131,6 +135,7 @@
 <script lang="ts">
 import { Modal } from "bootstrap";
 import CopyableInput from "./CopyableInput.vue";
+import { default as serverConfig } from "../../server/config.js";
 
 export default {
     components: {
@@ -224,7 +229,8 @@ export default {
                     "color",
                     "labelColor",
                 ],
-            }
+            },
+            badgeConstants: serverConfig.badgeConstants,
         };
     },
 

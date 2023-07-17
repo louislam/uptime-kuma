@@ -7,7 +7,7 @@
         "url": "https://github.com/louislam/uptime-kuma.git"
     },
     "engines": {
-        "node": "14.* || 16.* || 18.*"
+        "node": "14 || 16 || 18 || >= 20.4.0"
     },
     "scripts": {
         "install-legacy": "npm install",
@@ -121,6 +121,7 @@
         "qs": "~6.10.4",
         "redbean-node": "~0.3.0",
         "redis": "~4.5.1",
+        "semver": "~7.5.4",
         "socket.io": "~4.6.1",
         "socket.io-client": "~4.6.1",
         "socks-proxy-agent": "6.1.1",
@@ -175,6 +176,7 @@
         "typescript": "~4.4.4",
         "v-pagination-3": "~0.1.7",
         "vite": "~4.4.1",
+        "vite-plugin-commonjs": "^0.8.0",
         "vite-plugin-compression": "^0.5.1",
         "vue": "~3.3.4",
         "vue-chartjs": "~5.2.0",
