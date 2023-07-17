@@ -1,35 +1,43 @@
 <template>
     <div class="shadow-box mb-3" :style="boxStyle">
         <div class="list-header">
-            <div v-if="Object.keys($root.monitorList).length > 0" class="selection-controls">
-                <template v-if="Object.keys(selectedMonitors).length === 0">
-                    <input id="select-mode-btn" v-model="selectMode" type="checkbox" class="btn-check" autocomplete="off" :value="true">
-                    <label class="btn btn-sm text-primary" for="select-mode-btn">{{ $t(selectMode ? "Cancel" : "Select") }}</label>
-                    <button v-if="selectMode" class="btn btn-sm text-primary" type="button" @click="selectAll">Select All</button>
-                </template>
-                <div v-else class="dropdown">
-                    <button id="selectionDropdownButton" class="btn btn-sm btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        {{ $t("With Selected...") }}
-                    </button>
-                    <ul class="dropdown-menu" :class="{'dropdown-menu-dark': isDarkTheme}" aria-labelledby="selectionDropdownButton">
-                        <li><a class="dropdown-item" href="#" @click="pauseDialog"><font-awesome-icon icon="pause" size="sm" /> {{ $t("Pause") }}</a></li>
-                        <li><a class="dropdown-item" href="#" @click="resumeSelected"><font-awesome-icon icon="play" size="sm" /> {{ $t("Resume") }}</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="#" @click="cancelSelectMode">{{ $t("Cancel") }}</a></li>
-                    </ul>
+            <div class="header-top">
+                <div v-if="Object.keys($root.monitorList).length > 0" class="selection-controls">
+                    <template v-if="Object.keys(selectedMonitors).length === 0">
+                        <input id="select-mode-btn" v-model="selectMode" type="checkbox" class="btn-check" autocomplete="off" :value="true">
+                        <label class="btn btn-sm text-primary" for="select-mode-btn">{{ $t(selectMode ? "Cancel" : "Select") }}</label>
+                        <button v-if="selectMode" class="btn btn-sm text-primary" type="button" @click="selectAll">Select All</button>
+                    </template>
+                    <div v-else class="dropdown">
+                        <button id="selectionDropdownButton" class="btn btn-sm btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            {{ $t("With Selected...") }}
+                        </button>
+                        <ul class="dropdown-menu" :class="{'dropdown-menu-dark': isDarkTheme}" aria-labelledby="selectionDropdownButton">
+                            <li><a class="dropdown-item" href="#" @click="pauseDialog"><font-awesome-icon icon="pause" size="sm" /> {{ $t("Pause") }}</a></li>
+                            <li><a class="dropdown-item" href="#" @click="resumeSelected"><font-awesome-icon icon="play" size="sm" /> {{ $t("Resume") }}</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" @click="cancelSelectMode">{{ $t("Cancel") }}</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="placeholder"></div>
+                <div class="search-wrapper">
+                    <a v-if="searchText == ''" class="search-icon">
+                        <font-awesome-icon icon="search" />
+                    </a>
+                    <a v-if="searchText != ''" class="search-icon" @click="clearSearchText">
+                        <font-awesome-icon icon="times" />
+                    </a>
+                    <form>
+                        <input
+                            v-model="searchText" class="form-control search-input" :placeholder="$t('Search...')"
+                            autocomplete="off"
+                        />
+                    </form>
                 </div>
             </div>
-            <div class="placeholder"></div>
-            <div class="search-wrapper">
-                <a v-if="searchText == ''" class="search-icon">
-                    <font-awesome-icon icon="search" />
-                </a>
-                <a v-if="searchText != ''" class="search-icon" @click="clearSearchText">
-                    <font-awesome-icon icon="times" />
-                </a>
-                <form>
-                    <input v-model="searchText" class="form-control search-input" :placeholder="$t('Search...')" autocomplete="off" />
-                </form>
+            <div class="header-filter">
+                <MonitorListFilter :filterState="filterState" @update-filter="updateFilter" />
             </div>
         </div>
         <div class="monitor-list" :class="{ scrollbar: scrollbar }">
@@ -58,12 +66,14 @@
 <script>
 import Confirm from "../components/Confirm.vue";
 import MonitorListItem from "../components/MonitorListItem.vue";
+import MonitorListFilter from "./MonitorListFilter.vue";
 import { getMonitorRelativeURL } from "../util.ts";
 
 export default {
     components: {
         Confirm,
         MonitorListItem,
+        MonitorListFilter,
     },
     props: {
         /** Should the scrollbar be shown */
@@ -77,6 +87,11 @@ export default {
             selectMode: false,
             selectedMonitors: {},
             windowTop: 0,
+            filterState: {
+                status: null,
+                active: null,
+                tags: null,
+            }
         };
     },
     computed: {
@@ -107,8 +122,8 @@ export default {
                 const loweredSearchText = this.searchText.toLowerCase();
                 result = result.filter(monitor => {
                     return monitor.name.toLowerCase().includes(loweredSearchText)
-                    || monitor.tags.find(tag => tag.name.toLowerCase().includes(loweredSearchText)
-                    || tag.value?.toLowerCase().includes(loweredSearchText));
+                        || monitor.tags.find(tag => tag.name.toLowerCase().includes(loweredSearchText)
+                            || tag.value?.toLowerCase().includes(loweredSearchText));
                 });
             } else {
                 result = result.filter(monitor => monitor.parent === null);
@@ -139,6 +154,27 @@ export default {
 
                 return m1.name.localeCompare(m2.name);
             });
+
+            if (this.filterState.status != null && this.filterState.status.length > 0) {
+                result.map(monitor => {
+                    if (monitor.id in this.$root.lastHeartbeatList && this.$root.lastHeartbeatList[monitor.id]) {
+                        monitor.status = this.$root.lastHeartbeatList[monitor.id].status;
+                    }
+                });
+                result = result.filter(monitor => this.filterState.status.includes(monitor.status));
+            }
+
+            if (this.filterState.active != null && this.filterState.active.length > 0) {
+                result = result.filter(monitor => this.filterState.active.includes(monitor.active));
+            }
+
+            if (this.filterState.tags != null && this.filterState.tags.length > 0) {
+                result = result.filter(monitor => {
+                    return monitor.tags.map(tag => tag.tag_id) // convert to array of tag IDs
+                        .filter(monitorTagId => this.filterState.tags.includes(monitorTagId)) // perform Array Intersaction between filter and monitor's tags
+                        .length > 0;
+                });
+            }
 
             return result;
         },
@@ -178,6 +214,13 @@ export default {
         /** Clear the search bar */
         clearSearchText() {
             this.searchText = "";
+        },
+        /**
+         * Update the MonitorList Filter
+         * @param {object} newFilter Object with new filter
+         */
+        updateFilter(newFilter) {
+            this.filterState = newFilter;
         },
         /** Select all monitors */
         selectAll() {
@@ -258,8 +301,6 @@ export default {
     margin: -10px;
     margin-bottom: 10px;
     padding: 10px;
-    display: flex;
-    justify-content: space-between;
 
     .dark & {
         background-color: $dark-header-bg;
@@ -269,6 +310,17 @@ export default {
     .dropdown-menu {
         padding-left: 0;
     }
+}
+
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-filter {
+    display: flex;
+    align-items: center;
 }
 
 @media (max-width: 770px) {
@@ -334,4 +386,8 @@ export default {
     gap: 0;
 }
 
+.bottom-style {
+    padding-left: 67px;
+    margin-top: 5px;
+}
 </style>
