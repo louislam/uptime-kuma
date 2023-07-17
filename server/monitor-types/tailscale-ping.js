@@ -20,7 +20,7 @@ class TailscalePing extends MonitorType {
      */
     async check(monitor, heartbeat) {
         try {
-            let tailscaleOutput = await this.runTailscalePing(monitor.hostname);
+            let tailscaleOutput = await this.runTailscalePing(monitor.hostname, monitor.interval);
             this.parseTailscaleOutput(tailscaleOutput, heartbeat);
         } catch (err) {
             log.debug("Tailscale", err);
@@ -36,13 +36,13 @@ class TailscalePing extends MonitorType {
      * @returns {Promise<string>} - A Promise that resolves to the output of the Tailscale ping command
      * @throws Will throw an error if the command execution encounters any error.
      */
-    async runTailscalePing(hostname) {
+    async runTailscalePing(hostname, interval) {
         let cmd = `tailscale ping ${hostname}`;
 
         log.debug("Tailscale", cmd);
 
         return new Promise((resolve, reject) => {
-            let timeout = this.interval * 1000 * 0.8;
+            let timeout = interval * 1000 * 0.8;
             exec(cmd, { timeout: timeout }, (error, stdout, stderr) => {
                 // we may need to handle more cases if tailscale reports an error that isn't necessarily an error (such as not-logged in or DERP health-related issues)
                 if (error) {
