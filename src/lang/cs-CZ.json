@@ -806,5 +806,12 @@
     "Notify Channel": "Kanál nofitikací",
     "aboutNotifyChannel": "Upozornění kanálu spustí upozornění na počítači nebo v mobilu pro všechny členy kanálu, ať už jsou dostupní nebo ne.",
     "filterActive": "Aktivní",
-    "filterActivePaused": "Pozastaveno"
+    "filterActivePaused": "Pozastaveno",
+    "Enter the list of brokers": "Vytvořte seznam zprostředkovatelů",
+    "Press Enter to add broker": "Stiskem klávesy Enter přidáte zprostředkovatele",
+    "Kafka Topic Name": "Kafka název tématu",
+    "Enable Kafka SSL": "Zapnout Kafka SSL",
+    "Mechanism": "Mechanismus",
+    "Kafka Brokers": "Kafka zprostředkovatelé",
+    "Authorization Identity": "Autorizační identita"
 }
