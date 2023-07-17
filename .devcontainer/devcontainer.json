@@ -1,5 +1,5 @@
 {
-    "image": "mcr.microsoft.com/devcontainers/javascript-node:dev-20-bookworm",
+    "image": "mcr.microsoft.com/devcontainers/javascript-node:dev-18-bookworm",
     "features": {
         "ghcr.io/devcontainers/features/github-cli:1": {}
     },
@@ -14,8 +14,7 @@
         "vscode": {
             "extensions": [
                 "streetsidesoftware.code-spell-checker",
-                "dbaeumer.vscode-eslint",
-                "GitHub.copilot"
+                "dbaeumer.vscode-eslint"
             ]
         }
     },
