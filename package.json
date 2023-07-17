@@ -101,6 +101,7 @@
         "jsonata": "^2.0.3",
         "jsonwebtoken": "~9.0.0",
         "jwt-decode": "~3.1.2",
+        "kafkajs": "^2.2.4",
         "limiter": "~2.1.0",
         "liquidjs": "^10.7.0",
         "mongodb": "~4.14.0",
