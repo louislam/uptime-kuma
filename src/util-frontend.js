@@ -82,6 +82,7 @@ export function getResBaseURL() {
 }
 
 export function isDevContainer() {
+    // eslint-disable-next-line no-undef
     return (typeof DEVCONTAINER === "number" && DEVCONTAINER === 1);
 }
 
