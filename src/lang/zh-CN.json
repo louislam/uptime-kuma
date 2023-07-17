@@ -808,5 +808,7 @@
     "Badge Duration (in hours)": "徽章时间范围（以小时为单位）",
     "Badge Preview": "徽章预览",
     "Notify Channel": "通知该频道",
-    "aboutNotifyChannel": "勾选“通知该频道”，会令该频道内所有成员都收到一条桌面端或移动端通知，无论其状态是在线或离开。"
+    "aboutNotifyChannel": "勾选“通知该频道”，会令该频道内所有成员都收到一条桌面端或移动端通知，无论其状态是在线或离开。",
+    "filterActive": "启用",
+    "filterActivePaused": "暂停"
 }
