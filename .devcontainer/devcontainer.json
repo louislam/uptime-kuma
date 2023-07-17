@@ -12,7 +12,11 @@
     },
     "customizations": {
         "vscode": {
-            "extensions": ["streetsidesoftware.code-spell-checker"]
+            "extensions": [
+				"streetsidesoftware.code-spell-checker",
+				"dbaeumer.vscode-eslint",
+				"GitHub.copilot"
+			]
         }
     },
     "forwardPorts": [3000, 3001]
