@@ -17,6 +17,7 @@ export default defineConfig({
     },
     define: {
         "FRONTEND_VERSION": JSON.stringify(process.env.npm_package_version),
+        "DEVCONTAINER": process.env.DEVCONTAINER,
     },
     plugins: [
         commonjs(),
