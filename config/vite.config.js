@@ -10,8 +10,6 @@ const postcssRTLCSS = require("postcss-rtlcss");
 
 const viteCompressionFilter = /\.(js|mjs|json|css|html|svg)$/i;
 
-console.log(process.env);
-
 // https://vitejs.dev/config/
 export default defineConfig({
     server: {
