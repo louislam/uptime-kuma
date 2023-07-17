@@ -10,6 +10,8 @@ const postcssRTLCSS = require("postcss-rtlcss");
 
 const viteCompressionFilter = /\.(js|mjs|json|css|html|svg)$/i;
 
+console.log(process.env);
+
 // https://vitejs.dev/config/
 export default defineConfig({
     server: {
@@ -17,7 +19,9 @@ export default defineConfig({
     },
     define: {
         "FRONTEND_VERSION": JSON.stringify(process.env.npm_package_version),
-        "DEVCONTAINER": process.env.DEVCONTAINER,
+        "DEVCONTAINER": JSON.stringify(process.env.DEVCONTAINER),
+        "GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN": JSON.stringify(process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN),
+        "CODESPACE_NAME": JSON.stringify(process.env.CODESPACE_NAME),
     },
     plugins: [
         commonjs(),

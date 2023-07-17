@@ -83,12 +83,19 @@ export function getResBaseURL() {
 
 export function isDevContainer() {
     // eslint-disable-next-line no-undef
-    return (typeof DEVCONTAINER === "number" && DEVCONTAINER === 1);
+    return (typeof DEVCONTAINER === "string" && DEVCONTAINER === "1");
 }
 
+/**
+ * Supports GitHub Codespaces only currently
+ */
 export function getDevContainerServerHostname() {
-    // replace -3000 with -3001
-    return location.hostname.replace(/-3000\.preview\.app\.github\.dev/, "-3001.preview.app.github.dev");
+    if (!isDevContainer()) {
+        return "";
+    }
+
+    // eslint-disable-next-line no-undef
+    return CODESPACE_NAME + "-3001." + GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN;
 }
 
 /**
