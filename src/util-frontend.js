@@ -72,13 +72,17 @@ export function setPageLocale() {
  */
 export function getResBaseURL() {
     const env = process.env.NODE_ENV;
-    if (env === "development" && import.meta.env.VITE_DEVCONTAINER === "1") {
+    if (env === "development" && isDevContainer()) {
         return location.protocol + "//" + getDevContainerServerHostname();
     } else if (env === "development" || localStorage.dev === "dev") {
         return location.protocol + "//" + location.hostname + ":3001";
     } else {
         return "";
     }
+}
+
+export function isDevContainer() {
+    return (typeof DEVCONTAINER === "number" && DEVCONTAINER === 1);
 }
 
 export function getDevContainerServerHostname() {

@@ -4,7 +4,7 @@ import jwtDecode from "jwt-decode";
 import Favico from "favico.js";
 import dayjs from "dayjs";
 import { DOWN, MAINTENANCE, PENDING, UP } from "../util.ts";
-import { getDevContainerServerHostname } from "../util-frontend.js";
+import { getDevContainerServerHostname, isDevContainer } from "../util-frontend.js";
 const toast = useToast();
 
 let socket;
@@ -94,7 +94,7 @@ export default {
 
             let wsHost;
             const env = process.env.NODE_ENV || "production";
-            if (env === "development" && import.meta.env.VITE_DEVCONTAINER === "1") {
+            if (env === "development" && isDevContainer()) {
                 wsHost = protocol + getDevContainerServerHostname();
             } else if (env === "development" || localStorage.dev === "dev") {
                 wsHost = protocol + location.hostname + ":3001";
