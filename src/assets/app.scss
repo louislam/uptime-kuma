@@ -436,12 +436,12 @@ optgroup {
 .monitor-list {
     &.scrollbar {
         overflow-y: auto;
-        height: calc(100% - 65px);
+        height: calc(100% - 107px);
     }
 
     @media (max-width: 770px) {
         &.scrollbar {
-            height: calc(100% - 40px);
+            height: calc(100% - 97px);
         }
     }
 
