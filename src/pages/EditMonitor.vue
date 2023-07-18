@@ -373,6 +373,12 @@
                                 <input id="retry-interval" v-model="monitor.retryInterval" type="number" class="form-control" required :min="minInterval" step="1">
                             </div>
 
+                            <!-- Timeout: HTTP / Keyword only -->
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword'" class="my-3">
+                                <label for="timeout" class="form-label">{{ $t("Request Timeout") }} ({{ $t("timeoutAfter", [ monitor.timeout || clampTimeout(monitor.interval) ]) }})</label>
+                                <input id="timeout" v-model="monitor.timeout" type="number" class="form-control" required min="0" step="0.1">
+                            </div>
+
                             <div class="my-3">
                                 <label for="resend-interval" class="form-label">
                                     {{ $t("Resend Notification if Down X times consecutively") }}
@@ -448,12 +454,6 @@
                                     </div>
                                 </div>
                             </template>
-
-                            <!-- Timeout: HTTP / Keyword only -->
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword'" class="my-3">
-                                <label for="timeout" class="form-label">{{ $t("Request Timeout") }} ({{ $t("timeoutAfter", [ monitor.timeout ]) }})</label>
-                                <input id="timeout" v-model="monitor.timeout" type="number" class="form-control" required min="0" step="0.1">
-                            </div>
 
                             <!-- Description -->
                             <div class="my-3">
@@ -912,13 +912,14 @@ message HealthCheckResponse {
             if (this.monitor.retryInterval === oldValue) {
                 this.monitor.retryInterval = value;
             }
-            // keep timeout within 80% range
-            this.clampTimeout(this.monitor.timeout);
+            this.monitor.timeout = this.clampTimeout(value);
         },
 
         "monitor.timeout"(value, oldValue) {
             // keep timeout within 80% range
-            this.clampTimeout(value);
+            if (value && value !== oldValue) {
+                this.monitor.timeout = this.clampTimeout(value);
+            }
         },
 
         "monitor.type"() {
@@ -1101,7 +1102,7 @@ message HealthCheckResponse {
                         }
                         // Handling for monitors that are missing/zeroed timeout
                         if (!this.monitor.timeout) {
-                            this.monitor.timeout = this.monitor.interval * 0.8;
+                            this.monitor.timeout = ~~(this.monitor.interval * 8) / 10;
                         }
                     } else {
                         toast.error(res.msg);
@@ -1222,10 +1223,12 @@ message HealthCheckResponse {
 
         // Clamp timeout
         clampTimeout(timeout) {
-            // limit to 80% of interval
-            const maxTimeout = this.monitor.interval * 0.8;
+            // limit to 80% of interval, narrowly avoiding epsilon bug
+            const maxTimeout = ~~(this.monitor.interval * 8 ) / 10;
+            const clamped = Math.max(0, Math.min(timeout, maxTimeout));
+
             // 0 will be treated as 80% of interval
-            this.monitor.timeout = Math.max(0, Math.min(timeout, maxTimeout));
+            return Number.isFinite(clamped) ? clamped : maxTimeout;
         }
     },
 };
