@@ -810,5 +810,19 @@
     "Notify Channel": "通知该频道",
     "aboutNotifyChannel": "勾选“通知该频道”，会令该频道内所有成员都收到一条桌面端或移动端通知，无论其状态是在线或离开。",
     "filterActive": "启用",
-    "filterActivePaused": "暂停"
+    "filterActivePaused": "暂停",
+    "Kafka Topic Name": "Kafka 主题名称",
+    "Press Enter to add broker": "按回车键添加缓存代理（broker）",
+    "Enter the list of brokers": "输入缓存代理（broker）列表",
+    "Kafka Brokers": "Kafka 缓存代理（Broker）",
+    "Pick a SASL Mechanism...": "选择一种 SASL 鉴权方式……",
+    "Mechanism": "鉴权方式",
+    "Kafka SASL Options": "Kafka SASL 选项",
+    "AccessKey Id": "密钥 ID（AccessKey Id）",
+    "Authorization Identity": "授权实体（Authorization Identity）",
+    "Session Token": "会话令牌（Session Token）",
+    "Secret AccessKey": "访问密钥（Secret AccessKey）",
+    "Enable Kafka Producer Auto Topic Creation": "启用 Kafka 生成者（Producer）自动创建主题（Topic）功能",
+    "Enable Kafka SSL": "启用 Kafka SSL 功能",
+    "Kafka Producer Message": "Kafka 生成者（Producer）消息"
 }
