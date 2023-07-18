@@ -803,5 +803,19 @@
     "Notify Channel": "Bildirim Kanalı",
     "aboutNotifyChannel": "Bildirim kanalı, müsaitlik durumu etkin veya uzakta olarak ayarlanmış olsun, kanalın tüm üyeleri için bir masaüstü veya mobil bildirimi tetikler.",
     "filterActive": "Aktif",
-    "filterActivePaused": "Duraklatıldı"
+    "filterActivePaused": "Duraklatıldı",
+    "Enter the list of brokers": "Aracı listesine girin",
+    "Kafka Topic Name": "Kafka Başlık Adı",
+    "Kafka Producer Message": "Kafka Üretici Mesajı",
+    "Enable Kafka SSL": "Kafka SSL'i etkinleştir",
+    "Kafka SASL Options": "Kafka SASL Seçenekleri",
+    "Mechanism": "Mekanizma",
+    "Pick a SASL Mechanism...": "Bir SASL Mekanizması seçin...",
+    "Authorization Identity": "Yetki Kimliği",
+    "Secret AccessKey": "Gizli Erişim Anahtarı",
+    "Session Token": "Oturum Jetonu",
+    "Kafka Brokers": "Kafka Aracıları",
+    "Press Enter to add broker": "Aracı eklemek için Enter'a basın",
+    "Enable Kafka Producer Auto Topic Creation": "Kafka Üreticisi Otomatik Başlık Oluşturmayı Etkinleştir",
+    "AccessKey Id": "Erişim Anahtarı Kimliği"
 }
