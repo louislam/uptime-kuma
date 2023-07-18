@@ -788,7 +788,6 @@
     "toastMessagesDescription": "The notifications disappear after the given time in seconds. -1: no timeout, 0: no notifications",
     "toastErrorTimeoutSecs": "Timeout for errors",
     "toastOkTimeoutSecs": "Timeout for success",
-    "Delete Notifications": "Delete Notifications",
     "Kafka Brokers": "Kafka Brokers",
     "Enter the list of brokers": "Enter the list of brokers",
     "Press Enter to add broker": "Press Enter to add broker",

@@ -609,6 +609,18 @@ $shadow-box-padding: 20px;
     }
 }
 
+@media (max-width: 770px) {
+    .toast-container {
+        margin-bottom: 100px !important;
+    }
+}
+
+@media (max-width: 550px) {
+    .toast-container {
+        margin-bottom: 126px !important;
+    }
+}
+
 // Localization
 
 @import "localization.scss";

@@ -1,7 +1,7 @@
 import "bootstrap";
 import { createApp, h } from "vue";
 import contenteditable from "vue-contenteditable";
-import Toast from "vue-toastification";
+import Toast, { POSITION } from "vue-toastification";
 import "vue-toastification/dist/index.css";
 import App from "./App.vue";
 import "./assets/app.scss";
@@ -44,11 +44,13 @@ const app = createApp({
 app.use(router);
 app.use(i18n);
 
-const options = {
-    position: "bottom-right",
+const toastOptions = {
+    position: POSITION.BOTTOM_RIGHT,
+    containerClassName: "toast-container mb-5",
+    showCloseButtonOnHover: true,
 };
 
-app.use(Toast, options);
+app.use(Toast, toastOptions);
 app.component("Editable", contenteditable);
 app.component("FontAwesomeIcon", FontAwesomeIcon);
 

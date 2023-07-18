@@ -19,9 +19,6 @@
             <a v-if="hasNewVersion" target="_blank" href="https://github.com/louislam/uptime-kuma/releases" class="btn btn-info me-3">
                 <font-awesome-icon icon="arrow-alt-circle-up" /> {{ $t("New Update") }}
             </a>
-            <a href="#" class="nav-link" @click="deleteNotifications">
-                <font-awesome-icon icon="stream" /> {{ $t("Delete Notifications") }}
-            </a>
 
             <ul class="nav nav-pills">
                 <li v-if="$root.loggedIn" class="nav-item me-2">
@@ -120,6 +117,15 @@
                 {{ $t("Settings") }}
             </router-link>
         </nav>
+
+        <button
+            v-if="numActiveToasts != 0"
+            type="button"
+            class="btn btn-normal clear-all-toast-btn"
+            @click="clearToasts"
+        >
+            <font-awesome-icon icon="times" />
+        </button>
     </div>
 </template>
 
@@ -136,7 +142,11 @@ export default {
     },
 
     data() {
-        return {};
+        return {
+            toastContainer: null,
+            numActiveToasts: 0,
+            toastContainerObserver: null,
+        };
     },
 
     computed: {
@@ -164,15 +174,31 @@ export default {
     },
 
     mounted() {
+        this.toastContainer = document.querySelector(".bottom-right.toast-container");
 
+        // Watch the number of active toasts
+        this.toastContainerObserver = new MutationObserver((mutations) => {
+            for (const mutation of mutations) {
+                if (mutation.type === "childList") {
+                    this.numActiveToasts = mutation.target.children.length;
+                }
+            }
+        });
+
+        if (this.toastContainer != null) {
+            this.toastContainerObserver.observe(this.toastContainer, { childList: true });
+        }
+    },
+
+    beforeUnmount() {
+        this.toastContainerObserver.disconnect();
     },
 
     methods: {
         /**
-         * Delete all toast messages/notifications.
+         * Clear all toast notifications.
          */
-        deleteNotifications() {
-            console.log("deleteNotifications()");
+        clearToasts() {
             toast.clear();
         }
     },
@@ -334,4 +360,22 @@ main {
         background-color: $dark-bg;
     }
 }
+
+.clear-all-toast-btn {
+    position: fixed;
+    right: 1em;
+    bottom: 1em;
+    font-size: 1.2em;
+    padding: 9px 15px;
+    width: 48px;
+    box-shadow: 2px 2px 30px rgba(0, 0, 0, 0.2);
+}
+
+@media (max-width: 770px) {
+    .clear-all-toast-btn {
+        bottom: 72px;
+        z-index: 100;
+    }
+}
+
 </style>
