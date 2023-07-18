@@ -809,5 +809,19 @@
     "Notify Channel": "Сповіщення каналу",
     "aboutNotifyChannel": "Сповіщення каналу надішле сповіщення на десктоп або мобільний для всіх учасників каналу, незалежно від того, встановлена їхня доступність як активна чи відсутня.",
     "filterActive": "Активні",
-    "filterActivePaused": "Призупинені"
+    "filterActivePaused": "Призупинені",
+    "Kafka Brokers": "Брокери Kafka",
+    "Press Enter to add broker": "Натисніть Enter, щоб додати брокер",
+    "Kafka Topic Name": "Назва теми Kafka",
+    "Kafka SASL Options": "Параметри Kafka SASL",
+    "Mechanism": "Механізм",
+    "Pick a SASL Mechanism...": "Виберіть механізм SASL...",
+    "Authorization Identity": "Ідентифікатор авторизації",
+    "AccessKey Id": "AccessKey Id",
+    "Secret AccessKey": "Secret AccessKey",
+    "Session Token": "Токен сесії",
+    "Enable Kafka SSL": "Увімкнути Kafka SSL",
+    "Enable Kafka Producer Auto Topic Creation": "Увімкнути автоматичне створення тем Kafka Producer",
+    "Enter the list of brokers": "Введіть список брокерів",
+    "Kafka Producer Message": "Повідомлення Kafka Producer"
 }
