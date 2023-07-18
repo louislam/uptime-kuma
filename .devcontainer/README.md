@@ -1,6 +1,6 @@
 # Codespaces
 
-Now you can modifiy Uptime Kuma on your browser without setting up a local development.
+You can modifiy Uptime Kuma in your browser without setting up a local development.
 
 ![image](https://github.com/louislam/uptime-kuma/assets/1336778/31d9f06d-dd0b-4405-8e0d-a96586ee4595)
 
@@ -12,15 +12,17 @@ Now you can modifiy Uptime Kuma on your browser without setting up a local devel
 
 ## Frontend
 
-Since it is using Vite.js, all frontend changes will be hot-reloaded. You don't need to restart the frontend, unless you try to add a new frontend dependency.
+Since the frontend is using [Vite.js](https://vitejs.dev/), all changes in this area will be hot-reloaded.
+You don't need to restart the frontend, unless you try to add a new frontend dependency.
 
-## Restart Backend
+## Backend
 
-Sometimes you need to restart the backend after changed something.
+The backend does not automatically hot-reload.
+You will need to restart the backend after changing something using these steps:
 
 1. Click `Terminal`
-1. Click `Codespaces: server-dev` in the right panel
-1. Press `Ctrl + C` to stop the server
-2. Press `Up` to run `npm run start-server-dev`
+2. Click `Codespaces: server-dev` in the right panel
+3. Press `Ctrl + C` to stop the server
+4. Press `Up` to run `npm run start-server-dev`
 
 ![image](https://github.com/louislam/uptime-kuma/assets/1336778/e0c0a350-fe46-4588-9f37-e053c85834d1)
