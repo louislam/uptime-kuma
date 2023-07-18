@@ -4,7 +4,7 @@ import jwtDecode from "jwt-decode";
 import Favico from "favico.js";
 import dayjs from "dayjs";
 import { DOWN, MAINTENANCE, PENDING, UP } from "../util.ts";
-import { getDevContainerServerHostname, isDevContainer } from "../util-frontend.js";
+import { getDevContainerServerHostname, isDevContainer, loadToastSettings } from "../util-frontend.js";
 const toast = useToast();
 
 let socket;
@@ -189,19 +189,9 @@ export default {
 
                     if (this.monitorList[data.monitorID] !== undefined) {
                         if (data.status === 0) {
-                            let timeout = this.storage().toastErrorTimeoutSecs;
-                            if (timeout !== 0) {
-                                toast.error(`[${this.monitorList[data.monitorID].name}] [DOWN] ${data.msg}`, {
-                                    timeout: ((timeout === -1) ? false : timeout * 1000),
-                                });
-                            }
+                            toast.error(`[${this.monitorList[data.monitorID].name}] [DOWN] ${data.msg}`);
                         } else if (data.status === 1) {
-                            let timeout = this.storage().toastOkTimeoutSecs;
-                            if (timeout !== 0) {
-                                toast.success(`[${this.monitorList[data.monitorID].name}] [Up] ${data.msg}`, {
-                                    timeout: ((timeout === -1) ? false : timeout * 1000),
-                                });
-                            }
+                            toast.success(`[${this.monitorList[data.monitorID].name}] [Up] ${data.msg}`);
                         } else {
                             toast(`[${this.monitorList[data.monitorID].name}] ${data.msg}`);
                         }
@@ -680,6 +670,13 @@ export default {
          */
         getMonitorBeats(monitorID, period, callback) {
             socket.emit("getMonitorBeats", monitorID, period, callback);
+        },
+
+        /**
+         * Load toast timeout settings from storage and update defaults.
+         */
+        loadToastTimeoutSettings() {
+            toast.updateDefaults(loadToastSettings());
         }
     },
 

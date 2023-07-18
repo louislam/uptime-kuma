@@ -1,6 +1,7 @@
 import dayjs from "dayjs";
 import timezones from "timezones-list";
 import { localeDirection, currentLocale } from "./i18n";
+import { TYPE, POSITION } from "vue-toastification";
 
 /**
  * Returns the offset from UTC in hours for the current locale.
@@ -148,4 +149,55 @@ export function colorOptions(self) {
         { name: self.$t("Pink"),
             color: "#DB2777" },
     ];
+}
+
+/**
+ * Loads the toast timeout settings from storage.
+ *
+ * @return {Object} The toast plugin options object.
+ */
+export function loadToastSettings() {
+    let errorTimeout = -1;
+    let successTimeout = 20000;
+
+    if (localStorage.toastErrorTimeout !== undefined) {
+        const parsedTimeout = parseInt(localStorage.toastErrorTimeout);
+        if (parsedTimeout != null && !Number.isNaN(parsedTimeout)) {
+            errorTimeout = parsedTimeout;
+        }
+    }
+    if (localStorage.toastSuccessTimeout !== undefined) {
+        const parsedTimeout = parseInt(localStorage.toastSuccessTimeout);
+        if (parsedTimeout != null && !Number.isNaN(parsedTimeout)) {
+            successTimeout = parsedTimeout;
+        }
+    }
+
+    if (errorTimeout === -1) {
+        errorTimeout = false;
+    }
+    if (successTimeout === -1) {
+        successTimeout = false;
+    }
+
+    return {
+        position: POSITION.BOTTOM_RIGHT,
+        containerClassName: "toast-container mb-5",
+        showCloseButtonOnHover: true,
+        toastDefaults: {
+            [TYPE.ERROR]: {
+                timeout: errorTimeout,
+            },
+            [TYPE.SUCCESS]: {
+                timeout: successTimeout,
+            }
+        },
+        filterBeforeCreate: (toast, toasts) => {
+            if (toast.timeout === 0) {
+                return false;
+            } else {
+                return toast;
+            }
+        },
+    };
 }

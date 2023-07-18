@@ -1,7 +1,7 @@
 import "bootstrap";
 import { createApp, h } from "vue";
 import contenteditable from "vue-contenteditable";
-import Toast, { POSITION } from "vue-toastification";
+import Toast from "vue-toastification";
 import "vue-toastification/dist/index.css";
 import App from "./App.vue";
 import "./assets/app.scss";
@@ -20,6 +20,7 @@ import dayjs from "dayjs";
 import timezone from "./modules/dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
 import relativeTime from "dayjs/plugin/relativeTime";
+import { loadToastSettings } from "./util-frontend";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.extend(relativeTime);
@@ -44,13 +45,7 @@ const app = createApp({
 app.use(router);
 app.use(i18n);
 
-const toastOptions = {
-    position: POSITION.BOTTOM_RIGHT,
-    containerClassName: "toast-container mb-5",
-    showCloseButtonOnHover: true,
-};
-
-app.use(Toast, toastOptions);
+app.use(Toast, loadToastSettings());
 app.component("Editable", contenteditable);
 app.component("FontAwesomeIcon", FontAwesomeIcon);
 
