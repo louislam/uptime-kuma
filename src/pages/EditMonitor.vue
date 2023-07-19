@@ -86,6 +86,10 @@
                                 </select>
                             </div>
 
+                            <div v-if="monitor.type === 'tailscale-ping'" class="alert alert-warning" role="alert">
+                                {{ $t("tailscalePingWarning") }}
+                            </div>
+
                             <!-- Friendly Name -->
                             <div class="my-3">
                                 <label for="name" class="form-label">{{ $t("Friendly Name") }}</label>
