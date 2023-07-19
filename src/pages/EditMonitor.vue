@@ -61,6 +61,9 @@
                                         <option value="mqtt">
                                             MQTT
                                         </option>
+                                        <option value="kafka-producer">
+                                            Kafka Producer
+                                        </option>
                                         <option value="sqlserver">
                                             Microsoft SQL Server
                                         </option>
@@ -165,6 +168,57 @@
                                     </option>
                                 </select>
                             </div>
+
+                            <template v-if="monitor.type === 'kafka-producer'">
+                                <!-- Kafka Brokers List -->
+                                <div class="my-3">
+                                    <label for="kafkaProducerBrokers" class="form-label">{{ $t("Kafka Brokers") }}</label>
+                                    <VueMultiselect
+                                        id="kafkaProducerBrokers"
+                                        v-model="monitor.kafkaProducerBrokers"
+                                        :multiple="true"
+                                        :options="[]"
+                                        :placeholder="$t('Enter the list of brokers')"
+                                        :tag-placeholder="$t('Press Enter to add broker')"
+                                        :max-height="500"
+                                        :taggable="true"
+                                        :show-no-options="false"
+                                        :close-on-select="false"
+                                        :clear-on-select="false"
+                                        :preserve-search="false"
+                                        :preselect-first="false"
+                                        @tag="addKafkaProducerBroker"
+                                    ></VueMultiselect>
+                                </div>
+
+                                <!-- Kafka Topic Name -->
+                                <div class="my-3">
+                                    <label for="kafkaProducerTopic" class="form-label">{{ $t("Kafka Topic Name") }}</label>
+                                    <input id="kafkaProducerTopic" v-model="monitor.kafkaProducerTopic" type="text" class="form-control" required>
+                                </div>
+
+                                <!-- Kafka Producer Message -->
+                                <div class="my-3">
+                                    <label for="kafkaProducerMessage" class="form-label">{{ $t("Kafka Producer Message") }}</label>
+                                    <input id="kafkaProducerMessage" v-model="monitor.kafkaProducerMessage" type="text" class="form-control" required>
+                                </div>
+
+                                <!-- Kafka SSL -->
+                                <div class="my-3 form-check">
+                                    <input id="kafkaProducerSsl" v-model="monitor.kafkaProducerSsl" class="form-check-input" type="checkbox">
+                                    <label class="form-check-label" for="kafkaProducerSsl">
+                                        {{ $t("Enable Kafka SSL") }}
+                                    </label>
+                                </div>
+
+                                <!-- Kafka SSL -->
+                                <div class="my-3 form-check">
+                                    <input id="kafkaProducerAllowAutoTopicCreation" v-model="monitor.kafkaProducerAllowAutoTopicCreation" class="form-check-input" type="checkbox">
+                                    <label class="form-check-label" for="kafkaProducerAllowAutoTopicCreation">
+                                        {{ $t("Enable Kafka Producer Auto Topic Creation") }}
+                                    </label>
+                                </div>
+                            </template>
 
                             <!-- Hostname -->
                             <!-- TCP Port / Ping / DNS / Steam / MQTT / Radius only -->
@@ -512,6 +566,56 @@
                                 </button>
                             </div>
 
+                            <!-- Kafka SASL Options -->
+                            <!-- Kafka Producer only -->
+                            <template v-if="monitor.type === 'kafka-producer'">
+                                <h2 class="mt-5 mb-2">{{ $t("Kafka SASL Options") }}</h2>
+                                <div class="my-3">
+                                    <label class="form-label" for="kafkaProducerSaslMechanism">
+                                        {{ $t("Mechanism") }}
+                                    </label>
+                                    <VueMultiselect
+                                        id="kafkaProducerSaslMechanism"
+                                        v-model="monitor.kafkaProducerSaslOptions.mechanism"
+                                        :options="kafkaSaslMechanismOptions"
+                                        :multiple="false"
+                                        :clear-on-select="false"
+                                        :preserve-search="false"
+                                        :placeholder="$t('Pick a SASL Mechanism...')"
+                                        :preselect-first="false"
+                                        :max-height="500"
+                                        :allow-empty="false"
+                                        :taggable="false"
+                                    ></VueMultiselect>
+                                </div>
+                                <div v-if="monitor.kafkaProducerSaslOptions.mechanism !== 'None'">
+                                    <div v-if="monitor.kafkaProducerSaslOptions.mechanism !== 'aws'" class="my-3">
+                                        <label for="kafkaProducerSaslUsername" class="form-label">{{ $t("Username") }}</label>
+                                        <input id="kafkaProducerSaslUsername" v-model="monitor.kafkaProducerSaslOptions.username" type="text" autocomplete="kafkaProducerSaslUsername" class="form-control">
+                                    </div>
+                                    <div v-if="monitor.kafkaProducerSaslOptions.mechanism !== 'aws'" class="my-3">
+                                        <label for="kafkaProducerSaslPassword" class="form-label">{{ $t("Password") }}</label>
+                                        <input id="kafkaProducerSaslPassword" v-model="monitor.kafkaProducerSaslOptions.password" type="password" autocomplete="kafkaProducerSaslPassword" class="form-control">
+                                    </div>
+                                    <div v-if="monitor.kafkaProducerSaslOptions.mechanism === 'aws'" class="my-3">
+                                        <label for="kafkaProducerSaslAuthorizationIdentity" class="form-label">{{ $t("Authorization Identity") }}</label>
+                                        <input id="kafkaProducerSaslAuthorizationIdentity" v-model="monitor.kafkaProducerSaslOptions.authorizationIdentity" type="text" autocomplete="kafkaProducerSaslAuthorizationIdentity" class="form-control" required>
+                                    </div>
+                                    <div v-if="monitor.kafkaProducerSaslOptions.mechanism === 'aws'" class="my-3">
+                                        <label for="kafkaProducerSaslAccessKeyId" class="form-label">{{ $t("AccessKey Id") }}</label>
+                                        <input id="kafkaProducerSaslAccessKeyId" v-model="monitor.kafkaProducerSaslOptions.accessKeyId" type="text" autocomplete="kafkaProducerSaslAccessKeyId" class="form-control" required>
+                                    </div>
+                                    <div v-if="monitor.kafkaProducerSaslOptions.mechanism === 'aws'" class="my-3">
+                                        <label for="kafkaProducerSaslSecretAccessKey" class="form-label">{{ $t("Secret AccessKey") }}</label>
+                                        <input id="kafkaProducerSaslSecretAccessKey" v-model="monitor.kafkaProducerSaslOptions.secretAccessKey" type="password" autocomplete="kafkaProducerSaslSecretAccessKey" class="form-control" required>
+                                    </div>
+                                    <div v-if="monitor.kafkaProducerSaslOptions.mechanism === 'aws'" class="my-3">
+                                        <label for="kafkaProducerSaslSessionToken" class="form-label">{{ $t("Session Token") }}</label>
+                                        <input id="kafkaProducerSaslSessionToken" v-model="monitor.kafkaProducerSaslOptions.sessionToken" type="password" autocomplete="kafkaProducerSaslSessionToken" class="form-control">
+                                    </div>
+                                </div>
+                            </template>
+
                             <!-- HTTP Options -->
                             <template v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' ">
                                 <h2 class="mt-5 mb-2">{{ $t("HTTP Options") }}</h2>
@@ -724,6 +828,7 @@ export default {
             },
             acceptedStatusCodeOptions: [],
             dnsresolvetypeOptions: [],
+            kafkaSaslMechanismOptions: [],
             ipOrHostnameRegexPattern: hostNameRegexPattern(),
             mqttIpOrHostnameRegexPattern: hostNameRegexPattern(true),
             gameList: null,
@@ -987,12 +1092,21 @@ message HealthCheckResponse {
             "TXT",
         ];
 
+        let kafkaSaslMechanismOptions = [
+            "None",
+            "plain",
+            "scram-sha-256",
+            "scram-sha-512",
+            "aws",
+        ];
+
         for (let i = 100; i <= 999; i++) {
             acceptedStatusCodeOptions.push(i.toString());
         }
 
         this.acceptedStatusCodeOptions = acceptedStatusCodeOptions;
         this.dnsresolvetypeOptions = dnsresolvetypeOptions;
+        this.kafkaSaslMechanismOptions = kafkaSaslMechanismOptions;
     },
     methods: {
         /** Initialize the edit monitor form */
@@ -1026,7 +1140,11 @@ message HealthCheckResponse {
                     mqttTopic: "",
                     mqttSuccessMessage: "",
                     authMethod: null,
-                    httpBodyEncoding: "json"
+                    httpBodyEncoding: "json",
+                    kafkaProducerBrokers: [],
+                    kafkaProducerSaslOptions: {
+                        mechanism: "None",
+                    },
                 };
 
                 if (this.$root.proxyList && !this.monitor.proxyId) {
@@ -1067,6 +1185,7 @@ message HealthCheckResponse {
                             this.monitor.childrenIDs = undefined;
                             this.monitor.forceInactive = undefined;
                             this.monitor.pathName = undefined;
+                            this.monitor.screenshot = undefined;
 
                             this.monitor.name = this.$t("cloneOf", [ this.monitor.name ]);
                             this.$refs.tagsManager.newTags = this.monitor.tags.map((monitorTag) => {
@@ -1091,6 +1210,10 @@ message HealthCheckResponse {
                 });
             }
 
+        },
+
+        addKafkaProducerBroker(newBroker) {
+            this.monitor.kafkaProducerBrokers.push(newBroker);
         },
 
         /**

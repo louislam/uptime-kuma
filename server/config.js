@@ -1,4 +1,5 @@
-const args = require("args-parser")(process.argv);
+// Interop with browser
+const args = (typeof process !== "undefined") ? require("args-parser")(process.argv) : {};
 const demoMode = args["demo"] || false;
 
 const badgeConstants = {
