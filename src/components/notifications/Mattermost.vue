@@ -13,7 +13,7 @@
         <div class="form-text">
             <span style="color: red;"><sup>*</sup></span>{{ $t("Required") }}
             <i18n-t tag="p" keypath="aboutWebhooks" style="margin-top: 8px;">
-                <a href="https://docs.mattermost.com/developer/webhooks-incoming.html" target="_blank">https://docs.mattermost.com/developer/webhooks-incoming.html</a>
+                <a href="https://developers.mattermost.com/integrate/webhooks/incoming/" target="_blank">https://developers.mattermost.com/integrate/webhooks/incoming/</a>
             </i18n-t>
             <p style="margin-top: 8px;">
                 {{ $t("aboutMattermostChannelName") }}
