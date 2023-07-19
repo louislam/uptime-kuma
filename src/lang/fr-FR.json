@@ -817,5 +817,6 @@
     "Session Token": "Jeton de session",
     "Kafka Brokers": "Courtiers Kafka",
     "Kafka Producer Message": "Message du producteur Kafka",
-    "Enable Kafka Producer Auto Topic Creation": "Activer la création automatique de rubrique Kafka"
+    "Enable Kafka Producer Auto Topic Creation": "Activer la création automatique de rubrique Kafka",
+    "tailscalePingWarning": "Afin d'utiliser la sonde Tailscale Ping, vous devez installer Uptime Kuma sans Docker et également installer le client Tailscale sur votre serveur."
 }
