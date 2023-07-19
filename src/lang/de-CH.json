@@ -48,7 +48,7 @@
     "Port": "Port",
     "Heartbeat Interval": "Prüfintervall",
     "Retries": "Wiederholungen",
-    "retriesDescription": "Maximale Anzahl von Wiederholungen, bevor der Dienst als inaktiv markiert und eine Benachrichtigung gesendet wird.",
+    "retriesDescription": "Maximale Wiederholungen, bevor der Dienst als inaktiv markiert und eine Benachrichtigung gesendet wird.",
     "Advanced": "Erweitert",
     "ignoreTLSError": "Ignoriere TLS-/SSL-Fehler von Webseiten",
     "Upside Down Mode": "Umgekehrter Modus",
