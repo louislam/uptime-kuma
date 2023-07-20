@@ -826,5 +826,6 @@
     "invertKeywordDescription": "Искать, чтобы ключевое слово отсутствовало, а не присутствовало.",
     "filterActive": "Активный",
     "filterActivePaused": "На паузе",
-    "Invert Keyword": "Инвертировать ключевое слово"
+    "Invert Keyword": "Инвертировать ключевое слово",
+    "tailscalePingWarning": "Для того чтобы использовать монитор Tailscale Ping, необходимо установить Uptime Kuma без Docker, а также установить на сервер клиент Tailscale."
 }
