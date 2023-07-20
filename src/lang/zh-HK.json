@@ -139,6 +139,8 @@
     "Disable 2FA": "關閉 2FA",
     "2FA Settings": "2FA 設定",
     "Two Factor Authentication": "雙重認證",
+    "filterActive": "執行狀態",
+    "filterActivePaused": "已暫停",
     "Active": "生效",
     "Inactive": "未生效",
     "Token": "Token",

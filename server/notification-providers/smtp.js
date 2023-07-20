@@ -67,7 +67,7 @@ class SMTP extends NotificationProvider {
                 if (monitorJSON !== null) {
                     monitorName = monitorJSON["name"];
 
-                    if (monitorJSON["type"] === "http" || monitorJSON["type"] === "keyword") {
+                    if (monitorJSON["type"] === "http" || monitorJSON["type"] === "keyword" || monitorJSON["type"] === "json-query") {
                         monitorHostnameOrURL = monitorJSON["url"];
                     } else {
                         monitorHostnameOrURL = monitorJSON["hostname"];

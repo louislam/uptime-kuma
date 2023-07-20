@@ -7,11 +7,13 @@ class Twilio extends NotificationProvider {
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
 
+        let apiKey = notification.twilioApiKey ? notification.twilioApiKey : notification.twilioAccountSID;
+
         try {
             let config = {
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
-                    "Authorization": "Basic " + Buffer.from(notification.twilioAccountSID + ":" + notification.twilioAuthToken).toString("base64"),
+                    "Authorization": "Basic " + Buffer.from(apiKey + ":" + notification.twilioAuthToken).toString("base64"),
                 }
             };
 
