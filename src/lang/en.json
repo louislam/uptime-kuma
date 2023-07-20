@@ -697,6 +697,8 @@
     "onebotPrivateMessage": "Private",
     "onebotUserOrGroupId": "Group/User ID",
     "onebotSafetyTips": "For safety, must set access token",
+    "PushDeer Server": "PushDeer Server",
+    "Leave blank to use the official server": "Leave blank to use the official server",
     "PushDeer Key": "PushDeer Key",
     "wayToGetClickSendSMSToken": "You can get API Username and API Key from {0} .",
     "Custom Monitor Type": "Custom Monitor Type",
