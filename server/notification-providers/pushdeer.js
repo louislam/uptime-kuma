@@ -12,7 +12,9 @@ class PushDeer extends NotificationProvider {
         let endpoint = "/message/push";
         let pushdeerlink;
         if (notification.pushdeerServer) {
-            pushdeerlink = `${notification.pushdeerServer}${endpoint}`;
+            // remove blank characters and ending '/'
+            let customServer = notification.pushdeerServer.trim().replace(/\/*$/, "");
+            pushdeerlink = `${customServer}${endpoint}`;
         } else {
             pushdeerlink = `${defaultServer}${endpoint}`;
         }
