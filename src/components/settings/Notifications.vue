@@ -21,8 +21,8 @@
         </div>
 
         <div class="my-4 pt-4">
-            <h5 class="my-4 settings-subheading">{{ $t("toastMessagesLabel") }}</h5>
-            <p>{{ $t("toastMessagesDescription") }}</p>
+            <h5 class="my-4 settings-subheading">{{ $t("monitorToastMessagesLabel") }}</h5>
+            <p>{{ $t("monitorToastMessagesDescription") }}</p>
 
             <div class="my-4">
                 <label for="toastErrorTimeoutSecs" class="form-label">
@@ -118,14 +118,12 @@ export default {
             const parsedTimeout = parseInt(newTimeout);
             if (parsedTimeout != null && !Number.isNaN(parsedTimeout)) {
                 localStorage.toastSuccessTimeout = newTimeout > 0 ? newTimeout * 1000 : newTimeout;
-                this.$root.loadToastTimeoutSettings();
             }
         },
         toastErrorTimeoutSecs: function (newTimeout) {
             const parsedTimeout = parseInt(newTimeout);
             if (parsedTimeout != null && !Number.isNaN(parsedTimeout)) {
                 localStorage.toastErrorTimeout = newTimeout > 0 ? newTimeout * 1000 : newTimeout;
-                this.$root.loadToastTimeoutSettings();
             }
         }
     },

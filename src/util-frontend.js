@@ -157,41 +157,11 @@ export function colorOptions(self) {
  * @return {Object} The toast plugin options object.
  */
 export function loadToastSettings() {
-    let errorTimeout = -1;
-    let successTimeout = 20000;
-
-    if (localStorage.toastErrorTimeout !== undefined) {
-        const parsedTimeout = parseInt(localStorage.toastErrorTimeout);
-        if (parsedTimeout != null && !Number.isNaN(parsedTimeout)) {
-            errorTimeout = parsedTimeout;
-        }
-    }
-    if (localStorage.toastSuccessTimeout !== undefined) {
-        const parsedTimeout = parseInt(localStorage.toastSuccessTimeout);
-        if (parsedTimeout != null && !Number.isNaN(parsedTimeout)) {
-            successTimeout = parsedTimeout;
-        }
-    }
-
-    if (errorTimeout === -1) {
-        errorTimeout = false;
-    }
-    if (successTimeout === -1) {
-        successTimeout = false;
-    }
-
     return {
         position: POSITION.BOTTOM_RIGHT,
         containerClassName: "toast-container mb-5",
         showCloseButtonOnHover: true,
-        toastDefaults: {
-            [TYPE.ERROR]: {
-                timeout: errorTimeout,
-            },
-            [TYPE.SUCCESS]: {
-                timeout: successTimeout,
-            }
-        },
+
         filterBeforeCreate: (toast, toasts) => {
             if (toast.timeout === 0) {
                 return false;
@@ -200,4 +170,38 @@ export function loadToastSettings() {
             }
         },
     };
+}
+
+export function getToastSuccessTimeout() {
+    let successTimeout = 20000;
+
+    if (localStorage.toastSuccessTimeout !== undefined) {
+        const parsedTimeout = parseInt(localStorage.toastSuccessTimeout);
+        if (parsedTimeout != null && !Number.isNaN(parsedTimeout)) {
+            successTimeout = parsedTimeout;
+        }
+    }
+
+    if (successTimeout === -1) {
+        successTimeout = false;
+    }
+
+    return successTimeout;
+}
+
+export function getToastErrorTimeout() {
+    let errorTimeout = -1;
+
+    if (localStorage.toastErrorTimeout !== undefined) {
+        const parsedTimeout = parseInt(localStorage.toastErrorTimeout);
+        if (parsedTimeout != null && !Number.isNaN(parsedTimeout)) {
+            errorTimeout = parsedTimeout;
+        }
+    }
+
+    if (errorTimeout === -1) {
+        errorTimeout = false;
+    }
+
+    return errorTimeout;
 }
