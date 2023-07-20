@@ -1247,6 +1247,7 @@ let needSetup = false;
                 let version17x = compareVersions.compare(backupData.version, "1.7.0", ">=");
 
                 // If the import option is "overwrite" it'll clear most of the tables, except "settings" and "user"
+                let needOverWriteMonitorsIdList = [];
                 if (importHandle === "overwrite") {
                     // Stops every monitor first, so it doesn't execute any heartbeat while importing
                     for (let id in server.monitorList) {
@@ -1270,9 +1271,11 @@ let needSetup = false;
                         let backupMonitorId = monitorListData[i].id;
                         let idx = monitorsIdList.indexOf(backupMonitorId);
                         if (idx > -1) {
+                            needOverWriteMonitorsIdList.push(backupMonitorId);
                             monitorsIdList.splice(idx, 1);
                         }
                     }
+                    log.info("manage", `Need OverWrite Monitors Id List:[${needOverWriteMonitorsIdList}],Length:${needOverWriteMonitorsIdList.length}`);
                     // del expired monitors record (heartbeat records will delete on the same time)
                     await R.exec(`DELETE FROM monitor where id in (${Array(monitorsIdList.length).fill("?").join(",")})`, monitorsIdList);
                     log.info("manage", `Deleted monitors Id list: ${JSON.stringify(monitorsIdList)}`);
@@ -1400,14 +1403,19 @@ let needSetup = false;
                             await R.store(bean);
                             // b.t.w. It's not work when bean set id with redbean-node's method 'store()'
                             // what's the param 'changedFieldsOnly' means?
-
-                            // relink monitors heartbeat records
-                            await R.exec("UPDATE `heartbeat` SET monitor_id = ? WHERE monitor_id = ? ", [
-                                bean.id,
-                                monitorListData[i].id
-                            ]);
-                            // delete old same monitor item with expired id
-                            await R.exec("DELETE FROM monitor where id= ? ", monitorListData[i].id);
+                            let idx = needOverWriteMonitorsIdList.indexOf(monitorListData[i].id);
+                            if (idx > -1) {
+                                log.info("manage", `[BackUp OverWrite Mode] Find monitor which need keep heartbeats records - Monitor ID: ${monitorListData[i].id}`);
+                                // relink monitors heartbeat records
+                                await R.exec("UPDATE `heartbeat` SET monitor_id = ? WHERE monitor_id = ? ", [
+                                    bean.id,
+                                    monitorListData[i].id
+                                ]);
+                                // delete old same monitor item with expired id
+                                await R.exec("DELETE FROM monitor where id= ? ", monitorListData[i].id);
+                            } else {
+                                log.info("manage", `[BackUp OverWrite Mode] Find new monitor Join - name:${monitorListData[i].name}`);
+                            }
                             // reset new stor monitor's id to import backup item's id
                             await R.exec("UPDATE `monitor` SET id = ? WHERE id = ? ", [
                                 monitorListData[i].id,
