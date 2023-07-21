@@ -70,7 +70,7 @@ async function sendHeartbeatList(socket, monitorID, toUser = false, overwrite = 
 /**
  * Important Heart beat list (aka event list)
  * @param {Socket} socket Socket.io instance
- * @param {number} monitorID ID of monitor to send heartbeat history
+ * @param {number} monitorID ID of monitor to send heartbeat history, or null for all monitors
  * @param {boolean} [toUser=false]  True = send to all browsers with the same user id, False = send to the current browser only
  * @param {boolean} [overwrite=false] Overwrite client-side's heartbeat list
  * @returns {Promise<void>}
@@ -78,14 +78,25 @@ async function sendHeartbeatList(socket, monitorID, toUser = false, overwrite = 
 async function sendImportantHeartbeatList(socket, monitorID, toUser = false, overwrite = false) {
     const timeLogger = new TimeLogger();
 
-    let list = await R.find("heartbeat", `
+    let list = [];
+
+    if (monitorID == null) {
+        // Send important beats for all monitors
+        list = await R.find("heartbeat", `
+        important = 1
+        ORDER BY time DESC
+        LIMIT 5000
+    `);
+    } else {
+        list = await R.find("heartbeat", `
         monitor_id = ?
         AND important = 1
         ORDER BY time DESC
         LIMIT 500
     `, [
-        monitorID,
-    ]);
+            monitorID,
+        ]);
+    }
 
     timeLogger.print(`[Monitor: ${monitorID}] sendImportantHeartbeatList`);
 

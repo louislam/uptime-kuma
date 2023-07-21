@@ -222,6 +222,16 @@ export default {
             });
 
             socket.on("importantHeartbeatList", (monitorID, data, overwrite) => {
+                if (monitorID == null) {
+                    data.forEach(heartbeat => {
+                        if (this.importantHeartbeatList[heartbeat.monitorID] === undefined) {
+                            this.importantHeartbeatList[heartbeat.monitorID] = [ heartbeat ];
+                        } else {
+                            this.importantHeartbeatList[heartbeat.monitorID].push(heartbeat);
+                        }
+                    });
+                    return;
+                }
                 if (! (monitorID in this.importantHeartbeatList) || overwrite) {
                     this.importantHeartbeatList[monitorID] = data;
                 } else {

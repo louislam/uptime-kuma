@@ -1681,9 +1681,7 @@ async function afterLogin(socket, user) {
         await sendHeartbeatList(socket, monitorID);
     }
 
-    for (let monitorID in monitorList) {
-        await sendImportantHeartbeatList(socket, monitorID);
-    }
+    await sendImportantHeartbeatList(socket, null);
 
     for (let monitorID in monitorList) {
         await Monitor.sendStats(io, monitorID, user.id);
