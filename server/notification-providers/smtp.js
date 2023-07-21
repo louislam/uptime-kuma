@@ -13,7 +13,7 @@ class SMTP extends NotificationProvider {
             port: notification.smtpPort,
             secure: notification.smtpSecure,
             tls: {
-                rejectUnauthorized: notification.smtpIgnoreTLSError || false,
+                rejectUnauthorized: !notification.smtpIgnoreTLSError || false,
             }
         };
 
