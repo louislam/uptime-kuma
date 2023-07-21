@@ -10,7 +10,7 @@ class PushDeer extends NotificationProvider {
         let okMsg = "Sent Successfully.";
         let endpoint = "/message/push";
         let serverUrl = notification.pushdeerServer || "https://api2.pushdeer.com";
-        pushdeerlink = `${serverUrl.trim().replace(/\/*$/, "")}${endpoint}`;
+        let pushdeerlink = `${serverUrl.trim().replace(/\/*$/, "")}${endpoint}`;
 
         let valid = msg != null && monitorJSON != null && heartbeatJSON != null;
 
