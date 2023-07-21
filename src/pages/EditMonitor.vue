@@ -82,8 +82,15 @@
                                         <option value="redis">
                                             Redis
                                         </option>
+                                        <option value="tailscale-ping">
+                                            Tailscale Ping
+                                        </option>
                                     </optgroup>
                                 </select>
+                            </div>
+
+                            <div v-if="monitor.type === 'tailscale-ping'" class="alert alert-warning" role="alert">
+                                {{ $t("tailscalePingWarning") }}
                             </div>
 
                             <!-- Friendly Name -->
@@ -221,8 +228,8 @@
                             </template>
 
                             <!-- Hostname -->
-                            <!-- TCP Port / Ping / DNS / Steam / MQTT / Radius only -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'gamedig' ||monitor.type === 'mqtt' || monitor.type === 'radius'" class="my-3">
+                            <!-- TCP Port / Ping / DNS / Steam / MQTT / Radius / Tailscale Ping only -->
+                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'gamedig' ||monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'tailscale-ping'" class="my-3">
                                 <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>
                                 <input id="hostname" v-model="monitor.hostname" type="text" class="form-control" :pattern="`${monitor.type === 'mqtt' ? mqttIpOrHostnameRegexPattern : ipOrHostnameRegexPattern}`" required>
                             </div>
