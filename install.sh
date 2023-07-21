@@ -3,15 +3,15 @@
 # The command is working on Windows PowerShell and Docker for Windows only.
 # curl -o kuma_install.sh https://raw.githubusercontent.com/louislam/uptime-kuma/master/install.sh && sudo bash kuma_install.sh
 "echo" "-e" "====================="
-"echo" "-e" "Uptime Kuma Installer"
+"echo" "-e" "Uptime Kuma Install Script"
 "echo" "-e" "====================="
-"echo" "-e" "Supported OS: CentOS 7/8, Ubuntu >= 16.04 and Debian"
+"echo" "-e" "Supported OS: Ubuntu >= 16.04, Debian and CentOS/RHEL 7/8"
 "echo" "-e" "---------------------------------------"
 "echo" "-e" "This script is designed for Linux and basic usage."
 "echo" "-e" "For advanced usage, please go to https://github.com/louislam/uptime-kuma/wiki/Installation"
 "echo" "-e" "---------------------------------------"
 "echo" "-e" ""
-"echo" "-e" "Local - Install Uptime Kuma in your current machine with git, Node.js 14 and pm2"
+"echo" "-e" "Local - Install Uptime Kuma on your current machine with git, Node.js and pm2"
 "echo" "-e" "Docker - Install Uptime Kuma Docker container"
 "echo" "-e" ""
 if [ "$1" != "" ]; then
@@ -25,12 +25,9 @@ function checkNode {
   nodeVersion=$(node -e 'console.log(process.versions.node.split(`.`)[0])')
   "echo" "-e" "Node Version: ""$nodeVersion"
   _0="12"
-  if [ $(($nodeVersion < $_0)) == 1 ]; then
+  if [ $(($nodeVersion <= $_0)) == 1 ]; then
     "echo" "-e" "Error: Required Node.js 14"
     "exit" "1"  
-fi
-  if [ "$nodeVersion" == "12" ]; then
-    "echo" "-e" "Warning: NodeJS ""$nodeVersion"" is not tested."  
 fi
 }
 function deb {
@@ -50,8 +47,8 @@ fi
       "echo" "-e" "Installing Curl"
       apt --yes install curl    
 fi
-    "echo" "-e" "Installing Node.js 14"
-    curl -sL https://deb.nodesource.com/setup_14.x | bash - > log.txt
+    "echo" "-e" "Installing Node.js 16"
+    curl -sL https://deb.nodesource.com/setup_16.x | bash - > log.txt
     apt --yes install nodejs
     node -v
     nodeCheckAgain=$(node -v)
@@ -75,7 +72,10 @@ if [ "$type" == "local" ]; then
     if [ -e "/etc/issue" ]; then
       os=$(head -n1 /etc/issue | cut -f 1 -d ' ')
       if [ "$os" == "Ubuntu" ]; then
-        distribution="ubuntu"      
+        distribution="ubuntu"
+        # Get ubuntu version
+        . /etc/lsb-release
+        version="$DISTRIB_RELEASE"      
 fi
       if [ "$os" == "Debian" ]; then
         distribution="debian"      
@@ -85,6 +85,7 @@ fi
   arch=$(uname -i)
   "echo" "-e" "Your OS: ""$os"
   "echo" "-e" "Distribution: ""$distribution"
+  "echo" "-e" "Version: ""$version"
   "echo" "-e" "Arch: ""$arch"
   if [ "$3" != "" ]; then
     port="$3"
@@ -108,14 +109,27 @@ fi
     if [ "$nodeCheck" != "" ]; then
       "checkNode" 
     else
-      curlCheck=$(curl --version)
-      if [ "$curlCheck" == "" ]; then
-        "echo" "-e" "Installing Curl"
-        yum -y -q install curl      
+      dnfCheck=$(dnf --version)
+      # Use yum
+      if [ "$dnfCheck" == "" ]; then
+        curlCheck=$(curl --version)
+        if [ "$curlCheck" == "" ]; then
+          "echo" "-e" "Installing Curl"
+          yum -y -q install curl        
 fi
-      "echo" "-e" "Installing Node.js 14"
-      curl -sL https://rpm.nodesource.com/setup_14.x | bash - > log.txt
-      yum install -y -q nodejs
+        "echo" "-e" "Installing Node.js 16"
+        curl -sL https://rpm.nodesource.com/setup_16.x | bash - > log.txt
+        yum install -y -q nodejs
+      else
+        curlCheck=$(curl --version)
+        if [ "$curlCheck" == "" ]; then
+          "echo" "-e" "Installing Curl"
+          dnf -y install curl        
+fi
+        "echo" "-e" "Installing Node.js 16"
+        curl -sL https://rpm.nodesource.com/setup_16.x | bash - > log.txt
+        dnf install -y nodejs
+      fi
       node -v
       nodeCheckAgain=$(node -v)
       if [ "$nodeCheckAgain" == "" ]; then
@@ -161,6 +175,12 @@ fi
     "echo" "-e" "Installing PM2"
     npm install pm2 -g && pm2 install pm2-logrotate
     pm2 startup  
+fi
+  # Check again
+  check=$(pm2 --version)
+  if [ "$check" == "" ]; then
+    "echo" "-e" "Error: pm2 is not found!"
+    exit 1  
 fi
   mkdir -p $installPath
   cd $installPath
