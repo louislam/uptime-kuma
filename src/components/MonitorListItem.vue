@@ -28,7 +28,7 @@
 
         <transition name="slide-fade-up">
             <div v-if="!isCollapsed" class="childs">
-                <MonitorListItem v-for="(item, index) in sortedChildMonitorList" :key="index" :monitor="item" :isSearch="isSearch" :depth="depth + 1" />
+                <MonitorListItem v-for="(item, index) in sortedChildMonitorList" :key="index" :monitor="item" :showPathName="showPathName" :depth="depth + 1" />
             </div>
         </transition>
     </div>
@@ -54,7 +54,7 @@ export default {
             default: null,
         },
         /** If the user is currently searching */
-        isSearch: {
+        showPathName: {
             type: Boolean,
             default: false,
         },
@@ -111,7 +111,7 @@ export default {
             };
         },
         monitorName() {
-            if (this.isSearch) {
+            if (this.showPathName) {
                 return this.monitor.pathName;
             } else {
                 return this.monitor.name;
