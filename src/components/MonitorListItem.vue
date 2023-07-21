@@ -53,7 +53,7 @@ export default {
             type: Object,
             default: null,
         },
-        /** If the user is currently searching */
+        /** Should the monitor name show it's parent */
         showPathName: {
             type: Boolean,
             default: false,
