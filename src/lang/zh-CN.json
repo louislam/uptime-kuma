@@ -824,5 +824,6 @@
     "Secret AccessKey": "访问密钥（Secret AccessKey）",
     "Enable Kafka Producer Auto Topic Creation": "启用 Kafka 生成者（Producer）自动创建主题（Topic）功能",
     "Enable Kafka SSL": "启用 Kafka SSL 功能",
-    "Kafka Producer Message": "Kafka 生成者（Producer）消息"
+    "Kafka Producer Message": "Kafka 生成者（Producer）消息",
+    "tailscalePingWarning": "如需使用 Tailscale Ping 客户端，您需要以非 docker 方式安装 Uptime Kuma，并同时安装 Tailscale 客户端。"
 }
