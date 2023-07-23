@@ -1042,5 +1042,6 @@
     "promosmsTypeFull": "",
     "pauseDashboardHome": "",
     "Name": "",
-    "CopyToClipboardError": ""
+    "CopyToClipboardError": "",
+    "Enable DNS Cache": ""
 }
