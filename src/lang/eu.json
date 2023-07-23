@@ -1068,5 +1068,8 @@
     "RadiusCalledStationIdDescription": "",
     "dataRetentionTimeError": "",
     "infiniteRetention": "",
-    "Reconnecting...": ""
+    "Reconnecting...": "",
+    "Enable DNS Cache": "",
+    "backupOutdatedWarning": "",
+    "trustProxyDescription": ""
 }
