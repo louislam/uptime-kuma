@@ -1043,5 +1043,10 @@
     "CopyToClipboardError": "",
     "setupDatabaseChooseDatabase": "",
     "pushViewCode": "",
-    "Pick a SASL Mechanism...": ""
+    "Pick a SASL Mechanism...": "",
+    "Enable DNS Cache": "",
+    "trustProxyDescription": "",
+    "Search...": "",
+    "Add New below or Select...": "",
+    "backupOutdatedWarning": ""
 }
