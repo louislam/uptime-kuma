@@ -1047,5 +1047,6 @@
     "grpcMethodDescription": "",
     "ntfyPriorityHelptextAllExceptDown": "",
     "ignoreTLSError": "",
-    "ntfyPriorityHelptextAllEvents": ""
+    "ntfyPriorityHelptextAllEvents": "",
+    "Enable DNS Cache": ""
 }
