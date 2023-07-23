@@ -1053,5 +1053,6 @@
     "jsonQueryDescription": "",
     "Notify Channel": "",
     "From Name/Number": "",
-    "Pick a SASL Mechanism...": ""
+    "Pick a SASL Mechanism...": "",
+    "Enable DNS Cache": ""
 }
