@@ -1048,5 +1048,6 @@
     "grpcMethodDescription": "",
     "CopyToClipboardError": "",
     "Pick a SASL Mechanism...": "",
-    "ntfyPriorityHelptextAllEvents": ""
+    "ntfyPriorityHelptextAllEvents": "",
+    "Enable DNS Cache": ""
 }
