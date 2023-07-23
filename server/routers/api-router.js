@@ -442,7 +442,7 @@ router.get("/api/badge/:id/cert-exp", cache("5 minutes"), async (request, respon
                 if (!tlsInfo.valid) {
                     // return a "Bad Cert" badge in naColor (grey), when cert is not valid
                     badgeValues.message = "Bad Cert";
-                    badgeValues.color = badgeConstants.downColor;
+                    badgeValues.color = downColor;
                 } else {
                     const daysRemaining = parseInt(overrideValue ?? tlsInfo.certInfo.daysRemaining);
 

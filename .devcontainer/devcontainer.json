@@ -1,0 +1,22 @@
+{
+    "image": "mcr.microsoft.com/devcontainers/javascript-node:dev-18-bookworm",
+    "features": {
+        "ghcr.io/devcontainers/features/github-cli:1": {}
+    },
+    "updateContentCommand": "npm ci",
+    "postCreateCommand": "",
+    "postAttachCommand": {
+        "frontend-dev": "npm run start-frontend-devcontainer",
+        "server-dev": "npm run start-server-dev",
+        "open-port": "gh codespace ports visibility 3001:public -c $CODESPACE_NAME"
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "streetsidesoftware.code-spell-checker",
+                "dbaeumer.vscode-eslint"
+            ]
+        }
+    },
+    "forwardPorts": [3000, 3001]
+}
