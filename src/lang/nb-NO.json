@@ -1065,5 +1065,8 @@
     "grpcMethodDescription": "",
     "ntfyPriorityHelptextAllExceptDown": "",
     "pushViewCode": "",
-    "CopyToClipboardError": ""
+    "CopyToClipboardError": "",
+    "Enable DNS Cache": "",
+    "trustProxyDescription": "",
+    "backupOutdatedWarning": ""
 }
