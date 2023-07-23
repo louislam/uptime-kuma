@@ -1043,5 +1043,6 @@
     "resendDisabled": "",
     "upsideDownModeDescription": "",
     "grpcMethodDescription": "",
-    "ntfyPriorityHelptextAllExceptDown": ""
+    "ntfyPriorityHelptextAllExceptDown": "",
+    "Enable DNS Cache": ""
 }
