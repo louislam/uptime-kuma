@@ -1069,5 +1069,8 @@
     "alertaApiEndpoint": "",
     "grpcMethodDescription": "",
     "ntfyPriorityHelptextAllExceptDown": "",
-    "Pick a SASL Mechanism...": ""
+    "Pick a SASL Mechanism...": "",
+    "Enable DNS Cache": "",
+    "backupOutdatedWarning": "",
+    "trustProxyDescription": ""
 }
