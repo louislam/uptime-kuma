@@ -5,12 +5,12 @@ const {
     relayInit,
     getPublicKey,
     getEventHash,
-    signEvent,
+    getSignature,
     nip04,
     nip19
 } = require("nostr-tools");
 // polyfill for node <= 18
-require("websocket-polyfill");
+global.WebSocket = require("ws");
 
 class Nostr extends NotificationProvider {
     name = "nostr";
@@ -35,7 +35,7 @@ class Nostr extends NotificationProvider {
                 content: ciphertext,
             };
             event.id = getEventHash(event);
-            event.sig = signEvent(event, senderPrivateKey);
+            event.sig = getSignature(event, senderPrivateKey);
             events.push(event);
         }
 
