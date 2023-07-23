@@ -1046,5 +1046,6 @@
     "promosmsPhoneNumber": "",
     "setupDatabaseChooseDatabase": "",
     "ntfyPriorityHelptextAllExceptDown": "",
-    "grpcMethodDescription": ""
+    "grpcMethodDescription": "",
+    "Enable DNS Cache": ""
 }
