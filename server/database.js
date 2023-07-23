@@ -72,6 +72,8 @@ class Database {
         "patch-maintenance-cron.sql": true,
         "patch-add-parent-monitor.sql": true,
         "patch-add-invert-keyword.sql": true,
+        "patch-added-json-query.sql": true,
+        "patch-added-kafka-producer.sql": true,
         "patch-monitor-oauth-cc.sql": true,
     };
 

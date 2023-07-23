@@ -44,7 +44,7 @@ body:
     id: operating-system
     attributes:
       label: "💻 Operating System and Arch"
-      description: "Which OS is your server/device running on?"
+      description: "Which OS is your server/device running on? (For Replit, please do not report this bug)"
       placeholder: "Ex. Ubuntu 20.04 x86"
     validations:
       required: true
@@ -52,7 +52,7 @@ body:
     id: browser-vendor
     attributes:
       label: "🌐 Browser"
-      description: "Which browser are you running on?"
+      description: "Which browser are you running on? (For Replit, please do not report this bug)"
       placeholder: "Ex. Google Chrome 95.0.4638.69"
     validations:
       required: true
