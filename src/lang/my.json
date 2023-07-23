@@ -1050,5 +1050,6 @@
     "ntfyPriorityHelptextAllEvents": "",
     "Pick a SASL Mechanism...": "",
     "CopyToClipboardError": "",
-    "pushViewCode": ""
+    "pushViewCode": "",
+    "Enable DNS Cache": ""
 }
