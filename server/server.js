@@ -49,6 +49,7 @@ if (! process.env.NODE_ENV) {
 }
 
 log.info("server", "Node Env: " + process.env.NODE_ENV);
+log.info("server", "Inside Container: " + process.env.UPTIME_KUMA_IS_CONTAINER === "1");
 
 log.info("server", "Importing Node libraries");
 const fs = require("fs");
@@ -1588,6 +1589,8 @@ let needSetup = false;
         console.error("Cannot listen: " + err.message);
         await shutdownFunction();
     });
+
+    server.start();
 
     server.httpServer.listen(port, hostname, () => {
         if (hostname) {
