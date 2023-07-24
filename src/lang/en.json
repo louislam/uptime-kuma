@@ -356,7 +356,6 @@
     "Coming Soon": "Coming Soon",
     "Connection String": "Connection String",
     "Query": "Query",
-    "sqlQueryExample: select getdate()": "Example: select getdate()",
     "settingsCertificateExpiry": "TLS Certificate Expiry",
     "certificationExpiryDescription": "HTTPS Monitors trigger notification when TLS certificate expires in:",
     "Setup Docker Host": "Setup Docker Host",
