@@ -642,7 +642,7 @@
     "Server Timezone": "Sunucu Saat Dilimi",
     "statusPageMaintenanceEndDate": "Bitiş Zamanı",
     "IconUrl": "Icon URL",
-    "Enable DNS Cache": "DNS Önbelleğini Etkinleştir",
+    "Enable DNS Cache": "HTTP monitörleri için DNS Önbelleğini etkinleştir",
     "Enable": "Etkin",
     "Disable": "Devre Dışı",
     "dnsCacheDescription": "Bazı IPv6 ortamlarında çalışmıyor olabilir, herhangi bir sorunla karşılaşırsanız devre dışı bırakın.",
