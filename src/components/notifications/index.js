@@ -24,6 +24,7 @@ import Octopush from "./Octopush.vue";
 import OneBot from "./OneBot.vue";
 import Opsgenie from "./Opsgenie.vue";
 import PagerDuty from "./PagerDuty.vue";
+import FlashDuty from "./FlashDuty.vue";
 import PagerTree from "./PagerTree.vue";
 import PromoSMS from "./PromoSMS.vue";
 import Pushbullet from "./Pushbullet.vue";
@@ -82,6 +83,7 @@ const NotificationFormList = {
     "OneBot": OneBot,
     "Opsgenie": Opsgenie,
     "PagerDuty": PagerDuty,
+    "FlashDuty": FlashDuty,
     "PagerTree": PagerTree,
     "promosms": PromoSMS,
     "pushbullet": Pushbullet,
