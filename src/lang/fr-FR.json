@@ -652,7 +652,7 @@
     "Server Timezone": "Fuseau horaire du serveur",
     "statusPageMaintenanceEndDate": "Fin",
     "IconUrl": "URL vers l'icône",
-    "Enable DNS Cache": "Activer le cache DNS",
+    "Enable DNS Cache": "Activer le cache DNS pour les sondes HTTP(s)",
     "Enable": "Activer",
     "Disable": "Désactiver",
     "dnsCacheDescription": "Il peut ne pas fonctionner dans certains environnements IPv6, désactivez-le si vous rencontrez des problèmes.",
