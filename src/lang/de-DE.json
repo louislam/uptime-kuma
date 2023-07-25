@@ -646,7 +646,7 @@
     "Help": "Hilfe",
     "Game": "Spiel",
     "Custom": "Benutzerdefiniert",
-    "Enable DNS Cache": "DNS-Cache aktivieren",
+    "Enable DNS Cache": "DNS-Cache für HTTP(s)-Monitore aktivieren",
     "Enable": "Aktivieren",
     "Disable": "Deaktivieren",
     "Custom Monitor Type": "Benutzerdefinierter Monitortyp",
