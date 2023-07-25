@@ -72,11 +72,30 @@ export function setPageLocale() {
  */
 export function getResBaseURL() {
     const env = process.env.NODE_ENV;
-    if (env === "development" || localStorage.dev === "dev") {
+    if (env === "development" && isDevContainer()) {
+        return location.protocol + "//" + getDevContainerServerHostname();
+    } else if (env === "development" || localStorage.dev === "dev") {
         return location.protocol + "//" + location.hostname + ":3001";
     } else {
         return "";
     }
+}
+
+export function isDevContainer() {
+    // eslint-disable-next-line no-undef
+    return (typeof DEVCONTAINER === "string" && DEVCONTAINER === "1");
+}
+
+/**
+ * Supports GitHub Codespaces only currently
+ */
+export function getDevContainerServerHostname() {
+    if (!isDevContainer()) {
+        return "";
+    }
+
+    // eslint-disable-next-line no-undef
+    return CODESPACE_NAME + "-3001." + GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN;
 }
 
 /**
