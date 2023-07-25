@@ -1,6 +1,5 @@
+const { log } = require("../../src/util");
 const NotificationProvider = require("./notification-provider");
-// polyfill for node <= 18
-global.crypto = require("crypto");
 const {
     relayInit,
     getPublicKey,
@@ -9,8 +8,27 @@ const {
     nip04,
     nip19
 } = require("nostr-tools");
-// polyfill for node <= 18
-global.WebSocket = require("ws");
+
+// polyfills for node versions
+const semver = require("semver");
+const nodeVersion = process.version;
+if (semver.lt(nodeVersion, "16.0.0")) {
+    log.warn("monitor", "Node <= 16 is unsupported for nostr, sorry :(")
+} else if (semver.lt(nodeVersion, "18.0.0")) {
+    // polyfills for node 16
+    crypto = require('crypto');
+    WebSocket = require("isomorphic-ws");
+    if (typeof crypto !== 'undefined' && !crypto.subtle && crypto.webcrypto) {
+        crypto.subtle = crypto.webcrypto.subtle;
+    }
+} else if (semver.lt(nodeVersion, "20.0.0")) {
+    // polyfills for node 18
+    crypto = require('crypto');
+    WebSocket = require("isomorphic-ws");
+} else {
+    // polyfills for node 20
+    WebSocket = require("isomorphic-ws");    
+}
 
 class Nostr extends NotificationProvider {
     name = "nostr";

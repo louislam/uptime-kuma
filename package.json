@@ -100,6 +100,7 @@
         "http-proxy-agent": "~5.0.0",
         "https-proxy-agent": "~5.0.1",
         "iconv-lite": "~0.6.3",
+        "isomorphic-ws": "^5.0.0",
         "jsesc": "~3.0.2",
         "jsonata": "^2.0.3",
         "jsonwebtoken": "~9.0.0",
