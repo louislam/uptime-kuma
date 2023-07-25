@@ -9,7 +9,7 @@
     <div class="mb-3">
         <label for="flashduty-severity" class="form-label">{{ $t("FlashDuty Severity") }}</label>
         <select id="flashduty-severity" v-model="$parent.notification.flashdutySeverity" class="form-select" :required="true">
-            <option value="Info">Info</option>
+            <option value="Info" selected>Info</option>
             <option value="Warning" selected>Warning</option>
             <option value="Critical">Critical</option>
         </select>
