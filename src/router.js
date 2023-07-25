@@ -61,13 +61,13 @@ const routes = [
                                         path: "",
                                         component: Details,
                                     },
+                                    {
+                                        path: "/edit/:id",
+                                        component: EditMonitor,
+                                    },
                                 ],
                             },
                         ],
-                    },
-                    {
-                        path: "/edit/:id",
-                        component: EditMonitor,
                     },
                     {
                         path: "/add",
