@@ -660,7 +660,7 @@
     "webhookAdditionalHeadersDesc": "Legt zusätzliche Kopfzeilen fest, die mit dem Webhook gesendet werden. Jede Kopfzeile sollte als JSON Schlüssel/Wert definiert werden.",
     "Packet Size": "Paketgrösse",
     "IconUrl": "Symbol URL",
-    "Enable DNS Cache": "DNS Cache aktivieren",
+    "Enable DNS Cache": "DNS-Cache für HTTP(s)-Monitore aktivieren",
     "Help": "Hilfe",
     "Game": "Spiel",
     "General Monitor Type": "Allgemeiner Monitortyp",
