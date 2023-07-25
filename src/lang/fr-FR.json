@@ -451,8 +451,6 @@
     "For safety, must use secret key": "Par sécurité, utilisation obligatoire de la clé secrète",
     "Device Token": "Jeton d'appareil",
     "Platform": "Plateforme",
-    "iOS": "iOS",
-    "Android": "Android",
     "Huawei": "Huawei",
     "High": "Haute",
     "Retry": "Recommencez",

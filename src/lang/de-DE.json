@@ -403,8 +403,6 @@
     "For safety, must use secret key": "Zur Sicherheit muss ein geheimer Schlüssel verwendet werden",
     "Device Token": "Gerätetoken",
     "Platform": "Platform",
-    "iOS": "iOS",
-    "Android": "Android",
     "Huawei": "Huawei",
     "High": "Hoch",
     "Retry": "Wiederholungen",
