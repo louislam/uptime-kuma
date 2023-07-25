@@ -8,6 +8,7 @@ class Pushbullet extends NotificationProvider {
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
+        const url = "https://api.pushbullet.com/v2/pushes";
 
         try {
             let config = {
@@ -22,7 +23,7 @@ class Pushbullet extends NotificationProvider {
                     "title": "Uptime Kuma Alert",
                     "body": msg,
                 };
-                await axios.post("https://api.pushbullet.com/v2/pushes", data, config);
+                await axios.post(url, data, config);
             } else if (heartbeatJSON["status"] === DOWN) {
                 let downData = {
                     "type": "note",
@@ -31,7 +32,7 @@ class Pushbullet extends NotificationProvider {
                         heartbeatJSON["msg"] +
                         `\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`,
                 };
-                await axios.post("https://api.pushbullet.com/v2/pushes", downData, config);
+                await axios.post(url, downData, config);
             } else if (heartbeatJSON["status"] === UP) {
                 let upData = {
                     "type": "note",
@@ -40,7 +41,7 @@ class Pushbullet extends NotificationProvider {
                         heartbeatJSON["msg"] +
                         `\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`,
                 };
-                await axios.post("https://api.pushbullet.com/v2/pushes", upData, config);
+                await axios.post(url, upData, config);
             }
             return okMsg;
         } catch (error) {

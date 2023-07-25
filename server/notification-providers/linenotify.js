@@ -8,6 +8,7 @@ class LineNotify extends NotificationProvider {
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
+        const url = "https://notify-api.line.me/api/notify";
 
         try {
             let config = {
@@ -20,7 +21,7 @@ class LineNotify extends NotificationProvider {
                 let testMessage = {
                     "message": msg,
                 };
-                await axios.post("https://notify-api.line.me/api/notify", qs.stringify(testMessage), config);
+                await axios.post(url, qs.stringify(testMessage), config);
             } else if (heartbeatJSON["status"] === DOWN) {
                 let downMessage = {
                     "message": "\n[🔴 Down]\n" +
@@ -28,7 +29,7 @@ class LineNotify extends NotificationProvider {
                         heartbeatJSON["msg"] + "\n" +
                         `Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`
                 };
-                await axios.post("https://notify-api.line.me/api/notify", qs.stringify(downMessage), config);
+                await axios.post(url, qs.stringify(downMessage), config);
             } else if (heartbeatJSON["status"] === UP) {
                 let upMessage = {
                     "message": "\n[✅ Up]\n" +
@@ -36,7 +37,7 @@ class LineNotify extends NotificationProvider {
                         heartbeatJSON["msg"] + "\n" +
                         `Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`
                 };
-                await axios.post("https://notify-api.line.me/api/notify", qs.stringify(upMessage), config);
+                await axios.post(url, qs.stringify(upMessage), config);
             }
             return okMsg;
         } catch (error) {

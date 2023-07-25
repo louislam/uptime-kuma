@@ -6,6 +6,7 @@ class PromoSMS extends NotificationProvider {
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
+        const url = "https://promosms.com/api/rest/v3_2/sms";
 
         if (notification.promosmsAllowLongSMS === undefined) {
             notification.promosmsAllowLongSMS = false;
@@ -32,7 +33,7 @@ class PromoSMS extends NotificationProvider {
                 "sender": notification.promosmsSenderName
             };
 
-            let resp = await axios.post("https://promosms.com/api/rest/v3_2/sms", data, config);
+            let resp = await axios.post(url, data, config);
 
             if (resp.data.response.status !== 0) {
                 let error = "Something gone wrong. Api returned " + resp.data.response.status + ".";

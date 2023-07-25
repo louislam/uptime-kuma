@@ -7,6 +7,7 @@ class PushDeer extends NotificationProvider {
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
+        const url = "https://api2.pushdeer.com/message/push";
 
         let valid = msg != null && monitorJSON != null && heartbeatJSON != null;
 
@@ -27,7 +28,7 @@ class PushDeer extends NotificationProvider {
         };
 
         try {
-            let res = await axios.post("https://api2.pushdeer.com/message/push", data);
+            let res = await axios.post(url, data);
 
             if ("error" in res.data) {
                 let error = res.data.error;

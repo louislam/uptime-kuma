@@ -6,6 +6,7 @@ class SMSManager extends NotificationProvider {
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
+        const url = "https://http-api.smsmanager.cz/Send";
 
         try {
             let data = {
@@ -14,7 +15,7 @@ class SMSManager extends NotificationProvider {
                 number: notification.numbers,
                 gateway: notification.messageType,
             };
-            await axios.get(`https://http-api.smsmanager.cz/Send?apikey=${data.apikey}&message=${data.message}&number=${data.number}&gateway=${data.messageType}`);
+            await axios.get(`${url}?apikey=${data.apikey}&message=${data.message}&number=${data.number}&gateway=${data.messageType}`);
             return okMsg;
         } catch (error) {
             this.throwGeneralAxiosError(error);

@@ -6,6 +6,7 @@ class SerwerSMS extends NotificationProvider {
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
+        const url = "https://api2.serwersms.pl/messages/send_sms";
 
         try {
             let config = {
@@ -21,7 +22,7 @@ class SerwerSMS extends NotificationProvider {
                 "sender": notification.serwersmsSenderName,
             };
 
-            let resp = await axios.post("https://api2.serwersms.pl/messages/send_sms", data, config);
+            let resp = await axios.post(url, data, config);
 
             if (!resp.data.success) {
                 if (resp.data.error) {
