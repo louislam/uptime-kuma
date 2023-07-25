@@ -5,13 +5,29 @@ ARG TARGETPLATFORM
 
 WORKDIR /app
 
-# Install Curl
-# Install Apprise, add sqlite3 cli for debugging in the future, iputils-ping for ping, util-linux for setpriv
-# Stupid python3 and python3-pip actually install a lot of useless things into Debian, specify --no-install-recommends to skip them, make the base even smaller than alpine!
+# Specify --no-install-recommends to skip unused dependencies, make the base much smaller!
+# python3* = apprise's dependencies
+# sqlite3 = for debugging
+# iputils-ping = for ping
+# util-linux = for setpriv (Should be dropped in 2.0.0?)
+# dumb-init = avoid zombie processes (#480)
+# curl = for debugging
+# ca-certificates = keep the cert up-to-date
+# sudo = for start service nscd with non-root user
+# nscd = for better DNS caching
+# (pip) apprise = for notifications
 RUN apt-get update && \
-    apt-get --yes --no-install-recommends install python3 python3-pip python3-cryptography python3-six python3-yaml python3-click python3-markdown python3-requests python3-requests-oauthlib \
-        sqlite3 iputils-ping util-linux dumb-init git curl ca-certificates && \
-    pip3 --no-cache-dir install apprise==1.4.0 && \
+    apt-get --yes --no-install-recommends install  \
+        python3 python3-pip python3-cryptography python3-six python3-yaml python3-click python3-markdown python3-requests python3-requests-oauthlib \
+        sqlite3  \
+        iputils-ping  \
+        util-linux  \
+        dumb-init  \
+        curl  \
+        ca-certificates \
+        sudo \
+        nscd && \
+    pip3 --no-cache-dir install apprise==1.4.5 && \
     rm -rf /var/lib/apt/lists/* && \
     apt --yes autoremove
 
@@ -25,4 +41,8 @@ RUN set -eux && \
     cloudflared version && \
     rm -rf /var/lib/apt/lists/* && \
     apt --yes autoremove
+
+# For nscd
+COPY ./docker/etc/nscd.conf /etc/nscd.conf
+COPY ./docker/etc/sudoers /etc/sudoers
 
