@@ -2,21 +2,18 @@ const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 const { UP, DOWN, getMonitorRelativeURL } = require("../../src/util");
 const { setting } = require("../util-server");
-let successMessage = "Sent Successfully.";
+const successMessage = "Sent Successfully.";
 
 class FlashDuty extends NotificationProvider {
     name = "FlashDuty";
 
-    /**
-     * @inheritdoc
-     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         try {
             if (heartbeatJSON == null) {
                 const title = "Uptime Kuma Alert";
                 const monitor = {
                     type: "ping",
-                    url: "Uptime Kuma Test Button",
+                    url: msg,
                 };
                 return this.postNotification(notification, title, msg, monitor);
             }
@@ -24,12 +21,12 @@ class FlashDuty extends NotificationProvider {
             if (heartbeatJSON.status === UP) {
                 const title = "Uptime Kuma Monitor ✅ Up";
 
-                return this.postNotification(notification, title, heartbeatJSON.msg, monitorJSON);
+                return this.postNotification(notification, title, heartbeatJSON.msg, monitorJSON, "Ok");
             }
 
             if (heartbeatJSON.status === DOWN) {
                 const title = "Uptime Kuma Monitor 🔴 Down";
-                return this.postNotification(notification, title, heartbeatJSON.msg, monitorJSON);
+                return this.postNotification(notification, title, heartbeatJSON.msg, monitorJSON, notification.flashdutySeverity);
             }
         } catch (error) {
             this.throwGeneralAxiosError(error);
@@ -53,35 +50,39 @@ class FlashDuty extends NotificationProvider {
     /**
      * Send the message
      * @param {BeanModel} notification Message title
-     * @param {string} title Message title
+     * @param {string} title Message
      * @param {string} body Message
-     * @param {Object} monitorInfo Monitor details (For Up/Down only)
+     * @param {Object} monitorInfo Monitor details
+     * @param {string} eventStatus Monitor status (Info, Warning, Critical, Ok)
      * @returns {string}
      */
-    async postNotification(notification, title, body, monitorInfo) {
-        let monitorUrl;
-        if (monitorInfo.type === "port") {
-            monitorUrl = monitorInfo.hostname;
-            if (monitorInfo.port) {
-                monitorUrl += ":" + monitorInfo.port;
+    async postNotification(notification, title, body, monitorInfo, eventStatus) {
+        const genMonitorUrl = (monitorInfo) => {
+            let monitorUrl;
+            if (monitorInfo.type === "port") {
+                monitorUrl = monitorInfo.hostname;
+                if (monitorInfo.port) {
+                    monitorUrl += ":" + monitorInfo.port;
+                }
+            } else if (monitorInfo.hostname != null) {
+                monitorUrl = monitorInfo.hostname;
+            } else {
+                monitorUrl = monitorInfo.url;
             }
-        } else if (monitorInfo.hostname != null) {
-            monitorUrl = monitorInfo.hostname;
-        } else {
-            monitorUrl = monitorInfo.url;
-        }
+            return monitorUrl;
+        };
         const options = {
             method: "POST",
-            url: notification.flashdutyIntegrationUrl,
+            url: "https://api.flashcat.cloud/event/push/alert/standard?integration_key=" + notification.flashdutyIntegrationKey,
             headers: { "Content-Type": "application/json" },
             data: {
                 description: `[${title}] [${monitorInfo.name}] ${body}`,
                 title,
-                event_status: notification.flashdutyPriority || "Warning",
+                event_status: eventStatus || "Info",
                 alert_key: String(monitorInfo.id) || Math.random().toString(36).substring(7),
                 labels: monitorInfo.tags.reduce((acc, item) => ({ ...acc,
                     [item.name]: item.value
-                }), { resource: monitorUrl }),
+                }), { resource: genMonitorUrl(monitorInfo) }),
             }
         };
 
