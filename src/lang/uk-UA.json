@@ -680,7 +680,7 @@
     "Server Timezone": "Часовий пояс сервера",
     "statusPageMaintenanceEndDate": "Закінчення",
     "IconUrl": "URL-адреса іконки",
-    "Enable DNS Cache": "Увімкнути DNS-кеш",
+    "Enable DNS Cache": "Увімкнути DNS-кеш для HTTP(s) моніторів",
     "Enable": "Увімкнути",
     "confirmDeleteTagMsg": "Ви впевнені, що хочете видалити цей тег? Монітори, пов'язані з цим тегом, не будуть видалені.",
     "Guild ID": "ID гільдії",
