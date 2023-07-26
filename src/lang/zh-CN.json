@@ -655,7 +655,7 @@
     "Server Timezone": "服务器时区",
     "statusPageMaintenanceEndDate": "结束时间",
     "IconUrl": "图标 URL",
-    "Enable DNS Cache": "启用 DNS 缓存",
+    "Enable DNS Cache": "为 HTTP(s) 监控项启用 DNS 缓存",
     "Enable": "启用",
     "Disable": "禁用",
     "dnsCacheDescription": "可能无法在某些 IPv6 环境工作，如果遇到问题请禁用。",
