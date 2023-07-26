@@ -550,5 +550,7 @@
     "Json Query": "Jsonクエリ",
     "octopushSMSSender": "SMS送信者名：3～11文字の英数字とスペース（a～zA～z0～9）",
     "Lowcost": "低コスト",
-    "A list of Notification Services can be found in Home Assistant under \"Developer Tools > Services\" search for \"notification\" to find your device/phone name.": "通知サービスの一覧からデバイス名を見つけるには、Home Assistantの「開発者ツール > サービス」から通知で検索してください。"
+    "A list of Notification Services can be found in Home Assistant under \"Developer Tools > Services\" search for \"notification\" to find your device/phone name.": "通知サービスの一覧からデバイス名を見つけるには、Home Assistantの「開発者ツール > サービス」から通知で検索してください。",
+    "Notify Channel": "通知チャンネル",
+    "Icon Emoji": "絵文字アイコン"
 }
