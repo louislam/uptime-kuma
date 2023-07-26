@@ -33,6 +33,11 @@ class FlashDuty extends NotificationProvider {
             this.throwGeneralAxiosError(error);
         }
     }
+    /**
+     * Generate a monitor url from the monitors infomation
+     * @param {Object} monitorInfo Monitor details
+     * @returns {string|undefined}
+     */
 
     genMonitorUrl(monitorInfo) {
         if (monitorInfo.type === "port" && monitorInfo.port) {
