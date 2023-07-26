@@ -420,8 +420,6 @@
     "For safety, must use secret key": "Για ασφάλεια, πρέπει να χρησιμοποιήσετε secret key",
     "Device Token": "Device Token",
     "Platform": "Platform",
-    "iOS": "iOS",
-    "Android": "Android",
     "Huawei": "Huawei",
     "High": "High",
     "Retry": "Ξαναδοκιμάσετε",
