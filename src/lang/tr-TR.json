@@ -816,5 +816,6 @@
     "Press Enter to add broker": "Aracı eklemek için Enter'a basın",
     "Enable Kafka Producer Auto Topic Creation": "Kafka Üreticisi Otomatik Başlık Oluşturmayı Etkinleştir",
     "AccessKey Id": "Erişim Anahtarı Kimliği",
-    "tailscalePingWarning": "Tailscale Ping monitörünü kullanabilmek için Docker olmadan Uptime Kuma kurmanız ve ayrıca sunucunuza Tailscale client kurmanız gerekmektedir."
+    "tailscalePingWarning": "Tailscale Ping monitörünü kullanabilmek için Docker olmadan Uptime Kuma kurmanız ve ayrıca sunucunuza Tailscale client kurmanız gerekmektedir.",
+    "Server URL should not contain the nfty topic": "Sunucu URL'si nfty konusunu içermemelidir"
 }
