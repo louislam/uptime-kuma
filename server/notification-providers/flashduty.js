@@ -33,18 +33,14 @@ class FlashDuty extends NotificationProvider {
         }
     }
 
-    /**
-     * Check if result is successful, result code should be in range 2xx
-     * @param {Object} result Axios response object
-     * @throws {Error} The status code is not in range 2xx
-     */
-    checkResult(result) {
-        if (result.status == null) {
-            throw new Error("FlashDuty notification failed with invalid response!");
+    genMonitorUrl(monitorInfo) {
+        if (monitorInfo.type === "port" && monitorInfo.port) {
+            return monitorInfo.hostname + ":" + monitorInfo.port;
         }
-        if (result.status < 200 || result.status >= 300) {
-            throw new Error("FlashDuty notification failed with status code " + result.status);
+        if (monitorInfo.hostname != null) {
+            return monitorInfo.hostname;
         }
+        return monitorInfo.url;
     }
 
     /**
@@ -57,20 +53,6 @@ class FlashDuty extends NotificationProvider {
      * @returns {string}
      */
     async postNotification(notification, title, body, monitorInfo, eventStatus) {
-        const genMonitorUrl = (monitorInfo) => {
-            let monitorUrl;
-            if (monitorInfo.type === "port") {
-                monitorUrl = monitorInfo.hostname;
-                if (monitorInfo.port) {
-                    monitorUrl += ":" + monitorInfo.port;
-                }
-            } else if (monitorInfo.hostname != null) {
-                monitorUrl = monitorInfo.hostname;
-            } else {
-                monitorUrl = monitorInfo.url;
-            }
-            return monitorUrl;
-        };
         const options = {
             method: "POST",
             url: "https://api.flashcat.cloud/event/push/alert/standard?integration_key=" + notification.flashdutyIntegrationKey,
@@ -82,7 +64,7 @@ class FlashDuty extends NotificationProvider {
                 alert_key: String(monitorInfo.id) || Math.random().toString(36).substring(7),
                 labels: monitorInfo.tags.reduce((acc, item) => ({ ...acc,
                     [item.name]: item.value
-                }), { resource: genMonitorUrl(monitorInfo) }),
+                }), { resource: this.genMonitorUrl(monitorInfo) }),
             }
         };
 
@@ -93,7 +75,12 @@ class FlashDuty extends NotificationProvider {
         }
 
         let result = await axios.request(options);
-        this.checkResult(result);
+        if (result.status == null) {
+            throw new Error("FlashDuty notification failed with invalid response!");
+        }
+        if (result.status < 200 || result.status >= 300) {
+            throw new Error("FlashDuty notification failed with status code " + result.status);
+        }
         if (result.statusText != null) {
             return "FlashDuty notification succeed: " + result.statusText;
         }
