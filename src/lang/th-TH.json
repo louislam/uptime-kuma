@@ -404,8 +404,6 @@
     "For safety, must use secret key": "เพื่อความปลอดภัย จำเป็นต้องตั้งค่ากุญแจการเข้าถึง",
     "Device Token": "Device Token",
     "Platform": "แพลตฟอร์ม",
-    "iOS": "iOS",
-    "Android": "Android",
     "Huawei": "Huawei",
     "High": "สูง",
     "Retry": "ลองใหม่",

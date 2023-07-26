@@ -404,8 +404,6 @@
     "For safety, must use secret key": "Voor de veiligheid moet je de secret key gebruiken",
     "Device Token": "Apparaat Token",
     "Platform": "Platform",
-    "iOS": "iOS",
-    "Android": "Android",
     "Huawei": "Huawei",
     "High": "Hoog",
     "Retry": "Opnieuw",

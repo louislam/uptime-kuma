@@ -408,8 +408,6 @@
     "For safety, must use secret key": "Güvenlik için gizli anahtar kullanılmalıdır",
     "Device Token": "Cihaz Tokeni",
     "Platform": "Platform",
-    "iOS": "iOS",
-    "Android": "Android",
     "Huawei": "Huawei",
     "High": "High",
     "Retry": "Tekrar",

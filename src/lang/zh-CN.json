@@ -452,8 +452,6 @@
     "For safety, must use secret key": "出于安全考虑，必须使用加签密钥",
     "Device Token": "Apple Device Token",
     "Platform": "平台",
-    "iOS": "iOS",
-    "Android": "Android",
     "Huawei": "华为",
     "High": "高",
     "Retry": "重试次数",

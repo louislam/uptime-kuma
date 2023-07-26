@@ -413,8 +413,6 @@
     "For safety, must use secret key": "Для безпеки необхідно використовувати секретний ключ",
     "Device Token": "Токен пристрою",
     "Platform": "Платформа",
-    "iOS": "iOS",
-    "Android": "Android",
     "Huawei": "Huawei",
     "High": "Високий",
     "Retry": "Повтор",

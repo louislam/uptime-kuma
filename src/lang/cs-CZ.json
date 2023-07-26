@@ -454,8 +454,6 @@
     "For safety, must use secret key": "Z důvodu bezpečnosti použijte secret key",
     "Device Token": "Token zařízení",
     "Platform": "Platforma",
-    "iOS": "iOS",
-    "Android": "Android",
     "Huawei": "Huawei",
     "High": "Vysoký",
     "Retry": "Opakovat",

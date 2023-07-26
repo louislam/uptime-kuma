@@ -445,8 +445,6 @@
     "For safety, must use secret key": "為了安全起見，必須使用秘密金鑰",
     "Device Token": "裝置權杖",
     "Platform": "平台",
-    "iOS": "iOS",
-    "Android": "Android",
     "Huawei": "華為",
     "High": "高",
     "Retry": "重試",
