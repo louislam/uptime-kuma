@@ -14,6 +14,7 @@ class FlashDuty extends NotificationProvider {
                 const monitor = {
                     type: "ping",
                     url: msg,
+                    name: "https://flashcat.cloud"
                 };
                 return this.postNotification(notification, title, msg, monitor);
             }
@@ -62,7 +63,7 @@ class FlashDuty extends NotificationProvider {
                 title,
                 event_status: eventStatus || "Info",
                 alert_key: String(monitorInfo.id) || Math.random().toString(36).substring(7),
-                labels: monitorInfo.tags.reduce((acc, item) => ({ ...acc,
+                labels: monitorInfo?.tags?.reduce((acc, item) => ({ ...acc,
                     [item.name]: item.value
                 }), { resource: this.genMonitorUrl(monitorInfo) }),
             }
