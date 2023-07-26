@@ -690,6 +690,7 @@
     "Octopush API Version": "Octopush API Version",
     "Legacy Octopush-DM": "Legacy Octopush-DM",
     "ntfy Topic": "ntfy Topic",
+    "Server URL should not contain the nfty topic": "Server URL should not contain the nfty topic",
     "onebotHttpAddress": "OneBot HTTP Address",
     "onebotMessageType": "OneBot Message Type",
     "onebotGroupMessage": "Group",
