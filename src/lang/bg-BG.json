@@ -821,5 +821,6 @@
     "AccessKey Id": "AccessKey ID",
     "Secret AccessKey": "Таен ключ за достъп",
     "Session Token": "Токен за сесия",
-    "tailscalePingWarning": "За да използвате Tailscale Ping монитор, трябва да инсталирате Uptime Kuma без Docker и също така да инсталирате Tailscale клиент на вашия сървър."
+    "tailscalePingWarning": "За да използвате Tailscale Ping монитор, трябва да инсталирате Uptime Kuma без Docker и също така да инсталирате Tailscale клиент на вашия сървър.",
+    "Server URL should not contain the nfty topic": "URL адресът на сървъра не трябва да съдържа nfty темата"
 }
