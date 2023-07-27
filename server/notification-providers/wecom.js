@@ -17,7 +17,7 @@ class WeCom extends NotificationProvider {
         // If heartbeatJSON is null => non-monitor messages like certificate warnings/testing
         if (heartbeatJSON == null) {
             await axios.post(
-                WeComUrl,
+                url,
                 {
                     msgtype: "text",
                     text: {
