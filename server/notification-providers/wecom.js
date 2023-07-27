@@ -47,6 +47,7 @@ class WeCom extends NotificationProvider {
                 break;
         }
         const baseURL = await setting("primaryBaseURL");
+        let clientUrl = "";
         if (baseURL) {
             clientUrl = `${baseURL}${getMonitorRelativeURL(monitorJSON["id"])}`;
         }
