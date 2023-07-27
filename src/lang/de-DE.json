@@ -48,7 +48,7 @@
     "Port": "Port",
     "Heartbeat Interval": "Prüfintervall",
     "Retries": "Wiederholungen",
-    "retriesDescription": "Maximale Wiederholungen, bevor der Dienst als inaktiv markiert und eine Benachrichtigung gesendet wird.",
+    "retriesDescription": "Maximale Wiederholungen, bevor der Dienst als inaktiv markiert und eine Benachrichtigung gesendet wird",
     "Advanced": "Erweitert",
     "ignoreTLSError": "Ignoriere TLS-/SSL-Fehler von Webseiten",
     "Upside Down Mode": "Umgekehrter Modus",
@@ -218,7 +218,7 @@
     "wayToGetTelegramToken": "Hier kannst du einen Token erhalten {0}.",
     "Chat ID": "Chat ID",
     "supportTelegramChatID": "Unterstützt Direkt Chat / Gruppe / Kanal Chat-ID's",
-    "wayToGetTelegramChatID": "Du kannst deine Chat-ID erhalten, indem du eine Nachricht an den Bot sendest und zu dieser URL gehst, um die chat_id: zu sehen.",
+    "wayToGetTelegramChatID": "Du kannst deine Chat-ID erhalten, indem du eine Nachricht an den Bot sendest und zu dieser URL gehst, um die chat_id zu sehen:",
     "YOUR BOT TOKEN HERE": "HIER DEIN BOT TOKEN",
     "chatIDNotFound": "Chat-ID wurde nicht gefunden: bitte sende zuerst eine Nachricht an diesen Bot",
     "Post URL": "Post URL",
@@ -380,7 +380,7 @@
     "alertaAlertState": "Alarmstatus",
     "alertaRecoverState": "Wiederherstellungsstatus",
     "deleteStatusPageMsg": "Bist du sicher, dass du diese Status-Seite löschen willst?",
-    "Proxies": "Proxies",
+    "Proxies": "Proxys",
     "default": "Standard",
     "enabled": "Aktiviert",
     "setAsDefault": "Als Standard setzen",
@@ -816,5 +816,6 @@
     "Expected Value": "Erwarteter Wert",
     "Json Query": "Json-Abfrage",
     "jsonQueryDescription": "Führe eine JSON-Abfrage gegen die Antwort durch und prüfe den erwarteten Wert (der Rückgabewert wird zum Vergleich in eine Zeichenkette umgewandelt). Auf <a href='https://jsonata.org/'>jsonata.org</a> findest du die Dokumentation zur Abfragesprache. <a href='https://try.jsonata.org/'>Hier</a> kannst du Abfragen üben.",
-    "tailscalePingWarning": "Um den Tailscale Ping Monitor nutzen zu können, musst du Uptime Kuma ohne Docker installieren und den Tailscale Client auf dem Server installieren."
+    "tailscalePingWarning": "Um den Tailscale Ping Monitor nutzen zu können, musst du Uptime Kuma ohne Docker installieren und den Tailscale Client auf dem Server installieren.",
+    "Server URL should not contain the nfty topic": "Die Server-URL sollte das nfty-Thema nicht enthalten"
 }
