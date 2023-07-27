@@ -30,9 +30,6 @@ class WeCom extends NotificationProvider {
         }
 
         let address = "";
-        let clientUrl = "";
-
-        //#region computed address and clientUrl
         switch (monitorJSON["type"]) {
             case "ping":
                 address = monitorJSON["hostname"];
