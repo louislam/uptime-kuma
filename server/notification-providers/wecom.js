@@ -7,9 +7,7 @@ class WeCom extends NotificationProvider {
     name = "WeCom";
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
-        let WeComUrl =
-      "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=" +
-      notification.weComBotKey;
+        const url = `https://qyapi.weixin.qq.com/cgi-bin/webhook/send"?key=${notification.weComBotKey}`;
         let config = {
             headers: {
                 "Content-Type": "application/json",
