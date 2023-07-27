@@ -102,7 +102,7 @@ class WeCom extends NotificationProvider {
         }
 
         await axios.post(
-            WeComUrl,
+            url,
             {
                 msgtype: "template_card",
                 template_card: templateCard,
