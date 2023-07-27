@@ -1134,7 +1134,7 @@ message HealthCheckResponse {
                     url: "https://",
                     method: "GET",
                     interval: 60,
-                    timeout: this.interval * 0.8, // previous default value
+                    timeout: this.interval * 0.8,
                     retryInterval: this.interval,
                     resendInterval: 0,
                     maxretries: 1,
