@@ -759,29 +759,19 @@ class Monitor extends BeanModel {
                         port = this.port;
                     }
 
-                    try {
-                        const resp = await radius(
-                            this.hostname,
-                            this.radiusUsername,
-                            this.radiusPassword,
-                            this.radiusCalledStationId,
-                            this.radiusCallingStationId,
-                            this.radiusSecret,
-                            port,
-                            this.interval * 1000 * 0.8,
-                        );
-                        if (resp.code) {
-                            bean.msg = resp.code;
-                        }
-                        bean.status = UP;
-                    } catch (error) {
-                        bean.status = DOWN;
-                        if (error.response?.code) {
-                            bean.msg = error.response.code;
-                        } else {
-                            bean.msg = error.message;
-                        }
-                    }
+                    const resp = await radius(
+                        this.hostname,
+                        this.radiusUsername,
+                        this.radiusPassword,
+                        this.radiusCalledStationId,
+                        this.radiusCallingStationId,
+                        this.radiusSecret,
+                        port,
+                        this.interval * 1000 * 0.4,
+                    );
+
+                    bean.msg = resp.code;
+                    bean.status = UP;
                     bean.ping = dayjs().valueOf() - startTime;
                 } else if (this.type === "redis") {
                     let startTime = dayjs().valueOf();
