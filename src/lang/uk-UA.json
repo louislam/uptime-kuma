@@ -822,5 +822,6 @@
     "Enable Kafka Producer Auto Topic Creation": "Увімкнути автоматичне створення тем Kafka Producer",
     "Enter the list of brokers": "Введіть список брокерів",
     "Kafka Producer Message": "Повідомлення Kafka Producer",
-    "tailscalePingWarning": "Для того, щоб використовувати монітор Tailscale Ping, вам потрібно встановити Uptime Kuma без Docker, а також встановити клієнт Tailscale на вашому сервері."
+    "tailscalePingWarning": "Для того, щоб використовувати монітор Tailscale Ping, вам потрібно встановити Uptime Kuma без Docker, а також встановити клієнт Tailscale на вашому сервері.",
+    "Server URL should not contain the nfty topic": "URL-адреса сервера не повинна містити тему nfty"
 }
