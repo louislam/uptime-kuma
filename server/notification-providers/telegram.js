@@ -6,13 +6,13 @@ class Telegram extends NotificationProvider {
 
     name = "telegram";
 
-    async send(notification, msg, monitorJSON = null, heartbeatJSON = null, downTime = null) {
+    async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
 
         try {
             let message = msg;
-            if (downTime) {
-                const downTimeInMilliSec = downTime * 1000;
+            if (heartbeatJSON.downTime) {
+                const downTimeInMilliSec = heartbeatJSON.downTime * 1000;
 
                 // Convert the downTime to minutes and seconds (mm:ss) format
                 const downTimeFormatted = dayjs.duration(downTimeInMilliSec).format("mm:ss");

@@ -837,10 +837,11 @@ class Monitor extends BeanModel {
                         }
                     }
                     log.debug("monitor", `[${this.name}] sendNotification`);
+                    let downTime = 0;
                     if (downTimeInSeconds) {
-                        await Monitor.sendNotification(isFirstBeat, this, bean, downTimeInSeconds.duration);
+                        downTime = downTimeInSeconds.duration;
                     }
-                    await Monitor.sendNotification(isFirstBeat, this, bean);
+                    await Monitor.sendNotification(isFirstBeat, this, bean, downTime);
                 } else {
                     log.debug("monitor", `[${this.name}] will not sendNotification because it is (or was) under maintenance`);
                 }
@@ -1263,7 +1264,7 @@ class Monitor extends BeanModel {
      * @param {Monitor} monitor The monitor to send a notificaton about
      * @param {Bean} bean Status information about monitor
      */
-    static async sendNotification(isFirstBeat, monitor, bean, downTime = null) {
+    static async sendNotification(isFirstBeat, monitor, bean, downTime = 0) {
         if (!isFirstBeat || bean.status === DOWN) {
             const notificationList = await Monitor.getNotificationList(monitor);
 
@@ -1289,8 +1290,9 @@ class Monitor extends BeanModel {
                     heartbeatJSON["timezone"] = await UptimeKumaServer.getInstance().getTimezone();
                     heartbeatJSON["timezoneOffset"] = UptimeKumaServer.getInstance().getTimezoneOffset();
                     heartbeatJSON["localDateTime"] = dayjs.utc(heartbeatJSON["time"]).tz(heartbeatJSON["timezone"]).format(SQL_DATETIME_FORMAT);
+                    heartbeatJSON["downTime"] = downTime;
 
-                    await Notification.send(JSON.parse(notification.config), msg, await monitor.toJSON(false), heartbeatJSON, downTime);
+                    await Notification.send(JSON.parse(notification.config), msg, await monitor.toJSON(false), heartbeatJSON);
                 } catch (e) {
                     log.error("monitor", "Cannot send notification to " + notification.name);
                     log.error("monitor", e);
