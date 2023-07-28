@@ -361,7 +361,7 @@ class Monitor extends BeanModel {
                             }
                         } else if (this.httpBodyEncoding === "form") {
                             bodyValue = this.body;
-                            contentType = "application/x-www-form-urlencoded; charset=utf-8";
+                            contentType = "application/x-www-form-urlencoded";
                         } else if (this.httpBodyEncoding === "xml") {
                             bodyValue = this.body;
                             contentType = "text/xml; charset=utf-8";
