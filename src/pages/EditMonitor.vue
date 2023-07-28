@@ -931,6 +931,10 @@ message HealthCheckResponse {
   </soap:Body>
 </soap:Envelope>` ]);
             }
+            if (this.monitor && this.monitor.httpBodyEncoding && this.monitor.httpBodyEncoding === "form") {
+                return this.$t("Example:", [ `
+key1=value1&key2=value2` ]);
+            }
             return this.$t("Example:", [ `
 {
     "key": "value"
