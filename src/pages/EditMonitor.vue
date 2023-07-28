@@ -373,30 +373,18 @@
                                 </div>
                             </template>
 
+                            <!-- SQL Server / PostgreSQL / MySQL / Redis / MongoDB -->
+                            <template v-if="monitor.type === 'sqlserver' || monitor.type === 'postgres' || monitor.type === 'mysql' || monitor.type === 'redis' || monitor.type === 'mongodb'">
+                                <div class="my-3">
+                                    <label for="connectionString" class="form-label">{{ $t("Connection String") }}</label>
+                                    <input id="connectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" required>
+                                </div>
+                            </template>
                             <!-- SQL Server / PostgreSQL / MySQL -->
                             <template v-if="monitor.type === 'sqlserver' || monitor.type === 'postgres' || monitor.type === 'mysql'">
                                 <div class="my-3">
-                                    <label for="sqlConnectionString" class="form-label">{{ $t("Connection String") }}</label>
-                                    <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" required>
-                                </div>
-                                <div class="my-3">
                                     <label for="sqlQuery" class="form-label">{{ $t("Query") }}</label>
                                     <textarea id="sqlQuery" v-model="monitor.databaseQuery" class="form-control" :placeholder="$t('Example:', [ 'select getdate()' ])" required></textarea>
-                                </div>
-                            </template>
-                            <!-- Redis -->
-                            <template v-if="monitor.type === 'redis'">
-                                <div class="my-3">
-                                    <label for="redisConnectionString" class="form-label">{{ $t("Connection String") }}</label>
-                                    <input id="redisConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control">
-                                </div>
-                            </template>
-
-                            <!-- MongoDB -->
-                            <template v-if="monitor.type === 'mongodb'">
-                                <div class="my-3">
-                                    <label for="sqlConnectionString" class="form-label">{{ $t("Connection String") }}</label>
-                                    <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control">
                                 </div>
                             </template>
 
