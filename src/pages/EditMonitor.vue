@@ -1265,7 +1265,7 @@ message HealthCheckResponse {
                 this.monitor.body = JSON.stringify(JSON.parse(this.monitor.body), null, 4);
             }
 
-            const monitorTypesWithEncodingAllowed = ["http", "keyword", "json-query"];
+            const monitorTypesWithEncodingAllowed = [ "http", "keyword", "json-query" ];
             if (this.monitor.type && !monitorTypesWithEncodingAllowed.includes(this.monitor.type)) {
                 this.monitor.httpBodyEncoding = null;
             }
