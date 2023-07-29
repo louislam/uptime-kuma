@@ -37,75 +37,79 @@ class SMTP extends NotificationProvider {
                 pass: notification.smtpPassword,
             };
         }
-        // Lets start with default subject and empty string for custom one
+
+        // default values in case the user does not want to template
         let subject = msg;
-
-        // Change the subject if:
-        //     - The msg ends with "Testing" or
-        //     - Actual Up/Down Notification
-        if ((monitorJSON && heartbeatJSON) || msg.endsWith("Testing")) {
-            let customSubject = "";
-
-            // Our subject cannot end with whitespace it's often raise spam score
-            // Once I got "Cannot read property 'trim' of undefined", better be safe than sorry
-            if (notification.customSubject) {
-                customSubject = notification.customSubject.trim();
-            }
-
-            // If custom subject is not empty, change subject for notification
-            if (customSubject !== "") {
-
-                // Let's start with dummy values to simplify code
-                let monitorName = "Test";
-                let monitorHostnameOrURL = "testing.hostname";
-                let serviceStatus = "⚠️ Test";
-
-                if (monitorJSON !== null) {
-                    monitorName = monitorJSON["name"];
-
-                    if (monitorJSON["type"] === "http" || monitorJSON["type"] === "keyword" || monitorJSON["type"] === "json-query") {
-                        monitorHostnameOrURL = monitorJSON["url"];
-                    } else {
-                        monitorHostnameOrURL = monitorJSON["hostname"];
-                    }
-                }
-
-                if (heartbeatJSON !== null) {
-                    serviceStatus = (heartbeatJSON["status"] === DOWN) ? "🔴 Down" : "✅ Up";
-                }
-
-                // Initialize LiquidJS and parse the custom Body Template
-                const engine = new Liquid();
-                const tpl = engine.parse(customSubject);
-
-                // Insert templated values into Body
-                subject = await engine.render(tpl,
-                    {
-                        "STATUS": serviceStatus,
-                        "NAME": monitorName,
-                        "HOSTNAME_OR_URL": monitorHostnameOrURL,
-                    });
-            }
-        }
-
-        let transporter = nodemailer.createTransport(config);
-
-        let bodyTextContent = msg;
+        let body = msg;
         if (heartbeatJSON) {
-            bodyTextContent = `${msg}\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`;
+            body = `${msg}\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`;
+        }
+        // subject and body are templated
+        if ((monitorJSON && heartbeatJSON) || msg.endsWith("Testing")) {
+            // cannot end with whitespace as this often raises spam scores
+            const customSubject = notification.customSubject?.trim() || "";
+            const customBody = notification.customBody?.trim() || "";
+
+            const context = this.generateContext(msg, monitorJSON, heartbeatJSON);
+            const engine = new Liquid();
+            if (customSubject !== "") {
+                const tpl = engine.parse(customSubject);
+                subject = await engine.render(tpl, context);
+            }
+            if (customBody !== "") {
+                const tpl = engine.parse(customBody);
+                body = await engine.render(tpl, context);
+            }
         }
 
         // send mail with defined transport object
+        let transporter = nodemailer.createTransport(config);
         await transporter.sendMail({
             from: notification.smtpFrom,
             cc: notification.smtpCC,
             bcc: notification.smtpBCC,
             to: notification.smtpTo,
             subject: subject,
-            text: bodyTextContent,
+            text: body,
         });
 
         return "Sent Successfully.";
+    }
+
+    /**
+     * Generate context for LiquidJS
+     * @param msg {string}
+     * @param monitorJSON {Object|null}
+     * @param heartbeatJSON {Object|null}
+     * @returns {{STATUS: string, HOSTNAME_OR_URL: string, NAME: string, monitorJSON: Object|null, heartbeatJSON: Object|null, msg: string}}
+     */
+    generateContext(msg, monitorJSON, heartbeatJSON) {
+        // Let's start with dummy values to simplify code
+        let monitorName = "Monitor Name not available";
+        let monitorHostnameOrURL = "testing.hostname";
+        let serviceStatus = "⚠️ Test";
+
+        if (monitorJSON !== null) {
+            monitorName = monitorJSON["name"];
+
+            if (monitorJSON["type"] === "http" || monitorJSON["type"] === "keyword" || monitorJSON["type"] === "json-query") {
+                monitorHostnameOrURL = monitorJSON["url"];
+            } else {
+                monitorHostnameOrURL = monitorJSON["hostname"];
+            }
+        }
+
+        if (heartbeatJSON !== null) {
+            serviceStatus = (heartbeatJSON["status"] === DOWN) ? "🔴 Down" : "✅ Up";
+        }
+        return {
+            "STATUS": serviceStatus,
+            "NAME": monitorName,
+            "HOSTNAME_OR_URL": monitorHostnameOrURL,
+            monitorJSON,
+            heartbeatJSON,
+            msg,
+        };
     }
 }
 
