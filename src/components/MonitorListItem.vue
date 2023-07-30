@@ -27,13 +27,13 @@
                         </div>
                     </div>
                     <div v-show="$root.userHeartbeatBar == 'normal'" :key="$root.userHeartbeatBar" class="col-3 col-md-4">
-                        <HeartbeatBar size="small" :monitor-id="monitor.id" />
+                        <HeartbeatBar ref="heartbeatBar" size="small" :monitor-id="monitor.id" />
                     </div>
                 </div>
 
                 <div v-if="$root.userHeartbeatBar == 'bottom'" class="row mt-2">
                     <div class="col-12">
-                        <HeartbeatBar size="small" :monitor-id="monitor.id" />
+                        <HeartbeatBar ref="heartbeatBar" size="small" :monitor-id="monitor.id" />
                     </div>
                 </div>
             </router-link>
@@ -160,6 +160,12 @@ export default {
             }
         }
     },
+    watch: {
+        isSelectMode() {
+            // TODO: Resize the heartbeat bar, but too slow
+            // this.$refs.heartbeatBar.resize();
+        }
+    },
     beforeMount() {
 
         // Always unfold if monitor is accessed directly
@@ -256,9 +262,11 @@ export default {
 .select-input-wrapper {
     float: left;
     margin-top: 15px;
-    margin-left: 5px;
+    margin-left: 3px;
     margin-right: 10px;
     padding-left: 4px;
+    position: relative;
+    z-index: 15;
 }
 
 </style>

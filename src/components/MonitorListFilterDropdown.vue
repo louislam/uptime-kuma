@@ -107,6 +107,15 @@ export default {
     display: flex;
     align-items: center;
     margin-left: 5px;
+
+    &.active {
+        border: 1px solid $highlight;
+        background-color: $highlight-white;
+
+        .dark & {
+            background-color: $dark-font-color2;
+        }
+    }
 }
 
 .filter-active {

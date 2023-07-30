@@ -163,24 +163,23 @@ optgroup {
 }
 
 .btn-outline-normal {
-  padding: 4px 10px;
-  border: 1px solid #ced4da;
-  border-radius: 25px;
-  background-color: transparent;
-
-  .dark & {
-    color: $dark-font-color;
-    border: 1px solid $dark-font-color2;
-  }
-
-  &.active {
-    border: 1px solid $highlight;
-    background-color: $highlight-white;
+    padding: 4px 10px;
+    border: 1px solid #ced4da;
+    border-radius: 25px;
+    background-color: transparent;
 
     .dark & {
-      background-color: $dark-font-color2;
+        color: $dark-font-color;
+        border: 1px solid $dark-font-color2;
     }
-  }
+
+    &.active {
+        background-color: $highlight-white;
+
+        .dark & {
+            background-color: $dark-font-color2;
+        }
+    }
 }
 
 @media (max-width: 550px) {

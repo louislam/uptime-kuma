@@ -29,10 +29,9 @@
             <!-- Selection Controls -->
             <div v-if="selectMode" class="selection-controls px-2 pt-2">
                 <input
+                    v-model="selectAll"
                     class="form-check-input select-input"
                     type="checkbox"
-                    style="margin-left: 1px;"
-                    @click.stop="toggleSelection"
                 />
 
                 <button class="btn-outline-normal" @click="pauseDialog"><font-awesome-icon icon="pause" size="sm" /> {{ $t("Pause") }}</button>
@@ -84,6 +83,7 @@ export default {
         return {
             searchText: "",
             selectMode: false,
+            selectAll: false,
             selectedMonitors: {},
             windowTop: 0,
             filterState: {
@@ -197,6 +197,21 @@ export default {
     watch: {
         searchText() {
             this.cancelSelectMode();
+        },
+        selectAll() {
+            this.selectedMonitors = {};
+
+            if (this.selectAll) {
+                Object.values(this.$root.monitorList).forEach((item) => {
+                    this.selectedMonitors[item.id] = true;
+                });
+            }
+        },
+        selectMode() {
+            if (!this.selectMode) {
+                this.selectAll = false;
+                this.selectedMonitors = {};
+            }
         }
     },
     mounted() {
@@ -232,13 +247,6 @@ export default {
          */
         updateFilter(newFilter) {
             this.filterState = newFilter;
-        },
-        /** Select all monitors */
-        selectAll() {
-            this.selectedMonitors = {};
-            Object.values(this.$root.monitorList).forEach((item) => {
-                this.selectedMonitors[item.id] = true;
-            });
         },
         /**
          * Deselect a monitor
