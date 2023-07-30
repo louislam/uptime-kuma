@@ -7,8 +7,9 @@
     </div>
     <div class="mb-3">
         <label for="ntfy-server-url" class="form-label">{{ $t("Server URL") }}</label>
-        <div class="input-group mb-3">
-            <input id="ntfy-server-url" v-model="$parent.notification.ntfyserverurl" type="text" class="form-control" required>
+        <input id="ntfy-server-url" v-model="$parent.notification.ntfyserverurl" type="text" class="form-control" required>
+        <div class="form-text">
+            {{ $t("Server URL should not contain the nfty topic") }}
         </div>
     </div>
     <div class="mb-3">
