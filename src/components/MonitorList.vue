@@ -295,7 +295,6 @@ export default {
 }
 
 .list-header {
-    align-items: center;
     border-bottom: 1px solid #dee2e6;
     border-radius: 10px 10px 0 0;
     margin: -10px;
@@ -305,10 +304,6 @@ export default {
     .dark & {
         background-color: $dark-header-bg;
         border-bottom: 0;
-    }
-
-    .dropdown-menu {
-        padding-left: 0;
     }
 }
 
@@ -325,19 +320,9 @@ export default {
 
 @media (max-width: 770px) {
     .list-header {
-        margin: -5px -15px 10px;
+        margin: -20px;
+        margin-bottom: 10px;
         padding: 5px;
-    }
-}
-
-@media (min-width: 768px) and (max-width: 1450px) {
-    .list-header {
-        flex-wrap: wrap;
-    }
-
-    .selection-controls {
-        flex: 1 0 100%;
-        order: 999;
     }
 }
 
@@ -367,15 +352,6 @@ export default {
 
 .monitor-item {
     width: 100%;
-}
-
-.selection-controls .btn {
-    padding-left: 10px;
-    padding-right: 10px;
-}
-
-.selection-controls .dropdown-item [data-icon] {
-    margin-right: 6px;
 }
 
 .tags {

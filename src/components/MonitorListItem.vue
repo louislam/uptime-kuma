@@ -255,15 +255,15 @@ export default {
     align-items: center;
     column-gap: 10px;
     display: flex;
-}
 
-.item {
-    flex: 1 1 100%;
-}
+    .select-input-wrapper {
+        flex: 0 0 auto;
+        padding-left: 4px; /* stop active highlight from being cut off by overflow hidden */
+    }
 
-.select-input-wrapper {
-    flex: 0 0 auto;
-    padding-left: 4px; /* stop active highlight from being cut off by overflow hidden */
+    .item {
+        flex: 1 1 100%;
+    }
 }
 
 </style>
