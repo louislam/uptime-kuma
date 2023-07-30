@@ -2,24 +2,10 @@
     <div class="shadow-box mb-3" :style="boxStyle">
         <div class="list-header">
             <div class="header-top">
-                <div v-if="Object.keys($root.monitorList).length > 0" class="selection-controls">
-                    <template v-if="Object.keys(selectedMonitors).length === 0">
-                        <input id="select-mode-btn" v-model="selectMode" type="checkbox" class="btn-check" autocomplete="off" :value="true">
-                        <label class="btn btn-sm text-primary" for="select-mode-btn">{{ $t(selectMode ? "Cancel" : "Select") }}</label>
-                        <button v-if="selectMode" class="btn btn-sm text-primary" type="button" @click="selectAll">Select All</button>
-                    </template>
-                    <div v-else class="dropdown">
-                        <button id="selectionDropdownButton" class="btn btn-sm btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            {{ $t("With Selected...") }}
-                        </button>
-                        <ul class="dropdown-menu" :class="{'dropdown-menu-dark': isDarkTheme}" aria-labelledby="selectionDropdownButton">
-                            <li><a class="dropdown-item" href="#" @click="pauseDialog"><font-awesome-icon icon="pause" size="sm" /> {{ $t("Pause") }}</a></li>
-                            <li><a class="dropdown-item" href="#" @click="resumeSelected"><font-awesome-icon icon="play" size="sm" /> {{ $t("Resume") }}</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#" @click="cancelSelectMode">{{ $t("Cancel") }}</a></li>
-                        </ul>
-                    </div>
-                </div>
+                <button class="btn btn-outline-normal ms-2" :class="{ 'active': selectMode }" type="button" @click="selectMode = !selectMode">
+                    {{ $t("Select") }}
+                </button>
+
                 <div class="placeholder"></div>
                 <div class="search-wrapper">
                     <a v-if="searchText == ''" class="search-icon">
@@ -38,6 +24,18 @@
             </div>
             <div class="header-filter">
                 <MonitorListFilter :filterState="filterState" @update-filter="updateFilter" />
+            </div>
+
+            <!-- Selection Controls -->
+            <div v-if="selectMode" class="selection-controls px-2 pt-2">
+                <input
+                    class="form-check-input select-input"
+                    type="checkbox"
+                    @click.stop="toggleSelection"
+                />
+
+                <button class="btn-outline-normal" @click="pauseDialog"><font-awesome-icon icon="pause" size="sm" /> {{ $t("Pause") }}</button>
+                <button class="btn-outline-normal" @click="resumeSelected"><font-awesome-icon icon="play" size="sm" /> {{ $t("Resume") }}</button>
             </div>
         </div>
         <div class="monitor-list" :class="{ scrollbar: scrollbar }">
@@ -366,4 +364,11 @@ export default {
     padding-left: 67px;
     margin-top: 5px;
 }
+
+.selection-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 </style>
