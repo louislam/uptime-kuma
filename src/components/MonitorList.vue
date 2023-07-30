@@ -31,6 +31,7 @@
                 <input
                     class="form-check-input select-input"
                     type="checkbox"
+                    style="margin-left: 1px;"
                     @click.stop="toggleSelection"
                 />
 
@@ -38,7 +39,7 @@
                 <button class="btn-outline-normal" @click="resumeSelected"><font-awesome-icon icon="play" size="sm" /> {{ $t("Resume") }}</button>
             </div>
         </div>
-        <div class="monitor-list" :class="{ scrollbar: scrollbar }">
+        <div ref="monitorList" class="monitor-list" :class="{ scrollbar: scrollbar }" :style="monitorListStyle">
             <div v-if="Object.keys($root.monitorList).length === 0" class="text-center mt-3">
                 {{ $t("No Monitors, please") }} <router-link to="/add">{{ $t("add one") }}</router-link>
             </div>
@@ -179,6 +180,18 @@ export default {
 
         isDarkTheme() {
             return document.body.classList.contains("dark");
+        },
+
+        monitorListStyle() {
+            let listHeaderHeight = 107;
+
+            if (this.selectMode) {
+                listHeaderHeight += 42;
+            }
+
+            return {
+                "height": `calc(100% - ${listHeaderHeight}px)`
+            };
         },
     },
     watch: {
@@ -366,6 +379,7 @@ export default {
 }
 
 .selection-controls {
+    margin-top: 5px;
     display: flex;
     align-items: center;
     gap: 10px;

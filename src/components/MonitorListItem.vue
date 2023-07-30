@@ -1,6 +1,7 @@
 <template>
     <div>
-        <div class="item-and-select-wrapper" :style="depthMargin">
+        <div :style="depthMargin">
+            <!-- Checkbox -->
             <div v-if="isSelectMode" class="select-input-wrapper">
                 <input
                     class="form-check-input select-input"
@@ -10,6 +11,7 @@
                     @click.stop="toggleSelection"
                 />
             </div>
+
             <router-link :to="monitorURL(monitor.id)" class="item" :class="{ 'disabled': ! monitor.active }">
                 <div class="row">
                     <div class="col-9 col-md-8 small-padding" :class="{ 'monitor-item': $root.userHeartbeatBar == 'bottom' || $root.userHeartbeatBar == 'none' }">
@@ -251,19 +253,12 @@ export default {
     transition: all 0.2s $easing-in;
 }
 
-.item-and-select-wrapper {
-    align-items: center;
-    column-gap: 10px;
-    display: flex;
-
-    .select-input-wrapper {
-        flex: 0 0 auto;
-        padding-left: 4px; /* stop active highlight from being cut off by overflow hidden */
-    }
-
-    .item {
-        flex: 1 1 100%;
-    }
+.select-input-wrapper {
+    float: left;
+    margin-top: 15px;
+    margin-left: 5px;
+    margin-right: 10px;
+    padding-left: 4px;
 }
 
 </style>
