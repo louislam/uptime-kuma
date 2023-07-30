@@ -1,4 +1,4 @@
-FROM debian
+FROM debian:bookworm-slim
 
 # Test invalid node version, these commands install nodejs 10
 # RUN apt-get update

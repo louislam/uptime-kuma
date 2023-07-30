@@ -306,6 +306,16 @@ describe("Test uptimeKumaServer.getClientIP()", () => {
         ip = await server.getClientIP(fakeSocket);
         expect(ip).toBe("203.0.113.195");
 
+        fakeSocket.client.conn.remoteAddress = "2001:db8::1";
+        fakeSocket.client.conn.request.headers = {};
+        ip = await server.getClientIP(fakeSocket);
+        expect(ip).toBe("2001:db8::1");
+
+        fakeSocket.client.conn.remoteAddress = "::ffff:127.0.0.1";
+        fakeSocket.client.conn.request.headers = {};
+        ip = await server.getClientIP(fakeSocket);
+        expect(ip).toBe("127.0.0.1");
+
         await Database.close();
     }, 120000);
 });

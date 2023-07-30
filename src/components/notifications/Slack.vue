@@ -24,5 +24,13 @@
                 <a href="https://www.webfx.com/tools/emoji-cheat-sheet/" target="_blank">https://www.webfx.com/tools/emoji-cheat-sheet/</a>
             </i18n-t>
         </div>
+
+        <div class="form-check form-switch">
+            <input id="slack-channel-notify" v-model="$parent.notification.slackchannelnotify" type="checkbox" class="form-check-input">
+            <label for="slack-channel-notify" class="form-label">{{ $t("Notify Channel") }}</label>
+        </div>
+        <div class="form-text">
+            {{ $t("aboutNotifyChannel") }}
+        </div>
     </div>
 </template>

@@ -17,7 +17,7 @@
         <label for="gorush-platform" class="form-label">{{ $t("Platform") }}</label><span style="color: red;"><sup>*</sup></span>
         <select id="gorush-platform" v-model="$parent.notification.gorushPlatform" class="form-select">
             <option value="ios">iOS</option>
-            <option value="android">{{ $t("Android") }}</option>
+            <option value="android">Android</option>
             <option value="huawei">{{ $t("Huawei") }}</option>
         </select>
     </div>

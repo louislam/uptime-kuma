@@ -3,7 +3,6 @@ const { R } = require("redbean-node");
 const { setSetting, setting } = require("./util-server");
 const { log, sleep } = require("../src/util");
 const knex = require("knex");
-const { PluginsManager } = require("./plugins-manager");
 const path = require("path");
 const { EmbeddedMariaDB } = require("./embedded-mariadb");
 const mysql = require("mysql2/promise");
@@ -77,6 +76,9 @@ class Database {
         "patch-monitor-tls.sql": true,
         "patch-maintenance-cron.sql": true,
         "patch-add-parent-monitor.sql": true,   // The last file so far converted to a knex migration file
+        "patch-add-invert-keyword.sql": true,
+        "patch-added-json-query.sql": true,
+        "patch-added-kafka-producer.sql": true,
     };
 
     /**
@@ -98,12 +100,6 @@ class Database {
     static initDataDir(args) {
         // Data Directory (must be end with "/")
         Database.dataDir = process.env.DATA_DIR || args["data-dir"] || "./data/";
-
-        // Plugin feature is working only if the dataDir = "./data";
-        if (Database.dataDir !== "./data/") {
-            log.warn("PLUGIN", "Warning: In order to enable plugin feature, you need to use the default data directory: ./data/");
-            PluginsManager.disable = true;
-        }
 
         Database.sqlitePath = Database.dataDir + "kuma.db";
         if (! fs.existsSync(Database.dataDir)) {

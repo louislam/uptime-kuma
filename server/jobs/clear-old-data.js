@@ -42,6 +42,8 @@ const clearOldData = async () => {
                 "DELETE FROM heartbeat WHERE time < " + sqlHourOffset,
                 [ parsedPeriod * -24 ]
             );
+
+            await R.exec("PRAGMA optimize;");
         } catch (e) {
             log.error("clearOldData", `Failed to clear old data: ${e.message}`);
         }

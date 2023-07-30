@@ -5,7 +5,18 @@
     </div>
 
     <div class="mb-3">
-        <label for="twilio-auth-token" class="form-label">{{ $t("Auth Token") }}</label>
+        <label for="twilio-apikey-token" class="form-label">{{ $t("Api Key (optional)") }}</label>
+        <input id="twilio-apikey-token" v-model="$parent.notification.twilioApiKey" type="text" class="form-control">
+        <div class="form-text">
+            <p>
+                The API key is optional but recommended. You can provide either Account SID and AuthToken
+                from the may TwilioConsole page or Account SID and the pair of Api Key and Api Key secret
+            </p>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label for="twilio-auth-token" class="form-label">{{ $t("Auth Token / Api Key Secret") }}</label>
         <input id="twilio-auth-token" v-model="$parent.notification.twilioAuthToken" type="text" class="form-control" required>
     </div>
 
