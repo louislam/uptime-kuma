@@ -25,13 +25,13 @@
                         </div>
                     </div>
                     <div v-show="$root.userHeartbeatBar == 'normal'" :key="$root.userHeartbeatBar" class="col-3 col-md-4">
-                        <HeartbeatBar size="small" :monitor-id="monitor.id" class="py-0" />
+                        <HeartbeatBar size="small" :monitor-id="monitor.id" />
                     </div>
                 </div>
 
                 <div v-if="$root.userHeartbeatBar == 'bottom'" class="row mt-2">
                     <div class="col-12">
-                        <HeartbeatBar size="small" :monitor-id="monitor.id" class="py-0" />
+                        <HeartbeatBar size="small" :monitor-id="monitor.id" />
                     </div>
                 </div>
             </router-link>
