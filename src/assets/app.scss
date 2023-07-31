@@ -111,6 +111,10 @@ optgroup {
     padding-right: 20px;
 }
 
+.btn-sm {
+    border-radius: 25px;
+}
+
 .btn-primary {
     color: white;
 
@@ -156,6 +160,26 @@ optgroup {
 
 .btn-dark {
     background-color: #161B22;
+}
+
+.btn-outline-normal {
+    padding: 4px 10px;
+    border: 1px solid #ced4da;
+    border-radius: 25px;
+    background-color: transparent;
+
+    .dark & {
+        color: $dark-font-color;
+        border: 1px solid $dark-font-color2;
+    }
+
+    &.active {
+        background-color: $highlight-white;
+
+        .dark & {
+            background-color: $dark-font-color2;
+        }
+    }
 }
 
 @media (max-width: 550px) {
@@ -436,7 +460,6 @@ optgroup {
 .monitor-list {
     &.scrollbar {
         overflow-y: auto;
-        height: calc(100% - 107px);
     }
 
     @media (max-width: 770px) {

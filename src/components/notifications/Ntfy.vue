@@ -6,6 +6,9 @@
     <div class="mb-3">
         <label for="ntfy-server-url" class="form-label">{{ $t("Server URL") }}</label>
         <input id="ntfy-server-url" v-model="$parent.notification.ntfyserverurl" type="text" class="form-control" required>
+        <div class="form-text">
+            {{ $t("Server URL should not contain the nfty topic") }}
+        </div>
     </div>
     <div class="mb-3">
         <label for="ntfy-priority" class="form-label">{{ $t("Priority") }}</label>
