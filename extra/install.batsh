@@ -5,15 +5,15 @@
 
 // curl -o kuma_install.sh https://raw.githubusercontent.com/louislam/uptime-kuma/master/install.sh && sudo bash kuma_install.sh
 println("=====================");
-println("Uptime Kuma Installer");
+println("Uptime Kuma Install Script");
 println("=====================");
-println("Supported OS: CentOS 7/8, Ubuntu >= 16.04 and Debian");
+println("Supported OS: Ubuntu >= 16.04, Debian and CentOS/RHEL 7/8");
 println("---------------------------------------");
 println("This script is designed for Linux and basic usage.");
 println("For advanced usage, please go to https://github.com/louislam/uptime-kuma/wiki/Installation");
 println("---------------------------------------");
 println("");
-println("Local - Install Uptime Kuma in your current machine with git, Node.js 14 and pm2");
+println("Local - Install Uptime Kuma on your current machine with git, Node.js and pm2");
 println("Docker - Install Uptime Kuma Docker container");
 println("");
 
@@ -29,13 +29,9 @@ function checkNode() {
     bash("nodeVersion=$(node -e 'console.log(process.versions.node.split(`.`)[0])')");
     println("Node Version: " ++ nodeVersion);
 
-    if (nodeVersion < "12") {
+    if (nodeVersion <= "12") {
         println("Error: Required Node.js 14");
         call("exit", "1");
-    }
-
-    if (nodeVersion == "12") {
-        println("Warning: NodeJS " ++ nodeVersion ++ " is not tested.");
     }
 }
 
@@ -60,8 +56,8 @@ function deb() {
             bash("apt --yes install curl");
         }
 
-        println("Installing Node.js 14");
-        bash("curl -sL https://deb.nodesource.com/setup_14.x | bash - > log.txt");
+        println("Installing Node.js 16");
+        bash("curl -sL https://deb.nodesource.com/setup_16.x | bash - > log.txt");
         bash("apt --yes install nodejs");
         bash("node -v");
 
@@ -91,6 +87,10 @@ if (type == "local") {
         bash("os=$(head -n1 /etc/issue | cut -f 1 -d ' ')");
         if (os == "Ubuntu") {
             distribution = "ubuntu";
+
+            // Get ubuntu version
+            bash(". /etc/lsb-release");
+            version = DISTRIB_RELEASE;
         }
         if (os == "Debian") {
             distribution = "debian";
@@ -101,6 +101,7 @@ if (type == "local") {
 
     println("Your OS: " ++ os);
     println("Distribution: " ++ distribution);
+    println("Version: " ++ version);
     println("Arch: " ++ arch);
 
     if ("$3" != "") {
@@ -131,15 +132,32 @@ if (type == "local") {
             checkNode();
         } else {
 
-            bash("curlCheck=$(curl --version)");
-            if (curlCheck == "") {
-                println("Installing Curl");
-                bash("yum -y -q install curl");
+            bash("dnfCheck=$(dnf --version)");
+
+            // Use yum
+            if (dnfCheck == "") {
+                bash("curlCheck=$(curl --version)");
+                if (curlCheck == "") {
+                    println("Installing Curl");
+                    bash("yum -y -q install curl");
+                }
+
+                println("Installing Node.js 16");
+                bash("curl -sL https://rpm.nodesource.com/setup_16.x | bash - > log.txt");
+                bash("yum install -y -q nodejs");
+            } else {
+                bash("curlCheck=$(curl --version)");
+                if (curlCheck == "") {
+                    println("Installing Curl");
+                    bash("dnf -y install curl");
+                }
+
+                println("Installing Node.js 16");
+                bash("curl -sL https://rpm.nodesource.com/setup_16.x | bash - > log.txt");
+                bash("dnf install -y nodejs");
             }
 
-            println("Installing Node.js 14");
-            bash("curl -sL https://rpm.nodesource.com/setup_14.x | bash - > log.txt");
-            bash("yum install -y -q nodejs");
+
             bash("node -v");
 
             bash("nodeCheckAgain=$(node -v)");
@@ -191,6 +209,14 @@ if (type == "local") {
        println("Installing PM2");
        bash("npm install pm2 -g && pm2 install pm2-logrotate");
        bash("pm2 startup");
+   }
+
+
+   // Check again
+   bash("check=$(pm2 --version)");
+   if (check == "") {
+       println("Error: pm2 is not found!");
+       bash("exit 1");
    }
 
    bash("mkdir -p $installPath");

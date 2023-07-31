@@ -82,8 +82,15 @@
                                         <option value="redis">
                                             Redis
                                         </option>
+                                        <option value="tailscale-ping">
+                                            Tailscale Ping
+                                        </option>
                                     </optgroup>
                                 </select>
+                            </div>
+
+                            <div v-if="monitor.type === 'tailscale-ping'" class="alert alert-warning" role="alert">
+                                {{ $t("tailscalePingWarning") }}
                             </div>
 
                             <!-- Friendly Name -->
@@ -221,8 +228,8 @@
                             </template>
 
                             <!-- Hostname -->
-                            <!-- TCP Port / Ping / DNS / Steam / MQTT / Radius only -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'gamedig' ||monitor.type === 'mqtt' || monitor.type === 'radius'" class="my-3">
+                            <!-- TCP Port / Ping / DNS / Steam / MQTT / Radius / Tailscale Ping only -->
+                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'gamedig' ||monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'tailscale-ping'" class="my-3">
                                 <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>
                                 <input id="hostname" v-model="monitor.hostname" type="text" class="form-control" :pattern="`${monitor.type === 'mqtt' ? mqttIpOrHostnameRegexPattern : ipOrHostnameRegexPattern}`" required>
                             </div>
@@ -366,42 +373,18 @@
                                 </div>
                             </template>
 
+                            <!-- SQL Server / PostgreSQL / MySQL / Redis / MongoDB -->
+                            <template v-if="monitor.type === 'sqlserver' || monitor.type === 'postgres' || monitor.type === 'mysql' || monitor.type === 'redis' || monitor.type === 'mongodb'">
+                                <div class="my-3">
+                                    <label for="connectionString" class="form-label">{{ $t("Connection String") }}</label>
+                                    <input id="connectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" required>
+                                </div>
+                            </template>
                             <!-- SQL Server / PostgreSQL / MySQL -->
                             <template v-if="monitor.type === 'sqlserver' || monitor.type === 'postgres' || monitor.type === 'mysql'">
                                 <div class="my-3">
-                                    <label for="sqlConnectionString" class="form-label">{{ $t("Connection String") }}</label>
-
-                                    <template v-if="monitor.type === 'sqlserver'">
-                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control">
-                                    </template>
-                                    <template v-if="monitor.type === 'postgres'">
-                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control">
-                                    </template>
-                                    <template v-if="monitor.type === 'mysql'">
-                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control">
-                                    </template>
-                                </div>
-                                <div class="my-3">
                                     <label for="sqlQuery" class="form-label">{{ $t("Query") }}</label>
-                                    <textarea id="sqlQuery" v-model="monitor.databaseQuery" class="form-control" placeholder="Example: select getdate()"></textarea>
-                                </div>
-                            </template>
-                            <!-- Redis -->
-                            <template v-if="monitor.type === 'redis'">
-                                <div class="my-3">
-                                    <label for="redisConnectionString" class="form-label">{{ $t("Connection String") }}</label>
-                                    <input id="redisConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control">
-                                </div>
-                            </template>
-
-                            <!-- MongoDB -->
-                            <template v-if="monitor.type === 'mongodb'">
-                                <div class="my-3">
-                                    <label for="sqlConnectionString" class="form-label">{{ $t("Connection String") }}</label>
-
-                                    <template v-if="monitor.type === 'mongodb'">
-                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control">
-                                    </template>
+                                    <textarea id="sqlQuery" v-model="monitor.databaseQuery" class="form-control" :placeholder="$t('Example:', [ 'select getdate()' ])" required></textarea>
                                 </div>
                             </template>
 

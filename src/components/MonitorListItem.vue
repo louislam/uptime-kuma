@@ -1,34 +1,56 @@
 <template>
     <div>
-        <router-link :to="monitorURL(monitor.id)" class="item" :class="{ 'disabled': ! monitor.active }">
-            <div class="row">
-                <div class="col-9 col-md-8 small-padding" :class="{ 'monitor-item': $root.userHeartbeatBar == 'bottom' || $root.userHeartbeatBar == 'none' }">
-                    <div class="info" :style="depthMargin">
-                        <Uptime :monitor="monitor" type="24" :pill="true" />
-                        <span v-if="hasChildren" class="collapse-padding" @click.prevent="changeCollapsed">
-                            <font-awesome-icon icon="chevron-down" class="animated" :class="{ collapsed: isCollapsed}" />
-                        </span>
-                        {{ monitorName }}
-                    </div>
-                    <div class="tags">
-                        <Tag v-for="tag in monitor.tags" :key="tag" :item="tag" :size="'sm'" />
-                    </div>
-                </div>
-                <div v-show="$root.userHeartbeatBar == 'normal'" :key="$root.userHeartbeatBar" class="col-3 col-md-4">
-                    <HeartbeatBar size="small" :monitor-id="monitor.id" />
-                </div>
+        <div :style="depthMargin">
+            <!-- Checkbox -->
+            <div v-if="isSelectMode" class="select-input-wrapper">
+                <input
+                    class="form-check-input select-input"
+                    type="checkbox"
+                    :aria-label="$t('Check/Uncheck')"
+                    :checked="isSelected(monitor.id)"
+                    @click.stop="toggleSelection"
+                />
             </div>
 
-            <div v-if="$root.userHeartbeatBar == 'bottom'" class="row">
-                <div class="col-12 bottom-style">
-                    <HeartbeatBar size="small" :monitor-id="monitor.id" />
+            <router-link :to="monitorURL(monitor.id)" class="item" :class="{ 'disabled': ! monitor.active }">
+                <div class="row">
+                    <div class="col-9 col-md-8 small-padding" :class="{ 'monitor-item': $root.userHeartbeatBar == 'bottom' || $root.userHeartbeatBar == 'none' }">
+                        <div class="info">
+                            <Uptime :monitor="monitor" type="24" :pill="true" />
+                            <span v-if="hasChildren" class="collapse-padding" @click.prevent="changeCollapsed">
+                                <font-awesome-icon icon="chevron-down" class="animated" :class="{ collapsed: isCollapsed}" />
+                            </span>
+                            {{ monitorName }}
+                        </div>
+                        <div v-if="monitor.tags.length > 0" class="tags">
+                            <Tag v-for="tag in monitor.tags" :key="tag" :item="tag" :size="'sm'" />
+                        </div>
+                    </div>
+                    <div v-show="$root.userHeartbeatBar == 'normal'" :key="$root.userHeartbeatBar" class="col-3 col-md-4">
+                        <HeartbeatBar ref="heartbeatBar" size="small" :monitor-id="monitor.id" />
+                    </div>
                 </div>
-            </div>
-        </router-link>
+
+                <div v-if="$root.userHeartbeatBar == 'bottom'" class="row">
+                    <div class="col-12 bottom-style">
+                        <HeartbeatBar ref="heartbeatBar" size="small" :monitor-id="monitor.id" />
+                    </div>
+                </div>
+            </router-link>
+        </div>
 
         <transition name="slide-fade-up">
             <div v-if="!isCollapsed" class="childs">
-                <MonitorListItem v-for="(item, index) in sortedChildMonitorList" :key="index" :monitor="item" :isSearch="isSearch" :depth="depth + 1" />
+                <MonitorListItem
+                    v-for="(item, index) in sortedChildMonitorList"
+                    :key="index" :monitor="item"
+                    :isSearch="isSearch"
+                    :isSelectMode="isSelectMode"
+                    :isSelected="isSelected"
+                    :select="select"
+                    :deselect="deselect"
+                    :depth="depth + 1"
+                />
             </div>
         </transition>
     </div>
@@ -58,10 +80,30 @@ export default {
             type: Boolean,
             default: false,
         },
+        /** If the user is in select mode */
+        isSelectMode: {
+            type: Boolean,
+            default: false,
+        },
         /** How many ancestors are above this monitor */
         depth: {
             type: Number,
             default: 0,
+        },
+        /** Callback to determine if monitor is selected */
+        isSelected: {
+            type: Function,
+            default: () => {}
+        },
+        /** Callback fired when monitor is selected */
+        select: {
+            type: Function,
+            default: () => {}
+        },
+        /** Callback fired when monitor is deselected */
+        deselect: {
+            type: Function,
+            default: () => {}
         },
     },
     data() {
@@ -118,6 +160,12 @@ export default {
             }
         }
     },
+    watch: {
+        isSelectMode() {
+            // TODO: Resize the heartbeat bar, but too slow
+            // this.$refs.heartbeatBar.resize();
+        }
+    },
     beforeMount() {
 
         // Always unfold if monitor is accessed directly
@@ -164,6 +212,16 @@ export default {
         monitorURL(id) {
             return getMonitorRelativeURL(id);
         },
+        /**
+         * Toggle selection of monitor
+         */
+        toggleSelection() {
+            if (this.isSelected(this.monitor.id)) {
+                this.deselect(this.monitor.id);
+            } else {
+                this.select(this.monitor.id);
+            }
+        },
     },
 };
 </script>
@@ -199,6 +257,16 @@ export default {
 
 .animated {
     transition: all 0.2s $easing-in;
+}
+
+.select-input-wrapper {
+    float: left;
+    margin-top: 15px;
+    margin-left: 3px;
+    margin-right: 10px;
+    padding-left: 4px;
+    position: relative;
+    z-index: 15;
 }
 
 </style>
