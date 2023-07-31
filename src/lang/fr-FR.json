@@ -820,5 +820,14 @@
     "Server URL should not contain the nfty topic": "L'URL du serveur ne doit pas contenir le sujet nfty",
     "Select": "Sélectionner",
     "selectedMonitorCount": "Sélectionné : {0}",
-    "Check/Uncheck": "Cocher/décocher"
+    "Check/Uncheck": "Cocher/décocher",
+    "nostrRelaysHelp": "Une URL relais par ligne",
+    "nostrRecipients": "Clés publiques des bénéficiaires (npub)",
+    "nostrSender": "Émetteur clé privée (nsec)",
+    "nostrRecipientsHelp": "Format npub, un par ligne",
+    "nostrRelays": "Relais Nostr",
+    "PushDeer Server": "PushDeer Server",
+    "showCertificateExpiry": "Afficher l'expiration du certificat",
+    "noOrBadCertificate": "Pas/Mauvais certificat",
+    "pushDeerServerDescription": "Laissez le champ vide pour utiliser le serveur officiel"
 }
