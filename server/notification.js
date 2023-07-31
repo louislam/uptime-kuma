@@ -27,6 +27,7 @@ const Octopush = require("./notification-providers/octopush");
 const OneBot = require("./notification-providers/onebot");
 const Opsgenie = require("./notification-providers/opsgenie");
 const PagerDuty = require("./notification-providers/pagerduty");
+const FlashDuty = require("./notification-providers/flashduty");
 const PagerTree = require("./notification-providers/pagertree");
 const PromoSMS = require("./notification-providers/promosms");
 const Pushbullet = require("./notification-providers/pushbullet");
@@ -91,6 +92,7 @@ class Notification {
             new OneBot(),
             new Opsgenie(),
             new PagerDuty(),
+            new FlashDuty(),
             new PagerTree(),
             new PromoSMS(),
             new Pushbullet(),
@@ -117,7 +119,6 @@ class Notification {
             new GoAlert(),
             new ZohoCliq()
         ];
-
         for (let item of list) {
             if (! item.name) {
                 throw new Error("Notification provider without name");
