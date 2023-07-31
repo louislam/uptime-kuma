@@ -486,6 +486,7 @@ exports.radius = function (
         host: hostname,
         hostPort: port,
         timeout: timeout,
+        retries: 1,
         dictionaries: [ file ],
     });
 
@@ -497,6 +498,12 @@ exports.radius = function (
             [ attributes.CALLING_STATION_ID, callingStationId ],
             [ attributes.CALLED_STATION_ID, calledStationId ],
         ],
+    }).catch((error) => {
+        if (error.response?.code) {
+            throw Error(error.response.code);
+        } else {
+            throw Error(error.message);
+        }
     });
 };
 

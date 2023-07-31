@@ -269,6 +269,9 @@
     "Services": "Services",
     "Discard": "Discard",
     "Cancel": "Cancel",
+    "Select": "Select",
+    "selectedMonitorCount": "Selected: {0}",
+    "Check/Uncheck": "Check/Uncheck",
     "Powered by": "Powered by",
     "shrinkDatabaseDescription": "Trigger database VACUUM for SQLite. If your database is created after 1.10.0, AUTO_VACUUM is already enabled and this action is not needed.",
     "Customize": "Customize",
@@ -697,6 +700,8 @@
     "onebotPrivateMessage": "Private",
     "onebotUserOrGroupId": "Group/User ID",
     "onebotSafetyTips": "For safety, must set access token",
+    "PushDeer Server": "PushDeer Server",
+    "pushDeerServerDescription": "Leave blank to use the official server",
     "PushDeer Key": "PushDeer Key",
     "wayToGetClickSendSMSToken": "You can get API Username and API Key from {0} .",
     "Custom Monitor Type": "Custom Monitor Type",
@@ -785,5 +790,12 @@
     "Session Token": "Session Token",
     "noGroupMonitorMsg": "Not Available. Create a Group Monitor First.",
     "Close": "Close",
-    "Request Body": "Request Body"
+    "Request Body": "Request Body",
+    "nostrRelays": "Nostr relays",
+    "nostrRelaysHelp": "One relay URL per line",
+    "nostrSender": "Sender Private Key (nsec)",
+    "nostrRecipients": "Recipients Public Keys (npub)",
+    "nostrRecipientsHelp": "npub format, one per line",
+    "showCertificateExpiry": "Show Certificate Expiry",
+    "noOrBadCertificate": "No/Bad Certificate"
 }

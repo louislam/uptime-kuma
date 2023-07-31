@@ -37,11 +37,12 @@ class Monitor extends BeanModel {
      * Only show necessary data to public
      * @returns {Object}
      */
-    async toPublicJSON(showTags = false) {
+    async toPublicJSON(showTags = false, certExpiry = false) {
         let obj = {
             id: this.id,
             name: this.name,
             sendUrl: this.sendUrl,
+            type: this.type,
         };
 
         if (this.sendUrl) {
@@ -51,6 +52,13 @@ class Monitor extends BeanModel {
         if (showTags) {
             obj.tags = await this.getTags();
         }
+
+        if (certExpiry && this.type === "http") {
+            const { certExpiryDaysRemaining, validCert } = await this.getCertExpiry(this.id);
+            obj.certExpiryDaysRemaining = certExpiryDaysRemaining;
+            obj.validCert = validCert;
+        }
+
         return obj;
     }
 
@@ -182,6 +190,31 @@ class Monitor extends BeanModel {
      */
     async getTags() {
         return await R.getAll("SELECT mt.*, tag.name, tag.color FROM monitor_tag mt JOIN tag ON mt.tag_id = tag.id WHERE mt.monitor_id = ? ORDER BY tag.name", [ this.id ]);
+    }
+
+    /**
+     * Gets certificate expiry for this monitor
+     * @param {number} monitorID ID of monitor to send
+     * @returns {Promise<LooseObject<any>>}
+     */
+    async getCertExpiry(monitorID) {
+        let tlsInfoBean = await R.findOne("monitor_tls_info", "monitor_id = ?", [
+            monitorID,
+        ]);
+        let tlsInfo;
+        if (tlsInfoBean) {
+            tlsInfo = JSON.parse(tlsInfoBean?.info_json);
+            if (tlsInfo?.valid && tlsInfo?.certInfo?.daysRemaining) {
+                return {
+                    certExpiryDaysRemaining: tlsInfo.certInfo.daysRemaining,
+                    validCert: true
+                };
+            }
+        }
+        return {
+            certExpiryDaysRemaining: "",
+            validCert: false
+        };
     }
 
     /**
@@ -759,29 +792,19 @@ class Monitor extends BeanModel {
                         port = this.port;
                     }
 
-                    try {
-                        const resp = await radius(
-                            this.hostname,
-                            this.radiusUsername,
-                            this.radiusPassword,
-                            this.radiusCalledStationId,
-                            this.radiusCallingStationId,
-                            this.radiusSecret,
-                            port,
-                            this.interval * 1000 * 0.8,
-                        );
-                        if (resp.code) {
-                            bean.msg = resp.code;
-                        }
-                        bean.status = UP;
-                    } catch (error) {
-                        bean.status = DOWN;
-                        if (error.response?.code) {
-                            bean.msg = error.response.code;
-                        } else {
-                            bean.msg = error.message;
-                        }
-                    }
+                    const resp = await radius(
+                        this.hostname,
+                        this.radiusUsername,
+                        this.radiusPassword,
+                        this.radiusCalledStationId,
+                        this.radiusCallingStationId,
+                        this.radiusSecret,
+                        port,
+                        this.interval * 1000 * 0.4,
+                    );
+
+                    bean.msg = resp.code;
+                    bean.status = UP;
                     bean.ping = dayjs().valueOf() - startTime;
                 } else if (this.type === "redis") {
                     let startTime = dayjs().valueOf();
