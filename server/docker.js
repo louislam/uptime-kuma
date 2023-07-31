@@ -23,7 +23,7 @@ class DockerHost {
         let bean;
 
         if (dockerHostID) {
-            bean = await R.findOne("docker_host", " id = ? AND user_id = ? ", [ dockerHostID, userID ]);
+            bean = await R.findOne("docker_host", " id = ? ", [ dockerHostID ]);
 
             if (!bean) {
                 throw new Error("docker host not found");
@@ -46,11 +46,10 @@ class DockerHost {
     /**
      * Delete a Docker host
      * @param {number} dockerHostID ID of the Docker host to delete
-     * @param {number} userID ID of the user who created the Docker host
      * @returns {Promise<void>}
      */
-    static async delete(dockerHostID, userID) {
-        let bean = await R.findOne("docker_host", " id = ? AND user_id = ? ", [ dockerHostID, userID ]);
+    static async delete(dockerHostID) {
+        let bean = await R.findOne("docker_host", " id = ? ", [ dockerHostID ]);
 
         if (!bean) {
             throw new Error("docker host not found");

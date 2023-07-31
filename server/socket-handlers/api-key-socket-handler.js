@@ -74,10 +74,7 @@ module.exports.apiKeySocketHandler = (socket) => {
 
             log.debug("apikeys", `Deleted API Key: ${keyID} User ID: ${socket.userID}`);
 
-            await R.exec("DELETE FROM api_key WHERE id = ? AND user_id = ? ", [
-                keyID,
-                socket.userID,
-            ]);
+            await R.exec("DELETE FROM api_key WHERE id = ? ", [ keyID ]);
 
             apicache.clear();
 
