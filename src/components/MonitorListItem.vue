@@ -31,8 +31,8 @@
                     </div>
                 </div>
 
-                <div v-if="$root.userHeartbeatBar == 'bottom'" class="row mt-2">
-                    <div class="col-12">
+                <div v-if="$root.userHeartbeatBar == 'bottom'" class="row">
+                    <div class="col-12 bottom-style">
                         <HeartbeatBar ref="heartbeatBar" size="small" :monitor-id="monitor.id" />
                     </div>
                 </div>
