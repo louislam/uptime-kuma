@@ -826,5 +826,7 @@
     "tailscalePingWarning": "如需使用 Tailscale Ping 客户端，您需要以非 docker 方式安装 Uptime Kuma，并同时安装 Tailscale 客户端。",
     "Server URL should not contain the nfty topic": "服务器地址不应包含 ntfy主题",
     "Select": "选择",
-    "selectedMonitorCount": "已选：{0}"
+    "selectedMonitorCount": "已选：{0}",
+    "noOrBadCertificate": "无证书或证书错误",
+    "showCertificateExpiry": "显示证书有效期"
 }
