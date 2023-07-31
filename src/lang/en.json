@@ -793,5 +793,7 @@
     "nostrRelaysHelp": "One relay URL per line",
     "nostrSender": "Sender Private Key (nsec)",
     "nostrRecipients": "Recipients Public Keys (npub)",
-    "nostrRecipientsHelp": "npub format, one per line"
+    "nostrRecipientsHelp": "npub format, one per line",
+    "showCertificateExpiry": "Show Certificate Expiry",
+    "noOrBadCertificate": "No/Bad Certificate"
 }
