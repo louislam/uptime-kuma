@@ -824,5 +824,8 @@
     "jsonQueryDescription": "Proveďte JSON dotaz vůči odpovědi a zkontrolujte očekávaný výstup (za účelem porovnání bude návratová hodnota převedena na řetězec). Dokumentaci k dotazovacímu jazyku naleznete na <a href='https://jsonata.org/'>jsonata.org</a>, a využít můžete též <a href='https://try.jsonata.org/'>playground</a>.",
     "Select": "Vybrat",
     "selectedMonitorCount": "Vybráno: {0}",
-    "Check/Uncheck": "Vybrat/Zrušit výběr"
+    "Check/Uncheck": "Vybrat/Zrušit výběr",
+    "showCertificateExpiry": "Zobrazit vypršení platnosti certifikátu",
+    "pushDeerServerDescription": "Chcete-li používat oficiální server, ponechte prázdné",
+    "noOrBadCertificate": "Žádný/Vadný certifikát"
 }
