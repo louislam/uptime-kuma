@@ -36,6 +36,10 @@
 
                 <button class="btn-outline-normal" @click="pauseDialog"><font-awesome-icon icon="pause" size="sm" /> {{ $t("Pause") }}</button>
                 <button class="btn-outline-normal" @click="resumeSelected"><font-awesome-icon icon="play" size="sm" /> {{ $t("Resume") }}</button>
+
+                <span v-if="selectedMonitorCount > 0">
+                    {{ $t("selectedMonitorCount", [ selectedMonitorCount ]) }}
+                </span>
             </div>
         </div>
         <div ref="monitorList" class="monitor-list" :class="{ scrollbar: scrollbar }" :style="monitorListStyle">
@@ -84,6 +88,7 @@ export default {
             searchText: "",
             selectMode: false,
             selectAll: false,
+            disableSelectAllWatcher: false,
             selectedMonitors: {},
             windowTop: 0,
             filterState: {
@@ -193,18 +198,34 @@ export default {
                 "height": `calc(100% - ${listHeaderHeight}px)`
             };
         },
+
+        selectedMonitorCount() {
+            return Object.keys(this.selectedMonitors).length;
+        },
     },
     watch: {
         searchText() {
-            this.cancelSelectMode();
+            for (let monitor of this.sortedMonitorList) {
+                if (!this.selectedMonitors[monitor.id]) {
+                    if (this.selectAll) {
+                        this.disableSelectAllWatcher = true;
+                        this.selectAll = false;
+                    }
+                    break;
+                }
+            }
         },
         selectAll() {
-            this.selectedMonitors = {};
+            if (!this.disableSelectAllWatcher) {
+                this.selectedMonitors = {};
 
-            if (this.selectAll) {
-                Object.values(this.$root.monitorList).forEach((item) => {
-                    this.selectedMonitors[item.id] = true;
-                });
+                if (this.selectAll) {
+                    this.sortedMonitorList.forEach((item) => {
+                        this.selectedMonitors[item.id] = true;
+                    });
+                }
+            } else {
+                this.disableSelectAllWatcher = false;
             }
         },
         selectMode() {
