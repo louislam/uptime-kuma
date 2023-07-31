@@ -2,6 +2,10 @@
     <div class="shadow-box mb-3" :style="boxStyle">
         <div class="list-header">
             <div class="header-top">
+                <button class="btn btn-outline-normal ms-2" :class="{ 'active': selectMode }" type="button" @click="selectMode = !selectMode">
+                    {{ $t("Select") }}
+                </button>
+
                 <div class="placeholder"></div>
                 <div class="search-wrapper">
                     <a v-if="searchText == ''" class="search-icon">
@@ -21,27 +25,55 @@
             <div class="header-filter">
                 <MonitorListFilter :filterState="filterState" @update-filter="updateFilter" />
             </div>
+
+            <!-- Selection Controls -->
+            <div v-if="selectMode" class="selection-controls px-2 pt-2">
+                <input
+                    v-model="selectAll"
+                    class="form-check-input select-input"
+                    type="checkbox"
+                />
+
+                <button class="btn-outline-normal" @click="pauseDialog"><font-awesome-icon icon="pause" size="sm" /> {{ $t("Pause") }}</button>
+                <button class="btn-outline-normal" @click="resumeSelected"><font-awesome-icon icon="play" size="sm" /> {{ $t("Resume") }}</button>
+
+                <span v-if="selectedMonitorCount > 0">
+                    {{ $t("selectedMonitorCount", [ selectedMonitorCount ]) }}
+                </span>
+            </div>
         </div>
-        <div class="monitor-list" :class="{ scrollbar: scrollbar }">
+        <div ref="monitorList" class="monitor-list" :class="{ scrollbar: scrollbar }" :style="monitorListStyle">
             <div v-if="Object.keys($root.monitorList).length === 0" class="text-center mt-3">
                 {{ $t("No Monitors, please") }} <router-link to="/add">{{ $t("add one") }}</router-link>
             </div>
 
             <MonitorListItem
-                v-for="(item, index) in sortedMonitorList" :key="index" :monitor="item"
+                v-for="(item, index) in sortedMonitorList"
+                :key="index"
+                :monitor="item"
                 :isSearch="searchText !== ''"
+                :isSelectMode="selectMode"
+                :isSelected="isSelected"
+                :select="select"
+                :deselect="deselect"
             />
         </div>
     </div>
+
+    <Confirm ref="confirmPause" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="pauseSelected">
+        {{ $t("pauseMonitorMsg") }}
+    </Confirm>
 </template>
 
 <script>
+import Confirm from "../components/Confirm.vue";
 import MonitorListItem from "../components/MonitorListItem.vue";
 import MonitorListFilter from "./MonitorListFilter.vue";
 import { getMonitorRelativeURL } from "../util.ts";
 
 export default {
     components: {
+        Confirm,
         MonitorListItem,
         MonitorListFilter,
     },
@@ -54,6 +86,10 @@ export default {
     data() {
         return {
             searchText: "",
+            selectMode: false,
+            selectAll: false,
+            disableSelectAllWatcher: false,
+            selectedMonitors: {},
             windowTop: 0,
             filterState: {
                 status: null,
@@ -146,6 +182,58 @@ export default {
 
             return result;
         },
+
+        isDarkTheme() {
+            return document.body.classList.contains("dark");
+        },
+
+        monitorListStyle() {
+            let listHeaderHeight = 107;
+
+            if (this.selectMode) {
+                listHeaderHeight += 42;
+            }
+
+            return {
+                "height": `calc(100% - ${listHeaderHeight}px)`
+            };
+        },
+
+        selectedMonitorCount() {
+            return Object.keys(this.selectedMonitors).length;
+        },
+    },
+    watch: {
+        searchText() {
+            for (let monitor of this.sortedMonitorList) {
+                if (!this.selectedMonitors[monitor.id]) {
+                    if (this.selectAll) {
+                        this.disableSelectAllWatcher = true;
+                        this.selectAll = false;
+                    }
+                    break;
+                }
+            }
+        },
+        selectAll() {
+            if (!this.disableSelectAllWatcher) {
+                this.selectedMonitors = {};
+
+                if (this.selectAll) {
+                    this.sortedMonitorList.forEach((item) => {
+                        this.selectedMonitors[item.id] = true;
+                    });
+                }
+            } else {
+                this.disableSelectAllWatcher = false;
+            }
+        },
+        selectMode() {
+            if (!this.selectMode) {
+                this.selectAll = false;
+                this.selectedMonitors = {};
+            }
+        }
     },
     mounted() {
         window.addEventListener("scroll", this.onScroll);
@@ -180,6 +268,53 @@ export default {
          */
         updateFilter(newFilter) {
             this.filterState = newFilter;
+        },
+        /**
+         * Deselect a monitor
+         * @param {number} id ID of monitor
+         */
+        deselect(id) {
+            delete this.selectedMonitors[id];
+        },
+        /**
+         * Select a monitor
+         * @param {number} id ID of monitor
+         */
+        select(id) {
+            this.selectedMonitors[id] = true;
+        },
+        /**
+         * Determine if monitor is selected
+         * @param {number} id ID of monitor
+         * @returns {bool}
+         */
+        isSelected(id) {
+            return id in this.selectedMonitors;
+        },
+        /** Disable select mode and reset selection */
+        cancelSelectMode() {
+            this.selectMode = false;
+            this.selectedMonitors = {};
+        },
+        /** Show dialog to confirm pause */
+        pauseDialog() {
+            this.$refs.confirmPause.show();
+        },
+        /** Pause each selected monitor */
+        pauseSelected() {
+            Object.keys(this.selectedMonitors)
+                .filter(id => this.$root.monitorList[id].active)
+                .forEach(id => this.$root.getSocket().emit("pauseMonitor", id));
+
+            this.cancelSelectMode();
+        },
+        /** Resume each selected monitor */
+        resumeSelected() {
+            Object.keys(this.selectedMonitors)
+                .filter(id => !this.$root.monitorList[id].active)
+                .forEach(id => this.$root.getSocket().emit("resumeMonitor", id));
+
+            this.cancelSelectMode();
         },
     },
 };
@@ -271,4 +406,12 @@ export default {
     padding-left: 67px;
     margin-top: 5px;
 }
+
+.selection-controls {
+    margin-top: 5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 </style>
