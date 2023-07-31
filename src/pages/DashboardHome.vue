@@ -143,8 +143,7 @@ export default {
     watch: {
         importantHeartBeatList() {
             this.$nextTick(() => {
-                const tableContainer = this.$refs.tableContainer;
-                const tableContainerHeight = tableContainer.offsetHeight;
+                const tableContainerHeight = this.$refs.tableContainer.offsetHeight;
                 const availableHeight = this.calculatedHeight - tableContainerHeight;
                 const additionalPerPage = Math.floor(availableHeight / 58);
                 if (additionalPerPage > 0) {
