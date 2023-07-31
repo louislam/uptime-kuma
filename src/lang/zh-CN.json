@@ -824,5 +824,7 @@
     "Enable Kafka SSL": "启用 Kafka SSL 功能",
     "Kafka Producer Message": "Kafka 生成者（Producer）消息",
     "tailscalePingWarning": "如需使用 Tailscale Ping 客户端，您需要以非 docker 方式安装 Uptime Kuma，并同时安装 Tailscale 客户端。",
-    "Server URL should not contain the nfty topic": "服务器地址不应包含 ntfy主题"
+    "Server URL should not contain the nfty topic": "服务器地址不应包含 ntfy主题",
+    "Select": "选择",
+    "selectedMonitorCount": "已选：{0}"
 }
