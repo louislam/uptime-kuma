@@ -765,20 +765,18 @@ exports.checkLogin = (socket) => {
 
 /**
  * For logged-in users, double-check the password
- * @param {Socket} socket Socket.io instance
+ * @param {number} userID ID of user to check
  * @param {string} currentPassword Password to validate
  * @returns {Promise<Bean>} User
  * @throws The current password is not a string
  * @throws The provided password is not correct
  */
-exports.doubleCheckPassword = async (socket, currentPassword) => {
+exports.doubleCheckPassword = async (userID, currentPassword) => {
     if (typeof currentPassword !== "string") {
         throw new Error("Wrong data type?");
     }
 
-    let user = await R.findOne("user", " id = ? AND active = 1 ", [
-        socket.userID,
-    ]);
+    let user = await R.findOne("user", " id = ? ", [ userID ]);
 
     if (!user || !passwordHash.verify(currentPassword, user.password)) {
         throw new Error("Incorrect current password");
