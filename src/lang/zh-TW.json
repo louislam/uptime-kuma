@@ -742,7 +742,5 @@
     "Expires": "過期",
     "disableAPIKeyMsg": "您確定要停用這個 API 金鑰?",
     "Monitor Setting": "{0} 的監視器設定",
-    "Guild ID": "Guild ID",
-    "wayToGetFlashDutyKey": "您可以进入 协作空间 -> (选择一个 协作空间) -> 集成数据 -> 新增一个集成 页面，添加“自定义事件”获得一个推送地址，复制地址中的 Integration Key，更多信息前往{0}",
-    "FlashDuty Severity":"严重程度"
+    "Guild ID": "Guild ID"
 }
