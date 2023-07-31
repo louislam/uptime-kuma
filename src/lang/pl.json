@@ -414,8 +414,6 @@
     "For safety, must use secret key": "Ze względów bezpieczeństwa musisz użyć tajnego klucza",
     "Device Token": "Token urządzenia",
     "Platform": "Platforma",
-    "iOS": "iOS",
-    "Android": "Android",
     "Huawei": "Huawei",
     "High": "Wysoki",
     "Retry": "Ponów",
