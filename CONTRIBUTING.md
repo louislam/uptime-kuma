@@ -218,7 +218,17 @@ If for maybe security reasons, a library must be updated. Then you must need to 
 
 ## Translations
 
-Please read: https://github.com/louislam/uptime-kuma/tree/master/src/languages
+Please add **all** the strings which are translatable to `src/lang/en.json` (If translation keys are ommited, they can not be translated).
+
+**Don't include any other languages in your inital Pull-Request** (even if this is your mother tounge), to avoid merge-conflicts between weblate and `master`.  
+The translations can then (after merging a PR into `master`) be translated by awesome people donating their language-skills.
+
+If you want to help by translating Uptime Kuma into your language, please visit the [instructions on how to translate using weblate](https://github.com/louislam/uptime-kuma/blob/master/src/lang/README.md).
+
+## Spelling & Grammar
+
+Feel free to correct the grammar in the README, source code, or wiki.
+My mother language is not english and my grammar is not that great.
 
 ## Wiki
 
