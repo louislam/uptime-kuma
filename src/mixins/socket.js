@@ -57,7 +57,8 @@ export default {
                 message: "",
                 errorMessage: "",
                 currentPassword: "",
-            }
+            },
+            faviconUpdateDebounce: null,
         };
     },
 
@@ -760,7 +761,12 @@ export default {
         // Update Badge
         "stats.down"(to, from) {
             if (to !== from) {
-                favicon.badge(to);
+                if (this.faviconUpdateDebounce != null) {
+                    clearTimeout(this.faviconUpdateDebounce);
+                }
+                this.faviconUpdateDebounce = setTimeout(() => {
+                    favicon.badge(to);
+                }, 1000);
             }
         },
 
