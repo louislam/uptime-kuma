@@ -227,7 +227,7 @@ If you want to help by translating Uptime Kuma into your language, please visit 
 
 ## Spelling & Grammar
 
-Feel free to correct the grammar in the README, source code, or wiki.
+Feel free to correct the grammar in the documentation or code.
 My mother language is not english and my grammar is not that great.
 
 ## Wiki
