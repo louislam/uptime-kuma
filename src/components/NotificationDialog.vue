@@ -158,6 +158,7 @@ export default {
                 "AliyunSMS": "AliyunSMS (阿里云短信服务)",
                 "DingDing": "DingDing (钉钉自定义机器人)",
                 "Feishu": "Feishu (飞书)",
+                "FlashDuty": "FlashDuty (快猫星云)",
                 "FreeMobile": "FreeMobile (mobile.free.fr)",
                 "PushDeer": "PushDeer",
                 "promosms": "PromoSMS",
