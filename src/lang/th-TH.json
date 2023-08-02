@@ -404,8 +404,6 @@
     "For safety, must use secret key": "เพื่อความปลอดภัย จำเป็นต้องตั้งค่ากุญแจการเข้าถึง",
     "Device Token": "Device Token",
     "Platform": "แพลตฟอร์ม",
-    "iOS": "iOS",
-    "Android": "Android",
     "Huawei": "Huawei",
     "High": "สูง",
     "Retry": "ลองใหม่",
@@ -474,7 +472,7 @@
     "From Name/Number": "จาก ชื่อ / หมายเลข",
     "Leave blank to use a shared sender number.": "ไม่ต้องกรอกเพื่อใช้ชื่อผู้ส่งร่วมกัน",
     "Octopush API Version": "เวอร์ชั่น API Octopush",
-    "Legacy Octopush-DM": "Octopush-DM  แบบเก่า",
+    "Legacy Octopush-DM": "Octopush-DM แบบเก่า",
     "endpoint": "endpoint",
     "octopushAPIKey": "\"API key\" จากข้อมูลยืนยันตัวตน HTTP API ในแผงควบคุม",
     "octopushLogin": "\"Login\" จากข้อมูลยืนยันตัวตน HTTP API ในแผงควบคุม",
@@ -670,5 +668,9 @@
     "uninstalling": "กำลังถอนการติดตั้ง",
     "confirmUninstallPlugin": "แน่ใจหรือไม่ว่าต้องการถอนการติดตั้งปลั้กอินนี้?",
     "Schedule Maintenance": "กำหนดเวลาซ่อมแซม",
-    "Edit Maintenance": "แก้ใขการบำรุงรักษา"
+    "Edit Maintenance": "แก้ใขการบำรุงรักษา",
+    "recurringIntervalMessage": "ดำเนินการทุกวัน | ดำเนินการทุก {0} วัน",
+    "chromeExecutableAutoDetect": "ตรวจจับอัตโนมัติ",
+    "chromeExecutableDescription": "สำหรับผู้ใช้งาน Docker, ถ้ายังไม่ได้ติดตั่ง Chromium, อาจจะเสียเวลาในการติดตั่งและแสดงผลการทดสอบเพิ่มเติม, ใช้พื้นที่ประมาณ 1GB",
+    "notificationRegional": "ภูมิภาค"
 }

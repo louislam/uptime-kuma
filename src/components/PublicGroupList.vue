@@ -61,8 +61,13 @@
                                                 />
                                             </span>
                                         </div>
-                                        <div v-if="showTags" class="tags">
-                                            <Tag v-for="tag in monitor.element.tags" :key="tag" :item="tag" :size="'sm'" />
+                                        <div class="extra-info">
+                                            <div v-if="showCertificateExpiry && monitor.element.type === 'http'">
+                                                <Tag :item="{name: $t('Cert Exp.'), value: formattedCertExpiryMessage(monitor), color: certExpiryColor(monitor)}" :size="'sm'" />
+                                            </div>
+                                            <div v-if="showTags">
+                                                <Tag v-for="tag in monitor.element.tags" :key="tag" :item="tag" :size="'sm'" />
+                                            </div>
                                         </div>
                                     </div>
                                     <div :key="$root.userHeartbeatBar" class="col-3 col-md-4">
@@ -102,6 +107,10 @@ export default {
         },
         /** Should tags be shown? */
         showTags: {
+            type: Boolean,
+        },
+        /** Should expiry be shown? */
+        showCertificateExpiry: {
             type: Boolean,
         }
     },
@@ -154,12 +163,48 @@ export default {
             }
             return monitor.element.sendUrl && monitor.element.url && monitor.element.url !== "https://" && !this.editMode;
         },
+
+        /**
+         * Returns formatted certificate expiry or Bad cert message
+         * @param {Object} monitor Monitor to show expiry for
+         * @returns {string}
+         */
+        formattedCertExpiryMessage(monitor) {
+            if (monitor?.element?.validCert && monitor?.element?.certExpiryDaysRemaining) {
+                return monitor.element.certExpiryDaysRemaining + " " + this.$tc("day", monitor.element.certExpiryDaysRemaining);
+            } else if (monitor?.element?.validCert === false) {
+                return this.$t("noOrBadCertificate");
+            } else {
+                return this.$t("Unknown") + " " + this.$tc("day", 2);
+            }
+        },
+
+        /**
+         * Returns certificate expiry based on days remaining
+         * @param {Object} monitor Monitor to show expiry for
+         * @returns {string}
+         */
+        certExpiryColor(monitor) {
+            if (monitor?.element?.validCert && monitor.element.certExpiryDaysRemaining > 7) {
+                return "#059669";
+            }
+            return "#DC2626";
+        },
     }
 };
 </script>
 
 <style lang="scss" scoped>
 @import "../assets/vars";
+
+.extra-info {
+    display: flex;
+    margin-bottom: 0.5rem;
+}
+
+.extra-info > div > div:first-child {
+    margin-left: 0 !important;
+}
 
 .no-monitor-msg {
     position: absolute;

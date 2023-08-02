@@ -1,14 +1,13 @@
 <template>
     <div class="mb-3">
         <label for="ntfy-ntfytopic" class="form-label">{{ $t("ntfy Topic") }}</label>
-        <div class="input-group mb-3">
-            <input id="ntfy-ntfytopic" v-model="$parent.notification.ntfytopic" type="text" class="form-control" required>
-        </div>
+        <input id="ntfy-ntfytopic" v-model="$parent.notification.ntfytopic" type="text" class="form-control" required>
     </div>
     <div class="mb-3">
         <label for="ntfy-server-url" class="form-label">{{ $t("Server URL") }}</label>
-        <div class="input-group mb-3">
-            <input id="ntfy-server-url" v-model="$parent.notification.ntfyserverurl" type="text" class="form-control" required>
+        <input id="ntfy-server-url" v-model="$parent.notification.ntfyserverurl" type="text" class="form-control" required>
+        <div class="form-text">
+            {{ $t("Server URL should not contain the nfty topic") }}
         </div>
     </div>
     <div class="mb-3">
@@ -23,21 +22,15 @@
     </div>
     <div v-if="$parent.notification.ntfyAuthenticationMethod === 'usernamePassword'" class="mb-3">
         <label for="ntfy-username" class="form-label">{{ $t("Username") }}</label>
-        <div class="input-group mb-3">
-            <input id="ntfy-username" v-model="$parent.notification.ntfyusername" type="text" class="form-control">
-        </div>
+        <input id="ntfy-username" v-model="$parent.notification.ntfyusername" type="text" class="form-control">
     </div>
     <div v-if="$parent.notification.ntfyAuthenticationMethod === 'usernamePassword'" class="mb-3">
         <label for="ntfy-password" class="form-label">{{ $t("Password") }}</label>
-        <div class="input-group mb-3">
-            <HiddenInput id="ntfy-password" v-model="$parent.notification.ntfypassword" autocomplete="new-password"></HiddenInput>
-        </div>
+        <HiddenInput id="ntfy-password" v-model="$parent.notification.ntfypassword" autocomplete="new-password"></HiddenInput>
     </div>
     <div v-if="$parent.notification.ntfyAuthenticationMethod === 'accessToken'" class="mb-3">
         <label for="ntfy-access-token" class="form-label">{{ $t("Access Token") }}</label>
-        <div class="input-group mb-3">
-            <HiddenInput id="ntfy-access-token" v-model="$parent.notification.ntfyaccesstoken"></HiddenInput>
-        </div>
+        <HiddenInput id="ntfy-access-token" v-model="$parent.notification.ntfyaccesstoken"></HiddenInput>
     </div>
     <div class="mb-3">
         <label for="ntfy-icon" class="form-label">{{ $t("IconUrl") }}</label>

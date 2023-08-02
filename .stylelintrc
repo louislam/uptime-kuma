@@ -10,6 +10,7 @@
         "color-function-notation": "legacy",
         "shorthand-property-no-redundant-values": null,
         "color-hex-length": null,
-        "declaration-block-no-redundant-longhand-properties": null
+        "declaration-block-no-redundant-longhand-properties": null,
+        "at-rule-no-unknown": null
     }
 }

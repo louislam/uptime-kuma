@@ -8,7 +8,9 @@ class PushDeer extends NotificationProvider {
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
-        let pushdeerlink = "https://api2.pushdeer.com/message/push";
+        let endpoint = "/message/push";
+        let serverUrl = notification.pushdeerServer || "https://api2.pushdeer.com";
+        let pushdeerlink = `${serverUrl.trim().replace(/\/*$/, "")}${endpoint}`;
 
         let valid = msg != null && monitorJSON != null && heartbeatJSON != null;
 
