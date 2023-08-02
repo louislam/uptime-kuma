@@ -345,6 +345,10 @@ export default {
         page(to) {
             this.getImportantHeartbeatListPaged();
         },
+
+        monitor(to) {
+            this.getImportantHeartbeatListLength();
+        }
     },
 
     mounted() {
