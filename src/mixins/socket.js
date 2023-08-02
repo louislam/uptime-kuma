@@ -41,7 +41,6 @@ export default {
             maintenanceList: {},
             apiKeyList: {},
             heartbeatList: { },
-            importantHeartbeatList: { },
             avgPingList: { },
             uptimeList: { },
             tlsInfoList: {},
