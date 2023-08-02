@@ -1172,7 +1172,6 @@ let needSetup = false;
                 checkLogin(socket);
 
                 let count;
-
                 if (monitorID == null) {
                     count = await R.count("heartbeat", "important = 1");
                 } else {
@@ -1198,7 +1197,6 @@ let needSetup = false;
                 checkLogin(socket);
 
                 let list;
-
                 if (monitorID == null) {
                     list = await R.find("heartbeat", `
                         important = 1

@@ -130,6 +130,7 @@ export default {
          * Updates the displayed records when a new important heartbeat arrives.
          *
          * @param {object} heartbeat - The heartbeat object received.
+         * @return {void}
          */
         onNewImportantHeartbeat(heartbeat) {
             if (this.page === 1) {
