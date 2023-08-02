@@ -182,7 +182,7 @@
                             <td class="border-0">{{ beat.msg }}</td>
                         </tr>
 
-                        <tr v-if="importantHeartBeatList.length === 0">
+                        <tr v-if="importantHeartBeatListLength === 0">
                             <td colspan="3">
                                 {{ $t("No important events") }}
                             </td>
@@ -193,7 +193,7 @@
                 <div class="d-flex justify-content-center kuma_pagination">
                     <pagination
                         v-model="page"
-                        :records="importantHeartBeatList.length"
+                        :records="importantHeartBeatListLength"
                         :per-page="perPage"
                         :options="paginationConfig"
                     />
@@ -262,6 +262,8 @@ export default {
                 chunksNavigation: "scroll",
             },
             cacheTime: Date.now(),
+            importantHeartBeatListLength: 0,
+            displayedRecords: [],
         };
     },
     computed: {
@@ -300,16 +302,6 @@ export default {
             return this.$t("notAvailableShort");
         },
 
-        importantHeartBeatList() {
-            if (this.$root.importantHeartbeatList[this.monitor.id]) {
-                // eslint-disable-next-line vue/no-side-effects-in-computed-properties
-                this.heartBeatList = this.$root.importantHeartbeatList[this.monitor.id];
-                return this.$root.importantHeartbeatList[this.monitor.id];
-            }
-
-            return [];
-        },
-
         status() {
             if (this.$root.statusList[this.monitor.id]) {
                 return this.$root.statusList[this.monitor.id];
@@ -333,12 +325,6 @@ export default {
             return this.tlsInfo != null && this.toggleCertInfoBox;
         },
 
-        displayedRecords() {
-            const startIndex = this.perPage * (this.page - 1);
-            const endIndex = startIndex + this.perPage;
-            return this.heartBeatList.slice(startIndex, endIndex);
-        },
-
         group() {
             if (!this.monitor.pathName.includes("/")) {
                 return "";
@@ -354,9 +340,23 @@ export default {
             return getResBaseURL() + this.monitor.screenshot + "?time=" + this.cacheTime;
         }
     },
-    mounted() {
 
+    watch: {
+        page(to) {
+            this.getImportantHeartbeatListPaged();
+        },
     },
+
+    mounted() {
+        this.getImportantHeartbeatListLength();
+
+        this.$root.emitter.on("newImportantHeartbeat", this.onNewImportantHeartbeat);
+    },
+
+    beforeUnmount() {
+        this.$root.emitter.off("newImportantHeartbeat", this.onNewImportantHeartbeat);
+    },
+
     methods: {
         getResBaseURL,
         /**
@@ -441,7 +441,9 @@ export default {
          */
         clearEvents() {
             this.$root.clearEvents(this.monitor.id, (res) => {
-                if (! res.ok) {
+                if (res.ok) {
+                    this.getImportantHeartbeatListLength();
+                } else {
                     toast.error(res.msg);
                 }
             });
@@ -502,7 +504,56 @@ export default {
                 // Handle SQL Server
                 return urlString.replaceAll(/Password=(.+);/ig, "Password=******;");
             }
-        }
+        },
+
+        /**
+         * Retrieves the length of the important heartbeat list for this monitor.
+         *
+         * @return {void}
+         */
+        getImportantHeartbeatListLength() {
+            if (this.monitor) {
+                this.$root.getSocket().emit("monitorImportantHeartbeatListCount", this.monitor.id, (res) => {
+                    if (res.ok) {
+                        this.importantHeartBeatListLength = res.count;
+                        this.getImportantHeartbeatListPaged();
+                    }
+                });
+            }
+        },
+
+        /**
+         * Retrieves the important heartbeat list for the current page.
+         *
+         * @return {void}
+         */
+        getImportantHeartbeatListPaged() {
+            if (this.monitor) {
+                const offset = (this.page - 1) * this.perPage;
+                this.$root.getSocket().emit("monitorImportantHeartbeatListPaged", this.monitor.id, offset, this.perPage, (res) => {
+                    if (res.ok) {
+                        this.displayedRecords = res.data;
+                    }
+                });
+            }
+        },
+
+        /**
+         * Updates the displayed records when a new important heartbeat arrives.
+         *
+         * @param {object} heartbeat - The heartbeat object received.
+         */
+        onNewImportantHeartbeat(heartbeat) {
+            if (heartbeat.monitorID === this.monitor?.id) {
+                if (this.page === 1) {
+                    this.displayedRecords.unshift(heartbeat);
+                    if (this.displayedRecords.length > this.perPage) {
+                        this.displayedRecords.pop();
+                    }
+                    this.importantHeartBeatListLength += 1;
+                }
+            }
+        },
     },
 };
 </script>
