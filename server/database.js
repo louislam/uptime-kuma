@@ -75,6 +75,7 @@ class Database {
         "patch-added-json-query.sql": true,
         "patch-added-kafka-producer.sql": true,
         "patch-add-certificate-expiry-status-page.sql": true,
+        "patch-monitor-oauth-cc.sql": true,
     };
 
     /**
