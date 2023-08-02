@@ -182,16 +182,18 @@ export default {
                 // Also toast
                 if (data.important) {
 
-                    if (data.status === 0) {
-                        toast.error(`[${this.monitorList[data.monitorID].name}] [DOWN] ${data.msg}`, {
-                            timeout: false,
-                        });
-                    } else if (data.status === 1) {
-                        toast.success(`[${this.monitorList[data.monitorID].name}] [Up] ${data.msg}`, {
-                            timeout: 20000,
-                        });
-                    } else {
-                        toast(`[${this.monitorList[data.monitorID].name}] ${data.msg}`);
+                    if (this.monitorList[data.monitorID] !== undefined) {
+                        if (data.status === 0) {
+                            toast.error(`[${this.monitorList[data.monitorID].name}] [DOWN] ${data.msg}`, {
+                                timeout: false,
+                            });
+                        } else if (data.status === 1) {
+                            toast.success(`[${this.monitorList[data.monitorID].name}] [Up] ${data.msg}`, {
+                                timeout: 20000,
+                            });
+                        } else {
+                            toast(`[${this.monitorList[data.monitorID].name}] ${data.msg}`);
+                        }
                     }
 
                     if (! (data.monitorID in this.importantHeartbeatList)) {
