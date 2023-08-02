@@ -34,19 +34,19 @@ Yes or no, it depends on what you will try to do. Since I don't want to waste yo
 
 Here are some references:
 
-✅ Usually Accept:
+### ✅ Usually accepted:
 - Bug fix
 - Security fix
 - Adding notification providers
-- Adding new language files (You should go to https://weblate.kuma.pet for existing languages)
+- Adding new language files (see [these instructions](https://github.com/louislam/uptime-kuma/blob/master/src/lang/README.md))
 - Adding new language keys: `$t("...")`
 
-⚠️ Discussion First
+### ⚠️ Discussion required:
 - Large pull requests
 - New features
 
-❌ Won't Merge
-- A dedicated pr for translating existing languages (You can now translate on https://weblate.kuma.pet) 
+### ❌ Won't be merged:
+- A dedicated pr for translating existing languages (see [these instructions](https://github.com/louislam/uptime-kuma/blob/master/src/lang/README.md))
 - Do not pass the auto test
 - Any breaking changes
 - Duplicated pull requests
@@ -106,11 +106,11 @@ I personally do not like something that requires so many configurations before y
 
 ## Tools
 
-- Node.js >= 14
-- NPM >= 8.5
-- Git
-- IDE that supports ESLint and EditorConfig (I am using IntelliJ IDEA)
-- A SQLite GUI tool (SQLite Expert Personal is suggested)
+- [`Node.js`](https://nodejs.org/) >= 14
+- [`npm`](https://www.npmjs.com/) >= 8.5
+- [`git`](https://git-scm.com/)
+- IDE that supports [`ESLint`](https://eslint.org/) and EditorConfig (I am using [`IntelliJ IDEA`](https://www.jetbrains.com/idea/))
+- A SQLite GUI tool (f.ex. [`SQLite Expert Personal`](https://www.sqliteexpert.com/download.html) or [`DBeaver Communtiy`](https://dbeaver.io/download/))
 
 ## Install Dependencies for Development
 
@@ -218,7 +218,17 @@ If for maybe security reasons, a library must be updated. Then you must need to 
 
 ## Translations
 
-Please read: https://github.com/louislam/uptime-kuma/tree/master/src/languages
+Please add **all** the strings which are translatable to `src/lang/en.json` (If translation keys are ommited, they can not be translated).
+
+**Don't include any other languages in your inital Pull-Request** (even if this is your mother tounge), to avoid merge-conflicts between weblate and `master`.  
+The translations can then (after merging a PR into `master`) be translated by awesome people donating their language-skills.
+
+If you want to help by translating Uptime Kuma into your language, please visit the [instructions on how to translate using weblate](https://github.com/louislam/uptime-kuma/blob/master/src/lang/README.md).
+
+## Spelling & Grammar
+
+Feel free to correct the grammar in the documentation or code.
+My mother language is not english and my grammar is not that great.
 
 ## Wiki
 

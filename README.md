@@ -184,7 +184,10 @@ If you want to report a bug or request a new feature, feel free to open a [new i
 ### Translations
 If you want to translate Uptime Kuma into your language, please visit [Weblate Readme](https://github.com/louislam/uptime-kuma/blob/master/src/lang/README.md).
 
-Feel free to correct my grammar in this README, source code, or wiki, as my mother language is not English and my grammar is not that great.
+## Spelling & Grammar
+
+Feel free to correct the grammar in the documentation or code.
+My mother language is not english and my grammar is not that great.
 
 ### Create Pull Requests
 If you want to modify Uptime Kuma, please read this guide and follow the rules here: https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md
