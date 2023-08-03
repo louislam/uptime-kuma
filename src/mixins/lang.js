@@ -33,6 +33,13 @@ export default {
             this.$i18n.locale = lang;
             localStorage.locale = lang;
             setPageLocale();
+        },
+        /** Change the language for the current page (no localstore set) */
+        async changeCurrentPageLang(lang) {
+            let message = (await langModules["../lang/" + lang + ".json"]()).default;
+            this.$i18n.setLocaleMessage(lang, message);
+            this.$i18n.locale = lang;
+            setPageLocale();
         }
     }
 };
