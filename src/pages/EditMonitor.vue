@@ -826,6 +826,7 @@ import ProxyDialog from "../components/ProxyDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
 import { genSecret, isDev, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND } from "../util.ts";
 import { hostNameRegexPattern } from "../util-frontend";
+import { sleep } from "../util";
 
 const toast = useToast();
 
@@ -1375,10 +1376,16 @@ message HealthCheckResponse {
                     if (res.ok) {
                         await this.$refs.tagsManager.submit(res.monitorID);
 
+                        // Start the new parent monitor after edit is done
+                        if (createdNewParent) {
+                            this.startParentGroupMonitor();
+                        }
+
                         toast.success(res.msg);
                         this.processing = false;
                         this.$root.getMonitorList();
                         this.$router.push("/dashboard/" + res.monitorID);
+
                     } else {
                         toast.error(res.msg);
                         this.processing = false;
@@ -1392,13 +1399,18 @@ message HealthCheckResponse {
                     this.processing = false;
                     this.$root.toastRes(res);
                     this.init();
+
+                    // Start the new parent monitor after edit is done
+                    if (createdNewParent) {
+                        this.startParentGroupMonitor();
+                    }
                 });
             }
+        },
 
-            // Start the new parent monitor after edit is done
-            if (createdNewParent) {
-                await this.$root.getSocket().emit("resumeMonitor", this.monitor.parent, () => {});
-            }
+        async startParentGroupMonitor() {
+            await sleep(2000);
+            await this.$root.getSocket().emit("resumeMonitor", this.monitor.parent, () => {});
         },
 
         /**
