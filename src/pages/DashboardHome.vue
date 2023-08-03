@@ -91,6 +91,7 @@ export default {
         return {
             page: 1,
             perPage: 25,
+            initialPerPage: 25,
             heartBeatList: [],
             paginationConfig: {
                 hideCount: true,
@@ -143,13 +144,32 @@ export default {
     watch: {
         importantHeartBeatList() {
             this.$nextTick(() => {
-                const tableContainerHeight = this.$refs.tableContainer.offsetHeight;
-                const availableHeight = this.calculatedHeight - tableContainerHeight;
-                const additionalPerPage = Math.floor(availableHeight / 58);
-                if (additionalPerPage > 0) {
-                    this.perPage = Math.max(25, this.perPage + additionalPerPage);
-                }
+                this.updatePerPage();
             });
+        },
+    },
+    mounted() {
+        this.initialPerPage = this.perPage;
+
+        window.addEventListener("resize", this.updatePerPage);
+        this.updatePerPage();
+    },
+    beforeUnmount() {
+        window.removeEventListener("resize", this.updatePerPage);
+    },
+    methods: {
+        updatePerPage() {
+            const tableContainer = this.$refs.tableContainer;
+            const tableContainerHeight = tableContainer.offsetHeight;
+            const availableHeight = window.innerHeight - tableContainerHeight;
+            const additionalPerPage = Math.floor(availableHeight / 58);
+
+            if (additionalPerPage > 0) {
+                this.perPage = Math.max(this.initialPerPage, this.perPage + additionalPerPage);
+            } else {
+                this.perPage = this.initialPerPage;
+            }
+
         },
     },
 };
