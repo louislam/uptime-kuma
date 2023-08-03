@@ -6,7 +6,7 @@ const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, TimeLogger, MAX_INTERVA
     SQL_DATETIME_FORMAT
 } = require("../../src/util");
 const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, mqttAsync, setSetting, httpNtlm, radius, grpcQuery,
-    redisPingAsync, mongodbPing, kafkaProducerAsync
+    redisPingAsync, mongodbPing, kafkaProducerAsync, getOidcTokenClientCredentials,
 } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
@@ -37,11 +37,12 @@ class Monitor extends BeanModel {
      * Only show necessary data to public
      * @returns {Object}
      */
-    async toPublicJSON(showTags = false) {
+    async toPublicJSON(showTags = false, certExpiry = false) {
         let obj = {
             id: this.id,
             name: this.name,
             sendUrl: this.sendUrl,
+            type: this.type,
         };
 
         if (this.sendUrl) {
@@ -51,6 +52,13 @@ class Monitor extends BeanModel {
         if (showTags) {
             obj.tags = await this.getTags();
         }
+
+        if (certExpiry && this.type === "http") {
+            const { certExpiryDaysRemaining, validCert } = await this.getCertExpiry(this.id);
+            obj.certExpiryDaysRemaining = certExpiryDaysRemaining;
+            obj.validCert = validCert;
+        }
+
         return obj;
     }
 
@@ -146,6 +154,11 @@ class Monitor extends BeanModel {
                 grpcMetadata: this.grpcMetadata,
                 basic_auth_user: this.basic_auth_user,
                 basic_auth_pass: this.basic_auth_pass,
+                oauth_client_id: this.oauth_client_id,
+                oauth_client_secret: this.oauth_client_secret,
+                oauth_token_url: this.oauth_token_url,
+                oauth_scopes: this.oauth_scopes,
+                oauth_auth_method: this.oauth_auth_method,
                 pushToken: this.pushToken,
                 databaseConnectionString: this.databaseConnectionString,
                 radiusUsername: this.radiusUsername,
@@ -182,6 +195,31 @@ class Monitor extends BeanModel {
      */
     async getTags() {
         return await R.getAll("SELECT mt.*, tag.name, tag.color FROM monitor_tag mt JOIN tag ON mt.tag_id = tag.id WHERE mt.monitor_id = ? ORDER BY tag.name", [ this.id ]);
+    }
+
+    /**
+     * Gets certificate expiry for this monitor
+     * @param {number} monitorID ID of monitor to send
+     * @returns {Promise<LooseObject<any>>}
+     */
+    async getCertExpiry(monitorID) {
+        let tlsInfoBean = await R.findOne("monitor_tls_info", "monitor_id = ?", [
+            monitorID,
+        ]);
+        let tlsInfo;
+        if (tlsInfoBean) {
+            tlsInfo = JSON.parse(tlsInfoBean?.info_json);
+            if (tlsInfo?.valid && tlsInfo?.certInfo?.daysRemaining) {
+                return {
+                    certExpiryDaysRemaining: tlsInfo.certInfo.daysRemaining,
+                    validCert: true
+                };
+            }
+        }
+        return {
+            certExpiryDaysRemaining: "",
+            validCert: false
+        };
     }
 
     /**
@@ -341,6 +379,24 @@ class Monitor extends BeanModel {
                         };
                     }
 
+                    // OIDC: Basic client credential flow.
+                    // Additional grants might be implemented in the future
+                    let oauth2AuthHeader = {};
+                    if (this.auth_method === "oauth2-cc") {
+                        try {
+                            if (this.oauthAccessToken === undefined || new Date(this.oauthAccessToken.expires_at * 1000) <= new Date()) {
+                                log.debug("monitor", `[${this.name}] The oauth access-token undefined or expired. Requesting a new one`);
+                                this.oauthAccessToken = await getOidcTokenClientCredentials(this.oauth_token_url, this.oauth_client_id, this.oauth_client_secret, this.oauth_scopes, this.oauth_auth_method);
+                                log.debug("monitor", `[${this.name}] Obtained oauth access-token. Expires at ${new Date(this.oauthAccessToken.expires_at * 1000)}`);
+                            }
+                            oauth2AuthHeader = {
+                                "Authorization": this.oauthAccessToken.token_type + " " + this.oauthAccessToken.access_token,
+                            };
+                        } catch (e) {
+                            throw new Error("The oauth config is invalid. " + e.message);
+                        }
+                    }
+
                     const httpsAgentOptions = {
                         maxCachedSessions: 0, // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
                         rejectUnauthorized: !this.getIgnoreTls(),
@@ -375,6 +431,7 @@ class Monitor extends BeanModel {
                             "User-Agent": "Uptime-Kuma/" + version,
                             ...(contentType ? { "Content-Type": contentType } : {}),
                             ...(basicAuthHeader),
+                            ...(oauth2AuthHeader),
                             ...(this.headers ? JSON.parse(this.headers) : {})
                         },
                         maxRedirects: this.maxredirects,
@@ -759,29 +816,19 @@ class Monitor extends BeanModel {
                         port = this.port;
                     }
 
-                    try {
-                        const resp = await radius(
-                            this.hostname,
-                            this.radiusUsername,
-                            this.radiusPassword,
-                            this.radiusCalledStationId,
-                            this.radiusCallingStationId,
-                            this.radiusSecret,
-                            port,
-                            this.interval * 1000 * 0.8,
-                        );
-                        if (resp.code) {
-                            bean.msg = resp.code;
-                        }
-                        bean.status = UP;
-                    } catch (error) {
-                        bean.status = DOWN;
-                        if (error.response?.code) {
-                            bean.msg = error.response.code;
-                        } else {
-                            bean.msg = error.message;
-                        }
-                    }
+                    const resp = await radius(
+                        this.hostname,
+                        this.radiusUsername,
+                        this.radiusPassword,
+                        this.radiusCalledStationId,
+                        this.radiusCallingStationId,
+                        this.radiusSecret,
+                        port,
+                        this.interval * 1000 * 0.4,
+                    );
+
+                    bean.msg = resp.code;
+                    bean.status = UP;
                     bean.ping = dayjs().valueOf() - startTime;
                 } else if (this.type === "redis") {
                     let startTime = dayjs().valueOf();

@@ -100,6 +100,7 @@
         "http-proxy-agent": "~5.0.0",
         "https-proxy-agent": "~5.0.1",
         "iconv-lite": "~0.6.3",
+        "isomorphic-ws": "^5.0.0",
         "jsesc": "~3.0.2",
         "jsonata": "^2.0.3",
         "jsonwebtoken": "~9.0.0",
@@ -115,7 +116,9 @@
         "node-cloudflared-tunnel": "~1.0.9",
         "node-radius-client": "~1.0.0",
         "nodemailer": "~6.6.5",
+        "nostr-tools": "^1.13.1",
         "notp": "~2.0.3",
+        "openid-client": "^5.4.2",
         "password-hash": "~1.2.2",
         "pg": "~8.8.0",
         "pg-connection-string": "~2.5.0",
@@ -132,7 +135,8 @@
         "socks-proxy-agent": "6.1.1",
         "tar": "~6.1.11",
         "tcp-ping": "~0.1.1",
-        "thirty-two": "~1.0.2"
+        "thirty-two": "~1.0.2",
+        "ws": "^8.13.0"
     },
     "devDependencies": {
         "@actions/github": "~5.0.1",

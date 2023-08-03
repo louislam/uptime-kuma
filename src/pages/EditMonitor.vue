@@ -373,42 +373,18 @@
                                 </div>
                             </template>
 
+                            <!-- SQL Server / PostgreSQL / MySQL / Redis / MongoDB -->
+                            <template v-if="monitor.type === 'sqlserver' || monitor.type === 'postgres' || monitor.type === 'mysql' || monitor.type === 'redis' || monitor.type === 'mongodb'">
+                                <div class="my-3">
+                                    <label for="connectionString" class="form-label">{{ $t("Connection String") }}</label>
+                                    <input id="connectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" required>
+                                </div>
+                            </template>
                             <!-- SQL Server / PostgreSQL / MySQL -->
                             <template v-if="monitor.type === 'sqlserver' || monitor.type === 'postgres' || monitor.type === 'mysql'">
                                 <div class="my-3">
-                                    <label for="sqlConnectionString" class="form-label">{{ $t("Connection String") }}</label>
-
-                                    <template v-if="monitor.type === 'sqlserver'">
-                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control">
-                                    </template>
-                                    <template v-if="monitor.type === 'postgres'">
-                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control">
-                                    </template>
-                                    <template v-if="monitor.type === 'mysql'">
-                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control">
-                                    </template>
-                                </div>
-                                <div class="my-3">
                                     <label for="sqlQuery" class="form-label">{{ $t("Query") }}</label>
-                                    <textarea id="sqlQuery" v-model="monitor.databaseQuery" class="form-control" placeholder="Example: select getdate()"></textarea>
-                                </div>
-                            </template>
-                            <!-- Redis -->
-                            <template v-if="monitor.type === 'redis'">
-                                <div class="my-3">
-                                    <label for="redisConnectionString" class="form-label">{{ $t("Connection String") }}</label>
-                                    <input id="redisConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control">
-                                </div>
-                            </template>
-
-                            <!-- MongoDB -->
-                            <template v-if="monitor.type === 'mongodb'">
-                                <div class="my-3">
-                                    <label for="sqlConnectionString" class="form-label">{{ $t("Connection String") }}</label>
-
-                                    <template v-if="monitor.type === 'mongodb'">
-                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control">
-                                    </template>
+                                    <textarea id="sqlQuery" v-model="monitor.databaseQuery" class="form-control" :placeholder="$t('Example:', [ 'select getdate()' ])" required></textarea>
                                 </div>
                             </template>
 
@@ -689,6 +665,9 @@
                                         <option value="basic">
                                             {{ $t("HTTP Basic Auth") }}
                                         </option>
+                                        <option value="oauth2-cc">
+                                            {{ $t("OAuth2: Client Credentials") }}
+                                        </option>
                                         <option value="ntlm">
                                             NTLM
                                         </option>
@@ -711,6 +690,37 @@
                                             <label for="tls-ca" class="form-label">{{ $t("CA") }}</label>
                                             <textarea id="tls-ca" v-model="monitor.tlsCa" class="form-control" :placeholder="$t('Server CA')"></textarea>
                                         </div>
+                                    </template>
+                                    <template v-else-if="monitor.authMethod === 'oauth2-cc' ">
+                                        <div class="my-3">
+                                            <label for="oauth_auth_method" class="form-label">{{ $t("Authentication Method") }}</label>
+                                            <select id="oauth_auth_method" v-model="monitor.oauth_auth_method" class="form-select">
+                                                <option value="client_secret_basic">
+                                                    {{ $t("Authorization Header") }}
+                                                </option>
+                                                <option value="client_secret_post">
+                                                    {{ $t("Form Data Body") }}
+                                                </option>
+                                            </select>
+                                        </div>
+                                        <div class="my-3">
+                                            <label for="oauth_token_url" class="form-label">{{ $t("OAuth Token URL") }}</label>
+                                            <input id="oauth_token_url" v-model="monitor.oauth_token_url" type="text" class="form-control" :placeholder="$t('OAuth Token URL')" required>
+                                        </div>
+                                        <div class="my-3">
+                                            <label for="oauth_client_id" class="form-label">{{ $t("Client ID") }}</label>
+                                            <input id="oauth_client_id" v-model="monitor.oauth_client_id" type="text" class="form-control" :placeholder="$t('Client ID')" required>
+                                        </div>
+                                        <template v-if="monitor.oauth_auth_method === 'client_secret_post' || monitor.oauth_auth_method === 'client_secret_basic'">
+                                            <div class="my-3">
+                                                <label for="oauth_client_secret" class="form-label">{{ $t("Client Secret") }}</label>
+                                                <input id="oauth_client_secret" v-model="monitor.oauth_client_secret" type="password" class="form-control" :placeholder="$t('Client Secret')" required>
+                                            </div>
+                                            <div class="my-3">
+                                                <label for="oauth_scopes" class="form-label">{{ $t("OAuth Scope") }}</label>
+                                                <input id="oauth_scopes" v-model="monitor.oauth_scopes" type="text" class="form-control" :placeholder="$t('Optional: Space separated list of scopes')">
+                                            </div>
+                                        </template>
                                     </template>
                                     <template v-else>
                                         <div class="my-3">
@@ -1147,6 +1157,7 @@ message HealthCheckResponse {
                     mqttTopic: "",
                     mqttSuccessMessage: "",
                     authMethod: null,
+                    oauth_auth_method: "client_secret_basic",
                     httpBodyEncoding: "json",
                     kafkaProducerBrokers: [],
                     kafkaProducerSaslOptions: {
