@@ -10,6 +10,7 @@ const util = require("util");
 const { CacheableDnsHttpAgent } = require("./cacheable-dns-http-agent");
 const { Settings } = require("./settings");
 const dayjs = require("dayjs");
+const childProcess = require("child_process");
 // DO NOT IMPORT HERE IF THE MODULES USED `UptimeKumaServer.getInstance()`, put at the bottom of this file instead.
 
 /**
@@ -334,9 +335,49 @@ class UptimeKumaServer {
         dayjs.tz.setDefault(timezone);
     }
 
-    /** Stop the server */
-    async stop() {
+    /**
+     * TODO: Listen logic should be moved to here
+     * @returns {Promise<void>}
+     */
+    async start() {
+        this.startServices();
+    }
 
+    /**
+     * Stop the server
+     * @returns {Promise<void>}
+     */
+    async stop() {
+        this.stopServices();
+    }
+
+    /**
+     * Start all system services (e.g. nscd)
+     * For now, only used in Docker
+     */
+    startServices() {
+        if (process.env.UPTIME_KUMA_IS_CONTAINER) {
+            try {
+                log.info("services", "Starting nscd");
+                childProcess.execSync("sudo service nscd start", { stdio: "pipe" });
+            } catch (e) {
+                log.info("services", "Failed to start nscd");
+            }
+        }
+    }
+
+    /**
+     * Stop all system services
+     */
+    stopServices() {
+        if (process.env.UPTIME_KUMA_IS_CONTAINER) {
+            try {
+                log.info("services", "Stopping nscd");
+                childProcess.execSync("sudo service nscd stop");
+            } catch (e) {
+                log.info("services", "Failed to stop nscd");
+            }
+        }
     }
 }
 

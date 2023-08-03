@@ -455,8 +455,6 @@
     "For safety, must use secret key": "للسلامة يجب استخدام المفتاح السري",
     "Device Token": "رمز الجهاز",
     "Platform": "منصة",
-    "iOS": "iOS",
-    "Android": "ذكري المظهر",
     "Huawei": "هواوي",
     "High": "عالٍ",
     "Retry": "إعادة المحاولة",
