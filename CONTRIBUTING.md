@@ -110,7 +110,7 @@ I personally do not like something that requires so many configurations before y
 - [`npm`](https://www.npmjs.com/) >= 8.5
 - [`git`](https://git-scm.com/)
 - IDE that supports [`ESLint`](https://eslint.org/) and EditorConfig (I am using [`IntelliJ IDEA`](https://www.jetbrains.com/idea/))
-- A SQLite GUI tool (f.ex. [`SQLite Expert Personal`](https://www.sqliteexpert.com/download.html) or [`DBeaver Communtiy`](https://dbeaver.io/download/))
+- A SQLite GUI tool (f.ex. [`SQLite Expert Personal`](https://www.sqliteexpert.com/download.html) or [`DBeaver Community`](https://dbeaver.io/download/))
 
 ## Install Dependencies for Development
 
