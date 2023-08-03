@@ -9,6 +9,9 @@
     "engines": {
         "node": "14 || 16 || 18 || >= 20.4.0"
     },
+    "bin": {
+        "uptime-kuma": "./extra/cli.js"
+    },
     "scripts": {
         "install-legacy": "npm install",
         "update-legacy": "npm update",
