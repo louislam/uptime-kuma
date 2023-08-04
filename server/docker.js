@@ -3,13 +3,14 @@ const { R } = require("redbean-node");
 const version = require("../package.json").version;
 const https = require("https");
 const fs = require("fs");
+const path = require("path");
+const Database = require("./database");
 
 class DockerHost {
 
-    static CertificateBasePath = process.env.DOCKER_TLS_DIR_PATH || "data/docker-tls/";
-    static CertificateFileNameCA = process.env.DOCKER_TLS_FILE_NAME_CA || "ca.pem";
-    static CertificateFileNameCert = process.env.DOCKER_TLS_FILE_NAME_CA || "cert.pem";
-    static CertificateFileNameKey = process.env.DOCKER_TLS_FILE_NAME_CA || "key.pem";
+    static CertificateFileNameCA = "ca.pem";
+    static CertificateFileNameCert = "cert.pem";
+    static CertificateFileNameKey = "key.pem";
 
     /**
      * Save a docker host
@@ -67,7 +68,6 @@ class DockerHost {
      * @returns {number} Total amount of containers on the host
      */
     static async testDockerHost(dockerHost) {
-
         const options = {
             url: "/containers/json?all=true",
             headers: {
@@ -141,11 +141,11 @@ class DockerHost {
         };
         let certOptions = {};
 
-        let dirName = url.replace(/^https:\/\/([^/:]+)(\/|:).*$/, "$1");
-        let dirPath = DockerHost.CertificateBasePath + dirName + "/";
-        let caPath = dirPath + DockerHost.CertificateFileNameCA;
-        let certPath = dirPath + DockerHost.CertificateFileNameCert;
-        let keyPath = dirPath + DockerHost.CertificateFileNameKey;
+        let dirName = (new URL(url)).hostname;
+
+        let caPath = path.join(Database.dockerTLSDir, dirName, DockerHost.CertificateFileNameCA);
+        let certPath = path.join(Database.dockerTLSDir, dirName, DockerHost.CertificateFileNameCert);
+        let keyPath = path.join(Database.dockerTLSDir, dirName, DockerHost.CertificateFileNameKey);
 
         if (dockerType === "tcp" && fs.existsSync(caPath) && fs.existsSync(certPath) && fs.existsSync(keyPath)) {
             let ca = fs.readFileSync(caPath);
