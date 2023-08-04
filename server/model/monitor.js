@@ -457,12 +457,8 @@ class Monitor extends BeanModel {
                     }
 
                     if (this.cacheBust) {
-                        let cacheBust = "";
-                        const characters = "abcdefghijklmnopqrstuvwxyz0123456789";
-                        const charactersLength = characters.length;
-                        for (let i = 0; i < 6; i++) {
-                            cacheBust += characters.charAt(Math.floor(Math.random() * charactersLength));
-                        }
+                        const randomFloatString = Math.random().toString(36);
+                        const cacheBust = randomFloatString.substring(2);
                         options.params = {
                             uptime_kuma_cachebuster: cacheBust,
                         };
