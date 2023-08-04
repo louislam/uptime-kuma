@@ -870,6 +870,7 @@ const monitorDefaults = {
     kafkaProducerSaslOptions: {
         mechanism: "None",
     },
+    cacheBust: false,
 };
 
 export default {
@@ -1221,39 +1222,6 @@ message HealthCheckResponse {
             if (this.isAdd) {
 
                 this.monitor = {
-                    type: "http",
-                    name: "",
-                    parent: null,
-                    url: "https://",
-                    method: "GET",
-                    interval: 60,
-                    retryInterval: this.interval,
-                    resendInterval: 0,
-                    maxretries: 1,
-                    notificationIDList: {},
-                    ignoreTls: false,
-                    cacheBust: false,
-                    upsideDown: false,
-                    packetSize: 56,
-                    expiryNotification: false,
-                    maxredirects: 10,
-                    accepted_statuscodes: [ "200-299" ],
-                    dns_resolve_type: "A",
-                    dns_resolve_server: "1.1.1.1",
-                    docker_container: "",
-                    docker_host: null,
-                    proxyId: null,
-                    mqttUsername: "",
-                    mqttPassword: "",
-                    mqttTopic: "",
-                    mqttSuccessMessage: "",
-                    authMethod: null,
-                    oauth_auth_method: "client_secret_basic",
-                    httpBodyEncoding: "json",
-                    kafkaProducerBrokers: [],
-                    kafkaProducerSaslOptions: {
-                        mechanism: "None",
-                    },
                     ...monitorDefaults
                 };
 
