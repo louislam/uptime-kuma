@@ -351,7 +351,10 @@ class Monitor extends BeanModel {
                             const lastBeat = await Monitor.getPreviousHeartbeat(child.id);
 
                             // Only change state if the monitor is in worse conditions then the ones before
-                            if (bean.status === UP && (lastBeat.status === PENDING || lastBeat.status === DOWN)) {
+                            // lastBeat.status could be null
+                            if (!lastBeat) {
+                                bean.status = PENDING;
+                            } else if (bean.status === UP && (lastBeat.status === PENDING || lastBeat.status === DOWN)) {
                                 bean.status = lastBeat.status;
                             } else if (bean.status === PENDING && lastBeat.status === DOWN) {
                                 bean.status = lastBeat.status;
