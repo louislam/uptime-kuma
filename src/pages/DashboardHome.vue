@@ -101,10 +101,14 @@ export default {
         };
     },
     watch: {
-        displayedRecords() {
+        perPage() {
             this.$nextTick(() => {
-                this.updatePerPage();
+                this.getImportantHeartbeatListPaged();
             });
+        },
+
+        page() {
+            this.getImportantHeartbeatListPaged();
         },
     },
 
