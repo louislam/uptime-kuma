@@ -1047,3 +1047,13 @@ module.exports.grpcQuery = async (options) => {
 
     });
 };
+
+// For unit test, export functions
+if (process.env.TEST_BACKEND) {
+    module.exports.__test = {
+        parseCertificateInfo,
+    };
+    module.exports.__getPrivateFunction = (functionName) => {
+        return module.exports.__test[functionName];
+    };
+}
