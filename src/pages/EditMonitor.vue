@@ -3,7 +3,7 @@
         <div>
             <h1 class="mb-3">{{ pageName }}</h1>
             <form @submit.prevent="submit">
-                <div class="shadow-box">
+                <div class="shadow-box shadow-box-with-fixed-bottom-bar">
                     <div class="row">
                         <div class="col-md-6">
                             <h2 class="mb-2">{{ $t("General") }}</h2>
@@ -12,6 +12,9 @@
                                 <label for="type" class="form-label">{{ $t("Monitor Type") }}</label>
                                 <select id="type" v-model="monitor.type" class="form-select">
                                     <optgroup :label="$t('General Monitor Type')">
+                                        <option value="group">
+                                            {{ $t("Group") }}
+                                        </option>
                                         <option value="http">
                                             HTTP(s)
                                         </option>
@@ -24,6 +27,9 @@
                                         <option value="keyword">
                                             HTTP(s) - {{ $t("Keyword") }}
                                         </option>
+                                        <option value="json-query">
+                                            HTTP(s) - {{ $t("Json Query") }}
+                                        </option>
                                         <option value="grpc-keyword">
                                             gRPC(s) - {{ $t("Keyword") }}
                                         </option>
@@ -32,6 +38,10 @@
                                         </option>
                                         <option value="docker">
                                             {{ $t("Docker Container") }}
+                                        </option>
+
+                                        <option value="real-browser">
+                                            HTTP(s) - Browser Engine (Chrome/Chromium) (Beta)
                                         </option>
                                     </optgroup>
 
@@ -51,6 +61,9 @@
                                         <option value="mqtt">
                                             MQTT
                                         </option>
+                                        <option value="kafka-producer">
+                                            Kafka Producer
+                                        </option>
                                         <option value="sqlserver">
                                             Microsoft SQL Server
                                         </option>
@@ -69,18 +82,15 @@
                                         <option value="redis">
                                             Redis
                                         </option>
-                                    </optgroup>
-
-                                    <!--
-                                    Hidden for now: Reason refer to Setting.vue
-                                    <optgroup :label="$t('Custom Monitor Type')">
-                                        <option value="browser">
-                                            (Beta) HTTP(s) - Browser Engine (Chrome/Firefox)
+                                        <option value="tailscale-ping">
+                                            Tailscale Ping
                                         </option>
                                     </optgroup>
                                 </select>
-                                -->
-                                </select>
+                            </div>
+
+                            <div v-if="monitor.type === 'tailscale-ping'" class="alert alert-warning" role="alert">
+                                {{ $t("tailscalePingWarning") }}
                             </div>
 
                             <!-- Friendly Name -->
@@ -89,8 +99,18 @@
                                 <input id="name" v-model="monitor.name" type="text" class="form-control" required>
                             </div>
 
+                            <!-- Parent Monitor -->
+                            <div class="my-3">
+                                <label for="parent" class="form-label">{{ $t("Monitor Group") }}</label>
+                                <select v-model="monitor.parent" class="form-select" :disabled="sortedMonitorList.length === 0">
+                                    <option v-if="sortedMonitorList.length === 0" :value="null" selected>{{ $t("noGroupMonitorMsg") }}</option>
+                                    <option v-else :value="null" selected>{{ $t("None") }}</option>
+                                    <option v-for="parentMonitor in sortedMonitorList" :key="parentMonitor.id" :value="parentMonitor.id">{{ parentMonitor.pathName }}</option>
+                                </select>
+                            </div>
+
                             <!-- URL -->
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'browser' " class="my-3">
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'real-browser' " class="my-3">
                                 <label for="url" class="form-label">{{ $t("URL") }}</label>
                                 <input id="url" v-model="monitor.url" type="url" class="form-control" pattern="https?://.+" required>
                             </div>
@@ -98,7 +118,7 @@
                             <!-- gRPC URL -->
                             <div v-if="monitor.type === 'grpc-keyword' " class="my-3">
                                 <label for="grpc-url" class="form-label">{{ $t("URL") }}</label>
-                                <input id="grpc-url" v-model="monitor.grpcUrl" type="url" class="form-control" pattern="[^\:]+:[0-9]{5}" required>
+                                <input id="grpc-url" v-model="monitor.grpcUrl" type="text" class="form-control" required>
                             </div>
 
                             <!-- Push URL -->
@@ -120,6 +140,31 @@
                                 </div>
                             </div>
 
+                            <!-- Invert keyword -->
+                            <div v-if="monitor.type === 'keyword' || monitor.type === 'grpc-keyword'" class="my-3 form-check">
+                                <input id="invert-keyword" v-model="monitor.invertKeyword" class="form-check-input" type="checkbox">
+                                <label class="form-check-label" for="invert-keyword">
+                                    {{ $t("Invert Keyword") }}
+                                </label>
+                                <div class="form-text">
+                                    {{ $t("invertKeywordDescription") }}
+                                </div>
+                            </div>
+
+                            <!-- Json Query -->
+                            <div v-if="monitor.type === 'json-query'" class="my-3">
+                                <label for="jsonPath" class="form-label">{{ $t("Json Query") }}</label>
+                                <input id="jsonPath" v-model="monitor.jsonPath" type="text" class="form-control" required>
+
+                                <!-- eslint-disable-next-line vue/no-v-html -->
+                                <div class="form-text" v-html="$t('jsonQueryDescription')">
+                                </div>
+                                <br>
+
+                                <label for="expectedValue" class="form-label">{{ $t("Expected Value") }}</label>
+                                <input id="expectedValue" v-model="monitor.expectedValue" type="text" class="form-control" required>
+                            </div>
+
                             <!-- Game -->
                             <!-- GameDig only -->
                             <div v-if="monitor.type === 'gamedig'" class="my-3">
@@ -131,9 +176,60 @@
                                 </select>
                             </div>
 
+                            <template v-if="monitor.type === 'kafka-producer'">
+                                <!-- Kafka Brokers List -->
+                                <div class="my-3">
+                                    <label for="kafkaProducerBrokers" class="form-label">{{ $t("Kafka Brokers") }}</label>
+                                    <VueMultiselect
+                                        id="kafkaProducerBrokers"
+                                        v-model="monitor.kafkaProducerBrokers"
+                                        :multiple="true"
+                                        :options="[]"
+                                        :placeholder="$t('Enter the list of brokers')"
+                                        :tag-placeholder="$t('Press Enter to add broker')"
+                                        :max-height="500"
+                                        :taggable="true"
+                                        :show-no-options="false"
+                                        :close-on-select="false"
+                                        :clear-on-select="false"
+                                        :preserve-search="false"
+                                        :preselect-first="false"
+                                        @tag="addKafkaProducerBroker"
+                                    ></VueMultiselect>
+                                </div>
+
+                                <!-- Kafka Topic Name -->
+                                <div class="my-3">
+                                    <label for="kafkaProducerTopic" class="form-label">{{ $t("Kafka Topic Name") }}</label>
+                                    <input id="kafkaProducerTopic" v-model="monitor.kafkaProducerTopic" type="text" class="form-control" required>
+                                </div>
+
+                                <!-- Kafka Producer Message -->
+                                <div class="my-3">
+                                    <label for="kafkaProducerMessage" class="form-label">{{ $t("Kafka Producer Message") }}</label>
+                                    <input id="kafkaProducerMessage" v-model="monitor.kafkaProducerMessage" type="text" class="form-control" required>
+                                </div>
+
+                                <!-- Kafka SSL -->
+                                <div class="my-3 form-check">
+                                    <input id="kafkaProducerSsl" v-model="monitor.kafkaProducerSsl" class="form-check-input" type="checkbox">
+                                    <label class="form-check-label" for="kafkaProducerSsl">
+                                        {{ $t("Enable Kafka SSL") }}
+                                    </label>
+                                </div>
+
+                                <!-- Kafka SSL -->
+                                <div class="my-3 form-check">
+                                    <input id="kafkaProducerAllowAutoTopicCreation" v-model="monitor.kafkaProducerAllowAutoTopicCreation" class="form-check-input" type="checkbox">
+                                    <label class="form-check-label" for="kafkaProducerAllowAutoTopicCreation">
+                                        {{ $t("Enable Kafka Producer Auto Topic Creation") }}
+                                    </label>
+                                </div>
+                            </template>
+
                             <!-- Hostname -->
-                            <!-- TCP Port / Ping / DNS / Steam / MQTT / Radius only -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'gamedig' ||monitor.type === 'mqtt' || monitor.type === 'radius'" class="my-3">
+                            <!-- TCP Port / Ping / DNS / Steam / MQTT / Radius / Tailscale Ping only -->
+                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'gamedig' ||monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'tailscale-ping'" class="my-3">
                                 <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>
                                 <input id="hostname" v-model="monitor.hostname" type="text" class="form-control" :pattern="`${monitor.type === 'mqtt' ? mqttIpOrHostnameRegexPattern : ipOrHostnameRegexPattern}`" required>
                             </div>
@@ -277,42 +373,18 @@
                                 </div>
                             </template>
 
+                            <!-- SQL Server / PostgreSQL / MySQL / Redis / MongoDB -->
+                            <template v-if="monitor.type === 'sqlserver' || monitor.type === 'postgres' || monitor.type === 'mysql' || monitor.type === 'redis' || monitor.type === 'mongodb'">
+                                <div class="my-3">
+                                    <label for="connectionString" class="form-label">{{ $t("Connection String") }}</label>
+                                    <input id="connectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" required>
+                                </div>
+                            </template>
                             <!-- SQL Server / PostgreSQL / MySQL -->
                             <template v-if="monitor.type === 'sqlserver' || monitor.type === 'postgres' || monitor.type === 'mysql'">
                                 <div class="my-3">
-                                    <label for="sqlConnectionString" class="form-label">{{ $t("Connection String") }}</label>
-
-                                    <template v-if="monitor.type === 'sqlserver'">
-                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="Server=<hostname>,<port>;Database=<your database>;User Id=<your user id>;Password=<your password>;Encrypt=<true/false>;TrustServerCertificate=<Yes/No>;Connection Timeout=<int>">
-                                    </template>
-                                    <template v-if="monitor.type === 'postgres'">
-                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="postgres://username:password@host:port/database">
-                                    </template>
-                                    <template v-if="monitor.type === 'mysql'">
-                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="mysql://username:password@host:port/database">
-                                    </template>
-                                </div>
-                                <div class="my-3">
                                     <label for="sqlQuery" class="form-label">{{ $t("Query") }}</label>
-                                    <textarea id="sqlQuery" v-model="monitor.databaseQuery" class="form-control" placeholder="Example: select getdate()"></textarea>
-                                </div>
-                            </template>
-                            <!-- Redis -->
-                            <template v-if="monitor.type === 'redis'">
-                                <div class="my-3">
-                                    <label for="redisConnectionString" class="form-label">{{ $t("Connection String") }}</label>
-                                    <input id="redisConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="redis://user:password@host:port">
-                                </div>
-                            </template>
-
-                            <!-- MongoDB -->
-                            <template v-if="monitor.type === 'mongodb'">
-                                <div class="my-3">
-                                    <label for="sqlConnectionString" class="form-label">{{ $t("Connection String") }}</label>
-
-                                    <template v-if="monitor.type === 'mongodb'">
-                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" placeholder="mongodb://username:password@host:port/database">
-                                    </template>
+                                    <textarea id="sqlQuery" v-model="monitor.databaseQuery" class="form-control" :placeholder="$t('Example:', [ 'select getdate()' ])" required></textarea>
                                 </div>
                             </template>
 
@@ -349,7 +421,7 @@
 
                             <h2 v-if="monitor.type !== 'push'" class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
 
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' " class="my-3 form-check">
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' " class="my-3 form-check">
                                 <input id="expiry-notification" v-model="monitor.expiryNotification" class="form-check-input" type="checkbox">
                                 <label class="form-check-label" for="expiry-notification">
                                     {{ $t("Certificate Expiry Notification") }}
@@ -358,7 +430,7 @@
                                 </div>
                             </div>
 
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' " class="my-3 form-check">
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' " class="my-3 form-check">
                                 <input id="ignore-tls" v-model="monitor.ignoreTls" class="form-check-input" type="checkbox" value="">
                                 <label class="form-check-label" for="ignore-tls">
                                     {{ $t("ignoreTLSError") }}
@@ -450,7 +522,7 @@
                             </button>
 
                             <!-- Proxies -->
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword'">
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query'">
                                 <h2 class="mt-5 mb-2">{{ $t("Proxy") }}</h2>
                                 <p v-if="$root.proxyList.length === 0">
                                     {{ $t("Not available, please setup.") }}
@@ -477,8 +549,58 @@
                                 </button>
                             </div>
 
+                            <!-- Kafka SASL Options -->
+                            <!-- Kafka Producer only -->
+                            <template v-if="monitor.type === 'kafka-producer'">
+                                <h2 class="mt-5 mb-2">{{ $t("Kafka SASL Options") }}</h2>
+                                <div class="my-3">
+                                    <label class="form-label" for="kafkaProducerSaslMechanism">
+                                        {{ $t("Mechanism") }}
+                                    </label>
+                                    <VueMultiselect
+                                        id="kafkaProducerSaslMechanism"
+                                        v-model="monitor.kafkaProducerSaslOptions.mechanism"
+                                        :options="kafkaSaslMechanismOptions"
+                                        :multiple="false"
+                                        :clear-on-select="false"
+                                        :preserve-search="false"
+                                        :placeholder="$t('Pick a SASL Mechanism...')"
+                                        :preselect-first="false"
+                                        :max-height="500"
+                                        :allow-empty="false"
+                                        :taggable="false"
+                                    ></VueMultiselect>
+                                </div>
+                                <div v-if="monitor.kafkaProducerSaslOptions.mechanism !== 'None'">
+                                    <div v-if="monitor.kafkaProducerSaslOptions.mechanism !== 'aws'" class="my-3">
+                                        <label for="kafkaProducerSaslUsername" class="form-label">{{ $t("Username") }}</label>
+                                        <input id="kafkaProducerSaslUsername" v-model="monitor.kafkaProducerSaslOptions.username" type="text" autocomplete="kafkaProducerSaslUsername" class="form-control">
+                                    </div>
+                                    <div v-if="monitor.kafkaProducerSaslOptions.mechanism !== 'aws'" class="my-3">
+                                        <label for="kafkaProducerSaslPassword" class="form-label">{{ $t("Password") }}</label>
+                                        <input id="kafkaProducerSaslPassword" v-model="monitor.kafkaProducerSaslOptions.password" type="password" autocomplete="kafkaProducerSaslPassword" class="form-control">
+                                    </div>
+                                    <div v-if="monitor.kafkaProducerSaslOptions.mechanism === 'aws'" class="my-3">
+                                        <label for="kafkaProducerSaslAuthorizationIdentity" class="form-label">{{ $t("Authorization Identity") }}</label>
+                                        <input id="kafkaProducerSaslAuthorizationIdentity" v-model="monitor.kafkaProducerSaslOptions.authorizationIdentity" type="text" autocomplete="kafkaProducerSaslAuthorizationIdentity" class="form-control" required>
+                                    </div>
+                                    <div v-if="monitor.kafkaProducerSaslOptions.mechanism === 'aws'" class="my-3">
+                                        <label for="kafkaProducerSaslAccessKeyId" class="form-label">{{ $t("AccessKey Id") }}</label>
+                                        <input id="kafkaProducerSaslAccessKeyId" v-model="monitor.kafkaProducerSaslOptions.accessKeyId" type="text" autocomplete="kafkaProducerSaslAccessKeyId" class="form-control" required>
+                                    </div>
+                                    <div v-if="monitor.kafkaProducerSaslOptions.mechanism === 'aws'" class="my-3">
+                                        <label for="kafkaProducerSaslSecretAccessKey" class="form-label">{{ $t("Secret AccessKey") }}</label>
+                                        <input id="kafkaProducerSaslSecretAccessKey" v-model="monitor.kafkaProducerSaslOptions.secretAccessKey" type="password" autocomplete="kafkaProducerSaslSecretAccessKey" class="form-control" required>
+                                    </div>
+                                    <div v-if="monitor.kafkaProducerSaslOptions.mechanism === 'aws'" class="my-3">
+                                        <label for="kafkaProducerSaslSessionToken" class="form-label">{{ $t("Session Token") }}</label>
+                                        <input id="kafkaProducerSaslSessionToken" v-model="monitor.kafkaProducerSaslOptions.sessionToken" type="password" autocomplete="kafkaProducerSaslSessionToken" class="form-control">
+                                    </div>
+                                </div>
+                            </template>
+
                             <!-- HTTP Options -->
-                            <template v-if="monitor.type === 'http' || monitor.type === 'keyword' ">
+                            <template v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' ">
                                 <h2 class="mt-5 mb-2">{{ $t("HTTP Options") }}</h2>
 
                                 <!-- Method -->
@@ -543,31 +665,84 @@
                                         <option value="basic">
                                             {{ $t("HTTP Basic Auth") }}
                                         </option>
+                                        <option value="oauth2-cc">
+                                            {{ $t("OAuth2: Client Credentials") }}
+                                        </option>
                                         <option value="ntlm">
                                             NTLM
+                                        </option>
+                                        <option value="mtls">
+                                            mTLS
                                         </option>
                                     </select>
                                 </div>
                                 <template v-if="monitor.authMethod && monitor.authMethod !== null ">
-                                    <div class="my-3">
-                                        <label for="basicauth" class="form-label">{{ $t("Username") }}</label>
-                                        <input id="basicauth-user" v-model="monitor.basic_auth_user" type="text" class="form-control" :placeholder="$t('Username')">
-                                    </div>
-
-                                    <div class="my-3">
-                                        <label for="basicauth" class="form-label">{{ $t("Password") }}</label>
-                                        <input id="basicauth-pass" v-model="monitor.basic_auth_pass" type="password" autocomplete="new-password" class="form-control" :placeholder="$t('Password')">
-                                    </div>
-                                    <template v-if="monitor.authMethod === 'ntlm' ">
+                                    <template v-if="monitor.authMethod === 'mtls' ">
                                         <div class="my-3">
-                                            <label for="basicauth" class="form-label">{{ $t("Domain") }}</label>
-                                            <input id="basicauth-domain" v-model="monitor.authDomain" type="text" class="form-control" :placeholder="$t('Domain')">
+                                            <label for="tls-cert" class="form-label">{{ $t("Cert") }}</label>
+                                            <textarea id="tls-cert" v-model="monitor.tlsCert" class="form-control" :placeholder="$t('Cert body')" required></textarea>
+                                        </div>
+                                        <div class="my-3">
+                                            <label for="tls-key" class="form-label">{{ $t("Key") }}</label>
+                                            <textarea id="tls-key" v-model="monitor.tlsKey" class="form-control" :placeholder="$t('Key body')" required></textarea>
+                                        </div>
+                                        <div class="my-3">
+                                            <label for="tls-ca" class="form-label">{{ $t("CA") }}</label>
+                                            <textarea id="tls-ca" v-model="monitor.tlsCa" class="form-control" :placeholder="$t('Server CA')"></textarea>
+                                        </div>
+                                    </template>
+                                    <template v-else-if="monitor.authMethod === 'oauth2-cc' ">
+                                        <div class="my-3">
+                                            <label for="oauth_auth_method" class="form-label">{{ $t("Authentication Method") }}</label>
+                                            <select id="oauth_auth_method" v-model="monitor.oauth_auth_method" class="form-select">
+                                                <option value="client_secret_basic">
+                                                    {{ $t("Authorization Header") }}
+                                                </option>
+                                                <option value="client_secret_post">
+                                                    {{ $t("Form Data Body") }}
+                                                </option>
+                                            </select>
+                                        </div>
+                                        <div class="my-3">
+                                            <label for="oauth_token_url" class="form-label">{{ $t("OAuth Token URL") }}</label>
+                                            <input id="oauth_token_url" v-model="monitor.oauth_token_url" type="text" class="form-control" :placeholder="$t('OAuth Token URL')" required>
+                                        </div>
+                                        <div class="my-3">
+                                            <label for="oauth_client_id" class="form-label">{{ $t("Client ID") }}</label>
+                                            <input id="oauth_client_id" v-model="monitor.oauth_client_id" type="text" class="form-control" :placeholder="$t('Client ID')" required>
+                                        </div>
+                                        <template v-if="monitor.oauth_auth_method === 'client_secret_post' || monitor.oauth_auth_method === 'client_secret_basic'">
+                                            <div class="my-3">
+                                                <label for="oauth_client_secret" class="form-label">{{ $t("Client Secret") }}</label>
+                                                <input id="oauth_client_secret" v-model="monitor.oauth_client_secret" type="password" class="form-control" :placeholder="$t('Client Secret')" required>
+                                            </div>
+                                            <div class="my-3">
+                                                <label for="oauth_scopes" class="form-label">{{ $t("OAuth Scope") }}</label>
+                                                <input id="oauth_scopes" v-model="monitor.oauth_scopes" type="text" class="form-control" :placeholder="$t('Optional: Space separated list of scopes')">
+                                            </div>
+                                        </template>
+                                    </template>
+                                    <template v-else>
+                                        <div class="my-3">
+                                            <label for="basicauth-user" class="form-label">{{ $t("Username") }}</label>
+                                            <input id="basicauth-user" v-model="monitor.basic_auth_user" type="text" class="form-control" :placeholder="$t('Username')">
                                         </div>
 
                                         <div class="my-3">
-                                            <label for="basicauth" class="form-label">{{ $t("Workstation") }}</label>
-                                            <input id="basicauth-workstation" v-model="monitor.authWorkstation" type="text" class="form-control" :placeholder="$t('Workstation')">
+                                            <label for="basicauth-pass" class="form-label">{{ $t("Password") }}</label>
+                                            <input id="basicauth-pass" v-model="monitor.basic_auth_pass" type="password" autocomplete="new-password" class="form-control" :placeholder="$t('Password')">
                                         </div>
+                                        <template v-if="monitor.authMethod === 'ntlm' ">
+                                            <div class="my-3">
+                                                <label for="ntlm-domain" class="form-label">{{ $t("Domain") }}</label>
+                                                <input id="ntlm-domain" v-model="monitor.authDomain" type="text" class="form-control" :placeholder="$t('Domain')">
+                                            </div>
+
+                                            <div class="my-3">
+                                                <label for="ntlm-workstation" class="form-label">{{ $t("Workstation") }}</label>
+                                                <input id="ntlm-workstation" v-model="monitor.authWorkstation" type="text" class="form-control" :placeholder="$t('Workstation')">
+                                            </div>
+                                        </template>
                                     </template>
                                 </template>
                             </template>
@@ -670,9 +845,17 @@ export default {
             },
             acceptedStatusCodeOptions: [],
             dnsresolvetypeOptions: [],
+            kafkaSaslMechanismOptions: [],
             ipOrHostnameRegexPattern: hostNameRegexPattern(),
             mqttIpOrHostnameRegexPattern: hostNameRegexPattern(true),
             gameList: null,
+            connectionStringTemplates: {
+                "sqlserver": "Server=<hostname>,<port>;Database=<your database>;User Id=<your user id>;Password=<your password>;Encrypt=<true/false>;TrustServerCertificate=<Yes/No>;Connection Timeout=<int>",
+                "postgres": "postgres://username:password@host:port/database",
+                "mysql": "mysql://username:password@host:port/database",
+                "redis": "redis://user:password@host:port",
+                "mongodb": "mongodb://username:password@host:port/database",
+            }
         };
     },
 
@@ -781,6 +964,47 @@ message HealthCheckResponse {
             return null;
         },
 
+        // Filter result by active state, weight and alphabetical
+        // Only return groups which arent't itself and one of its decendants
+        sortedMonitorList() {
+            let result = Object.values(this.$root.monitorList);
+
+            // Only groups, not itself, not a decendant
+            result = result.filter(
+                monitor => monitor.type === "group" &&
+				monitor.id !== this.monitor.id &&
+				!this.monitor.childrenIDs?.includes(monitor.id)
+            );
+
+            // Filter result by active state, weight and alphabetical
+            result.sort((m1, m2) => {
+
+                if (m1.active !== m2.active) {
+                    if (m1.active === 0) {
+                        return 1;
+                    }
+
+                    if (m2.active === 0) {
+                        return -1;
+                    }
+                }
+
+                if (m1.weight !== m2.weight) {
+                    if (m1.weight > m2.weight) {
+                        return -1;
+                    }
+
+                    if (m1.weight < m2.weight) {
+                        return 1;
+                    }
+                }
+
+                return m1.pathName.localeCompare(m2.pathName);
+            });
+
+            return result;
+        },
+
     },
     watch: {
         "$root.proxyList"() {
@@ -834,6 +1058,24 @@ message HealthCheckResponse {
                     }
                 });
             }
+
+            // Set default database connection string if empty or it is a template from another database monitor type
+            for (let monitorType in this.connectionStringTemplates) {
+                if (this.monitor.type === monitorType) {
+                    let isTemplate = false;
+                    for (let key in this.connectionStringTemplates) {
+                        if (this.monitor.databaseConnectionString === this.connectionStringTemplates[key]) {
+                            isTemplate = true;
+                            break;
+                        }
+                    }
+                    if (!this.monitor.databaseConnectionString || isTemplate) {
+                        this.monitor.databaseConnectionString = this.connectionStringTemplates[monitorType];
+                    }
+                    break;
+                }
+            }
+
         },
 
         currentGameObject(newGameObject, previousGameObject) {
@@ -841,8 +1083,7 @@ message HealthCheckResponse {
                 this.monitor.port = newGameObject.options.port;
             }
             this.monitor.game = newGameObject.keys[0];
-        }
-
+        },
     },
     mounted() {
         this.init();
@@ -868,12 +1109,21 @@ message HealthCheckResponse {
             "TXT",
         ];
 
+        let kafkaSaslMechanismOptions = [
+            "None",
+            "plain",
+            "scram-sha-256",
+            "scram-sha-512",
+            "aws",
+        ];
+
         for (let i = 100; i <= 999; i++) {
             acceptedStatusCodeOptions.push(i.toString());
         }
 
         this.acceptedStatusCodeOptions = acceptedStatusCodeOptions;
         this.dnsresolvetypeOptions = dnsresolvetypeOptions;
+        this.kafkaSaslMechanismOptions = kafkaSaslMechanismOptions;
     },
     methods: {
         /** Initialize the edit monitor form */
@@ -883,12 +1133,13 @@ message HealthCheckResponse {
                 this.monitor = {
                     type: "http",
                     name: "",
+                    parent: null,
                     url: "https://",
                     method: "GET",
                     interval: 60,
                     retryInterval: this.interval,
                     resendInterval: 0,
-                    maxretries: 0,
+                    maxretries: 1,
                     notificationIDList: {},
                     ignoreTls: false,
                     upsideDown: false,
@@ -906,7 +1157,12 @@ message HealthCheckResponse {
                     mqttTopic: "",
                     mqttSuccessMessage: "",
                     authMethod: null,
-                    httpBodyEncoding: "json"
+                    oauth_auth_method: "client_secret_basic",
+                    httpBodyEncoding: "json",
+                    kafkaProducerBrokers: [],
+                    kafkaProducerSaslOptions: {
+                        mechanism: "None",
+                    },
                 };
 
                 if (this.$root.proxyList && !this.monitor.proxyId) {
@@ -925,18 +1181,41 @@ message HealthCheckResponse {
             } else if (this.isEdit || this.isClone) {
                 this.$root.getSocket().emit("getMonitor", this.$route.params.id, (res) => {
                     if (res.ok) {
+
+                        if (this.isClone) {
+                            // Reset push token for cloned monitors
+                            if (res.monitor.type === "push") {
+                                res.monitor.pushToken = undefined;
+                            }
+                        }
+
                         this.monitor = res.monitor;
 
                         if (this.isClone) {
                             /*
-                         * Cloning a monitor will include properties that can not be posted to backend
-                         * as they are not valid columns in the SQLite table.
-                         */
+                            * Cloning a monitor will include properties that can not be posted to backend
+                            * as they are not valid columns in the SQLite table.
+                            */
                             this.monitor.id = undefined; // Remove id when cloning as we want a new id
                             this.monitor.includeSensitiveData = undefined;
                             this.monitor.maintenance = undefined;
+                            // group monitor fields
+                            this.monitor.childrenIDs = undefined;
+                            this.monitor.forceInactive = undefined;
+                            this.monitor.pathName = undefined;
+                            this.monitor.screenshot = undefined;
+
                             this.monitor.name = this.$t("cloneOf", [ this.monitor.name ]);
-                            this.monitor.tags = undefined; // FIXME: Cloning tags does not work yet
+                            this.$refs.tagsManager.newTags = this.monitor.tags.map((monitorTag) => {
+                                return {
+                                    id: monitorTag.tag_id,
+                                    name: monitorTag.name,
+                                    color: monitorTag.color,
+                                    value: monitorTag.value,
+                                    new: true,
+                                };
+                            });
+                            this.monitor.tags = undefined;
                         }
 
                         // Handling for monitors that are created before 1.7.0
@@ -949,6 +1228,10 @@ message HealthCheckResponse {
                 });
             }
 
+        },
+
+        addKafkaProducerBroker(newBroker) {
+            this.monitor.kafkaProducerBrokers.push(newBroker);
         },
 
         /**
@@ -993,7 +1276,7 @@ message HealthCheckResponse {
                 this.monitor.body = JSON.stringify(JSON.parse(this.monitor.body), null, 4);
             }
 
-            if (this.monitor.type && this.monitor.type !== "http" && this.monitor.type !== "keyword") {
+            if (this.monitor.type && this.monitor.type !== "http" && (this.monitor.type !== "keyword" || this.monitor.type !== "json-query")) {
                 this.monitor.httpBodyEncoding = null;
             }
 
@@ -1066,31 +1349,7 @@ message HealthCheckResponse {
 <style lang="scss" scoped>
     @import "../assets/vars.scss";
 
-    $padding: 20px;
-
-    .shadow-box {
-        padding-top: $padding;
-        padding-bottom: 0;
-        padding-right: $padding;
-        padding-left: $padding;
-    }
-
     textarea {
         min-height: 200px;
-    }
-
-    .fixed-bottom-bar {
-        position: sticky;
-        bottom: 0;
-        margin-left: -$padding;
-        margin-right: -$padding;
-        z-index: 100;
-        background-color: rgba(white, 0.2);
-        backdrop-filter: blur(2px);
-        border-radius: 0 0 10px 10px;
-
-        .dark & {
-            background-color: rgba($dark-header-bg, 0.9);
-        }
     }
 </style>

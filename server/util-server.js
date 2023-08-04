@@ -21,6 +21,8 @@ const grpc = require("@grpc/grpc-js");
 const protojs = require("protobufjs");
 const radiusClient = require("node-radius-client");
 const redis = require("redis");
+const oidc = require("openid-client");
+
 const {
     dictionaries: {
         rfc2865: { file, attributes },
@@ -28,8 +30,11 @@ const {
 } = require("node-radius-utils");
 const dayjs = require("dayjs");
 
-const isWindows = process.platform === /^win/.test(process.platform);
+// SASLOptions used in JSDoc
+// eslint-disable-next-line no-unused-vars
+const { Kafka, SASLOptions } = require("kafkajs");
 
+const isWindows = process.platform === /^win/.test(process.platform);
 /**
  * Init or reset JWT secret
  * @returns {Promise<Bean>}
@@ -47,6 +52,43 @@ exports.initJWTSecret = async () => {
     jwtSecretBean.value = passwordHash.generate(genSecret());
     await R.store(jwtSecretBean);
     return jwtSecretBean;
+};
+
+/**
+ * Decodes a jwt and returns the payload portion without verifying the jqt.
+ * @param {string} jwt The input jwt as a string
+ * @returns {Object} Decoded jwt payload object
+ */
+exports.decodeJwt = (jwt) => {
+    return JSON.parse(Buffer.from(jwt.split(".")[1], "base64").toString());
+};
+
+/**
+ * Gets a Access Token form a oidc/oauth2 provider
+ * @param {string} tokenEndpoint The token URI form the auth service provider
+ * @param {string} clientId The oidc/oauth application client id
+ * @param {string} clientSecret The oidc/oauth application client secret
+ * @param {string} scope The scope the for which the token should be issued for
+ * @param {string} authMethod The method on how to sent the credentials. Default client_secret_basic
+ * @returns {Promise<oidc.TokenSet>} TokenSet promise if the token request was successful
+ */
+exports.getOidcTokenClientCredentials = async (tokenEndpoint, clientId, clientSecret, scope, authMethod = "client_secret_basic") => {
+    const oauthProvider = new oidc.Issuer({ token_endpoint: tokenEndpoint });
+    let client = new oauthProvider.Client({
+        client_id: clientId,
+        client_secret: clientSecret,
+        token_endpoint_auth_method: authMethod
+    });
+
+    // Increase default timeout and clock tolerance
+    client[oidc.custom.http_options] = () => ({ timeout: 10000 });
+    client[oidc.custom.clock_tolerance] = 5;
+
+    let grantParams = { grant_type: "client_credentials" };
+    if (scope) {
+        grantParams.scope = scope;
+    }
+    return await client.grant(grantParams);
 };
 
 /**
@@ -87,7 +129,10 @@ exports.ping = async (hostname, size = 56) => {
         return await exports.pingAsync(hostname, false, size);
     } catch (e) {
         // If the host cannot be resolved, try again with ipv6
-        if (e.message.includes("service not known")) {
+        console.debug("ping", "IPv6 error message: " + e.message);
+
+        // As node-ping does not report a specific error for this, try again if it is an empty message with ipv6 no matter what.
+        if (!e.message) {
             return await exports.pingAsync(hostname, true, size);
         } else {
             throw e;
@@ -190,6 +235,94 @@ exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
             }
         });
 
+    });
+};
+
+/**
+ * Monitor Kafka using Producer
+ * @param {string} topic Topic name to produce into
+ * @param {string} message Message to produce
+ * @param {Object} [options={interval = 20, allowAutoTopicCreation = false, ssl = false, clientId = "Uptime-Kuma"}]
+ * Kafka client options. Contains ssl, clientId, allowAutoTopicCreation and
+ * interval (interval defaults to 20, allowAutoTopicCreation defaults to false, clientId defaults to "Uptime-Kuma"
+ * and ssl defaults to false)
+ * @param {string[]} brokers List of kafka brokers to connect, host and port joined by ':'
+ * @param {SASLOptions} [saslOptions={}] Options for kafka client Authentication (SASL) (defaults to
+ * {})
+ * @returns {Promise<string>}
+ */
+exports.kafkaProducerAsync = function (brokers, topic, message, options = {}, saslOptions = {}) {
+    return new Promise((resolve, reject) => {
+        const { interval = 20, allowAutoTopicCreation = false, ssl = false, clientId = "Uptime-Kuma" } = options;
+
+        let connectedToKafka = false;
+
+        const timeoutID = setTimeout(() => {
+            log.debug("kafkaProducer", "KafkaProducer timeout triggered");
+            connectedToKafka = true;
+            reject(new Error("Timeout"));
+        }, interval * 1000 * 0.8);
+
+        if (saslOptions.mechanism === "None") {
+            saslOptions = undefined;
+        }
+
+        let client = new Kafka({
+            brokers: brokers,
+            clientId: clientId,
+            sasl: saslOptions,
+            retry: {
+                retries: 0,
+            },
+            ssl: ssl,
+        });
+
+        let producer = client.producer({
+            allowAutoTopicCreation: allowAutoTopicCreation,
+            retry: {
+                retries: 0,
+            }
+        });
+
+        producer.connect().then(
+            () => {
+                try {
+                    producer.send({
+                        topic: topic,
+                        messages: [{
+                            value: message,
+                        }],
+                    });
+                    connectedToKafka = true;
+                    clearTimeout(timeoutID);
+                    resolve("Message sent successfully");
+                } catch (e) {
+                    connectedToKafka = true;
+                    producer.disconnect();
+                    clearTimeout(timeoutID);
+                    reject(new Error("Error sending message: " + e.message));
+                }
+            }
+        ).catch(
+            (e) => {
+                connectedToKafka = true;
+                producer.disconnect();
+                clearTimeout(timeoutID);
+                reject(new Error("Error in producer connection: " + e.message));
+            }
+        );
+
+        producer.on("producer.network.request_timeout", (_) => {
+            clearTimeout(timeoutID);
+            reject(new Error("producer.network.request_timeout"));
+        });
+
+        producer.on("producer.disconnect", (_) => {
+            if (!connectedToKafka) {
+                clearTimeout(timeoutID);
+                reject(new Error("producer.disconnect"));
+            }
+        });
     });
 };
 
@@ -319,21 +452,33 @@ exports.postgresQuery = function (connectionString, query) {
  * Run a query on MySQL/MariaDB
  * @param {string} connectionString The database connection string
  * @param {string} query The query to validate the database with
- * @returns {Promise<(string[]|Object[]|Object)>}
+ * @returns {Promise<(string)>}
  */
 exports.mysqlQuery = function (connectionString, query) {
     return new Promise((resolve, reject) => {
         const connection = mysql.createConnection(connectionString);
-        connection.promise().query(query)
-            .then(res => {
-                resolve(res);
-            })
-            .catch(err => {
+
+        connection.on("error", (err) => {
+            reject(err);
+        });
+
+        connection.query(query, (err, res) => {
+            if (err) {
                 reject(err);
-            })
-            .finally(() => {
+            } else {
+                if (Array.isArray(res)) {
+                    resolve("Rows: " + res.length);
+                } else {
+                    resolve("No Error, but the result is not an array. Type: " + typeof res);
+                }
+            }
+
+            try {
+                connection.end();
+            } catch (_) {
                 connection.destroy();
-            });
+            }
+        });
     });
 };
 
@@ -363,6 +508,7 @@ exports.mongodbPing = async function (connectionString) {
  * @param {string} callingStationId ID of calling station
  * @param {string} secret Secret to use
  * @param {number} [port=1812] Port to contact radius server on
+ * @param {number} [timeout=2500] Timeout for connection to use
  * @returns {Promise<any>}
  */
 exports.radius = function (
@@ -373,10 +519,13 @@ exports.radius = function (
     callingStationId,
     secret,
     port = 1812,
+    timeout = 2500,
 ) {
     const client = new radiusClient({
         host: hostname,
         hostPort: port,
+        timeout: timeout,
+        retries: 1,
         dictionaries: [ file ],
     });
 
@@ -388,6 +537,12 @@ exports.radius = function (
             [ attributes.CALLING_STATION_ID, callingStationId ],
             [ attributes.CALLED_STATION_ID, calledStationId ],
         ],
+    }).catch((error) => {
+        if (error.response?.code) {
+            throw Error(error.response.code);
+        } else {
+            throw Error(error.message);
+        }
     });
 };
 
@@ -398,19 +553,28 @@ exports.radius = function (
 exports.redisPingAsync = function (dsn) {
     return new Promise((resolve, reject) => {
         const client = redis.createClient({
-            url: dsn,
+            url: dsn
         });
         client.on("error", (err) => {
+            if (client.isOpen) {
+                client.disconnect();
+            }
             reject(err);
         });
         client.connect().then(() => {
+            if (!client.isOpen) {
+                client.emit("error", new Error("connection isn't open"));
+            }
             client.ping().then((res, err) => {
+                if (client.isOpen) {
+                    client.disconnect();
+                }
                 if (err) {
                     reject(err);
                 } else {
                     resolve(res);
                 }
-            });
+            }).catch(error => reject(error));
         });
     });
 };
@@ -506,12 +670,16 @@ const parseCertificateInfo = function (info) {
 
         // Move up the chain until loop is encountered
         if (link.issuerCertificate == null) {
+            link.certType = (i === 0) ? "self-signed" : "root CA";
             break;
         } else if (link.issuerCertificate.fingerprint in existingList) {
+            // a root CA certificate is typically "signed by itself"  (=> "self signed certificate") and thus the "issuerCertificate" is a reference to itself.
             log.debug("cert", `[Last] ${link.issuerCertificate.fingerprint}`);
+            link.certType = (i === 0) ? "self-signed" : "root CA";
             link.issuerCertificate = null;
             break;
         } else {
+            link.certType = (i === 0) ? "server" : "intermediate CA";
             link = link.issuerCertificate;
         }
 

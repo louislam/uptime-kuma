@@ -76,17 +76,30 @@
                                     </button>
                                 </router-link>
                             </div>
-                            <div v-if="allMonitorList.length > 0" class="pt-3 px-3">
+                            <div v-if="allMonitorList.length > 0" class="pt-3">
                                 <label class="form-label">{{ $t("Add a monitor") }}:</label>
-                                <select v-model="selectedAddMonitor" class="form-control">
-                                    <option v-for="monitor in allMonitorList" :key="monitor.id" :value="monitor">{{ monitor.name }}</option>
-                                </select>
+                                <VueMultiselect
+                                    v-model="selectedAddMonitor"
+                                    :options="allMonitorList"
+                                    :multiple="false"
+                                    :searchable="true"
+                                    :placeholder="$t('Add a monitor')"
+                                    label="name"
+                                    trackBy="name"
+                                    class="mt-1"
+                                >
+                                    <template #option="{ option }">
+                                        <div class="d-inline-flex">
+                                            <span>{{ option.name }} <Tag v-for="monitorTag in option.tags" :key="monitorTag" :item="monitorTag" :size="'sm'" /></span>
+                                        </div>
+                                    </template>
+                                </VueMultiselect>
                             </div>
                         </div>
                     </div>
 
                     <div class="modal-footer">
-                        <button v-if="tag" type="button" class="btn btn-danger" :disabled="processing" @click="deleteConfirm">
+                        <button v-if="tag && tag.id !== null" type="button" class="btn btn-danger" :disabled="processing" @click="deleteConfirm">
                             {{ $t("Delete") }}
                         </button>
                         <button type="submit" class="btn btn-primary" :disabled="processing">
@@ -107,6 +120,7 @@
 <script>
 import { Modal } from "bootstrap";
 import Confirm from "./Confirm.vue";
+import Tag from "./Tag.vue";
 import VueMultiselect from "vue-multiselect";
 import { colorOptions } from "../util-frontend";
 import { useToast } from "vue-toastification";
@@ -117,6 +131,7 @@ export default {
     components: {
         VueMultiselect,
         Confirm,
+        Tag,
     },
     props: {
         updated: {

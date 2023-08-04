@@ -6,6 +6,7 @@ const AliyunSms = require("./notification-providers/aliyun-sms");
 const Apprise = require("./notification-providers/apprise");
 const Bark = require("./notification-providers/bark");
 const ClickSendSMS = require("./notification-providers/clicksendsms");
+const SMSC = require("./notification-providers/smsc");
 const DingDing = require("./notification-providers/dingding");
 const Discord = require("./notification-providers/discord");
 const Feishu = require("./notification-providers/feishu");
@@ -20,10 +21,14 @@ const LineNotify = require("./notification-providers/linenotify");
 const LunaSea = require("./notification-providers/lunasea");
 const Matrix = require("./notification-providers/matrix");
 const Mattermost = require("./notification-providers/mattermost");
+const Nostr = require("./notification-providers/nostr");
 const Ntfy = require("./notification-providers/ntfy");
 const Octopush = require("./notification-providers/octopush");
 const OneBot = require("./notification-providers/onebot");
+const Opsgenie = require("./notification-providers/opsgenie");
 const PagerDuty = require("./notification-providers/pagerduty");
+const FlashDuty = require("./notification-providers/flashduty");
+const PagerTree = require("./notification-providers/pagertree");
 const PromoSMS = require("./notification-providers/promosms");
 const Pushbullet = require("./notification-providers/pushbullet");
 const PushDeer = require("./notification-providers/pushdeer");
@@ -40,6 +45,7 @@ const Stackfield = require("./notification-providers/stackfield");
 const Teams = require("./notification-providers/teams");
 const TechulusPush = require("./notification-providers/techulus-push");
 const Telegram = require("./notification-providers/telegram");
+const Twilio = require("./notification-providers/twilio");
 const Splunk = require("./notification-providers/splunk");
 const Webhook = require("./notification-providers/webhook");
 const WeCom = require("./notification-providers/wecom");
@@ -65,6 +71,7 @@ class Notification {
             new Apprise(),
             new Bark(),
             new ClickSendSMS(),
+            new SMSC(),
             new DingDing(),
             new Discord(),
             new Feishu(),
@@ -79,10 +86,14 @@ class Notification {
             new LunaSea(),
             new Matrix(),
             new Mattermost(),
+            new Nostr(),
             new Ntfy(),
             new Octopush(),
             new OneBot(),
+            new Opsgenie(),
             new PagerDuty(),
+            new FlashDuty(),
+            new PagerTree(),
             new PromoSMS(),
             new Pushbullet(),
             new PushDeer(),
@@ -101,13 +112,13 @@ class Notification {
             new Teams(),
             new TechulusPush(),
             new Telegram(),
+            new Twilio(),
             new Splunk(),
             new Webhook(),
             new WeCom(),
             new GoAlert(),
             new ZohoCliq()
         ];
-
         for (let item of list) {
             if (! item.name) {
                 throw new Error("Notification provider without name");
