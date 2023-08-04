@@ -720,6 +720,9 @@ class Monitor extends BeanModel {
                         options.socketPath = dockerHost._dockerDaemon;
                     } else if (dockerHost._dockerType === "tcp") {
                         options.baseURL = DockerHost.patchDockerURL(dockerHost._dockerDaemon);
+                        options.httpsAgent = CacheableDnsHttpAgent.getHttpsAgent(
+                            DockerHost.getHttpsAgentOptions(dockerHost._dockerType, options.baseURL)
+                        );
                     }
 
                     log.debug("monitor", `[${this.name}] Axios Request`);
