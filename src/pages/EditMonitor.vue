@@ -442,8 +442,13 @@
                             <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' " class="my-3 form-check">
                                 <input id="cache-bust" v-model="monitor.cacheBust" class="form-check-input" type="checkbox" value="">
                                 <label class="form-check-label" for="cache-bust">
-                                    {{ $t("cacheBusterParam") }}
+                                    <i18n-t tag="label" keypath="cacheBusterParam" class="form-check-label" for="cache-bust">
+                                        <code>uptime_kuma_cachebuster</code>
+                                    </i18n-t>
                                 </label>
+                                <div class="form-text">
+                                    {{ $t("cacheBusterParamDescription") }}
+                                </div>
                             </div>
 
                             <div class="my-3 form-check">
