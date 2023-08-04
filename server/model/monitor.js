@@ -143,6 +143,7 @@ class Monitor extends BeanModel {
             kafkaProducerAllowAutoTopicCreation: this.kafkaProducerAllowAutoTopicCreation === "1" && true || false,
             kafkaProducerMessage: this.kafkaProducerMessage,
             screenshot,
+            cacheBust: this.getCacheBust(),
         };
 
         if (includeSensitiveData) {
@@ -269,6 +270,14 @@ class Monitor extends BeanModel {
      */
     getGrpcEnableTls() {
         return Boolean(this.grpcEnableTls);
+    }
+
+    /**
+     * Parse to boolean
+     * @returns {boolean}
+     */
+    getCacheBust() {
+        return Boolean(this.cacheBust);
     }
 
     /**
@@ -442,6 +451,18 @@ class Monitor extends BeanModel {
 
                     if (bodyValue) {
                         options.data = bodyValue;
+                    }
+
+                    if (this.cacheBust) {
+                        let cacheBust = "";
+                        const characters = "abcdefghijklmnopqrstuvwxyz0123456789";
+                        const charactersLength = characters.length;
+                        for (let i = 0; i < 6; i++) {
+                            cacheBust += characters.charAt(Math.floor(Math.random() * charactersLength));
+                        }
+                        options.params = {
+                            uptime_kuma_cachebuster: cacheBust,
+                        };
                     }
 
                     if (this.proxy_id) {

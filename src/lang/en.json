@@ -799,5 +799,6 @@
     "nostrRecipients": "Recipients Public Keys (npub)",
     "nostrRecipientsHelp": "npub format, one per line",
     "showCertificateExpiry": "Show Certificate Expiry",
-    "noOrBadCertificate": "No/Bad Certificate"
+    "noOrBadCertificate": "No/Bad Certificate",
+    "cacheBusterParam": "Add Cache Buster Param"
 }

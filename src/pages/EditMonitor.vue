@@ -437,6 +437,13 @@
                                 </label>
                             </div>
 
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' " class="my-3 form-check">
+                                <input id="cache-bust" v-model="monitor.cacheBust" class="form-check-input" type="checkbox" value="">
+                                <label class="form-check-label" for="cache-bust">
+                                    {{ $t("cacheBusterParam") }}
+                                </label>
+                            </div>
+
                             <div class="my-3 form-check">
                                 <input id="upside-down" v-model="monitor.upsideDown" class="form-check-input" type="checkbox">
                                 <label class="form-check-label" for="upside-down">
@@ -1142,6 +1149,7 @@ message HealthCheckResponse {
                     maxretries: 1,
                     notificationIDList: {},
                     ignoreTls: false,
+                    cacheBust: false,
                     upsideDown: false,
                     packetSize: 56,
                     expiryNotification: false,
