@@ -800,6 +800,6 @@
     "nostrRecipientsHelp": "npub format, one per line",
     "showCertificateExpiry": "Show Certificate Expiry",
     "noOrBadCertificate": "No/Bad Certificate",
-    "cacheBusterParam": "Add {0} parameter",
-    "cacheBusterParamDescription": "Dynamically generated parameter to skip caches."
+    "cacheBusterParam": "Add the {0} parameter",
+    "cacheBusterParamDescription": "Randomly generated parameter to skip caches."
 }
