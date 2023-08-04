@@ -102,11 +102,13 @@
                             <!-- Parent Monitor -->
                             <div class="my-3">
                                 <label for="parent" class="form-label">{{ $t("Monitor Group") }}</label>
-                                <select v-model="monitor.parent" class="form-select" :disabled="sortedMonitorList.length === 0">
-                                    <option v-if="sortedMonitorList.length === 0" :value="null" selected>{{ $t("noGroupMonitorMsg") }}</option>
-                                    <option v-else :value="null" selected>{{ $t("None") }}</option>
-                                    <option v-for="parentMonitor in sortedMonitorList" :key="parentMonitor.id" :value="parentMonitor.id">{{ parentMonitor.pathName }}</option>
-                                </select>
+                                <ActionSelect
+                                    v-model="monitor.parent"
+                                    :options="parentMonitorOptionsList"
+                                    :disabled="sortedGroupMonitorList.length === 0 && draftGroupName == null"
+                                    :icon="'plus'"
+                                    :action="() => $refs.createGroupDialog.show()"
+                                />
                             </div>
 
                             <!-- URL -->
@@ -807,6 +809,7 @@
             <NotificationDialog ref="notificationDialog" @added="addedNotification" />
             <DockerHostDialog ref="dockerHostDialog" @added="addedDockerHost" />
             <ProxyDialog ref="proxyDialog" @added="addedProxy" />
+            <CreateGroupDialog ref="createGroupDialog" @added="addedDraftGroup" />
         </div>
     </transition>
 </template>
@@ -814,20 +817,60 @@
 <script>
 import VueMultiselect from "vue-multiselect";
 import { useToast } from "vue-toastification";
+import ActionSelect from "../components/ActionSelect.vue";
 import CopyableInput from "../components/CopyableInput.vue";
+import CreateGroupDialog from "../components/CreateGroupDialog.vue";
 import NotificationDialog from "../components/NotificationDialog.vue";
 import DockerHostDialog from "../components/DockerHostDialog.vue";
 import ProxyDialog from "../components/ProxyDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
 import { genSecret, isDev, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND } from "../util.ts";
 import { hostNameRegexPattern } from "../util-frontend";
+import { sleep } from "../util";
 
 const toast = useToast();
 
+const monitorDefaults = {
+    type: "http",
+    name: "",
+    parent: null,
+    url: "https://",
+    method: "GET",
+    interval: 60,
+    retryInterval: 60,
+    resendInterval: 0,
+    maxretries: 1,
+    notificationIDList: {},
+    ignoreTls: false,
+    upsideDown: false,
+    packetSize: 56,
+    expiryNotification: false,
+    maxredirects: 10,
+    accepted_statuscodes: [ "200-299" ],
+    dns_resolve_type: "A",
+    dns_resolve_server: "1.1.1.1",
+    docker_container: "",
+    docker_host: null,
+    proxyId: null,
+    mqttUsername: "",
+    mqttPassword: "",
+    mqttTopic: "",
+    mqttSuccessMessage: "",
+    authMethod: null,
+    oauth_auth_method: "client_secret_basic",
+    httpBodyEncoding: "json",
+    kafkaProducerBrokers: [],
+    kafkaProducerSaslOptions: {
+        mechanism: "None",
+    },
+};
+
 export default {
     components: {
+        ActionSelect,
         ProxyDialog,
         CopyableInput,
+        CreateGroupDialog,
         NotificationDialog,
         DockerHostDialog,
         TagsManager,
@@ -855,7 +898,8 @@ export default {
                 "mysql": "mysql://username:password@host:port/database",
                 "redis": "redis://user:password@host:port",
                 "mongodb": "mongodb://username:password@host:port/database",
-            }
+            },
+            draftGroupName: null,
         };
     },
 
@@ -966,7 +1010,7 @@ message HealthCheckResponse {
 
         // Filter result by active state, weight and alphabetical
         // Only return groups which arent't itself and one of its decendants
-        sortedMonitorList() {
+        sortedGroupMonitorList() {
             let result = Object.values(this.$root.monitorList);
 
             // Only groups, not itself, not a decendant
@@ -1003,6 +1047,45 @@ message HealthCheckResponse {
             });
 
             return result;
+        },
+
+        /**
+         * Generates the parent monitor options list based on the sorted group monitor list and draft group name.
+         *
+         * @return {Array} The parent monitor options list.
+         */
+        parentMonitorOptionsList() {
+            let list = [];
+            if (this.sortedGroupMonitorList.length === 0 && this.draftGroupName == null) {
+                list = [
+                    {
+                        label: this.$t("noGroupMonitorMsg"),
+                        value: null
+                    }
+                ];
+            } else {
+                list = [
+                    {
+                        label: this.$t("None"),
+                        value: null
+                    },
+                    ... this.sortedGroupMonitorList.map(monitor => {
+                        return {
+                            label: monitor.pathName,
+                            value: monitor.id,
+                        };
+                    }),
+                ];
+            }
+
+            if (this.draftGroupName != null) {
+                list = [{
+                    label: this.draftGroupName,
+                    value: -1,
+                }].concat(list);
+            }
+
+            return list;
         },
 
     },
@@ -1131,38 +1214,7 @@ message HealthCheckResponse {
             if (this.isAdd) {
 
                 this.monitor = {
-                    type: "http",
-                    name: "",
-                    parent: null,
-                    url: "https://",
-                    method: "GET",
-                    interval: 60,
-                    retryInterval: this.interval,
-                    resendInterval: 0,
-                    maxretries: 1,
-                    notificationIDList: {},
-                    ignoreTls: false,
-                    upsideDown: false,
-                    packetSize: 56,
-                    expiryNotification: false,
-                    maxredirects: 10,
-                    accepted_statuscodes: [ "200-299" ],
-                    dns_resolve_type: "A",
-                    dns_resolve_server: "1.1.1.1",
-                    docker_container: "",
-                    docker_host: null,
-                    proxyId: null,
-                    mqttUsername: "",
-                    mqttPassword: "",
-                    mqttTopic: "",
-                    mqttSuccessMessage: "",
-                    authMethod: null,
-                    oauth_auth_method: "client_secret_basic",
-                    httpBodyEncoding: "json",
-                    kafkaProducerBrokers: [],
-                    kafkaProducerSaslOptions: {
-                        mechanism: "None",
-                    },
+                    ...monitorDefaults
                 };
 
                 if (this.$root.proxyList && !this.monitor.proxyId) {
@@ -1228,6 +1280,8 @@ message HealthCheckResponse {
                 });
             }
 
+            this.draftGroupName = null;
+
         },
 
         addKafkaProducerBroker(newBroker) {
@@ -1292,16 +1346,46 @@ message HealthCheckResponse {
                 this.monitor.url = this.monitor.url.trim();
             }
 
+            let createdNewParent = false;
+
+            if (this.draftGroupName && this.monitor.parent === -1) {
+                // Create Monitor with name of draft group
+                const res = await new Promise((resolve) => {
+                    this.$root.add({
+                        ...monitorDefaults,
+                        type: "group",
+                        name: this.draftGroupName,
+                        interval: this.monitor.interval,
+                        active: false,
+                    }, resolve);
+                });
+
+                if (res.ok) {
+                    createdNewParent = true;
+                    this.monitor.parent = res.monitorID;
+                } else {
+                    toast.error(res.msg);
+                    this.processing = false;
+                    return;
+                }
+            }
+
             if (this.isAdd || this.isClone) {
                 this.$root.add(this.monitor, async (res) => {
 
                     if (res.ok) {
                         await this.$refs.tagsManager.submit(res.monitorID);
 
+                        // Start the new parent monitor after edit is done
+                        if (createdNewParent) {
+                            this.startParentGroupMonitor();
+                        }
+
                         toast.success(res.msg);
                         this.processing = false;
                         this.$root.getMonitorList();
                         this.$router.push("/dashboard/" + res.monitorID);
+
                     } else {
                         toast.error(res.msg);
                         this.processing = false;
@@ -1315,8 +1399,18 @@ message HealthCheckResponse {
                     this.processing = false;
                     this.$root.toastRes(res);
                     this.init();
+
+                    // Start the new parent monitor after edit is done
+                    if (createdNewParent) {
+                        this.startParentGroupMonitor();
+                    }
                 });
             }
+        },
+
+        async startParentGroupMonitor() {
+            await sleep(2000);
+            await this.$root.getSocket().emit("resumeMonitor", this.monitor.parent, () => {});
         },
 
         /**
@@ -1342,6 +1436,16 @@ message HealthCheckResponse {
         addedDockerHost(id) {
             this.monitor.docker_host = id;
         },
+
+        /**
+         * Adds a draft group.
+         *
+         * @param {string} draftGroupName - The name of the draft group.
+         */
+        addedDraftGroup(draftGroupName) {
+            this.draftGroupName = draftGroupName;
+            this.monitor.parent = -1;
+        }
     },
 };
 </script>
