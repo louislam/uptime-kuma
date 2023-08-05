@@ -1,5 +1,5 @@
 <template>
-    <transition name="slide-fade" appear>
+    <transition ref="tableContainer" name="slide-fade" appear>
         <div v-if="$route.name === 'DashboardHome'">
             <h1 class="mb-3">
                 {{ $t("Quick Stats") }}
@@ -81,10 +81,17 @@ export default {
         Status,
         Pagination,
     },
+    props: {
+        calculatedHeight: {
+            type: Number,
+            default: 0
+        }
+    },
     data() {
         return {
             page: 1,
             perPage: 25,
+            initialPerPage: 25,
             heartBeatList: [],
             paginationConfig: {
                 hideCount: true,
@@ -132,6 +139,37 @@ export default {
             const startIndex = this.perPage * (this.page - 1);
             const endIndex = startIndex + this.perPage;
             return this.heartBeatList.slice(startIndex, endIndex);
+        },
+    },
+    watch: {
+        importantHeartBeatList() {
+            this.$nextTick(() => {
+                this.updatePerPage();
+            });
+        },
+    },
+    mounted() {
+        this.initialPerPage = this.perPage;
+
+        window.addEventListener("resize", this.updatePerPage);
+        this.updatePerPage();
+    },
+    beforeUnmount() {
+        window.removeEventListener("resize", this.updatePerPage);
+    },
+    methods: {
+        updatePerPage() {
+            const tableContainer = this.$refs.tableContainer;
+            const tableContainerHeight = tableContainer.offsetHeight;
+            const availableHeight = window.innerHeight - tableContainerHeight;
+            const additionalPerPage = Math.floor(availableHeight / 58);
+
+            if (additionalPerPage > 0) {
+                this.perPage = Math.max(this.initialPerPage, this.perPage + additionalPerPage);
+            } else {
+                this.perPage = this.initialPerPage;
+            }
+
         },
     },
 };

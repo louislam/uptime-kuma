@@ -44,6 +44,7 @@ export default {
 
 <style lang="scss">
 @import "../assets/vars.scss";
+@import "../assets/app.scss";
 
 .filter-dropdown-menu {
     z-index: 100;
@@ -102,18 +103,10 @@ export default {
 }
 
 .filter-dropdown-status {
+    @extend .btn-outline-normal;
     display: flex;
     align-items: center;
-    padding: 4px 10px;
     margin-left: 5px;
-    border: 1px solid #ced4da;
-    border-radius: 25px;
-    background-color: transparent;
-
-    .dark & {
-        color: $dark-font-color;
-        border: 1px solid $dark-font-color2;
-    }
 
     &.active {
         border: 1px solid $highlight;

@@ -657,7 +657,10 @@ let needSetup = false;
                 await updateMonitorNotification(bean.id, notificationIDList);
 
                 await server.sendMonitorList(socket);
-                await startMonitor(socket.userID, bean.id);
+
+                if (monitor.active !== false) {
+                    await startMonitor(socket.userID, bean.id);
+                }
 
                 log.info("monitor", `Added Monitor: ${monitor.id} User ID: ${socket.userID}`);
 
@@ -713,6 +716,11 @@ let needSetup = false;
                 bean.headers = monitor.headers;
                 bean.basic_auth_user = monitor.basic_auth_user;
                 bean.basic_auth_pass = monitor.basic_auth_pass;
+                bean.oauth_client_id = monitor.oauth_client_id,
+                bean.oauth_client_secret = monitor.oauth_client_secret,
+                bean.oauth_auth_method = this.oauth_auth_method,
+                bean.oauth_token_url = monitor.oauth_token_url,
+                bean.oauth_scopes = monitor.oauth_scopes,
                 bean.tlsCa = monitor.tlsCa;
                 bean.tlsCert = monitor.tlsCert;
                 bean.tlsKey = monitor.tlsKey;
