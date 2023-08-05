@@ -14,6 +14,7 @@ module.exports = {
     extends: [
         "eslint:recommended",
         "plugin:vue/vue3-recommended",
+        "plugin:jsdoc/recommended-error",
     ],
     parser: "vue-eslint-parser",
     parserOptions: {
@@ -21,6 +22,9 @@ module.exports = {
         sourceType: "module",
         requireConfigFile: false,
     },
+    plugins: [
+        "jsdoc"
+    ],
     rules: {
         "yoda": "error",
         eqeqeq: [ "warn", "smart" ],
