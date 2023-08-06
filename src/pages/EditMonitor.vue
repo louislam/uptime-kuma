@@ -1464,7 +1464,7 @@ message HealthCheckResponse {
         addedDraftGroup(draftGroupName) {
             this.draftGroupName = draftGroupName;
             this.monitor.parent = -1;
-        }
+        },
 
         // Clamp timeout
         clampTimeout(timeout) {
@@ -1474,7 +1474,8 @@ message HealthCheckResponse {
 
             // 0 will be treated as 80% of interval
             return Number.isFinite(clamped) ? clamped : maxTimeout;
-        }
+        },
+
     },
 };
 </script>
