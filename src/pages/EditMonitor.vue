@@ -393,7 +393,7 @@
                             <!-- Interval -->
                             <div class="my-3">
                                 <label for="interval" class="form-label">{{ $t("Heartbeat Interval") }} ({{ $t("checkEverySecond", [ monitor.interval ]) }})</label>
-                                <input id="interval" v-model="monitor.interval" type="number" class="form-control" required :min="minInterval" step="1" :max="maxInterval">
+                                <input id="interval" v-model="monitor.interval" type="number" class="form-control" required :min="minInterval" step="1" :max="maxInterval" @blur="finishUpdateInterval">
                             </div>
 
                             <div class="my-3">
@@ -410,6 +410,12 @@
                                     <span>({{ $t("retryCheckEverySecond", [ monitor.retryInterval ]) }})</span>
                                 </label>
                                 <input id="retry-interval" v-model="monitor.retryInterval" type="number" class="form-control" required :min="minInterval" step="1">
+                            </div>
+
+                            <!-- Timeout: HTTP / Keyword only -->
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword'" class="my-3">
+                                <label for="timeout" class="form-label">{{ $t("Request Timeout") }} ({{ $t("timeoutAfter", [ monitor.timeout || clampTimeout(monitor.interval) ]) }})</label>
+                                <input id="timeout" v-model="monitor.timeout" type="number" class="form-control" required min="0" step="0.1">
                             </div>
 
                             <div class="my-3">
@@ -840,6 +846,7 @@ const monitorDefaults = {
     retryInterval: 60,
     resendInterval: 0,
     maxretries: 1,
+    timeout: 48,
     notificationIDList: {},
     ignoreTls: false,
     upsideDown: false,
@@ -1113,6 +1120,13 @@ message HealthCheckResponse {
             }
         },
 
+        "monitor.timeout"(value, oldValue) {
+            // keep timeout within 80% range
+            if (value && value !== oldValue) {
+                this.monitor.timeout = this.clampTimeout(value);
+            }
+        },
+
         "monitor.type"() {
             if (this.monitor.type === "push") {
                 if (! this.monitor.pushToken) {
@@ -1273,6 +1287,10 @@ message HealthCheckResponse {
                         // Handling for monitors that are created before 1.7.0
                         if (this.monitor.retryInterval === 0) {
                             this.monitor.retryInterval = this.monitor.interval;
+                        }
+                        // Handling for monitors that are missing/zeroed timeout
+                        if (!this.monitor.timeout) {
+                            this.monitor.timeout = ~~(this.monitor.interval * 8) / 10;
                         }
                     } else {
                         toast.error(res.msg);
@@ -1445,7 +1463,26 @@ message HealthCheckResponse {
         addedDraftGroup(draftGroupName) {
             this.draftGroupName = draftGroupName;
             this.monitor.parent = -1;
-        }
+        },
+
+        // Clamp timeout
+        clampTimeout(timeout) {
+            // limit to 80% of interval, narrowly avoiding epsilon bug
+            const maxTimeout = ~~(this.monitor.interval * 8 ) / 10;
+            const clamped = Math.max(0, Math.min(timeout, maxTimeout));
+
+            // 0 will be treated as 80% of interval
+            return Number.isFinite(clamped) ? clamped : maxTimeout;
+        },
+
+        finishUpdateInterval() {
+            // Update timeout if it is greater than the clamp timeout
+            let clampedValue = this.clampTimeout(this.monitor.interval);
+            if (this.monitor.timeout > clampedValue) {
+                this.monitor.timeout = clampedValue;
+            }
+        },
+
     },
 };
 </script>
