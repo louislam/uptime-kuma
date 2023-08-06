@@ -6,7 +6,7 @@ const DEFAULT_KEEP_PERIOD = 180;
 
 /**
  * Clears old data from the heartbeat table of the database.
- * @return {Promise<void>} A promise that resolves when the data has been cleared.
+ * @returns {Promise<void>} A promise that resolves when the data has been cleared.
  */
 
 const clearOldData = async () => {

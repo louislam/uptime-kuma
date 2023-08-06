@@ -91,7 +91,8 @@ class Database {
 
     /**
      * Initialize the database
-     * @param {Object} args Arguments to initialize DB with
+     * @param {object} args Arguments to initialize DB with
+     * @returns {void}
      */
     static init(args) {
         // Data Directory (must be end with "/")
@@ -124,11 +125,11 @@ class Database {
 
     /**
      * Connect to the database
-     * @param {boolean} [testMode=false] Should the connection be
+     * @param {boolean} testMode Should the connection be
      * started in test mode?
-     * @param {boolean} [autoloadModels=true] Should models be
+     * @param {boolean} autoloadModels Should models be
      * automatically loaded?
-     * @param {boolean} [noLog=false] Should logs not be output?
+     * @param {boolean} noLog Should logs not be output?
      * @returns {Promise<void>}
      */
     static async connect(testMode = false, autoloadModels = true, noLog = false) {
@@ -190,7 +191,10 @@ class Database {
         }
     }
 
-    /** Patch the database */
+    /**
+     * Patch the database
+     * @returns {void}
+     */
     static async patch() {
         let version = parseInt(await setting("database_version"));
 
@@ -343,8 +347,8 @@ class Database {
      * Patch database using new patching process
      * Used it patch2() only
      * @private
-     * @param sqlFilename
-     * @param databasePatchedFiles
+     * @param {string} sqlFilename Name of SQL file to load
+     * @param {object} databasePatchedFiles Patch status of database files
      * @returns {Promise<void>}
      */
     static async patch2Recursion(sqlFilename, databasePatchedFiles) {
@@ -379,7 +383,7 @@ class Database {
 
     /**
      * Load an SQL file and execute it
-     * @param filename Filename of SQL file to import
+     * @param {string} filename Filename of SQL file to import
      * @returns {Promise<void>}
      */
     static async importSQLFile(filename) {
@@ -413,7 +417,7 @@ class Database {
 
     /**
      * Aquire a direct connection to database
-     * @returns {any}
+     * @returns {any} Database connection
      */
     static getBetterSQLite3Database() {
         return R.knex.client.acquireConnection();
@@ -450,7 +454,10 @@ class Database {
         process.removeListener("unhandledRejection", listener);
     }
 
-    /** Get the size of the database */
+    /**
+     * Get the size of the database
+     * @returns {number} Size of database
+     */
     static getSize() {
         log.debug("db", "Database.getSize()");
         let stats = fs.statSync(Database.path);

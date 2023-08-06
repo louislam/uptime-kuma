@@ -81,6 +81,7 @@ export default {
         /**
          * Remove a day from expiry notification days.
          * @param {number} day The day to remove.
+         * @returns {void}
          */
         removeExpiryNotifDay(day) {
             this.settings.tlsExpiryNotifyDays = this.settings.tlsExpiryNotifyDays.filter(d => d !== day);
@@ -93,6 +94,7 @@ export default {
          * - day is > 0.
          * - The day is not already in the list.
          * @param {number} day The day number to add.
+         * @returns {void}
          */
         addExpiryNotifDay(day) {
             if (day != null && day !== "") {

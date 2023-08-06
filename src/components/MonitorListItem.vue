@@ -189,7 +189,9 @@ export default {
     },
     methods: {
         /**
-         * Changes the collapsed value of the current monitor and saves it to local storage
+         * Changes the collapsed value of the current monitor and saves
+         * it to local storage
+         * @returns {void}
          */
         changeCollapsed() {
             this.isCollapsed = !this.isCollapsed;
@@ -214,6 +216,7 @@ export default {
         },
         /**
          * Toggle selection of monitor
+         * @returns {void}
          */
         toggleSelection() {
             if (this.isSelected(this.monitor.id)) {

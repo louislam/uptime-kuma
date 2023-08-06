@@ -47,6 +47,7 @@ export default {
 
         /**
          * If heartbeatList is null, get it from $root.heartbeatList
+         * @returns {object} Heartbeat list
          */
         beatList() {
             if (this.heartbeatList === null) {
@@ -163,7 +164,10 @@ export default {
         this.resize();
     },
     methods: {
-        /** Resize the heartbeat bar */
+        /**
+         * Resize the heartbeat bar
+         * @returns {void}
+         */
         resize() {
             if (this.$refs.wrap) {
                 this.maxBeat = Math.floor(this.$refs.wrap.clientWidth / (this.beatWidth + this.beatMargin * 2));
@@ -173,8 +177,8 @@ export default {
         /**
          * Get the title of the beat.
          * Used as the hover tooltip on the heartbeat bar.
-         * @param {Object} beat Beat to get title from
-         * @returns {string}
+         * @param {object} beat Beat to get title from
+         * @returns {string} Beat title
          */
         getBeatTitle(beat) {
             return `${this.$root.datetime(beat.time)}` + ((beat.msg) ? ` - ${beat.msg}` : "");

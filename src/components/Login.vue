@@ -64,7 +64,10 @@ export default {
     },
 
     methods: {
-        /** Submit the user details and attempt to log in */
+        /**
+         * Submit the user details and attempt to log in
+         * @returns {void}
+         */
         submit() {
             this.processing = true;
 

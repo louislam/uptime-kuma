@@ -7,6 +7,7 @@ const server = UptimeKumaServer.getInstance();
 /**
  * Handlers for proxy
  * @param {Socket} socket Socket.io instance
+ * @returns {void}
  */
 module.exports.proxySocketHandler = (socket) => {
     socket.on("addProxy", async (proxy, proxyID, callback) => {

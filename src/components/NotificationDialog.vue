@@ -218,7 +218,10 @@ export default {
     },
     methods: {
 
-        /** Show dialog to confirm deletion */
+        /**
+         * Show dialog to confirm deletion
+         * @returns {void}
+         */
         deleteConfirm() {
             this.modal.hide();
             this.$refs.confirmDelete.show();
@@ -227,6 +230,7 @@ export default {
         /**
          * Show settings for specified notification
          * @param {number} notificationID ID of notification to show
+         * @returns {void}
          */
         show(notificationID) {
             if (notificationID) {
@@ -250,7 +254,10 @@ export default {
             this.modal.show();
         },
 
-        /** Submit the form to the server */
+        /**
+         * Submit the form to the server
+         * @returns {void}
+         */
         submit() {
             this.processing = true;
             this.$root.getSocket().emit("addNotification", this.notification, this.id, (res) => {
@@ -269,7 +276,10 @@ export default {
             });
         },
 
-        /** Test the notification endpoint */
+        /**
+         * Test the notification endpoint
+         * @returns {void}
+         */
         test() {
             this.processing = true;
             this.$root.getSocket().emit("testNotification", this.notification, (res) => {
@@ -278,7 +288,10 @@ export default {
             });
         },
 
-        /** Delete the notification endpoint */
+        /**
+         * Delete the notification endpoint
+         * @returns {void}
+         */
         deleteNotification() {
             this.processing = true;
             this.$root.getSocket().emit("deleteNotification", this.id, (res) => {
@@ -293,7 +306,8 @@ export default {
         /**
          * Get a unique default name for the notification
          * @param {keyof NotificationFormList} notificationKey
-         * @return {string}
+         * Notification to retrieve
+         * @returns {string} Default name
          */
         getUniqueDefaultName(notificationKey) {
 
