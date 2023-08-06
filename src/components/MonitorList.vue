@@ -218,6 +218,15 @@ export default {
         selectedMonitorCount() {
             return Object.keys(this.selectedMonitors).length;
         },
+
+        /**
+         * Determines if any filters are active.
+         *
+         * @return {boolean} True if any filter is active, false otherwise.
+         */
+        filtersActive() {
+            return this.filterState.status != null || this.filterState.active != null || this.filterState.tags != null || this.searchText !== "";
+        }
     },
     watch: {
         searchText() {
@@ -250,15 +259,6 @@ export default {
                 this.selectedMonitors = {};
             }
         },
-
-        /**
-         * Determines if any filters are active.
-         *
-         * @return {boolean} True if any filter is active, false otherwise.
-         */
-        filtersActive() {
-            return this.filterState.status != null || this.filterState.active != null || this.filterState.tags != null || this.searchText !== "";
-        }
     },
     mounted() {
         window.addEventListener("scroll", this.onScroll);
