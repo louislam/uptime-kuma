@@ -118,6 +118,7 @@
         "nanoid": "~3.3.4",
         "node-cloudflared-tunnel": "~1.0.9",
         "node-radius-client": "~1.0.0",
+        "node-windows": "^1.0.0-beta.8",
         "nodemailer": "~6.6.5",
         "nostr-tools": "^1.13.1",
         "notp": "~2.0.3",
