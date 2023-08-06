@@ -20,6 +20,9 @@
                 <div class="my-3">
                     <label for="description" class="form-label">{{ $t("Description") }}</label>
                     <textarea id="description" v-model="config.description" class="form-control"></textarea>
+                    <div class="form-text">
+                        {{ $t("markdownSupported") }}
+                    </div>
                 </div>
 
                 <!-- Footer Text -->
@@ -31,9 +34,13 @@
                     </div>
                 </div>
 
-                <div class="my-3 form-check form-switch">
-                    <input id="switch-theme" v-model="config.theme" class="form-check-input" type="checkbox" true-value="dark" false-value="light">
-                    <label class="form-check-label" for="switch-theme">{{ $t("Switch to Dark Theme") }}</label>
+                <div class="my-3">
+                    <label for="switch-theme" class="form-label">{{ $t("Theme") }}</label>
+                    <select id="switch-theme" v-model="config.theme" class="form-select">
+                        <option value="auto">{{ $t("Auto") }}</option>
+                        <option value="light">{{ $t("Light") }}</option>
+                        <option value="dark">{{ $t("Dark") }}</option>
+                    </select>
                 </div>
 
                 <div class="my-3 form-check form-switch">
@@ -45,6 +52,12 @@
                 <div class="my-3 form-check form-switch">
                     <input id="show-powered-by" v-model="config.showPoweredBy" class="form-check-input" type="checkbox">
                     <label class="form-check-label" for="show-powered-by">{{ $t("Show Powered By") }}</label>
+                </div>
+
+                <!-- Show certificate expiry -->
+                <div class="my-3 form-check form-switch">
+                    <input id="show-certificate-expiry" v-model="config.showCertificateExpiry" class="form-check-input" type="checkbox">
+                    <label class="form-check-label" for="show-certificate-expiry">{{ $t("showCertificateExpiry") }}</label>
                 </div>
 
                 <div v-if="false" class="my-3">
@@ -258,7 +271,9 @@
 
             <!-- Description -->
             <strong v-if="editMode">{{ $t("Description") }}:</strong>
-            <Editable v-model="config.description" :contenteditable="editMode" tag="div" class="mb-4 description" />
+            <Editable v-if="enableEditMode" v-model="config.description" :contenteditable="editMode" tag="div" class="mb-4 description" />
+            <!-- eslint-disable-next-line vue/no-v-html-->
+            <div v-if="! enableEditMode" class="alert-heading p-2" v-html="descriptionHTML"></div>
 
             <div v-if="editMode" class="mb-4">
                 <div>
@@ -269,11 +284,24 @@
                 </div>
 
                 <div class="mt-3">
-                    <div v-if="allMonitorList.length > 0 && loadedData">
+                    <div v-if="sortedMonitorList.length > 0 && loadedData">
                         <label>{{ $t("Add a monitor") }}:</label>
-                        <select v-model="selectedMonitor" class="form-control">
-                            <option v-for="monitor in allMonitorList" :key="monitor.id" :value="monitor">{{ monitor.name }}</option>
-                        </select>
+                        <VueMultiselect
+                            v-model="selectedMonitor"
+                            :options="sortedMonitorList"
+                            :multiple="false"
+                            :searchable="true"
+                            :placeholder="$t('Add a monitor')"
+                            label="name"
+                            trackBy="name"
+                            class="mt-3"
+                        >
+                            <template #option="{ option }">
+                                <div class="d-inline-flex">
+                                    <span>{{ option.pathName }} <Tag v-for="tag in option.tags" :key="tag" :item="tag" :size="'sm'" /></span>
+                                </div>
+                            </template>
+                        </VueMultiselect>
                     </div>
                     <div v-else class="text-center">
                         {{ $t("No monitors available.") }}  <router-link to="/add">{{ $t("Add one") }}</router-link>
@@ -287,7 +315,7 @@
                     👀 {{ $t("statusPageNothing") }}
                 </div>
 
-                <PublicGroupList :edit-mode="enableEditMode" :show-tags="config.showTags" />
+                <PublicGroupList :edit-mode="enableEditMode" :show-tags="config.showTags" :show-certificate-expiry="config.showCertificateExpiry" />
             </div>
 
             <footer class="mt-5 mb-4">
@@ -301,6 +329,11 @@
                 <p v-if="config.showPoweredBy">
                     {{ $t("Powered by") }} <a target="_blank" rel="noopener noreferrer" href="https://github.com/louislam/uptime-kuma">{{ $t("Uptime Kuma" ) }}</a>
                 </p>
+
+                <div class="refresh-info mb-2">
+                    <div>{{ $t("Last Updated") }}:  {{ lastUpdateTimeDisplay }}</div>
+                    <div>{{ $tc("statusPageRefreshIn", [ updateCountdownText]) }}</div>
+                </div>
             </footer>
         </div>
 
@@ -317,6 +350,7 @@
 <script>
 import axios from "axios";
 import dayjs from "dayjs";
+import duration from "dayjs/plugin/duration";
 import Favico from "favico.js";
 // import highlighting library (you can use any library you want just return html string)
 import { highlight, languages } from "prismjs/components/prism-core";
@@ -334,8 +368,11 @@ import PublicGroupList from "../components/PublicGroupList.vue";
 import MaintenanceTime from "../components/MaintenanceTime.vue";
 import { getResBaseURL } from "../util-frontend";
 import { STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_MAINTENANCE, STATUS_PAGE_PARTIAL_DOWN, UP, MAINTENANCE } from "../util.ts";
+import Tag from "../components/Tag.vue";
+import VueMultiselect from "vue-multiselect";
 
 const toast = useToast();
+dayjs.extend(duration);
 
 const leavePageMsg = "Do you really want to leave? you have unsaved changes!";
 
@@ -354,6 +391,8 @@ export default {
         Confirm,
         PrismEditor,
         MaintenanceTime,
+        Tag,
+        VueMultiselect
     },
 
     // Leave Page for vue route change
@@ -395,6 +434,10 @@ export default {
             baseURL: "",
             clickedEditButton: false,
             maintenanceList: [],
+            autoRefreshInterval: 5,
+            lastUpdateTime: dayjs(),
+            updateCountdown: null,
+            updateCountdownText: null,
         };
     },
     computed: {
@@ -410,7 +453,7 @@ export default {
         /**
          * If the monitor is added to public list, which will not be in this list.
          */
-        allMonitorList() {
+        sortedMonitorList() {
             let result = [];
 
             for (let id in this.$root.monitorList) {
@@ -419,6 +462,31 @@ export default {
                     result.push(monitor);
                 }
             }
+
+            result.sort((m1, m2) => {
+
+                if (m1.active !== m2.active) {
+                    if (m1.active === 0) {
+                        return 1;
+                    }
+
+                    if (m2.active === 0) {
+                        return -1;
+                    }
+                }
+
+                if (m1.weight !== m2.weight) {
+                    if (m1.weight > m2.weight) {
+                        return -1;
+                    }
+
+                    if (m1.weight < m2.weight) {
+                        return 1;
+                    }
+                }
+
+                return m1.pathName.localeCompare(m2.pathName);
+            });
 
             return result;
         },
@@ -497,12 +565,32 @@ export default {
         },
 
         incidentHTML() {
-            return DOMPurify.sanitize(marked(this.incident.content));
+            if (this.incident.content != null) {
+                return DOMPurify.sanitize(marked(this.incident.content));
+            } else {
+                return "";
+            }
+        },
+
+        descriptionHTML() {
+            if (this.config.description != null) {
+                return DOMPurify.sanitize(marked(this.config.description));
+            } else {
+                return "";
+            }
         },
 
         footerHTML() {
-            return DOMPurify.sanitize(marked(this.config.footerText));
+            if (this.config.footerText != null) {
+                return DOMPurify.sanitize(marked(this.config.footerText));
+            } else {
+                return "";
+            }
         },
+
+        lastUpdateTimeDisplay() {
+            return this.$root.datetime(this.lastUpdateTime);
+        }
     },
     watch: {
 
@@ -616,11 +704,13 @@ export default {
             console.log(error);
         });
 
-        // 5mins a loop
+        // Configure auto-refresh loop
         this.updateHeartbeatList();
         feedInterval = setInterval(() => {
             this.updateHeartbeatList();
-        }, (300 + 10) * 1000);
+        }, (this.autoRefreshInterval * 60 + 10) * 1000);
+
+        this.updateUpdateTimer();
 
         // Go to edit page if ?edit present
         // null means ?edit present, but no value
@@ -679,8 +769,27 @@ export default {
                     favicon.badge(downMonitors);
 
                     this.loadedData = true;
+                    this.lastUpdateTime = dayjs();
+                    this.updateUpdateTimer();
                 });
             }
+        },
+
+        /**
+         * Setup timer to display countdown to refresh
+         * @returns {void}
+         */
+        updateUpdateTimer() {
+            clearInterval(this.updateCountdown);
+
+            this.updateCountdown = setInterval(() => {
+                const countdown = dayjs.duration(this.lastUpdateTime.add(this.autoRefreshInterval, "minutes").add(10, "seconds").diff(dayjs()));
+                if (countdown.as("seconds") < 0) {
+                    clearInterval(this.updateCountdown);
+                } else {
+                    this.updateCountdownText = countdown.format("mm:ss");
+                }
+            }, 1000);
         },
 
         /** Enable editing mode */
@@ -868,7 +977,11 @@ export default {
          * @returns {string} Sanitized HTML
          */
         maintenanceHTML(description) {
-            return DOMPurify.sanitize(marked(description));
+            if (description) {
+                return DOMPurify.sanitize(marked(description));
+            } else {
+                return "";
+            }
         },
 
     }
@@ -1095,6 +1208,10 @@ footer {
     .alert-heading {
         font-weight: bold;
     }
+}
+
+.refresh-info {
+    opacity: 0.7;
 }
 
 </style>

@@ -34,30 +34,30 @@ Yes or no, it depends on what you will try to do. Since I don't want to waste yo
 
 Here are some references:
 
-✅ Usually Accept:
+### ✅ Usually accepted:
 - Bug fix
 - Security fix
 - Adding notification providers
-- Adding new language files (You should go to https://weblate.kuma.pet for existing languages)
+- Adding new language files (see [these instructions](https://github.com/louislam/uptime-kuma/blob/master/src/lang/README.md))
 - Adding new language keys: `$t("...")`
 
-⚠️ Discussion First
+### ⚠️ Discussion required:
 - Large pull requests
 - New features
 
-❌ Won't Merge
-- A dedicated pr for translating existing languages (You can now translate on https://weblate.kuma.pet) 
-- Do not pass auto test
+### ❌ Won't be merged:
+- A dedicated pr for translating existing languages (see [these instructions](https://github.com/louislam/uptime-kuma/blob/master/src/lang/README.md))
+- Do not pass the auto test
 - Any breaking changes
-- Duplicated pull request
+- Duplicated pull requests
 - Buggy
 - UI/UX is not close to Uptime Kuma 
-- Existing logic is completely modified or deleted for no reason
-- A function that is completely out of scope
-- Convert existing code into other programming languages
-- Unnecessary large code changes (Hard to review, causes code conflicts to other pull requests)
+- Modifications or deletions of existing logic without a valid reason.
+- Adding functions that is completely out of scope
+- Converting existing code into other programming languages
+- Unnecessarily large code changes that are hard to review and cause conflicts with other PRs.
 
-The above cases cannot cover all situations.
+The above cases may not cover all possible situations.
 
 I (@louislam) have the final say. If your pull request does not meet my expectations, I will reject it, no matter how much time you spend on it. Therefore, it is essential to have a discussion beforehand.
 
@@ -106,11 +106,11 @@ I personally do not like something that requires so many configurations before y
 
 ## Tools
 
-- Node.js >= 14
-- NPM >= 8.5
-- Git
-- IDE that supports ESLint and EditorConfig (I am using IntelliJ IDEA)
-- A SQLite GUI tool (SQLite Expert Personal is suggested)
+- [`Node.js`](https://nodejs.org/) >= 14
+- [`npm`](https://www.npmjs.com/) >= 8.5
+- [`git`](https://git-scm.com/)
+- IDE that supports [`ESLint`](https://eslint.org/) and EditorConfig (I am using [`IntelliJ IDEA`](https://www.jetbrains.com/idea/))
+- A SQLite GUI tool (f.ex. [`SQLite Expert Personal`](https://www.sqliteexpert.com/download.html) or [`DBeaver Community`](https://dbeaver.io/download/))
 
 ## Install Dependencies for Development
 
@@ -218,7 +218,17 @@ If for maybe security reasons, a library must be updated. Then you must need to 
 
 ## Translations
 
-Please read: https://github.com/louislam/uptime-kuma/tree/master/src/languages
+Please add **all** the strings which are translatable to `src/lang/en.json` (If translation keys are ommited, they can not be translated).
+
+**Don't include any other languages in your inital Pull-Request** (even if this is your mother tounge), to avoid merge-conflicts between weblate and `master`.  
+The translations can then (after merging a PR into `master`) be translated by awesome people donating their language-skills.
+
+If you want to help by translating Uptime Kuma into your language, please visit the [instructions on how to translate using weblate](https://github.com/louislam/uptime-kuma/blob/master/src/lang/README.md).
+
+## Spelling & Grammar
+
+Feel free to correct the grammar in the documentation or code.
+My mother language is not english and my grammar is not that great.
 
 ## Wiki
 
@@ -235,6 +245,7 @@ https://github.com/louislam/uptime-kuma/issues?q=sort%3Aupdated-desc
 
 1. Draft a release note
 2. Make sure the repo is cleared
+3. If the healthcheck is updated, remember to re-compile it: `npm run build-docker-builder-go`
 3. `npm run release-final with env vars: `VERSION` and `GITHUB_TOKEN`
 4. Wait until the `Press any key to continue`
 5. `git push`

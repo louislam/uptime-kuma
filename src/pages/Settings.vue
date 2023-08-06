@@ -107,18 +107,15 @@ export default {
                 security: {
                     title: this.$t("Security"),
                 },
+                "api-keys": {
+                    title: this.$t("API Keys")
+                },
                 proxies: {
                     title: this.$t("Proxies"),
                 },
                 backup: {
                     title: this.$t("Backup"),
                 },
-                /*
-                Hidden for now: Unfortunately, after some test, I found that Playwright requires a lot of libraries to be installed on the Linux host in order to start Chrome or Firefox.
-                It will be hard to install, so I hide this feature for now. But it still accessible via URL: /settings/plugins.
-                plugins: {
-                    title: this.$tc("plugin", 2),
-                },*/
                 about: {
                     title: this.$t("About"),
                 },

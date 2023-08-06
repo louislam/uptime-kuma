@@ -2,9 +2,11 @@ const https = require("https");
 const dayjs = require("dayjs");
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
-const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, TimeLogger, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND } = require("../../src/util");
+const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, TimeLogger, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND,
+    SQL_DATETIME_FORMAT
+} = require("../../src/util");
 const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, mqttAsync, setSetting, httpNtlm, radius, grpcQuery,
-    redisPingAsync, mongodbPing,
+    redisPingAsync, mongodbPing, kafkaProducerAsync, getOidcTokenClientCredentials,
 } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
@@ -16,9 +18,10 @@ const apicache = require("../modules/apicache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { CacheableDnsHttpAgent } = require("../cacheable-dns-http-agent");
 const { DockerHost } = require("../docker");
-const Maintenance = require("./maintenance");
 const { UptimeCacheList } = require("../uptime-cache-list");
 const Gamedig = require("gamedig");
+const jsonata = require("jsonata");
+const jwt = require("jsonwebtoken");
 
 /**
  * status:
@@ -34,11 +37,12 @@ class Monitor extends BeanModel {
      * Only show necessary data to public
      * @returns {Object}
      */
-    async toPublicJSON(showTags = false) {
+    async toPublicJSON(showTags = false, certExpiry = false) {
         let obj = {
             id: this.id,
             name: this.name,
             sendUrl: this.sendUrl,
+            type: this.type,
         };
 
         if (this.sendUrl) {
@@ -48,6 +52,13 @@ class Monitor extends BeanModel {
         if (showTags) {
             obj.tags = await this.getTags();
         }
+
+        if (certExpiry && this.type === "http") {
+            const { certExpiryDaysRemaining, validCert } = await this.getCertExpiry(this.id);
+            obj.certExpiryDaysRemaining = certExpiryDaysRemaining;
+            obj.validCert = validCert;
+        }
+
         return obj;
     }
 
@@ -69,21 +80,33 @@ class Monitor extends BeanModel {
 
         const tags = await this.getTags();
 
+        let screenshot = null;
+
+        if (this.type === "real-browser") {
+            screenshot = "/screenshots/" + jwt.sign(this.id, UptimeKumaServer.getInstance().jwtSecret) + ".png";
+        }
+
         let data = {
             id: this.id,
             name: this.name,
+            description: this.description,
+            pathName: await this.getPathName(),
+            parent: this.parent,
+            childrenIDs: await Monitor.getAllChildrenIDs(this.id),
             url: this.url,
             method: this.method,
             hostname: this.hostname,
             port: this.port,
             maxretries: this.maxretries,
             weight: this.weight,
-            active: this.active,
+            active: await this.isActive(),
+            forceInactive: !await Monitor.isParentActive(this.id),
             type: this.type,
             interval: this.interval,
             retryInterval: this.retryInterval,
             resendInterval: this.resendInterval,
             keyword: this.keyword,
+            invertKeyword: this.isInvertKeyword(),
             expiryNotification: this.isEnabledExpiryNotification(),
             ignoreTls: this.getIgnoreTls(),
             upsideDown: this.isUpsideDown(),
@@ -111,6 +134,15 @@ class Monitor extends BeanModel {
             radiusCalledStationId: this.radiusCalledStationId,
             radiusCallingStationId: this.radiusCallingStationId,
             game: this.game,
+            httpBodyEncoding: this.httpBodyEncoding,
+            jsonPath: this.jsonPath,
+            expectedValue: this.expectedValue,
+            kafkaProducerTopic: this.kafkaProducerTopic,
+            kafkaProducerBrokers: JSON.parse(this.kafkaProducerBrokers),
+            kafkaProducerSsl: this.kafkaProducerSsl === "1" && true || false,
+            kafkaProducerAllowAutoTopicCreation: this.kafkaProducerAllowAutoTopicCreation === "1" && true || false,
+            kafkaProducerMessage: this.kafkaProducerMessage,
+            screenshot,
         };
 
         if (includeSensitiveData) {
@@ -122,6 +154,11 @@ class Monitor extends BeanModel {
                 grpcMetadata: this.grpcMetadata,
                 basic_auth_user: this.basic_auth_user,
                 basic_auth_pass: this.basic_auth_pass,
+                oauth_client_id: this.oauth_client_id,
+                oauth_client_secret: this.oauth_client_secret,
+                oauth_token_url: this.oauth_token_url,
+                oauth_scopes: this.oauth_scopes,
+                oauth_auth_method: this.oauth_auth_method,
                 pushToken: this.pushToken,
                 databaseConnectionString: this.databaseConnectionString,
                 radiusUsername: this.radiusUsername,
@@ -131,6 +168,10 @@ class Monitor extends BeanModel {
                 mqttPassword: this.mqttPassword,
                 authWorkstation: this.authWorkstation,
                 authDomain: this.authDomain,
+                tlsCa: this.tlsCa,
+                tlsCert: this.tlsCert,
+                tlsKey: this.tlsKey,
+                kafkaProducerSaslOptions: JSON.parse(this.kafkaProducerSaslOptions),
             };
         }
 
@@ -139,11 +180,46 @@ class Monitor extends BeanModel {
     }
 
     /**
+	 * Checks if the monitor is active based on itself and its parents
+	 * @returns {Promise<Boolean>}
+	 */
+    async isActive() {
+        const parentActive = await Monitor.isParentActive(this.id);
+
+        return (this.active === 1) && parentActive;
+    }
+
+    /**
      * Get all tags applied to this monitor
      * @returns {Promise<LooseObject<any>[]>}
      */
     async getTags() {
-        return await R.getAll("SELECT mt.*, tag.name, tag.color FROM monitor_tag mt JOIN tag ON mt.tag_id = tag.id WHERE mt.monitor_id = ?", [ this.id ]);
+        return await R.getAll("SELECT mt.*, tag.name, tag.color FROM monitor_tag mt JOIN tag ON mt.tag_id = tag.id WHERE mt.monitor_id = ? ORDER BY tag.name", [ this.id ]);
+    }
+
+    /**
+     * Gets certificate expiry for this monitor
+     * @param {number} monitorID ID of monitor to send
+     * @returns {Promise<LooseObject<any>>}
+     */
+    async getCertExpiry(monitorID) {
+        let tlsInfoBean = await R.findOne("monitor_tls_info", "monitor_id = ?", [
+            monitorID,
+        ]);
+        let tlsInfo;
+        if (tlsInfoBean) {
+            tlsInfo = JSON.parse(tlsInfoBean?.info_json);
+            if (tlsInfo?.valid && tlsInfo?.certInfo?.daysRemaining) {
+                return {
+                    certExpiryDaysRemaining: tlsInfo.certInfo.daysRemaining,
+                    validCert: true
+                };
+            }
+        }
+        return {
+            certExpiryDaysRemaining: "",
+            validCert: false
+        };
     }
 
     /**
@@ -183,6 +259,14 @@ class Monitor extends BeanModel {
      * Parse to boolean
      * @returns {boolean}
      */
+    isInvertKeyword() {
+        return Boolean(this.invertKeyword);
+    }
+
+    /**
+     * Parse to boolean
+     * @returns {boolean}
+     */
     getGrpcEnableTls() {
         return Boolean(this.grpcEnableTls);
     }
@@ -203,7 +287,7 @@ class Monitor extends BeanModel {
         let previousBeat = null;
         let retries = 0;
 
-        let prometheus = new Prometheus(this);
+        this.prometheus = new Prometheus(this);
 
         const beat = async () => {
 
@@ -253,7 +337,40 @@ class Monitor extends BeanModel {
                 if (await Monitor.isUnderMaintenance(this.id)) {
                     bean.msg = "Monitor under maintenance";
                     bean.status = MAINTENANCE;
-                } else if (this.type === "http" || this.type === "keyword") {
+                } else if (this.type === "group") {
+                    const children = await Monitor.getChildren(this.id);
+
+                    if (children.length > 0) {
+                        bean.status = UP;
+                        bean.msg = "All children up and running";
+                        for (const child of children) {
+                            if (!child.active) {
+                                // Ignore inactive childs
+                                continue;
+                            }
+                            const lastBeat = await Monitor.getPreviousHeartbeat(child.id);
+
+                            // Only change state if the monitor is in worse conditions then the ones before
+                            // lastBeat.status could be null
+                            if (!lastBeat) {
+                                bean.status = PENDING;
+                            } else if (bean.status === UP && (lastBeat.status === PENDING || lastBeat.status === DOWN)) {
+                                bean.status = lastBeat.status;
+                            } else if (bean.status === PENDING && lastBeat.status === DOWN) {
+                                bean.status = lastBeat.status;
+                            }
+                        }
+
+                        if (bean.status !== UP) {
+                            bean.msg = "Child inaccessible";
+                        }
+                    } else {
+                        // Set status pending if group is empty
+                        bean.status = PENDING;
+                        bean.msg = "Group empty";
+                    }
+
+                } else if (this.type === "http" || this.type === "keyword" || this.type === "json-query") {
                     // Do not do any queries/high loading things before the "bean.ping"
                     let startTime = dayjs().valueOf();
 
@@ -265,6 +382,24 @@ class Monitor extends BeanModel {
                         };
                     }
 
+                    // OIDC: Basic client credential flow.
+                    // Additional grants might be implemented in the future
+                    let oauth2AuthHeader = {};
+                    if (this.auth_method === "oauth2-cc") {
+                        try {
+                            if (this.oauthAccessToken === undefined || new Date(this.oauthAccessToken.expires_at * 1000) <= new Date()) {
+                                log.debug("monitor", `[${this.name}] The oauth access-token undefined or expired. Requesting a new one`);
+                                this.oauthAccessToken = await getOidcTokenClientCredentials(this.oauth_token_url, this.oauth_client_id, this.oauth_client_secret, this.oauth_scopes, this.oauth_auth_method);
+                                log.debug("monitor", `[${this.name}] Obtained oauth access-token. Expires at ${new Date(this.oauthAccessToken.expires_at * 1000)}`);
+                            }
+                            oauth2AuthHeader = {
+                                "Authorization": this.oauthAccessToken.token_type + " " + this.oauthAccessToken.access_token,
+                            };
+                        } catch (e) {
+                            throw new Error("The oauth config is invalid. " + e.message);
+                        }
+                    }
+
                     const httpsAgentOptions = {
                         maxCachedSessions: 0, // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
                         rejectUnauthorized: !this.getIgnoreTls(),
@@ -272,23 +407,45 @@ class Monitor extends BeanModel {
 
                     log.debug("monitor", `[${this.name}] Prepare Options for axios`);
 
+                    let contentType = null;
+                    let bodyValue = null;
+
+                    if (this.body && (typeof this.body === "string" && this.body.trim().length > 0)) {
+                        if (!this.httpBodyEncoding || this.httpBodyEncoding === "json") {
+                            try {
+                                bodyValue = JSON.parse(this.body);
+                                contentType = "application/json";
+                            } catch (e) {
+                                throw new Error("Your JSON body is invalid. " + e.message);
+                            }
+                        } else if (this.httpBodyEncoding === "xml") {
+                            bodyValue = this.body;
+                            contentType = "text/xml; charset=utf-8";
+                        }
+                    }
+
                     // Axios Options
                     const options = {
                         url: this.url,
                         method: (this.method || "get").toLowerCase(),
-                        ...(this.body ? { data: JSON.parse(this.body) } : {}),
                         timeout: this.interval * 1000 * 0.8,
                         headers: {
                             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
                             "User-Agent": "Uptime-Kuma/" + version,
-                            ...(this.headers ? JSON.parse(this.headers) : {}),
+                            ...(contentType ? { "Content-Type": contentType } : {}),
                             ...(basicAuthHeader),
+                            ...(oauth2AuthHeader),
+                            ...(this.headers ? JSON.parse(this.headers) : {})
                         },
                         maxRedirects: this.maxredirects,
                         validateStatus: (status) => {
                             return checkStatusCode(status, this.getAcceptedStatuscodes());
                         },
                     };
+
+                    if (bodyValue) {
+                        options.data = bodyValue;
+                    }
 
                     if (this.proxy_id) {
                         const proxy = await R.load("proxy", this.proxy_id);
@@ -306,6 +463,18 @@ class Monitor extends BeanModel {
 
                     if (!options.httpsAgent) {
                         options.httpsAgent = new https.Agent(httpsAgentOptions);
+                    }
+
+                    if (this.auth_method === "mtls") {
+                        if (this.tlsCert !== null && this.tlsCert !== "") {
+                            options.httpsAgent.options.cert = Buffer.from(this.tlsCert);
+                        }
+                        if (this.tlsCa !== null && this.tlsCa !== "") {
+                            options.httpsAgent.options.ca = Buffer.from(this.tlsCa);
+                        }
+                        if (this.tlsKey !== null && this.tlsKey !== "") {
+                            options.httpsAgent.options.key = Buffer.from(this.tlsKey);
+                        }
                     }
 
                     log.debug("monitor", `[${this.name}] Axios Options: ${JSON.stringify(options)}`);
@@ -326,8 +495,8 @@ class Monitor extends BeanModel {
                             tlsInfo = await this.updateTlsInfo(tlsInfoObject);
 
                             if (!this.getIgnoreTls() && this.isEnabledExpiryNotification()) {
-                                log.debug("monitor", `[${this.name}] call sendCertNotification`);
-                                await this.sendCertNotification(tlsInfoObject);
+                                log.debug("monitor", `[${this.name}] call checkCertExpiryNotifications`);
+                                await this.checkCertExpiryNotifications(tlsInfoObject);
                             }
 
                         } catch (e) {
@@ -348,7 +517,7 @@ class Monitor extends BeanModel {
 
                     if (this.type === "http") {
                         bean.status = UP;
-                    } else {
+                    } else if (this.type === "keyword") {
 
                         let data = res.data;
 
@@ -357,17 +526,37 @@ class Monitor extends BeanModel {
                             data = JSON.stringify(data);
                         }
 
-                        if (data.includes(this.keyword)) {
-                            bean.msg += ", keyword is found";
+                        let keywordFound = data.includes(this.keyword);
+                        if (keywordFound === !this.isInvertKeyword()) {
+                            bean.msg += ", keyword " + (keywordFound ? "is" : "not") + " found";
                             bean.status = UP;
                         } else {
-                            data = data.replace(/<[^>]*>?|[\n\r]|\s+/gm, " ");
+                            data = data.replace(/<[^>]*>?|[\n\r]|\s+/gm, " ").trim();
                             if (data.length > 50) {
                                 data = data.substring(0, 47) + "...";
                             }
-                            throw new Error(bean.msg + ", but keyword is not in [" + data + "]");
+                            throw new Error(bean.msg + ", but keyword is " +
+                                (keywordFound ? "present" : "not") + " in [" + data + "]");
                         }
 
+                    } else if (this.type === "json-query") {
+                        let data = res.data;
+
+                        // convert data to object
+                        if (typeof data === "string") {
+                            data = JSON.parse(data);
+                        }
+
+                        let expression = jsonata(this.jsonPath);
+
+                        let result = await expression.evaluate(data);
+
+                        if (result.toString() === this.expectedValue) {
+                            bean.msg += ", expected value is found";
+                            bean.status = UP;
+                        } else {
+                            throw new Error(bean.msg + ", but value is not equal to expected value, value was: [" + result + "]");
+                        }
                     }
 
                 } else if (this.type === "port") {
@@ -442,7 +631,7 @@ class Monitor extends BeanModel {
                             // No need to insert successful heartbeat for push type, so end here
                             retries = 0;
                             log.debug("monitor", `[${this.name}] timeout = ${timeout}`);
-                            this.heartbeatInterval = setTimeout(beat, timeout);
+                            this.heartbeatInterval = setTimeout(safeBeat, timeout);
                             return;
                         }
                     } else {
@@ -531,13 +720,22 @@ class Monitor extends BeanModel {
                         options.socketPath = dockerHost._dockerDaemon;
                     } else if (dockerHost._dockerType === "tcp") {
                         options.baseURL = DockerHost.patchDockerURL(dockerHost._dockerDaemon);
+                        options.httpsAgent = CacheableDnsHttpAgent.getHttpsAgent(
+                            DockerHost.getHttpsAgentOptions(dockerHost._dockerType, options.baseURL)
+                        );
                     }
 
                     log.debug("monitor", `[${this.name}] Axios Request`);
                     let res = await axios.request(options);
+
                     if (res.data.State.Running) {
-                        bean.status = UP;
-                        bean.msg = res.data.State.Status;
+                        if (res.data.State.Health && res.data.State.Health.Status !== "healthy") {
+                            bean.status = PENDING;
+                            bean.msg = res.data.State.Health.Status;
+                        } else {
+                            bean.status = UP;
+                            bean.msg = res.data.State.Health ? res.data.State.Health.Status : res.data.State.Status;
+                        }
                     } else {
                         throw Error("Container State is " + res.data.State.Status);
                     }
@@ -566,7 +764,6 @@ class Monitor extends BeanModel {
                         grpcEnableTls: this.grpcEnableTls,
                         grpcMethod: this.grpcMethod,
                         grpcBody: this.grpcBody,
-                        keyword: this.keyword
                     };
                     const response = await grpcQuery(options);
                     bean.ping = dayjs().valueOf() - startTime;
@@ -579,13 +776,14 @@ class Monitor extends BeanModel {
                         bean.status = DOWN;
                         bean.msg = `Error in send gRPC ${response.code} ${response.errorMessage}`;
                     } else {
-                        if (response.data.toString().includes(this.keyword)) {
+                        let keywordFound = response.data.toString().includes(this.keyword);
+                        if (keywordFound === !this.isInvertKeyword()) {
                             bean.status = UP;
-                            bean.msg = `${responseData}, keyword [${this.keyword}] is found`;
+                            bean.msg = `${responseData}, keyword [${this.keyword}] ${keywordFound ? "is" : "not"} found`;
                         } else {
-                            log.debug("monitor:", `GRPC response [${response.data}] + ", but keyword [${this.keyword}] is not in [" + ${response.data} + "]"`);
+                            log.debug("monitor:", `GRPC response [${response.data}] + ", but keyword [${this.keyword}] is ${keywordFound ? "present" : "not"} in [" + ${response.data} + "]"`);
                             bean.status = DOWN;
-                            bean.msg = `, but keyword [${this.keyword}] is not in [" + ${responseData} + "]`;
+                            bean.msg = `, but keyword [${this.keyword}] is ${keywordFound ? "present" : "not"} in [" + ${responseData} + "]`;
                         }
                     }
                 } else if (this.type === "postgres") {
@@ -599,9 +797,7 @@ class Monitor extends BeanModel {
                 } else if (this.type === "mysql") {
                     let startTime = dayjs().valueOf();
 
-                    await mysqlQuery(this.databaseConnectionString, this.databaseQuery);
-
-                    bean.msg = "";
+                    bean.msg = await mysqlQuery(this.databaseConnectionString, this.databaseQuery);
                     bean.status = UP;
                     bean.ping = dayjs().valueOf() - startTime;
                 } else if (this.type === "mongodb") {
@@ -626,28 +822,19 @@ class Monitor extends BeanModel {
                         port = this.port;
                     }
 
-                    try {
-                        const resp = await radius(
-                            this.hostname,
-                            this.radiusUsername,
-                            this.radiusPassword,
-                            this.radiusCalledStationId,
-                            this.radiusCallingStationId,
-                            this.radiusSecret,
-                            port
-                        );
-                        if (resp.code) {
-                            bean.msg = resp.code;
-                        }
-                        bean.status = UP;
-                    } catch (error) {
-                        bean.status = DOWN;
-                        if (error.response?.code) {
-                            bean.msg = error.response.code;
-                        } else {
-                            bean.msg = error.message;
-                        }
-                    }
+                    const resp = await radius(
+                        this.hostname,
+                        this.radiusUsername,
+                        this.radiusPassword,
+                        this.radiusCalledStationId,
+                        this.radiusCallingStationId,
+                        this.radiusSecret,
+                        port,
+                        this.interval * 1000 * 0.4,
+                    );
+
+                    bean.msg = resp.code;
+                    bean.status = UP;
                     bean.ping = dayjs().valueOf() - startTime;
                 } else if (this.type === "redis") {
                     let startTime = dayjs().valueOf();
@@ -659,10 +846,28 @@ class Monitor extends BeanModel {
                 } else if (this.type in UptimeKumaServer.monitorTypeList) {
                     let startTime = dayjs().valueOf();
                     const monitorType = UptimeKumaServer.monitorTypeList[this.type];
-                    await monitorType.check(this, bean);
+                    await monitorType.check(this, bean, UptimeKumaServer.getInstance());
                     if (!bean.ping) {
                         bean.ping = dayjs().valueOf() - startTime;
                     }
+
+                } else if (this.type === "kafka-producer") {
+                    let startTime = dayjs().valueOf();
+
+                    bean.msg = await kafkaProducerAsync(
+                        JSON.parse(this.kafkaProducerBrokers),
+                        this.kafkaProducerTopic,
+                        this.kafkaProducerMessage,
+                        {
+                            allowAutoTopicCreation: this.kafkaProducerAllowAutoTopicCreation,
+                            ssl: this.kafkaProducerSsl,
+                            clientId: `Uptime-Kuma/${version}`,
+                            interval: this.interval,
+                        },
+                        JSON.parse(this.kafkaProducerSaslOptions),
+                    );
+                    bean.status = UP;
+                    bean.ping = dayjs().valueOf() - startTime;
 
                 } else {
                     throw new Error("Unknown Monitor Type");
@@ -755,7 +960,7 @@ class Monitor extends BeanModel {
             await R.store(bean);
 
             log.debug("monitor", `[${this.name}] prometheus.update`);
-            prometheus.update(bean, tlsInfo);
+            this.prometheus?.update(bean, tlsInfo);
 
             previousBeat = bean;
 
@@ -813,7 +1018,6 @@ class Monitor extends BeanModel {
                     domain: this.authDomain,
                     workstation: this.authWorkstation ? this.authWorkstation : undefined
                 });
-
             } else {
                 res = await axios.request(options);
             }
@@ -840,15 +1044,15 @@ class Monitor extends BeanModel {
         clearTimeout(this.heartbeatInterval);
         this.isStop = true;
 
-        this.prometheus().remove();
+        this.prometheus?.remove();
     }
 
     /**
-     * Get a new prometheus instance
-     * @returns {Prometheus}
+     * Get prometheus instance
+     * @returns {Prometheus|undefined}
      */
-    prometheus() {
-        return new Prometheus(this);
+    getPrometheus() {
+        return this.prometheus;
     }
 
     /**
@@ -1142,11 +1346,17 @@ class Monitor extends BeanModel {
 
             for (let notification of notificationList) {
                 try {
-                    // Prevent if the msg is undefined, notifications such as Discord cannot send out.
                     const heartbeatJSON = bean.toJSON();
+
+                    // Prevent if the msg is undefined, notifications such as Discord cannot send out.
                     if (!heartbeatJSON["msg"]) {
                         heartbeatJSON["msg"] = "N/A";
                     }
+
+                    // Also provide the time in server timezone
+                    heartbeatJSON["timezone"] = await UptimeKumaServer.getInstance().getTimezone();
+                    heartbeatJSON["timezoneOffset"] = UptimeKumaServer.getInstance().getTimezoneOffset();
+                    heartbeatJSON["localDateTime"] = dayjs.utc(heartbeatJSON["time"]).tz(heartbeatJSON["timezone"]).format(SQL_DATETIME_FORMAT);
 
                     await Notification.send(JSON.parse(notification.config), msg, await monitor.toJSON(false), heartbeatJSON);
                 } catch (e) {
@@ -1170,12 +1380,18 @@ class Monitor extends BeanModel {
     }
 
     /**
-     * Send notification about a certificate
+     * checks certificate chain for expiring certificates
      * @param {Object} tlsInfoObject Information about certificate
      */
-    async sendCertNotification(tlsInfoObject) {
+    async checkCertExpiryNotifications(tlsInfoObject) {
         if (tlsInfoObject && tlsInfoObject.certInfo && tlsInfoObject.certInfo.daysRemaining) {
             const notificationList = await Monitor.getNotificationList(this);
+
+            if (! notificationList.length > 0) {
+                // fail fast. If no notification is set, all the following checks can be skipped.
+                log.debug("monitor", "No notification, no need to send cert notification");
+                return;
+            }
 
             let notifyDays = await setting("tlsExpiryNotifyDays");
             if (notifyDays == null || !Array.isArray(notifyDays)) {
@@ -1184,10 +1400,19 @@ class Monitor extends BeanModel {
                 notifyDays = [ 7, 14, 21 ];
             }
 
-            if (notifyDays != null && Array.isArray(notifyDays)) {
-                for (const day of notifyDays) {
-                    log.debug("monitor", "call sendCertNotificationByTargetDays", day);
-                    await this.sendCertNotificationByTargetDays(tlsInfoObject.certInfo.daysRemaining, day, notificationList);
+            if (Array.isArray(notifyDays)) {
+                for (const targetDays of notifyDays) {
+                    let certInfo = tlsInfoObject.certInfo;
+                    while (certInfo) {
+                        let subjectCN = certInfo.subject["CN"];
+                        if (certInfo.daysRemaining > targetDays) {
+                            log.debug("monitor", `No need to send cert notification for ${certInfo.certType} certificate "${subjectCN}" (${certInfo.daysRemaining} days valid) on ${targetDays} deadline.`);
+                        } else {
+                            log.debug("monitor", `call sendCertNotificationByTargetDays for ${targetDays} deadline on certificate ${subjectCN}.`);
+                            await this.sendCertNotificationByTargetDays(subjectCN, certInfo.certType, certInfo.daysRemaining, targetDays, notificationList);
+                        }
+                        certInfo = certInfo.issuerCertificate;
+                    }
                 }
             }
         }
@@ -1196,55 +1421,47 @@ class Monitor extends BeanModel {
     /**
      * Send a certificate notification when certificate expires in less
      * than target days
-     * @param {number} daysRemaining Number of days remaining on certifcate
+     * @param {string} certCN  Common Name attribute from the certificate subject
+     * @param {string} certType  certificate type
+     * @param {number} daysRemaining Number of days remaining on certificate
      * @param {number} targetDays Number of days to alert after
      * @param {LooseObject<any>[]} notificationList List of notification providers
      * @returns {Promise<void>}
      */
-    async sendCertNotificationByTargetDays(daysRemaining, targetDays, notificationList) {
+    async sendCertNotificationByTargetDays(certCN, certType, daysRemaining, targetDays, notificationList) {
 
-        if (daysRemaining > targetDays) {
-            log.debug("monitor", `No need to send cert notification. ${daysRemaining} > ${targetDays}`);
+        let row = await R.getRow("SELECT * FROM notification_sent_history WHERE type = ? AND monitor_id = ? AND days <= ?", [
+            "certificate",
+            this.id,
+            targetDays,
+        ]);
+
+        // Sent already, no need to send again
+        if (row) {
+            log.debug("monitor", "Sent already, no need to send again");
             return;
         }
 
-        if (notificationList.length > 0) {
+        let sent = false;
+        log.debug("monitor", "Send certificate notification");
 
-            let row = await R.getRow("SELECT * FROM notification_sent_history WHERE type = ? AND monitor_id = ? AND days = ?", [
+        for (let notification of notificationList) {
+            try {
+                log.debug("monitor", "Sending to " + notification.name);
+                await Notification.send(JSON.parse(notification.config), `[${this.name}][${this.url}] ${certType} certificate ${certCN} will be expired in ${daysRemaining} days`);
+                sent = true;
+            } catch (e) {
+                log.error("monitor", "Cannot send cert notification to " + notification.name);
+                log.error("monitor", e);
+            }
+        }
+
+        if (sent) {
+            await R.exec("INSERT INTO notification_sent_history (type, monitor_id, days) VALUES(?, ?, ?)", [
                 "certificate",
                 this.id,
                 targetDays,
             ]);
-
-            // Sent already, no need to send again
-            if (row) {
-                log.debug("monitor", "Sent already, no need to send again");
-                return;
-            }
-
-            let sent = false;
-            log.debug("monitor", "Send certificate notification");
-
-            for (let notification of notificationList) {
-                try {
-                    log.debug("monitor", "Sending to " + notification.name);
-                    await Notification.send(JSON.parse(notification.config), `[${this.name}][${this.url}] Certificate will be expired in ${daysRemaining} days`);
-                    sent = true;
-                } catch (e) {
-                    log.error("monitor", "Cannot send cert notification to " + notification.name);
-                    log.error("monitor", e);
-                }
-            }
-
-            if (sent) {
-                await R.exec("INSERT INTO notification_sent_history (type, monitor_id, days) VALUES(?, ?, ?)", [
-                    "certificate",
-                    this.id,
-                    targetDays,
-                ]);
-            }
-        } else {
-            log.debug("monitor", "No notification, no need to send cert notification");
         }
     }
 
@@ -1268,18 +1485,24 @@ class Monitor extends BeanModel {
      * @returns {Promise<boolean>}
      */
     static async isUnderMaintenance(monitorID) {
-        let activeCondition = Maintenance.getActiveMaintenanceSQLCondition();
-        const maintenance = await R.getRow(`
-            SELECT COUNT(*) AS count
-            FROM monitor_maintenance mm
-            JOIN maintenance
-                ON mm.maintenance_id = maintenance.id
-                AND mm.monitor_id = ?
-            LEFT JOIN maintenance_timeslot
-                ON maintenance_timeslot.maintenance_id = maintenance.id
-            WHERE ${activeCondition}
-            LIMIT 1`, [ monitorID ]);
-        return maintenance.count !== 0;
+        const maintenanceIDList = await R.getCol(`
+            SELECT maintenance_id FROM monitor_maintenance
+            WHERE monitor_id = ?
+        `, [ monitorID ]);
+
+        for (const maintenanceID of maintenanceIDList) {
+            const maintenance = await UptimeKumaServer.getInstance().getMaintenance(maintenanceID);
+            if (maintenance && await maintenance.isUnderMaintenance()) {
+                return true;
+            }
+        }
+
+        const parent = await Monitor.getParent(monitorID);
+        if (parent != null) {
+            return await Monitor.isUnderMaintenance(parent.id);
+        }
+
+        return false;
     }
 
     /** Make sure monitor interval is between bounds */
@@ -1290,6 +1513,105 @@ class Monitor extends BeanModel {
         if (this.interval < MIN_INTERVAL_SECOND) {
             throw new Error(`Interval cannot be less than ${MIN_INTERVAL_SECOND} seconds`);
         }
+    }
+
+    /**
+     * Gets Parent of the monitor
+     * @param {number} monitorID ID of monitor to get
+     * @returns {Promise<LooseObject<any>>}
+     */
+    static async getParent(monitorID) {
+        return await R.getRow(`
+            SELECT parent.* FROM monitor parent
+    		LEFT JOIN monitor child
+    			ON child.parent = parent.id
+            WHERE child.id = ?
+        `, [
+            monitorID,
+        ]);
+    }
+
+    /**
+     * Gets all Children of the monitor
+     * @param {number} monitorID ID of monitor to get
+     * @returns {Promise<LooseObject<any>>}
+     */
+    static async getChildren(monitorID) {
+        return await R.getAll(`
+            SELECT * FROM monitor
+            WHERE parent = ?
+        `, [
+            monitorID,
+        ]);
+    }
+
+    /**
+     * Gets Full Path-Name (Groups and Name)
+     * @returns {Promise<String>}
+     */
+    async getPathName() {
+        let path = this.name;
+
+        if (this.parent === null) {
+            return path;
+        }
+
+        let parent = await Monitor.getParent(this.id);
+        while (parent !== null) {
+            path = `${parent.name} / ${path}`;
+            parent = await Monitor.getParent(parent.id);
+        }
+
+        return path;
+    }
+
+    /**
+     * Gets recursive all child ids
+	 * @param {number} monitorID ID of the monitor to get
+     * @returns {Promise<Array>}
+     */
+    static async getAllChildrenIDs(monitorID) {
+        const childs = await Monitor.getChildren(monitorID);
+
+        if (childs === null) {
+            return [];
+        }
+
+        let childrenIDs = [];
+
+        for (const child of childs) {
+            childrenIDs.push(child.id);
+            childrenIDs = childrenIDs.concat(await Monitor.getAllChildrenIDs(child.id));
+        }
+
+        return childrenIDs;
+    }
+
+    /**
+     * Unlinks all children of the the group monitor
+     * @param {number} groupID ID of group to remove children of
+     * @returns {Promise<void>}
+     */
+    static async unlinkAllChildren(groupID) {
+        return await R.exec("UPDATE `monitor` SET parent = ? WHERE parent = ? ", [
+            null, groupID
+        ]);
+    }
+
+    /**
+	 * Checks recursive if parent (ancestors) are active
+	 * @param {number} monitorID ID of the monitor to get
+	 * @returns {Promise<Boolean>}
+	 */
+    static async isParentActive(monitorID) {
+        const parent = await Monitor.getParent(monitorID);
+
+        if (parent === null) {
+            return true;
+        }
+
+        const parentActive = await Monitor.isParentActive(parent.id);
+        return parent.active && parentActive;
     }
 }
 

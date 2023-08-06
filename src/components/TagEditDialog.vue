@@ -12,7 +12,17 @@
                     <div class="modal-body">
                         <div class="mb-3">
                             <label for="tag-name" class="form-label">{{ $t("Name") }}</label>
-                            <input id="tag-name" v-model="tag.name" type="text" class="form-control" required>
+                            <input
+                                id="tag-name"
+                                v-model="tag.name"
+                                type="text"
+                                class="form-control"
+                                :class="{'is-invalid': nameInvalid}"
+                                required
+                            >
+                            <div class="invalid-feedback">
+                                {{ $t("Tag with this name already exist.") }}
+                            </div>
                         </div>
 
                         <div class="mb-3">
@@ -66,17 +76,30 @@
                                     </button>
                                 </router-link>
                             </div>
-                            <div v-if="allMonitorList.length > 0" class="pt-3 px-3">
+                            <div v-if="allMonitorList.length > 0" class="pt-3">
                                 <label class="form-label">{{ $t("Add a monitor") }}:</label>
-                                <select v-model="selectedAddMonitor" class="form-control">
-                                    <option v-for="monitor in allMonitorList" :key="monitor.id" :value="monitor">{{ monitor.name }}</option>
-                                </select>
+                                <VueMultiselect
+                                    v-model="selectedAddMonitor"
+                                    :options="allMonitorList"
+                                    :multiple="false"
+                                    :searchable="true"
+                                    :placeholder="$t('Add a monitor')"
+                                    label="name"
+                                    trackBy="name"
+                                    class="mt-1"
+                                >
+                                    <template #option="{ option }">
+                                        <div class="d-inline-flex">
+                                            <span>{{ option.name }} <Tag v-for="monitorTag in option.tags" :key="monitorTag" :item="monitorTag" :size="'sm'" /></span>
+                                        </div>
+                                    </template>
+                                </VueMultiselect>
                             </div>
                         </div>
                     </div>
 
                     <div class="modal-footer">
-                        <button v-if="tag" type="button" class="btn btn-danger" :disabled="processing" @click="deleteConfirm">
+                        <button v-if="tag && tag.id !== null" type="button" class="btn btn-danger" :disabled="processing" @click="deleteConfirm">
                             {{ $t("Delete") }}
                         </button>
                         <button type="submit" class="btn btn-primary" :disabled="processing">
@@ -97,6 +120,7 @@
 <script>
 import { Modal } from "bootstrap";
 import Confirm from "./Confirm.vue";
+import Tag from "./Tag.vue";
 import VueMultiselect from "vue-multiselect";
 import { colorOptions } from "../util-frontend";
 import { useToast } from "vue-toastification";
@@ -107,12 +131,17 @@ export default {
     components: {
         VueMultiselect,
         Confirm,
+        Tag,
     },
     props: {
         updated: {
             type: Function,
             default: () => {},
-        }
+        },
+        existingTags: {
+            type: Array,
+            default: () => [],
+        },
     },
     data() {
         return {
@@ -132,6 +161,7 @@ export default {
             removingMonitor: [],
             addingMonitor: [],
             selectedAddMonitor: null,
+            nameInvalid: false,
         };
     },
 
@@ -160,9 +190,14 @@ export default {
     watch: {
         // Set color option to "Custom" when a unknown color is entered
         "tag.color"(to, from) {
-            if (colorOptions(this).find(x => x.color === to) == null) {
+            if (to !== "" && colorOptions(this).find(x => x.color === to) == null) {
                 this.selectedColor.name = this.$t("Custom");
                 this.selectedColor.color = to;
+            }
+        },
+        "tag.name"(to, from) {
+            if (to != null) {
+                this.validate();
             }
         },
         selectedColor(to, from) {
@@ -198,6 +233,35 @@ export default {
         },
 
         /**
+         * Reset the editTag form
+         */
+        reset() {
+            this.selectedColor = null;
+            this.tag = {
+                id: null,
+                name: "",
+                color: "",
+            };
+            this.monitors = [];
+            this.removingMonitor = [];
+            this.addingMonitor = [];
+        },
+
+        /**
+         * Check for existing tags of the same name, set invalid input
+         * @returns {boolean} True if editing tag is valid
+         */
+        validate() {
+            this.nameInvalid = false;
+            const sameName = this.existingTags.find((existingTag) => existingTag.name === this.tag.name);
+            if (sameName != null && sameName.id !== this.tag.id) {
+                this.nameInvalid = true;
+                return false;
+            }
+            return true;
+        },
+
+        /**
          * Load tag information for display in the edit dialog
          * @param {Object} tag tag object to edit
          * @returns {void}
@@ -227,6 +291,27 @@ export default {
         async submit() {
             this.processing = true;
             let editResult = true;
+
+            if (!this.validate()) {
+                this.processing = false;
+                return;
+            }
+
+            if (this.tag.id == null) {
+                await this.addTagAsync(this.tag).then((res) => {
+                    if (!res.ok) {
+                        this.$root.toastRes(res.msg);
+                        editResult = false;
+                    } else {
+                        this.tag.id = res.tag.id;
+                        this.updated();
+                    }
+                });
+            }
+
+            if (!editResult) {
+                return;
+            }
 
             for (let addId of this.addingMonitor) {
                 await this.addMonitorTagAsync(this.tag.id, addId, "").then((res) => {
@@ -263,9 +348,9 @@ export default {
          * Delete the editing tag from server
          * @returns {void}
          */
-        deleteTag() {
+        async deleteTag() {
             this.processing = true;
-            this.$root.getSocket().emit("deleteTag", this.tag.id, (res) => {
+            await this.deleteTagAsync(this.tag.id).then((res) => {
                 this.$root.toastRes(res);
                 this.processing = false;
 
@@ -307,6 +392,28 @@ export default {
          */
         monitorURL(id) {
             return getMonitorRelativeURL(id);
+        },
+
+        /**
+         * Add a tag asynchronously
+         * @param {Object} newTag Object representing new tag to add
+         * @returns {Promise<void>}
+         */
+        addTagAsync(newTag) {
+            return new Promise((resolve) => {
+                this.$root.getSocket().emit("addTag", newTag, resolve);
+            });
+        },
+
+        /**
+         * Delete a tag asynchronously
+         * @param {number} tagId ID of tag to delete
+         * @returns {Promise<void>}
+         */
+        deleteTagAsync(tagId) {
+            return new Promise((resolve) => {
+                this.$root.getSocket().emit("deleteTag", tagId, resolve);
+            });
         },
 
         /**

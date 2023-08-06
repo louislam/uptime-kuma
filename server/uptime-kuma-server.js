@@ -10,8 +10,9 @@ const util = require("util");
 const { CacheableDnsHttpAgent } = require("./cacheable-dns-http-agent");
 const { Settings } = require("./settings");
 const dayjs = require("dayjs");
-const { PluginsManager } = require("./plugins-manager");
-// DO NOT IMPORT HERE IF THE MODULES USED `UptimeKumaServer.getInstance()`
+const childProcess = require("child_process");
+const path = require("path");
+// DO NOT IMPORT HERE IF THE MODULES USED `UptimeKumaServer.getInstance()`, put at the bottom of this file instead.
 
 /**
  * `module.exports` (alias: `server`) should be inside this class, in order to avoid circular dependency issue.
@@ -47,14 +48,6 @@ class UptimeKumaServer {
      */
     indexHTML = "";
 
-    generateMaintenanceTimeslotsInterval = undefined;
-
-    /**
-     * Plugins Manager
-     * @type {PluginsManager}
-     */
-    pluginsManager = null;
-
     /**
      *
      * @type {{}}
@@ -62,6 +55,12 @@ class UptimeKumaServer {
     static monitorTypeList = {
 
     };
+
+    /**
+     * Use for decode the auth object
+     * @type {null}
+     */
+    jwtSecret = null;
 
     static getInstance(args) {
         if (UptimeKumaServer.instance == null) {
@@ -74,6 +73,7 @@ class UptimeKumaServer {
         // SSL
         const sslKey = args["ssl-key"] || process.env.UPTIME_KUMA_SSL_KEY || process.env.SSL_KEY || undefined;
         const sslCert = args["ssl-cert"] || process.env.UPTIME_KUMA_SSL_CERT || process.env.SSL_CERT || undefined;
+        const sslKeyPassphrase = args["ssl-key-passphrase"] || process.env.UPTIME_KUMA_SSL_KEY_PASSPHRASE || process.env.SSL_KEY_PASSPHRASE || undefined;
 
         log.info("server", "Creating express and socket.io instance");
         this.app = express();
@@ -81,7 +81,8 @@ class UptimeKumaServer {
             log.info("server", "Server Type: HTTPS");
             this.httpServer = https.createServer({
                 key: fs.readFileSync(sslKey),
-                cert: fs.readFileSync(sslCert)
+                cert: fs.readFileSync(sslCert),
+                passphrase: sslKeyPassphrase,
             }, this.app);
         } else {
             log.info("server", "Server Type: HTTP");
@@ -98,11 +99,18 @@ class UptimeKumaServer {
             }
         }
 
+        // Set Monitor Types
+        UptimeKumaServer.monitorTypeList["real-browser"] = new RealBrowserMonitorType();
+        UptimeKumaServer.monitorTypeList["tailscale-ping"] = new TailscalePing();
+
         this.io = new Server(this.httpServer);
     }
 
     /** Initialise app after the database has been set up */
     async initAfterDatabaseReady() {
+        // Static
+        this.app.use("/screenshots", express.static(Database.screenshotDir));
+
         await CacheableDnsHttpAgent.update();
 
         process.env.TZ = await this.getTimezone();
@@ -110,8 +118,7 @@ class UptimeKumaServer {
         log.debug("DEBUG", "Timezone: " + process.env.TZ);
         log.debug("DEBUG", "Current Time: " + dayjs.tz().format());
 
-        await this.generateMaintenanceTimeslots();
-        this.generateMaintenanceTimeslotsInterval = setInterval(this.generateMaintenanceTimeslots, 60 * 1000);
+        await this.loadMaintenanceList();
     }
 
     /**
@@ -173,16 +180,33 @@ class UptimeKumaServer {
      */
     async getMaintenanceJSONList(userID) {
         let result = {};
+        for (let maintenanceID in this.maintenanceList) {
+            result[maintenanceID] = await this.maintenanceList[maintenanceID].toJSON();
+        }
+        return result;
+    }
 
-        let maintenanceList = await R.find("maintenance", " user_id = ? ORDER BY end_date DESC, title", [
-            userID,
+    /**
+     * Load maintenance list and run
+     * @param userID
+     * @returns {Promise<void>}
+     */
+    async loadMaintenanceList(userID) {
+        let maintenanceList = await R.findAll("maintenance", " ORDER BY end_date DESC, title", [
+
         ]);
 
         for (let maintenance of maintenanceList) {
-            result[maintenance.id] = await maintenance.toJSON();
+            this.maintenanceList[maintenance.id] = maintenance;
+            maintenance.run(this);
         }
+    }
 
-        return result;
+    getMaintenance(maintenanceID) {
+        if (this.maintenanceList[maintenanceID]) {
+            return this.maintenanceList[maintenanceID];
+        }
+        return null;
     }
 
     /**
@@ -191,7 +215,7 @@ class UptimeKumaServer {
      * @param {boolean} outputToConsole Should the error also be output to console?
      */
     static errorLog(error, outputToConsole = true) {
-        const errorLogStream = fs.createWriteStream(Database.dataDir + "/error.log", {
+        const errorLogStream = fs.createWriteStream(path.join(Database.dataDir, "/error.log"), {
             flags: "a"
         });
 
@@ -228,9 +252,9 @@ class UptimeKumaServer {
 
             return (typeof forwardedFor === "string" ? forwardedFor.split(",")[0].trim() : null)
                 || socket.client.conn.request.headers["x-real-ip"]
-                || clientIP.replace(/^.*:/, "");
+                || clientIP.replace(/^::ffff:/, "");
         } else {
-            return clientIP.replace(/^.*:/, "");
+            return clientIP.replace(/^::ffff:/, "");
         }
     }
 
@@ -238,16 +262,46 @@ class UptimeKumaServer {
      * Attempt to get the current server timezone
      * If this fails, fall back to environment variables and then make a
      * guess.
-     * @returns {string}
+     * @returns {Promise<string>}
      */
     async getTimezone() {
+        // From process.env.TZ
+        try {
+            if (process.env.TZ) {
+                this.checkTimezone(process.env.TZ);
+                return process.env.TZ;
+            }
+        } catch (e) {
+            log.warn("timezone", e.message + " in process.env.TZ");
+        }
+
         let timezone = await Settings.get("serverTimezone");
-        if (timezone) {
-            return timezone;
-        } else if (process.env.TZ) {
-            return process.env.TZ;
-        } else {
-            return dayjs.tz.guess();
+
+        // From Settings
+        try {
+            log.debug("timezone", "Using timezone from settings: " + timezone);
+            if (timezone) {
+                this.checkTimezone(timezone);
+                return timezone;
+            }
+        } catch (e) {
+            log.warn("timezone", e.message + " in settings");
+        }
+
+        // Guess
+        try {
+            let guess = dayjs.tz.guess();
+            log.debug("timezone", "Guessing timezone: " + guess);
+            if (guess) {
+                this.checkTimezone(guess);
+                return guess;
+            } else {
+                return "UTC";
+            }
+        } catch (e) {
+            // Guess failed, fall back to UTC
+            log.debug("timezone", "Guessed an invalid timezone. Use UTC as fallback");
+            return "UTC";
         }
     }
 
@@ -260,79 +314,78 @@ class UptimeKumaServer {
     }
 
     /**
+     * Throw an error if the timezone is invalid
+     * @param timezone
+     */
+    checkTimezone(timezone) {
+        try {
+            dayjs.utc("2013-11-18 11:55").tz(timezone).format();
+        } catch (e) {
+            throw new Error("Invalid timezone:" + timezone);
+        }
+    }
+
+    /**
      * Set the current server timezone and environment variables
      * @param {string} timezone
      */
     async setTimezone(timezone) {
+        this.checkTimezone(timezone);
         await Settings.set("serverTimezone", timezone, "general");
         process.env.TZ = timezone;
         dayjs.tz.setDefault(timezone);
     }
 
-    /** Load the timeslots for maintenance */
-    async generateMaintenanceTimeslots() {
-
-        let list = await R.find("maintenance_timeslot", " generated_next = 0 AND start_date <= DATETIME('now') ");
-
-        for (let maintenanceTimeslot of list) {
-            let maintenance = await maintenanceTimeslot.maintenance;
-            await MaintenanceTimeslot.generateTimeslot(maintenance, maintenanceTimeslot.end_date, false);
-            maintenanceTimeslot.generated_next = true;
-            await R.store(maintenanceTimeslot);
-        }
-
+    /**
+     * TODO: Listen logic should be moved to here
+     * @returns {Promise<void>}
+     */
+    async start() {
+        this.startServices();
     }
 
-    /** Stop the server */
+    /**
+     * Stop the server
+     * @returns {Promise<void>}
+     */
     async stop() {
-        clearTimeout(this.generateMaintenanceTimeslotsInterval);
-    }
-
-    loadPlugins() {
-        this.pluginsManager = new PluginsManager(this);
+        this.stopServices();
     }
 
     /**
-     *
-     * @returns {PluginsManager}
+     * Start all system services (e.g. nscd)
+     * For now, only used in Docker
      */
-    getPluginManager() {
-        return this.pluginsManager;
-    }
-
-    /**
-     *
-     * @param {MonitorType} monitorType
-     */
-    addMonitorType(monitorType) {
-        if (monitorType instanceof MonitorType && monitorType.name) {
-            if (monitorType.name in UptimeKumaServer.monitorTypeList) {
-                log.error("", "Conflict Monitor Type name");
+    startServices() {
+        if (process.env.UPTIME_KUMA_IS_CONTAINER) {
+            try {
+                log.info("services", "Starting nscd");
+                childProcess.execSync("sudo service nscd start", { stdio: "pipe" });
+            } catch (e) {
+                log.info("services", "Failed to start nscd");
             }
-            UptimeKumaServer.monitorTypeList[monitorType.name] = monitorType;
-        } else {
-            log.error("", "Invalid Monitor Type: " + monitorType.name);
         }
     }
 
     /**
-     *
-     * @param {MonitorType} monitorType
+     * Stop all system services
      */
-    removeMonitorType(monitorType) {
-        if (UptimeKumaServer.monitorTypeList[monitorType.name] === monitorType) {
-            delete UptimeKumaServer.monitorTypeList[monitorType.name];
-        } else {
-            log.error("", "Remove MonitorType failed: " + monitorType.name);
+    stopServices() {
+        if (process.env.UPTIME_KUMA_IS_CONTAINER) {
+            try {
+                log.info("services", "Stopping nscd");
+                childProcess.execSync("sudo service nscd stop");
+            } catch (e) {
+                log.info("services", "Failed to stop nscd");
+            }
         }
     }
-
 }
 
 module.exports = {
     UptimeKumaServer
 };
 
-// Must be at the end
-const MaintenanceTimeslot = require("./model/maintenance_timeslot");
-const { MonitorType } = require("./monitor-types/monitor-type");
+// Must be at the end to avoid circular dependencies
+const { RealBrowserMonitorType } = require("./monitor-types/real-browser-monitor-type");
+const { TailscalePing } = require("./monitor-types/tailscale-ping");

@@ -74,7 +74,7 @@
     "Heartbeat Interval": "Διάστημα καρδιακών παλμών",
     "Retries": "Επαναλήψεις",
     "Heartbeat Retry Interval": "Διάστημα επανάληψης παλμών καρδιάς",
-    "Resend Notification if Down X times consequently": "Αποστολή νέας ειδοποίησης εάν κατω X φορές κατά συνέχεια",
+    "Resend Notification if Down X times consecutively": "Αποστολή νέας ειδοποίησης εάν κατω X φορές κατά συνέχεια",
     "Advanced": "Προχωρημένα",
     "Upside Down Mode": "Ανάποδη λειτουργία",
     "Max. Redirects": "Μέγιστη. Ανακατευθύνσεις",
@@ -420,8 +420,6 @@
     "For safety, must use secret key": "Για ασφάλεια, πρέπει να χρησιμοποιήσετε secret key",
     "Device Token": "Device Token",
     "Platform": "Platform",
-    "iOS": "iOS",
-    "Android": "Android",
     "Huawei": "Huawei",
     "High": "High",
     "Retry": "Ξαναδοκιμάσετε",
@@ -695,5 +693,7 @@
     "Learn More": "Μάθετε περισσότερα",
     "Free Mobile User Identifier": "Free Mobile User Identifier",
     "Free Mobile API Key": "Free Mobile API Key",
-    "smseaglePriority": "Προτεραιότητα μηνύματος (0-9, προεπιλογή = 0)"
+    "smseaglePriority": "Προτεραιότητα μηνύματος (0-9, προεπιλογή = 0)",
+    "statusPageRefreshIn": "Ανανέωση σε {0}",
+    "Add New Tag": "Πρόσθεσε νέα ετικέτα"
 }

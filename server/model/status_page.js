@@ -3,7 +3,6 @@ const { R } = require("redbean-node");
 const cheerio = require("cheerio");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const jsesc = require("jsesc");
-const Maintenance = require("./maintenance");
 const googleAnalytics = require("../google-analytics");
 
 class StatusPage extends BeanModel {
@@ -91,6 +90,8 @@ class StatusPage extends BeanModel {
      * @param {StatusPage} statusPage
      */
     static async getStatusPageData(statusPage) {
+        const config = await statusPage.toPublicJSON();
+
         // Incident
         let incident = await R.findOne("incident", " pin = 1 AND active = 1 AND status_page_id = ? ", [
             statusPage.id,
@@ -111,13 +112,13 @@ class StatusPage extends BeanModel {
         ]);
 
         for (let groupBean of list) {
-            let monitorGroup = await groupBean.toPublicJSON(showTags);
+            let monitorGroup = await groupBean.toPublicJSON(showTags, config?.showCertificateExpiry);
             publicGroupList.push(monitorGroup);
         }
 
         // Response
         return {
-            config: await statusPage.toPublicJSON(),
+            config,
             incident,
             publicGroupList,
             maintenanceList,
@@ -235,6 +236,7 @@ class StatusPage extends BeanModel {
             footerText: this.footer_text,
             showPoweredBy: !!this.show_powered_by,
             googleAnalyticsId: this.google_analytics_tag_id,
+            showCertificateExpiry: !!this.show_certificate_expiry,
         };
     }
 
@@ -256,6 +258,7 @@ class StatusPage extends BeanModel {
             footerText: this.footer_text,
             showPoweredBy: !!this.show_powered_by,
             googleAnalyticsId: this.google_analytics_tag_id,
+            showCertificateExpiry: !!this.show_certificate_expiry,
         };
     }
 
@@ -290,21 +293,17 @@ class StatusPage extends BeanModel {
         try {
             const publicMaintenanceList = [];
 
-            let activeCondition = Maintenance.getActiveMaintenanceSQLCondition();
-            let maintenanceBeanList = R.convertToBeans("maintenance", await R.getAll(`
-                SELECT DISTINCT maintenance.*
-                FROM maintenance
-                JOIN maintenance_status_page
-                    ON maintenance_status_page.maintenance_id = maintenance.id
-                    AND maintenance_status_page.status_page_id = ?
-                LEFT JOIN maintenance_timeslot
-                    ON maintenance_timeslot.maintenance_id = maintenance.id
-                WHERE ${activeCondition}
-                ORDER BY maintenance.end_date
-            `, [ statusPageId ]));
+            let maintenanceIDList = await R.getCol(`
+                SELECT DISTINCT maintenance_id
+                FROM maintenance_status_page
+                WHERE status_page_id = ?
+            `, [ statusPageId ]);
 
-            for (const bean of maintenanceBeanList) {
-                publicMaintenanceList.push(await bean.toPublicJSON());
+            for (const maintenanceID of maintenanceIDList) {
+                let maintenance = UptimeKumaServer.getInstance().getMaintenance(maintenanceID);
+                if (maintenance && await maintenance.isUnderMaintenance()) {
+                    publicMaintenanceList.push(await maintenance.toPublicJSON());
+                }
             }
 
             return publicMaintenanceList;

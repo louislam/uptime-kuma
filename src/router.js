@@ -18,7 +18,7 @@ import NotFound from "./pages/NotFound.vue";
 import DockerHosts from "./components/settings/Docker.vue";
 import MaintenanceDetails from "./pages/MaintenanceDetails.vue";
 import ManageMaintenance from "./pages/ManageMaintenance.vue";
-import Plugins from "./components/settings/Plugins.vue";
+import APIKeys from "./components/settings/APIKeys.vue";
 
 // Settings - Sub Pages
 import Appearance from "./components/settings/Appearance.vue";
@@ -68,6 +68,10 @@ const routes = [
                                 ],
                             },
                             {
+                                path: "/clone/:id",
+                                component: EditMonitor,
+                            },
+                            {
                                 path: "/add",
                                 component: EditMonitor,
                             },
@@ -114,16 +118,16 @@ const routes = [
                                 component: Security,
                             },
                             {
+                                path: "api-keys",
+                                component: APIKeys,
+                            },
+                            {
                                 path: "proxies",
                                 component: Proxies,
                             },
                             {
                                 path: "backup",
                                 component: Backup,
-                            },
-                            {
-                                path: "plugins",
-                                component: Plugins,
                             },
                             {
                                 path: "about",

@@ -4,6 +4,7 @@ import jwtDecode from "jwt-decode";
 import Favico from "favico.js";
 import dayjs from "dayjs";
 import { DOWN, MAINTENANCE, PENDING, UP } from "../util.ts";
+import { getDevContainerServerHostname, isDevContainer } from "../util-frontend.js";
 const toast = useToast();
 
 let socket;
@@ -35,7 +36,8 @@ export default {
             allowLoginDialog: false,        // Allowed to show login dialog, but "loggedIn" have to be true too. This exists because prevent the login dialog show 0.1s in first before the socket server auth-ed.
             loggedIn: false,
             monitorList: { },
-            maintenanceList: { },
+            maintenanceList: {},
+            apiKeyList: {},
             heartbeatList: { },
             importantHeartbeatList: { },
             avgPingList: { },
@@ -46,7 +48,7 @@ export default {
             statusPageListLoaded: false,
             statusPageList: [],
             proxyList: [],
-            connectionErrorMsg: "Cannot connect to the socket server. Reconnecting...",
+            connectionErrorMsg: `${this.$t("Cannot connect to the socket server.")} ${this.$t("Reconnecting...")}`,
             showReverseProxyGuide: true,
             cloudflared: {
                 cloudflareTunnelToken: "",
@@ -55,7 +57,8 @@ export default {
                 message: "",
                 errorMessage: "",
                 currentPassword: "",
-            }
+            },
+            faviconUpdateDebounce: null,
         };
     },
 
@@ -92,7 +95,9 @@ export default {
 
             let wsHost;
             const env = process.env.NODE_ENV || "production";
-            if (env === "development" || localStorage.dev === "dev") {
+            if (env === "development" && isDevContainer()) {
+                wsHost = protocol + getDevContainerServerHostname();
+            } else if (env === "development" || localStorage.dev === "dev") {
                 wsHost = protocol + location.hostname + ":3001";
             } else {
                 wsHost = protocol + location.host;
@@ -135,6 +140,10 @@ export default {
                 this.maintenanceList = data;
             });
 
+            socket.on("apiKeyList", (data) => {
+                this.apiKeyList = data;
+            });
+
             socket.on("notificationList", (data) => {
                 this.notificationList = data;
             });
@@ -173,16 +182,18 @@ export default {
                 // Also toast
                 if (data.important) {
 
-                    if (data.status === 0) {
-                        toast.error(`[${this.monitorList[data.monitorID].name}] [DOWN] ${data.msg}`, {
-                            timeout: false,
-                        });
-                    } else if (data.status === 1) {
-                        toast.success(`[${this.monitorList[data.monitorID].name}] [Up] ${data.msg}`, {
-                            timeout: 20000,
-                        });
-                    } else {
-                        toast(`[${this.monitorList[data.monitorID].name}] ${data.msg}`);
+                    if (this.monitorList[data.monitorID] !== undefined) {
+                        if (data.status === 0) {
+                            toast.error(`[${this.monitorList[data.monitorID].name}] [DOWN] ${data.msg}`, {
+                                timeout: false,
+                            });
+                        } else if (data.status === 1) {
+                            toast.success(`[${this.monitorList[data.monitorID].name}] [Up] ${data.msg}`, {
+                                timeout: 20000,
+                            });
+                        } else {
+                            toast(`[${this.monitorList[data.monitorID].name}] ${data.msg}`);
+                        }
                     }
 
                     if (! (data.monitorID in this.importantHeartbeatList)) {
@@ -223,7 +234,7 @@ export default {
 
             socket.on("connect_error", (err) => {
                 console.error(`Failed to connect to the backend. Socket.io connect_error: ${err.message}`);
-                this.connectionErrorMsg = `Cannot connect to the socket server. [${err}] Reconnecting...`;
+                this.connectionErrorMsg = `${this.$t("Cannot connect to the socket server.")} [${err}] ${this.$t("Reconnecting...")}`;
                 this.showReverseProxyGuide = true;
                 this.socket.connected = false;
                 this.socket.firstConnect = false;
@@ -467,6 +478,17 @@ export default {
         },
 
         /**
+         * Send list of API keys
+         * @param {socketCB} callback
+         */
+        getAPIKeyList(callback) {
+            if (!callback) {
+                callback = () => { };
+            }
+            socket.emit("getAPIKeyList", callback);
+        },
+
+        /**
          * Add a monitor
          * @param {Object} monitor Object representing monitor to add
          * @param {socketCB} callback
@@ -538,6 +560,24 @@ export default {
          */
         deleteMaintenance(maintenanceID, callback) {
             socket.emit("deleteMaintenance", maintenanceID, callback);
+        },
+
+        /**
+         * Add an API key
+         * @param {Object} key API key to add
+         * @param {socketCB} callback
+         */
+        addAPIKey(key, callback) {
+            socket.emit("addAPIKey", key, callback);
+        },
+
+        /**
+         * Delete specified API key
+         * @param {int} keyID ID of key to delete
+         * @param {socketCB} callback
+         */
+        deleteAPIKey(keyID, callback) {
+            socket.emit("deleteAPIKey", keyID, callback);
         },
 
         /** Clear the hearbeat list */
@@ -659,9 +699,11 @@ export default {
 
         stats() {
             let result = {
+                active: 0,
                 up: 0,
                 down: 0,
                 maintenance: 0,
+                pending: 0,
                 unknown: 0,
                 pause: 0,
             };
@@ -673,12 +715,13 @@ export default {
                 if (monitor && ! monitor.active) {
                     result.pause++;
                 } else if (beat) {
+                    result.active++;
                     if (beat.status === UP) {
                         result.up++;
                     } else if (beat.status === DOWN) {
                         result.down++;
                     } else if (beat.status === PENDING) {
-                        result.up++;
+                        result.pending++;
                     } else if (beat.status === MAINTENANCE) {
                         result.maintenance++;
                     } else {
@@ -720,7 +763,12 @@ export default {
         // Update Badge
         "stats.down"(to, from) {
             if (to !== from) {
-                favicon.badge(to);
+                if (this.faviconUpdateDebounce != null) {
+                    clearTimeout(this.faviconUpdateDebounce);
+                }
+                this.faviconUpdateDebounce = setTimeout(() => {
+                    favicon.badge(to);
+                }, 1000);
             }
         },
 
