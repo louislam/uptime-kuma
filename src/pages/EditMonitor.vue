@@ -393,7 +393,7 @@
                             <!-- Interval -->
                             <div class="my-3">
                                 <label for="interval" class="form-label">{{ $t("Heartbeat Interval") }} ({{ $t("checkEverySecond", [ monitor.interval ]) }})</label>
-                                <input id="interval" v-model="monitor.interval" type="number" class="form-control" required :min="minInterval" step="1" :max="maxInterval">
+                                <input id="interval" v-model="monitor.interval" type="number" class="form-control" required :min="minInterval" step="1" :max="maxInterval" @blur="finishUpdateInterval">
                             </div>
 
                             <div class="my-3">
@@ -1118,7 +1118,6 @@ message HealthCheckResponse {
             if (this.monitor.retryInterval === oldValue) {
                 this.monitor.retryInterval = value;
             }
-            this.monitor.timeout = this.clampTimeout(value);
         },
 
         "monitor.timeout"(value, oldValue) {
@@ -1474,6 +1473,14 @@ message HealthCheckResponse {
 
             // 0 will be treated as 80% of interval
             return Number.isFinite(clamped) ? clamped : maxTimeout;
+        },
+
+        finishUpdateInterval() {
+            // Update timeout if it is greater than the clamp timeout
+            let clampedValue = this.clampTimeout(this.monitor.interval);
+            if (this.monitor.timeout > clampedValue) {
+                this.monitor.timeout = clampedValue;
+            }
         },
 
     },
