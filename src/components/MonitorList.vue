@@ -51,7 +51,7 @@
                 v-for="(item, index) in sortedMonitorList"
                 :key="index"
                 :monitor="item"
-                :isSearch="searchText !== ''"
+                :showPathName="filtersActive"
                 :isSelectMode="selectMode"
                 :isSelected="isSelected"
                 :select="select"
@@ -117,31 +117,68 @@ export default {
 
         },
 
+        /**
+         * Returns a sorted list of monitors based on the applied filters and search text.
+         *
+         * @return {Array} The sorted list of monitors.
+         */
         sortedMonitorList() {
             let result = Object.values(this.$root.monitorList);
 
-            // Simple filter by search text
-            // finds monitor name, tag name or tag value
-            if (this.searchText !== "") {
-                const loweredSearchText = this.searchText.toLowerCase();
-                result = result.filter(monitor => {
-                    return monitor.name.toLowerCase().includes(loweredSearchText)
+            result = result.filter(monitor => {
+                // filter by search text
+                // finds monitor name, tag name or tag value
+                let searchTextMatch = true;
+                if (this.searchText !== "") {
+                    const loweredSearchText = this.searchText.toLowerCase();
+                    searchTextMatch =
+                        monitor.name.toLowerCase().includes(loweredSearchText)
                         || monitor.tags.find(tag => tag.name.toLowerCase().includes(loweredSearchText)
                             || tag.value?.toLowerCase().includes(loweredSearchText));
-                });
-            } else {
-                result = result.filter(monitor => monitor.parent === null);
-            }
+                }
+
+                // filter by status
+                let statusMatch = true;
+                if (this.filterState.status != null && this.filterState.status.length > 0) {
+                    if (monitor.id in this.$root.lastHeartbeatList && this.$root.lastHeartbeatList[monitor.id]) {
+                        monitor.status = this.$root.lastHeartbeatList[monitor.id].status;
+                    }
+                    statusMatch = this.filterState.status.includes(monitor.status);
+                }
+
+                // filter by active
+                let activeMatch = true;
+                if (this.filterState.active != null && this.filterState.active.length > 0) {
+                    activeMatch = this.filterState.active.includes(monitor.active);
+                }
+
+                // filter by tags
+                let tagsMatch = true;
+                if (this.filterState.tags != null && this.filterState.tags.length > 0) {
+                    tagsMatch = monitor.tags.map(tag => tag.tag_id) // convert to array of tag IDs
+                        .filter(monitorTagId => this.filterState.tags.includes(monitorTagId)) // perform Array Intersaction between filter and monitor's tags
+                        .length > 0;
+                }
+
+                // Hide children if not filtering
+                let showChild = true;
+                if (this.filterState.status == null && this.filterState.active == null && this.filterState.tags == null && this.searchText === "") {
+                    if (monitor.parent !== null) {
+                        showChild = false;
+                    }
+                }
+
+                return searchTextMatch && statusMatch && activeMatch && tagsMatch && showChild;
+            });
 
             // Filter result by active state, weight and alphabetical
             result.sort((m1, m2) => {
-
                 if (m1.active !== m2.active) {
-                    if (m1.active === 0) {
+                    if (m1.active === false) {
                         return 1;
                     }
 
-                    if (m2.active === 0) {
+                    if (m2.active === false) {
                         return -1;
                     }
                 }
@@ -158,27 +195,6 @@ export default {
 
                 return m1.name.localeCompare(m2.name);
             });
-
-            if (this.filterState.status != null && this.filterState.status.length > 0) {
-                result.map(monitor => {
-                    if (monitor.id in this.$root.lastHeartbeatList && this.$root.lastHeartbeatList[monitor.id]) {
-                        monitor.status = this.$root.lastHeartbeatList[monitor.id].status;
-                    }
-                });
-                result = result.filter(monitor => this.filterState.status.includes(monitor.status));
-            }
-
-            if (this.filterState.active != null && this.filterState.active.length > 0) {
-                result = result.filter(monitor => this.filterState.active.includes(monitor.active));
-            }
-
-            if (this.filterState.tags != null && this.filterState.tags.length > 0) {
-                result = result.filter(monitor => {
-                    return monitor.tags.map(tag => tag.tag_id) // convert to array of tag IDs
-                        .filter(monitorTagId => this.filterState.tags.includes(monitorTagId)) // perform Array Intersaction between filter and monitor's tags
-                        .length > 0;
-                });
-            }
 
             return result;
         },
@@ -233,6 +249,15 @@ export default {
                 this.selectAll = false;
                 this.selectedMonitors = {};
             }
+        },
+
+        /**
+         * Determines if any filters are active.
+         *
+         * @return {boolean} True if any filter is active, false otherwise.
+         */
+        filtersActive() {
+            return this.filterState.status != null || this.filterState.active != null || this.filterState.tags != null || this.searchText !== "";
         }
     },
     mounted() {
