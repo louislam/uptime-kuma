@@ -5,9 +5,7 @@
     </div>
     <div class="mb-3">
         <label for="gotify-server-url" class="form-label">{{ $t("Server URL") }}</label>
-        <div class="input-group mb-3">
-            <input id="gotify-server-url" v-model="$parent.notification.gotifyserverurl" type="text" class="form-control" required>
-        </div>
+        <input id="gotify-server-url" v-model="$parent.notification.gotifyserverurl" type="text" class="form-control" required>
     </div>
 
     <div class="mb-3">

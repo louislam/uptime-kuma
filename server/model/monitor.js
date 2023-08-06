@@ -6,7 +6,7 @@ const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, TimeLogger, MAX_INTERVA
     SQL_DATETIME_FORMAT
 } = require("../../src/util");
 const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, mqttAsync, setSetting, httpNtlm, radius, grpcQuery,
-    redisPingAsync, mongodbPing, kafkaProducerAsync
+    redisPingAsync, mongodbPing, kafkaProducerAsync, getOidcTokenClientCredentials,
 } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
@@ -102,6 +102,7 @@ class Monitor extends BeanModel {
             active: await this.isActive(),
             forceInactive: !await Monitor.isParentActive(this.id),
             type: this.type,
+            timeout: this.timeout,
             interval: this.interval,
             retryInterval: this.retryInterval,
             resendInterval: this.resendInterval,
@@ -154,6 +155,11 @@ class Monitor extends BeanModel {
                 grpcMetadata: this.grpcMetadata,
                 basic_auth_user: this.basic_auth_user,
                 basic_auth_pass: this.basic_auth_pass,
+                oauth_client_id: this.oauth_client_id,
+                oauth_client_secret: this.oauth_client_secret,
+                oauth_token_url: this.oauth_token_url,
+                oauth_scopes: this.oauth_scopes,
+                oauth_auth_method: this.oauth_auth_method,
                 pushToken: this.pushToken,
                 databaseConnectionString: this.databaseConnectionString,
                 radiusUsername: this.radiusUsername,
@@ -346,7 +352,10 @@ class Monitor extends BeanModel {
                             const lastBeat = await Monitor.getPreviousHeartbeat(child.id);
 
                             // Only change state if the monitor is in worse conditions then the ones before
-                            if (bean.status === UP && (lastBeat.status === PENDING || lastBeat.status === DOWN)) {
+                            // lastBeat.status could be null
+                            if (!lastBeat) {
+                                bean.status = PENDING;
+                            } else if (bean.status === UP && (lastBeat.status === PENDING || lastBeat.status === DOWN)) {
                                 bean.status = lastBeat.status;
                             } else if (bean.status === PENDING && lastBeat.status === DOWN) {
                                 bean.status = lastBeat.status;
@@ -372,6 +381,24 @@ class Monitor extends BeanModel {
                         basicAuthHeader = {
                             "Authorization": "Basic " + this.encodeBase64(this.basic_auth_user, this.basic_auth_pass),
                         };
+                    }
+
+                    // OIDC: Basic client credential flow.
+                    // Additional grants might be implemented in the future
+                    let oauth2AuthHeader = {};
+                    if (this.auth_method === "oauth2-cc") {
+                        try {
+                            if (this.oauthAccessToken === undefined || new Date(this.oauthAccessToken.expires_at * 1000) <= new Date()) {
+                                log.debug("monitor", `[${this.name}] The oauth access-token undefined or expired. Requesting a new one`);
+                                this.oauthAccessToken = await getOidcTokenClientCredentials(this.oauth_token_url, this.oauth_client_id, this.oauth_client_secret, this.oauth_scopes, this.oauth_auth_method);
+                                log.debug("monitor", `[${this.name}] Obtained oauth access-token. Expires at ${new Date(this.oauthAccessToken.expires_at * 1000)}`);
+                            }
+                            oauth2AuthHeader = {
+                                "Authorization": this.oauthAccessToken.token_type + " " + this.oauthAccessToken.access_token,
+                            };
+                        } catch (e) {
+                            throw new Error("The oauth config is invalid. " + e.message);
+                        }
                     }
 
                     const httpsAgentOptions = {
@@ -402,12 +429,13 @@ class Monitor extends BeanModel {
                     const options = {
                         url: this.url,
                         method: (this.method || "get").toLowerCase(),
-                        timeout: this.interval * 1000 * 0.8,
+                        timeout: this.timeout,
                         headers: {
                             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
                             "User-Agent": "Uptime-Kuma/" + version,
                             ...(contentType ? { "Content-Type": contentType } : {}),
                             ...(basicAuthHeader),
+                            ...(oauth2AuthHeader),
                             ...(this.headers ? JSON.parse(this.headers) : {})
                         },
                         maxRedirects: this.maxredirects,
@@ -621,7 +649,7 @@ class Monitor extends BeanModel {
                     }
 
                     let res = await axios.get(steamApiUrl, {
-                        timeout: this.interval * 1000 * 0.8,
+                        timeout: this.timeout,
                         headers: {
                             "Accept": "*/*",
                             "User-Agent": "Uptime-Kuma/" + version,
@@ -693,6 +721,9 @@ class Monitor extends BeanModel {
                         options.socketPath = dockerHost._dockerDaemon;
                     } else if (dockerHost._dockerType === "tcp") {
                         options.baseURL = DockerHost.patchDockerURL(dockerHost._dockerDaemon);
+                        options.httpsAgent = CacheableDnsHttpAgent.getHttpsAgent(
+                            DockerHost.getHttpsAgentOptions(dockerHost._dockerType, options.baseURL)
+                        );
                     }
 
                     log.debug("monitor", `[${this.name}] Axios Request`);
