@@ -1201,7 +1201,7 @@ message HealthCheckResponse {
             "mongodb",
             "redis",
         ];
-        
+
         let kafkaSaslMechanismOptions = [
             "None",
             "plain",
@@ -1263,7 +1263,7 @@ message HealthCheckResponse {
                         ) {
                             this.monitor.name = "";
                         }
-                        
+
                         if (this.isClone) {
                             /*
                             * Cloning a monitor will include properties that can not be posted to backend
