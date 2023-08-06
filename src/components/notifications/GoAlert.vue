@@ -1,9 +1,7 @@
 <template>
     <div class="mb-3">
         <label for="goalert-base-url" class="form-label">{{ $t("Base URL") }}</label>
-        <div class="input-group mb-3">
-            <input id="goalert-base-url" v-model="$parent.notification.goAlertBaseURL" type="text" class="form-control" required>
-        </div>
+        <input id="goalert-base-url" v-model="$parent.notification.goAlertBaseURL" type="text" class="form-control" required>
         <i18n-t tag="div" keypath="goAlertInfo" class="form-text">
             <a href="https://goalert.me" target="_blank">https://goalert.me</a>
         </i18n-t>
