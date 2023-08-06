@@ -641,6 +641,10 @@ let needSetup = false;
                 let notificationIDList = monitor.notificationIDList;
                 delete monitor.notificationIDList;
 
+                // Ensure status code ranges are strings
+                if (!monitor.accepted_statuscodes.every((code) => typeof code === "string")) {
+                    throw new Error("Accepted status codes are not all strings");
+                }
                 monitor.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
                 delete monitor.accepted_statuscodes;
 
@@ -704,6 +708,11 @@ let needSetup = false;
                 // Remove children if monitor type has changed (from group to non-group)
                 if (bean.type === "group" && monitor.type !== bean.type) {
                     removeGroupChildren = true;
+                }
+
+                // Ensure status code ranges are strings
+                if (!monitor.accepted_statuscodes.every((code) => typeof code === "string")) {
+                    throw new Error("Accepted status codes are not all strings");
                 }
 
                 bean.name = monitor.name;

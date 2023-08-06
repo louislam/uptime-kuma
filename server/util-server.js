@@ -728,6 +728,10 @@ exports.checkStatusCode = function (status, acceptedCodes) {
     }
 
     for (const codeRange of acceptedCodes) {
+        if (typeof codeRange !== "string") {
+            throw new Error("Invalid status code range");
+        }
+
         const codeRangeSplit = codeRange.split("-").map(string => parseInt(string));
         if (codeRangeSplit.length === 1) {
             if (status === codeRangeSplit[0]) {
