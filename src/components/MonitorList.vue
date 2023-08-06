@@ -126,7 +126,6 @@ export default {
             let result = Object.values(this.$root.monitorList);
 
             result = result.filter(monitor => {
-
                 // filter by search text
                 // finds monitor name, tag name or tag value
                 let searchTextMatch = true;
@@ -136,7 +135,6 @@ export default {
                         monitor.name.toLowerCase().includes(loweredSearchText)
                         || monitor.tags.find(tag => tag.name.toLowerCase().includes(loweredSearchText)
                             || tag.value?.toLowerCase().includes(loweredSearchText));
-
                 }
 
                 // filter by status
@@ -175,7 +173,6 @@ export default {
 
             // Filter result by active state, weight and alphabetical
             result.sort((m1, m2) => {
-
                 if (m1.active !== m2.active) {
                     if (m1.active === false) {
                         return 1;
