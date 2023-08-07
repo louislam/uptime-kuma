@@ -823,5 +823,21 @@
     "Enter the list of brokers": "Введіть список брокерів",
     "Kafka Producer Message": "Повідомлення Kafka Producer",
     "tailscalePingWarning": "Для того, щоб використовувати монітор Tailscale Ping, вам потрібно встановити Uptime Kuma без Docker, а також встановити клієнт Tailscale на вашому сервері.",
-    "Server URL should not contain the nfty topic": "URL-адреса сервера не повинна містити тему nfty"
+    "Server URL should not contain the nfty topic": "URL-адреса сервера не повинна містити тему nfty",
+    "FlashDuty Severity": "Серйозність",
+    "nostrRelays": "Реле Nostr",
+    "nostrRelaysHelp": "Одна URL-адреса реле в рядку",
+    "nostrSender": "Приватний ключ відправника (nsec)",
+    "nostrRecipients": "Відкриті ключі одержувачів (npub)",
+    "showCertificateExpiry": "Показати термін дії сертифікату",
+    "noOrBadCertificate": "Відсутність/поганий сертифікат",
+    "Select": "Вибрати",
+    "selectedMonitorCount": "Вибрано: {0}",
+    "wayToGetFlashDutyKey": "Ви можете перейти на сторінку \"Канал -> (Виберіть канал) -> Інтеграції -> Додати нову інтеграцію\", додати \"Користувацьку подію\", щоб отримати пуш-адресу, скопіювати ключ інтеграції в адресу. Для отримання додаткової інформації, будь ласка, відвідайте",
+    "nostrRecipientsHelp": "Формат npub, по одному в рядку",
+    "Check/Uncheck": "Встановити/зняти галочку",
+    "PushDeer Server": "Сервер PushDeer",
+    "pushDeerServerDescription": "Залиште порожнім, щоб використовувати офіційний сервер",
+    "Request Timeout": "Таймаут запиту",
+    "timeoutAfter": "Таймаут через {0} секунд"
 }
