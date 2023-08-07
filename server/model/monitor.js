@@ -135,6 +135,7 @@ class Monitor extends BeanModel {
             radiusCalledStationId: this.radiusCalledStationId,
             radiusCallingStationId: this.radiusCallingStationId,
             game: this.game,
+            gamedigGivenPortOnly: this.getGameDigGivenPortOnly(),
             httpBodyEncoding: this.httpBodyEncoding,
             jsonPath: this.jsonPath,
             expectedValue: this.expectedValue,
@@ -278,6 +279,10 @@ class Monitor extends BeanModel {
      */
     getAcceptedStatuscodes() {
         return JSON.parse(this.accepted_statuscodes_json);
+    }
+
+    getGameDigGivenPortOnly() {
+        return Boolean(this.gamedigGivenPortOnly);
     }
 
     /**
@@ -687,7 +692,7 @@ class Monitor extends BeanModel {
                             type: this.game,
                             host: this.hostname,
                             port: this.port,
-                            givenPortOnly: true,
+                            givenPortOnly: this.getGameDigGivenPortOnly(),
                         });
 
                         bean.msg = state.name;
