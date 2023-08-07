@@ -26,6 +26,8 @@ class Database {
 
     static path;
 
+    static dockerTLSDir;
+
     /**
      * @type {boolean}
      */
@@ -78,6 +80,7 @@ class Database {
         "patch-add-certificate-expiry-status-page.sql": true,
         "patch-monitor-oauth-cc.sql": true,
         "patch-add-cache-bust.sql": true,
+        "patch-add-timeout-monitor.sql": true,
     };
 
     /**
@@ -111,6 +114,11 @@ class Database {
         Database.screenshotDir = path.join(Database.dataDir, "screenshots/");
         if (! fs.existsSync(Database.screenshotDir)) {
             fs.mkdirSync(Database.screenshotDir, { recursive: true });
+        }
+
+        Database.dockerTLSDir = path.join(Database.dataDir, "docker-tls/");
+        if (! fs.existsSync(Database.dockerTLSDir)) {
+            fs.mkdirSync(Database.dockerTLSDir, { recursive: true });
         }
 
         log.info("db", `Data Dir: ${Database.dataDir}`);

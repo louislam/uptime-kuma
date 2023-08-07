@@ -59,6 +59,8 @@
     "Hostname": "Hostname",
     "Port": "Port",
     "Heartbeat Interval": "Heartbeat Interval",
+    "Request Timeout": "Request Timeout",
+    "timeoutAfter": "Timeout after {0} seconds",
     "Retries": "Retries",
     "Heartbeat Retry Interval": "Heartbeat Retry Interval",
     "Resend Notification if Down X times consecutively": "Resend Notification if Down X times consecutively",
