@@ -11,11 +11,11 @@
             />
         </div>
         <div
-            v-if="size !== 'small' && beatList.length > 4"
+            v-if="size !== 'small' && beatList.length > 4 && $root.styleElapsedTime !== 'none'"
             class="d-flex justify-content-between align-items-center word" :style="timeStyle"
         >
             <div>{{ timeSinceFirstBeat }} ago</div>
-            <div class="connecting-line"></div>
+            <div v-if="$root.styleElapsedTime === 'with-line'" class="connecting-line"></div>
             <div>{{ timeSinceLastBeat }}</div>
         </div>
     </div>
@@ -315,9 +315,13 @@ export default {
 .connecting-line {
     flex-grow: 1;
     height: 1px;
-    background-color: #aaa;
+    background-color: #ededed;
     margin-left: 10px;
     margin-right: 10px;
     margin-top: 2px;
+
+    .dark & {
+        background-color: #333;
+    }
 }
 </style>
