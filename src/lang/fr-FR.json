@@ -829,5 +829,9 @@
     "PushDeer Server": "PushDeer Server",
     "showCertificateExpiry": "Afficher l'expiration du certificat",
     "noOrBadCertificate": "Pas/Mauvais certificat",
-    "pushDeerServerDescription": "Laissez le champ vide pour utiliser le serveur officiel"
+    "pushDeerServerDescription": "Laissez le champ vide pour utiliser le serveur officiel",
+    "FlashDuty Severity": "Gravité",
+    "wayToGetFlashDutyKey": "Vous pouvez aller dans Canal -> (Sélectionner un canal) -> Intégrations -> Ajouter une nouvelle page d'intégration, ajouter un \"événement personnalisé\" pour obtenir une adresse push, copier la clé d'intégration dans l'adresse. Pour plus d'informations, veuillez visiter",
+    "Request Timeout": "Délai d'expiration de la demande",
+    "timeoutAfter": "Délai dépassé après {0} secondes"
 }
