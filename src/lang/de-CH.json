@@ -814,5 +814,6 @@
     "Badge Duration (in hours)": "Badge Dauer (in Stunden)",
     "Badge Preview": "Badge Vorschau",
     "tailscalePingWarning": "Um den Tailscale Ping Monitor nutzen zu können, musst du Uptime Kuma ohne Docker installieren und den Tailscale Client auf dem Server installieren.",
-    "Server URL should not contain the nfty topic": "Die Server-URL sollte das nfty-Thema nicht enthalten"
+    "Server URL should not contain the nfty topic": "Die Server-URL sollte das nfty-Thema nicht enthalten",
+    "pushDeerServerDescription": "Leer lassen, um den offiziellen Server zu verwenden"
 }

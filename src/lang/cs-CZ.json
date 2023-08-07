@@ -827,5 +827,11 @@
     "Check/Uncheck": "Vybrat/Zrušit výběr",
     "showCertificateExpiry": "Zobrazit vypršení platnosti certifikátu",
     "pushDeerServerDescription": "Chcete-li používat oficiální server, ponechte prázdné",
-    "noOrBadCertificate": "Žádný/Vadný certifikát"
+    "noOrBadCertificate": "Žádný/Vadný certifikát",
+    "nostrRelays": "Relé Nostr",
+    "FlashDuty Severity": "Závažnost",
+    "PushDeer Server": "Server PushDeer",
+    "wayToGetFlashDutyKey": "Můžete přejít na stránku Kanál -> (Vyberte kanál) -> Integrace -> Přidat novou integraci, přidat \"Vlastní událost\" a získat adresu pro odeslání, zkopírovat klíč integrace do adresy. Další informace naleznete na adrese",
+    "Request Timeout": "Časový limit požadavku",
+    "timeoutAfter": "Vypršení časového limitu po {0} sekundách"
 }

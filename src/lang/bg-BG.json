@@ -822,5 +822,16 @@
     "Secret AccessKey": "Таен ключ за достъп",
     "Session Token": "Токен за сесия",
     "tailscalePingWarning": "За да използвате Tailscale Ping монитор, трябва да инсталирате Uptime Kuma без Docker и също така да инсталирате Tailscale клиент на вашия сървър.",
-    "Server URL should not contain the nfty topic": "URL адресът на сървъра не трябва да съдържа nfty темата"
+    "Server URL should not contain the nfty topic": "URL адресът на сървъра не трябва да съдържа nfty темата",
+    "FlashDuty Severity": "Степен на тежест",
+    "showCertificateExpiry": "Показвай изтичащ сертификат",
+    "noOrBadCertificate": "Няма/лош сертификат",
+    "Select": "Избери",
+    "selectedMonitorCount": "Избрано: {0}",
+    "wayToGetFlashDutyKey": "Можете да отидете на страница 'Channel -> (Select a Channel) -> Integrations -> Add a new integration' и да добавите 'Custom Event', за да получите 'push' адрес и да копирате ключа за интегриране в адреса. За повече информация, моля посетете",
+    "PushDeer Server": "PushDeer сървър",
+    "pushDeerServerDescription": "Оставете празно, за да използвате официалния сървър",
+    "Check/Uncheck": "Постави/Премахни отметка",
+    "Request Timeout": "Време за изтичане на заявката",
+    "timeoutAfter": "Времето изтича след {0} секунди"
 }
