@@ -833,5 +833,10 @@
     "FlashDuty Severity": "Gravité",
     "wayToGetFlashDutyKey": "Vous pouvez aller dans Canal -> (Sélectionner un canal) -> Intégrations -> Ajouter une nouvelle page d'intégration, ajouter un \"événement personnalisé\" pour obtenir une adresse push, copier la clé d'intégration dans l'adresse. Pour plus d'informations, veuillez visiter",
     "Request Timeout": "Délai d'expiration de la demande",
-    "timeoutAfter": "Délai dépassé après {0} secondes"
+    "timeoutAfter": "Délai dépassé après {0} secondes",
+    "gamedigGuessPort": "Gamedig: Devinez le port",
+    "gamedigGuessPortDescription": "Le port utilisé par Valve Server Query Protocol peut être différent du port client. Essayez ceci si la sonde ne peut pas se connecter à votre serveur.",
+    "styleElapsedTimeShowNoLine": "Afficher (pas de ligne)",
+    "styleElapsedTimeShowWithLine": "Afficher (avec ligne)",
+    "styleElapsedTime": "Temps écoulé sous la barre d'état"
 }
