@@ -839,5 +839,10 @@
     "PushDeer Server": "Сервер PushDeer",
     "pushDeerServerDescription": "Залиште порожнім, щоб використовувати офіційний сервер",
     "Request Timeout": "Таймаут запиту",
-    "timeoutAfter": "Таймаут через {0} секунд"
+    "timeoutAfter": "Таймаут через {0} секунд",
+    "styleElapsedTime": "Час, що минув під індикатором серцебиття",
+    "gamedigGuessPort": "Gamedig: Вгадати порт",
+    "gamedigGuessPortDescription": "Порт, що використовується протоколом запитів до сервера Valve, може відрізнятися від порту клієнта. Спробуйте це, якщо монітор не може підключитися до вашого сервера.",
+    "styleElapsedTimeShowWithLine": "Показати (з лінією)",
+    "styleElapsedTimeShowNoLine": "Показати (без лінії)"
 }
