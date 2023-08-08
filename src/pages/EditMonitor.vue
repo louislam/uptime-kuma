@@ -467,6 +467,16 @@
                                 </div>
                             </div>
 
+                            <div v-if="monitor.type === 'gamedig'" class="my-3 form-check">
+                                <input id="gamedig-guess-port" v-model="monitor.gamedigGivenPortOnly" :true-value="false" :false-value="true" class="form-check-input" type="checkbox">
+                                <label class="form-check-label" for="gamedig-guess-port">
+                                    {{ $t("gamedigGuessPort") }}
+                                </label>
+                                <div class="form-text">
+                                    {{ $t("gamedigGuessPortDescription") }}
+                                </div>
+                            </div>
+
                             <!-- Ping packet size -->
                             <div v-if="monitor.type === 'ping'" class="my-3">
                                 <label for="packet-size" class="form-label">{{ $t("Packet Size") }}</label>
@@ -883,6 +893,7 @@ const monitorDefaults = {
         mechanism: "None",
     },
     cacheBust: false,
+    gamedigGivenPortOnly: true,
 };
 
 export default {

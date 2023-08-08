@@ -720,7 +720,6 @@ exports.checkCertificate = function (res) {
  * @param {number} status The status code to check
  * @param {string[]} acceptedCodes An array of accepted status codes
  * @returns {boolean} True if status code within range, false otherwise
- * @throws {Error} Will throw an error if the provided status code is not a valid range string or code string
  */
 exports.checkStatusCode = function (status, acceptedCodes) {
     if (acceptedCodes == null || acceptedCodes.length === 0) {
@@ -728,6 +727,11 @@ exports.checkStatusCode = function (status, acceptedCodes) {
     }
 
     for (const codeRange of acceptedCodes) {
+        if (typeof codeRange !== "string") {
+            log.error("monitor", `Accepted status code not a string. ${codeRange} is of type ${typeof codeRange}`);
+            continue;
+        }
+
         const codeRangeSplit = codeRange.split("-").map(string => parseInt(string));
         if (codeRangeSplit.length === 1) {
             if (status === codeRangeSplit[0]) {
@@ -738,7 +742,8 @@ exports.checkStatusCode = function (status, acceptedCodes) {
                 return true;
             }
         } else {
-            throw new Error("Invalid status code range");
+            log.error("monitor", `${codeRange} is not a valid status code range`);
+            continue;
         }
     }
 
