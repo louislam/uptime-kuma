@@ -833,5 +833,10 @@
     "pushDeerServerDescription": "Оставете празно, за да използвате официалния сървър",
     "Check/Uncheck": "Постави/Премахни отметка",
     "Request Timeout": "Време за изтичане на заявката",
-    "timeoutAfter": "Времето изтича след {0} секунди"
+    "timeoutAfter": "Времето изтича след {0} секунди",
+    "styleElapsedTime": "Изминало време под лентата с проверки",
+    "styleElapsedTimeShowNoLine": "Покажи (без ред)",
+    "gamedigGuessPort": "Gamedig: Познай порт",
+    "gamedigGuessPortDescription": "Портът, използван от Valve Server Query Protocol, може да е различен от клиентския порт. Опитайте това, ако мониторът не може да се свърже с вашия сървър.",
+    "styleElapsedTimeShowWithLine": "Покажи (с ред)"
 }
