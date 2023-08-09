@@ -1,7 +1,7 @@
 import dayjs from "dayjs";
 import timezones from "timezones-list";
 import { localeDirection, currentLocale } from "./i18n";
-import { TYPE, POSITION } from "vue-toastification";
+import { POSITION } from "vue-toastification";
 
 /**
  * Returns the offset from UTC in hours for the current locale.
@@ -172,6 +172,10 @@ export function loadToastSettings() {
     };
 }
 
+/**
+ * Get timeout for success toasts
+ * @returns {(number|boolean)} Timeout in ms. If false timeout disabled.
+ */
 export function getToastSuccessTimeout() {
     let successTimeout = 20000;
 
@@ -189,6 +193,10 @@ export function getToastSuccessTimeout() {
     return successTimeout;
 }
 
+/**
+ * Get timeout for error toasts
+ * @returns {(number|boolean)} Timeout in ms. If false timeout disabled.
+ */
 export function getToastErrorTimeout() {
     let errorTimeout = -1;
 

@@ -114,13 +114,13 @@ export default {
 
     watch: {
         // Parse, store and apply new timeout settings.
-        toastSuccessTimeoutSecs: function (newTimeout) {
+        toastSuccessTimeoutSecs(newTimeout) {
             const parsedTimeout = parseInt(newTimeout);
             if (parsedTimeout != null && !Number.isNaN(parsedTimeout)) {
                 localStorage.toastSuccessTimeout = newTimeout > 0 ? newTimeout * 1000 : newTimeout;
             }
         },
-        toastErrorTimeoutSecs: function (newTimeout) {
+        toastErrorTimeoutSecs(newTimeout) {
             const parsedTimeout = parseInt(newTimeout);
             if (parsedTimeout != null && !Number.isNaN(parsedTimeout)) {
                 localStorage.toastErrorTimeout = newTimeout > 0 ? newTimeout * 1000 : newTimeout;
