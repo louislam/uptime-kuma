@@ -1,5 +1,5 @@
 const { genSecret, DOWN, log} = require("../src/util");
-const utilServerRewire = require("../server/util-server");
+const utilServer = require("../server/util-server");
 const Discord = require("../server/notification-providers/discord");
 const axios = require("axios");
 const { UptimeKumaServer } = require("../server/uptime-kuma-server");
@@ -14,13 +14,13 @@ jest.mock("axios");
 
 describe("Test parseCertificateInfo", () => {
     it("should handle undefined", async () => {
-        const parseCertificateInfo = utilServerRewire.__get__("parseCertificateInfo");
+        const parseCertificateInfo = utilServer.__getPrivateFunction("parseCertificateInfo");
         const info = parseCertificateInfo(undefined);
         expect(info).toEqual(undefined);
     }, 5000);
 
     it("should handle normal cert chain", async () => {
-        const parseCertificateInfo = utilServerRewire.__get__("parseCertificateInfo");
+        const parseCertificateInfo = utilServer.__getPrivateFunction("parseCertificateInfo");
 
         const chain1 = {
             fingerprint: "CF:2C:F3:6A:FE:6B:10:EC:44:77:C8:95:BB:96:2E:06:1F:0E:15:DA",
@@ -52,7 +52,7 @@ describe("Test parseCertificateInfo", () => {
     }, 5000);
 
     it("should handle cert chain with strange circle", async () => {
-        const parseCertificateInfo = utilServerRewire.__get__("parseCertificateInfo");
+        const parseCertificateInfo = utilServer.__getPrivateFunction("parseCertificateInfo");
 
         const chain1 = {
             fingerprint: "CF:2C:F3:6A:FE:6B:10:EC:44:77:C8:95:BB:96:2E:06:1F:0E:15:DA",
@@ -92,7 +92,7 @@ describe("Test parseCertificateInfo", () => {
     }, 5000);
 
     it("should handle cert chain with last undefined (should be happen in real, but just in case)", async () => {
-        const parseCertificateInfo = utilServerRewire.__get__("parseCertificateInfo");
+        const parseCertificateInfo = utilServer.__getPrivateFunction("parseCertificateInfo");
 
         const chain1 = {
             fingerprint: "CF:2C:F3:6A:FE:6B:10:EC:44:77:C8:95:BB:96:2E:06:1F:0E:15:DA",
@@ -213,22 +213,22 @@ describe("Test Discord Notification Provider", () => {
 
 describe("The function filterAndJoin", () => {
     it("should join and array of strings to one string", () => {
-        const result = utilServerRewire.filterAndJoin([ "one", "two", "three" ]);
+        const result = utilServer.filterAndJoin([ "one", "two", "three" ]);
         expect(result).toBe("onetwothree");
     });
 
     it("should join strings using a given connector", () => {
-        const result = utilServerRewire.filterAndJoin([ "one", "two", "three" ], "-");
+        const result = utilServer.filterAndJoin([ "one", "two", "three" ], "-");
         expect(result).toBe("one-two-three");
     });
 
     it("should filter null, undefined and empty strings before joining", () => {
-        const result = utilServerRewire.filterAndJoin([ undefined, "", "three" ], "--");
+        const result = utilServer.filterAndJoin([ undefined, "", "three" ], "--");
         expect(result).toBe("three");
     });
 
     it("should return an empty string if all parts are filtered out", () => {
-        const result = utilServerRewire.filterAndJoin([ undefined, "", "" ], "--");
+        const result = utilServer.filterAndJoin([ undefined, "", "" ], "--");
         expect(result).toBe("");
     });
 });

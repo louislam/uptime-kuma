@@ -720,5 +720,15 @@
     "sameAsServerTimezone": "使用伺服器時區",
     "WeCom Bot Key": "WeCom 機器人 Key",
     "pagertreeMedium": "中",
-    "pagertreeHigh": "高"
+    "pagertreeHigh": "高",
+    "Cannot connect to the socket server": "無法連線到 Socket 伺服器",
+    "Reconnecting...": "重新連線...",
+    "chromeExecutable": "Chrome/Chromium 執行檔",
+    "chromeExecutableAutoDetect": "自動偵測",
+    "chromeExecutableDescription": "如果您使用 Docker 且未安裝 Chromium，可能要花數分鐘安裝後才能顯示測試結果。安裝會使用 1GB 的硬碟空間。",
+    "Edit Maintenance": "編輯維護",
+    "Invert Keyword": "以上關鍵字不能出現",
+    "Home": "首頁",
+    "Expected Value": "預期值",
+    "Json Query": "JSON 查询"
 }
