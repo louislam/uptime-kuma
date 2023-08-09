@@ -639,7 +639,7 @@
     "Server Timezone": "Часовой пояс сервера",
     "statusPageMaintenanceEndDate": "Конец",
     "IconUrl": "URL иконки",
-    "Enable DNS Cache": "Включить DNS кэш",
+    "Enable DNS Cache": "Включить DNS кэш для мониторов HTTP(S)",
     "Enable": "Включить",
     "Disable": "Отключить",
     "Single Maintenance Window": "Единое окно техбслуживания",
@@ -825,5 +825,13 @@
     "filterActive": "Активный",
     "filterActivePaused": "На паузе",
     "Invert Keyword": "Инвертировать ключевое слово",
-    "tailscalePingWarning": "Для того чтобы использовать монитор Tailscale Ping, необходимо установить Uptime Kuma без Docker, а также установить на сервер клиент Tailscale."
+    "tailscalePingWarning": "Для того чтобы использовать монитор Tailscale Ping, необходимо установить Uptime Kuma без Docker, а также установить на сервер клиент Tailscale.",
+    "PushDeer Server": "Сервер PushDeer",
+    "pushDeerServerDescription": "Оставьте пустым для использования официального сервера",
+    "showCertificateExpiry": "Показывать истекающий сертификат",
+    "Request Timeout": "Тайм-Аут запроса",
+    "timeoutAfter": "Тайм-Аут через {0} секунд",
+    "Select": "Выбрать",
+    "selectedMonitorCount": "Выбрано: {0}",
+    "Check/Uncheck": "Отметить/Снять"
 }
