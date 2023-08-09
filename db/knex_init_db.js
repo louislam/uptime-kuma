@@ -447,6 +447,110 @@ async function createTables() {
             .onUpdate("CASCADE");
     });
 
+    /*
+        patch-add-invert-keyword.sql
+        ALTER TABLE monitor
+        ADD invert_keyword BOOLEAN default 0 not null;
+     */
+    await knex.schema.table("monitor", function (table) {
+        table.boolean("invert_keyword").defaultTo(0).notNullable();
+    });
+
+    /*
+        patch-added-json-query.sql
+        ALTER TABLE monitor
+	    ADD json_path TEXT;
+
+        ALTER TABLE monitor
+	    ADD expected_value VARCHAR(255);
+     */
+    await knex.schema.table("monitor", function (table) {
+        table.text("json_path");
+        table.string("expected_value", 255);
+    });
+
+    /*
+    patch-added-kafka-producer.sql
+
+    ALTER TABLE monitor
+	ADD kafka_producer_topic VARCHAR(255);
+
+ALTER TABLE monitor
+	ADD kafka_producer_brokers TEXT;
+
+ALTER TABLE monitor
+	ADD kafka_producer_ssl INTEGER;
+
+ALTER TABLE monitor
+	ADD kafka_producer_allow_auto_topic_creation VARCHAR(255);
+
+ALTER TABLE monitor
+	ADD kafka_producer_sasl_options TEXT;
+
+ALTER TABLE monitor
+	ADD kafka_producer_message TEXT;
+     */
+    await knex.schema.table("monitor", function (table) {
+        table.string("kafka_producer_topic", 255);
+        table.text("kafka_producer_brokers");
+        table.integer("kafka_producer_ssl");
+        table.string("kafka_producer_allow_auto_topic_creation", 255);
+        table.text("kafka_producer_sasl_options");
+        table.text("kafka_producer_message");
+    });
+
+    /*
+    patch-add-certificate-expiry-status-page.sql
+    ALTER TABLE status_page
+    ADD show_certificate_expiry BOOLEAN default 0 NOT NULL;
+     */
+    await knex.schema.table("status_page", function (table) {
+        table.boolean("show_certificate_expiry").defaultTo(0).notNullable();
+    });
+
+    /*
+    patch-monitor-oauth-cc.sql
+    ALTER TABLE monitor
+    ADD oauth_client_id TEXT default null;
+
+ALTER TABLE monitor
+    ADD oauth_client_secret TEXT default null;
+
+ALTER TABLE monitor
+    ADD oauth_token_url TEXT default null;
+
+ALTER TABLE monitor
+    ADD oauth_scopes TEXT default null;
+
+ALTER TABLE monitor
+    ADD oauth_auth_method TEXT default null;
+     */
+    await knex.schema.table("monitor", function (table) {
+        table.text("oauth_client_id").defaultTo(null);
+        table.text("oauth_client_secret").defaultTo(null);
+        table.text("oauth_token_url").defaultTo(null);
+        table.text("oauth_scopes").defaultTo(null);
+        table.text("oauth_auth_method").defaultTo(null);
+    });
+
+    /*
+    patch-add-timeout-monitor.sql
+    ALTER TABLE monitor
+    ADD timeout DOUBLE default 0 not null;
+     */
+    await knex.schema.table("monitor", function (table) {
+        table.double("timeout").defaultTo(0).notNullable();
+    });
+
+    /*
+    patch-add-gamedig-given-port.sql
+    ALTER TABLE monitor
+    ADD gamedig_given_port_only BOOLEAN default 1 not null;
+     */
+    await knex.schema.table("monitor", function (table) {
+        table.boolean("gamedig_given_port_only").defaultTo(1).notNullable();
+    });
+
     log.info("mariadb", "Created basic tables for MariaDB");
 }
 

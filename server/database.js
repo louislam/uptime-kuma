@@ -77,14 +77,14 @@ class Database {
         "patch-api-key-table.sql": true,
         "patch-monitor-tls.sql": true,
         "patch-maintenance-cron.sql": true,
-        "patch-add-parent-monitor.sql": true,   // The last file so far converted to a knex migration file
+        "patch-add-parent-monitor.sql": true,
         "patch-add-invert-keyword.sql": true,
         "patch-added-json-query.sql": true,
         "patch-added-kafka-producer.sql": true,
         "patch-add-certificate-expiry-status-page.sql": true,
         "patch-monitor-oauth-cc.sql": true,
         "patch-add-timeout-monitor.sql": true,
-        "patch-add-gamedig-given-port.sql": true,
+        "patch-add-gamedig-given-port.sql": true,   // The last file so far converted to a knex migration file
     };
 
     /**
