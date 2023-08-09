@@ -830,5 +830,10 @@
     "selectedMonitorCount": "已选：{0}",
     "noOrBadCertificate": "无证书或证书错误",
     "showCertificateExpiry": "显示证书有效期",
-    "FlashDuty Severity":"严重程度"
+    "FlashDuty Severity": "严重程度",
+    "Check/Uncheck": "选中/取消选中",
+    "pushDeerServerDescription": "留空则使用官方服务器",
+    "PushDeer Server": "PushDeer 服务器",
+    "timeoutAfter": "{0} 秒后超时",
+    "Request Timeout": "请求超时"
 }

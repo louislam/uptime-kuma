@@ -817,5 +817,21 @@
     "Enable Kafka Producer Auto Topic Creation": "Kafka Üreticisi Otomatik Başlık Oluşturmayı Etkinleştir",
     "AccessKey Id": "Erişim Anahtarı Kimliği",
     "tailscalePingWarning": "Tailscale Ping monitörünü kullanabilmek için Docker olmadan Uptime Kuma kurmanız ve ayrıca sunucunuza Tailscale client kurmanız gerekmektedir.",
-    "Server URL should not contain the nfty topic": "Sunucu URL'si nfty konusunu içermemelidir"
+    "Server URL should not contain the nfty topic": "Sunucu URL'si nfty konusunu içermemelidir",
+    "FlashDuty Severity": "Önem derecesi",
+    "nostrRelays": "Nostr röleleri",
+    "nostrRelaysHelp": "Satır başına bir geçiş URL'si",
+    "nostrSender": "Gönderen Özel Anahtarı (nsec)",
+    "nostrRecipients": "Alıcıların Genel Anahtarları (npub)",
+    "nostrRecipientsHelp": "npub biçimi, her satıra bir tane",
+    "showCertificateExpiry": "Sertifika Geçerlilik Süresini Göster",
+    "noOrBadCertificate": "Sertifika Yok/Geçersiz",
+    "Select": "Seç",
+    "PushDeer Server": "PushDeer Sunucusu",
+    "wayToGetFlashDutyKey": "Kanal -> (Bir Kanal Seçin) -> Entegrasyonlar -> Yeni entegrasyon ekle sayfasına gidebilir, bir push adresi almak için bir 'Özel Etkinlik' ekleyebilir, adresteki Entegrasyon Anahtarını kopyalayabilirsiniz. Daha fazla bilgi için lütfen ziyaret edin",
+    "selectedMonitorCount": "Seçildi: {0}",
+    "Check/Uncheck": "İşaretle/İşareti Kaldır",
+    "pushDeerServerDescription": "Resmi sunucuyu kullanmak için boş bırakın",
+    "Request Timeout": "İstek zaman aşımına uğradı",
+    "timeoutAfter": "{0} saniye sonra zaman aşımı"
 }

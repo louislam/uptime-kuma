@@ -817,5 +817,6 @@
     "Json Query": "Json-Abfrage",
     "jsonQueryDescription": "Führe eine JSON-Abfrage gegen die Antwort durch und prüfe den erwarteten Wert (der Rückgabewert wird zum Vergleich in eine Zeichenkette umgewandelt). Auf <a href='https://jsonata.org/'>jsonata.org</a> findest du die Dokumentation zur Abfragesprache. <a href='https://try.jsonata.org/'>Hier</a> kannst du Abfragen üben.",
     "tailscalePingWarning": "Um den Tailscale Ping Monitor nutzen zu können, musst du Uptime Kuma ohne Docker installieren und den Tailscale Client auf dem Server installieren.",
-    "Server URL should not contain the nfty topic": "Die Server-URL sollte das nfty-Thema nicht enthalten"
+    "Server URL should not contain the nfty topic": "Die Server-URL sollte das nfty-Thema nicht enthalten",
+    "pushDeerServerDescription": "Leer lassen, um den offiziellen Server zu verwenden"
 }
