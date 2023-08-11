@@ -1,5 +1,6 @@
 {
     "name": "uptime-kuma",
+    "description": "Uptime Kuma is an easy-to-use self-hosted monitoring tool",
     "version": "1.23.0-beta.1",
     "license": "MIT",
     "repository": {
@@ -13,6 +14,7 @@
         "uptime-kuma": "./extra/cli.js"
     },
     "scripts": {
+        "uptime-kuma": "node ./extra/cli.js",
         "install-legacy": "npm install",
         "update-legacy": "npm update",
         "lint:js": "eslint --ext \".js,.vue\" --ignore-path .gitignore .",
@@ -58,8 +60,8 @@
         "simple-dns-server": "node extra/simple-dns-server.js",
         "simple-mqtt-server": "node extra/simple-mqtt-server.js",
         "update-language-files": "cd extra/update-language-files && node index.js && cross-env-shell eslint ../../src/languages/$npm_config_language.js --fix",
-        "release-final": "node ./extra/test-docker.js && node extra/update-version.js && npm run build-docker && node ./extra/press-any-key.js && npm run upload-artifacts && node ./extra/update-wiki-version.js",
-        "release-beta": "node ./extra/test-docker.js && node extra/beta/update-version.js && npm run build && node ./extra/env2arg.js docker buildx build -f docker/dockerfile --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma:$VERSION -t louislam/uptime-kuma:beta .  --target release --push && node ./extra/press-any-key.js && npm run upload-artifacts",
+        "release-final": "node ./extra/test-docker.js && node extra/update-version.js && npm run build-docker && node ./extra/press-any-key.js && npm run upload-artifacts && node ./extra/update-wiki-version.js && npm run publish-to-npm",
+        "release-beta": "node ./extra/test-docker.js && node extra/beta/update-version.js && npm run build && node ./extra/env2arg.js docker buildx build -f docker/dockerfile --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma:$VERSION -t louislam/uptime-kuma:beta .  --target release --push && node ./extra/press-any-key.js && npm run upload-artifacts && npm run publish-to-npm-beta",
         "git-remove-tag": "git tag -d",
         "build-dist-and-restart": "npm run build && npm run start-server-dev",
         "start-pr-test": "node extra/checkout-pr.js && npm install && npm run dev",
@@ -71,7 +73,10 @@
         "deploy-demo-server": "node extra/deploy-demo-server.js",
         "sort-contributors": "node extra/sort-contributors.js",
         "quick-run-nightly": "docker run --rm --env NODE_ENV=development -p 3001:3001 louislam/uptime-kuma:nightly2",
-        "start-dev-container": "cd docker && docker-compose -f docker-compose-dev.yml up --force-recreate"
+        "start-dev-container": "cd docker && docker-compose -f docker-compose-dev.yml up --force-recreate",
+        "publish-to-npm-dev": "npm run build && npm publish --tag dev",
+        "publish-to-npm-beta": "npm publish --tag beta",
+        "publish-to-npm": "npm publish"
     },
     "dependencies": {
         "@grpc/grpc-js": "~1.7.3",

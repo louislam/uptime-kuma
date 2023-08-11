@@ -1,19 +1,19 @@
-# Should be very similar to .npmignore, but the syntax is a bit different
+# Should be very similar to .dockerignore, but the syntax is a bit different
 
 /.idea
 /node_modules
-/data*
+/data
 /cypress
 /out
 /test
 /kubernetes
 /.do
-**/.dockerignore
+/.dockerignore
 /private
-**/.git
-**/.gitignore
-**/docker-compose*
-**/[Dd]ockerfile*
+/.git
+/.gitignore
+/docker-compose*
+/[Dd]ockerfile*
 .editorconfig
 .vs
 .vscode
@@ -40,8 +40,6 @@ extra/exe-builder
 dist-ssr
 *.local
 
-# .dockerignore only, not in .npmignore
-/extra/healthcheck.exe
-/extra/healthcheck
-LICENSE
-README.md
+## .npmignore only, not in .dockerignore
+/docker
+/extra/healthcheck*
