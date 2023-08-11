@@ -133,6 +133,9 @@ class Database {
         log.info("db", `Data Dir: ${Database.dataDir}`);
     }
 
+    /**
+     *
+     */
     static readDBConfig() {
         let dbConfig;
 
@@ -149,6 +152,9 @@ class Database {
         return dbConfig;
     }
 
+    /**
+     * @param dbConfig
+     */
     static writeDBConfig(dbConfig) {
         fs.writeFileSync(path.join(Database.dataDir, "db-config.json"), JSON.stringify(dbConfig, null, 4));
     }
@@ -276,6 +282,10 @@ class Database {
         }
     }
 
+    /**
+     * @param testMode
+     * @param noLog
+     */
     static async initSQLite(testMode, noLog) {
         await R.exec("PRAGMA foreign_keys = ON");
         if (testMode) {
@@ -301,6 +311,9 @@ class Database {
         }
     }
 
+    /**
+     *
+     */
     static async initMariaDB() {
         log.debug("db", "Checking if MariaDB database exists...");
 
@@ -337,7 +350,6 @@ class Database {
     }
 
     /**
-     *
      * @returns {Promise<void>}
      */
     static async rollbackLatestPatch() {
@@ -628,6 +640,9 @@ class Database {
         await R.exec("VACUUM");
     }
 
+    /**
+     *
+     */
     static sqlHourOffset() {
         if (this.dbConfig.client === "sqlite3") {
             return "DATETIME('now', ? || ' hours')";

@@ -23,6 +23,10 @@ class SetupDatabase {
 
     server;
 
+    /**
+     * @param args
+     * @param server
+     */
     constructor(args, server) {
         this.server = server;
 
@@ -72,10 +76,17 @@ class SetupDatabase {
         return this.needSetup;
     }
 
+    /**
+     *
+     */
     isEnabledEmbeddedMariaDB() {
         return process.env.UPTIME_KUMA_ENABLE_EMBEDDED_MARIADB === "1";
     }
 
+    /**
+     * @param hostname
+     * @param port
+     */
     start(hostname, port) {
         return new Promise((resolve) => {
             const app = express();

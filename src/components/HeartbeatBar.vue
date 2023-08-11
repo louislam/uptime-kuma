@@ -68,8 +68,7 @@ export default {
 
         /**
          * Calculates the amount of beats of padding needed to fill the length of shortBeatList.
-         *
-         * @return {number} The amount of beats of padding needed to fill the length of shortBeatList.
+         * @returns {number} The amount of beats of padding needed to fill the length of shortBeatList.
          */
         numPadding() {
             if (!this.beatList) {
@@ -149,7 +148,7 @@ export default {
 
         /**
          * Returns the style object for positioning the time element.
-         * @return {Object} The style object containing the CSS properties for positioning the time element.
+         * @returns {object} The style object containing the CSS properties for positioning the time element.
          */
         timeStyle() {
             return {
@@ -159,8 +158,7 @@ export default {
 
         /**
          * Calculates the time elapsed since the first valid beat.
-         *
-         * @return {string} The time elapsed in minutes or hours.
+         * @returns {string} The time elapsed in minutes or hours.
          */
         timeSinceFirstBeat() {
             const firstValidBeat = this.shortBeatList.at(this.numPadding);
@@ -174,8 +172,7 @@ export default {
 
         /**
          * Calculates the elapsed time since the last valid beat was registered.
-         *
-         * @return {string} The elapsed time in a minutes, hours or "now".
+         * @returns {string} The elapsed time in a minutes, hours or "now".
          */
         timeSinceLastBeat() {
             const lastValidBeat = this.shortBeatList.at(-1);

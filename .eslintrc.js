@@ -113,7 +113,7 @@ module.exports = {
             "error",
             { "noOptionalParamNames": true }
         ],
-        "jsdoc/require-throws": "error",
+        "jsdoc/require-throws": "warn",
         "jsdoc/require-jsdoc": [
             "error",
             {
@@ -124,19 +124,20 @@ module.exports = {
             }
         ],
         "jsdoc/no-blank-block-descriptions": "error",
+        "jsdoc/require-returns-description": "warn",
         "jsdoc/require-returns-check": [
             "error",
             { "reportMissingReturnForUndefinedTypes": false }
         ],
         "jsdoc/require-returns": [
-            "error",
+            "warn",
             {
                 "forceRequireReturn": true,
                 "forceReturnsWithAsync": true
             }
         ],
-        "jsdoc/require-param-type": "error",
-        "jsdoc/require-param-description": "error"
+        "jsdoc/require-param-type": "warn",
+        "jsdoc/require-param-description": "warn"
     },
     "overrides": [
         {

@@ -120,8 +120,7 @@ export default {
 
         /**
          * Returns a sorted list of monitors based on the applied filters and search text.
-         *
-         * @return {Array} The sorted list of monitors.
+         * @returns {Array} The sorted list of monitors.
          */
         sortedMonitorList() {
             let result = Object.values(this.$root.monitorList);
@@ -222,8 +221,7 @@ export default {
 
         /**
          * Determines if any filters are active.
-         *
-         * @return {boolean} True if any filter is active, false otherwise.
+         * @returns {boolean} True if any filter is active, false otherwise.
          */
         filtersActive() {
             return this.filterState.status != null || this.filterState.active != null || this.filterState.tags != null || this.searchText !== "";

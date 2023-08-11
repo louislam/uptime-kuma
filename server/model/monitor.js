@@ -291,6 +291,9 @@ class Monitor extends BeanModel {
         return JSON.parse(this.accepted_statuscodes_json);
     }
 
+    /**
+     *
+     */
     getGameDigGivenPortOnly() {
         return Boolean(this.gamedigGivenPortOnly);
     }

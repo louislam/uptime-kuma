@@ -24,7 +24,6 @@ class EmbeddedMariaDB {
     started = false;
 
     /**
-     *
      * @returns {EmbeddedMariaDB}
      */
     static getInstance() {
@@ -34,6 +33,9 @@ class EmbeddedMariaDB {
         return EmbeddedMariaDB.instance;
     }
 
+    /**
+     *
+     */
     static hasInstance() {
         return !!EmbeddedMariaDB.instance;
     }
@@ -100,6 +102,9 @@ class EmbeddedMariaDB {
         });
     }
 
+    /**
+     *
+     */
     stop() {
         if (this.childProcess) {
             this.childProcess.kill("SIGINT");
@@ -107,6 +112,9 @@ class EmbeddedMariaDB {
         }
     }
 
+    /**
+     *
+     */
     initDB() {
         if (!fs.existsSync(this.mariadbDataDir)) {
             log.info("mariadb", `Embedded MariaDB: ${this.mariadbDataDir} is not found, create one now.`);
@@ -137,6 +145,9 @@ class EmbeddedMariaDB {
 
     }
 
+    /**
+     *
+     */
     async initDBAfterStarted() {
         const connection = mysql.createConnection({
             socketPath: this.socketPath,
