@@ -51,7 +51,7 @@
                 v-for="(item, index) in sortedMonitorList"
                 :key="index"
                 :monitor="item"
-                :isSearch="searchText !== ''"
+                :showPathName="filtersActive"
                 :isSelectMode="selectMode"
                 :isSelected="isSelected"
                 :select="select"
@@ -103,6 +103,7 @@ export default {
          * Improve the sticky appearance of the list by increasing its
          * height as user scrolls down.
          * Not used on mobile.
+         * @returns {object} Style for monitor list
          */
         boxStyle() {
             if (window.innerWidth > 550) {
@@ -117,31 +118,68 @@ export default {
 
         },
 
+        /**
+         * Returns a sorted list of monitors based on the applied filters and search text.
+         *
+         * @return {Array} The sorted list of monitors.
+         */
         sortedMonitorList() {
             let result = Object.values(this.$root.monitorList);
 
-            // Simple filter by search text
-            // finds monitor name, tag name or tag value
-            if (this.searchText !== "") {
-                const loweredSearchText = this.searchText.toLowerCase();
-                result = result.filter(monitor => {
-                    return monitor.name.toLowerCase().includes(loweredSearchText)
+            result = result.filter(monitor => {
+                // filter by search text
+                // finds monitor name, tag name or tag value
+                let searchTextMatch = true;
+                if (this.searchText !== "") {
+                    const loweredSearchText = this.searchText.toLowerCase();
+                    searchTextMatch =
+                        monitor.name.toLowerCase().includes(loweredSearchText)
                         || monitor.tags.find(tag => tag.name.toLowerCase().includes(loweredSearchText)
                             || tag.value?.toLowerCase().includes(loweredSearchText));
-                });
-            } else {
-                result = result.filter(monitor => monitor.parent === null);
-            }
+                }
+
+                // filter by status
+                let statusMatch = true;
+                if (this.filterState.status != null && this.filterState.status.length > 0) {
+                    if (monitor.id in this.$root.lastHeartbeatList && this.$root.lastHeartbeatList[monitor.id]) {
+                        monitor.status = this.$root.lastHeartbeatList[monitor.id].status;
+                    }
+                    statusMatch = this.filterState.status.includes(monitor.status);
+                }
+
+                // filter by active
+                let activeMatch = true;
+                if (this.filterState.active != null && this.filterState.active.length > 0) {
+                    activeMatch = this.filterState.active.includes(monitor.active);
+                }
+
+                // filter by tags
+                let tagsMatch = true;
+                if (this.filterState.tags != null && this.filterState.tags.length > 0) {
+                    tagsMatch = monitor.tags.map(tag => tag.tag_id) // convert to array of tag IDs
+                        .filter(monitorTagId => this.filterState.tags.includes(monitorTagId)) // perform Array Intersaction between filter and monitor's tags
+                        .length > 0;
+                }
+
+                // Hide children if not filtering
+                let showChild = true;
+                if (this.filterState.status == null && this.filterState.active == null && this.filterState.tags == null && this.searchText === "") {
+                    if (monitor.parent !== null) {
+                        showChild = false;
+                    }
+                }
+
+                return searchTextMatch && statusMatch && activeMatch && tagsMatch && showChild;
+            });
 
             // Filter result by active state, weight and alphabetical
             result.sort((m1, m2) => {
-
                 if (m1.active !== m2.active) {
-                    if (m1.active === 0) {
+                    if (m1.active === false) {
                         return 1;
                     }
 
-                    if (m2.active === 0) {
+                    if (m2.active === false) {
                         return -1;
                     }
                 }
@@ -158,27 +196,6 @@ export default {
 
                 return m1.name.localeCompare(m2.name);
             });
-
-            if (this.filterState.status != null && this.filterState.status.length > 0) {
-                result.map(monitor => {
-                    if (monitor.id in this.$root.lastHeartbeatList && this.$root.lastHeartbeatList[monitor.id]) {
-                        monitor.status = this.$root.lastHeartbeatList[monitor.id].status;
-                    }
-                });
-                result = result.filter(monitor => this.filterState.status.includes(monitor.status));
-            }
-
-            if (this.filterState.active != null && this.filterState.active.length > 0) {
-                result = result.filter(monitor => this.filterState.active.includes(monitor.active));
-            }
-
-            if (this.filterState.tags != null && this.filterState.tags.length > 0) {
-                result = result.filter(monitor => {
-                    return monitor.tags.map(tag => tag.tag_id) // convert to array of tag IDs
-                        .filter(monitorTagId => this.filterState.tags.includes(monitorTagId)) // perform Array Intersaction between filter and monitor's tags
-                        .length > 0;
-                });
-            }
 
             return result;
         },
@@ -202,6 +219,15 @@ export default {
         selectedMonitorCount() {
             return Object.keys(this.selectedMonitors).length;
         },
+
+        /**
+         * Determines if any filters are active.
+         *
+         * @return {boolean} True if any filter is active, false otherwise.
+         */
+        filtersActive() {
+            return this.filterState.status != null || this.filterState.active != null || this.filterState.tags != null || this.searchText !== "";
+        }
     },
     watch: {
         searchText() {
@@ -233,7 +259,7 @@ export default {
                 this.selectAll = false;
                 this.selectedMonitors = {};
             }
-        }
+        },
     },
     mounted() {
         window.addEventListener("scroll", this.onScroll);
@@ -242,7 +268,10 @@ export default {
         window.removeEventListener("scroll", this.onScroll);
     },
     methods: {
-        /** Handle user scroll */
+        /**
+         * Handle user scroll
+         * @returns {void}
+         */
         onScroll() {
             if (window.top.scrollY <= 133) {
                 this.windowTop = window.top.scrollY;
@@ -258,13 +287,17 @@ export default {
         monitorURL(id) {
             return getMonitorRelativeURL(id);
         },
-        /** Clear the search bar */
+        /**
+         * Clear the search bar
+         * @returns {void}
+         */
         clearSearchText() {
             this.searchText = "";
         },
         /**
          * Update the MonitorList Filter
          * @param {object} newFilter Object with new filter
+         * @returns {void}
          */
         updateFilter(newFilter) {
             this.filterState = newFilter;
@@ -272,6 +305,7 @@ export default {
         /**
          * Deselect a monitor
          * @param {number} id ID of monitor
+         * @returns {void}
          */
         deselect(id) {
             delete this.selectedMonitors[id];
@@ -279,6 +313,7 @@ export default {
         /**
          * Select a monitor
          * @param {number} id ID of monitor
+         * @returns {void}
          */
         select(id) {
             this.selectedMonitors[id] = true;
@@ -286,21 +321,30 @@ export default {
         /**
          * Determine if monitor is selected
          * @param {number} id ID of monitor
-         * @returns {bool}
+         * @returns {bool} Is the monitor selected?
          */
         isSelected(id) {
             return id in this.selectedMonitors;
         },
-        /** Disable select mode and reset selection */
+        /**
+         * Disable select mode and reset selection
+         * @returns {void}
+         */
         cancelSelectMode() {
             this.selectMode = false;
             this.selectedMonitors = {};
         },
-        /** Show dialog to confirm pause */
+        /**
+         * Show dialog to confirm pause
+         * @returns {void}
+         */
         pauseDialog() {
             this.$refs.confirmPause.show();
         },
-        /** Pause each selected monitor */
+        /**
+         * Pause each selected monitor
+         * @returns {void}
+         */
         pauseSelected() {
             Object.keys(this.selectedMonitors)
                 .filter(id => this.$root.monitorList[id].active)
@@ -308,7 +352,10 @@ export default {
 
             this.cancelSelectMode();
         },
-        /** Resume each selected monitor */
+        /**
+         * Resume each selected monitor
+         * @returns {void}
+         */
         resumeSelected() {
             Object.keys(this.selectedMonitors)
                 .filter(id => !this.$root.monitorList[id].active)

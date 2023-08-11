@@ -6,6 +6,9 @@ class SMTP extends NotificationProvider {
 
     name = "smtp";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
 
         const config = {

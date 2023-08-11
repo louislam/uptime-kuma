@@ -22,6 +22,7 @@ const { UptimeCacheList } = require("../uptime-cache-list");
 const Gamedig = require("gamedig");
 const jsonata = require("jsonata");
 const jwt = require("jsonwebtoken");
+const Database = require("../database");
 
 /**
  * status:
@@ -33,9 +34,12 @@ const jwt = require("jsonwebtoken");
 class Monitor extends BeanModel {
 
     /**
-     * Return an object that ready to parse to JSON for public
-     * Only show necessary data to public
-     * @returns {Object}
+     * Return an object that ready to parse to JSON for public Only show
+     * necessary data to public
+     * @param {boolean} showTags Include tags in JSON
+     * @param {boolean} certExpiry Include certificate expiry info in
+     * JSON
+     * @returns {object} Object ready to parse
      */
     async toPublicJSON(showTags = false, certExpiry = false) {
         let obj = {
@@ -64,7 +68,9 @@ class Monitor extends BeanModel {
 
     /**
      * Return an object that ready to parse to JSON
-     * @returns {Object}
+     * @param {boolean} includeSensitiveData Include sensitive data in
+     * JSON
+     * @returns {object} Object ready to parse
      */
     async toJSON(includeSensitiveData = true) {
 
@@ -102,6 +108,7 @@ class Monitor extends BeanModel {
             active: await this.isActive(),
             forceInactive: !await Monitor.isParentActive(this.id),
             type: this.type,
+            timeout: this.timeout,
             interval: this.interval,
             retryInterval: this.retryInterval,
             resendInterval: this.resendInterval,
@@ -134,6 +141,7 @@ class Monitor extends BeanModel {
             radiusCalledStationId: this.radiusCalledStationId,
             radiusCallingStationId: this.radiusCallingStationId,
             game: this.game,
+            gamedigGivenPortOnly: this.getGameDigGivenPortOnly(),
             httpBodyEncoding: this.httpBodyEncoding,
             jsonPath: this.jsonPath,
             expectedValue: this.expectedValue,
@@ -180,9 +188,9 @@ class Monitor extends BeanModel {
     }
 
     /**
-	 * Checks if the monitor is active based on itself and its parents
-	 * @returns {Promise<Boolean>}
-	 */
+     * Checks if the monitor is active based on itself and its parents
+     * @returns {Promise<boolean>} Is the monitor active?
+     */
     async isActive() {
         const parentActive = await Monitor.isParentActive(this.id);
 
@@ -191,7 +199,8 @@ class Monitor extends BeanModel {
 
     /**
      * Get all tags applied to this monitor
-     * @returns {Promise<LooseObject<any>[]>}
+     * @returns {Promise<LooseObject<any>[]>} List of tags on the
+     * monitor
      */
     async getTags() {
         return await R.getAll("SELECT mt.*, tag.name, tag.color FROM monitor_tag mt JOIN tag ON mt.tag_id = tag.id WHERE mt.monitor_id = ? ORDER BY tag.name", [ this.id ]);
@@ -200,7 +209,8 @@ class Monitor extends BeanModel {
     /**
      * Gets certificate expiry for this monitor
      * @param {number} monitorID ID of monitor to send
-     * @returns {Promise<LooseObject<any>>}
+     * @returns {Promise<LooseObject<any>>} Certificate expiry info for
+     * monitor
      */
     async getCertExpiry(monitorID) {
         let tlsInfoBean = await R.findOne("monitor_tls_info", "monitor_id = ?", [
@@ -225,7 +235,9 @@ class Monitor extends BeanModel {
     /**
      * Encode user and password to Base64 encoding
      * for HTTP "basic" auth, as per RFC-7617
-     * @returns {string}
+     * @param {string} user Username to encode
+     * @param {string} pass Password to encode
+     * @returns {string} Encoded username:password
      */
     encodeBase64(user, pass) {
         return Buffer.from(user + ":" + pass).toString("base64");
@@ -233,7 +245,7 @@ class Monitor extends BeanModel {
 
     /**
      * Is the TLS expiry notification enabled?
-     * @returns {boolean}
+     * @returns {boolean} Enabled?
      */
     isEnabledExpiryNotification() {
         return Boolean(this.expiryNotification);
@@ -241,7 +253,7 @@ class Monitor extends BeanModel {
 
     /**
      * Parse to boolean
-     * @returns {boolean}
+     * @returns {boolean} Should TLS errors be ignored?
      */
     getIgnoreTls() {
         return Boolean(this.ignoreTls);
@@ -249,7 +261,7 @@ class Monitor extends BeanModel {
 
     /**
      * Parse to boolean
-     * @returns {boolean}
+     * @returns {boolean} Is the monitor in upside down mode?
      */
     isUpsideDown() {
         return Boolean(this.upsideDown);
@@ -257,7 +269,7 @@ class Monitor extends BeanModel {
 
     /**
      * Parse to boolean
-     * @returns {boolean}
+     * @returns {boolean} Invert keyword match?
      */
     isInvertKeyword() {
         return Boolean(this.invertKeyword);
@@ -265,7 +277,7 @@ class Monitor extends BeanModel {
 
     /**
      * Parse to boolean
-     * @returns {boolean}
+     * @returns {boolean} Enable TLS for gRPC?
      */
     getGrpcEnableTls() {
         return Boolean(this.grpcEnableTls);
@@ -273,15 +285,20 @@ class Monitor extends BeanModel {
 
     /**
      * Get accepted status codes
-     * @returns {Object}
+     * @returns {object} Accepted status codes
      */
     getAcceptedStatuscodes() {
         return JSON.parse(this.accepted_statuscodes_json);
     }
 
+    getGameDigGivenPortOnly() {
+        return Boolean(this.gamedigGivenPortOnly);
+    }
+
     /**
      * Start monitor
      * @param {Server} io Socket server instance
+     * @returns {void}
      */
     start(io) {
         let previousBeat = null;
@@ -351,7 +368,10 @@ class Monitor extends BeanModel {
                             const lastBeat = await Monitor.getPreviousHeartbeat(child.id);
 
                             // Only change state if the monitor is in worse conditions then the ones before
-                            if (bean.status === UP && (lastBeat.status === PENDING || lastBeat.status === DOWN)) {
+                            // lastBeat.status could be null
+                            if (!lastBeat) {
+                                bean.status = PENDING;
+                            } else if (bean.status === UP && (lastBeat.status === PENDING || lastBeat.status === DOWN)) {
                                 bean.status = lastBeat.status;
                             } else if (bean.status === PENDING && lastBeat.status === DOWN) {
                                 bean.status = lastBeat.status;
@@ -425,7 +445,7 @@ class Monitor extends BeanModel {
                     const options = {
                         url: this.url,
                         method: (this.method || "get").toLowerCase(),
-                        timeout: this.interval * 1000 * 0.8,
+                        timeout: this.timeout * 1000,
                         headers: {
                             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
                             "User-Agent": "Uptime-Kuma/" + version,
@@ -645,7 +665,7 @@ class Monitor extends BeanModel {
                     }
 
                     let res = await axios.get(steamApiUrl, {
-                        timeout: this.interval * 1000 * 0.8,
+                        timeout: this.timeout * 1000,
                         headers: {
                             "Accept": "*/*",
                             "User-Agent": "Uptime-Kuma/" + version,
@@ -683,7 +703,7 @@ class Monitor extends BeanModel {
                             type: this.game,
                             host: this.hostname,
                             port: this.port,
-                            givenPortOnly: true,
+                            givenPortOnly: this.getGameDigGivenPortOnly(),
                         });
 
                         bean.msg = state.name;
@@ -717,6 +737,9 @@ class Monitor extends BeanModel {
                         options.socketPath = dockerHost._dockerDaemon;
                     } else if (dockerHost._dockerType === "tcp") {
                         options.baseURL = DockerHost.patchDockerURL(dockerHost._dockerDaemon);
+                        options.httpsAgent = CacheableDnsHttpAgent.getHttpsAgent(
+                            DockerHost.getHttpsAgentOptions(dockerHost._dockerType, options.baseURL)
+                        );
                     }
 
                     log.debug("monitor", `[${this.name}] Axios Request`);
@@ -967,7 +990,10 @@ class Monitor extends BeanModel {
 
         };
 
-        /** Get a heartbeat and handle errors */
+        /**
+         * Get a heartbeat and handle errors7
+         * @returns {void}
+         */
         const safeBeat = async () => {
             try {
                 await beat();
@@ -995,10 +1021,10 @@ class Monitor extends BeanModel {
 
     /**
      * Make a request using axios
-     * @param {Object} options Options for Axios
+     * @param {object} options Options for Axios
      * @param {boolean} finalCall Should this be the final call i.e
-     * don't retry on faliure
-     * @returns {Object} Axios response
+     * don't retry on failure
+     * @returns {object} Axios response
      */
     async makeAxiosRequest(options, finalCall = false) {
         try {
@@ -1033,7 +1059,10 @@ class Monitor extends BeanModel {
         }
     }
 
-    /** Stop monitor */
+    /**
+     * Stop monitor
+     * @returns {void}
+     */
     stop() {
         clearTimeout(this.heartbeatInterval);
         this.isStop = true;
@@ -1043,7 +1072,7 @@ class Monitor extends BeanModel {
 
     /**
      * Get prometheus instance
-     * @returns {Prometheus|undefined}
+     * @returns {Prometheus|undefined} Current prometheus instance
      */
     getPrometheus() {
         return this.prometheus;
@@ -1053,7 +1082,7 @@ class Monitor extends BeanModel {
      * Helper Method:
      * returns URL object for further usage
      * returns null if url is invalid
-     * @returns {(null|URL)}
+     * @returns {(null|URL)} Monitor URL
      */
     getUrl() {
         try {
@@ -1065,8 +1094,8 @@ class Monitor extends BeanModel {
 
     /**
      * Store TLS info to database
-     * @param checkCertificateResult
-     * @returns {Promise<Object>}
+     * @param {object} checkCertificateResult Certificate to update
+     * @returns {Promise<object>} Updated certificate
      */
     async updateTlsInfo(checkCertificateResult) {
         let tlsInfoBean = await R.findOne("monitor_tls_info", "monitor_id = ?", [
@@ -1113,6 +1142,7 @@ class Monitor extends BeanModel {
      * @param {Server} io Socket server instance
      * @param {number} monitorID ID of monitor to send
      * @param {number} userID ID of user to send to
+     * @returns {void}
      */
     static async sendStats(io, monitorID, userID) {
         const hasClients = getTotalClientInRoom(io, userID) > 0;
@@ -1130,14 +1160,19 @@ class Monitor extends BeanModel {
     /**
      * Send the average ping to user
      * @param {number} duration Hours
+     * @param {Server} io Socket instance to send data to
+     * @param {number} monitorID ID of monitor to read
+     * @param {number} userID ID of user to send data to
+     * @returns {void}
      */
     static async sendAvgPing(duration, io, monitorID, userID) {
         const timeLogger = new TimeLogger();
+        const sqlHourOffset = Database.sqlHourOffset();
 
         let avgPing = parseInt(await R.getCell(`
             SELECT AVG(ping)
             FROM heartbeat
-            WHERE time > DATETIME('now', ? || ' hours')
+            WHERE time > ${sqlHourOffset}
             AND ping IS NOT NULL
             AND monitor_id = ? `, [
             -duration,
@@ -1154,6 +1189,7 @@ class Monitor extends BeanModel {
      * @param {Server} io Socket server instance
      * @param {number} monitorID ID of monitor to send
      * @param {number} userID ID of user to send to
+     * @returns {void}
      */
     static async sendCertInfo(io, monitorID, userID) {
         let tlsInfo = await R.findOne("monitor_tls_info", "monitor_id = ?", [
@@ -1170,6 +1206,8 @@ class Monitor extends BeanModel {
      * https://www.uptrends.com/support/kb/reporting/calculation-of-uptime-and-downtime
      * @param {number} duration Hours
      * @param {number} monitorID ID of monitor to calculate
+     * @param {boolean} forceNoCache Should the uptime be recalculated?
+     * @returns {number} Uptime of monitor
      */
     static async calcUptime(duration, monitorID, forceNoCache = false) {
 
@@ -1250,6 +1288,7 @@ class Monitor extends BeanModel {
      * @param {Server} io Socket server instance
      * @param {number} monitorID ID of monitor to send
      * @param {number} userID ID of user to send to
+     * @returns {void}
      */
     static async sendUptime(duration, io, monitorID, userID) {
         const uptime = await this.calcUptime(duration, monitorID);
@@ -1324,6 +1363,7 @@ class Monitor extends BeanModel {
      * @param {boolean} isFirstBeat Is this beat the first of this monitor?
      * @param {Monitor} monitor The monitor to send a notificaton about
      * @param {Bean} bean Status information about monitor
+     * @returns {void}
      */
     static async sendNotification(isFirstBeat, monitor, bean) {
         if (!isFirstBeat || bean.status === DOWN) {
@@ -1364,7 +1404,7 @@ class Monitor extends BeanModel {
     /**
      * Get list of notification providers for a given monitor
      * @param {Monitor} monitor Monitor to get notification providers for
-     * @returns {Promise<LooseObject<any>[]>}
+     * @returns {Promise<LooseObject<any>[]>} List of notifications
      */
     static async getNotificationList(monitor) {
         let notificationList = await R.getAll("SELECT notification.* FROM notification, monitor_notification WHERE monitor_id = ? AND monitor_notification.notification_id = notification.id ", [
@@ -1375,7 +1415,8 @@ class Monitor extends BeanModel {
 
     /**
      * checks certificate chain for expiring certificates
-     * @param {Object} tlsInfoObject Information about certificate
+     * @param {object} tlsInfoObject Information about certificate
+     * @returns {void}
      */
     async checkCertExpiryNotifications(tlsInfoObject) {
         if (tlsInfoObject && tlsInfoObject.certInfo && tlsInfoObject.certInfo.daysRemaining) {
@@ -1462,7 +1503,7 @@ class Monitor extends BeanModel {
     /**
      * Get the status of the previous heartbeat
      * @param {number} monitorID ID of monitor to check
-     * @returns {Promise<LooseObject<any>>}
+     * @returns {Promise<LooseObject<any>>} Previous heartbeat
      */
     static async getPreviousHeartbeat(monitorID) {
         return await R.getRow(`
@@ -1476,7 +1517,7 @@ class Monitor extends BeanModel {
     /**
      * Check if monitor is under maintenance
      * @param {number} monitorID ID of monitor to check
-     * @returns {Promise<boolean>}
+     * @returns {Promise<boolean>} Is the monitor under maintenance
      */
     static async isUnderMaintenance(monitorID) {
         const maintenanceIDList = await R.getCol(`
@@ -1499,7 +1540,11 @@ class Monitor extends BeanModel {
         return false;
     }
 
-    /** Make sure monitor interval is between bounds */
+    /**
+     * Make sure monitor interval is between bounds
+     * @returns {void}
+     * @throws Interval is outside of range
+     */
     validate() {
         if (this.interval > MAX_INTERVAL_SECOND) {
             throw new Error(`Interval cannot be more than ${MAX_INTERVAL_SECOND} seconds`);
@@ -1512,7 +1557,7 @@ class Monitor extends BeanModel {
     /**
      * Gets Parent of the monitor
      * @param {number} monitorID ID of monitor to get
-     * @returns {Promise<LooseObject<any>>}
+     * @returns {Promise<LooseObject<any>>} Parent
      */
     static async getParent(monitorID) {
         return await R.getRow(`
@@ -1528,7 +1573,7 @@ class Monitor extends BeanModel {
     /**
      * Gets all Children of the monitor
      * @param {number} monitorID ID of monitor to get
-     * @returns {Promise<LooseObject<any>>}
+     * @returns {Promise<LooseObject<any>>} Children
      */
     static async getChildren(monitorID) {
         return await R.getAll(`
@@ -1541,7 +1586,7 @@ class Monitor extends BeanModel {
 
     /**
      * Gets Full Path-Name (Groups and Name)
-     * @returns {Promise<String>}
+     * @returns {Promise<string>} Full path name of this monitor
      */
     async getPathName() {
         let path = this.name;
@@ -1561,8 +1606,8 @@ class Monitor extends BeanModel {
 
     /**
      * Gets recursive all child ids
-	 * @param {number} monitorID ID of the monitor to get
-     * @returns {Promise<Array>}
+     * @param {number} monitorID ID of the monitor to get
+     * @returns {Promise<Array>} IDs of all children
      */
     static async getAllChildrenIDs(monitorID) {
         const childs = await Monitor.getChildren(monitorID);
@@ -1593,10 +1638,10 @@ class Monitor extends BeanModel {
     }
 
     /**
-	 * Checks recursive if parent (ancestors) are active
-	 * @param {number} monitorID ID of the monitor to get
-	 * @returns {Promise<Boolean>}
-	 */
+     * Checks recursive if parent (ancestors) are active
+     * @param {number} monitorID ID of the monitor to get
+     * @returns {Promise<boolean>} Is the parent monitor active?
+     */
     static async isParentActive(monitorID) {
         const parent = await Monitor.getParent(monitorID);
 

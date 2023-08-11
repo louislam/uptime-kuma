@@ -68,7 +68,7 @@ export default {
     methods: {
         /**
          * Get the URL for telegram updates
-         * @param {string} [mode=masked] Should the token be masked?
+         * @param {string} mode Should the token be masked?
          * @returns {string} formatted URL
          */
         telegramGetUpdatesURL(mode = "masked") {
@@ -85,7 +85,11 @@ export default {
             return `https://api.telegram.org/bot${token}/getUpdates`;
         },
 
-        /** Get the telegram chat ID */
+        /**
+         * Get the telegram chat ID
+         * @returns {void}
+         * @throws The chat ID could not be found
+         */
         async autoGetTelegramChatID() {
             try {
                 let res = await axios.get(this.telegramGetUpdatesURL("withToken"));

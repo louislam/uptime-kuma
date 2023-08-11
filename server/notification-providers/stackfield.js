@@ -7,6 +7,9 @@ class Stackfield extends NotificationProvider {
 
     name = "stackfield";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null) {
         let okMsg = "Sent Successfully.";
         try {

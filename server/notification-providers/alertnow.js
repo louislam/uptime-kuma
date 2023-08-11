@@ -7,6 +7,9 @@ class AlertNow extends NotificationProvider {
 
     name = "AlertNow";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
         try {

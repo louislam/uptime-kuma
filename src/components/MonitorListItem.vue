@@ -44,7 +44,7 @@
                 <MonitorListItem
                     v-for="(item, index) in sortedChildMonitorList"
                     :key="index" :monitor="item"
-                    :isSearch="isSearch"
+                    :showPathName="showPathName"
                     :isSelectMode="isSelectMode"
                     :isSelected="isSelected"
                     :select="select"
@@ -75,8 +75,8 @@ export default {
             type: Object,
             default: null,
         },
-        /** If the user is currently searching */
-        isSearch: {
+        /** Should the monitor name show it's parent */
+        showPathName: {
             type: Boolean,
             default: false,
         },
@@ -153,7 +153,7 @@ export default {
             };
         },
         monitorName() {
-            if (this.isSearch) {
+            if (this.showPathName) {
                 return this.monitor.pathName;
             } else {
                 return this.monitor.name;
@@ -189,7 +189,9 @@ export default {
     },
     methods: {
         /**
-         * Changes the collapsed value of the current monitor and saves it to local storage
+         * Changes the collapsed value of the current monitor and saves
+         * it to local storage
+         * @returns {void}
          */
         changeCollapsed() {
             this.isCollapsed = !this.isCollapsed;
@@ -214,6 +216,7 @@ export default {
         },
         /**
          * Toggle selection of monitor
+         * @returns {void}
          */
         toggleSelection() {
             if (this.isSelected(this.monitor.id)) {

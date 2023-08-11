@@ -62,6 +62,8 @@ export default {
 
     },
     mounted() {
+        // TODO: Check if it is a database setup
+
         this.$root.getSocket().emit("needSetup", (needSetup) => {
             if (! needSetup) {
                 this.$router.push("/");

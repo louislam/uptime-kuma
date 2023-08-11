@@ -1,5 +1,10 @@
 {
     "languageName": "English",
+    "setupDatabaseChooseDatabase": "Which database do you want to use?",
+    "setupDatabaseEmbeddedMariaDB": "You don't need to set anything. This docker image have embedded and configured a MariaDB for you automatically. Uptime Kuma will connect to this database via unix socket.",
+    "setupDatabaseMariaDB": "Connect to an external MariaDB database. You need to set the database connection information.",
+    "setupDatabaseSQLite": "A simple database file, recommended for small-scale deployments. Prior to v2.0.0, Uptime Kuma used SQLite as the default database.",
+    "dbName": "Database Name",
     "Settings": "Settings",
     "Dashboard": "Dashboard",
     "Help": "Help",
@@ -59,6 +64,8 @@
     "Hostname": "Hostname",
     "Port": "Port",
     "Heartbeat Interval": "Heartbeat Interval",
+    "Request Timeout": "Request Timeout",
+    "timeoutAfter": "Timeout after {0} seconds",
     "Retries": "Retries",
     "Heartbeat Retry Interval": "Heartbeat Retry Interval",
     "Resend Notification if Down X times consecutively": "Resend Notification if Down X times consecutively",
@@ -85,6 +92,9 @@
     "Dark": "Dark",
     "Auto": "Auto",
     "Theme - Heartbeat Bar": "Theme - Heartbeat Bar",
+    "styleElapsedTime": "Elapsed time under the heartbeat bar",
+    "styleElapsedTimeShowNoLine": "Show (No Line)",
+    "styleElapsedTimeShowWithLine": "Show (With Line)",
     "Normal": "Normal",
     "Bottom": "Bottom",
     "None": "None",
@@ -799,5 +809,7 @@
     "nostrRecipients": "Recipients Public Keys (npub)",
     "nostrRecipientsHelp": "npub format, one per line",
     "showCertificateExpiry": "Show Certificate Expiry",
-    "noOrBadCertificate": "No/Bad Certificate"
+    "noOrBadCertificate": "No/Bad Certificate",
+    "gamedigGuessPort": "Gamedig: Guess Port",
+    "gamedigGuessPortDescription": "The port used by Valve Server Query Protocol may be different from the client port. Try this if the monitor cannot connect to your server."
 }
