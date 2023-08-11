@@ -29,6 +29,9 @@ const {
     },
 } = require("node-radius-utils");
 const dayjs = require("dayjs");
+const readline = require("readline");
+const rl = readline.createInterface({ input: process.stdin,
+    output: process.stdout });
 
 // SASLOptions used in JSDoc
 // eslint-disable-next-line no-unused-vars
@@ -727,7 +730,6 @@ exports.checkCertificate = function (res) {
  * @param {number} status The status code to check
  * @param {string[]} acceptedCodes An array of accepted status codes
  * @returns {boolean} True if status code within range, false otherwise
- * @throws {Error} Will throw an error if the provided status code is not a valid range string or code string
  */
 exports.checkStatusCode = function (status, acceptedCodes) {
     if (acceptedCodes == null || acceptedCodes.length === 0) {
@@ -735,6 +737,11 @@ exports.checkStatusCode = function (status, acceptedCodes) {
     }
 
     for (const codeRange of acceptedCodes) {
+        if (typeof codeRange !== "string") {
+            log.error("monitor", `Accepted status code not a string. ${codeRange} is of type ${typeof codeRange}`);
+            continue;
+        }
+
         const codeRangeSplit = codeRange.split("-").map(string => parseInt(string));
         if (codeRangeSplit.length === 1) {
             if (status === codeRangeSplit[0]) {
@@ -745,7 +752,8 @@ exports.checkStatusCode = function (status, acceptedCodes) {
                 return true;
             }
         } else {
-            throw new Error("Invalid status code range");
+            log.error("monitor", `${codeRange} is not a valid status code range`);
+            continue;
         }
     }
 
@@ -799,6 +807,7 @@ exports.allowDevAllOrigin = (res) => {
  */
 exports.allowAllOrigin = (res) => {
     res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE, OPTIONS");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
 };
 
@@ -1073,6 +1082,8 @@ module.exports.grpcQuery = async (options) => {
 
     });
 };
+
+module.exports.prompt = (query) => new Promise((resolve) => rl.question(query, resolve));
 
 // For unit test, export functions
 if (process.env.TEST_BACKEND) {
