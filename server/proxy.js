@@ -11,11 +11,10 @@ class Proxy {
 
     /**
      * Saves and updates given proxy entity
-     *
-     * @param proxy
-     * @param proxyID
-     * @param userID
-     * @return {Promise<Bean>}
+     * @param {object} proxy Proxy to store
+     * @param {number} proxyID ID of proxy to update
+     * @param {number} userID ID of user the proxy belongs to
+     * @returns {Promise<Bean>} Updated proxy
      */
     static async save(proxy, proxyID, userID) {
         let bean;
@@ -65,10 +64,9 @@ class Proxy {
 
     /**
      * Deletes proxy with given id and removes it from monitors
-     *
-     * @param proxyID
-     * @param userID
-     * @return {Promise<void>}
+     * @param {number} proxyID ID of proxy to delete
+     * @param {number} userID ID of proxy owner
+     * @returns {Promise<void>}
      */
     static async delete(proxyID, userID) {
         const bean = await R.findOne("proxy", " id = ? AND user_id = ? ", [ proxyID, userID ]);
@@ -86,10 +84,10 @@ class Proxy {
 
     /**
      * Create HTTP and HTTPS agents related with given proxy bean object
-     *
-     * @param proxy proxy bean object
-     * @param options http and https agent options
-     * @return {{httpAgent: Agent, httpsAgent: Agent}}
+     * @param {object} proxy proxy bean object
+     * @param {object} options http and https agent options
+     * @returns {{httpAgent: Agent, httpsAgent: Agent}} New HTTP and HTTPS agents
+     * @throws Proxy protocol is unsupported
      */
     static createAgents(proxy, options) {
         const { httpAgentOptions, httpsAgentOptions } = options || {};
@@ -171,10 +169,9 @@ class Proxy {
 
 /**
  * Applies given proxy id to monitors
- *
- * @param proxyID
- * @param userID
- * @return {Promise<void>}
+ * @param {number} proxyID ID of proxy to apply
+ * @param {number} userID ID of proxy owner
+ * @returns {Promise<void>}
  */
 async function applyProxyEveryMonitor(proxyID, userID) {
     // Find all monitors with id and proxy id

@@ -15,6 +15,7 @@ class CacheableDnsHttpAgent {
 
     /**
      * Register/Disable cacheable to global agents
+     * @returns {void}
      */
     static async update() {
         log.debug("CacheableDnsHttpAgent", "update");
@@ -40,14 +41,15 @@ class CacheableDnsHttpAgent {
     /**
      * Attach cacheable to HTTP agent
      * @param {http.Agent} agent Agent to install
+     * @returns {void}
      */
     static install(agent) {
         this.cacheable.install(agent);
     }
 
     /**
-     * @var {https.AgentOptions} agentOptions
-     * @return {https.Agent}
+     * @param {https.AgentOptions} agentOptions Options to pass to HTTPS agent
+     * @returns {https.Agent} The new HTTPS agent
      */
     static getHttpsAgent(agentOptions) {
         if (!this.enable) {
@@ -63,8 +65,8 @@ class CacheableDnsHttpAgent {
     }
 
     /**
-     * @var {http.AgentOptions} agentOptions
-     * @return {https.Agents}
+     * @param {http.AgentOptions} agentOptions Options to pass to the HTTP agent
+     * @returns {https.Agents} The new HTTP agent
      */
     static getHttpAgent(agentOptions) {
         if (!this.enable) {

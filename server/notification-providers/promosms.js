@@ -5,6 +5,9 @@ class PromoSMS extends NotificationProvider {
 
     name = "promosms";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
 

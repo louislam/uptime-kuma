@@ -126,6 +126,7 @@ export default {
     methods: {
         /**
          * Show modal
+         * @returns {void}
          */
         show() {
             this.id = null;
@@ -138,7 +139,10 @@ export default {
             this.keyaddmodal.show();
         },
 
-        /** Submit data to server */
+        /**
+         * Submit data to server
+         * @returns {Promise<void>}
+         */
         async submit() {
             this.processing = true;
 
@@ -159,7 +163,10 @@ export default {
             });
         },
 
-        /** Clear Form inputs */
+        /**
+         * Clear Form inputs
+         * @returns {void}
+         */
         clearForm() {
             this.key = {
                 name: "",

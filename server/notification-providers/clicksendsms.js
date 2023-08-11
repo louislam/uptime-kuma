@@ -5,6 +5,9 @@ class ClickSendSMS extends NotificationProvider {
 
     name = "clicksendsms";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
         try {

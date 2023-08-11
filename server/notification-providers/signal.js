@@ -5,6 +5,9 @@ class Signal extends NotificationProvider {
 
     name = "signal";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
 

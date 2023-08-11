@@ -1699,8 +1699,8 @@ async function updateMonitorNotification(monitorID, notificationIDList) {
 
 /**
  * Check if a given user owns a specific monitor
- * @param {number} userID
- * @param {number} monitorID
+ * @param {number} userID ID of user to check
+ * @param {number} monitorID ID of monitor to check
  * @returns {Promise<void>}
  * @throws {Error} The specified user does not own the monitor
  */
@@ -1719,7 +1719,7 @@ async function checkOwner(userID, monitorID) {
  * Function called after user login
  * This function is used to send the heartbeat list of a monitor.
  * @param {Socket} socket Socket.io instance
- * @param {Object} user User object
+ * @param {object} user User object
  * @returns {Promise<void>}
  */
 async function afterLogin(socket, user) {
@@ -1760,7 +1760,7 @@ async function afterLogin(socket, user) {
 
 /**
  * Initialize the database
- * @param {boolean} [testMode=false] Should the connection be
+ * @param {boolean} testMode Should the connection be
  * started in test mode?
  * @returns {Promise<void>}
  */
@@ -1852,7 +1852,10 @@ async function pauseMonitor(userID, monitorID) {
     }
 }
 
-/** Resume active monitors */
+/**
+ * Resume active monitors
+ * @returns {Promise<void>}
+ */
 async function startMonitors() {
     let list = await R.find("monitor", " active = 1 ");
 
@@ -1896,7 +1899,10 @@ async function shutdownFunction(signal) {
     Settings.stopCacheCleaner();
 }
 
-/** Final function called before application exits */
+/**
+ * Final function called before application exits
+ * @returns {void}
+ */
 function finalFunction() {
     log.info("server", "Graceful shutdown successful!");
 }

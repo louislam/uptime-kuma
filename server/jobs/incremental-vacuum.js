@@ -4,7 +4,7 @@ const Database = require("../database");
 
 /**
  * Run incremental_vacuum and checkpoint the WAL.
- * @return {Promise<void>} A promise that resolves when the process is finished.
+ * @returns {Promise<void>} A promise that resolves when the process is finished.
  */
 
 const incrementalVacuum = async () => {
