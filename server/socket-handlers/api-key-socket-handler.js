@@ -17,7 +17,7 @@ module.exports.apiKeySocketHandler = (socket) => {
     // Add a new api key
     socket.on("addAPIKey", async (key, callback) => {
         try {
-            checkLogin(socket);
+            await checkLogin(socket);
 
             let clearKey = nanoid(40);
             let hashedKey = passwordHash.generate(clearKey);
@@ -54,7 +54,7 @@ module.exports.apiKeySocketHandler = (socket) => {
 
     socket.on("getAPIKeyList", async (callback) => {
         try {
-            checkLogin(socket);
+            await checkLogin(socket);
             await sendAPIKeyList(socket);
             callback({
                 ok: true,
@@ -70,7 +70,7 @@ module.exports.apiKeySocketHandler = (socket) => {
 
     socket.on("deleteAPIKey", async (keyID, callback) => {
         try {
-            checkLogin(socket);
+            await checkLogin(socket);
 
             log.debug("apikeys", `Deleted API Key: ${keyID} User ID: ${socket.userID}`);
 
@@ -96,7 +96,7 @@ module.exports.apiKeySocketHandler = (socket) => {
 
     socket.on("disableAPIKey", async (keyID, callback) => {
         try {
-            checkLogin(socket);
+            await checkLogin(socket);
 
             log.debug("apikeys", `Disabled Key: ${keyID} User ID: ${socket.userID}`);
 
@@ -124,7 +124,7 @@ module.exports.apiKeySocketHandler = (socket) => {
 
     socket.on("enableAPIKey", async (keyID, callback) => {
         try {
-            checkLogin(socket);
+            await checkLogin(socket);
 
             log.debug("apikeys", `Enabled Key: ${keyID} User ID: ${socket.userID}`);
 
