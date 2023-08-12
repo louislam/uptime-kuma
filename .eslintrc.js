@@ -1,6 +1,7 @@
 module.exports = {
     ignorePatterns: [
-        "test/*",
+        "test/*.js",
+        "test/cypress",
         "server/modules/apicache/*",
         "src/util.js"
     ],
