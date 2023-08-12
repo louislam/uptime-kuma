@@ -214,7 +214,7 @@ Since previously updating Vite 2.5.10 to 2.6.0 broke the application completely,
 
 Patch release = the third digit ([Semantic Versioning](https://semver.org/))
 
-If for maybe security reasons, a library must be updated. Then you must need to check if there are any breaking changes.
+If for security / bug / other reasons, a library must be updated, breaking changes need to be checked by the person proposing the change.
 
 ## Translations
 
