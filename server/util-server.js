@@ -757,8 +757,10 @@ exports.allowAllOrigin = (res) => {
  * @returns {void}
  * @throws The user is not logged in
  */
-exports.checkLogin = (socket) => {
-    if (!socket.userID) {
+exports.checkLogin = async (socket) => {
+    const user = await R.findOne("user", " id = ? AND active = 1 ", [ socket.userID ]);
+
+    if (!user) {
         throw new Error("You are not logged in.");
     }
 };
