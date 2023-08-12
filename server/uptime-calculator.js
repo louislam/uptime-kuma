@@ -12,6 +12,8 @@ class UptimeCalculator {
      */
     static currentDate = null;
 
+    monitorID;
+
     /**
      * Recent 24-hour uptime, each item is a 1-minute interval
      * Key: {number} DivisionKey
@@ -48,14 +50,14 @@ class UptimeCalculator {
     }
 
     /**
-     * TODO
+     * @param {number} monitorID
      */
-    init() {
+    async init(monitorID) {
+        this.monitorID = monitorID;
     }
 
     /**
      * @param {number} status status
-     * @param {dayjs.Dayjs} date The heartbeat date
      * @returns {dayjs.Dayjs} date
      * @throws {Error} Invalid status
      */
@@ -66,11 +68,11 @@ class UptimeCalculator {
         let dailyKey = this.getDailyKey(divisionKey);
 
         if (flatStatus === UP) {
-            this.uptimeDataList[divisionKey].uptime += 1;
-            this.dailyUptimeDataList[dailyKey].uptime += 1;
+            this.uptimeDataList[divisionKey].up += 1;
+            this.dailyUptimeDataList[dailyKey].up += 1;
         } else {
-            this.uptimeDataList[divisionKey].downtime += 1;
-            this.dailyUptimeDataList[dailyKey].downtime += 1;
+            this.uptimeDataList[divisionKey].down += 1;
+            this.dailyUptimeDataList[dailyKey].down += 1;
         }
 
         this.lastDailyUptimeData = this.dailyUptimeDataList[dailyKey];
@@ -92,8 +94,8 @@ class UptimeCalculator {
 
         if (! (divisionKey in this.uptimeDataList)) {
             this.uptimeDataList[divisionKey] = {
-                uptime: 0,
-                downtime: 0,
+                up: 0,
+                down: 0,
             };
         }
 
@@ -115,8 +117,8 @@ class UptimeCalculator {
 
         if (!this.dailyUptimeDataList[dailyKey]) {
             this.dailyUptimeDataList[dailyKey] = {
-                uptime: 0,
-                downtime: 0,
+                up: 0,
+                down: 0,
             };
         }
 
@@ -150,7 +152,7 @@ class UptimeCalculator {
 
         // No data in last 24 hours, it could be a new monitor or the interval is larger than 24 hours
         // Try to use previous data, if no previous data, return 0
-        if (dailyUptimeData.uptime === 0 && dailyUptimeData.downtime === 0) {
+        if (dailyUptimeData.up === 0 && dailyUptimeData.down === 0) {
             if (this.lastDailyUptimeData) {
                 dailyUptimeData = this.lastDailyUptimeData;
             } else {
@@ -158,7 +160,7 @@ class UptimeCalculator {
             }
         }
 
-        return dailyUptimeData.uptime / (dailyUptimeData.uptime + dailyUptimeData.downtime);
+        return dailyUptimeData.up / (dailyUptimeData.up + dailyUptimeData.down);
     }
 
     /**
@@ -168,23 +170,23 @@ class UptimeCalculator {
         let dailyKey = this.getDailyKey(this.getCurrentDate().unix());
 
         let total = {
-            uptime: 0,
-            downtime: 0,
+            up: 0,
+            down: 0,
         };
 
         for (let i = 0; i < day; i++) {
             let dailyUptimeData = this.dailyUptimeDataList[dailyKey];
 
             if (dailyUptimeData) {
-                total.uptime += dailyUptimeData.uptime;
-                total.downtime += dailyUptimeData.downtime;
+                total.up += dailyUptimeData.up;
+                total.down += dailyUptimeData.down;
             }
 
             // Previous day
             dailyKey -= 86400;
         }
 
-        if (total.uptime === 0 && total.downtime === 0) {
+        if (total.up === 0 && total.down === 0) {
             if (this.lastDailyUptimeData) {
                 total = this.lastDailyUptimeData;
             } else {
@@ -192,7 +194,7 @@ class UptimeCalculator {
             }
         }
 
-        return total.uptime / (total.uptime + total.downtime);
+        return total.up / (total.up + total.down);
     }
 
     /**
@@ -224,10 +226,14 @@ class UptimeCalculator {
     }
 
     /**
-     *
+     * TODO
      */
     clear() {
+        // Clear data older than 24 hours
 
+        // Clear data older than 1 year
+
+        // https://stackoverflow.com/a/6630869/1097815
     }
 }
 
