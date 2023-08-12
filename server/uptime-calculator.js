@@ -162,24 +162,58 @@ class UptimeCalculator {
     }
 
     /**
+     * @param day
+     */
+    getUptime(day) {
+        let dailyKey = this.getDailyKey(this.getCurrentDate().unix());
+
+        let total = {
+            uptime: 0,
+            downtime: 0,
+        };
+
+        for (let i = 0; i < day; i++) {
+            let dailyUptimeData = this.dailyUptimeDataList[dailyKey];
+
+            if (dailyUptimeData) {
+                total.uptime += dailyUptimeData.uptime;
+                total.downtime += dailyUptimeData.downtime;
+            }
+
+            // Previous day
+            dailyKey -= 86400;
+        }
+
+        if (total.uptime === 0 && total.downtime === 0) {
+            if (this.lastDailyUptimeData) {
+                total = this.lastDailyUptimeData;
+            } else {
+                return 0;
+            }
+        }
+
+        return total.uptime / (total.uptime + total.downtime);
+    }
+
+    /**
      *
      */
     get7DayUptime() {
-
+        return this.getUptime(7);
     }
 
     /**
      *
      */
     get30DayUptime() {
-
+        return this.getUptime(30);
     }
 
     /**
      *
      */
     get1YearUptime() {
-
+        return this.getUptime(365);
     }
 
     /**

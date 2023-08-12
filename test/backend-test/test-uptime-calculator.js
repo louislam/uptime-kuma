@@ -164,18 +164,107 @@ test("Test update - get24HourUptime", (t) => {
     // Add 24 hours
     c2 = new UptimeCalculator();
     c2.update(UP);
+    c2.update(UP);
+    c2.update(UP);
+    c2.update(UP);
+    c2.update(DOWN);
     uptime = c2.get24HourUptime();
-    assert.strictEqual(uptime, 1);
+    assert.strictEqual(uptime, 0.8);
     UptimeCalculator.currentDate = UptimeCalculator.currentDate.add(24, "hour");
 
-    // After 24 hours, even if there is no data, the uptime should be still 100%
+    // After 24 hours, even if there is no data, the uptime should be still 80%
     uptime = c2.get24HourUptime();
-    assert.strictEqual(uptime, 1);
+    assert.strictEqual(uptime, 0.8);
 
     // Add more 24 hours (48 hours)
     UptimeCalculator.currentDate = UptimeCalculator.currentDate.add(24, "hour");
 
-    // After 24 hours, even if there is no data, the uptime should be still 100%
+    // After 48 hours, even if there is no data, the uptime should be still 80%
     uptime = c2.get24HourUptime();
+    assert.strictEqual(uptime, 0.8);
+});
+
+test("Test update - get7DayUptime", (t) => {
+    UptimeCalculator.currentDate = dayjs.utc("2023-08-12 20:46:59");
+
+    // No data
+    let c2 = new UptimeCalculator();
+    let uptime = c2.get7DayUptime();
+    assert.strictEqual(uptime, 0);
+
+    // 1 Up
+    c2 = new UptimeCalculator();
+    c2.update(UP);
+    uptime = c2.get7DayUptime();
     assert.strictEqual(uptime, 1);
+
+    // 2 Up
+    c2 = new UptimeCalculator();
+    c2.update(UP);
+    c2.update(UP);
+    uptime = c2.get7DayUptime();
+    assert.strictEqual(uptime, 1);
+
+    // 3 Up
+    c2 = new UptimeCalculator();
+    c2.update(UP);
+    c2.update(UP);
+    c2.update(UP);
+    uptime = c2.get7DayUptime();
+    assert.strictEqual(uptime, 1);
+
+    // 1 MAINTENANCE
+    c2 = new UptimeCalculator();
+    c2.update(MAINTENANCE);
+    uptime = c2.get7DayUptime();
+    assert.strictEqual(uptime, 1);
+
+    // 1 PENDING
+    c2 = new UptimeCalculator();
+    c2.update(PENDING);
+    uptime = c2.get7DayUptime();
+    assert.strictEqual(uptime, 0);
+
+    // 1 DOWN
+    c2 = new UptimeCalculator();
+    c2.update(DOWN);
+    uptime = c2.get7DayUptime();
+    assert.strictEqual(uptime, 0);
+
+    // 2 DOWN
+    c2 = new UptimeCalculator();
+    c2.update(DOWN);
+    c2.update(DOWN);
+    uptime = c2.get7DayUptime();
+    assert.strictEqual(uptime, 0);
+
+    // 1 DOWN, 1 UP
+    c2 = new UptimeCalculator();
+    c2.update(DOWN);
+    c2.update(UP);
+    uptime = c2.get7DayUptime();
+    assert.strictEqual(uptime, 0.5);
+
+    // 1 UP, 1 DOWN
+    c2 = new UptimeCalculator();
+    c2.update(UP);
+    c2.update(DOWN);
+    uptime = c2.get7DayUptime();
+    assert.strictEqual(uptime, 0.5);
+
+    // Add 7 days
+    c2 = new UptimeCalculator();
+    c2.update(UP);
+    c2.update(UP);
+    c2.update(UP);
+    c2.update(UP);
+    c2.update(DOWN);
+    uptime = c2.get7DayUptime();
+    assert.strictEqual(uptime, 0.8);
+    UptimeCalculator.currentDate = UptimeCalculator.currentDate.add(7, "day");
+
+    // After 7 days, even if there is no data, the uptime should be still 80%
+    uptime = c2.get7DayUptime();
+    assert.strictEqual(uptime, 0.8);
+
 });
