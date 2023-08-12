@@ -833,5 +833,10 @@
     "Check/Uncheck": "İşaretle/İşareti Kaldır",
     "pushDeerServerDescription": "Resmi sunucuyu kullanmak için boş bırakın",
     "Request Timeout": "İstek zaman aşımına uğradı",
-    "timeoutAfter": "{0} saniye sonra zaman aşımı"
+    "timeoutAfter": "{0} saniye sonra zaman aşımı",
+    "gamedigGuessPort": "Gamedig: Ziyaretçi Portu",
+    "gamedigGuessPortDescription": "Valve Server Sorgu Protokolü tarafından kullanılan bağlantı noktası, istemci bağlantı noktasından farklı olabilir. Monitör sunucunuza bağlanamıyorsa bunu deneyin.",
+    "styleElapsedTimeShowNoLine": "Göster (Satır Yok)",
+    "styleElapsedTime": "Kalp atışı çubuğunun altında geçen süre",
+    "styleElapsedTimeShowWithLine": "Göster (Satır ile birlikte)"
 }
