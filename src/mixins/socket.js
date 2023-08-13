@@ -33,6 +33,7 @@ export default {
                 connectCount: 0,
                 initedSocketIO: false,
             },
+            userID: null,
             username: null,
             remember: (localStorage.remember !== "0"),
             allowLoginDialog: false,        // Allowed to show login dialog, but "loggedIn" have to be true too. This exists because prevent the login dialog show 0.1s in first before the socket server auth-ed.
@@ -407,8 +408,11 @@ export default {
                 if (res.ok) {
                     this.storage().token = res.token;
                     this.socket.token = res.token;
+
+                    const { userID, username } = this.getJWTPayload() || {};
+                    this.userID = userID;
+                    this.username = username;
                     this.loggedIn = true;
-                    this.username = this.getJWTPayload()?.username;
 
                     // Trigger Chrome Save Password
                     history.pushState({}, "");
@@ -430,8 +434,10 @@ export default {
                 if (! res.ok) {
                     this.logout();
                 } else {
+                    const { userID, username } = this.getJWTPayload() || {};
+                    this.userID = userID;
+                    this.username = username;
                     this.loggedIn = true;
-                    this.username = this.getJWTPayload()?.username;
                 }
             });
         },
@@ -445,6 +451,7 @@ export default {
             this.storage().removeItem("token");
             this.socket.token = null;
             this.loggedIn = false;
+            this.userID = null;
             this.username = null;
             this.clearData();
         },
