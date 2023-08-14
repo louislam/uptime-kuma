@@ -130,6 +130,13 @@ export default {
                 security: {
                     title: this.$t("Security"),
                 },
+                users: {
+                    title: this.$t("Users"),
+                    children: {
+                        add: { title: this.$t("Add") },
+                        edit: { title: this.$t("Edit") }
+                    },
+                },
                 "api-keys": {
                     title: this.$t("API Keys")
                 },
