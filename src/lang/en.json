@@ -1027,5 +1027,12 @@
     "greater than": "greater than",
     "less than or equal to": "less than or equal to",
     "greater than or equal to": "greater than or equal to",
-    "record": "record"
+    "record": "record",
+    "Users": "Users",
+    "Add New User": "Add New User",
+    "confirmDisableUserMsg": "Are you sure you want to disable this user? The user will not be able to login anymore.",
+    "Create an admin account": "Create an admin account",
+    "Identity": "Identity",
+    "Update Username": "Update Username",
+    "Permissions": "Permissions"
 }
