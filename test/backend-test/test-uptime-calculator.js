@@ -270,12 +270,12 @@ test("Test get7DayUptime", (t) => {
 });
 
 test("Test get30DayUptime (1 check per day)", (t) => {
+    UptimeCalculator.currentDate = dayjs.utc("2023-08-12 20:46:59");
 
     let c2 = new UptimeCalculator();
     let uptime = c2.get7DayUptime();
     assert.strictEqual(uptime, 0);
 
-    UptimeCalculator.currentDate = dayjs.utc("2023-08-12 20:46:59");
     let up = 0;
     let down = 0;
     let flip = true;
@@ -303,12 +303,12 @@ test("Test get30DayUptime (1 check per day)", (t) => {
 });
 
 test("Test get1YearUptime (1 check per day)", (t) => {
+    UptimeCalculator.currentDate = dayjs.utc("2023-08-12 20:46:59");
 
     let c2 = new UptimeCalculator();
     let uptime = c2.get7DayUptime();
     assert.strictEqual(uptime, 0);
 
-    UptimeCalculator.currentDate = dayjs.utc("2023-08-12 20:46:59");
     let up = 0;
     let down = 0;
     let flip = true;
@@ -332,7 +332,24 @@ test("Test get1YearUptime (1 check per day)", (t) => {
     assert.strictEqual(c2.get7DayUptime(), 4 / 7);
 });
 
+/**
+ * Code from here: https://stackoverflow.com/a/64550489/1097815
+ */
+function memoryUsage() {
+    const formatMemoryUsage = (data) => `${Math.round(data / 1024 / 1024 * 100) / 100} MB`;
+    const memoryData = process.memoryUsage();
+
+    const memoryUsage = {
+        rss: `${formatMemoryUsage(memoryData.rss)} -> Resident Set Size - total memory allocated for the process execution`,
+        heapTotal: `${formatMemoryUsage(memoryData.heapTotal)} -> total size of the allocated heap`,
+        heapUsed: `${formatMemoryUsage(memoryData.heapUsed)} -> actual memory used during the execution`,
+        external: `${formatMemoryUsage(memoryData.external)} -> V8 external memory`,
+    };
+    return memoryUsage;
+}
+
 test("Worst case", async (t) => {
+    console.log("Memory usage before preparation", memoryUsage());
 
     let c = new UptimeCalculator();
     let up = 0;
@@ -364,8 +381,10 @@ test("Worst case", async (t) => {
 
         }
 
-        assert.strictEqual(Object.keys(c.uptimeDataList).length, 1440);
-        assert.strictEqual(Object.keys(c.dailyUptimeDataList).length, 365);
+        console.log("Memory usage before preparation", memoryUsage());
+
+        assert.strictEqual(c.uptimeDataList.length(), 1440);
+        assert.strictEqual(c.dailyUptimeDataList.length(), 365);
     });
 
     await t.test("get1YearUptime()", async () => {

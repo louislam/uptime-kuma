@@ -1,5 +1,7 @@
 const dayjs = require("dayjs");
 const { UP, MAINTENANCE, DOWN, PENDING } = require("../src/util");
+const { LimitQueue } = require("./utils/limit-queue");
+const { log } = require("../src/util");
 
 /**
  * Calculates the uptime of a monitor.
@@ -18,17 +20,13 @@ class UptimeCalculator {
      * Recent 24-hour uptime, each item is a 1-minute interval
      * Key: {number} DivisionKey
      */
-    uptimeDataList = {
-
-    };
+    uptimeDataList = new LimitQueue(24 * 60);
 
     /**
      * Daily uptime data,
      * Key: {number} DailyKey
      */
-    dailyUptimeDataList = {
-
-    };
+    dailyUptimeDataList = new LimitQueue(365);
 
     lastDailyUptimeData = null;
 
@@ -93,10 +91,15 @@ class UptimeCalculator {
         let divisionKey = date.unix();
 
         if (! (divisionKey in this.uptimeDataList)) {
-            this.uptimeDataList[divisionKey] = {
+            let last = this.uptimeDataList.getLastKey();
+            if (last && last > divisionKey) {
+                log.warn("uptime-calc", "The system time has been changed? The uptime data may be inaccurate.");
+            }
+
+            this.uptimeDataList.push(divisionKey, {
                 up: 0,
                 down: 0,
-            };
+            });
         }
 
         return divisionKey;
@@ -116,10 +119,15 @@ class UptimeCalculator {
         let dailyKey = date.unix();
 
         if (!this.dailyUptimeDataList[dailyKey]) {
-            this.dailyUptimeDataList[dailyKey] = {
+            let last = this.dailyUptimeDataList.getLastKey();
+            if (last && last > dailyKey) {
+                log.warn("uptime-calc", "The system time has been changed? The uptime data may be inaccurate.");
+            }
+
+            this.dailyUptimeDataList.push(dailyKey, {
                 up: 0,
                 down: 0,
-            };
+            });
         }
 
         return dailyKey;
