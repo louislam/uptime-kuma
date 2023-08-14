@@ -13,6 +13,7 @@ class GrafanaOncall extends NotificationProvider {
                 let grafanadowndata = {
                     title: monitorJSON["name"] + " is down",
                     message: heartbeatJSON["msg"],
+                    state: "alerting",
                 };
                 await axios.post(
                     notification.GrafanaOncallURL,
