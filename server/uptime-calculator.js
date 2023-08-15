@@ -8,6 +8,8 @@ const { log } = require("../src/util");
  */
 class UptimeCalculator {
 
+    flushInterval = 60 * 1000;
+
     /**
      * For testing purposes, we can set the current date to a specific date.
      * @type {dayjs.Dayjs}
@@ -52,6 +54,8 @@ class UptimeCalculator {
      */
     async init(monitorID) {
         this.monitorID = monitorID;
+
+        // Object.assign(new Foo, { a: 1 })
     }
 
     /**
