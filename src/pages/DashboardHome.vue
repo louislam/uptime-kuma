@@ -132,9 +132,8 @@ export default {
     methods: {
         /**
          * Updates the displayed records when a new important heartbeat arrives.
-         *
          * @param {object} heartbeat - The heartbeat object received.
-         * @return {void}
+         * @returns {void}
          */
         onNewImportantHeartbeat(heartbeat) {
             if (this.page === 1) {
@@ -148,8 +147,7 @@ export default {
 
         /**
          * Retrieves the length of the important heartbeat list for all monitors.
-         *
-         * @return {void}
+         * @returns {void}
          */
         getImportantHeartbeatListLength() {
             this.$root.getSocket().emit("monitorImportantHeartbeatListCount", null, (res) => {
@@ -162,8 +160,7 @@ export default {
 
         /**
          * Retrieves the important heartbeat list for the current page.
-         *
-         * @return {void}
+         * @returns {void}
          */
         getImportantHeartbeatListPaged() {
             const offset = (this.page - 1) * this.perPage;
@@ -174,6 +171,10 @@ export default {
             });
         },
 
+        /**
+         * Updates the number of items shown per page based on the available height.
+         * @returns {void}
+         */
         updatePerPage() {
             const tableContainer = this.$refs.tableContainer;
             const tableContainerHeight = tableContainer.offsetHeight;

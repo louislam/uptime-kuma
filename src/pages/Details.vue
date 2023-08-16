@@ -512,8 +512,7 @@ export default {
 
         /**
          * Retrieves the length of the important heartbeat list for this monitor.
-         *
-         * @return {void}
+         * @returns {void}
          */
         getImportantHeartbeatListLength() {
             if (this.monitor) {
@@ -528,8 +527,7 @@ export default {
 
         /**
          * Retrieves the important heartbeat list for the current page.
-         *
-         * @return {void}
+         * @returns {void}
          */
         getImportantHeartbeatListPaged() {
             if (this.monitor) {
@@ -544,8 +542,8 @@ export default {
 
         /**
          * Updates the displayed records when a new important heartbeat arrives.
-         *
          * @param {object} heartbeat - The heartbeat object received.
+         * @returns {void}
          */
         onNewImportantHeartbeat(heartbeat) {
             if (heartbeat.monitorID === this.monitor?.id) {
