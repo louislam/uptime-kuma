@@ -9,7 +9,7 @@ on:
     paths-ignore:
       - '*.md'
   pull_request:
-    branches: [ master ]
+    branches: [ master, 2.0.X ]
     paths-ignore:
       - '*.md'
 
