@@ -834,8 +834,9 @@
     "wayToGetFlashDutyKey": "Můžete přejít na stránku Kanál -> (Vyberte kanál) -> Integrace -> Přidat novou integraci, přidat \"Vlastní událost\" a získat adresu pro odeslání, zkopírovat klíč integrace do adresy. Další informace naleznete na adrese",
     "Request Timeout": "Časový limit požadavku",
     "timeoutAfter": "Vypršení časového limitu po {0} sekundách",
-    "styleElapsedTime": "Čas uplynulý pod pruhem poslední odpovědi",
+    "styleElapsedTime": "Čas uplynulý pod heartbeat ukazatelem",
     "styleElapsedTimeShowWithLine": "Zobrazit (s linkou)",
     "gamedigGuessPortDescription": "Port používaný protokolem Valve Server Query Protocol se může lišit od portu klienta. Pokud se monitor nemůže připojit k serveru, zkuste to.",
-    "styleElapsedTimeShowNoLine": "Zobrazit (bez linky)"
+    "styleElapsedTimeShowNoLine": "Zobrazit (bez linky)",
+    "gamedigGuessPort": "Gamedig: Guess Port"
 }
