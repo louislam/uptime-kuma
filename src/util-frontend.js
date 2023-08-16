@@ -153,8 +153,7 @@ export function colorOptions(self) {
 
 /**
  * Loads the toast timeout settings from storage.
- *
- * @return {Object} The toast plugin options object.
+ * @returns {object} The toast plugin options object.
  */
 export function loadToastSettings() {
     return {
