@@ -7,6 +7,7 @@ const { ArrayWithKey } = require("./array-with-key");
 class LimitQueue extends ArrayWithKey {
 
     __limit;
+    __onExceed = null;
 
     /**
      * @param {number} limit
@@ -22,7 +23,10 @@ class LimitQueue extends ArrayWithKey {
     push(key, value) {
         super.push(key, value);
         if (this.length() > this.__limit) {
-            this.shift();
+            let item = this.shift();
+            if (this.__onExceed) {
+                this.__onExceed(item);
+            }
         }
     }
 

@@ -43,9 +43,12 @@ class ArrayWithKey {
      */
     shift() {
         let key = this.__stack.shift();
-        let prop = this[key];
+        let value = this[key];
         delete this[key];
-        return prop;
+        return {
+            key,
+            value,
+        };
     }
 
     /**

@@ -359,6 +359,9 @@ test("Worst case", async (t) => {
     await t.test("Prepare data", async () => {
         UptimeCalculator.currentDate = dayjs.utc("2023-08-12 20:46:59");
 
+        // Since 2023-08-12 will be out of 365 range, it starts from 2023-08-13 actually
+        let actualStartDate = dayjs.utc("2023-08-13 00:00:00").unix();
+
         // Simulate 1s interval for a year
         for (let i = 0; i < 365 * 24 * 60 * 60; i += interval) {
             UptimeCalculator.currentDate = UptimeCalculator.currentDate.add(interval, "second");
@@ -367,20 +370,27 @@ test("Worst case", async (t) => {
             let rand = Math.random();
             if (rand < 0.25) {
                 c.update(UP);
-                up++;
+                if (UptimeCalculator.currentDate.unix() > actualStartDate) {
+                    up++;
+                }
             } else if (rand < 0.5) {
                 c.update(DOWN);
-                down++;
+                if (UptimeCalculator.currentDate.unix() > actualStartDate) {
+                    down++;
+                }
             } else if (rand < 0.75) {
                 c.update(MAINTENANCE);
-                up++;
+                if (UptimeCalculator.currentDate.unix() > actualStartDate) {
+                    up++;
+                }
             } else {
                 c.update(PENDING);
-                down++;
+                if (UptimeCalculator.currentDate.unix() > actualStartDate) {
+                    down++;
+                }
             }
-
         }
-
+        console.log("Final Date: ", UptimeCalculator.currentDate.format("YYYY-MM-DD HH:mm:ss"));
         console.log("Memory usage before preparation", memoryUsage());
 
         assert.strictEqual(c.uptimeDataList.length(), 1440);

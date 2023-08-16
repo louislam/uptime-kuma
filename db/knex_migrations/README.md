@@ -9,8 +9,6 @@ https://knexjs.org/guide/migrations.html#knexfile-in-other-languages
 
 ## Template
 
-Filename: YYYYMMDDHHMMSS_name.js
-
 ```js
 exports.up = function(knex) {
 

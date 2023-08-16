@@ -60,10 +60,11 @@ class UptimeCalculator {
 
     /**
      * @param {number} status status
+     * @param {number} ping
      * @returns {dayjs.Dayjs} date
      * @throws {Error} Invalid status
      */
-    update(status) {
+    update(status, ping = 0) {
         let date = this.getCurrentDate();
         let flatStatus = this.flatStatus(status);
         let divisionKey = this.getDivisionKey(date);
@@ -76,6 +77,14 @@ class UptimeCalculator {
             this.uptimeDataList[divisionKey].down += 1;
             this.dailyUptimeDataList[dailyKey].down += 1;
         }
+
+        // Add avg ping
+        let count = this.uptimeDataList[divisionKey].up + this.uptimeDataList[divisionKey].down;
+        this.uptimeDataList[divisionKey].ping = (this.uptimeDataList[divisionKey].ping * (count - 1) + ping) / count;
+
+        // Add avg ping (daily)
+        count = this.dailyUptimeDataList[dailyKey].up + this.dailyUptimeDataList[dailyKey].down;
+        this.dailyUptimeDataList[dailyKey].ping = (this.dailyUptimeDataList[dailyKey].ping * (count - 1) + ping) / count;
 
         this.lastDailyUptimeData = this.dailyUptimeDataList[dailyKey];
 
@@ -103,6 +112,7 @@ class UptimeCalculator {
             this.uptimeDataList.push(divisionKey, {
                 up: 0,
                 down: 0,
+                ping: 0,
             });
         }
 
@@ -131,6 +141,7 @@ class UptimeCalculator {
             this.dailyUptimeDataList.push(dailyKey, {
                 up: 0,
                 down: 0,
+                ping: 0,
             });
         }
 
@@ -241,10 +252,6 @@ class UptimeCalculator {
      * TODO
      */
     clear() {
-        // Clear data older than 24 hours
-
-        // Clear data older than 1 year
-
         // https://stackoverflow.com/a/6630869/1097815
     }
 }
