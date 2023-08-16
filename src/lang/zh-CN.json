@@ -835,5 +835,10 @@
     "pushDeerServerDescription": "留空则使用官方服务器",
     "PushDeer Server": "PushDeer 服务器",
     "timeoutAfter": "{0} 秒后超时",
-    "Request Timeout": "请求超时"
+    "Request Timeout": "请求超时",
+    "gamedigGuessPortDescription": "Valve 服务器查询协议使用的端口可能与客户端端口不同。如果监控器无法连接到服务器，请尝试此方法。",
+    "gamedigGuessPort": "Gamedig: 自动检测端口号",
+    "styleElapsedTimeShowWithLine": "显示（带连接线）",
+    "styleElapsedTimeShowNoLine": "显示（不带连接线）",
+    "styleElapsedTime": "在监控项详情的心跳栏下显示起止时间"
 }
