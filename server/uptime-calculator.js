@@ -2,6 +2,7 @@ const dayjs = require("dayjs");
 const { UP, MAINTENANCE, DOWN, PENDING } = require("../src/util");
 const { LimitQueue } = require("./utils/limit-queue");
 const { log } = require("../src/util");
+const { R } = require("redbean-node");
 
 /**
  * Calculates the uptime of a monitor.
@@ -31,6 +32,7 @@ class UptimeCalculator {
     dailyUptimeDataList = new LimitQueue(365);
 
     lastDailyUptimeData = null;
+    lastUptimeData = null;
 
     /**
      *
@@ -67,7 +69,7 @@ class UptimeCalculator {
     update(status, ping = 0) {
         let date = this.getCurrentDate();
         let flatStatus = this.flatStatus(status);
-        let divisionKey = this.getDivisionKey(date);
+        let divisionKey = this.getMinutelyKey(date);
         let dailyKey = this.getDailyKey(divisionKey);
 
         if (flatStatus === UP) {
@@ -86,17 +88,45 @@ class UptimeCalculator {
         count = this.dailyUptimeDataList[dailyKey].up + this.dailyUptimeDataList[dailyKey].down;
         this.dailyUptimeDataList[dailyKey].ping = (this.dailyUptimeDataList[dailyKey].ping * (count - 1) + ping) / count;
 
-        this.lastDailyUptimeData = this.dailyUptimeDataList[dailyKey];
+        if (this.dailyUptimeDataList[dailyKey] != this.lastDailyUptimeData) {
 
-        this.clear();
+            this.lastDailyUptimeData =
+            this.lastDailyUptimeData.monitor_id = this.monitorID;
+            this.lastDailyUptimeData.timestamp = dailyKey;
+            this.lastDailyUptimeData = this.dailyUptimeDataList[dailyKey];
+        }
+
+        if (this.uptimeDataList[divisionKey] != this.lastUptimeData) {
+            this.lastUptimeData = this.uptimeDataList[divisionKey];
+        }
+
         return date;
     }
 
     /**
-     * @param {dayjs.Dayjs} date The heartbeat date
-     * @returns {number} division
+     * Get the daily stat bean
+     * @param {number} timestamp milliseconds
+     * @returns {Promise<import("redbean-node").Bean>} stat_daily bean
      */
-    getDivisionKey(date) {
+    async getDailyStatBean(timestamp) {
+        let bean = await R.findOne("stat_daily", " monitor_id = ? AND timestamp = ?", [
+            this.monitorID,
+            timestamp,
+        ]);
+
+        if (!bean) {
+            bean = R.dispense("stat_daily");
+            bean.monitor_id = this.monitorID;
+            bean.timestamp = timestamp;
+        }
+        return bean;
+    }
+
+    /**
+     * @param {dayjs.Dayjs} date The heartbeat date
+     * @returns {number} Timestamp
+     */
+    getMinutelyKey(date) {
         // Convert the current date to the nearest minute (e.g. 2021-01-01 12:34:56 -> 2021-01-01 12:34:00)
         date = date.startOf("minute");
 
@@ -122,7 +152,7 @@ class UptimeCalculator {
     /**
      * Convert timestamp to daily key
      * @param {number} timestamp Timestamp
-     * @returns {number} dailyKey
+     * @returns {number} Timestamp
      */
     getDailyKey(timestamp) {
         let date = dayjs.unix(timestamp);
@@ -167,78 +197,96 @@ class UptimeCalculator {
     }
 
     /**
-     *
+     * @param {number} num
+     * @param {string} type "day" | "minute"
      */
-    get24HourUptime() {
-        let dailyKey = this.getDailyKey(this.getCurrentDate().unix());
-        let dailyUptimeData = this.dailyUptimeDataList[dailyKey];
+    getData(num, type = "day") {
+        let key;
 
-        // No data in last 24 hours, it could be a new monitor or the interval is larger than 24 hours
-        // Try to use previous data, if no previous data, return 0
-        if (dailyUptimeData.up === 0 && dailyUptimeData.down === 0) {
-            if (this.lastDailyUptimeData) {
-                dailyUptimeData = this.lastDailyUptimeData;
-            } else {
-                return 0;
+        if (type === "day") {
+            key = this.getDailyKey(this.getCurrentDate().unix());
+        } else {
+            if (num > 24 * 60) {
+                throw new Error("The maximum number of minutes is 1440");
             }
+            key = this.getMinutelyKey(this.getCurrentDate());
         }
-
-        return dailyUptimeData.up / (dailyUptimeData.up + dailyUptimeData.down);
-    }
-
-    /**
-     * @param day
-     */
-    getUptime(day) {
-        let dailyKey = this.getDailyKey(this.getCurrentDate().unix());
 
         let total = {
             up: 0,
             down: 0,
         };
 
-        for (let i = 0; i < day; i++) {
-            let dailyUptimeData = this.dailyUptimeDataList[dailyKey];
+        let totalPing = 0;
 
-            if (dailyUptimeData) {
-                total.up += dailyUptimeData.up;
-                total.down += dailyUptimeData.down;
+        for (let i = 0; i < num; i++) {
+            let data;
+
+            if (type === "day") {
+                data = this.dailyUptimeDataList[key];
+            } else {
+                data = this.uptimeDataList[key];
+            }
+
+            if (data) {
+                total.up += data.up;
+                total.down += data.down;
+                totalPing += data.ping;
             }
 
             // Previous day
-            dailyKey -= 86400;
-        }
-
-        if (total.up === 0 && total.down === 0) {
-            if (this.lastDailyUptimeData) {
-                total = this.lastDailyUptimeData;
+            if (type === "day") {
+                key -= 86400;
             } else {
-                return 0;
+                key -= 60;
             }
         }
 
-        return total.up / (total.up + total.down);
+        if (total.up === 0 && total.down === 0) {
+            if (type === "day" && this.lastDailyUptimeData) {
+                total = this.lastDailyUptimeData;
+            } else if (type === "minute" && this.lastUptimeData) {
+                total = this.lastUptimeData;
+            } else {
+                return {
+                    uptime: 0,
+                    avgPing: 0,
+                };
+            }
+        }
+
+        return {
+            uptime: total.up / (total.up + total.down),
+            avgPing: totalPing / total.up,
+        };
     }
 
     /**
      *
      */
-    get7DayUptime() {
-        return this.getUptime(7);
+    get24Hour() {
+        return this.getData(24, "minute");
     }
 
     /**
      *
      */
-    get30DayUptime() {
-        return this.getUptime(30);
+    get7Day() {
+        return this.getData(7);
     }
 
     /**
      *
      */
-    get1YearUptime() {
-        return this.getUptime(365);
+    get30Day() {
+        return this.getData(30);
+    }
+
+    /**
+     *
+     */
+    get1Year() {
+        return this.getData(365);
     }
 
     /**
@@ -248,12 +296,6 @@ class UptimeCalculator {
         return dayjs.utc();
     }
 
-    /**
-     * TODO
-     */
-    clear() {
-        // https://stackoverflow.com/a/6630869/1097815
-    }
 }
 
 module.exports = {

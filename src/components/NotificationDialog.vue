@@ -199,7 +199,7 @@ export default {
         },
     },
 
-    watch: {
+    watch: { 
         "notification.type"(to, from) {
             let oldName;
             if (from) {

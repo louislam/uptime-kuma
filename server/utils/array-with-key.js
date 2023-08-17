@@ -35,6 +35,9 @@ class ArrayWithKey {
      *
      */
     getLastKey() {
+        if (this.__stack.length === 0) {
+            return null;
+        }
         return this.__stack[this.__stack.length - 1];
     }
 
@@ -56,6 +59,18 @@ class ArrayWithKey {
      */
     length() {
         return this.__stack.length;
+    }
+
+    /**
+     * Get the last element
+     * @returns {*|null} The last element, or null if the array is empty
+     */
+    last() {
+        let key = this.getLastKey();
+        if (key === null) {
+            return null;
+        }
+        return this[key];
     }
 }
 

@@ -1,24 +1,32 @@
 exports.up = function (knex) {
     return knex.schema
-        .createTable("aggregate_minutely", function (table) {
+        .createTable("stat_minutely", function (table) {
             table.increments("id");
+            table.comment("This table contains the minutely aggregate statistics for each monitor");
             table.integer("monitor_id").unsigned().notNullable()
                 .references("id").inTable("monitor")
                 .onDelete("CASCADE")
                 .onUpdate("CASCADE");
-            table.integer("timestamp").notNullable();
-            table.integer("ping").notNullable();
+            table.integer("timestamp")
+                .notNullable()
+                .unique()
+                .comment("Unix timestamp rounded down to the nearest minute");
+            table.float("ping").notNullable().comment("Average ping in milliseconds");
             table.smallint("up").notNullable();
             table.smallint("down").notNullable();
         })
-        .createTable("aggregate_daily", function (table) {
+        .createTable("stat_daily", function (table) {
             table.increments("id");
+            table.comment("This table contains the daily aggregate statistics for each monitor");
             table.integer("monitor_id").unsigned().notNullable()
                 .references("id").inTable("monitor")
                 .onDelete("CASCADE")
                 .onUpdate("CASCADE");
-            table.integer("timestamp").notNullable();
-            table.integer("ping").notNullable();
+            table.integer("timestamp")
+                .notNullable()
+                .unique()
+                .comment("Unix timestamp rounded down to the nearest day");
+            table.float("ping").notNullable().comment("Average ping in milliseconds");
             table.smallint("up").notNullable();
             table.smallint("down").notNullable();
         });
@@ -26,6 +34,6 @@ exports.up = function (knex) {
 
 exports.down = function (knex) {
     return knex.schema
-        .dropTable("aggregate_minutely")
-        .dropTable("aggregate_daily");
+        .dropTable("stat_minutely")
+        .dropTable("stat_daily");
 };

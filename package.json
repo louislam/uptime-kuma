@@ -184,6 +184,7 @@
         "stylelint": "^15.10.1",
         "stylelint-config-standard": "~25.0.0",
         "terser": "~5.15.0",
+        "test": "~3.3.0",
         "timezones-list": "~3.0.1",
         "typescript": "~4.4.4",
         "v-pagination-3": "~0.1.7",
