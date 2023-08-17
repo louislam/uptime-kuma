@@ -786,5 +786,7 @@
     "install": "Pasang",
     "promosmsAllowLongSMS": "Izinkan SMS panjang",
     "Badge Pending Color": "Warna Lencana Tertunda",
-    "Monitor Group": "Monitor Grup"
+    "Monitor Group": "Monitor Grup",
+    "Expected Value": "Value yang diharapkan",
+    "Json Query": "Json Query"
 }
