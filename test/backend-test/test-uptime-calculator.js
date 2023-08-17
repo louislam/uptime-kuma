@@ -16,7 +16,7 @@ dayjs.extend(require("dayjs/plugin/utc"));
 dayjs.extend(require("../../server/modules/dayjs/plugin/timezone"));
 dayjs.extend(require("dayjs/plugin/customParseFormat"));
 
-test("Test Uptime Calculator - custom date", (t) => {
+test("Test Uptime Calculator - custom date", async (t) => {
     let c1 = new UptimeCalculator();
 
     // Test custom date
@@ -24,35 +24,35 @@ test("Test Uptime Calculator - custom date", (t) => {
     assert.strictEqual(c1.getCurrentDate().unix(), dayjs.utc("2021-01-01T00:00:00.000Z").unix());
 });
 
-test("Test update - UP", (t) => {
+test("Test update - UP", async (t) => {
     UptimeCalculator.currentDate = dayjs.utc("2023-08-12 20:46:59");
     let c2 = new UptimeCalculator();
-    let date = c2.update(UP);
+    let date = await c2.update(UP);
     assert.strictEqual(date.unix(), dayjs.utc("2023-08-12 20:46:59").unix());
 });
 
-test("Test update - MAINTENANCE", (t) => {
+test("Test update - MAINTENANCE", async (t) => {
     UptimeCalculator.currentDate = dayjs.utc("2023-08-12 20:47:20");
     let c2 = new UptimeCalculator();
-    let date = c2.update(MAINTENANCE);
+    let date = await c2.update(MAINTENANCE);
     assert.strictEqual(date.unix(), dayjs.utc("2023-08-12 20:47:20").unix());
 });
 
-test("Test update - DOWN", (t) => {
+test("Test update - DOWN", async (t) => {
     UptimeCalculator.currentDate = dayjs.utc("2023-08-12 20:47:20");
     let c2 = new UptimeCalculator();
-    let date = c2.update(DOWN);
+    let date = await c2.update(DOWN);
     assert.strictEqual(date.unix(), dayjs.utc("2023-08-12 20:47:20").unix());
 });
 
-test("Test update - PENDING", (t) => {
+test("Test update - PENDING", async (t) => {
     UptimeCalculator.currentDate = dayjs.utc("2023-08-12 20:47:20");
     let c2 = new UptimeCalculator();
-    let date = c2.update(PENDING);
+    let date = await c2.update(PENDING);
     assert.strictEqual(date.unix(), dayjs.utc("2023-08-12 20:47:20").unix());
 });
 
-test("Test flatStatus", (t) => {
+test("Test flatStatus", async (t) => {
     let c2 = new UptimeCalculator();
     assert.strictEqual(c2.flatStatus(UP), UP);
     assert.strictEqual(c2.flatStatus(MAINTENANCE), UP);
@@ -60,7 +60,7 @@ test("Test flatStatus", (t) => {
     assert.strictEqual(c2.flatStatus(PENDING), DOWN);
 });
 
-test("Test getMinutelyKey", (t) => {
+test("Test getMinutelyKey", async (t) => {
     let c2 = new UptimeCalculator();
     let divisionKey = c2.getMinutelyKey(dayjs.utc("2023-08-12 20:46:00"));
     assert.strictEqual(divisionKey, dayjs.utc("2023-08-12 20:46:00").unix());
@@ -76,7 +76,7 @@ test("Test getMinutelyKey", (t) => {
     assert.strictEqual(divisionKey, dayjs.utc("2023-08-12 20:46:00").unix());
 });
 
-test("Test getDailyKey", (t) => {
+test("Test getDailyKey", async (t) => {
     let c2 = new UptimeCalculator();
     let dailyKey = c2.getDailyKey(dayjs.utc("2023-08-12 20:46:00").unix());
     assert.strictEqual(dailyKey, dayjs.utc("2023-08-12").unix());
@@ -96,13 +96,13 @@ test("Test getDailyKey", (t) => {
     assert.strictEqual(dailyKey, dayjs.utc("2023-08-12").unix());
 });
 
-test("Test lastDailyUptimeData", (t) => {
+test("Test lastDailyUptimeData", async (t) => {
     let c2 = new UptimeCalculator();
-    c2.update(UP);
+    await c2.update(UP);
     assert.strictEqual(c2.lastDailyUptimeData.up, 1);
 });
 
-test("Test get24HourUptime", (t) => {
+test("Test get24HourUptime", async (t) => {
     UptimeCalculator.currentDate = dayjs.utc("2023-08-12 20:46:59");
 
     // No data
@@ -113,71 +113,71 @@ test("Test get24HourUptime", (t) => {
 
     // 1 Up
     c2 = new UptimeCalculator();
-    c2.update(UP);
+    await c2.update(UP);
     let uptime = c2.get24Hour().uptime;
     assert.strictEqual(uptime, 1);
 
     // 2 Up
     c2 = new UptimeCalculator();
-    c2.update(UP);
-    c2.update(UP);
+    await c2.update(UP);
+    await c2.update(UP);
     uptime = c2.get24Hour().uptime;
     assert.strictEqual(uptime, 1);
 
     // 3 Up
     c2 = new UptimeCalculator();
-    c2.update(UP);
-    c2.update(UP);
-    c2.update(UP);
+    await c2.update(UP);
+    await c2.update(UP);
+    await c2.update(UP);
     uptime = c2.get24Hour().uptime;
     assert.strictEqual(uptime, 1);
 
     // 1 MAINTENANCE
     c2 = new UptimeCalculator();
-    c2.update(MAINTENANCE);
+    await c2.update(MAINTENANCE);
     uptime = c2.get24Hour().uptime;
     assert.strictEqual(uptime, 1);
 
     // 1 PENDING
     c2 = new UptimeCalculator();
-    c2.update(PENDING);
+    await c2.update(PENDING);
     uptime = c2.get24Hour().uptime;
     assert.strictEqual(uptime, 0);
 
     // 1 DOWN
     c2 = new UptimeCalculator();
-    c2.update(DOWN);
+    await c2.update(DOWN);
     uptime = c2.get24Hour().uptime;
     assert.strictEqual(uptime, 0);
 
     // 2 DOWN
     c2 = new UptimeCalculator();
-    c2.update(DOWN);
-    c2.update(DOWN);
+    await c2.update(DOWN);
+    await c2.update(DOWN);
     uptime = c2.get24Hour().uptime;
     assert.strictEqual(uptime, 0);
 
     // 1 DOWN, 1 UP
     c2 = new UptimeCalculator();
-    c2.update(DOWN);
-    c2.update(UP);
+    await c2.update(DOWN);
+    await c2.update(UP);
     uptime = c2.get24Hour().uptime;
     assert.strictEqual(uptime, 0.5);
 
     // 1 UP, 1 DOWN
     c2 = new UptimeCalculator();
-    c2.update(UP);
-    c2.update(DOWN);
+    await c2.update(UP);
+    await c2.update(DOWN);
     uptime = c2.get24Hour().uptime;
     assert.strictEqual(uptime, 0.5);
 
     // Add 24 hours
     c2 = new UptimeCalculator();
-    c2.update(UP);
-    c2.update(UP);
-    c2.update(UP);
-    c2.update(UP);
-    c2.update(DOWN);
+    await c2.update(UP);
+    await c2.update(UP);
+    await c2.update(UP);
+    await c2.update(UP);
+    await c2.update(DOWN);
     uptime = c2.get24Hour().uptime;
     assert.strictEqual(uptime, 0.8);
     UptimeCalculator.currentDate = UptimeCalculator.currentDate.add(24, "hour");
@@ -194,7 +194,7 @@ test("Test get24HourUptime", (t) => {
     assert.strictEqual(uptime, 0.8);
 });
 
-test("Test get7DayUptime", (t) => {
+test("Test get7DayUptime", async (t) => {
     UptimeCalculator.currentDate = dayjs.utc("2023-08-12 20:46:59");
 
     // No data
@@ -204,71 +204,71 @@ test("Test get7DayUptime", (t) => {
 
     // 1 Up
     c2 = new UptimeCalculator();
-    c2.update(UP);
+    await c2.update(UP);
     uptime = c2.get7Day().uptime;
     assert.strictEqual(uptime, 1);
 
     // 2 Up
     c2 = new UptimeCalculator();
-    c2.update(UP);
-    c2.update(UP);
+    await c2.update(UP);
+    await c2.update(UP);
     uptime = c2.get7Day().uptime;
     assert.strictEqual(uptime, 1);
 
     // 3 Up
     c2 = new UptimeCalculator();
-    c2.update(UP);
-    c2.update(UP);
-    c2.update(UP);
+    await c2.update(UP);
+    await c2.update(UP);
+    await c2.update(UP);
     uptime = c2.get7Day().uptime;
     assert.strictEqual(uptime, 1);
 
     // 1 MAINTENANCE
     c2 = new UptimeCalculator();
-    c2.update(MAINTENANCE);
+    await c2.update(MAINTENANCE);
     uptime = c2.get7Day().uptime;
     assert.strictEqual(uptime, 1);
 
     // 1 PENDING
     c2 = new UptimeCalculator();
-    c2.update(PENDING);
+    await c2.update(PENDING);
     uptime = c2.get7Day().uptime;
     assert.strictEqual(uptime, 0);
 
     // 1 DOWN
     c2 = new UptimeCalculator();
-    c2.update(DOWN);
+    await c2.update(DOWN);
     uptime = c2.get7Day().uptime;
     assert.strictEqual(uptime, 0);
 
     // 2 DOWN
     c2 = new UptimeCalculator();
-    c2.update(DOWN);
-    c2.update(DOWN);
+    await c2.update(DOWN);
+    await c2.update(DOWN);
     uptime = c2.get7Day().uptime;
     assert.strictEqual(uptime, 0);
 
     // 1 DOWN, 1 UP
     c2 = new UptimeCalculator();
-    c2.update(DOWN);
-    c2.update(UP);
+    await c2.update(DOWN);
+    await c2.update(UP);
     uptime = c2.get7Day().uptime;
     assert.strictEqual(uptime, 0.5);
 
     // 1 UP, 1 DOWN
     c2 = new UptimeCalculator();
-    c2.update(UP);
-    c2.update(DOWN);
+    await c2.update(UP);
+    await c2.update(DOWN);
     uptime = c2.get7Day().uptime;
     assert.strictEqual(uptime, 0.5);
 
     // Add 7 days
     c2 = new UptimeCalculator();
-    c2.update(UP);
-    c2.update(UP);
-    c2.update(UP);
-    c2.update(UP);
-    c2.update(DOWN);
+    await c2.update(UP);
+    await c2.update(UP);
+    await c2.update(UP);
+    await c2.update(UP);
+    await c2.update(DOWN);
     uptime = c2.get7Day().uptime;
     assert.strictEqual(uptime, 0.8);
     UptimeCalculator.currentDate = UptimeCalculator.currentDate.add(7, "day");
@@ -279,7 +279,7 @@ test("Test get7DayUptime", (t) => {
 
 });
 
-test("Test get30DayUptime (1 check per day)", (t) => {
+test("Test get30DayUptime (1 check per day)", async (t) => {
     UptimeCalculator.currentDate = dayjs.utc("2023-08-12 20:46:59");
 
     let c2 = new UptimeCalculator();
@@ -293,10 +293,10 @@ test("Test get30DayUptime (1 check per day)", (t) => {
         UptimeCalculator.currentDate = UptimeCalculator.currentDate.add(1, "day");
 
         if (flip) {
-            c2.update(UP);
+            await c2.update(UP);
             up++;
         } else {
-            c2.update(DOWN);
+            await c2.update(DOWN);
             down++;
         }
 
@@ -312,7 +312,7 @@ test("Test get30DayUptime (1 check per day)", (t) => {
     assert.strictEqual(c2.get7Day().uptime, 3 / 7);
 });
 
-test("Test get1YearUptime (1 check per day)", (t) => {
+test("Test get1YearUptime (1 check per day)", async (t) => {
     UptimeCalculator.currentDate = dayjs.utc("2023-08-12 20:46:59");
 
     let c2 = new UptimeCalculator();
@@ -324,9 +324,9 @@ test("Test get1YearUptime (1 check per day)", (t) => {
         UptimeCalculator.currentDate = UptimeCalculator.currentDate.add(1, "day");
 
         if (flip) {
-            c2.update(UP);
+            await c2.update(UP);
         } else {
-            c2.update(DOWN);
+            await c2.update(DOWN);
         }
 
         uptime = c2.get30Day().time;
@@ -399,7 +399,7 @@ test("Worst case", async (t) => {
         console.log("Final Date: ", UptimeCalculator.currentDate.format("YYYY-MM-DD HH:mm:ss"));
         console.log("Memory usage before preparation", memoryUsage());
 
-        assert.strictEqual(c.uptimeDataList.length(), 1440);
+        assert.strictEqual(c.minutelyUptimeDataList.length(), 1440);
         assert.strictEqual(c.dailyUptimeDataList.length(), 365);
     });
 

@@ -23,6 +23,7 @@ const Gamedig = require("gamedig");
 const jsonata = require("jsonata");
 const jwt = require("jsonwebtoken");
 const Database = require("../database");
+const { UptimeCalculator } = require("../uptime-calculator");
 
 /**
  * status:
@@ -344,13 +345,6 @@ class Monitor extends BeanModel {
 
             if (this.isUpsideDown()) {
                 bean.status = flipStatus(bean.status);
-            }
-
-            // Duration
-            if (!isFirstBeat) {
-                bean.duration = dayjs(bean.time).diff(dayjs(previousBeat.time), "second");
-            } else {
-                bean.duration = 0;
             }
 
             try {
@@ -975,6 +969,10 @@ class Monitor extends BeanModel {
             UptimeCacheList.clearCache(this.id);
             io.to(this.user_id).emit("heartbeat", bean.toJSON());
             Monitor.sendStats(io, this.id, this.user_id);
+
+            let uptimeCalculator = await UptimeCalculator.getUptimeCalculator(this.id);
+            let endTimeDayjs = await uptimeCalculator.update(bean.status, parseFloat(bean.ping));
+            bean.end_time = R.isoDateTimeMillis(endTimeDayjs);
 
             log.debug("monitor", `[${this.name}] Store`);
             await R.store(bean);
