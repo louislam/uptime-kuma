@@ -97,18 +97,22 @@ class UptimeCalculator {
         if (flatStatus === UP) {
             this.minutelyUptimeDataList[divisionKey].up += 1;
             this.dailyUptimeDataList[dailyKey].up += 1;
+
+            // Only UP status can update the ping
+            if (!isNaN(ping)) {
+                // Add avg ping
+                let count = this.minutelyUptimeDataList[divisionKey].up + this.minutelyUptimeDataList[divisionKey].down;
+                this.minutelyUptimeDataList[divisionKey].ping = (this.minutelyUptimeDataList[divisionKey].ping * (count - 1) + ping) / count;
+
+                // Add avg ping (daily)
+                count = this.dailyUptimeDataList[dailyKey].up + this.dailyUptimeDataList[dailyKey].down;
+                this.dailyUptimeDataList[dailyKey].ping = (this.dailyUptimeDataList[dailyKey].ping * (count - 1) + ping) / count;
+            }
+
         } else {
             this.minutelyUptimeDataList[divisionKey].down += 1;
             this.dailyUptimeDataList[dailyKey].down += 1;
         }
-
-        // Add avg ping
-        let count = this.minutelyUptimeDataList[divisionKey].up + this.minutelyUptimeDataList[divisionKey].down;
-        this.minutelyUptimeDataList[divisionKey].ping = (this.minutelyUptimeDataList[divisionKey].ping * (count - 1) + ping) / count;
-
-        // Add avg ping (daily)
-        count = this.dailyUptimeDataList[dailyKey].up + this.dailyUptimeDataList[dailyKey].down;
-        this.dailyUptimeDataList[dailyKey].ping = (this.dailyUptimeDataList[dailyKey].ping * (count - 1) + ping) / count;
 
         if (this.dailyUptimeDataList[dailyKey] !== this.lastDailyUptimeData) {
             this.lastDailyUptimeData = this.dailyUptimeDataList[dailyKey];

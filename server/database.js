@@ -183,6 +183,12 @@ class Database {
 
         let config = {};
 
+        let mariadbPoolConfig = {
+            afterCreate: function (conn, done) {
+                conn.query("SET time_zone = \"+00:00\";", (_) => { });
+            }
+        };
+
         log.info("db", `Database Type: ${dbConfig.type}`);
 
         if (dbConfig.type === "sqlite") {
@@ -233,7 +239,8 @@ class Database {
                     user: dbConfig.username,
                     password: dbConfig.password,
                     database: dbConfig.dbName,
-                }
+                },
+                pool: mariadbPoolConfig,
             };
         } else if (dbConfig.type === "embedded-mariadb") {
             let embeddedMariaDB = EmbeddedMariaDB.getInstance();
@@ -245,7 +252,8 @@ class Database {
                     socketPath: embeddedMariaDB.socketPath,
                     user: "node",
                     database: "kuma",
-                }
+                },
+                pool: mariadbPoolConfig,
             };
         } else {
             throw new Error("Unknown Database type: " + dbConfig.type);
@@ -603,7 +611,9 @@ class Database {
         log.info("db", "Closing the database");
 
         // Flush WAL to main database
-        await R.exec("PRAGMA wal_checkpoint(TRUNCATE)");
+        if (Database.dbConfig.type === "sqlite") {
+            await R.exec("PRAGMA wal_checkpoint(TRUNCATE)");
+        }
 
         while (true) {
             Database.noReject = true;

@@ -18,7 +18,6 @@ const apicache = require("../modules/apicache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { CacheableDnsHttpAgent } = require("../cacheable-dns-http-agent");
 const { DockerHost } = require("../docker");
-const { UptimeCacheList } = require("../uptime-cache-list");
 const Gamedig = require("gamedig");
 const jsonata = require("jsonata");
 const jwt = require("jsonwebtoken");
@@ -966,7 +965,7 @@ class Monitor extends BeanModel {
             }
 
             log.debug("monitor", `[${this.name}] Send to socket`);
-            UptimeCacheList.clearCache(this.id);
+
             io.to(this.user_id).emit("heartbeat", bean.toJSON());
             Monitor.sendStats(io, this.id, this.user_id);
 
@@ -1147,42 +1146,26 @@ class Monitor extends BeanModel {
      */
     static async sendStats(io, monitorID, userID) {
         const hasClients = getTotalClientInRoom(io, userID) > 0;
+        let uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitorID);
 
         if (hasClients) {
-            await Monitor.sendAvgPing(24, io, monitorID, userID);
-            await Monitor.sendUptime(24, io, monitorID, userID);
-            await Monitor.sendUptime(24 * 30, io, monitorID, userID);
+            // Send 24 hour average ping
+            let data24h = await uptimeCalculator.get24Hour();
+            io.to(userID).emit("avgPing", monitorID, +data24h.avgPing.toFixed(2));
+
+            // Send 24 hour uptime
+            io.to(userID).emit("uptime", monitorID, 24, data24h.uptime);
+
+            let data30d = await uptimeCalculator.get30Day();
+
+            // Send 30 day uptime
+            io.to(userID).emit("uptime", monitorID, 720, data30d.uptime);
+
+            // Send Cert Info
             await Monitor.sendCertInfo(io, monitorID, userID);
         } else {
             log.debug("monitor", "No clients in the room, no need to send stats");
         }
-    }
-
-    /**
-     * Send the average ping to user
-     * @param {number} duration Hours
-     * @param {Server} io Socket instance to send data to
-     * @param {number} monitorID ID of monitor to read
-     * @param {number} userID ID of user to send data to
-     * @returns {void}
-     */
-    static async sendAvgPing(duration, io, monitorID, userID) {
-        const timeLogger = new TimeLogger();
-        const sqlHourOffset = Database.sqlHourOffset();
-
-        let avgPing = parseInt(await R.getCell(`
-            SELECT AVG(ping)
-            FROM heartbeat
-            WHERE time > ${sqlHourOffset}
-            AND ping IS NOT NULL
-            AND monitor_id = ? `, [
-            -duration,
-            monitorID,
-        ]));
-
-        timeLogger.print(`[Monitor: ${monitorID}] avgPing`);
-
-        io.to(userID).emit("avgPing", monitorID, avgPing);
     }
 
     /**
@@ -1199,101 +1182,6 @@ class Monitor extends BeanModel {
         if (tlsInfo != null) {
             io.to(userID).emit("certInfo", monitorID, tlsInfo.info_json);
         }
-    }
-
-    /**
-     * Uptime with calculation
-     * Calculation based on:
-     * https://www.uptrends.com/support/kb/reporting/calculation-of-uptime-and-downtime
-     * @param {number} duration Hours
-     * @param {number} monitorID ID of monitor to calculate
-     * @param {boolean} forceNoCache Should the uptime be recalculated?
-     * @returns {number} Uptime of monitor
-     */
-    static async calcUptime(duration, monitorID, forceNoCache = false) {
-
-        if (!forceNoCache) {
-            let cachedUptime = UptimeCacheList.getUptime(monitorID, duration);
-            if (cachedUptime != null) {
-                return cachedUptime;
-            }
-        }
-
-        const timeLogger = new TimeLogger();
-
-        const startTime = R.isoDateTime(dayjs.utc().subtract(duration, "hour"));
-
-        // Handle if heartbeat duration longer than the target duration
-        // e.g. If the last beat's duration is bigger that the 24hrs window, it will use the duration between the (beat time - window margin) (THEN case in SQL)
-        let result = await R.getRow(`
-            SELECT
-               -- SUM all duration, also trim off the beat out of time window
-                SUM(
-                    CASE
-                        WHEN (JULIANDAY(\`time\`) - JULIANDAY(?)) * 86400 < duration
-                        THEN (JULIANDAY(\`time\`) - JULIANDAY(?)) * 86400
-                        ELSE duration
-                    END
-                ) AS total_duration,
-
-               -- SUM all uptime duration, also trim off the beat out of time window
-                SUM(
-                    CASE
-                        WHEN (status = 1 OR status = 3)
-                        THEN
-                            CASE
-                                WHEN (JULIANDAY(\`time\`) - JULIANDAY(?)) * 86400 < duration
-                                    THEN (JULIANDAY(\`time\`) - JULIANDAY(?)) * 86400
-                                ELSE duration
-                            END
-                        END
-                ) AS uptime_duration
-            FROM heartbeat
-            WHERE time > ?
-            AND monitor_id = ?
-        `, [
-            startTime, startTime, startTime, startTime, startTime,
-            monitorID,
-        ]);
-
-        timeLogger.print(`[Monitor: ${monitorID}][${duration}] sendUptime`);
-
-        let totalDuration = result.total_duration;
-        let uptimeDuration = result.uptime_duration;
-        let uptime = 0;
-
-        if (totalDuration > 0) {
-            uptime = uptimeDuration / totalDuration;
-            if (uptime < 0) {
-                uptime = 0;
-            }
-
-        } else {
-            // Handle new monitor with only one beat, because the beat's duration = 0
-            let status = parseInt(await R.getCell("SELECT `status` FROM heartbeat WHERE monitor_id = ?", [ monitorID ]));
-
-            if (status === UP) {
-                uptime = 1;
-            }
-        }
-
-        // Cache
-        UptimeCacheList.addUptime(monitorID, duration, uptime);
-
-        return uptime;
-    }
-
-    /**
-     * Send Uptime
-     * @param {number} duration Hours
-     * @param {Server} io Socket server instance
-     * @param {number} monitorID ID of monitor to send
-     * @param {number} userID ID of user to send to
-     * @returns {void}
-     */
-    static async sendUptime(duration, io, monitorID, userID) {
-        const uptime = await this.calcUptime(duration, monitorID);
-        io.to(userID).emit("uptime", monitorID, duration, uptime);
     }
 
     /**

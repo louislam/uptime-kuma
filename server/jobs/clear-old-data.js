@@ -43,7 +43,9 @@ const clearOldData = async () => {
                 [ parsedPeriod * -24 ]
             );
 
-            await R.exec("PRAGMA optimize;");
+            if (Database.dbConfig.type === "sqlite") {
+                await R.exec("PRAGMA optimize;");
+            }
         } catch (e) {
             log.error("clearOldData", `Failed to clear old data: ${e.message}`);
         }

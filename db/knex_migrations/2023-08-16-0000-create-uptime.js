@@ -9,11 +9,12 @@ exports.up = function (knex) {
                 .onUpdate("CASCADE");
             table.integer("timestamp")
                 .notNullable()
-                .unique()
                 .comment("Unix timestamp rounded down to the nearest minute");
             table.float("ping").notNullable().comment("Average ping in milliseconds");
             table.smallint("up").notNullable();
             table.smallint("down").notNullable();
+
+            table.unique([ "monitor_id", "timestamp" ]);
         })
         .createTable("stat_daily", function (table) {
             table.increments("id");
@@ -24,11 +25,12 @@ exports.up = function (knex) {
                 .onUpdate("CASCADE");
             table.integer("timestamp")
                 .notNullable()
-                .unique()
                 .comment("Unix timestamp rounded down to the nearest day");
             table.float("ping").notNullable().comment("Average ping in milliseconds");
             table.smallint("up").notNullable();
             table.smallint("down").notNullable();
+
+            table.unique([ "monitor_id", "timestamp" ]);
         });
 };
 
