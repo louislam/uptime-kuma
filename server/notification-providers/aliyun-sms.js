@@ -18,7 +18,7 @@ class AliyunSMS extends NotificationProvider {
                     status: this.statusToString(heartbeatJSON["status"]),
                     msg: heartbeatJSON["msg"],
                 });
-                if (this.sendSms(notification, msgBody)) {
+                if (await this.sendSms(notification, msgBody)) {
                     return okMsg;
                 }
             } else {
@@ -28,7 +28,7 @@ class AliyunSMS extends NotificationProvider {
                     status: "",
                     msg: msg,
                 });
-                if (this.sendSms(notification, msgBody)) {
+                if (await this.sendSms(notification, msgBody)) {
                     return okMsg;
                 }
             }
@@ -73,7 +73,8 @@ class AliyunSMS extends NotificationProvider {
         if (result.data.Message === "OK") {
             return true;
         }
-        return false;
+
+        throw new Error(result.data.Message);
     }
 
     /**

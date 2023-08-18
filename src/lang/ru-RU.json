@@ -746,7 +746,7 @@
     "Proto Method": "Метод Proto",
     "Proto Content": "Содержание Proto",
     "telegramMessageThreadID": "(Необязательно) ID цепочки сообщений",
-    "statusPageRefreshIn": "Обновлять каждые: {0}",
+    "statusPageRefreshIn": "Обновление через: {0}",
     "twilioAccountSID": "SID учетной записи",
     "twilioAuthToken": "Токен авторизации / Секретный API ключ",
     "twilioFromNumber": "С номера",

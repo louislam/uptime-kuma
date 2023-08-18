@@ -201,5 +201,19 @@
     "statusPageRefreshIn": "Obnovenie za: {0}",
     "emojiCheatSheet": "Emotikony: {0}",
     "Read more": "Prečítajte si viac",
-    "appriseInstalled": "Apprise je nainštalovaný."
+    "appriseInstalled": "Apprise je nainštalovaný.",
+    "Reconnecting...": "Prepájanie...",
+    "Request Timeout": "Platnosť požiadavky vypršala",
+    "styleElapsedTimeShowWithLine": "Zobraziť (S Riadkom)",
+    "webhookCustomBodyDesc": "Zadajte vlastné HTTP Body pre request. Šablónové premenné {msg}, {heartbeat}, {monitor} sú akceptované.",
+    "timeoutAfter": "Platnosť požiadavky vypršala po {0} sekundách",
+    "styleElapsedTime": "Uplynulý čas pod lištou srdcového tepu",
+    "styleElapsedTimeShowNoLine": "Zobraziť (Žiadny riadok)",
+    "filterActive": "Aktívne",
+    "filterActivePaused": "Pozastavené",
+    "Home": "Domov",
+    "Cannot connect to the socket server": "Nemožno sa pripojiť k socket serveru",
+    "Invert Keyword": "Prevrátiť kľúčové slovo",
+    "Expected Value": "Očakávaná hodnota",
+    "Json Query": "Json Query"
 }
