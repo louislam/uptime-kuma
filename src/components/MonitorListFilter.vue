@@ -258,7 +258,7 @@ export default {
 <style lang="scss" scoped>
 @import "../assets/vars.scss";
 
-.dropdown-item{
+.dropdown-item {
     cursor: pointer;
 }
 
