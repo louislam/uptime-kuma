@@ -258,6 +258,10 @@ export default {
 <style lang="scss" scoped>
 @import "../assets/vars.scss";
 
+.dropdown-item {
+    cursor: pointer;
+}
+
 .clear-filters-btn {
     font-size: 0.8em;
     margin-right: 5px;
