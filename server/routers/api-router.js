@@ -11,6 +11,7 @@ const { makeBadge } = require("badge-maker");
 const { badgeConstants } = require("../config");
 const { Prometheus } = require("../prometheus");
 const Database = require("../database");
+const { UptimeCalculator } = require("../uptime-calculator");
 
 let router = express.Router();
 
@@ -205,8 +206,12 @@ router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (reques
     try {
         const requestedMonitorId = parseInt(request.params.id, 10);
         // if no duration is given, set value to 24 (h)
-        const requestedDuration = request.params.duration !== undefined ? parseInt(request.params.duration, 10) : 24;
+        let requestedDuration = request.params.duration !== undefined ? request.params.duration : "24h";
         const overrideValue = value && parseFloat(value);
+
+        if (requestedDuration === "24") {
+            requestedDuration = "24h";
+        }
 
         let publicMonitor = await R.getRow(`
                 SELECT monitor_group.monitor_id FROM monitor_group, \`group\`
@@ -224,10 +229,8 @@ router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (reques
             badgeValues.message = "N/A";
             badgeValues.color = badgeConstants.naColor;
         } else {
-            const uptime = overrideValue ?? await Monitor.calcUptime(
-                requestedDuration,
-                requestedMonitorId
-            );
+            const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(requestedMonitorId);
+            const uptime = overrideValue ?? uptimeCalculator.getDataByDuration(requestedDuration).uptime;
 
             // limit the displayed uptime percentage to four (two, when displayed as percent) decimal digits
             const cleanUptime = (uptime * 100).toPrecision(4);
@@ -273,21 +276,19 @@ router.get("/api/badge/:id/ping/:duration?", cache("5 minutes"), async (request,
         const requestedMonitorId = parseInt(request.params.id, 10);
 
         // Default duration is 24 (h) if not defined in queryParam, limited to 720h (30d)
-        const requestedDuration = Math.min(request.params.duration ? parseInt(request.params.duration, 10) : 24, 720);
+        let requestedDuration = request.params.duration !== undefined ? request.params.duration : "24h";
         const overrideValue = value && parseFloat(value);
+
+        if (requestedDuration === "24") {
+            requestedDuration = "24h";
+        }
 
         const sqlHourOffset = Database.sqlHourOffset();
 
-        const publicAvgPing = parseInt(await R.getCell(`
-                SELECT AVG(ping) FROM monitor_group, \`group\`, heartbeat
-                WHERE monitor_group.group_id = \`group\`.id
-                AND heartbeat.time > ${sqlHourOffset}
-                AND heartbeat.ping IS NOT NULL
-                AND public = 1
-                AND heartbeat.monitor_id = ?
-            `,
-        [ -requestedDuration, requestedMonitorId ]
-        ));
+        // Check if monitor is public
+
+        const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(requestedMonitorId);
+        const publicAvgPing = uptimeCalculator.getDataByDuration(requestedDuration).avgPing;
 
         const badgeValues = { style };
 

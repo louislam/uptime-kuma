@@ -964,15 +964,17 @@ class Monitor extends BeanModel {
                 log.warn("monitor", `Monitor #${this.id} '${this.name}': Failing: ${bean.msg} | Interval: ${beatInterval} seconds | Type: ${this.type} | Down Count: ${bean.downCount} | Resend Interval: ${this.resendInterval}`);
             }
 
-            log.debug("monitor", `[${this.name}] Send to socket`);
-
-            io.to(this.user_id).emit("heartbeat", bean.toJSON());
-            Monitor.sendStats(io, this.id, this.user_id);
-
+            // Calculate uptime
             let uptimeCalculator = await UptimeCalculator.getUptimeCalculator(this.id);
             let endTimeDayjs = await uptimeCalculator.update(bean.status, parseFloat(bean.ping));
             bean.end_time = R.isoDateTimeMillis(endTimeDayjs);
 
+            // Send to frontend
+            log.debug("monitor", `[${this.name}] Send to socket`);
+            io.to(this.user_id).emit("heartbeat", bean.toJSON());
+            Monitor.sendStats(io, this.id, this.user_id);
+
+            // Store to database
             log.debug("monitor", `[${this.name}] Store`);
             await R.store(bean);
 

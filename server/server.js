@@ -84,7 +84,7 @@ log.info("server", "Importing this project modules");
 log.debug("server", "Importing Monitor");
 const Monitor = require("./model/monitor");
 log.debug("server", "Importing Settings");
-const { getSettings, setSettings, setting, initJWTSecret, checkLogin, startUnitTest, FBSD, doubleCheckPassword, startE2eTests,
+const { getSettings, setSettings, setting, initJWTSecret, checkLogin, FBSD, doubleCheckPassword, startE2eTests,
     allowDevAllOrigin
 } = require("./util-server");
 
@@ -1658,10 +1658,6 @@ let needSetup = false;
         }
         startMonitors();
         checkVersion.startInterval();
-
-        if (testMode) {
-            startUnitTest();
-        }
 
         if (e2eTestMode) {
             startE2eTests();

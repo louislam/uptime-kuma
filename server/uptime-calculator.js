@@ -79,61 +79,100 @@ class UptimeCalculator {
     async init(monitorID) {
         this.monitorID = monitorID;
 
-        // Object.assign(new Foo, { a: 1 })
+        let now = this.getCurrentDate();
+
+        // Load minutely data from database (recent 24 hours only)
+        let minutelyStatBeans = await R.find("stat_minutely", " monitor_id = ? AND timestamp > ? ORDER BY timestamp", [
+            monitorID,
+            this.getMinutelyKey(now.subtract(24, "hour")),
+        ]);
+
+        // TODO
+
+        // Load daily data from database (recent 365 days only)
+        let dailyStatBeans = await R.find("stat_daily", " monitor_id = ? AND timestamp > ? ORDER BY timestamp", [
+            monitorID,
+            this.getDailyKey(now.subtract(365, "day").unix()),
+        ]);
+
+        // TODO
+
     }
 
     /**
      * @param {number} status status
-     * @param {number} ping
+     * @param {number} ping Ping
      * @returns {dayjs.Dayjs} date
      * @throws {Error} Invalid status
      */
     async update(status, ping = 0) {
         let date = this.getCurrentDate();
+
+        // Don't count MAINTENANCE into uptime
+        if (status === MAINTENANCE) {
+            return date;
+        }
+
         let flatStatus = this.flatStatus(status);
+
+        if (flatStatus === DOWN && ping > 0) {
+            log.warn("uptime-calc", "The ping is not effective when the status is DOWN");
+        }
+
         let divisionKey = this.getMinutelyKey(date);
         let dailyKey = this.getDailyKey(divisionKey);
 
+        let minutelyData = this.minutelyUptimeDataList[divisionKey];
+        let dailyData = this.dailyUptimeDataList[dailyKey];
+
         if (flatStatus === UP) {
-            this.minutelyUptimeDataList[divisionKey].up += 1;
-            this.dailyUptimeDataList[dailyKey].up += 1;
+            minutelyData.up += 1;
+            dailyData.up += 1;
 
             // Only UP status can update the ping
             if (!isNaN(ping)) {
                 // Add avg ping
-                let count = this.minutelyUptimeDataList[divisionKey].up + this.minutelyUptimeDataList[divisionKey].down;
-                this.minutelyUptimeDataList[divisionKey].ping = (this.minutelyUptimeDataList[divisionKey].ping * (count - 1) + ping) / count;
+                // The first beat of the minute, the ping is the current ping
+                if (minutelyData.up === 1) {
+                    minutelyData.avgPing = ping;
+                } else {
+                    minutelyData.avgPing = (minutelyData.avgPing * (minutelyData.up - 1) + ping) / minutelyData.up;
+                }
 
                 // Add avg ping (daily)
-                count = this.dailyUptimeDataList[dailyKey].up + this.dailyUptimeDataList[dailyKey].down;
-                this.dailyUptimeDataList[dailyKey].ping = (this.dailyUptimeDataList[dailyKey].ping * (count - 1) + ping) / count;
+                // The first beat of the day, the ping is the current ping
+                if (minutelyData.up === 1) {
+                    dailyData.avgPing = ping;
+                } else {
+                    dailyData.avgPing = (dailyData.avgPing * (dailyData.up - 1) + ping) / dailyData.up;
+                }
             }
 
         } else {
-            this.minutelyUptimeDataList[divisionKey].down += 1;
-            this.dailyUptimeDataList[dailyKey].down += 1;
+            minutelyData.down += 1;
+            dailyData.down += 1;
         }
 
-        if (this.dailyUptimeDataList[dailyKey] !== this.lastDailyUptimeData) {
-            this.lastDailyUptimeData = this.dailyUptimeDataList[dailyKey];
+        if (dailyData !== this.lastDailyUptimeData) {
+            this.lastDailyUptimeData = dailyData;
         }
 
-        if (this.minutelyUptimeDataList[divisionKey] !== this.lastUptimeData) {
-            this.lastUptimeData = this.minutelyUptimeDataList[divisionKey];
+        if (minutelyData !== this.lastUptimeData) {
+            this.lastUptimeData = minutelyData;
         }
 
         // Update database
         if (!process.env.TEST_BACKEND) {
             let dailyStatBean = await this.getDailyStatBean(dailyKey);
-            dailyStatBean.up = this.dailyUptimeDataList[dailyKey].up;
-            dailyStatBean.down = this.dailyUptimeDataList[dailyKey].down;
-            dailyStatBean.ping = this.dailyUptimeDataList[dailyKey].ping;
+            dailyStatBean.up = dailyData.up;
+            dailyStatBean.down = dailyData.down;
+            dailyStatBean.ping = dailyData.ping;
             await R.store(dailyStatBean);
 
             let minutelyStatBean = await this.getMinutelyStatBean(divisionKey);
-            minutelyStatBean.up = this.minutelyUptimeDataList[divisionKey].up;
-            minutelyStatBean.down = this.minutelyUptimeDataList[divisionKey].down;
-            minutelyStatBean.ping = this.minutelyUptimeDataList[divisionKey].ping;
+            minutelyStatBean.up = minutelyData.up;
+            minutelyStatBean.down = minutelyData.down;
+            minutelyStatBean.ping = minutelyData.ping;
             await R.store(minutelyStatBean);
         }
 
@@ -210,7 +249,7 @@ class UptimeCalculator {
             this.minutelyUptimeDataList.push(divisionKey, {
                 up: 0,
                 down: 0,
-                ping: 0,
+                avgPing: 0,
             });
         }
 
@@ -239,7 +278,7 @@ class UptimeCalculator {
             this.dailyUptimeDataList.push(dailyKey, {
                 up: 0,
                 down: 0,
-                ping: 0,
+                avgPing: 0,
             });
         }
 
@@ -255,7 +294,7 @@ class UptimeCalculator {
     flatStatus(status) {
         switch (status) {
             case UP:
-            case MAINTENANCE:
+            // case MAINTENANCE:
                 return UP;
             case DOWN:
             case PENDING:
@@ -286,8 +325,16 @@ class UptimeCalculator {
         };
 
         let totalPing = 0;
+        let endTimestamp;
 
-        for (let i = 0; i < num; i++) {
+        if (type === "day") {
+            endTimestamp = key - 86400 * (num - 1);
+        } else {
+            endTimestamp = key - 60 * (num - 1);
+        }
+
+        // Sum up all data in the specified time range
+        while (key >= endTimestamp) {
             let data;
 
             if (type === "day") {
@@ -299,7 +346,7 @@ class UptimeCalculator {
             if (data) {
                 total.up += data.up;
                 total.down += data.down;
-                totalPing += data.ping;
+                totalPing += data.avgPing * data.up;
             }
 
             // Previous day
@@ -310,55 +357,84 @@ class UptimeCalculator {
             }
         }
 
+        let uptimeData = new UptimeDataResult();
+
         if (total.up === 0 && total.down === 0) {
             if (type === "day" && this.lastDailyUptimeData) {
                 total = this.lastDailyUptimeData;
+                totalPing = total.avgPing * total.up;
             } else if (type === "minute" && this.lastUptimeData) {
                 total = this.lastUptimeData;
+                totalPing = total.avgPing * total.up;
             } else {
-                return {
-                    uptime: 0,
-                    avgPing: 0,
-                };
+                uptimeData.uptime = 0;
+                uptimeData.avgPing = null;
+                return uptimeData;
             }
         }
 
-        return {
-            uptime: total.up / (total.up + total.down),
-            avgPing: totalPing / total.up,
-        };
+        let avgPing;
+
+        if (total.up === 0) {
+            avgPing = null;
+        } else {
+            avgPing = totalPing / total.up;
+        }
+
+        uptimeData.uptime = total.up / (total.up + total.down);
+        uptimeData.avgPing = avgPing;
+        return uptimeData;
     }
 
     /**
-     *
+     * Get the uptime data by duration
+     * @param {'24h'|'30d'|'1y'} duration Only accept 24h, 30d, 1y
+     * @returns {UptimeDataResult} UptimeDataResult
+     * @throws {Error} Invalid duration
+     */
+    getDataByDuration(duration) {
+        if (duration === "24h") {
+            return this.get24Hour();
+        } else if (duration === "30d") {
+            return this.get30Day();
+        } else if (duration === "1y") {
+            return this.get1Year();
+        } else {
+            throw new Error("Invalid duration");
+        }
+    }
+
+    /**
+     * 1440 = 24 * 60mins
+     * @returns {UptimeDataResult} UptimeDataResult
      */
     get24Hour() {
-        return this.getData(24, "minute");
+        return this.getData(1440, "minute");
     }
 
     /**
-     *
+     * @returns {UptimeDataResult} UptimeDataResult
      */
     get7Day() {
         return this.getData(7);
     }
 
     /**
-     *
+     * @returns {UptimeDataResult} UptimeDataResult
      */
     get30Day() {
         return this.getData(30);
     }
 
     /**
-     *
+     * @returns {UptimeDataResult} UptimeDataResult
      */
     get1Year() {
         return this.getData(365);
     }
 
     /**
-     *
+     * @returns {UptimeDataResult} UptimeDataResult
      */
     getCurrentDate() {
         return dayjs.utc();
@@ -366,6 +442,19 @@ class UptimeCalculator {
 
 }
 
+class UptimeDataResult {
+    /**
+     * @type {number} Uptime
+     */
+    uptime;
+
+    /**
+     * @type {number} Average ping
+     */
+    avgPing;
+}
+
 module.exports = {
-    UptimeCalculator
+    UptimeCalculator,
+    UptimeDataResult,
 };

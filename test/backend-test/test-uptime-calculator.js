@@ -55,7 +55,7 @@ test("Test update - PENDING", async (t) => {
 test("Test flatStatus", async (t) => {
     let c2 = new UptimeCalculator();
     assert.strictEqual(c2.flatStatus(UP), UP);
-    assert.strictEqual(c2.flatStatus(MAINTENANCE), UP);
+    //assert.strictEqual(c2.flatStatus(MAINTENANCE), UP);
     assert.strictEqual(c2.flatStatus(DOWN), DOWN);
     assert.strictEqual(c2.flatStatus(PENDING), DOWN);
 });
@@ -102,53 +102,59 @@ test("Test lastDailyUptimeData", async (t) => {
     assert.strictEqual(c2.lastDailyUptimeData.up, 1);
 });
 
-test("Test get24HourUptime", async (t) => {
+test("Test get24Hour Uptime and Avg Ping", async (t) => {
     UptimeCalculator.currentDate = dayjs.utc("2023-08-12 20:46:59");
 
     // No data
     let c2 = new UptimeCalculator();
     let data = c2.get24Hour();
     assert.strictEqual(data.uptime, 0);
-    assert.strictEqual(data.avgPing, 0);
+    assert.strictEqual(data.avgPing, null);
 
     // 1 Up
     c2 = new UptimeCalculator();
-    await c2.update(UP);
+    await c2.update(UP, 100);
     let uptime = c2.get24Hour().uptime;
     assert.strictEqual(uptime, 1);
+    assert.strictEqual(c2.get24Hour().avgPing, 100);
 
     // 2 Up
     c2 = new UptimeCalculator();
-    await c2.update(UP);
-    await c2.update(UP);
+    await c2.update(UP, 100);
+    await c2.update(UP, 200);
     uptime = c2.get24Hour().uptime;
     assert.strictEqual(uptime, 1);
+    assert.strictEqual(c2.get24Hour().avgPing, 150);
 
     // 3 Up
     c2 = new UptimeCalculator();
-    await c2.update(UP);
-    await c2.update(UP);
-    await c2.update(UP);
+    await c2.update(UP, 0);
+    await c2.update(UP, 100);
+    await c2.update(UP, 400);
     uptime = c2.get24Hour().uptime;
     assert.strictEqual(uptime, 1);
+    assert.strictEqual(c2.get24Hour().avgPing, 166.66666666666666);
 
     // 1 MAINTENANCE
     c2 = new UptimeCalculator();
     await c2.update(MAINTENANCE);
     uptime = c2.get24Hour().uptime;
-    assert.strictEqual(uptime, 1);
+    assert.strictEqual(uptime, 0);
+    assert.strictEqual(c2.get24Hour().avgPing, null);
 
     // 1 PENDING
     c2 = new UptimeCalculator();
     await c2.update(PENDING);
     uptime = c2.get24Hour().uptime;
     assert.strictEqual(uptime, 0);
+    assert.strictEqual(c2.get24Hour().avgPing, null);
 
     // 1 DOWN
     c2 = new UptimeCalculator();
     await c2.update(DOWN);
     uptime = c2.get24Hour().uptime;
     assert.strictEqual(uptime, 0);
+    assert.strictEqual(c2.get24Hour().avgPing, null);
 
     // 2 DOWN
     c2 = new UptimeCalculator();
@@ -156,35 +162,41 @@ test("Test get24HourUptime", async (t) => {
     await c2.update(DOWN);
     uptime = c2.get24Hour().uptime;
     assert.strictEqual(uptime, 0);
+    assert.strictEqual(c2.get24Hour().avgPing, null);
 
     // 1 DOWN, 1 UP
     c2 = new UptimeCalculator();
     await c2.update(DOWN);
-    await c2.update(UP);
+    await c2.update(UP, 0.5);
     uptime = c2.get24Hour().uptime;
     assert.strictEqual(uptime, 0.5);
+    assert.strictEqual(c2.get24Hour().avgPing, 0.5);
 
     // 1 UP, 1 DOWN
     c2 = new UptimeCalculator();
-    await c2.update(UP);
+    await c2.update(UP, 123);
     await c2.update(DOWN);
     uptime = c2.get24Hour().uptime;
     assert.strictEqual(uptime, 0.5);
+    assert.strictEqual(c2.get24Hour().avgPing, 123);
 
     // Add 24 hours
     c2 = new UptimeCalculator();
-    await c2.update(UP);
-    await c2.update(UP);
-    await c2.update(UP);
-    await c2.update(UP);
+    await c2.update(UP, 0);
+    await c2.update(UP, 0);
+    await c2.update(UP, 0);
+    await c2.update(UP, 1);
     await c2.update(DOWN);
     uptime = c2.get24Hour().uptime;
     assert.strictEqual(uptime, 0.8);
+    assert.strictEqual(c2.get24Hour().avgPing, 0.25);
+
     UptimeCalculator.currentDate = UptimeCalculator.currentDate.add(24, "hour");
 
     // After 24 hours, even if there is no data, the uptime should be still 80%
     uptime = c2.get24Hour().uptime;
     assert.strictEqual(uptime, 0.8);
+    assert.strictEqual(c2.get24Hour().avgPing, 0.25);
 
     // Add more 24 hours (48 hours)
     UptimeCalculator.currentDate = UptimeCalculator.currentDate.add(24, "hour");
@@ -192,6 +204,7 @@ test("Test get24HourUptime", async (t) => {
     // After 48 hours, even if there is no data, the uptime should be still 80%
     uptime = c2.get24Hour().uptime;
     assert.strictEqual(uptime, 0.8);
+    assert.strictEqual(c2.get24Hour().avgPing, 0.25);
 });
 
 test("Test get7DayUptime", async (t) => {
@@ -227,7 +240,7 @@ test("Test get7DayUptime", async (t) => {
     c2 = new UptimeCalculator();
     await c2.update(MAINTENANCE);
     uptime = c2.get7Day().uptime;
-    assert.strictEqual(uptime, 1);
+    assert.strictEqual(uptime, 0);
 
     // 1 PENDING
     c2 = new UptimeCalculator();
@@ -387,7 +400,7 @@ test("Worst case", async (t) => {
             } else if (rand < 0.75) {
                 c.update(MAINTENANCE);
                 if (UptimeCalculator.currentDate.unix() > actualStartDate) {
-                    up++;
+                    //up++;
                 }
             } else {
                 c.update(PENDING);
