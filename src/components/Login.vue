@@ -5,18 +5,18 @@
                 <h1 class="h3 mb-3 fw-normal" />
 
                 <div v-if="!tokenRequired" class="form-floating">
-                    <input id="floatingInput" v-model="username" type="text" class="form-control" placeholder="Username">
+                    <input id="floatingInput" v-model="username" type="text" class="form-control" placeholder="Username" autocomplete="username" required>
                     <label for="floatingInput">{{ $t("Username") }}</label>
                 </div>
 
                 <div v-if="!tokenRequired" class="form-floating mt-3">
-                    <input id="floatingPassword" v-model="password" type="password" class="form-control" placeholder="Password">
+                    <input id="floatingPassword" v-model="password" type="password" class="form-control" placeholder="Password" autocomplete="current-password" required>
                     <label for="floatingPassword">{{ $t("Password") }}</label>
                 </div>
 
                 <div v-if="tokenRequired">
                     <div class="form-floating mt-3">
-                        <input id="otp" v-model="token" type="text" maxlength="6" class="form-control" placeholder="123456">
+                        <input id="otp" v-model="token" type="text" maxlength="6" class="form-control" placeholder="123456" autocomplete="one-time-code" required>
                         <label for="otp">{{ $t("Token") }}</label>
                     </div>
                 </div>
