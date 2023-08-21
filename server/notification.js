@@ -5,6 +5,7 @@ const AlertNow = require("./notification-providers/alertnow");
 const AliyunSms = require("./notification-providers/aliyun-sms");
 const Apprise = require("./notification-providers/apprise");
 const Bark = require("./notification-providers/bark");
+const Bitrix24 = require("./notification-providers/bitrix24");
 const ClickSendSMS = require("./notification-providers/clicksendsms");
 const SMSC = require("./notification-providers/smsc");
 const DingDing = require("./notification-providers/dingding");
@@ -70,6 +71,7 @@ class Notification {
             new AliyunSms(),
             new Apprise(),
             new Bark(),
+            new Bitrix24(),
             new ClickSendSMS(),
             new SMSC(),
             new DingDing(),

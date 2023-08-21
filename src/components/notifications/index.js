@@ -3,6 +3,7 @@ import AlertNow from "./AlertNow.vue";
 import AliyunSMS from "./AliyunSms.vue";
 import Apprise from "./Apprise.vue";
 import Bark from "./Bark.vue";
+import Bitrix24 from "./Bitrix24.vue";
 import ClickSendSMS from "./ClickSendSMS.vue";
 import SMSC from "./SMSC.vue";
 import DingDing from "./DingDing.vue";
@@ -63,6 +64,7 @@ const NotificationFormList = {
     "AliyunSMS": AliyunSMS,
     "apprise": Apprise,
     "Bark": Bark,
+    "Bitrix24": Bitrix24,
     "clicksendsms": ClickSendSMS,
     "smsc": SMSC,
     "DingDing": DingDing,
