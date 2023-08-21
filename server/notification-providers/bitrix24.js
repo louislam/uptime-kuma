@@ -6,10 +6,10 @@ class Bitrix24 extends NotificationProvider {
     name = "Bitrix24";
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
 
         try {
-            let params = {
+            const params = {
                 user_id: notification.bitrix24UserID,
                 message: "[B]Uptime Kuma[/B]",
                 "ATTACH[COLOR]": msg.indexOf("✅") === -1 ? "#b73419" : "#67b518",
