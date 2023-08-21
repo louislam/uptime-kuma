@@ -1,5 +1,4 @@
 <template>
-    
     <div class="mb-3">
         <label for="bitrix24-webhook-url" class="form-label">{{ $t("Bitrix24 Webhook URL") }}</label>
         <HiddenInput id="bitrix24-webhook-url" v-model="$parent.notification.bitrix24WebhookURL" :required="true" autocomplete="new-password"></HiddenInput>
