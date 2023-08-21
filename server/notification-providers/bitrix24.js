@@ -12,7 +12,7 @@ class Bitrix24 extends NotificationProvider {
             let params = {
                 user_id: notification.bitrix24UserID,
                 message: "[B]Uptime Kuma[/B]",
-                "ATTACH[COLOR]": msg.indexOf('✅') === -1 ? "#b73419" : "#67b518",
+                "ATTACH[COLOR]": msg.indexOf("✅") === -1 ? "#b73419" : "#67b518",
                 "ATTACH[BLOCKS][0][MESSAGE]": msg
             };
 
@@ -22,7 +22,6 @@ class Bitrix24 extends NotificationProvider {
             return okMsg;
 
         } catch (error) {
-            console.log(error)
             if (error.response && error.response.data && error.response.data.description) {
                 throw new Error(error.response.data.description);
             } else {
