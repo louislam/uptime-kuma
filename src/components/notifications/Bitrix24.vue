@@ -9,14 +9,8 @@
 
     <div class="mb-3">
         <label for="bitrix24-user-id" class="form-label">{{ $t("User ID") }}</label>
-
-        <div class="input-group mb-3">
-            <input id="bitrix24-user-id" v-model="$parent.notification.bitrix24UserID" type="text" class="form-control" required>
-        </div>
-
-        <div class="form-text">
-            {{ $t("bitrix24SupportUserID") }}
-        </div>
+        <input id="bitrix24-user-id" v-model="$parent.notification.bitrix24UserID" type="text" class="form-control" required>
+        <div class="form-text">{{ $t("bitrix24SupportUserID") }}</div>
     </div>
 </template>
 <script>
