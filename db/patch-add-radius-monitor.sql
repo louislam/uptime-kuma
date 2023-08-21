@@ -1,3 +1,4 @@
+-- You should not modify if this have pushed to Github, unless it does serious wrong with the db.
 BEGIN TRANSACTION;
 
 ALTER TABLE monitor
@@ -15,4 +16,4 @@ ALTER TABLE monitor
 ALTER TABLE monitor
     ADD radius_secret VARCHAR(255);
 
-COMMIT
+COMMIT;
