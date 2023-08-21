@@ -3,6 +3,7 @@ const { R } = require("redbean-node");
 const { setSetting, setting } = require("./util-server");
 const { log, sleep } = require("../src/util");
 const knex = require("knex");
+const path = require("path");
 
 /**
  * Database & App Data Folder
@@ -24,6 +25,8 @@ class Database {
     static screenshotDir;
 
     static path;
+
+    static dockerTLSDir;
 
     /**
      * @type {boolean}
@@ -74,6 +77,10 @@ class Database {
         "patch-add-invert-keyword.sql": true,
         "patch-added-json-query.sql": true,
         "patch-added-kafka-producer.sql": true,
+        "patch-add-certificate-expiry-status-page.sql": true,
+        "patch-monitor-oauth-cc.sql": true,
+        "patch-add-timeout-monitor.sql": true,
+        "patch-add-gamedig-given-port.sql": true,
     };
 
     /**
@@ -92,21 +99,26 @@ class Database {
         // Data Directory (must be end with "/")
         Database.dataDir = process.env.DATA_DIR || args["data-dir"] || "./data/";
 
-        Database.path = Database.dataDir + "kuma.db";
+        Database.path = path.join(Database.dataDir, "kuma.db");
         if (! fs.existsSync(Database.dataDir)) {
             fs.mkdirSync(Database.dataDir, { recursive: true });
         }
 
-        Database.uploadDir = Database.dataDir + "upload/";
+        Database.uploadDir = path.join(Database.dataDir, "upload/");
 
         if (! fs.existsSync(Database.uploadDir)) {
             fs.mkdirSync(Database.uploadDir, { recursive: true });
         }
 
         // Create screenshot dir
-        Database.screenshotDir = Database.dataDir + "screenshots/";
+        Database.screenshotDir = path.join(Database.dataDir, "screenshots/");
         if (! fs.existsSync(Database.screenshotDir)) {
             fs.mkdirSync(Database.screenshotDir, { recursive: true });
+        }
+
+        Database.dockerTLSDir = path.join(Database.dataDir, "docker-tls/");
+        if (! fs.existsSync(Database.dockerTLSDir)) {
+            fs.mkdirSync(Database.dockerTLSDir, { recursive: true });
         }
 
         log.info("db", `Data Dir: ${Database.dataDir}`);

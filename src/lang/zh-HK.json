@@ -440,7 +440,7 @@
     "uninstall": "解除安裝",
     "wayToGetZohoCliqURL": "您可以前往此頁面以了解如何建立 Webhook 網址 {0}。",
     "Select status pages...": "選擇 Status Page…",
-    "webhookAdditionalHeadersDesc": "設定傳送 Webhook 時使用的額外 Header。",
+    "webhookAdditionalHeadersDesc": "設定傳送 Webhook 時使用的額外 Header。請使用 JSON key/value 格式。",
     "topic": "Topic",
     "topicExplanation": "監測 MQTT 中的一個 Topic",
     "successMessageExplanation": "MQTT 中收到視為成功的訊息",
@@ -694,7 +694,6 @@
     "Retry": "重試",
     "High": "高",
     "Huawei": "華為",
-    "Android": "Android",
     "For safety, must use secret key": "為安全起見，必須使用 Secret Key",
     "SecretKey": "SecretKey",
     "WebHookUrl": "WebHookUrl",
@@ -721,5 +720,15 @@
     "sameAsServerTimezone": "使用伺服器時區",
     "WeCom Bot Key": "WeCom 機器人 Key",
     "pagertreeMedium": "中",
-    "pagertreeHigh": "高"
+    "pagertreeHigh": "高",
+    "Cannot connect to the socket server": "無法連線到 Socket 伺服器",
+    "Reconnecting...": "重新連線...",
+    "chromeExecutable": "Chrome/Chromium 執行檔",
+    "chromeExecutableAutoDetect": "自動偵測",
+    "chromeExecutableDescription": "如果您使用 Docker 且未安裝 Chromium，可能要花數分鐘安裝後才能顯示測試結果。安裝會使用 1GB 的硬碟空間。",
+    "Edit Maintenance": "編輯維護",
+    "Invert Keyword": "以上關鍵字不能出現",
+    "Home": "首頁",
+    "Expected Value": "預期值",
+    "Json Query": "JSON 查询"
 }
