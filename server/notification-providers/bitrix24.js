@@ -21,11 +21,7 @@ class Bitrix24 extends NotificationProvider {
             return okMsg;
 
         } catch (error) {
-            if (error.response && error.response.data && error.response.data.description) {
-                throw new Error(error.response.data.description);
-            } else {
-                throw new Error(error.message);
-            }
+            this.throwGeneralAxiosError(error);
         }
     }
 }
