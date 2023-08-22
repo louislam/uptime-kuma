@@ -4,6 +4,9 @@ const axios = require("axios");
 class Bitrix24 extends NotificationProvider {
     name = "Bitrix24";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
 
