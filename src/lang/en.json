@@ -480,7 +480,7 @@
     "Ignore TLS Error": "Ignore TLS Error",
     "From Email": "From Email",
     "emailCustomisableContent": "Customisable content",
-    "smtpLiquidIntroduction": "The following two fields are templatable via the Liquid templating Language. Please refer to the {0} for usage instructions. These are the avaliable variables:",
+    "smtpLiquidIntroduction": "The following two fields are templatable via the Liquid templating Language. Please refer to the {0} for usage instructions. These are the available variables:",
     "emailCustomSubject": "Custom Subject",
     "leave blank for default subject": "leave blank for default subject",
     "emailCustomBody": "Custom Body",
