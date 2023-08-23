@@ -55,9 +55,7 @@
             <input v-model="showAdditionalHeadersField" class="form-check-input" type="checkbox">
             <label class="form-check-label">{{ $t("webhookAdditionalHeadersTitle") }}</label>
         </div>
-        <div class="form-text">
-            <i18n-t tag="p" keypath="webhookAdditionalHeadersDesc"> </i18n-t>
-        </div>
+        <div class="form-text">{{ $t("webhookAdditionalHeadersDesc") }}</div>
         <textarea
             v-if="showAdditionalHeadersField"
             id="additionalHeaders"
@@ -78,18 +76,18 @@ export default {
     computed: {
         headersPlaceholder() {
             return this.$t("Example:", [
-                `
-{
+`{
     "Authorization": "Authorization Token"
 }`,
             ]);
         },
         customBodyPlaceholder() {
-            return `Example:
-{
-    "Title": "Uptime Kuma Alert - {{ monitorJSON['name'] }}",
+            return this.$t("Example:", [
+`{
+    "Title": "Uptime Kuma Alert{% if monitorJSON %} - {{ monitorJSON['name'] }}{% endif %}",
     "Body": "{{ msg }}"
-}`;
+}`
+            ]);
         }
     },
 };
