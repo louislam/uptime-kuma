@@ -26,40 +26,28 @@
             <option value="custom">{{ $t("webhookBodyCustomOption") }}</option>
         </select>
 
-        <div class="form-text">
-            <div v-if="$parent.notification.webhookContentType == 'json'">
-                <p>{{ $t("webhookJsonDesc", ['"application/json"']) }}</p>
-            </div>
-            <div v-if="$parent.notification.webhookContentType == 'form-data'">
-                <i18n-t tag="p" keypath="webhookFormDataDesc">
-                    <template #multipart>multipart/form-data"</template>
-                    <template #decodeFunction>
-                        <strong>json_decode($_POST['data'])</strong>
-                    </template>
-                </i18n-t>
-            </div>
-            <div v-if="$parent.notification.webhookContentType == 'custom'">
-                <i18n-t tag="p" keypath="webhookCustomBodyDesc">
-                    <template #msg>
-                        <code>msg</code>
-                    </template>
-                    <template #heartbeat>
-                        <code>heartbeatJSON</code>
-                    </template>
-                    <template #monitor>
-                        <code>monitorJSON</code>
-                    </template>
-                </i18n-t>
-            </div>
-        </div>
+        <div v-if="$parent.notification.webhookContentType == 'json'" class="form-text">{{ $t("webhookJsonDesc", ['"application/json"']) }}</div>
+        <i18n-t v-else-if="$parent.notification.webhookContentType == 'form-data'" tag="div" keypath="webhookFormDataDesc" class="form-text">
+            <template #multipart>multipart/form-data"</template>
+            <template #decodeFunction>
+                <strong>json_decode($_POST['data'])</strong>
+            </template>
+        </i18n-t>
+        <template v-else-if="$parent.notification.webhookContentType == 'custom'">
+            <i18n-t tag="div" keypath="liquidIntroduction" class="form-text">
+                <a href="https://liquidjs.com/" target="_blank">{{ $t("documentation") }}</a>
+            </i18n-t>
+            <code v-pre>{{msg}}</code>: {{ $t("templateMsg") }}<br />
+            <code v-pre>{{heartbeatJSON}}</code>: {{ $t("templateHeartbeatJSON") }} <b>({{ $t("templateLimitedToUpDownNotification") }})</b><br />
+            <code v-pre>{{monitorJSON}}</code>: {{ $t("templateMonitorJSON") }} <b>({{ $t("templateLimitedToUpDownNotification") }})</b><br />
 
-        <textarea
-            v-if="$parent.notification.webhookContentType == 'custom'"
-            id="customBody"
-            v-model="$parent.notification.webhookCustomBody"
-            class="form-control"
-            :placeholder="customBodyPlaceholder"
-        ></textarea>
+            <textarea
+                id="customBody"
+                v-model="$parent.notification.webhookCustomBody"
+                class="form-control"
+                :placeholder="customBodyPlaceholder"
+            ></textarea>
+        </template>
     </div>
 
     <div class="mb-3">
