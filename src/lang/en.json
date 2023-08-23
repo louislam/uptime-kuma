@@ -59,6 +59,8 @@
     "Hostname": "Hostname",
     "Port": "Port",
     "Heartbeat Interval": "Heartbeat Interval",
+    "Request Timeout": "Request Timeout",
+    "timeoutAfter": "Timeout after {0} seconds",
     "Retries": "Retries",
     "Heartbeat Retry Interval": "Heartbeat Retry Interval",
     "Resend Notification if Down X times consecutively": "Resend Notification if Down X times consecutively",
@@ -85,6 +87,9 @@
     "Dark": "Dark",
     "Auto": "Auto",
     "Theme - Heartbeat Bar": "Theme - Heartbeat Bar",
+    "styleElapsedTime": "Elapsed time under the heartbeat bar",
+    "styleElapsedTimeShowNoLine": "Show (No Line)",
+    "styleElapsedTimeShowWithLine": "Show (With Line)",
     "Normal": "Normal",
     "Bottom": "Bottom",
     "None": "None",
@@ -799,5 +804,7 @@
     "nostrRecipients": "Recipients Public Keys (npub)",
     "nostrRecipientsHelp": "npub format, one per line",
     "showCertificateExpiry": "Show Certificate Expiry",
-    "noOrBadCertificate": "No/Bad Certificate"
+    "noOrBadCertificate": "No/Bad Certificate",
+    "gamedigGuessPort": "Gamedig: Guess Port",
+    "gamedigGuessPortDescription": "The port used by Valve Server Query Protocol may be different from the client port. Try this if the monitor cannot connect to your server."
 }
