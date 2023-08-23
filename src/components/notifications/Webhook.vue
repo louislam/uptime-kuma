@@ -12,9 +12,7 @@
     </div>
 
     <div class="mb-3">
-        <label for="webhook-request-body" class="form-label">{{
-            $t("Request Body")
-        }}</label>
+        <label for="webhook-request-body" class="form-label">{{ $t("Request Body") }}</label>
         <select
             id="webhook-request-body"
             v-model="$parent.notification.webhookContentType"
@@ -46,6 +44,7 @@
                 v-model="$parent.notification.webhookCustomBody"
                 class="form-control"
                 :placeholder="customBodyPlaceholder"
+                required
             ></textarea>
         </template>
     </div>
@@ -62,6 +61,7 @@
             v-model="$parent.notification.webhookAdditionalHeaders"
             class="form-control"
             :placeholder="headersPlaceholder"
+            :required="showAdditionalHeadersField"
         ></textarea>
     </div>
 </template>
