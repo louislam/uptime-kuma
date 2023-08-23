@@ -36,8 +36,8 @@
                 <a href="https://liquidjs.com/" target="_blank">{{ $t("documentation") }}</a>
             </i18n-t>
             <code v-pre>{{msg}}</code>: {{ $t("templateMsg") }}<br />
-            <code v-pre>{{heartbeatJSON}}</code>: {{ $t("templateHeartbeatJSON") }} <b>({{ $t("templateLimitedToUpDownNotification") }})</b><br />
-            <code v-pre>{{monitorJSON}}</code>: {{ $t("templateMonitorJSON") }} <b>({{ $t("templateLimitedToUpDownNotification") }})</b><br />
+            <code v-pre>{{heartbeatJSON}}</code>: {{ $t("templateHeartbeatJSON") }} <b>({{ $t("templateLimitedToUpDownNotifications") }})</b><br />
+            <code v-pre>{{monitorJSON}}</code>: {{ $t("templateMonitorJSON") }} <b>({{ $t("templateLimitedToUpDownCertNotifications") }})</b><br />
 
             <textarea
                 id="customBody"
