@@ -2,13 +2,13 @@
 
 First of all, I want to thank everyone who made pull requests for Uptime Kuma. I never thought the GitHub Community would be so nice! Because of this, I also never thought that other people would actually read and edit my code. It is not very well structured or commented, sorry about that.
 
-The project was created with vite.js (vue3). Then I created a subdirectory called "server" for server part. Both frontend and backend share the same package.json.
+The project was created with vite.js (vue3). Then I created a subdirectory called "server" for the server part. Both frontend and backend share the same package.json.
 
-The frontend code build into "dist" directory. The server (express.js) exposes the "dist" directory as root of the endpoint. This is how production is working.
+The frontend code builds into "dist" directory. The server (express.js) exposes the "dist" directory as the root of the endpoint. This is how production is working.
 
 ## Key Technical Skills
 
-- Node.js (You should know what are promise, async/await and arrow function etc.)
+- Node.js (You should know about promise, async/await and arrow function etc.)
 - Socket.io
 - SCSS
 - Vue.js
@@ -30,7 +30,7 @@ The frontend code build into "dist" directory. The server (express.js) exposes t
 
 ## Can I create a pull request for Uptime Kuma?
 
-Yes or no, it depends on what you will try to do. Since I don't want to waste your time, be sure to **create an empty draft pull request or open an issue, so we can have a discussion first**. Especially for a large pull request or you don't know it will be merged or not.
+Yes or no, it depends on what you will try to do. Since I don't want to waste your time, be sure to **create an empty draft pull request or open an issue, so we can have a discussion first**. Especially for a large pull request or you don't know if it will be merged or not.
 
 Here are some references:
 
@@ -46,8 +46,8 @@ Here are some references:
 - New features
 
 ### ❌ Won't be merged:
-- A dedicated pr for translating existing languages (see [these instructions](https://github.com/louislam/uptime-kuma/blob/master/src/lang/README.md))
-- Do not pass the auto test
+- A dedicated PR for translating existing languages (see [these instructions](https://github.com/louislam/uptime-kuma/blob/master/src/lang/README.md))
+- Do not pass the auto-test
 - Any breaking changes
 - Duplicated pull requests
 - Buggy
@@ -61,9 +61,9 @@ The above cases may not cover all possible situations.
 
 I (@louislam) have the final say. If your pull request does not meet my expectations, I will reject it, no matter how much time you spend on it. Therefore, it is essential to have a discussion beforehand.
 
-I will mark your pull request in the [milestones](https://github.com/louislam/uptime-kuma/milestones), if I am plan to review and merge it.
+I will assign your pull request to a [milestone](https://github.com/louislam/uptime-kuma/milestones), if I plan to review and merge it.
 
-Also, please don't rush or ask for ETA, because I have to understand the pull request, make sure it is no breaking changes and stick to my vision of this project, especially for large pull requests.
+Also, please don't rush or ask for an ETA, because I have to understand the pull request, make sure it is no breaking changes and stick to my vision of this project, especially for large pull requests.
 
 
 ### Recommended Pull Request Guideline
@@ -83,11 +83,11 @@ Before deep into coding, discussion first is preferred. Creating an empty pull r
 
 ## Project Styles
 
-I personally do not like something that requires so many configurations before you can finally start the app. I hope Uptime Kuma installation could be as easy as like installing a mobile app.
+I personally do not like something that requires so many configurations before you can finally start the app. I hope Uptime Kuma installation will be as easy as like installing a mobile app.
 
-- Easy to install for non-Docker users, no native build dependency is needed (for x86_64/armv7/arm64), no extra config, no extra effort required to get it running
+- Easy to install for non-Docker users, no native build dependency is needed (for x86_64/armv7/arm64), no extra config, and no extra effort required to get it running
 - Single container for Docker users, no very complex docker-compose file. Just map the volume and expose the port, then good to go
-- Settings should be configurable in the frontend. Environment variable is not encouraged, unless it is related to startup such as `DATA_DIR`
+- Settings should be configurable in the frontend. Environment variables are discouraged, unless it is related to startup such as `DATA_DIR`
 - Easy to use
 - The web UI styling should be consistent and nice
 
@@ -130,7 +130,7 @@ Port `3000` and port `3001` will be used.
 npm run dev
 ```
 
-But sometimes, you would like to keep restart the server, but not the frontend, you can run these command in two terminals:
+But sometimes, you would like to restart the server, but not the frontend, you can run these commands in two terminals:
 ```
 npm run start-frontend-dev
 npm run start-server-dev
@@ -146,13 +146,13 @@ It is mainly a socket.io app + express.js.
 express.js is used for: 
 - entry point such as redirecting to a status page or the dashboard
 - serving the frontend built files (index.html, .js and .css etc.)
-- serving internal APIs of status page
+- serving internal APIs of the status page
 
 
 ### Structure in /server/
 
 - jobs/ (Jobs that are running in another process)
-- model/ (Object model, auto mapping to the database table name)
+- model/ (Object model, auto-mapping to the database table name)
 - modules/ (Modified 3rd-party modules)
 - monitor_types (Monitor Types)
 - notification-providers/ (individual notification logic)
@@ -163,7 +163,7 @@ express.js is used for:
 
 ## Frontend Dev Server
 
-It binds to `0.0.0.0:3000` by default. Frontend dev server is used for development only. 
+It binds to `0.0.0.0:3000` by default. The frontend dev server is used for development only. 
 
 For production, it is not used. It will be compiled to `dist` directory instead. 
 
@@ -181,7 +181,7 @@ Uptime Kuma Frontend is a single page application (SPA). Most paths are handled 
 
 The router is in `src/router.js`
 
-As you can see, most data in frontend is stored in root level, even though you changed the current router to any other pages.
+As you can see, most data in the frontend is stored at the root level, even though you changed the current router to any other pages.
 
 The data and socket logic are in `src/mixins/socket.js`.
 
@@ -210,7 +210,7 @@ Both frontend and backend share the same package.json. However, the frontend dep
 
 ### Update Dependencies
 
-Since previously updating Vite 2.5.10 to 2.6.0 broke the application completely, from now on, it should update patch release version only.
+Since previously updating Vite 2.5.10 to 2.6.0 broke the application completely, from now on, it should update the patch release version only.
 
 Patch release = the third digit ([Semantic Versioning](https://semver.org/))
 
@@ -218,17 +218,17 @@ If for security / bug / other reasons, a library must be updated, breaking chang
 
 ## Translations
 
-Please add **all** the strings which are translatable to `src/lang/en.json` (If translation keys are ommited, they can not be translated).
+Please add **all** the strings which are translatable to `src/lang/en.json` (If translation keys are omitted, they can not be translated).
 
-**Don't include any other languages in your inital Pull-Request** (even if this is your mother tounge), to avoid merge-conflicts between weblate and `master`.  
-The translations can then (after merging a PR into `master`) be translated by awesome people donating their language-skills.
+**Don't include any other languages in your initial Pull-Request** (even if this is your mother tongue), to avoid merge-conflicts between weblate and `master`.  
+The translations can then (after merging a PR into `master`) be translated by awesome people donating their language skills.
 
 If you want to help by translating Uptime Kuma into your language, please visit the [instructions on how to translate using weblate](https://github.com/louislam/uptime-kuma/blob/master/src/lang/README.md).
 
 ## Spelling & Grammar
 
 Feel free to correct the grammar in the documentation or code.
-My mother language is not english and my grammar is not that great.
+My mother language is not English and my grammar is not that great.
 
 ## Wiki
 
