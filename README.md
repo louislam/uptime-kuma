@@ -26,7 +26,7 @@ It is a temporary live demo, all data will be deleted after 10 minutes. Use the 
 * Monitoring uptime for HTTP(s) / TCP / HTTP(s) Keyword / HTTP(s) Json Query / Ping / DNS Record / Push / Steam Game Server / Docker Containers
 * Fancy, Reactive, Fast UI/UX
 * Notifications via Telegram, Discord, Gotify, Slack, Pushover, Email (SMTP), and [90+ notification services, click here for the full list](https://github.com/louislam/uptime-kuma/tree/master/src/components/notifications)
-* 20 second intervals
+* 20-second intervals
 * [Multi Languages](https://github.com/louislam/uptime-kuma/tree/master/src/lang)
 * Multiple status pages
 * Map status pages to specific domains
@@ -70,7 +70,7 @@ npm run setup
 # Option 1. Try it
 node server/server.js
 
-# (Recommended) Option 2. Run in background using PM2
+# (Recommended) Option 2. Run in the background using PM2
 # Install PM2 if you don't have it:
 npm install pm2 -g && pm2 install pm2-logrotate
 
@@ -109,7 +109,7 @@ https://github.com/louislam/uptime-kuma/wiki/%F0%9F%86%99-How-to-Update
 
 ## 🆕 What's Next?
 
-I will mark requests/issues to the next milestone.
+I will assign requests/issues to the next milestone.
 
 https://github.com/louislam/uptime-kuma/milestones
 
