@@ -1116,9 +1116,6 @@ let needSetup = false;
                     value,
                 ]);
 
-                // Cleanup unused Tags
-                await R.exec("delete from tag where ( select count(*) from monitor_tag mt where tag.id = mt.tag_id ) = 0");
-
                 callback({
                     ok: true,
                     msg: "Deleted Successfully.",
