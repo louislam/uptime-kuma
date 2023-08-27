@@ -99,18 +99,6 @@
                                 <input id="name" v-model="monitor.name" type="text" class="form-control" required>
                             </div>
 
-                            <!-- Parent Monitor -->
-                            <div class="my-3">
-                                <label for="parent" class="form-label">{{ $t("Monitor Group") }}</label>
-                                <ActionSelect
-                                    v-model="monitor.parent"
-                                    :options="parentMonitorOptionsList"
-                                    :disabled="sortedGroupMonitorList.length === 0 && draftGroupName == null"
-                                    :icon="'plus'"
-                                    :action="() => $refs.createGroupDialog.show()"
-                                />
-                            </div>
-
                             <!-- URL -->
                             <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'real-browser' " class="my-3">
                                 <label for="url" class="form-label">{{ $t("URL") }}</label>
@@ -503,6 +491,18 @@
                                     </div>
                                 </div>
                             </template>
+
+                            <!-- Parent Monitor -->
+                            <div class="my-3">
+                                <label for="parent" class="form-label">{{ $t("Monitor Group") }}</label>
+                                <ActionSelect
+                                    v-model="monitor.parent"
+                                    :options="parentMonitorOptionsList"
+                                    :disabled="sortedGroupMonitorList.length === 0 && draftGroupName == null"
+                                    :icon="'plus'"
+                                    :action="() => $refs.createGroupDialog.show()"
+                                />
+                            </div>
 
                             <!-- Description -->
                             <div class="my-3">
