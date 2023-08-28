@@ -151,7 +151,7 @@
             </div>
 
             <!-- DNS Cache (nscd) -->
-            <div class="mb-4">
+            <div v-if="$root.info.isContainer" class="mb-4">
                 <label class="form-label">
                     {{ $t("enableNSCD") }}
                 </label>

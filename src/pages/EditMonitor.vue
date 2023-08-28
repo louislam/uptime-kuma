@@ -82,7 +82,7 @@
                                         <option value="redis">
                                             Redis
                                         </option>
-                                        <option value="tailscale-ping">
+                                        <option v-if="$root.info.isContainer" value="tailscale-ping">
                                             Tailscale Ping
                                         </option>
                                     </optgroup>
