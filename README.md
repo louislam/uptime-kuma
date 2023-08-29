@@ -93,7 +93,7 @@ pm2 save && pm2 startup
 
 ### Windows Portable (x64)
 
-https://github.com/louislam/uptime-kuma/files/11886108/uptime-kuma-win64-portable-1.0.1.zip
+https://github.com/louislam/uptime-kuma/releases/download/1.23.1/uptime-kuma-windows-x64-portable-1.23.1.zip
 
 ### Advanced Installation
 
