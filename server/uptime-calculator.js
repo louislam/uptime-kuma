@@ -162,7 +162,8 @@ class UptimeCalculator {
         }
 
         // Don't store data in test mode
-        if (!process.env.TEST_BACKEND) {
+        if (process.env.TEST_BACKEND) {
+            log.debug("uptime-calc", "Skip storing data in test mode");
             return date;
         }
 
