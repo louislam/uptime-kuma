@@ -189,13 +189,15 @@ if (type == "local") {
         bash("check=$(git --version)");
         if (check == "") {
             error = 1;
-            println("Error: git is missing");
+            println("Error: git is not found!");
+            println("help: an installation guide is available at https://git-scm.com/book/en/v2/Getting-Started-Installing-Git");
         }
 
         bash("check=$(node -v)");
         if (check == "") {
             error = 1;
-            println("Error: node is missing");
+            println("Error: node is not found");
+            println("help: an installation guide is available at https://nodejs.org/en/download");
         }
 
         if (error > 0) {
@@ -216,6 +218,7 @@ if (type == "local") {
    bash("check=$(pm2 --version)");
    if (check == "") {
        println("Error: pm2 is not found!");
+       println("help: an installation guide is available at https://pm2.keymetrics.io/docs/usage/quick-start/");
        bash("exit 1");
    }
 
@@ -232,6 +235,7 @@ if (type == "local") {
     bash("check=$(docker -v)");
     if (check == "") {
         println("Error: docker is not found!");
+        println("help: an installation guide is available at https://docs.docker.com/desktop/");
         bash("exit 1");
     }
 
@@ -239,6 +243,7 @@ if (type == "local") {
 
     bash("if [[ \"$check\" == *\"Is the docker daemon running\"* ]]; then
       \"echo\" \"Error: docker is not running\"
+      \"echo\" \"help: a troubleshooting guide is available at https://docs.docker.com/config/daemon/troubleshoot/\"
       \"exit\" \"1\"
     fi");
 

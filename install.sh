@@ -156,12 +156,14 @@ fi
         check=$(git --version)
         if [ "$check" == "" ]; then
           error=$((1))
-          "echo" "-e" "Error: git is missing"        
+          "echo" "-e" "Error: git is not found!"
+          "echo" "-e" "help: an installation guide is available at https://git-scm.com/book/en/v2/Getting-Started-Installing-Git"        
 fi
         check=$(node -v)
         if [ "$check" == "" ]; then
           error=$((1))
-          "echo" "-e" "Error: node is missing"        
+          "echo" "-e" "Error: node is not found"
+          "echo" "-e" "help: an installation guide is available at https://nodejs.org/en/download"        
 fi
         if [ $(($error > 0)) == 1 ]; then
           "echo" "-e" "Please install above missing software"
@@ -180,6 +182,7 @@ fi
   check=$(pm2 --version)
   if [ "$check" == "" ]; then
     "echo" "-e" "Error: pm2 is not found!"
+    "echo" "-e" "help: an installation guide is available at https://pm2.keymetrics.io/docs/usage/quick-start/"
     exit 1  
 fi
   mkdir -p $installPath
@@ -192,11 +195,13 @@ else
   check=$(docker -v)
   if [ "$check" == "" ]; then
     "echo" "-e" "Error: docker is not found!"
+    "echo" "-e" "help: an installation guide is available at https://docs.docker.com/desktop/"
     exit 1  
 fi
   check=$(docker info)
   if [[ "$check" == *"Is the docker daemon running"* ]]; then
       "echo" "Error: docker is not running"
+      "echo" "help: a troubleshooting guide is available at https://docs.docker.com/config/daemon/troubleshoot/"
       "exit" "1"
     fi
   if [ "$3" != "" ]; then

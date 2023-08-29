@@ -739,5 +739,6 @@
     "pagertreeHigh": "גבוהה",
     "pagertreeCritical": "קריטי",
     "pagertreeResolve": "הגדרה אוטומטית",
-    "ntfyUsernameAndPassword": "שם משתמש וסיסמא"
+    "ntfyUsernameAndPassword": "שם משתמש וסיסמא",
+    "Cannot connect to the socket server": "לא ניתן להתחבר לשקע השרת"
 }

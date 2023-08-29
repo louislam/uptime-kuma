@@ -150,6 +150,43 @@
                 </div>
             </div>
 
+            <!-- DNS Cache (nscd) -->
+            <div v-if="$root.info.isContainer" class="mb-4">
+                <label class="form-label">
+                    {{ $t("enableNSCD") }}
+                </label>
+
+                <div class="form-check">
+                    <input
+                        id="nscdEnable"
+                        v-model="settings.nscd"
+                        class="form-check-input"
+                        type="radio"
+                        name="nscd"
+                        :value="true"
+                        required
+                    />
+                    <label class="form-check-label" for="nscdEnable">
+                        {{ $t("Enable") }}
+                    </label>
+                </div>
+
+                <div class="form-check">
+                    <input
+                        id="nscdDisable"
+                        v-model="settings.nscd"
+                        class="form-check-input"
+                        type="radio"
+                        name="nscd"
+                        :value="false"
+                        required
+                    />
+                    <label class="form-check-label" for="nscdDisable">
+                        {{ $t("Disable") }}
+                    </label>
+                </div>
+            </div>
+
             <!-- DNS Cache -->
             <div class="mb-4">
                 <label class="form-label">

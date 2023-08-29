@@ -595,13 +595,13 @@ class Monitor extends BeanModel {
                     let dnsRes = await dnsResolve(this.hostname, this.dns_resolve_server, this.port, this.dns_resolve_type);
                     bean.ping = dayjs().valueOf() - startTime;
 
-                    if (this.dns_resolve_type === "A" || this.dns_resolve_type === "AAAA" || this.dns_resolve_type === "TXT") {
+                    if (this.dns_resolve_type === "A" || this.dns_resolve_type === "AAAA" || this.dns_resolve_type === "TXT" || this.dns_resolve_type === "PTR") {
                         dnsMessage += "Records: ";
                         dnsMessage += dnsRes.join(" | ");
-                    } else if (this.dns_resolve_type === "CNAME" || this.dns_resolve_type === "PTR") {
-                        dnsMessage = dnsRes[0];
+                    } else if (this.dns_resolve_type === "CNAME") {
+                        dnsMessage += dnsRes[0];
                     } else if (this.dns_resolve_type === "CAA") {
-                        dnsMessage = dnsRes[0].issue;
+                        dnsMessage += dnsRes[0].issue;
                     } else if (this.dns_resolve_type === "MX") {
                         dnsRes.forEach(record => {
                             dnsMessage += `Hostname: ${record.exchange} - Priority: ${record.priority} | `;
@@ -619,7 +619,7 @@ class Monitor extends BeanModel {
                         dnsMessage = dnsMessage.slice(0, -2);
                     }
 
-                    if (this.dnsLastResult !== dnsMessage) {
+                    if (this.dnsLastResult !== dnsMessage && dnsMessage !== undefined) {
                         R.exec("UPDATE `monitor` SET dns_last_result = ? WHERE id = ? ", [
                             dnsMessage,
                             this.id
