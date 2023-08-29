@@ -161,20 +161,29 @@ class UptimeCalculator {
             this.lastUptimeData = minutelyData;
         }
 
-        // Update database
+        // Don't store data in test mode
         if (!process.env.TEST_BACKEND) {
-            let dailyStatBean = await this.getDailyStatBean(dailyKey);
-            dailyStatBean.up = dailyData.up;
-            dailyStatBean.down = dailyData.down;
-            dailyStatBean.ping = dailyData.ping;
-            await R.store(dailyStatBean);
-
-            let minutelyStatBean = await this.getMinutelyStatBean(divisionKey);
-            minutelyStatBean.up = minutelyData.up;
-            minutelyStatBean.down = minutelyData.down;
-            minutelyStatBean.ping = minutelyData.ping;
-            await R.store(minutelyStatBean);
+            return date;
         }
+
+        let dailyStatBean = await this.getDailyStatBean(dailyKey);
+        dailyStatBean.up = dailyData.up;
+        dailyStatBean.down = dailyData.down;
+        dailyStatBean.ping = dailyData.ping;
+        await R.store(dailyStatBean);
+
+        let minutelyStatBean = await this.getMinutelyStatBean(divisionKey);
+        minutelyStatBean.up = minutelyData.up;
+        minutelyStatBean.down = minutelyData.down;
+        minutelyStatBean.ping = minutelyData.ping;
+        await R.store(minutelyStatBean);
+
+        // Remove the old data
+        log.debug("uptime-calc", "Remove old data");
+        await R.exec("DELETE FROM stat_minutely WHERE monitor_id = ? AND timestamp < ?", [
+            this.monitorID,
+            this.getMinutelyKey(date.subtract(24, "hour")),
+        ]);
 
         return date;
     }
@@ -434,7 +443,7 @@ class UptimeCalculator {
     }
 
     /**
-     * @returns {UptimeDataResult} UptimeDataResult
+     * @returns {dayjs.Dayjs} Current date
      */
     getCurrentDate() {
         return dayjs.utc();

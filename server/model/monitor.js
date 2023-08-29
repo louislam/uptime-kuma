@@ -21,7 +21,6 @@ const { DockerHost } = require("../docker");
 const Gamedig = require("gamedig");
 const jsonata = require("jsonata");
 const jwt = require("jsonwebtoken");
-const Database = require("../database");
 const { UptimeCalculator } = require("../uptime-calculator");
 
 /**
@@ -1153,15 +1152,18 @@ class Monitor extends BeanModel {
         if (hasClients) {
             // Send 24 hour average ping
             let data24h = await uptimeCalculator.get24Hour();
-            io.to(userID).emit("avgPing", monitorID, +data24h.avgPing.toFixed(2));
+            io.to(userID).emit("avgPing", monitorID, (data24h.avgPing) ? data24h.avgPing.toFixed(2) : null);
 
             // Send 24 hour uptime
             io.to(userID).emit("uptime", monitorID, 24, data24h.uptime);
 
-            let data30d = await uptimeCalculator.get30Day();
-
             // Send 30 day uptime
+            let data30d = await uptimeCalculator.get30Day();
             io.to(userID).emit("uptime", monitorID, 720, data30d.uptime);
+
+            // Send 1-year uptime
+            let data1y = await uptimeCalculator.get1Year();
+            io.to(userID).emit("uptime", monitorID, "1y", data1y.uptime);
 
             // Send Cert Info
             await Monitor.sendCertInfo(io, monitorID, userID);
