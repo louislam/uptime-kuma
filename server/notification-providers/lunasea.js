@@ -38,7 +38,7 @@ class LunaSea extends NotificationProvider {
                         heartbeatJSON["msg"] +
                         `\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`
                 };
-                await axios.post(`https://notify.lunasea.app/v1/custom/${target}`, updata);
+                await axios.post(`${url}/custom/${target}`, updata);
                 return okMsg;
             }
 
