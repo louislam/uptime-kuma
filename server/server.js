@@ -49,7 +49,7 @@ if (! process.env.NODE_ENV) {
 }
 
 log.info("server", "Node Env: " + process.env.NODE_ENV);
-log.info("server", "Inside Container: " + process.env.UPTIME_KUMA_IS_CONTAINER === "1");
+log.info("server", "Inside Container: " + (process.env.UPTIME_KUMA_IS_CONTAINER === "1"));
 
 log.info("server", "Importing Node libraries");
 const fs = require("fs");
@@ -641,6 +641,10 @@ let needSetup = false;
                 let notificationIDList = monitor.notificationIDList;
                 delete monitor.notificationIDList;
 
+                // Ensure status code ranges are strings
+                if (!monitor.accepted_statuscodes.every((code) => typeof code === "string")) {
+                    throw new Error("Accepted status codes are not all strings");
+                }
                 monitor.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
                 delete monitor.accepted_statuscodes;
 
@@ -657,7 +661,10 @@ let needSetup = false;
                 await updateMonitorNotification(bean.id, notificationIDList);
 
                 await server.sendMonitorList(socket);
-                await startMonitor(socket.userID, bean.id);
+
+                if (monitor.active !== false) {
+                    await startMonitor(socket.userID, bean.id);
+                }
 
                 log.info("monitor", `Added Monitor: ${monitor.id} User ID: ${socket.userID}`);
 
@@ -703,6 +710,11 @@ let needSetup = false;
                     removeGroupChildren = true;
                 }
 
+                // Ensure status code ranges are strings
+                if (!monitor.accepted_statuscodes.every((code) => typeof code === "string")) {
+                    throw new Error("Accepted status codes are not all strings");
+                }
+
                 bean.name = monitor.name;
                 bean.description = monitor.description;
                 bean.parent = monitor.parent;
@@ -713,6 +725,12 @@ let needSetup = false;
                 bean.headers = monitor.headers;
                 bean.basic_auth_user = monitor.basic_auth_user;
                 bean.basic_auth_pass = monitor.basic_auth_pass;
+                bean.timeout = monitor.timeout;
+                bean.oauth_client_id = monitor.oauth_client_id,
+                bean.oauth_client_secret = monitor.oauth_client_secret,
+                bean.oauth_auth_method = this.oauth_auth_method,
+                bean.oauth_token_url = monitor.oauth_token_url,
+                bean.oauth_scopes = monitor.oauth_scopes,
                 bean.tlsCa = monitor.tlsCa;
                 bean.tlsCert = monitor.tlsCert;
                 bean.tlsKey = monitor.tlsKey;
@@ -766,6 +784,7 @@ let needSetup = false;
                 bean.kafkaProducerAllowAutoTopicCreation = monitor.kafkaProducerAllowAutoTopicCreation;
                 bean.kafkaProducerSaslOptions = JSON.stringify(monitor.kafkaProducerSaslOptions);
                 bean.kafkaProducerMessage = monitor.kafkaProducerMessage;
+                bean.gamedigGivenPortOnly = monitor.gamedigGivenPortOnly;
 
                 bean.validate();
 
@@ -1097,9 +1116,6 @@ let needSetup = false;
                     value,
                 ]);
 
-                // Cleanup unused Tags
-                await R.exec("delete from tag where ( select count(*) from monitor_tag mt where tag.id = mt.tag_id ) = 0");
-
                 callback({
                     ok: true,
                     msg: "Deleted Successfully.",
@@ -1178,6 +1194,7 @@ let needSetup = false;
                 }
 
                 const previousChromeExecutable = await Settings.get("chromeExecutable");
+                const previousNSCDStatus = await Settings.get("nscd");
 
                 await setSettings("general", data);
                 server.entryPage = data.entryPage;
@@ -1193,6 +1210,15 @@ let needSetup = false;
                 if (previousChromeExecutable !== data.chromeExecutable) {
                     log.info("settings", "Chrome executable is changed. Resetting Chrome...");
                     await resetChrome();
+                }
+
+                // Update nscd status
+                if (previousNSCDStatus !== data.nscd) {
+                    if (data.nscd) {
+                        server.startNSCDServices();
+                    } else {
+                        server.stopNSCDServices();
+                    }
                 }
 
                 callback({
@@ -1364,6 +1390,7 @@ let needSetup = false;
 
                             // Define default values
                             let retryInterval = 0;
+                            let timeout = monitorListData[i].timeout || (monitorListData[i].interval * 0.8); // fallback to old value
 
                             /*
                             Only replace the default value with the backup file data for the specific version, where it appears the first time
@@ -1389,6 +1416,7 @@ let needSetup = false;
                                 basic_auth_pass: monitorListData[i].basic_auth_pass,
                                 authWorkstation: monitorListData[i].authWorkstation,
                                 authDomain: monitorListData[i].authDomain,
+                                timeout,
                                 interval: monitorListData[i].interval,
                                 retryInterval: retryInterval,
                                 resendInterval: monitorListData[i].resendInterval || 0,

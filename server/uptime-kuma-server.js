@@ -11,6 +11,7 @@ const { CacheableDnsHttpAgent } = require("./cacheable-dns-http-agent");
 const { Settings } = require("./settings");
 const dayjs = require("dayjs");
 const childProcess = require("child_process");
+const path = require("path");
 // DO NOT IMPORT HERE IF THE MODULES USED `UptimeKumaServer.getInstance()`, put at the bottom of this file instead.
 
 /**
@@ -214,7 +215,7 @@ class UptimeKumaServer {
      * @param {boolean} outputToConsole Should the error also be output to console?
      */
     static errorLog(error, outputToConsole = true) {
-        const errorLogStream = fs.createWriteStream(Database.dataDir + "/error.log", {
+        const errorLogStream = fs.createWriteStream(path.join(Database.dataDir, "/error.log"), {
             flags: "a"
         });
 
@@ -340,7 +341,11 @@ class UptimeKumaServer {
      * @returns {Promise<void>}
      */
     async start() {
-        this.startServices();
+        let enable = await Settings.get("nscd");
+
+        if (enable || enable === null) {
+            this.startNSCDServices();
+        }
     }
 
     /**
@@ -348,14 +353,18 @@ class UptimeKumaServer {
      * @returns {Promise<void>}
      */
     async stop() {
-        this.stopServices();
+        let enable = await Settings.get("nscd");
+
+        if (enable || enable === null) {
+            this.stopNSCDServices();
+        }
     }
 
     /**
      * Start all system services (e.g. nscd)
      * For now, only used in Docker
      */
-    startServices() {
+    startNSCDServices() {
         if (process.env.UPTIME_KUMA_IS_CONTAINER) {
             try {
                 log.info("services", "Starting nscd");
@@ -369,7 +378,7 @@ class UptimeKumaServer {
     /**
      * Stop all system services
      */
-    stopServices() {
+    stopNSCDServices() {
         if (process.env.UPTIME_KUMA_IS_CONTAINER) {
             try {
                 log.info("services", "Stopping nscd");

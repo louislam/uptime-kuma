@@ -19,10 +19,10 @@ class Opsgenie extends NotificationProvider {
 
         try {
             switch (notification.opsgenieRegion) {
-                case "US":
+                case "us":
                     opsgenieAlertsUrl = opsgenieAlertsUrlUS;
                     break;
-                case "EU":
+                case "eu":
                     opsgenieAlertsUrl = opsgenieAlertsUrlEU;
                     break;
                 default:

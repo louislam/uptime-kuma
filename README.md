@@ -1,15 +1,15 @@
+<div align="center" width="100%">
+    <img src="./public/icon.svg" width="128" alt="" />
+</div>
+
 # Uptime Kuma
+
+Uptime Kuma is an easy-to-use self-hosted monitoring tool.
 
 <a target="_blank" href="https://github.com/louislam/uptime-kuma"><img src="https://img.shields.io/github/stars/louislam/uptime-kuma" /></a> <a target="_blank" href="https://hub.docker.com/r/louislam/uptime-kuma"><img src="https://img.shields.io/docker/pulls/louislam/uptime-kuma" /></a> <a target="_blank" href="https://hub.docker.com/r/louislam/uptime-kuma"><img src="https://img.shields.io/docker/v/louislam/uptime-kuma/latest?label=docker%20image%20ver." /></a> <a target="_blank" href="https://github.com/louislam/uptime-kuma"><img src="https://img.shields.io/github/last-commit/louislam/uptime-kuma" /></a>  <a target="_blank" href="https://opencollective.com/uptime-kuma"><img src="https://opencollective.com/uptime-kuma/total/badge.svg?label=Open%20Collective%20Backers&color=brightgreen" /></a>
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/louislam?label=GitHub%20Sponsors)](https://github.com/sponsors/louislam) <a href="https://weblate.kuma.pet/projects/uptime-kuma/uptime-kuma/">
 <img src="https://weblate.kuma.pet/widgets/uptime-kuma/-/svg-badge.svg" alt="Translation status" />
 </a>
-
-<div align="center" width="100%">
-    <img src="./public/icon.svg" width="128" alt="" />
-</div>
-
-Uptime Kuma is an easy-to-use self-hosted monitoring tool.
 
 <img src="https://user-images.githubusercontent.com/1336778/212262296-e6205815-ad62-488c-83ec-a5b0d0689f7c.jpg" width="700" alt="" />
 
@@ -26,7 +26,7 @@ It is a temporary live demo, all data will be deleted after 10 minutes. Use the 
 * Monitoring uptime for HTTP(s) / TCP / HTTP(s) Keyword / HTTP(s) Json Query / Ping / DNS Record / Push / Steam Game Server / Docker Containers
 * Fancy, Reactive, Fast UI/UX
 * Notifications via Telegram, Discord, Gotify, Slack, Pushover, Email (SMTP), and [90+ notification services, click here for the full list](https://github.com/louislam/uptime-kuma/tree/master/src/components/notifications)
-* 20 second intervals
+* 20-second intervals
 * [Multi Languages](https://github.com/louislam/uptime-kuma/tree/master/src/lang)
 * Multiple status pages
 * Map status pages to specific domains
@@ -70,7 +70,7 @@ npm run setup
 # Option 1. Try it
 node server/server.js
 
-# (Recommended) Option 2. Run in background using PM2
+# (Recommended) Option 2. Run in the background using PM2
 # Install PM2 if you don't have it:
 npm install pm2 -g && pm2 install pm2-logrotate
 
@@ -93,7 +93,7 @@ pm2 save && pm2 startup
 
 ### Windows Portable (x64)
 
-https://github.com/louislam/uptime-kuma/files/11886108/uptime-kuma-win64-portable-1.0.1.zip
+https://github.com/louislam/uptime-kuma/releases/download/1.23.1/uptime-kuma-windows-x64-portable-1.23.1.zip
 
 ### Advanced Installation
 
@@ -109,7 +109,7 @@ https://github.com/louislam/uptime-kuma/wiki/%F0%9F%86%99-How-to-Update
 
 ## 🆕 What's Next?
 
-I will mark requests/issues to the next milestone.
+I will assign requests/issues to the next milestone.
 
 https://github.com/louislam/uptime-kuma/milestones
 
@@ -184,7 +184,10 @@ If you want to report a bug or request a new feature, feel free to open a [new i
 ### Translations
 If you want to translate Uptime Kuma into your language, please visit [Weblate Readme](https://github.com/louislam/uptime-kuma/blob/master/src/lang/README.md).
 
-Feel free to correct my grammar in this README, source code, or wiki, as my mother language is not English and my grammar is not that great.
+## Spelling & Grammar
+
+Feel free to correct the grammar in the documentation or code.
+My mother language is not english and my grammar is not that great.
 
 ### Create Pull Requests
 If you want to modify Uptime Kuma, please read this guide and follow the rules here: https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md

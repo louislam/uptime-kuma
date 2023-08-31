@@ -6,7 +6,7 @@ const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, TimeLogger, MAX_INTERVA
     SQL_DATETIME_FORMAT
 } = require("../../src/util");
 const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, mqttAsync, setSetting, httpNtlm, radius, grpcQuery,
-    redisPingAsync, mongodbPing, kafkaProducerAsync
+    redisPingAsync, mongodbPing, kafkaProducerAsync, getOidcTokenClientCredentials,
 } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
@@ -37,11 +37,12 @@ class Monitor extends BeanModel {
      * Only show necessary data to public
      * @returns {Object}
      */
-    async toPublicJSON(showTags = false) {
+    async toPublicJSON(showTags = false, certExpiry = false) {
         let obj = {
             id: this.id,
             name: this.name,
             sendUrl: this.sendUrl,
+            type: this.type,
         };
 
         if (this.sendUrl) {
@@ -51,6 +52,13 @@ class Monitor extends BeanModel {
         if (showTags) {
             obj.tags = await this.getTags();
         }
+
+        if (certExpiry && this.type === "http") {
+            const { certExpiryDaysRemaining, validCert } = await this.getCertExpiry(this.id);
+            obj.certExpiryDaysRemaining = certExpiryDaysRemaining;
+            obj.validCert = validCert;
+        }
+
         return obj;
     }
 
@@ -94,6 +102,7 @@ class Monitor extends BeanModel {
             active: await this.isActive(),
             forceInactive: !await Monitor.isParentActive(this.id),
             type: this.type,
+            timeout: this.timeout,
             interval: this.interval,
             retryInterval: this.retryInterval,
             resendInterval: this.resendInterval,
@@ -126,6 +135,7 @@ class Monitor extends BeanModel {
             radiusCalledStationId: this.radiusCalledStationId,
             radiusCallingStationId: this.radiusCallingStationId,
             game: this.game,
+            gamedigGivenPortOnly: this.getGameDigGivenPortOnly(),
             httpBodyEncoding: this.httpBodyEncoding,
             jsonPath: this.jsonPath,
             expectedValue: this.expectedValue,
@@ -146,6 +156,11 @@ class Monitor extends BeanModel {
                 grpcMetadata: this.grpcMetadata,
                 basic_auth_user: this.basic_auth_user,
                 basic_auth_pass: this.basic_auth_pass,
+                oauth_client_id: this.oauth_client_id,
+                oauth_client_secret: this.oauth_client_secret,
+                oauth_token_url: this.oauth_token_url,
+                oauth_scopes: this.oauth_scopes,
+                oauth_auth_method: this.oauth_auth_method,
                 pushToken: this.pushToken,
                 databaseConnectionString: this.databaseConnectionString,
                 radiusUsername: this.radiusUsername,
@@ -182,6 +197,31 @@ class Monitor extends BeanModel {
      */
     async getTags() {
         return await R.getAll("SELECT mt.*, tag.name, tag.color FROM monitor_tag mt JOIN tag ON mt.tag_id = tag.id WHERE mt.monitor_id = ? ORDER BY tag.name", [ this.id ]);
+    }
+
+    /**
+     * Gets certificate expiry for this monitor
+     * @param {number} monitorID ID of monitor to send
+     * @returns {Promise<LooseObject<any>>}
+     */
+    async getCertExpiry(monitorID) {
+        let tlsInfoBean = await R.findOne("monitor_tls_info", "monitor_id = ?", [
+            monitorID,
+        ]);
+        let tlsInfo;
+        if (tlsInfoBean) {
+            tlsInfo = JSON.parse(tlsInfoBean?.info_json);
+            if (tlsInfo?.valid && tlsInfo?.certInfo?.daysRemaining) {
+                return {
+                    certExpiryDaysRemaining: tlsInfo.certInfo.daysRemaining,
+                    validCert: true
+                };
+            }
+        }
+        return {
+            certExpiryDaysRemaining: "",
+            validCert: false
+        };
     }
 
     /**
@@ -239,6 +279,10 @@ class Monitor extends BeanModel {
      */
     getAcceptedStatuscodes() {
         return JSON.parse(this.accepted_statuscodes_json);
+    }
+
+    getGameDigGivenPortOnly() {
+        return Boolean(this.gamedigGivenPortOnly);
     }
 
     /**
@@ -313,7 +357,10 @@ class Monitor extends BeanModel {
                             const lastBeat = await Monitor.getPreviousHeartbeat(child.id);
 
                             // Only change state if the monitor is in worse conditions then the ones before
-                            if (bean.status === UP && (lastBeat.status === PENDING || lastBeat.status === DOWN)) {
+                            // lastBeat.status could be null
+                            if (!lastBeat) {
+                                bean.status = PENDING;
+                            } else if (bean.status === UP && (lastBeat.status === PENDING || lastBeat.status === DOWN)) {
                                 bean.status = lastBeat.status;
                             } else if (bean.status === PENDING && lastBeat.status === DOWN) {
                                 bean.status = lastBeat.status;
@@ -339,6 +386,24 @@ class Monitor extends BeanModel {
                         basicAuthHeader = {
                             "Authorization": "Basic " + this.encodeBase64(this.basic_auth_user, this.basic_auth_pass),
                         };
+                    }
+
+                    // OIDC: Basic client credential flow.
+                    // Additional grants might be implemented in the future
+                    let oauth2AuthHeader = {};
+                    if (this.auth_method === "oauth2-cc") {
+                        try {
+                            if (this.oauthAccessToken === undefined || new Date(this.oauthAccessToken.expires_at * 1000) <= new Date()) {
+                                log.debug("monitor", `[${this.name}] The oauth access-token undefined or expired. Requesting a new one`);
+                                this.oauthAccessToken = await getOidcTokenClientCredentials(this.oauth_token_url, this.oauth_client_id, this.oauth_client_secret, this.oauth_scopes, this.oauth_auth_method);
+                                log.debug("monitor", `[${this.name}] Obtained oauth access-token. Expires at ${new Date(this.oauthAccessToken.expires_at * 1000)}`);
+                            }
+                            oauth2AuthHeader = {
+                                "Authorization": this.oauthAccessToken.token_type + " " + this.oauthAccessToken.access_token,
+                            };
+                        } catch (e) {
+                            throw new Error("The oauth config is invalid. " + e.message);
+                        }
                     }
 
                     const httpsAgentOptions = {
@@ -369,12 +434,13 @@ class Monitor extends BeanModel {
                     const options = {
                         url: this.url,
                         method: (this.method || "get").toLowerCase(),
-                        timeout: this.interval * 1000 * 0.8,
+                        timeout: this.timeout * 1000,
                         headers: {
                             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
                             "User-Agent": "Uptime-Kuma/" + version,
                             ...(contentType ? { "Content-Type": contentType } : {}),
                             ...(basicAuthHeader),
+                            ...(oauth2AuthHeader),
                             ...(this.headers ? JSON.parse(this.headers) : {})
                         },
                         maxRedirects: this.maxredirects,
@@ -515,13 +581,13 @@ class Monitor extends BeanModel {
                     let dnsRes = await dnsResolve(this.hostname, this.dns_resolve_server, this.port, this.dns_resolve_type);
                     bean.ping = dayjs().valueOf() - startTime;
 
-                    if (this.dns_resolve_type === "A" || this.dns_resolve_type === "AAAA" || this.dns_resolve_type === "TXT") {
+                    if (this.dns_resolve_type === "A" || this.dns_resolve_type === "AAAA" || this.dns_resolve_type === "TXT" || this.dns_resolve_type === "PTR") {
                         dnsMessage += "Records: ";
                         dnsMessage += dnsRes.join(" | ");
-                    } else if (this.dns_resolve_type === "CNAME" || this.dns_resolve_type === "PTR") {
-                        dnsMessage = dnsRes[0];
+                    } else if (this.dns_resolve_type === "CNAME") {
+                        dnsMessage += dnsRes[0];
                     } else if (this.dns_resolve_type === "CAA") {
-                        dnsMessage = dnsRes[0].issue;
+                        dnsMessage += dnsRes[0].issue;
                     } else if (this.dns_resolve_type === "MX") {
                         dnsRes.forEach(record => {
                             dnsMessage += `Hostname: ${record.exchange} - Priority: ${record.priority} | `;
@@ -539,7 +605,7 @@ class Monitor extends BeanModel {
                         dnsMessage = dnsMessage.slice(0, -2);
                     }
 
-                    if (this.dnsLastResult !== dnsMessage) {
+                    if (this.dnsLastResult !== dnsMessage && dnsMessage !== undefined) {
                         R.exec("UPDATE `monitor` SET dns_last_result = ? WHERE id = ? ", [
                             dnsMessage,
                             this.id
@@ -588,7 +654,7 @@ class Monitor extends BeanModel {
                     }
 
                     let res = await axios.get(steamApiUrl, {
-                        timeout: this.interval * 1000 * 0.8,
+                        timeout: this.timeout * 1000,
                         headers: {
                             "Accept": "*/*",
                             "User-Agent": "Uptime-Kuma/" + version,
@@ -626,7 +692,7 @@ class Monitor extends BeanModel {
                             type: this.game,
                             host: this.hostname,
                             port: this.port,
-                            givenPortOnly: true,
+                            givenPortOnly: this.getGameDigGivenPortOnly(),
                         });
 
                         bean.msg = state.name;
@@ -660,6 +726,9 @@ class Monitor extends BeanModel {
                         options.socketPath = dockerHost._dockerDaemon;
                     } else if (dockerHost._dockerType === "tcp") {
                         options.baseURL = DockerHost.patchDockerURL(dockerHost._dockerDaemon);
+                        options.httpsAgent = CacheableDnsHttpAgent.getHttpsAgent(
+                            DockerHost.getHttpsAgentOptions(dockerHost._dockerType, options.baseURL)
+                        );
                     }
 
                     log.debug("monitor", `[${this.name}] Axios Request`);
@@ -759,29 +828,19 @@ class Monitor extends BeanModel {
                         port = this.port;
                     }
 
-                    try {
-                        const resp = await radius(
-                            this.hostname,
-                            this.radiusUsername,
-                            this.radiusPassword,
-                            this.radiusCalledStationId,
-                            this.radiusCallingStationId,
-                            this.radiusSecret,
-                            port,
-                            this.interval * 1000 * 0.8,
-                        );
-                        if (resp.code) {
-                            bean.msg = resp.code;
-                        }
-                        bean.status = UP;
-                    } catch (error) {
-                        bean.status = DOWN;
-                        if (error.response?.code) {
-                            bean.msg = error.response.code;
-                        } else {
-                            bean.msg = error.message;
-                        }
-                    }
+                    const resp = await radius(
+                        this.hostname,
+                        this.radiusUsername,
+                        this.radiusPassword,
+                        this.radiusCalledStationId,
+                        this.radiusCallingStationId,
+                        this.radiusSecret,
+                        port,
+                        this.interval * 1000 * 0.4,
+                    );
+
+                    bean.msg = resp.code;
+                    bean.status = UP;
                     bean.ping = dayjs().valueOf() - startTime;
                 } else if (this.type === "redis") {
                     let startTime = dayjs().valueOf();

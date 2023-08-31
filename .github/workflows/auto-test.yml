@@ -9,7 +9,7 @@ on:
     paths-ignore:
       - '*.md'
   pull_request:
-    branches: [ master ]
+    branches: [ master, 2.0.X ]
     paths-ignore:
       - '*.md'
 
@@ -22,7 +22,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest, ARM64]
-        node: [ 14, 18 ]
+        node: [ 14, 20 ]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
@@ -50,7 +50,7 @@ jobs:
     strategy:
       matrix:
         os: [ ARMv7 ]
-        node: [ 14.21.3, 18.16.1 ]
+        node: [ 14, 20 ]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:

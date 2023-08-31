@@ -19,11 +19,13 @@ import LineNotify from "./LineNotify.vue";
 import LunaSea from "./LunaSea.vue";
 import Matrix from "./Matrix.vue";
 import Mattermost from "./Mattermost.vue";
+import Nostr from "./Nostr.vue";
 import Ntfy from "./Ntfy.vue";
 import Octopush from "./Octopush.vue";
 import OneBot from "./OneBot.vue";
 import Opsgenie from "./Opsgenie.vue";
 import PagerDuty from "./PagerDuty.vue";
+import FlashDuty from "./FlashDuty.vue";
 import PagerTree from "./PagerTree.vue";
 import PromoSMS from "./PromoSMS.vue";
 import Pushbullet from "./Pushbullet.vue";
@@ -77,11 +79,13 @@ const NotificationFormList = {
     "lunasea": LunaSea,
     "matrix": Matrix,
     "mattermost": Mattermost,
+    "nostr": Nostr,
     "ntfy": Ntfy,
     "octopush": Octopush,
     "OneBot": OneBot,
     "Opsgenie": Opsgenie,
     "PagerDuty": PagerDuty,
+    "FlashDuty": FlashDuty,
     "PagerTree": PagerTree,
     "promosms": PromoSMS,
     "pushbullet": Pushbullet,

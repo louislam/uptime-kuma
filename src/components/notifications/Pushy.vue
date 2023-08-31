@@ -6,9 +6,7 @@
 
     <div class="mb-3">
         <label for="pushy-user-key" class="form-label">{{ $t("pushyToken") }}</label>
-        <div class="input-group mb-3">
-            <HiddenInput id="pushy-user-key" v-model="$parent.notification.pushyToken" :required="true" autocomplete="new-password"></HiddenInput>
-        </div>
+        <HiddenInput id="pushy-user-key" v-model="$parent.notification.pushyToken" :required="true" autocomplete="new-password"></HiddenInput>
     </div>
     <i18n-t tag="p" keypath="More info on:" style="margin-top: 8px;">
         <a href="https://pushy.me/docs/api/send-notifications" target="_blank">https://pushy.me/docs/api/send-notifications</a>

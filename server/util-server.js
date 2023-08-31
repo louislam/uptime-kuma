@@ -21,6 +21,8 @@ const grpc = require("@grpc/grpc-js");
 const protojs = require("protobufjs");
 const radiusClient = require("node-radius-client");
 const redis = require("redis");
+const oidc = require("openid-client");
+
 const {
     dictionaries: {
         rfc2865: { file, attributes },
@@ -50,6 +52,43 @@ exports.initJWTSecret = async () => {
     jwtSecretBean.value = passwordHash.generate(genSecret());
     await R.store(jwtSecretBean);
     return jwtSecretBean;
+};
+
+/**
+ * Decodes a jwt and returns the payload portion without verifying the jqt.
+ * @param {string} jwt The input jwt as a string
+ * @returns {Object} Decoded jwt payload object
+ */
+exports.decodeJwt = (jwt) => {
+    return JSON.parse(Buffer.from(jwt.split(".")[1], "base64").toString());
+};
+
+/**
+ * Gets a Access Token form a oidc/oauth2 provider
+ * @param {string} tokenEndpoint The token URI form the auth service provider
+ * @param {string} clientId The oidc/oauth application client id
+ * @param {string} clientSecret The oidc/oauth application client secret
+ * @param {string} scope The scope the for which the token should be issued for
+ * @param {string} authMethod The method on how to sent the credentials. Default client_secret_basic
+ * @returns {Promise<oidc.TokenSet>} TokenSet promise if the token request was successful
+ */
+exports.getOidcTokenClientCredentials = async (tokenEndpoint, clientId, clientSecret, scope, authMethod = "client_secret_basic") => {
+    const oauthProvider = new oidc.Issuer({ token_endpoint: tokenEndpoint });
+    let client = new oauthProvider.Client({
+        client_id: clientId,
+        client_secret: clientSecret,
+        token_endpoint_auth_method: authMethod
+    });
+
+    // Increase default timeout and clock tolerance
+    client[oidc.custom.http_options] = () => ({ timeout: 10000 });
+    client[oidc.custom.clock_tolerance] = 5;
+
+    let grantParams = { grant_type: "client_credentials" };
+    if (scope) {
+        grantParams.scope = scope;
+    }
+    return await client.grant(grantParams);
 };
 
 /**
@@ -486,6 +525,7 @@ exports.radius = function (
         host: hostname,
         hostPort: port,
         timeout: timeout,
+        retries: 1,
         dictionaries: [ file ],
     });
 
@@ -497,6 +537,12 @@ exports.radius = function (
             [ attributes.CALLING_STATION_ID, callingStationId ],
             [ attributes.CALLED_STATION_ID, calledStationId ],
         ],
+    }).catch((error) => {
+        if (error.response?.code) {
+            throw Error(error.response.code);
+        } else {
+            throw Error(error.message);
+        }
     });
 };
 
@@ -674,7 +720,6 @@ exports.checkCertificate = function (res) {
  * @param {number} status The status code to check
  * @param {string[]} acceptedCodes An array of accepted status codes
  * @returns {boolean} True if status code within range, false otherwise
- * @throws {Error} Will throw an error if the provided status code is not a valid range string or code string
  */
 exports.checkStatusCode = function (status, acceptedCodes) {
     if (acceptedCodes == null || acceptedCodes.length === 0) {
@@ -682,6 +727,11 @@ exports.checkStatusCode = function (status, acceptedCodes) {
     }
 
     for (const codeRange of acceptedCodes) {
+        if (typeof codeRange !== "string") {
+            log.error("monitor", `Accepted status code not a string. ${codeRange} is of type ${typeof codeRange}`);
+            continue;
+        }
+
         const codeRangeSplit = codeRange.split("-").map(string => parseInt(string));
         if (codeRangeSplit.length === 1) {
             if (status === codeRangeSplit[0]) {
@@ -692,7 +742,8 @@ exports.checkStatusCode = function (status, acceptedCodes) {
                 return true;
             }
         } else {
-            throw new Error("Invalid status code range");
+            log.error("monitor", `${codeRange} is not a valid status code range`);
+            continue;
         }
     }
 
@@ -1001,3 +1052,13 @@ module.exports.grpcQuery = async (options) => {
 
     });
 };
+
+// For unit test, export functions
+if (process.env.TEST_BACKEND) {
+    module.exports.__test = {
+        parseCertificateInfo,
+    };
+    module.exports.__getPrivateFunction = (functionName) => {
+        return module.exports.__test[functionName];
+    };
+}
