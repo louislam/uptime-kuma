@@ -6,6 +6,9 @@ class GoAlert extends NotificationProvider {
 
     name = "GoAlert";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
         try {

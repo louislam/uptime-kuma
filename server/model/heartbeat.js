@@ -12,7 +12,7 @@ class Heartbeat extends BeanModel {
     /**
      * Return an object that ready to parse to JSON for public
      * Only show necessary data to public
-     * @returns {Object}
+     * @returns {object} Object ready to parse
      */
     toPublicJSON() {
         return {
@@ -25,7 +25,7 @@ class Heartbeat extends BeanModel {
 
     /**
      * Return an object that ready to parse to JSON
-     * @returns {Object}
+     * @returns {object} Object ready to parse
      */
     toJSON() {
         return {

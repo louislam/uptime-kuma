@@ -12,7 +12,7 @@ const checkVersion = require("./check-version");
 /**
  * Send list of notification providers to client
  * @param {Socket} socket Socket.io socket instance
- * @returns {Promise<Bean[]>}
+ * @returns {Promise<Bean[]>} List of notifications
  */
 async function sendNotificationList(socket) {
     const timeLogger = new TimeLogger();
@@ -40,13 +40,11 @@ async function sendNotificationList(socket) {
  * Send Heartbeat History list to socket
  * @param {Socket} socket Socket.io instance
  * @param {number} monitorID ID of monitor to send heartbeat history
- * @param {boolean} [toUser=false]  True = send to all browsers with the same user id, False = send to the current browser only
- * @param {boolean} [overwrite=false] Overwrite client-side's heartbeat list
+ * @param {boolean} toUser  True = send to all browsers with the same user id, False = send to the current browser only
+ * @param {boolean} overwrite Overwrite client-side's heartbeat list
  * @returns {Promise<void>}
  */
 async function sendHeartbeatList(socket, monitorID, toUser = false, overwrite = false) {
-    const timeLogger = new TimeLogger();
-
     let list = await R.getAll(`
         SELECT * FROM heartbeat
         WHERE monitor_id = ?
@@ -63,16 +61,14 @@ async function sendHeartbeatList(socket, monitorID, toUser = false, overwrite = 
     } else {
         socket.emit("heartbeatList", monitorID, result, overwrite);
     }
-
-    timeLogger.print(`[Monitor: ${monitorID}] sendHeartbeatList`);
 }
 
 /**
  * Important Heart beat list (aka event list)
  * @param {Socket} socket Socket.io instance
  * @param {number} monitorID ID of monitor to send heartbeat history
- * @param {boolean} [toUser=false]  True = send to all browsers with the same user id, False = send to the current browser only
- * @param {boolean} [overwrite=false] Overwrite client-side's heartbeat list
+ * @param {boolean} toUser  True = send to all browsers with the same user id, False = send to the current browser only
+ * @param {boolean} overwrite Overwrite client-side's heartbeat list
  * @returns {Promise<void>}
  */
 async function sendImportantHeartbeatList(socket, monitorID, toUser = false, overwrite = false) {
@@ -100,7 +96,7 @@ async function sendImportantHeartbeatList(socket, monitorID, toUser = false, ove
 /**
  * Emit proxy list to client
  * @param {Socket} socket Socket.io socket instance
- * @return {Promise<Bean[]>}
+ * @returns {Promise<Bean[]>} List of proxies
  */
 async function sendProxyList(socket) {
     const timeLogger = new TimeLogger();
@@ -141,7 +137,7 @@ async function sendAPIKeyList(socket) {
 /**
  * Emits the version information to the client.
  * @param {Socket} socket Socket.io socket instance
- * @param {boolean} hideVersion
+ * @param {boolean} hideVersion Should we hide the version information in the response?
  * @returns {Promise<void>}
  */
 async function sendInfo(socket, hideVersion = false) {
@@ -168,7 +164,7 @@ async function sendInfo(socket, hideVersion = false) {
 /**
  * Send list of docker hosts to client
  * @param {Socket} socket Socket.io socket instance
- * @returns {Promise<Bean[]>}
+ * @returns {Promise<Bean[]>} List of docker hosts
  */
 async function sendDockerHostList(socket) {
     const timeLogger = new TimeLogger();

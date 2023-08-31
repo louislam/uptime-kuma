@@ -84,7 +84,9 @@ log.info("server", "Importing this project modules");
 log.debug("server", "Importing Monitor");
 const Monitor = require("./model/monitor");
 log.debug("server", "Importing Settings");
-const { getSettings, setSettings, setting, initJWTSecret, checkLogin, startUnitTest, FBSD, doubleCheckPassword, startE2eTests } = require("./util-server");
+const { getSettings, setSettings, setting, initJWTSecret, checkLogin, FBSD, doubleCheckPassword, startE2eTests,
+    allowDevAllOrigin
+} = require("./util-server");
 
 log.debug("server", "Importing Notification");
 const { Notification } = require("./notification");
@@ -157,6 +159,8 @@ const { Settings } = require("./settings");
 const { CacheableDnsHttpAgent } = require("./cacheable-dns-http-agent");
 const apicache = require("./modules/apicache");
 const { resetChrome } = require("./monitor-types/real-browser-monitor-type");
+const { EmbeddedMariaDB } = require("./embedded-mariadb");
+const { SetupDatabase } = require("./setup-database");
 
 app.use(express.json());
 
@@ -176,8 +180,25 @@ app.use(function (req, res, next) {
 let needSetup = false;
 
 (async () => {
-    Database.init(args);
-    await initDatabase(testMode);
+    // Create a data directory
+    Database.initDataDir(args);
+
+    // Check if is chosen a database type
+    let setupDatabase = new SetupDatabase(args, server);
+    if (setupDatabase.isNeedSetup()) {
+        // Hold here and start a special setup page until user choose a database type
+        await setupDatabase.start(hostname, port);
+    }
+
+    // Connect to database
+    try {
+        await initDatabase(testMode);
+    } catch (e) {
+        log.error("server", "Failed to prepare your database: " + e.message);
+        process.exit(1);
+    }
+
+    // Database should be ready now
     await server.initAfterDatabaseReady();
     server.entryPage = await Settings.get("entryPage");
     await StatusPage.loadDomainMappingList();
@@ -213,6 +234,14 @@ let needSetup = false;
         } else {
             response.redirect("/dashboard");
         }
+    });
+
+    app.get("/setup-database-info", (request, response) => {
+        allowDevAllOrigin(response);
+        response.json({
+            runningSetup: false,
+            needSetup: false,
+        });
     });
 
     if (isDev) {
@@ -342,7 +371,7 @@ let needSetup = false;
             }
 
             // Login Rate Limit
-            if (! await loginRateLimiter.pass(callback)) {
+            if (!await loginRateLimiter.pass(callback)) {
                 log.info("auth", `Too many failed requests for user ${data.username}. IP=${clientIP}`);
                 return;
             }
@@ -415,7 +444,7 @@ let needSetup = false;
 
         socket.on("logout", async (callback) => {
             // Rate Limit
-            if (! await loginRateLimiter.pass(callback)) {
+            if (!await loginRateLimiter.pass(callback)) {
                 return;
             }
 
@@ -429,7 +458,7 @@ let needSetup = false;
 
         socket.on("prepare2FA", async (currentPassword, callback) => {
             try {
-                if (! await twoFaRateLimiter.pass(callback)) {
+                if (!await twoFaRateLimiter.pass(callback)) {
                     return;
                 }
 
@@ -478,7 +507,7 @@ let needSetup = false;
             const clientIP = await server.getClientIP(socket);
 
             try {
-                if (! await twoFaRateLimiter.pass(callback)) {
+                if (!await twoFaRateLimiter.pass(callback)) {
                     return;
                 }
 
@@ -510,7 +539,7 @@ let needSetup = false;
             const clientIP = await server.getClientIP(socket);
 
             try {
-                if (! await twoFaRateLimiter.pass(callback)) {
+                if (!await twoFaRateLimiter.pass(callback)) {
                     return;
                 }
 
@@ -604,7 +633,7 @@ let needSetup = false;
                     throw new Error("Password is too weak. It should contain alphabetic and numeric characters. It must be at least 6 characters in length.");
                 }
 
-                if ((await R.count("user")) !== 0) {
+                if ((await R.knex("user").count("id as count").first()).count !== 0) {
                     throw new Error("Uptime Kuma has been initialized. If you want to run setup again, please delete the database.");
                 }
 
@@ -741,6 +770,11 @@ let needSetup = false;
                 bean.game = monitor.game;
                 bean.maxretries = monitor.maxretries;
                 bean.port = parseInt(monitor.port);
+
+                if (isNaN(bean.port)) {
+                    bean.port = null;
+                }
+
                 bean.keyword = monitor.keyword;
                 bean.invertKeyword = monitor.invertKeyword;
                 bean.ignoreTls = monitor.ignoreTls;
@@ -867,14 +901,17 @@ let needSetup = false;
                     throw new Error("Invalid period.");
                 }
 
+                const sqlHourOffset = Database.sqlHourOffset();
+
                 let list = await R.getAll(`
-                    SELECT * FROM heartbeat
-                    WHERE monitor_id = ? AND
-                    time > DATETIME('now', '-' || ? || ' hours')
+                    SELECT *
+                    FROM heartbeat
+                    WHERE monitor_id = ?
+                      AND time > ${sqlHourOffset}
                     ORDER BY time ASC
                 `, [
                     monitorID,
-                    period,
+                    -period,
                 ]);
 
                 callback({
@@ -1133,7 +1170,7 @@ let needSetup = false;
             try {
                 checkLogin(socket);
 
-                if (! password.newPassword) {
+                if (!password.newPassword) {
                     throw new Error("Invalid new password");
                 }
 
@@ -1462,7 +1499,7 @@ let needSetup = false;
                                     ]);
 
                                     let tagId;
-                                    if (! tag) {
+                                    if (!tag) {
                                         // -> If it doesn't exist, create new tag from backup file
                                         let beanTag = R.dispense("tag");
                                         beanTag.name = oldTag.name;
@@ -1629,10 +1666,6 @@ let needSetup = false;
         startMonitors();
         checkVersion.startInterval();
 
-        if (testMode) {
-            startUnitTest();
-        }
-
         if (e2eTestMode) {
             startE2eTests();
         }
@@ -1669,8 +1702,8 @@ async function updateMonitorNotification(monitorID, notificationIDList) {
 
 /**
  * Check if a given user owns a specific monitor
- * @param {number} userID
- * @param {number} monitorID
+ * @param {number} userID ID of user to check
+ * @param {number} monitorID ID of monitor to check
  * @returns {Promise<void>}
  * @throws {Error} The specified user does not own the monitor
  */
@@ -1689,7 +1722,7 @@ async function checkOwner(userID, monitorID) {
  * Function called after user login
  * This function is used to send the heartbeat list of a monitor.
  * @param {Socket} socket Socket.io instance
- * @param {Object} user User object
+ * @param {object} user User object
  * @returns {Promise<void>}
  */
 async function afterLogin(socket, user) {
@@ -1730,16 +1763,11 @@ async function afterLogin(socket, user) {
 
 /**
  * Initialize the database
- * @param {boolean} [testMode=false] Should the connection be
+ * @param {boolean} testMode Should the connection be
  * started in test mode?
  * @returns {Promise<void>}
  */
 async function initDatabase(testMode = false) {
-    if (! fs.existsSync(Database.path)) {
-        log.info("server", "Copying Database");
-        fs.copyFileSync(Database.templatePath, Database.path);
-    }
-
     log.info("server", "Connecting to the Database");
     await Database.connect(testMode);
     log.info("server", "Connected");
@@ -1760,7 +1788,7 @@ async function initDatabase(testMode = false) {
     }
 
     // If there is no record in user table, it is a new Uptime Kuma instance, need to setup
-    if ((await R.count("user")) === 0) {
+    if ((await R.knex("user").count("id as count").first()).count === 0) {
         log.info("server", "No user, need setup");
         needSetup = true;
     }
@@ -1827,7 +1855,10 @@ async function pauseMonitor(userID, monitorID) {
     }
 }
 
-/** Resume active monitors */
+/**
+ * Resume active monitors
+ * @returns {Promise<void>}
+ */
 async function startMonitors() {
     let list = await R.find("monitor", " active = 1 ");
 
@@ -1862,12 +1893,19 @@ async function shutdownFunction(signal) {
     await sleep(2000);
     await Database.close();
 
+    if (EmbeddedMariaDB.hasInstance()) {
+        EmbeddedMariaDB.getInstance().stop();
+    }
+
     stopBackgroundJobs();
     await cloudflaredStop();
     Settings.stopCacheCleaner();
 }
 
-/** Final function called before application exits */
+/**
+ * Final function called before application exits
+ * @returns {void}
+ */
 function finalFunction() {
     log.info("server", "Graceful shutdown successful!");
 }

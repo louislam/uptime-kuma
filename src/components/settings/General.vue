@@ -293,16 +293,25 @@ export default {
     },
 
     methods: {
-        /** Save the settings */
+        /**
+         * Save the settings
+         * @returns {void}
+         */
         saveGeneral() {
             localStorage.timezone = this.$root.userTimezone;
             this.saveSettings();
         },
-        /** Get the base URL of the application */
+        /**
+         * Get the base URL of the application
+         * @returns {void}
+         */
         autoGetPrimaryBaseURL() {
             this.settings.primaryBaseURL = location.protocol + "//" + location.host;
         },
-
+        /**
+         * Test the chrome executable
+         * @returns {void}
+         */
         testChrome() {
             this.$root.getSocket().emit("testChrome", this.settings.chromeExecutable, (res) => {
                 this.$root.toastRes(res);
