@@ -7,6 +7,7 @@ class LunaSea extends NotificationProvider {
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
+        const url = "https://notify.lunasea.app/v1";
 
         try {
             const target = this.getTarget(notification);
@@ -15,7 +16,7 @@ class LunaSea extends NotificationProvider {
                     "title": "Uptime Kuma Alert",
                     "body": msg,
                 };
-                await axios.post(`https://notify.lunasea.app/v1/custom/${target}`, testdata);
+                await axios.post(`${url}/custom/${target}`, testdata);
                 return okMsg;
             }
 
@@ -26,7 +27,7 @@ class LunaSea extends NotificationProvider {
                         heartbeatJSON["msg"] +
                         `\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`
                 };
-                await axios.post(`https://notify.lunasea.app/v1/custom/${target}`, downdata);
+                await axios.post(`${url}/custom/${target}`, downdata);
                 return okMsg;
             }
 
