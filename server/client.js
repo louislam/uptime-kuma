@@ -56,8 +56,6 @@ async function sendHeartbeatList(socket, monitorID, toUser = false, overwrite = 
 
     let result = list.reverse();
 
-    console.log(result);
-
     if (toUser) {
         io.to(socket.userID).emit("heartbeatList", monitorID, result, overwrite);
     } else {
