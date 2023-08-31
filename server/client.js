@@ -45,8 +45,6 @@ async function sendNotificationList(socket) {
  * @returns {Promise<void>}
  */
 async function sendHeartbeatList(socket, monitorID, toUser = false, overwrite = false) {
-    const timeLogger = new TimeLogger();
-
     let list = await R.getAll(`
         SELECT * FROM heartbeat
         WHERE monitor_id = ?
@@ -58,13 +56,13 @@ async function sendHeartbeatList(socket, monitorID, toUser = false, overwrite = 
 
     let result = list.reverse();
 
+    console.log(result);
+
     if (toUser) {
         io.to(socket.userID).emit("heartbeatList", monitorID, result, overwrite);
     } else {
         socket.emit("heartbeatList", monitorID, result, overwrite);
     }
-
-    timeLogger.print(`[Monitor: ${monitorID}] sendHeartbeatList`);
 }
 
 /**

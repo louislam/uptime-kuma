@@ -2,10 +2,7 @@ exports.up = function (knex) {
     // Add new column heartbeat.end_time
     return knex.schema
         .alterTable("heartbeat", function (table) {
-            table.timestamp("end_time").nullable().defaultTo(null);
-
-            // Change time's datatype to timestamp
-            table.timestamp("time").alter();
+            table.datetime("end_time").nullable().defaultTo(null);
         });
 
 };

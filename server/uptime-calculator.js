@@ -87,7 +87,14 @@ class UptimeCalculator {
             this.getMinutelyKey(now.subtract(24, "hour")),
         ]);
 
-        // TODO
+        for (let bean of minutelyStatBeans) {
+            let key = bean.timestamp;
+            this.minutelyUptimeDataList.push(key, {
+                up: bean.up,
+                down: bean.down,
+                avgPing: bean.ping,
+            });
+        }
 
         // Load daily data from database (recent 365 days only)
         let dailyStatBeans = await R.find("stat_daily", " monitor_id = ? AND timestamp > ? ORDER BY timestamp", [
@@ -95,8 +102,14 @@ class UptimeCalculator {
             this.getDailyKey(now.subtract(365, "day").unix()),
         ]);
 
-        // TODO
-
+        for (let bean of dailyStatBeans) {
+            let key = bean.timestamp;
+            this.dailyUptimeDataList.push(key, {
+                up: bean.up,
+                down: bean.down,
+                avgPing: bean.ping,
+            });
+        }
     }
 
     /**

@@ -185,7 +185,7 @@ class Database {
 
         let mariadbPoolConfig = {
             afterCreate: function (conn, done) {
-                conn.query("SET time_zone = \"+00:00\";", (_) => { });
+
             }
         };
 
@@ -239,6 +239,7 @@ class Database {
                     user: dbConfig.username,
                     password: dbConfig.password,
                     database: dbConfig.dbName,
+                    timezone: "UTC",
                 },
                 pool: mariadbPoolConfig,
             };
