@@ -330,10 +330,19 @@ export default {
          * @returns {void}
          */
         toastRes(res) {
+            let msg = res.msg;
+            if (res.msgi18n) {
+                if (msg != null && typeof msg === "object") {
+                    msg = this.$t(msg.key, msg.values);
+                } else {
+                    msg = this.$t(msg);
+                }
+            }
+
             if (res.ok) {
-                toast.success(res.msg);
+                toast.success(msg);
             } else {
-                toast.error(res.msg);
+                toast.error(msg);
             }
         },
 
