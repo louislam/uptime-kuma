@@ -8,7 +8,7 @@
                   'py-0': size == 'sm',
                   'mx-1': size == 'sm',
         }"
-        :style="{ backgroundColor: item.color, fontSize: size == 'sm' ? '0.7em' : '1em' }"
+        :style="{ backgroundColor: item?.color ?? '#636363', fontSize: size == 'sm' ? '0.7em' : '1em' }"
     >
         <span class="tag-text">{{ displayText }}</span>
         <span v-if="remove != null" class="ps-1 btn-remove" @click="remove(item)">
@@ -48,8 +48,8 @@ export default {
     },
     computed: {
         displayText() {
-            if (this.item.value === "" || this.item.value === undefined) {
-                return this.item.name;
+            if (this.item?.value === "" || this.item?.value === undefined) {
+                return this.item?.name;
             } else {
                 return `${this.item.name}: ${this.item.value}`;
             }

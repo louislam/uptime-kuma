@@ -160,6 +160,14 @@ export default {
                         .length > 0;
                 }
 
+                // filter by tag value
+                let tagValueMatch = true;
+                if (this.filterState.tagValues != null && this.filterState.tagValues.length > 0) {
+                    tagValueMatch = monitor.tags.map(tag => tag.id) // convert to array of tag values
+                        .filter(monitorTagValueId => this.filterState.tagValues.includes(monitorTagValueId)) // perform Array Intersaction between filter and monitor's tags
+                        .length > 0;
+                }
+
                 // Hide children if not filtering
                 let showChild = true;
                 if (this.filterState.status == null && this.filterState.active == null && this.filterState.tags == null && this.searchText === "") {
@@ -168,7 +176,7 @@ export default {
                     }
                 }
 
-                return searchTextMatch && statusMatch && activeMatch && tagsMatch && showChild;
+                return searchTextMatch && statusMatch && activeMatch && tagsMatch && showChild && tagValueMatch;
             });
 
             // Filter result by active state, weight and alphabetical

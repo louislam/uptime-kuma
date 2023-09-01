@@ -116,7 +116,7 @@
                 </li>
             </template>
         </MonitorListFilterDropdown>
-        <MonitorListFilterDropdown :filterActive="filterState.tags?.length > 0">
+        <TagValueDropdown :filterActive="filterState.tags?.length > 0" :items="tagsList" @toggle-tag-filter="toggleTagFilter" @toggle-tag-value-filter="toggleTagValueFilter">
             <template #status>
                 <Tag
                     v-if="filterState.tags?.length === 1"
@@ -127,32 +127,19 @@
                     {{ $t('Tags') }}
                 </span>
             </template>
-            <template #dropdown>
-                <li v-for="tag in tagsList" :key="tag.id">
-                    <div class="dropdown-item" tabindex="0" @click.stop="toggleTagFilter(tag)">
-                        <div class="d-flex align-items-center justify-content-between">
-                            <span><Tag :item="tag" :size="'sm'" /></span>
-                            <span class="ps-3">
-                                {{ getTaggedMonitorCount(tag) }}
-                                <span v-if="filterState.tags?.includes(tag.id)" class="px-1 filter-active">
-                                    <font-awesome-icon icon="check" />
-                                </span>
-                            </span>
-                        </div>
-                    </div>
-                </li>
-            </template>
-        </MonitorListFilterDropdown>
+        </TagValueDropdown>
     </div>
 </template>
 
 <script>
 import MonitorListFilterDropdown from "./MonitorListFilterDropdown.vue";
+import TagValueDropdown from "./TagValueDropdown.vue";
 import Status from "./Status.vue";
 import Tag from "./Tag.vue";
 
 export default {
     components: {
+        TagValueDropdown,
         MonitorListFilterDropdown,
         Status,
         Tag,
@@ -230,6 +217,22 @@ export default {
                     newFilter.tags = newFilter.tags.filter(item => item !== tag.id);
                 } else {
                     newFilter.tags.push(tag.id);
+                }
+            }
+            this.$emit("updateFilter", newFilter);
+        },
+        toggleTagValueFilter(tag) {
+            let newFilter = {
+                ...this.filterState
+            };
+
+            if (newFilter.tagValues == null) {
+                newFilter.tagValues = [ tag.id ];
+            } else {
+                if (newFilter.tagValues.includes(tag.id)) {
+                    newFilter.tagValues = newFilter.tagValues.filter(item => item !== tag.id);
+                } else {
+                    newFilter.tagValues.push(tag.id);
                 }
             }
             this.$emit("updateFilter", newFilter);
