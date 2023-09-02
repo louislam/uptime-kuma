@@ -264,11 +264,6 @@ class UptimeCalculator {
         let divisionKey = date.unix();
 
         if (! (divisionKey in this.minutelyUptimeDataList)) {
-            let last = this.minutelyUptimeDataList.getLastKey();
-            if (last && last > divisionKey) {
-                log.warn("uptime-calc", "The system time has been changed? The uptime data may be inaccurate.");
-            }
-
             this.minutelyUptimeDataList.push(divisionKey, {
                 up: 0,
                 down: 0,
@@ -293,11 +288,6 @@ class UptimeCalculator {
         let dailyKey = date.unix();
 
         if (!this.dailyUptimeDataList[dailyKey]) {
-            let last = this.dailyUptimeDataList.getLastKey();
-            if (last && last > dailyKey) {
-                log.warn("uptime-calc", "The system time has been changed? The uptime data may be inaccurate.");
-            }
-
             this.dailyUptimeDataList.push(dailyKey, {
                 up: 0,
                 down: 0,
