@@ -141,6 +141,9 @@
                         </div>
                     </div>
                 </li>
+                <li v-if="tagsList.length === 0">
+                    $t('No tags found.')
+                </li>
             </template>
         </MonitorListFilterDropdown>
     </div>
