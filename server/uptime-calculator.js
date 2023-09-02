@@ -183,13 +183,13 @@ class UptimeCalculator {
         let dailyStatBean = await this.getDailyStatBean(dailyKey);
         dailyStatBean.up = dailyData.up;
         dailyStatBean.down = dailyData.down;
-        dailyStatBean.ping = dailyData.ping;
+        dailyStatBean.ping = dailyData.avgPing;
         await R.store(dailyStatBean);
 
         let minutelyStatBean = await this.getMinutelyStatBean(divisionKey);
         minutelyStatBean.up = minutelyData.up;
         minutelyStatBean.down = minutelyData.down;
-        minutelyStatBean.ping = minutelyData.ping;
+        minutelyStatBean.ping = minutelyData.avgPing;
         await R.store(minutelyStatBean);
 
         // Remove the old data
