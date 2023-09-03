@@ -341,7 +341,8 @@ let needSetup = false;
 
                     callback({
                         ok: false,
-                        msg: "The user is inactive or deleted.",
+                        msg: "authUserInactiveOrDeleted",
+                        msgi18n: true,
                     });
                 }
             } catch (error) {
@@ -350,7 +351,8 @@ let needSetup = false;
 
                 callback({
                     ok: false,
-                    msg: "Invalid token.",
+                    msg: "authInvalidToken",
+                    msgi18n: true,
                 });
             }
 
@@ -426,7 +428,8 @@ let needSetup = false;
 
                         callback({
                             ok: false,
-                            msg: "Invalid Token!",
+                            msg: "authInvalidToken",
+                            msgi18n: true,
                         });
                     }
                 }
@@ -436,7 +439,8 @@ let needSetup = false;
 
                 callback({
                     ok: false,
-                    msg: "Incorrect username or password.",
+                    msg: "authIncorrectCreds",
+                    msgi18n: true,
                 });
             }
 
@@ -492,7 +496,8 @@ let needSetup = false;
                 } else {
                     callback({
                         ok: false,
-                        msg: "2FA is already enabled.",
+                        msg: "2faAlreadyEnabled",
+                        msgi18n: true,
                     });
                 }
             } catch (error) {
@@ -522,7 +527,8 @@ let needSetup = false;
 
                 callback({
                     ok: true,
-                    msg: "2FA Enabled.",
+                    msg: "2faEnabled",
+                    msgi18n: true,
                 });
             } catch (error) {
 
@@ -551,7 +557,8 @@ let needSetup = false;
 
                 callback({
                     ok: true,
-                    msg: "2FA Disabled.",
+                    msg: "2faDisabled",
+                    msgi18n: true,
                 });
             } catch (error) {
 
@@ -583,7 +590,8 @@ let needSetup = false;
                 } else {
                     callback({
                         ok: false,
-                        msg: "Invalid Token.",
+                        msg: "authInvalidToken",
+                        msgi18n: true,
                         valid: false,
                     });
                 }
@@ -646,7 +654,8 @@ let needSetup = false;
 
                 callback({
                     ok: true,
-                    msg: "Added Successfully.",
+                    msg: "successAdded",
+                    msgi18n: true,
                 });
 
             } catch (e) {
@@ -699,7 +708,8 @@ let needSetup = false;
 
                 callback({
                     ok: true,
-                    msg: "Added Successfully.",
+                    msg: "successAdded",
+                    msgi18n: true,
                     monitorID: bean.id,
                 });
 
@@ -936,7 +946,8 @@ let needSetup = false;
 
                 callback({
                     ok: true,
-                    msg: "Resumed Successfully.",
+                    msg: "successResumed",
+                    msgi18n: true,
                 });
 
             } catch (e) {
@@ -955,7 +966,8 @@ let needSetup = false;
 
                 callback({
                     ok: true,
-                    msg: "Paused Successfully.",
+                    msg: "successPaused",
+                    msgi18n: true,
                 });
 
             } catch (e) {
@@ -993,7 +1005,8 @@ let needSetup = false;
 
                 callback({
                     ok: true,
-                    msg: "Deleted Successfully.",
+                    msg: "successDeleted",
+                    msgi18n: true,
                 });
 
                 await server.sendMonitorList(socket);
@@ -1057,7 +1070,8 @@ let needSetup = false;
                 if (bean == null) {
                     callback({
                         ok: false,
-                        msg: "Tag not found",
+                        msg: "tagNotFound",
+                        msgi18n: true,
                     });
                     return;
                 }
@@ -1088,7 +1102,8 @@ let needSetup = false;
 
                 callback({
                     ok: true,
-                    msg: "Deleted Successfully.",
+                    msg: "successDeleted",
+                    msgi18n: true,
                 });
 
             } catch (e) {
@@ -1111,7 +1126,8 @@ let needSetup = false;
 
                 callback({
                     ok: true,
-                    msg: "Added Successfully.",
+                    msg: "successAdded",
+                    msgi18n: true,
                 });
 
             } catch (e) {
@@ -1134,7 +1150,8 @@ let needSetup = false;
 
                 callback({
                     ok: true,
-                    msg: "Edited Successfully.",
+                    msg: "successEdited",
+                    msgi18n: true,
                 });
 
             } catch (e) {
@@ -1157,7 +1174,8 @@ let needSetup = false;
 
                 callback({
                     ok: true,
-                    msg: "Deleted Successfully.",
+                    msg: "successDeleted",
+                    msgi18n: true,
                 });
 
             } catch (e) {
@@ -1185,7 +1203,8 @@ let needSetup = false;
 
                 callback({
                     ok: true,
-                    msg: "Password has been updated successfully.",
+                    msg: "successAuthChangePassword",
+                    msgi18n: true,
                 });
 
             } catch (e) {
@@ -1309,7 +1328,8 @@ let needSetup = false;
 
                 callback({
                     ok: true,
-                    msg: "Deleted",
+                    msg: "successDeleted",
+                    msgi18n: true,
                 });
 
             } catch (e) {
@@ -1544,7 +1564,8 @@ let needSetup = false;
 
                 callback({
                     ok: true,
-                    msg: "Backup successfully restored.",
+                    msg: "successBackupRestored",
+                    msgi18n: true,
                 });
 
             } catch (e) {
