@@ -63,12 +63,8 @@ class FlashDuty extends NotificationProvider {
             resource: this.genMonitorUrl(monitorInfo),
             check: monitorInfo.name,
         };
-        if (monitorInfo?.tags?.length > 0) {
-            labels = monitorInfo?.tags?.reduce(
-                (acc, item) => ({ ...acc,
-                    [item.name]: item.value }),
-                labels
-            );
+        for (let tag of monitorInfo.tags) {
+            labels[tag.name] = tag.value;
         }
         const options = {
             method: "POST",

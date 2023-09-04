@@ -413,7 +413,7 @@
     "smtpDkimheaderFieldNames": "包含在哈希计算对象内的 Header 列表（可选）",
     "smtpDkimskipFields": "不包含在哈希计算对象内的 Header 列表（可选）",
     "wayToGetPagerDutyKey": "您可以在 Service -> Service Directory -> (选择一个 Service) -> Integrations -> Add integration 页面中搜索“Events API V2”以获取此 Integration Key，更多信息请看{0}",
-    "wayToGetFlashDutyKey": "您可以进入 协作空间 -> (选择一个 协作空间) -> 集成数据 -> 新增一个集成 页面，添加“自定义事件”获得一个推送地址，复制地址中的 Integration Key，更多信息前往{0}",
+    "wayToGetFlashDutyKey": "您可以进入 协作空间 -> (选择一个 协作空间) -> 集成数据 -> 新增一个集成 页面，添加“Uptime Kuma”获得一个推送地址，复制地址中的 Integration Key，更多信息前往{0}",
     "Integration Key": "集成密钥",
     "Integration URL": "集成网址",
     "Auto resolve or acknowledged": "自动标记为已解决或已读",
