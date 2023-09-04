@@ -1,3 +1,5 @@
+// ⚠️⚠️⚠️ Deprecated: Jest is not recommended for testing backend code anymore, please create a new test file in ./test/backend-test which are native Node.js test files.
+
 const { genSecret, DOWN, log} = require("../src/util");
 const utilServer = require("../server/util-server");
 const Discord = require("../server/notification-providers/discord");
