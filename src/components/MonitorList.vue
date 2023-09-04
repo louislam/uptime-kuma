@@ -51,12 +51,12 @@
                 v-for="(item, index) in sortedMonitorList"
                 :key="index"
                 :monitor="item"
-                :isSelectMode="selectMode" 
-                :isSelected="isSelected" 
-                :select="select" 
+                :isSelectMode="selectMode"
+                :isSelected="isSelected"
+                :select="select"
                 :deselect="deselect"
-                :filter-func="filterFunc" 
-                :sort-func="sortFunc" 
+                :filter-func="filterFunc"
+                :sort-func="sortFunc"
             />
         </div>
     </div>
@@ -128,11 +128,11 @@ export default {
 
             result = result.filter(monitor => {
                 // The root list does not show children
-                    if (monitor.parent !== null) {
+                if (monitor.parent !== null) {
                     return false;
                 }
                 return true;
-            })
+            });
 
             result = result.filter(this.filterFunc);
 
@@ -303,14 +303,14 @@ export default {
 
             this.cancelSelectMode();
         },
-        /** 
+        /**
          * Whether a monitor should be displayed based on the filters
          * @param {object} monitor Monitor to check
          * @returns {boolean} Should the monitor be displayed
          */
         filterFunc(monitor) {
             // Group monitors bypass filter if at least 1 of children matched
-            if (monitor.type == "group") {
+            if (monitor.type === "group") {
                 const children = Object.values(this.$root.monitorList).filter(m => m.parent === monitor.id);
                 if (children.some((child, index, children) => this.filterFunc(child))) {
                     return true;
