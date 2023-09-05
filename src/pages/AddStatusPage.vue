@@ -51,7 +51,10 @@ export default {
         };
     },
     methods: {
-        /** Submit form data to add new status page */
+        /**
+         * Submit form data to add new status page
+         * @returns {Promise<void>}
+         */
         async submit() {
             this.processing = true;
 

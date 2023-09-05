@@ -6,9 +6,17 @@ class LunaSea extends NotificationProvider {
 
     name = "lunasea";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
-        let lunaseadevice = "https://notify.lunasea.app/v1/custom/device/" + notification.lunaseaDevice;
+        let lunaseaurl = "";
+        if (notification.lunaseaTarget === "user") {
+            lunaseaurl = "https://notify.lunasea.app/v1/custom/user/" + notification.lunaseaUserID;
+        } else {
+            lunaseaurl = "https://notify.lunasea.app/v1/custom/device/" + notification.lunaseaDevice;
+        }
 
         try {
             if (heartbeatJSON == null) {
@@ -16,25 +24,29 @@ class LunaSea extends NotificationProvider {
                     "title": "Uptime Kuma Alert",
                     "body": msg,
                 };
-                await axios.post(lunaseadevice, testdata);
+                await axios.post(lunaseaurl, testdata);
                 return okMsg;
             }
 
             if (heartbeatJSON["status"] === DOWN) {
                 let downdata = {
                     "title": "UptimeKuma Alert: " + monitorJSON["name"],
-                    "body": "[🔴 Down] " + heartbeatJSON["msg"] + "\nTime (UTC): " + heartbeatJSON["time"],
+                    "body": "[🔴 Down] " +
+                        heartbeatJSON["msg"] +
+                        `\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`
                 };
-                await axios.post(lunaseadevice, downdata);
+                await axios.post(lunaseaurl, downdata);
                 return okMsg;
             }
 
             if (heartbeatJSON["status"] === UP) {
                 let updata = {
                     "title": "UptimeKuma Alert: " + monitorJSON["name"],
-                    "body": "[✅ Up] " + heartbeatJSON["msg"] + "\nTime (UTC): " + heartbeatJSON["time"],
+                    "body": "[✅ Up] " +
+                        heartbeatJSON["msg"] +
+                        `\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`
                 };
-                await axios.post(lunaseadevice, updata);
+                await axios.post(lunaseaurl, updata);
                 return okMsg;
             }
 

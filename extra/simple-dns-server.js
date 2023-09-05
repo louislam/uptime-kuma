@@ -135,6 +135,11 @@ server.listen({
     udp: 5300
 });
 
+/**
+ * Get human readable request type from request code
+ * @param {number} code Request code to translate
+ * @returns {string|void} Human readable request type
+ */
 function type(code) {
     for (let name in Packet.TYPE) {
         if (Packet.TYPE[name] === code) {

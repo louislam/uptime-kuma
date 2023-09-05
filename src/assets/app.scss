@@ -22,6 +22,24 @@ textarea.form-control {
     width: 10px;
 }
 
+.bg-maintenance {
+    color: white !important;
+    background-color: $maintenance !important;
+}
+
+.bg-dark {
+    color: white;
+}
+
+.text-maintenance {
+    color: $maintenance !important;
+}
+
+.incident a,
+.bg-maintenance a {
+    color: inherit;
+}
+
 .list-group {
     border-radius: 0.75rem;
 
@@ -93,6 +111,10 @@ optgroup {
     padding-right: 20px;
 }
 
+.btn-sm {
+    border-radius: 25px;
+}
+
 .btn-primary {
     color: white;
 
@@ -104,6 +126,19 @@ optgroup {
 
     .dark & {
         color: $dark-font-color2;
+    }
+}
+
+.btn-normal {
+    $bg-color: #F5F5F5;
+
+    background-color: $bg-color;
+    border-color: $bg-color;
+
+    &:hover {
+        $hover-color: darken($bg-color, 3%);
+        background-color: $hover-color;
+        border-color: $hover-color;
     }
 }
 
@@ -125,6 +160,26 @@ optgroup {
 
 .btn-dark {
     background-color: #161B22;
+}
+
+.btn-outline-normal {
+    padding: 4px 10px;
+    border: 1px solid #ced4da;
+    border-radius: 25px;
+    background-color: transparent;
+
+    .dark & {
+        color: $dark-font-color;
+        border: 1px solid $dark-font-color2;
+    }
+
+    &.active {
+        background-color: $highlight-white;
+
+        .dark & {
+            background-color: $dark-font-color2;
+        }
+    }
 }
 
 @media (max-width: 550px) {
@@ -222,12 +277,22 @@ optgroup {
         }
     }
 
+    .incident a,
+    .bg-maintenance a {
+        color: inherit;
+    }
+
     .form-control,
     .form-control:focus,
     .form-select,
     .form-select:focus {
         color: $dark-font-color;
         background-color: $dark-bg2;
+    }
+
+    .form-select:disabled {
+        color: rgba($dark-font-color, 0.7);
+        background-color: $dark-bg;
     }
 
     .form-control, .form-select {
@@ -254,6 +319,20 @@ optgroup {
 
     .btn-secondary {
         color: white;
+    }
+
+    .btn-normal {
+        $bg-color: $dark-header-bg;
+
+        color: $dark-font-color;
+        background-color: $bg-color;
+        border-color: $bg-color;
+
+        &:hover {
+            $hover-color: darken($bg-color, 3%);
+            background-color: $hover-color;
+            border-color: $hover-color;
+        }
     }
 
     .btn-warning {
@@ -323,6 +402,7 @@ optgroup {
         &.bg-info,
         &.bg-warning,
         &.bg-danger,
+        &.bg-maintenance,
         &.bg-light {
             color: $dark-font-color2;
         }
@@ -380,12 +460,11 @@ optgroup {
 .monitor-list {
     &.scrollbar {
         overflow-y: auto;
-        height: calc(100% - 65px);
     }
 
     @media (max-width: 770px) {
         &.scrollbar {
-            height: calc(100% - 40px);
+            height: calc(100% - 97px);
         }
     }
 
@@ -503,6 +582,31 @@ h5.settings-subheading::after {
     width: 50%;
     padding-top: 8px;
     border-bottom: 1px solid $dark-border-color;
+}
+
+
+$shadow-box-padding: 20px;
+
+.shadow-box-with-fixed-bottom-bar {
+    padding-top: $shadow-box-padding;
+    padding-bottom: 0;
+    padding-right: $shadow-box-padding;
+    padding-left: $shadow-box-padding;
+}
+
+.fixed-bottom-bar {
+    position: sticky;
+    bottom: 0;
+    margin-left: -$shadow-box-padding;
+    margin-right: -$shadow-box-padding;
+    z-index: 100;
+    background-color: rgba(white, 0.2);
+    backdrop-filter: blur(2px);
+    border-radius: 0 0 10px 10px;
+
+    .dark & {
+        background-color: rgba($dark-header-bg, 0.9);
+    }
 }
 
 // Localization

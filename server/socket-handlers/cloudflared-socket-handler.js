@@ -1,6 +1,7 @@
 const { checkLogin, setSetting, setting, doubleCheckPassword } = require("../util-server");
 const { CloudflaredTunnel } = require("node-cloudflared-tunnel");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
+const { log } = require("../../src/util");
 const io = UptimeKumaServer.getInstance().io;
 
 const prefix = "cloudflared_";
@@ -10,6 +11,7 @@ const cloudflared = new CloudflaredTunnel();
  * Change running state
  * @param {string} running Is it running?
  * @param {string} message Message to pass
+ * @returns {void}
  */
 cloudflared.change = (running, message) => {
     io.to("cloudflared").emit(prefix + "running", running);
@@ -18,7 +20,8 @@ cloudflared.change = (running, message) => {
 
 /**
  * Emit an error message
- * @param {string} errorMessage
+ * @param {string} errorMessage Error message to send
+ * @returns {void}
  */
 cloudflared.error = (errorMessage) => {
     io.to("cloudflared").emit(prefix + "errorMessage", errorMessage);
@@ -27,6 +30,7 @@ cloudflared.error = (errorMessage) => {
 /**
  * Handler for cloudflared
  * @param {Socket} socket Socket.io instance
+ * @returns {void}
  */
 module.exports.cloudflaredSocketHandler = (socket) => {
 
@@ -88,6 +92,7 @@ module.exports.cloudflaredSocketHandler = (socket) => {
 /**
  * Automatically start cloudflared
  * @param {string} token Cloudflared tunnel token
+ * @returns {Promise<void>}
  */
 module.exports.autoStart = async (token) => {
     if (!token) {
@@ -105,9 +110,12 @@ module.exports.autoStart = async (token) => {
     }
 };
 
-/** Stop cloudflared */
+/**
+ * Stop cloudflared
+ * @returns {Promise<void>}
+ */
 module.exports.stop = async () => {
-    console.log("Stop cloudflared");
+    log.info("cloudflared", "Stop cloudflared");
     if (cloudflared) {
         cloudflared.stop();
     }

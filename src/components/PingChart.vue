@@ -11,29 +11,25 @@
             </ul>
         </div>
         <div class="chart-wrapper" :class="{ loading : loading}">
-            <LineChart :chart-data="chartData" :options="chartOptions" />
+            <Line :data="chartData" :options="chartOptions" />
         </div>
     </div>
 </template>
 
-<script lang="ts">
+<script lang="js">
 import { BarController, BarElement, Chart, Filler, LinearScale, LineController, LineElement, PointElement, TimeScale, Tooltip } from "chart.js";
-import "chartjs-adapter-dayjs";
+import "chartjs-adapter-dayjs-4";
 import dayjs from "dayjs";
-import timezone from "dayjs/plugin/timezone";
-import utc from "dayjs/plugin/utc";
-import { LineChart } from "vue-chart-3";
+import { Line } from "vue-chartjs";
 import { useToast } from "vue-toastification";
-import { DOWN, log } from "../util.ts";
+import { DOWN, PENDING, MAINTENANCE, log } from "../util.ts";
 
-dayjs.extend(utc);
-dayjs.extend(timezone);
 const toast = useToast();
 
 Chart.register(LineController, BarController, LineElement, PointElement, TimeScale, BarElement, LinearScale, Tooltip, Filler);
 
 export default {
-    components: { LineChart },
+    components: { Line },
     props: {
         /** ID of monitor */
         monitorId: {
@@ -108,8 +104,10 @@ export default {
                             }
                         },
                         ticks: {
+                            sampleSize: 3,
                             maxRotation: 0,
                             autoSkipPadding: 30,
+                            padding: 3,
                         },
                         grid: {
                             color: this.$root.theme === "light" ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.1)",
@@ -163,7 +161,8 @@ export default {
         },
         chartData() {
             let pingData = [];  // Ping Data for Line Chart, y-axis contains ping time
-            let downData = [];  // Down Data for Bar Chart, y-axis is 1 if target is down, 0 if target is up
+            let downData = [];  // Down Data for Bar Chart, y-axis is 1 if target is down (red color), under maintenance (blue color) or pending (orange color), 0 if target is up
+            let colorData = []; // Color Data for Bar Chart
 
             let heartbeatList = this.heartbeatList ||
              (this.monitorId in this.$root.heartbeatList && this.$root.heartbeatList[this.monitorId]) ||
@@ -185,8 +184,9 @@ export default {
                     });
                     downData.push({
                         x,
-                        y: beat.status === DOWN ? 1 : 0,
+                        y: (beat.status === DOWN || beat.status === MAINTENANCE || beat.status === PENDING) ? 1 : 0,
                     });
+                    colorData.push((beat.status === MAINTENANCE) ? "rgba(23,71,245,0.41)" : ((beat.status === PENDING) ? "rgba(245,182,23,0.41)" : "#DC354568"));
                 });
 
             return {
@@ -199,17 +199,20 @@ export default {
                         borderColor: "#5CDD8B",
                         backgroundColor: "#5CDD8B38",
                         yAxisID: "y",
+                        label: "ping",
                     },
                     {
                         // Bar Chart
                         type: "bar",
                         data: downData,
                         borderColor: "#00000000",
-                        backgroundColor: "#DC354568",
+                        backgroundColor: colorData,
                         yAxisID: "y1",
                         barThickness: "flex",
                         barPercentage: 1,
                         categoryPercentage: 1,
+                        inflateAmount: 0.05,
+                        label: "status",
                     },
                 ],
             };

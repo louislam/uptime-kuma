@@ -6,7 +6,7 @@
         </i18n-t>
         <input id="clicksendsms-login" v-model="$parent.notification.clicksendsmsLogin" type="text" class="form-control" required>
         <label for="clicksendsms-key" class="form-label">{{ $t("API Key") }}</label>
-        <HiddenInput id="clicksendsms-key" v-model="$parent.notification.clicksendsmsPassword" :required="true" autocomplete="one-time-code"></HiddenInput>
+        <HiddenInput id="clicksendsms-key" v-model="$parent.notification.clicksendsmsPassword" :required="true" autocomplete="new-password"></HiddenInput>
     </div>
     <div class="mb-3">
         <div class="form-text">

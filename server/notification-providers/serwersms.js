@@ -5,6 +5,9 @@ class SerwerSMS extends NotificationProvider {
 
     name = "serwersms";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
 

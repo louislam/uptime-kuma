@@ -5,14 +5,35 @@
  */
 console.log("Welcome to Uptime Kuma");
 
+// As the log function need to use dayjs, it should be very top
+const dayjs = require("dayjs");
+dayjs.extend(require("dayjs/plugin/utc"));
+dayjs.extend(require("./modules/dayjs/plugin/timezone"));
+dayjs.extend(require("dayjs/plugin/customParseFormat"));
+
+// Load environment variables from `.env`
+require("dotenv").config();
+
 // Check Node.js Version
-const nodeVersion = parseInt(process.versions.node.split(".")[0]);
-const requiredVersion = 14;
+const nodeVersion = process.versions.node;
+
+// Get the required Node.js version from package.json
+const requiredNodeVersions = require("../package.json").engines.node;
+const bannedNodeVersions = " < 14 || 20.0.* || 20.1.* || 20.2.* || 20.3.* ";
 console.log(`Your Node.js version: ${nodeVersion}`);
 
-if (nodeVersion < requiredVersion) {
-    console.error(`Error: Your Node.js version is not supported, please upgrade to Node.js >= ${requiredVersion}.`);
+const semver = require("semver");
+const requiredNodeVersionsComma = requiredNodeVersions.split("||").map((version) => version.trim()).join(", ");
+
+// Exit Uptime Kuma immediately if the Node.js version is banned
+if (semver.satisfies(nodeVersion, bannedNodeVersions)) {
+    console.error("\x1b[31m%s\x1b[0m", `Error: Your Node.js version: ${nodeVersion} is not supported, please upgrade your Node.js to ${requiredNodeVersionsComma}.`);
     process.exit(-1);
+}
+
+// Warning if the Node.js version is not in the support list, but it maybe still works
+if (!semver.satisfies(nodeVersion, requiredNodeVersions)) {
+    console.warn("\x1b[31m%s\x1b[0m", `Warning: Your Node.js version: ${nodeVersion} is not officially supported, please upgrade your Node.js to ${requiredNodeVersionsComma}.`);
 }
 
 const args = require("args-parser")(process.argv);
@@ -28,11 +49,13 @@ if (! process.env.NODE_ENV) {
 }
 
 log.info("server", "Node Env: " + process.env.NODE_ENV);
+log.info("server", "Inside Container: " + (process.env.UPTIME_KUMA_IS_CONTAINER === "1"));
 
 log.info("server", "Importing Node libraries");
 const fs = require("fs");
 
 log.info("server", "Importing 3rd-party libraries");
+
 log.debug("server", "Importing express");
 const express = require("express");
 const expressStaticGzip = require("express-static-gzip");
@@ -61,7 +84,9 @@ log.info("server", "Importing this project modules");
 log.debug("server", "Importing Monitor");
 const Monitor = require("./model/monitor");
 log.debug("server", "Importing Settings");
-const { getSettings, setSettings, setting, initJWTSecret, checkLogin, startUnitTest, FBSD, doubleCheckPassword, startE2eTests } = require("./util-server");
+const { getSettings, setSettings, setting, initJWTSecret, checkLogin, FBSD, doubleCheckPassword, startE2eTests,
+    allowDevAllOrigin
+} = require("./util-server");
 
 log.debug("server", "Importing Notification");
 const { Notification } = require("./notification");
@@ -77,7 +102,7 @@ log.debug("server", "Importing Background Jobs");
 const { initBackgroundJobs, stopBackgroundJobs } = require("./jobs");
 const { loginRateLimiter, twoFaRateLimiter } = require("./rate-limiter");
 
-const { basicAuth } = require("./auth");
+const { apiAuth } = require("./auth");
 const { login } = require("./auth");
 const passwordHash = require("./password-hash");
 
@@ -119,7 +144,7 @@ if (config.demoMode) {
 }
 
 // Must be after io instantiation
-const { sendNotificationList, sendHeartbeatList, sendImportantHeartbeatList, sendInfo, sendProxyList, sendDockerHostList } = require("./client");
+const { sendNotificationList, sendHeartbeatList, sendImportantHeartbeatList, sendInfo, sendProxyList, sendDockerHostList, sendAPIKeyList } = require("./client");
 const { statusPageSocketHandler } = require("./socket-handlers/status-page-socket-handler");
 const databaseSocketHandler = require("./socket-handlers/database-socket-handler");
 const TwoFA = require("./2fa");
@@ -127,6 +152,15 @@ const StatusPage = require("./model/status_page");
 const { cloudflaredSocketHandler, autoStart: cloudflaredAutoStart, stop: cloudflaredStop } = require("./socket-handlers/cloudflared-socket-handler");
 const { proxySocketHandler } = require("./socket-handlers/proxy-socket-handler");
 const { dockerSocketHandler } = require("./socket-handlers/docker-socket-handler");
+const { maintenanceSocketHandler } = require("./socket-handlers/maintenance-socket-handler");
+const { apiKeySocketHandler } = require("./socket-handlers/api-key-socket-handler");
+const { generalSocketHandler } = require("./socket-handlers/general-socket-handler");
+const { Settings } = require("./settings");
+const { CacheableDnsHttpAgent } = require("./cacheable-dns-http-agent");
+const apicache = require("./modules/apicache");
+const { resetChrome } = require("./monitor-types/real-browser-monitor-type");
+const { EmbeddedMariaDB } = require("./embedded-mariadb");
+const { SetupDatabase } = require("./setup-database");
 
 app.use(express.json());
 
@@ -140,22 +174,33 @@ app.use(function (req, res, next) {
 });
 
 /**
- * Use for decode the auth object
- * @type {null}
- */
-let jwtSecret = null;
-
-/**
  * Show Setup Page
  * @type {boolean}
  */
 let needSetup = false;
 
 (async () => {
-    Database.init(args);
-    await initDatabase(testMode);
+    // Create a data directory
+    Database.initDataDir(args);
 
-    exports.entryPage = await setting("entryPage");
+    // Check if is chosen a database type
+    let setupDatabase = new SetupDatabase(args, server);
+    if (setupDatabase.isNeedSetup()) {
+        // Hold here and start a special setup page until user choose a database type
+        await setupDatabase.start(hostname, port);
+    }
+
+    // Connect to database
+    try {
+        await initDatabase(testMode);
+    } catch (e) {
+        log.error("server", "Failed to prepare your database: " + e.message);
+        process.exit(1);
+    }
+
+    // Database should be ready now
+    await server.initAfterDatabaseReady();
+    server.entryPage = await Settings.get("entryPage");
 
     const mainRouter = express.Router();
     await StatusPage.loadDomainMappingList();
@@ -178,22 +223,33 @@ let needSetup = false;
 
         log.debug("entry", `Request Domain: ${request.hostname}`);
 
+        const uptimeKumaEntryPage = server.entryPage;
         if (hostname in StatusPage.domainMappingList) {
             log.debug("entry", "This is a status page domain");
 
             let slug = StatusPage.domainMappingList[hostname];
             await StatusPage.handleStatusPageResponse(response, server.indexHTML, slug);
 
-        } else if (exports.entryPage && exports.entryPage.startsWith("statusPage-")) {
-            response.redirect(server.basePath + "status/" + exports.entryPage.replace("statusPage-", ""));
+        } else if (uptimeKumaEntryPage && uptimeKumaEntryPage.startsWith("statusPage-")) {
+            response.redirect(server.basePath + "/status/" + uptimeKumaEntryPage.replace("statusPage-", ""));
 
         } else {
             response.redirect(server.basePath + "dashboard");
         }
     });
 
+    app.get("/setup-database-info", (request, response) => {
+        allowDevAllOrigin(response);
+        response.json({
+            runningSetup: false,
+            needSetup: false,
+        });
+    });
+
     if (isDev) {
+        mainRouter.use(express.urlencoded({ extended: true }));
         mainRouter.post("/test-webhook", async (request, response) => {
+            log.debug("test", request.headers);
             log.debug("test", request.body);
             response.send("OK");
         });
@@ -202,7 +258,7 @@ let needSetup = false;
     // Robots.txt
     mainRouter.get("/robots.txt", async (_request, response) => {
         let txt = "User-agent: *\nDisallow:";
-        if (! await setting("searchEngineIndex")) {
+        if (!await setting("searchEngineIndex")) {
             txt += " /";
         }
         response.setHeader("Content-Type", "text/plain");
@@ -213,7 +269,7 @@ let needSetup = false;
 
     // Prometheus API metrics  /metrics
     // With Basic Auth using the first user's username/password
-    mainRouter.get("/metrics", basicAuth, prometheusAPIMetrics());
+    mainRouter.get("/metrics", apiAuth, prometheusAPIMetrics());
 
     mainRouter.use("/", expressStaticGzip("dist", {
         enableBrotli: true,
@@ -248,7 +304,7 @@ let needSetup = false;
     log.info("server", "Adding socket handler");
     io.on("connection", async (socket) => {
 
-        sendInfo(socket);
+        sendInfo(socket, true);
 
         if (needSetup) {
             log.info("server", "Redirect to setup page");
@@ -265,7 +321,7 @@ let needSetup = false;
             log.info("auth", `Login by token. IP=${clientIP}`);
 
             try {
-                let decoded = jwt.verify(token, jwtSecret);
+                let decoded = jwt.verify(token, server.jwtSecret);
 
                 log.info("auth", "Username from JWT: " + decoded.username);
 
@@ -319,7 +375,7 @@ let needSetup = false;
             }
 
             // Login Rate Limit
-            if (! await loginRateLimiter.pass(callback)) {
+            if (!await loginRateLimiter.pass(callback)) {
                 log.info("auth", `Too many failed requests for user ${data.username}. IP=${clientIP}`);
                 return;
             }
@@ -336,7 +392,7 @@ let needSetup = false;
                         ok: true,
                         token: jwt.sign({
                             username: data.username,
-                        }, jwtSecret),
+                        }, server.jwtSecret),
                     });
                 }
 
@@ -366,7 +422,7 @@ let needSetup = false;
                             ok: true,
                             token: jwt.sign({
                                 username: data.username,
-                            }, jwtSecret),
+                            }, server.jwtSecret),
                         });
                     } else {
 
@@ -392,7 +448,7 @@ let needSetup = false;
 
         socket.on("logout", async (callback) => {
             // Rate Limit
-            if (! await loginRateLimiter.pass(callback)) {
+            if (!await loginRateLimiter.pass(callback)) {
                 return;
             }
 
@@ -406,7 +462,7 @@ let needSetup = false;
 
         socket.on("prepare2FA", async (currentPassword, callback) => {
             try {
-                if (! await twoFaRateLimiter.pass(callback)) {
+                if (!await twoFaRateLimiter.pass(callback)) {
                     return;
                 }
 
@@ -455,7 +511,7 @@ let needSetup = false;
             const clientIP = await server.getClientIP(socket);
 
             try {
-                if (! await twoFaRateLimiter.pass(callback)) {
+                if (!await twoFaRateLimiter.pass(callback)) {
                     return;
                 }
 
@@ -487,7 +543,7 @@ let needSetup = false;
             const clientIP = await server.getClientIP(socket);
 
             try {
-                if (! await twoFaRateLimiter.pass(callback)) {
+                if (!await twoFaRateLimiter.pass(callback)) {
                     return;
                 }
 
@@ -564,7 +620,6 @@ let needSetup = false;
                     });
                 }
             } catch (error) {
-                console.log(error);
                 callback({
                     ok: false,
                     msg: error.message,
@@ -582,7 +637,7 @@ let needSetup = false;
                     throw new Error("Password is too weak. It should contain alphabetic and numeric characters. It must be at least 6 characters in length.");
                 }
 
-                if ((await R.count("user")) !== 0) {
+                if ((await R.knex("user").count("id as count").first()).count !== 0) {
                     throw new Error("Uptime Kuma has been initialized. If you want to run setup again, please delete the database.");
                 }
 
@@ -619,17 +674,30 @@ let needSetup = false;
                 let notificationIDList = monitor.notificationIDList;
                 delete monitor.notificationIDList;
 
+                // Ensure status code ranges are strings
+                if (!monitor.accepted_statuscodes.every((code) => typeof code === "string")) {
+                    throw new Error("Accepted status codes are not all strings");
+                }
                 monitor.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
                 delete monitor.accepted_statuscodes;
 
+                monitor.kafkaProducerBrokers = JSON.stringify(monitor.kafkaProducerBrokers);
+                monitor.kafkaProducerSaslOptions = JSON.stringify(monitor.kafkaProducerSaslOptions);
+
                 bean.import(monitor);
                 bean.user_id = socket.userID;
+
+                bean.validate();
+
                 await R.store(bean);
 
                 await updateMonitorNotification(bean.id, notificationIDList);
 
                 await server.sendMonitorList(socket);
-                await startMonitor(socket.userID, bean.id);
+
+                if (monitor.active !== false) {
+                    await startMonitor(socket.userID, bean.id);
+                }
 
                 log.info("monitor", `Added Monitor: ${monitor.id} User ID: ${socket.userID}`);
 
@@ -653,6 +721,7 @@ let needSetup = false;
         // Edit a monitor
         socket.on("editMonitor", async (monitor, callback) => {
             try {
+                let removeGroupChildren = false;
                 checkLogin(socket);
 
                 let bean = await R.findOne("monitor", " id = ? ", [ monitor.id ]);
@@ -661,10 +730,27 @@ let needSetup = false;
                     throw new Error("Permission denied.");
                 }
 
-                // Reset Prometheus labels
-                server.monitorList[monitor.id]?.prometheus()?.remove();
+                // Check if Parent is Descendant (would cause endless loop)
+                if (monitor.parent !== null) {
+                    const childIDs = await Monitor.getAllChildrenIDs(monitor.id);
+                    if (childIDs.includes(monitor.parent)) {
+                        throw new Error("Invalid Monitor Group");
+                    }
+                }
+
+                // Remove children if monitor type has changed (from group to non-group)
+                if (bean.type === "group" && monitor.type !== bean.type) {
+                    removeGroupChildren = true;
+                }
+
+                // Ensure status code ranges are strings
+                if (!monitor.accepted_statuscodes.every((code) => typeof code === "string")) {
+                    throw new Error("Accepted status codes are not all strings");
+                }
 
                 bean.name = monitor.name;
+                bean.description = monitor.description;
+                bean.parent = monitor.parent;
                 bean.type = monitor.type;
                 bean.url = monitor.url;
                 bean.method = monitor.method;
@@ -672,16 +758,33 @@ let needSetup = false;
                 bean.headers = monitor.headers;
                 bean.basic_auth_user = monitor.basic_auth_user;
                 bean.basic_auth_pass = monitor.basic_auth_pass;
+                bean.timeout = monitor.timeout;
+                bean.oauth_client_id = monitor.oauth_client_id,
+                bean.oauth_client_secret = monitor.oauth_client_secret,
+                bean.oauth_auth_method = this.oauth_auth_method,
+                bean.oauth_token_url = monitor.oauth_token_url,
+                bean.oauth_scopes = monitor.oauth_scopes,
+                bean.tlsCa = monitor.tlsCa;
+                bean.tlsCert = monitor.tlsCert;
+                bean.tlsKey = monitor.tlsKey;
                 bean.interval = monitor.interval;
                 bean.retryInterval = monitor.retryInterval;
                 bean.resendInterval = monitor.resendInterval;
                 bean.hostname = monitor.hostname;
+                bean.game = monitor.game;
                 bean.maxretries = monitor.maxretries;
                 bean.port = parseInt(monitor.port);
+
+                if (isNaN(bean.port)) {
+                    bean.port = null;
+                }
+
                 bean.keyword = monitor.keyword;
+                bean.invertKeyword = monitor.invertKeyword;
                 bean.ignoreTls = monitor.ignoreTls;
                 bean.expiryNotification = monitor.expiryNotification;
                 bean.upsideDown = monitor.upsideDown;
+                bean.packetSize = monitor.packetSize;
                 bean.maxredirects = monitor.maxredirects;
                 bean.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
                 bean.dns_resolve_type = monitor.dns_resolve_type;
@@ -699,17 +802,39 @@ let needSetup = false;
                 bean.authMethod = monitor.authMethod;
                 bean.authWorkstation = monitor.authWorkstation;
                 bean.authDomain = monitor.authDomain;
+                bean.grpcUrl = monitor.grpcUrl;
+                bean.grpcProtobuf = monitor.grpcProtobuf;
+                bean.grpcServiceName = monitor.grpcServiceName;
+                bean.grpcMethod = monitor.grpcMethod;
+                bean.grpcBody = monitor.grpcBody;
+                bean.grpcMetadata = monitor.grpcMetadata;
+                bean.grpcEnableTls = monitor.grpcEnableTls;
                 bean.radiusUsername = monitor.radiusUsername;
                 bean.radiusPassword = monitor.radiusPassword;
                 bean.radiusCalledStationId = monitor.radiusCalledStationId;
                 bean.radiusCallingStationId = monitor.radiusCallingStationId;
                 bean.radiusSecret = monitor.radiusSecret;
+                bean.httpBodyEncoding = monitor.httpBodyEncoding;
+                bean.expectedValue = monitor.expectedValue;
+                bean.jsonPath = monitor.jsonPath;
+                bean.kafkaProducerTopic = monitor.kafkaProducerTopic;
+                bean.kafkaProducerBrokers = JSON.stringify(monitor.kafkaProducerBrokers);
+                bean.kafkaProducerAllowAutoTopicCreation = monitor.kafkaProducerAllowAutoTopicCreation;
+                bean.kafkaProducerSaslOptions = JSON.stringify(monitor.kafkaProducerSaslOptions);
+                bean.kafkaProducerMessage = monitor.kafkaProducerMessage;
+                bean.gamedigGivenPortOnly = monitor.gamedigGivenPortOnly;
+
+                bean.validate();
 
                 await R.store(bean);
 
+                if (removeGroupChildren) {
+                    await Monitor.unlinkAllChildren(monitor.id);
+                }
+
                 await updateMonitorNotification(bean.id, monitor.notificationIDList);
 
-                if (bean.active) {
+                if (bean.isActive()) {
                     await restartMonitor(socket.userID, bean.id);
                 }
 
@@ -718,6 +843,7 @@ let needSetup = false;
                 callback({
                     ok: true,
                     msg: "Saved.",
+                    msgi18n: true,
                     monitorID: bean.id,
                 });
 
@@ -780,14 +906,17 @@ let needSetup = false;
                     throw new Error("Invalid period.");
                 }
 
+                const sqlHourOffset = Database.sqlHourOffset();
+
                 let list = await R.getAll(`
-                    SELECT * FROM heartbeat
-                    WHERE monitor_id = ? AND
-                    time > DATETIME('now', '-' || ? || ' hours')
+                    SELECT *
+                    FROM heartbeat
+                    WHERE monitor_id = ?
+                      AND time > ${sqlHourOffset}
                     ORDER BY time ASC
                 `, [
                     monitorID,
-                    period,
+                    -period,
                 ]);
 
                 callback({
@@ -852,10 +981,19 @@ let needSetup = false;
                     delete server.monitorList[monitorID];
                 }
 
+                const startTime = Date.now();
+
                 await R.exec("DELETE FROM monitor WHERE id = ? AND user_id = ? ", [
                     monitorID,
                     socket.userID,
                 ]);
+
+                // Fix #2880
+                apicache.clear();
+
+                const endTime = Date.now();
+
+                log.info("DB", `Delete Monitor completed in : ${endTime - startTime} ms`);
 
                 callback({
                     ok: true,
@@ -919,13 +1057,22 @@ let needSetup = false;
             try {
                 checkLogin(socket);
 
-                let bean = await R.findOne("monitor", " id = ? ", [ tag.id ]);
+                let bean = await R.findOne("tag", " id = ? ", [ tag.id ]);
+                if (bean == null) {
+                    callback({
+                        ok: false,
+                        msg: "Tag not found",
+                    });
+                    return;
+                }
                 bean.name = tag.name;
                 bean.color = tag.color;
                 await R.store(bean);
 
                 callback({
                     ok: true,
+                    msg: "Saved.",
+                    msgi18n: true,
                     tag: await bean.toJSON(),
                 });
 
@@ -1012,9 +1159,6 @@ let needSetup = false;
                     value,
                 ]);
 
-                // Cleanup unused Tags
-                await R.exec("delete from tag where ( select count(*) from monitor_tag mt where tag.id = mt.tag_id ) = 0");
-
                 callback({
                     ok: true,
                     msg: "Deleted Successfully.",
@@ -1032,7 +1176,7 @@ let needSetup = false;
             try {
                 checkLogin(socket);
 
-                if (! password.newPassword) {
+                if (!password.newPassword) {
                     throw new Error("Invalid new password");
                 }
 
@@ -1059,10 +1203,15 @@ let needSetup = false;
         socket.on("getSettings", async (callback) => {
             try {
                 checkLogin(socket);
+                const data = await getSettings("general");
+
+                if (!data.serverTimezone) {
+                    data.serverTimezone = await server.getTimezone();
+                }
 
                 callback({
                     ok: true,
-                    data: await getSettings("general"),
+                    data: data,
                 });
 
             } catch (e) {
@@ -1087,15 +1236,42 @@ let needSetup = false;
                     await doubleCheckPassword(socket, currentPassword);
                 }
 
+                const previousChromeExecutable = await Settings.get("chromeExecutable");
+                const previousNSCDStatus = await Settings.get("nscd");
+
                 await setSettings("general", data);
-                exports.entryPage = data.entryPage;
+                server.entryPage = data.entryPage;
+
+                await CacheableDnsHttpAgent.update();
+
+                // Also need to apply timezone globally
+                if (data.serverTimezone) {
+                    await server.setTimezone(data.serverTimezone);
+                }
+
+                // If Chrome Executable is changed, need to reset the browser
+                if (previousChromeExecutable !== data.chromeExecutable) {
+                    log.info("settings", "Chrome executable is changed. Resetting Chrome...");
+                    await resetChrome();
+                }
+
+                // Update nscd status
+                if (previousNSCDStatus !== data.nscd) {
+                    if (data.nscd) {
+                        server.startNSCDServices();
+                    } else {
+                        server.stopNSCDServices();
+                    }
+                }
 
                 callback({
                     ok: true,
-                    msg: "Saved"
+                    msg: "Saved.",
+                    msgi18n: true,
                 });
 
                 sendInfo(socket);
+                server.sendMaintenanceList(socket);
 
             } catch (e) {
                 callback({
@@ -1115,7 +1291,8 @@ let needSetup = false;
 
                 callback({
                     ok: true,
-                    msg: "Saved",
+                    msg: "Saved.",
+                    msgi18n: true,
                     id: notificationBean.id,
                 });
 
@@ -1258,6 +1435,7 @@ let needSetup = false;
 
                             // Define default values
                             let retryInterval = 0;
+                            let timeout = monitorListData[i].timeout || (monitorListData[i].interval * 0.8); // fallback to old value
 
                             /*
                             Only replace the default value with the backup file data for the specific version, where it appears the first time
@@ -1272,6 +1450,7 @@ let needSetup = false;
                             let monitor = {
                                 // Define the new variable from earlier here
                                 name: monitorListData[i].name,
+                                description: monitorListData[i].description,
                                 type: monitorListData[i].type,
                                 url: monitorListData[i].url,
                                 method: monitorListData[i].method || "GET",
@@ -1282,6 +1461,7 @@ let needSetup = false;
                                 basic_auth_pass: monitorListData[i].basic_auth_pass,
                                 authWorkstation: monitorListData[i].authWorkstation,
                                 authDomain: monitorListData[i].authDomain,
+                                timeout,
                                 interval: monitorListData[i].interval,
                                 retryInterval: retryInterval,
                                 resendInterval: monitorListData[i].resendInterval || 0,
@@ -1289,13 +1469,14 @@ let needSetup = false;
                                 maxretries: monitorListData[i].maxretries,
                                 port: monitorListData[i].port,
                                 keyword: monitorListData[i].keyword,
+                                invertKeyword: monitorListData[i].invertKeyword,
                                 ignoreTls: monitorListData[i].ignoreTls,
                                 upsideDown: monitorListData[i].upsideDown,
                                 maxredirects: monitorListData[i].maxredirects,
                                 accepted_statuscodes: monitorListData[i].accepted_statuscodes,
                                 dns_resolve_type: monitorListData[i].dns_resolve_type,
                                 dns_resolve_server: monitorListData[i].dns_resolve_server,
-                                notificationIDList: {},
+                                notificationIDList: monitorListData[i].notificationIDList,
                                 proxy_id: monitorListData[i].proxy_id || null,
                             };
 
@@ -1326,7 +1507,7 @@ let needSetup = false;
                                     ]);
 
                                     let tagId;
-                                    if (! tag) {
+                                    if (!tag) {
                                         // -> If it doesn't exist, create new tag from backup file
                                         let beanTag = R.dispense("tag");
                                         beanTag.name = oldTag.name;
@@ -1454,6 +1635,9 @@ let needSetup = false;
         databaseSocketHandler(socket);
         proxySocketHandler(socket);
         dockerSocketHandler(socket);
+        maintenanceSocketHandler(socket);
+        apiKeySocketHandler(socket);
+        generalSocketHandler(socket, server);
 
         log.debug("server", "added all socket handlers");
 
@@ -1479,6 +1663,8 @@ let needSetup = false;
         await shutdownFunction();
     });
 
+    server.start();
+
     server.httpServer.listen(port, hostname, () => {
         if (hostname) {
             log.info("server", `Listening on ${hostname}:${port}`);
@@ -1488,16 +1674,12 @@ let needSetup = false;
         startMonitors();
         checkVersion.startInterval();
 
-        if (testMode) {
-            startUnitTest();
-        }
-
         if (e2eTestMode) {
             startE2eTests();
         }
     });
 
-    initBackgroundJobs(args);
+    await initBackgroundJobs();
 
     // Start cloudflared at the end if configured
     await cloudflaredAutoStart(cloudflaredToken);
@@ -1528,8 +1710,8 @@ async function updateMonitorNotification(monitorID, notificationIDList) {
 
 /**
  * Check if a given user owns a specific monitor
- * @param {number} userID
- * @param {number} monitorID
+ * @param {number} userID ID of user to check
+ * @param {number} monitorID ID of monitor to check
  * @returns {Promise<void>}
  * @throws {Error} The specified user does not own the monitor
  */
@@ -1548,7 +1730,7 @@ async function checkOwner(userID, monitorID) {
  * Function called after user login
  * This function is used to send the heartbeat list of a monitor.
  * @param {Socket} socket Socket.io instance
- * @param {Object} user User object
+ * @param {object} user User object
  * @returns {Promise<void>}
  */
 async function afterLogin(socket, user) {
@@ -1556,9 +1738,12 @@ async function afterLogin(socket, user) {
     socket.join(user.id);
 
     let monitorList = await server.sendMonitorList(socket);
+    sendInfo(socket);
+    server.sendMaintenanceList(socket);
     sendNotificationList(socket);
     sendProxyList(socket);
     sendDockerHostList(socket);
+    sendAPIKeyList(socket);
 
     await sleep(500);
 
@@ -1575,20 +1760,22 @@ async function afterLogin(socket, user) {
     for (let monitorID in monitorList) {
         await Monitor.sendStats(io, monitorID, user.id);
     }
+
+    // Set server timezone from client browser if not set
+    // It should be run once only
+    if (! await Settings.get("initServerTimezone")) {
+        log.debug("server", "emit initServerTimezone");
+        socket.emit("initServerTimezone");
+    }
 }
 
 /**
  * Initialize the database
- * @param {boolean} [testMode=false] Should the connection be
+ * @param {boolean} testMode Should the connection be
  * started in test mode?
  * @returns {Promise<void>}
  */
 async function initDatabase(testMode = false) {
-    if (! fs.existsSync(Database.path)) {
-        log.info("server", "Copying Database");
-        fs.copyFileSync(Database.templatePath, Database.path);
-    }
-
     log.info("server", "Connecting to the Database");
     await Database.connect(testMode);
     log.info("server", "Connected");
@@ -1609,12 +1796,12 @@ async function initDatabase(testMode = false) {
     }
 
     // If there is no record in user table, it is a new Uptime Kuma instance, need to setup
-    if ((await R.count("user")) === 0) {
+    if ((await R.knex("user").count("id as count").first()).count === 0) {
         log.info("server", "No user, need setup");
         needSetup = true;
     }
 
-    jwtSecret = jwtSecretBean.value;
+    server.jwtSecret = jwtSecretBean.value;
 }
 
 /**
@@ -1676,7 +1863,10 @@ async function pauseMonitor(userID, monitorID) {
     }
 }
 
-/** Resume active monitors */
+/**
+ * Resume active monitors
+ * @returns {Promise<void>}
+ */
 async function startMonitors() {
     let list = await R.find("monitor", " active = 1 ");
 
@@ -1701,6 +1891,8 @@ async function shutdownFunction(signal) {
     log.info("server", "Shutdown requested");
     log.info("server", "Called signal: " + signal);
 
+    await server.stop();
+
     log.info("server", "Stopping all monitors");
     for (let id in server.monitorList) {
         let monitor = server.monitorList[id];
@@ -1709,11 +1901,19 @@ async function shutdownFunction(signal) {
     await sleep(2000);
     await Database.close();
 
+    if (EmbeddedMariaDB.hasInstance()) {
+        EmbeddedMariaDB.getInstance().stop();
+    }
+
     stopBackgroundJobs();
     await cloudflaredStop();
+    Settings.stopCacheCleaner();
 }
 
-/** Final function called before application exits */
+/**
+ * Final function called before application exits
+ * @returns {void}
+ */
 function finalFunction() {
     log.info("server", "Graceful shutdown successful!");
 }

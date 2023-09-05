@@ -5,10 +5,12 @@ class ClickSendSMS extends NotificationProvider {
 
     name = "clicksendsms";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
         try {
-            console.log({ notification });
             let config = {
                 headers: {
                     "Content-Type": "application/json",

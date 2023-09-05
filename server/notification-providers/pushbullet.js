@@ -7,6 +7,9 @@ class Pushbullet extends NotificationProvider {
 
     name = "pushbullet";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
 
@@ -19,26 +22,30 @@ class Pushbullet extends NotificationProvider {
                 }
             };
             if (heartbeatJSON == null) {
-                let testdata = {
+                let data = {
                     "type": "note",
                     "title": "Uptime Kuma Alert",
-                    "body": "Testing Successful.",
+                    "body": msg,
                 };
-                await axios.post(pushbulletUrl, testdata, config);
+                await axios.post(pushbulletUrl, data, config);
             } else if (heartbeatJSON["status"] === DOWN) {
-                let downdata = {
+                let downData = {
                     "type": "note",
                     "title": "UptimeKuma Alert: " + monitorJSON["name"],
-                    "body": "[🔴 Down] " + heartbeatJSON["msg"] + "\nTime (UTC): " + heartbeatJSON["time"],
+                    "body": "[🔴 Down] " +
+                        heartbeatJSON["msg"] +
+                        `\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`,
                 };
-                await axios.post(pushbulletUrl, downdata, config);
+                await axios.post(pushbulletUrl, downData, config);
             } else if (heartbeatJSON["status"] === UP) {
-                let updata = {
+                let upData = {
                     "type": "note",
                     "title": "UptimeKuma Alert: " + monitorJSON["name"],
-                    "body": "[✅ Up] " + heartbeatJSON["msg"] + "\nTime (UTC): " + heartbeatJSON["time"],
+                    "body": "[✅ Up] " +
+                        heartbeatJSON["msg"] +
+                        `\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`,
                 };
-                await axios.post(pushbulletUrl, updata, config);
+                await axios.post(pushbulletUrl, upData, config);
             }
             return okMsg;
         } catch (error) {

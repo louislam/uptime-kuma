@@ -6,6 +6,9 @@ class SMTP extends NotificationProvider {
 
     name = "smtp";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
 
         const config = {
@@ -13,7 +16,7 @@ class SMTP extends NotificationProvider {
             port: notification.smtpPort,
             secure: notification.smtpSecure,
             tls: {
-                rejectUnauthorized: notification.smtpIgnoreTLSError || false,
+                rejectUnauthorized: !notification.smtpIgnoreTLSError || false,
             }
         };
 
@@ -67,7 +70,7 @@ class SMTP extends NotificationProvider {
                 if (monitorJSON !== null) {
                     monitorName = monitorJSON["name"];
 
-                    if (monitorJSON["type"] === "http" || monitorJSON["type"] === "keyword") {
+                    if (monitorJSON["type"] === "http" || monitorJSON["type"] === "keyword" || monitorJSON["type"] === "json-query") {
                         monitorHostnameOrURL = monitorJSON["url"];
                     } else {
                         monitorHostnameOrURL = monitorJSON["hostname"];
@@ -91,7 +94,7 @@ class SMTP extends NotificationProvider {
 
         let bodyTextContent = msg;
         if (heartbeatJSON) {
-            bodyTextContent = `${msg}\nTime (UTC): ${heartbeatJSON["time"]}`;
+            bodyTextContent = `${msg}\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`;
         }
 
         // send mail with defined transport object

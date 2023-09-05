@@ -34,7 +34,7 @@
 
         <div class="mb-3">
             <label for="password" class="form-label">{{ $t("Password") }}</label>
-            <HiddenInput id="password" v-model="$parent.notification.smtpPassword" :required="false" autocomplete="one-time-code"></HiddenInput>
+            <HiddenInput id="password" v-model="$parent.notification.smtpPassword" :required="false" autocomplete="new-password"></HiddenInput>
         </div>
 
         <div class="mb-3">
@@ -97,7 +97,6 @@
                 (leave blank for default one)<br />
                 {{NAME}}: Service Name<br />
                 {{HOSTNAME_OR_URL}}: Hostname or URL<br />
-                {{URL}}: URL<br />
                 {{STATUS}}: Status<br />
             </div>
         </div>

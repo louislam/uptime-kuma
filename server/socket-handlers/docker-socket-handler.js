@@ -6,6 +6,7 @@ const { log } = require("../../src/util");
 /**
  * Handlers for docker hosts
  * @param {Socket} socket Socket.io instance
+ * @returns {void}
  */
 module.exports.dockerSocketHandler = (socket) => {
     socket.on("addDockerHost", async (dockerHost, dockerHostID, callback) => {
@@ -17,7 +18,8 @@ module.exports.dockerSocketHandler = (socket) => {
 
             callback({
                 ok: true,
-                msg: "Saved",
+                msg: "Saved.",
+                msgi18n: true,
                 id: dockerHostBean.id,
             });
 
@@ -56,7 +58,7 @@ module.exports.dockerSocketHandler = (socket) => {
             let amount = await DockerHost.testDockerHost(dockerHost);
             let msg;
 
-            if (amount > 1) {
+            if (amount >= 1) {
                 msg = "Connected Successfully. Amount of containers: " + amount;
             } else {
                 msg = "Connected Successfully, but there are no containers?";

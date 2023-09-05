@@ -6,6 +6,9 @@ class Discord extends NotificationProvider {
 
     name = "discord";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
 
@@ -30,6 +33,7 @@ class Discord extends NotificationProvider {
                     break;
                 case "port":
                 case "dns":
+                case "gamedig":
                 case "steam":
                     address = monitorJSON["hostname"];
                     if (monitorJSON["port"]) {
@@ -59,12 +63,12 @@ class Discord extends NotificationProvider {
                                 value: monitorJSON["type"] === "push" ? "Heartbeat" : address,
                             },
                             {
-                                name: "Time (UTC)",
-                                value: heartbeatJSON["time"],
+                                name: `Time (${heartbeatJSON["timezone"]})`,
+                                value: heartbeatJSON["localDateTime"],
                             },
                             {
                                 name: "Error",
-                                value: heartbeatJSON["msg"],
+                                value: heartbeatJSON["msg"] == null ? "N/A" : heartbeatJSON["msg"],
                             },
                         ],
                     }],
@@ -91,11 +95,11 @@ class Discord extends NotificationProvider {
                             },
                             {
                                 name: monitorJSON["type"] === "push" ? "Service Type" : "Service URL",
-                                value: monitorJSON["type"] === "push" ? "Heartbeat" : address.startsWith("http") ? "[Visit Service](" + address + ")" : address,
+                                value: monitorJSON["type"] === "push" ? "Heartbeat" : address,
                             },
                             {
-                                name: "Time (UTC)",
-                                value: heartbeatJSON["time"],
+                                name: `Time (${heartbeatJSON["timezone"]})`,
+                                value: heartbeatJSON["localDateTime"],
                             },
                             {
                                 name: "Ping",

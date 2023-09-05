@@ -7,15 +7,14 @@ const { UptimeKumaServer } = require("./uptime-kuma-server");
 
 class Proxy {
 
-    static SUPPORTED_PROXY_PROTOCOLS = [ "http", "https", "socks", "socks5", "socks4" ];
+    static SUPPORTED_PROXY_PROTOCOLS = [ "http", "https", "socks", "socks5", "socks5h", "socks4" ];
 
     /**
      * Saves and updates given proxy entity
-     *
-     * @param proxy
-     * @param proxyID
-     * @param userID
-     * @return {Promise<Bean>}
+     * @param {object} proxy Proxy to store
+     * @param {number} proxyID ID of proxy to update
+     * @param {number} userID ID of user the proxy belongs to
+     * @returns {Promise<Bean>} Updated proxy
      */
     static async save(proxy, proxyID, userID) {
         let bean;
@@ -65,10 +64,9 @@ class Proxy {
 
     /**
      * Deletes proxy with given id and removes it from monitors
-     *
-     * @param proxyID
-     * @param userID
-     * @return {Promise<void>}
+     * @param {number} proxyID ID of proxy to delete
+     * @param {number} userID ID of proxy owner
+     * @returns {Promise<void>}
      */
     static async delete(proxyID, userID) {
         const bean = await R.findOne("proxy", " id = ? AND user_id = ? ", [ proxyID, userID ]);
@@ -86,10 +84,10 @@ class Proxy {
 
     /**
      * Create HTTP and HTTPS agents related with given proxy bean object
-     *
-     * @param proxy proxy bean object
-     * @param options http and https agent options
-     * @return {{httpAgent: Agent, httpsAgent: Agent}}
+     * @param {object} proxy proxy bean object
+     * @param {object} options http and https agent options
+     * @returns {{httpAgent: Agent, httpsAgent: Agent}} New HTTP and HTTPS agents
+     * @throws Proxy protocol is unsupported
      */
     static createAgents(proxy, options) {
         const { httpAgentOptions, httpsAgentOptions } = options || {};
@@ -126,11 +124,15 @@ class Proxy {
                 break;
             case "socks":
             case "socks5":
+            case "socks5h":
             case "socks4":
                 agent = new SocksProxyAgent({
                     ...httpAgentOptions,
                     ...httpsAgentOptions,
                     ...proxyOptions,
+                    tls: {
+                        rejectUnauthorized: httpsAgentOptions.rejectUnauthorized,
+                    },
                 });
 
                 httpAgent = agent;
@@ -167,10 +169,9 @@ class Proxy {
 
 /**
  * Applies given proxy id to monitors
- *
- * @param proxyID
- * @param userID
- * @return {Promise<void>}
+ * @param {number} proxyID ID of proxy to apply
+ * @param {number} userID ID of proxy owner
+ * @returns {Promise<void>}
  */
 async function applyProxyEveryMonitor(proxyID, userID) {
     // Find all monitors with id and proxy id

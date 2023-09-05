@@ -13,7 +13,7 @@ const rl = readline.createInterface({
 
 const main = async () => {
     console.log("Connecting the database");
-    Database.init(args);
+    Database.initDataDir(args);
     await Database.connect(false, false, true);
 
     try {
@@ -53,6 +53,11 @@ const main = async () => {
     console.log("Finished.");
 };
 
+/**
+ * Ask question of user
+ * @param {string} question Question to ask
+ * @returns {Promise<string>} Users response
+ */
 function question(question) {
     return new Promise((resolve) => {
         rl.question(question, (answer) => {

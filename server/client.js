@@ -4,14 +4,15 @@
 const { TimeLogger } = require("../src/util");
 const { R } = require("redbean-node");
 const { UptimeKumaServer } = require("./uptime-kuma-server");
-const io = UptimeKumaServer.getInstance().io;
+const server = UptimeKumaServer.getInstance();
+const io = server.io;
 const { setting } = require("./util-server");
 const checkVersion = require("./check-version");
 
 /**
  * Send list of notification providers to client
  * @param {Socket} socket Socket.io socket instance
- * @returns {Promise<Bean[]>}
+ * @returns {Promise<Bean[]>} List of notifications
  */
 async function sendNotificationList(socket) {
     const timeLogger = new TimeLogger();
@@ -39,13 +40,11 @@ async function sendNotificationList(socket) {
  * Send Heartbeat History list to socket
  * @param {Socket} socket Socket.io instance
  * @param {number} monitorID ID of monitor to send heartbeat history
- * @param {boolean} [toUser=false]  True = send to all browsers with the same user id, False = send to the current browser only
- * @param {boolean} [overwrite=false] Overwrite client-side's heartbeat list
+ * @param {boolean} toUser  True = send to all browsers with the same user id, False = send to the current browser only
+ * @param {boolean} overwrite Overwrite client-side's heartbeat list
  * @returns {Promise<void>}
  */
 async function sendHeartbeatList(socket, monitorID, toUser = false, overwrite = false) {
-    const timeLogger = new TimeLogger();
-
     let list = await R.getAll(`
         SELECT * FROM heartbeat
         WHERE monitor_id = ?
@@ -62,16 +61,14 @@ async function sendHeartbeatList(socket, monitorID, toUser = false, overwrite = 
     } else {
         socket.emit("heartbeatList", monitorID, result, overwrite);
     }
-
-    timeLogger.print(`[Monitor: ${monitorID}] sendHeartbeatList`);
 }
 
 /**
  * Important Heart beat list (aka event list)
  * @param {Socket} socket Socket.io instance
  * @param {number} monitorID ID of monitor to send heartbeat history
- * @param {boolean} [toUser=false]  True = send to all browsers with the same user id, False = send to the current browser only
- * @param {boolean} [overwrite=false] Overwrite client-side's heartbeat list
+ * @param {boolean} toUser  True = send to all browsers with the same user id, False = send to the current browser only
+ * @param {boolean} overwrite Overwrite client-side's heartbeat list
  * @returns {Promise<void>}
  */
 async function sendImportantHeartbeatList(socket, monitorID, toUser = false, overwrite = false) {
@@ -99,7 +96,7 @@ async function sendImportantHeartbeatList(socket, monitorID, toUser = false, ove
 /**
  * Emit proxy list to client
  * @param {Socket} socket Socket.io socket instance
- * @return {Promise<Bean[]>}
+ * @returns {Promise<Bean[]>} List of proxies
  */
 async function sendProxyList(socket) {
     const timeLogger = new TimeLogger();
@@ -113,22 +110,61 @@ async function sendProxyList(socket) {
 }
 
 /**
- * Emits the version information to the client.
+ * Emit API key list to client
  * @param {Socket} socket Socket.io socket instance
  * @returns {Promise<void>}
  */
-async function sendInfo(socket) {
+async function sendAPIKeyList(socket) {
+    const timeLogger = new TimeLogger();
+
+    let result = [];
+    const list = await R.find(
+        "api_key",
+        "user_id=?",
+        [ socket.userID ],
+    );
+
+    for (let bean of list) {
+        result.push(bean.toPublicJSON());
+    }
+
+    io.to(socket.userID).emit("apiKeyList", result);
+    timeLogger.print("Sent API Key List");
+
+    return list;
+}
+
+/**
+ * Emits the version information to the client.
+ * @param {Socket} socket Socket.io socket instance
+ * @param {boolean} hideVersion Should we hide the version information in the response?
+ * @returns {Promise<void>}
+ */
+async function sendInfo(socket, hideVersion = false) {
+    let version;
+    let latestVersion;
+    let isContainer;
+
+    if (!hideVersion) {
+        version = checkVersion.version;
+        latestVersion = checkVersion.latestVersion;
+        isContainer = (process.env.UPTIME_KUMA_IS_CONTAINER === "1");
+    }
+
     socket.emit("info", {
-        version: checkVersion.version,
-        latestVersion: checkVersion.latestVersion,
-        primaryBaseURL: await setting("primaryBaseURL")
+        version,
+        latestVersion,
+        isContainer,
+        primaryBaseURL: await setting("primaryBaseURL"),
+        serverTimezone: await server.getTimezone(),
+        serverTimezoneOffset: server.getTimezoneOffset(),
     });
 }
 
 /**
  * Send list of docker hosts to client
  * @param {Socket} socket Socket.io socket instance
- * @returns {Promise<Bean[]>}
+ * @returns {Promise<Bean[]>} List of docker hosts
  */
 async function sendDockerHostList(socket) {
     const timeLogger = new TimeLogger();
@@ -154,6 +190,7 @@ module.exports = {
     sendImportantHeartbeatList,
     sendHeartbeatList,
     sendProxyList,
+    sendAPIKeyList,
     sendInfo,
     sendDockerHostList
 };

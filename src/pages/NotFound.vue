@@ -31,8 +31,8 @@
                 {{ $t("What you can try:") }}<br />
                 <ul>
                     <li>{{ $t("Retype the address.") }}</li>
-                    <li><a href="#" class="go-back" @click.prevent="goBack()">{{ $t("Go back to the previous page.") }}</a></li>
-                    <li><a href="./" class="go-back">Go back to home page.</a></li>
+                    <li><a href="#" class="go-back" @click="goBack()">{{ $t("Go back to the previous page.") }}</a></li>
+                    <li><a href="./" class="go-back">{{ $t("Go back to home page.") }}</a></li>
                 </ul>
             </div>
         </div>
@@ -45,7 +45,10 @@ export default {
 
     },
     methods: {
-        /** Go back 1 in browser history */
+        /**
+         * Go back 1 in browser history
+         * @returns {void}
+         */
         goBack() {
             history.back();
         }
