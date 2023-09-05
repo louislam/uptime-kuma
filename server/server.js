@@ -231,14 +231,14 @@ let needSetup = false;
             await StatusPage.handleStatusPageResponse(response, server.indexHTML, slug);
 
         } else if (uptimeKumaEntryPage && uptimeKumaEntryPage.startsWith("statusPage-")) {
-            response.redirect(server.basePath + "/status/" + uptimeKumaEntryPage.replace("statusPage-", ""));
+            response.redirect(server.basePath + "status/" + uptimeKumaEntryPage.replace("statusPage-", ""));
 
         } else {
             response.redirect(server.basePath + "dashboard");
         }
     });
 
-    app.get("/setup-database-info", (request, response) => {
+    mainRouter.get("/setup-database-info", (request, response) => {
         allowDevAllOrigin(response);
         response.json({
             runningSetup: false,
@@ -300,6 +300,12 @@ let needSetup = false;
     });
 
     app.use(server.basePath, mainRouter);
+
+    if (server.basePath !== "/") {
+        app.get("/", (request, response) => {
+            response.status(404).send("Your Uptime Kuma is running at " + server.basePath);
+        });
+    }
 
     log.info("server", "Adding socket handler");
     io.on("connection", async (socket) => {

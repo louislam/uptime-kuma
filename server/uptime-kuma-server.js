@@ -92,6 +92,10 @@ class UptimeKumaServer {
             basePathEnv = basePathEnv + "/";
         }
 
+        if (basePathEnv !== "/") {
+            log.info("server", "Base Path enabled: " + basePathEnv);
+        }
+
         this.basePath = basePathEnv;
 
         log.info("server", "Creating express and socket.io instance");
