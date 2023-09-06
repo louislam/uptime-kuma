@@ -291,7 +291,8 @@ class Monitor extends BeanModel {
     }
 
     /**
-     *
+     * Get if game dig should only use the port which was provided
+     * @returns {boolean} gamedig should only use the provided port
      */
     getGameDigGivenPortOnly() {
         return Boolean(this.gamedigGivenPortOnly);
