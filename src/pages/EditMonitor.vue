@@ -82,7 +82,7 @@
                                         <option value="redis">
                                             Redis
                                         </option>
-                                        <option value="tailscale-ping">
+                                        <option v-if="$root.info.isContainer" value="tailscale-ping">
                                             Tailscale Ping
                                         </option>
                                     </optgroup>
@@ -97,18 +97,6 @@
                             <div class="my-3">
                                 <label for="name" class="form-label">{{ $t("Friendly Name") }}</label>
                                 <input id="name" v-model="monitor.name" type="text" class="form-control" required>
-                            </div>
-
-                            <!-- Parent Monitor -->
-                            <div class="my-3">
-                                <label for="parent" class="form-label">{{ $t("Monitor Group") }}</label>
-                                <ActionSelect
-                                    v-model="monitor.parent"
-                                    :options="parentMonitorOptionsList"
-                                    :disabled="sortedGroupMonitorList.length === 0 && draftGroupName == null"
-                                    :icon="'plus'"
-                                    :action="() => $refs.createGroupDialog.show()"
-                                />
                             </div>
 
                             <!-- URL -->
@@ -503,6 +491,18 @@
                                     </div>
                                 </div>
                             </template>
+
+                            <!-- Parent Monitor -->
+                            <div class="my-3">
+                                <label for="parent" class="form-label">{{ $t("Monitor Group") }}</label>
+                                <ActionSelect
+                                    v-model="monitor.parent"
+                                    :options="parentMonitorOptionsList"
+                                    :disabled="sortedGroupMonitorList.length === 0 && draftGroupName == null"
+                                    :icon="'plus'"
+                                    :action="() => $refs.createGroupDialog.show()"
+                                />
+                            </div>
 
                             <!-- Description -->
                             <div class="my-3">

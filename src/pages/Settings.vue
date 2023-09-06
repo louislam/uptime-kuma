@@ -163,6 +163,10 @@ export default {
                     this.settings.entryPage = "dashboard";
                 }
 
+                if (this.settings.nscd === undefined) {
+                    this.settings.nscd = true;
+                }
+
                 if (this.settings.dnsCache === undefined) {
                     this.settings.dnsCache = false;
                 }

@@ -342,7 +342,11 @@ class UptimeKumaServer {
      * @returns {Promise<void>}
      */
     async start() {
-        this.startServices();
+        let enable = await Settings.get("nscd");
+
+        if (enable || enable === null) {
+            this.startNSCDServices();
+        }
     }
 
     /**
@@ -350,14 +354,18 @@ class UptimeKumaServer {
      * @returns {Promise<void>}
      */
     async stop() {
-        this.stopServices();
+        let enable = await Settings.get("nscd");
+
+        if (enable || enable === null) {
+            this.stopNSCDServices();
+        }
     }
 
     /**
      * Start all system services (e.g. nscd)
      * For now, only used in Docker
      */
-    startServices() {
+    startNSCDServices() {
         if (process.env.UPTIME_KUMA_IS_CONTAINER) {
             try {
                 log.info("services", "Starting nscd");
@@ -371,7 +379,7 @@ class UptimeKumaServer {
     /**
      * Stop all system services
      */
-    stopServices() {
+    stopNSCDServices() {
         if (process.env.UPTIME_KUMA_IS_CONTAINER) {
             try {
                 log.info("services", "Stopping nscd");
