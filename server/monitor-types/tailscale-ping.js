@@ -13,9 +13,9 @@ class TailscalePing extends MonitorType {
     /**
      * Checks the ping status of the URL associated with the monitor.
      * It then parses the Tailscale ping command output to update the heatrbeat.
-     *
-     * @param {Object} monitor - The monitor object associated with the check.
-     * @param {Object} heartbeat - The heartbeat object to update.
+     * @param {object} monitor The monitor object associated with the check.
+     * @param {object} heartbeat The heartbeat object to update.
+     * @returns {Promise<void>}
      * @throws Will throw an error if checking Tailscale ping encounters any error
      */
     async check(monitor, heartbeat) {
@@ -31,9 +31,9 @@ class TailscalePing extends MonitorType {
 
     /**
      * Runs the Tailscale ping command to the given URL.
-     *
-     * @param {string} hostname - The hostname to ping.
-     * @returns {Promise<string>} - A Promise that resolves to the output of the Tailscale ping command
+     * @param {string} hostname The hostname to ping.
+     * @param {number} interval Interval to send ping
+     * @returns {Promise<string>} A Promise that resolves to the output of the Tailscale ping command
      * @throws Will throw an error if the command execution encounters any error.
      */
     async runTailscalePing(hostname, interval) {
@@ -61,9 +61,9 @@ class TailscalePing extends MonitorType {
 
     /**
      * Parses the output of the Tailscale ping command to update the heartbeat.
-     *
-     * @param {string} tailscaleOutput - The output of the Tailscale ping command.
-     * @param {Object} heartbeat - The heartbeat object to update.
+     * @param {string} tailscaleOutput The output of the Tailscale ping command.
+     * @param {object} heartbeat The heartbeat object to update.
+     * @returns {void}
      * @throws Will throw an eror if the output contains any unexpected string.
      */
     parseTailscaleOutput(tailscaleOutput, heartbeat) {

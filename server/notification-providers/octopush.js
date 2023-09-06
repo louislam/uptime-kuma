@@ -5,6 +5,9 @@ class Octopush extends NotificationProvider {
 
     name = "octopush";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
 

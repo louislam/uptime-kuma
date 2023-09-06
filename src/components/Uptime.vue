@@ -84,10 +84,12 @@ export default {
         },
 
         title() {
+            if (this.type === "1y") {
+                return `1${this.$t("-year")}`;
+            }
             if (this.type === "720") {
                 return `30${this.$t("-day")}`;
             }
-
             return `24${this.$t("-hour")}`;
         }
     },

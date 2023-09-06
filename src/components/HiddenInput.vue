@@ -74,11 +74,17 @@ export default {
 
     },
     methods: {
-        /** Show users input in plain text */
+        /**
+         * Show users input in plain text
+         * @returns {void}
+         */
         showInput() {
             this.visibility = "text";
         },
-        /** Censor users input */
+        /**
+         * Censor users input
+         * @returns {void}
+         */
         hideInput() {
             this.visibility = "password";
         },
