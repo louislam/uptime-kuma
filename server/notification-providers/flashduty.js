@@ -7,6 +7,9 @@ const successMessage = "Sent Successfully.";
 class FlashDuty extends NotificationProvider {
     name = "FlashDuty";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         try {
             if (heartbeatJSON == null) {
@@ -33,12 +36,12 @@ class FlashDuty extends NotificationProvider {
             this.throwGeneralAxiosError(error);
         }
     }
+
     /**
      * Generate a monitor url from the monitors infomation
-     * @param {Object} monitorInfo Monitor details
-     * @returns {string|undefined}
+     * @param {object} monitorInfo Monitor details
+     * @returns {string|undefined} Monitor URL
      */
-
     genMonitorUrl(monitorInfo) {
         if (monitorInfo.type === "port" && monitorInfo.port) {
             return monitorInfo.hostname + ":" + monitorInfo.port;
@@ -54,9 +57,9 @@ class FlashDuty extends NotificationProvider {
      * @param {BeanModel} notification Message title
      * @param {string} title Message
      * @param {string} body Message
-     * @param {Object} monitorInfo Monitor details
+     * @param {object} monitorInfo Monitor details
      * @param {string} eventStatus Monitor status (Info, Warning, Critical, Ok)
-     * @returns {string}
+     * @returns {string} Success message
      */
     async postNotification(notification, title, body, monitorInfo, eventStatus) {
         const options = {

@@ -5,6 +5,9 @@ class Telegram extends NotificationProvider {
 
     name = "telegram";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
 

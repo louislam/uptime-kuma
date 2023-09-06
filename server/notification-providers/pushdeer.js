@@ -6,6 +6,9 @@ class PushDeer extends NotificationProvider {
 
     name = "PushDeer";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
         let endpoint = "/message/push";

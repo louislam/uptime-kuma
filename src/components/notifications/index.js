@@ -54,7 +54,6 @@ import Splunk from "./Splunk.vue";
 
 /**
  * Manage all notification form.
- *
  * @type { Record<string, any> }
  */
 const NotificationFormList = {

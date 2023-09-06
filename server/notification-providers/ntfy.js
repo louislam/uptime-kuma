@@ -6,6 +6,9 @@ class Ntfy extends NotificationProvider {
 
     name = "ntfy";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
         try {

@@ -6,6 +6,9 @@ class Discord extends NotificationProvider {
 
     name = "discord";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
 
