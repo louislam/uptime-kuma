@@ -81,10 +81,10 @@ class SMTP extends NotificationProvider {
 
     /**
      * Generate context for LiquidJS
-     * @param msg {string}
-     * @param monitorJSON {Object|null}
-     * @param heartbeatJSON {Object|null}
-     * @returns {{STATUS: string, HOSTNAME_OR_URL: string, NAME: string, monitorJSON: Object|null, heartbeatJSON: Object|null, msg: string}}
+     * @param {string} msg  the message that will be included in the context
+     * @param {?object} monitorJSON Monitor details (For Up/Down/Cert-Expiry only)
+     * @param {?object} heartbeatJSON Heartbeat details (For Up/Down only)
+     * @returns {{STATUS: string, HOSTNAME_OR_URL: string, NAME: string, monitorJSON: ?object, heartbeatJSON: ?object, msg: string}} the context
      */
     generateContext(msg, monitorJSON, heartbeatJSON) {
         // Let's start with dummy values to simplify code
