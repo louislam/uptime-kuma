@@ -8,6 +8,9 @@ class DnsMonitorType extends MonitorType {
 
     name = "dns";
 
+     /**
+     * @inheritdoc
+     */
     async check(monitor, heartbeat, _server) {
         let startTime = dayjs().valueOf();
         let dnsMessage = "";
