@@ -65,7 +65,10 @@ export default {
         this.init();
     },
     methods: {
-        /** Initialise page */
+        /**
+         * Initialise page
+         * @returns {void}
+         */
         init() {
             this.$root.getSocket().emit("getMonitorMaintenance", this.$route.params.id, (res) => {
                 if (res.ok) {
@@ -84,12 +87,18 @@ export default {
             });
         },
 
-        /** Confirm deletion */
+        /**
+         * Confirm deletion
+         * @returns {void}
+         */
         deleteDialog() {
             this.$refs.confirmDelete.show();
         },
 
-        /** Delete maintenance after showing confirmation */
+        /**
+         * Delete maintenance after showing confirmation
+         * @returns {void}
+         */
         deleteMaintenance() {
             this.$root.deleteMaintenance(this.maintenance.id, (res) => {
                 if (res.ok) {

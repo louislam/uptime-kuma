@@ -207,6 +207,8 @@ export default {
         },
         /**
          * Selected a monitor and add to the list.
+         * @param {object} monitor Monitor to add
+         * @returns {void}
          */
         selectedAddMonitor(monitor) {
             if (monitor) {
@@ -227,6 +229,7 @@ export default {
     methods: {
         /**
          * Show confirmation for deleting a tag
+         * @returns {void}
          */
         deleteConfirm() {
             this.$refs.confirmDelete.show();
@@ -234,6 +237,7 @@ export default {
 
         /**
          * Reset the editTag form
+         * @returns {void}
          */
         reset() {
             this.selectedColor = null;
@@ -263,7 +267,7 @@ export default {
 
         /**
          * Load tag information for display in the edit dialog
-         * @param {Object} tag tag object to edit
+         * @param {object} tag tag object to edit
          * @returns {void}
          */
         show(tag) {
@@ -377,7 +381,7 @@ export default {
         /**
          * Get monitors which has a specific tag locally
          * @param {number} tagId id of the tag to filter
-         * @returns {Object[]} list of monitors which has a specific tag
+         * @returns {object[]} list of monitors which has a specific tag
          */
         monitorsByTag(tagId) {
             return Object.values(this.$root.monitorList).filter((monitor) => {
@@ -396,7 +400,7 @@ export default {
 
         /**
          * Add a tag asynchronously
-         * @param {Object} newTag Object representing new tag to add
+         * @param {object} newTag Object representing new tag to add
          * @returns {Promise<void>}
          */
         addTagAsync(newTag) {

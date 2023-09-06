@@ -10,7 +10,7 @@ let gameList = null;
 
 /**
  * Get a game list via GameDig
- * @returns {Object[]} list of games supported by GameDig
+ * @returns {object[]} list of games supported by GameDig
  */
 function getGameList() {
     if (gameList == null) {

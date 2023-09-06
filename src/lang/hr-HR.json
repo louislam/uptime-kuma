@@ -348,7 +348,7 @@
     "Discard": "Odbaci",
     "Cancel": "Otkaži",
     "Powered by": "Pokreće",
-    "Saved": "Spremljeno",
+    "Saved.": "Spremljeno.",
     "PushByTechulus": "Push by Techulus",
     "GoogleChat": "Google Chat (preko platforme Google Workspace)",
     "shrinkDatabaseDescription": "Pokreni VACUUM operaciju za SQLite. Ako je baza podataka kreirana nakon inačice 1.10.0, AUTO_VACUUM opcija već je uključena te ova akcija nije nužna.",

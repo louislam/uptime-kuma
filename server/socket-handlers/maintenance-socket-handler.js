@@ -9,6 +9,7 @@ const server = UptimeKumaServer.getInstance();
 /**
  * Handlers for Maintenance
  * @param {Socket} socket Socket.io instance
+ * @returns {void}
  */
 module.exports.maintenanceSocketHandler = (socket) => {
     // Add a new maintenance
@@ -60,6 +61,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
             callback({
                 ok: true,
                 msg: "Saved.",
+                msgi18n: true,
                 maintenanceID: bean.id,
             });
 
