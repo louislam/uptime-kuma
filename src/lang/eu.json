@@ -569,5 +569,18 @@
     "dayOfMonth": "Hilabeteko eguna",
     "lastDay": "Azken eguna",
     "lastDay1": "Hilabeteko azken eguna",
-    "Resend Notification if Down X times consecutively": "Bidali jakinarazpena X aldiz jarraian erortzen bada"
+    "Resend Notification if Down X times consecutively": "Bidali jakinarazpena X aldiz jarraian erortzen bada",
+    "Add New Tag": "Gehitu etiketa berria",
+    "Schedule maintenance": "Programatu mantenua",
+    "Start of maintenance": "Mantenuaren hasiera",
+    "All Status Pages": "Egoera orrialde guztiak",
+    "Custom": "Pertsonalizatua",
+    "showCertificateExpiry": "Erakutsi ziurtagiriaren iraungitzea",
+    "Close": "Itxi",
+    "Request Body": "Eskaera gorputza",
+    "Mechanism": "Mekanismoa",
+    "Home": "Hasiera",
+    "filterActive": "Aktibo",
+    "filterActivePaused": "Geldituta",
+    "Expected Value": "Esperotako balioa"
 }

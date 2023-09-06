@@ -58,18 +58,23 @@ export default {
         this.modal = new Modal(this.$refs.modal);
     },
     methods: {
-        /** Show the confirm dialog */
+        /**
+         * Show the confirm dialog
+         * @returns {void}
+         */
         show() {
             this.modal.show();
         },
         /**
-         * @emits string "yes" Notify the parent when Yes is pressed
+         * @fires string "yes" Notify the parent when Yes is pressed
+         * @returns {void}
          */
         yes() {
             this.$emit("yes");
         },
         /**
-         * @emits string "no" Notify the parent when No is pressed
+         * @fires string "no" Notify the parent when No is pressed
+         * @returns {void}
          */
         no() {
             this.$emit("no");

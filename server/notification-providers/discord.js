@@ -6,6 +6,9 @@ class Discord extends NotificationProvider {
 
     name = "discord";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
 
@@ -30,6 +33,7 @@ class Discord extends NotificationProvider {
                     break;
                 case "port":
                 case "dns":
+                case "gamedig":
                 case "steam":
                     address = monitorJSON["hostname"];
                     if (monitorJSON["port"]) {

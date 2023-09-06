@@ -1,5 +1,10 @@
 {
     "languageName": "English",
+    "setupDatabaseChooseDatabase": "Which database do you want to use?",
+    "setupDatabaseEmbeddedMariaDB": "You don't need to set anything. This docker image have embedded and configured a MariaDB for you automatically. Uptime Kuma will connect to this database via unix socket.",
+    "setupDatabaseMariaDB": "Connect to an external MariaDB database. You need to set the database connection information.",
+    "setupDatabaseSQLite": "A simple database file, recommended for small-scale deployments. Prior to v2.0.0, Uptime Kuma used SQLite as the default database.",
+    "dbName": "Database Name",
     "Settings": "Settings",
     "Dashboard": "Dashboard",
     "Help": "Help",
@@ -449,9 +454,10 @@
     "Server Timezone": "Server Timezone",
     "statusPageMaintenanceEndDate": "End",
     "IconUrl": "Icon URL",
-    "Enable DNS Cache": "Enable DNS Cache for HTTP(s) monitors",
+    "Enable DNS Cache": "(Deprecated) Enable DNS Cache for HTTP(s) monitors",
     "Enable": "Enable",
     "Disable": "Disable",
+    "enableNSCD": "Enable NSCD (Name Service Cache Daemon) for caching all DNS requests",
     "chromeExecutable": "Chrome/Chromium Executable",
     "chromeExecutableAutoDetect": "Auto Detect",
     "chromeExecutableDescription": "For Docker users, if Chromium is not yet installed, it may take a few minutes to install and display the test result. It takes 1GB of disk space.",
@@ -779,6 +785,10 @@
     "Badge URL": "Badge URL",
     "Group": "Group",
     "Monitor Group": "Monitor Group",
+    "monitorToastMessagesLabel": "Monitor Toast notifications",
+    "monitorToastMessagesDescription": "Toast notifications for monitors disappear after given time in seconds. Set to -1 disables timeout. Set to 0 disables toast notifications.",
+    "toastErrorTimeout": "Timeout for Error Notifications",
+    "toastSuccessTimeout": "Timeout for Success Notifications",
     "Kafka Brokers": "Kafka Brokers",
     "Enter the list of brokers": "Enter the list of brokers",
     "Press Enter to add broker": "Press Enter to add broker",
@@ -806,5 +816,6 @@
     "showCertificateExpiry": "Show Certificate Expiry",
     "noOrBadCertificate": "No/Bad Certificate",
     "gamedigGuessPort": "Gamedig: Guess Port",
-    "gamedigGuessPortDescription": "The port used by Valve Server Query Protocol may be different from the client port. Try this if the monitor cannot connect to your server."
+    "gamedigGuessPortDescription": "The port used by Valve Server Query Protocol may be different from the client port. Try this if the monitor cannot connect to your server.",
+    "Saved.": "Saved."
 }
