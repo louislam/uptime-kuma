@@ -48,6 +48,12 @@ class SetupDatabase {
 
             // Check if kuma.db is found (1.X.X users)
             if (fs.existsSync(path.join(Database.dataDir, "kuma.db"))) {
+                // Migrate to new config format
+                dbConfig = {
+                    type: "sqlite",
+                };
+                Database.writeDBConfig(dbConfig);
+
                 this.needSetup = false;
             } else {
                 this.needSetup = true;
