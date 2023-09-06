@@ -137,13 +137,14 @@ const toast = useToast();
 /**
  * @typedef Tag
  * @type {object}
- * @property {number | undefined} id
- * @property {number | undefined} monitor_id
- * @property {number | undefined} tag_id
- * @property {string} value
- * @property {string} name
- * @property {string} color
- * @property {boolean | undefined} new
+ * @property {number | undefined} id ID of tag assignment
+ * @property {number | undefined} monitor_id ID of monitor tag is
+ * assigned to
+ * @property {number | undefined} tag_id ID of tag
+ * @property {string} value Value given to tag
+ * @property {string} name Name of tag
+ * @property {string} color Colour of tag
+ * @property {boolean | undefined} new Should a new tag be created?
  */
 
 export default {
@@ -152,7 +153,8 @@ export default {
         VueMultiselect,
     },
     props: {
-        /** Array of tags to be pre-selected
+        /**
+         * Array of tags to be pre-selected
          * @type {Tag[]}
          */
         preSelectedTags: {
@@ -244,11 +246,17 @@ export default {
         this.getExistingTags();
     },
     methods: {
-        /** Show the add tag dialog */
+        /**
+         * Show the add tag dialog
+         * @returns {void}
+         */
         showAddDialog() {
             this.modal.show();
         },
-        /** Get all existing tags */
+        /**
+         * Get all existing tags
+         * @returns {void}
+         */
         getExistingTags() {
             this.$root.getSocket().emit("getTags", (res) => {
                 if (res.ok) {
@@ -260,7 +268,8 @@ export default {
         },
         /**
          * Delete the specified tag
-         * @param {Object} tag Object representing tag to delete
+         * @param {object} item Object representing tag to delete
+         * @returns {void}
          */
         deleteTag(item) {
             if (item.new) {
@@ -273,10 +282,10 @@ export default {
         },
         /**
          * Get colour of text inside the tag
-         * @param {Object} option The tag that needs to be displayed.
+         * @param {object} option The tag that needs to be displayed.
          * Defaults to "white" unless the tag has no color, which will
          * then return the body color (based on application theme)
-         * @returns string
+         * @returns {string} Text color
          */
         textColor(option) {
             if (option.color) {
@@ -285,7 +294,10 @@ export default {
                 return this.$root.theme === "light" ? "var(--bs-body-color)" : "inherit";
             }
         },
-        /** Add a draft tag */
+        /**
+         * Add a draft tag
+         * @returns {void}
+         */
         addDraftTag() {
             console.log("Adding Draft Tag: ", this.newDraftTag);
             if (this.newDraftTag.select != null) {
@@ -313,7 +325,10 @@ export default {
             }
             this.clearDraftTag();
         },
-        /** Remove a draft tag */
+        /**
+         * Remove a draft tag
+         * @returns {void}
+         */
         clearDraftTag() {
             this.newDraftTag = {
                 name: null,
@@ -327,7 +342,7 @@ export default {
         },
         /**
          * Add a tag asynchronously
-         * @param {Object} newTag Object representing new tag to add
+         * @param {object} newTag Object representing new tag to add
          * @returns {Promise<void>}
          */
         addTagAsync(newTag) {
@@ -359,7 +374,10 @@ export default {
                 this.$root.getSocket().emit("deleteMonitorTag", tagId, monitorId, value, resolve);
             });
         },
-        /** Handle pressing Enter key when inside the modal */
+        /**
+         * Handle pressing Enter key when inside the modal
+         * @returns {void}
+         */
         onEnter() {
             if (!this.validateDraftTag.invalid) {
                 this.addDraftTag();

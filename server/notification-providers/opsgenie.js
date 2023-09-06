@@ -20,10 +20,10 @@ class Opsgenie extends NotificationProvider {
 
         try {
             switch (notification.opsgenieRegion) {
-                case "US":
+                case "us":
                     opsgenieAlertsUrl = opsgenieAlertsUrlUS;
                     break;
-                case "EU":
+                case "eu":
                     opsgenieAlertsUrl = opsgenieAlertsUrlEU;
                     break;
                 default:
@@ -68,11 +68,11 @@ class Opsgenie extends NotificationProvider {
     }
 
     /**
-     *
-     * @param {BeanModel} notification
+     * Make POST request to Opsgenie
+     * @param {BeanModel} notification Notification to send
      * @param {string} url Request url
-     * @param {Object} data Request body
-     * @returns {Promise<string>}
+     * @param {object} data Request body
+     * @returns {Promise<string>} Success message
      */
     async post(notification, url, data) {
         let config = {

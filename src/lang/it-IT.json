@@ -177,7 +177,7 @@
     "Entry Page": "Pagina Principale",
     "statusPageNothing": "Non c'è nulla qui, aggiungi un gruppo oppure un monitor.",
     "No Services": "Nessun servizio",
-    "All Systems Operational": "Tutti i sistemi sono funzionali",
+    "All Systems Operational": "Tutti i sistemi sono funzionanti",
     "Partially Degraded Service": "Servizio parzialmente degradato",
     "Degraded Service": "Servizio degradato",
     "Add Group": "Aggiungi gruppo",
@@ -608,5 +608,7 @@
     "Cannot connect to the socket server": "Impossibile connettersi al server socket",
     "Reconnecting...": "Riconnessione...",
     "Expected Value": "Valore atteso",
-    "Json Query": "Query Json"
+    "Json Query": "Query Json",
+    "deleteMaintenanceMsg": "Sei sicuro di voler cancellare questa attività di manutenzione?",
+    "dnsPortDescription": "Porta server DNS. Default 53. Puoi cambiare questa porta in ogni momento."
 }
