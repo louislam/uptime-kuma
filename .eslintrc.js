@@ -1,6 +1,7 @@
 module.exports = {
     ignorePatterns: [
-        "test/*",
+        "test/*.js",
+        "test/cypress",
         "server/modules/apicache/*",
         "src/util.js"
     ],
@@ -14,6 +15,7 @@ module.exports = {
     extends: [
         "eslint:recommended",
         "plugin:vue/vue3-recommended",
+        "plugin:jsdoc/recommended-error",
     ],
     parser: "vue-eslint-parser",
     parserOptions: {
@@ -21,6 +23,9 @@ module.exports = {
         sourceType: "module",
         requireConfigFile: false,
     },
+    plugins: [
+        "jsdoc"
+    ],
     rules: {
         "yoda": "error",
         eqeqeq: [ "warn", "smart" ],
@@ -97,7 +102,43 @@ module.exports = {
         }],
         "no-control-regex": "off",
         "one-var": [ "error", "never" ],
-        "max-statements-per-line": [ "error", { "max": 1 }]
+        "max-statements-per-line": [ "error", { "max": 1 }],
+        "jsdoc/check-tag-names": [
+            "error",
+            {
+                "definedTags": [ "link" ]
+            }
+        ],
+        "jsdoc/no-undefined-types": "off",
+        "jsdoc/no-defaults": [
+            "error",
+            { "noOptionalParamNames": true }
+        ],
+        "jsdoc/require-throws": "warn",
+        "jsdoc/require-jsdoc": [
+            "error",
+            {
+                "require": {
+                    "FunctionDeclaration": true,
+                    "MethodDefinition": true,
+                }
+            }
+        ],
+        "jsdoc/no-blank-block-descriptions": "error",
+        "jsdoc/require-returns-description": "warn",
+        "jsdoc/require-returns-check": [
+            "error",
+            { "reportMissingReturnForUndefinedTypes": false }
+        ],
+        "jsdoc/require-returns": [
+            "warn",
+            {
+                "forceRequireReturn": true,
+                "forceReturnsWithAsync": true
+            }
+        ],
+        "jsdoc/require-param-type": "warn",
+        "jsdoc/require-param-description": "warn"
     },
     "overrides": [
         {

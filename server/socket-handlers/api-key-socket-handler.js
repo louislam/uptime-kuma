@@ -9,8 +9,9 @@ const { Settings } = require("../settings");
 const { sendAPIKeyList } = require("../client");
 
 /**
- * Handlers for Maintenance
+ * Handlers for API keys
  * @param {Socket} socket Socket.io instance
+ * @returns {void}
  */
 module.exports.apiKeySocketHandler = (socket) => {
     // Add a new api key

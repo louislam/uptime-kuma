@@ -29,6 +29,9 @@ const {
     },
 } = require("node-radius-utils");
 const dayjs = require("dayjs");
+const readline = require("readline");
+const rl = readline.createInterface({ input: process.stdin,
+    output: process.stdout });
 
 // SASLOptions used in JSDoc
 // eslint-disable-next-line no-unused-vars
@@ -37,7 +40,7 @@ const { Kafka, SASLOptions } = require("kafkajs");
 const isWindows = process.platform === /^win/.test(process.platform);
 /**
  * Init or reset JWT secret
- * @returns {Promise<Bean>}
+ * @returns {Promise<Bean>} JWT secret
  */
 exports.initJWTSecret = async () => {
     let jwtSecretBean = await R.findOne("setting", " `key` = ? ", [
@@ -57,7 +60,7 @@ exports.initJWTSecret = async () => {
 /**
  * Decodes a jwt and returns the payload portion without verifying the jqt.
  * @param {string} jwt The input jwt as a string
- * @returns {Object} Decoded jwt payload object
+ * @returns {object} Decoded jwt payload object
  */
 exports.decodeJwt = (jwt) => {
     return JSON.parse(Buffer.from(jwt.split(".")[1], "base64").toString());
@@ -121,7 +124,7 @@ exports.tcping = function (hostname, port) {
 /**
  * Ping the specified machine
  * @param {string} hostname Hostname / address of machine
- * @param {number} [size=56] Size of packet to send
+ * @param {number} size Size of packet to send
  * @returns {Promise<number>} Time for ping in ms rounded to nearest integer
  */
 exports.ping = async (hostname, size = 56) => {
@@ -144,7 +147,7 @@ exports.ping = async (hostname, size = 56) => {
  * Ping the specified machine
  * @param {string} hostname Hostname / address of machine to ping
  * @param {boolean} ipv6 Should IPv6 be used?
- * @param {number} [size = 56] Size of ping packet to send
+ * @param {number} size Size of ping packet to send
  * @returns {Promise<number>} Time for ping in ms rounded to nearest integer
  */
 exports.pingAsync = function (hostname, ipv6 = false, size = 56) {
@@ -176,9 +179,9 @@ exports.pingAsync = function (hostname, ipv6 = false, size = 56) {
  * @param {string} hostname Hostname / address of machine to test
  * @param {string} topic MQTT topic
  * @param {string} okMessage Expected result
- * @param {Object} [options={}] MQTT options. Contains port, username,
+ * @param {object} options MQTT options. Contains port, username,
  * password and interval (interval defaults to 20)
- * @returns {Promise<string>}
+ * @returns {Promise<string>} Received MQTT message
  */
 exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
     return new Promise((resolve, reject) => {
@@ -240,16 +243,17 @@ exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
 
 /**
  * Monitor Kafka using Producer
+ * @param {string[]} brokers List of kafka brokers to connect, host and
+ * port joined by ':'
  * @param {string} topic Topic name to produce into
  * @param {string} message Message to produce
- * @param {Object} [options={interval = 20, allowAutoTopicCreation = false, ssl = false, clientId = "Uptime-Kuma"}]
- * Kafka client options. Contains ssl, clientId, allowAutoTopicCreation and
- * interval (interval defaults to 20, allowAutoTopicCreation defaults to false, clientId defaults to "Uptime-Kuma"
- * and ssl defaults to false)
- * @param {string[]} brokers List of kafka brokers to connect, host and port joined by ':'
- * @param {SASLOptions} [saslOptions={}] Options for kafka client Authentication (SASL) (defaults to
- * {})
- * @returns {Promise<string>}
+ * @param {object} options Kafka client options. Contains ssl, clientId,
+ * allowAutoTopicCreation and interval (interval defaults to 20,
+ * allowAutoTopicCreation defaults to false, clientId defaults to
+ * "Uptime-Kuma" and ssl defaults to false)
+ * @param {SASLOptions} saslOptions Options for kafka client
+ * Authentication (SASL) (defaults to {})
+ * @returns {Promise<string>} Status message
  */
 exports.kafkaProducerAsync = function (brokers, topic, message, options = {}, saslOptions = {}) {
     return new Promise((resolve, reject) => {
@@ -328,9 +332,9 @@ exports.kafkaProducerAsync = function (brokers, topic, message, options = {}, sa
 
 /**
  * Use NTLM Auth for a http request.
- * @param {Object} options The http request options
- * @param {Object} ntlmOptions The auth options
- * @returns {Promise<(string[]|Object[]|Object)>}
+ * @param {object} options The http request options
+ * @param {object} ntlmOptions The auth options
+ * @returns {Promise<(string[] | object[] | object)>} NTLM response
  */
 exports.httpNtlm = function (options, ntlmOptions) {
     return new Promise((resolve, reject) => {
@@ -352,7 +356,7 @@ exports.httpNtlm = function (options, ntlmOptions) {
  * @param {string} resolverServer The DNS server to use
  * @param {string} resolverPort Port the DNS server is listening on
  * @param {string} rrtype The type of record to request
- * @returns {Promise<(string[]|Object[]|Object)>}
+ * @returns {Promise<(string[] | object[] | object)>} DNS response
  */
 exports.dnsResolve = function (hostname, resolverServer, resolverPort, rrtype) {
     const resolver = new Resolver();
@@ -385,7 +389,8 @@ exports.dnsResolve = function (hostname, resolverServer, resolverPort, rrtype) {
  * Run a query on SQL Server
  * @param {string} connectionString The database connection string
  * @param {string} query The query to validate the database with
- * @returns {Promise<(string[]|Object[]|Object)>}
+ * @returns {Promise<(string[] | object[] | object)>} Response from
+ * server
  */
 exports.mssqlQuery = async function (connectionString, query) {
     let pool;
@@ -406,7 +411,8 @@ exports.mssqlQuery = async function (connectionString, query) {
  * Run a query on Postgres
  * @param {string} connectionString The database connection string
  * @param {string} query The query to validate the database with
- * @returns {Promise<(string[]|Object[]|Object)>}
+ * @returns {Promise<(string[] | object[] | object)>} Response from
+ * server
  */
 exports.postgresQuery = function (connectionString, query) {
     return new Promise((resolve, reject) => {
@@ -452,7 +458,7 @@ exports.postgresQuery = function (connectionString, query) {
  * Run a query on MySQL/MariaDB
  * @param {string} connectionString The database connection string
  * @param {string} query The query to validate the database with
- * @returns {Promise<(string)>}
+ * @returns {Promise<(string)>} Response from server
  */
 exports.mysqlQuery = function (connectionString, query) {
     return new Promise((resolve, reject) => {
@@ -483,9 +489,10 @@ exports.mysqlQuery = function (connectionString, query) {
 };
 
 /**
- * Connect to and Ping a MongoDB database
+ * Connect to and ping a MongoDB database
  * @param {string} connectionString The database connection string
- * @returns {Promise<(string[]|Object[]|Object)>}
+ * @returns {Promise<(string[] | object[] | object)>} Response from
+ * server
  */
 exports.mongodbPing = async function (connectionString) {
     let client = await MongoClient.connect(connectionString);
@@ -507,9 +514,9 @@ exports.mongodbPing = async function (connectionString) {
  * @param {string} calledStationId ID of called station
  * @param {string} callingStationId ID of calling station
  * @param {string} secret Secret to use
- * @param {number} [port=1812] Port to contact radius server on
- * @param {number} [timeout=2500] Timeout for connection to use
- * @returns {Promise<any>}
+ * @param {number} port Port to contact radius server on
+ * @param {number} timeout Timeout for connection to use
+ * @returns {Promise<any>} Response from server
  */
 exports.radius = function (
     hostname,
@@ -549,6 +556,7 @@ exports.radius = function (
 /**
  * Redis server ping
  * @param {string} dsn The redis connection string
+ * @returns {Promise<any>} Response from redis server
  */
 exports.redisPingAsync = function (dsn) {
     return new Promise((resolve, reject) => {
@@ -590,7 +598,7 @@ exports.setting = async function (key) {
 };
 
 /**
- * Sets the specified setting to specifed value
+ * Sets the specified setting to specified value
  * @param {string} key Key of setting to set
  * @param {any} value Value to set to
  * @param {?string} type Type of setting
@@ -603,7 +611,7 @@ exports.setSetting = async function (key, value, type = null) {
 /**
  * Get settings based on type
  * @param {string} type The type of setting
- * @returns {Promise<Bean>}
+ * @returns {Promise<Bean>} Settings of requested type
  */
 exports.getSettings = async function (type) {
     return await Settings.getSettings(type);
@@ -612,7 +620,7 @@ exports.getSettings = async function (type) {
 /**
  * Set settings based on type
  * @param {string} type Type of settings to set
- * @param {Object} data Values of settings
+ * @param {object} data Values of settings
  * @returns {Promise<void>}
  */
 exports.setSettings = async function (type, data) {
@@ -626,7 +634,7 @@ exports.setSettings = async function (type, data) {
  * Get number of days between two dates
  * @param {Date} validFrom Start date
  * @param {Date} validTo End date
- * @returns {number}
+ * @returns {number} Number of days
  */
 const getDaysBetween = (validFrom, validTo) =>
     Math.round(Math.abs(+validFrom - +validTo) / 8.64e7);
@@ -635,7 +643,7 @@ const getDaysBetween = (validFrom, validTo) =>
  * Get days remaining from a time range
  * @param {Date} validFrom Start date
  * @param {Date} validTo End date
- * @returns {number}
+ * @returns {number} Number of days remaining
  */
 const getDaysRemaining = (validFrom, validTo) => {
     const daysRemaining = getDaysBetween(validFrom, validTo);
@@ -647,8 +655,9 @@ const getDaysRemaining = (validFrom, validTo) => {
 
 /**
  * Fix certificate info for display
- * @param {Object} info The chain obtained from getPeerCertificate()
- * @returns {Object} An object representing certificate information
+ * @param {object} info The chain obtained from getPeerCertificate()
+ * @returns {object} An object representing certificate information
+ * @throws The certificate chain length exceeded 500.
  */
 const parseCertificateInfo = function (info) {
     let link = info;
@@ -695,8 +704,9 @@ const parseCertificateInfo = function (info) {
 
 /**
  * Check if certificate is valid
- * @param {Object} res Response object from axios
- * @returns {Object} Object containing certificate information
+ * @param {object} res Response object from axios
+ * @returns {object} Object containing certificate information
+ * @throws No socket was found to check certificate for
  */
 exports.checkCertificate = function (res) {
     if (!res.request.res.socket) {
@@ -754,7 +764,7 @@ exports.checkStatusCode = function (status, acceptedCodes) {
  * Get total number of clients in room
  * @param {Server} io Socket server instance
  * @param {string} roomName Name of room to check
- * @returns {number}
+ * @returns {number} Total clients in room
  */
 exports.getTotalClientInRoom = (io, roomName) => {
 
@@ -781,7 +791,8 @@ exports.getTotalClientInRoom = (io, roomName) => {
 
 /**
  * Allow CORS all origins if development
- * @param {Object} res Response object from axios
+ * @param {object} res Response object from axios
+ * @returns {void}
  */
 exports.allowDevAllOrigin = (res) => {
     if (process.env.NODE_ENV === "development") {
@@ -791,16 +802,20 @@ exports.allowDevAllOrigin = (res) => {
 
 /**
  * Allow CORS all origins
- * @param {Object} res Response object from axios
+ * @param {object} res Response object from axios
+ * @returns {void}
  */
 exports.allowAllOrigin = (res) => {
     res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE, OPTIONS");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
 };
 
 /**
  * Check if a user is logged in
  * @param {Socket} socket Socket instance
+ * @returns {void}
+ * @throws The user is not logged in
  */
 exports.checkLogin = (socket) => {
     if (!socket.userID) {
@@ -811,8 +826,10 @@ exports.checkLogin = (socket) => {
 /**
  * For logged-in users, double-check the password
  * @param {Socket} socket Socket.io instance
- * @param {string} currentPassword
- * @returns {Promise<Bean>}
+ * @param {string} currentPassword Password to validate
+ * @returns {Promise<Bean>} User
+ * @throws The current password is not a string
+ * @throws The provided password is not correct
  */
 exports.doubleCheckPassword = async (socket, currentPassword) => {
     if (typeof currentPassword !== "string") {
@@ -830,27 +847,10 @@ exports.doubleCheckPassword = async (socket, currentPassword) => {
     return user;
 };
 
-/** Start Unit tests */
-exports.startUnitTest = async () => {
-    console.log("Starting unit test...");
-    const npm = /^win/.test(process.platform) ? "npm.cmd" : "npm";
-    const child = childProcess.spawn(npm, [ "run", "jest-backend" ]);
-
-    child.stdout.on("data", (data) => {
-        console.log(data.toString());
-    });
-
-    child.stderr.on("data", (data) => {
-        console.log(data.toString());
-    });
-
-    child.on("close", function (code) {
-        console.log("Jest exit code: " + code);
-        process.exit(code);
-    });
-};
-
-/** Start end-to-end tests */
+/**
+ * Start end-to-end tests
+ * @returns {void}
+ */
 exports.startE2eTests = async () => {
     console.log("Starting unit test...");
     const npm = /^win/.test(process.platform) ? "npm.cmd" : "npm";
@@ -873,7 +873,7 @@ exports.startE2eTests = async () => {
 /**
  * Convert unknown string to UTF8
  * @param {Uint8Array} body Buffer
- * @returns {string}
+ * @returns {string} UTF8 string
  */
 exports.convertToUTF8 = (body) => {
     const guessEncoding = chardet.detect(body);
@@ -885,11 +885,10 @@ exports.convertToUTF8 = (body) => {
  * Returns a color code in hex format based on a given percentage:
  * 0% => hue = 10 => red
  * 100% => hue = 90 => green
- *
  * @param {number} percentage float, 0 to 1
- * @param {number} maxHue
- * @param {number} minHue, int
- * @returns {string}, hex value
+ * @param {number} maxHue Maximum hue - int
+ * @param {number} minHue Minimum hue - int
+ * @returns {string} Color in hex
  */
 exports.percentageToColor = (percentage, maxHue = 90, minHue = 10) => {
     const hue = percentage * (maxHue - minHue) + minHue;
@@ -902,10 +901,9 @@ exports.percentageToColor = (percentage, maxHue = 90, minHue = 10) => {
 
 /**
  * Joins and array of string to one string after filtering out empty values
- *
- * @param {string[]} parts
- * @param {string} connector
- * @returns {string}
+ * @param {string[]} parts Strings to join
+ * @param {string} connector Separator for joined strings
+ * @returns {string} Joined strings
  */
 exports.filterAndJoin = (parts, connector = "") => {
     return parts.filter((part) => !!part && part !== "").join(connector);
@@ -913,8 +911,9 @@ exports.filterAndJoin = (parts, connector = "") => {
 
 /**
  * Send an Error response
- * @param {Object} res Express response object
- * @param {string} [msg=""] Message to send
+ * @param {object} res Express response object
+ * @param {string} msg Message to send
+ * @returns {void}
  */
 module.exports.sendHttpError = (res, msg = "") => {
     if (msg.includes("SQLITE_BUSY") || msg.includes("SQLITE_LOCKED")) {
@@ -935,6 +934,13 @@ module.exports.sendHttpError = (res, msg = "") => {
     }
 };
 
+/**
+ * Convert timezone of time object
+ * @param {object} obj Time object to update
+ * @param {string} timezone New timezone to set
+ * @param {boolean} timeObjectToUTC Convert time object to UTC
+ * @returns {object} Time object with updated timezone
+ */
 function timeObjectConvertTimezone(obj, timezone, timeObjectToUTC = true) {
     let offsetString;
 
@@ -977,20 +983,20 @@ function timeObjectConvertTimezone(obj, timezone, timeObjectToUTC = true) {
 }
 
 /**
- *
- * @param {object} obj
- * @param {string} timezone
- * @returns {object}
+ * Convert time object to UTC
+ * @param {object} obj Object to convert
+ * @param {string} timezone Timezone of time object
+ * @returns {object} Updated time object
  */
 module.exports.timeObjectToUTC = (obj, timezone = undefined) => {
     return timeObjectConvertTimezone(obj, timezone, true);
 };
 
 /**
- *
- * @param {object} obj
- * @param {string} timezone
- * @returns {object}
+ * Convert time object to local time
+ * @param {object} obj Object to convert
+ * @param {string} timezone Timezone to convert to
+ * @returns {object} Updated object
  */
 module.exports.timeObjectToLocal = (obj, timezone = undefined) => {
     return timeObjectConvertTimezone(obj, timezone, false);
@@ -998,7 +1004,8 @@ module.exports.timeObjectToLocal = (obj, timezone = undefined) => {
 
 /**
  * Create gRPC client stib
- * @param {Object} options from gRPC client
+ * @param {object} options from gRPC client
+ * @returns {Promise<object>} Result of gRPC query
  */
 module.exports.grpcQuery = async (options) => {
     const { grpcUrl, grpcProtobufData, grpcServiceName, grpcEnableTls, grpcMethod, grpcBody } = options;
@@ -1052,6 +1059,8 @@ module.exports.grpcQuery = async (options) => {
 
     });
 };
+
+module.exports.prompt = (query) => new Promise((resolve) => rl.question(query, resolve));
 
 // For unit test, export functions
 if (process.env.TEST_BACKEND) {

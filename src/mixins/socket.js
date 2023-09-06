@@ -4,7 +4,7 @@ import jwtDecode from "jwt-decode";
 import Favico from "favico.js";
 import dayjs from "dayjs";
 import { DOWN, MAINTENANCE, PENDING, UP } from "../util.ts";
-import { getDevContainerServerHostname, isDevContainer } from "../util-frontend.js";
+import { getDevContainerServerHostname, isDevContainer, getToastSuccessTimeout, getToastErrorTimeout } from "../util-frontend.js";
 const toast = useToast();
 
 let socket;
@@ -70,9 +70,9 @@ export default {
 
         /**
          * Initialize connection to socket server
-         * @param {boolean} [bypass = false] Should the check for if we
+         * @param {boolean} bypass Should the check for if we
          * are on a status page be bypassed?
-         * @returns {(void|null)}
+         * @returns {void}
          */
         initSocketIO(bypass = false) {
             // No need to re-init
@@ -87,6 +87,11 @@ export default {
                         return;
                     }
                 }
+            }
+
+            // Also don't need to connect to the socket.io for setup database page
+            if (location.pathname === "/setup-database") {
+                return;
             }
 
             this.socket.initedSocketIO = true;
@@ -185,11 +190,11 @@ export default {
                     if (this.monitorList[data.monitorID] !== undefined) {
                         if (data.status === 0) {
                             toast.error(`[${this.monitorList[data.monitorID].name}] [DOWN] ${data.msg}`, {
-                                timeout: false,
+                                timeout: getToastErrorTimeout(),
                             });
                         } else if (data.status === 1) {
                             toast.success(`[${this.monitorList[data.monitorID].name}] [Up] ${data.msg}`, {
-                                timeout: 20000,
+                                timeout: getToastSuccessTimeout(),
                             });
                         } else {
                             toast(`[${this.monitorList[data.monitorID].name}] ${data.msg}`);
@@ -292,7 +297,7 @@ export default {
 
         /**
          * The storage currently in use
-         * @returns {Storage}
+         * @returns {Storage} Current storage
          */
         storage() {
             return (this.remember) ? localStorage : sessionStorage;
@@ -300,7 +305,7 @@ export default {
 
         /**
          * Get payload of JWT cookie
-         * @returns {(Object|undefined)}
+         * @returns {(object | undefined)} JWT payload
          */
         getJWTPayload() {
             const jwtToken = this.$root.storage().token;
@@ -313,7 +318,7 @@ export default {
 
         /**
          * Get current socket
-         * @returns {Socket}
+         * @returns {Socket} Current socket
          */
         getSocket() {
             return socket;
@@ -321,19 +326,30 @@ export default {
 
         /**
          * Show success or error toast dependant on response status code
-         * @param {Object} res Response object
+         * @param {object} res Response object
+         * @returns {void}
          */
         toastRes(res) {
+            let msg = res.msg;
+            if (res.msgi18n) {
+                if (msg != null && typeof msg === "object") {
+                    msg = this.$t(msg.key, msg.values);
+                } else {
+                    msg = this.$t(msg);
+                }
+            }
+
             if (res.ok) {
-                toast.success(res.msg);
+                toast.success(msg);
             } else {
-                toast.error(res.msg);
+                toast.error(msg);
             }
         },
 
         /**
          * Show a success toast
          * @param {string} msg Message to show
+         * @returns {void}
          */
         toastSuccess(msg) {
             toast.success(msg);
@@ -342,6 +358,7 @@ export default {
         /**
          * Show an error toast
          * @param {string} msg Message to show
+         * @returns {void}
          */
         toastError(msg) {
             toast.error(msg);
@@ -350,7 +367,7 @@ export default {
         /**
          * Callback for login
          * @callback loginCB
-         * @param {Object} res Response object
+         * @param {object} res Response object
          */
 
         /**
@@ -359,6 +376,7 @@ export default {
          * @param {string} password Password to log in with
          * @param {string} token User token
          * @param {loginCB} callback Callback to call with result
+         * @returns {void}
          */
         login(username, password, token, callback) {
             socket.emit("login", {
@@ -387,6 +405,7 @@ export default {
         /**
          * Log in using a token
          * @param {string} token Token to log in with
+         * @returns {void}
          */
         loginByToken(token) {
             socket.emit("loginByToken", token, (res) => {
@@ -401,7 +420,10 @@ export default {
             });
         },
 
-        /** Log out of the web application */
+        /**
+         * Log out of the web application
+         * @returns {void}
+         */
         logout() {
             socket.emit("logout", () => { });
             this.storage().removeItem("token");
@@ -414,9 +436,13 @@ export default {
         /**
          * Callback for general socket requests
          * @callback socketCB
-         * @param {Object} res Result of operation
+         * @param {object} res Result of operation
          */
-        /** Prepare 2FA configuration */
+        /**
+         * Prepare 2FA configuration
+         * @param {socketCB} callback Callback for socket response
+         * @returns {void}
+         */
         prepare2FA(callback) {
             socket.emit("prepare2FA", callback);
         },
@@ -424,7 +450,8 @@ export default {
         /**
          * Save the current 2FA configuration
          * @param {any} secret Unused
-         * @param {socketCB} callback
+         * @param {socketCB} callback Callback for socket response
+         * @returns {void}
          */
         save2FA(secret, callback) {
             socket.emit("save2FA", callback);
@@ -432,7 +459,8 @@ export default {
 
         /**
          * Disable 2FA for this user
-         * @param {socketCB} callback
+         * @param {socketCB} callback Callback for socket response
+         * @returns {void}
          */
         disable2FA(callback) {
             socket.emit("disable2FA", callback);
@@ -441,7 +469,8 @@ export default {
         /**
          * Verify the provided 2FA token
          * @param {string} token Token to verify
-         * @param {socketCB} callback
+         * @param {socketCB} callback Callback for socket response
+         * @returns {void}
          */
         verifyToken(token, callback) {
             socket.emit("verifyToken", token, callback);
@@ -449,7 +478,8 @@ export default {
 
         /**
          * Get current 2FA status
-         * @param {socketCB} callback
+         * @param {socketCB} callback Callback for socket response
+         * @returns {void}
          */
         twoFAStatus(callback) {
             socket.emit("twoFAStatus", callback);
@@ -457,7 +487,8 @@ export default {
 
         /**
          * Get list of monitors
-         * @param {socketCB} callback
+         * @param {socketCB} callback Callback for socket response
+         * @returns {void}
          */
         getMonitorList(callback) {
             if (! callback) {
@@ -468,7 +499,8 @@ export default {
 
         /**
          * Get list of maintenances
-         * @param {socketCB} callback
+         * @param {socketCB} callback Callback for socket response
+         * @returns {void}
          */
         getMaintenanceList(callback) {
             if (! callback) {
@@ -479,7 +511,8 @@ export default {
 
         /**
          * Send list of API keys
-         * @param {socketCB} callback
+         * @param {socketCB} callback Callback for socket response
+         * @returns {void}
          */
         getAPIKeyList(callback) {
             if (!callback) {
@@ -490,17 +523,19 @@ export default {
 
         /**
          * Add a monitor
-         * @param {Object} monitor Object representing monitor to add
-         * @param {socketCB} callback
+         * @param {object} monitor Object representing monitor to add
+         * @param {socketCB} callback Callback for socket response
+         * @returns {void}
          */
         add(monitor, callback) {
             socket.emit("add", monitor, callback);
         },
 
         /**
-         * Adds a maintenace
-         * @param {Object} maintenance
-         * @param {socketCB} callback
+         * Adds a maintenance
+         * @param {object} maintenance Maintenance to add
+         * @param {socketCB} callback Callback for socket response
+         * @returns {void}
          */
         addMaintenance(maintenance, callback) {
             socket.emit("addMaintenance", maintenance, callback);
@@ -508,9 +543,10 @@ export default {
 
         /**
          * Add monitors to maintenance
-         * @param {number} maintenanceID
-         * @param {number[]} monitors
-         * @param {socketCB} callback
+         * @param {number} maintenanceID Maintenance to modify
+         * @param {number[]} monitors IDs of monitors to add
+         * @param {socketCB} callback Callback for socket response
+         * @returns {void}
          */
         addMonitorMaintenance(maintenanceID, monitors, callback) {
             socket.emit("addMonitorMaintenance", maintenanceID, monitors, callback);
@@ -518,9 +554,10 @@ export default {
 
         /**
          * Add status page to maintenance
-         * @param {number} maintenanceID
-         * @param {number} statusPages
-         * @param {socketCB} callback
+         * @param {number} maintenanceID Maintenance to modify
+         * @param {number} statusPages ID of status page to add
+         * @param {socketCB} callback Callback for socket response
+         * @returns {void}
          */
         addMaintenanceStatusPage(maintenanceID, statusPages, callback) {
             socket.emit("addMaintenanceStatusPage", maintenanceID, statusPages, callback);
@@ -528,8 +565,9 @@ export default {
 
         /**
          * Get monitors affected by maintenance
-         * @param {number} maintenanceID
-         * @param {socketCB} callback
+         * @param {number} maintenanceID Maintenance to read
+         * @param {socketCB} callback Callback for socket response
+         * @returns {void}
          */
         getMonitorMaintenance(maintenanceID, callback) {
             socket.emit("getMonitorMaintenance", maintenanceID, callback);
@@ -537,8 +575,9 @@ export default {
 
         /**
          * Get status pages where maintenance is shown
-         * @param {number} maintenanceID
-         * @param {socketCB} callback
+         * @param {number} maintenanceID Maintenance to read
+         * @param {socketCB} callback Callback for socket response
+         * @returns {void}
          */
         getMaintenanceStatusPage(maintenanceID, callback) {
             socket.emit("getMaintenanceStatusPage", maintenanceID, callback);
@@ -547,7 +586,8 @@ export default {
         /**
          * Delete monitor by ID
          * @param {number} monitorID ID of monitor to delete
-         * @param {socketCB} callback
+         * @param {socketCB} callback Callback for socket response
+         * @returns {void}
          */
         deleteMonitor(monitorID, callback) {
             socket.emit("deleteMonitor", monitorID, callback);
@@ -555,8 +595,9 @@ export default {
 
         /**
          * Delete specified maintenance
-         * @param {number} maintenanceID
-         * @param {socketCB} callback
+         * @param {number} maintenanceID Maintenance to delete
+         * @param {socketCB} callback Callback for socket response
+         * @returns {void}
          */
         deleteMaintenance(maintenanceID, callback) {
             socket.emit("deleteMaintenance", maintenanceID, callback);
@@ -564,8 +605,9 @@ export default {
 
         /**
          * Add an API key
-         * @param {Object} key API key to add
-         * @param {socketCB} callback
+         * @param {object} key API key to add
+         * @param {socketCB} callback Callback for socket response
+         * @returns {void}
          */
         addAPIKey(key, callback) {
             socket.emit("addAPIKey", key, callback);
@@ -574,13 +616,17 @@ export default {
         /**
          * Delete specified API key
          * @param {int} keyID ID of key to delete
-         * @param {socketCB} callback
+         * @param {socketCB} callback Callback for socket response
+         * @returns {void}
          */
         deleteAPIKey(keyID, callback) {
             socket.emit("deleteAPIKey", keyID, callback);
         },
 
-        /** Clear the hearbeat list */
+        /**
+         * Clear the hearbeat list
+         * @returns {void}
+         */
         clearData() {
             console.log("reset heartbeat list");
             this.heartbeatList = {};
@@ -592,7 +638,8 @@ export default {
          * @param {string} uploadedJSON JSON to upload
          * @param {string} importHandle Type of import. If set to
          * most data in database will be replaced
-         * @param {socketCB} callback
+         * @param {socketCB} callback Callback for socket response
+         * @returns {void}
          */
         uploadBackup(uploadedJSON, importHandle, callback) {
             socket.emit("uploadBackup", uploadedJSON, importHandle, callback);
@@ -601,7 +648,8 @@ export default {
         /**
          * Clear events for a specified monitor
          * @param {number} monitorID ID of monitor to clear
-         * @param {socketCB} callback
+         * @param {socketCB} callback Callback for socket response
+         * @returns {void}
          */
         clearEvents(monitorID, callback) {
             socket.emit("clearEvents", monitorID, callback);
@@ -610,7 +658,8 @@ export default {
         /**
          * Clear the heartbeats of a specified monitor
          * @param {number} monitorID Id of monitor to clear
-         * @param {socketCB} callback
+         * @param {socketCB} callback Callback for socket response
+         * @returns {void}
          */
         clearHeartbeats(monitorID, callback) {
             socket.emit("clearHeartbeats", monitorID, callback);
@@ -618,7 +667,8 @@ export default {
 
         /**
          * Clear all statistics
-         * @param {socketCB} callback
+         * @param {socketCB} callback Callback for socket response
+         * @returns {void}
          */
         clearStatistics(callback) {
             socket.emit("clearStatistics", callback);
@@ -628,11 +678,12 @@ export default {
          * Get monitor beats for a specific monitor in a time range
          * @param {number} monitorID ID of monitor to fetch
          * @param {number} period Time in hours from now
-         * @param {socketCB} callback
+         * @param {socketCB} callback Callback for socket response
+         * @returns {void}
          */
         getMonitorBeats(monitorID, period, callback) {
             socket.emit("getMonitorBeats", monitorID, period, callback);
-        }
+        },
     },
 
     computed: {
@@ -739,7 +790,7 @@ export default {
          *  Frontend Version
          *  It should be compiled to a static value while building the frontend.
          *  Please see ./config/vite.config.js, it is defined via vite.js
-         * @returns {string}
+         * @returns {string} Current version
          */
         frontendVersion() {
             // eslint-disable-next-line no-undef
@@ -748,7 +799,7 @@ export default {
 
         /**
          * Are both frontend and backend in the same version?
-         * @returns {boolean}
+         * @returns {boolean} The frontend and backend match?
          */
         isFrontendBackendVersionMatched() {
             if (!this.info.version) {

@@ -8,6 +8,9 @@ class RocketChat extends NotificationProvider {
 
     name = "rocket.chat";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
         try {
