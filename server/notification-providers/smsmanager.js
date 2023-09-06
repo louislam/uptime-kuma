@@ -4,6 +4,9 @@ const axios = require("axios");
 class SMSManager extends NotificationProvider {
     name = "SMSManager";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
         const url = "https://http-api.smsmanager.cz/Send";

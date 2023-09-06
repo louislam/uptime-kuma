@@ -4,6 +4,9 @@ const axios = require("axios");
 class SerwerSMS extends NotificationProvider {
     name = "serwersms";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
         const url = "https://api2.serwersms.pl/messages/send_sms";

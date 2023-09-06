@@ -6,6 +6,9 @@ const { Liquid } = require("liquidjs");
 class Webhook extends NotificationProvider {
     name = "webhook";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
 

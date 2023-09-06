@@ -4,6 +4,9 @@ const axios = require("axios");
 class Kook extends NotificationProvider {
     name = "Kook";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
         const url = "https://www.kookapp.cn/api/v3/message/create";

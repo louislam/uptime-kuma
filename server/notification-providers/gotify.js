@@ -4,6 +4,9 @@ const axios = require("axios");
 class Gotify extends NotificationProvider {
     name = "gotify";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
 

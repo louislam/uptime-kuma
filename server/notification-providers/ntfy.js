@@ -5,6 +5,9 @@ const { DOWN, UP } = require("../../src/util");
 class Ntfy extends NotificationProvider {
     name = "ntfy";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
 

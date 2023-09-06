@@ -138,7 +138,7 @@ export default {
         /**
          * Get monitors which has a specific tag locally
          * @param {number} tagId id of the tag to filter
-         * @returns {Object[]} list of monitors which has a specific tag
+         * @returns {object[]} list of monitors which has a specific tag
          */
         monitorsByTag(tagId) {
             return Object.values(this.$root.monitorList).filter((monitor) => {

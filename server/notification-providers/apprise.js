@@ -4,6 +4,9 @@ const childProcess = require("child_process");
 class Apprise extends NotificationProvider {
     name = "apprise";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
 

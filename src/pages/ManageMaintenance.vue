@@ -135,7 +135,7 @@ export default {
 
         /**
          * Get maintenance URL
-         * @param {number} id
+         * @param {number} id ID of maintenance to read
          * @returns {string} Relative URL
          */
         maintenanceURL(id) {
@@ -144,14 +144,19 @@ export default {
 
         /**
          * Show delete confirmation
-         * @param {number} maintenanceID
+         * @param {number} maintenanceID ID of maintenance to show delete
+         * confirmation for.
+         * @returns {void}
          */
         deleteDialog(maintenanceID) {
             this.selectedMaintenanceID = maintenanceID;
             this.$refs.confirmDelete.show();
         },
 
-        /** Delete maintenance after showing confirmation dialog */
+        /**
+         * Delete maintenance after showing confirmation dialog
+         * @returns {void}
+         */
         deleteMaintenance() {
             this.$root.deleteMaintenance(this.selectedMaintenanceID, (res) => {
                 if (res.ok) {
@@ -165,6 +170,9 @@ export default {
 
         /**
          * Show dialog to confirm pause
+         * @param {number} maintenanceID ID of maintenance to confirm
+         * pause.
+         * @returns {void}
          */
         pauseDialog(maintenanceID) {
             this.selectedMaintenanceID = maintenanceID;
@@ -173,6 +181,7 @@ export default {
 
         /**
          * Pause maintenance
+         * @returns {void}
          */
         pauseMaintenance() {
             this.$root.getSocket().emit("pauseMaintenance", this.selectedMaintenanceID, (res) => {
@@ -182,6 +191,8 @@ export default {
 
         /**
          * Resume maintenance
+         * @param {number} id ID of maintenance to resume
+         * @returns {void}
          */
         resumeMaintenance(id) {
             this.$root.getSocket().emit("resumeMaintenance", id, (res) => {

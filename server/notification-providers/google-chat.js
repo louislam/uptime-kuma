@@ -7,6 +7,9 @@ const { DOWN, UP } = require("../../src/util");
 class GoogleChat extends NotificationProvider {
     name = "GoogleChat";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
 

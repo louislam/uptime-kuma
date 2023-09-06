@@ -5,6 +5,9 @@ const { DOWN, UP } = require("../../src/util");
 class Mattermost extends NotificationProvider {
     name = "mattermost";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
 

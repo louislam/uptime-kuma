@@ -6,6 +6,9 @@ const { DOWN, UP } = require("../../src/util");
 class LineNotify extends NotificationProvider {
     name = "LineNotify";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
         const url = "https://notify-api.line.me/api/notify";

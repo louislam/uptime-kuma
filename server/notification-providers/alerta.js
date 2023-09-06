@@ -5,6 +5,9 @@ const axios = require("axios");
 class Alerta extends NotificationProvider {
     name = "alerta";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
 

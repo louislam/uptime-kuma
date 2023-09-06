@@ -11,7 +11,7 @@ class Maintenance extends BeanModel {
     /**
      * Return an object that ready to parse to JSON for public
      * Only show necessary data to public
-     * @returns {Object}
+     * @returns {object} Object ready to parse
      */
     async toPublicJSON() {
 
@@ -98,7 +98,7 @@ class Maintenance extends BeanModel {
     /**
      * Return an object that ready to parse to JSON
      * @param {string} timezone If not specified, the timeRange will be in UTC
-     * @returns {Object}
+     * @returns {object} Object ready to parse
      */
     async toJSON(timezone = null) {
         return this.toPublicJSON(timezone);
@@ -142,7 +142,7 @@ class Maintenance extends BeanModel {
     /**
      * Convert data from socket to bean
      * @param {Bean} bean Bean to fill in
-     * @param {Object} obj Data to fill bean with
+     * @param {object} obj Data to fill bean with
      * @returns {Bean} Filled bean
      */
     static async jsonToBean(bean, obj) {
@@ -188,7 +188,7 @@ class Maintenance extends BeanModel {
 
     /**
      * Throw error if cron is invalid
-     * @param cron
+     * @param {string|Date} cron Pattern or date
      * @returns {Promise<void>}
      */
     static async validateCron(cron) {
@@ -198,6 +198,8 @@ class Maintenance extends BeanModel {
 
     /**
      * Run the cron
+     * @param {boolean} throwError Should an error be thrown on failure
+     * @returns {Promise<void>}
      */
     async run(throwError = false) {
         if (this.beanMeta.job) {
@@ -290,6 +292,10 @@ class Maintenance extends BeanModel {
         }
     }
 
+    /**
+     * Get timeslots where maintenance is running
+     * @returns {object|null} Maintenance time slot
+     */
     getRunningTimeslot() {
         let start = dayjs(this.beanMeta.job.nextRun(dayjs().add(-this.duration, "second").toDate()));
         let end = start.add(this.duration, "second");
@@ -305,6 +311,10 @@ class Maintenance extends BeanModel {
         }
     }
 
+    /**
+     * Stop the maintenance
+     * @returns {void}
+     */
     stop() {
         if (this.beanMeta.job) {
             this.beanMeta.job.stop();
@@ -312,10 +322,18 @@ class Maintenance extends BeanModel {
         }
     }
 
+    /**
+     * Is this maintenance currently active
+     * @returns {boolean} The maintenance is active?
+     */
     async isUnderMaintenance() {
         return (await this.getStatus()) === "under-maintenance";
     }
 
+    /**
+     * Get the timezone of the maintenance
+     * @returns {string} timezone
+     */
     async getTimezone() {
         if (!this.timezone || this.timezone === "SAME_AS_SERVER") {
             return await UptimeKumaServer.getInstance().getTimezone();
@@ -323,10 +341,18 @@ class Maintenance extends BeanModel {
         return this.timezone;
     }
 
+    /**
+     * Get offset for timezone
+     * @returns {string} offset
+     */
     async getTimezoneOffset() {
         return dayjs.tz(dayjs(), await this.getTimezone()).format("Z");
     }
 
+    /**
+     * Get the current status of the maintenance
+     * @returns {string} Current status
+     */
     async getStatus() {
         if (!this.active) {
             return "inactive";

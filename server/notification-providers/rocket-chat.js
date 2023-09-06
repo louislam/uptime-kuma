@@ -7,6 +7,9 @@ const { getMonitorRelativeURL, DOWN } = require("../../src/util");
 class RocketChat extends NotificationProvider {
     name = "rocket.chat";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
 

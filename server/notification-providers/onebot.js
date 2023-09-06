@@ -4,6 +4,9 @@ const axios = require("axios");
 class OneBot extends NotificationProvider {
     name = "OneBot";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
 

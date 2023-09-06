@@ -4,6 +4,9 @@ const axios = require("axios");
 class ClickSendSMS extends NotificationProvider {
     name = "clicksendsms";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
         const url = "https://rest.clicksend.com/v3/sms/send";

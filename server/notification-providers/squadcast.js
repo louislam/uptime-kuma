@@ -5,6 +5,9 @@ const { DOWN } = require("../../src/util");
 class Squadcast extends NotificationProvider {
     name = "squadcast";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
 

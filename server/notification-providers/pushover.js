@@ -4,6 +4,9 @@ const axios = require("axios");
 class Pushover extends NotificationProvider {
     name = "pushover";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
         const url = "https://api.pushover.net/1/messages.json";

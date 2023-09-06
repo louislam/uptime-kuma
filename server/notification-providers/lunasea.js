@@ -5,6 +5,9 @@ const { DOWN, UP } = require("../../src/util");
 class LunaSea extends NotificationProvider {
     name = "lunasea";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
         const url = "https://notify.lunasea.app/v1";

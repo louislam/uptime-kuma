@@ -6,6 +6,9 @@ const { getMonitorRelativeURL, UP, DOWN } = require("../../src/util");
 class AlertNow extends NotificationProvider {
     name = "AlertNow";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
 

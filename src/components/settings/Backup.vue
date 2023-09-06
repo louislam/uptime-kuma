@@ -142,12 +142,16 @@ export default {
         /**
          * Show the confimation dialog confirming the configuration
          * be imported
+         * @returns {void}
          */
         confirmImport() {
             this.$refs.confirmImport.show();
         },
 
-        /** Download a backup of the configuration */
+        /**
+         * Download a backup of the configuration
+         * @returns {void}
+         */
         downloadBackup() {
             let time = dayjs().format("YYYY_MM_DD-hh_mm_ss");
             let fileName = `Uptime_Kuma_Backup_${time}.json`;
@@ -170,7 +174,7 @@ export default {
 
         /**
          * Import the specified backup file
-         * @returns {?string}
+         * @returns {string|void} Error message
          */
         importBackup() {
             this.processing = true;

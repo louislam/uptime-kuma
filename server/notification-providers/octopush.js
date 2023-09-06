@@ -4,6 +4,9 @@ const axios = require("axios");
 class Octopush extends NotificationProvider {
     name = "octopush";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
         const urlV2 = "https://api.octopush.com/v1/public/sms-campaign/send";

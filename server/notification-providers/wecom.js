@@ -5,6 +5,9 @@ const { DOWN, UP } = require("../../src/util");
 class WeCom extends NotificationProvider {
     name = "WeCom";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
 
@@ -24,9 +27,9 @@ class WeCom extends NotificationProvider {
 
     /**
      * Generate the message to send
-     * @param {Object} heartbeatJSON Heartbeat details (For Up/Down only)
+     * @param {object} heartbeatJSON Heartbeat details (For Up/Down only)
      * @param {string} msg General message
-     * @returns {Object}
+     * @returns {object} Message
      */
     composeMessage(heartbeatJSON, msg) {
         let title;

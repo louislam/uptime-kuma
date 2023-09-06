@@ -5,6 +5,9 @@ const { DOWN, UP } = require("../../src/util");
 class PushDeer extends NotificationProvider {
     name = "PushDeer";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
         const serverUrl = notification.pushdeerServer || "https://api2.pushdeer.com";

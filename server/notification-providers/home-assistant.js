@@ -6,6 +6,9 @@ const defaultNotificationService = "notify";
 class HomeAssistant extends NotificationProvider {
     name = "HomeAssistant";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
 

@@ -4,6 +4,9 @@ const axios = require("axios");
 class Twilio extends NotificationProvider {
     name = "twilio";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
 

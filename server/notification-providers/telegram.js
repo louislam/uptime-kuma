@@ -4,6 +4,9 @@ const axios = require("axios");
 class Telegram extends NotificationProvider {
     name = "telegram";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
         const url = "https://api.telegram.org";

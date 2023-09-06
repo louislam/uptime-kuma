@@ -4,6 +4,9 @@ const axios = require("axios");
 class PromoSMS extends NotificationProvider {
     name = "promosms";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
         const url = "https://promosms.com/api/rest/v3_2/sms";

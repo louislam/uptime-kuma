@@ -5,6 +5,9 @@ const { DOWN, UP } = require("../../src/util");
 class Discord extends NotificationProvider {
     name = "discord";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
 

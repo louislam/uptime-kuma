@@ -4,6 +4,9 @@ const axios = require("axios");
 class Gorush extends NotificationProvider {
     name = "gorush";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
 

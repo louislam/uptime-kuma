@@ -6,6 +6,9 @@ const { getMonitorRelativeURL } = require("../../src/util");
 class Stackfield extends NotificationProvider {
     name = "stackfield";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
 

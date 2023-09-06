@@ -6,6 +6,9 @@ const { DOWN, UP } = require("../../src/util");
 class Pushbullet extends NotificationProvider {
     name = "pushbullet";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
         const url = "https://api.pushbullet.com/v2/pushes";
