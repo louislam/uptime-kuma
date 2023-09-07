@@ -284,3 +284,11 @@ git remote add production https://github.com/louislam/uptime-kuma.wiki.git
 git pull
 git push production master
 ```
+
+## Useful Commands
+
+Change the base of a pull request such as `master` to `1.23.X`
+
+```
+git rebase --onto <new parent> <old parent>
+```
