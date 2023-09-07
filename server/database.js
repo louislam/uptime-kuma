@@ -653,7 +653,7 @@ class Database {
      *
      */
     static sqlHourOffset() {
-        if (this.dbConfig.client === "sqlite3") {
+        if (Database.dbConfig.type === "sqlite") {
             return "DATETIME('now', ? || ' hours')";
         } else {
             return "DATE_ADD(NOW(), INTERVAL ? HOUR)";
