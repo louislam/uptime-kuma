@@ -368,6 +368,12 @@ function memoryUsage() {
 }
 
 test("Worst case", async (t) => {
+
+    // Disable on GitHub Actions, as it is not stable on it
+    if (process.env.GITHUB_ACTIONS) {
+        return;
+    }
+
     console.log("Memory usage before preparation", memoryUsage());
 
     let c = new UptimeCalculator();

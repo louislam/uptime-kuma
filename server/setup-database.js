@@ -46,7 +46,7 @@ class SetupDatabase {
         } catch (e) {
             log.info("setup-database", "db-config.json is not found or invalid: " + e.message);
 
-            // Check if kuma.db is found (1.X.X users)
+            // Check if kuma.db is found (1.X.X users), generate db-config.json
             if (fs.existsSync(path.join(Database.dataDir, "kuma.db"))) {
                 // Migrate to new config format
                 dbConfig = {
@@ -55,6 +55,11 @@ class SetupDatabase {
                 Database.writeDBConfig(dbConfig);
 
                 this.needSetup = false;
+
+                log.info("setup-database", "kuma.db is found, generate db-config.json");
+                Database.writeDBConfig({
+                    type: "sqlite",
+                });
             } else {
                 this.needSetup = true;
             }
