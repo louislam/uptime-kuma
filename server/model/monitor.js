@@ -6,7 +6,7 @@ const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, TimeLogger, MAX_INTERVA
     SQL_DATETIME_FORMAT
 } = require("../../src/util");
 const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, mqttAsync, setSetting, httpNtlm, radius, grpcQuery,
-    redisPingAsync, mongodbPing, kafkaProducerAsync
+    redisPingAsync, mongodbPing, kafkaProducerAsync, getOidcTokenClientCredentials,
 } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
@@ -18,10 +18,10 @@ const apicache = require("../modules/apicache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { CacheableDnsHttpAgent } = require("../cacheable-dns-http-agent");
 const { DockerHost } = require("../docker");
-const { UptimeCacheList } = require("../uptime-cache-list");
 const Gamedig = require("gamedig");
 const jsonata = require("jsonata");
 const jwt = require("jsonwebtoken");
+const { UptimeCalculator } = require("../uptime-calculator");
 
 /**
  * status:
@@ -33,15 +33,19 @@ const jwt = require("jsonwebtoken");
 class Monitor extends BeanModel {
 
     /**
-     * Return an object that ready to parse to JSON for public
-     * Only show necessary data to public
-     * @returns {Object}
+     * Return an object that ready to parse to JSON for public Only show
+     * necessary data to public
+     * @param {boolean} showTags Include tags in JSON
+     * @param {boolean} certExpiry Include certificate expiry info in
+     * JSON
+     * @returns {object} Object ready to parse
      */
-    async toPublicJSON(showTags = false) {
+    async toPublicJSON(showTags = false, certExpiry = false) {
         let obj = {
             id: this.id,
             name: this.name,
             sendUrl: this.sendUrl,
+            type: this.type,
         };
 
         if (this.sendUrl) {
@@ -51,12 +55,21 @@ class Monitor extends BeanModel {
         if (showTags) {
             obj.tags = await this.getTags();
         }
+
+        if (certExpiry && this.type === "http") {
+            const { certExpiryDaysRemaining, validCert } = await this.getCertExpiry(this.id);
+            obj.certExpiryDaysRemaining = certExpiryDaysRemaining;
+            obj.validCert = validCert;
+        }
+
         return obj;
     }
 
     /**
      * Return an object that ready to parse to JSON
-     * @returns {Object}
+     * @param {boolean} includeSensitiveData Include sensitive data in
+     * JSON
+     * @returns {object} Object ready to parse
      */
     async toJSON(includeSensitiveData = true) {
 
@@ -94,6 +107,7 @@ class Monitor extends BeanModel {
             active: await this.isActive(),
             forceInactive: !await Monitor.isParentActive(this.id),
             type: this.type,
+            timeout: this.timeout,
             interval: this.interval,
             retryInterval: this.retryInterval,
             resendInterval: this.resendInterval,
@@ -126,6 +140,7 @@ class Monitor extends BeanModel {
             radiusCalledStationId: this.radiusCalledStationId,
             radiusCallingStationId: this.radiusCallingStationId,
             game: this.game,
+            gamedigGivenPortOnly: this.getGameDigGivenPortOnly(),
             httpBodyEncoding: this.httpBodyEncoding,
             jsonPath: this.jsonPath,
             expectedValue: this.expectedValue,
@@ -146,6 +161,11 @@ class Monitor extends BeanModel {
                 grpcMetadata: this.grpcMetadata,
                 basic_auth_user: this.basic_auth_user,
                 basic_auth_pass: this.basic_auth_pass,
+                oauth_client_id: this.oauth_client_id,
+                oauth_client_secret: this.oauth_client_secret,
+                oauth_token_url: this.oauth_token_url,
+                oauth_scopes: this.oauth_scopes,
+                oauth_auth_method: this.oauth_auth_method,
                 pushToken: this.pushToken,
                 databaseConnectionString: this.databaseConnectionString,
                 radiusUsername: this.radiusUsername,
@@ -167,9 +187,9 @@ class Monitor extends BeanModel {
     }
 
     /**
-	 * Checks if the monitor is active based on itself and its parents
-	 * @returns {Promise<Boolean>}
-	 */
+     * Checks if the monitor is active based on itself and its parents
+     * @returns {Promise<boolean>} Is the monitor active?
+     */
     async isActive() {
         const parentActive = await Monitor.isParentActive(this.id);
 
@@ -178,16 +198,45 @@ class Monitor extends BeanModel {
 
     /**
      * Get all tags applied to this monitor
-     * @returns {Promise<LooseObject<any>[]>}
+     * @returns {Promise<LooseObject<any>[]>} List of tags on the
+     * monitor
      */
     async getTags() {
         return await R.getAll("SELECT mt.*, tag.name, tag.color FROM monitor_tag mt JOIN tag ON mt.tag_id = tag.id WHERE mt.monitor_id = ? ORDER BY tag.name", [ this.id ]);
     }
 
     /**
+     * Gets certificate expiry for this monitor
+     * @param {number} monitorID ID of monitor to send
+     * @returns {Promise<LooseObject<any>>} Certificate expiry info for
+     * monitor
+     */
+    async getCertExpiry(monitorID) {
+        let tlsInfoBean = await R.findOne("monitor_tls_info", "monitor_id = ?", [
+            monitorID,
+        ]);
+        let tlsInfo;
+        if (tlsInfoBean) {
+            tlsInfo = JSON.parse(tlsInfoBean?.info_json);
+            if (tlsInfo?.valid && tlsInfo?.certInfo?.daysRemaining) {
+                return {
+                    certExpiryDaysRemaining: tlsInfo.certInfo.daysRemaining,
+                    validCert: true
+                };
+            }
+        }
+        return {
+            certExpiryDaysRemaining: "",
+            validCert: false
+        };
+    }
+
+    /**
      * Encode user and password to Base64 encoding
      * for HTTP "basic" auth, as per RFC-7617
-     * @returns {string}
+     * @param {string} user Username to encode
+     * @param {string} pass Password to encode
+     * @returns {string} Encoded username:password
      */
     encodeBase64(user, pass) {
         return Buffer.from(user + ":" + pass).toString("base64");
@@ -195,7 +244,7 @@ class Monitor extends BeanModel {
 
     /**
      * Is the TLS expiry notification enabled?
-     * @returns {boolean}
+     * @returns {boolean} Enabled?
      */
     isEnabledExpiryNotification() {
         return Boolean(this.expiryNotification);
@@ -203,7 +252,7 @@ class Monitor extends BeanModel {
 
     /**
      * Parse to boolean
-     * @returns {boolean}
+     * @returns {boolean} Should TLS errors be ignored?
      */
     getIgnoreTls() {
         return Boolean(this.ignoreTls);
@@ -211,7 +260,7 @@ class Monitor extends BeanModel {
 
     /**
      * Parse to boolean
-     * @returns {boolean}
+     * @returns {boolean} Is the monitor in upside down mode?
      */
     isUpsideDown() {
         return Boolean(this.upsideDown);
@@ -219,7 +268,7 @@ class Monitor extends BeanModel {
 
     /**
      * Parse to boolean
-     * @returns {boolean}
+     * @returns {boolean} Invert keyword match?
      */
     isInvertKeyword() {
         return Boolean(this.invertKeyword);
@@ -227,7 +276,7 @@ class Monitor extends BeanModel {
 
     /**
      * Parse to boolean
-     * @returns {boolean}
+     * @returns {boolean} Enable TLS for gRPC?
      */
     getGrpcEnableTls() {
         return Boolean(this.grpcEnableTls);
@@ -235,15 +284,24 @@ class Monitor extends BeanModel {
 
     /**
      * Get accepted status codes
-     * @returns {Object}
+     * @returns {object} Accepted status codes
      */
     getAcceptedStatuscodes() {
         return JSON.parse(this.accepted_statuscodes_json);
     }
 
     /**
+     * Get if game dig should only use the port which was provided
+     * @returns {boolean} gamedig should only use the provided port
+     */
+    getGameDigGivenPortOnly() {
+        return Boolean(this.gamedigGivenPortOnly);
+    }
+
+    /**
      * Start monitor
      * @param {Server} io Socket server instance
+     * @returns {void}
      */
     start(io) {
         let previousBeat = null;
@@ -288,13 +346,6 @@ class Monitor extends BeanModel {
                 bean.status = flipStatus(bean.status);
             }
 
-            // Duration
-            if (!isFirstBeat) {
-                bean.duration = dayjs(bean.time).diff(dayjs(previousBeat.time), "second");
-            } else {
-                bean.duration = 0;
-            }
-
             try {
                 if (await Monitor.isUnderMaintenance(this.id)) {
                     bean.msg = "Monitor under maintenance";
@@ -313,7 +364,10 @@ class Monitor extends BeanModel {
                             const lastBeat = await Monitor.getPreviousHeartbeat(child.id);
 
                             // Only change state if the monitor is in worse conditions then the ones before
-                            if (bean.status === UP && (lastBeat.status === PENDING || lastBeat.status === DOWN)) {
+                            // lastBeat.status could be null
+                            if (!lastBeat) {
+                                bean.status = PENDING;
+                            } else if (bean.status === UP && (lastBeat.status === PENDING || lastBeat.status === DOWN)) {
                                 bean.status = lastBeat.status;
                             } else if (bean.status === PENDING && lastBeat.status === DOWN) {
                                 bean.status = lastBeat.status;
@@ -339,6 +393,24 @@ class Monitor extends BeanModel {
                         basicAuthHeader = {
                             "Authorization": "Basic " + this.encodeBase64(this.basic_auth_user, this.basic_auth_pass),
                         };
+                    }
+
+                    // OIDC: Basic client credential flow.
+                    // Additional grants might be implemented in the future
+                    let oauth2AuthHeader = {};
+                    if (this.auth_method === "oauth2-cc") {
+                        try {
+                            if (this.oauthAccessToken === undefined || new Date(this.oauthAccessToken.expires_at * 1000) <= new Date()) {
+                                log.debug("monitor", `[${this.name}] The oauth access-token undefined or expired. Requesting a new one`);
+                                this.oauthAccessToken = await getOidcTokenClientCredentials(this.oauth_token_url, this.oauth_client_id, this.oauth_client_secret, this.oauth_scopes, this.oauth_auth_method);
+                                log.debug("monitor", `[${this.name}] Obtained oauth access-token. Expires at ${new Date(this.oauthAccessToken.expires_at * 1000)}`);
+                            }
+                            oauth2AuthHeader = {
+                                "Authorization": this.oauthAccessToken.token_type + " " + this.oauthAccessToken.access_token,
+                            };
+                        } catch (e) {
+                            throw new Error("The oauth config is invalid. " + e.message);
+                        }
                     }
 
                     const httpsAgentOptions = {
@@ -372,12 +444,13 @@ class Monitor extends BeanModel {
                     const options = {
                         url: this.url,
                         method: (this.method || "get").toLowerCase(),
-                        timeout: this.interval * 1000 * 0.8,
+                        timeout: this.timeout * 1000,
                         headers: {
                             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
                             "User-Agent": "Uptime-Kuma/" + version,
                             ...(contentType ? { "Content-Type": contentType } : {}),
                             ...(basicAuthHeader),
+                            ...(oauth2AuthHeader),
                             ...(this.headers ? JSON.parse(this.headers) : {})
                         },
                         maxRedirects: this.maxredirects,
@@ -518,13 +591,13 @@ class Monitor extends BeanModel {
                     let dnsRes = await dnsResolve(this.hostname, this.dns_resolve_server, this.port, this.dns_resolve_type);
                     bean.ping = dayjs().valueOf() - startTime;
 
-                    if (this.dns_resolve_type === "A" || this.dns_resolve_type === "AAAA" || this.dns_resolve_type === "TXT") {
+                    if (this.dns_resolve_type === "A" || this.dns_resolve_type === "AAAA" || this.dns_resolve_type === "TXT" || this.dns_resolve_type === "PTR") {
                         dnsMessage += "Records: ";
                         dnsMessage += dnsRes.join(" | ");
-                    } else if (this.dns_resolve_type === "CNAME" || this.dns_resolve_type === "PTR") {
-                        dnsMessage = dnsRes[0];
+                    } else if (this.dns_resolve_type === "CNAME") {
+                        dnsMessage += dnsRes[0];
                     } else if (this.dns_resolve_type === "CAA") {
-                        dnsMessage = dnsRes[0].issue;
+                        dnsMessage += dnsRes[0].issue;
                     } else if (this.dns_resolve_type === "MX") {
                         dnsRes.forEach(record => {
                             dnsMessage += `Hostname: ${record.exchange} - Priority: ${record.priority} | `;
@@ -542,7 +615,7 @@ class Monitor extends BeanModel {
                         dnsMessage = dnsMessage.slice(0, -2);
                     }
 
-                    if (this.dnsLastResult !== dnsMessage) {
+                    if (this.dnsLastResult !== dnsMessage && dnsMessage !== undefined) {
                         R.exec("UPDATE `monitor` SET dns_last_result = ? WHERE id = ? ", [
                             dnsMessage,
                             this.id
@@ -591,7 +664,7 @@ class Monitor extends BeanModel {
                     }
 
                     let res = await axios.get(steamApiUrl, {
-                        timeout: this.interval * 1000 * 0.8,
+                        timeout: this.timeout * 1000,
                         headers: {
                             "Accept": "*/*",
                             "User-Agent": "Uptime-Kuma/" + version,
@@ -629,7 +702,7 @@ class Monitor extends BeanModel {
                             type: this.game,
                             host: this.hostname,
                             port: this.port,
-                            givenPortOnly: true,
+                            givenPortOnly: this.getGameDigGivenPortOnly(),
                         });
 
                         bean.msg = state.name;
@@ -663,6 +736,9 @@ class Monitor extends BeanModel {
                         options.socketPath = dockerHost._dockerDaemon;
                     } else if (dockerHost._dockerType === "tcp") {
                         options.baseURL = DockerHost.patchDockerURL(dockerHost._dockerDaemon);
+                        options.httpsAgent = CacheableDnsHttpAgent.getHttpsAgent(
+                            DockerHost.getHttpsAgentOptions(dockerHost._dockerType, options.baseURL)
+                        );
                     }
 
                     log.debug("monitor", `[${this.name}] Axios Request`);
@@ -762,29 +838,19 @@ class Monitor extends BeanModel {
                         port = this.port;
                     }
 
-                    try {
-                        const resp = await radius(
-                            this.hostname,
-                            this.radiusUsername,
-                            this.radiusPassword,
-                            this.radiusCalledStationId,
-                            this.radiusCallingStationId,
-                            this.radiusSecret,
-                            port,
-                            this.interval * 1000 * 0.8,
-                        );
-                        if (resp.code) {
-                            bean.msg = resp.code;
-                        }
-                        bean.status = UP;
-                    } catch (error) {
-                        bean.status = DOWN;
-                        if (error.response?.code) {
-                            bean.msg = error.response.code;
-                        } else {
-                            bean.msg = error.message;
-                        }
-                    }
+                    const resp = await radius(
+                        this.hostname,
+                        this.radiusUsername,
+                        this.radiusPassword,
+                        this.radiusCalledStationId,
+                        this.radiusCallingStationId,
+                        this.radiusSecret,
+                        port,
+                        this.interval * 1000 * 0.4,
+                    );
+
+                    bean.msg = resp.code;
+                    bean.status = UP;
                     bean.ping = dayjs().valueOf() - startTime;
                 } else if (this.type === "redis") {
                     let startTime = dayjs().valueOf();
@@ -901,11 +967,17 @@ class Monitor extends BeanModel {
                 log.warn("monitor", `Monitor #${this.id} '${this.name}': Failing: ${bean.msg} | Interval: ${beatInterval} seconds | Type: ${this.type} | Down Count: ${bean.downCount} | Resend Interval: ${this.resendInterval}`);
             }
 
+            // Calculate uptime
+            let uptimeCalculator = await UptimeCalculator.getUptimeCalculator(this.id);
+            let endTimeDayjs = await uptimeCalculator.update(bean.status, parseFloat(bean.ping));
+            bean.end_time = R.isoDateTimeMillis(endTimeDayjs);
+
+            // Send to frontend
             log.debug("monitor", `[${this.name}] Send to socket`);
-            UptimeCacheList.clearCache(this.id);
             io.to(this.user_id).emit("heartbeat", bean.toJSON());
             Monitor.sendStats(io, this.id, this.user_id);
 
+            // Store to database
             log.debug("monitor", `[${this.name}] Store`);
             await R.store(bean);
 
@@ -923,7 +995,10 @@ class Monitor extends BeanModel {
 
         };
 
-        /** Get a heartbeat and handle errors */
+        /**
+         * Get a heartbeat and handle errors7
+         * @returns {void}
+         */
         const safeBeat = async () => {
             try {
                 await beat();
@@ -951,10 +1026,10 @@ class Monitor extends BeanModel {
 
     /**
      * Make a request using axios
-     * @param {Object} options Options for Axios
+     * @param {object} options Options for Axios
      * @param {boolean} finalCall Should this be the final call i.e
-     * don't retry on faliure
-     * @returns {Object} Axios response
+     * don't retry on failure
+     * @returns {object} Axios response
      */
     async makeAxiosRequest(options, finalCall = false) {
         try {
@@ -989,7 +1064,10 @@ class Monitor extends BeanModel {
         }
     }
 
-    /** Stop monitor */
+    /**
+     * Stop monitor
+     * @returns {void}
+     */
     stop() {
         clearTimeout(this.heartbeatInterval);
         this.isStop = true;
@@ -999,7 +1077,7 @@ class Monitor extends BeanModel {
 
     /**
      * Get prometheus instance
-     * @returns {Prometheus|undefined}
+     * @returns {Prometheus|undefined} Current prometheus instance
      */
     getPrometheus() {
         return this.prometheus;
@@ -1009,7 +1087,7 @@ class Monitor extends BeanModel {
      * Helper Method:
      * returns URL object for further usage
      * returns null if url is invalid
-     * @returns {(null|URL)}
+     * @returns {(null|URL)} Monitor URL
      */
     getUrl() {
         try {
@@ -1021,8 +1099,8 @@ class Monitor extends BeanModel {
 
     /**
      * Store TLS info to database
-     * @param checkCertificateResult
-     * @returns {Promise<Object>}
+     * @param {object} checkCertificateResult Certificate to update
+     * @returns {Promise<object>} Updated certificate
      */
     async updateTlsInfo(checkCertificateResult) {
         let tlsInfoBean = await R.findOne("monitor_tls_info", "monitor_id = ?", [
@@ -1069,14 +1147,29 @@ class Monitor extends BeanModel {
      * @param {Server} io Socket server instance
      * @param {number} monitorID ID of monitor to send
      * @param {number} userID ID of user to send to
+     * @returns {void}
      */
     static async sendStats(io, monitorID, userID) {
         const hasClients = getTotalClientInRoom(io, userID) > 0;
+        let uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitorID);
 
         if (hasClients) {
-            await Monitor.sendAvgPing(24, io, monitorID, userID);
-            await Monitor.sendUptime(24, io, monitorID, userID);
-            await Monitor.sendUptime(24 * 30, io, monitorID, userID);
+            // Send 24 hour average ping
+            let data24h = await uptimeCalculator.get24Hour();
+            io.to(userID).emit("avgPing", monitorID, (data24h.avgPing) ? data24h.avgPing.toFixed(2) : null);
+
+            // Send 24 hour uptime
+            io.to(userID).emit("uptime", monitorID, 24, data24h.uptime);
+
+            // Send 30 day uptime
+            let data30d = await uptimeCalculator.get30Day();
+            io.to(userID).emit("uptime", monitorID, 720, data30d.uptime);
+
+            // Send 1-year uptime
+            let data1y = await uptimeCalculator.get1Year();
+            io.to(userID).emit("uptime", monitorID, "1y", data1y.uptime);
+
+            // Send Cert Info
             await Monitor.sendCertInfo(io, monitorID, userID);
         } else {
             log.debug("monitor", "No clients in the room, no need to send stats");
@@ -1084,32 +1177,11 @@ class Monitor extends BeanModel {
     }
 
     /**
-     * Send the average ping to user
-     * @param {number} duration Hours
-     */
-    static async sendAvgPing(duration, io, monitorID, userID) {
-        const timeLogger = new TimeLogger();
-
-        let avgPing = parseInt(await R.getCell(`
-            SELECT AVG(ping)
-            FROM heartbeat
-            WHERE time > DATETIME('now', ? || ' hours')
-            AND ping IS NOT NULL
-            AND monitor_id = ? `, [
-            -duration,
-            monitorID,
-        ]));
-
-        timeLogger.print(`[Monitor: ${monitorID}] avgPing`);
-
-        io.to(userID).emit("avgPing", monitorID, avgPing);
-    }
-
-    /**
      * Send certificate information to client
      * @param {Server} io Socket server instance
      * @param {number} monitorID ID of monitor to send
      * @param {number} userID ID of user to send to
+     * @returns {void}
      */
     static async sendCertInfo(io, monitorID, userID) {
         let tlsInfo = await R.findOne("monitor_tls_info", "monitor_id = ?", [
@@ -1118,98 +1190,6 @@ class Monitor extends BeanModel {
         if (tlsInfo != null) {
             io.to(userID).emit("certInfo", monitorID, tlsInfo.info_json);
         }
-    }
-
-    /**
-     * Uptime with calculation
-     * Calculation based on:
-     * https://www.uptrends.com/support/kb/reporting/calculation-of-uptime-and-downtime
-     * @param {number} duration Hours
-     * @param {number} monitorID ID of monitor to calculate
-     */
-    static async calcUptime(duration, monitorID, forceNoCache = false) {
-
-        if (!forceNoCache) {
-            let cachedUptime = UptimeCacheList.getUptime(monitorID, duration);
-            if (cachedUptime != null) {
-                return cachedUptime;
-            }
-        }
-
-        const timeLogger = new TimeLogger();
-
-        const startTime = R.isoDateTime(dayjs.utc().subtract(duration, "hour"));
-
-        // Handle if heartbeat duration longer than the target duration
-        // e.g. If the last beat's duration is bigger that the 24hrs window, it will use the duration between the (beat time - window margin) (THEN case in SQL)
-        let result = await R.getRow(`
-            SELECT
-               -- SUM all duration, also trim off the beat out of time window
-                SUM(
-                    CASE
-                        WHEN (JULIANDAY(\`time\`) - JULIANDAY(?)) * 86400 < duration
-                        THEN (JULIANDAY(\`time\`) - JULIANDAY(?)) * 86400
-                        ELSE duration
-                    END
-                ) AS total_duration,
-
-               -- SUM all uptime duration, also trim off the beat out of time window
-                SUM(
-                    CASE
-                        WHEN (status = 1 OR status = 3)
-                        THEN
-                            CASE
-                                WHEN (JULIANDAY(\`time\`) - JULIANDAY(?)) * 86400 < duration
-                                    THEN (JULIANDAY(\`time\`) - JULIANDAY(?)) * 86400
-                                ELSE duration
-                            END
-                        END
-                ) AS uptime_duration
-            FROM heartbeat
-            WHERE time > ?
-            AND monitor_id = ?
-        `, [
-            startTime, startTime, startTime, startTime, startTime,
-            monitorID,
-        ]);
-
-        timeLogger.print(`[Monitor: ${monitorID}][${duration}] sendUptime`);
-
-        let totalDuration = result.total_duration;
-        let uptimeDuration = result.uptime_duration;
-        let uptime = 0;
-
-        if (totalDuration > 0) {
-            uptime = uptimeDuration / totalDuration;
-            if (uptime < 0) {
-                uptime = 0;
-            }
-
-        } else {
-            // Handle new monitor with only one beat, because the beat's duration = 0
-            let status = parseInt(await R.getCell("SELECT `status` FROM heartbeat WHERE monitor_id = ?", [ monitorID ]));
-
-            if (status === UP) {
-                uptime = 1;
-            }
-        }
-
-        // Cache
-        UptimeCacheList.addUptime(monitorID, duration, uptime);
-
-        return uptime;
-    }
-
-    /**
-     * Send Uptime
-     * @param {number} duration Hours
-     * @param {Server} io Socket server instance
-     * @param {number} monitorID ID of monitor to send
-     * @param {number} userID ID of user to send to
-     */
-    static async sendUptime(duration, io, monitorID, userID) {
-        const uptime = await this.calcUptime(duration, monitorID);
-        io.to(userID).emit("uptime", monitorID, duration, uptime);
     }
 
     /**
@@ -1280,6 +1260,7 @@ class Monitor extends BeanModel {
      * @param {boolean} isFirstBeat Is this beat the first of this monitor?
      * @param {Monitor} monitor The monitor to send a notificaton about
      * @param {Bean} bean Status information about monitor
+     * @returns {void}
      */
     static async sendNotification(isFirstBeat, monitor, bean) {
         if (!isFirstBeat || bean.status === DOWN) {
@@ -1320,7 +1301,7 @@ class Monitor extends BeanModel {
     /**
      * Get list of notification providers for a given monitor
      * @param {Monitor} monitor Monitor to get notification providers for
-     * @returns {Promise<LooseObject<any>[]>}
+     * @returns {Promise<LooseObject<any>[]>} List of notifications
      */
     static async getNotificationList(monitor) {
         let notificationList = await R.getAll("SELECT notification.* FROM notification, monitor_notification WHERE monitor_id = ? AND monitor_notification.notification_id = notification.id ", [
@@ -1331,7 +1312,8 @@ class Monitor extends BeanModel {
 
     /**
      * checks certificate chain for expiring certificates
-     * @param {Object} tlsInfoObject Information about certificate
+     * @param {object} tlsInfoObject Information about certificate
+     * @returns {void}
      */
     async checkCertExpiryNotifications(tlsInfoObject) {
         if (tlsInfoObject && tlsInfoObject.certInfo && tlsInfoObject.certInfo.daysRemaining) {
@@ -1418,7 +1400,7 @@ class Monitor extends BeanModel {
     /**
      * Get the status of the previous heartbeat
      * @param {number} monitorID ID of monitor to check
-     * @returns {Promise<LooseObject<any>>}
+     * @returns {Promise<LooseObject<any>>} Previous heartbeat
      */
     static async getPreviousHeartbeat(monitorID) {
         return await R.getRow(`
@@ -1432,7 +1414,7 @@ class Monitor extends BeanModel {
     /**
      * Check if monitor is under maintenance
      * @param {number} monitorID ID of monitor to check
-     * @returns {Promise<boolean>}
+     * @returns {Promise<boolean>} Is the monitor under maintenance
      */
     static async isUnderMaintenance(monitorID) {
         const maintenanceIDList = await R.getCol(`
@@ -1455,7 +1437,11 @@ class Monitor extends BeanModel {
         return false;
     }
 
-    /** Make sure monitor interval is between bounds */
+    /**
+     * Make sure monitor interval is between bounds
+     * @returns {void}
+     * @throws Interval is outside of range
+     */
     validate() {
         if (this.interval > MAX_INTERVAL_SECOND) {
             throw new Error(`Interval cannot be more than ${MAX_INTERVAL_SECOND} seconds`);
@@ -1468,7 +1454,7 @@ class Monitor extends BeanModel {
     /**
      * Gets Parent of the monitor
      * @param {number} monitorID ID of monitor to get
-     * @returns {Promise<LooseObject<any>>}
+     * @returns {Promise<LooseObject<any>>} Parent
      */
     static async getParent(monitorID) {
         return await R.getRow(`
@@ -1484,7 +1470,7 @@ class Monitor extends BeanModel {
     /**
      * Gets all Children of the monitor
      * @param {number} monitorID ID of monitor to get
-     * @returns {Promise<LooseObject<any>>}
+     * @returns {Promise<LooseObject<any>>} Children
      */
     static async getChildren(monitorID) {
         return await R.getAll(`
@@ -1497,7 +1483,7 @@ class Monitor extends BeanModel {
 
     /**
      * Gets Full Path-Name (Groups and Name)
-     * @returns {Promise<String>}
+     * @returns {Promise<string>} Full path name of this monitor
      */
     async getPathName() {
         let path = this.name;
@@ -1517,8 +1503,8 @@ class Monitor extends BeanModel {
 
     /**
      * Gets recursive all child ids
-	 * @param {number} monitorID ID of the monitor to get
-     * @returns {Promise<Array>}
+     * @param {number} monitorID ID of the monitor to get
+     * @returns {Promise<Array>} IDs of all children
      */
     static async getAllChildrenIDs(monitorID) {
         const childs = await Monitor.getChildren(monitorID);
@@ -1549,10 +1535,10 @@ class Monitor extends BeanModel {
     }
 
     /**
-	 * Checks recursive if parent (ancestors) are active
-	 * @param {number} monitorID ID of the monitor to get
-	 * @returns {Promise<Boolean>}
-	 */
+     * Checks recursive if parent (ancestors) are active
+     * @param {number} monitorID ID of the monitor to get
+     * @returns {Promise<boolean>} Is the parent monitor active?
+     */
     static async isParentActive(monitorID) {
         const parent = await Monitor.getParent(monitorID);
 

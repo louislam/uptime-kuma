@@ -54,6 +54,12 @@
                     <label class="form-check-label" for="show-powered-by">{{ $t("Show Powered By") }}</label>
                 </div>
 
+                <!-- Show certificate expiry -->
+                <div class="my-3 form-check form-switch">
+                    <input id="show-certificate-expiry" v-model="config.showCertificateExpiry" class="form-check-input" type="checkbox">
+                    <label class="form-check-label" for="show-certificate-expiry">{{ $t("showCertificateExpiry") }}</label>
+                </div>
+
                 <div v-if="false" class="my-3">
                     <label for="password" class="form-label">{{ $t("Password") }} <sup>{{ $t("Coming Soon") }}</sup></label>
                     <input id="password" v-model="config.password" disabled type="password" autocomplete="new-password" class="form-control">
@@ -309,7 +315,7 @@
                     👀 {{ $t("statusPageNothing") }}
                 </div>
 
-                <PublicGroupList :edit-mode="enableEditMode" :show-tags="config.showTags" />
+                <PublicGroupList :edit-mode="enableEditMode" :show-tags="config.showTags" :show-certificate-expiry="config.showCertificateExpiry" />
             </div>
 
             <footer class="mt-5 mb-4">
@@ -446,6 +452,7 @@ export default {
 
         /**
          * If the monitor is added to public list, which will not be in this list.
+         * @returns {object[]} List of monitors
          */
         sortedMonitorList() {
             let result = [];
@@ -590,7 +597,8 @@ export default {
 
         /**
          * If connected to the socket and logged in, request private data of this statusPage
-         * @param connected
+         * @param {boolean} loggedIn Is the client logged in?
+         * @returns {void}
          */
         "$root.loggedIn"(loggedIn) {
             if (loggedIn) {
@@ -613,6 +621,8 @@ export default {
 
         /**
          * Selected a monitor and add to the list.
+         * @param {object} monitor Monitor to add
+         * @returns {void}
          */
         selectedMonitor(monitor) {
             if (monitor) {
@@ -717,7 +727,7 @@ export default {
         /**
          * Get status page data
          * It should be preloaded in window.preloadData
-         * @returns {Promise<any>}
+         * @returns {Promise<any>} Status page data
          */
         getData: function () {
             if (window.preloadData) {
@@ -732,13 +742,16 @@ export default {
         /**
          * Provide syntax highlighting for CSS
          * @param {string} code Text to highlight
-         * @returns {string}
+         * @returns {string} Highlighted HTML
          */
         highlighter(code) {
             return highlight(code, languages.css);
         },
 
-        /** Update the heartbeat list and update favicon if neccessary */
+        /**
+         * Update the heartbeat list and update favicon if necessary
+         * @returns {void}
+         */
         updateHeartbeatList() {
             // If editMode, it will use the data from websocket.
             if (! this.editMode) {
@@ -786,7 +799,10 @@ export default {
             }, 1000);
         },
 
-        /** Enable editing mode */
+        /**
+         * Enable editing mode
+         * @returns {void}
+         */
         edit() {
             if (this.hasToken) {
                 this.$root.initSocketIO(true);
@@ -798,7 +814,10 @@ export default {
             }
         },
 
-        /** Save the status page */
+        /**
+         * Save the status page
+         * @returns {void}
+         */
         save() {
             let startTime = new Date();
             this.config.slug = this.config.slug.trim().toLowerCase();
@@ -826,12 +845,18 @@ export default {
             });
         },
 
-        /** Show dialog confirming deletion */
+        /**
+         * Show dialog confirming deletion
+         * @returns {void}
+         */
         deleteDialog() {
             this.$refs.confirmDelete.show();
         },
 
-        /** Request deletion of this status page */
+        /**
+         * Request deletion of this status page
+         * @returns {void}
+         */
         deleteStatusPage() {
             this.$root.getSocket().emit("deleteStatusPage", this.slug, (res) => {
                 if (res.ok) {
@@ -844,15 +869,18 @@ export default {
         },
 
         /**
-         * Returns label for a specifed monitor
-         * @param {Object} monitor Object representing monitor
-         * @returns {string}
+         * Returns label for a specified monitor
+         * @param {object} monitor Object representing monitor
+         * @returns {string} Monitor label
          */
         monitorSelectorLabel(monitor) {
             return `${monitor.name}`;
         },
 
-        /** Add a group to the status page */
+        /**
+         * Add a group to the status page
+         * @returns {void}
+         */
         addGroup() {
             let groupName = this.$t("Untitled Group");
 
@@ -866,12 +894,18 @@ export default {
             });
         },
 
-        /** Add a domain to the status page */
+        /**
+         * Add a domain to the status page
+         * @returns {void}
+         */
         addDomainField() {
             this.config.domainNameList.push("");
         },
 
-        /** Discard changes to status page */
+        /**
+         * Discard changes to status page
+         * @returns {void}
+         */
         discard() {
             location.href = "/status/" + this.slug;
         },
@@ -879,19 +913,26 @@ export default {
         /**
          * Set URL of new image after successful crop operation
          * @param {string} imgDataUrl URL of image in data:// format
+         * @returns {void}
          */
         cropSuccess(imgDataUrl) {
             this.imgDataUrl = imgDataUrl;
         },
 
-        /** Show image crop dialog if in edit mode */
+        /**
+         * Show image crop dialog if in edit mode
+         * @returns {void}
+         */
         showImageCropUploadMethod() {
             if (this.editMode) {
                 this.showImageCropUpload = true;
             }
         },
 
-        /** Create an incident for this status page */
+        /**
+         * Create an incident for this status page
+         * @returns {void}
+         */
         createIncident() {
             this.enableEditIncidentMode = true;
 
@@ -906,7 +947,10 @@ export default {
             };
         },
 
-        /** Post the incident to the status page */
+        /**
+         * Post the incident to the status page
+         * @returns {void}
+         */
         postIncident() {
             if (this.incident.title === "" || this.incident.content === "") {
                 toast.error(this.$t("Please input title and content"));
@@ -926,13 +970,19 @@ export default {
 
         },
 
-        /** Click Edit Button */
+        /**
+         * Click Edit Button
+         * @returns {void}
+         */
         editIncident() {
             this.enableEditIncidentMode = true;
             this.previousIncident = Object.assign({}, this.incident);
         },
 
-        /** Cancel creation or editing of incident */
+        /**
+         * Cancel creation or editing of incident
+         * @returns {void}
+         */
         cancelIncident() {
             this.enableEditIncidentMode = false;
 
@@ -942,7 +992,10 @@ export default {
             }
         },
 
-        /** Unpin the incident */
+        /**
+         * Unpin the incident
+         * @returns {void}
+         */
         unpinIncident() {
             this.$root.getSocket().emit("unpinIncident", this.slug, () => {
                 this.incident = null;
@@ -951,7 +1004,8 @@ export default {
 
         /**
          * Get the relative time difference of a date from now
-         * @returns {string}
+         * @param {any} date Date to get time difference
+         * @returns {string} Time difference
          */
         dateFromNow(date) {
             return dayjs.utc(date).fromNow();
@@ -960,6 +1014,7 @@ export default {
         /**
          * Remove a domain from the status page
          * @param {number} index Index of domain to remove
+         * @returns {void}
          */
         removeDomain(index) {
             this.config.domainNameList.splice(index, 1);
@@ -967,7 +1022,7 @@ export default {
 
         /**
          * Generate sanitized HTML from maintenance description
-         * @param {string} description
+         * @param {string} description Text to sanitize
          * @returns {string} Sanitized HTML
          */
         maintenanceHTML(description) {

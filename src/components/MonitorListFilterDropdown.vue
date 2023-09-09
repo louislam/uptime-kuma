@@ -1,5 +1,5 @@
 <template>
-    <div class="dropdown" @focusin="open = true" @focusout="handleFocusOut">
+    <div tabindex="-1" class="dropdown" @focusin="open = true" @focusout="handleFocusOut">
         <button type="button" class="filter-dropdown-status" :class="{ 'active': filterActive }" tabindex="0">
             <div class="px-1 d-flex align-items-center">
                 <slot name="status"></slot>
@@ -44,6 +44,7 @@ export default {
 
 <style lang="scss">
 @import "../assets/vars.scss";
+@import "../assets/app.scss";
 
 .filter-dropdown-menu {
     z-index: 100;
@@ -102,17 +103,22 @@ export default {
 }
 
 .filter-dropdown-status {
+    @extend .btn-outline-normal;
     display: flex;
     align-items: center;
-    padding: 4px 10px;
     margin-left: 5px;
-    border: 1px solid #ced4da;
-    border-radius: 25px;
-    background-color: transparent;
+    color: $link-color;
 
     .dark & {
         color: $dark-font-color;
-        border: 1px solid $dark-font-color2;
+    }
+
+    &:focus {
+        background-color: $highlight-white;
+
+        .dark & {
+            background-color: $dark-font-color2;
+        }
     }
 
     &.active {

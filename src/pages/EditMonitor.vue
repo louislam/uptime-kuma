@@ -82,7 +82,7 @@
                                         <option value="redis">
                                             Redis
                                         </option>
-                                        <option value="tailscale-ping">
+                                        <option v-if="$root.info.isContainer" value="tailscale-ping">
                                             Tailscale Ping
                                         </option>
                                     </optgroup>
@@ -97,16 +97,6 @@
                             <div class="my-3">
                                 <label for="name" class="form-label">{{ $t("Friendly Name") }}</label>
                                 <input id="name" v-model="monitor.name" type="text" class="form-control" required>
-                            </div>
-
-                            <!-- Parent Monitor -->
-                            <div class="my-3">
-                                <label for="parent" class="form-label">{{ $t("Monitor Group") }}</label>
-                                <select v-model="monitor.parent" class="form-select" :disabled="sortedMonitorList.length === 0">
-                                    <option v-if="sortedMonitorList.length === 0" :value="null" selected>{{ $t("noGroupMonitorMsg") }}</option>
-                                    <option v-else :value="null" selected>{{ $t("None") }}</option>
-                                    <option v-for="parentMonitor in sortedMonitorList" :key="parentMonitor.id" :value="parentMonitor.id">{{ parentMonitor.pathName }}</option>
-                                </select>
                             </div>
 
                             <!-- URL -->
@@ -373,49 +363,25 @@
                                 </div>
                             </template>
 
+                            <!-- SQL Server / PostgreSQL / MySQL / Redis / MongoDB -->
+                            <template v-if="monitor.type === 'sqlserver' || monitor.type === 'postgres' || monitor.type === 'mysql' || monitor.type === 'redis' || monitor.type === 'mongodb'">
+                                <div class="my-3">
+                                    <label for="connectionString" class="form-label">{{ $t("Connection String") }}</label>
+                                    <input id="connectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" required>
+                                </div>
+                            </template>
                             <!-- SQL Server / PostgreSQL / MySQL -->
                             <template v-if="monitor.type === 'sqlserver' || monitor.type === 'postgres' || monitor.type === 'mysql'">
                                 <div class="my-3">
-                                    <label for="sqlConnectionString" class="form-label">{{ $t("Connection String") }}</label>
-
-                                    <template v-if="monitor.type === 'sqlserver'">
-                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control">
-                                    </template>
-                                    <template v-if="monitor.type === 'postgres'">
-                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control">
-                                    </template>
-                                    <template v-if="monitor.type === 'mysql'">
-                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control">
-                                    </template>
-                                </div>
-                                <div class="my-3">
                                     <label for="sqlQuery" class="form-label">{{ $t("Query") }}</label>
-                                    <textarea id="sqlQuery" v-model="monitor.databaseQuery" class="form-control" placeholder="Example: select getdate()"></textarea>
-                                </div>
-                            </template>
-                            <!-- Redis -->
-                            <template v-if="monitor.type === 'redis'">
-                                <div class="my-3">
-                                    <label for="redisConnectionString" class="form-label">{{ $t("Connection String") }}</label>
-                                    <input id="redisConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control">
-                                </div>
-                            </template>
-
-                            <!-- MongoDB -->
-                            <template v-if="monitor.type === 'mongodb'">
-                                <div class="my-3">
-                                    <label for="sqlConnectionString" class="form-label">{{ $t("Connection String") }}</label>
-
-                                    <template v-if="monitor.type === 'mongodb'">
-                                        <input id="sqlConnectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control">
-                                    </template>
+                                    <textarea id="sqlQuery" v-model="monitor.databaseQuery" class="form-control" :placeholder="$t('Example:', [ 'select getdate()' ])" required></textarea>
                                 </div>
                             </template>
 
                             <!-- Interval -->
                             <div class="my-3">
                                 <label for="interval" class="form-label">{{ $t("Heartbeat Interval") }} ({{ $t("checkEverySecond", [ monitor.interval ]) }})</label>
-                                <input id="interval" v-model="monitor.interval" type="number" class="form-control" required :min="minInterval" step="1" :max="maxInterval">
+                                <input id="interval" v-model="monitor.interval" type="number" class="form-control" required :min="minInterval" step="1" :max="maxInterval" @blur="finishUpdateInterval">
                             </div>
 
                             <div class="my-3">
@@ -432,6 +398,12 @@
                                     <span>({{ $t("retryCheckEverySecond", [ monitor.retryInterval ]) }})</span>
                                 </label>
                                 <input id="retry-interval" v-model="monitor.retryInterval" type="number" class="form-control" required :min="minInterval" step="1">
+                            </div>
+
+                            <!-- Timeout: HTTP / Keyword only -->
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword'" class="my-3">
+                                <label for="timeout" class="form-label">{{ $t("Request Timeout") }} ({{ $t("timeoutAfter", [ monitor.timeout || clampTimeout(monitor.interval) ]) }})</label>
+                                <input id="timeout" v-model="monitor.timeout" type="number" class="form-control" required min="0" step="0.1">
                             </div>
 
                             <div class="my-3">
@@ -468,6 +440,16 @@
                                 </label>
                                 <div class="form-text">
                                     {{ $t("upsideDownModeDescription") }}
+                                </div>
+                            </div>
+
+                            <div v-if="monitor.type === 'gamedig'" class="my-3 form-check">
+                                <input id="gamedig-guess-port" v-model="monitor.gamedigGivenPortOnly" :true-value="false" :false-value="true" class="form-check-input" type="checkbox">
+                                <label class="form-check-label" for="gamedig-guess-port">
+                                    {{ $t("gamedigGuessPort") }}
+                                </label>
+                                <div class="form-text">
+                                    {{ $t("gamedigGuessPortDescription") }}
                                 </div>
                             </div>
 
@@ -509,6 +491,18 @@
                                     </div>
                                 </div>
                             </template>
+
+                            <!-- Parent Monitor -->
+                            <div class="my-3">
+                                <label for="parent" class="form-label">{{ $t("Monitor Group") }}</label>
+                                <ActionSelect
+                                    v-model="monitor.parent"
+                                    :options="parentMonitorOptionsList"
+                                    :disabled="sortedGroupMonitorList.length === 0 && draftGroupName == null"
+                                    :icon="'plus'"
+                                    :action="() => $refs.createGroupDialog.show()"
+                                />
+                            </div>
 
                             <!-- Description -->
                             <div class="my-3">
@@ -690,6 +684,9 @@
                                         <option value="basic">
                                             {{ $t("HTTP Basic Auth") }}
                                         </option>
+                                        <option value="oauth2-cc">
+                                            {{ $t("OAuth2: Client Credentials") }}
+                                        </option>
                                         <option value="ntlm">
                                             NTLM
                                         </option>
@@ -712,6 +709,37 @@
                                             <label for="tls-ca" class="form-label">{{ $t("CA") }}</label>
                                             <textarea id="tls-ca" v-model="monitor.tlsCa" class="form-control" :placeholder="$t('Server CA')"></textarea>
                                         </div>
+                                    </template>
+                                    <template v-else-if="monitor.authMethod === 'oauth2-cc' ">
+                                        <div class="my-3">
+                                            <label for="oauth_auth_method" class="form-label">{{ $t("Authentication Method") }}</label>
+                                            <select id="oauth_auth_method" v-model="monitor.oauth_auth_method" class="form-select">
+                                                <option value="client_secret_basic">
+                                                    {{ $t("Authorization Header") }}
+                                                </option>
+                                                <option value="client_secret_post">
+                                                    {{ $t("Form Data Body") }}
+                                                </option>
+                                            </select>
+                                        </div>
+                                        <div class="my-3">
+                                            <label for="oauth_token_url" class="form-label">{{ $t("OAuth Token URL") }}</label>
+                                            <input id="oauth_token_url" v-model="monitor.oauth_token_url" type="text" class="form-control" :placeholder="$t('OAuth Token URL')" required>
+                                        </div>
+                                        <div class="my-3">
+                                            <label for="oauth_client_id" class="form-label">{{ $t("Client ID") }}</label>
+                                            <input id="oauth_client_id" v-model="monitor.oauth_client_id" type="text" class="form-control" :placeholder="$t('Client ID')" required>
+                                        </div>
+                                        <template v-if="monitor.oauth_auth_method === 'client_secret_post' || monitor.oauth_auth_method === 'client_secret_basic'">
+                                            <div class="my-3">
+                                                <label for="oauth_client_secret" class="form-label">{{ $t("Client Secret") }}</label>
+                                                <input id="oauth_client_secret" v-model="monitor.oauth_client_secret" type="password" class="form-control" :placeholder="$t('Client Secret')" required>
+                                            </div>
+                                            <div class="my-3">
+                                                <label for="oauth_scopes" class="form-label">{{ $t("OAuth Scope") }}</label>
+                                                <input id="oauth_scopes" v-model="monitor.oauth_scopes" type="text" class="form-control" :placeholder="$t('Optional: Space separated list of scopes')">
+                                            </div>
+                                        </template>
                                     </template>
                                     <template v-else>
                                         <div class="my-3">
@@ -798,6 +826,7 @@
             <NotificationDialog ref="notificationDialog" @added="addedNotification" />
             <DockerHostDialog ref="dockerHostDialog" @added="addedDockerHost" />
             <ProxyDialog ref="proxyDialog" @added="addedProxy" />
+            <CreateGroupDialog ref="createGroupDialog" @added="addedDraftGroup" />
         </div>
     </transition>
 </template>
@@ -805,20 +834,62 @@
 <script>
 import VueMultiselect from "vue-multiselect";
 import { useToast } from "vue-toastification";
+import ActionSelect from "../components/ActionSelect.vue";
 import CopyableInput from "../components/CopyableInput.vue";
+import CreateGroupDialog from "../components/CreateGroupDialog.vue";
 import NotificationDialog from "../components/NotificationDialog.vue";
 import DockerHostDialog from "../components/DockerHostDialog.vue";
 import ProxyDialog from "../components/ProxyDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
 import { genSecret, isDev, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND } from "../util.ts";
 import { hostNameRegexPattern } from "../util-frontend";
+import { sleep } from "../util";
 
 const toast = useToast();
 
+const monitorDefaults = {
+    type: "http",
+    name: "",
+    parent: null,
+    url: "https://",
+    method: "GET",
+    interval: 60,
+    retryInterval: 60,
+    resendInterval: 0,
+    maxretries: 1,
+    timeout: 48,
+    notificationIDList: {},
+    ignoreTls: false,
+    upsideDown: false,
+    packetSize: 56,
+    expiryNotification: false,
+    maxredirects: 10,
+    accepted_statuscodes: [ "200-299" ],
+    dns_resolve_type: "A",
+    dns_resolve_server: "1.1.1.1",
+    docker_container: "",
+    docker_host: null,
+    proxyId: null,
+    mqttUsername: "",
+    mqttPassword: "",
+    mqttTopic: "",
+    mqttSuccessMessage: "",
+    authMethod: null,
+    oauth_auth_method: "client_secret_basic",
+    httpBodyEncoding: "json",
+    kafkaProducerBrokers: [],
+    kafkaProducerSaslOptions: {
+        mechanism: "None",
+    },
+    gamedigGivenPortOnly: true,
+};
+
 export default {
     components: {
+        ActionSelect,
         ProxyDialog,
         CopyableInput,
+        CreateGroupDialog,
         NotificationDialog,
         DockerHostDialog,
         TagsManager,
@@ -846,7 +917,8 @@ export default {
                 "mysql": "mysql://username:password@host:port/database",
                 "redis": "redis://user:password@host:port",
                 "mongodb": "mongodb://username:password@host:port/database",
-            }
+            },
+            draftGroupName: null,
         };
     },
 
@@ -960,7 +1032,7 @@ message HealthCheckResponse {
 
         // Filter result by active state, weight and alphabetical
         // Only return groups which arent't itself and one of its decendants
-        sortedMonitorList() {
+        sortedGroupMonitorList() {
             let result = Object.values(this.$root.monitorList);
 
             // Only groups, not itself, not a decendant
@@ -999,6 +1071,44 @@ message HealthCheckResponse {
             return result;
         },
 
+        /**
+         * Generates the parent monitor options list based on the sorted group monitor list and draft group name.
+         * @returns {Array} The parent monitor options list.
+         */
+        parentMonitorOptionsList() {
+            let list = [];
+            if (this.sortedGroupMonitorList.length === 0 && this.draftGroupName == null) {
+                list = [
+                    {
+                        label: this.$t("noGroupMonitorMsg"),
+                        value: null
+                    }
+                ];
+            } else {
+                list = [
+                    {
+                        label: this.$t("None"),
+                        value: null
+                    },
+                    ... this.sortedGroupMonitorList.map(monitor => {
+                        return {
+                            label: monitor.pathName,
+                            value: monitor.id,
+                        };
+                    }),
+                ];
+            }
+
+            if (this.draftGroupName != null) {
+                list = [{
+                    label: this.draftGroupName,
+                    value: -1,
+                }].concat(list);
+            }
+
+            return list;
+        },
+
     },
     watch: {
         "$root.proxyList"() {
@@ -1021,6 +1131,13 @@ message HealthCheckResponse {
             // Link interval and retryInterval if they are the same value.
             if (this.monitor.retryInterval === oldValue) {
                 this.monitor.retryInterval = value;
+            }
+        },
+
+        "monitor.timeout"(value, oldValue) {
+            // keep timeout within 80% range
+            if (value && value !== oldValue) {
+                this.monitor.timeout = this.clampTimeout(value);
             }
         },
 
@@ -1120,42 +1237,15 @@ message HealthCheckResponse {
         this.kafkaSaslMechanismOptions = kafkaSaslMechanismOptions;
     },
     methods: {
-        /** Initialize the edit monitor form */
+        /**
+         * Initialize the edit monitor form
+         * @returns {void}
+         */
         init() {
             if (this.isAdd) {
 
                 this.monitor = {
-                    type: "http",
-                    name: "",
-                    parent: null,
-                    url: "https://",
-                    method: "GET",
-                    interval: 60,
-                    retryInterval: this.interval,
-                    resendInterval: 0,
-                    maxretries: 1,
-                    notificationIDList: {},
-                    ignoreTls: false,
-                    upsideDown: false,
-                    packetSize: 56,
-                    expiryNotification: false,
-                    maxredirects: 10,
-                    accepted_statuscodes: [ "200-299" ],
-                    dns_resolve_type: "A",
-                    dns_resolve_server: "1.1.1.1",
-                    docker_container: "",
-                    docker_host: null,
-                    proxyId: null,
-                    mqttUsername: "",
-                    mqttPassword: "",
-                    mqttTopic: "",
-                    mqttSuccessMessage: "",
-                    authMethod: null,
-                    httpBodyEncoding: "json",
-                    kafkaProducerBrokers: [],
-                    kafkaProducerSaslOptions: {
-                        mechanism: "None",
-                    },
+                    ...monitorDefaults
                 };
 
                 if (this.$root.proxyList && !this.monitor.proxyId) {
@@ -1215,11 +1305,17 @@ message HealthCheckResponse {
                         if (this.monitor.retryInterval === 0) {
                             this.monitor.retryInterval = this.monitor.interval;
                         }
+                        // Handling for monitors that are missing/zeroed timeout
+                        if (!this.monitor.timeout) {
+                            this.monitor.timeout = ~~(this.monitor.interval * 8) / 10;
+                        }
                     } else {
                         toast.error(res.msg);
                     }
                 });
             }
+
+            this.draftGroupName = null;
 
         },
 
@@ -1269,7 +1365,8 @@ message HealthCheckResponse {
                 this.monitor.body = JSON.stringify(JSON.parse(this.monitor.body), null, 4);
             }
 
-            if (this.monitor.type && this.monitor.type !== "http" && (this.monitor.type !== "keyword" || this.monitor.type !== "json-query")) {
+            const monitorTypesWithEncodingAllowed = [ "http", "keyword", "json-query" ];
+            if (this.monitor.type && !monitorTypesWithEncodingAllowed.includes(this.monitor.type)) {
                 this.monitor.httpBodyEncoding = null;
             }
 
@@ -1285,16 +1382,46 @@ message HealthCheckResponse {
                 this.monitor.url = this.monitor.url.trim();
             }
 
+            let createdNewParent = false;
+
+            if (this.draftGroupName && this.monitor.parent === -1) {
+                // Create Monitor with name of draft group
+                const res = await new Promise((resolve) => {
+                    this.$root.add({
+                        ...monitorDefaults,
+                        type: "group",
+                        name: this.draftGroupName,
+                        interval: this.monitor.interval,
+                        active: false,
+                    }, resolve);
+                });
+
+                if (res.ok) {
+                    createdNewParent = true;
+                    this.monitor.parent = res.monitorID;
+                } else {
+                    toast.error(res.msg);
+                    this.processing = false;
+                    return;
+                }
+            }
+
             if (this.isAdd || this.isClone) {
                 this.$root.add(this.monitor, async (res) => {
 
                     if (res.ok) {
                         await this.$refs.tagsManager.submit(res.monitorID);
 
+                        // Start the new parent monitor after edit is done
+                        if (createdNewParent) {
+                            this.startParentGroupMonitor();
+                        }
+
                         toast.success(res.msg);
                         this.processing = false;
                         this.$root.getMonitorList();
                         this.$router.push("/dashboard/" + res.monitorID);
+
                     } else {
                         toast.error(res.msg);
                         this.processing = false;
@@ -1308,14 +1435,25 @@ message HealthCheckResponse {
                     this.processing = false;
                     this.$root.toastRes(res);
                     this.init();
+
+                    // Start the new parent monitor after edit is done
+                    if (createdNewParent) {
+                        this.startParentGroupMonitor();
+                    }
                 });
             }
+        },
+
+        async startParentGroupMonitor() {
+            await sleep(2000);
+            await this.$root.getSocket().emit("resumeMonitor", this.monitor.parent, () => {});
         },
 
         /**
          * Added a Notification Event
          * Enable it if the notification is added in EditMonitor.vue
          * @param {number} id ID of notification to add
+         * @returns {void}
          */
         addedNotification(id) {
             this.monitor.notificationIDList[id] = true;
@@ -1325,16 +1463,50 @@ message HealthCheckResponse {
          * Added a Proxy Event
          * Enable it if the proxy is added in EditMonitor.vue
          * @param {number} id ID of proxy to add
+         * @returns {void}
          */
         addedProxy(id) {
             this.monitor.proxyId = id;
         },
 
-        // Added a Docker Host Event
-        // Enable it if the Docker Host is added in EditMonitor.vue
+        /**
+         * Added a Docker Host Event
+         * Enable it if the Docker Host is added in EditMonitor.vue
+         * @param {number} id ID of docker host
+         * @returns {void}
+         */
         addedDockerHost(id) {
             this.monitor.docker_host = id;
         },
+
+        /**
+         * Adds a draft group.
+         * @param {string} draftGroupName The name of the draft group.
+         * @returns {void}
+         */
+        addedDraftGroup(draftGroupName) {
+            this.draftGroupName = draftGroupName;
+            this.monitor.parent = -1;
+        },
+
+        // Clamp timeout
+        clampTimeout(timeout) {
+            // limit to 80% of interval, narrowly avoiding epsilon bug
+            const maxTimeout = ~~(this.monitor.interval * 8 ) / 10;
+            const clamped = Math.max(0, Math.min(timeout, maxTimeout));
+
+            // 0 will be treated as 80% of interval
+            return Number.isFinite(clamped) ? clamped : maxTimeout;
+        },
+
+        finishUpdateInterval() {
+            // Update timeout if it is greater than the clamp timeout
+            let clampedValue = this.clampTimeout(this.monitor.interval);
+            if (this.monitor.timeout > clampedValue) {
+                this.monitor.timeout = clampedValue;
+            }
+        },
+
     },
 };
 </script>

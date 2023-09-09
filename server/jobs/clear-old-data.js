@@ -1,12 +1,13 @@
 const { R } = require("redbean-node");
 const { log } = require("../../src/util");
 const { setSetting, setting } = require("../util-server");
+const Database = require("../database");
 
 const DEFAULT_KEEP_PERIOD = 180;
 
 /**
  * Clears old data from the heartbeat table of the database.
- * @return {Promise<void>} A promise that resolves when the data has been cleared.
+ * @returns {Promise<void>} A promise that resolves when the data has been cleared.
  */
 
 const clearOldData = async () => {
@@ -34,13 +35,17 @@ const clearOldData = async () => {
 
         log.debug("clearOldData", `Clearing Data older than ${parsedPeriod} days...`);
 
+        const sqlHourOffset = Database.sqlHourOffset();
+
         try {
             await R.exec(
-                "DELETE FROM heartbeat WHERE time < DATETIME('now', '-' || ? || ' days') ",
-                [ parsedPeriod ]
+                "DELETE FROM heartbeat WHERE time < " + sqlHourOffset,
+                [ parsedPeriod * -24 ]
             );
 
-            await R.exec("PRAGMA optimize;");
+            if (Database.dbConfig.type === "sqlite") {
+                await R.exec("PRAGMA optimize;");
+            }
         } catch (e) {
             log.error("clearOldData", `Failed to clear old data: ${e.message}`);
         }

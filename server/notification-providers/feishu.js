@@ -5,6 +5,9 @@ const { DOWN, UP } = require("../../src/util");
 class Feishu extends NotificationProvider {
     name = "Feishu";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
         let feishuWebHookUrl = notification.feishuWebHookUrl;

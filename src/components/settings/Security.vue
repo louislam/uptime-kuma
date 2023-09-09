@@ -19,6 +19,7 @@
                             v-model="password.currentPassword"
                             type="password"
                             class="form-control"
+                            autocomplete="current-password"
                             required
                         />
                     </div>
@@ -32,6 +33,7 @@
                             v-model="password.newPassword"
                             type="password"
                             class="form-control"
+                            autocomplete="new-password"
                             required
                         />
                     </div>
@@ -46,6 +48,7 @@
                             type="password"
                             class="form-control"
                             :class="{ 'is-invalid': invalidPassword }"
+                            autocomplete="new-password"
                             required
                         />
                         <div class="invalid-feedback">
@@ -152,7 +155,10 @@ export default {
     },
 
     methods: {
-        /** Check new passwords match before saving them */
+        /**
+         * Check new passwords match before saving them
+         * @returns {void}
+         */
         savePassword() {
             if (this.password.newPassword !== this.password.repeatNewPassword) {
                 this.invalidPassword = true;
@@ -170,7 +176,10 @@ export default {
             }
         },
 
-        /** Disable authentication for web app access */
+        /**
+         * Disable authentication for web app access
+         * @returns {void}
+         */
         disableAuth() {
             this.settings.disableAuth = true;
 
@@ -183,7 +192,10 @@ export default {
             }, this.password.currentPassword);
         },
 
-        /** Enable authentication for web app access */
+        /**
+         * Enable authentication for web app access
+         * @returns {void}
+         */
         enableAuth() {
             this.settings.disableAuth = false;
             this.saveSettings();
@@ -191,7 +203,10 @@ export default {
             location.reload();
         },
 
-        /** Show confirmation dialog for disable auth */
+        /**
+         * Show confirmation dialog for disable auth
+         * @returns {void}
+         */
         confirmDisableAuth() {
             this.$refs.confirmDisableAuth.show();
         },

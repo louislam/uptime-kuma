@@ -14,10 +14,11 @@ class StatusPage extends BeanModel {
     static domainMappingList = { };
 
     /**
-     *
-     * @param {Response} response
-     * @param {string} indexHTML
-     * @param {string} slug
+     * Handle responses to status page
+     * @param {Response} response Response object
+     * @param {string} indexHTML HTML to render
+     * @param {string} slug Status page slug
+     * @returns {void}
      */
     static async handleStatusPageResponse(response, indexHTML, slug) {
         let statusPage = await R.findOne("status_page", " slug = ? ", [
@@ -33,8 +34,9 @@ class StatusPage extends BeanModel {
 
     /**
      * SSR for status pages
-     * @param {string} indexHTML
-     * @param {StatusPage} statusPage
+     * @param {string} indexHTML HTML page to render
+     * @param {StatusPage} statusPage Status page populate HTML with
+     * @returns {void}
      */
     static async renderHTML(indexHTML, statusPage) {
         const $ = cheerio.load(indexHTML);
@@ -87,9 +89,12 @@ class StatusPage extends BeanModel {
 
     /**
      * Get all status page data in one call
-     * @param {StatusPage} statusPage
+     * @param {StatusPage} statusPage Status page to get data for
+     * @returns {object} Status page data
      */
     static async getStatusPageData(statusPage) {
+        const config = await statusPage.toPublicJSON();
+
         // Incident
         let incident = await R.findOne("incident", " pin = 1 AND active = 1 AND status_page_id = ? ", [
             statusPage.id,
@@ -110,13 +115,13 @@ class StatusPage extends BeanModel {
         ]);
 
         for (let groupBean of list) {
-            let monitorGroup = await groupBean.toPublicJSON(showTags);
+            let monitorGroup = await groupBean.toPublicJSON(showTags, config?.showCertificateExpiry);
             publicGroupList.push(monitorGroup);
         }
 
         // Response
         return {
-            config: await statusPage.toPublicJSON(),
+            config,
             incident,
             publicGroupList,
             maintenanceList,
@@ -140,7 +145,7 @@ class StatusPage extends BeanModel {
      * Send status page list to client
      * @param {Server} io io Socket server instance
      * @param {Socket} socket Socket.io instance
-     * @returns {Promise<Bean[]>}
+     * @returns {Promise<Bean[]>} Status page list
      */
     static async sendStatusPageList(io, socket) {
         let result = {};
@@ -157,7 +162,7 @@ class StatusPage extends BeanModel {
 
     /**
      * Update list of domain names
-     * @param {string[]} domainNameList
+     * @param {string[]} domainNameList List of status page domains
      * @returns {Promise<void>}
      */
     async updateDomainNameList(domainNameList) {
@@ -201,7 +206,7 @@ class StatusPage extends BeanModel {
 
     /**
      * Get list of domain names
-     * @returns {Object[]}
+     * @returns {object[]} List of status page domains
      */
     getDomainNameList() {
         let domainList = [];
@@ -217,7 +222,7 @@ class StatusPage extends BeanModel {
 
     /**
      * Return an object that ready to parse to JSON
-     * @returns {Object}
+     * @returns {object} Object ready to parse
      */
     async toJSON() {
         return {
@@ -234,13 +239,14 @@ class StatusPage extends BeanModel {
             footerText: this.footer_text,
             showPoweredBy: !!this.show_powered_by,
             googleAnalyticsId: this.google_analytics_tag_id,
+            showCertificateExpiry: !!this.show_certificate_expiry,
         };
     }
 
     /**
      * Return an object that ready to parse to JSON for public
      * Only show necessary data to public
-     * @returns {Object}
+     * @returns {object} Object ready to parse
      */
     async toPublicJSON() {
         return {
@@ -255,12 +261,14 @@ class StatusPage extends BeanModel {
             footerText: this.footer_text,
             showPoweredBy: !!this.show_powered_by,
             googleAnalyticsId: this.google_analytics_tag_id,
+            showCertificateExpiry: !!this.show_certificate_expiry,
         };
     }
 
     /**
      * Convert slug to status page ID
-     * @param {string} slug
+     * @param {string} slug Status page slug
+     * @returns {Promise<number>} ID of status page
      */
     static async slugToID(slug) {
         return await R.getCell("SELECT id FROM status_page WHERE slug = ? ", [
@@ -270,7 +278,7 @@ class StatusPage extends BeanModel {
 
     /**
      * Get path to the icon for the page
-     * @returns {string}
+     * @returns {string} Path
      */
     getIcon() {
         if (!this.icon) {
@@ -283,7 +291,7 @@ class StatusPage extends BeanModel {
     /**
      * Get list of maintenances
      * @param {number} statusPageId ID of status page to get maintenance for
-     * @returns {Object} Object representing maintenances sanitized for public
+     * @returns {object} Object representing maintenances sanitized for public
      */
     static async getMaintenanceList(statusPageId) {
         try {
