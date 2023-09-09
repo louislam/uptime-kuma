@@ -654,6 +654,7 @@
                                     <label for="httpBodyEncoding" class="form-label">{{ $t("Body Encoding") }}</label>
                                     <select id="httpBodyEncoding" v-model="monitor.httpBodyEncoding" class="form-select">
                                         <option value="json">JSON</option>
+                                        <option value="form">x-www-form-urlencoded</option>
                                         <option value="xml">XML</option>
                                     </select>
                                 </div>
@@ -1001,6 +1002,9 @@ message HealthCheckResponse {
     <Uptime>Kuma</Uptime>
   </soap:Body>
 </soap:Envelope>` ]);
+            }
+            if (this.monitor && this.monitor.httpBodyEncoding === "form") {
+                return this.$t("Example:", [ "key1=value1&key2=value2" ]);
             }
             return this.$t("Example:", [ `
 {

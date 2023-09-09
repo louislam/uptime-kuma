@@ -431,6 +431,9 @@ class Monitor extends BeanModel {
                             } catch (e) {
                                 throw new Error("Your JSON body is invalid. " + e.message);
                             }
+                        } else if (this.httpBodyEncoding === "form") {
+                            bodyValue = this.body;
+                            contentType = "application/x-www-form-urlencoded";
                         } else if (this.httpBodyEncoding === "xml") {
                             bodyValue = this.body;
                             contentType = "text/xml; charset=utf-8";
