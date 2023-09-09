@@ -251,6 +251,12 @@ let needSetup = false;
             log.debug("test", request.body);
             response.send("OK");
         });
+
+        app.post("/test-x-www-form-urlencoded", async (request, response) => {
+            log.debug("test", request.headers);
+            log.debug("test", request.body);
+            response.send("OK");
+        });
     }
 
     // Robots.txt
