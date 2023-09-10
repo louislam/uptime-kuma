@@ -242,7 +242,7 @@ class Database {
                     user: dbConfig.username,
                     password: dbConfig.password,
                     database: dbConfig.dbName,
-                    timezone: "UTC",
+                    timezone: "+00:00",
                 },
                 pool: mariadbPoolConfig,
             };
