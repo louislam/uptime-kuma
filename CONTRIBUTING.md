@@ -112,6 +112,12 @@ I personally do not like something that requires so many configurations before y
 - IDE that supports [`ESLint`](https://eslint.org/) and EditorConfig (I am using [`IntelliJ IDEA`](https://www.jetbrains.com/idea/))
 - A SQLite GUI tool (f.ex. [`SQLite Expert Personal`](https://www.sqliteexpert.com/download.html) or [`DBeaver Community`](https://dbeaver.io/download/))
 
+## Git Branches
+
+- `master`: 2.X.X development. If you want to add a new feature, your pull request should base on this.
+- `1.23.X`: 1.23.X development. If you want to fix a bug for v1 and v2, your pull request should base on this.
+- All other branches are unused, outdated or for dev.
+
 ## Install Dependencies for Development
 
 ```bash
@@ -235,6 +241,42 @@ My mother language is not English and my grammar is not that great.
 Since there is no way to make a pull request to wiki's repo, I have set up another repo to do that.
 
 https://github.com/louislam/uptime-kuma-wiki
+
+## Docker
+
+#### Arch
+
+- amd64
+- arm64
+- armv7
+
+### Docker Tags
+
+#### v2
+
+- `2`, `latest-2`: v2 with full features such as Chromium and bundled MariaDB
+- `2.x.x`
+- `2-slim`: v2 with basic features
+- `2.x.x-slim`
+- `beta2`: Latest beta build
+- `2.x.x-beta.x`
+- `nightly2`: Dev build
+- `base2`: Basic Debian setup without Uptime Kuma source code (Full features)
+- `base2-slim`: Basic Debian setup without Uptime Kuma source code
+- `pr-test2`: For testing pull request without setting up a local environment
+
+#### v1
+
+- `1`, `latest`, `1-debian`, `debian`: Latest version of v1
+- `1.x.x`, `1.x.x-debian`
+- `1.x.x-beta.x`: Beta build
+- `beta`: Latest beta build
+- `nightly`: Dev build
+- `base-debian`: Basic Debian setup without Uptime Kuma source code
+- `pr-test`: For testing pull request without setting up a local environment
+- `base-alpine`: (Deprecated) Basic Alpine setup without Uptime Kuma source code
+- `1-alpine`, `alpine`: (Deprecated)
+- `1.x.x-alpine`: (Deprecated)
 
 ## Maintainer
 
