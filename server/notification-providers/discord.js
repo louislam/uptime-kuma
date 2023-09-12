@@ -64,7 +64,7 @@ class Discord extends NotificationProvider {
                             },
                             {
                                 name: "Time",
-                                value: `<t:${Math.floor(Date.now()/1000)}:f>`,
+                                value: `<t:${Math.floor((new Date(heartbeatJSON["time"])).getTime() / 1000)}:f>`,
                             },
                             {
                                 name: "Error",
@@ -99,7 +99,7 @@ class Discord extends NotificationProvider {
                             },
                             {
                                 name: "Time",
-                                value: `<t:${Math.floor(Date.now()/1000)}:f>`,
+                                value: `<t:${Math.floor((new Date(heartbeatJSON["time"])).getTime() / 1000)}:f>`,
                             },
                             {
                                 name: "Ping",
