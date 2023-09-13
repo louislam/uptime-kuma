@@ -37,6 +37,7 @@ export default {
         /**
          * Change the language for the current page (no localstore set)
          * @param {string} lang Code of language to switch to.
+         * @returns {Promise<void>}
          */
         async changeCurrentPageLang(lang) {
             let message = (await langModules["../lang/" + lang + ".json"]()).default;
