@@ -1,4 +1,4 @@
-$pushURL = "https://status.kuma.pet/api/push/XhQE4b4dGI?status=up&msg=OK&ping="
+$pushURL = "https://example.com/api/push/key?status=up&msg=OK&ping="
 $interval = 60
 
 while ($true) {

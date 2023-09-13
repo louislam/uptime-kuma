@@ -1,5 +1,5 @@
 #!/bin/bash
-PUSH_URL="https://status.kuma.pet/api/push/XhQE4b4dGI?status=up&msg=OK&ping="
+PUSH_URL="https://example.com/api/push/key?status=up&msg=OK&ping="
 INTERVAL=60
 
 while true; do
