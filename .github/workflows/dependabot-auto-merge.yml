@@ -1,0 +1,33 @@
+# Workflow name
+name: Dependabot auto-merge
+
+# Events that trigger the workflow
+on: pull_request
+
+# Permissions for the workflow
+permissions:
+  contents: write
+  pull-requests: write
+
+# Define jobs
+jobs:
+  dependabot:
+    # Run this job on Ubuntu
+    runs-on: ubuntu-latest
+    # Only run if the actor is Dependabot
+    if: ${{ github.actor == 'dependabot[bot]' }}
+    steps:
+      # Fetch metadata about the PR
+      - name: Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v1
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+
+      # Auto-merge the PR based on conditions
+      - name: Enable auto-merge for Dependabot PRs
+        # --auto Automatically merge only after necessary requirements are met (e.g., Passing the CI tests.)
+        run: gh pr merge --auto --merge "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
