@@ -58,6 +58,9 @@
                     <router-link :to=" '/clone/' + monitor.id " class="btn btn-normal">
                         <font-awesome-icon icon="clone" /> {{ $t("Clone") }}
                     </router-link>
+                    <button v-if="isAWSInstance" class="btn btn-warning" @click="restartInstance">
+                        <font-awesome-icon icon="undo" /> {{ $t("Restart") }}
+                    </button>
                     <button class="btn btn-danger" @click="deleteDialog">
                         <font-awesome-icon icon="trash" /> {{ $t("Delete") }}
                     </button>
@@ -365,6 +368,9 @@ export default {
 
         screenshotURL() {
             return getResBaseURL() + this.monitor.screenshot + "?time=" + this.cacheTime;
+        },
+        isAWSInstance() {
+            return this.monitor.tags.find(tag => tag.name === "Instance_ID" && tag.value !== "");
         }
     },
     mounted() {
@@ -395,6 +401,20 @@ export default {
          */
         resumeMonitor() {
             this.$root.getSocket().emit("resumeMonitor", this.monitor.id, (res) => {
+                this.$root.toastRes(res);
+            });
+        },
+
+        /**
+         * Restart this AWS Instance
+         * @returns {void}
+         */
+        restartInstance() {
+            const instanceID = this.monitor.tags.find(tag => tag.name === "Instance_ID" && tag.value !== "")?.value;
+            if (!instanceID) {
+                return;
+            }
+            this.$root.getSocket().emit("restartInstance", instanceID, (res) => {
                 this.$root.toastRes(res);
             });
         },
