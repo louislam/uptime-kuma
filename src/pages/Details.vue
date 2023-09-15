@@ -78,12 +78,12 @@
 
             <!-- Push Examples -->
             <div v-if="monitor.type === 'push'" class="shadow-box big-padding">
-                <a href="#" @click="pushMonitor.showPushExamples = !pushMonitor.showPushExamples">View Code</a>
+                <a href="#" @click="pushMonitor.showPushExamples = !pushMonitor.showPushExamples">{{ $t("pushViewCode") }}</a>
 
                 <transition name="slide-fade" appear>
                     <div v-if="pushMonitor.showPushExamples" class="mt-3">
                         <select id="push-current-example" v-model="pushMonitor.currentExample" class="form-select">
-                            <optgroup label="Programming Languages">
+                            <optgroup :label="$t('programmingLanguages')">
                                 <option value="csharp">C#</option>
                                 <option value="go">Go</option>
                                 <option value="java">Java</option>
@@ -92,7 +92,7 @@
                                 <option value="python">Python</option>
                                 <option value="typescript-fetch">TypeScript (fetch)</option>
                             </optgroup>
-                            <optgroup label="Others">
+                            <optgroup :label="$t('pushOthers')">
                                 <option value="bash-curl">Bash (curl)</option>
                                 <option value="powershell">PowerShell</option>
                                 <option value="docker">Docker</option>
@@ -418,7 +418,7 @@ export default {
         },
     },
     mounted() {
-        if (this.monitor.type === "push") {
+        if (this.monitor && this.monitor.type === "push") {
             if (this.lastHeartBeat.status === -1) {
                 this.pushMonitor.showPushExamples = true;
             }
