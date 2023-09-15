@@ -96,7 +96,6 @@
                                 <option value="bash-curl">Bash (curl)</option>
                                 <option value="powershell">PowerShell</option>
                                 <option value="docker">Docker</option>
-                                <option value="exe">Windows exe file (64bit)</option>
                             </optgroup>
                         </select>
 
