@@ -26,42 +26,42 @@ function checkNode {
   "echo" "-e" "Node Version: ""$nodeVersion"
   _0="12"
   if [ $(($nodeVersion <= $_0)) == 1 ]; then
-    "echo" "-e" "Error: Required Node.js 14"
-    "exit" "1"  
-fi
+    "echo" "-e" "Error: Required Node.js 18"
+    "exit" "1"
+  fi
 }
 function deb {
   nodeCheck=$(node -v)
   apt --yes update
   if [ "$nodeCheck" != "" ]; then
-    "checkNode" 
+    "checkNode"
   else
     # Old nodejs binary name is "nodejs"
     check=$(nodejs --version)
     if [ "$check" != "" ]; then
       "echo" "-e" "Error: 'node' command is not found, but 'nodejs' command is found. Your NodeJS should be too old."
-      exit 1    
-fi
+      exit 1
+    fi
     curlCheck=$(curl --version)
     if [ "$curlCheck" == "" ]; then
       "echo" "-e" "Installing Curl"
-      apt --yes install curl    
-fi
-    "echo" "-e" "Installing Node.js 16"
-    curl -sL https://deb.nodesource.com/setup_16.x | bash - > log.txt
+      apt --yes install curl
+    fi
+    "echo" "-e" "Installing Node.js 18"
+    curl -sL https://deb.nodesource.com/setup_18.x | bash - >log.txt
     apt --yes install nodejs
     node -v
     nodeCheckAgain=$(node -v)
     if [ "$nodeCheckAgain" == "" ]; then
       "echo" "-e" "Error during Node.js installation"
-      exit 1    
-fi
+      exit 1
+    fi
   fi
   check=$(git --version)
   if [ "$check" == "" ]; then
     "echo" "-e" "Installing Git"
-    apt --yes install git  
-fi
+    apt --yes install git
+  fi
 }
 if [ "$type" == "local" ]; then
   defaultInstallPath="/opt/uptime-kuma"
@@ -75,12 +75,12 @@ if [ "$type" == "local" ]; then
         distribution="ubuntu"
         # Get ubuntu version
         . /etc/lsb-release
-        version="$DISTRIB_RELEASE"      
-fi
+        version="$DISTRIB_RELEASE"
+      fi
       if [ "$os" == "Debian" ]; then
-        distribution="debian"      
-fi    
-fi
+        distribution="debian"
+      fi
+    fi
   fi
   arch=$(uname -i)
   "echo" "-e" "Your OS: ""$os"
@@ -92,22 +92,22 @@ fi
   else
     "read" "-p" "Listening Port [$defaultPort]: " "port"
     if [ "$port" == "" ]; then
-      port="$defaultPort"    
-fi
+      port="$defaultPort"
+    fi
   fi
   if [ "$2" != "" ]; then
     installPath="$2"
   else
     "read" "-p" "Installation Path [$defaultInstallPath]: " "installPath"
     if [ "$installPath" == "" ]; then
-      installPath="$defaultInstallPath"    
-fi
+      installPath="$defaultInstallPath"
+    fi
   fi
   # CentOS
   if [ "$distribution" == "rhel" ]; then
     nodeCheck=$(node -v)
     if [ "$nodeCheck" != "" ]; then
-      "checkNode" 
+      "checkNode"
     else
       dnfCheck=$(dnf --version)
       # Use yum
@@ -115,41 +115,41 @@ fi
         curlCheck=$(curl --version)
         if [ "$curlCheck" == "" ]; then
           "echo" "-e" "Installing Curl"
-          yum -y -q install curl        
-fi
-        "echo" "-e" "Installing Node.js 16"
-        curl -sL https://rpm.nodesource.com/setup_16.x | bash - > log.txt
+          yum -y -q install curl
+        fi
+        "echo" "-e" "Installing Node.js 18"
+        curl -sL https://rpm.nodesource.com/setup_18.x | bash - >log.txt
         yum install -y -q nodejs
       else
         curlCheck=$(curl --version)
         if [ "$curlCheck" == "" ]; then
           "echo" "-e" "Installing Curl"
-          dnf -y install curl        
-fi
-        "echo" "-e" "Installing Node.js 16"
-        curl -sL https://rpm.nodesource.com/setup_16.x | bash - > log.txt
+          dnf -y install curl
+        fi
+        "echo" "-e" "Installing Node.js 18"
+        curl -sL https://rpm.nodesource.com/setup_18.x | bash - >log.txt
         dnf install -y nodejs
       fi
       node -v
       nodeCheckAgain=$(node -v)
       if [ "$nodeCheckAgain" == "" ]; then
         "echo" "-e" "Error during Node.js installation"
-        exit 1      
-fi
+        exit 1
+      fi
     fi
     check=$(git --version)
     if [ "$check" == "" ]; then
       "echo" "-e" "Installing Git"
-      yum -y -q install git    
-fi
+      yum -y -q install git
+    fi
     # Ubuntu
   else
     if [ "$distribution" == "ubuntu" ]; then
-      "deb" 
+      "deb"
       # Debian
     else
       if [ "$distribution" == "debian" ]; then
-        "deb" 
+        "deb"
       else
         # Unknown distribution
         error=$((0))
@@ -157,18 +157,18 @@ fi
         if [ "$check" == "" ]; then
           error=$((1))
           "echo" "-e" "Error: git is not found!"
-          "echo" "-e" "help: an installation guide is available at https://git-scm.com/book/en/v2/Getting-Started-Installing-Git"        
-fi
+          "echo" "-e" "help: an installation guide is available at https://git-scm.com/book/en/v2/Getting-Started-Installing-Git"
+        fi
         check=$(node -v)
         if [ "$check" == "" ]; then
           error=$((1))
           "echo" "-e" "Error: node is not found"
-          "echo" "-e" "help: an installation guide is available at https://nodejs.org/en/download"        
-fi
+          "echo" "-e" "help: an installation guide is available at https://nodejs.org/en/download"
+        fi
         if [ $(($error > 0)) == 1 ]; then
           "echo" "-e" "Please install above missing software"
-          exit 1        
-fi
+          exit 1
+        fi
       fi
     fi
   fi
@@ -176,15 +176,15 @@ fi
   if [ "$check" == "" ]; then
     "echo" "-e" "Installing PM2"
     npm install pm2 -g && pm2 install pm2-logrotate
-    pm2 startup  
-fi
+    pm2 startup
+  fi
   # Check again
   check=$(pm2 --version)
   if [ "$check" == "" ]; then
     "echo" "-e" "Error: pm2 is not found!"
     "echo" "-e" "help: an installation guide is available at https://pm2.keymetrics.io/docs/usage/quick-start/"
-    exit 1  
-fi
+    exit 1
+  fi
   mkdir -p $installPath
   cd $installPath
   git clone https://github.com/louislam/uptime-kuma.git .
@@ -196,29 +196,29 @@ else
   if [ "$check" == "" ]; then
     "echo" "-e" "Error: docker is not found!"
     "echo" "-e" "help: an installation guide is available at https://docs.docker.com/desktop/"
-    exit 1  
-fi
+    exit 1
+  fi
   check=$(docker info)
   if [[ "$check" == *"Is the docker daemon running"* ]]; then
-      "echo" "Error: docker is not running"
-      "echo" "help: a troubleshooting guide is available at https://docs.docker.com/config/daemon/troubleshoot/"
-      "exit" "1"
-    fi
+    "echo" "Error: docker is not running"
+    "echo" "help: a troubleshooting guide is available at https://docs.docker.com/config/daemon/troubleshoot/"
+    "exit" "1"
+  fi
   if [ "$3" != "" ]; then
     port="$3"
   else
     "read" "-p" "Expose Port [$defaultPort]: " "port"
     if [ "$port" == "" ]; then
-      port="$defaultPort"    
-fi
+      port="$defaultPort"
+    fi
   fi
   if [ "$2" != "" ]; then
     volume="$2"
   else
     "read" "-p" "Volume Name [$defaultVolume]: " "volume"
     if [ "$volume" == "" ]; then
-      volume="$defaultVolume"    
-fi
+      volume="$defaultVolume"
+    fi
   fi
   "echo" "-e" "Port: $port"
   "echo" "-e" "Volume: $volume"

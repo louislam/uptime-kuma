@@ -22,7 +22,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest, ARM64]
-        node: [ 14, 20.5 ]
+        node: [ 18, 20.5 ]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
@@ -50,7 +50,7 @@ jobs:
     strategy:
       matrix:
         os: [ ARMv7 ]
-        node: [ 14, 20 ]
+        node: [ 18, 20 ]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
@@ -101,10 +101,10 @@ jobs:
     - run: git config --global core.autocrlf false  # Mainly for Windows
     - uses: actions/checkout@v3
 
-    - name: Use Node.js 14
+    - name: Use Node.js 18
       uses: actions/setup-node@v3
       with:
-        node-version: 14
+        node-version: 18
     - run: npm install
     - run: npm run build
     - run: npm run cy:run:unit
