@@ -138,7 +138,7 @@ class Database {
      * Read the database config
      * @throws {Error} If the config is invalid
      * @typedef {string|undefined} envString
-     * @returns {{type: "sqlite"} | {type:envString, hostname:envString, port:envString, database:envString, username:envString, password:envString}} Database config
+     * @returns {{type: "sqlite" | "mariadb" | "embedded-mariadb" | "postgres"} | {type:envString, hostname:envString, port:envString, database:envString, username:envString, password:envString}} Database config
      */
     static readDBConfig() {
         let dbConfig;
@@ -158,7 +158,7 @@ class Database {
 
     /**
      * @typedef {string|undefined} envString
-     * @param {{type: "sqlite"} | {type:envString, hostname:envString, port:envString, database:envString, username:envString, password:envString}} dbConfig the database configuration that should be written
+     * @param {{type: "sqlite" | "mariadb" | "embedded-mariadb" | "postgres"} | {type:envString, hostname:envString, port:envString, database:envString, username:envString, password:envString}} dbConfig the database configuration that should be written
      * @returns {void}
      */
     static writeDBConfig(dbConfig) {
