@@ -15,18 +15,25 @@ dayjs.extend(require("dayjs/plugin/customParseFormat"));
 require("dotenv").config();
 
 // Check Node.js Version
-const nodeVersion = parseInt(process.versions.node.split(".")[0]);
-const requiredVersion = 14;
+const nodeVersion = process.versions.node;
+
+// Get the required Node.js version from package.json
+const requiredNodeVersions = require("../package.json").engines.node;
+const bannedNodeVersions = " < 14 || 20.0.* || 20.1.* || 20.2.* || 20.3.* ";
 console.log(`Your Node.js version: ${nodeVersion}`);
 
-// See more: https://github.com/louislam/uptime-kuma/issues/3138
-if (nodeVersion >= 20) {
-    console.warn("\x1b[31m%s\x1b[0m", "Warning: Uptime Kuma is currently not stable on Node.js >= 20, please use Node.js 18.");
+const semver = require("semver");
+const requiredNodeVersionsComma = requiredNodeVersions.split("||").map((version) => version.trim()).join(", ");
+
+// Exit Uptime Kuma immediately if the Node.js version is banned
+if (semver.satisfies(nodeVersion, bannedNodeVersions)) {
+    console.error("\x1b[31m%s\x1b[0m", `Error: Your Node.js version: ${nodeVersion} is not supported, please upgrade your Node.js to ${requiredNodeVersionsComma}.`);
+    process.exit(-1);
 }
 
-if (nodeVersion < requiredVersion) {
-    console.error(`Error: Your Node.js version is not supported, please upgrade to Node.js >= ${requiredVersion}.`);
-    process.exit(-1);
+// Warning if the Node.js version is not in the support list, but it maybe still works
+if (!semver.satisfies(nodeVersion, requiredNodeVersions)) {
+    console.warn("\x1b[31m%s\x1b[0m", `Warning: Your Node.js version: ${nodeVersion} is not officially supported, please upgrade your Node.js to ${requiredNodeVersionsComma}.`);
 }
 
 const args = require("args-parser")(process.argv);
@@ -42,6 +49,7 @@ if (! process.env.NODE_ENV) {
 }
 
 log.info("server", "Node Env: " + process.env.NODE_ENV);
+log.info("server", "Inside Container: " + (process.env.UPTIME_KUMA_IS_CONTAINER === "1"));
 
 log.info("server", "Importing Node libraries");
 const fs = require("fs");
@@ -76,7 +84,9 @@ log.info("server", "Importing this project modules");
 log.debug("server", "Importing Monitor");
 const Monitor = require("./model/monitor");
 log.debug("server", "Importing Settings");
-const { getSettings, setSettings, setting, initJWTSecret, checkLogin, startUnitTest, FBSD, doubleCheckPassword, startE2eTests } = require("./util-server");
+const { getSettings, setSettings, setting, initJWTSecret, checkLogin, FBSD, doubleCheckPassword, startE2eTests,
+    allowDevAllOrigin
+} = require("./util-server");
 
 log.debug("server", "Importing Notification");
 const { Notification } = require("./notification");
@@ -149,6 +159,8 @@ const { Settings } = require("./settings");
 const { CacheableDnsHttpAgent } = require("./cacheable-dns-http-agent");
 const apicache = require("./modules/apicache");
 const { resetChrome } = require("./monitor-types/real-browser-monitor-type");
+const { EmbeddedMariaDB } = require("./embedded-mariadb");
+const { SetupDatabase } = require("./setup-database");
 
 app.use(express.json());
 
@@ -168,8 +180,25 @@ app.use(function (req, res, next) {
 let needSetup = false;
 
 (async () => {
-    Database.init(args);
-    await initDatabase(testMode);
+    // Create a data directory
+    Database.initDataDir(args);
+
+    // Check if is chosen a database type
+    let setupDatabase = new SetupDatabase(args, server);
+    if (setupDatabase.isNeedSetup()) {
+        // Hold here and start a special setup page until user choose a database type
+        await setupDatabase.start(hostname, port);
+    }
+
+    // Connect to database
+    try {
+        await initDatabase(testMode);
+    } catch (e) {
+        log.error("server", "Failed to prepare your database: " + e.message);
+        process.exit(1);
+    }
+
+    // Database should be ready now
     await server.initAfterDatabaseReady();
     server.entryPage = await Settings.get("entryPage");
     await StatusPage.loadDomainMappingList();
@@ -207,9 +236,23 @@ let needSetup = false;
         }
     });
 
+    app.get("/setup-database-info", (request, response) => {
+        allowDevAllOrigin(response);
+        response.json({
+            runningSetup: false,
+            needSetup: false,
+        });
+    });
+
     if (isDev) {
         app.use(express.urlencoded({ extended: true }));
         app.post("/test-webhook", async (request, response) => {
+            log.debug("test", request.headers);
+            log.debug("test", request.body);
+            response.send("OK");
+        });
+
+        app.post("/test-x-www-form-urlencoded", async (request, response) => {
             log.debug("test", request.headers);
             log.debug("test", request.body);
             response.send("OK");
@@ -263,7 +306,7 @@ let needSetup = false;
     log.info("server", "Adding socket handler");
     io.on("connection", async (socket) => {
 
-        sendInfo(socket);
+        sendInfo(socket, true);
 
         if (needSetup) {
             log.info("server", "Redirect to setup page");
@@ -334,7 +377,7 @@ let needSetup = false;
             }
 
             // Login Rate Limit
-            if (! await loginRateLimiter.pass(callback)) {
+            if (!await loginRateLimiter.pass(callback)) {
                 log.info("auth", `Too many failed requests for user ${data.username}. IP=${clientIP}`);
                 return;
             }
@@ -407,7 +450,7 @@ let needSetup = false;
 
         socket.on("logout", async (callback) => {
             // Rate Limit
-            if (! await loginRateLimiter.pass(callback)) {
+            if (!await loginRateLimiter.pass(callback)) {
                 return;
             }
 
@@ -421,7 +464,7 @@ let needSetup = false;
 
         socket.on("prepare2FA", async (currentPassword, callback) => {
             try {
-                if (! await twoFaRateLimiter.pass(callback)) {
+                if (!await twoFaRateLimiter.pass(callback)) {
                     return;
                 }
 
@@ -470,7 +513,7 @@ let needSetup = false;
             const clientIP = await server.getClientIP(socket);
 
             try {
-                if (! await twoFaRateLimiter.pass(callback)) {
+                if (!await twoFaRateLimiter.pass(callback)) {
                     return;
                 }
 
@@ -502,7 +545,7 @@ let needSetup = false;
             const clientIP = await server.getClientIP(socket);
 
             try {
-                if (! await twoFaRateLimiter.pass(callback)) {
+                if (!await twoFaRateLimiter.pass(callback)) {
                     return;
                 }
 
@@ -596,7 +639,7 @@ let needSetup = false;
                     throw new Error("Password is too weak. It should contain alphabetic and numeric characters. It must be at least 6 characters in length.");
                 }
 
-                if ((await R.count("user")) !== 0) {
+                if ((await R.knex("user").count("id as count").first()).count !== 0) {
                     throw new Error("Uptime Kuma has been initialized. If you want to run setup again, please delete the database.");
                 }
 
@@ -633,8 +676,15 @@ let needSetup = false;
                 let notificationIDList = monitor.notificationIDList;
                 delete monitor.notificationIDList;
 
+                // Ensure status code ranges are strings
+                if (!monitor.accepted_statuscodes.every((code) => typeof code === "string")) {
+                    throw new Error("Accepted status codes are not all strings");
+                }
                 monitor.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
                 delete monitor.accepted_statuscodes;
+
+                monitor.kafkaProducerBrokers = JSON.stringify(monitor.kafkaProducerBrokers);
+                monitor.kafkaProducerSaslOptions = JSON.stringify(monitor.kafkaProducerSaslOptions);
 
                 bean.import(monitor);
                 bean.user_id = socket.userID;
@@ -646,7 +696,10 @@ let needSetup = false;
                 await updateMonitorNotification(bean.id, notificationIDList);
 
                 await server.sendMonitorList(socket);
-                await startMonitor(socket.userID, bean.id);
+
+                if (monitor.active !== false) {
+                    await startMonitor(socket.userID, bean.id);
+                }
 
                 log.info("monitor", `Added Monitor: ${monitor.id} User ID: ${socket.userID}`);
 
@@ -692,6 +745,11 @@ let needSetup = false;
                     removeGroupChildren = true;
                 }
 
+                // Ensure status code ranges are strings
+                if (!monitor.accepted_statuscodes.every((code) => typeof code === "string")) {
+                    throw new Error("Accepted status codes are not all strings");
+                }
+
                 bean.name = monitor.name;
                 bean.description = monitor.description;
                 bean.parent = monitor.parent;
@@ -702,6 +760,12 @@ let needSetup = false;
                 bean.headers = monitor.headers;
                 bean.basic_auth_user = monitor.basic_auth_user;
                 bean.basic_auth_pass = monitor.basic_auth_pass;
+                bean.timeout = monitor.timeout;
+                bean.oauth_client_id = monitor.oauth_client_id,
+                bean.oauth_client_secret = monitor.oauth_client_secret,
+                bean.oauth_auth_method = this.oauth_auth_method,
+                bean.oauth_token_url = monitor.oauth_token_url,
+                bean.oauth_scopes = monitor.oauth_scopes,
                 bean.tlsCa = monitor.tlsCa;
                 bean.tlsCert = monitor.tlsCert;
                 bean.tlsKey = monitor.tlsKey;
@@ -712,6 +776,11 @@ let needSetup = false;
                 bean.game = monitor.game;
                 bean.maxretries = monitor.maxretries;
                 bean.port = parseInt(monitor.port);
+
+                if (isNaN(bean.port)) {
+                    bean.port = null;
+                }
+
                 bean.keyword = monitor.keyword;
                 bean.invertKeyword = monitor.invertKeyword;
                 bean.ignoreTls = monitor.ignoreTls;
@@ -748,6 +817,14 @@ let needSetup = false;
                 bean.radiusCallingStationId = monitor.radiusCallingStationId;
                 bean.radiusSecret = monitor.radiusSecret;
                 bean.httpBodyEncoding = monitor.httpBodyEncoding;
+                bean.expectedValue = monitor.expectedValue;
+                bean.jsonPath = monitor.jsonPath;
+                bean.kafkaProducerTopic = monitor.kafkaProducerTopic;
+                bean.kafkaProducerBrokers = JSON.stringify(monitor.kafkaProducerBrokers);
+                bean.kafkaProducerAllowAutoTopicCreation = monitor.kafkaProducerAllowAutoTopicCreation;
+                bean.kafkaProducerSaslOptions = JSON.stringify(monitor.kafkaProducerSaslOptions);
+                bean.kafkaProducerMessage = monitor.kafkaProducerMessage;
+                bean.gamedigGivenPortOnly = monitor.gamedigGivenPortOnly;
 
                 bean.validate();
 
@@ -768,6 +845,7 @@ let needSetup = false;
                 callback({
                     ok: true,
                     msg: "Saved.",
+                    msgi18n: true,
                     monitorID: bean.id,
                 });
 
@@ -830,14 +908,17 @@ let needSetup = false;
                     throw new Error("Invalid period.");
                 }
 
+                const sqlHourOffset = Database.sqlHourOffset();
+
                 let list = await R.getAll(`
-                    SELECT * FROM heartbeat
-                    WHERE monitor_id = ? AND
-                    time > DATETIME('now', '-' || ? || ' hours')
+                    SELECT *
+                    FROM heartbeat
+                    WHERE monitor_id = ?
+                      AND time > ${sqlHourOffset}
                     ORDER BY time ASC
                 `, [
                     monitorID,
-                    period,
+                    -period,
                 ]);
 
                 callback({
@@ -992,7 +1073,8 @@ let needSetup = false;
 
                 callback({
                     ok: true,
-                    msg: "Saved",
+                    msg: "Saved.",
+                    msgi18n: true,
                     tag: await bean.toJSON(),
                 });
 
@@ -1079,9 +1161,6 @@ let needSetup = false;
                     value,
                 ]);
 
-                // Cleanup unused Tags
-                await R.exec("delete from tag where ( select count(*) from monitor_tag mt where tag.id = mt.tag_id ) = 0");
-
                 callback({
                     ok: true,
                     msg: "Deleted Successfully.",
@@ -1099,7 +1178,7 @@ let needSetup = false;
             try {
                 checkLogin(socket);
 
-                if (! password.newPassword) {
+                if (!password.newPassword) {
                     throw new Error("Invalid new password");
                 }
 
@@ -1160,6 +1239,7 @@ let needSetup = false;
                 }
 
                 const previousChromeExecutable = await Settings.get("chromeExecutable");
+                const previousNSCDStatus = await Settings.get("nscd");
 
                 await setSettings("general", data);
                 server.entryPage = data.entryPage;
@@ -1177,9 +1257,19 @@ let needSetup = false;
                     await resetChrome();
                 }
 
+                // Update nscd status
+                if (previousNSCDStatus !== data.nscd) {
+                    if (data.nscd) {
+                        server.startNSCDServices();
+                    } else {
+                        server.stopNSCDServices();
+                    }
+                }
+
                 callback({
                     ok: true,
-                    msg: "Saved"
+                    msg: "Saved.",
+                    msgi18n: true,
                 });
 
                 sendInfo(socket);
@@ -1203,7 +1293,8 @@ let needSetup = false;
 
                 callback({
                     ok: true,
-                    msg: "Saved",
+                    msg: "Saved.",
+                    msgi18n: true,
                     id: notificationBean.id,
                 });
 
@@ -1346,6 +1437,7 @@ let needSetup = false;
 
                             // Define default values
                             let retryInterval = 0;
+                            let timeout = monitorListData[i].timeout || (monitorListData[i].interval * 0.8); // fallback to old value
 
                             /*
                             Only replace the default value with the backup file data for the specific version, where it appears the first time
@@ -1371,6 +1463,7 @@ let needSetup = false;
                                 basic_auth_pass: monitorListData[i].basic_auth_pass,
                                 authWorkstation: monitorListData[i].authWorkstation,
                                 authDomain: monitorListData[i].authDomain,
+                                timeout,
                                 interval: monitorListData[i].interval,
                                 retryInterval: retryInterval,
                                 resendInterval: monitorListData[i].resendInterval || 0,
@@ -1416,7 +1509,7 @@ let needSetup = false;
                                     ]);
 
                                     let tagId;
-                                    if (! tag) {
+                                    if (!tag) {
                                         // -> If it doesn't exist, create new tag from backup file
                                         let beanTag = R.dispense("tag");
                                         beanTag.name = oldTag.name;
@@ -1572,6 +1665,8 @@ let needSetup = false;
         await shutdownFunction();
     });
 
+    server.start();
+
     server.httpServer.listen(port, hostname, () => {
         if (hostname) {
             log.info("server", `Listening on ${hostname}:${port}`);
@@ -1580,10 +1675,6 @@ let needSetup = false;
         }
         startMonitors();
         checkVersion.startInterval();
-
-        if (testMode) {
-            startUnitTest();
-        }
 
         if (e2eTestMode) {
             startE2eTests();
@@ -1621,8 +1712,8 @@ async function updateMonitorNotification(monitorID, notificationIDList) {
 
 /**
  * Check if a given user owns a specific monitor
- * @param {number} userID
- * @param {number} monitorID
+ * @param {number} userID ID of user to check
+ * @param {number} monitorID ID of monitor to check
  * @returns {Promise<void>}
  * @throws {Error} The specified user does not own the monitor
  */
@@ -1641,7 +1732,7 @@ async function checkOwner(userID, monitorID) {
  * Function called after user login
  * This function is used to send the heartbeat list of a monitor.
  * @param {Socket} socket Socket.io instance
- * @param {Object} user User object
+ * @param {object} user User object
  * @returns {Promise<void>}
  */
 async function afterLogin(socket, user) {
@@ -1649,6 +1740,7 @@ async function afterLogin(socket, user) {
     socket.join(user.id);
 
     let monitorList = await server.sendMonitorList(socket);
+    sendInfo(socket);
     server.sendMaintenanceList(socket);
     sendNotificationList(socket);
     sendProxyList(socket);
@@ -1681,16 +1773,11 @@ async function afterLogin(socket, user) {
 
 /**
  * Initialize the database
- * @param {boolean} [testMode=false] Should the connection be
+ * @param {boolean} testMode Should the connection be
  * started in test mode?
  * @returns {Promise<void>}
  */
 async function initDatabase(testMode = false) {
-    if (! fs.existsSync(Database.path)) {
-        log.info("server", "Copying Database");
-        fs.copyFileSync(Database.templatePath, Database.path);
-    }
-
     log.info("server", "Connecting to the Database");
     await Database.connect(testMode);
     log.info("server", "Connected");
@@ -1711,7 +1798,7 @@ async function initDatabase(testMode = false) {
     }
 
     // If there is no record in user table, it is a new Uptime Kuma instance, need to setup
-    if ((await R.count("user")) === 0) {
+    if ((await R.knex("user").count("id as count").first()).count === 0) {
         log.info("server", "No user, need setup");
         needSetup = true;
     }
@@ -1778,7 +1865,10 @@ async function pauseMonitor(userID, monitorID) {
     }
 }
 
-/** Resume active monitors */
+/**
+ * Resume active monitors
+ * @returns {Promise<void>}
+ */
 async function startMonitors() {
     let list = await R.find("monitor", " active = 1 ");
 
@@ -1813,12 +1903,19 @@ async function shutdownFunction(signal) {
     await sleep(2000);
     await Database.close();
 
+    if (EmbeddedMariaDB.hasInstance()) {
+        EmbeddedMariaDB.getInstance().stop();
+    }
+
     stopBackgroundJobs();
     await cloudflaredStop();
     Settings.stopCacheCleaner();
 }
 
-/** Final function called before application exits */
+/**
+ * Final function called before application exits
+ * @returns {void}
+ */
 function finalFunction() {
     log.info("server", "Graceful shutdown successful!");
 }

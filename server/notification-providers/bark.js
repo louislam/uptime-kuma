@@ -18,6 +18,9 @@ const successMessage = "Successes!";
 class Bark extends NotificationProvider {
     name = "Bark";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let barkEndpoint = notification.barkEndpoint;
 
@@ -44,7 +47,8 @@ class Bark extends NotificationProvider {
 
     /**
      * Check if result is successful
-     * @param {Object} result Axios response object
+     * @param {object} result Axios response object
+     * @returns {void}
      * @throws {Error} The status code is not in range 2xx
      */
     checkResult(result) {
@@ -58,10 +62,11 @@ class Bark extends NotificationProvider {
 
     /**
      * Send the message
+     * @param {BeanModel} notification Notification to send
      * @param {string} title Message title
      * @param {string} subtitle Message
      * @param {string} endpoint Endpoint to send request to
-     * @returns {string}
+     * @returns {string} Success message
      */
     async postNotification(notification, title, subtitle, endpoint) {
         let result = await axios.post(`${endpoint}/push`, {
