@@ -58,7 +58,7 @@
                     <router-link :to=" '/clone/' + monitor.id " class="btn btn-normal">
                         <font-awesome-icon icon="clone" /> {{ $t("Clone") }}
                     </router-link>
-                    <button v-if="isAWSInstance" class="btn btn-warning" @click="restartInstance">
+                    <button class="btn btn-warning" @click="restartInstance">
                         <font-awesome-icon icon="undo" /> {{ $t("Restart") }}
                     </button>
                     <button class="btn btn-danger" @click="deleteDialog">
