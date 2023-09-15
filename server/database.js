@@ -232,7 +232,7 @@ class Database {
                 }
             };
         } else if (dbConfig.type === "mariadb") {
-            validateDBName(dbConfig.dbName);
+            this.validateDBName(dbConfig.dbName);
 
             const connection = await mysql.createConnection({
                 host: dbConfig.hostname,
@@ -270,7 +270,7 @@ class Database {
                 pool: mariadbPoolConfig,
             };
         } else if (dbConfig.type === "postgres") {
-            validateDBName(dbConfig.dbName);
+            this.validateDBName(dbConfig.dbName);
 
             const clientConfig = {
                 host: dbConfig.hostname,
@@ -280,7 +280,7 @@ class Database {
                 database: dbConfig.dbName,
             };
             const client = new pg.Client(clientConfig);
-            await connection.execute("CREATE DATABASE IF NOT EXISTS " + dbConfig.dbName);
+            await client.execute("CREATE DATABASE IF NOT EXISTS " + dbConfig.dbName);
             await client.end();
 
             config = {
