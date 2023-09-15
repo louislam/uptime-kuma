@@ -94,9 +94,9 @@ class Bark extends NotificationProvider {
      * @param {string} endpoint Endpoint to send request to
      * @returns {string} Success message
      */
-    async postNotification(notification, title, subtitle, endpoint, useV1 = false) {
-        let result; 
-        if (useV1) {
+    async postNotification(notification, title, subtitle, endpoint) {
+        let result;
+        if (notification.apiVersion == "v1") {
             // url encode title and subtitle
             title = encodeURIComponent(title);
             subtitle = encodeURIComponent(subtitle);
