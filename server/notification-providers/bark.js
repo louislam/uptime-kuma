@@ -94,10 +94,16 @@ class Bark extends NotificationProvider {
      * @param {string} endpoint Endpoint to send request to
      * @returns {string} Success message
      */
-    async postNotification(notification, title, subtitle, endpoint, useV2 = false) {
-        
+    async postNotification(notification, title, subtitle, endpoint, useV1 = false) {
         let result; 
-        if (useV2) {
+        if (useV1) {
+            // url encode title and subtitle
+            title = encodeURIComponent(title);
+            subtitle = encodeURIComponent(subtitle);
+            let postUrl = endpoint + "/" + title + "/" + subtitle;
+            postUrl = this.appendAdditionalParameters(notification, postUrl);
+            result = await axios.get(postUrl);
+        } else {
             result = await axios.post(`${endpoint}/push`, {
                 title,
                 body: subtitle,
@@ -105,13 +111,6 @@ class Bark extends NotificationProvider {
                 sound: notification.barkSound || "telegraph", // default sound is telegraph
                 group: notification.barkGroup || "UptimeKuma", // default group is UptimeKuma
             });
-        } else {
-            // url encode title and subtitle
-            title = encodeURIComponent(title);
-            subtitle = encodeURIComponent(subtitle);
-            let postUrl = endpoint + "/" + title + "/" + subtitle;
-            postUrl = this.appendAdditionalParameters(notification, postUrl);
-            result = await axios.get(postUrl);
         }
         this.checkResult(result);
         if (result.statusText != null) {
