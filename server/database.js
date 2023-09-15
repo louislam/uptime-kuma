@@ -167,7 +167,7 @@ class Database {
 
     /**
      * Validate a database name
-     * @param {string} dbName
+     * @param {string} dbName Database name to validate
      * @throws {Error} If the database name is invalid
      * @returns {void}
      */
@@ -703,6 +703,7 @@ class Database {
 
     /**
      * @returns {string} Get the SQL for the current time plus a number of hours
+     * @throws {Error} If the database type is unknown
      */
     static sqlHourOffset() {
         if (Database.dbConfig.type === "sqlite") {
@@ -712,6 +713,7 @@ class Database {
         } else if (Database.dbConfig.type === "postgres") {
             return "NOW() + INTERVAL '? HOUR'";
         }
+        throw new Error("Unknown database type: " + Database.dbConfig.type);
     }
 
 }
