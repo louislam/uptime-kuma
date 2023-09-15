@@ -6,6 +6,7 @@ const knex = require("knex");
 const path = require("path");
 const { EmbeddedMariaDB } = require("./embedded-mariadb");
 const mysql = require("mysql2/promise");
+const pg = require("pg");
 
 /**
  * Database & App Data Folder
@@ -165,6 +166,18 @@ class Database {
     }
 
     /**
+     * Validate a database name
+     * @param {string} dbName
+     * @throws {Error} If the database name is invalid
+     * @returns {void}
+     */
+    static validateDBName(dbName) {
+        if (!/^\w+$/.test(dbName)) {
+            throw Error("Invalid database name. A database name can only consist of letters, numbers and underscores");
+        }
+    }
+
+    /**
      * Connect to the database
      * @param {boolean} testMode Should the connection be started in test mode?
      * @param {boolean} autoloadModels Should models be automatically loaded?
@@ -195,7 +208,6 @@ class Database {
         log.info("db", `Database Type: ${dbConfig.type}`);
 
         if (dbConfig.type === "sqlite") {
-
             if (! fs.existsSync(Database.sqlitePath)) {
                 log.info("server", "Copying Database");
                 fs.copyFileSync(Database.templatePath, Database.sqlitePath);
@@ -220,9 +232,7 @@ class Database {
                 }
             };
         } else if (dbConfig.type === "mariadb") {
-            if (!/^\w+$/.test(dbConfig.dbName)) {
-                throw Error("Invalid database name. A database name can only consist of letters, numbers and underscores");
-            }
+            validateDBName(dbConfig.dbName);
 
             const connection = await mysql.createConnection({
                 host: dbConfig.hostname,
@@ -259,6 +269,24 @@ class Database {
                 },
                 pool: mariadbPoolConfig,
             };
+        } else if (dbConfig.type === "postgres") {
+            validateDBName(dbConfig.dbName);
+
+            const clientConfig = {
+                host: dbConfig.hostname,
+                port: dbConfig.port,
+                user: dbConfig.username,
+                password: dbConfig.password,
+                database: dbConfig.dbName,
+            };
+            const client = new pg.Client(clientConfig);
+            await connection.execute("CREATE DATABASE IF NOT EXISTS " + dbConfig.dbName);
+            await client.end();
+
+            config = {
+                client: "pg",
+                connection: clientConfig,
+            };
         } else {
             throw new Error("Unknown Database type: " + dbConfig.type);
         }
@@ -291,6 +319,8 @@ class Database {
             await this.initSQLite(testMode, noLog);
         } else if (dbConfig.type.endsWith("mariadb")) {
             await this.initMariaDB();
+        } else if (dbConfig.type === "postgres") {
+            await this.initPostgres();
         }
     }
 
@@ -337,6 +367,22 @@ class Database {
             await createTables();
         } else {
             log.debug("db", "MariaDB database already exists");
+        }
+    }
+
+    /**
+     * Initialize PostgresDB
+     * @returns {Promise<void>}
+     */
+    static async initPostgres() {
+        log.debug("db", "Checking if PostgresDB database exists...");
+
+        let hasTable = await R.hasTable("docker_host");
+        if (!hasTable) {
+            const { createTables } = require("../db/knex_init_db");
+            await createTables();
+        } else {
+            log.debug("db", "PostgresDB database already exists");
         }
     }
 
