@@ -46,6 +46,32 @@ class Bark extends NotificationProvider {
     }
 
     /**
+     * Add additional parameter for Bark v1 endpoints
+     * @param {BeanModel} notification Notification to send
+     * @param {string} postUrl URL to append parameters to
+     * @returns {string} Additional URL parameters
+     */
+    appendAdditionalParameters(notification, postUrl) {
+        // set icon to uptime kuma icon, 11kb should be fine
+        postUrl += "?icon=" + barkNotificationAvatar;
+        // grouping all our notifications
+        if (notification.barkGroup != null) {
+            postUrl += "&group=" + notification.barkGroup;
+        } else {
+            // default name
+            postUrl += "&group=" + "UptimeKuma";
+        }
+        // picked a sound, this should follow system's mute status when arrival
+        if (notification.barkSound != null) {
+            postUrl += "&sound=" + notification.barkSound;
+        } else {
+            // default sound
+            postUrl += "&sound=" + "telegraph";
+        }
+        return postUrl;
+    }
+
+    /**
      * Check if result is successful
      * @param {object} result Axios response object
      * @returns {void}
@@ -68,14 +94,25 @@ class Bark extends NotificationProvider {
      * @param {string} endpoint Endpoint to send request to
      * @returns {string} Success message
      */
-    async postNotification(notification, title, subtitle, endpoint) {
-        let result = await axios.post(`${endpoint}/push`, {
-            title,
-            body: subtitle,
-            icon: barkNotificationAvatar,
-            sound: notification.barkSound || "telegraph", // default sound is telegraph
-            group: notification.barkGroup || "UptimeKuma", // default group is UptimeKuma
-        });
+    async postNotification(notification, title, subtitle, endpoint, useV2 = false) {
+        
+        let result; 
+        if (useV2) {
+            result = await axios.post(`${endpoint}/push`, {
+                title,
+                body: subtitle,
+                icon: barkNotificationAvatar,
+                sound: notification.barkSound || "telegraph", // default sound is telegraph
+                group: notification.barkGroup || "UptimeKuma", // default group is UptimeKuma
+            });
+        } else {
+            // url encode title and subtitle
+            title = encodeURIComponent(title);
+            subtitle = encodeURIComponent(subtitle);
+            let postUrl = endpoint + "/" + title + "/" + subtitle;
+            postUrl = this.appendAdditionalParameters(notification, postUrl);
+            result = await axios.get(postUrl);
+        }
         this.checkResult(result);
         if (result.statusText != null) {
             return "Bark notification succeed: " + result.statusText;
