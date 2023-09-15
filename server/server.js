@@ -161,6 +161,7 @@ const apicache = require("./modules/apicache");
 const { resetChrome } = require("./monitor-types/real-browser-monitor-type");
 const { EmbeddedMariaDB } = require("./embedded-mariadb");
 const { SetupDatabase } = require("./setup-database");
+const { restartInstance } = require("./util-aws");
 
 app.use(express.json());
 
@@ -964,6 +965,24 @@ let needSetup = false;
                     msg: "Paused Successfully.",
                 });
 
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("restartInstance", async (instanceID, callback) => {
+            try {
+                checkLogin(socket);
+                await restartInstance(socket.userID, instanceID);
+                await server.sendMonitorList(socket);
+
+                callback({
+                    ok: true,
+                    msg: "Restarted Successfully.",
+                });
             } catch (e) {
                 callback({
                     ok: false,
