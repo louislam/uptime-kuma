@@ -707,8 +707,10 @@ class Database {
     static sqlHourOffset() {
         if (Database.dbConfig.type === "sqlite") {
             return "DATETIME('now', ? || ' hours')";
-        } else {
+        } else if (Database.dbConfig.type.endsWith("mariadb")) {
             return "DATE_ADD(NOW(), INTERVAL ? HOUR)";
+        } else if (Database.dbConfig.type === "postgres") {
+            return "NOW() + INTERVAL '? HOUR'";
         }
     }
 
