@@ -53,7 +53,7 @@ class Monitor extends BeanModel {
             obj.tags = await this.getTags();
         }
 
-        if (certExpiry && this.type === "http") {
+        if (certExpiry && this.type === "http" && this.getURLProtocol() === "https:") {
             const { certExpiryDaysRemaining, validCert } = await this.getCertExpiry(this.id);
             obj.certExpiryDaysRemaining = certExpiryDaysRemaining;
             obj.validCert = validCert;
@@ -1071,6 +1071,19 @@ class Monitor extends BeanModel {
         try {
             return new URL(this.url);
         } catch (_) {
+            return null;
+        }
+    }
+
+    /**
+     * Example: http: or https:
+     * @returns {(null|string)}
+     */
+    getURLProtocol() {
+        const url = this.getUrl();
+        if (url) {
+            return this.getUrl().protocol;
+        } else {
             return null;
         }
     }
