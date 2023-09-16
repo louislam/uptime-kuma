@@ -626,6 +626,7 @@
     "TemplateCode": "TemplateCode",
     "SignName": "SignName",
     "Sms template must contain parameters: ": "Sms template must contain parameters: ",
+    "Bark API Version": "Bark API Version",
     "Bark Endpoint": "Bark Endpoint",
     "Bark Group": "Bark Group",
     "Bark Sound": "Bark Sound",
