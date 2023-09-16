@@ -1,7 +1,7 @@
 <template>
     <div class="mb-3">
-        <label for="Bark Endpoint" class="form-label">{{ $t("Bark API Version") }}</label>
-        <select id="Bark Sound" v-model="$parent.notification.apiVersion" class="form-select" required>
+        <label for="Bark API Version" class="form-label">{{ $t("Bark API Version") }}</label>
+        <select id="Bark API Version" v-model="$parent.notification.apiVersion" class="form-select" required>
             <option value="v1">v1</option>
             <option value="v2">v2</option>
         </select>
