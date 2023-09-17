@@ -33,10 +33,12 @@ tsconfig.json
 /babel.config.js
 /ecosystem.config.js
 /extra/healthcheck.exe
+/extra/healthcheck-armv7
 /extra/healthcheck
 /extra/exe-builder
 /extra/push-examples
 /extra/uptime-kuma-push
+
 
 ### .gitignore content (commented rules are duplicated)
 
