@@ -19,13 +19,14 @@ jobs:
     steps:
       # Fetch metadata about the PR
       - name: Dependabot metadata
-        id: metadata
+        id: dependabot-metadata
         uses: dependabot/fetch-metadata@v1
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
 
       # Auto-merge the PR based on conditions
       - name: Enable auto-merge for Dependabot PRs
+        if: ${{ !contains(steps.dependabot-metadata.outputs.update-type, 'major') }}
         # --auto Automatically merge only after necessary requirements are met (e.g., Passing the CI tests.)
         run: gh pr merge --auto --merge "$PR_URL"
         env:
