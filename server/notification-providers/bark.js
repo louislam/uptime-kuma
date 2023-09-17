@@ -96,7 +96,7 @@ class Bark extends NotificationProvider {
      */
     async postNotification(notification, title, subtitle, endpoint) {
         let result;
-        if (notification.apiVersion == "v1") {
+        if (notification.apiVersion === "v1" || notification.apiVersion == null) {
             // url encode title and subtitle
             title = encodeURIComponent(title);
             subtitle = encodeURIComponent(subtitle);
