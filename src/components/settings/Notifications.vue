@@ -166,6 +166,7 @@ export default {
 
         /**
          * Loads toast timeout settings from storage to component data.
+         * @returns {void}
          */
         loadToastTimeoutSettings() {
             const successTimeout = localStorage.toastSuccessTimeout;

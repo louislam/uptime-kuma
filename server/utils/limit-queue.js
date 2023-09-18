@@ -6,11 +6,22 @@ const { ArrayWithKey } = require("./array-with-key");
  */
 class LimitQueue extends ArrayWithKey {
 
+    /**
+     * The limit of the queue after which the first element will be removed
+     * @private
+     * @type {number}
+     */
     __limit;
+    /**
+     * The callback function when the queue exceeds the limit
+     * @private
+     * @callback onExceedCallback
+     * @param {{key:K,value:V}|nul} item
+     */
     __onExceed = null;
 
     /**
-     * @param {number} limit
+     * @param {number} limit The limit of the queue after which the first element will be removed
      */
     constructor(limit) {
         super();

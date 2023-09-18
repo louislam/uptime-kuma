@@ -82,7 +82,7 @@
                                         <option value="redis">
                                             Redis
                                         </option>
-                                        <option v-if="$root.info.isContainer" value="tailscale-ping">
+                                        <option v-if="!$root.info.isContainer" value="tailscale-ping">
                                             Tailscale Ping
                                         </option>
                                     </optgroup>
@@ -401,7 +401,7 @@
                             </div>
 
                             <!-- Timeout: HTTP / Keyword only -->
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword'" class="my-3">
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query'" class="my-3">
                                 <label for="timeout" class="form-label">{{ $t("Request Timeout") }} ({{ $t("timeoutAfter", [ monitor.timeout || clampTimeout(monitor.interval) ]) }})</label>
                                 <input id="timeout" v-model="monitor.timeout" type="number" class="form-control" required min="0" step="0.1">
                             </div>
@@ -460,7 +460,7 @@
                             </div>
 
                             <!-- HTTP / Keyword only -->
-                            <template v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'grpc-keyword' ">
+                            <template v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'grpc-keyword' ">
                                 <div class="my-3">
                                     <label for="maxRedirects" class="form-label">{{ $t("Max. Redirects") }}</label>
                                     <input id="maxRedirects" v-model="monitor.maxredirects" type="number" class="form-control" required min="0" step="1">
@@ -654,6 +654,7 @@
                                     <label for="httpBodyEncoding" class="form-label">{{ $t("Body Encoding") }}</label>
                                     <select id="httpBodyEncoding" v-model="monitor.httpBodyEncoding" class="form-select">
                                         <option value="json">JSON</option>
+                                        <option value="form">x-www-form-urlencoded</option>
                                         <option value="xml">XML</option>
                                     </select>
                                 </div>
@@ -1001,6 +1002,9 @@ message HealthCheckResponse {
     <Uptime>Kuma</Uptime>
   </soap:Body>
 </soap:Envelope>` ]);
+            }
+            if (this.monitor && this.monitor.httpBodyEncoding === "form") {
+                return this.$t("Example:", [ "key1=value1&key2=value2" ]);
             }
             return this.$t("Example:", [ `
 {
