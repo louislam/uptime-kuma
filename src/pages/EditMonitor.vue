@@ -880,6 +880,7 @@ const monitorDefaults = {
     kafkaProducerSaslOptions: {
         mechanism: "None",
     },
+    kafkaProducerSsl: false,
     gamedigGivenPortOnly: true,
 };
 
