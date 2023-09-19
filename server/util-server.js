@@ -286,22 +286,22 @@ exports.kafkaProducerAsync = function (brokers, topic, message, options = {}, sa
 
         producer.connect().then(
             () => {
-                try {
-                    producer.send({
-                        topic: topic,
-                        messages: [{
-                            value: message,
-                        }],
-                    });
-                    connectedToKafka = true;
-                    clearTimeout(timeoutID);
+                producer.send({
+                    topic: topic,
+                    messages: [{
+                        value: message,
+                    }],
+                }).then((_) => {
                     resolve("Message sent successfully");
-                } catch (e) {
+                }).catch((e) => {
                     connectedToKafka = true;
                     producer.disconnect();
                     clearTimeout(timeoutID);
                     reject(new Error("Error sending message: " + e.message));
-                }
+                }).finally(() => {
+                    connectedToKafka = true;
+                    clearTimeout(timeoutID);
+                });
             }
         ).catch(
             (e) => {
@@ -313,8 +313,10 @@ exports.kafkaProducerAsync = function (brokers, topic, message, options = {}, sa
         );
 
         producer.on("producer.network.request_timeout", (_) => {
-            clearTimeout(timeoutID);
-            reject(new Error("producer.network.request_timeout"));
+            if (!connectedToKafka) {
+                clearTimeout(timeoutID);
+                reject(new Error("producer.network.request_timeout"));
+            }
         });
 
         producer.on("producer.disconnect", (_) => {
