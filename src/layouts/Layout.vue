@@ -197,6 +197,7 @@ export default {
     methods: {
         /**
          * Clear all toast notifications.
+         * @returns {void}
          */
         clearToasts() {
             toast.clear();

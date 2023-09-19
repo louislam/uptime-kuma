@@ -3,4 +3,5 @@ BEGIN TRANSACTION;
 
 ALTER TABLE monitor
     ADD timeout DOUBLE default 0 not null;
+
 COMMIT;

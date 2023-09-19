@@ -9,10 +9,12 @@
             </div>
 
             <div v-if="info.runningSetup" class="mt-5">
-                <div class="alert alert-success" role="alert">
+                <div class="alert alert-success mx-3 px-4" role="alert">
                     <div class="d-flex align-items-center">
                         <strong>Setting up the database. It may take a while, please be patient.</strong>
-                        <div class="spinner-border ml-auto" role="status" aria-hidden="true"></div>
+                        <div class="ms-3 pt-1">
+                            <div class="spinner-border" role="status" aria-hidden="true"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -51,17 +53,17 @@
                     </label>
                 </div>
 
-                <p v-if="dbConfig.type === 'embedded-mariadb'" class="mt-3">
+                <div v-if="dbConfig.type === 'embedded-mariadb'" class="mt-3 short">
                     {{ $t("setupDatabaseEmbeddedMariaDB") }}
-                </p>
+                </div>
 
-                <p v-if="dbConfig.type === 'mariadb'" class="mt-3">
+                <div v-if="dbConfig.type === 'mariadb'" class="mt-3 short">
                     {{ $t("setupDatabaseMariaDB") }}
-                </p>
+                </div>
 
-                <p v-if="dbConfig.type === 'sqlite'" class="mt-3">
+                <div v-if="dbConfig.type === 'sqlite'" class="mt-3 short">
                     {{ $t("setupDatabaseSQLite") }}
-                </p>
+                </div>
 
                 <template v-if="dbConfig.type === 'mariadb'">
                     <div class="form-floating mt-3 short">
@@ -80,7 +82,7 @@
                     </div>
 
                     <div class="form-floating mt-3 short">
-                        <input id="floatingInput" v-model="dbConfig.password" type="passwrod" class="form-control" required>
+                        <input id="floatingInput" v-model="dbConfig.password" type="password" class="form-control" required>
                         <label for="floatingInput">{{ $t("Password") }}</label>
                     </div>
 
