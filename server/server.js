@@ -976,7 +976,7 @@ let needSetup = false;
         socket.on("restartInstance", async (instanceID, callback) => {
             try {
                 checkLogin(socket);
-                await restartInstance(socket.userID, instanceID);
+                await restartInstance(instanceID);
                 await server.sendMonitorList(socket);
 
                 callback({
