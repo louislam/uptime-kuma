@@ -12,11 +12,17 @@ async function main() {
     console.log("Pr ID: ", currentBranchPRID);
 
     // Use gh commend to get pr commits
-    const prCommits = JSON.parse(execSync(`gh pr view ${currentBranchPRID} --json commits`).toString().trim());
-    console.log("Found commits: ", prCommits.commits.length);
+    const prCommits = JSON.parse(execSync(`gh pr view ${currentBranchPRID} --json commits`).toString().trim()).commits;
+
+    console.log("Found commits: ", prCommits.length);
+
+    // Sort the commits by authoredDate
+    prCommits.sort((a, b) => {
+        return new Date(a.authoredDate) - new Date(b.authoredDate);
+    });
 
     // Get the oldest commit id
-    const oldestCommitID = prCommits.commits[prCommits.commits.length - 1].oid;
+    const oldestCommitID = prCommits[0].oid;
     console.log("Oldest commit id of this pr:", oldestCommitID);
 
     // Get the latest commit id of the target branch
