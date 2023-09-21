@@ -272,10 +272,10 @@ async function createTables() {
     await knex.schema.createTable("notification", (table) => {
         table.increments("id");
         table.string("name", 255);
-        table.text("config");
         table.boolean("active").notNullable().defaultTo(true);
         table.integer("user_id").unsigned();
         table.boolean("is_default").notNullable().defaultTo(false);
+        table.text("config");
     });
 
     // monitor_notification
