@@ -1,7 +1,7 @@
 const AWS = require("aws-sdk");
 
 exports.restartInstance = async (instanceID) => {
-    const ec2 = new AWS.EC2({ region: "ap-southeast-1" });
+    const ec2 = new AWS.EC2({ region: "ap-northeast-1" });
 
     return new Promise((resolve, reject) => {
         const params = {

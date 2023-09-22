@@ -21,6 +21,7 @@
         "start-frontend-dev": "cross-env NODE_ENV=development vite --host --config ./config/vite.config.js",
         "start-frontend-devcontainer": "cross-env NODE_ENV=development DEVCONTAINER=1 vite --host --config ./config/vite.config.js",
         "start": "npm run start-server",
+        "prepare": "npm run build",
         "start-server": "node server/server.js",
         "start-server-dev": "cross-env NODE_ENV=development node server/server.js",
         "build": "vite build --config ./config/vite.config.js",
