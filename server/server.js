@@ -973,10 +973,11 @@ let needSetup = false;
             }
         });
 
-        socket.on("restartInstance", async (instanceID, callback) => {
+        socket.on("restartInstance", async (instance, callback) => {
             try {
                 checkLogin(socket);
-                await restartInstance(instanceID);
+                const { id: instanceID, environment } = instance;
+                await restartInstance(instanceID, environment);
                 await server.sendMonitorList(socket);
 
                 callback({
