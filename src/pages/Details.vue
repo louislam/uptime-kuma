@@ -416,7 +416,7 @@ export default {
                 return;
             }
             this.$root.getSocket().emit("restartInstance", {
-                id: instanceID,
+                instanceID: instanceID,
                 environment: environment
             }, (res) => {
                 this.$root.toastRes(res);

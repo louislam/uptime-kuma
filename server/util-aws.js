@@ -17,8 +17,6 @@ exports.restartInstance = async (instanceID, environment) => {
         }
     }[environment];
 
-    console.log("aws-util", credential);
-
     const ec2 = new AWS.EC2({
         region: "ap-southeast-1",
         ...credential,
