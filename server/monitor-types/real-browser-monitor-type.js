@@ -221,6 +221,9 @@ class RealBrowserMonitorType extends MonitorType {
 
         await context.close();
 
+        // Close the browser instance
+        await browser.close();
+
         if (res.status() >= 200 && res.status() < 400) {
             heartbeat.status = UP;
             heartbeat.msg = res.status();
