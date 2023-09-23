@@ -45,8 +45,6 @@ async function sendNotificationList(socket) {
  * @returns {Promise<void>}
  */
 async function sendHeartbeatList(socket, monitorID, toUser = false, overwrite = false) {
-    const timeLogger = new TimeLogger();
-
     let list = await R.getAll(`
         SELECT * FROM heartbeat
         WHERE monitor_id = ?
@@ -63,8 +61,6 @@ async function sendHeartbeatList(socket, monitorID, toUser = false, overwrite = 
     } else {
         socket.emit("heartbeatList", monitorID, result, overwrite);
     }
-
-    timeLogger.print(`[Monitor: ${monitorID}] sendHeartbeatList`);
 }
 
 /**
@@ -147,15 +143,18 @@ async function sendAPIKeyList(socket) {
 async function sendInfo(socket, hideVersion = false) {
     let version;
     let latestVersion;
+    let isContainer;
 
     if (!hideVersion) {
         version = checkVersion.version;
         latestVersion = checkVersion.latestVersion;
+        isContainer = (process.env.UPTIME_KUMA_IS_CONTAINER === "1");
     }
 
     socket.emit("info", {
         version,
         latestVersion,
+        isContainer,
         primaryBaseURL: await setting("primaryBaseURL"),
         serverTimezone: await server.getTimezone(),
         serverTimezoneOffset: server.getTimezoneOffset(),

@@ -6,7 +6,7 @@ import dayjs from "dayjs";
 import mitt from "mitt";
 
 import { DOWN, MAINTENANCE, PENDING, UP } from "../util.ts";
-import { getDevContainerServerHostname, isDevContainer } from "../util-frontend.js";
+import { getDevContainerServerHostname, isDevContainer, getToastSuccessTimeout, getToastErrorTimeout } from "../util-frontend.js";
 const toast = useToast();
 
 let socket;
@@ -192,11 +192,11 @@ export default {
                     if (this.monitorList[data.monitorID] !== undefined) {
                         if (data.status === 0) {
                             toast.error(`[${this.monitorList[data.monitorID].name}] [DOWN] ${data.msg}`, {
-                                timeout: false,
+                                timeout: getToastErrorTimeout(),
                             });
                         } else if (data.status === 1) {
                             toast.success(`[${this.monitorList[data.monitorID].name}] [Up] ${data.msg}`, {
-                                timeout: 20000,
+                                timeout: getToastSuccessTimeout(),
                             });
                         } else {
                             toast(`[${this.monitorList[data.monitorID].name}] ${data.msg}`);
@@ -320,10 +320,19 @@ export default {
          * @returns {void}
          */
         toastRes(res) {
+            let msg = res.msg;
+            if (res.msgi18n) {
+                if (msg != null && typeof msg === "object") {
+                    msg = this.$t(msg.key, msg.values);
+                } else {
+                    msg = this.$t(msg);
+                }
+            }
+
             if (res.ok) {
-                toast.success(res.msg);
+                toast.success(msg);
             } else {
-                toast.error(res.msg);
+                toast.error(msg);
             }
         },
 
@@ -663,7 +672,7 @@ export default {
          */
         getMonitorBeats(monitorID, period, callback) {
             socket.emit("getMonitorBeats", monitorID, period, callback);
-        }
+        },
     },
 
     computed: {

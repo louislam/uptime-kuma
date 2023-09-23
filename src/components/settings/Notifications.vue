@@ -21,6 +21,39 @@
         </div>
 
         <div class="my-4 pt-4">
+            <h5 class="my-4 settings-subheading">{{ $t("monitorToastMessagesLabel") }}</h5>
+            <p>{{ $t("monitorToastMessagesDescription") }}</p>
+
+            <div class="my-4">
+                <label for="toastErrorTimeoutSecs" class="form-label">
+                    {{ $t("toastErrorTimeout") }}
+                </label>
+                <input
+                    id="toastErrorTimeoutSecs"
+                    v-model="toastErrorTimeoutSecs"
+                    type="number"
+                    class="form-control"
+                    min="-1"
+                    step="1"
+                />
+            </div>
+
+            <div class="my-4">
+                <label for="toastSuccessTimeoutSecs" class="form-label">
+                    {{ $t("toastSuccessTimeout") }}
+                </label>
+                <input
+                    id="toastSuccessTimeoutSecs"
+                    v-model="toastSuccessTimeoutSecs"
+                    type="number"
+                    class="form-control"
+                    min="-1"
+                    step="1"
+                />
+            </div>
+        </div>
+
+        <div class="my-4 pt-4">
             <h5 class="my-4 settings-subheading">{{ $t("settingsCertificateExpiry") }}</h5>
             <p>{{ $t("certificationExpiryDescription") }}</p>
             <p>{{ $t("notificationDescription") }}</p>
@@ -58,6 +91,8 @@ export default {
 
     data() {
         return {
+            toastSuccessTimeoutSecs: 20,
+            toastErrorTimeoutSecs: -1,
             /**
              * Variable to store the input for new certificate expiry day.
              */
@@ -75,6 +110,26 @@ export default {
         settingsLoaded() {
             return this.$parent.$parent.$parent.settingsLoaded;
         },
+    },
+
+    watch: {
+        // Parse, store and apply new timeout settings.
+        toastSuccessTimeoutSecs(newTimeout) {
+            const parsedTimeout = parseInt(newTimeout);
+            if (parsedTimeout != null && !Number.isNaN(parsedTimeout)) {
+                localStorage.toastSuccessTimeout = newTimeout > 0 ? newTimeout * 1000 : newTimeout;
+            }
+        },
+        toastErrorTimeoutSecs(newTimeout) {
+            const parsedTimeout = parseInt(newTimeout);
+            if (parsedTimeout != null && !Number.isNaN(parsedTimeout)) {
+                localStorage.toastErrorTimeout = newTimeout > 0 ? newTimeout * 1000 : newTimeout;
+            }
+        }
+    },
+
+    mounted() {
+        this.loadToastTimeoutSettings();
     },
 
     methods: {
@@ -105,6 +160,28 @@ export default {
                         this.settings.tlsExpiryNotifyDays.sort((a, b) => a - b);
                         this.expiryNotifInput = null;
                     }
+                }
+            }
+        },
+
+        /**
+         * Loads toast timeout settings from storage to component data.
+         * @returns {void}
+         */
+        loadToastTimeoutSettings() {
+            const successTimeout = localStorage.toastSuccessTimeout;
+            if (successTimeout !== undefined) {
+                const parsedTimeout = parseInt(successTimeout);
+                if (parsedTimeout != null && !Number.isNaN(parsedTimeout)) {
+                    this.toastSuccessTimeoutSecs = parsedTimeout > 0 ? parsedTimeout / 1000 : parsedTimeout;
+                }
+            }
+
+            const errorTimeout = localStorage.toastErrorTimeout;
+            if (errorTimeout !== undefined) {
+                const parsedTimeout = parseInt(errorTimeout);
+                if (parsedTimeout != null && !Number.isNaN(parsedTimeout)) {
+                    this.toastErrorTimeoutSecs = parsedTimeout > 0 ? parsedTimeout / 1000 : parsedTimeout;
                 }
             }
         },

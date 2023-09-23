@@ -84,7 +84,7 @@ log.info("server", "Importing this project modules");
 log.debug("server", "Importing Monitor");
 const Monitor = require("./model/monitor");
 log.debug("server", "Importing Settings");
-const { getSettings, setSettings, setting, initJWTSecret, checkLogin, startUnitTest, FBSD, doubleCheckPassword, startE2eTests,
+const { getSettings, setSettings, setting, initJWTSecret, checkLogin, FBSD, doubleCheckPassword, startE2eTests,
     allowDevAllOrigin
 } = require("./util-server");
 
@@ -247,6 +247,12 @@ let needSetup = false;
     if (isDev) {
         app.use(express.urlencoded({ extended: true }));
         app.post("/test-webhook", async (request, response) => {
+            log.debug("test", request.headers);
+            log.debug("test", request.body);
+            response.send("OK");
+        });
+
+        app.post("/test-x-www-form-urlencoded", async (request, response) => {
             log.debug("test", request.headers);
             log.debug("test", request.body);
             response.send("OK");
@@ -755,11 +761,11 @@ let needSetup = false;
                 bean.basic_auth_user = monitor.basic_auth_user;
                 bean.basic_auth_pass = monitor.basic_auth_pass;
                 bean.timeout = monitor.timeout;
-                bean.oauth_client_id = monitor.oauth_client_id,
-                bean.oauth_client_secret = monitor.oauth_client_secret,
-                bean.oauth_auth_method = this.oauth_auth_method,
-                bean.oauth_token_url = monitor.oauth_token_url,
-                bean.oauth_scopes = monitor.oauth_scopes,
+                bean.oauth_client_id = monitor.oauth_client_id;
+                bean.oauth_client_secret = monitor.oauth_client_secret;
+                bean.oauth_auth_method = monitor.oauth_auth_method;
+                bean.oauth_token_url = monitor.oauth_token_url;
+                bean.oauth_scopes = monitor.oauth_scopes;
                 bean.tlsCa = monitor.tlsCa;
                 bean.tlsCert = monitor.tlsCert;
                 bean.tlsKey = monitor.tlsKey;
@@ -830,7 +836,7 @@ let needSetup = false;
 
                 await updateMonitorNotification(bean.id, monitor.notificationIDList);
 
-                if (bean.isActive()) {
+                if (await bean.isActive()) {
                     await restartMonitor(socket.userID, bean.id);
                 }
 
@@ -839,6 +845,7 @@ let needSetup = false;
                 callback({
                     ok: true,
                     msg: "Saved.",
+                    msgi18n: true,
                     monitorID: bean.id,
                 });
 
@@ -1064,7 +1071,8 @@ let needSetup = false;
 
                 callback({
                     ok: true,
-                    msg: "Saved",
+                    msg: "Saved.",
+                    msgi18n: true,
                     tag: await bean.toJSON(),
                 });
 
@@ -1150,9 +1158,6 @@ let needSetup = false;
                     monitorID,
                     value,
                 ]);
-
-                // Cleanup unused Tags
-                await R.exec("delete from tag where ( select count(*) from monitor_tag mt where tag.id = mt.tag_id ) = 0");
 
                 callback({
                     ok: true,
@@ -1298,6 +1303,7 @@ let needSetup = false;
                 }
 
                 const previousChromeExecutable = await Settings.get("chromeExecutable");
+                const previousNSCDStatus = await Settings.get("nscd");
 
                 await setSettings("general", data);
                 server.entryPage = data.entryPage;
@@ -1315,9 +1321,19 @@ let needSetup = false;
                     await resetChrome();
                 }
 
+                // Update nscd status
+                if (previousNSCDStatus !== data.nscd) {
+                    if (data.nscd) {
+                        server.startNSCDServices();
+                    } else {
+                        server.stopNSCDServices();
+                    }
+                }
+
                 callback({
                     ok: true,
-                    msg: "Saved"
+                    msg: "Saved.",
+                    msgi18n: true,
                 });
 
                 sendInfo(socket);
@@ -1341,7 +1357,8 @@ let needSetup = false;
 
                 callback({
                     ok: true,
-                    msg: "Saved",
+                    msg: "Saved.",
+                    msgi18n: true,
                     id: notificationBean.id,
                 });
 
@@ -1720,10 +1737,6 @@ let needSetup = false;
         }
         startMonitors();
         checkVersion.startInterval();
-
-        if (testMode) {
-            startUnitTest();
-        }
 
         if (e2eTestMode) {
             startE2eTests();

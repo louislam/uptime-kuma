@@ -4,12 +4,10 @@ https://knexjs.org/guide/migrations.html#knexfile-in-other-languages
 
 ## Basic rules
 - All tables must have a primary key named `id`
-- Filename format: `YYYY-MM-DD-HHMM-patch-name.js`
-- Avoid native SQL syntax, use knex methods, because Uptime Kuma supports multiple databases
+- Filename format: `YYYY-MM-DD-HHMM-patch-name.js` 
+- Avoid native SQL syntax, use knex methods, because Uptime Kuma supports SQLite and MariaDB.
 
 ## Template
-
-Filename: YYYYMMDDHHMMSS_name.js
 
 ```js
 exports.up = function(knex) {

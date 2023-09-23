@@ -134,7 +134,10 @@ class Database {
     }
 
     /**
-     *
+     * Read the database config
+     * @throws {Error} If the config is invalid
+     * @typedef {string|undefined} envString
+     * @returns {{type: "sqlite"} | {type:envString, hostname:envString, port:envString, database:envString, username:envString, password:envString}} Database config
      */
     static readDBConfig() {
         let dbConfig;
@@ -153,7 +156,9 @@ class Database {
     }
 
     /**
-     * @param dbConfig
+     * @typedef {string|undefined} envString
+     * @param {{type: "sqlite"} | {type:envString, hostname:envString, port:envString, database:envString, username:envString, password:envString}} dbConfig the database configuration that should be written
+     * @returns {void}
      */
     static writeDBConfig(dbConfig) {
         fs.writeFileSync(path.join(Database.dataDir, "db-config.json"), JSON.stringify(dbConfig, null, 4));
@@ -161,10 +166,8 @@ class Database {
 
     /**
      * Connect to the database
-     * @param {boolean} testMode Should the connection be
-     * started in test mode?
-     * @param {boolean} autoloadModels Should models be
-     * automatically loaded?
+     * @param {boolean} testMode Should the connection be started in test mode?
+     * @param {boolean} autoloadModels Should models be automatically loaded?
      * @param {boolean} noLog Should logs not be output?
      * @returns {Promise<void>}
      */
@@ -182,6 +185,12 @@ class Database {
         }
 
         let config = {};
+
+        let mariadbPoolConfig = {
+            afterCreate: function (conn, done) {
+
+            }
+        };
 
         log.info("db", `Database Type: ${dbConfig.type}`);
 
@@ -233,7 +242,9 @@ class Database {
                     user: dbConfig.username,
                     password: dbConfig.password,
                     database: dbConfig.dbName,
-                }
+                    timezone: "+00:00",
+                },
+                pool: mariadbPoolConfig,
             };
         } else if (dbConfig.type === "embedded-mariadb") {
             let embeddedMariaDB = EmbeddedMariaDB.getInstance();
@@ -245,7 +256,8 @@ class Database {
                     socketPath: embeddedMariaDB.socketPath,
                     user: "node",
                     database: "kuma",
-                }
+                },
+                pool: mariadbPoolConfig,
             };
         } else {
             throw new Error("Unknown Database type: " + dbConfig.type);
@@ -283,8 +295,9 @@ class Database {
     }
 
     /**
-     * @param testMode
-     * @param noLog
+     @param {boolean} testMode Should the connection be started in test mode?
+     @param {boolean} noLog Should logs not be output?
+     @returns {Promise<void>}
      */
     static async initSQLite(testMode, noLog) {
         await R.exec("PRAGMA foreign_keys = ON");
@@ -312,7 +325,8 @@ class Database {
     }
 
     /**
-     *
+     * Initialize MariaDB
+     * @returns {Promise<void>}
      */
     static async initMariaDB() {
         log.debug("db", "Checking if MariaDB database exists...");
@@ -344,12 +358,19 @@ class Database {
                 directory: Database.knexMigrationsPath,
             });
         } catch (e) {
-            log.error("db", "Database migration failed");
-            throw e;
+            // Allow missing patch files for downgrade or testing pr.
+            if (e.message.includes("the following files are missing:")) {
+                log.warn("db", e.message);
+                log.warn("db", "Database migration failed, you may be downgrading Uptime Kuma.");
+            } else {
+                log.error("db", "Database migration failed");
+                throw e;
+            }
         }
     }
 
     /**
+     * TODO
      * @returns {Promise<void>}
      */
     static async rollbackLatestPatch() {
@@ -358,6 +379,7 @@ class Database {
 
     /**
      * Patch the database for SQLite
+     * @returns {Promise<void>}
      * @deprecated
      */
     static async patchSqlite() {
@@ -583,14 +605,6 @@ class Database {
     }
 
     /**
-     * Aquire a direct connection to database
-     * @returns {any} Database connection
-     */
-    static getBetterSQLite3Database() {
-        return R.knex.client.acquireConnection();
-    }
-
-    /**
      * Special handle, because tarn.js throw a promise reject that cannot be caught
      * @returns {Promise<void>}
      */
@@ -603,7 +617,9 @@ class Database {
         log.info("db", "Closing the database");
 
         // Flush WAL to main database
-        await R.exec("PRAGMA wal_checkpoint(TRUNCATE)");
+        if (Database.dbConfig.type === "sqlite") {
+            await R.exec("PRAGMA wal_checkpoint(TRUNCATE)");
+        }
 
         while (true) {
             Database.noReject = true;
@@ -616,20 +632,23 @@ class Database {
                 log.info("db", "Waiting to close the database");
             }
         }
-        log.info("db", "SQLite closed");
+        log.info("db", "Database closed");
 
         process.removeListener("unhandledRejection", listener);
     }
 
     /**
-     * Get the size of the database
+     * Get the size of the database (SQLite only)
      * @returns {number} Size of database
      */
     static getSize() {
-        log.debug("db", "Database.getSize()");
-        let stats = fs.statSync(Database.sqlitePath);
-        log.debug("db", stats);
-        return stats.size;
+        if (Database.dbConfig.type === "sqlite") {
+            log.debug("db", "Database.getSize()");
+            let stats = fs.statSync(Database.sqlitePath);
+            log.debug("db", stats);
+            return stats.size;
+        }
+        return 0;
     }
 
     /**
@@ -637,14 +656,16 @@ class Database {
      * @returns {Promise<void>}
      */
     static async shrink() {
-        await R.exec("VACUUM");
+        if (Database.dbConfig.type === "sqlite") {
+            await R.exec("VACUUM");
+        }
     }
 
     /**
-     *
+     * @returns {string} Get the SQL for the current time plus a number of hours
      */
     static sqlHourOffset() {
-        if (this.dbConfig.client === "sqlite3") {
+        if (Database.dbConfig.type === "sqlite") {
             return "DATETIME('now', ? || ' hours')";
         } else {
             return "DATE_ADD(NOW(), INTERVAL ? HOUR)";

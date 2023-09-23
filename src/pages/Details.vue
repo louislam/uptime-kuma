@@ -95,6 +95,8 @@
                             <CountUp :value="avgPing" />
                         </span>
                     </div>
+
+                    <!-- Uptime (24-hour) -->
                     <div class="col-12 col-sm col row d-flex align-items-center d-sm-block">
                         <h4 class="col-4 col-sm-12">{{ $t("Uptime") }}</h4>
                         <p class="col-4 col-sm-12 mb-0 mb-sm-2">(24{{ $t("-hour") }})</p>
@@ -102,11 +104,22 @@
                             <Uptime :monitor="monitor" type="24" />
                         </span>
                     </div>
+
+                    <!-- Uptime (30-day) -->
                     <div class="col-12 col-sm col row d-flex align-items-center d-sm-block">
                         <h4 class="col-4 col-sm-12">{{ $t("Uptime") }}</h4>
                         <p class="col-4 col-sm-12 mb-0 mb-sm-2">(30{{ $t("-day") }})</p>
                         <span class="col-4 col-sm-12 num">
                             <Uptime :monitor="monitor" type="720" />
+                        </span>
+                    </div>
+
+                    <!-- Uptime (1-year) -->
+                    <div class="col-12 col-sm col row d-flex align-items-center d-sm-block">
+                        <h4 class="col-4 col-sm-12">{{ $t("Uptime") }}</h4>
+                        <p class="col-4 col-sm-12 mb-0 mb-sm-2">(1{{ $t("-year") }})</p>
+                        <span class="col-4 col-sm-12 num">
+                            <Uptime :monitor="monitor" type="1y" />
                         </span>
                     </div>
 

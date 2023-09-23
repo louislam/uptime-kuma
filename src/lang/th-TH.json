@@ -672,5 +672,8 @@
     "recurringIntervalMessage": "ดำเนินการทุกวัน | ดำเนินการทุก {0} วัน",
     "chromeExecutableAutoDetect": "ตรวจจับอัตโนมัติ",
     "chromeExecutableDescription": "สำหรับผู้ใช้งาน Docker, ถ้ายังไม่ได้ติดตั่ง Chromium, อาจจะเสียเวลาในการติดตั่งและแสดงผลการทดสอบเพิ่มเติม, ใช้พื้นที่ประมาณ 1GB",
-    "notificationRegional": "ภูมิภาค"
+    "notificationRegional": "ภูมิภาค",
+    "timeoutAfter": "หมดเวลาหลังจาก {0} วินาที",
+    "Select": "เลือก",
+    "Expected Value": "ค่าที่คาดหวัง"
 }
