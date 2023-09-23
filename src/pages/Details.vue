@@ -585,8 +585,8 @@ export default {
             this.pushMonitor.code = "";
             this.$root.getSocket().emit("getPushExample", this.pushMonitor.currentExample, (res) => {
                 let code = res.code
-                    .replace("https://example.com/api/push/key?status=up&msg=OK&ping=", this.pushURL)
-                    .replace("60", this.monitor.interval);
+                    .replace("60", this.monitor.interval)
+                    .replace("https://example.com/api/push/key?status=up&msg=OK&ping=", this.pushURL);
                 this.pushMonitor.code = code;
             });
         }
