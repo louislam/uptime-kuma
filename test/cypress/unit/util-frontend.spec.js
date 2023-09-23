@@ -1,4 +1,5 @@
-import { hostNameRegexPattern } from "../../../src/util-frontend";
+import { hostNameRegexPattern,  } from "../../../src/util-frontend";
+import {ucfirst} from "../../../src/util";
 
 describe("Test util-frontend.js", () => {
 
@@ -37,5 +38,21 @@ describe("Test util-frontend.js", () => {
                 expect(regex.test(`${schema}://127.0.0.1`)).to.be.true;
             });
         });
+    });
+});
+
+describe('Test ucfirst', () => {
+    it('should capitalize the first letter of a string', () => {
+        expect(ucfirst('hello')).toBe('Hello');
+        expect(ucfirst('world')).toBe('World');
+    });
+
+    it('should return an empty string if the input is empty', () => {
+        expect(ucfirst('')).toBe('');
+    });
+
+    it('should return the input string if it is already capitalized', () => {
+        expect(ucfirst('Hello')).toBe('Hello');
+        expect(ucfirst('World')).toBe('World');
     });
 });
