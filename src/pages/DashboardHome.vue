@@ -42,13 +42,13 @@
                     </thead>
                     <tbody>
                         <tr v-for="(beat, index) in displayedRecords" :key="index" :class="{ 'shadow-box': $root.windowWidth <= 550}">
-                            <td><router-link :to="`/dashboard/${beat.monitorID}`">{{ beat.name }}</router-link></td>
+                            <td><router-link :to="`/dashboard/${beat.monitorID}`">{{ $root.monitorList[beat.monitorID]?.name }}</router-link></td>
                             <td><Status :status="beat.status" /></td>
                             <td :class="{ 'border-0':! beat.msg}"><Datetime :value="beat.time" /></td>
                             <td class="border-0">{{ beat.msg }}</td>
                         </tr>
 
-                        <tr v-if="importantHeartBeatList.length === 0">
+                        <tr v-if="importantHeartBeatListLength === 0">
                             <td colspan="4">
                                 {{ $t("No important events") }}
                             </td>
@@ -59,7 +59,7 @@
                 <div class="d-flex justify-content-center kuma_pagination">
                     <pagination
                         v-model="page"
-                        :records="importantHeartBeatList.length"
+                        :records="importantHeartBeatListLength"
                         :per-page="perPage"
                         :options="paginationConfig"
                     />
@@ -92,72 +92,89 @@ export default {
             page: 1,
             perPage: 25,
             initialPerPage: 25,
-            heartBeatList: [],
             paginationConfig: {
                 hideCount: true,
                 chunksNavigation: "scroll",
             },
+            importantHeartBeatListLength: 0,
+            displayedRecords: [],
         };
     },
-    computed: {
-
-        importantHeartBeatList() {
-            let result = [];
-
-            for (let monitorID in this.$root.importantHeartbeatList) {
-                let list = this.$root.importantHeartbeatList[monitorID];
-                result = result.concat(list);
-            }
-
-            for (let beat of result) {
-                let monitor = this.$root.monitorList[beat.monitorID];
-
-                if (monitor) {
-                    beat.name = monitor.name;
-                }
-            }
-
-            result.sort((a, b) => {
-                if (a.time > b.time) {
-                    return -1;
-                }
-
-                if (a.time < b.time) {
-                    return 1;
-                }
-
-                return 0;
-            });
-
-            // eslint-disable-next-line vue/no-side-effects-in-computed-properties
-            this.heartBeatList = result;
-
-            return result;
-        },
-
-        displayedRecords() {
-            const startIndex = this.perPage * (this.page - 1);
-            const endIndex = startIndex + this.perPage;
-            return this.heartBeatList.slice(startIndex, endIndex);
-        },
-    },
     watch: {
-        importantHeartBeatList() {
+        perPage() {
             this.$nextTick(() => {
-                this.updatePerPage();
+                this.getImportantHeartbeatListPaged();
             });
         },
+
+        page() {
+            this.getImportantHeartbeatListPaged();
+        },
     },
+
     mounted() {
+        this.getImportantHeartbeatListLength();
+
+        this.$root.emitter.on("newImportantHeartbeat", this.onNewImportantHeartbeat);
+
         this.initialPerPage = this.perPage;
 
         window.addEventListener("resize", this.updatePerPage);
         this.updatePerPage();
     },
+
     beforeUnmount() {
+        this.$root.emitter.off("newImportantHeartbeat", this.onNewImportantHeartbeat);
+
         window.removeEventListener("resize", this.updatePerPage);
     },
+
     methods: {
+        /**
+         * Updates the displayed records when a new important heartbeat arrives.
+         * @param {object} heartbeat - The heartbeat object received.
+         * @returns {void}
+         */
+        onNewImportantHeartbeat(heartbeat) {
+            if (this.page === 1) {
+                this.displayedRecords.unshift(heartbeat);
+                if (this.displayedRecords.length > this.perPage) {
+                    this.displayedRecords.pop();
+                }
+                this.importantHeartBeatListLength += 1;
+            }
+        },
+
+        /**
+         * Retrieves the length of the important heartbeat list for all monitors.
+         * @returns {void}
+         */
+        getImportantHeartbeatListLength() {
+            this.$root.getSocket().emit("monitorImportantHeartbeatListCount", null, (res) => {
+                if (res.ok) {
+                    this.importantHeartBeatListLength = res.count;
+                    this.getImportantHeartbeatListPaged();
+                }
+            });
+        },
+
+        /**
+         * Retrieves the important heartbeat list for the current page.
+         * @returns {void}
+         */
+        getImportantHeartbeatListPaged() {
+            const offset = (this.page - 1) * this.perPage;
+            this.$root.getSocket().emit("monitorImportantHeartbeatListPaged", null, offset, this.perPage, (res) => {
+                if (res.ok) {
+                    this.displayedRecords = res.data;
+                }
+            });
+        },
+
+        /**
+         * Updates the number of items shown per page based on the available height.
+         * @returns {void}
+         */
         updatePerPage() {
             const tableContainer = this.$refs.tableContainer;
             const tableContainerHeight = tableContainer.offsetHeight;
