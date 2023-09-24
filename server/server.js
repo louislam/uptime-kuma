@@ -144,7 +144,7 @@ if (config.demoMode) {
 }
 
 // Must be after io instantiation
-const { sendNotificationList, sendHeartbeatList, sendImportantHeartbeatList, sendInfo, sendProxyList, sendDockerHostList, sendAPIKeyList } = require("./client");
+const { sendNotificationList, sendHeartbeatList, sendInfo, sendProxyList, sendDockerHostList, sendAPIKeyList } = require("./client");
 const { statusPageSocketHandler } = require("./socket-handlers/status-page-socket-handler");
 const databaseSocketHandler = require("./socket-handlers/database-socket-handler");
 const TwoFA = require("./2fa");
@@ -1003,8 +1003,6 @@ let needSetup = false;
                 });
 
                 await server.sendMonitorList(socket);
-                // Clear heartbeat list on client
-                await sendImportantHeartbeatList(socket, monitorID, true, true);
 
             } catch (e) {
                 callback({
@@ -1166,6 +1164,72 @@ let needSetup = false;
                     msg: "Deleted Successfully.",
                 });
 
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("monitorImportantHeartbeatListCount", async (monitorID, callback) => {
+            try {
+                checkLogin(socket);
+
+                let count;
+                if (monitorID == null) {
+                    count = await R.count("heartbeat", "important = 1");
+                } else {
+                    count = await R.count("heartbeat", "monitor_id = ? AND important = 1", [
+                        monitorID,
+                    ]);
+                }
+
+                callback({
+                    ok: true,
+                    count: count,
+                });
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("monitorImportantHeartbeatListPaged", async (monitorID, offset, count, callback) => {
+            try {
+                checkLogin(socket);
+
+                let list;
+                if (monitorID == null) {
+                    list = await R.find("heartbeat", `
+                        important = 1
+                        ORDER BY time DESC
+                        LIMIT ?
+                        OFFSET ?
+                    `, [
+                        count,
+                        offset,
+                    ]);
+                } else {
+                    list = await R.find("heartbeat", `
+                        monitor_id = ?
+                        AND important = 1
+                        ORDER BY time DESC
+                        LIMIT ?
+                        OFFSET ?
+                    `, [
+                        monitorID,
+                        count,
+                        offset,
+                    ]);
+                }
+
+                callback({
+                    ok: true,
+                    data: list,
+                });
             } catch (e) {
                 callback({
                     ok: false,
@@ -1573,8 +1637,6 @@ let needSetup = false;
                     monitorID,
                 ]);
 
-                await sendImportantHeartbeatList(socket, monitorID, true, true);
-
                 callback({
                     ok: true,
                 });
@@ -1753,10 +1815,6 @@ async function afterLogin(socket, user) {
 
     for (let monitorID in monitorList) {
         await sendHeartbeatList(socket, monitorID);
-    }
-
-    for (let monitorID in monitorList) {
-        await sendImportantHeartbeatList(socket, monitorID);
     }
 
     for (let monitorID in monitorList) {
