@@ -112,6 +112,12 @@ I personally do not like something that requires so many configurations before y
 - IDE that supports [`ESLint`](https://eslint.org/) and EditorConfig (I am using [`IntelliJ IDEA`](https://www.jetbrains.com/idea/))
 - A SQLite GUI tool (f.ex. [`SQLite Expert Personal`](https://www.sqliteexpert.com/download.html) or [`DBeaver Community`](https://dbeaver.io/download/))
 
+### GitHub Codespace
+
+If you don't want to setup an local environment, you can now develop on GitHub Codespace, read more: 
+
+https://github.com/louislam/uptime-kuma/tree/master/.devcontainer
+
 ## Git Branches
 
 - `master`: 2.X.X development. If you want to add a new feature, your pull request should base on this.
@@ -193,8 +199,7 @@ The data and socket logic are in `src/mixins/socket.js`.
 
 ## Database Migration
 
-1. Create `patch-{name}.sql` in `./db/`
-2. Add your patch filename in the `patchList` list in `./server/database.js`
+See: https://github.com/louislam/uptime-kuma/tree/master/db/knex_migrations
 
 ## Unit Test
 
