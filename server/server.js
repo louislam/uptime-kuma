@@ -51,11 +51,6 @@ if (! process.env.NODE_ENV) {
 log.info("server", "Node Env: " + process.env.NODE_ENV);
 log.info("server", "Inside Container: " + (process.env.UPTIME_KUMA_IS_CONTAINER === "1"));
 
-log.info("server", "Importing Node libraries");
-const fs = require("fs");
-
-log.info("server", "Importing 3rd-party libraries");
-
 log.debug("server", "Importing express");
 const express = require("express");
 const expressStaticGzip = require("express-static-gzip");
