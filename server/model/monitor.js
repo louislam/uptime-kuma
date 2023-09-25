@@ -56,7 +56,7 @@ class Monitor extends BeanModel {
             obj.tags = await this.getTags();
         }
 
-        if (certExpiry && this.type === "http") {
+        if (certExpiry && this.type === "http" && this.getURLProtocol() === "https:") {
             const { certExpiryDaysRemaining, validCert } = await this.getCertExpiry(this.id);
             obj.certExpiryDaysRemaining = certExpiryDaysRemaining;
             obj.validCert = validCert;
@@ -948,7 +948,15 @@ class Monitor extends BeanModel {
 
             if (! this.isStop) {
                 log.debug("monitor", `[${this.name}] SetTimeout for next check.`);
-                this.heartbeatInterval = setTimeout(safeBeat, beatInterval * 1000);
+
+                let intervalRemainingMs = Math.max(
+                    1,
+                    beatInterval * 1000 - dayjs().diff(dayjs.utc(bean.time))
+                );
+
+                log.debug("monitor", `[${this.name}] Next heartbeat in: ${intervalRemainingMs}ms`);
+
+                this.heartbeatInterval = setTimeout(safeBeat, intervalRemainingMs);
             } else {
                 log.info("monitor", `[${this.name}] isStop = true, no next check.`);
             }
@@ -1053,6 +1061,19 @@ class Monitor extends BeanModel {
         try {
             return new URL(this.url);
         } catch (_) {
+            return null;
+        }
+    }
+
+    /**
+     * Example: http: or https:
+     * @returns {(null|string)}
+     */
+    getURLProtocol() {
+        const url = this.getUrl();
+        if (url) {
+            return this.getUrl().protocol;
+        } else {
             return null;
         }
     }

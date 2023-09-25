@@ -34,8 +34,9 @@ tsconfig.json
 /ecosystem.config.js
 /extra/healthcheck.exe
 /extra/healthcheck
-extra/exe-builder
-
+/extra/exe-builder
+/extra/push-examples
+/extra/uptime-kuma-push
 
 ### .gitignore content (commented rules are duplicated)
 

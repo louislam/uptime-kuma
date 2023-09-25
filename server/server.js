@@ -51,11 +51,6 @@ if (! process.env.NODE_ENV) {
 log.info("server", "Node Env: " + process.env.NODE_ENV);
 log.info("server", "Inside Container: " + (process.env.UPTIME_KUMA_IS_CONTAINER === "1"));
 
-log.info("server", "Importing Node libraries");
-const fs = require("fs");
-
-log.info("server", "Importing 3rd-party libraries");
-
 log.debug("server", "Importing express");
 const express = require("express");
 const expressStaticGzip = require("express-static-gzip");
@@ -144,7 +139,7 @@ if (config.demoMode) {
 }
 
 // Must be after io instantiation
-const { sendNotificationList, sendHeartbeatList, sendImportantHeartbeatList, sendInfo, sendProxyList, sendDockerHostList, sendAPIKeyList } = require("./client");
+const { sendNotificationList, sendHeartbeatList, sendInfo, sendProxyList, sendDockerHostList, sendAPIKeyList } = require("./client");
 const { statusPageSocketHandler } = require("./socket-handlers/status-page-socket-handler");
 const databaseSocketHandler = require("./socket-handlers/database-socket-handler");
 const TwoFA = require("./2fa");
@@ -761,11 +756,11 @@ let needSetup = false;
                 bean.basic_auth_user = monitor.basic_auth_user;
                 bean.basic_auth_pass = monitor.basic_auth_pass;
                 bean.timeout = monitor.timeout;
-                bean.oauth_client_id = monitor.oauth_client_id,
-                bean.oauth_client_secret = monitor.oauth_client_secret,
-                bean.oauth_auth_method = this.oauth_auth_method,
-                bean.oauth_token_url = monitor.oauth_token_url,
-                bean.oauth_scopes = monitor.oauth_scopes,
+                bean.oauth_client_id = monitor.oauth_client_id;
+                bean.oauth_client_secret = monitor.oauth_client_secret;
+                bean.oauth_auth_method = monitor.oauth_auth_method;
+                bean.oauth_token_url = monitor.oauth_token_url;
+                bean.oauth_scopes = monitor.oauth_scopes;
                 bean.tlsCa = monitor.tlsCa;
                 bean.tlsCert = monitor.tlsCert;
                 bean.tlsKey = monitor.tlsKey;
@@ -836,7 +831,7 @@ let needSetup = false;
 
                 await updateMonitorNotification(bean.id, monitor.notificationIDList);
 
-                if (bean.isActive()) {
+                if (await bean.isActive()) {
                     await restartMonitor(socket.userID, bean.id);
                 }
 
@@ -1003,8 +998,6 @@ let needSetup = false;
                 });
 
                 await server.sendMonitorList(socket);
-                // Clear heartbeat list on client
-                await sendImportantHeartbeatList(socket, monitorID, true, true);
 
             } catch (e) {
                 callback({
@@ -1166,6 +1159,72 @@ let needSetup = false;
                     msg: "Deleted Successfully.",
                 });
 
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("monitorImportantHeartbeatListCount", async (monitorID, callback) => {
+            try {
+                checkLogin(socket);
+
+                let count;
+                if (monitorID == null) {
+                    count = await R.count("heartbeat", "important = 1");
+                } else {
+                    count = await R.count("heartbeat", "monitor_id = ? AND important = 1", [
+                        monitorID,
+                    ]);
+                }
+
+                callback({
+                    ok: true,
+                    count: count,
+                });
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("monitorImportantHeartbeatListPaged", async (monitorID, offset, count, callback) => {
+            try {
+                checkLogin(socket);
+
+                let list;
+                if (monitorID == null) {
+                    list = await R.find("heartbeat", `
+                        important = 1
+                        ORDER BY time DESC
+                        LIMIT ?
+                        OFFSET ?
+                    `, [
+                        count,
+                        offset,
+                    ]);
+                } else {
+                    list = await R.find("heartbeat", `
+                        monitor_id = ?
+                        AND important = 1
+                        ORDER BY time DESC
+                        LIMIT ?
+                        OFFSET ?
+                    `, [
+                        monitorID,
+                        count,
+                        offset,
+                    ]);
+                }
+
+                callback({
+                    ok: true,
+                    data: list,
+                });
             } catch (e) {
                 callback({
                     ok: false,
@@ -1573,8 +1632,6 @@ let needSetup = false;
                     monitorID,
                 ]);
 
-                await sendImportantHeartbeatList(socket, monitorID, true, true);
-
                 callback({
                     ok: true,
                 });
@@ -1753,10 +1810,6 @@ async function afterLogin(socket, user) {
 
     for (let monitorID in monitorList) {
         await sendHeartbeatList(socket, monitorID);
-    }
-
-    for (let monitorID in monitorList) {
-        await sendImportantHeartbeatList(socket, monitorID);
     }
 
     for (let monitorID in monitorList) {

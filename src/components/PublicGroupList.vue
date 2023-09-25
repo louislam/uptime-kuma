@@ -62,7 +62,7 @@
                                             </span>
                                         </div>
                                         <div class="extra-info">
-                                            <div v-if="showCertificateExpiry && monitor.element.type === 'http'">
+                                            <div v-if="showCertificateExpiry && monitor.element.certExpiryDaysRemaining">
                                                 <Tag :item="{name: $t('Cert Exp.'), value: formattedCertExpiryMessage(monitor), color: certExpiryColor(monitor)}" :size="'sm'" />
                                             </div>
                                             <div v-if="showTags">
