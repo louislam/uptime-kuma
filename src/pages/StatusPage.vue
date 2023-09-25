@@ -743,7 +743,7 @@ export default {
         /**
          * Provide syntax highlighting for CSS
          * @param {string} code Text to highlight
-         * @returns {string} Highlighted HTML
+         * @returns {string} Highlighted CSS
          */
         highlighter(code) {
             return highlight(code, languages.css);
@@ -1240,20 +1240,6 @@ footer {
                 color: #1d2634;
             }
         }
-    }
-}
-
-/* required class */
-.css-editor {
-    /* we dont use `language-` classes anymore so thats why we need to add background and text color manually */
-
-    border-radius: 1rem;
-    padding: 10px 5px;
-    border: 1px solid #ced4da;
-
-    .dark & {
-        background: $dark-bg;
-        border: 1px solid $dark-border-color;
     }
 }
 
