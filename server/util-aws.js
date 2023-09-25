@@ -1,9 +1,7 @@
 const AWS = require("aws-sdk");
+const path = require("path");
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 
-<<<<<<< HEAD
-exports.restartInstance = async (instanceID) => {
-    const ec2 = new AWS.EC2({ region: "ap-northeast-1" });
-=======
 exports.restartInstance = async (instanceID, environment) => {
 
     const credential = {
@@ -17,11 +15,12 @@ exports.restartInstance = async (instanceID, environment) => {
         }
     }[environment];
 
+    console.log("aws", credential, instanceID);
+
     const ec2 = new AWS.EC2({
-        region: "ap-southeast-1",
+        region: "ap-northeast-1",
         ...credential,
     });
->>>>>>> 58023ddd0c0328760bd93e67c5403acc4e20a711
 
     return new Promise((resolve, reject) => {
         const params = {
