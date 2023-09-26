@@ -821,5 +821,22 @@
     "noOrBadCertificate": "No/Bad Certificate",
     "gamedigGuessPort": "Gamedig: Guess Port",
     "gamedigGuessPortDescription": "The port used by Valve Server Query Protocol may be different from the client port. Try this if the monitor cannot connect to your server.",
-    "Saved.": "Saved."
+    "Saved.": "Saved.",
+    "authUserInactiveOrDeleted": "The user is inactive or deleted.",
+    "authInvalidToken": "Invalid Token.",
+    "authIncorrectCreds": "Incorrect username or password.",
+    "2faAlreadyEnabled": "2FA is already enabled.",
+    "2faEnabled": "2FA Enabled.",
+    "2faDisabled": "2FA Disabled.",
+    "successAdded": "Added Successfully.",
+    "successResumed": "Resumed Successfully.",
+    "successPaused": "Paused Successfully.",
+    "successDeleted": "Deleted Successfully.",
+    "successEdited": "Edited Successfully.",
+    "successAuthChangePassword": "Password has been updated successfully.",
+    "successBackupRestored": "Backup successfully restored.",
+    "successDisabled": "Disabled Successfully.",
+    "successEnabled": "Enabled Successfully.",
+    "tagNotFound": "Tag not found.",
+    "foundChromiumVersion": "Found Chromium/Chrome. Version: {0}"
 }
