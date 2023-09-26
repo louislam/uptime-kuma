@@ -106,5 +106,6 @@
     "dbName": "資料庫名稱",
     "Home": "首頁",
     "Cannot connect to the socket server": "連唔到 Socket 伺服器",
-    "Reconnecting...": "重新連線中..."
+    "Reconnecting...": "重新連線中...",
+    "pushViewCode": ""
 }
