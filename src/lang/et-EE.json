@@ -1064,5 +1064,6 @@
     "Enable DNS Cache": "",
     "grpcMethodDescription": "",
     "ntfyPriorityHelptextAllExceptDown": "",
-    "CopyToClipboardError": ""
+    "CopyToClipboardError": "",
+    "pushViewCode": ""
 }
