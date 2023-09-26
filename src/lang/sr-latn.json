@@ -1041,5 +1041,6 @@
     "grpcMethodDescription": "",
     "ntfyPriorityHelptextAllExceptDown": "",
     "CopyToClipboardError": "",
-    "setupDatabaseChooseDatabase": ""
+    "setupDatabaseChooseDatabase": "",
+    "pushViewCode": ""
 }
