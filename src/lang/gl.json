@@ -1047,5 +1047,6 @@
     "Enable DNS Cache": "",
     "setupDatabaseEmbeddedMariaDB": "",
     "ignoreTLSError": "",
-    "CopyToClipboardError": ""
+    "CopyToClipboardError": "",
+    "pushViewCode": ""
 }
