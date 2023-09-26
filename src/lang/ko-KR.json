@@ -785,5 +785,6 @@
     "-year": "-연도",
     "Json Query Expression": "Json 쿼리 표현식",
     "Host URL": "호스트 URL",
-    "locally configured mail transfer agent": "로컬로 구성된 메일 전송 에이전트"
+    "locally configured mail transfer agent": "로컬로 구성된 메일 전송 에이전트",
+    "pushViewCode": ""
 }
