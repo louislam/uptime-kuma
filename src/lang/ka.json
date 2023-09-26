@@ -1046,5 +1046,6 @@
     "Specific Monitor Type": "",
     "ignoreTLSError": "",
     "setupDatabaseEmbeddedMariaDB": "",
-    "setupDatabaseChooseDatabase": ""
+    "setupDatabaseChooseDatabase": "",
+    "pushViewCode": ""
 }
