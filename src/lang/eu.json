@@ -1074,5 +1074,6 @@
     "trustProxyDescription": "",
     "grpcMethodDescription": "",
     "ntfyPriorityHelptextAllExceptDown": "",
-    "setupDatabaseEmbeddedMariaDB": ""
+    "setupDatabaseEmbeddedMariaDB": "",
+    "pushViewCode": ""
 }
