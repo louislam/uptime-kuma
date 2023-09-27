@@ -76,6 +76,34 @@
                 </div>
             </div>
 
+            <!-- Push Examples -->
+            <div v-if="monitor.type === 'push'" class="shadow-box big-padding">
+                <a href="#" @click="pushMonitor.showPushExamples = !pushMonitor.showPushExamples">{{ $t("pushViewCode") }}</a>
+
+                <transition name="slide-fade" appear>
+                    <div v-if="pushMonitor.showPushExamples" class="mt-3">
+                        <select id="push-current-example" v-model="pushMonitor.currentExample" class="form-select">
+                            <optgroup :label="$t('programmingLanguages')">
+                                <option value="csharp">C#</option>
+                                <option value="go">Go</option>
+                                <option value="java">Java</option>
+                                <option value="javascript-fetch">JavaScript (fetch)</option>
+                                <option value="php">PHP</option>
+                                <option value="python">Python</option>
+                                <option value="typescript-fetch">TypeScript (fetch)</option>
+                            </optgroup>
+                            <optgroup :label="$t('pushOthers')">
+                                <option value="bash-curl">Bash (curl)</option>
+                                <option value="powershell">PowerShell</option>
+                                <option value="docker">Docker</option>
+                            </optgroup>
+                        </select>
+
+                        <prism-editor v-model="pushMonitor.code" class="css-editor mt-3" :highlight="pushExampleHighlighter" line-numbers readonly></prism-editor>
+                    </div>
+                </transition>
+            </div>
+
             <!-- Stats -->
             <div class="shadow-box big-padding text-center stats">
                 <div class="row">
@@ -249,6 +277,12 @@ import CertificateInfo from "../components/CertificateInfo.vue";
 import { getMonitorRelativeURL } from "../util.ts";
 import { URL } from "whatwg-url";
 import { getResBaseURL } from "../util-frontend";
+import { highlight, languages } from "prismjs/components/prism-core";
+import "prismjs/components/prism-clike";
+import "prismjs/components/prism-javascript";
+import "prismjs/components/prism-css";
+import { PrismEditor } from "vue-prism-editor";
+import "vue-prism-editor/dist/prismeditor.min.css";
 
 export default {
     components: {
@@ -262,6 +296,7 @@ export default {
         PingChart,
         Tag,
         CertificateInfo,
+        PrismEditor,
     },
     data() {
         return {
@@ -277,6 +312,11 @@ export default {
             cacheTime: Date.now(),
             importantHeartBeatListLength: 0,
             displayedRecords: [],
+            pushMonitor: {
+                showPushExamples: false,
+                currentExample: "javascript-fetch",
+                code: "",
+            },
         };
     },
     computed: {
@@ -361,13 +401,28 @@ export default {
 
         monitor(to) {
             this.getImportantHeartbeatListLength();
-        }
+        },
+        "monitor.type"() {
+            if (this.monitor && this.monitor.type === "push") {
+                this.loadPushExample();
+            }
+        },
+        "pushMonitor.currentExample"() {
+            this.loadPushExample();
+        },
     },
 
     mounted() {
         this.getImportantHeartbeatListLength();
 
         this.$root.emitter.on("newImportantHeartbeat", this.onNewImportantHeartbeat);
+
+        if (this.monitor && this.monitor.type === "push") {
+            if (this.lastHeartBeat.status === -1) {
+                this.pushMonitor.showPushExamples = true;
+            }
+            this.loadPushExample();
+        }
     },
 
     beforeUnmount() {
@@ -569,6 +624,25 @@ export default {
                 }
             }
         },
+
+        /**
+         * Highlight the example code
+         * @param {string} code Code
+         * @returns {string} Highlighted code
+         */
+        pushExampleHighlighter(code) {
+            return highlight(code, languages.js);
+        },
+
+        loadPushExample() {
+            this.pushMonitor.code = "";
+            this.$root.getSocket().emit("getPushExample", this.pushMonitor.currentExample, (res) => {
+                let code = res.code
+                    .replace("60", this.monitor.interval)
+                    .replace("https://example.com/api/push/key?status=up&msg=OK&ping=", this.pushURL);
+                this.pushMonitor.code = code;
+            });
+        }
     },
 };
 </script>

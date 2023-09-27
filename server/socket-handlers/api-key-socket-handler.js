@@ -38,7 +38,8 @@ module.exports.apiKeySocketHandler = (socket) => {
 
             callback({
                 ok: true,
-                msg: "Added Successfully.",
+                msg: "successAdded",
+                msgi18n: true,
                 key: formattedKey,
                 keyID: bean.id,
             });
@@ -82,7 +83,8 @@ module.exports.apiKeySocketHandler = (socket) => {
 
             callback({
                 ok: true,
-                msg: "Deleted Successfully.",
+                msg: "successDeleted",
+                msgi18n: true,
             });
 
             await sendAPIKeyList(socket);
@@ -109,7 +111,8 @@ module.exports.apiKeySocketHandler = (socket) => {
 
             callback({
                 ok: true,
-                msg: "Disabled Successfully.",
+                msg: "successDisabled",
+                msgi18n: true,
             });
 
             await sendAPIKeyList(socket);
@@ -136,7 +139,8 @@ module.exports.apiKeySocketHandler = (socket) => {
 
             callback({
                 ok: true,
-                msg: "Enabled Successfully",
+                msg: "successEnabled",
+                msgi18n: true,
             });
 
             await sendAPIKeyList(socket);
