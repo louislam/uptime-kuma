@@ -332,6 +332,9 @@ class Monitor extends BeanModel {
                 previousBeat = await R.findOne("heartbeat", " monitor_id = ? ORDER BY time DESC", [
                     this.id,
                 ]);
+                if (previousBeat) {
+                    retries = previousBeat.retries;
+                }
             }
 
             const isFirstBeat = !previousBeat;
@@ -596,6 +599,7 @@ class Monitor extends BeanModel {
                         // If the previous beat was down or pending we use the regular
                         // beatInterval/retryInterval in the setTimeout further below
                         if (previousBeat.status !== (this.isUpsideDown() ? DOWN : UP) || msSinceLastBeat > beatInterval * 1000 + bufferTime) {
+                            bean.duration = Math.round(msSinceLastBeat / 1000);
                             throw new Error("No heartbeat in the time window");
                         } else {
                             let timeout = beatInterval * 1000 - msSinceLastBeat;
@@ -871,8 +875,13 @@ class Monitor extends BeanModel {
                 } else if ((this.maxretries > 0) && (retries < this.maxretries)) {
                     retries++;
                     bean.status = PENDING;
+                } else {
+                    // Continue counting retries during DOWN
+                    retries++;
                 }
             }
+
+            bean.retries = retries;
 
             log.debug("monitor", `[${this.name}] Check isImportant`);
             let isImportant = Monitor.isImportantBeat(isFirstBeat, previousBeat?.status, bean.status);
@@ -1384,10 +1393,7 @@ class Monitor extends BeanModel {
      * @returns {Promise<LooseObject<any>>} Previous heartbeat
      */
     static async getPreviousHeartbeat(monitorID) {
-        return await R.getRow(`
-            SELECT ping, status, time FROM heartbeat
-            WHERE id = (select MAX(id) from heartbeat where monitor_id = ?)
-        `, [
+        return await R.findOne("heartbeat", " id = (select MAX(id) from heartbeat where monitor_id = ?)", [
             monitorID
         ]);
     }

@@ -53,38 +53,31 @@ router.get("/api/push/:pushToken", async (request, response) => {
 
         const previousHeartbeat = await Monitor.getPreviousHeartbeat(monitor.id);
 
-        if (monitor.isUpsideDown()) {
-            status = flipStatus(status);
-        }
-
         let isFirstBeat = true;
-        let previousStatus = status;
-        let duration = 0;
 
         let bean = R.dispense("heartbeat");
         bean.time = R.isoDateTimeMillis(dayjs.utc());
+        bean.monitor_id = monitor.id;
+        bean.ping = ping;
+        bean.msg = msg;
 
         if (previousHeartbeat) {
             isFirstBeat = false;
-            previousStatus = previousHeartbeat.status;
-            duration = dayjs(bean.time).diff(dayjs(previousHeartbeat.time), "second");
+            bean.duration = dayjs(bean.time).diff(dayjs(previousHeartbeat.time), "second");
         }
 
         if (await Monitor.isUnderMaintenance(monitor.id)) {
             msg = "Monitor under maintenance";
-            status = MAINTENANCE;
+            bean.status = MAINTENANCE;
+        } else {
+            determineStatus(status, previousHeartbeat, monitor.maxretries, monitor.isUpsideDown(), bean);
         }
 
         log.debug("router", `/api/push/ called at ${dayjs().format("YYYY-MM-DD HH:mm:ss.SSS")}`);
-        log.debug("router", "PreviousStatus: " + previousStatus);
-        log.debug("router", "Current Status: " + status);
+        log.debug("router", "PreviousStatus: " + previousHeartbeat?.status);
+        log.debug("router", "Current Status: " + bean.status);
 
-        bean.important = Monitor.isImportantBeat(isFirstBeat, previousStatus, status);
-        bean.monitor_id = monitor.id;
-        bean.status = status;
-        bean.msg = msg;
-        bean.ping = ping;
-        bean.duration = duration;
+        bean.important = Monitor.isImportantBeat(isFirstBeat, previousHeartbeat?.status, status);
 
         await R.store(bean);
 
@@ -97,7 +90,7 @@ router.get("/api/push/:pushToken", async (request, response) => {
             ok: true,
         });
 
-        if (Monitor.isImportantForNotification(isFirstBeat, previousStatus, status)) {
+        if (Monitor.isImportantForNotification(isFirstBeat, previousHeartbeat?.status, status)) {
             await Monitor.sendNotification(isFirstBeat, monitor, bean);
         }
 
@@ -552,5 +545,56 @@ router.get("/api/badge/:id/response", cache("5 minutes"), async (request, respon
         sendHttpError(response, error.message);
     }
 });
+
+/**
+ * Determines the status of the next beat in the push route handling.
+ * @param {string} status - The reported new status.
+ * @param {object} previousHeartbeat - The previous heartbeat object.
+ * @param {number} maxretries - The maximum number of retries allowed.
+ * @param {boolean} isUpsideDown - Indicates if the monitor is upside down.
+ * @param {object} bean - The new heartbeat object.
+ * @returns {void}
+ */
+function determineStatus(status, previousHeartbeat, maxretries, isUpsideDown, bean) {
+    console.log(status, previousHeartbeat, maxretries, isUpsideDown, bean);
+
+    if (isUpsideDown) {
+        status = flipStatus(status);
+    }
+
+    if (previousHeartbeat) {
+        if (previousHeartbeat.status === UP && status === DOWN) {
+            // Going Down
+            if ((maxretries > 0) && (previousHeartbeat.retries < maxretries)) {
+                // Retries available
+                bean.retries = previousHeartbeat.retries + 1;
+                bean.status = PENDING;
+            } else {
+                // No more retries
+                bean.retries = 0;
+                bean.status = DOWN;
+            }
+        } else if (previousHeartbeat.status === PENDING && status === DOWN && previousHeartbeat.retries < maxretries) {
+            // Retries available
+            bean.retries = previousHeartbeat.retries + 1;
+            bean.status = PENDING;
+        } else {
+            // No more retries or not pending
+            bean.retries = 0;
+            bean.status = status;
+        }
+    } else {
+        // First beat?
+        if (status === DOWN && maxretries > 0) {
+            // Retries available
+            bean.retries = 1;
+            bean.status = PENDING;
+        } else {
+            // Retires not enabled
+            bean.retries = 0;
+            bean.status = status;
+        }
+    }
+}
 
 module.exports = router;
