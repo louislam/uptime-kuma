@@ -615,6 +615,7 @@ class Monitor extends BeanModel {
                             return;
                         }
                     } else {
+                        bean.duration = beatInterval;
                         throw new Error("No heartbeat in the time window");
                     }
 
