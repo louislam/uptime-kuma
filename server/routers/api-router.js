@@ -60,6 +60,7 @@ router.get("/api/push/:pushToken", async (request, response) => {
         bean.monitor_id = monitor.id;
         bean.ping = ping;
         bean.msg = msg;
+        bean.downCount = previousHeartbeat?.downCount || 0;
 
         if (previousHeartbeat) {
             isFirstBeat = false;
@@ -84,6 +85,26 @@ router.get("/api/push/:pushToken", async (request, response) => {
 
         bean.important = Monitor.isImportantBeat(isFirstBeat, previousHeartbeat?.status, status);
 
+        if (Monitor.isImportantForNotification(isFirstBeat, previousHeartbeat?.status, status)) {
+            // Reset down count
+            bean.downCount = 0;
+
+            log.debug("monitor", `[${this.name}] sendNotification`);
+            await Monitor.sendNotification(isFirstBeat, monitor, bean);
+        } else {
+            if (bean.status === DOWN && this.resendInterval > 0) {
+                ++bean.downCount;
+                if (bean.downCount >= this.resendInterval) {
+                    // Send notification again, because we are still DOWN
+                    log.debug("monitor", `[${this.name}] sendNotification again: Down Count: ${bean.downCount} | Resend Interval: ${this.resendInterval}`);
+                    await Monitor.sendNotification(isFirstBeat, this, bean);
+
+                    // Reset down count
+                    bean.downCount = 0;
+                }
+            }
+        }
+
         await R.store(bean);
 
         io.to(monitor.user_id).emit("heartbeat", bean.toJSON());
@@ -94,11 +115,6 @@ router.get("/api/push/:pushToken", async (request, response) => {
         response.json({
             ok: true,
         });
-
-        if (Monitor.isImportantForNotification(isFirstBeat, previousHeartbeat?.status, status)) {
-            await Monitor.sendNotification(isFirstBeat, monitor, bean);
-        }
-
     } catch (e) {
         response.status(404).json({
             ok: false,
@@ -585,8 +601,13 @@ function determineStatus(status, previousHeartbeat, maxretries, isUpsideDown, be
             bean.status = PENDING;
         } else {
             // No more retries or not pending
-            bean.retries = 0;
-            bean.status = status;
+            if (status === DOWN) {
+                bean.retries = previousHeartbeat.retries + 1;
+                bean.status = status;
+            } else {
+                bean.retries = 0;
+                bean.status = status;
+            }
         }
     } else {
         // First beat?
