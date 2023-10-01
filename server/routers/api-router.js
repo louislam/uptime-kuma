@@ -577,8 +577,6 @@ router.get("/api/badge/:id/response", cache("5 minutes"), async (request, respon
  * @returns {void}
  */
 function determineStatus(status, previousHeartbeat, maxretries, isUpsideDown, bean) {
-    console.log(status, previousHeartbeat, maxretries, isUpsideDown, bean);
-
     if (isUpsideDown) {
         status = flipStatus(status);
     }
