@@ -73,6 +73,11 @@ router.get("/api/push/:pushToken", async (request, response) => {
             determineStatus(status, previousHeartbeat, monitor.maxretries, monitor.isUpsideDown(), bean);
         }
 
+        // Calculate uptime
+        let uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitor.id);
+        let endTimeDayjs = await uptimeCalculator.update(bean.status, parseFloat(bean.ping));
+        bean.end_time = R.isoDateTimeMillis(endTimeDayjs);
+
         log.debug("router", `/api/push/ called at ${dayjs().format("YYYY-MM-DD HH:mm:ss.SSS")}`);
         log.debug("router", "PreviousStatus: " + previousHeartbeat?.status);
         log.debug("router", "Current Status: " + bean.status);
