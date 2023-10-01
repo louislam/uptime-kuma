@@ -23,17 +23,17 @@ It is a temporary live demo, all data will be deleted after 10 minutes. Use the 
 
 ## ⭐ Features
 
-* Monitoring uptime for HTTP(s) / TCP / HTTP(s) Keyword / HTTP(s) Json Query / Ping / DNS Record / Push / Steam Game Server / Docker Containers
-* Fancy, Reactive, Fast UI/UX
-* Notifications via Telegram, Discord, Gotify, Slack, Pushover, Email (SMTP), and [90+ notification services, click here for the full list](https://github.com/louislam/uptime-kuma/tree/master/src/components/notifications)
-* 20-second intervals
-* [Multi Languages](https://github.com/louislam/uptime-kuma/tree/master/src/lang)
-* Multiple status pages
-* Map status pages to specific domains
-* Ping chart
-* Certificate info
-* Proxy support
-* 2FA support
+- Monitoring uptime for HTTP(s) / TCP / HTTP(s) Keyword / HTTP(s) Json Query / Ping / DNS Record / Push / Steam Game Server / Docker Containers
+- Fancy, Reactive, Fast UI/UX
+- Notifications via Telegram, Discord, Gotify, Slack, Pushover, Email (SMTP), and [90+ notification services, click here for the full list](https://github.com/louislam/uptime-kuma/tree/master/src/components/notifications)
+- 20-second intervals
+- [Multi Languages](https://github.com/louislam/uptime-kuma/tree/master/src/lang)
+- Multiple status pages
+- Map status pages to specific domains
+- Ping chart
+- Certificate info
+- Proxy support
+- 2FA support
 
 ## 🔧 How to Install
 
@@ -50,6 +50,7 @@ Uptime Kuma is now running on http://localhost:3001
 ### 💪🏻 Non-Docker
 
 Requirements:
+
 - Platform
   - ✅ Major Linux distros such as Debian, Ubuntu, CentOS, Fedora and ArchLinux etc.
   - ✅ Windows 10 (x64), Windows Server 2012 R2 (x64) or higher
@@ -76,9 +77,8 @@ npm install pm2 -g && pm2 install pm2-logrotate
 
 # Start Server
 pm2 start server/server.js --name uptime-kuma
-
-
 ```
+
 Uptime Kuma is now running on http://localhost:3001
 
 More useful PM2 Commands
@@ -143,12 +143,12 @@ Telegram Notification Sample:
 
 ## Motivation
 
-* I was looking for a self-hosted monitoring tool like "Uptime Robot", but it is hard to find a suitable one. One of the close ones is statping. Unfortunately, it is not stable and no longer maintained.
-* Want to build a fancy UI.
-* Learn Vue 3 and vite.js.
-* Show the power of Bootstrap 5.
-* Try to use WebSocket with SPA instead of REST API.
-* Deploy my first Docker image to Docker Hub.
+- I was looking for a self-hosted monitoring tool like "Uptime Robot", but it is hard to find a suitable one. One of the close ones is statping. Unfortunately, it is not stable and no longer maintained.
+- Want to build a fancy UI.
+- Learn Vue 3 and vite.js.
+- Show the power of Bootstrap 5.
+- Try to use WebSocket with SPA instead of REST API.
+- Deploy my first Docker image to Docker Hub.
 
 If you love this project, please consider giving me a ⭐.
 
@@ -161,9 +161,8 @@ I recommend using Google, GitHub Issues, or Uptime Kuma's Subreddit for finding 
 - [GitHub Issues](https://github.com/louislam/uptime-kuma/issues)
 - [Subreddit r/Uptime kuma](https://www.reddit.com/r/UptimeKuma/)
 
-My Reddit account: [u/louislamlam](https://reddit.com/u/louislamlam).  
+My Reddit account: [u/louislamlam](https://reddit.com/u/louislamlam).
 You can mention me if you ask a question on Reddit.
-
 
 ## Contribute
 
@@ -179,9 +178,11 @@ https://github.com/louislam/uptime-kuma/wiki/Test-Pull-Requests
 Check out the latest beta release here: https://github.com/louislam/uptime-kuma/releases
 
 ### Bug Reports / Feature Requests
+
 If you want to report a bug or request a new feature, feel free to open a [new issue](https://github.com/louislam/uptime-kuma/issues).
 
 ### Translations
+
 If you want to translate Uptime Kuma into your language, please visit [Weblate Readme](https://github.com/louislam/uptime-kuma/blob/master/src/lang/README.md).
 
 ### Spelling & Grammar
@@ -190,4 +191,5 @@ Feel free to correct the grammar in the documentation or code.
 My mother language is not english and my grammar is not that great.
 
 ### Create Pull Requests
+
 If you want to modify Uptime Kuma, please read this guide and follow the rules here: https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md
