@@ -1,6 +1,10 @@
 <template>
     <div>
         <div class="period-options">
+            <span class="time-format-12-hour">
+                <input id="checkbox12HourTimeFormat" class="time-format-12-hour-check-input form-check-input" type="checkbox" @change="set12HourTimeFormat" />
+                <label for="checkbox12HourTimeFormat" class="time-format-12-hour-check-label">{{ $t("12-hour format") }}</label>
+            </span>
             <button type="button" class="btn btn-light dropdown-toggle btn-period-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                 {{ chartPeriodOptions[chartPeriodHrs] }}&nbsp;
             </button>
@@ -36,7 +40,12 @@ export default {
             type: Number,
             required: true,
         },
+        use12HourTimeFormat: {
+            type: Boolean,
+            default: false
+        }
     },
+    emits: [ "switch-use-12-hour-time-format" ],
     data() {
         return {
 
@@ -60,6 +69,11 @@ export default {
     },
     computed: {
         chartOptions() {
+            const minuteTimeFormat = `${
+                this.use12HourTimeFormat ? "hh" : "HH"
+            }:mm${
+                this.use12HourTimeFormat ? " A" : ""
+            }`;
             return {
                 responsive: true,
                 maintainAspectRatio: false,
@@ -99,8 +113,8 @@ export default {
                             round: "second",
                             tooltipFormat: "YYYY-MM-DD HH:mm:ss",
                             displayFormats: {
-                                minute: "HH:mm",
-                                hour: "MM-DD HH:mm",
+                                minute: minuteTimeFormat,
+                                hour: `MM-DD ${minuteTimeFormat}`,
                             }
                         },
                         ticks: {
@@ -177,7 +191,7 @@ export default {
                     )
                 )
                 .map((beat) => {
-                    const x = this.$root.datetime(beat.time);
+                    const x = this.$root.datetime(beat.time, this.use12HourTimeFormat);
                     pingData.push({
                         x,
                         y: beat.ping,
@@ -265,6 +279,12 @@ export default {
         if (period != null) {
             this.chartPeriodHrs = Math.min(period, 6);
         }
+    },
+    methods: {
+        set12HourTimeFormat() {
+            console.log(this.use12HourTimeFormat, "->", !this.use12HourTimeFormat);
+            this.$emit("switch-use-12-hour-time-format");
+        }
     }
 };
 </script>
@@ -280,9 +300,28 @@ export default {
 .period-options {
     padding: 0.1em 1em;
     margin-bottom: -1.2em;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
     float: right;
     position: relative;
     z-index: 10;
+
+    .time-format-12-hour {
+        .time-format-12-hour-check-input {
+            margin-top: 0;
+            vertical-align: middle;
+            background-color: #070a10;
+            border-color: #1d2634;
+        }
+        .time-format-12-hour-check-label {
+            padding: 2px 5px;
+            background: transparent;
+            border: 0;
+            opacity: 0.7;
+            font-size: 0.9em;
+        }
+    }
 
     .dropdown-menu {
         padding: 0;
