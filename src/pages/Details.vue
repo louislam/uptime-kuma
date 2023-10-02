@@ -176,7 +176,7 @@
             <div v-if="showPingChartBox" class="shadow-box big-padding text-center ping-chart-wrapper">
                 <div class="row">
                     <div class="col">
-                        <PingChart :monitor-id="monitor.id" :use12HourTimeFormat="use12HourTimeFormat" @switch-use-12-hour-time-format="set12HourTimeFormat" />
+                        <PingChart :monitor-id="monitor.id" :use12HourTimeFormat="use12HourTimeFormat" />
                     </div>
                 </div>
             </div>
@@ -414,6 +414,7 @@ export default {
     },
 
     mounted() {
+        this.loadSettings();
         this.getImportantHeartbeatListLength();
 
         this.$root.emitter.on("newImportantHeartbeat", this.onNewImportantHeartbeat);
@@ -645,9 +646,10 @@ export default {
             });
         },
 
-        set12HourTimeFormat() {
-            console.log(this.use12HourTimeFormat, "->", !this.use12HourTimeFormat);
-            this.use12HourTimeFormat = !this.use12HourTimeFormat;
+        loadSettings() {
+            this.$root.getSocket().emit("getSettings", res => {
+                this.use12HourTimeFormat = res.data.use12HourTimeFormat || false;
+            });
         }
 
     },

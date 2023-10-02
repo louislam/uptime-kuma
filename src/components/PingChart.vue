@@ -1,10 +1,6 @@
 <template>
     <div>
         <div class="period-options">
-            <span class="time-format-12-hour">
-                <input id="checkbox12HourTimeFormat" class="time-format-12-hour-check-input form-check-input" type="checkbox" @change="set12HourTimeFormat" />
-                <label for="checkbox12HourTimeFormat" class="time-format-12-hour-check-label">{{ $t("12-hour format") }}</label>
-            </span>
             <button type="button" class="btn btn-light dropdown-toggle btn-period-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                 {{ chartPeriodOptions[chartPeriodHrs] }}&nbsp;
             </button>
@@ -45,7 +41,6 @@ export default {
             default: false
         }
     },
-    emits: [ "switch-use-12-hour-time-format" ],
     data() {
         return {
 
@@ -279,12 +274,6 @@ export default {
         if (period != null) {
             this.chartPeriodHrs = Math.min(period, 6);
         }
-    },
-    methods: {
-        set12HourTimeFormat() {
-            console.log(this.use12HourTimeFormat, "->", !this.use12HourTimeFormat);
-            this.$emit("switch-use-12-hour-time-format");
-        }
     }
 };
 </script>
@@ -306,23 +295,6 @@ export default {
     float: right;
     position: relative;
     z-index: 10;
-
-    .time-format-12-hour {
-        .time-format-12-hour-check-input {
-            margin-top: 0;
-            vertical-align: middle;
-            background-color: #070a10;
-            border-color: #1d2634;
-        }
-
-        .time-format-12-hour-check-label {
-            padding: 2px 5px;
-            background: transparent;
-            border: 0;
-            opacity: 0.7;
-            font-size: 0.9em;
-        }
-    }
 
     .dropdown-menu {
         padding: 0;

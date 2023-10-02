@@ -163,6 +163,10 @@ export default {
                     this.settings.searchEngineIndex = false;
                 }
 
+                if (this.settings.use12HourTimeFormat === undefined) {
+                    this.settings.use12HourTimeFormat = false;
+                }
+
                 if (this.settings.entryPage === undefined) {
                     this.settings.entryPage = "dashboard";
                 }
