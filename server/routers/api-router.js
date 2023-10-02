@@ -283,8 +283,6 @@ router.get("/api/badge/:id/ping/:duration?", cache("5 minutes"), async (request,
             requestedDuration = "24h";
         }
 
-        const sqlHourOffset = Database.sqlHourOffset();
-
         // Check if monitor is public
 
         const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(requestedMonitorId);
