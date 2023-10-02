@@ -35,17 +35,15 @@ export default {
         /**
          * Return a given value in the format YYYY-MM-DD HH:mm:ss
          * @param {any} value Value to format as date time
-         * @param {boolean} use12HourFormat Whether to use 12-hour format
+         * @param {boolean} use12HourTimeFormat Whether to use 12-hour format
          * @returns {string} Formatted string
          */
-        datetime(value, use12HourFormat = false) {
+        datetime(value, use12HourTimeFormat = false) {
+            const hourTimeFormat = use12HourTimeFormat ? "hh" : "HH";
             const timeFormat =
-                `YYYY-MM-DD ${
-                    use12HourFormat ? "hh" : "HH"
-                }:mm:ss${
-                    use12HourFormat ? " A" : ""
+                `YYYY-MM-DD ${hourTimeFormat}:mm:ss${
+                    use12HourTimeFormat ? " A" : ""
                 }`;
-            console.log(timeFormat);
             return this.datetimeFormat(value, timeFormat);
         },
 

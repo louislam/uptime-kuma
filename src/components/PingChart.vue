@@ -64,9 +64,8 @@ export default {
     },
     computed: {
         chartOptions() {
-            const minuteTimeFormat = `${
-                this.use12HourTimeFormat ? "hh" : "HH"
-            }:mm${
+            const hourTimeFormat = this.use12HourTimeFormat ? "hh" : "HH";
+            const minuteTimeFormat = `${hourTimeFormat}:mm${
                 this.use12HourTimeFormat ? " A" : ""
             }`;
             return {
