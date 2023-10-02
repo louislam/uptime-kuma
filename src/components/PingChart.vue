@@ -314,6 +314,7 @@ export default {
             background-color: #070a10;
             border-color: #1d2634;
         }
+
         .time-format-12-hour-check-label {
             padding: 2px 5px;
             background: transparent;
