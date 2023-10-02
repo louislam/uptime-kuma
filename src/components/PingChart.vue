@@ -289,9 +289,6 @@ export default {
 .period-options {
     padding: 0.1em 1em;
     margin-bottom: -1.2em;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
     float: right;
     position: relative;
     z-index: 10;
