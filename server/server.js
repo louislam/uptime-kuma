@@ -1796,7 +1796,6 @@ async function updateMonitorNotification(monitorID, notificationIDList) {
 
 /**
  * Update all parents after overwite backup
- * providers to add
  * @returns {Promise<void>}
  */
 async function updateMonitorParents(){
