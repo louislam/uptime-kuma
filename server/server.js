@@ -1559,8 +1559,8 @@ let needSetup = false;
                                 dns_resolve_server: monitorListData[i].dns_resolve_server,
                                 notificationIDList: monitorListData[i].notificationIDList,
                                 proxy_id: monitorListData[i].proxy_id || null,
-                                recovery_id:  monitorListData[i].id,
-                                recovery_parent:  monitorListData[i].parent
+                                recovery_id: monitorListData[i].id,
+                                recovery_parent: monitorListData[i].parent
                             };
 
                             if (monitorListData[i].pushToken) {
