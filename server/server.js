@@ -1559,6 +1559,8 @@ let needSetup = false;
                                 dns_resolve_server: monitorListData[i].dns_resolve_server,
                                 notificationIDList: monitorListData[i].notificationIDList,
                                 proxy_id: monitorListData[i].proxy_id || null,
+                                recovery_id:  monitorListData[i].id,
+                                recovery_parent:  monitorListData[i].parent
                             };
 
                             if (monitorListData[i].pushToken) {
@@ -1621,6 +1623,10 @@ let needSetup = false;
                             }
 
                         }
+                    }
+
+                    if(importHandle === "overwrite"){
+                        await updateMonitorParents();
                     }
 
                     await sendNotificationList(socket);
@@ -1786,6 +1792,24 @@ async function updateMonitorNotification(monitorID, notificationIDList) {
             await R.store(relation);
         }
     }
+}
+
+/**
+ * Update all parents after overwite backup
+ * providers to add
+ * @returns {Promise<void>}
+ */
+async function updateMonitorParents(){
+    await R.exec(`
+    UPDATE monitor
+    SET parent =
+      (SELECT m.id
+       FROM monitor m
+       WHERE m.recovery_id = monitor.recovery_parent)
+    WHERE EXISTS
+        (SELECT m.id
+         FROM monitor m
+         WHERE m.recovery_id = monitor.recovery_parent)`);
 }
 
 /**
