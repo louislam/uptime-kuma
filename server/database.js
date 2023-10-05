@@ -259,6 +259,17 @@ class Database {
                 },
                 pool: mariadbPoolConfig,
             };
+        } else if (dbConfig.type === "libsql") {
+            config = {
+                client: require("@libsql/knex-libsql"),
+                connection: {
+                    filename: dbConfig.url,
+                },
+                pool: {
+                    min: 1,
+                    max: 7,
+                }
+            }
         } else {
             throw new Error("Unknown Database type: " + dbConfig.type);
         }
@@ -289,8 +300,8 @@ class Database {
 
         if (dbConfig.type === "sqlite") {
             await this.initSQLite(testMode, noLog);
-        } else if (dbConfig.type.endsWith("mariadb")) {
-            await this.initMariaDB();
+        } else {
+            await this.initDatabase();
         }
     }
 
@@ -328,7 +339,7 @@ class Database {
      * Initialize MariaDB
      * @returns {Promise<void>}
      */
-    static async initMariaDB() {
+    static async initDatabase() {
         log.debug("db", "Checking if MariaDB database exists...");
 
         let hasTable = await R.hasTable("docker_host");

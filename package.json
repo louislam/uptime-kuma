@@ -77,6 +77,8 @@
     },
     "dependencies": {
         "@grpc/grpc-js": "~1.7.3",
+        "@libsql/client": "~0.3.5",
+        "@libsql/knex-libsql": "~0.1.0",
         "@louislam/ping": "~0.4.4-mod.1",
         "@louislam/sqlite3": "15.1.6",
         "args-parser": "~1.3.0",
