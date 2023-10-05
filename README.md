@@ -45,7 +45,7 @@ docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name upti
 
 ⚠️ Please use a **local volume** only. Other types such as NFS are not supported.
 
-Uptime Kuma is now running on http://<your_external_ip>:3001
+Uptime Kuma is now running on http://<your_external_ip>:3001 (and http://127.0.0.1:3001 too).
 
 If you want to run it at localhost (without exposing port for other users or to use with nginx), you can expose port like that:
 
