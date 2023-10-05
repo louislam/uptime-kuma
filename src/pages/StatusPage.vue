@@ -957,7 +957,7 @@ export default {
          */
         postIncident() {
             if (this.incident.title === "" || this.incident.content === "") {
-                this.$root.toastError(this.$t("Please input title and content"));
+                this.$root.toastError("Please input title and content");
                 return;
             }
 
