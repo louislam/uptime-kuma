@@ -159,7 +159,7 @@ export default {
          */
         deleteMaintenance() {
             this.$root.deleteMaintenance(this.selectedMaintenanceID, (res) => {
-                this.$router.push("/maintenance");
+                this.$root.toastRes(res);
                 if (res.ok) {
                     this.$router.push("/maintenance");
                 }
