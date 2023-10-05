@@ -499,14 +499,14 @@ export default {
                     if (res.ok) {
                         await this.addMonitorMaintenance(res.maintenanceID, async () => {
                             await this.addMaintenanceStatusPage(res.maintenanceID, () => {
-                                toast.success(res.msg);
+                                this.$root.toastRes(res);
                                 this.processing = false;
                                 this.$root.getMaintenanceList();
                                 this.$router.push("/maintenance");
                             });
                         });
                     } else {
-                        toast.error(res.msg);
+                        this.$root.toastRes(res);
                         this.processing = false;
                     }
 

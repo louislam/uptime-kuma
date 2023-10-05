@@ -1416,17 +1416,14 @@ message HealthCheckResponse {
                         if (createdNewParent) {
                             this.startParentGroupMonitor();
                         }
-
-                        toast.success(res.msg);
                         this.processing = false;
                         this.$root.getMonitorList();
                         this.$router.push("/dashboard/" + res.monitorID);
-
                     } else {
-                        toast.error(res.msg);
                         this.processing = false;
                     }
 
+                    this.$root.toastRes(res);
                 });
             } else {
                 await this.$refs.tagsManager.submit(this.monitor.id);

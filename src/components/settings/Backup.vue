@@ -200,11 +200,7 @@ export default {
                     (res) => {
                         this.processing = false;
 
-                        if (res.ok) {
-                            toast.success(res.msg);
-                        } else {
-                            toast.error(res.msg);
-                        }
+                        this.$root.toastRes(res);
                     }
                 );
             };

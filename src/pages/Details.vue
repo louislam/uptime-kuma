@@ -498,11 +498,9 @@ export default {
          */
         deleteMonitor() {
             this.$root.deleteMonitor(this.monitor.id, (res) => {
+                this.$root.toastRes(res);
                 if (res.ok) {
-                    toast.success(res.msg);
                     this.$router.push("/dashboard");
-                } else {
-                    toast.error(res.msg);
                 }
             });
         },
