@@ -231,7 +231,7 @@ export default {
 
                 this.$root.getMonitorBeats(this.monitorId, newPeriod, (res) => {
                     if (!res.ok) {
-                        toast.error(res.msg);
+                        this.$root.toastError(res.msg);
                     } else {
                         this.heartbeatList = res.data;
                         this.$root.storage()[`chart-period-${this.monitorId}`] = newPeriod;

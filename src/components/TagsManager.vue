@@ -262,7 +262,7 @@ export default {
                 if (res.ok) {
                     this.existingTags = res.tags;
                 } else {
-                    toast.error(res.msg);
+                    this.$root.toastError(res.msg);
                 }
             });
         },
@@ -399,7 +399,7 @@ export default {
                     let newTagResult;
                     await this.addTagAsync(newTag).then((res) => {
                         if (!res.ok) {
-                            toast.error(res.msg);
+                            this.$root.toastError(res.msg);
                             newTagResult = false;
                         }
                         newTagResult = res.tag;
@@ -424,7 +424,7 @@ export default {
                 // Assign tag to monitor
                 await this.addMonitorTagAsync(tagId, monitorId, newTag.value).then((res) => {
                     if (!res.ok) {
-                        toast.error(res.msg);
+                        this.$root.toastError(res.msg);
                         newMonitorTagResult = false;
                     }
                     newMonitorTagResult = true;
@@ -440,7 +440,7 @@ export default {
                 let deleteMonitorTagResult;
                 await this.deleteMonitorTagAsync(deleteTag.tag_id, deleteTag.monitor_id, deleteTag.value).then((res) => {
                     if (!res.ok) {
-                        toast.error(res.msg);
+                        this.$root.toastError(res.msg);
                         deleteMonitorTagResult = false;
                     }
                     deleteMonitorTagResult = true;

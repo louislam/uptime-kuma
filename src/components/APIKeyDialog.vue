@@ -158,7 +158,7 @@ export default {
                     this.keymodal.show();
                     this.clearForm();
                 } else {
-                    toast.error(res.msg);
+                    this.$root.toastError(res.msg);
                 }
             });
         },

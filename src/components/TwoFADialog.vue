@@ -138,7 +138,7 @@ export default {
                 if (res.ok) {
                     this.uri = res.uri;
                 } else {
-                    toast.error(res.msg);
+                    this.$root.toastError(res.msg);
                 }
             });
         },
@@ -159,7 +159,7 @@ export default {
                     this.currentPassword = "";
                     this.modal.hide();
                 } else {
-                    toast.error(res.msg);
+                    this.$root.toastError(res.msg);
                 }
             });
         },
@@ -180,7 +180,7 @@ export default {
                     this.currentPassword = "";
                     this.modal.hide();
                 } else {
-                    toast.error(res.msg);
+                    this.$root.toastError(res.msg);
                 }
             });
         },
@@ -194,7 +194,7 @@ export default {
                 if (res.ok) {
                     this.tokenValid = res.valid;
                 } else {
-                    toast.error(res.msg);
+                    this.$root.toastError(res.msg);
                 }
             });
         },
@@ -208,7 +208,7 @@ export default {
                 if (res.ok) {
                     this.twoFAStatus = res.status;
                 } else {
-                    toast.error(res.msg);
+                    this.$root.toastError(res.msg);
                 }
             });
         },

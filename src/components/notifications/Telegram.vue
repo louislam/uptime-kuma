@@ -110,7 +110,7 @@ export default {
                 }
 
             } catch (error) {
-                toast.error(error.message);
+                this.$root.toastError(error.message);
             }
 
         },

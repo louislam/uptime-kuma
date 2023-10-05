@@ -79,7 +79,7 @@ export default {
             this.processing = true;
 
             if (this.password !== this.repeatPassword) {
-                toast.error(this.$t("PasswordsDoNotMatch"));
+                this.$root.toastError("PasswordsDoNotMatch");
                 this.processing = false;
                 return;
             }

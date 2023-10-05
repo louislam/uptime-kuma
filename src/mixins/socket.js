@@ -342,7 +342,7 @@ export default {
          * @returns {void}
          */
         toastSuccess(msg) {
-            toast.success(msg);
+            toast.success(this.$t(msg));
         },
 
         /**
@@ -351,7 +351,7 @@ export default {
          * @returns {void}
          */
         toastError(msg) {
-            toast.error(msg);
+            toast.error(this.$t(msg));
         },
 
         /**

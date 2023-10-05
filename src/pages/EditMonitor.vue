@@ -1165,7 +1165,7 @@ message HealthCheckResponse {
                     if (res.ok) {
                         this.gameList = res.gameList;
                     } else {
-                        toast.error(res.msg);
+                        this.$root.toastError(res.msg);
                     }
                 });
             }
@@ -1310,7 +1310,7 @@ message HealthCheckResponse {
                             this.monitor.timeout = ~~(this.monitor.interval * 8) / 10;
                         }
                     } else {
-                        toast.error(res.msg);
+                        this.$root.toastError(res.msg);
                     }
                 });
             }
@@ -1332,7 +1332,7 @@ message HealthCheckResponse {
                 try {
                     JSON.parse(this.monitor.body);
                 } catch (err) {
-                    toast.error(this.$t("BodyInvalidFormat") + err.message);
+                    this.$root.toastError(this.$t("BodyInvalidFormat") + err.message);
                     return false;
                 }
             }
@@ -1340,7 +1340,7 @@ message HealthCheckResponse {
                 try {
                     JSON.parse(this.monitor.headers);
                 } catch (err) {
-                    toast.error(this.$t("HeadersInvalidFormat") + err.message);
+                    this.$root.toastError(this.$t("HeadersInvalidFormat") + err.message);
                     return false;
                 }
             }
@@ -1400,7 +1400,7 @@ message HealthCheckResponse {
                     createdNewParent = true;
                     this.monitor.parent = res.monitorID;
                 } else {
-                    toast.error(res.msg);
+                    this.$root.toastError(res.msg);
                     this.processing = false;
                     return;
                 }

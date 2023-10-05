@@ -437,7 +437,7 @@ export default {
          */
         testNotification() {
             this.$root.getSocket().emit("testNotification", this.monitor.id);
-            toast.success("Test notification is requested.");
+            this.$root.toastSuccess("Test notification is requested.");
         },
 
         /**
@@ -514,7 +514,7 @@ export default {
                 if (res.ok) {
                     this.getImportantHeartbeatListLength();
                 } else {
-                    toast.error(res.msg);
+                    this.$root.toastError(res.msg);
                 }
             });
         },
@@ -526,7 +526,7 @@ export default {
         clearHeartbeats() {
             this.$root.clearHeartbeats(this.monitor.id, (res) => {
                 if (! res.ok) {
-                    toast.error(res.msg);
+                    this.$root.toastError(res.msg);
                 }
             });
         },

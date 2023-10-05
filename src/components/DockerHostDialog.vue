@@ -120,7 +120,7 @@ export default {
                 }
 
                 if (!found) {
-                    toast.error("Docker Host not found!");
+                    this.$root.toastError("Docker Host not found!");
                 }
 
             } else {

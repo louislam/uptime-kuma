@@ -320,7 +320,7 @@ export default {
             for (let addId of this.addingMonitor) {
                 await this.addMonitorTagAsync(this.tag.id, addId, "").then((res) => {
                     if (!res.ok) {
-                        toast.error(res.msg);
+                        this.$root.toastError(res.msg);
                         editResult = false;
                     }
                 });
@@ -330,7 +330,7 @@ export default {
                 this.monitors.find(monitor => monitor.id === removeId)?.tags.forEach(async (monitorTag) => {
                     await this.deleteMonitorTagAsync(this.tag.id, removeId, monitorTag.value).then((res) => {
                         if (!res.ok) {
-                            toast.error(res.msg);
+                            this.$root.toastError(res.msg);
                             editResult = false;
                         }
                     });

@@ -151,7 +151,7 @@ export default {
                 await sleep(2000);
                 await this.goToMainServerWhenReady();
             } catch (e) {
-                toast.error(e.response.data);
+                this.$root.toastError(e.response.data);
             } finally {
                 this.info.runningSetup = false;
             }
@@ -179,7 +179,7 @@ export default {
         },
 
         test() {
-            toast.error("not implemented");
+            this.$root.toastError("not implemented");
         }
     },
 };

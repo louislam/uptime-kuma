@@ -74,7 +74,7 @@ export default {
                 if (res.ok) {
                     this.affectedMonitors = Object.values(res.monitors).map(monitor => monitor.name);
                 } else {
-                    toast.error(res.msg);
+                    this.$root.toastError(res.msg);
                 }
             });
 
@@ -82,7 +82,7 @@ export default {
                 if (res.ok) {
                     this.selectedStatusPages = Object.values(res.statusPages).map(statusPage => statusPage.title);
                 } else {
-                    toast.error(res.msg);
+                    this.$root.toastError(res.msg);
                 }
             });
         },

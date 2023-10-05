@@ -86,7 +86,7 @@ export default {
                 if (res.ok) {
                     this.tagsList = res.tags;
                 } else {
-                    toast.error(res.msg);
+                    this.$root.toastError(res.msg);
                 }
             });
         },

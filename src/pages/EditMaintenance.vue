@@ -457,7 +457,7 @@ export default {
                                     this.affectedMonitors.push(this.affectedMonitorsOptions.find(item => item.id === monitor.id));
                                 });
                             } else {
-                                toast.error(res.msg);
+                                this.$root.toastError(res.msg);
                             }
                         });
 
@@ -472,11 +472,11 @@ export default {
 
                                 this.showOnAllPages = Object.values(res.statusPages).length === this.selectedStatusPagesOptions.length;
                             } else {
-                                toast.error(res.msg);
+                                this.$root.toastError(res.msg);
                             }
                         });
                     } else {
-                        toast.error(res.msg);
+                        this.$root.toastError(res.msg);
                     }
                 });
             }
@@ -490,7 +490,7 @@ export default {
             this.processing = true;
 
             if (this.affectedMonitors.length === 0) {
-                toast.error(this.$t("atLeastOneMonitor"));
+                this.$root.toastError(this.$t("atLeastOneMonitor"));
                 return this.processing = false;
             }
 
@@ -524,7 +524,7 @@ export default {
                         });
                     } else {
                         this.processing = false;
-                        toast.error(res.msg);
+                        this.$root.toastError(res.msg);
                     }
                 });
             }
@@ -539,7 +539,7 @@ export default {
         async addMonitorMaintenance(maintenanceID, callback) {
             await this.$root.addMonitorMaintenance(maintenanceID, this.affectedMonitors, async (res) => {
                 if (!res.ok) {
-                    toast.error(res.msg);
+                    this.$root.toastError(res.msg);
                 } else {
                     this.$root.getMonitorList();
                 }
@@ -557,7 +557,7 @@ export default {
         async addMaintenanceStatusPage(maintenanceID, callback) {
             await this.$root.addMaintenanceStatusPage(maintenanceID, (this.showOnAllPages) ? this.selectedStatusPagesOptions : this.selectedStatusPages, async (res) => {
                 if (!res.ok) {
-                    toast.error(res.msg);
+                    this.$root.toastError(res.msg);
                 } else {
                     this.$root.getMaintenanceList();
                 }
