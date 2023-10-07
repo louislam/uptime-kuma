@@ -155,25 +155,11 @@ exports.basicAuth = async function (req, res, next) {
  * @param {express.NextFunction} next Next handler in chain
  * @returns {void}
  */
-exports.apiAuth = async function (req, res, next) {
-    if (!await Settings.get("disableAuth")) {
-        let usingAPIKeys = await Settings.get("apiKeysEnabled");
-        let middleware;
-        if (usingAPIKeys) {
-            middleware = basicAuth({
-                authorizer: apiAuthorizer,
-                authorizeAsync: true,
-                challenge: true,
-            });
-        } else {
-            middleware = basicAuth({
-                authorizer: userAuthorizer,
-                authorizeAsync: true,
-                challenge: true,
-            });
-        }
-        middleware(req, res, next);
-    } else {
-        next();
-    }
+exports.basicAuthMiddleware = async function (req, res, next) {
+    let middleware = basicAuth({
+        authorizer: apiAuthorizer,
+        authorizeAsync: true,
+        challenge: true,
+    });
+    middleware(req, res, next);
 };
