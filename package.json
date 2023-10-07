@@ -136,13 +136,13 @@
         "redbean-node": "~0.3.0",
         "redis": "~4.5.1",
         "semver": "~7.5.4",
-        "socket.io": "~4.6.1",
-        "socket.io-client": "~4.6.1",
+        "socket.io": "~4.7.2",
+        "socket.io-client": "~4.7.2",
         "socks-proxy-agent": "6.1.1",
         "tar": "~6.1.11",
         "tcp-ping": "~0.1.1",
         "thirty-two": "~1.0.2",
-        "ws": "^8.13.0"
+        "ws": "~8.11.0"
     },
     "devDependencies": {
         "@actions/github": "~5.0.1",
