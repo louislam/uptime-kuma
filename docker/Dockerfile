@@ -3,7 +3,7 @@ ARG BASE_IMAGE=louislam/uptime-kuma:base2
 ############################################
 # Build in Golang
 # Run npm run build-healthcheck-armv7 in the host first, otherwise it will be super slow where it is building the armv7 healthcheck
-# Check file: builder-go.dockerfile
+# Check file: builder-go.Dockerfile
 ############################################
 FROM louislam/uptime-kuma:builder-go AS build_healthcheck
 
