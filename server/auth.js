@@ -37,19 +37,31 @@ exports.login = async function (username, password) {
 };
 
 /**
+ * uk prefix + key ID is before _
+ * @param {string} key API Key
+ * @returns {{clear: string, index: string}} Parsed API key
+ */
+exports.parseAPIKey = function (key) {
+    let index = key.substring(2, key.indexOf("_"));
+    let clear = key.substring(key.indexOf("_") + 1, key.length);
+
+    return {
+        index,
+        clear,
+    };
+};
+
+/**
  * Validate a provided API key
  * @param {string} key API key to verify
- * @returns {boolean} API is ok?
+ * @returns {Promise<boolean>} API is ok?
  */
 async function verifyAPIKey(key) {
     if (typeof key !== "string") {
         return false;
     }
 
-    // uk prefix + key ID is before _
-    let index = key.substring(2, key.indexOf("_"));
-    let clear = key.substring(key.indexOf("_") + 1, key.length);
-
+    const { index, clear } = exports.parseAPIKey(key);
     let hash = await R.findOne("api_key", " id=? ", [ index ]);
 
     if (hash === null) {
@@ -63,6 +75,28 @@ async function verifyAPIKey(key) {
     }
 
     return hash && passwordHash.verify(clear, hash.key);
+}
+
+/**
+ * @param {string} key API key to verify
+ * @returns {Promise<void>}
+ * @throws {Error} If API key is invalid or rate limit exceeded
+ */
+async function verifyAPIKeyWithRateLimit(key) {
+    const pass = await apiRateLimiter.pass(null, 0);
+    if (pass) {
+        await apiRateLimiter.removeTokens(1);
+        const valid = await verifyAPIKey(key);
+        if (!valid) {
+            const errMsg = "Failed API auth attempt: invalid API Key";
+            log.warn("api-auth", errMsg);
+            throw new Error(errMsg);
+        }
+    } else {
+        const errMsg = "Failed API auth attempt: rate limit exceeded";
+        log.warn("api-auth", errMsg);
+        throw new Error(errMsg);
+    }
 }
 
 /**
@@ -80,22 +114,10 @@ async function verifyAPIKey(key) {
  * @returns {void}
  */
 function apiAuthorizer(username, password, callback) {
-    // API Rate Limit
-    apiRateLimiter.pass(null, 0).then((pass) => {
-        if (pass) {
-            verifyAPIKey(password).then((valid) => {
-                if (!valid) {
-                    log.warn("api-auth", "Failed API auth attempt: invalid API Key");
-                }
-                callback(null, valid);
-                // Only allow a set number of api requests per minute
-                // (currently set to 60)
-                apiRateLimiter.removeTokens(1);
-            });
-        } else {
-            log.warn("api-auth", "Failed API auth attempt: rate limit exceeded");
-            callback(null, false);
-        }
+    verifyAPIKeyWithRateLimit(password).then(() => {
+        callback(null, true);
+    }).catch(() => {
+        callback(null, false);
     });
 }
 
@@ -162,4 +184,42 @@ exports.basicAuthMiddleware = async function (req, res, next) {
         challenge: true,
     });
     middleware(req, res, next);
+};
+
+// Get the API key from the header Authorization and verify it
+exports.headerAuthMiddleware = async function (req, res, next) {
+    const authorizationHeader = req.header("Authorization");
+
+    let key = null;
+
+    if (authorizationHeader && typeof authorizationHeader === "string") {
+        const arr = authorizationHeader.split(" ");
+        if (arr.length === 2) {
+            const type = arr[0];
+            if (type === "Bearer") {
+                key = arr[1];
+            }
+        }
+    }
+
+    if (key) {
+        try {
+            await verifyAPIKeyWithRateLimit(key);
+            res.locals.apiKeyID = exports.parseAPIKey(key).index;
+            next();
+        } catch (e) {
+            res.status(401);
+            res.json({
+                ok: false,
+                msg: e.message,
+            });
+        }
+    } else {
+        await apiRateLimiter.removeTokens(1);
+        res.status(401);
+        res.json({
+            ok: false,
+            msg: "No API Key provided, please provide an API Key in the \"Authorization\" header",
+        });
+    }
 };

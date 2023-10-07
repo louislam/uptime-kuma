@@ -1,4 +1,4 @@
-let express = require("express");
+const express = require("express");
 const { allowDevAllOrigin, allowAllOrigin, percentageToColor, filterAndJoin, sendHttpError } = require("../util-server");
 const { R } = require("redbean-node");
 const apicache = require("../modules/apicache");
@@ -12,6 +12,10 @@ const { badgeConstants } = require("../config");
 const { Prometheus } = require("../prometheus");
 const Database = require("../database");
 const { UptimeCalculator } = require("../uptime-calculator");
+const ioClient = require("socket.io-client").io;
+const Socket = require("socket.io-client").Socket;
+const { headerAuthMiddleware } = require("../auth");
+const jwt = require("jsonwebtoken");
 
 let router = express.Router();
 
@@ -108,6 +112,117 @@ router.get("/api/push/:pushToken", async (request, response) => {
         });
     }
 });
+
+/*
+ * Map Socket.io API to REST API
+ */
+router.post("/api", headerAuthMiddleware, async (request, response) => {
+    allowDevAllOrigin(response);
+    // TODO: Allow whitelist of origins
+
+    // Generate a JWT for logging in to the socket.io server
+    const apiKeyID = response.locals.apiKeyID;
+    const userID = await R.getCell("SELECT user_id FROM api_key WHERE id = ?", [ apiKeyID ]);
+    const username = await R.getCell("SELECT username FROM user WHERE id = ?", [ userID ]);
+    const token = jwt.sign({
+        username,
+    }, server.jwtSecret);
+
+    const requestData = request.body;
+
+    console.log(requestData);
+
+    // TODO: should not hard coded
+    let wsURL = "ws://localhost:3001";
+
+    const socket = ioClient(wsURL, {
+        transports: [ "websocket" ],
+        reconnection: false,
+    });
+
+    try {
+        let result = await socketClientHandler(socket, token, requestData);
+        let status = 404;
+        if (result.status) {
+            status = result.status;
+        } else if (result.ok) {
+            status = 200;
+        }
+        response.status(status).json(result);
+    } catch (e) {
+        response.status(e.status).json(e);
+    }
+
+    console.log("Close socket");
+    socket.disconnect();
+});
+
+/**
+ * @param {Socket} socket
+ * @param {string} token JWT
+ * @param {object} requestData Request Data
+ */
+function socketClientHandler(socket, token, requestData) {
+    const action = requestData.action;
+    const params = requestData.params;
+
+    return new Promise((resolve, reject) => {
+        socket.on("connect", () => {
+            socket.emit("loginByToken", token, (res) => {
+                if (res.ok) {
+
+                    if (action === "getPushExample") {
+                        if (params.length <= 0) {
+                            reject({
+                                status: 400,
+                                ok: false,
+                                msg: "Missing required parameter(s)",
+                            });
+                        } else {
+                            socket.emit("getPushExample", params[0], (res) => {
+                                resolve(res);
+                            });
+                        }
+
+                    } else {
+                        reject({
+                            status: 404,
+                            ok: false,
+                            msg: "Event not found"
+                        });
+                    }
+                } else {
+                    reject({
+                        status: 401,
+                        ok: false,
+                        msg: "Login failed?????"
+                    });
+                }
+            });
+        });
+
+        socket.on("connect_error", (error) => {
+            reject({
+                status: 500,
+                ok: false,
+                msg: error.message
+            });
+        });
+
+        socket.on("error", (error) => {
+            reject({
+                status: 500,
+                ok: false,
+                msg: error.message
+            });
+        });
+    });
+
+}
+
+/*
+ * Badge API
+ */
 
 router.get("/api/badge/:id/status", cache("5 minutes"), async (request, response) => {
     allowAllOrigin(response);
