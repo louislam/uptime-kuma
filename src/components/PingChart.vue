@@ -68,6 +68,9 @@ export default {
             const minuteTimeFormat = `${hourTimeFormat}:mm${
                 this.use12HourTimeFormat ? " A" : ""
             }`;
+            const tooltipFormat = `YYYY-MM-DD ${hourTimeFormat}:mm:ss${
+                this.use12HourTimeFormat ? " A" : ""
+            }`;
             return {
                 responsive: true,
                 maintainAspectRatio: false,
@@ -105,7 +108,7 @@ export default {
                         time: {
                             minUnit: "minute",
                             round: "second",
-                            tooltipFormat: "YYYY-MM-DD HH:mm:ss",
+                            tooltipFormat,
                             displayFormats: {
                                 minute: minuteTimeFormat,
                                 hour: `MM-DD ${minuteTimeFormat}`,
@@ -185,7 +188,7 @@ export default {
                     )
                 )
                 .map((beat) => {
-                    const x = this.$root.datetime(beat.time, this.use12HourTimeFormat);
+                    const x = this.$root.datetime(beat.time);
                     pingData.push({
                         x,
                         y: beat.ping,
