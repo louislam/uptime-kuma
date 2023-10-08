@@ -15,7 +15,7 @@ class MqttMonitorType extends MonitorType {
      * @returns {Promise<void>}
      */
     async check(monitor, heartbeat, server) {
-        const receivedMessage = await this.mqttAsync(monitor.hostname, monitor.mqttTopic, monitor.mqttSuccessMessage, {
+        const receivedMessage = await this.mqttAsync(monitor.hostname, monitor.mqttTopic, {
             port: monitor.port,
             username: monitor.mqttUsername,
             password: monitor.mqttPassword,
@@ -83,8 +83,9 @@ class MqttMonitorType extends MonitorType {
                 log.debug("mqtt", "MQTT connected");
 
                 try {
-                    log.debug("mqtt", "MQTT subscribe topic");
-                    client.subscribe(topic);
+                    client.subscribe(topic, () => {
+                        log.debug("mqtt", "MQTT subscribed to topic");
+                    });
                 } catch (e) {
                     client.end();
                     clearTimeout(timeoutID);
