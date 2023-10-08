@@ -43,7 +43,7 @@ It is a temporary live demo, all data will be deleted after 10 minutes. Use the 
 docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name uptime-kuma louislam/uptime-kuma:1
 ```
 > [!WARNING]
-> Please use a **local volume** only. Other types such as NFS are not supported.
+> **NFS** (Network File System) are **NOT** supported. Please map to a local directory or volume. 
 
 Uptime Kuma is now running on http://localhost:3001
 
