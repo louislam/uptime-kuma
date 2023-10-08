@@ -33,6 +33,7 @@ const dayjs = require("dayjs");
 // SASLOptions used in JSDoc
 // eslint-disable-next-line no-unused-vars
 const { Kafka, SASLOptions } = require("kafkajs");
+const crypto = require("crypto");
 
 const isWindows = process.platform === /^win/.test(process.platform);
 /**
@@ -1053,6 +1054,23 @@ module.exports.grpcQuery = async (options) => {
         }
 
     });
+};
+
+module.exports.SHAKE256_LENGTH = 16;
+
+/**
+ *
+ * @param {string} data
+ * @param {number} len
+ * @return {string}
+ */
+module.exports.shake256 = (data, len) => {
+    if (!data) {
+        return "";
+    }
+    return crypto.createHash("shake256", { outputLength: len })
+        .update(data)
+        .digest("hex");
 };
 
 // For unit test, export functions

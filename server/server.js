@@ -83,8 +83,11 @@ const app = server.app;
 log.info("server", "Importing this project modules");
 log.debug("server", "Importing Monitor");
 const Monitor = require("./model/monitor");
+const User = require("./model/user");
+
 log.debug("server", "Importing Settings");
-const { getSettings, setSettings, setting, initJWTSecret, checkLogin, startUnitTest, FBSD, doubleCheckPassword, startE2eTests } = require("./util-server");
+const { getSettings, setSettings, setting, initJWTSecret, checkLogin, startUnitTest, FBSD, doubleCheckPassword, startE2eTests, shake256, SHAKE256_LENGTH
+} = require("./util-server");
 
 log.debug("server", "Importing Notification");
 const { Notification } = require("./notification");
@@ -296,6 +299,11 @@ let needSetup = false;
                     decoded.username,
                 ]);
 
+                // Check if the password changed
+                if (decoded.h !== shake256(user.password, SHAKE256_LENGTH)) {
+                    throw new Error("The token is invalid due to password change or old token");
+                }
+
                 if (user) {
                     log.debug("auth", "afterLogin");
                     afterLogin(socket, user);
@@ -316,9 +324,10 @@ let needSetup = false;
                     });
                 }
             } catch (error) {
-
                 log.error("auth", `Invalid token. IP=${clientIP}`);
-
+                if (error.message) {
+                    log.error("auth", error.message, `IP=${clientIP}`);
+                }
                 callback({
                     ok: false,
                     msg: "Invalid token.",
@@ -357,9 +366,7 @@ let needSetup = false;
 
                     callback({
                         ok: true,
-                        token: jwt.sign({
-                            username: data.username,
-                        }, server.jwtSecret),
+                        token: User.createJWT(user, server.jwtSecret),
                     });
                 }
 
@@ -387,9 +394,7 @@ let needSetup = false;
 
                         callback({
                             ok: true,
-                            token: jwt.sign({
-                                username: data.username,
-                            }, server.jwtSecret),
+                            token: User.createJWT(user, server.jwtSecret),
                         });
                     } else {
 
