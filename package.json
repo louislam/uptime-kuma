@@ -106,6 +106,7 @@
         "iconv-lite": "~0.6.3",
         "isomorphic-ws": "^5.0.0",
         "jsesc": "~3.0.2",
+        "json5": "~2.2.3",
         "jsonata": "^2.0.3",
         "jsonwebtoken": "~9.0.0",
         "jwt-decode": "~3.1.2",

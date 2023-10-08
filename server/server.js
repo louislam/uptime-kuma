@@ -1255,6 +1255,10 @@ let needSetup = false;
             try {
                 checkLogin(socket);
 
+                if (typeof password.currentPassword === "undefined") {
+                    throw new Error("Incorrect current password");
+                }
+
                 if (!password.newPassword) {
                     throw new Error("Invalid new password");
                 }

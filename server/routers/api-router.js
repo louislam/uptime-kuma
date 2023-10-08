@@ -16,6 +16,9 @@ const ioClient = require("socket.io-client").io;
 const Socket = require("socket.io-client").Socket;
 const { headerAuthMiddleware } = require("../auth");
 const jwt = require("jsonwebtoken");
+const fs = require("fs");
+const JSON5 = require("json5");
+const apiSpec = JSON5.parse(fs.readFileSync("./extra/api-spec.json5", "utf8"));
 
 let router = express.Router();
 
@@ -142,11 +145,11 @@ router.post("/api", headerAuthMiddleware, async (request, response) => {
 
     try {
         let result = await socketClientHandler(socket, token, requestData);
-        let status = 404;
+        let status = 200;
         if (result.status) {
             status = result.status;
-        } else if (result.ok) {
-            status = 200;
+        } else if (typeof result === "object" && result.ok === false) {
+            status = 404;
         }
         response.status(status).json(result);
     } catch (e) {
@@ -170,6 +173,50 @@ function socketClientHandler(socket, token, requestData) {
         socket.on("connect", () => {
             socket.emit("loginByToken", token, (res) => {
                 if (res.ok) {
+                    let matched = false;
+
+                    // Find the action in the API spec
+                    for (let actionObj of apiSpec) {
+
+                        // Find it
+                        if (action === actionObj.name) {
+                            matched = true;
+                            let flatParams = [];
+
+                            // Check if required parameters are provided
+                            if (actionObj.params.length > 0 && !params) {
+                                reject({
+                                    status: 400,
+                                    ok: false,
+                                    msg: "Missing \"params\" property in request body",
+                                });
+                                return;
+                            }
+
+                            // Check if required parameters are valid
+                            for (let paramObj of actionObj.params) {
+                                let value = params[paramObj.name];
+
+                                // Check if required parameter is in a correct data type
+                                if (typeof value !== paramObj.type) {
+                                    reject({
+                                        status: 400,
+                                        ok: false,
+                                        msg: `Parameter "${paramObj.name}" should be "${paramObj.type}". Got "${typeof value}" instead.`
+                                    });
+                                    return;
+                                }
+
+                                flatParams.push(value);
+                            }
+
+                            socket.emit(actionObj.name, ...flatParams, (res) => {
+                                resolve(res);
+                            });
+
+                            break;
+                        }
+                    }
 
                     if (action === "getPushExample") {
                         if (params.length <= 0) {
@@ -183,8 +230,9 @@ function socketClientHandler(socket, token, requestData) {
                                 resolve(res);
                             });
                         }
+                    }
 
-                    } else {
+                    if (!matched) {
                         reject({
                             status: 404,
                             ok: false,

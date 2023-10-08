@@ -4,8 +4,40 @@ Content-Type: application/json
 
 {
     "action": "getPushExample",
-    "params": [
-        "javascript-fetch"
-    ]
+    "params": {
+        "language": "javascript-fetch"
+    }
 }
+
 ###
+POST http://localhost:3001/api
+Authorization: Bearer uk1_1HaQRETls-E5KlhB6yCtf8WJRW57KwFMuKkya-Tj
+Content-Type: application/json
+
+{
+    "action": "checkApprise"
+}
+
+###
+POST http://localhost:3001/api
+Authorization: Bearer uk1_1HaQRETls-E5KlhB6yCtf8WJRW57KwFMuKkya-Tj
+Content-Type: application/json
+
+{
+    "action": "getSettings"
+}
+
+###
+POST http://localhost:3001/api
+Authorization: Bearer uk1_1HaQRETls-E5KlhB6yCtf8WJRW57KwFMuKkya-Tj
+Content-Type: application/json
+
+{
+    "action": "changePassword",
+    "params": {
+        "password": {
+            "currentPassword": "123456",
+            "newPassword": "1sfdsf234567"
+        }
+    }
+}

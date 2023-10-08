@@ -833,7 +833,7 @@ exports.checkLogin = (socket) => {
  */
 exports.doubleCheckPassword = async (socket, currentPassword) => {
     if (typeof currentPassword !== "string") {
-        throw new Error("Wrong data type?");
+        throw new Error("Wrong data type of current password");
     }
 
     let user = await R.findOne("user", " id = ? AND active = 1 ", [
