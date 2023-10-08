@@ -438,7 +438,7 @@ export default {
             lastUpdateTime: dayjs(),
             updateCountdown: null,
             updateCountdownText: null,
-            loading: true,
+            loading: false,
         };
     },
     computed: {
@@ -702,8 +702,6 @@ export default {
             this.incident = res.data.incident;
             this.maintenanceList = res.data.maintenanceList;
             this.$root.publicGroupList = res.data.publicGroupList;
-
-            this.loading = false;
         }).catch( function (error) {
             if (error.response.status === 404) {
                 location.href = "/page-not-found";
