@@ -584,6 +584,20 @@ h5.settings-subheading::after {
     border-bottom: 1px solid $dark-border-color;
 }
 
+/* required class */
+.code-editor, .css-editor {
+    /* we dont use `language-` classes anymore so thats why we need to add background and text color manually */
+
+    border-radius: 1rem;
+    padding: 10px 5px;
+    border: 1px solid #ced4da;
+
+    .dark & {
+        background: $dark-bg2;
+        border: 1px solid $dark-border-color;
+    }
+}
+
 
 $shadow-box-padding: 20px;
 

@@ -72,7 +72,8 @@
         "deploy-demo-server": "node extra/deploy-demo-server.js",
         "sort-contributors": "node extra/sort-contributors.js",
         "quick-run-nightly": "docker run --rm --env NODE_ENV=development -p 3001:3001 louislam/uptime-kuma:nightly2",
-        "start-dev-container": "cd docker && docker-compose -f docker-compose-dev.yml up --force-recreate"
+        "start-dev-container": "cd docker && docker-compose -f docker-compose-dev.yml up --force-recreate",
+        "rebase-pr-to-1.23.X": "node extra/rebase-pr.js 1.23.X"
     },
     "dependencies": {
         "@grpc/grpc-js": "~1.7.3",
@@ -112,6 +113,7 @@
         "knex": "^2.4.2",
         "limiter": "~2.1.0",
         "liquidjs": "^10.7.0",
+        "mitt": "~3.0.1",
         "mongodb": "~4.17.1",
         "mqtt": "~4.3.7",
         "mssql": "~8.1.4",

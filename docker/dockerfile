@@ -30,6 +30,8 @@ FROM $BASE_IMAGE AS release
 USER node
 WORKDIR /app
 
+LABEL org.opencontainers.image.source="https://github.com/louislam/uptime-kuma"
+
 ENV UPTIME_KUMA_IS_CONTAINER=1
 
 # Copy app files from build layer

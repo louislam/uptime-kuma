@@ -51,11 +51,6 @@ if (! process.env.NODE_ENV) {
 log.info("server", "Node Env: " + process.env.NODE_ENV);
 log.info("server", "Inside Container: " + (process.env.UPTIME_KUMA_IS_CONTAINER === "1"));
 
-log.info("server", "Importing Node libraries");
-const fs = require("fs");
-
-log.info("server", "Importing 3rd-party libraries");
-
 log.debug("server", "Importing express");
 const express = require("express");
 const expressStaticGzip = require("express-static-gzip");
@@ -144,7 +139,7 @@ if (config.demoMode) {
 }
 
 // Must be after io instantiation
-const { sendNotificationList, sendHeartbeatList, sendImportantHeartbeatList, sendInfo, sendProxyList, sendDockerHostList, sendAPIKeyList } = require("./client");
+const { sendNotificationList, sendHeartbeatList, sendInfo, sendProxyList, sendDockerHostList, sendAPIKeyList } = require("./client");
 const { statusPageSocketHandler } = require("./socket-handlers/status-page-socket-handler");
 const databaseSocketHandler = require("./socket-handlers/database-socket-handler");
 const TwoFA = require("./2fa");
@@ -347,7 +342,8 @@ let needSetup = false;
 
                     callback({
                         ok: false,
-                        msg: "The user is inactive or deleted.",
+                        msg: "authUserInactiveOrDeleted",
+                        msgi18n: true,
                     });
                 }
             } catch (error) {
@@ -356,7 +352,8 @@ let needSetup = false;
 
                 callback({
                     ok: false,
-                    msg: "Invalid token.",
+                    msg: "authInvalidToken",
+                    msgi18n: true,
                 });
             }
 
@@ -432,7 +429,8 @@ let needSetup = false;
 
                         callback({
                             ok: false,
-                            msg: "Invalid Token!",
+                            msg: "authInvalidToken",
+                            msgi18n: true,
                         });
                     }
                 }
@@ -442,7 +440,8 @@ let needSetup = false;
 
                 callback({
                     ok: false,
-                    msg: "Incorrect username or password.",
+                    msg: "authIncorrectCreds",
+                    msgi18n: true,
                 });
             }
 
@@ -498,7 +497,8 @@ let needSetup = false;
                 } else {
                     callback({
                         ok: false,
-                        msg: "2FA is already enabled.",
+                        msg: "2faAlreadyEnabled",
+                        msgi18n: true,
                     });
                 }
             } catch (error) {
@@ -528,7 +528,8 @@ let needSetup = false;
 
                 callback({
                     ok: true,
-                    msg: "2FA Enabled.",
+                    msg: "2faEnabled",
+                    msgi18n: true,
                 });
             } catch (error) {
 
@@ -557,7 +558,8 @@ let needSetup = false;
 
                 callback({
                     ok: true,
-                    msg: "2FA Disabled.",
+                    msg: "2faDisabled",
+                    msgi18n: true,
                 });
             } catch (error) {
 
@@ -589,7 +591,8 @@ let needSetup = false;
                 } else {
                     callback({
                         ok: false,
-                        msg: "Invalid Token.",
+                        msg: "authInvalidToken",
+                        msgi18n: true,
                         valid: false,
                     });
                 }
@@ -652,7 +655,8 @@ let needSetup = false;
 
                 callback({
                     ok: true,
-                    msg: "Added Successfully.",
+                    msg: "successAdded",
+                    msgi18n: true,
                 });
 
             } catch (e) {
@@ -705,7 +709,8 @@ let needSetup = false;
 
                 callback({
                     ok: true,
-                    msg: "Added Successfully.",
+                    msg: "successAdded",
+                    msgi18n: true,
                     monitorID: bean.id,
                 });
 
@@ -942,7 +947,8 @@ let needSetup = false;
 
                 callback({
                     ok: true,
-                    msg: "Resumed Successfully.",
+                    msg: "successResumed",
+                    msgi18n: true,
                 });
 
             } catch (e) {
@@ -961,7 +967,8 @@ let needSetup = false;
 
                 callback({
                     ok: true,
-                    msg: "Paused Successfully.",
+                    msg: "successPaused",
+                    msgi18n: true,
                 });
 
             } catch (e) {
@@ -999,12 +1006,11 @@ let needSetup = false;
 
                 callback({
                     ok: true,
-                    msg: "Deleted Successfully.",
+                    msg: "successDeleted",
+                    msgi18n: true,
                 });
 
                 await server.sendMonitorList(socket);
-                // Clear heartbeat list on client
-                await sendImportantHeartbeatList(socket, monitorID, true, true);
 
             } catch (e) {
                 callback({
@@ -1063,7 +1069,8 @@ let needSetup = false;
                 if (bean == null) {
                     callback({
                         ok: false,
-                        msg: "Tag not found",
+                        msg: "tagNotFound",
+                        msgi18n: true,
                     });
                     return;
                 }
@@ -1094,7 +1101,8 @@ let needSetup = false;
 
                 callback({
                     ok: true,
-                    msg: "Deleted Successfully.",
+                    msg: "successDeleted",
+                    msgi18n: true,
                 });
 
             } catch (e) {
@@ -1117,7 +1125,8 @@ let needSetup = false;
 
                 callback({
                     ok: true,
-                    msg: "Added Successfully.",
+                    msg: "successAdded",
+                    msgi18n: true,
                 });
 
             } catch (e) {
@@ -1140,7 +1149,8 @@ let needSetup = false;
 
                 callback({
                     ok: true,
-                    msg: "Edited Successfully.",
+                    msg: "successEdited",
+                    msgi18n: true,
                 });
 
             } catch (e) {
@@ -1163,9 +1173,76 @@ let needSetup = false;
 
                 callback({
                     ok: true,
-                    msg: "Deleted Successfully.",
+                    msg: "successDeleted",
+                    msgi18n: true,
                 });
 
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("monitorImportantHeartbeatListCount", async (monitorID, callback) => {
+            try {
+                checkLogin(socket);
+
+                let count;
+                if (monitorID == null) {
+                    count = await R.count("heartbeat", "important = 1");
+                } else {
+                    count = await R.count("heartbeat", "monitor_id = ? AND important = 1", [
+                        monitorID,
+                    ]);
+                }
+
+                callback({
+                    ok: true,
+                    count: count,
+                });
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("monitorImportantHeartbeatListPaged", async (monitorID, offset, count, callback) => {
+            try {
+                checkLogin(socket);
+
+                let list;
+                if (monitorID == null) {
+                    list = await R.find("heartbeat", `
+                        important = 1
+                        ORDER BY time DESC
+                        LIMIT ?
+                        OFFSET ?
+                    `, [
+                        count,
+                        offset,
+                    ]);
+                } else {
+                    list = await R.find("heartbeat", `
+                        monitor_id = ?
+                        AND important = 1
+                        ORDER BY time DESC
+                        LIMIT ?
+                        OFFSET ?
+                    `, [
+                        monitorID,
+                        count,
+                        offset,
+                    ]);
+                }
+
+                callback({
+                    ok: true,
+                    data: list,
+                });
             } catch (e) {
                 callback({
                     ok: false,
@@ -1191,7 +1268,8 @@ let needSetup = false;
 
                 callback({
                     ok: true,
-                    msg: "Password has been updated successfully.",
+                    msg: "successAuthChangePassword",
+                    msgi18n: true,
                 });
 
             } catch (e) {
@@ -1315,7 +1393,8 @@ let needSetup = false;
 
                 callback({
                     ok: true,
-                    msg: "Deleted",
+                    msg: "successDeleted",
+                    msgi18n: true,
                 });
 
             } catch (e) {
@@ -1550,7 +1629,8 @@ let needSetup = false;
 
                 callback({
                     ok: true,
-                    msg: "Backup successfully restored.",
+                    msg: "successBackupRestored",
+                    msgi18n: true,
                 });
 
             } catch (e) {
@@ -1572,8 +1652,6 @@ let needSetup = false;
                     "0",
                     monitorID,
                 ]);
-
-                await sendImportantHeartbeatList(socket, monitorID, true, true);
 
                 callback({
                     ok: true,
@@ -1753,10 +1831,6 @@ async function afterLogin(socket, user) {
 
     for (let monitorID in monitorList) {
         await sendHeartbeatList(socket, monitorID);
-    }
-
-    for (let monitorID in monitorList) {
-        await sendImportantHeartbeatList(socket, monitorID);
     }
 
     for (let monitorID in monitorList) {
