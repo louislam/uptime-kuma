@@ -48,7 +48,7 @@ class MqttMonitorType extends MonitorType {
     }
 
     /**
-     * MQTT Monitor
+     * Connect to MQTT Broker, subscribe to topic and receive message as String
      * @param {string} hostname Hostname / address of machine to test
      * @param {string} topic MQTT topic
      * @param {object} options MQTT options. Contains port, username,
