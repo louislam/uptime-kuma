@@ -63,12 +63,12 @@
             <i18n-t tag="div" keypath="smtpLiquidIntroduction" class="form-text mb-3">
                 <a href="https://liquidjs.com/" target="_blank">{{ $t("documentation") }}</a>
             </i18n-t>
-            <code v-pre>{{NAME}}</code>: {{ $t("emailTemplateServiceName") }}<br />
+            <code v-pre>{{name}}</code>: {{ $t("emailTemplateServiceName") }}<br />
             <code v-pre>{{msg}}</code>: {{ $t("emailTemplateMsg") }}<br />
-            <code v-pre>{{STATUS}}</code>: {{ $t("emailTemplateStatus") }}<br />
+            <code v-pre>{{status}}</code>: {{ $t("emailTemplateStatus") }}<br />
             <code v-pre>{{heartbeatJSON}}</code>: {{ $t("emailTemplateHeartbeatJSON") }}<b>{{ $t("emailTemplateLimitedToUpDownNotification") }}</b><br />
             <code v-pre>{{monitorJSON}}</code>: {{ $t("emailTemplateMonitorJSON") }} <b>{{ $t("emailTemplateLimitedToUpDownNotification") }}</b><br />
-            <code v-pre>{{HOSTNAME_OR_URL}}</code>: {{ $t("emailTemplateHostnameOrURL") }}<br />
+            <code v-pre>{{hostnameOrURL}}</code>: {{ $t("emailTemplateHostnameOrURL") }}<br />
         </p>
         <div class="mb-3">
             <label for="subject-email" class="form-label">{{ $t("emailCustomSubject") }}</label>

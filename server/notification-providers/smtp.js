@@ -84,13 +84,12 @@ class SMTP extends NotificationProvider {
      * @param {string} msg  the message that will be included in the context
      * @param {?object} monitorJSON Monitor details (For Up/Down/Cert-Expiry only)
      * @param {?object} heartbeatJSON Heartbeat details (For Up/Down only)
-     * @returns {{STATUS: string, HOSTNAME_OR_URL: string, NAME: string, monitorJSON: ?object, heartbeatJSON: ?object, msg: string}} the context
+     * @returns {{STATUS: string, status: string, HOSTNAME_OR_URL: string, hostnameOrUrl: string, NAME: string, name: string, monitorJSON: ?object, heartbeatJSON: ?object, msg: string}} the context
      */
     generateContext(msg, monitorJSON, heartbeatJSON) {
         // Let's start with dummy values to simplify code
         let monitorName = "Monitor Name not available";
         let monitorHostnameOrURL = "testing.hostname";
-        let serviceStatus = "⚠️ Test";
 
         if (monitorJSON !== null) {
             monitorName = monitorJSON["name"];
@@ -102,13 +101,20 @@ class SMTP extends NotificationProvider {
             }
         }
 
+        let serviceStatus = "⚠️ Test";
         if (heartbeatJSON !== null) {
             serviceStatus = (heartbeatJSON["status"] === DOWN) ? "🔴 Down" : "✅ Up";
         }
         return {
+            // for v1 compatibility, to be removed in v3
             "STATUS": serviceStatus,
             "NAME": monitorName,
             "HOSTNAME_OR_URL": monitorHostnameOrURL,
+
+            // variables which are officially supported
+            "status": serviceStatus,
+            "name": monitorName,
+            "hostnameOrURL": monitorHostnameOrURL,
             monitorJSON,
             heartbeatJSON,
             msg,
