@@ -183,6 +183,10 @@ export default {
                     }
                 }
 
+                if (m1.status !== m2.status) {
+                    return m1.status - m2.status;
+                }
+
                 if (m1.weight !== m2.weight) {
                     if (m1.weight > m2.weight) {
                         return -1;

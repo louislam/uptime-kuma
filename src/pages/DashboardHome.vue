@@ -166,8 +166,7 @@ export default {
             const offset = (this.page - 1) * this.perPage;
             this.$root.getSocket().emit("monitorImportantHeartbeatListPaged", null, offset, this.perPage, (res) => {
                 if (res.ok) {
-                    /** Sort records to prioritize down services */
-                    this.displayedRecords = res.data.sort((a, b) => a.status - b.status);
+                    this.displayedRecords = res.data;
                 }
             });
         },
