@@ -827,7 +827,7 @@
             </form>
 
             <NotificationDialog ref="notificationDialog" @added="addedNotification" />
-            <DockerHostDialog ref="dockerHostDialog" @added="addedDockerHost" />
+            <DockerHostDialog ref="dockerHostDialog" @added="addedDockerHost" @deleted="deletedDockerHost" />
             <ProxyDialog ref="proxyDialog" @added="addedProxy" />
             <CreateGroupDialog ref="createGroupDialog" @added="addedDraftGroup" />
         </div>
@@ -1507,6 +1507,18 @@ message HealthCheckResponse {
          */
         addedDockerHost(id) {
             this.monitor.docker_host = id;
+        },
+
+        /**
+         * A docker host was deleted
+         * Unset the docker host if it was deleted
+         * @param {number} id - The ID of the Docker host that was deleted.
+         * @returns {void}
+         */
+        deletedDockerHost(id) {
+            if (this.monitor.docker_host === id) {
+                this.monitor.docker_host = null;
+            }
         },
 
         /**
