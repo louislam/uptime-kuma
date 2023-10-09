@@ -84,7 +84,7 @@
     "Theme - Heartbeat Bar": "테마 - 하트비트 바",
     "Normal": "기본값",
     "Bottom": "가운데",
-    "None": "없애기",
+    "None": "없음",
     "Timezone": "시간대",
     "Search Engine Visibility": "검색 엔진 활성화",
     "Allow indexing": "인덱싱 허용",
@@ -749,5 +749,6 @@
     "lunaseaDeviceID": "기기 ID",
     "statusPageRefreshIn": "{0} 후 새로고침",
     "telegramMessageThreadIDDescription": "포럼의 대상 메시지 쓰레드(주제)에 대한 선택적 고유 식별인, 포럼 관리자 그룹에만 해당",
-    "pagertreeSilent": "없음"
+    "pagertreeSilent": "없음",
+    "setupDatabaseChooseDatabase": "어떤 데이터베이스를 사용하시겠습니까?"
 }
