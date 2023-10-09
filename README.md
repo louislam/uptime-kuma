@@ -43,9 +43,10 @@ It is a temporary live demo, all data will be deleted after 10 minutes. Use the 
 docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name uptime-kuma louislam/uptime-kuma:1
 ```
 
-⚠️ Please use a **local volume** only. Other types such as NFS are not supported.
-
 Uptime Kuma is now running on http://localhost:3001
+
+> [!WARNING]
+> **NFS** (Network File System) are **NOT** supported. Please map to a local directory or volume. 
 
 ### 💪🏻 Non-Docker
 
@@ -56,7 +57,7 @@ Requirements:
   - ✅ Windows 10 (x64), Windows Server 2012 R2 (x64) or higher
   - ❌ Replit / Heroku
 - [Node.js](https://nodejs.org/en/download/) 14 / 16 / 18 / 20.4
-- [npm](https://docs.npmjs.com/cli/) >= 7
+- [npm](https://docs.npmjs.com/cli/) 9
 - [Git](https://git-scm.com/downloads)
 - [pm2](https://pm2.keymetrics.io/) - For running Uptime Kuma in the background
 
@@ -91,10 +92,6 @@ pm2 monit
 pm2 save && pm2 startup
 ```
 
-### Windows Portable (x64)
-
-https://github.com/louislam/uptime-kuma/releases/download/1.23.1/uptime-kuma-windows-x64-portable-1.23.1-2.zip
-
 ### Advanced Installation
 
 If you need more options or need to browse via a reverse proxy, please read:
@@ -112,10 +109,6 @@ https://github.com/louislam/uptime-kuma/wiki/%F0%9F%86%99-How-to-Update
 I will assign requests/issues to the next milestone.
 
 https://github.com/louislam/uptime-kuma/milestones
-
-Project Plan:
-
-https://github.com/users/louislam/projects/4/views/1
 
 ## ❤️ Sponsors
 
