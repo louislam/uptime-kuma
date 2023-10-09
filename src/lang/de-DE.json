@@ -1,5 +1,5 @@
 {
-    "languageName": "Deutsch (Deutschland)",
+    "languageName": "Englisch",
     "Settings": "Einstellungen",
     "Dashboard": "Dashboard",
     "New Update": "Aktualisierung verfügbar",
@@ -844,5 +844,6 @@
     "setupDatabaseEmbeddedMariaDB": "Du brauchst nichts einzustellen. Dieses Docker-Image hat automatisch eine MariaDB für dich eingerichtet und konfiguriert. Uptime Kuma wird sich mit dieser Datenbank über einen Unix-Socket verbinden.",
     "dbName": "Datenbank Name",
     "setupDatabaseMariaDB": "Mit externer MariaDB-Datenbank verbinden. Du musst die Verbindungsinformationen für die Datenbank festlegen.",
-    "setupDatabaseSQLite": "Eine einfache Datenbankdatei, empfohlen für kleinere Bereitstellungen. Vor v2.0.0 verwendete Uptime Kuma SQLite als Standarddatenbank."
+    "setupDatabaseSQLite": "Eine einfache Datenbankdatei, empfohlen für kleinere Bereitstellungen. Vor v2.0.0 verwendete Uptime Kuma SQLite als Standarddatenbank.",
+    "Saved.": "Gespeichert."
 }
