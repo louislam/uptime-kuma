@@ -705,7 +705,7 @@
     "dataRetentionTimeError": "保留期限必須為 0 或正數",
     "infiniteRetention": "設定為 0 以作無限期保留。",
     "confirmDeleteTagMsg": "你確定你要刪除此標籤？相關的監測器不會被刪除。",
-    "twilioAuthToken": "認證 Token",
+    "twilioAuthToken": "認證 Token / API 金鑰",
     "twilioAccountSID": "帳號 SID",
     "ntfyUsernameAndPassword": "使用者名稱和密碼",
     "ntfyAuthenticationMethod": "認證類型",
@@ -777,5 +777,12 @@
     "pagertreeIntegrationUrl": "集成 URL 地址",
     "pagertreeUrgency": "緊急程度",
     "Expected Value": "預期值",
-    "Json Query": "JSON 查詢"
+    "Json Query": "JSON 查詢",
+    "setupDatabaseChooseDatabase": "您想使用什麼資料庫？",
+    "setupDatabaseEmbeddedMariaDB": "您不需要設置任何東西。 此 docker 映像檔已自動為您嵌入並配置了 MariaDB。 Uptime Kuma 將通過 unix 套接字連接到該資料庫。",
+    "setupDatabaseMariaDB": "連接到外部 MariaDB 資料庫。 需要設置資料庫連接資訊。",
+    "dbName": "資料庫名稱",
+    "Show Clickable Link": "顯示可點擊連結",
+    "pagertreeSilent": "靜音",
+    "twilioApiKey": "API 金鑰 (選用)"
 }
