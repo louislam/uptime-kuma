@@ -133,10 +133,13 @@ router.post("/api", headerAuthMiddleware, async (request, response) => {
 
     const requestData = request.body;
 
-    console.log(requestData);
+    let hostname = "localhost";
+    if (server.hostname) {
+        hostname = server.hostname;
+    }
+    const protocol = (server.isHTTPS) ? "wss" : "ws";
 
-    // TODO: should not hard coded
-    let wsURL = "ws://localhost:3001";
+    let wsURL = `${protocol}://${hostname}:${server.port}`;
 
     const socket = ioClient(wsURL, {
         transports: [ "websocket" ],

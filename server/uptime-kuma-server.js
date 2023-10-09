@@ -12,6 +12,7 @@ const { Settings } = require("./settings");
 const dayjs = require("dayjs");
 const childProcess = require("child_process");
 const path = require("path");
+const { FBSD } = require("./util-server");
 // DO NOT IMPORT HERE IF THE MODULES USED `UptimeKumaServer.getInstance()`, put at the bottom of this file instead.
 
 /**
@@ -62,6 +63,23 @@ class UptimeKumaServer {
     jwtSecret = null;
 
     /**
+     * Port
+     * @type {number}
+     */
+    port = undefined;
+
+    /**
+     * Hostname
+     * @type {string|undefined}
+     */
+    hostname = undefined;
+
+    /**
+     * Is SSL enabled?
+     */
+    isHTTPS = false;
+
+    /**
      * Get the current instance of the server if it exists, otherwise
      * create a new instance.
      * @param {object} args Arguments to pass to instance constructor
@@ -78,6 +96,23 @@ class UptimeKumaServer {
      * @param {object} args Arguments to initialise server with
      */
     constructor(args) {
+
+        // Port
+        this.port = [ args.port, process.env.UPTIME_KUMA_PORT, process.env.PORT, 3001 ]
+            .map(portValue => parseInt(portValue))
+            .find(portValue => !isNaN(portValue));
+
+        // Hostname
+        // If host is omitted, the server will accept connections on the unspecified IPv6 address (::) when IPv6 is available and the unspecified IPv4 address (0.0.0.0) otherwise.
+        // Dual-stack support for (::)
+        // Also read HOST if not FreeBSD, as HOST is a system environment variable in FreeBSD
+        let hostEnv = FBSD ? null : process.env.HOST;
+        this.hostname = args.host || process.env.UPTIME_KUMA_HOST || hostEnv;
+
+        if (this.hostname) {
+            log.info("server", "Custom hostname: " + this.hostname);
+        }
+
         // SSL
         const sslKey = args["ssl-key"] || process.env.UPTIME_KUMA_SSL_KEY || process.env.SSL_KEY || undefined;
         const sslCert = args["ssl-cert"] || process.env.UPTIME_KUMA_SSL_CERT || process.env.SSL_CERT || undefined;
@@ -87,6 +122,7 @@ class UptimeKumaServer {
         this.app = express();
         if (sslKey && sslCert) {
             log.info("server", "Server Type: HTTPS");
+            this.isHTTPS = true;
             this.httpServer = https.createServer({
                 key: fs.readFileSync(sslKey),
                 cert: fs.readFileSync(sslCert),
@@ -94,6 +130,7 @@ class UptimeKumaServer {
             }, this.app);
         } else {
             log.info("server", "Server Type: HTTP");
+            this.isHTTPS = false;
             this.httpServer = http.createServer(this.app);
         }
 

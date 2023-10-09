@@ -79,7 +79,7 @@ log.info("server", "Importing this project modules");
 log.debug("server", "Importing Monitor");
 const Monitor = require("./model/monitor");
 log.debug("server", "Importing Settings");
-const { getSettings, setSettings, setting, initJWTSecret, checkLogin, FBSD, doubleCheckPassword, startE2eTests,
+const { getSettings, setSettings, setting, initJWTSecret, checkLogin, doubleCheckPassword, startE2eTests,
     allowDevAllOrigin
 } = require("./util-server");
 
@@ -103,20 +103,6 @@ const passwordHash = require("./password-hash");
 
 const checkVersion = require("./check-version");
 log.info("server", "Version: " + checkVersion.version);
-
-// If host is omitted, the server will accept connections on the unspecified IPv6 address (::) when IPv6 is available and the unspecified IPv4 address (0.0.0.0) otherwise.
-// Dual-stack support for (::)
-// Also read HOST if not FreeBSD, as HOST is a system environment variable in FreeBSD
-let hostEnv = FBSD ? null : process.env.HOST;
-let hostname = args.host || process.env.UPTIME_KUMA_HOST || hostEnv;
-
-if (hostname) {
-    log.info("server", "Custom hostname: " + hostname);
-}
-
-const port = [ args.port, process.env.UPTIME_KUMA_PORT, process.env.PORT, 3001 ]
-    .map(portValue => parseInt(portValue))
-    .find(portValue => !isNaN(portValue));
 
 const disableFrameSameOrigin = !!process.env.UPTIME_KUMA_DISABLE_FRAME_SAMEORIGIN || args["disable-frame-sameorigin"] || false;
 const cloudflaredToken = args["cloudflared-token"] || process.env.UPTIME_KUMA_CLOUDFLARED_TOKEN || undefined;
@@ -182,7 +168,7 @@ let needSetup = false;
     let setupDatabase = new SetupDatabase(args, server);
     if (setupDatabase.isNeedSetup()) {
         // Hold here and start a special setup page until user choose a database type
-        await setupDatabase.start(hostname, port);
+        await setupDatabase.start(server.hostname, server.port);
     }
 
     // Connect to database
@@ -1749,11 +1735,11 @@ let needSetup = false;
 
     server.start();
 
-    server.httpServer.listen(port, hostname, () => {
-        if (hostname) {
-            log.info("server", `Listening on ${hostname}:${port}`);
+    server.httpServer.listen(server.port, server.hostname, () => {
+        if (server.hostname) {
+            log.info("server", `Listening on ${server.hostname}:${server.port}`);
         } else {
-            log.info("server", `Listening on ${port}`);
+            log.info("server", `Listening on ${server.port}`);
         }
         startMonitors();
         checkVersion.startInterval();
