@@ -556,7 +556,7 @@
     "affectedMonitorsDescription": "Selecciona los monitores que se ven afectados por el mantenimiento actual",
     "affectedStatusPages": "Muestra este mensaje de mantenimiento en las páginas de estado seleccionadas",
     "atLeastOneMonitor": "Selecciona al menos un monitor afectado",
-    "endpoint": "punto final",
+    "endpoint": "endpoint",
     "promosmsPassword": "Contraseña API",
     "pushoversounds pushover": "Pushover (predeterminado)",
     "pushoversounds bike": "Bicicleta",
@@ -838,5 +838,16 @@
     "styleElapsedTimeShowWithLine": "Mostrar (Con línea)",
     "webhookCustomBodyDesc": "Define un cuerpo HTTP personalizado para la petición. Las variables que puedes usar como plantillas son {msg}, {heartbeat}, y {monitor}.",
     "webhookBodyPresetOption": "Preajuste- {0}",
-    "tailscalePingWarning": "Para utilizar el monitor Tailscale Ping, debe instalar Uptime Kuma sin Docker y también instalar el cliente Tailscale en su servidor."
+    "tailscalePingWarning": "Para utilizar el monitor Tailscale Ping, debe instalar Uptime Kuma sin Docker y también instalar el cliente Tailscale en su servidor.",
+    "Bark API Version": "Versión de la API Bark",
+    "monitorToastMessagesDescription": "Las notificaciones Toast para monitores desaparecen después de un tiempo dado en segundos. Establecer a -1 desactiva el tiempo de espera. Si se establece en 0, se desactivan las notificaciones.",
+    "Saved.": "Guardado.",
+    "monitorToastMessagesLabel": "Monitorizar las notificaciones Toast",
+    "toastSuccessTimeout": "Tiempo de espera para notificaciones de éxito",
+    "toastErrorTimeout": "Tiempo de espera para notificaciones de error",
+    "setupDatabaseChooseDatabase": "¿Qué base de datos desea utilizar?",
+    "setupDatabaseEmbeddedMariaDB": "No necesitas configurar nada. Esta imagen docker ha incrustado y configurado un MariaDB para ti automáticamente. Uptime Kuma se conectará a esta base de datos a través de un socket unix.",
+    "setupDatabaseMariaDB": "Conectarse a una base de datos MariaDB externa. Debe configurar la información de conexión a la base de datos.",
+    "setupDatabaseSQLite": "Un archivo de base de datos simple, recomendado para despliegues a pequeña escala. Antes de la versión 2.0.0, Uptime Kuma utilizaba SQLite como base de datos predeterminada.",
+    "dbName": "Nombre de la base de datos"
 }
