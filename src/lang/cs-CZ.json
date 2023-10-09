@@ -838,5 +838,11 @@
     "styleElapsedTimeShowWithLine": "Zobrazit (s linkou)",
     "gamedigGuessPortDescription": "Port používaný protokolem Valve Server Query Protocol se může lišit od portu klienta. Pokud se monitor nemůže připojit k serveru, zkuste to.",
     "styleElapsedTimeShowNoLine": "Zobrazit (bez linky)",
-    "gamedigGuessPort": "Gamedig: Guess Port"
+    "gamedigGuessPort": "Gamedig: Guess Port",
+    "Saved.": "Uloženo.",
+    "setupDatabaseChooseDatabase": "Kterou databázi chcete použít?",
+    "setupDatabaseEmbeddedMariaDB": "Nemusíte nic nastavovat. Tento Docker obraz pro vás automaticky vložil a nakonfiguroval databázi MariaDB. Uptime Kuma se k této databázi připojí prostřednictvím unixového socketu.",
+    "setupDatabaseMariaDB": "Připojení k externí databázi MariaDB. Je třeba nastavit informace o připojení k databázi.",
+    "setupDatabaseSQLite": "Jednoduchý databázový soubor, doporučený pro malé instalace. Před verzí 2.0.0 používal Uptime Kuma jako výchozí databázi SQLite.",
+    "dbName": "Název databáze"
 }
