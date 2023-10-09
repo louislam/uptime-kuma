@@ -1066,10 +1066,9 @@ module.exports.grpcQuery = async (options) => {
 module.exports.SHAKE256_LENGTH = 16;
 
 /**
- *
- * @param {string} data
- * @param {number} len
- * @return {string}
+ * @param {string} data The data to be hashed
+ * @param {number} len Output length of the hash
+ * @returns {string} The hashed data in hex format
  */
 module.exports.shake256 = (data, len) => {
     if (!data) {
