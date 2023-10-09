@@ -335,6 +335,7 @@ export default {
          */
         saveGeneral() {
             localStorage.timezone = this.$root.userTimezone;
+            this.$root.use12HourTimeFormat = this.settings.use12HourTimeFormat;
             this.saveSettings();
         },
         /**

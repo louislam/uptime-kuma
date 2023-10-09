@@ -113,8 +113,11 @@ export default {
         },
     },
 
-    mounted() {
+    created() {
         this.loadSettings();
+    },
+
+    mounted() {
         this.getImportantHeartbeatListLength();
 
         this.$root.emitter.on("newImportantHeartbeat", this.onNewImportantHeartbeat);
