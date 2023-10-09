@@ -359,5 +359,17 @@
     "Cannot connect to the socket server": "Kan inte koppla till socketservern",
     "Reconnecting...": "Återanslutar...",
     "Json Query": "Json Query",
-    "Default enabled": "Standard aktiverad"
+    "Default enabled": "Standard aktiverad",
+    "pushViewCode": "Visa kod",
+    "Steam Game Server": "Steam Spel Server",
+    "Docker Container": "Docker Container",
+    "setupDatabaseChooseDatabase": "Vilken databas skulle du vilja använda?",
+    "dbName": "Databas Namn",
+    "What you can try:": "Vad du kan försöka:",
+    "Container Name / ID": "Containernamn / ID",
+    "Docker Host": "Docker värd",
+    "Docker Hosts": "Docker värdar",
+    "Domain": "Domän",
+    "Most likely causes:": "Störst troliga anledningar:",
+    "Coming Soon": "Kommer snart"
 }
