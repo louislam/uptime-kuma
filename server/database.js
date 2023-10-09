@@ -85,6 +85,7 @@ class Database {
         "patch-monitor-oauth-cc.sql": true,
         "patch-add-timeout-monitor.sql": true,
         "patch-add-gamedig-given-port.sql": true,   // The last file so far converted to a knex migration file
+        "patch-notification-config.sql": true,
     };
 
     /**

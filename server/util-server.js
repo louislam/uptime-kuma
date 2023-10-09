@@ -36,6 +36,7 @@ const rl = readline.createInterface({ input: process.stdin,
 // SASLOptions used in JSDoc
 // eslint-disable-next-line no-unused-vars
 const { Kafka, SASLOptions } = require("kafkajs");
+const crypto = require("crypto");
 
 const isWindows = process.platform === /^win/.test(process.platform);
 /**
@@ -290,22 +291,22 @@ exports.kafkaProducerAsync = function (brokers, topic, message, options = {}, sa
 
         producer.connect().then(
             () => {
-                try {
-                    producer.send({
-                        topic: topic,
-                        messages: [{
-                            value: message,
-                        }],
-                    });
-                    connectedToKafka = true;
-                    clearTimeout(timeoutID);
+                producer.send({
+                    topic: topic,
+                    messages: [{
+                        value: message,
+                    }],
+                }).then((_) => {
                     resolve("Message sent successfully");
-                } catch (e) {
+                }).catch((e) => {
                     connectedToKafka = true;
                     producer.disconnect();
                     clearTimeout(timeoutID);
                     reject(new Error("Error sending message: " + e.message));
-                }
+                }).finally(() => {
+                    connectedToKafka = true;
+                    clearTimeout(timeoutID);
+                });
             }
         ).catch(
             (e) => {
@@ -317,8 +318,10 @@ exports.kafkaProducerAsync = function (brokers, topic, message, options = {}, sa
         );
 
         producer.on("producer.network.request_timeout", (_) => {
-            clearTimeout(timeoutID);
-            reject(new Error("producer.network.request_timeout"));
+            if (!connectedToKafka) {
+                clearTimeout(timeoutID);
+                reject(new Error("producer.network.request_timeout"));
+            }
         });
 
         producer.on("producer.disconnect", (_) => {
@@ -1058,6 +1061,23 @@ module.exports.grpcQuery = async (options) => {
         }
 
     });
+};
+
+module.exports.SHAKE256_LENGTH = 16;
+
+/**
+ *
+ * @param {string} data
+ * @param {number} len
+ * @return {string}
+ */
+module.exports.shake256 = (data, len) => {
+    if (!data) {
+        return "";
+    }
+    return crypto.createHash("shake256", { outputLength: len })
+        .update(data)
+        .digest("hex");
 };
 
 module.exports.prompt = (query) => new Promise((resolve) => rl.question(query, resolve));
