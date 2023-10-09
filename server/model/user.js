@@ -31,9 +31,9 @@ class User extends BeanModel {
 
     /**
      * Create a new JWT for a user
-     * @param {User} user
-     * @param {string} jwtSecret
-     * @return {string}
+     * @param {User} User name
+     * @param {string} jwtSecret secret for JWT authentication
+     * @returns {string}
      */
     static createJWT(user, jwtSecret) {
         return jwt.sign({
