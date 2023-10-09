@@ -839,5 +839,10 @@
     "nostrRecipientsHelp": "npub-Format, eine pro Zeile",
     "showCertificateExpiry": "Ablauf des Zertifikats anzeigen",
     "noOrBadCertificate": "Kein/schlechtes Zertifikat",
-    "enableNSCD": "Aktivieren Sie NSCD (Name Service Cache Daemon) zur Zwischenspeicherung aller DNS-Anfragen"
+    "enableNSCD": "Aktivieren Sie NSCD (Name Service Cache Daemon) zur Zwischenspeicherung aller DNS-Anfragen",
+    "setupDatabaseChooseDatabase": "Welche Datenbank möchtest du verwenden?",
+    "setupDatabaseEmbeddedMariaDB": "Du brauchst nichts einzustellen. Dieses Docker-Image hat automatisch eine MariaDB für dich eingerichtet und konfiguriert. Uptime Kuma wird sich mit dieser Datenbank über einen Unix-Socket verbinden.",
+    "dbName": "Datenbank Name",
+    "setupDatabaseMariaDB": "Mit externer MariaDB-Datenbank verbinden. Du musst die Verbindungsinformationen für die Datenbank festlegen.",
+    "setupDatabaseSQLite": "Eine einfache Datenbankdatei, empfohlen für kleinere Bereitstellungen. Vor v2.0.0 verwendete Uptime Kuma SQLite als Standarddatenbank."
 }
