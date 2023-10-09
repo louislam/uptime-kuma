@@ -1066,10 +1066,9 @@ module.exports.grpcQuery = async (options) => {
 module.exports.SHAKE256_LENGTH = 16;
 
 /**
- *
- * @param {string} data
- * @param {number} len
- * @return {string}
+ * @param {string} data required to update the secret
+ * @param {number} len of the data
+ * @returns {string}
  */
 module.exports.shake256 = (data, len) => {
     if (!data) {
