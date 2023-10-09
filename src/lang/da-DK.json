@@ -581,5 +581,6 @@
     "deleteAPIKeyMsg": "Er du sikker på du vil slette denne API nøgle?",
     "pagertreeDoNothing": "Gør intet",
     "Start of maintenance": "Start på vedligeholdelse",
-    "Add New Tag": "Tilføj nyt tag"
+    "Add New Tag": "Tilføj nyt tag",
+    "setupDatabaseChooseDatabase": "Hvilken database vil du gerne bruge?"
 }
