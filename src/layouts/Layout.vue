@@ -371,6 +371,7 @@ main {
     width: 48px;
     box-shadow: 2px 2px 30px rgba(0, 0, 0, 0.2);
     z-index: 100;
+
     .dark & {
         box-shadow: 2px 2px 30px rgba(0, 0, 0, 0.5);
     }
