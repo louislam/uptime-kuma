@@ -10,8 +10,6 @@
         "node": "14 || 16 || 18 || >= 20.4.0"
     },
     "scripts": {
-        "install-legacy": "npm install",
-        "update-legacy": "npm update",
         "lint:js": "eslint --ext \".js,.vue\" --ignore-path .gitignore .",
         "lint-fix:js": "eslint --ext \".js,.vue\" --fix --ignore-path .gitignore .",
         "lint:style": "stylelint \"**/*.{vue,css,scss}\" --ignore-path .gitignore",
