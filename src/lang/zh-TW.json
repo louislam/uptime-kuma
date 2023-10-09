@@ -769,7 +769,7 @@
     "selectedMonitorCount": "已選：{0}",
     "Check/Uncheck": "選中/取消選中",
     "tailscalePingWarning": "如需使用 Tailscale Ping 客戶端，您需要以非 docker 方式安裝 Uptime Kuma，並同時安裝 Tailscale 客戶端。",
-    "invertKeywordDescription": "出現關鍵詞將令檢測結果為失敗，而非成功。",
+    "invertKeywordDescription": "出現關鍵詞將令檢測結果設為失敗，而非成功。",
     "jsonQueryDescription": "對響應結果執行一次 JSON 查詢，其返回值將會被轉換為字符串，再與期望值進行比較。可訪問<a href='https://jsonata.org/'>jsonata.org</a> 閱讀JSON 查詢語言的文檔，或在<a href='https://try.jsonata.org/'>此處</a>測試查詢語句。",
     "wayToGetKookGuildID": "在 Kook 設置中打開“開發者模式”，然後右鍵點擊頻道可獲取其 ID",
     "Notify Channel": "通知該頻道",
