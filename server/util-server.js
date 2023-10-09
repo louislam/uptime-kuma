@@ -1068,7 +1068,7 @@ module.exports.SHAKE256_LENGTH = 16;
 /**
  * @param {string} data required to update the secret
  * @param {number} len of the data
- * @returns {string}
+ * @returns {string} return a string
  */
 module.exports.shake256 = (data, len) => {
     if (!data) {
