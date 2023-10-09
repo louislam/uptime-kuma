@@ -552,5 +552,18 @@
     "Lowcost": "低コスト",
     "A list of Notification Services can be found in Home Assistant under \"Developer Tools > Services\" search for \"notification\" to find your device/phone name.": "通知サービスの一覧からデバイス名を見つけるには、Home Assistantの「開発者ツール > サービス」から通知で検索してください。",
     "Notify Channel": "通知チャンネル",
-    "Icon Emoji": "絵文字アイコン"
+    "Icon Emoji": "絵文字アイコン",
+    "setupDatabaseChooseDatabase": "どのデータベースを利用しますか？",
+    "setupDatabaseEmbeddedMariaDB": "何も設定する必要はありません。この Docker イメージは設定済みの MariaDB が組み込まれています。Uptime Kuma はこのデータベースに unix ソケットを通じて接続します。",
+    "setupDatabaseSQLite": "小規模な開発のために推奨される小さなデータベースファイルです。v2.0.0 以前は、Uptime Kuma は SQLite を標準のデータベースとして使用していました。",
+    "tailscalePingWarning": "Tailscale Ping モニターを使用するためには、Uptime Kuma を Docker を利用せずインストールし、そのうえで Tailscale Client をサーバーにインストールしてください。",
+    "invertKeywordDescription": "キーワードが含まれているものではなく、含まれないものを探します。",
+    "setupDatabaseMariaDB": "外部の MariaDB データベースに接続するためには、データベースの接続情報を設定する必要があります。",
+    "dbName": "データベース名",
+    "Request Timeout": "リクエストタイムアウト",
+    "timeoutAfter": "{0} 秒後にタイムアウト",
+    "selectedMonitorCount": "選択済み: {0}",
+    "Long-Lived Access Token": "Long-Lived Access Token",
+    "Invert Keyword": "「含まない」キーワード",
+    "Expected Value": "期待値"
 }
