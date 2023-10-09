@@ -1,0 +1,68 @@
+[
+    {
+        "name": "getPushExample",
+        "description": "Get a push example.",
+        "params": [
+            {
+                "name": "language",
+                "type": "string",
+                "description": "The programming language such as `javascript-fetch` or `python`. See the directory ./extra/push-examples for a list of available languages."
+            }
+        ],
+        "returnType": "response-json",
+        "okReturn": [
+            {
+                "name": "code",
+                "type": "string",
+                "description": "The push example."
+            }
+        ],
+        "possibleErrorReasons": [
+            "The parameter `language` is not available"
+        ],
+    },
+    {
+        "name": "checkApprise",
+        "description": "Check if the apprise library is installed.",
+        "params": [],
+        "returnType": "boolean",
+    },
+    {
+        "name": "getSettings",
+        "description": "",
+        "params": [],
+        "returnType": "response-json",
+        "okReturn": [
+            {
+                "name": "data",
+                "type": "object",
+                "description": "The setting object. It does not contain default values."
+            }
+        ],
+        "possibleErrorReasons": [],
+    },
+    {
+        "name": "changePassword",
+        "description": "",
+        "params": [
+            {
+                "name": "password",
+                "type": "object",
+                "description": "The password object with the following properties: `currentPassword` and `newPassword`"
+            }
+        ],
+        "returnType": "response-json",
+        "okReturn": [
+            {
+                "name": "data",
+                "type": "object",
+                "description": "The setting object. It does not contain default values."
+            }
+        ],
+        "possibleErrorReasons": [
+            "Incorrect current password",
+            "Invalid new password",
+            "Password is too weak"
+        ],
+    }
+]

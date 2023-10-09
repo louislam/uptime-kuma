@@ -97,7 +97,7 @@ log.debug("server", "Importing Background Jobs");
 const { initBackgroundJobs, stopBackgroundJobs } = require("./jobs");
 const { loginRateLimiter, twoFaRateLimiter } = require("./rate-limiter");
 
-const { apiAuth } = require("./auth");
+const { basicAuthMiddleware } = require("./auth");
 const { login } = require("./auth");
 const passwordHash = require("./password-hash");
 
@@ -267,8 +267,8 @@ let needSetup = false;
     // Basic Auth Router here
 
     // Prometheus API metrics  /metrics
-    // With Basic Auth using the first user's username/password
-    app.get("/metrics", apiAuth, prometheusAPIMetrics());
+    // With Basic Auth using an API Key
+    app.get("/metrics", basicAuthMiddleware, prometheusAPIMetrics());
 
     app.use("/", expressStaticGzip("dist", {
         enableBrotli: true,
@@ -1254,6 +1254,10 @@ let needSetup = false;
         socket.on("changePassword", async (password, callback) => {
             try {
                 checkLogin(socket);
+
+                if (typeof password.currentPassword === "undefined") {
+                    throw new Error("Incorrect current password");
+                }
 
                 if (!password.newPassword) {
                     throw new Error("Invalid new password");
