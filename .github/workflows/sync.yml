@@ -1,0 +1,23 @@
+# .github/workflows/sync.yml
+name: Sync with Upstream
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Sync with Upstream
+        run: |
+          git remote add upstream https://github.com/louislam/uptime-kuma.git
+          git fetch upstream
+          git checkout master
+          git merge upstream/master --no-edit
+          git push origin master
