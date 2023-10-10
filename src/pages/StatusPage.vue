@@ -1047,7 +1047,7 @@ export default {
 @import "../assets/vars.scss";
 
 .overall-status {
-    font-weight: bold;
+    font-weight: regular;
     font-size: 25px;
 
     .ok {
@@ -1190,7 +1190,7 @@ footer {
 }
 
 .dark .shadow-box {
-    background-color: #0d1117;
+    background-color: #101D21;
 }
 
 .status-maintenance {

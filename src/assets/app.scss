@@ -2,8 +2,10 @@
 @import "multiselect.scss";
 @import "node_modules/bootstrap/scss/bootstrap";
 
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100;200;300;400;500;600;700;800;900&display=swap');
 #app {
-    font-family: BlinkMacSystemFont, segoe ui, Roboto, helvetica neue, Arial, noto sans, sans-serif, apple color emoji, segoe ui emoji, segoe ui symbol, noto color emoji;
+    font-family: 'Outfit', sans-serif;
 }
 
 h1 {
@@ -12,6 +14,7 @@ h1 {
 
 h2 {
     font-size: 26px;
+    font-weight: medium;
 }
 
 textarea.form-control {
@@ -231,7 +234,7 @@ optgroup {
 
 // Dark Theme override here
 .dark {
-    background-color: #090c10;
+    background-color: #031115;
     color: $dark-font-color;
 
     mark, .mark {
