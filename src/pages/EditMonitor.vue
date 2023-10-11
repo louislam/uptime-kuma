@@ -1118,10 +1118,9 @@ message HealthCheckResponse {
 		/**
          * Retrieves the appropriate ignore TLS error label based on the monitor type.
          *
-         * @return {string} Returns the non specific label if the monitor type is 'redis',
-         *                  otherwise, returns the default.
+         * @returns {string} Returns the non specific label if the monitor type is 'redis', otherwise, returns the default.
          */
-		ignoreTlsLabel() {
+        ignoreTlsLabel() {
             return this.monitor.type === "redis"
                 ? this.$t("ignoreTLSErrorGeneral")
                 : this.$t("ignoreTLSError");

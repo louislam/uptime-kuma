@@ -560,7 +560,7 @@ exports.radius = function (
  * Redis server ping
  * @param {string} dsn The redis connection string
  * @param {boolean} rejectUnauthorized If false, allows unverified server certificates.
- * @returns {Promise<any>}
+ * @returns {Promise<any>} Response from server
  */
 exports.redisPingAsync = function (dsn, rejectUnauthorized) {
     return new Promise((resolve, reject) => {
