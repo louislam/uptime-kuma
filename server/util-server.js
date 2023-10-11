@@ -1076,7 +1076,7 @@ module.exports.grpcQuery = async (options) => {
 
 /**
  * Returns an array of SHA256 fingerprints for all known root certificates.
- * @returns {Array} An array of SHA256 fingerprints.
+ * @returns {Set} A set of SHA256 fingerprints.
  */
 module.exports.rootCertificatesFingerprints = () => {
     let fingerprints = tls.rootCertificates.map(cert => {
@@ -1093,7 +1093,7 @@ module.exports.rootCertificatesFingerprints = () => {
     fingerprints.push("6D:99:FB:26:5E:B1:C5:B3:74:47:65:FC:BC:64:8F:3C:D8:E1:BF:FA:FD:C4:C2:F9:9B:9D:47:CF:7F:F1:C2:4F"); // ISRG X1 cross-signed with DST X3
     fingerprints.push("8B:05:B6:8C:C6:59:E5:ED:0F:CB:38:F2:C9:42:FB:FD:20:0E:6F:2F:F9:F8:5D:63:C6:99:4E:F5:E0:B0:27:01"); // ISRG X2 cross-signed with ISRG X1
 
-    return fingerprints;
+    return new Set(fingerprints);
 };
 
 module.exports.SHAKE256_LENGTH = 16;

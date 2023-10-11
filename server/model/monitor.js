@@ -1430,7 +1430,7 @@ class Monitor extends BeanModel {
                     let certInfo = tlsInfoObject.certInfo;
                     while (certInfo) {
                         let subjectCN = certInfo.subject["CN"];
-                        if (rootCertificates.includes(certInfo.fingerprint256)) {
+                        if (rootCertificates.has(certInfo.fingerprint256)) {
                             log.debug("monitor", `Known root cert: ${certInfo.certType} certificate "${subjectCN}" (${certInfo.daysRemaining} days valid) on ${targetDays} deadline.`);
                             break;
                         } else if (certInfo.daysRemaining > targetDays) {
