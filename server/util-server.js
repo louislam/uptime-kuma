@@ -1086,8 +1086,10 @@ module.exports.rootCertificatesFingerprints = () => {
         let certBody = certLines.join("");
         let buf = Buffer.from(certBody, "base64");
 
-        let certDocoded = new crypto.X509Certificate(buf);
-        return certDocoded.fingerprint256;
+        const shasum = crypto.createHash("sha256");
+        shasum.update(buf);
+
+        return shasum.digest("hex").toUpperCase().replace(/(.{2})(?!$)/g, "$1:");
     });
 
     fingerprints.push("6D:99:FB:26:5E:B1:C5:B3:74:47:65:FC:BC:64:8F:3C:D8:E1:BF:FA:FD:C4:C2:F9:9B:9D:47:CF:7F:F1:C2:4F"); // ISRG X1 cross-signed with DST X3
