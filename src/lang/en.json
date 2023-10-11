@@ -244,6 +244,7 @@
     "successMessage": "Success Message",
     "successMessageExplanation": "MQTT message that will be considered as success",
     "recent": "Recent",
+    "Reset Token": "Reset Token",
     "Done": "Done",
     "Info": "Info",
     "Security": "Security",
