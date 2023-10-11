@@ -1,6 +1,11 @@
 const { checkLogin } = require("../util-server");
 const Database = require("../database");
 
+/**
+ * Handlers for database
+ * @param {Socket} socket Socket.io instance
+ * @returns {void}
+ */
 module.exports = (socket) => {
 
     // Post or edit incident

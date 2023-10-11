@@ -1,13 +1,14 @@
 <template>
-    <div class="tag-wrapper rounded d-inline-flex"
-         :class="{ 'px-3': size == 'normal',
-                   'py-1': size == 'normal',
-                   'm-2': size == 'normal',
-                   'px-2': size == 'sm',
-                   'py-0': size == 'sm',
-                   'm-1': size == 'sm',
-         }"
-         :style="{ backgroundColor: item.color, fontSize: size == 'sm' ? '0.7em' : '1em' }"
+    <div
+        class="tag-wrapper rounded d-inline-flex"
+        :class="{ 'px-3': size == 'normal',
+                  'py-1': size == 'normal',
+                  'm-2': size == 'normal',
+                  'px-2': size == 'sm',
+                  'py-0': size == 'sm',
+                  'mx-1': size == 'sm',
+        }"
+        :style="{ backgroundColor: item.color, fontSize: size == 'sm' ? '0.7em' : '1em' }"
     >
         <span class="tag-text">{{ displayText }}</span>
         <span v-if="remove != null" class="ps-1 btn-remove" @click="remove(item)">
@@ -17,16 +18,29 @@
 </template>
 
 <script>
+/**
+ * @typedef {import('./TagsManager.vue').Tag} Tag
+ */
+
 export default {
     props: {
+        /**
+         * Object representing tag
+         * @type {Tag}
+         */
         item: {
             type: Object,
             required: true,
         },
+        /** Function to remove tag */
         remove: {
             type: Function,
             default: null,
         },
+        /**
+         * Size of tag
+         * @type {"normal" | "small"}
+         */
         size: {
             type: String,
             default: "normal",
@@ -34,14 +48,14 @@ export default {
     },
     computed: {
         displayText() {
-            if (this.item.value == "") {
+            if (this.item.value === "" || this.item.value === undefined) {
                 return this.item.name;
             } else {
                 return `${this.item.name}: ${this.item.value}`;
             }
         }
     }
-}
+};
 </script>
 
 <style lang="scss" scoped>

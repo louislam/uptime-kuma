@@ -6,6 +6,9 @@ class Discord extends NotificationProvider {
 
     name = "discord";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
 
@@ -17,25 +20,33 @@ class Discord extends NotificationProvider {
                 let discordtestdata = {
                     username: discordDisplayName,
                     content: msg,
-                }
-                await axios.post(notification.discordWebhookUrl, discordtestdata)
+                };
+                await axios.post(notification.discordWebhookUrl, discordtestdata);
                 return okMsg;
             }
 
-            let url;
+            let address;
 
-            if (monitorJSON["type"] === "port") {
-                url = monitorJSON["hostname"];
-                if (monitorJSON["port"]) {
-                    url += ":" + monitorJSON["port"];
-                }
-
-            } else {
-                url = monitorJSON["url"];
+            switch (monitorJSON["type"]) {
+                case "ping":
+                    address = monitorJSON["hostname"];
+                    break;
+                case "port":
+                case "dns":
+                case "gamedig":
+                case "steam":
+                    address = monitorJSON["hostname"];
+                    if (monitorJSON["port"]) {
+                        address += ":" + monitorJSON["port"];
+                    }
+                    break;
+                default:
+                    address = monitorJSON["url"];
+                    break;
             }
 
             // If heartbeatJSON is not null, we go into the normal alerting loop.
-            if (heartbeatJSON["status"] == DOWN) {
+            if (heartbeatJSON["status"] === DOWN) {
                 let discorddowndata = {
                     username: discordDisplayName,
                     embeds: [{
@@ -48,29 +59,29 @@ class Discord extends NotificationProvider {
                                 value: monitorJSON["name"],
                             },
                             {
-                                name: "Service URL",
-                                value: url,
+                                name: monitorJSON["type"] === "push" ? "Service Type" : "Service URL",
+                                value: monitorJSON["type"] === "push" ? "Heartbeat" : address,
                             },
                             {
-                                name: "Time (UTC)",
-                                value: heartbeatJSON["time"],
+                                name: `Time (${heartbeatJSON["timezone"]})`,
+                                value: heartbeatJSON["localDateTime"],
                             },
                             {
                                 name: "Error",
-                                value: heartbeatJSON["msg"],
+                                value: heartbeatJSON["msg"] == null ? "N/A" : heartbeatJSON["msg"],
                             },
                         ],
                     }],
-                }
+                };
 
                 if (notification.discordPrefixMessage) {
                     discorddowndata.content = notification.discordPrefixMessage;
                 }
 
-                await axios.post(notification.discordWebhookUrl, discorddowndata)
+                await axios.post(notification.discordWebhookUrl, discorddowndata);
                 return okMsg;
 
-            } else if (heartbeatJSON["status"] == UP) {
+            } else if (heartbeatJSON["status"] === UP) {
                 let discordupdata = {
                     username: discordDisplayName,
                     embeds: [{
@@ -83,30 +94,30 @@ class Discord extends NotificationProvider {
                                 value: monitorJSON["name"],
                             },
                             {
-                                name: "Service URL",
-                                value: url.startsWith("http") ? "[Visit Service](" + url + ")" : url,
+                                name: monitorJSON["type"] === "push" ? "Service Type" : "Service URL",
+                                value: monitorJSON["type"] === "push" ? "Heartbeat" : address,
                             },
                             {
-                                name: "Time (UTC)",
-                                value: heartbeatJSON["time"],
+                                name: `Time (${heartbeatJSON["timezone"]})`,
+                                value: heartbeatJSON["localDateTime"],
                             },
                             {
                                 name: "Ping",
-                                value: heartbeatJSON["ping"] + "ms",
+                                value: heartbeatJSON["ping"] == null ? "N/A" : heartbeatJSON["ping"] + " ms",
                             },
                         ],
                     }],
-                }
+                };
 
                 if (notification.discordPrefixMessage) {
                     discordupdata.content = notification.discordPrefixMessage;
                 }
 
-                await axios.post(notification.discordWebhookUrl, discordupdata)
+                await axios.post(notification.discordWebhookUrl, discordupdata);
                 return okMsg;
             }
         } catch (error) {
-            this.throwGeneralAxiosError(error)
+            this.throwGeneralAxiosError(error);
         }
     }
 

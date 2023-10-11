@@ -1,11 +1,10 @@
 console.log("== Uptime Kuma Reset Password Tool ==");
 
-console.log("Loading the database");
-
 const Database = require("../server/database");
 const { R } = require("redbean-node");
 const readline = require("readline");
 const { initJWTSecret } = require("../server/util-server");
+const User = require("../server/model/user");
 const args = require("args-parser")(process.argv);
 const rl = readline.createInterface({
     input: process.stdin,
@@ -13,8 +12,9 @@ const rl = readline.createInterface({
 });
 
 const main = async () => {
-    Database.init(args);
-    await Database.connect();
+    console.log("Connecting the database");
+    Database.initDataDir(args);
+    await Database.connect(false, false, true);
 
     try {
         // No need to actually reset the password for testing, just make sure no connection problem. It is ok for now.
@@ -31,7 +31,7 @@ const main = async () => {
                 let confirmPassword = await question("Confirm New Password: ");
 
                 if (password === confirmPassword) {
-                    await user.resetPassword(password);
+                    await User.resetPassword(user.id, password);
 
                     // Reset all sessions by reset jwt secret
                     await initJWTSecret();
@@ -53,6 +53,11 @@ const main = async () => {
     console.log("Finished.");
 };
 
+/**
+ * Ask question of user
+ * @param {string} question Question to ask
+ * @returns {Promise<string>} Users response
+ */
 function question(question) {
     return new Promise((resolve) => {
         rl.question(question, (answer) => {

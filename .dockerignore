@@ -1,6 +1,7 @@
 /.idea
 /node_modules
-/data
+/data*
+/cypress
 /out
 /test
 /kubernetes
@@ -17,6 +18,7 @@ README.md
 .vscode
 .eslint*
 .stylelint*
+/.devcontainer
 /.github
 yarn.lock
 app.json
@@ -28,6 +30,17 @@ SECURITY.md
 tsconfig.json
 .env
 /tmp
+/babel.config.js
+/ecosystem.config.js
+/extra/healthcheck.exe
+/extra/healthcheck
+/extra/exe-builder
+/extra/push-examples
+/extra/uptime-kuma-push
+
+# Comment the following line if you want to rebuild the healthcheck binary
+/extra/healthcheck-armv7
+
 
 ### .gitignore content (commented rules are duplicated)
 

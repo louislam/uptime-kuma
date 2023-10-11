@@ -39,14 +39,39 @@
                                             <font-awesome-icon v-if="editMode" icon="times" class="action remove me-3" @click="removeMonitor(group.index, monitor.index)" />
 
                                             <Uptime :monitor="monitor.element" type="24" :pill="true" />
-                                            {{ monitor.element.name }}
+                                            <a
+                                                v-if="showLink(monitor)"
+                                                :href="monitor.element.url"
+                                                class="item-name"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                {{ monitor.element.name }}
+                                            </a>
+                                            <p v-else class="item-name"> {{ monitor.element.name }} </p>
+
+                                            <span
+                                                title="Setting"
+                                            >
+                                                <font-awesome-icon
+                                                    v-if="editMode"
+                                                    :class="{'link-active': true, 'btn-link': true}"
+                                                    icon="cog" class="action me-3"
+                                                    @click="$refs.monitorSettingDialog.show(group, monitor)"
+                                                />
+                                            </span>
                                         </div>
-                                        <div class="tags">
-                                            <Tag v-for="tag in monitor.element.tags" :key="tag" :item="tag" :size="'sm'" />
+                                        <div class="extra-info">
+                                            <div v-if="showCertificateExpiry && monitor.element.certExpiryDaysRemaining">
+                                                <Tag :item="{name: $t('Cert Exp.'), value: formattedCertExpiryMessage(monitor), color: certExpiryColor(monitor)}" :size="'sm'" />
+                                            </div>
+                                            <div v-if="showTags">
+                                                <Tag v-for="tag in monitor.element.tags" :key="tag" :item="tag" :size="'sm'" />
+                                            </div>
                                         </div>
                                     </div>
                                     <div :key="$root.userHeartbeatBar" class="col-3 col-md-4">
-                                        <HeartbeatBar size="small" :monitor-id="monitor.element.id" />
+                                        <HeartbeatBar size="mid" :monitor-id="monitor.element.id" />
                                     </div>
                                 </div>
                             </div>
@@ -56,9 +81,11 @@
             </div>
         </template>
     </Draggable>
+    <MonitorSettingDialog ref="monitorSettingDialog" />
 </template>
 
 <script>
+import MonitorSettingDialog from "./MonitorSettingDialog.vue";
 import Draggable from "vuedraggable";
 import HeartbeatBar from "./HeartbeatBar.vue";
 import Uptime from "./Uptime.vue";
@@ -66,16 +93,26 @@ import Tag from "./Tag.vue";
 
 export default {
     components: {
+        MonitorSettingDialog,
         Draggable,
         HeartbeatBar,
         Uptime,
         Tag,
     },
     props: {
+        /** Are we in edit mode? */
         editMode: {
             type: Boolean,
             required: true,
         },
+        /** Should tags be shown? */
+        showTags: {
+            type: Boolean,
+        },
+        /** Should expiry be shown? */
+        showCertificateExpiry: {
+            type: Boolean,
+        }
     },
     data() {
         return {
@@ -91,12 +128,69 @@ export default {
 
     },
     methods: {
+        /**
+         * Remove the specified group
+         * @param {number} index Index of group to remove
+         * @returns {void}
+         */
         removeGroup(index) {
             this.$root.publicGroupList.splice(index, 1);
         },
 
+        /**
+         * Remove a monitor from a group
+         * @param {number} groupIndex Index of group to remove monitor
+         * from
+         * @param {number} index Index of monitor to remove
+         * @returns {void}
+         */
         removeMonitor(groupIndex, index) {
             this.$root.publicGroupList[groupIndex].monitorList.splice(index, 1);
+        },
+
+        /**
+         * Should a link to the monitor be shown?
+         * Attempts to guess if a link should be shown based upon if
+         * sendUrl is set and if the URL is default or not.
+         * @param {object} monitor Monitor to check
+         * @param {boolean} ignoreSendUrl Should the presence of the sendUrl
+         * property be ignored. This will only work in edit mode.
+         * @returns {boolean} Should the link be shown
+         */
+        showLink(monitor, ignoreSendUrl = false) {
+            // We must check if there are any elements in monitorList to
+            // prevent undefined errors if it hasn't been loaded yet
+            if (this.$parent.editMode && ignoreSendUrl && Object.keys(this.$root.monitorList).length) {
+                return this.$root.monitorList[monitor.element.id].type === "http" || this.$root.monitorList[monitor.element.id].type === "keyword" || this.$root.monitorList[monitor.element.id].type === "json-query";
+            }
+            return monitor.element.sendUrl && monitor.element.url && monitor.element.url !== "https://" && !this.editMode;
+        },
+
+        /**
+         * Returns formatted certificate expiry or Bad cert message
+         * @param {object} monitor Monitor to show expiry for
+         * @returns {string} Certificate expiry message
+         */
+        formattedCertExpiryMessage(monitor) {
+            if (monitor?.element?.validCert && monitor?.element?.certExpiryDaysRemaining) {
+                return monitor.element.certExpiryDaysRemaining + " " + this.$tc("day", monitor.element.certExpiryDaysRemaining);
+            } else if (monitor?.element?.validCert === false) {
+                return this.$t("noOrBadCertificate");
+            } else {
+                return this.$t("Unknown") + " " + this.$tc("day", 2);
+            }
+        },
+
+        /**
+         * Returns certificate expiry color based on days remaining
+         * @param {object} monitor Monitor to show expiry for
+         * @returns {string} Color for certificate expiry
+         */
+        certExpiryColor(monitor) {
+            if (monitor?.element?.validCert && monitor.element.certExpiryDaysRemaining > 7) {
+                return "#059669";
+            }
+            return "#DC2626";
         },
     }
 };
@@ -104,6 +198,15 @@ export default {
 
 <style lang="scss" scoped>
 @import "../assets/vars";
+
+.extra-info {
+    display: flex;
+    margin-bottom: 0.5rem;
+}
+
+.extra-info > div > div:first-child {
+    margin-left: 0 !important;
+}
 
 .no-monitor-msg {
     position: absolute;
@@ -114,6 +217,22 @@ export default {
 
 .monitor-list {
     min-height: 46px;
+}
+
+.item-name {
+    padding-left: 5px;
+    padding-right: 5px;
+    margin: 0;
+    display: inline-block;
+}
+
+.btn-link {
+    color: #bbbbbb;
+    margin-left: 5px;
+}
+
+.link-active {
+    color: $primary;
 }
 
 .flip-list-move {
@@ -142,8 +261,12 @@ export default {
 
 .mobile {
     .item {
-        padding: 13px 0 10px 0;
+        padding: 13px 0 10px;
     }
+}
+
+.bg-maintenance {
+    background-color: $maintenance;
 }
 
 </style>

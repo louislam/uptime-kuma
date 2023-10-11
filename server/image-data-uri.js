@@ -3,12 +3,21 @@
     Modified with 0 dependencies
  */
 let fs = require("fs");
+const { log } = require("../src/util");
 
 let ImageDataURI = (() => {
 
+    /**
+     * Decode the data:image/ URI
+     * @param {string} dataURI data:image/ URI to decode
+     * @returns {?object} An object with properties "imageType" and "dataBase64".
+     * The former is the image type, e.g., "png", and the latter is a base64
+     * encoded string of the image's binary data. If it fails to parse, returns
+     * null instead of an object.
+     */
     function decode(dataURI) {
         if (!/data:image\//.test(dataURI)) {
-            console.log("ImageDataURI :: Error :: It seems that it is not an Image Data URI. Couldn't match \"data:image/\"");
+            log.error("image-data-uri", "It seems that it is not an Image Data URI. Couldn't match \"data:image/\"");
             return null;
         }
 
@@ -20,9 +29,16 @@ let ImageDataURI = (() => {
         };
     }
 
+    /**
+     * Endcode an image into data:image/ URI
+     * @param {(Buffer|string)} data Data to encode
+     * @param {string} mediaType Media type of data
+     * @returns {(string|null)} A string representing the base64-encoded
+     * version of the given Buffer object or null if an error occurred.
+     */
     function encode(data, mediaType) {
         if (!data || !mediaType) {
-            console.log("ImageDataURI :: Error :: Missing some of the required params: data, mediaType ");
+            log.error("image-data-uri", "Missing some of the required params: data, mediaType");
             return null;
         }
 
@@ -33,6 +49,12 @@ let ImageDataURI = (() => {
         return dataImgBase64;
     }
 
+    /**
+     * Write data URI to file
+     * @param {string} dataURI data:image/ URI
+     * @param {string} filePath Path to write file to
+     * @returns {Promise<string|void>} Write file error
+     */
     function outputFile(dataURI, filePath) {
         filePath = filePath || "./";
         return new Promise((resolve, reject) => {

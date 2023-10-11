@@ -1,9 +1,9 @@
 <template>
     <div class="mb-3">
         <label for="pushover-user" class="form-label">{{ $t("User Key") }}<span style="color: red;"><sup>*</sup></span></label>
-        <HiddenInput id="pushover-user" v-model="$parent.notification.pushoveruserkey" :required="true" autocomplete="one-time-code"></HiddenInput>
+        <HiddenInput id="pushover-user" v-model="$parent.notification.pushoveruserkey" :required="true" autocomplete="new-password"></HiddenInput>
         <label for="pushover-app-token" class="form-label">{{ $t("Application Token") }}<span style="color: red;"><sup>*</sup></span></label>
-        <HiddenInput id="pushover-app-token" v-model="$parent.notification.pushoverapptoken" :required="true" autocomplete="one-time-code"></HiddenInput>
+        <HiddenInput id="pushover-app-token" v-model="$parent.notification.pushoverapptoken" :required="true" autocomplete="new-password"></HiddenInput>
         <label for="pushover-device" class="form-label">{{ $t("Device") }}</label>
         <input id="pushover-device" v-model="$parent.notification.pushoverdevice" type="text" class="form-control">
         <label for="pushover-device" class="form-label">{{ $t("Message Title") }}</label>
@@ -18,29 +18,32 @@
         </select>
         <label for="pushover-sound" class="form-label">{{ $t("Notification Sound") }}</label>
         <select id="pushover-sound" v-model="$parent.notification.pushoversounds" class="form-select">
-            <option>pushover</option>
-            <option>bike</option>
-            <option>bugle</option>
-            <option>cashregister</option>
-            <option>classical</option>
-            <option>cosmic</option>
-            <option>falling</option>
-            <option>gamelan</option>
-            <option>incoming</option>
-            <option>intermission</option>
-            <option>mechanical</option>
-            <option>pianobar</option>
-            <option>siren</option>
-            <option>spacealarm</option>
-            <option>tugboat</option>
-            <option>alien</option>
-            <option>climb</option>
-            <option>persistent</option>
-            <option>echo</option>
-            <option>updown</option>
-            <option>vibrate</option>
-            <option>none</option>
+            <option value="pushover">{{ $t("pushoversounds pushover") }}</option>
+            <option value="bike">{{ $t("pushoversounds bike") }}</option>
+            <option value="bugle">{{ $t("pushoversounds bugle") }}</option>
+            <option value="cashregister">{{ $t("pushoversounds cashregister") }}</option>
+            <option value="classical">{{ $t("pushoversounds classical") }}</option>
+            <option value="cosmic">{{ $t("pushoversounds cosmic") }}</option>
+            <option value="falling">{{ $t("pushoversounds falling") }}</option>
+            <option value="gamelan">{{ $t("pushoversounds gamelan") }}</option>
+            <option value="incoming">{{ $t("pushoversounds incoming") }}</option>
+            <option value="intermission">{{ $t("pushoversounds intermission") }}</option>
+            <option value="magic">{{ $t("pushoversounds magic") }}</option>
+            <option value="mechanical">{{ $t("pushoversounds mechanical") }}</option>
+            <option value="pianobar">{{ $t("pushoversounds pianobar") }}</option>
+            <option value="siren">{{ $t("pushoversounds siren") }}</option>
+            <option value="spacealarm">{{ $t("pushoversounds spacealarm") }}</option>
+            <option value="tugboat">{{ $t("pushoversounds tugboat") }}</option>
+            <option value="alien">{{ $t("pushoversounds alien") }}</option>
+            <option value="climb">{{ $t("pushoversounds climb") }}</option>
+            <option value="persistent">{{ $t("pushoversounds persistent") }}</option>
+            <option value="echo">{{ $t("pushoversounds echo") }}</option>
+            <option value="updown">{{ $t("pushoversounds updown") }}</option>
+            <option value="vibrate">{{ $t("pushoversounds vibrate") }}</option>
+            <option value="none">{{ $t("pushoversounds none") }}</option>
         </select>
+        <label for="pushover-ttl" class="form-label">{{ $t("pushoverMessageTtl") }}</label>
+        <input id="pushover-ttl" v-model="$parent.notification.pushoverttl" type="number" min="0" step="1" class="form-control">
         <div class="form-text">
             <span style="color: red;"><sup>*</sup></span>{{ $t("Required") }}
             <i18n-t tag="p" keypath="More info on:" style="margin-top: 8px;">
@@ -63,5 +66,5 @@ export default {
     components: {
         HiddenInput,
     },
-}
+};
 </script>

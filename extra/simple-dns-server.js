@@ -26,7 +26,7 @@ server.on("request", (request, send, rinfo) => {
                     ttl: 300,
                     address: "1.2.3.4"
                 });
-            } if (question.type === Packet.TYPE.AAAA) {
+            } else if (question.type === Packet.TYPE.AAAA) {
                 response.answers.push({
                     name: question.name,
                     type: question.type,
@@ -135,6 +135,11 @@ server.listen({
     udp: 5300
 });
 
+/**
+ * Get human readable request type from request code
+ * @param {number} code Request code to translate
+ * @returns {string|void} Human readable request type
+ */
 function type(code) {
     for (let name in Packet.TYPE) {
         if (Packet.TYPE[name] === code) {

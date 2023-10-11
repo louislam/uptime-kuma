@@ -1,35 +1,110 @@
-# This workflow will do a clean install of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
 
 name: Auto Test
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, 1.23.X ]
+    paths-ignore:
+      - '*.md'
   pull_request:
-    branches: [ master ]
+    branches: [ master, 1.23.X ]
+    paths-ignore:
+      - '*.md'
 
 jobs:
   auto-test:
+    needs: [ check-linters ]
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
 
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
-        node-version: [14.x, 16.x, 17.x]
+        os: [macos-latest, ubuntu-latest, windows-latest, ARM64]
+        node: [ 14, 20.5 ]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
-    - uses: actions/checkout@v2
+    - run: git config --global core.autocrlf false  # Mainly for Windows
+    - uses: actions/checkout@v3
 
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v2
+    - name: Use Node.js ${{ matrix.node }}
+      uses: actions/setup-node@v3
       with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    - run: npm run install-legacy
+        node-version: ${{ matrix.node }}
+    - run: npm install npm@9 -g
+    - run: npm install
     - run: npm run build
     - run: npm test
       env:
         HEADLESS_TEST: 1
         JUST_FOR_TEST: ${{ secrets.JUST_FOR_TEST }}
+
+  # As a lot of dev dependencies are not supported on ARMv7, we have to test it separately and just test if `npm ci --production` works
+  armv7-simple-test:
+    needs: [ check-linters ]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+
+    strategy:
+      matrix:
+        os: [ ARMv7 ]
+        node: [ 14, 20 ]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+
+    steps:
+      - run: git config --global core.autocrlf false  # Mainly for Windows
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js ${{ matrix.node }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm install npm@9 -g
+      - run: npm ci --production
+
+  check-linters:
+    runs-on: ubuntu-latest
+
+    steps:
+    - run: git config --global core.autocrlf false  # Mainly for Windows
+    - uses: actions/checkout@v3
+
+    - name: Use Node.js 20
+      uses: actions/setup-node@v3
+      with:
+        node-version: 20
+    - run: npm install
+    - run: npm run lint
+
+# TODO: Temporarily disable, as it cannot pass the test in 2.0.0 yet
+#  e2e-tests:
+#    needs: [ check-linters ]
+#    runs-on: ubuntu-latest
+#    steps:
+#    - run: git config --global core.autocrlf false  # Mainly for Windows
+#    - uses: actions/checkout@v3
+#
+#    - name: Use Node.js 14
+#      uses: actions/setup-node@v3
+#      with:
+#        node-version: 14
+#    - run: npm install
+#    - run: npm run build
+#    - run: npm run cy:test
+
+  frontend-unit-tests:
+    needs: [ check-linters ]
+    runs-on: ubuntu-latest
+    steps:
+    - run: git config --global core.autocrlf false  # Mainly for Windows
+    - uses: actions/checkout@v3
+
+    - name: Use Node.js 14
+      uses: actions/setup-node@v3
+      with:
+        node-version: 14
+    - run: npm install
+    - run: npm run build
+    - run: npm run cy:run:unit

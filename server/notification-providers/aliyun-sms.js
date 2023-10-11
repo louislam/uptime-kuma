@@ -7,6 +7,9 @@ const qs = require("qs");
 class AliyunSMS extends NotificationProvider {
     name = "AliyunSMS";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
 
@@ -18,7 +21,7 @@ class AliyunSMS extends NotificationProvider {
                     status: this.statusToString(heartbeatJSON["status"]),
                     msg: heartbeatJSON["msg"],
                 });
-                if (this.sendSms(notification, msgBody)) {
+                if (await this.sendSms(notification, msgBody)) {
                     return okMsg;
                 }
             } else {
@@ -28,7 +31,7 @@ class AliyunSMS extends NotificationProvider {
                     status: "",
                     msg: msg,
                 });
-                if (this.sendSms(notification, msgBody)) {
+                if (await this.sendSms(notification, msgBody)) {
                     return okMsg;
                 }
             }
@@ -37,6 +40,12 @@ class AliyunSMS extends NotificationProvider {
         }
     }
 
+    /**
+     * Send the SMS notification
+     * @param {BeanModel} notification Notification details
+     * @param {string} msgbody Message template
+     * @returns {boolean} True if successful else false
+     */
     async sendSms(notification, msgbody) {
         let params = {
             PhoneNumbers: notification.phonenumber,
@@ -64,13 +73,19 @@ class AliyunSMS extends NotificationProvider {
         };
 
         let result = await axios(config);
-        if (result.data.Message == "OK") {
+        if (result.data.Message === "OK") {
             return true;
         }
-        return false;
+
+        throw new Error(result.data.Message);
     }
 
-    /** Aliyun request sign */
+    /**
+     * Aliyun request sign
+     * @param {object} param Parameters object to sign
+     * @param {string} AccessKeySecret Secret key to sign parameters with
+     * @returns {string} Base64 encoded request
+     */
     sign(param, AccessKeySecret) {
         let param2 = {};
         let data = [];
@@ -82,8 +97,23 @@ class AliyunSMS extends NotificationProvider {
             param2[key] = param[key];
         }
 
+        // Escape more characters than encodeURIComponent does.
+        // For generating Aliyun signature, all characters except A-Za-z0-9~-._ are encoded.
+        // See https://help.aliyun.com/document_detail/315526.html
+        // This encoding methods as known as RFC 3986 (https://tools.ietf.org/html/rfc3986)
+        let moreEscapesTable = function (m) {
+            return {
+                "!": "%21",
+                "*": "%2A",
+                "'": "%27",
+                "(": "%28",
+                ")": "%29"
+            }[m];
+        };
+
         for (let key in param2) {
-            data.push(`${encodeURIComponent(key)}=${encodeURIComponent(param2[key])}`);
+            let value = encodeURIComponent(param2[key]).replace(/[!*'()]/g, moreEscapesTable);
+            data.push(`${encodeURIComponent(key)}=${value}`);
         }
 
         let StringToSign = `POST&${encodeURIComponent("/")}&${encodeURIComponent(data.join("&"))}`;
@@ -93,6 +123,11 @@ class AliyunSMS extends NotificationProvider {
             .digest("base64");
     }
 
+    /**
+     * Convert status constant to string
+     * @param {const} status The status constant
+     * @returns {string} Status
+     */
     statusToString(status) {
         switch (status) {
             case DOWN:

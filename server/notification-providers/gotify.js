@@ -5,6 +5,9 @@ class Gotify extends NotificationProvider {
 
     name = "gotify";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
         try {
@@ -15,7 +18,7 @@ class Gotify extends NotificationProvider {
                 "message": msg,
                 "priority": notification.gotifyPriority || 8,
                 "title": "Uptime-Kuma",
-            })
+            });
 
             return okMsg;
 

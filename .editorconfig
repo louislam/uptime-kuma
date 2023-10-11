@@ -19,3 +19,6 @@ indent_size = 2
 
 [*.vue]
 trim_trailing_whitespace = false
+
+[*.go]
+indent_style = tab

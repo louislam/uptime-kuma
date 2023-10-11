@@ -13,7 +13,10 @@
                         <div class="mb-3">
                             <label for="notification-type" class="form-label">{{ $t("Notification Type") }}</label>
                             <select id="notification-type" v-model="notification.type" class="form-select">
-                                <option v-for="type in notificationTypes" :key="type" :value="type">{{ $t(type) }}</option>
+                                <option v-for="(name, type) in notificationNameList.regularList" :key="type" :value="type">{{ name }}</option>
+                                <optgroup :label="$t('notificationRegional')">
+                                    <option v-for="(name, type) in notificationNameList.regionalList" :key="type" :value="type">{{ name }}</option>
+                                </optgroup>
                             </select>
                         </div>
 
@@ -67,9 +70,8 @@
     </Confirm>
 </template>
 
-<script lang="ts">
+<script>
 import { Modal } from "bootstrap";
-import { ucfirst } from "../util.ts";
 
 import Confirm from "./Confirm.vue";
 import NotificationFormList from "./notifications";
@@ -79,13 +81,15 @@ export default {
         Confirm,
     },
     props: {},
-    emits: ["added"],
+    emits: [ "added" ],
     data() {
         return {
             model: null,
             processing: false,
             id: null,
-            notificationTypes: Object.keys(NotificationFormList),
+            notificationTypes: Object.keys(NotificationFormList).sort((a, b) => {
+                return a.toLowerCase().localeCompare(b.toLowerCase());
+            }),
             notification: {
                 name: "",
                 /** @type { null | keyof NotificationFormList } */
@@ -102,7 +106,97 @@ export default {
                 return null;
             }
             return NotificationFormList[this.notification.type];
-        }
+        },
+
+        notificationNameList() {
+            let regularList = {
+                "alerta": "Alerta",
+                "AlertNow": "AlertNow",
+                "apprise": this.$t("apprise"),
+                "Bark": "Bark",
+                "clicksendsms": "ClickSend SMS",
+                "discord": "Discord",
+                "GoogleChat": "Google Chat (Google Workspace)",
+                "gorush": "Gorush",
+                "gotify": "Gotify",
+                "HomeAssistant": "Home Assistant",
+                "Kook": "Kook",
+                "line": "LINE Messenger",
+                "LineNotify": "LINE Notify",
+                "lunasea": "LunaSea",
+                "matrix": "Matrix",
+                "mattermost": "Mattermost",
+                "nostr": "Nostr",
+                "ntfy": "Ntfy",
+                "octopush": "Octopush",
+                "OneBot": "OneBot",
+                "Opsgenie": "Opsgenie",
+                "PagerDuty": "PagerDuty",
+                "PagerTree": "PagerTree",
+                "pushbullet": "Pushbullet",
+                "PushByTechulus": "Push by Techulus",
+                "pushover": "Pushover",
+                "pushy": "Pushy",
+                "rocket.chat": "Rocket.Chat",
+                "signal": "Signal",
+                "slack": "Slack",
+                "squadcast": "SquadCast",
+                "SMSEagle": "SMSEagle",
+                "smtp": this.$t("smtp"),
+                "stackfield": "Stackfield",
+                "teams": "Microsoft Teams",
+                "telegram": "Telegram",
+                "twilio": "Twilio",
+                "Splunk": "Splunk",
+                "webhook": "Webhook",
+                "GoAlert": "GoAlert",
+                "ZohoCliq": "ZohoCliq"
+            };
+
+            // Put notifications here if it's not supported in most regions or its documentation is not in English
+            let regionalList = {
+                "AliyunSMS": "AliyunSMS (阿里云短信服务)",
+                "DingDing": "DingDing (钉钉自定义机器人)",
+                "Feishu": "Feishu (飞书)",
+                "FlashDuty": "FlashDuty (快猫星云)",
+                "FreeMobile": "FreeMobile (mobile.free.fr)",
+                "PushDeer": "PushDeer",
+                "promosms": "PromoSMS",
+                "serwersms": "SerwerSMS.pl",
+                "SMSManager": "SmsManager (smsmanager.cz)",
+                "WeCom": "WeCom (企业微信群机器人)",
+                "ServerChan": "ServerChan (Server酱)",
+                "smsc": "SMSC",
+            };
+
+            // Sort by notification name
+            // No idea how, but it works
+            // https://stackoverflow.com/questions/1069666/sorting-object-property-by-values
+            let sort = (list2) => {
+                return Object.entries(list2)
+                    .sort(([ , a ], [ , b ]) => a.localeCompare(b))
+                    .reduce((r, [ k, v ]) => ({
+                        ...r,
+                        [k]: v
+                    }), {});
+            };
+
+            return {
+                regularList: sort(regularList),
+                regionalList: sort(regionalList),
+            };
+        },
+
+        notificationFullNameList() {
+            let list = {};
+            for (let [ key, value ] of Object.entries(this.notificationNameList.regularList)) {
+                list[key] = value;
+            }
+            for (let [ key, value ] of Object.entries(this.notificationNameList.regionalList)) {
+                list[key] = value;
+            }
+            return list;
+        },
     },
 
     watch: {
@@ -124,11 +218,20 @@ export default {
     },
     methods: {
 
+        /**
+         * Show dialog to confirm deletion
+         * @returns {void}
+         */
         deleteConfirm() {
             this.modal.hide();
             this.$refs.confirmDelete.show();
         },
 
+        /**
+         * Show settings for specified notification
+         * @param {number} notificationID ID of notification to show
+         * @returns {void}
+         */
         show(notificationID) {
             if (notificationID) {
                 this.id = notificationID;
@@ -143,17 +246,18 @@ export default {
                 this.id = null;
                 this.notification = {
                     name: "",
-                    type: null,
+                    type: "telegram",
                     isDefault: false,
                 };
-
-                // Set Default value here
-                this.notification.type = this.notificationTypes[0];
             }
 
             this.modal.show();
         },
 
+        /**
+         * Submit the form to the server
+         * @returns {void}
+         */
         submit() {
             this.processing = true;
             this.$root.getSocket().emit("addNotification", this.notification, this.id, (res) => {
@@ -172,6 +276,10 @@ export default {
             });
         },
 
+        /**
+         * Test the notification endpoint
+         * @returns {void}
+         */
         test() {
             this.processing = true;
             this.$root.getSocket().emit("testNotification", this.notification, (res) => {
@@ -180,6 +288,10 @@ export default {
             });
         },
 
+        /**
+         * Delete the notification endpoint
+         * @returns {void}
+         */
         deleteNotification() {
             this.processing = true;
             this.$root.getSocket().emit("deleteNotification", this.id, (res) => {
@@ -192,15 +304,18 @@ export default {
             });
         },
         /**
+         * Get a unique default name for the notification
          * @param {keyof NotificationFormList} notificationKey
-         * @return {string}
+         * Notification to retrieve
+         * @returns {string} Default name
          */
         getUniqueDefaultName(notificationKey) {
+
             let index = 1;
             let name = "";
             do {
                 name = this.$t("defaultNotificationName", {
-                    notification: this.$t(notificationKey).replace(/\(.+\)/, "").trim(),
+                    notification: this.notificationFullNameList[notificationKey].replace(/\(.+\)/, "").trim(),
                     number: index++
                 });
             } while (this.$root.notificationList.find(it => it.name === name));

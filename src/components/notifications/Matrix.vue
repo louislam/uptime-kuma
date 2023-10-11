@@ -9,7 +9,7 @@
     </div>
     <div class="mb-3">
         <label for="access-token" class="form-label">{{ $t("Access Token") }}</label><span style="color: red;"><sup>*</sup></span>
-        <HiddenInput id="access-token" v-model="$parent.notification.accessToken" :required="true" autocomplete="one-time-code" :maxlength="500"></HiddenInput>
+        <HiddenInput id="access-token" v-model="$parent.notification.accessToken" :required="true" autocomplete="new-password" :maxlength="500"></HiddenInput>
     </div>
 
     <div class="form-text">

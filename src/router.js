@@ -1,21 +1,35 @@
 import { createRouter, createWebHistory } from "vue-router";
+
 import EmptyLayout from "./layouts/EmptyLayout.vue";
 import Layout from "./layouts/Layout.vue";
 import Dashboard from "./pages/Dashboard.vue";
 import DashboardHome from "./pages/DashboardHome.vue";
 import Details from "./pages/Details.vue";
 import EditMonitor from "./pages/EditMonitor.vue";
+import EditMaintenance from "./pages/EditMaintenance.vue";
 import List from "./pages/List.vue";
 const Settings = () => import("./pages/Settings.vue");
 import Setup from "./pages/Setup.vue";
-const StatusPage = () => import("./pages/StatusPage.vue");
+import StatusPage from "./pages/StatusPage.vue";
 import Entry from "./pages/Entry.vue";
+import ManageStatusPage from "./pages/ManageStatusPage.vue";
+import AddStatusPage from "./pages/AddStatusPage.vue";
+import NotFound from "./pages/NotFound.vue";
+import DockerHosts from "./components/settings/Docker.vue";
+import MaintenanceDetails from "./pages/MaintenanceDetails.vue";
+import ManageMaintenance from "./pages/ManageMaintenance.vue";
+import APIKeys from "./components/settings/APIKeys.vue";
+import SetupDatabase from "./pages/SetupDatabase.vue";
 
+// Settings - Sub Pages
 import Appearance from "./components/settings/Appearance.vue";
 import General from "./components/settings/General.vue";
-import Notifications from "./components/settings/Notifications.vue";
+const Notifications = () => import("./components/settings/Notifications.vue");
+import ReverseProxy from "./components/settings/ReverseProxy.vue";
+import Tags from "./components/settings/Tags.vue";
 import MonitorHistory from "./components/settings/MonitorHistory.vue";
-import Security from "./components/settings/Security.vue";
+const Security = () => import("./components/settings/Security.vue");
+import Proxies from "./components/settings/Proxies.vue";
 import Backup from "./components/settings/Backup.vue";
 import About from "./components/settings/About.vue";
 
@@ -55,14 +69,18 @@ const routes = [
                                 ],
                             },
                             {
-                                path: "/add",
+                                path: "/clone/:id",
                                 component: EditMonitor,
                             },
                             {
-                                path: "/list",
-                                component: List,
+                                path: "/add",
+                                component: EditMonitor,
                             },
                         ],
+                    },
+                    {
+                        path: "/list",
+                        component: List,
                     },
                     {
                         path: "/settings",
@@ -70,7 +88,6 @@ const routes = [
                         children: [
                             {
                                 path: "general",
-                                alias: "",
                                 component: General,
                             },
                             {
@@ -82,12 +99,32 @@ const routes = [
                                 component: Notifications,
                             },
                             {
+                                path: "reverse-proxy",
+                                component: ReverseProxy,
+                            },
+                            {
+                                path: "tags",
+                                component: Tags,
+                            },
+                            {
                                 path: "monitor-history",
                                 component: MonitorHistory,
                             },
                             {
+                                path: "docker-hosts",
+                                component: DockerHosts,
+                            },
+                            {
                                 path: "security",
                                 component: Security,
+                            },
+                            {
+                                path: "api-keys",
+                                component: APIKeys,
+                            },
+                            {
+                                path: "proxies",
+                                component: Proxies,
                             },
                             {
                                 path: "backup",
@@ -99,6 +136,30 @@ const routes = [
                             },
                         ]
                     },
+                    {
+                        path: "/manage-status-page",
+                        component: ManageStatusPage,
+                    },
+                    {
+                        path: "/add-status-page",
+                        component: AddStatusPage,
+                    },
+                    {
+                        path: "/maintenance",
+                        component: ManageMaintenance,
+                    },
+                    {
+                        path: "/maintenance/:id",
+                        component: MaintenanceDetails,
+                    },
+                    {
+                        path: "/add-maintenance",
+                        component: EditMaintenance,
+                    },
+                    {
+                        path: "/maintenance/edit/:id",
+                        component: EditMaintenance,
+                    },
                 ],
             },
         ],
@@ -108,12 +169,24 @@ const routes = [
         component: Setup,
     },
     {
+        path: "/setup-database",
+        component: SetupDatabase,
+    },
+    {
         path: "/status-page",
         component: StatusPage,
     },
     {
         path: "/status",
         component: StatusPage,
+    },
+    {
+        path: "/status/:slug",
+        component: StatusPage,
+    },
+    {
+        path: "/:pathMatch(.*)*",
+        component: NotFound,
     },
 ];
 

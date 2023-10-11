@@ -5,6 +5,9 @@ class Signal extends NotificationProvider {
 
     name = "signal";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
 
@@ -16,10 +19,10 @@ class Signal extends NotificationProvider {
             };
             let config = {};
 
-            await axios.post(notification.signalURL, data, config)
+            await axios.post(notification.signalURL, data, config);
             return okMsg;
         } catch (error) {
-            this.throwGeneralAxiosError(error)
+            this.throwGeneralAxiosError(error);
         }
     }
 }

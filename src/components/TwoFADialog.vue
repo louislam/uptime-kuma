@@ -19,6 +19,20 @@
                             </div>
                             <p v-if="showURI && twoFAStatus == false" class="text-break mt-2">{{ uri }}</p>
 
+                            <div v-if="!(uri && twoFAStatus == false)" class="mb-3">
+                                <label for="current-password" class="form-label">
+                                    {{ $t("Current Password") }}
+                                </label>
+                                <input
+                                    id="current-password"
+                                    v-model="currentPassword"
+                                    type="password"
+                                    class="form-control"
+                                    autocomplete="current-password"
+                                    required
+                                />
+                            </div>
+
                             <button v-if="uri == null && twoFAStatus == false" class="btn btn-primary" type="button" @click="prepare2FA()">
                                 {{ $t("Enable 2FA") }}
                             </button>
@@ -30,10 +44,10 @@
                             <div v-if="uri && twoFAStatus == false" class="mt-3">
                                 <label for="basic-url" class="form-label">{{ $t("twoFAVerifyLabel") }}</label>
                                 <div class="input-group">
-                                    <input v-model="token" type="text" maxlength="6" class="form-control">
+                                    <input v-model="token" type="text" maxlength="6" class="form-control" autocomplete="one-time-code" required>
                                     <button class="btn btn-outline-primary" type="button" @click="verifyToken()">{{ $t("Verify Token") }}</button>
                                 </div>
-                                <p v-show="tokenValid" class="mt-2" style="color: green">{{ $t("tokenValidSettingsMsg") }}</p>
+                                <p v-show="tokenValid" class="mt-2" style="color: green;">{{ $t("tokenValidSettingsMsg") }}</p>
                             </div>
                         </div>
                     </div>
@@ -59,11 +73,11 @@
 </template>
 
 <script lang="ts">
-import { Modal } from "bootstrap"
+import { Modal } from "bootstrap";
 import Confirm from "./Confirm.vue";
-import VueQrcode from "vue-qrcode"
-import { useToast } from "vue-toastification"
-const toast = useToast()
+import VueQrcode from "vue-qrcode";
+import { useToast } from "vue-toastification";
+const toast = useToast();
 
 export default {
     components: {
@@ -73,35 +87,52 @@ export default {
     props: {},
     data() {
         return {
+            currentPassword: "",
             processing: false,
             uri: null,
             tokenValid: false,
             twoFAStatus: null,
             token: null,
             showURI: false,
-        }
+        };
     },
     mounted() {
-        this.modal = new Modal(this.$refs.modal)
+        this.modal = new Modal(this.$refs.modal);
         this.getStatus();
     },
     methods: {
+        /**
+         * Show the dialog
+         * @returns {void}
+         */
         show() {
-            this.modal.show()
+            this.modal.show();
         },
 
+        /**
+         * Show dialog to confirm enabling 2FA
+         * @returns {void}
+         */
         confirmEnableTwoFA() {
-            this.$refs.confirmEnableTwoFA.show()
+            this.$refs.confirmEnableTwoFA.show();
         },
 
+        /**
+         * Show dialog to confirm disabling 2FA
+         * @returns {void}
+         */
         confirmDisableTwoFA() {
-            this.$refs.confirmDisableTwoFA.show()
+            this.$refs.confirmDisableTwoFA.show();
         },
 
+        /**
+         * Prepare 2FA configuration
+         * @returns {void}
+         */
         prepare2FA() {
             this.processing = true;
 
-            this.$root.getSocket().emit("prepare2FA", (res) => {
+            this.$root.getSocket().emit("prepare2FA", this.currentPassword, (res) => {
                 this.processing = false;
 
                 if (res.ok) {
@@ -109,51 +140,69 @@ export default {
                 } else {
                     toast.error(res.msg);
                 }
-            })
+            });
         },
 
+        /**
+         * Save the current 2FA configuration
+         * @returns {void}
+         */
         save2FA() {
             this.processing = true;
 
-            this.$root.getSocket().emit("save2FA", (res) => {
+            this.$root.getSocket().emit("save2FA", this.currentPassword, (res) => {
                 this.processing = false;
 
                 if (res.ok) {
-                    this.$root.toastRes(res)
+                    this.$root.toastRes(res);
                     this.getStatus();
+                    this.currentPassword = "";
                     this.modal.hide();
                 } else {
                     toast.error(res.msg);
                 }
-            })
+            });
         },
 
+        /**
+         * Disable 2FA for this user
+         * @returns {void}
+         */
         disable2FA() {
             this.processing = true;
 
-            this.$root.getSocket().emit("disable2FA", (res) => {
+            this.$root.getSocket().emit("disable2FA", this.currentPassword, (res) => {
                 this.processing = false;
 
                 if (res.ok) {
-                    this.$root.toastRes(res)
+                    this.$root.toastRes(res);
                     this.getStatus();
+                    this.currentPassword = "";
                     this.modal.hide();
                 } else {
                     toast.error(res.msg);
                 }
-            })
+            });
         },
 
+        /**
+         * Verify the token generated by the user
+         * @returns {void}
+         */
         verifyToken() {
-            this.$root.getSocket().emit("verifyToken", this.token, (res) => {
+            this.$root.getSocket().emit("verifyToken", this.token, this.currentPassword, (res) => {
                 if (res.ok) {
                     this.tokenValid = res.valid;
                 } else {
                     toast.error(res.msg);
                 }
-            })
+            });
         },
 
+        /**
+         * Get current status of 2FA
+         * @returns {void}
+         */
         getStatus() {
             this.$root.getSocket().emit("twoFAStatus", (res) => {
                 if (res.ok) {
@@ -161,10 +210,10 @@ export default {
                 } else {
                     toast.error(res.msg);
                 }
-            })
+            });
         },
     },
-}
+};
 </script>
 
 <style lang="scss" scoped>

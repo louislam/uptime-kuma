@@ -22,6 +22,55 @@ textarea.form-control {
     width: 10px;
 }
 
+.bg-maintenance {
+    color: white !important;
+    background-color: $maintenance !important;
+}
+
+.bg-dark {
+    color: white;
+}
+
+.text-maintenance {
+    color: $maintenance !important;
+}
+
+.incident a,
+.bg-maintenance a {
+    color: inherit;
+}
+
+.list-group {
+    border-radius: 0.75rem;
+
+    .dark & {
+        .list-group-item {
+            background-color: $dark-bg;
+            color: $dark-font-color;
+            border-color: $dark-border-color;
+        }
+    }
+}
+
+
+// optgroup
+optgroup {
+    color: #b1b1b1;
+    option {
+        color: #212529;
+    }
+}
+
+.dark {
+    optgroup {
+        color: #535864;
+        option {
+            color: $dark-font-color;
+        }
+    }
+}
+
+// Scrollbar
 ::-webkit-scrollbar-thumb {
     background: #ccc;
     border-radius: 20px;
@@ -62,6 +111,10 @@ textarea.form-control {
     padding-right: 20px;
 }
 
+.btn-sm {
+    border-radius: 25px;
+}
+
 .btn-primary {
     color: white;
 
@@ -73,6 +126,19 @@ textarea.form-control {
 
     .dark & {
         color: $dark-font-color2;
+    }
+}
+
+.btn-normal {
+    $bg-color: #F5F5F5;
+
+    background-color: $bg-color;
+    border-color: $bg-color;
+
+    &:hover {
+        $hover-color: darken($bg-color, 3%);
+        background-color: $hover-color;
+        border-color: $hover-color;
     }
 }
 
@@ -89,6 +155,30 @@ textarea.form-control {
 
     &:hover, &:active, &:focus, &.active {
         color: white;
+    }
+}
+
+.btn-dark {
+    background-color: #161B22;
+}
+
+.btn-outline-normal {
+    padding: 4px 10px;
+    border: 1px solid #ced4da;
+    border-radius: 25px;
+    background-color: transparent;
+
+    .dark & {
+        color: $dark-font-color;
+        border: 1px solid $dark-font-color2;
+    }
+
+    &.active {
+        background-color: $highlight-white;
+
+        .dark & {
+            background-color: $dark-font-color2;
+        }
     }
 }
 
@@ -144,6 +234,10 @@ textarea.form-control {
     background-color: #090c10;
     color: $dark-font-color;
 
+    mark, .mark {
+        background-color: #b6ad86;
+    }
+
     &::-webkit-scrollbar-thumb, ::-webkit-scrollbar-thumb {
         background: $dark-border-color;
     }
@@ -156,13 +250,24 @@ textarea.form-control {
 
     .form-check-input {
         background-color: $dark-bg2;
+        border-color: $dark-border-color;
+    }
+
+    .input-group-text {
+        background-color: #282f39;
+        border-color: $dark-border-color;
+        color: $dark-font-color;
+    }
+
+    .form-check-input:checked {
+        border-color: $primary; // Re-apply bootstrap border
     }
 
     .form-switch .form-check-input {
         background-color: #232f3b;
     }
 
-    a,
+    a:not(.btn),
     .table,
     .nav-link {
         color: $dark-font-color;
@@ -172,12 +277,22 @@ textarea.form-control {
         }
     }
 
+    .incident a,
+    .bg-maintenance a {
+        color: inherit;
+    }
+
     .form-control,
     .form-control:focus,
     .form-select,
     .form-select:focus {
         color: $dark-font-color;
         background-color: $dark-bg2;
+    }
+
+    .form-select:disabled {
+        color: rgba($dark-font-color, 0.7);
+        background-color: $dark-bg;
     }
 
     .form-control, .form-select {
@@ -204,6 +319,20 @@ textarea.form-control {
 
     .btn-secondary {
         color: white;
+    }
+
+    .btn-normal {
+        $bg-color: $dark-header-bg;
+
+        color: $dark-font-color;
+        background-color: $bg-color;
+        border-color: $bg-color;
+
+        &:hover {
+            $hover-color: darken($bg-color, 3%);
+            background-color: $hover-color;
+            border-color: $hover-color;
+        }
     }
 
     .btn-warning {
@@ -273,6 +402,7 @@ textarea.form-control {
         &.bg-info,
         &.bg-warning,
         &.bg-danger,
+        &.bg-maintenance,
         &.bg-light {
             color: $dark-font-color2;
         }
@@ -313,13 +443,29 @@ textarea.form-control {
     opacity: 0;
 }
 
+.slide-fade-up-enter-active {
+    transition: all 0.2s $easing-in;
+}
+
+.slide-fade-up-leave-active {
+    transition: all 0.2s $easing-in;
+}
+
+.slide-fade-up-enter-from,
+.slide-fade-up-leave-to {
+    transform: translateY(-50px);
+    opacity: 0;
+}
+
 .monitor-list {
     &.scrollbar {
-        min-height: calc(100vh - 240px);
-        max-height: calc(100vh - 30px);
         overflow-y: auto;
-        position: sticky;
-        top: 10px;
+    }
+
+    @media (max-width: 770px) {
+        &.scrollbar {
+            height: calc(100% - 97px);
+        }
     }
 
     .item {
@@ -336,7 +482,6 @@ textarea.form-control {
         .info {
             white-space: nowrap;
             overflow: hidden;
-            text-overflow: ellipsis;
         }
 
         &:hover {
@@ -382,6 +527,10 @@ textarea.form-control {
     background-color: rgba(239, 239, 239, 0.7);
     border-radius: 8px;
 
+    &.no-bg {
+        background-color: transparent !important;
+    }
+
     &:focus {
         outline: 0 solid #eee;
         background-color: rgba(245, 245, 245, 0.9);
@@ -417,6 +566,73 @@ textarea.form-control {
 
 .vue-image-crop-upload .vicp-wrap {
     border-radius: 10px !important;
+}
+
+.spinner {
+    color: $primary;
+}
+
+.prism-editor__textarea {
+    outline: none !important;
+}
+
+h5.settings-subheading::after {
+    content: "";
+    display: block;
+    width: 50%;
+    padding-top: 8px;
+    border-bottom: 1px solid $dark-border-color;
+}
+
+/* required class */
+.code-editor, .css-editor {
+    /* we dont use `language-` classes anymore so thats why we need to add background and text color manually */
+
+    border-radius: 1rem;
+    padding: 10px 5px;
+    border: 1px solid #ced4da;
+
+    .dark & {
+        background: $dark-bg2;
+        border: 1px solid $dark-border-color;
+    }
+}
+
+
+$shadow-box-padding: 20px;
+
+.shadow-box-with-fixed-bottom-bar {
+    padding-top: $shadow-box-padding;
+    padding-bottom: 0;
+    padding-right: $shadow-box-padding;
+    padding-left: $shadow-box-padding;
+}
+
+.fixed-bottom-bar {
+    position: sticky;
+    bottom: 0;
+    margin-left: -$shadow-box-padding;
+    margin-right: -$shadow-box-padding;
+    z-index: 100;
+    background-color: rgba(white, 0.2);
+    backdrop-filter: blur(2px);
+    border-radius: 0 0 10px 10px;
+
+    .dark & {
+        background-color: rgba($dark-header-bg, 0.9);
+    }
+}
+
+@media (max-width: 770px) {
+    .toast-container {
+        margin-bottom: 100px !important;
+    }
+}
+
+@media (max-width: 550px) {
+    .toast-container {
+        margin-bottom: 126px !important;
+    }
 }
 
 // Localization

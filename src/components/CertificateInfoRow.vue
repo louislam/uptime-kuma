@@ -11,23 +11,23 @@
                 <table class="text-start">
                     <tbody>
                         <tr class="my-3">
-                            <td class="px-3">Subject:</td>
+                            <td class="px-3">{{ $t("Subject:") }}</td>
                             <td>{{ formatSubject(cert.subject) }}</td>
                         </tr>
                         <tr class="my-3">
-                            <td class="px-3">Valid To:</td>
+                            <td class="px-3">{{ $t("Valid To:") }}</td>
                             <td><Datetime :value="cert.validTo" /></td>
                         </tr>
                         <tr class="my-3">
-                            <td class="px-3">Days Remaining:</td>
+                            <td class="px-3">{{ $t("Days Remaining:") }}</td>
                             <td>{{ cert.daysRemaining }}</td>
                         </tr>
                         <tr class="my-3">
-                            <td class="px-3">Issuer:</td>
+                            <td class="px-3">{{ $t("Issuer:") }}</td>
                             <td>{{ formatSubject(cert.issuer) }}</td>
                         </tr>
                         <tr class="my-3">
-                            <td class="px-3">Fingerprint:</td>
+                            <td class="px-3">{{ $t("Fingerprint:") }}</td>
                             <td>{{ cert.fingerprint }}</td>
                         </tr>
                     </tbody>
@@ -56,12 +56,19 @@ export default {
         Datetime,
     },
     props: {
+        /** Object representing certificate */
         cert: {
             type: Object,
             required: true,
         },
     },
     methods: {
+        /**
+         * Format the subject of the certificate
+         * @param {object} subject Object representing the certificates
+         * subject
+         * @returns {string} Certificate subject
+         */
         formatSubject(subject) {
             if (subject.O && subject.CN && subject.C) {
                 return `${subject.CN} - ${subject.O} (${subject.C})`;
