@@ -76,6 +76,7 @@
     "resendDisabled": "Resend disabled",
     "retriesDescription": "Maximum retries before the service is marked as down and a notification is sent",
     "ignoreTLSError": "Ignore TLS/SSL error for HTTPS websites",
+	"ignoreTLSErrorGeneral": "Ignore TLS/SSL error for connection",
     "upsideDownModeDescription": "Flip the status upside down. If the service is reachable, it is DOWN.",
     "maxRedirectDescription": "Maximum number of redirects to follow. Set to 0 to disable redirects.",
     "Upside Down Mode": "Upside Down Mode",

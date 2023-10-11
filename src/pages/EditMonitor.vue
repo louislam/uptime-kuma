@@ -429,10 +429,10 @@
                                 </div>
                             </div>
 
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' " class="my-3 form-check">
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'redis' " class="my-3 form-check">
                                 <input id="ignore-tls" v-model="monitor.ignoreTls" class="form-check-input" type="checkbox" value="">
                                 <label class="form-check-label" for="ignore-tls">
-                                    {{ $t("ignoreTLSError") }}
+                                    {{ ignoreTlsLabel }}
                                 </label>
                             </div>
 
@@ -1113,9 +1113,21 @@ message HealthCheckResponse {
             }
 
             return list;
-        },
+		},
 
-    },
+		/**
+         * Retrieves the appropriate ignore TLS error label based on the monitor type.
+         *
+         * @return {string} Returns the non specific label if the monitor type is 'redis',
+         *                  otherwise, returns the default.
+         */
+		ignoreTlsLabel() {
+            return this.monitor.type === "redis"
+                ? this.$t("ignoreTLSErrorGeneral")
+                : this.$t("ignoreTLSError");
+        }
+	},
+	
     watch: {
         "$root.proxyList"() {
             if (this.isAdd) {
