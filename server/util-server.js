@@ -395,6 +395,9 @@ exports.mssqlQuery = async function (connectionString, query) {
     try {
         pool = new mssql.ConnectionPool(connectionString);
         await pool.connect();
+        if (!query) {
+            query = "SELECT 1";
+        }
         await pool.request().query(query);
         pool.close();
     } catch (e) {
@@ -415,12 +418,22 @@ exports.postgresQuery = function (connectionString, query) {
     return new Promise((resolve, reject) => {
         const config = postgresConParse(connectionString);
 
-        if (config.password === "") {
-            // See https://github.com/brianc/node-postgres/issues/1927
-            return reject(new Error("Password is undefined."));
+        // Fix #3868, which true/false is not parsed to boolean
+        if (typeof config.ssl === "string") {
+            config.ssl = config.ssl === "true";
         }
 
-        const client = new Client({ connectionString });
+        if (config.password === "") {
+            // See https://github.com/brianc/node-postgres/issues/1927
+            reject(new Error("Password is undefined."));
+            return;
+        }
+        const client = new Client(config);
+
+        client.on("error", (error) => {
+            log.debug("postgres", "Error caught in the error event handler.");
+            reject(error);
+        });
 
         client.connect((err) => {
             if (err) {
