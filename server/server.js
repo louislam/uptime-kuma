@@ -38,7 +38,6 @@ if (!semver.satisfies(nodeVersion, requiredNodeVersions)) {
 
 const args = require("args-parser")(process.argv);
 const { sleep, log, getRandomInt, genSecret, isDev } = require("../src/util");
-const config = require("./config");
 
 log.info("server", "Welcome to Uptime Kuma");
 log.debug("server", "Arguments");
@@ -71,6 +70,7 @@ const notp = require("notp");
 const base32 = require("thirty-two");
 
 const { UptimeKumaServer } = require("./uptime-kuma-server");
+
 const server = UptimeKumaServer.getInstance(args);
 const io = module.exports.io = server.io;
 const app = server.app;
@@ -134,10 +134,6 @@ const twoFAVerifyOptions = {
  */
 const testMode = !!args["test"] || false;
 const e2eTestMode = !!args["e2e"] || false;
-
-if (config.demoMode) {
-    log.info("server", "==== Demo Mode ====");
-}
 
 // Must be after io instantiation
 const { sendNotificationList, sendHeartbeatList, sendInfo, sendProxyList, sendDockerHostList, sendAPIKeyList } = require("./client");
