@@ -79,6 +79,45 @@ class Slack extends NotificationProvider {
             }
 
             const textMsg = "Uptime Kuma Alert";
+
+            //create an array to dynamically add blocks
+            const blocks = [];
+
+            // the header block
+            blocks.push({
+                "type": "header",
+                "text": {
+                    "type": "plain_text",
+                    "text": textMsg,
+                },
+            });
+
+            // the body block, containing the details
+            blocks.push({
+                "type": "section",
+                "fields": [
+                    {
+                        "type": "mrkdwn",
+                        "text": "*Message*\n" + msg,
+                    },
+                    {
+                        "type": "mrkdwn",
+                        "text": `*Time (${heartbeatJSON["timezone"]})*\n${heartbeatJSON["localDateTime"]}`,
+                    }
+                ],
+            });
+
+            //only add this block if we have actions
+            if(actions.length > 0){
+
+                //the actions block, containing buttons
+                blocks.push({
+                    "type": "actions",
+                    "elements": actions,
+                });
+            }
+
+            //finally, build the entire slack request object
             let data = {
                 "text": `${textMsg}\n${msg}`,
                 "channel": notification.slackchannel,
@@ -87,30 +126,7 @@ class Slack extends NotificationProvider {
                 "attachments": [
                     {
                         "color": (heartbeatJSON["status"] === UP) ? "#2eb886" : "#e01e5a",
-                        "blocks": [
-                            {
-                                "type": "header",
-                                "text": {
-                                    "type": "plain_text",
-                                    "text": textMsg,
-                                },
-                            },
-                            {
-                                "type": "section",
-                                "fields": [{
-                                    "type": "mrkdwn",
-                                    "text": "*Message*\n" + msg,
-                                },
-                                {
-                                    "type": "mrkdwn",
-                                    "text": `*Time (${heartbeatJSON["timezone"]})*\n${heartbeatJSON["localDateTime"]}`,
-                                }],
-                            },
-                            {
-                                "type": "actions",
-                                "elements": actions,
-                            }
-                        ],
+                        "blocks": blocks,
                     }
                 ]
             };
