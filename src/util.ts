@@ -1,3 +1,4 @@
+/*!
 // Common Util for frontend and backend
 //
 // DOT NOT MODIFY util.js!
@@ -5,6 +6,7 @@
 //
 // Backend uses the compiled file util.js
 // Frontend uses util.ts
+*/
 
 import * as dayjs from "dayjs";
 
