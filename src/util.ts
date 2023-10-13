@@ -9,7 +9,9 @@
 import * as dayjs from "dayjs";
 
 // For loading dayjs plugins, don't remove event though it is not used in this file
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import * as timezone from "dayjs/plugin/timezone";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import * as utc from "dayjs/plugin/utc";
 
 export const isDev = process.env.NODE_ENV === "development";
@@ -72,7 +74,7 @@ export function ucfirst(str: string) {
  * @deprecated Use log.debug (https://github.com/louislam/uptime-kuma/pull/910)
  * @param msg
  */
-export function debug(msg: any) {
+export function debug(msg: unknown) {
     log.log("", msg, "debug");
 }
 
@@ -87,7 +89,7 @@ class Logger {
      *     "info_monitor",
      *  ]
      */
-    hideLog : any = {
+    hideLog : Record<string, string[]> = {
         info: [],
         warn: [],
         error: [],
@@ -99,11 +101,11 @@ class Logger {
      */
     constructor() {
         if (typeof process !== "undefined" && process.env.UPTIME_KUMA_HIDE_LOG) {
-            let list = process.env.UPTIME_KUMA_HIDE_LOG.split(",").map(v => v.toLowerCase());
+            const list = process.env.UPTIME_KUMA_HIDE_LOG.split(",").map(v => v.toLowerCase());
 
-            for (let pair of list) {
+            for (const pair of list) {
                 // split first "_" only
-                let values = pair.split(/_(.*)/s);
+                const values = pair.split(/_(.*)/s);
 
                 if (values.length >= 2) {
                     this.hideLog[values[0]].push(values[1]);
@@ -121,7 +123,7 @@ class Logger {
      * @param msg Message to write
      * @param level Log level. One of INFO, WARN, ERROR, DEBUG or can be customized.
      */
-    log(module: string, msg: any, level: string) {
+    log(module: string, msg: unknown, level: string) {
         if (this.hideLog[level] && this.hideLog[level].includes(module.toLowerCase())) {
             return;
         }
@@ -157,7 +159,7 @@ class Logger {
      * @param module Module log comes from
      * @param msg Message to write
      */
-    info(module: string, msg: any) {
+    info(module: string, msg: unknown) {
         this.log(module, msg, "info");
     }
 
@@ -166,7 +168,7 @@ class Logger {
      * @param module Module log comes from
      * @param msg Message to write
      */
-    warn(module: string, msg: any) {
+    warn(module: string, msg: unknown) {
         this.log(module, msg, "warn");
     }
 
@@ -175,7 +177,7 @@ class Logger {
      * @param module Module log comes from
      * @param msg Message to write
      */
-    error(module: string, msg: any) {
+    error(module: string, msg: unknown) {
         this.log(module, msg, "error");
     }
 
@@ -184,17 +186,17 @@ class Logger {
      * @param module Module log comes from
      * @param msg Message to write
      */
-    debug(module: string, msg: any) {
+    debug(module: string, msg: unknown) {
         this.log(module, msg, "debug");
     }
 
     /**
-     * Log an exeption as an ERROR
+     * Log an exception as an ERROR
      * @param module Module log comes from
-     * @param exception The exeption to include
+     * @param exception The exception to include
      * @param msg The message to write
      */
-    exception(module: string, exception: any, msg: any) {
+    exception(module: string, exception: unknown, msg: unknown) {
         let finalMessage = exception;
 
         if (msg) {
@@ -280,13 +282,13 @@ export function getRandomInt(min: number, max: number) {
  * Returns either the NodeJS crypto.randomBytes() function or its
  * browser equivalent implemented via window.crypto.getRandomValues()
  */
-let getRandomBytes = (
+const getRandomBytes = (
     (typeof window !== "undefined" && window.crypto)
 
         // Browsers
         ? function () {
             return (numBytes: number) => {
-                let randomBytes = new Uint8Array(numBytes);
+                const randomBytes = new Uint8Array(numBytes);
                 for (let i = 0; i < numBytes; i += 65536) {
                     window.crypto.getRandomValues(randomBytes.subarray(i, i + Math.min(numBytes - i, 65536)));
                 }
@@ -296,6 +298,7 @@ let getRandomBytes = (
 
     // Node
         : function () {
+            // eslint-disable-next-line @typescript-eslint/no-var-requires
             return require("crypto").randomBytes;
         }
 )();
@@ -392,13 +395,13 @@ export function parseTimeObject(time: string) {
         };
     }
 
-    let array = time.split(":");
+    const array = time.split(":");
 
     if (array.length < 2) {
         throw new Error("parseVueDatePickerTimeFormat: Invalid Time");
     }
 
-    let obj = {
+    const obj = {
         hours: parseInt(array[0]),
         minutes: parseInt(array[1]),
         seconds: 0,

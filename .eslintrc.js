@@ -171,9 +171,13 @@ module.exports = {
             "files": [
                 "**/*.ts",
             ],
+            extends: [
+                "plugin:@typescript-eslint/recommended",
+            ],
             "rules": {
                 "jsdoc/require-returns-type": "off",
                 "jsdoc/require-param-type": "off",
+                "@typescript-eslint/no-explicit-any": "off",
             }
         }
     ]

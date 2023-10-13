@@ -87,10 +87,10 @@ class Logger {
             debug: [],
         };
         if (typeof process !== "undefined" && process.env.UPTIME_KUMA_HIDE_LOG) {
-            let list = process.env.UPTIME_KUMA_HIDE_LOG.split(",").map(v => v.toLowerCase());
-            for (let pair of list) {
+            const list = process.env.UPTIME_KUMA_HIDE_LOG.split(",").map(v => v.toLowerCase());
+            for (const pair of list) {
                 // split first "_" only
-                let values = pair.split(/_(.*)/s);
+                const values = pair.split(/_(.*)/s);
                 if (values.length >= 2) {
                     this.hideLog[values[0]].push(values[1]);
                 }
@@ -170,9 +170,9 @@ class Logger {
         this.log(module, msg, "debug");
     }
     /**
-     * Log an exeption as an ERROR
+     * Log an exception as an ERROR
      * @param module Module log comes from
-     * @param exception The exeption to include
+     * @param exception The exception to include
      * @param msg The message to write
      */
     exception(module, exception, msg) {
@@ -251,11 +251,11 @@ exports.getRandomInt = getRandomInt;
  * Returns either the NodeJS crypto.randomBytes() function or its
  * browser equivalent implemented via window.crypto.getRandomValues()
  */
-let getRandomBytes = ((typeof window !== "undefined" && window.crypto)
+const getRandomBytes = ((typeof window !== "undefined" && window.crypto)
     // Browsers
     ? function () {
         return (numBytes) => {
-            let randomBytes = new Uint8Array(numBytes);
+            const randomBytes = new Uint8Array(numBytes);
             for (let i = 0; i < numBytes; i += 65536) {
                 window.crypto.getRandomValues(randomBytes.subarray(i, i + Math.min(numBytes - i, 65536)));
             }
@@ -264,6 +264,7 @@ let getRandomBytes = ((typeof window !== "undefined" && window.crypto)
     }
     // Node
     : function () {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
         return require("crypto").randomBytes;
     })();
 /**
@@ -350,11 +351,11 @@ function parseTimeObject(time) {
             minutes: 0,
         };
     }
-    let array = time.split(":");
+    const array = time.split(":");
     if (array.length < 2) {
         throw new Error("parseVueDatePickerTimeFormat: Invalid Time");
     }
-    let obj = {
+    const obj = {
         hours: parseInt(array[0]),
         minutes: parseInt(array[1]),
         seconds: 0,
