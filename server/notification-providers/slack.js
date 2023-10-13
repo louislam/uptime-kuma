@@ -53,7 +53,7 @@ class Slack extends NotificationProvider {
 
             const baseURL = await setting("primaryBaseURL");
 
-            if(baseURL){
+            if (baseURL) {
                 actions.push({
                     "type": "button",
                     "text": {
@@ -66,7 +66,7 @@ class Slack extends NotificationProvider {
 
             }
 
-            if(monitorJSON.url) {
+            if (monitorJSON.url) {
                 actions.push({
                     "type": "button",
                     "text": {
@@ -75,7 +75,7 @@ class Slack extends NotificationProvider {
                     },
                     "value": "Site",
                     "url": monitorJSON.url,
-                })
+                });
             }
 
             const textMsg = "Uptime Kuma Alert";
@@ -108,7 +108,7 @@ class Slack extends NotificationProvider {
             });
 
             //only add this block if we have actions
-            if(actions.length > 0){
+            if (actions.length > 0) {
 
                 //the actions block, containing buttons
                 blocks.push({
