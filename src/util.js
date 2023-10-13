@@ -1,5 +1,5 @@
 "use strict";
-//! Common Util for frontend and backend
+// Common Util for frontend and backend
 //
 // DOT NOT MODIFY util.js!
 // Need to run "npm run tsc" to compile if there are any changes.
