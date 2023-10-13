@@ -49,6 +49,35 @@ class Slack extends NotificationProvider {
                 return okMsg;
             }
 
+            const actions = [];
+
+            const baseURL = await setting("primaryBaseURL");
+
+            if(baseURL){
+                actions.push({
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "Visit Uptime Kuma",
+                    },
+                    "value": "Uptime-Kuma",
+                    "url": baseURL + getMonitorRelativeURL(monitorJSON.id),
+                });
+
+            }
+
+            if(monitorJSON.url) {
+                actions.push({
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "Visit site",
+                    },
+                    "value": "Site",
+                    "url": monitorJSON.url,
+                })
+            }
+
             const textMsg = "Uptime Kuma Alert";
             let data = {
                 "text": `${textMsg}\n${msg}`,
@@ -76,6 +105,10 @@ class Slack extends NotificationProvider {
                                     "type": "mrkdwn",
                                     "text": `*Time (${heartbeatJSON["timezone"]})*\n${heartbeatJSON["localDateTime"]}`,
                                 }],
+                            },
+                            {
+                                "type": "actions",
+                                "elements": actions,
                             }
                         ],
                     }
@@ -84,26 +117,6 @@ class Slack extends NotificationProvider {
 
             if (notification.slackbutton) {
                 await Slack.deprecateURL(notification.slackbutton);
-            }
-
-            const baseURL = await setting("primaryBaseURL");
-
-            // Button
-            if (baseURL) {
-                data.attachments.forEach(element => {
-                    element.blocks.push({
-                        "type": "actions",
-                        "elements": [{
-                            "type": "button",
-                            "text": {
-                                "type": "plain_text",
-                                "text": "Visit Uptime Kuma",
-                            },
-                            "value": "Uptime-Kuma",
-                            "url": baseURL + getMonitorRelativeURL(monitorJSON.id),
-                        }],
-                    });
-                });
             }
 
             await axios.post(notification.slackwebhookURL, data);
