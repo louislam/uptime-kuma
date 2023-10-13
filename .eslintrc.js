@@ -19,12 +19,13 @@ module.exports = {
     ],
     parser: "vue-eslint-parser",
     parserOptions: {
-        parser: "@babel/eslint-parser",
+        parser: "@typescript-eslint/parser",
         sourceType: "module",
         requireConfigFile: false,
     },
     plugins: [
-        "jsdoc"
+        "jsdoc",
+        "@typescript-eslint",
     ],
     rules: {
         "yoda": "error",
@@ -163,6 +164,17 @@ module.exports = {
                 context: true,
                 jestPuppeteer: true,
             },
+        },
+
+        // Override for TypeScript
+        {
+            "files": [
+                "**/*.ts",
+            ],
+            "rules": {
+                "jsdoc/require-returns-type": "off",
+                "jsdoc/require-param-type": "off",
+            }
         }
     ]
 };

@@ -152,6 +152,8 @@
         "@fortawesome/vue-fontawesome": "~3.0.0-5",
         "@popperjs/core": "~2.10.2",
         "@types/bootstrap": "~5.1.9",
+        "@typescript-eslint/eslint-plugin": "^6.7.5",
+        "@typescript-eslint/parser": "^6.7.5",
         "@vitejs/plugin-vue": "~4.2.3",
         "@vue/compiler-sfc": "~3.3.4",
         "@vuepic/vue-datepicker": "~3.4.8",

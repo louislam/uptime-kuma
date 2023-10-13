@@ -1,5 +1,5 @@
 "use strict";
-// Common Util for frontend and backend
+//! Common Util for frontend and backend
 //
 // DOT NOT MODIFY util.js!
 // Need to run "npm run tsc" to compile if there are any changes.
@@ -24,7 +24,10 @@ exports.SQL_DATETIME_FORMAT = "YYYY-MM-DD HH:mm:ss";
 exports.SQL_DATETIME_FORMAT_WITHOUT_SECOND = "YYYY-MM-DD HH:mm";
 exports.MAX_INTERVAL_SECOND = 2073600; // 24 days
 exports.MIN_INTERVAL_SECOND = 20; // 20 seconds
-/** Flip the status of s */
+/**
+ * Flip the status of s
+ * @param s
+ */
 function flipStatus(s) {
     if (s === exports.UP) {
         return exports.DOWN;
@@ -56,8 +59,7 @@ function ucfirst(str) {
 }
 exports.ucfirst = ucfirst;
 /**
- * @deprecated Use log.debug
- * @since https://github.com/louislam/uptime-kuma/pull/910
+ * @deprecated Use log.debug (https://github.com/louislam/uptime-kuma/pull/910)
  * @param msg
  */
 function debug(msg) {
@@ -65,6 +67,9 @@ function debug(msg) {
 }
 exports.debug = debug;
 class Logger {
+    /**
+     *
+     */
     constructor() {
         /**
          * UPTIME_KUMA_HIDE_LOG=debug_monitor,info_monitor
@@ -199,6 +204,9 @@ function polyfill() {
 }
 exports.polyfill = polyfill;
 class TimeLogger {
+    /**
+     *
+     */
     constructor() {
         this.startTime = dayjs().valueOf();
     }
@@ -215,6 +223,8 @@ class TimeLogger {
 exports.TimeLogger = TimeLogger;
 /**
  * Returns a random number between min (inclusive) and max (exclusive)
+ * @param min
+ * @param max
  */
 function getRandomArbitrary(min, max) {
     return Math.random() * (max - min) + min;
@@ -228,6 +238,8 @@ exports.getRandomArbitrary = getRandomArbitrary;
  * if min isn't an integer) and no greater than max (or the next integer
  * lower than max if max isn't an integer).
  * Using Math.round() will give you a non-uniform distribution!
+ * @param min
+ * @param max
  */
 function getRandomInt(min, max) {
     min = Math.ceil(min);
@@ -239,7 +251,7 @@ exports.getRandomInt = getRandomInt;
  * Returns either the NodeJS crypto.randomBytes() function or its
  * browser equivalent implemented via window.crypto.getRandomValues()
  */
-let getRandomBytes = ((typeof window !== 'undefined' && window.crypto)
+let getRandomBytes = ((typeof window !== "undefined" && window.crypto)
     // Browsers
     ? function () {
         return (numBytes) => {
@@ -264,15 +276,17 @@ let getRandomBytes = ((typeof window !== 'undefined' && window.crypto)
 function getCryptoRandomInt(min, max) {
     // synchronous version of: https://github.com/joepie91/node-random-number-csprng
     const range = max - min;
-    if (range >= Math.pow(2, 32))
+    if (range >= Math.pow(2, 32)) {
         console.log("Warning! Range is too large.");
+    }
     let tmpRange = range;
     let bitsNeeded = 0;
     let bytesNeeded = 0;
     let mask = 1;
     while (tmpRange > 0) {
-        if (bitsNeeded % 8 === 0)
+        if (bitsNeeded % 8 === 0) {
             bytesNeeded += 1;
+        }
         bitsNeeded += 1;
         mask = mask << 1 | 1;
         tmpRange = tmpRange >>> 1;
@@ -352,6 +366,7 @@ function parseTimeObject(time) {
 }
 exports.parseTimeObject = parseTimeObject;
 /**
+ * @param obj
  * @returns string e.g. 12:00
  */
 function parseTimeFromTimeObject(obj) {
@@ -384,6 +399,9 @@ function utcToISODateTime(input) {
 exports.utcToISODateTime = utcToISODateTime;
 /**
  * For SQL_DATETIME_FORMAT
+ * @param input
+ * @param format
+ * @returns A string date of SQL_DATETIME_FORMAT
  */
 function utcToLocal(input, format = exports.SQL_DATETIME_FORMAT) {
     return dayjs.utc(input).local().format(format);
