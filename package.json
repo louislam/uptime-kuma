@@ -144,8 +144,6 @@
     },
     "devDependencies": {
         "@actions/github": "~5.0.1",
-        "@babel/eslint-parser": "^7.22.7",
-        "@babel/preset-env": "^7.15.8",
         "@fortawesome/fontawesome-svg-core": "~1.2.36",
         "@fortawesome/free-regular-svg-icons": "~5.15.4",
         "@fortawesome/free-solid-svg-icons": "~5.15.4",
