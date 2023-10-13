@@ -9,7 +9,8 @@
 // Frontend uses util.ts
 */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.localToUTC = exports.utcToLocal = exports.utcToISODateTime = exports.isoToUTCDateTime = exports.parseTimeFromTimeObject = exports.parseTimeObject = exports.getMaintenanceRelativeURL = exports.getMonitorRelativeURL = exports.genSecret = exports.getCryptoRandomInt = exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.log = exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.MIN_INTERVAL_SECOND = exports.MAX_INTERVAL_SECOND = exports.SQL_DATETIME_FORMAT_WITHOUT_SECOND = exports.SQL_DATETIME_FORMAT = exports.SQL_DATE_FORMAT = exports.STATUS_PAGE_MAINTENANCE = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.MAINTENANCE = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isDev = void 0;
+exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.CONSOLE_STYLE_BgGray = exports.CONSOLE_STYLE_BgWhite = exports.CONSOLE_STYLE_BgCyan = exports.CONSOLE_STYLE_BgMagenta = exports.CONSOLE_STYLE_BgBlue = exports.CONSOLE_STYLE_BgYellow = exports.CONSOLE_STYLE_BgGreen = exports.CONSOLE_STYLE_BgRed = exports.CONSOLE_STYLE_BgBlack = exports.CONSOLE_STYLE_FgPink = exports.CONSOLE_STYLE_FgBrown = exports.CONSOLE_STYLE_FgViolet = exports.CONSOLE_STYLE_FgLightBlue = exports.CONSOLE_STYLE_FgLightGreen = exports.CONSOLE_STYLE_FgOrange = exports.CONSOLE_STYLE_FgGray = exports.CONSOLE_STYLE_FgWhite = exports.CONSOLE_STYLE_FgCyan = exports.CONSOLE_STYLE_FgMagenta = exports.CONSOLE_STYLE_FgBlue = exports.CONSOLE_STYLE_FgYellow = exports.CONSOLE_STYLE_FgGreen = exports.CONSOLE_STYLE_FgRed = exports.CONSOLE_STYLE_FgBlack = exports.CONSOLE_STYLE_Hidden = exports.CONSOLE_STYLE_Reverse = exports.CONSOLE_STYLE_Blink = exports.CONSOLE_STYLE_Underscore = exports.CONSOLE_STYLE_Dim = exports.CONSOLE_STYLE_Bright = exports.CONSOLE_STYLE_Reset = exports.MIN_INTERVAL_SECOND = exports.MAX_INTERVAL_SECOND = exports.SQL_DATETIME_FORMAT_WITHOUT_SECOND = exports.SQL_DATETIME_FORMAT = exports.SQL_DATE_FORMAT = exports.STATUS_PAGE_MAINTENANCE = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.MAINTENANCE = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isDev = void 0;
+exports.intHash = exports.localToUTC = exports.utcToLocal = exports.utcToISODateTime = exports.isoToUTCDateTime = exports.parseTimeFromTimeObject = exports.parseTimeObject = exports.getMaintenanceRelativeURL = exports.getMonitorRelativeURL = exports.genSecret = exports.getCryptoRandomInt = exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.log = void 0;
 const dayjs = require("dayjs");
 exports.isDev = process.env.NODE_ENV === "development";
 exports.appName = "Uptime Kuma";
@@ -26,6 +27,55 @@ exports.SQL_DATETIME_FORMAT = "YYYY-MM-DD HH:mm:ss";
 exports.SQL_DATETIME_FORMAT_WITHOUT_SECOND = "YYYY-MM-DD HH:mm";
 exports.MAX_INTERVAL_SECOND = 2073600;
 exports.MIN_INTERVAL_SECOND = 20;
+exports.CONSOLE_STYLE_Reset = "\x1b[0m";
+exports.CONSOLE_STYLE_Bright = "\x1b[1m";
+exports.CONSOLE_STYLE_Dim = "\x1b[2m";
+exports.CONSOLE_STYLE_Underscore = "\x1b[4m";
+exports.CONSOLE_STYLE_Blink = "\x1b[5m";
+exports.CONSOLE_STYLE_Reverse = "\x1b[7m";
+exports.CONSOLE_STYLE_Hidden = "\x1b[8m";
+exports.CONSOLE_STYLE_FgBlack = "\x1b[30m";
+exports.CONSOLE_STYLE_FgRed = "\x1b[31m";
+exports.CONSOLE_STYLE_FgGreen = "\x1b[32m";
+exports.CONSOLE_STYLE_FgYellow = "\x1b[33m";
+exports.CONSOLE_STYLE_FgBlue = "\x1b[34m";
+exports.CONSOLE_STYLE_FgMagenta = "\x1b[35m";
+exports.CONSOLE_STYLE_FgCyan = "\x1b[36m";
+exports.CONSOLE_STYLE_FgWhite = "\x1b[37m";
+exports.CONSOLE_STYLE_FgGray = "\x1b[90m";
+exports.CONSOLE_STYLE_FgOrange = "\x1b[38;5;208m";
+exports.CONSOLE_STYLE_FgLightGreen = "\x1b[38;5;119m";
+exports.CONSOLE_STYLE_FgLightBlue = "\x1b[38;5;117m";
+exports.CONSOLE_STYLE_FgViolet = "\x1b[38;5;141m";
+exports.CONSOLE_STYLE_FgBrown = "\x1b[38;5;130m";
+exports.CONSOLE_STYLE_FgPink = "\x1b[38;5;219m";
+exports.CONSOLE_STYLE_BgBlack = "\x1b[40m";
+exports.CONSOLE_STYLE_BgRed = "\x1b[41m";
+exports.CONSOLE_STYLE_BgGreen = "\x1b[42m";
+exports.CONSOLE_STYLE_BgYellow = "\x1b[43m";
+exports.CONSOLE_STYLE_BgBlue = "\x1b[44m";
+exports.CONSOLE_STYLE_BgMagenta = "\x1b[45m";
+exports.CONSOLE_STYLE_BgCyan = "\x1b[46m";
+exports.CONSOLE_STYLE_BgWhite = "\x1b[47m";
+exports.CONSOLE_STYLE_BgGray = "\x1b[100m";
+const consoleModuleColors = [
+    exports.CONSOLE_STYLE_FgCyan,
+    exports.CONSOLE_STYLE_FgGreen,
+    exports.CONSOLE_STYLE_FgLightGreen,
+    exports.CONSOLE_STYLE_FgBlue,
+    exports.CONSOLE_STYLE_FgLightBlue,
+    exports.CONSOLE_STYLE_FgMagenta,
+    exports.CONSOLE_STYLE_FgOrange,
+    exports.CONSOLE_STYLE_FgViolet,
+    exports.CONSOLE_STYLE_FgBrown,
+    exports.CONSOLE_STYLE_FgPink,
+];
+const consoleLevelColors = {
+    "INFO": exports.CONSOLE_STYLE_FgCyan,
+    "WARN": exports.CONSOLE_STYLE_FgYellow,
+    "ERROR": exports.CONSOLE_STYLE_FgRed,
+    "DEBUG": exports.CONSOLE_STYLE_FgGray,
+};
 function flipStatus(s) {
     if (s === exports.UP) {
         return exports.DOWN;
@@ -85,23 +135,30 @@ class Logger {
         else {
             now = dayjs().format();
         }
-        const formattedMessage = (typeof msg === "string") ? `${now} [${module}] ${level}: ${msg}` : msg;
+        const levelColor = consoleLevelColors[level];
+        const moduleColor = consoleModuleColors[intHash(module, consoleModuleColors.length)];
+        let timePart = exports.CONSOLE_STYLE_FgCyan + now + exports.CONSOLE_STYLE_Reset;
+        let modulePart = "[" + moduleColor + module + exports.CONSOLE_STYLE_Reset + "]";
+        let levelPart = levelColor + `${level}:` + exports.CONSOLE_STYLE_Reset;
         if (level === "INFO") {
-            console.info(formattedMessage);
+            console.info(timePart, modulePart, levelPart, msg);
         }
         else if (level === "WARN") {
-            console.warn(formattedMessage);
+            console.warn(timePart, modulePart, levelPart, msg);
         }
         else if (level === "ERROR") {
-            console.error(formattedMessage);
+            let msgPart = exports.CONSOLE_STYLE_FgRed + msg + exports.CONSOLE_STYLE_Reset;
+            console.error(timePart, modulePart, levelPart, msgPart);
         }
         else if (level === "DEBUG") {
             if (exports.isDev) {
-                console.log(formattedMessage);
+                timePart = exports.CONSOLE_STYLE_FgGray + now + exports.CONSOLE_STYLE_Reset;
+                let msgPart = exports.CONSOLE_STYLE_FgGray + msg + exports.CONSOLE_STYLE_Reset;
+                console.debug(timePart, modulePart, levelPart, msgPart);
             }
         }
         else {
-            console.log(formattedMessage);
+            console.log(timePart, modulePart, msg);
         }
     }
     info(module, msg) {
@@ -269,3 +326,11 @@ function localToUTC(input, format = exports.SQL_DATETIME_FORMAT) {
     return dayjs(input).utc().format(format);
 }
 exports.localToUTC = localToUTC;
+function intHash(str, length = 10) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash += str.charCodeAt(i);
+    }
+    return (hash % length + length) % length;
+}
+exports.intHash = intHash;

@@ -35,6 +35,62 @@ export const SQL_DATETIME_FORMAT_WITHOUT_SECOND = "YYYY-MM-DD HH:mm";
 export const MAX_INTERVAL_SECOND = 2073600; // 24 days
 export const MIN_INTERVAL_SECOND = 20; // 20 seconds
 
+// Console colors
+// https://stackoverflow.com/questions/9781218/how-to-change-node-jss-console-font-color
+export const CONSOLE_STYLE_Reset = "\x1b[0m";
+export const CONSOLE_STYLE_Bright = "\x1b[1m";
+export const CONSOLE_STYLE_Dim = "\x1b[2m";
+export const CONSOLE_STYLE_Underscore = "\x1b[4m";
+export const CONSOLE_STYLE_Blink = "\x1b[5m";
+export const CONSOLE_STYLE_Reverse = "\x1b[7m";
+export const CONSOLE_STYLE_Hidden = "\x1b[8m";
+
+export const CONSOLE_STYLE_FgBlack = "\x1b[30m";
+export const CONSOLE_STYLE_FgRed = "\x1b[31m";
+export const CONSOLE_STYLE_FgGreen = "\x1b[32m";
+export const CONSOLE_STYLE_FgYellow = "\x1b[33m";
+export const CONSOLE_STYLE_FgBlue = "\x1b[34m";
+export const CONSOLE_STYLE_FgMagenta = "\x1b[35m";
+export const CONSOLE_STYLE_FgCyan = "\x1b[36m";
+export const CONSOLE_STYLE_FgWhite = "\x1b[37m";
+export const CONSOLE_STYLE_FgGray = "\x1b[90m";
+export const CONSOLE_STYLE_FgOrange = "\x1b[38;5;208m";
+export const CONSOLE_STYLE_FgLightGreen = "\x1b[38;5;119m";
+export const CONSOLE_STYLE_FgLightBlue = "\x1b[38;5;117m";
+export const CONSOLE_STYLE_FgViolet = "\x1b[38;5;141m";
+export const CONSOLE_STYLE_FgBrown = "\x1b[38;5;130m";
+export const CONSOLE_STYLE_FgPink = "\x1b[38;5;219m";
+
+export const CONSOLE_STYLE_BgBlack = "\x1b[40m";
+export const CONSOLE_STYLE_BgRed = "\x1b[41m";
+export const CONSOLE_STYLE_BgGreen = "\x1b[42m";
+export const CONSOLE_STYLE_BgYellow = "\x1b[43m";
+export const CONSOLE_STYLE_BgBlue = "\x1b[44m";
+export const CONSOLE_STYLE_BgMagenta = "\x1b[45m";
+export const CONSOLE_STYLE_BgCyan = "\x1b[46m";
+export const CONSOLE_STYLE_BgWhite = "\x1b[47m";
+export const CONSOLE_STYLE_BgGray = "\x1b[100m";
+
+const consoleModuleColors = [
+    CONSOLE_STYLE_FgCyan,
+    CONSOLE_STYLE_FgGreen,
+    CONSOLE_STYLE_FgLightGreen,
+    CONSOLE_STYLE_FgBlue,
+    CONSOLE_STYLE_FgLightBlue,
+    CONSOLE_STYLE_FgMagenta,
+    CONSOLE_STYLE_FgOrange,
+    CONSOLE_STYLE_FgViolet,
+    CONSOLE_STYLE_FgBrown,
+    CONSOLE_STYLE_FgPink,
+];
+
+const consoleLevelColors : Record<string, string> = {
+    "INFO": CONSOLE_STYLE_FgCyan,
+    "WARN": CONSOLE_STYLE_FgYellow,
+    "ERROR": CONSOLE_STYLE_FgRed,
+    "DEBUG": CONSOLE_STYLE_FgGray,
+};
+
 /**
  * Flip the status of s
  * @param s
@@ -125,7 +181,7 @@ class Logger {
      * @param msg Message to write
      * @param level Log level. One of INFO, WARN, ERROR, DEBUG or can be customized.
      */
-    log(module: string, msg: unknown, level: string) {
+    log(module: string, msg: any, level: string) {
         if (this.hideLog[level] && this.hideLog[level].includes(module.toLowerCase())) {
             return;
         }
@@ -139,20 +195,29 @@ class Logger {
         } else {
             now = dayjs().format();
         }
-        const formattedMessage = (typeof msg === "string") ? `${now} [${module}] ${level}: ${msg}` : msg;
+
+        const levelColor = consoleLevelColors[level];
+        const moduleColor = consoleModuleColors[intHash(module, consoleModuleColors.length)];
+
+        let timePart = CONSOLE_STYLE_FgCyan + now + CONSOLE_STYLE_Reset;
+        let modulePart = "[" + moduleColor + module + CONSOLE_STYLE_Reset + "]";
+        let levelPart = levelColor + `${level}:` + CONSOLE_STYLE_Reset;
 
         if (level === "INFO") {
-            console.info(formattedMessage);
+            console.info(timePart, modulePart, levelPart, msg);
         } else if (level === "WARN") {
-            console.warn(formattedMessage);
+            console.warn(timePart, modulePart, levelPart, msg);
         } else if (level === "ERROR") {
-            console.error(formattedMessage);
+            let msgPart = CONSOLE_STYLE_FgRed + msg + CONSOLE_STYLE_Reset;
+            console.error(timePart, modulePart, levelPart, msgPart);
         } else if (level === "DEBUG") {
             if (isDev) {
-                console.log(formattedMessage);
+                timePart = CONSOLE_STYLE_FgGray + now + CONSOLE_STYLE_Reset;
+                let msgPart = CONSOLE_STYLE_FgGray + msg + CONSOLE_STYLE_Reset;
+                console.debug(timePart, modulePart, levelPart, msgPart );
             }
         } else {
-            console.log(formattedMessage);
+            console.log(timePart, modulePart, msg);
         }
     }
 
@@ -469,3 +534,19 @@ export function utcToLocal(input : string, format = SQL_DATETIME_FORMAT) : strin
 export function localToUTC(input : string, format = SQL_DATETIME_FORMAT) {
     return dayjs(input).utc().format(format);
 }
+
+/**
+ * Generate a decimal integer number from a string
+ * @param str Input
+ * @param length Default is 10 which means 0 - 9
+ */
+export function intHash(str : string, length = 10) : number {
+    // A simple hashing function (you can use more complex hash functions if needed)
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash += str.charCodeAt(i);
+    }
+    // Normalize the hash to the range [0, 10]
+    return (hash % length + length) % length; // Ensure the result is non-negative
+}
+
