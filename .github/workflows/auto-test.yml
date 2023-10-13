@@ -5,11 +5,11 @@ name: Auto Test
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, 1.23.X ]
     paths-ignore:
       - '*.md'
   pull_request:
-    branches: [ master, 2.0.X ]
+    branches: [ master, 1.23.X ]
     paths-ignore:
       - '*.md'
 

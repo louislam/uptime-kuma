@@ -38,7 +38,6 @@ if (!semver.satisfies(nodeVersion, requiredNodeVersions)) {
 
 const args = require("args-parser")(process.argv);
 const { sleep, log, getRandomInt, genSecret, isDev } = require("../src/util");
-const config = require("./config");
 
 log.info("server", "Welcome to Uptime Kuma");
 log.debug("server", "Arguments");
@@ -71,6 +70,7 @@ const notp = require("notp");
 const base32 = require("thirty-two");
 
 const { UptimeKumaServer } = require("./uptime-kuma-server");
+
 const server = UptimeKumaServer.getInstance(args);
 const io = module.exports.io = server.io;
 const app = server.app;
@@ -78,9 +78,10 @@ const app = server.app;
 log.info("server", "Importing this project modules");
 log.debug("server", "Importing Monitor");
 const Monitor = require("./model/monitor");
+const User = require("./model/user");
+
 log.debug("server", "Importing Settings");
-const { getSettings, setSettings, setting, initJWTSecret, checkLogin, FBSD, doubleCheckPassword, startE2eTests,
-    allowDevAllOrigin
+const { getSettings, setSettings, setting, initJWTSecret, checkLogin, FBSD, doubleCheckPassword, startE2eTests, shake256, SHAKE256_LENGTH, allowDevAllOrigin,
 } = require("./util-server");
 
 log.debug("server", "Importing Notification");
@@ -133,10 +134,6 @@ const twoFAVerifyOptions = {
  */
 const testMode = !!args["test"] || false;
 const e2eTestMode = !!args["e2e"] || false;
-
-if (config.demoMode) {
-    log.info("server", "==== Demo Mode ====");
-}
 
 // Must be after io instantiation
 const { sendNotificationList, sendHeartbeatList, sendInfo, sendProxyList, sendDockerHostList, sendAPIKeyList } = require("./client");
@@ -326,6 +323,11 @@ let needSetup = false;
                     decoded.username,
                 ]);
 
+                // Check if the password changed
+                if (decoded.h !== shake256(user.password, SHAKE256_LENGTH)) {
+                    throw new Error("The token is invalid due to password change or old token");
+                }
+
                 if (user) {
                     log.debug("auth", "afterLogin");
                     afterLogin(socket, user);
@@ -347,9 +349,10 @@ let needSetup = false;
                     });
                 }
             } catch (error) {
-
                 log.error("auth", `Invalid token. IP=${clientIP}`);
-
+                if (error.message) {
+                    log.error("auth", error.message, `IP=${clientIP}`);
+                }
                 callback({
                     ok: false,
                     msg: "authInvalidToken",
@@ -389,9 +392,7 @@ let needSetup = false;
 
                     callback({
                         ok: true,
-                        token: jwt.sign({
-                            username: data.username,
-                        }, server.jwtSecret),
+                        token: User.createJWT(user, server.jwtSecret),
                     });
                 }
 
@@ -419,9 +420,7 @@ let needSetup = false;
 
                         callback({
                             ok: true,
-                            token: jwt.sign({
-                                username: data.username,
-                            }, server.jwtSecret),
+                            token: User.createJWT(user, server.jwtSecret),
                         });
                     } else {
 

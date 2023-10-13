@@ -1,11 +1,8 @@
-
 # Node.js Test Runner
 
 Documentation: https://nodejs.org/api/test.html
 
 Create a test file in this directory with the name `*.js`.
-
-
 
 ## Template
 
@@ -26,7 +23,7 @@ test("Test name", async (t) => {
 });
 ```
 
-## Run 
+## Run
 
 Node.js >=18
 

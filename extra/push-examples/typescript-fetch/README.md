@@ -1,3 +1,4 @@
+# How to run
 
 Node.js (ts-node)
 
@@ -16,4 +17,3 @@ Bun.js
 ```bash
 bun index.ts
 ```
-

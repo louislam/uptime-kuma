@@ -275,7 +275,7 @@ async function createTables() {
         table.boolean("active").notNullable().defaultTo(true);
         table.integer("user_id").unsigned();
         table.boolean("is_default").notNullable().defaultTo(false);
-        table.text("config");
+        table.text("config", "longtext");
     });
 
     // monitor_notification

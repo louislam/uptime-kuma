@@ -119,6 +119,9 @@
                                     {{ $t("needPushEvery", [monitor.interval]) }}<br />
                                     {{ $t("pushOptionalParams", ["status, msg, ping"]) }}
                                 </div>
+                                <button class="btn btn-primary" type="button" @click="resetToken">
+                                    {{ $t("Reset Token") }}
+                                </button>
                             </div>
 
                             <!-- Keyword -->
@@ -847,6 +850,8 @@ import { sleep } from "../util";
 
 const toast = useToast();
 
+const pushTokenLength = 32;
+
 const monitorDefaults = {
     type: "http",
     name: "",
@@ -881,6 +886,7 @@ const monitorDefaults = {
     kafkaProducerSaslOptions: {
         mechanism: "None",
     },
+    kafkaProducerSsl: false,
     gamedigGivenPortOnly: true,
 };
 
@@ -1144,7 +1150,9 @@ message HealthCheckResponse {
         "monitor.type"() {
             if (this.monitor.type === "push") {
                 if (! this.monitor.pushToken) {
-                    this.monitor.pushToken = genSecret(10);
+                    // ideally this would require checking if the generated token is already used
+                    // it's very unlikely to get a collision though (62^32 ~ 2.27265788 * 10^57 unique tokens)
+                    this.monitor.pushToken = genSecret(pushTokenLength);
                 }
             }
 
@@ -1345,6 +1353,10 @@ message HealthCheckResponse {
                 }
             }
             return true;
+        },
+
+        resetToken() {
+            this.monitor.pushToken = genSecret(pushTokenLength);
         },
 
         /**

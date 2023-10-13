@@ -31,7 +31,7 @@
     "confirmDisableTwoFAMsg": "Apakah Anda yakin ingin menonaktifkan 2FA?",
     "Settings": "Pengaturan",
     "Dashboard": "Dasbor",
-    "New Update": "Update terbaru",
+    "New Update": "Pembaruan Baru",
     "Language": "Bahasa",
     "Appearance": "Tampilan",
     "Theme": "Tema",
@@ -584,7 +584,7 @@
     "Game": "Permainan",
     "markdownSupported": "Dukungan sintaks markdown",
     "statusMaintenance": "Pemeliharaan",
-    "Maintenance": "Pemeliharaan",
+    "Maintenance": "Tidak Ada Pemeliharaan",
     "General Monitor Type": "Tipe Monitor Umum",
     "Passive Monitor Type": "Tipe Monitor Pasif",
     "Specific Monitor Type": "Tipe Monitor Spesifik",
@@ -788,5 +788,10 @@
     "Badge Pending Color": "Warna Lencana Tertunda",
     "Monitor Group": "Monitor Grup",
     "Expected Value": "Value yang diharapkan",
-    "Json Query": "Json Query"
+    "Json Query": "Json Query",
+    "setupDatabaseSQLite": "File database sederhana, direkomendasikan untuk penerapan skala kecil. Sebelum v2.0.0, Uptime Kuma menggunakan SQLite sebagai database default.",
+    "setupDatabaseMariaDB": "Hubungkan ke database MariaDB eksternal. Anda perlu mengatur informasi koneksi database.",
+    "setupDatabaseEmbeddedMariaDB": "Anda tidak perlu mengatur apa pun. Docker Image ini telah menyematkan dan mengonfigurasi MariaDB untuk Anda secara otomatis. Uptime Kuma akan terhubung ke database ini melalui soket unix.",
+    "setupDatabaseChooseDatabase": "Database mana yang ingin Anda gunakan?",
+    "dbName": "Nama Database"
 }
