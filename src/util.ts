@@ -1,3 +1,4 @@
+/*!
 // Common Util for frontend and backend
 //
 // DOT NOT MODIFY util.js!
@@ -5,9 +6,14 @@
 //
 // Backend uses the compiled file util.js
 // Frontend uses util.ts
+*/
 
-import * as dayjs  from "dayjs";
+import * as dayjs from "dayjs";
+
+// For loading dayjs plugins, don't remove event though it is not used in this file
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import * as timezone from "dayjs/plugin/timezone";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import * as utc from "dayjs/plugin/utc";
 
 export const isDev = process.env.NODE_ENV === "development";
@@ -29,7 +35,10 @@ export const SQL_DATETIME_FORMAT_WITHOUT_SECOND = "YYYY-MM-DD HH:mm";
 export const MAX_INTERVAL_SECOND = 2073600; // 24 days
 export const MIN_INTERVAL_SECOND = 20; // 20 seconds
 
-/** Flip the status of s */
+/**
+ * Flip the status of s
+ * @param s
+ */
 export function flipStatus(s: number) {
     if (s === UP) {
         return DOWN;
@@ -64,11 +73,10 @@ export function ucfirst(str: string) {
 }
 
 /**
- * @deprecated Use log.debug
- * @since https://github.com/louislam/uptime-kuma/pull/910
+ * @deprecated Use log.debug (https://github.com/louislam/uptime-kuma/pull/910)
  * @param msg
  */
-export function debug(msg: any) {
+export function debug(msg: unknown) {
     log.log("", msg, "debug");
 }
 
@@ -83,20 +91,23 @@ class Logger {
      *     "info_monitor",
      *  ]
      */
-    hideLog : any = {
+    hideLog : Record<string, string[]> = {
         info: [],
         warn: [],
         error: [],
         debug: [],
     };
 
+    /**
+     *
+     */
     constructor() {
         if (typeof process !== "undefined" && process.env.UPTIME_KUMA_HIDE_LOG) {
-            let list = process.env.UPTIME_KUMA_HIDE_LOG.split(",").map(v => v.toLowerCase());
+            const list = process.env.UPTIME_KUMA_HIDE_LOG.split(",").map(v => v.toLowerCase());
 
-            for (let pair of list) {
+            for (const pair of list) {
                 // split first "_" only
-                let values = pair.split(/_(.*)/s);
+                const values = pair.split(/_(.*)/s);
 
                 if (values.length >= 2) {
                     this.hideLog[values[0]].push(values[1]);
@@ -114,7 +125,7 @@ class Logger {
      * @param msg Message to write
      * @param level Log level. One of INFO, WARN, ERROR, DEBUG or can be customized.
      */
-    log(module: string, msg: any, level: string) {
+    log(module: string, msg: unknown, level: string) {
         if (this.hideLog[level] && this.hideLog[level].includes(module.toLowerCase())) {
             return;
         }
@@ -150,7 +161,7 @@ class Logger {
      * @param module Module log comes from
      * @param msg Message to write
      */
-    info(module: string, msg: any) {
+    info(module: string, msg: unknown) {
         this.log(module, msg, "info");
     }
 
@@ -159,7 +170,7 @@ class Logger {
      * @param module Module log comes from
      * @param msg Message to write
      */
-    warn(module: string, msg: any) {
+    warn(module: string, msg: unknown) {
         this.log(module, msg, "warn");
     }
 
@@ -168,8 +179,8 @@ class Logger {
      * @param module Module log comes from
      * @param msg Message to write
      */
-    error(module: string, msg: any) {
-       this.log(module, msg, "error");
+    error(module: string, msg: unknown) {
+        this.log(module, msg, "error");
     }
 
     /**
@@ -177,24 +188,24 @@ class Logger {
      * @param module Module log comes from
      * @param msg Message to write
      */
-    debug(module: string, msg: any) {
-       this.log(module, msg, "debug");
+    debug(module: string, msg: unknown) {
+        this.log(module, msg, "debug");
     }
 
     /**
-     * Log an exeption as an ERROR
+     * Log an exception as an ERROR
      * @param module Module log comes from
-     * @param exception The exeption to include
+     * @param exception The exception to include
      * @param msg The message to write
      */
-    exception(module: string, exception: any, msg: any) {
-        let finalMessage = exception
+    exception(module: string, exception: unknown, msg: unknown) {
+        let finalMessage = exception;
 
         if (msg) {
-            finalMessage = `${msg}: ${exception}`
+            finalMessage = `${msg}: ${exception}`;
         }
 
-        this.log(module, finalMessage , "error");
+        this.log(module, finalMessage, "error");
     }
 }
 
@@ -225,22 +236,28 @@ export function polyfill() {
 export class TimeLogger {
     startTime: number;
 
+    /**
+     *
+     */
     constructor() {
         this.startTime = dayjs().valueOf();
     }
+
     /**
      * Output time since start of monitor
      * @param name Name of monitor
      */
     print(name: string) {
         if (isDev && process.env.TIMELOGGER === "1") {
-            console.log(name + ": " + (dayjs().valueOf() - this.startTime) + "ms")
+            console.log(name + ": " + (dayjs().valueOf() - this.startTime) + "ms");
         }
     }
 }
 
 /**
  * Returns a random number between min (inclusive) and max (exclusive)
+ * @param min
+ * @param max
  */
 export function getRandomArbitrary(min: number, max: number) {
     return Math.random() * (max - min) + min;
@@ -254,6 +271,8 @@ export function getRandomArbitrary(min: number, max: number) {
  * if min isn't an integer) and no greater than max (or the next integer
  * lower than max if max isn't an integer).
  * Using Math.round() will give you a non-uniform distribution!
+ * @param min
+ * @param max
  */
 export function getRandomInt(min: number, max: number) {
     min = Math.ceil(min);
@@ -265,13 +284,13 @@ export function getRandomInt(min: number, max: number) {
  * Returns either the NodeJS crypto.randomBytes() function or its
  * browser equivalent implemented via window.crypto.getRandomValues()
  */
-let getRandomBytes = (
-    (typeof window !== 'undefined' && window.crypto)
+const getRandomBytes = (
+    (typeof window !== "undefined" && window.crypto)
 
         // Browsers
         ? function () {
             return (numBytes: number) => {
-                let randomBytes = new Uint8Array(numBytes);
+                const randomBytes = new Uint8Array(numBytes);
                 for (let i = 0; i < numBytes; i += 65536) {
                     window.crypto.getRandomValues(randomBytes.subarray(i, i + Math.min(numBytes - i, 65536)));
                 }
@@ -279,8 +298,9 @@ let getRandomBytes = (
             };
         }
 
-         // Node
-        : function() {
+    // Node
+        : function () {
+            // eslint-disable-next-line @typescript-eslint/no-var-requires
             return require("crypto").randomBytes;
         }
 )();
@@ -296,35 +316,38 @@ export function getCryptoRandomInt(min: number, max: number):number {
 
     // synchronous version of: https://github.com/joepie91/node-random-number-csprng
 
-    const range = max - min
-    if (range >= Math.pow(2, 32))
-        console.log("Warning! Range is too large.")
-
-    let tmpRange = range
-    let bitsNeeded = 0
-    let bytesNeeded = 0
-    let mask = 1
-
-    while (tmpRange > 0) {
-        if (bitsNeeded % 8 === 0) bytesNeeded += 1
-        bitsNeeded += 1
-        mask = mask << 1 | 1
-        tmpRange = tmpRange >>> 1
+    const range = max - min;
+    if (range >= Math.pow(2, 32)) {
+        console.log("Warning! Range is too large.");
     }
 
-    const randomBytes = getRandomBytes(bytesNeeded)
-    let randomValue = 0
+    let tmpRange = range;
+    let bitsNeeded = 0;
+    let bytesNeeded = 0;
+    let mask = 1;
+
+    while (tmpRange > 0) {
+        if (bitsNeeded % 8 === 0) {
+            bytesNeeded += 1;
+        }
+        bitsNeeded += 1;
+        mask = mask << 1 | 1;
+        tmpRange = tmpRange >>> 1;
+    }
+
+    const randomBytes = getRandomBytes(bytesNeeded);
+    let randomValue = 0;
 
     for (let i = 0; i < bytesNeeded; i++) {
-	    randomValue |= randomBytes[i] << 8 * i
+        randomValue |= randomBytes[i] << 8 * i;
     }
 
     randomValue = randomValue & mask;
 
     if (randomValue <= range) {
-        return min + randomValue
+        return min + randomValue;
     } else {
-        return getCryptoRandomInt(min, max)
+        return getCryptoRandomInt(min, max);
     }
 }
 
@@ -374,17 +397,17 @@ export function parseTimeObject(time: string) {
         };
     }
 
-    let array = time.split(":");
+    const array = time.split(":");
 
     if (array.length < 2) {
         throw new Error("parseVueDatePickerTimeFormat: Invalid Time");
     }
 
-    let obj =  {
+    const obj = {
         hours: parseInt(array[0]),
         minutes: parseInt(array[1]),
         seconds: 0,
-    }
+    };
     if (array.length >= 3) {
         obj.seconds = parseInt(array[2]);
     }
@@ -392,6 +415,7 @@ export function parseTimeObject(time: string) {
 }
 
 /**
+ * @param obj
  * @returns string e.g. 12:00
  */
 export function parseTimeFromTimeObject(obj : any) {
@@ -401,10 +425,10 @@ export function parseTimeFromTimeObject(obj : any) {
 
     let result = "";
 
-    result += obj.hours.toString().padStart(2, "0") + ":" + obj.minutes.toString().padStart(2, "0")
+    result += obj.hours.toString().padStart(2, "0") + ":" + obj.minutes.toString().padStart(2, "0");
 
     if (obj.seconds) {
-        result += ":" +  obj.seconds.toString().padStart(2, "0")
+        result += ":" + obj.seconds.toString().padStart(2, "0");
     }
 
     return result;
@@ -428,8 +452,11 @@ export function utcToISODateTime(input : string) {
 
 /**
  * For SQL_DATETIME_FORMAT
+ * @param input
+ * @param format
+ * @returns A string date of SQL_DATETIME_FORMAT
  */
-export function utcToLocal(input : string, format = SQL_DATETIME_FORMAT) {
+export function utcToLocal(input : string, format = SQL_DATETIME_FORMAT) : string {
     return dayjs.utc(input).local().format(format);
 }
 
