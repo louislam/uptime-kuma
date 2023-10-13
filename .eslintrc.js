@@ -178,6 +178,7 @@ module.exports = {
                 "jsdoc/require-returns-type": "off",
                 "jsdoc/require-param-type": "off",
                 "@typescript-eslint/no-explicit-any": "off",
+                "prefer-const": "off",
             }
         }
     ]
