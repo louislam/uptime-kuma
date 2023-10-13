@@ -27,6 +27,83 @@ class Slack extends NotificationProvider {
         }
     }
 
+    static async buildActions(monitorJSON){
+        const actions = [];
+
+        const baseURL = await setting("primaryBaseURL");
+
+        if (baseURL) {
+            actions.push({
+                "type": "button",
+                "text": {
+                    "type": "plain_text",
+                    "text": "Visit Uptime Kuma",
+                },
+                "value": "Uptime-Kuma",
+                "url": baseURL + getMonitorRelativeURL(monitorJSON.id),
+            });
+
+        }
+
+        if (monitorJSON.url) {
+            actions.push({
+                "type": "button",
+                "text": {
+                    "type": "plain_text",
+                    "text": "Visit site",
+                },
+                "value": "Site",
+                "url": monitorJSON.url,
+            });
+        }
+
+        return actions;
+    }
+    static async buildBLocks(monitorJSON, heartbeatJSON, textMsg, msg){
+
+        //create an array to dynamically add blocks
+        const blocks = [];
+
+        // the header block
+        blocks.push({
+            "type": "header",
+            "text": {
+                "type": "plain_text",
+                "text": textMsg,
+            },
+        });
+
+        // the body block, containing the details
+        blocks.push({
+            "type": "section",
+            "fields": [
+                {
+                    "type": "mrkdwn",
+                    "text": "*Message*\n" + msg,
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": `*Time (${heartbeatJSON["timezone"]})*\n${heartbeatJSON["localDateTime"]}`,
+                }
+            ],
+        });
+
+
+        const actions = await this.buildActions(monitorJSON);
+
+        //only add this block if we have actions
+        if (actions.length > 0) {
+
+            //the actions block, containing buttons
+            blocks.push({
+                "type": "actions",
+                "elements": actions,
+            });
+        }
+
+        return blocks;
+    }
+
     /**
      * @inheritdoc
      */
@@ -49,73 +126,9 @@ class Slack extends NotificationProvider {
                 return okMsg;
             }
 
-            const actions = [];
-
-            const baseURL = await setting("primaryBaseURL");
-
-            if (baseURL) {
-                actions.push({
-                    "type": "button",
-                    "text": {
-                        "type": "plain_text",
-                        "text": "Visit Uptime Kuma",
-                    },
-                    "value": "Uptime-Kuma",
-                    "url": baseURL + getMonitorRelativeURL(monitorJSON.id),
-                });
-
-            }
-
-            if (monitorJSON.url) {
-                actions.push({
-                    "type": "button",
-                    "text": {
-                        "type": "plain_text",
-                        "text": "Visit site",
-                    },
-                    "value": "Site",
-                    "url": monitorJSON.url,
-                });
-            }
-
             const textMsg = "Uptime Kuma Alert";
 
-            //create an array to dynamically add blocks
-            const blocks = [];
-
-            // the header block
-            blocks.push({
-                "type": "header",
-                "text": {
-                    "type": "plain_text",
-                    "text": textMsg,
-                },
-            });
-
-            // the body block, containing the details
-            blocks.push({
-                "type": "section",
-                "fields": [
-                    {
-                        "type": "mrkdwn",
-                        "text": "*Message*\n" + msg,
-                    },
-                    {
-                        "type": "mrkdwn",
-                        "text": `*Time (${heartbeatJSON["timezone"]})*\n${heartbeatJSON["localDateTime"]}`,
-                    }
-                ],
-            });
-
-            //only add this block if we have actions
-            if (actions.length > 0) {
-
-                //the actions block, containing buttons
-                blocks.push({
-                    "type": "actions",
-                    "elements": actions,
-                });
-            }
+            const blocks = await Slack.buildBLocks(monitorJSON, heartbeatJSON, textMsg, msg);
 
             //finally, build the entire slack request object
             let data = {
