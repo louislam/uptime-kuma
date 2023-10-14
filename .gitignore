@@ -27,3 +27,6 @@ extra/exe-builder/obj
 
 .vs
 .vscode
+/test-results/
+/playwright-report/
+/playwright/.cache/

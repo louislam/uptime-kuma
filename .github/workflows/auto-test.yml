@@ -36,7 +36,7 @@ jobs:
     - run: npm install npm@9 -g
     - run: npm install
     - run: npm run build
-    - run: npm test
+    - run: npm test-backend
       env:
         HEADLESS_TEST: 1
         JUST_FOR_TEST: ${{ secrets.JUST_FOR_TEST }}
@@ -78,33 +78,17 @@ jobs:
     - run: npm install
     - run: npm run lint
 
-# TODO: Temporarily disable, as it cannot pass the test in 2.0.0 yet
-#  e2e-tests:
-#    needs: [ check-linters ]
-#    runs-on: ubuntu-latest
-#    steps:
-#    - run: git config --global core.autocrlf false  # Mainly for Windows
-#    - uses: actions/checkout@v3
-#
-#    - name: Use Node.js 14
-#      uses: actions/setup-node@v3
-#      with:
-#        node-version: 14
-#    - run: npm install
-#    - run: npm run build
-#    - run: npm run cy:test
-
-  frontend-unit-tests:
+  e2e-test:
     needs: [ check-linters ]
     runs-on: ubuntu-latest
     steps:
     - run: git config --global core.autocrlf false  # Mainly for Windows
     - uses: actions/checkout@v3
 
-    - name: Use Node.js 14
+    - name: Use Node.js 20
       uses: actions/setup-node@v3
       with:
-        node-version: 14
+        node-version: 20
     - run: npm install
     - run: npm run build
-    - run: npm run cy:run:unit
+    - run: npm run test-e2e
