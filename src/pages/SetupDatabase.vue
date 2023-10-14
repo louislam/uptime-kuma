@@ -151,7 +151,7 @@ export default {
                 await sleep(2000);
                 await this.goToMainServerWhenReady();
             } catch (e) {
-                this.$root.toastError(e.response.data);
+                toast.error(e.response.data);
             } finally {
                 this.info.runningSetup = false;
             }

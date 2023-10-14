@@ -846,7 +846,7 @@ export default {
 
                 } else {
                     this.loading = false;
-                    this.$root.toastError(res.msg);
+                    toast.error(res.msg);
                 }
             });
         },

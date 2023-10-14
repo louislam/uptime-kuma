@@ -514,7 +514,7 @@ export default {
                 if (res.ok) {
                     this.getImportantHeartbeatListLength();
                 } else {
-                    this.$root.toastError(res.msg);
+                    toast.error(res.msg);
                 }
             });
         },
@@ -526,7 +526,7 @@ export default {
         clearHeartbeats() {
             this.$root.clearHeartbeats(this.monitor.id, (res) => {
                 if (! res.ok) {
-                    this.$root.toastError(res.msg);
+                    toast.error(res.msg);
                 }
             });
         },
