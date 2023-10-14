@@ -59,7 +59,7 @@ class Slack extends NotificationProvider {
 
         return actions;
     }
-    static async buildBLocks(monitorJSON, heartbeatJSON, textMsg, msg){
+    static async buildBlocks(monitorJSON, heartbeatJSON, textMsg, msg){
 
         //create an array to dynamically add blocks
         const blocks = [];
