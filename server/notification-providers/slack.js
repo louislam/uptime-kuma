@@ -71,7 +71,7 @@ class Slack extends NotificationProvider {
      * @param {object} heartbeatJSON The heartbeat object
      * @param {string} title The message title
      * @param {string} msg The message body
-     * @returns {Promise<*[object]>} The rich content blocks for the Slack message
+     * @returns {Array<object>} The rich content blocks for the Slack message
      */
     static buildBlocks(baseURL, monitorJSON, heartbeatJSON, title, msg) {
 
@@ -147,7 +147,7 @@ class Slack extends NotificationProvider {
                 "attachments": [
                     {
                         "color": (heartbeatJSON["status"] === UP) ? "#2eb886" : "#e01e5a",
-                        "blocks": await Slack.buildBlocks(baseURL, monitorJSON, heartbeatJSON, title, msg),
+                        "blocks": Slack.buildBlocks(baseURL, monitorJSON, heartbeatJSON, title, msg),
                     }
                 ]
             };
