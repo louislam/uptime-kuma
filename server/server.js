@@ -65,8 +65,6 @@ log.debug("server", "Importing http-graceful-shutdown");
 const gracefulShutdown = require("http-graceful-shutdown");
 log.debug("server", "Importing prometheus-api-metrics");
 const prometheusAPIMetrics = require("prometheus-api-metrics");
-log.debug("server", "Importing compare-versions");
-const compareVersions = require("compare-versions");
 const { passwordStrength } = require("check-password-strength");
 
 log.debug("server", "Importing 2FA Modules");
@@ -90,9 +88,6 @@ const { getSettings, setSettings, setting, initJWTSecret, checkLogin, FBSD, doub
 log.debug("server", "Importing Notification");
 const { Notification } = require("./notification");
 Notification.init();
-
-log.debug("server", "Importing Proxy");
-const { Proxy } = require("./proxy");
 
 log.debug("server", "Importing Database");
 const Database = require("./database");
