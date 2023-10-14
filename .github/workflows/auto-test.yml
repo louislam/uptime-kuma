@@ -36,7 +36,7 @@ jobs:
     - run: npm install npm@9 -g
     - run: npm install
     - run: npm run build
-    - run: npm test-backend
+    - run: npm run test-backend
       env:
         HEADLESS_TEST: 1
         JUST_FOR_TEST: ${{ secrets.JUST_FOR_TEST }}
