@@ -208,13 +208,23 @@ class Logger {
         } else if (level === "WARN") {
             console.warn(timePart, modulePart, levelPart, msg);
         } else if (level === "ERROR") {
-            let msgPart = CONSOLE_STYLE_FgRed + msg + CONSOLE_STYLE_Reset;
+            let msgPart :string;
+            if (typeof msg === "string") {
+                msgPart = CONSOLE_STYLE_FgRed + msg + CONSOLE_STYLE_Reset;
+            } else {
+                msgPart = msg;
+            }
             console.error(timePart, modulePart, levelPart, msgPart);
         } else if (level === "DEBUG") {
             if (isDev) {
                 timePart = CONSOLE_STYLE_FgGray + now + CONSOLE_STYLE_Reset;
-                let msgPart = CONSOLE_STYLE_FgGray + msg + CONSOLE_STYLE_Reset;
-                console.debug(timePart, modulePart, levelPart, msgPart );
+                let msgPart :string;
+                if (typeof msg === "string") {
+                    msgPart = CONSOLE_STYLE_FgGray + msg + CONSOLE_STYLE_Reset;
+                } else {
+                    msgPart = msg;
+                }
+                console.debug(timePart, modulePart, levelPart, msgPart);
             }
         } else {
             console.log(timePart, modulePart, msg);

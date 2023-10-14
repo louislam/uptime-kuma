@@ -147,13 +147,25 @@ class Logger {
             console.warn(timePart, modulePart, levelPart, msg);
         }
         else if (level === "ERROR") {
-            let msgPart = exports.CONSOLE_STYLE_FgRed + msg + exports.CONSOLE_STYLE_Reset;
+            let msgPart;
+            if (typeof msg === "string") {
+                msgPart = exports.CONSOLE_STYLE_FgRed + msg + exports.CONSOLE_STYLE_Reset;
+            }
+            else {
+                msgPart = msg;
+            }
             console.error(timePart, modulePart, levelPart, msgPart);
         }
         else if (level === "DEBUG") {
             if (exports.isDev) {
                 timePart = exports.CONSOLE_STYLE_FgGray + now + exports.CONSOLE_STYLE_Reset;
-                let msgPart = exports.CONSOLE_STYLE_FgGray + msg + exports.CONSOLE_STYLE_Reset;
+                let msgPart;
+                if (typeof msg === "string") {
+                    msgPart = exports.CONSOLE_STYLE_FgGray + msg + exports.CONSOLE_STYLE_Reset;
+                }
+                else {
+                    msgPart = msg;
+                }
                 console.debug(timePart, modulePart, levelPart, msgPart);
             }
         }

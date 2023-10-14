@@ -49,8 +49,6 @@ if (process.platform === "win32") {
     ];
 }
 
-log.debug("chrome", allowedList);
-
 /**
  * Is the executable path allowed?
  * @param {string} executablePath Path to executable
