@@ -785,6 +785,7 @@ let needSetup = false;
                     bean.port = null;
                 }
 
+                bean.ipFamily = monitor.ipFamily;
                 bean.keyword = monitor.keyword;
                 bean.invertKeyword = monitor.invertKeyword;
                 bean.ignoreTls = monitor.ignoreTls;
@@ -1558,6 +1559,7 @@ let needSetup = false;
                                 dns_resolve_server: monitorListData[i].dns_resolve_server,
                                 notificationIDList: monitorListData[i].notificationIDList,
                                 proxy_id: monitorListData[i].proxy_id || null,
+                                ipFamily: monitorListData[i].ipFamily,
                             };
 
                             if (monitorListData[i].pushToken) {

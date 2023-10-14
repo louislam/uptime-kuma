@@ -462,6 +462,23 @@
                                 <input id="packet-size" v-model="monitor.packetSize" type="number" class="form-control" required min="1" max="65500" step="1">
                             </div>
 
+                            <!-- Resolve Family -->
+                            <!-- TCP Port / Ping / DNS -->
+                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' " class="my-3">
+                                <label for="ip-family" class="form-label">{{ $t("IP Address Family") }}</label>
+                                <VueMultiselect
+                                    id="ip-family"
+                                    v-model="monitor.ipFamily"
+                                    :options="ipFamilyOptions.map(i => i.id)"
+                                    :custom-label="opt => ipFamilyOptions.find(e => e.id === opt).name"
+                                    :multiple="false"
+                                    :preselect-first="true"
+                                    :max-height="500"
+                                    :allow-empty="false"
+                                    :taggable="false"
+                                ></VueMultiselect>
+                            </div>
+
                             <!-- HTTP / Keyword only -->
                             <template v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'grpc-keyword' ">
                                 <div class="my-3">
@@ -1236,6 +1253,21 @@ message HealthCheckResponse {
             "aws",
         ];
 
+        let ipFamilyOptions = [
+            {
+                id: 0,
+                name: "auto-detect",
+            },
+            {
+                id: 4,
+                name: "IPv4",
+            },
+            {
+                id: 6,
+                name: "IPv6",
+            },
+        ];
+
         for (let i = 100; i <= 999; i++) {
             acceptedStatusCodeOptions.push(i.toString());
         }
@@ -1243,6 +1275,7 @@ message HealthCheckResponse {
         this.acceptedStatusCodeOptions = acceptedStatusCodeOptions;
         this.dnsresolvetypeOptions = dnsresolvetypeOptions;
         this.kafkaSaslMechanismOptions = kafkaSaslMechanismOptions;
+        this.ipFamilyOptions = ipFamilyOptions;
     },
     methods: {
         /**

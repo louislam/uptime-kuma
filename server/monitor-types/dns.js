@@ -1,7 +1,7 @@
 const { MonitorType } = require("./monitor-type");
-const { UP } = require("../../src/util");
+const { UP, log } = require("../../src/util");
 const dayjs = require("dayjs");
-const { dnsResolve } = require("../util-server");
+const { dnsResolve, lookup } = require("../util-server");
 const { R } = require("redbean-node");
 
 class DnsMonitorType extends MonitorType {
@@ -15,7 +15,15 @@ class DnsMonitorType extends MonitorType {
         let startTime = dayjs().valueOf();
         let dnsMessage = "";
 
-        let dnsRes = await dnsResolve(monitor.hostname, monitor.dns_resolve_server, monitor.port, monitor.dns_resolve_type);
+        let dnsResolveServer = monitor.dns_resolve_server;
+        try {
+            dnsResolveServer = await lookup(dnsResolveServer, monitor.ipFamily);
+        } catch (err) {
+            log.debug("monitor", err);
+            dnsResolveServer = null;
+        }
+
+        let dnsRes = await dnsResolve(monitor.hostname, dnsResolveServer, monitor.port, monitor.dns_resolve_type);
         heartbeat.ping = dayjs().valueOf() - startTime;
 
         if (monitor.dns_resolve_type === "A" || monitor.dns_resolve_type === "AAAA" || monitor.dns_resolve_type === "TXT" || monitor.dns_resolve_type === "PTR") {
