@@ -865,7 +865,7 @@ import { genSecret, isDev, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND } from "../u
 import { hostNameRegexPattern } from "../util-frontend";
 import { sleep } from "../util";
 
-const toast = useToast();
+const toast = useToast;
 
 const pushTokenLength = 32;
 
@@ -1190,7 +1190,7 @@ message HealthCheckResponse {
                     if (res.ok) {
                         this.gameList = res.gameList;
                     } else {
-                        toast.error(res.msg);
+                        this.$root.toastError(res.msg);
                     }
                 });
             }
@@ -1351,7 +1351,7 @@ message HealthCheckResponse {
                             this.monitor.timeout = ~~(this.monitor.interval * 8) / 10;
                         }
                     } else {
-                        toast.error(res.msg);
+                        this.$root.toastError(res.msg);
                     }
                 });
             }
@@ -1445,7 +1445,7 @@ message HealthCheckResponse {
                     createdNewParent = true;
                     this.monitor.parent = res.monitorID;
                 } else {
-                    toast.error(res.msg);
+                    this.$root.toastError(res.msg);
                     this.processing = false;
                     return;
                 }
@@ -1461,17 +1461,14 @@ message HealthCheckResponse {
                         if (createdNewParent) {
                             this.startParentGroupMonitor();
                         }
-
-                        toast.success(res.msg);
                         this.processing = false;
                         this.$root.getMonitorList();
                         this.$router.push("/dashboard/" + res.monitorID);
-
                     } else {
-                        toast.error(res.msg);
                         this.processing = false;
                     }
 
+                    this.$root.toastRes(res);
                 });
             } else {
                 await this.$refs.tagsManager.submit(this.monitor.id);

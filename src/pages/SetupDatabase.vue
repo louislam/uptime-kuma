@@ -179,7 +179,7 @@ export default {
         },
 
         test() {
-            toast.error("not implemented");
+            this.$root.toastError("not implemented");
         }
     },
 };
