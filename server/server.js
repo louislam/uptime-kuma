@@ -1559,7 +1559,6 @@ let needSetup = false;
                                 dns_resolve_server: monitorListData[i].dns_resolve_server,
                                 notificationIDList: monitorListData[i].notificationIDList,
                                 proxy_id: monitorListData[i].proxy_id || null,
-                                ipFamily: monitorListData[i].ipFamily,
                             };
 
                             if (monitorListData[i].pushToken) {

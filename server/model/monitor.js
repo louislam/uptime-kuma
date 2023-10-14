@@ -348,13 +348,13 @@ class Monitor extends BeanModel {
             }
 
             try {
-                let hostname = this.hostname;
+                let HostnameOrIp = this.hostname;
                 if (this.type === "ping" || this.type === "port" ) {
                     try {
-                        hostname = await lookup(this.hostname, this.ipFamily);
+                        HostnameOrIp = await lookup(this.hostname, this.ipFamily);
                     } catch (err) {
                         log.debug("monitor", err);
-                        hostname = null;
+                        HostnameOrIp = null;
                     }
                 }
 
@@ -587,12 +587,12 @@ class Monitor extends BeanModel {
                     }
 
                 } else if (this.type === "port") {
-                    bean.ping = await tcping(hostname, this.port);
+                    bean.ping = await tcping(HostnameOrIp, this.port);
                     bean.msg = "";
                     bean.status = UP;
 
                 } else if (this.type === "ping") {
-                    bean.ping = await ping(hostname, this.packetSize);
+                    bean.ping = await ping(HostnameOrIp, this.packetSize);
                     bean.msg = "";
                     bean.status = UP;
                 } else if (this.type === "push") {      // Type: Push
