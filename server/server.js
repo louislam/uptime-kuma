@@ -82,7 +82,7 @@ const Monitor = require("./model/monitor");
 const User = require("./model/user");
 
 log.debug("server", "Importing Settings");
-const { getSettings, setSettings, setting, initJWTSecret, checkLogin, FBSD, doubleCheckPassword, startE2eTests, shake256, SHAKE256_LENGTH, allowDevAllOrigin,
+const { getSettings, setSettings, setting, initJWTSecret, checkLogin, FBSD, doubleCheckPassword, shake256, SHAKE256_LENGTH, allowDevAllOrigin,
 } = require("./util-server");
 
 log.debug("server", "Importing Notification");
@@ -1542,10 +1542,6 @@ let needSetup = false;
         }
         startMonitors();
         checkVersion.startInterval();
-
-        if (e2eTestMode) {
-            startE2eTests();
-        }
     });
 
     await initBackgroundJobs();

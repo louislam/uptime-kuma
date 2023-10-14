@@ -172,7 +172,6 @@
         "eslint-plugin-jsdoc": "~46.4.6",
         "eslint-plugin-vue": "~8.7.1",
         "favico.js": "~0.3.10",
-        "jest": "~29.6.1",
         "marked": "~4.2.5",
         "node-ssh": "~13.1.0",
         "postcss-html": "~1.5.0",
