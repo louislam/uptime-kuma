@@ -836,6 +836,7 @@
 
 <script>
 import VueMultiselect from "vue-multiselect";
+import { useToast } from "vue-toastification";
 import ActionSelect from "../components/ActionSelect.vue";
 import CopyableInput from "../components/CopyableInput.vue";
 import CreateGroupDialog from "../components/CreateGroupDialog.vue";
@@ -846,6 +847,8 @@ import TagsManager from "../components/TagsManager.vue";
 import { genSecret, isDev, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND } from "../util.ts";
 import { hostNameRegexPattern } from "../util-frontend";
 import { sleep } from "../util";
+
+const toast = useToast;
 
 const pushTokenLength = 32;
 
@@ -1337,7 +1340,7 @@ message HealthCheckResponse {
                 try {
                     JSON.parse(this.monitor.body);
                 } catch (err) {
-                    this.$root.toastError(this.$t("BodyInvalidFormat") + err.message);
+                    toast.error(this.$t("BodyInvalidFormat") + err.message);
                     return false;
                 }
             }
@@ -1345,7 +1348,7 @@ message HealthCheckResponse {
                 try {
                     JSON.parse(this.monitor.headers);
                 } catch (err) {
-                    this.$root.toastError(this.$t("HeadersInvalidFormat") + err.message);
+                    toast.error(this.$t("HeadersInvalidFormat") + err.message);
                     return false;
                 }
             }
