@@ -15,7 +15,7 @@ on:
 
 jobs:
   auto-test:
-    needs: [ check-linters ]
+    needs: [ check-linters, e2e-test ]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
 
@@ -80,7 +80,7 @@ jobs:
 
   e2e-test:
     needs: [ check-linters ]
-    runs-on: ubuntu-latest
+    runs-on: ARM64
     steps:
     - run: git config --global core.autocrlf false  # Mainly for Windows
     - uses: actions/checkout@v3
@@ -90,5 +90,6 @@ jobs:
       with:
         node-version: 20
     - run: npm install
+    - run: npx playwright install
     - run: npm run build
     - run: npm run test-e2e
