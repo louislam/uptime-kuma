@@ -124,10 +124,6 @@ class Slack extends NotificationProvider {
             }
 
             const textMsg = "Uptime Kuma Alert";
-
-            const blocks = await Slack.buildBLocks(monitorJSON, heartbeatJSON, textMsg, msg);
-
-            //finally, build the entire slack request object
             let data = {
                 "text": `${textMsg}\n${msg}`,
                 "channel": notification.slackchannel,
