@@ -123,9 +123,7 @@ import Confirm from "./Confirm.vue";
 import Tag from "./Tag.vue";
 import VueMultiselect from "vue-multiselect";
 import { colorOptions } from "../util-frontend";
-import { useToast } from "vue-toastification";
 import { getMonitorRelativeURL } from "../util.ts";
-const toast = useToast();
 
 export default {
     components: {

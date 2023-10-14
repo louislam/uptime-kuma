@@ -28,11 +28,9 @@
 </template>
 
 <script>
-import { useToast } from "vue-toastification";
 import TagEditDialog from "../../components/TagEditDialog.vue";
 import Tag from "../Tag.vue";
 import Confirm from "../Confirm.vue";
-const toast = useToast();
 
 export default {
     components: {

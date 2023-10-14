@@ -58,8 +58,6 @@
 <script>
 import HiddenInput from "../HiddenInput.vue";
 import axios from "axios";
-import { useToast } from "vue-toastification";
-const toast = useToast();
 
 export default {
     components: {

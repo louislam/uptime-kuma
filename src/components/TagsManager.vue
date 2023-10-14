@@ -129,10 +129,8 @@
 <script>
 import { Modal } from "bootstrap";
 import VueMultiselect from "vue-multiselect";
-import { useToast } from "vue-toastification";
 import { colorOptions } from "../util-frontend";
 import Tag from "../components/Tag.vue";
-const toast = useToast();
 
 /**
  * @typedef Tag

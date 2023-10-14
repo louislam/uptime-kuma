@@ -62,8 +62,6 @@
 <script lang="ts">
 import { Modal } from "bootstrap";
 import Confirm from "./Confirm.vue";
-import { useToast } from "vue-toastification";
-const toast = useToast();
 
 export default {
     components: {

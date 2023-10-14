@@ -76,8 +76,6 @@
 import { Modal } from "bootstrap";
 import Confirm from "./Confirm.vue";
 import VueQrcode from "vue-qrcode";
-import { useToast } from "vue-toastification";
-const toast = useToast();
 
 export default {
     components: {

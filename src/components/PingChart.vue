@@ -21,10 +21,7 @@ import { BarController, BarElement, Chart, Filler, LinearScale, LineController, 
 import "chartjs-adapter-dayjs-4";
 import dayjs from "dayjs";
 import { Line } from "vue-chartjs";
-import { useToast } from "vue-toastification";
 import { DOWN, PENDING, MAINTENANCE, log } from "../util.ts";
-
-const toast = useToast();
 
 Chart.register(LineController, BarController, LineElement, PointElement, TimeScale, BarElement, LinearScale, Tooltip, Filler);
 

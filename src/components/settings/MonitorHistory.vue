@@ -57,9 +57,6 @@
 <script>
 import Confirm from "../../components/Confirm.vue";
 import { log } from "../../util.ts";
-import { useToast } from "vue-toastification";
-
-const toast = useToast();
 
 export default {
     components: {

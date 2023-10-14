@@ -246,13 +246,10 @@
 </template>
 
 <script>
-import { useToast } from "vue-toastification";
 import VueMultiselect from "vue-multiselect";
 import Datepicker from "@vuepic/vue-datepicker";
 import { timezoneList } from "../util-frontend";
 import cronstrue from "cronstrue/i18n";
-
-const toast = useToast();
 
 export default {
     components: {

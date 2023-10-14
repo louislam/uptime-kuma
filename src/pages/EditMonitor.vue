@@ -836,7 +836,6 @@
 
 <script>
 import VueMultiselect from "vue-multiselect";
-import { useToast } from "vue-toastification";
 import ActionSelect from "../components/ActionSelect.vue";
 import CopyableInput from "../components/CopyableInput.vue";
 import CreateGroupDialog from "../components/CreateGroupDialog.vue";
@@ -847,8 +846,6 @@ import TagsManager from "../components/TagsManager.vue";
 import { genSecret, isDev, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND } from "../util.ts";
 import { hostNameRegexPattern } from "../util-frontend";
 import { sleep } from "../util";
-
-const toast = useToast();
 
 const pushTokenLength = 32;
 

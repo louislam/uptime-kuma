@@ -81,8 +81,6 @@ import { getResBaseURL } from "../util-frontend";
 import { getMaintenanceRelativeURL } from "../util.ts";
 import Confirm from "../components/Confirm.vue";
 import MaintenanceTime from "../components/MaintenanceTime.vue";
-import { useToast } from "vue-toastification";
-const toast = useToast();
 
 export default {
     components: {
