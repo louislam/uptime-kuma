@@ -90,7 +90,6 @@ class Slack extends NotificationProvider {
 
         const actions = await this.buildActions(monitorJSON);
         if (actions.length > 0) {
-
             //the actions block, containing buttons
             blocks.push({
                 "type": "actions",
