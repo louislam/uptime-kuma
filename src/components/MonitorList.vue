@@ -346,7 +346,7 @@ export default {
         pauseSelected() {
             Object.keys(this.selectedMonitors)
                 .filter(id => this.$root.monitorList[id].active)
-                .forEach(id => this.$root.getSocket().emit("pauseMonitor", id));
+                .forEach(id => this.$root.getSocket().emit("pauseMonitor", id, () => {}));
 
             this.cancelSelectMode();
         },
@@ -357,7 +357,7 @@ export default {
         resumeSelected() {
             Object.keys(this.selectedMonitors)
                 .filter(id => !this.$root.monitorList[id].active)
-                .forEach(id => this.$root.getSocket().emit("resumeMonitor", id));
+                .forEach(id => this.$root.getSocket().emit("resumeMonitor", id, () => {}));
 
             this.cancelSelectMode();
         },

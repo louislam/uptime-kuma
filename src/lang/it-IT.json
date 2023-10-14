@@ -610,5 +610,6 @@
     "Expected Value": "Valore atteso",
     "Json Query": "Query Json",
     "deleteMaintenanceMsg": "Sei sicuro di voler cancellare questa attività di manutenzione?",
-    "dnsPortDescription": "Porta server DNS. Default 53. Puoi cambiare questa porta in ogni momento."
+    "dnsPortDescription": "Porta server DNS. Default 53. Puoi cambiare questa porta in ogni momento.",
+    "setupDatabaseChooseDatabase": "Quale database vuoi usare?"
 }

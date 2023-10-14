@@ -38,9 +38,7 @@ if (!semver.satisfies(nodeVersion, requiredNodeVersions)) {
 
 const args = require("args-parser")(process.argv);
 const { sleep, log, getRandomInt, genSecret, isDev } = require("../src/util");
-const config = require("./config");
 
-log.info("server", "Welcome to Uptime Kuma");
 log.debug("server", "Arguments");
 log.debug("server", args);
 
@@ -48,8 +46,13 @@ if (! process.env.NODE_ENV) {
     process.env.NODE_ENV = "production";
 }
 
-log.info("server", "Node Env: " + process.env.NODE_ENV);
-log.info("server", "Inside Container: " + (process.env.UPTIME_KUMA_IS_CONTAINER === "1"));
+log.info("server", "Env: " + process.env.NODE_ENV);
+log.debug("server", "Inside Container: " + (process.env.UPTIME_KUMA_IS_CONTAINER === "1"));
+
+const checkVersion = require("./check-version");
+log.info("server", "Uptime Kuma Version: " + checkVersion.version);
+
+log.info("server", "Loading modules");
 
 log.debug("server", "Importing express");
 const express = require("express");
@@ -71,16 +74,17 @@ const notp = require("notp");
 const base32 = require("thirty-two");
 
 const { UptimeKumaServer } = require("./uptime-kuma-server");
+
 const server = UptimeKumaServer.getInstance(args);
 const io = module.exports.io = server.io;
 const app = server.app;
 
-log.info("server", "Importing this project modules");
 log.debug("server", "Importing Monitor");
 const Monitor = require("./model/monitor");
+const User = require("./model/user");
+
 log.debug("server", "Importing Settings");
-const { getSettings, setSettings, setting, initJWTSecret, checkLogin, FBSD, doubleCheckPassword, startE2eTests,
-    allowDevAllOrigin
+const { getSettings, setSettings, setting, initJWTSecret, checkLogin, FBSD, doubleCheckPassword, startE2eTests, shake256, SHAKE256_LENGTH, allowDevAllOrigin,
 } = require("./util-server");
 
 log.debug("server", "Importing Notification");
@@ -100,9 +104,6 @@ const { loginRateLimiter, twoFaRateLimiter } = require("./rate-limiter");
 const { apiAuth } = require("./auth");
 const { login } = require("./auth");
 const passwordHash = require("./password-hash");
-
-const checkVersion = require("./check-version");
-log.info("server", "Version: " + checkVersion.version);
 
 // If host is omitted, the server will accept connections on the unspecified IPv6 address (::) when IPv6 is available and the unspecified IPv4 address (0.0.0.0) otherwise.
 // Dual-stack support for (::)
@@ -133,10 +134,6 @@ const twoFAVerifyOptions = {
  */
 const testMode = !!args["test"] || false;
 const e2eTestMode = !!args["e2e"] || false;
-
-if (config.demoMode) {
-    log.info("server", "==== Demo Mode ====");
-}
 
 // Must be after io instantiation
 const { sendNotificationList, sendHeartbeatList, sendInfo, sendProxyList, sendDockerHostList, sendAPIKeyList } = require("./client");
@@ -198,7 +195,7 @@ let needSetup = false;
     server.entryPage = await Settings.get("entryPage");
     await StatusPage.loadDomainMappingList();
 
-    log.info("server", "Adding route");
+    log.debug("server", "Adding route");
 
     // ***************************
     // Normal Router here
@@ -298,7 +295,7 @@ let needSetup = false;
         }
     });
 
-    log.info("server", "Adding socket handler");
+    log.debug("server", "Adding socket handler");
     io.on("connection", async (socket) => {
 
         sendInfo(socket, true);
@@ -326,6 +323,11 @@ let needSetup = false;
                     decoded.username,
                 ]);
 
+                // Check if the password changed
+                if (decoded.h !== shake256(user.password, SHAKE256_LENGTH)) {
+                    throw new Error("The token is invalid due to password change or old token");
+                }
+
                 if (user) {
                     log.debug("auth", "afterLogin");
                     afterLogin(socket, user);
@@ -347,9 +349,10 @@ let needSetup = false;
                     });
                 }
             } catch (error) {
-
                 log.error("auth", `Invalid token. IP=${clientIP}`);
-
+                if (error.message) {
+                    log.error("auth", error.message, `IP=${clientIP}`);
+                }
                 callback({
                     ok: false,
                     msg: "authInvalidToken",
@@ -389,9 +392,7 @@ let needSetup = false;
 
                     callback({
                         ok: true,
-                        token: jwt.sign({
-                            username: data.username,
-                        }, server.jwtSecret),
+                        token: User.createJWT(user, server.jwtSecret),
                     });
                 }
 
@@ -419,9 +420,7 @@ let needSetup = false;
 
                         callback({
                             ok: true,
-                            token: jwt.sign({
-                                username: data.username,
-                            }, server.jwtSecret),
+                            token: User.createJWT(user, server.jwtSecret),
                         });
                     } else {
 
@@ -1736,11 +1735,12 @@ let needSetup = false;
 
     });
 
-    log.info("server", "Init the server");
+    log.debug("server", "Init the server");
 
     server.httpServer.once("error", async (err) => {
-        console.error("Cannot listen: " + err.message);
+        log.error("server", "Cannot listen: " + err.message);
         await shutdownFunction();
+        process.exit(1);
     });
 
     server.start();
@@ -1852,9 +1852,9 @@ async function afterLogin(socket, user) {
  * @returns {Promise<void>}
  */
 async function initDatabase(testMode = false) {
-    log.info("server", "Connecting to the Database");
+    log.debug("server", "Connecting to the database");
     await Database.connect(testMode);
-    log.info("server", "Connected");
+    log.info("server", "Connected to the database");
 
     // Patch the database
     await Database.patch();
@@ -1868,7 +1868,7 @@ async function initDatabase(testMode = false) {
         jwtSecretBean = await initJWTSecret();
         log.info("server", "Stored JWT secret into database");
     } else {
-        log.info("server", "Load JWT secret from database.");
+        log.debug("server", "Load JWT secret from database.");
     }
 
     // If there is no record in user table, it is a new Uptime Kuma instance, need to setup
