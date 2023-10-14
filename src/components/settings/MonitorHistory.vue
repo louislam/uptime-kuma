@@ -57,9 +57,6 @@
 <script>
 import Confirm from "../../components/Confirm.vue";
 import { log } from "../../util.ts";
-import { useToast } from "vue-toastification";
-
-const toast = useToast();
 
 export default {
     components: {
@@ -118,7 +115,7 @@ export default {
             this.$root.getSocket().emit("shrinkDatabase", (res) => {
                 if (res.ok) {
                     this.loadDatabaseSize();
-                    toast.success("Done");
+                    this.$root.toastSuccess("Done");
                 } else {
                     log.debug("monitorhistory", res);
                 }
@@ -142,7 +139,7 @@ export default {
                 if (res.ok) {
                     this.$router.go();
                 } else {
-                    toast.error(res.msg);
+                    this.$root.toastError(res.msg);
                 }
             });
         },

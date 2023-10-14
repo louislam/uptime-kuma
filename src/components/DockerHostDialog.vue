@@ -62,8 +62,6 @@
 <script lang="ts">
 import { Modal } from "bootstrap";
 import Confirm from "./Confirm.vue";
-import { useToast } from "vue-toastification";
-const toast = useToast();
 
 export default {
     components: {
@@ -120,7 +118,7 @@ export default {
                 }
 
                 if (!found) {
-                    toast.error("Docker Host not found!");
+                    this.$root.toastError("Docker Host not found!");
                 }
 
             } else {
