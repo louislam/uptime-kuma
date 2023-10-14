@@ -132,7 +132,7 @@ class Slack extends NotificationProvider {
                 "attachments": [
                     {
                         "color": (heartbeatJSON["status"] === UP) ? "#2eb886" : "#e01e5a",
-                        "blocks": blocks,
+                        "blocks": await Slack.buildBlocks(monitorJSON, heartbeatJSON, textMsg, msg),
                     }
                 ]
             };
