@@ -29,13 +29,13 @@ class Slack extends NotificationProvider {
 
     /**
      * Builds the actions available in the slack message
+     * @param {string} baseURL Uptime Kuma base URL
      * @param {object} monitorJSON The monitor config
      * @returns {Array} The relevant action objects
      */
-    static async buildActions(monitorJSON) {
+    static buildActions(baseURL, monitorJSON) {
         const actions = [];
 
-        const baseURL = await setting("primaryBaseURL");
         if (baseURL) {
             actions.push({
                 "type": "button",
@@ -66,13 +66,14 @@ class Slack extends NotificationProvider {
 
     /**
      * Builds the different blocks the Slack message consists of.
+     * @param {string} baseURL Uptime Kuma base URL
      * @param {object} monitorJSON The monitor object
      * @param {object} heartbeatJSON The heartbeat object
      * @param {string} title The message title
      * @param {string} msg The message body
      * @returns {Promise<*[object]>} The rich content blocks for the Slack message
      */
-    static async buildBlocks(monitorJSON, heartbeatJSON, title, msg) {
+    static buildBlocks(baseURL, monitorJSON, heartbeatJSON, title, msg) {
 
         //create an array to dynamically add blocks
         const blocks = [];
@@ -101,7 +102,7 @@ class Slack extends NotificationProvider {
             ],
         });
 
-        const actions = await this.buildActions(monitorJSON);
+        const actions = this.buildActions(baseURL, monitorJSON);
         if (actions.length > 0) {
             //the actions block, containing buttons
             blocks.push({
@@ -135,6 +136,8 @@ class Slack extends NotificationProvider {
                 return okMsg;
             }
 
+            const baseURL = await setting("primaryBaseURL");
+
             const title = "Uptime Kuma Alert";
             let data = {
                 "text": `${title}\n${msg}`,
@@ -144,7 +147,7 @@ class Slack extends NotificationProvider {
                 "attachments": [
                     {
                         "color": (heartbeatJSON["status"] === UP) ? "#2eb886" : "#e01e5a",
-                        "blocks": await Slack.buildBlocks(monitorJSON, heartbeatJSON, title, msg),
+                        "blocks": await Slack.buildBlocks(baseURL, monitorJSON, heartbeatJSON, title, msg),
                     }
                 ]
             };
