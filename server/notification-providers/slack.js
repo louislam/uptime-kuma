@@ -31,7 +31,6 @@ class Slack extends NotificationProvider {
         const actions = [];
 
         const baseURL = await setting("primaryBaseURL");
-
         if (baseURL) {
             actions.push({
                 "type": "button",
