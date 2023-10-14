@@ -27,7 +27,11 @@ class Slack extends NotificationProvider {
         }
     }
 
-    static async buildActions(monitorJSON){
+    /**
+     * Builds the actions available in the slack message
+     * @param monitorJSON
+     */
+    static async buildActions (monitorJSON) {
         const actions = [];
 
         const baseURL = await setting("primaryBaseURL");
@@ -58,7 +62,16 @@ class Slack extends NotificationProvider {
 
         return actions;
     }
-    static async buildBlocks(monitorJSON, heartbeatJSON, textMsg, msg){
+
+    /**
+     * Builds the different blocks the Slack message consists of.
+     * @param monitorJSON
+     * @param heartbeatJSON
+     * @param textMsg
+     * @param msg
+     * @returns {Promise<*[]>}
+     */
+    static async buildBlocks (monitorJSON, heartbeatJSON, textMsg, msg) {
 
         //create an array to dynamically add blocks
         const blocks = [];
