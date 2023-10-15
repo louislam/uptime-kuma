@@ -1,6 +1,6 @@
-# DON'T UPDATE TO node:14-bullseye-slim, see #372.
-# If the image changed, the second stage image should be changed too
-FROM node:16-buster-slim
+# DON'T UPDATE TO bullseye-slim, see #372.
+# There is no 20-buster-slim for armv7 unfortunately, 18-buster-slim is the last one for Uptime Kuma v1.
+FROM node:18-buster-slim
 ARG TARGETPLATFORM
 
 WORKDIR /app
