@@ -756,7 +756,7 @@ class Monitor extends BeanModel {
                 } else if (this.type === "sqlserver") {
                     let startTime = dayjs().valueOf();
 
-                    await mssqlQuery(this.databaseConnectionString, this.databaseQuery);
+                    await mssqlQuery(this.databaseConnectionString, this.databaseQuery || "SELECT 1");
 
                     bean.msg = "";
                     bean.status = UP;
@@ -795,7 +795,7 @@ class Monitor extends BeanModel {
                 } else if (this.type === "postgres") {
                     let startTime = dayjs().valueOf();
 
-                    await postgresQuery(this.databaseConnectionString, this.databaseQuery);
+                    await postgresQuery(this.databaseConnectionString, this.databaseQuery || "SELECT 1");
 
                     bean.msg = "";
                     bean.status = UP;
@@ -803,7 +803,11 @@ class Monitor extends BeanModel {
                 } else if (this.type === "mysql") {
                     let startTime = dayjs().valueOf();
 
-                    bean.msg = await mysqlQuery(this.databaseConnectionString, this.databaseQuery);
+                    // Use `radius_password` as `password` field, since there are too many unnecessary fields
+                    // TODO: rename `radius_password` to `password` later for general use
+                    let mysqlPassword = this.radiusPassword;
+
+                    bean.msg = await mysqlQuery(this.databaseConnectionString, this.databaseQuery || "SELECT 1", mysqlPassword);
                     bean.status = UP;
                     bean.ping = dayjs().valueOf() - startTime;
                 } else if (this.type === "mongodb") {

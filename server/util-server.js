@@ -468,11 +468,15 @@ exports.postgresQuery = function (connectionString, query) {
  * Run a query on MySQL/MariaDB
  * @param {string} connectionString The database connection string
  * @param {string} query The query to validate the database with
+ * @param {?string} password The password to use
  * @returns {Promise<(string)>}
  */
-exports.mysqlQuery = function (connectionString, query) {
+exports.mysqlQuery = function (connectionString, query, password = undefined) {
     return new Promise((resolve, reject) => {
-        const connection = mysql.createConnection(connectionString);
+        const connection = mysql.createConnection({
+            uri: connectionString,
+            password
+        });
 
         connection.on("error", (err) => {
             reject(err);
