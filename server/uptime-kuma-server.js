@@ -83,7 +83,7 @@ class UptimeKumaServer {
         const sslCert = args["ssl-cert"] || process.env.UPTIME_KUMA_SSL_CERT || process.env.SSL_CERT || undefined;
         const sslKeyPassphrase = args["ssl-key-passphrase"] || process.env.UPTIME_KUMA_SSL_KEY_PASSPHRASE || process.env.SSL_KEY_PASSPHRASE || undefined;
 
-        log.info("server", "Creating express and socket.io instance");
+        log.debug("server", "Creating express and socket.io instance");
         this.app = express();
         if (sslKey && sslCert) {
             log.info("server", "Server Type: HTTPS");
