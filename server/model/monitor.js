@@ -6,7 +6,7 @@ const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, TimeLogger, MAX_INTERVA
     SQL_DATETIME_FORMAT
 } = require("../../src/util");
 const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, mqttAsync, setSetting, httpNtlm, radius, grpcQuery,
-    redisPingAsync, mongodbPing, kafkaProducerAsync, getOidcTokenClientCredentials,
+    redisPingAsync, mongodbPing, kafkaProducerAsync, getOidcTokenClientCredentials, rootCertificatesFingerprints
 } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
@@ -22,6 +22,8 @@ const { UptimeCacheList } = require("../uptime-cache-list");
 const Gamedig = require("gamedig");
 const jsonata = require("jsonata");
 const jwt = require("jsonwebtoken");
+
+const rootCertificates = rootCertificatesFingerprints();
 
 /**
  * status:
@@ -1428,7 +1430,10 @@ class Monitor extends BeanModel {
                     let certInfo = tlsInfoObject.certInfo;
                     while (certInfo) {
                         let subjectCN = certInfo.subject["CN"];
-                        if (certInfo.daysRemaining > targetDays) {
+                        if (rootCertificates.has(certInfo.fingerprint256)) {
+                            log.debug("monitor", `Known root cert: ${certInfo.certType} certificate "${subjectCN}" (${certInfo.daysRemaining} days valid) on ${targetDays} deadline.`);
+                            break;
+                        } else if (certInfo.daysRemaining > targetDays) {
                             log.debug("monitor", `No need to send cert notification for ${certInfo.certType} certificate "${subjectCN}" (${certInfo.daysRemaining} days valid) on ${targetDays} deadline.`);
                         } else {
                             log.debug("monitor", `call sendCertNotificationByTargetDays for ${targetDays} deadline on certificate ${subjectCN}.`);
