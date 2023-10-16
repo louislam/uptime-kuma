@@ -19,8 +19,8 @@ class DnsMonitorType extends MonitorType {
         try {
             dnsResolveServer = await lookup(dnsResolveServer, monitor.ipFamily);
         } catch (err) {
-            log.debug("monitor", err);
-            dnsResolveServer = null;
+            log.debug("monitor", `Error resolving ${monitor.dns_resolve_server}. Error: ${err}`);
+            throw new Error(`Error resolving ${monitor.dns_resolve_server}. Error: ${err}`);
         }
 
         let dnsRes = await dnsResolve(monitor.hostname, dnsResolveServer, monitor.port, monitor.dns_resolve_type);

@@ -353,8 +353,8 @@ class Monitor extends BeanModel {
                     try {
                         HostnameOrIp = await lookup(this.hostname, this.ipFamily);
                     } catch (err) {
-                        log.debug("monitor", err);
-                        HostnameOrIp = null;
+                        log.debug("monitor", `Error resolving ${this.hostname}. Error: ${err}`);
+                        throw new Error(`Error resolving ${this.hostname}. Error: ${err}`);
                     }
                 }
 
