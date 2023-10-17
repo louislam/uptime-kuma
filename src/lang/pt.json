@@ -31,5 +31,9 @@
     "day": "dia | dias",
     "languageName": "Português",
     "Primary Base URL": "URL base primário",
-    "No important events": "Nenhum evento importante"
+    "No important events": "Nenhum evento importante",
+    "Dashboard": "Dashboard",
+    "Add New Monitor": "Adicionar Novo Monitor",
+    "Home": "Home",
+    "Check Update On GitHub": "Verificar por Actualizações no GitHub"
 }

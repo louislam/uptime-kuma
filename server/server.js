@@ -84,7 +84,7 @@ log.info("server", "Importing this project modules");
 log.debug("server", "Importing Monitor");
 const Monitor = require("./model/monitor");
 log.debug("server", "Importing Settings");
-const { getSettings, setSettings, setting, initJWTSecret, checkLogin, startUnitTest, FBSD, doubleCheckPassword, startE2eTests,
+const { getSettings, setSettings, setting, initJWTSecret, checkLogin, FBSD, doubleCheckPassword, startE2eTests,
     allowDevAllOrigin
 } = require("./util-server");
 
@@ -1153,9 +1153,6 @@ let needSetup = false;
                     value,
                 ]);
 
-                // Cleanup unused Tags
-                await R.exec("delete from tag where ( select count(*) from monitor_tag mt where tag.id = mt.tag_id ) = 0");
-
                 callback({
                     ok: true,
                     msg: "Deleted Successfully.",
@@ -1234,6 +1231,7 @@ let needSetup = false;
                 }
 
                 const previousChromeExecutable = await Settings.get("chromeExecutable");
+                const previousNSCDStatus = await Settings.get("nscd");
 
                 await setSettings("general", data);
                 server.entryPage = data.entryPage;
@@ -1249,6 +1247,15 @@ let needSetup = false;
                 if (previousChromeExecutable !== data.chromeExecutable) {
                     log.info("settings", "Chrome executable is changed. Resetting Chrome...");
                     await resetChrome();
+                }
+
+                // Update nscd status
+                if (previousNSCDStatus !== data.nscd) {
+                    if (data.nscd) {
+                        server.startNSCDServices();
+                    } else {
+                        server.stopNSCDServices();
+                    }
                 }
 
                 callback({
@@ -1658,10 +1665,6 @@ let needSetup = false;
         }
         startMonitors();
         checkVersion.startInterval();
-
-        if (testMode) {
-            startUnitTest();
-        }
 
         if (e2eTestMode) {
             startE2eTests();

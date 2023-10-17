@@ -19,6 +19,7 @@
                             v-model="password.currentPassword"
                             type="password"
                             class="form-control"
+                            autocomplete="current-password"
                             required
                         />
                     </div>
@@ -32,6 +33,7 @@
                             v-model="password.newPassword"
                             type="password"
                             class="form-control"
+                            autocomplete="new-password"
                             required
                         />
                     </div>
@@ -46,6 +48,7 @@
                             type="password"
                             class="form-control"
                             :class="{ 'is-invalid': invalidPassword }"
+                            autocomplete="new-password"
                             required
                         />
                         <div class="invalid-feedback">
