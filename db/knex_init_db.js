@@ -22,6 +22,12 @@ async function createTables() {
         table.string("name", 255);
     });
 
+    await knex.schema.createTable("remote_browser", (table) => {
+        table.increments("id");
+        table.string("name", 255).notNullable();
+        table.string("url", 255).notNullable();
+    });
+
     // group
     await knex.schema.createTable("group", (table) => {
         table.increments("id");
