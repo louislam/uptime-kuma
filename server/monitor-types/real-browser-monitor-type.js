@@ -8,6 +8,7 @@ const path = require("path");
 const Database = require("../database");
 const jwt = require("jsonwebtoken");
 const config = require("../config");
+const { RemoteBrowser } = require("../remote-browser");
 
 let browser = null;
 
@@ -80,6 +81,19 @@ async function getBrowser() {
             executablePath,
         });
     }
+    return browser;
+}
+
+/**
+ * Get the current instance of the browser. If there isn't one, create it
+ * @param {integer} remoteBrowserID Path to executable
+ * @param {integer} userId User ID
+ * @returns {Promise<Browser>} The browser
+ */
+async function getRemoteBrowser(remoteBrowserID, userId) {
+    let remoteBrowser = await RemoteBrowser.get(remoteBrowserID, userId);
+    log.debug("MONITOR", `Using remote browser: ${remoteBrowser.name} (${remoteBrowser.id})`);
+    browser = chromium.connect(remoteBrowser.url);
     return browser;
 }
 
@@ -202,7 +216,7 @@ class RealBrowserMonitorType extends MonitorType {
      * @inheritdoc
      */
     async check(monitor, heartbeat, server) {
-        const browser = await getBrowser();
+        const browser = monitor.remote_browser ? await getRemoteBrowser(monitor.remote_browser, monitor.user_id) : await getBrowser();
         const context = await browser.newContext();
         const page = await context.newPage();
 

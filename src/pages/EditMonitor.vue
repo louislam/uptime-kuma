@@ -144,6 +144,15 @@
                                 </div>
                             </div>
 
+                            <!-- Remote Browser -->
+                            <div v-if="monitor.type === 'real-browser'" class="my-3">
+                                <label for="remote-browser" class="form-label">{{ $t("Remote Browser") }}</label>
+                                <select id="remote-browser" v-model="monitor.remote_browser" class="form-select">
+                                    <option :value="null">Local</option>
+                                    <option v-for="remoteBrowser in $root.remoteBrowserList" :key="remoteBrowser.id" :value="remoteBrowser.id">{{ remoteBrowser.name }}</option>
+                                </select>
+                            </div>
+
                             <!-- Json Query -->
                             <div v-if="monitor.type === 'json-query'" class="my-3">
                                 <label for="jsonPath" class="form-label">{{ $t("Json Query") }}</label>
@@ -888,6 +897,7 @@ const monitorDefaults = {
     },
     kafkaProducerSsl: false,
     gamedigGivenPortOnly: true,
+    remote_browser: null
 };
 
 export default {

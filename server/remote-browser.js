@@ -3,6 +3,21 @@ const { R } = require("redbean-node");
 
 class RemoteBrowser {
 
+    /**
+     * Gets remote browser from ID
+     * @param {number} remoteBrowserID ID of the remote browser
+     * @param {number} userID ID of the user who created the remote browser
+     * @returns {Promise<Bean>} Remote Browser
+     */
+    static async get(remoteBrowserID, userID) {
+        let bean = await R.findOne("remote_browser", " id = ? AND user_id = ? ", [ remoteBrowserID, userID ]);
+
+        if (!bean) {
+            throw new Error("Remote browser not found");
+        }
+
+        return bean;
+    }
 
     /**
      * Save a Remote Browser

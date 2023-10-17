@@ -150,6 +150,7 @@ class Monitor extends BeanModel {
             kafkaProducerAllowAutoTopicCreation: this.kafkaProducerAllowAutoTopicCreation === "1" && true || false,
             kafkaProducerMessage: this.kafkaProducerMessage,
             screenshot,
+            remote_browser: this.remote_browser,
         };
 
         if (includeSensitiveData) {

@@ -825,6 +825,8 @@ let needSetup = false;
                 bean.kafkaProducerSaslOptions = JSON.stringify(monitor.kafkaProducerSaslOptions);
                 bean.kafkaProducerMessage = monitor.kafkaProducerMessage;
                 bean.gamedigGivenPortOnly = monitor.gamedigGivenPortOnly;
+                bean.remote_browser = monitor.remote_browser;
+
 
                 bean.validate();
 
