@@ -1,4 +1,3 @@
-
 const { R } = require("redbean-node");
 
 class RemoteBrowser {
