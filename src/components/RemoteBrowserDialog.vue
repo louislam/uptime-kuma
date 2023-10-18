@@ -15,7 +15,6 @@
                             <input id="remote-browser-name" v-model="remoteBrowser.name" type="text" class="form-control" required>
                         </div>
 
-
                         <div class="mb-3">
                             <label for="remote-browser-url" class="form-label">{{ $t("URL") }}</label>
                             <input id="remote-browser-url" v-model="remoteBrowser.url" type="text" class="form-control" required>
@@ -51,7 +50,7 @@
     </Confirm>
 </template>
 
-<script lang="ts">
+<script>
 import { Modal } from "bootstrap";
 import Confirm from "./Confirm.vue";
 

@@ -827,7 +827,6 @@ let needSetup = false;
                 bean.gamedigGivenPortOnly = monitor.gamedigGivenPortOnly;
                 bean.remote_browser = monitor.remote_browser;
 
-
                 bean.validate();
 
                 await R.store(bean);

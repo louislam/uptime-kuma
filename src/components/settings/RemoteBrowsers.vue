@@ -27,7 +27,7 @@
 </template>
 
 <script>
-import RemoteBrowserDialog from "../remoteBrowserDialog.vue";
+import RemoteBrowserDialog from "../../components/remoteBrowserDialog.vue";
 
 export default {
     components: {
