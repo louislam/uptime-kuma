@@ -3,6 +3,7 @@ const { checkLogin } = require("../util-server");
 const { RemoteBrowser } = require("../remote-browser");
 
 const { log } = require("../../src/util");
+const { testRemoteBrowser } = require("../monitor-types/real-browser-monitor-type");
 
 /**
  * Handlers for docker hosts
@@ -56,8 +57,8 @@ module.exports.remoteBrowserSocketHandler = (socket) => {
     socket.on("testRemoteBrowser", async (remoteBrowser, callback) => {
         try {
             checkLogin(socket);
-
-            let check = await RemoteBrowser.test(remoteBrowser);
+            let check = await testRemoteBrowser(remoteBrowser.url);
+            log.info("remoteBrowser", "Tested remote browser: " + check);
             let msg;
 
             if (check) {

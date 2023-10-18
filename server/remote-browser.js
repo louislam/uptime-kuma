@@ -1,5 +1,5 @@
 const { R } = require("redbean-node");
-
+const { testRemoteBrowser } = require("./monitor-types/real-browser-monitor-type.js");
 class RemoteBrowser {
 
     /**
@@ -73,8 +73,8 @@ class RemoteBrowser {
      * @returns {boolean} Returns if connection worked
      */
     static async test(remoteBrowser) {
-        // TODO: test connection to remote browser
-        return true;
+        const testResult = await testRemoteBrowser(remoteBrowser.id, remoteBrowser.user_id);
+        return testResult;
     }
 
 }

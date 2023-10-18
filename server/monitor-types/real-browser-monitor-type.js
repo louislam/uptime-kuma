@@ -203,11 +203,21 @@ async function testChrome(executablePath) {
         throw new Error(e.message);
     }
 }
-
+// test remote browser
 /**
- * TODO: connect remote browser? https://playwright.dev/docs/api/class-browsertype#browser-type-connect
- *
+ * @param {string} remoteBrowserURL Remote Browser URL
+ * @returns {Promise<boolean>} Returns if connection worked
  */
+async function testRemoteBrowser(remoteBrowserURL) {
+    try {
+        const browser = await chromium.connect(remoteBrowserURL);
+        browser.version();
+        await browser.close();
+        return true;
+    } catch (e) {
+        throw new Error(e.message);
+    }
+}
 class RealBrowserMonitorType extends MonitorType {
 
     name = "real-browser";
@@ -249,4 +259,5 @@ module.exports = {
     RealBrowserMonitorType,
     testChrome,
     resetChrome,
+    testRemoteBrowser,
 };
