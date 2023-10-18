@@ -1,4 +1,4 @@
-name: Lint
+name: Auto Fix Lint Issues
 
 on:
   push:
@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out Git repository
+      - name: Checkout
         uses: actions/checkout@v3
 
       - name: Install
