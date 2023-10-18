@@ -12,22 +12,40 @@ const mysql = require("mysql2/promise");
  */
 class Database {
 
+    /**
+     * Boostrap database for SQLite
+     * @type {string}
+     */
     static templatePath = "./db/kuma.db";
 
     /**
      * Data Dir (Default: ./data)
+     * @type {string}
      */
     static dataDir;
 
     /**
      * User Upload Dir (Default: ./data/upload)
+     * @type {string}
      */
     static uploadDir;
 
+    /**
+     * Chrome Screenshot Dir (Default: ./data/screenshots)
+     * @type {string}
+     */
     static screenshotDir;
 
+    /**
+     * SQLite file path (Default: ./data/kuma.db)
+     * @type {string}
+     */
     static sqlitePath;
 
+    /**
+     * For storing Docker TLS certs (Default: ./data/docker-tls)
+     * @type {string}
+     */
     static dockerTLSDir;
 
     /**
@@ -84,8 +102,8 @@ class Database {
         "patch-add-certificate-expiry-status-page.sql": true,
         "patch-monitor-oauth-cc.sql": true,
         "patch-add-timeout-monitor.sql": true,
-        "patch-add-gamedig-given-port.sql": true,   // The last file so far converted to a knex migration file
-        "patch-notification-config.sql": true,
+        "patch-add-gamedig-given-port.sql": true,
+        "patch-notification-config.sql": true,      // The last file so far converted to a knex migration file
     };
 
     /**
