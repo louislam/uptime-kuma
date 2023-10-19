@@ -416,8 +416,12 @@ class UptimeKumaServer {
         }
     }
 
+    /**
+     * Default User-Agent when making HTTP requests
+     * @returns {string} User-Agent
+     */
     getUserAgent() {
-        return "Uptime-Kuma/" + require("../package.json").version
+        return "Uptime-Kuma/" + require("../package.json").version;
     }
 }
 
