@@ -47,7 +47,8 @@ module.exports.proxySocketHandler = (socket) => {
 
             callback({
                 ok: true,
-                msg: "Deleted",
+                msg: "successDeleted",
+                msgi18n: true,
             });
 
         } catch (e) {

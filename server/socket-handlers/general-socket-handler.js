@@ -55,7 +55,11 @@ module.exports.generalSocketHandler = (socket, server) => {
         testChrome(executable).then((version) => {
             callback({
                 ok: true,
-                msg: "Found Chromium/Chrome. Version: " + version,
+                msg: {
+                    key: "foundChromiumVersion",
+                    values: [ version ],
+                },
+                msgi18n: true,
             });
         }).catch((e) => {
             callback({

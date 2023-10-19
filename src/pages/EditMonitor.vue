@@ -119,6 +119,9 @@
                                     {{ $t("needPushEvery", [monitor.interval]) }}<br />
                                     {{ $t("pushOptionalParams", ["status, msg, ping"]) }}
                                 </div>
+                                <button class="btn btn-primary" type="button" @click="resetToken">
+                                    {{ $t("Reset Token") }}
+                                </button>
                             </div>
 
                             <!-- Keyword -->
@@ -845,7 +848,9 @@ import { genSecret, isDev, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND } from "../u
 import { hostNameRegexPattern } from "../util-frontend";
 import { sleep } from "../util";
 
-const toast = useToast();
+const toast = useToast;
+
+const pushTokenLength = 32;
 
 const monitorDefaults = {
     type: "http",
@@ -881,6 +886,7 @@ const monitorDefaults = {
     kafkaProducerSaslOptions: {
         mechanism: "None",
     },
+    kafkaProducerSsl: false,
     gamedigGivenPortOnly: true,
 };
 
@@ -1144,7 +1150,9 @@ message HealthCheckResponse {
         "monitor.type"() {
             if (this.monitor.type === "push") {
                 if (! this.monitor.pushToken) {
-                    this.monitor.pushToken = genSecret(10);
+                    // ideally this would require checking if the generated token is already used
+                    // it's very unlikely to get a collision though (62^32 ~ 2.27265788 * 10^57 unique tokens)
+                    this.monitor.pushToken = genSecret(pushTokenLength);
                 }
             }
 
@@ -1165,7 +1173,7 @@ message HealthCheckResponse {
                     if (res.ok) {
                         this.gameList = res.gameList;
                     } else {
-                        toast.error(res.msg);
+                        this.$root.toastError(res.msg);
                     }
                 });
             }
@@ -1310,7 +1318,7 @@ message HealthCheckResponse {
                             this.monitor.timeout = ~~(this.monitor.interval * 8) / 10;
                         }
                     } else {
-                        toast.error(res.msg);
+                        this.$root.toastError(res.msg);
                     }
                 });
             }
@@ -1345,6 +1353,10 @@ message HealthCheckResponse {
                 }
             }
             return true;
+        },
+
+        resetToken() {
+            this.monitor.pushToken = genSecret(pushTokenLength);
         },
 
         /**
@@ -1400,7 +1412,7 @@ message HealthCheckResponse {
                     createdNewParent = true;
                     this.monitor.parent = res.monitorID;
                 } else {
-                    toast.error(res.msg);
+                    this.$root.toastError(res.msg);
                     this.processing = false;
                     return;
                 }
@@ -1416,17 +1428,14 @@ message HealthCheckResponse {
                         if (createdNewParent) {
                             this.startParentGroupMonitor();
                         }
-
-                        toast.success(res.msg);
                         this.processing = false;
                         this.$root.getMonitorList();
                         this.$router.push("/dashboard/" + res.monitorID);
-
                     } else {
-                        toast.error(res.msg);
                         this.processing = false;
                     }
 
+                    this.$root.toastRes(res);
                 });
             } else {
                 await this.$refs.tagsManager.submit(this.monitor.id);

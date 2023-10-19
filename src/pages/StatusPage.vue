@@ -438,7 +438,7 @@ export default {
             lastUpdateTime: dayjs(),
             updateCountdown: null,
             updateCountdownText: null,
-            loading: false,
+            loading: true,
         };
     },
     computed: {
@@ -614,7 +614,7 @@ export default {
                         }
 
                     } else {
-                        toast.error(res.msg);
+                        this.$root.toastError(res.msg);
                     }
                 });
             }
@@ -702,6 +702,8 @@ export default {
             this.incident = res.data.incident;
             this.maintenanceList = res.data.maintenanceList;
             this.$root.publicGroupList = res.data.publicGroupList;
+
+            this.loading = false;
         }).catch( function (error) {
             if (error.response.status === 404) {
                 location.href = "/page-not-found";
@@ -867,7 +869,7 @@ export default {
                     this.enableEditMode = false;
                     location.href = "/manage-status-page";
                 } else {
-                    toast.error(res.msg);
+                    this.$root.toastError(res.msg);
                 }
             });
         },
@@ -957,7 +959,7 @@ export default {
          */
         postIncident() {
             if (this.incident.title === "" || this.incident.content === "") {
-                toast.error(this.$t("Please input title and content"));
+                this.$root.toastError("Please input title and content");
                 return;
             }
 
@@ -967,7 +969,7 @@ export default {
                     this.enableEditIncidentMode = false;
                     this.incident = res.incident;
                 } else {
-                    toast.error(res.msg);
+                    this.$root.toastError(res.msg);
                 }
 
             });

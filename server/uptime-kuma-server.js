@@ -12,6 +12,7 @@ const { Settings } = require("./settings");
 const dayjs = require("dayjs");
 const childProcess = require("child_process");
 const path = require("path");
+const axios = require("axios");
 // DO NOT IMPORT HERE IF THE MODULES USED `UptimeKumaServer.getInstance()`, put at the bottom of this file instead.
 
 /**
@@ -83,7 +84,10 @@ class UptimeKumaServer {
         const sslCert = args["ssl-cert"] || process.env.UPTIME_KUMA_SSL_CERT || process.env.SSL_CERT || undefined;
         const sslKeyPassphrase = args["ssl-key-passphrase"] || process.env.UPTIME_KUMA_SSL_KEY_PASSPHRASE || process.env.SSL_KEY_PASSPHRASE || undefined;
 
-        log.info("server", "Creating express and socket.io instance");
+        // Set axios default user-agent to Uptime-Kuma/version
+        axios.defaults.headers.common["User-Agent"] = this.getUserAgent();
+
+        log.debug("server", "Creating express and socket.io instance");
         this.app = express();
         if (sslKey && sslCert) {
             log.info("server", "Server Type: HTTPS");
@@ -410,6 +414,14 @@ class UptimeKumaServer {
                 log.info("services", "Failed to stop nscd");
             }
         }
+    }
+
+    /**
+     * Default User-Agent when making HTTP requests
+     * @returns {string} User-Agent
+     */
+    getUserAgent() {
+        return "Uptime-Kuma/" + require("../package.json").version;
     }
 }
 
