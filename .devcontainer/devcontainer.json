@@ -13,9 +13,10 @@
     "customizations": {
         "vscode": {
             "extensions": [
-                "streetsidesoftware.code-spell-checker",
-                "dbaeumer.vscode-eslint"
-            ]
+				"streetsidesoftware.code-spell-checker",
+				"dbaeumer.vscode-eslint",
+				"GitHub.copilot-chat"
+			]
         }
     },
     "forwardPorts": [3000, 3001]

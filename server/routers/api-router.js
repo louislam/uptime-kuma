@@ -1,5 +1,12 @@
 let express = require("express");
-const { allowDevAllOrigin, allowAllOrigin, percentageToColor, filterAndJoin, sendHttpError } = require("../util-server");
+const {
+    setting,
+    allowDevAllOrigin,
+    allowAllOrigin,
+    percentageToColor,
+    filterAndJoin,
+    sendHttpError,
+} = require("../util-server");
 const { R } = require("redbean-node");
 const apicache = require("../modules/apicache");
 const Monitor = require("../model/monitor");
@@ -7,10 +14,11 @@ const dayjs = require("dayjs");
 const { UP, MAINTENANCE, DOWN, PENDING, flipStatus, log } = require("../../src/util");
 const StatusPage = require("../model/status_page");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
-const { UptimeCacheList } = require("../uptime-cache-list");
 const { makeBadge } = require("badge-maker");
 const { badgeConstants } = require("../config");
 const { Prometheus } = require("../prometheus");
+const Database = require("../database");
+const { UptimeCalculator } = require("../uptime-calculator");
 
 let router = express.Router();
 
@@ -22,10 +30,14 @@ router.get("/api/entry-page", async (request, response) => {
     allowDevAllOrigin(response);
 
     let result = { };
+    let hostname = request.hostname;
+    if ((await setting("trustProxy")) && request.headers["x-forwarded-host"]) {
+        hostname = request.headers["x-forwarded-host"];
+    }
 
-    if (request.hostname in StatusPage.domainMappingList) {
+    if (hostname in StatusPage.domainMappingList) {
         result.type = "statusPageMatchedDomain";
-        result.statusPageSlug = StatusPage.domainMappingList[request.hostname];
+        result.statusPageSlug = StatusPage.domainMappingList[hostname];
     } else {
         result.type = "entryPage";
         result.entryPage = server.entryPage;
@@ -88,7 +100,7 @@ router.get("/api/push/:pushToken", async (request, response) => {
         await R.store(bean);
 
         io.to(monitor.user_id).emit("heartbeat", bean.toJSON());
-        UptimeCacheList.clearCache(monitor.id);
+
         Monitor.sendStats(io, monitor.id, monitor.user_id);
         new Prometheus(monitor).update(bean, undefined);
 
@@ -205,8 +217,12 @@ router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (reques
     try {
         const requestedMonitorId = parseInt(request.params.id, 10);
         // if no duration is given, set value to 24 (h)
-        const requestedDuration = request.params.duration !== undefined ? parseInt(request.params.duration, 10) : 24;
+        let requestedDuration = request.params.duration !== undefined ? request.params.duration : "24h";
         const overrideValue = value && parseFloat(value);
+
+        if (requestedDuration === "24") {
+            requestedDuration = "24h";
+        }
 
         let publicMonitor = await R.getRow(`
                 SELECT monitor_group.monitor_id FROM monitor_group, \`group\`
@@ -224,10 +240,8 @@ router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (reques
             badgeValues.message = "N/A";
             badgeValues.color = badgeConstants.naColor;
         } else {
-            const uptime = overrideValue ?? await Monitor.calcUptime(
-                requestedDuration,
-                requestedMonitorId
-            );
+            const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(requestedMonitorId);
+            const uptime = overrideValue ?? uptimeCalculator.getDataByDuration(requestedDuration).uptime;
 
             // limit the displayed uptime percentage to four (two, when displayed as percent) decimal digits
             const cleanUptime = (uptime * 100).toPrecision(4);
@@ -273,19 +287,17 @@ router.get("/api/badge/:id/ping/:duration?", cache("5 minutes"), async (request,
         const requestedMonitorId = parseInt(request.params.id, 10);
 
         // Default duration is 24 (h) if not defined in queryParam, limited to 720h (30d)
-        const requestedDuration = Math.min(request.params.duration ? parseInt(request.params.duration, 10) : 24, 720);
+        let requestedDuration = request.params.duration !== undefined ? request.params.duration : "24h";
         const overrideValue = value && parseFloat(value);
 
-        const publicAvgPing = parseInt(await R.getCell(`
-                SELECT AVG(ping) FROM monitor_group, \`group\`, heartbeat
-                WHERE monitor_group.group_id = \`group\`.id
-                AND heartbeat.time > DATETIME('now', ? || ' hours')
-                AND heartbeat.ping IS NOT NULL
-                AND public = 1
-                AND heartbeat.monitor_id = ?
-            `,
-        [ -requestedDuration, requestedMonitorId ]
-        ));
+        if (requestedDuration === "24") {
+            requestedDuration = "24h";
+        }
+
+        // Check if monitor is public
+
+        const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(requestedMonitorId);
+        const publicAvgPing = uptimeCalculator.getDataByDuration(requestedDuration).avgPing;
 
         const badgeValues = { style };
 
@@ -342,10 +354,12 @@ router.get("/api/badge/:id/avg-response/:duration?", cache("5 minutes"), async (
         );
         const overrideValue = value && parseFloat(value);
 
+        const sqlHourOffset = Database.sqlHourOffset();
+
         const publicAvgPing = parseInt(await R.getCell(`
             SELECT AVG(ping) FROM monitor_group, \`group\`, heartbeat
             WHERE monitor_group.group_id = \`group\`.id
-            AND heartbeat.time > DATETIME('now', ? || ' hours')
+            AND heartbeat.time > ${sqlHourOffset}
             AND heartbeat.ping IS NOT NULL
             AND public = 1
             AND heartbeat.monitor_id = ?

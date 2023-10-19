@@ -4,28 +4,48 @@ const { setSetting, setting } = require("./util-server");
 const { log, sleep } = require("../src/util");
 const knex = require("knex");
 const path = require("path");
+const { EmbeddedMariaDB } = require("./embedded-mariadb");
+const mysql = require("mysql2/promise");
 
 /**
  * Database & App Data Folder
  */
 class Database {
 
+    /**
+     * Boostrap database for SQLite
+     * @type {string}
+     */
     static templatePath = "./db/kuma.db";
 
     /**
      * Data Dir (Default: ./data)
+     * @type {string}
      */
     static dataDir;
 
     /**
      * User Upload Dir (Default: ./data/upload)
+     * @type {string}
      */
     static uploadDir;
 
+    /**
+     * Chrome Screenshot Dir (Default: ./data/screenshots)
+     * @type {string}
+     */
     static screenshotDir;
 
-    static path;
+    /**
+     * SQLite file path (Default: ./data/kuma.db)
+     * @type {string}
+     */
+    static sqlitePath;
 
+    /**
+     * For storing Docker TLS certs (Default: ./data/docker-tls)
+     * @type {string}
+     */
     static dockerTLSDir;
 
     /**
@@ -34,11 +54,13 @@ class Database {
     static patched = false;
 
     /**
+     * SQLite only
      * Add patch filename in key
      * Values:
      *      true: Add it regardless of order
      *      false: Do nothing
      *      { parents: []}: Need parents before add it
+     *  @deprecated
      */
     static patchList = {
         "patch-setting-value-type.sql": true,
@@ -81,6 +103,7 @@ class Database {
         "patch-monitor-oauth-cc.sql": true,
         "patch-add-timeout-monitor.sql": true,
         "patch-add-gamedig-given-port.sql": true,
+        "patch-notification-config.sql": true,      // The last file so far converted to a knex migration file
     };
 
     /**
@@ -91,15 +114,20 @@ class Database {
 
     static noReject = true;
 
+    static dbConfig = {};
+
+    static knexMigrationsPath = "./db/knex_migrations";
+
     /**
-     * Initialize the database
-     * @param {Object} args Arguments to initialize DB with
+     * Initialize the data directory
+     * @param {object} args Arguments to initialize DB with
+     * @returns {void}
      */
-    static init(args) {
+    static initDataDir(args) {
         // Data Directory (must be end with "/")
         Database.dataDir = process.env.DATA_DIR || args["data-dir"] || "./data/";
 
-        Database.path = path.join(Database.dataDir, "kuma.db");
+        Database.sqlitePath = path.join(Database.dataDir, "kuma.db");
         if (! fs.existsSync(Database.dataDir)) {
             fs.mkdirSync(Database.dataDir, { recursive: true });
         }
@@ -121,39 +149,149 @@ class Database {
             fs.mkdirSync(Database.dockerTLSDir, { recursive: true });
         }
 
-        log.info("db", `Data Dir: ${Database.dataDir}`);
+        log.info("server", `Data Dir: ${Database.dataDir}`);
+    }
+
+    /**
+     * Read the database config
+     * @throws {Error} If the config is invalid
+     * @typedef {string|undefined} envString
+     * @returns {{type: "sqlite"} | {type:envString, hostname:envString, port:envString, database:envString, username:envString, password:envString}} Database config
+     */
+    static readDBConfig() {
+        let dbConfig;
+
+        let dbConfigString = fs.readFileSync(path.join(Database.dataDir, "db-config.json")).toString("utf-8");
+        dbConfig = JSON.parse(dbConfigString);
+
+        if (typeof dbConfig !== "object") {
+            throw new Error("Invalid db-config.json, it must be an object");
+        }
+
+        if (typeof dbConfig.type !== "string") {
+            throw new Error("Invalid db-config.json, type must be a string");
+        }
+        return dbConfig;
+    }
+
+    /**
+     * @typedef {string|undefined} envString
+     * @param {{type: "sqlite"} | {type:envString, hostname:envString, port:envString, database:envString, username:envString, password:envString}} dbConfig the database configuration that should be written
+     * @returns {void}
+     */
+    static writeDBConfig(dbConfig) {
+        fs.writeFileSync(path.join(Database.dataDir, "db-config.json"), JSON.stringify(dbConfig, null, 4));
     }
 
     /**
      * Connect to the database
-     * @param {boolean} [testMode=false] Should the connection be
-     * started in test mode?
-     * @param {boolean} [autoloadModels=true] Should models be
-     * automatically loaded?
-     * @param {boolean} [noLog=false] Should logs not be output?
+     * @param {boolean} testMode Should the connection be started in test mode?
+     * @param {boolean} autoloadModels Should models be automatically loaded?
+     * @param {boolean} noLog Should logs not be output?
      * @returns {Promise<void>}
      */
     static async connect(testMode = false, autoloadModels = true, noLog = false) {
         const acquireConnectionTimeout = 120 * 1000;
+        let dbConfig;
+        try {
+            dbConfig = this.readDBConfig();
+            Database.dbConfig = dbConfig;
+        } catch (err) {
+            log.warn("db", err.message);
+            dbConfig = {
+                type: "sqlite",
+            };
+        }
 
-        const Dialect = require("knex/lib/dialects/sqlite3/index.js");
-        Dialect.prototype._driver = () => require("@louislam/sqlite3");
+        let config = {};
 
-        const knexInstance = knex({
-            client: Dialect,
-            connection: {
-                filename: Database.path,
-                acquireConnectionTimeout: acquireConnectionTimeout,
-            },
-            useNullAsDefault: true,
-            pool: {
-                min: 1,
-                max: 1,
-                idleTimeoutMillis: 120 * 1000,
-                propagateCreateError: false,
-                acquireTimeoutMillis: acquireConnectionTimeout,
+        let mariadbPoolConfig = {
+            afterCreate: function (conn, done) {
+
             }
-        });
+        };
+
+        log.info("db", `Database Type: ${dbConfig.type}`);
+
+        if (dbConfig.type === "sqlite") {
+
+            if (! fs.existsSync(Database.sqlitePath)) {
+                log.info("server", "Copying Database");
+                fs.copyFileSync(Database.templatePath, Database.sqlitePath);
+            }
+
+            const Dialect = require("knex/lib/dialects/sqlite3/index.js");
+            Dialect.prototype._driver = () => require("@louislam/sqlite3");
+
+            config = {
+                client: Dialect,
+                connection: {
+                    filename: Database.sqlitePath,
+                    acquireConnectionTimeout: acquireConnectionTimeout,
+                },
+                useNullAsDefault: true,
+                pool: {
+                    min: 1,
+                    max: 1,
+                    idleTimeoutMillis: 120 * 1000,
+                    propagateCreateError: false,
+                    acquireTimeoutMillis: acquireConnectionTimeout,
+                }
+            };
+        } else if (dbConfig.type === "mariadb") {
+            if (!/^\w+$/.test(dbConfig.dbName)) {
+                throw Error("Invalid database name. A database name can only consist of letters, numbers and underscores");
+            }
+
+            const connection = await mysql.createConnection({
+                host: dbConfig.hostname,
+                port: dbConfig.port,
+                user: dbConfig.username,
+                password: dbConfig.password,
+            });
+
+            await connection.execute("CREATE DATABASE IF NOT EXISTS " + dbConfig.dbName + " CHARACTER SET utf8mb4");
+            connection.end();
+
+            config = {
+                client: "mysql2",
+                connection: {
+                    host: dbConfig.hostname,
+                    port: dbConfig.port,
+                    user: dbConfig.username,
+                    password: dbConfig.password,
+                    database: dbConfig.dbName,
+                    timezone: "+00:00",
+                },
+                pool: mariadbPoolConfig,
+            };
+        } else if (dbConfig.type === "embedded-mariadb") {
+            let embeddedMariaDB = EmbeddedMariaDB.getInstance();
+            await embeddedMariaDB.start();
+            log.info("mariadb", "Embedded MariaDB started");
+            config = {
+                client: "mysql2",
+                connection: {
+                    socketPath: embeddedMariaDB.socketPath,
+                    user: "node",
+                    database: "kuma",
+                },
+                pool: mariadbPoolConfig,
+            };
+        } else {
+            throw new Error("Unknown Database type: " + dbConfig.type);
+        }
+
+        // Set to utf8mb4 for MariaDB
+        if (dbConfig.type.endsWith("mariadb")) {
+            config.pool = {
+                afterCreate(conn, done) {
+                    conn.query("SET CHARACTER SET utf8mb4;", (err) => done(err, conn));
+                },
+            };
+        }
+
+        const knexInstance = knex(config);
 
         R.setup(knexInstance);
 
@@ -168,6 +306,19 @@ class Database {
             await R.autoloadModels("./server/model");
         }
 
+        if (dbConfig.type === "sqlite") {
+            await this.initSQLite(testMode, noLog);
+        } else if (dbConfig.type.endsWith("mariadb")) {
+            await this.initMariaDB();
+        }
+    }
+
+    /**
+     @param {boolean} testMode Should the connection be started in test mode?
+     @param {boolean} noLog Should logs not be output?
+     @returns {Promise<void>}
+     */
+    static async initSQLite(testMode, noLog) {
         await R.exec("PRAGMA foreign_keys = ON");
         if (testMode) {
             // Change to MEMORY
@@ -185,35 +336,94 @@ class Database {
         await R.exec("PRAGMA synchronous = NORMAL");
 
         if (!noLog) {
-            log.info("db", "SQLite config:");
-            log.info("db", await R.getAll("PRAGMA journal_mode"));
-            log.info("db", await R.getAll("PRAGMA cache_size"));
-            log.info("db", "SQLite Version: " + await R.getCell("SELECT sqlite_version()"));
+            log.debug("db", "SQLite config:");
+            log.debug("db", await R.getAll("PRAGMA journal_mode"));
+            log.debug("db", await R.getAll("PRAGMA cache_size"));
+            log.debug("db", "SQLite Version: " + await R.getCell("SELECT sqlite_version()"));
         }
     }
 
-    /** Patch the database */
+    /**
+     * Initialize MariaDB
+     * @returns {Promise<void>}
+     */
+    static async initMariaDB() {
+        log.debug("db", "Checking if MariaDB database exists...");
+
+        let hasTable = await R.hasTable("docker_host");
+        if (!hasTable) {
+            const { createTables } = require("../db/knex_init_db");
+            await createTables();
+        } else {
+            log.debug("db", "MariaDB database already exists");
+        }
+    }
+
+    /**
+     * Patch the database
+     * @returns {void}
+     */
     static async patch() {
+        // Still need to keep this for old versions of Uptime Kuma
+        if (Database.dbConfig.type === "sqlite") {
+            await this.patchSqlite();
+        }
+
+        // Using knex migrations
+        // https://knexjs.org/guide/migrations.html
+        // https://gist.github.com/NigelEarle/70db130cc040cc2868555b29a0278261
+        try {
+            await R.knex.migrate.latest({
+                directory: Database.knexMigrationsPath,
+            });
+        } catch (e) {
+            // Allow missing patch files for downgrade or testing pr.
+            if (e.message.includes("the following files are missing:")) {
+                log.warn("db", e.message);
+                log.warn("db", "Database migration failed, you may be downgrading Uptime Kuma.");
+            } else {
+                log.error("db", "Database migration failed");
+                throw e;
+            }
+        }
+    }
+
+    /**
+     * TODO
+     * @returns {Promise<void>}
+     */
+    static async rollbackLatestPatch() {
+
+    }
+
+    /**
+     * Patch the database for SQLite
+     * @returns {Promise<void>}
+     * @deprecated
+     */
+    static async patchSqlite() {
         let version = parseInt(await setting("database_version"));
 
         if (! version) {
             version = 0;
         }
 
-        log.info("db", "Your database version: " + version);
-        log.info("db", "Latest database version: " + this.latestVersion);
+        if (version !== this.latestVersion) {
+            log.info("db", "Your database version: " + version);
+            log.info("db", "Latest database version: " + this.latestVersion);
+        }
 
         if (version === this.latestVersion) {
-            log.info("db", "Database patch not needed");
+            log.debug("db", "Database patch not needed");
         } else if (version > this.latestVersion) {
-            log.info("db", "Warning: Database version is newer than expected");
+            log.warn("db", "Warning: Database version is newer than expected");
         } else {
             log.info("db", "Database patch is needed");
 
             // Try catch anything here
             try {
                 for (let i = version + 1; i <= this.latestVersion; i++) {
-                    const sqlFile = `./db/patch${i}.sql`;
+                    const sqlFile = `./db/old_migrations/patch${i}.sql`;
                     log.info("db", `Patching ${sqlFile}`);
                     await Database.importSQLFile(sqlFile);
                     log.info("db", `Patched ${sqlFile}`);
@@ -230,18 +440,19 @@ class Database {
             }
         }
 
-        await this.patch2();
+        await this.patchSqlite2();
         await this.migrateNewStatusPage();
     }
 
     /**
      * Patch DB using new process
      * Call it from patch() only
+     * @deprecated
      * @private
      * @returns {Promise<void>}
      */
-    static async patch2() {
-        log.info("db", "Database Patch 2.0 Process");
+    static async patchSqlite2() {
+        log.debug("db", "Database Patch 2.0 Process");
         let databasePatchedFiles = await setting("databasePatchedFiles");
 
         if (! databasePatchedFiles) {
@@ -274,6 +485,7 @@ class Database {
     }
 
     /**
+     * SQlite only
      * Migrate status page value in setting to "status_page" table
      * @returns {Promise<void>}
      */
@@ -345,8 +557,8 @@ class Database {
      * Patch database using new patching process
      * Used it patch2() only
      * @private
-     * @param sqlFilename
-     * @param databasePatchedFiles
+     * @param {string} sqlFilename Name of SQL file to load
+     * @param {object} databasePatchedFiles Patch status of database files
      * @returns {Promise<void>}
      */
     static async patch2Recursion(sqlFilename, databasePatchedFiles) {
@@ -370,7 +582,7 @@ class Database {
 
             log.info("db", sqlFilename + " is patching");
             this.patched = true;
-            await this.importSQLFile("./db/" + sqlFilename);
+            await this.importSQLFile("./db/old_migrations/" + sqlFilename);
             databasePatchedFiles[sqlFilename] = true;
             log.info("db", sqlFilename + " was patched successfully");
 
@@ -381,7 +593,7 @@ class Database {
 
     /**
      * Load an SQL file and execute it
-     * @param filename Filename of SQL file to import
+     * @param {string} filename Filename of SQL file to import
      * @returns {Promise<void>}
      */
     static async importSQLFile(filename) {
@@ -414,14 +626,6 @@ class Database {
     }
 
     /**
-     * Aquire a direct connection to database
-     * @returns {any}
-     */
-    static getBetterSQLite3Database() {
-        return R.knex.client.acquireConnection();
-    }
-
-    /**
      * Special handle, because tarn.js throw a promise reject that cannot be caught
      * @returns {Promise<void>}
      */
@@ -434,7 +638,9 @@ class Database {
         log.info("db", "Closing the database");
 
         // Flush WAL to main database
-        await R.exec("PRAGMA wal_checkpoint(TRUNCATE)");
+        if (Database.dbConfig.type === "sqlite") {
+            await R.exec("PRAGMA wal_checkpoint(TRUNCATE)");
+        }
 
         while (true) {
             Database.noReject = true;
@@ -447,17 +653,23 @@ class Database {
                 log.info("db", "Waiting to close the database");
             }
         }
-        log.info("db", "SQLite closed");
+        log.info("db", "Database closed");
 
         process.removeListener("unhandledRejection", listener);
     }
 
-    /** Get the size of the database */
+    /**
+     * Get the size of the database (SQLite only)
+     * @returns {number} Size of database
+     */
     static getSize() {
-        log.debug("db", "Database.getSize()");
-        let stats = fs.statSync(Database.path);
-        log.debug("db", stats);
-        return stats.size;
+        if (Database.dbConfig.type === "sqlite") {
+            log.debug("db", "Database.getSize()");
+            let stats = fs.statSync(Database.sqlitePath);
+            log.debug("db", stats);
+            return stats.size;
+        }
+        return 0;
     }
 
     /**
@@ -465,8 +677,22 @@ class Database {
      * @returns {Promise<void>}
      */
     static async shrink() {
-        await R.exec("VACUUM");
+        if (Database.dbConfig.type === "sqlite") {
+            await R.exec("VACUUM");
+        }
     }
+
+    /**
+     * @returns {string} Get the SQL for the current time plus a number of hours
+     */
+    static sqlHourOffset() {
+        if (Database.dbConfig.type === "sqlite") {
+            return "DATETIME('now', ? || ' hours')";
+        } else {
+            return "DATE_ADD(NOW(), INTERVAL ? HOUR)";
+        }
+    }
+
 }
 
 module.exports = Database;

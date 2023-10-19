@@ -1,6 +1,8 @@
+ARG BASE_IMAGE=louislam/uptime-kuma:base2
+
 ############################################
 # Build in Golang
-# Run npm run build-healthcheck-armv7 in the host first, another it will be super slow where it is building the armv7 healthcheck
+# Run npm run build-healthcheck-armv7 in the host first, otherwise it will be super slow where it is building the armv7 healthcheck
 # Check file: builder-go.dockerfile
 ############################################
 FROM louislam/uptime-kuma:builder-go AS build_healthcheck
@@ -8,49 +10,50 @@ FROM louislam/uptime-kuma:builder-go AS build_healthcheck
 ############################################
 # Build in Node.js
 ############################################
-FROM louislam/uptime-kuma:base-debian AS build
+FROM louislam/uptime-kuma:base2 AS build
+USER node
 WORKDIR /app
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1
-COPY .npmrc .npmrc
-COPY package.json package.json
-COPY package-lock.json package-lock.json
+COPY --chown=node:node .npmrc .npmrc
+COPY --chown=node:node package.json package.json
+COPY --chown=node:node package-lock.json package-lock.json
 RUN npm ci --omit=dev
 COPY . .
-COPY --from=build_healthcheck /app/extra/healthcheck /app/extra/healthcheck
-RUN chmod +x /app/extra/entrypoint.sh
+COPY --chown=node:node --from=build_healthcheck /app/extra/healthcheck /app/extra/healthcheck
+RUN mkdir ./data
 
 ############################################
 # ⭐ Main Image
 ############################################
-FROM louislam/uptime-kuma:base-debian AS release
+FROM $BASE_IMAGE AS release
+USER node
 WORKDIR /app
+
+LABEL org.opencontainers.image.source="https://github.com/louislam/uptime-kuma"
 
 ENV UPTIME_KUMA_IS_CONTAINER=1
 
 # Copy app files from build layer
-COPY --from=build /app /app
-
+COPY --chown=node:node --from=build /app /app
 
 EXPOSE 3001
-VOLUME ["/app/data"]
 HEALTHCHECK --interval=60s --timeout=30s --start-period=180s --retries=5 CMD extra/healthcheck
-ENTRYPOINT ["/usr/bin/dumb-init", "--", "extra/entrypoint.sh"]
+ENTRYPOINT ["/usr/bin/dumb-init", "--"]
 CMD ["node", "server/server.js"]
 
 ############################################
 # Mark as Nightly
 ############################################
 FROM release AS nightly
+USER node
 RUN npm run mark-as-nightly
 
 ############################################
 # Build an image for testing pr
 ############################################
-FROM louislam/uptime-kuma:base-debian AS pr-test
-
+FROM louislam/uptime-kuma:base2 AS pr-test2
 WORKDIR /app
-
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1
 
 ## Install Git
@@ -78,7 +81,7 @@ CMD ["npm", "run", "start-pr-test"]
 ############################################
 # Upload the artifact to Github
 ############################################
-FROM louislam/uptime-kuma:base-debian AS upload-artifact
+FROM louislam/uptime-kuma:base2 AS upload-artifact
 WORKDIR /
 RUN apt update && \
     apt --yes install curl file

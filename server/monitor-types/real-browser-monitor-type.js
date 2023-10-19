@@ -49,8 +49,11 @@ if (process.platform === "win32") {
     ];
 }
 
-log.debug("chrome", allowedList);
-
+/**
+ * Is the executable path allowed?
+ * @param {string} executablePath Path to executable
+ * @returns {Promise<boolean>} The executable is allowed?
+ */
 async function isAllowedChromeExecutable(executablePath) {
     console.log(config.args);
     if (config.args["allow-all-chrome-exec"] || process.env.UPTIME_KUMA_ALLOW_ALL_CHROME_EXEC === "1") {
@@ -61,6 +64,11 @@ async function isAllowedChromeExecutable(executablePath) {
     return allowedList.includes(executablePath);
 }
 
+/**
+ * Get the current instance of the browser. If there isn't one, create
+ * it.
+ * @returns {Promise<Browser>} The browser
+ */
 async function getBrowser() {
     if (!browser) {
         let executablePath = await Settings.get("chromeExecutable");
@@ -75,6 +83,11 @@ async function getBrowser() {
     return browser;
 }
 
+/**
+ * Prepare the chrome executable path
+ * @param {string} executablePath Path to chrome executable
+ * @returns {Promise<string>} Executable path
+ */
 async function prepareChromeExecutable(executablePath) {
     // Special code for using the playwright_chromium
     if (typeof executablePath === "string" && executablePath.toLocaleLowerCase() === "#playwright_chromium") {
@@ -121,6 +134,12 @@ async function prepareChromeExecutable(executablePath) {
     return executablePath;
 }
 
+/**
+ * Find the chrome executable
+ * @param {any[]} executables Executables to search through
+ * @returns {any} Executable
+ * @throws Could not find executable
+ */
 function findChrome(executables) {
     // Use the last working executable, so we don't have to search for it again
     if (lastAutoDetectChromeExecutable) {
@@ -138,6 +157,10 @@ function findChrome(executables) {
     throw new Error("Chromium not found, please specify Chromium executable path in the settings page.");
 }
 
+/**
+ * Reset chrome
+ * @returns {Promise<void>}
+ */
 async function resetChrome() {
     if (browser) {
         await browser.close();
@@ -147,8 +170,8 @@ async function resetChrome() {
 
 /**
  * Test if the chrome executable is valid and return the version
- * @param executablePath
- * @returns {Promise<string>}
+ * @param {string} executablePath Path to executable
+ * @returns {Promise<string>} Chrome version
  */
 async function testChrome(executablePath) {
     try {
@@ -175,6 +198,9 @@ class RealBrowserMonitorType extends MonitorType {
 
     name = "real-browser";
 
+    /**
+     * @inheritdoc
+     */
     async check(monitor, heartbeat, server) {
         const browser = await getBrowser();
         const context = await browser.newContext();
