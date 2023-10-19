@@ -858,5 +858,6 @@
     "tagNotFound": "Tag not found.",
     "foundChromiumVersion": "Found Chromium/Chrome. Version: {0}",
     "remoteBrowsersDescription": "Remote Browsers are an alternative to running Chromium locally. Setup with a service like browserless.io or connect to your self-hosted container: https://hub.docker.com/r/browserless/chrome",
-    "deleteRemoteBrowserMessage": "Are you sure want to delete this Remote Browser for all monitors?"
+    "deleteRemoteBrowserMessage": "Are you sure want to delete this Remote Browser for all monitors?",
+    "GrafanaOncallUrl": "Grafana Oncall URL"
 }
