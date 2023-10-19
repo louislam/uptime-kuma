@@ -10,6 +10,11 @@ class GrafanaOncall extends NotificationProvider {
      * @inheritdoc
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
+
+        if (!notification.GrafanaOncallURL) {
+            throw new Error("GrafanaOncallURL cannot be empty");
+        }
+
         let okMsg = "Sent Successfully.";
         try {
             if (heartbeatJSON === null) {
