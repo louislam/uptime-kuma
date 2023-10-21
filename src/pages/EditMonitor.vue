@@ -147,10 +147,16 @@
                             <!-- Remote Browser -->
                             <div v-if="monitor.type === 'real-browser'" class="my-3">
                                 <label for="remote-browser" class="form-label">{{ $t("Remote Browser") }}</label>
-                                <select id="remote-browser" v-model="monitor.remote_browser" class="form-select">
+                                <ActionSelect
+                                    v-model="monitor.remote_browser"
+                                    :options="remoteBrowsersOptions"
+                                    :icon="'plus'"
+                                    :action="() => $refs.remoteBrowserDialog.show()"
+                                />
+                                <!-- <select id="remote-browser" v-model="monitor.remote_browser" class="form-select">
                                     <option :value="null">Local</option>
                                     <option v-for="remoteBrowser in $root.remoteBrowserList" :key="remoteBrowser.id" :value="remoteBrowser.id">{{ remoteBrowser.name }}</option>
-                                </select>
+                                </select> -->
                             </div>
 
                             <!-- Json Query -->
@@ -839,6 +845,7 @@
             <DockerHostDialog ref="dockerHostDialog" @added="addedDockerHost" />
             <ProxyDialog ref="proxyDialog" @added="addedProxy" />
             <CreateGroupDialog ref="createGroupDialog" @added="addedDraftGroup" />
+            <RemoteBrowserDialog ref="remoteBrowserDialog" @added="addedRemoteBrowser" />
         </div>
     </transition>
 </template>
@@ -851,6 +858,7 @@ import CopyableInput from "../components/CopyableInput.vue";
 import CreateGroupDialog from "../components/CreateGroupDialog.vue";
 import NotificationDialog from "../components/NotificationDialog.vue";
 import DockerHostDialog from "../components/DockerHostDialog.vue";
+import RemoteBrowserDialog from "../components/RemoteBrowserDialog.vue";
 import ProxyDialog from "../components/ProxyDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
 import { genSecret, isDev, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND } from "../util.ts";
@@ -908,6 +916,7 @@ export default {
         CreateGroupDialog,
         NotificationDialog,
         DockerHostDialog,
+        RemoteBrowserDialog,
         TagsManager,
         VueMultiselect,
     },
@@ -958,7 +967,19 @@ export default {
             }
             return this.$t(name);
         },
-
+        remoteBrowsersOptions() {
+            const options = this.$root.remoteBrowserList.map(browser => {
+                return {
+                    label: browser.name,
+                    value: browser.id,
+                };
+            });
+            // Default to local
+            return [ ...options, {
+                label: this.$t("Local"),
+                value: null,
+            }];
+        },
         isAdd() {
             return this.$route.path === "/add";
         },
