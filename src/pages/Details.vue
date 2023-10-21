@@ -185,7 +185,7 @@
             <div v-if="monitor.type === 'real-browser'" class="shadow-box">
                 <div class="row">
                     <div class="col-md-6 zoom-cursor">
-                        <img :src="screenshotURL" style="width: 100%;" alt @click="showScreenshotDialog">
+                        <img :src="screenshotURL" style="width: 100%;" alt="screenshot of the website" @click="showScreenshotDialog">
                     </div>
                     <ScreenshotDialog ref="screenshotDialog" :imageURL="screenshotURL" />
                 </div>
