@@ -14,6 +14,7 @@ const FreeMobile = require("./notification-providers/freemobile");
 const GoogleChat = require("./notification-providers/google-chat");
 const Gorush = require("./notification-providers/gorush");
 const Gotify = require("./notification-providers/gotify");
+const GrafanaOncall = require("./notification-providers/grafana-oncall");
 const HomeAssistant = require("./notification-providers/home-assistant");
 const Kook = require("./notification-providers/kook");
 const Line = require("./notification-providers/line");
@@ -65,7 +66,7 @@ class Notification {
      * @throws Duplicate notification providers in list
      */
     static init() {
-        log.info("notification", "Prepare Notification Providers");
+        log.debug("notification", "Prepare Notification Providers");
 
         this.providerList = {};
 
@@ -84,6 +85,7 @@ class Notification {
             new GoogleChat(),
             new Gorush(),
             new Gotify(),
+            new GrafanaOncall(),
             new HomeAssistant(),
             new Kook(),
             new Line(),

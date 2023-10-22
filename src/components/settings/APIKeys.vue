@@ -72,8 +72,6 @@
 <script>
 import APIKeyDialog from "../../components/APIKeyDialog.vue";
 import Confirm from "../Confirm.vue";
-import { useToast } from "vue-toastification";
-const toast = useToast();
 
 export default {
     components: {
@@ -109,11 +107,7 @@ export default {
          */
         deleteKey() {
             this.$root.deleteAPIKey(this.selectedKeyID, (res) => {
-                if (res.ok) {
-                    toast.success(res.msg);
-                } else {
-                    toast.error(res.msg);
-                }
+                this.$root.toastRes(res);
             });
         },
 
