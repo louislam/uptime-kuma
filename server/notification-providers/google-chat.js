@@ -47,6 +47,7 @@ class GoogleChat extends NotificationProvider {
             // add button for monitor link if available
             const baseURL = await setting("primaryBaseURL");
             if (baseURL) {
+                const urlPath = monitorJSON ? getMonitorRelativeURL(monitorJSON.id) : "/"
                 sectionWidgets.push({
                     buttonList: {
                         buttons: [
@@ -54,10 +55,7 @@ class GoogleChat extends NotificationProvider {
                                 text: "Visit Uptime Kuma",
                                 onClick: {
                                     openLink: {
-                                        url:
-                                            baseURL + (monitorJSON ? getMonitorRelativeURL(
-                                                monitorJSON.id
-                                            ) : "/"),
+                                        url: baseURL + urlPath,
                                     },
                                 },
                             },
