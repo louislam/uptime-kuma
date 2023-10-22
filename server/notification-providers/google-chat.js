@@ -64,7 +64,6 @@ class GoogleChat extends NotificationProvider {
                 });
             }
 
-            // construct first section
             let chatSections = [
                 {
                     widgets: sectionWidgets,
