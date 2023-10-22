@@ -39,7 +39,7 @@ class GoogleChat extends NotificationProvider {
             if (heartbeatJSON) {
                 sectionWidgets.push({
                     textParagraph: {
-                        text: `<b>Time (UTC):</b>\n${heartbeatJSON["localDateTime"]}`,
+                        text: `<b>Time (${heartbeatJSON["timezone"]}):</b>\n${heartbeatJSON["localDateTime"]}`,
                     },
                 });
             }
