@@ -47,7 +47,7 @@ class GoogleChat extends NotificationProvider {
             // add button for monitor link if available
             const baseURL = await setting("primaryBaseURL");
             if (baseURL) {
-                const urlPath = monitorJSON ? getMonitorRelativeURL(monitorJSON.id) : "/"
+                const urlPath = monitorJSON ? getMonitorRelativeURL(monitorJSON.id) : "/";
                 sectionWidgets.push({
                     buttonList: {
                         buttons: [
