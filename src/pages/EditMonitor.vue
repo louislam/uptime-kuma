@@ -150,7 +150,7 @@
                                 <div class="my-3 form-check">
                                     <input id="toggle" v-model="remoteBrowsersToggle" class="form-check-input" type="checkbox">
                                     <label class="form-check-label" for="toggle">
-                                        {{ $t("Use Remote Browser") }}
+                                        {{ $t("useRemoteBrowser") }}
                                     </label>
                                     <div class="form-text">
                                         {{ $t("remoteBrowserToggle") }}
