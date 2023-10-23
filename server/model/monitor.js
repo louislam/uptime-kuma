@@ -129,6 +129,7 @@ class Monitor extends BeanModel {
             tags: tags,
             maintenance: await Monitor.isUnderMaintenance(this.id),
             mqttTopic: this.mqttTopic,
+            nutVariable: this.nutVariable,
             mqttSuccessMessage: this.mqttSuccessMessage,
             databaseQuery: this.databaseQuery,
             authMethod: this.authMethod,
