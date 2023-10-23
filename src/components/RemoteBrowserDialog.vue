@@ -107,7 +107,7 @@ export default {
                 }
 
                 if (!found) {
-                    this.$root.toastError("Remote Browser not found!");
+                    this.$root.toastError(this.$t("Remote Browser not found!"));
                 }
 
             } else {
