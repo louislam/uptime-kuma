@@ -146,17 +146,26 @@
 
                             <!-- Remote Browser -->
                             <div v-if="monitor.type === 'real-browser'" class="my-3">
-                                <label for="remote-browser" class="form-label">{{ $t("Remote Browser") }}</label>
-                                <ActionSelect
-                                    v-model="monitor.remote_browser"
-                                    :options="remoteBrowsersOptions"
-                                    :icon="'plus'"
-                                    :action="() => $refs.remoteBrowserDialog.show()"
-                                />
-                                <!-- <select id="remote-browser" v-model="monitor.remote_browser" class="form-select">
-                                    <option :value="null">Local</option>
-                                    <option v-for="remoteBrowser in $root.remoteBrowserList" :key="remoteBrowser.id" :value="remoteBrowser.id">{{ remoteBrowser.name }}</option>
-                                </select> -->
+                                <!-- Toggle -->
+                                <div class="my-3 form-check">
+                                    <input id="toggle" v-model="remoteBrowsersToggle" class="form-check-input" type="checkbox">
+                                    <label class="form-check-label" for="toggle">
+                                        {{ $t("Use Remote Browser") }}
+                                    </label>
+                                    <div class="form-text">
+                                        {{ $t("remoteBrowserToggle") }}
+                                    </div>
+                                </div>
+
+                                <span v-if="remoteBrowsersToggle">
+                                    <label for="remote-browser" class="form-label">{{ $t("Remote Browser") }}</label>
+                                    <ActionSelect
+                                        v-model="monitor.remote_browser"
+                                        :options="remoteBrowsersOptions"
+                                        :icon="'plus'"
+                                        :action="() => $refs.remoteBrowserDialog.show()"
+                                    />
+                                </span>
                             </div>
 
                             <!-- Json Query -->
@@ -944,6 +953,7 @@ export default {
                 "mongodb": "mongodb://username:password@host:port/database",
             },
             draftGroupName: null,
+            remoteBrowsersEnabled: false,
         };
     },
 
@@ -968,17 +978,25 @@ export default {
             return this.$t(name);
         },
         remoteBrowsersOptions() {
-            const options = this.$root.remoteBrowserList.map(browser => {
+            return this.$root.remoteBrowserList.map(browser => {
                 return {
                     label: browser.name,
                     value: browser.id,
                 };
             });
-            // Default to local
-            return [ ...options, {
-                label: this.$t("Local"),
-                value: null,
-            }];
+        },
+        remoteBrowsersToggle: {
+            get() {
+                return this.remoteBrowsersEnabled || this.monitor.remote_browser != null;
+            },
+            set(value) {
+                if (value) {
+                    this.remoteBrowsersEnabled = true;
+                } else {
+                    this.remoteBrowsersEnabled = false;
+                    this.monitor.remote_browser = null;
+                }
+            }
         },
         isAdd() {
             return this.$route.path === "/add";
