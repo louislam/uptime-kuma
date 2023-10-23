@@ -291,16 +291,11 @@
                                         v-model="monitor.docker_host"
                                         :options="dockerHostOptionsList"
                                         :disabled="$root.dockerHostList == null || $root.dockerHostList.length === 0"
-                                        :icon="'cog'"
-                                        :action="() => $refs.dockerHostDialog.show(monitor.docker_host)"
-                                        :actionDisabled="!$root.dockerHostList || $root.dockerHostList.length === 0"
+                                        :icon="'plus'"
+                                        :action="() => $refs.dockerHostDialog.show()"
                                         :required="true"
                                     />
                                 </div>
-
-                                <button class="btn btn-primary me-2" type="button" @click="$refs.dockerHostDialog.show()">
-                                    {{ $t("Setup Docker Host") }}
-                                </button>
                             </div>
 
                             <!-- MQTT -->
@@ -832,7 +827,7 @@
             </form>
 
             <NotificationDialog ref="notificationDialog" @added="addedNotification" />
-            <DockerHostDialog ref="dockerHostDialog" @added="addedDockerHost" @deleted="deletedDockerHost" />
+            <DockerHostDialog ref="dockerHostDialog" @added="addedDockerHost" />
             <ProxyDialog ref="proxyDialog" @added="addedProxy" />
             <CreateGroupDialog ref="createGroupDialog" @added="addedDraftGroup" />
         </div>
@@ -1499,18 +1494,6 @@ message HealthCheckResponse {
         // Enable it if the Docker Host is added in EditMonitor.vue
         addedDockerHost(id) {
             this.monitor.docker_host = id;
-        },
-
-        /**
-         * A docker host was deleted
-         * Unset the docker host if it was deleted
-         * @param {number} id - The ID of the Docker host that was deleted.
-         * @returns {void}
-         */
-        deletedDockerHost(id) {
-            if (this.monitor.docker_host === id) {
-                this.monitor.docker_host = null;
-            }
         },
 
         /**
