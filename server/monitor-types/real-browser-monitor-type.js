@@ -224,7 +224,7 @@ class RealBrowserMonitorType extends MonitorType {
             heartbeat.msg = res.status();
 
             const timing = res.request().timing();
-            heartbeat.ping = timing.responseEnd;
+            heartbeat.ping = Math.round(timing.responseEnd);
         } else {
             throw new Error(res.status() + "");
         }
