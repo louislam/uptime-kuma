@@ -150,6 +150,43 @@
                 </div>
             </div>
 
+            <!-- DNS Cache (nscd) -->
+            <div v-if="$root.info.isContainer" class="mb-4">
+                <label class="form-label">
+                    {{ $t("enableNSCD") }}
+                </label>
+
+                <div class="form-check">
+                    <input
+                        id="nscdEnable"
+                        v-model="settings.nscd"
+                        class="form-check-input"
+                        type="radio"
+                        name="nscd"
+                        :value="true"
+                        required
+                    />
+                    <label class="form-check-label" for="nscdEnable">
+                        {{ $t("Enable") }}
+                    </label>
+                </div>
+
+                <div class="form-check">
+                    <input
+                        id="nscdDisable"
+                        v-model="settings.nscd"
+                        class="form-check-input"
+                        type="radio"
+                        name="nscd"
+                        :value="false"
+                        required
+                    />
+                    <label class="form-check-label" for="nscdDisable">
+                        {{ $t("Disable") }}
+                    </label>
+                </div>
+            </div>
+
             <!-- DNS Cache -->
             <div class="mb-4">
                 <label class="form-label">
@@ -187,6 +224,30 @@
                     <label class="form-check-label" for="dnsCacheDisable">
                         {{ $t("Disable") }}
                     </label>
+                </div>
+            </div>
+
+            <!-- Chrome Executable -->
+            <div class="mb-4">
+                <label class="form-label" for="primaryBaseURL">
+                    {{ $t("chromeExecutable") }}
+                </label>
+
+                <div class="input-group mb-3">
+                    <input
+                        id="primaryBaseURL"
+                        v-model="settings.chromeExecutable"
+                        class="form-control"
+                        name="primaryBaseURL"
+                        :placeholder="$t('chromeExecutableAutoDetect')"
+                    />
+                    <button class="btn btn-outline-primary" type="button" @click="testChrome">
+                        {{ $t("Test") }}
+                    </button>
+                </div>
+
+                <div class="form-text">
+                    {{ $t("chromeExecutableDescription") }}
                 </div>
             </div>
 
@@ -240,6 +301,12 @@ export default {
         /** Get the base URL of the application */
         autoGetPrimaryBaseURL() {
             this.settings.primaryBaseURL = location.protocol + "//" + location.host;
+        },
+
+        testChrome() {
+            this.$root.getSocket().emit("testChrome", this.settings.chromeExecutable, (res) => {
+                this.$root.toastRes(res);
+            });
         },
     },
 };

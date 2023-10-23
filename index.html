@@ -2,15 +2,31 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
     <link rel="icon" type="image/svg+xml" href="/icon.svg" />
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" id="theme-color" content="" />
     <meta name="description" content="Uptime Kuma monitoring tool" />
     <title>Uptime Kuma</title>
+    <style>
+        .noscript-message {
+            font-size: 20px;
+            text-align: center;
+            padding: 10px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+    </style>
 </head>
 <body>
+<noscript>
+<div class="noscript-message">
+    Sorry, you don't seem to have JavaScript enabled or your browser
+    doesn't support it.<br />This website requires JavaScript to function.
+    Please enable JavaScript in your browser settings to continue.
+</div>
+</noscript>
 <div id="app"></div>
 <script type="module" src="/src/main.js"></script>
 </body>

@@ -24,12 +24,18 @@ class LineNotify extends NotificationProvider {
                 await axios.post(lineAPIUrl, qs.stringify(testMessage), config);
             } else if (heartbeatJSON["status"] === DOWN) {
                 let downMessage = {
-                    "message": "\n[🔴 Down]\n" + "Name: " + monitorJSON["name"] + " \n" + heartbeatJSON["msg"] + "\nTime (UTC): " + heartbeatJSON["time"]
+                    "message": "\n[🔴 Down]\n" +
+                        "Name: " + monitorJSON["name"] + " \n" +
+                        heartbeatJSON["msg"] + "\n" +
+                        `Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`
                 };
                 await axios.post(lineAPIUrl, qs.stringify(downMessage), config);
             } else if (heartbeatJSON["status"] === UP) {
                 let upMessage = {
-                    "message": "\n[✅ Up]\n" + "Name: " + monitorJSON["name"] + " \n" + heartbeatJSON["msg"] + "\nTime (UTC): " + heartbeatJSON["time"]
+                    "message": "\n[✅ Up]\n" +
+                        "Name: " + monitorJSON["name"] + " \n" +
+                        heartbeatJSON["msg"] + "\n" +
+                        `Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`
                 };
                 await axios.post(lineAPIUrl, qs.stringify(upMessage), config);
             }

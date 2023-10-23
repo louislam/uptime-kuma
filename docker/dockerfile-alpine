@@ -3,10 +3,12 @@ WORKDIR /app
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1
 
+COPY .npmrc .npmrc
+COPY package.json package.json
+COPY package-lock.json package-lock.json
+RUN npm ci --omit=dev
 COPY . .
-RUN npm ci --production && \
-    chmod +x /app/extra/entrypoint.sh
-
+RUN chmod +x /app/extra/entrypoint.sh
 
 FROM louislam/uptime-kuma:base-alpine AS release
 WORKDIR /app

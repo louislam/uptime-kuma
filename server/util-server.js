@@ -1,5 +1,5 @@
 const tcpp = require("tcp-ping");
-const ping = require("ping");
+const ping = require("@louislam/ping");
 const { R } = require("redbean-node");
 const { log, genSecret } = require("../src/util");
 const passwordHash = require("./password-hash");
@@ -14,11 +14,15 @@ const mssql = require("mssql");
 const { Client } = require("pg");
 const postgresConParse = require("pg-connection-string").parse;
 const mysql = require("mysql2");
+const { MongoClient } = require("mongodb");
 const { NtlmClient } = require("axios-ntlm");
 const { Settings } = require("./settings");
 const grpc = require("@grpc/grpc-js");
 const protojs = require("protobufjs");
 const radiusClient = require("node-radius-client");
+const redis = require("redis");
+const oidc = require("openid-client");
+
 const {
     dictionaries: {
         rfc2865: { file, attributes },
@@ -26,8 +30,12 @@ const {
 } = require("node-radius-utils");
 const dayjs = require("dayjs");
 
-const isWindows = process.platform === /^win/.test(process.platform);
+// SASLOptions used in JSDoc
+// eslint-disable-next-line no-unused-vars
+const { Kafka, SASLOptions } = require("kafkajs");
+const crypto = require("crypto");
 
+const isWindows = process.platform === /^win/.test(process.platform);
 /**
  * Init or reset JWT secret
  * @returns {Promise<Bean>}
@@ -45,6 +53,43 @@ exports.initJWTSecret = async () => {
     jwtSecretBean.value = passwordHash.generate(genSecret());
     await R.store(jwtSecretBean);
     return jwtSecretBean;
+};
+
+/**
+ * Decodes a jwt and returns the payload portion without verifying the jqt.
+ * @param {string} jwt The input jwt as a string
+ * @returns {Object} Decoded jwt payload object
+ */
+exports.decodeJwt = (jwt) => {
+    return JSON.parse(Buffer.from(jwt.split(".")[1], "base64").toString());
+};
+
+/**
+ * Gets a Access Token form a oidc/oauth2 provider
+ * @param {string} tokenEndpoint The token URI form the auth service provider
+ * @param {string} clientId The oidc/oauth application client id
+ * @param {string} clientSecret The oidc/oauth application client secret
+ * @param {string} scope The scope the for which the token should be issued for
+ * @param {string} authMethod The method on how to sent the credentials. Default client_secret_basic
+ * @returns {Promise<oidc.TokenSet>} TokenSet promise if the token request was successful
+ */
+exports.getOidcTokenClientCredentials = async (tokenEndpoint, clientId, clientSecret, scope, authMethod = "client_secret_basic") => {
+    const oauthProvider = new oidc.Issuer({ token_endpoint: tokenEndpoint });
+    let client = new oauthProvider.Client({
+        client_id: clientId,
+        client_secret: clientSecret,
+        token_endpoint_auth_method: authMethod
+    });
+
+    // Increase default timeout and clock tolerance
+    client[oidc.custom.http_options] = () => ({ timeout: 10000 });
+    client[oidc.custom.clock_tolerance] = 5;
+
+    let grantParams = { grant_type: "client_credentials" };
+    if (scope) {
+        grantParams.scope = scope;
+    }
+    return await client.grant(grantParams);
 };
 
 /**
@@ -77,15 +122,19 @@ exports.tcping = function (hostname, port) {
 /**
  * Ping the specified machine
  * @param {string} hostname Hostname / address of machine
+ * @param {number} [size=56] Size of packet to send
  * @returns {Promise<number>} Time for ping in ms rounded to nearest integer
  */
-exports.ping = async (hostname) => {
+exports.ping = async (hostname, size = 56) => {
     try {
-        return await exports.pingAsync(hostname);
+        return await exports.pingAsync(hostname, false, size);
     } catch (e) {
         // If the host cannot be resolved, try again with ipv6
-        if (e.message.includes("service not known")) {
-            return await exports.pingAsync(hostname, true);
+        console.debug("ping", "IPv6 error message: " + e.message);
+
+        // As node-ping does not report a specific error for this, try again if it is an empty message with ipv6 no matter what.
+        if (!e.message) {
+            return await exports.pingAsync(hostname, true, size);
         } else {
             throw e;
         }
@@ -96,14 +145,16 @@ exports.ping = async (hostname) => {
  * Ping the specified machine
  * @param {string} hostname Hostname / address of machine to ping
  * @param {boolean} ipv6 Should IPv6 be used?
+ * @param {number} [size = 56] Size of ping packet to send
  * @returns {Promise<number>} Time for ping in ms rounded to nearest integer
  */
-exports.pingAsync = function (hostname, ipv6 = false) {
+exports.pingAsync = function (hostname, ipv6 = false, size = 56) {
     return new Promise((resolve, reject) => {
         ping.promise.probe(hostname, {
             v6: ipv6,
             min_reply: 1,
-            timeout: 10,
+            deadline: 10,
+            packetSize: size,
         }).then((res) => {
             // If ping failed, it will set field to unknown
             if (res.alive) {
@@ -135,7 +186,7 @@ exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
         const { port, username, password, interval = 20 } = options;
 
         // Adds MQTT protocol to the hostname if not already present
-        if (!/^(?:http|mqtt)s?:\/\//.test(hostname)) {
+        if (!/^(?:http|mqtt|ws)s?:\/\//.test(hostname)) {
             hostname = "mqtt://" + hostname;
         }
 
@@ -145,10 +196,11 @@ exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
             reject(new Error("Timeout"));
         }, interval * 1000 * 0.8);
 
-        log.debug("mqtt", "MQTT connecting");
+        const mqttUrl = `${hostname}:${port}`;
 
-        let client = mqtt.connect(hostname, {
-            port,
+        log.debug("mqtt", `MQTT connecting to ${mqttUrl}`);
+
+        let client = mqtt.connect(mqttUrl, {
             username,
             password
         });
@@ -184,6 +236,96 @@ exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
             }
         });
 
+    });
+};
+
+/**
+ * Monitor Kafka using Producer
+ * @param {string} topic Topic name to produce into
+ * @param {string} message Message to produce
+ * @param {Object} [options={interval = 20, allowAutoTopicCreation = false, ssl = false, clientId = "Uptime-Kuma"}]
+ * Kafka client options. Contains ssl, clientId, allowAutoTopicCreation and
+ * interval (interval defaults to 20, allowAutoTopicCreation defaults to false, clientId defaults to "Uptime-Kuma"
+ * and ssl defaults to false)
+ * @param {string[]} brokers List of kafka brokers to connect, host and port joined by ':'
+ * @param {SASLOptions} [saslOptions={}] Options for kafka client Authentication (SASL) (defaults to
+ * {})
+ * @returns {Promise<string>}
+ */
+exports.kafkaProducerAsync = function (brokers, topic, message, options = {}, saslOptions = {}) {
+    return new Promise((resolve, reject) => {
+        const { interval = 20, allowAutoTopicCreation = false, ssl = false, clientId = "Uptime-Kuma" } = options;
+
+        let connectedToKafka = false;
+
+        const timeoutID = setTimeout(() => {
+            log.debug("kafkaProducer", "KafkaProducer timeout triggered");
+            connectedToKafka = true;
+            reject(new Error("Timeout"));
+        }, interval * 1000 * 0.8);
+
+        if (saslOptions.mechanism === "None") {
+            saslOptions = undefined;
+        }
+
+        let client = new Kafka({
+            brokers: brokers,
+            clientId: clientId,
+            sasl: saslOptions,
+            retry: {
+                retries: 0,
+            },
+            ssl: ssl,
+        });
+
+        let producer = client.producer({
+            allowAutoTopicCreation: allowAutoTopicCreation,
+            retry: {
+                retries: 0,
+            }
+        });
+
+        producer.connect().then(
+            () => {
+                producer.send({
+                    topic: topic,
+                    messages: [{
+                        value: message,
+                    }],
+                }).then((_) => {
+                    resolve("Message sent successfully");
+                }).catch((e) => {
+                    connectedToKafka = true;
+                    producer.disconnect();
+                    clearTimeout(timeoutID);
+                    reject(new Error("Error sending message: " + e.message));
+                }).finally(() => {
+                    connectedToKafka = true;
+                    clearTimeout(timeoutID);
+                });
+            }
+        ).catch(
+            (e) => {
+                connectedToKafka = true;
+                producer.disconnect();
+                clearTimeout(timeoutID);
+                reject(new Error("Error in producer connection: " + e.message));
+            }
+        );
+
+        producer.on("producer.network.request_timeout", (_) => {
+            if (!connectedToKafka) {
+                clearTimeout(timeoutID);
+                reject(new Error("producer.network.request_timeout"));
+            }
+        });
+
+        producer.on("producer.disconnect", (_) => {
+            if (!connectedToKafka) {
+                clearTimeout(timeoutID);
+                reject(new Error("producer.disconnect"));
+            }
+        });
     });
 };
 
@@ -280,18 +422,32 @@ exports.postgresQuery = function (connectionString, query) {
 
         const client = new Client({ connectionString });
 
-        client.connect();
-
-        return client.query(query)
-            .then(res => {
-                resolve(res);
-            })
-            .catch(err => {
+        client.connect((err) => {
+            if (err) {
                 reject(err);
-            })
-            .finally(() => {
                 client.end();
-            });
+            } else {
+                // Connected here
+                try {
+                    // No query provided by user, use SELECT 1
+                    if (!query || (typeof query === "string" && query.trim() === "")) {
+                        query = "SELECT 1";
+                    }
+
+                    client.query(query, (err, res) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(res);
+                        }
+                        client.end();
+                    });
+                } catch (e) {
+                    reject(e);
+                }
+            }
+        });
+
     });
 };
 
@@ -299,22 +455,51 @@ exports.postgresQuery = function (connectionString, query) {
  * Run a query on MySQL/MariaDB
  * @param {string} connectionString The database connection string
  * @param {string} query The query to validate the database with
- * @returns {Promise<(string[]|Object[]|Object)>}
+ * @returns {Promise<(string)>}
  */
 exports.mysqlQuery = function (connectionString, query) {
     return new Promise((resolve, reject) => {
         const connection = mysql.createConnection(connectionString);
-        connection.promise().query(query)
-            .then(res => {
-                resolve(res);
-            })
-            .catch(err => {
+
+        connection.on("error", (err) => {
+            reject(err);
+        });
+
+        connection.query(query, (err, res) => {
+            if (err) {
                 reject(err);
-            })
-            .finally(() => {
+            } else {
+                if (Array.isArray(res)) {
+                    resolve("Rows: " + res.length);
+                } else {
+                    resolve("No Error, but the result is not an array. Type: " + typeof res);
+                }
+            }
+
+            try {
                 connection.end();
-            });
+            } catch (_) {
+                connection.destroy();
+            }
+        });
     });
+};
+
+/**
+ * Connect to and Ping a MongoDB database
+ * @param {string} connectionString The database connection string
+ * @returns {Promise<(string[]|Object[]|Object)>}
+ */
+exports.mongodbPing = async function (connectionString) {
+    let client = await MongoClient.connect(connectionString);
+    let dbPing = await client.db().command({ ping: 1 });
+    await client.close();
+
+    if (dbPing["ok"] === 1) {
+        return "UP";
+    } else {
+        throw Error("failed");
+    }
 };
 
 /**
@@ -326,6 +511,7 @@ exports.mysqlQuery = function (connectionString, query) {
  * @param {string} callingStationId ID of calling station
  * @param {string} secret Secret to use
  * @param {number} [port=1812] Port to contact radius server on
+ * @param {number} [timeout=2500] Timeout for connection to use
  * @returns {Promise<any>}
  */
 exports.radius = function (
@@ -336,10 +522,13 @@ exports.radius = function (
     callingStationId,
     secret,
     port = 1812,
+    timeout = 2500,
 ) {
     const client = new radiusClient({
         host: hostname,
         hostPort: port,
+        timeout: timeout,
+        retries: 1,
         dictionaries: [ file ],
     });
 
@@ -351,6 +540,45 @@ exports.radius = function (
             [ attributes.CALLING_STATION_ID, callingStationId ],
             [ attributes.CALLED_STATION_ID, calledStationId ],
         ],
+    }).catch((error) => {
+        if (error.response?.code) {
+            throw Error(error.response.code);
+        } else {
+            throw Error(error.message);
+        }
+    });
+};
+
+/**
+ * Redis server ping
+ * @param {string} dsn The redis connection string
+ */
+exports.redisPingAsync = function (dsn) {
+    return new Promise((resolve, reject) => {
+        const client = redis.createClient({
+            url: dsn
+        });
+        client.on("error", (err) => {
+            if (client.isOpen) {
+                client.disconnect();
+            }
+            reject(err);
+        });
+        client.connect().then(() => {
+            if (!client.isOpen) {
+                client.emit("error", new Error("connection isn't open"));
+            }
+            client.ping().then((res, err) => {
+                if (client.isOpen) {
+                    client.disconnect();
+                }
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(res);
+                }
+            }).catch(error => reject(error));
+        });
     });
 };
 
@@ -445,12 +673,16 @@ const parseCertificateInfo = function (info) {
 
         // Move up the chain until loop is encountered
         if (link.issuerCertificate == null) {
+            link.certType = (i === 0) ? "self-signed" : "root CA";
             break;
         } else if (link.issuerCertificate.fingerprint in existingList) {
+            // a root CA certificate is typically "signed by itself"  (=> "self signed certificate") and thus the "issuerCertificate" is a reference to itself.
             log.debug("cert", `[Last] ${link.issuerCertificate.fingerprint}`);
+            link.certType = (i === 0) ? "self-signed" : "root CA";
             link.issuerCertificate = null;
             break;
         } else {
+            link.certType = (i === 0) ? "server" : "intermediate CA";
             link = link.issuerCertificate;
         }
 
@@ -491,7 +723,6 @@ exports.checkCertificate = function (res) {
  * @param {number} status The status code to check
  * @param {string[]} acceptedCodes An array of accepted status codes
  * @returns {boolean} True if status code within range, false otherwise
- * @throws {Error} Will throw an error if the provided status code is not a valid range string or code string
  */
 exports.checkStatusCode = function (status, acceptedCodes) {
     if (acceptedCodes == null || acceptedCodes.length === 0) {
@@ -499,6 +730,11 @@ exports.checkStatusCode = function (status, acceptedCodes) {
     }
 
     for (const codeRange of acceptedCodes) {
+        if (typeof codeRange !== "string") {
+            log.error("monitor", `Accepted status code not a string. ${codeRange} is of type ${typeof codeRange}`);
+            continue;
+        }
+
         const codeRangeSplit = codeRange.split("-").map(string => parseInt(string));
         if (codeRangeSplit.length === 1) {
             if (status === codeRangeSplit[0]) {
@@ -509,7 +745,8 @@ exports.checkStatusCode = function (status, acceptedCodes) {
                 return true;
             }
         } else {
-            throw new Error("Invalid status code range");
+            log.error("monitor", `${codeRange} is not a valid status code range`);
+            continue;
         }
     }
 
@@ -678,15 +915,27 @@ exports.filterAndJoin = (parts, connector = "") => {
 };
 
 /**
- * Send a 403 response
+ * Send an Error response
  * @param {Object} res Express response object
  * @param {string} [msg=""] Message to send
  */
-module.exports.send403 = (res, msg = "") => {
-    res.status(403).json({
-        "status": "fail",
-        "msg": msg,
-    });
+module.exports.sendHttpError = (res, msg = "") => {
+    if (msg.includes("SQLITE_BUSY") || msg.includes("SQLITE_LOCKED")) {
+        res.status(503).json({
+            "status": "fail",
+            "msg": msg,
+        });
+    } else if (msg.toLowerCase().includes("not found")) {
+        res.status(404).json({
+            "status": "fail",
+            "msg": msg,
+        });
+    } else {
+        res.status(403).json({
+            "status": "fail",
+            "msg": msg,
+        });
+    }
 };
 
 function timeObjectConvertTimezone(obj, timezone, timeObjectToUTC = true) {
@@ -806,3 +1055,30 @@ module.exports.grpcQuery = async (options) => {
 
     });
 };
+
+module.exports.SHAKE256_LENGTH = 16;
+
+/**
+ *
+ * @param {string} data
+ * @param {number} len
+ * @return {string}
+ */
+module.exports.shake256 = (data, len) => {
+    if (!data) {
+        return "";
+    }
+    return crypto.createHash("shake256", { outputLength: len })
+        .update(data)
+        .digest("hex");
+};
+
+// For unit test, export functions
+if (process.env.TEST_BACKEND) {
+    module.exports.__test = {
+        parseCertificateInfo,
+    };
+    module.exports.__getPrivateFunction = (functionName) => {
+        return module.exports.__test[functionName];
+    };
+}

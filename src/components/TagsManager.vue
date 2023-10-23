@@ -130,8 +130,21 @@
 import { Modal } from "bootstrap";
 import VueMultiselect from "vue-multiselect";
 import { useToast } from "vue-toastification";
+import { colorOptions } from "../util-frontend";
 import Tag from "../components/Tag.vue";
 const toast = useToast();
+
+/**
+ * @typedef Tag
+ * @type {object}
+ * @property {number | undefined} id
+ * @property {number | undefined} monitor_id
+ * @property {number | undefined} tag_id
+ * @property {string} value
+ * @property {string} name
+ * @property {string} color
+ * @property {boolean | undefined} new
+ */
 
 export default {
     components: {
@@ -139,7 +152,9 @@ export default {
         VueMultiselect,
     },
     props: {
-        /** Array of tags to be pre-selected */
+        /** Array of tags to be pre-selected
+         * @type {Tag[]}
+         */
         preSelectedTags: {
             type: Array,
             default: () => [],
@@ -147,10 +162,14 @@ export default {
     },
     data() {
         return {
+            /** @type {Modal | null} */
             modal: null,
+            /** @type {Tag[]} */
             existingTags: [],
             processing: false,
+            /** @type {Tag[]} */
             newTags: [],
+            /** @type {Tag[]} */
             deleteTags: [],
             newDraftTag: {
                 name: null,
@@ -176,24 +195,7 @@ export default {
             return this.preSelectedTags.concat(this.newTags).filter(tag => !this.deleteTags.find(monitorTag => monitorTag.id === tag.id));
         },
         colorOptions() {
-            return [
-                { name: this.$t("Gray"),
-                    color: "#4B5563" },
-                { name: this.$t("Red"),
-                    color: "#DC2626" },
-                { name: this.$t("Orange"),
-                    color: "#D97706" },
-                { name: this.$t("Green"),
-                    color: "#059669" },
-                { name: this.$t("Blue"),
-                    color: "#2563EB" },
-                { name: this.$t("Indigo"),
-                    color: "#4F46E5" },
-                { name: this.$t("Purple"),
-                    color: "#7C3AED" },
-                { name: this.$t("Pink"),
-                    color: "#DB2777" },
-            ];
+            return colorOptions(this);
         },
         validateDraftTag() {
             let nameInvalid = false;

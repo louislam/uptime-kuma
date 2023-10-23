@@ -18,12 +18,14 @@ import NotFound from "./pages/NotFound.vue";
 import DockerHosts from "./components/settings/Docker.vue";
 import MaintenanceDetails from "./pages/MaintenanceDetails.vue";
 import ManageMaintenance from "./pages/ManageMaintenance.vue";
+import APIKeys from "./components/settings/APIKeys.vue";
 
 // Settings - Sub Pages
 import Appearance from "./components/settings/Appearance.vue";
 import General from "./components/settings/General.vue";
 const Notifications = () => import("./components/settings/Notifications.vue");
 import ReverseProxy from "./components/settings/ReverseProxy.vue";
+import Tags from "./components/settings/Tags.vue";
 import MonitorHistory from "./components/settings/MonitorHistory.vue";
 const Security = () => import("./components/settings/Security.vue");
 import Proxies from "./components/settings/Proxies.vue";
@@ -66,6 +68,10 @@ const routes = [
                                 ],
                             },
                             {
+                                path: "/clone/:id",
+                                component: EditMonitor,
+                            },
+                            {
                                 path: "/add",
                                 component: EditMonitor,
                             },
@@ -96,6 +102,10 @@ const routes = [
                                 component: ReverseProxy,
                             },
                             {
+                                path: "tags",
+                                component: Tags,
+                            },
+                            {
                                 path: "monitor-history",
                                 component: MonitorHistory,
                             },
@@ -106,6 +116,10 @@ const routes = [
                             {
                                 path: "security",
                                 component: Security,
+                            },
+                            {
+                                path: "api-keys",
+                                component: APIKeys,
                             },
                             {
                                 path: "proxies",
