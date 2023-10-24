@@ -157,15 +157,15 @@
                                     </div>
                                 </div>
 
-                                <span v-if="remoteBrowsersToggle">
+                                <div v-if="remoteBrowsersToggle">
                                     <label for="remote-browser" class="form-label">{{ $t("Remote Browser") }}</label>
                                     <ActionSelect
                                         v-model="monitor.remote_browser"
                                         :options="remoteBrowsersOptions"
-                                        :icon="'plus'"
+                                        icon="plus"
                                         :action="() => $refs.remoteBrowserDialog.show()"
                                     />
-                                </span>
+                                </div>
                             </div>
 
                             <!-- Json Query -->
@@ -992,6 +992,10 @@ export default {
             set(value) {
                 if (value) {
                     this.remoteBrowsersEnabled = true;
+                    if (this.monitor.remote_browser == null && this.$root.remoteBrowserList.length > 0) {
+                        // set a default remote browser if there is one. Otherwise, the user will have to select one manually.
+                        this.monitor.remote_browser = this.$root.remoteBrowserList[0].id;
+                    }
                 } else {
                     this.remoteBrowsersEnabled = false;
                     this.monitor.remote_browser = null;
