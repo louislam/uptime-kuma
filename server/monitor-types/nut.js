@@ -1,5 +1,5 @@
 const { MonitorType } = require("./monitor-type");
-const { UP } = require("../../src/util");
+const { UP, DOWN } = require("../../src/util");
 const dayjs = require("dayjs");
 const jsonata = require("jsonata");
 const Nut = require("node-nut");
@@ -63,7 +63,8 @@ class NutMonitorType extends MonitorType {
                             heartbeat.msg = "";
                             heartbeat.ping = dayjs().valueOf() - startTime;
                         } else {
-                            throw new Error("Value is not equal to expected value, value was: [" + result + "]");
+                            heartbeat.status = DOWN;
+                            heartbeat.msg = "Value not expected, value was: [" + result + "]";
                         }
                     }
                 });
