@@ -42,6 +42,7 @@
                 <span v-if="monitor.type === 'redis'">{{ filterPassword(monitor.databaseConnectionString) }}</span>
                 <span v-if="monitor.type === 'sqlserver'">SQL Server: {{ filterPassword(monitor.databaseConnectionString) }}</span>
                 <span v-if="monitor.type === 'steam'">Steam Game Server: {{ monitor.hostname }}:{{ monitor.port }}</span>
+                <span v-if="monitor.type === 'nut'">NUT: {{monitor.upsName}} on {{ monitor.hostname }}:{{ monitor.port }}</span>
             </p>
 
             <div class="functions">
