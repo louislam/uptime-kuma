@@ -1,7 +1,7 @@
-const jsonata = require("jsonata");
 const { MonitorType } = require("./monitor-type");
 const { UP } = require("../../src/util");
 const dayjs = require("dayjs");
+const jsonata = require("jsonata");
 const Nut = require("node-nut");
 
 const { log } = require("../../src/util");
@@ -20,14 +20,13 @@ class NutMonitorType extends MonitorType {
      * @inheritdoc
      */
     async check(monitor, heartbeat, _server) {
-        log.debug("NUT", `MONITOR DATA ${monitor.port} ${monitor.hostname} ${monitor.upsName} ${monitor.jsonPath} ${monitor.expectedValue}`);
         let startTime = dayjs().valueOf();
         let expression = jsonata(monitor.jsonPath);
 
         const nut = new Nut(monitor.port, monitor.hostname);
 
         nut.on("error", err => {
-            log.error("NUT", "There was an error from the NUT server: " + err);
+            throw new Error("NUT", "There was an error from the NUT server: " + err);
         });
 
         nut.on("close", () => {
@@ -37,6 +36,7 @@ class NutMonitorType extends MonitorType {
             log.debug("NUT", "Ready event");
             nut.GetUPSList((upslist, err) => {
                 if (err) {
+                    nut.close();
                     log.error("NUT Error: " + err);
                 }
 
@@ -45,30 +45,27 @@ class NutMonitorType extends MonitorType {
                 log.debug("NUT", `ups name ${upsname}`);
 
                 nut.GetUPSVars(upsname, async (vars, err) => {
+                    nut.close();
                     if (err) {
-                        log.error("NUT", "Error getting UPS variables", err);
-                        return;
+                        throw new Error("Error getting UPS variables");
                     } else {
                         // convert data to object
                         if (typeof vars === "string") {
                             vars = JSON.parse(vars);
                         }
                         const data = ({ ...vars }); // Why must I do this?
+
                         // Check device status
-                        // Why do I need to do this?!
                         let result = await expression.evaluate(data);
-                        log.debug("NUT", `jsonata result ${result}`);
 
                         if (result.toString() === monitor.expectedValue) {
-                            heartbeat.msg = `${monitor.jsonPath} is ${monitor.expectedValue}`;
                             heartbeat.status = UP;
+                            heartbeat.msg = "";
                             heartbeat.ping = dayjs().valueOf() - startTime;
                         } else {
-                            throw new Error(heartbeat.msg + ", but value is not equal to expected value, value was: [" + result + "]");
+                            throw new Error("Value is not equal to expected value, value was: [" + result + "]");
                         }
                     }
-
-                    nut.close();
                 });
             });
         });
