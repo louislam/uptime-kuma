@@ -151,7 +151,7 @@
                             <!-- For NUT Type -->
                             <template v-if="monitor.type === 'nut'">
                                 <div class="my-3">
-                                    <label for="upsName" class="form-label">UPS {{ $t("upsName") }}</label>
+                                    <label for="upsName" class="form-label">UPS {{ $t("Name") }}</label>
                                     <input id="upsName" v-model="monitor.upsName" type="text" class="form-control" required>
                                 </div>
                             </template>

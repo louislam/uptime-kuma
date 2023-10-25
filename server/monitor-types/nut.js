@@ -39,8 +39,6 @@ class NutMonitorType extends MonitorType {
                 if (err) {
                     log.error("NUT Error: " + err);
                 }
-                log.debug("NUT", upslist);
-                log.debug("NUT😎😎", `we out here ${true}`);
 
                 // TODO support multiple named UPS devices
                 let upsname = upslist[monitor.upsName] && monitor.upsName || Object.keys(upslist)[0];
