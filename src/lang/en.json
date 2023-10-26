@@ -380,6 +380,7 @@
     "Query": "Query",
     "settingsCertificateExpiry": "TLS Certificate Expiry",
     "certificationExpiryDescription": "HTTPS Monitors trigger notification when TLS certificate expires in:",
+    "certHostnameMismatch": "Certificate hostname is not valid for this monitor url.",
     "Setup Docker Host": "Setup Docker Host",
     "Connection Type": "Connection Type",
     "Docker Daemon": "Docker Daemon",

@@ -156,6 +156,7 @@
                         <p class="col-4 col-sm-12 mb-0 mb-sm-2">(<Datetime :value="tlsInfo.certInfo.validTo" date-only />)</p>
                         <span class="col-4 col-sm-12 num">
                             <a href="#" @click.prevent="toggleCertInfoBox = !toggleCertInfoBox">{{ tlsInfo.certInfo.daysRemaining }} {{ $tc("day", tlsInfo.certInfo.daysRemaining) }}</a>
+                            <font-awesome-icon v-if="tlsInfo.hostnameMatchMonitorUrl === false" class="cert-info-warn" icon="exclamation-triangle" :title="$t('certHostnameMismatch')" />
                         </span>
                     </div>
                 </div>
@@ -789,6 +790,15 @@ table {
 
 .tags > div:first-child {
     margin-left: 0 !important;
+}
+
+.cert-info-warn {
+    margin-left: 4px;
+    opacity: 0.5;
+
+    .dark & {
+        opacity: 0.7;
+    }
 }
 
 </style>

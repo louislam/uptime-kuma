@@ -22,6 +22,7 @@ const Gamedig = require("gamedig");
 const jsonata = require("jsonata");
 const jwt = require("jsonwebtoken");
 const { UptimeCalculator } = require("../uptime-calculator");
+const { X509Certificate } = require("node:crypto");
 
 /**
  * status:
@@ -507,6 +508,12 @@ class Monitor extends BeanModel {
                         log.debug("monitor", `[${this.name}] Check cert`);
                         try {
                             let tlsInfoObject = checkCertificate(res);
+
+                            // Check if the certificate obtained matches the hostname set for the monitor (if redirected)
+                            let certObject = new X509Certificate(tlsInfoObject.certInfo.raw);
+                            let hostnameMatch = certObject.checkHost(this.getUrl()?.hostname) !== undefined;
+                            tlsInfoObject.hostnameMatchMonitorUrl = hostnameMatch;
+
                             tlsInfo = await this.updateTlsInfo(tlsInfoObject);
 
                             if (!this.getIgnoreTls() && this.isEnabledExpiryNotification()) {
