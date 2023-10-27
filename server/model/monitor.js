@@ -132,6 +132,10 @@ class Monitor extends BeanModel {
             mqttSuccessMessage: this.mqttSuccessMessage,
             databaseQuery: this.databaseQuery,
             authMethod: this.authMethod,
+            slowResponseNotification: this.isEnabledSlowResponseNotification(),
+            slowResponseNotificationThreshold: this.slowResponseNotificationThreshold,
+            slowResponseNotificationRange: this.slowResponseNotificationRange,
+            slowResponseNotificationMethod: this.slowResponseNotificationMethod,
             grpcUrl: this.grpcUrl,
             grpcProtobuf: this.grpcProtobuf,
             grpcMethod: this.grpcMethod,
@@ -296,6 +300,14 @@ class Monitor extends BeanModel {
      */
     getGameDigGivenPortOnly() {
         return Boolean(this.gamedigGivenPortOnly);
+    }
+
+    /**
+     * Is the slow response notification enabled?
+     * @returns {boolean}
+     */
+    isEnabledSlowResponseNotification() {
+        return Boolean(this.slowResponseNotification);
     }
 
     /**
@@ -938,6 +950,11 @@ class Monitor extends BeanModel {
             log.debug("monitor", `[${this.name}] Store`);
             await R.store(bean);
 
+            if (this.isEnabledSlowResponseNotification()) {
+                log.debug("monitor", `[${this.name}] Check response is slow`);
+                await this.checkSlowResponseNotification(this);
+            }
+
             log.debug("monitor", `[${this.name}] prometheus.update`);
             this.prometheus?.update(bean, tlsInfo);
 
@@ -1372,6 +1389,71 @@ class Monitor extends BeanModel {
                 this.id,
                 targetDays,
             ]);
+        }
+    }
+
+    /**
+     * Check heartbeat response time is slower than threshold.
+     * @param {Monitor} monitor The monitor to send a notification about
+     * @returns {Promise<void>}
+     */
+    async checkSlowResponseNotification(monitor) {
+
+        //Get recent heartbeat list with range of time
+        const afterThisDate = new Date(Date.now() - (1000 * monitor.slowResponseNotificationRange));
+        const previousBeats = await R.getAll(`
+            SELECT * FROM heartbeat
+            WHERE monitor_id = ? AND time > datetime(?) AND status = ?`,
+        [
+            monitor.id,
+            afterThisDate.toISOString(),
+            UP,
+        ]);
+        const method = monitor.slowResponseNotificationMethod;
+        const thresholdResponseTime = monitor.slowResponseNotificationThreshold;
+        let actualResponseTime = 0;
+
+        switch (method) {
+            case "average":
+                previousBeats.forEach(beat => {
+                    actualResponseTime = actualResponseTime + beat.ping;
+                });
+                actualResponseTime = actualResponseTime / previousBeats.length;
+                break;
+
+            case "max":
+                previousBeats.forEach(beat => {
+                    actualResponseTime = Math.max(actualResponseTime, beat.ping);
+                });
+                break;
+
+            default:
+                log.error("monitor", `[${this.name}] Unknown slow response notification method ${method}`);
+                return;
+        }
+
+        if (actualResponseTime < thresholdResponseTime) {
+            log.debug("monitor", `[${this.name}] No need to send slow notification. ${actualResponseTime} < ${thresholdResponseTime}`);
+            return;
+        }
+
+        log.debug("monitor", `[${this.name}] Try to send slow response notification (${actualResponseTime} > ${thresholdResponseTime})`);
+
+        const notificationList = await Monitor.getNotificationList(monitor);
+
+        if (notificationList.length > 0) {
+            for (let notification of notificationList) {
+                try {
+                    log.debug("monitor", `[${this.name}] Sending to ${notification.name}`);
+                    await Notification.send(JSON.parse(notification.config), `[${this.name}] Responding slowly (${actualResponseTime}ms > ${thresholdResponseTime}ms)`);
+                } catch (e) {
+                    log.error("monitor", `[${this.name}] Cannot send slow response notification to ${notification.name}`);
+                    log.error("monitor", e);
+                }
+            }
+
+        } else {
+            log.debug("monitor", `[${this.name}] No notification, no need to send slow response notification`);
         }
     }
 

@@ -43,7 +43,8 @@ log.debug("server", "Arguments");
 log.debug("server", args);
 
 if (! process.env.NODE_ENV) {
-    process.env.NODE_ENV = "production";
+    // process.env.NODE_ENV = "production";
+    process.env.NODE_ENV = "development";
 }
 
 log.info("server", "Env: " + process.env.NODE_ENV);
@@ -803,6 +804,10 @@ let needSetup = false;
                 bean.authMethod = monitor.authMethod;
                 bean.authWorkstation = monitor.authWorkstation;
                 bean.authDomain = monitor.authDomain;
+                bean.slowResponseNotification = monitor.slowResponseNotification;
+                bean.slowResponseNotificationThreshold = monitor.slowResponseNotificationThreshold;
+                bean.slowResponseNotificationRange = monitor.slowResponseNotificationRange;
+                bean.slowResponseNotificationMethod = monitor.slowResponseNotificationMethod;
                 bean.grpcUrl = monitor.grpcUrl;
                 bean.grpcProtobuf = monitor.grpcProtobuf;
                 bean.grpcServiceName = monitor.grpcServiceName;

@@ -418,6 +418,53 @@
                                 <input id="resend-interval" v-model="monitor.resendInterval" type="number" class="form-control" required min="0" step="1">
                             </div>
 
+                            <h2 class="mt-5 mb-2">{{ $t("slowResponseNotification") }}</h2>
+
+                            <div class="my-3 form-check">
+                                <input id="slow-response-notification" v-model="monitor.slowResponseNotification" class="form-check-input" type="checkbox">
+                                <label class="form-check-label" for="slow-response-notification">
+                                    {{ $t("slowResponseNotificationUse") }}
+                                </label>
+                                <div class="form-text">
+                                    {{ $t("slowResponseNotificationUseDescription") }}
+                                </div>
+                            </div>
+
+                            <!-- Method -->
+                            <div v-if="monitor.slowResponseNotification" class="my-3">
+                                <label for="method" class="form-label">{{ $t("slowResponseNotificationMethod") }}</label>
+                                <select id="method" v-model="monitor.slowResponseNotificationMethod" class="form-select">
+                                    <option value="average">
+                                        {{ $t("slowResponseNotificationMethodAverage") }}
+                                    </option>
+                                    <option value="max">
+                                        {{ $t("slowResponseNotificationMethodMax") }}
+                                    </option>
+                                </select>
+                                <div v-if="monitor.slowResponseNotificationMethod === 'average'" class="form-text">
+                                    {{ $t("slowResponseNotificationMethodAverageDescription", [monitor.slowResponseNotificationRange]) }}
+                                </div>
+                                <div v-if="monitor.slowResponseNotificationMethod === 'max'" class="form-text">
+                                    {{ $t("slowResponseNotificationMethodMaxDescription", [monitor.slowResponseNotificationRange]) }}
+                                </div>
+                            </div>
+
+                            <div v-if="monitor.slowResponseNotification" class="my-3">
+                                <label for="slow-response-notification-threshold" class="form-label">{{ $t("slowResponseNotificationThreshold") }}</label>
+                                <input id="slow-response-notification-threshold" v-model="monitor.slowResponseNotificationThreshold" type="number" class="form-control" required min="0" step="1">
+                                <div class="form-text">
+                                    {{ $t("slowResponseNotificationThresholdDescription", [monitor.slowResponseNotificationThreshold]) }}
+                                </div>
+                            </div>
+
+                            <div v-if="monitor.slowResponseNotification" class="my-3">
+                                <label for="slow-response-notification-range" class="form-label">{{ $t("slowResponseNotificationRange") }}</label>
+                                <input id="slow-response-notification-range" v-model="monitor.slowResponseNotificationRange" type="number" class="form-control" required min="0" step="1">
+                                <div class="form-text">
+                                    {{ $t("slowResponseNotificationRangeDescription", [monitor.slowResponseNotificationRange]) }}
+                                </div>
+                            </div>
+
                             <h2 v-if="monitor.type !== 'push'" class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
 
                             <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' " class="my-3 form-check">
@@ -888,6 +935,10 @@ const monitorDefaults = {
     },
     kafkaProducerSsl: false,
     gamedigGivenPortOnly: true,
+    slowResponseNotification: false,
+    slowResponseNotificationThreshold: 5000,
+    slowResponseNotificationRange: 60,
+    slowResponseNotificationMethod: "average",
 };
 
 export default {
