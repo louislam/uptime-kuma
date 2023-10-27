@@ -11,7 +11,6 @@ const mysql = require("mysql2/promise");
  * Database & App Data Folder
  */
 class Database {
-
     /**
      * Boostrap database for SQLite
      * @type {string}
@@ -82,7 +81,9 @@ class Database {
         "patch-added-mqtt-monitor.sql": true,
         "patch-add-clickable-status-page-link.sql": true,
         "patch-add-sqlserver-monitor.sql": true,
-        "patch-add-other-auth.sql": { parents: [ "patch-monitor-basic-auth.sql" ] },
+        "patch-add-other-auth.sql": {
+            parents: ["patch-monitor-basic-auth.sql"],
+        },
         "patch-grpc-monitor.sql": true,
         "patch-add-radius-monitor.sql": true,
         "patch-monitor-add-resend-interval.sql": true,
@@ -103,7 +104,8 @@ class Database {
         "patch-monitor-oauth-cc.sql": true,
         "patch-add-timeout-monitor.sql": true,
         "patch-add-gamedig-given-port.sql": true,
-        "patch-notification-config.sql": true,      // The last file so far converted to a knex migration file
+        "patch-notification-config.sql": true,
+        "patch-fix-kafka-producer-booleans.sql": false, // The last file so far converted to a knex migration file
     };
 
     /**
@@ -125,27 +127,28 @@ class Database {
      */
     static initDataDir(args) {
         // Data Directory (must be end with "/")
-        Database.dataDir = process.env.DATA_DIR || args["data-dir"] || "./data/";
+        Database.dataDir =
+            process.env.DATA_DIR || args["data-dir"] || "./data/";
 
         Database.sqlitePath = path.join(Database.dataDir, "kuma.db");
-        if (! fs.existsSync(Database.dataDir)) {
+        if (!fs.existsSync(Database.dataDir)) {
             fs.mkdirSync(Database.dataDir, { recursive: true });
         }
 
         Database.uploadDir = path.join(Database.dataDir, "upload/");
 
-        if (! fs.existsSync(Database.uploadDir)) {
+        if (!fs.existsSync(Database.uploadDir)) {
             fs.mkdirSync(Database.uploadDir, { recursive: true });
         }
 
         // Create screenshot dir
         Database.screenshotDir = path.join(Database.dataDir, "screenshots/");
-        if (! fs.existsSync(Database.screenshotDir)) {
+        if (!fs.existsSync(Database.screenshotDir)) {
             fs.mkdirSync(Database.screenshotDir, { recursive: true });
         }
 
         Database.dockerTLSDir = path.join(Database.dataDir, "docker-tls/");
-        if (! fs.existsSync(Database.dockerTLSDir)) {
+        if (!fs.existsSync(Database.dockerTLSDir)) {
             fs.mkdirSync(Database.dockerTLSDir, { recursive: true });
         }
 
@@ -161,7 +164,9 @@ class Database {
     static readDBConfig() {
         let dbConfig;
 
-        let dbConfigString = fs.readFileSync(path.join(Database.dataDir, "db-config.json")).toString("utf-8");
+        let dbConfigString = fs
+            .readFileSync(path.join(Database.dataDir, "db-config.json"))
+            .toString("utf-8");
         dbConfig = JSON.parse(dbConfigString);
 
         if (typeof dbConfig !== "object") {
@@ -180,7 +185,10 @@ class Database {
      * @returns {void}
      */
     static writeDBConfig(dbConfig) {
-        fs.writeFileSync(path.join(Database.dataDir, "db-config.json"), JSON.stringify(dbConfig, null, 4));
+        fs.writeFileSync(
+            path.join(Database.dataDir, "db-config.json"),
+            JSON.stringify(dbConfig, null, 4)
+        );
     }
 
     /**
@@ -190,7 +198,11 @@ class Database {
      * @param {boolean} noLog Should logs not be output?
      * @returns {Promise<void>}
      */
-    static async connect(testMode = false, autoloadModels = true, noLog = false) {
+    static async connect(
+        testMode = false,
+        autoloadModels = true,
+        noLog = false
+    ) {
         const acquireConnectionTimeout = 120 * 1000;
         let dbConfig;
         try {
@@ -206,16 +218,13 @@ class Database {
         let config = {};
 
         let mariadbPoolConfig = {
-            afterCreate: function (conn, done) {
-
-            }
+            afterCreate: function (conn, done) {},
         };
 
         log.info("db", `Database Type: ${dbConfig.type}`);
 
         if (dbConfig.type === "sqlite") {
-
-            if (! fs.existsSync(Database.sqlitePath)) {
+            if (!fs.existsSync(Database.sqlitePath)) {
                 log.info("server", "Copying Database");
                 fs.copyFileSync(Database.templatePath, Database.sqlitePath);
             }
@@ -236,11 +245,13 @@ class Database {
                     idleTimeoutMillis: 120 * 1000,
                     propagateCreateError: false,
                     acquireTimeoutMillis: acquireConnectionTimeout,
-                }
+                },
             };
         } else if (dbConfig.type === "mariadb") {
             if (!/^\w+$/.test(dbConfig.dbName)) {
-                throw Error("Invalid database name. A database name can only consist of letters, numbers and underscores");
+                throw Error(
+                    "Invalid database name. A database name can only consist of letters, numbers and underscores"
+                );
             }
 
             const connection = await mysql.createConnection({
@@ -250,7 +261,11 @@ class Database {
                 password: dbConfig.password,
             });
 
-            await connection.execute("CREATE DATABASE IF NOT EXISTS " + dbConfig.dbName + " CHARACTER SET utf8mb4");
+            await connection.execute(
+                "CREATE DATABASE IF NOT EXISTS " +
+                    dbConfig.dbName +
+                    " CHARACTER SET utf8mb4"
+            );
             connection.end();
 
             config = {
@@ -286,7 +301,9 @@ class Database {
         if (dbConfig.type.endsWith("mariadb")) {
             config.pool = {
                 afterCreate(conn, done) {
-                    conn.query("SET CHARACTER SET utf8mb4;", (err) => done(err, conn));
+                    conn.query("SET CHARACTER SET utf8mb4;", (err) =>
+                        done(err, conn)
+                    );
                 },
             };
         }
@@ -339,7 +356,11 @@ class Database {
             log.debug("db", "SQLite config:");
             log.debug("db", await R.getAll("PRAGMA journal_mode"));
             log.debug("db", await R.getAll("PRAGMA cache_size"));
-            log.debug("db", "SQLite Version: " + await R.getCell("SELECT sqlite_version()"));
+            log.debug(
+                "db",
+                "SQLite Version: " +
+                    (await R.getCell("SELECT sqlite_version()"))
+            );
         }
     }
 
@@ -380,7 +401,10 @@ class Database {
             // Allow missing patch files for downgrade or testing pr.
             if (e.message.includes("the following files are missing:")) {
                 log.warn("db", e.message);
-                log.warn("db", "Database migration failed, you may be downgrading Uptime Kuma.");
+                log.warn(
+                    "db",
+                    "Database migration failed, you may be downgrading Uptime Kuma."
+                );
             } else {
                 log.error("db", "Database migration failed");
                 throw e;
@@ -392,9 +416,7 @@ class Database {
      * TODO
      * @returns {Promise<void>}
      */
-    static async rollbackLatestPatch() {
-
-    }
+    static async rollbackLatestPatch() {}
 
     /**
      * Patch the database for SQLite
@@ -404,7 +426,7 @@ class Database {
     static async patchSqlite() {
         let version = parseInt(await setting("database_version"));
 
-        if (! version) {
+        if (!version) {
             version = 0;
         }
 
@@ -433,8 +455,14 @@ class Database {
                 await Database.close();
 
                 log.error("db", ex);
-                log.error("db", "Start Uptime-Kuma failed due to issue patching the database");
-                log.error("db", "Please submit a bug report if you still encounter the problem after restart: https://github.com/louislam/uptime-kuma/issues");
+                log.error(
+                    "db",
+                    "Start Uptime-Kuma failed due to issue patching the database"
+                );
+                log.error(
+                    "db",
+                    "Please submit a bug report if you still encounter the problem after restart: https://github.com/louislam/uptime-kuma/issues"
+                );
 
                 process.exit(1);
             }
@@ -455,7 +483,7 @@ class Database {
         log.debug("db", "Database Patch 2.0 Process");
         let databasePatchedFiles = await setting("databasePatchedFiles");
 
-        if (! databasePatchedFiles) {
+        if (!databasePatchedFiles) {
             databasePatchedFiles = {};
         }
 
@@ -470,13 +498,18 @@ class Database {
             if (this.patched) {
                 log.info("db", "Database Patched Successfully");
             }
-
         } catch (ex) {
             await Database.close();
 
             log.error("db", ex);
-            log.error("db", "Start Uptime-Kuma failed due to issue patching the database");
-            log.error("db", "Please submit the bug report if you still encounter the problem after restart: https://github.com/louislam/uptime-kuma/issues");
+            log.error(
+                "db",
+                "Start Uptime-Kuma failed due to issue patching the database"
+            );
+            log.error(
+                "db",
+                "Please submit the bug report if you still encounter the problem after restart: https://github.com/louislam/uptime-kuma/issues"
+            );
 
             process.exit(1);
         }
@@ -490,19 +523,25 @@ class Database {
      * @returns {Promise<void>}
      */
     static async migrateNewStatusPage() {
-
         // Fix 1.13.0 empty slug bug
-        await R.exec("UPDATE status_page SET slug = 'empty-slug-recover' WHERE TRIM(slug) = ''");
+        await R.exec(
+            "UPDATE status_page SET slug = 'empty-slug-recover' WHERE TRIM(slug) = ''"
+        );
 
         let title = await setting("title");
 
         if (title) {
             console.log("Migrating Status Page");
 
-            let statusPageCheck = await R.findOne("status_page", " slug = 'default' ");
+            let statusPageCheck = await R.findOne(
+                "status_page",
+                " slug = 'default' "
+            );
 
             if (statusPageCheck !== null) {
-                console.log("Migrating Status Page - Skip, default slug record is already existing");
+                console.log(
+                    "Migrating Status Page - Skip, default slug record is already existing"
+                );
                 return;
             }
 
@@ -512,9 +551,11 @@ class Database {
             statusPage.description = await setting("description");
             statusPage.icon = await setting("icon");
             statusPage.theme = await setting("statusPageTheme");
-            statusPage.published = !!await setting("statusPagePublished");
-            statusPage.search_engine_index = !!await setting("searchEngineIndex");
-            statusPage.show_tags = !!await setting("statusPageTags");
+            statusPage.published = !!(await setting("statusPagePublished"));
+            statusPage.search_engine_index = !!(await setting(
+                "searchEngineIndex"
+            ));
+            statusPage.show_tags = !!(await setting("statusPageTags"));
             statusPage.password = null;
 
             if (!statusPage.title) {
@@ -531,13 +572,15 @@ class Database {
 
             let id = await R.store(statusPage);
 
-            await R.exec("UPDATE incident SET status_page_id = ? WHERE status_page_id IS NULL", [
-                id
-            ]);
+            await R.exec(
+                "UPDATE incident SET status_page_id = ? WHERE status_page_id IS NULL",
+                [id]
+            );
 
-            await R.exec("UPDATE [group] SET status_page_id = ? WHERE status_page_id IS NULL", [
-                id
-            ]);
+            await R.exec(
+                "UPDATE [group] SET status_page_id = ? WHERE status_page_id IS NULL",
+                [id]
+            );
 
             await R.exec("DELETE FROM setting WHERE type = 'statusPage'");
 
@@ -550,7 +593,6 @@ class Database {
 
             console.log("Migrating Status Page - Done");
         }
-
     }
 
     /**
@@ -564,19 +606,22 @@ class Database {
     static async patch2Recursion(sqlFilename, databasePatchedFiles) {
         let value = this.patchList[sqlFilename];
 
-        if (! value) {
+        if (!value) {
             log.info("db", sqlFilename + " skip");
             return;
         }
 
         // Check if patched
-        if (! databasePatchedFiles[sqlFilename]) {
+        if (!databasePatchedFiles[sqlFilename]) {
             log.info("db", sqlFilename + " is not patched");
 
             if (value.parents) {
                 log.info("db", sqlFilename + " need parents");
                 for (let parentSQLFilename of value.parents) {
-                    await this.patch2Recursion(parentSQLFilename, databasePatchedFiles);
+                    await this.patch2Recursion(
+                        parentSQLFilename,
+                        databasePatchedFiles
+                    );
                 }
             }
 
@@ -585,7 +630,6 @@ class Database {
             await this.importSQLFile("./db/old_migrations/" + sqlFilename);
             databasePatchedFiles[sqlFilename] = true;
             log.info("db", sqlFilename + " was patched successfully");
-
         } else {
             log.debug("db", sqlFilename + " is already patched, skip");
         }
@@ -605,14 +649,15 @@ class Database {
         // Remove all comments (--)
         let lines = text.split("\n");
         lines = lines.filter((line) => {
-            return ! line.startsWith("--");
+            return !line.startsWith("--");
         });
 
         // Split statements by semicolon
         // Filter out empty line
         text = lines.join("\n");
 
-        let statements = text.split(";")
+        let statements = text
+            .split(";")
             .map((statement) => {
                 return statement.trim();
             })
@@ -692,7 +737,6 @@ class Database {
             return "DATE_ADD(NOW(), INTERVAL ? HOUR)";
         }
     }
-
 }
 
 module.exports = Database;

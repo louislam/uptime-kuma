@@ -823,6 +823,8 @@ let needSetup = false;
                 bean.kafkaProducerAllowAutoTopicCreation = monitor.kafkaProducerAllowAutoTopicCreation;
                 bean.kafkaProducerSaslOptions = JSON.stringify(monitor.kafkaProducerSaslOptions);
                 bean.kafkaProducerMessage = monitor.kafkaProducerMessage;
+                bean.kafkaProducerSsl = monitor.kafkaProducerSsl;
+                bean.kafkaProducerAllowAutoTopicCreation = monitor.kafkaProducerAllowAutoTopicCreation;
                 bean.gamedigGivenPortOnly = monitor.gamedigGivenPortOnly;
 
                 bean.validate();
