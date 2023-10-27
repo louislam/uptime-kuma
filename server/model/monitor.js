@@ -143,8 +143,8 @@ class Monitor extends BeanModel {
             expectedValue: this.expectedValue,
             kafkaProducerTopic: this.kafkaProducerTopic,
             kafkaProducerBrokers: JSON.parse(this.kafkaProducerBrokers),
-            kafkaProducerSsl: this.kafkaProducerSsl === "1" && true || false,
-            kafkaProducerAllowAutoTopicCreation: this.kafkaProducerAllowAutoTopicCreation === "1" && true || false,
+            kafkaProducerSsl: this.getKafkaProducerSsl(),
+            kafkaProducerAllowAutoTopicCreation: this.getKafkaProducerAllowAutoTopicCreation(),
             kafkaProducerMessage: this.kafkaProducerMessage,
             screenshot,
         };
@@ -285,6 +285,22 @@ class Monitor extends BeanModel {
 
     getGameDigGivenPortOnly() {
         return Boolean(this.gamedigGivenPortOnly);
+    }
+
+    /**
+     * Parse to boolean
+     * @returns {boolean} Kafka Producer Ssl enabled?
+     */
+    getKafkaProducerSsl() {
+        return Boolean(this.kafkaProducerSsl);
+    }
+
+    /**
+     * Parse to boolean
+     * @returns {boolean} Kafka Producer Allow Auto Topic Creation Enabled?
+     */
+    getKafkaProducerAllowAutoTopicCreation() {
+        return Boolean(this.kafkaProducerAllowAutoTopicCreation);
     }
 
     /**
