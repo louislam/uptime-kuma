@@ -24,6 +24,9 @@ if (process.platform === "win32") {
     allowedList.push(process.env.PROGRAMFILES + "\\Chromium\\Application\\chrome.exe");
     allowedList.push(process.env["ProgramFiles(x86)"] + "\\Chromium\\Application\\chrome.exe");
 
+    // Allow MS Edge
+    allowedList.push(process.env["ProgramFiles(x86)"] + "\\Microsoft\\Edge\\Application\\msedge.exe");
+
     // For Loop A to Z
     for (let i = 65; i <= 90; i++) {
         let drive = String.fromCharCode(i);

@@ -318,12 +318,12 @@ let needSetup = false;
                     decoded.username,
                 ]);
 
-                // Check if the password changed
-                if (decoded.h !== shake256(user.password, SHAKE256_LENGTH)) {
-                    throw new Error("The token is invalid due to password change or old token");
-                }
-
                 if (user) {
+                    // Check if the password changed
+                    if (decoded.h !== shake256(user.password, SHAKE256_LENGTH)) {
+                        throw new Error("The token is invalid due to password change or old token");
+                    }
+
                     log.debug("auth", "afterLogin");
                     afterLogin(socket, user);
                     log.debug("auth", "afterLogin ok");
