@@ -6,7 +6,7 @@ const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, MAX_INTERVAL_SECOND, MI
     SQL_DATETIME_FORMAT
 } = require("../../src/util");
 const { tcping, ping, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, mqttAsync, setSetting, httpNtlm, radius, grpcQuery,
-    redisPingAsync, mongodbPing, kafkaProducerAsync, getOidcTokenClientCredentials,
+    redisPingAsync, mongodbPing, kafkaProducerAsync, getOidcTokenClientCredentials, checkCertificateHostname
 } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
@@ -22,7 +22,6 @@ const Gamedig = require("gamedig");
 const jsonata = require("jsonata");
 const jwt = require("jsonwebtoken");
 const { UptimeCalculator } = require("../uptime-calculator");
-const { X509Certificate } = require("node:crypto");
 
 /**
  * status:
@@ -509,10 +508,7 @@ class Monitor extends BeanModel {
                         try {
                             let tlsInfoObject = checkCertificate(res);
 
-                            // Check if the certificate obtained matches the hostname set for the monitor (if redirected)
-                            let certObject = new X509Certificate(tlsInfoObject.certInfo.raw);
-                            let hostnameMatch = certObject.checkHost(this.getUrl()?.hostname) !== undefined;
-                            tlsInfoObject.hostnameMatchMonitorUrl = hostnameMatch;
+                            tlsInfoObject.hostnameMatchMonitorUrl = checkCertificateHostname(tlsInfoObject.certInfo.raw, this.getUrl()?.hostname);
 
                             tlsInfo = await this.updateTlsInfo(tlsInfoObject);
 

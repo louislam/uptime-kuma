@@ -726,6 +726,30 @@ exports.checkCertificate = function (res) {
 };
 
 /**
+ * Checks if the certificate is valid for the provided hostname.
+ * Defaults to true if feature `X509Certificate` is not available, or input is not valid.
+ * @param {Buffer} certBuffer - The certificate buffer.
+ * @param {string} hostname - The hostname to compare against.
+ * @returns {boolean} True if the certificate is valid for the provided hostname, false otherwise.
+ */
+exports.checkCertificateHostname = function (certBuffer, hostname) {
+    let X509Certificate;
+    try {
+        X509Certificate = require("node:crypto").X509Certificate;
+    } catch (_) {
+        // X509Certificate is not available in this version of Node.js
+        return true;
+    }
+
+    if (!certBuffer || !hostname) {
+        return true;
+    }
+
+    let certObject = new X509Certificate(certBuffer);
+    return certObject.checkHost(hostname) !== undefined;
+};
+
+/**
  * Check if the provided status code is within the accepted ranges
  * @param {number} status The status code to check
  * @param {string[]} acceptedCodes An array of accepted status codes
