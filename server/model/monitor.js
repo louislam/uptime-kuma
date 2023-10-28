@@ -3,7 +3,7 @@ const dayjs = require("dayjs");
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
 const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, TimeLogger, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND,
-    SQL_DATETIME_FORMAT
+    SQL_DATETIME_FORMAT, isDev, sleep, getRandomInt
 } = require("../../src/util");
 const { tcping, ping, dnsResolve, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, mqttAsync, setSetting, httpNtlm, radius, grpcQuery,
     redisPingAsync, mongodbPing, kafkaProducerAsync, getOidcTokenClientCredentials, rootCertificatesFingerprints
@@ -309,6 +309,16 @@ class Monitor extends BeanModel {
                 if (beatInterval < 20) {
                     console.log("beat interval too low, reset to 20s");
                     beatInterval = 20;
+                }
+            }
+
+            // Evil
+            if (isDev) {
+                if (process.env.EVIL_RANDOM_MONITOR_SLEEP === "SURE") {
+                    if (getRandomInt(0, 100) === 0) {
+                        log.debug("evil", `[${this.name}] Evil mode: Random sleep: ` + beatInterval * 10000);
+                        await sleep(beatInterval * 10000);
+                    }
                 }
             }
 
@@ -979,6 +989,7 @@ class Monitor extends BeanModel {
             if (! this.isStop) {
                 log.debug("monitor", `[${this.name}] SetTimeout for next check.`);
                 this.heartbeatInterval = setTimeout(safeBeat, beatInterval * 1000);
+                this.lastScheduleBeatTime = dayjs();
             } else {
                 log.info("monitor", `[${this.name}] isStop = true, no next check.`);
             }
@@ -988,7 +999,9 @@ class Monitor extends BeanModel {
         /** Get a heartbeat and handle errors */
         const safeBeat = async () => {
             try {
+                this.lastStartBeatTime = dayjs();
                 await beat();
+                this.lastEndBeatTime = dayjs();
             } catch (e) {
                 console.trace(e);
                 UptimeKumaServer.errorLog(e, false);
@@ -997,6 +1010,9 @@ class Monitor extends BeanModel {
                 if (! this.isStop) {
                     log.info("monitor", "Try to restart the monitor");
                     this.heartbeatInterval = setTimeout(safeBeat, this.interval * 1000);
+                    this.lastScheduleBeatTime = dayjs();
+                } else {
+                    log.info("monitor", "isStop = true, no next check.");
                 }
             }
         };
