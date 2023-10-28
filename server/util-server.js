@@ -741,7 +741,7 @@ exports.checkCertificateHostname = function (certBuffer, hostname) {
         return true;
     }
 
-    if (!certBuffer || !hostname) {
+    if (!X509Certificate || !certBuffer || !hostname) {
         return true;
     }
 
