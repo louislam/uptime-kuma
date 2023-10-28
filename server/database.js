@@ -82,6 +82,7 @@ class Database {
         "patch-add-timeout-monitor.sql": true,
         "patch-add-gamedig-given-port.sql": true,
         "patch-notification-config.sql": true,
+        "patch-fix-kafka-producer-booleans.sql": true,
     };
 
     /**

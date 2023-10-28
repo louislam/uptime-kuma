@@ -891,6 +891,7 @@ const monitorDefaults = {
         mechanism: "None",
     },
     kafkaProducerSsl: false,
+    kafkaProducerAllowAutoTopicCreation: false,
     gamedigGivenPortOnly: true,
 };
 
