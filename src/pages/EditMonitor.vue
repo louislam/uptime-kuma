@@ -465,6 +465,15 @@
                                 </div>
                             </div>
 
+                            <div v-if="monitor.slowResponseNotification" class="my-3">
+                                <label for="slow-response-notification-resend-interval" class="form-label">
+                                    {{ $t("Resend Notification if Slow Response X times consecutively") }}
+                                    <span v-if="monitor.slowResponseNotificationResendInterval > 0">({{ $t("resendEveryXTimes", [ monitor.slowResponseNotificationResendInterval ]) }})</span>
+                                    <span v-else>({{ $t("resendDisabled") }})</span>
+                                </label>
+                                <input id="slow-response-notification-resend-interval" v-model="monitor.slowResponseNotificationResendInterval" type="number" class="form-control" required min="0" step="1">
+                            </div>
+
                             <h2 v-if="monitor.type !== 'push'" class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
 
                             <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' " class="my-3 form-check">
@@ -939,6 +948,7 @@ const monitorDefaults = {
     slowResponseNotificationThreshold: 5000,
     slowResponseNotificationRange: 60,
     slowResponseNotificationMethod: "average",
+    slowResponseNotificationResendInterval: 0,
 };
 
 export default {

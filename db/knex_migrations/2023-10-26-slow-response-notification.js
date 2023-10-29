@@ -6,6 +6,7 @@ exports.up = function (knex) {
             table.integer("slow_response_notification_threshold").defaultTo(0);
             table.integer("slow_response_notification_range").defaultTo(0);
             table.string("slow_response_notification_method").defaultTo("");
+            table.integer("slow_response_notification_resend_interval").defaultTo(0);
         });
 }
 
@@ -16,5 +17,6 @@ exports.down = function (knex) {
             table.integer("slow_response_notification_threshold").defaultTo(0);
             table.integer("slow_response_notification_range").defaultTo(0);
             table.string("slow_response_notification_method").defaultTo("");
+            table.integer("slow_response_notification_resend_interval").defaultTo(0);
         });
 }
