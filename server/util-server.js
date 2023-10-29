@@ -1105,7 +1105,7 @@ module.exports.axiosAbortSignal = (timeoutMs) => {
     try {
         return AbortSignal.timeout(timeoutMs);
     } catch (_) {
-        // v16-: AbortSignal is not supported
+        // v16-: AbortSignal.timeout is not supported
         try {
             const abortController = new AbortController();
 
