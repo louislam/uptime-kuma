@@ -42,7 +42,8 @@ const languageList = {
     "yue": "繁體中文 (廣東話 / 粵語)",
     "ro": "Limba română",
     "ur": "Urdu",
-    "ge": "ქართული"
+    "ge": "ქართული",
+    "uz": "Ўзбек тили",
 };
 
 let messages = {
