@@ -8,11 +8,6 @@ const { log } = require("../../src/util");
 
 class NutMonitorType extends MonitorType {
 
-    /* JOHN_DELETE_NOTE
-     * going to do crap job of this then improve
-     * hardcoding, not dry, breakable
-     */
-
     name = "nut";
 
     /**
