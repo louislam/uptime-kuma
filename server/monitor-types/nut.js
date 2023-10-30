@@ -5,7 +5,6 @@ const jsonata = require("jsonata");
 const Nut = require("node-nut");
 
 const { log } = require("../../src/util");
-log.debug("NUT", "nut file loaded");
 
 class NutMonitorType extends MonitorType {
 
@@ -26,7 +25,6 @@ class NutMonitorType extends MonitorType {
         const nut = new Nut(monitor.port, monitor.hostname);
 
         nut.on("ready", () => {
-            log.debug("NUT", "Ready event");
             nut.GetUPSList((upslist, err) => {
                 if (err) {
                     nut.close();
