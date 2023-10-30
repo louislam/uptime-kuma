@@ -42,7 +42,7 @@ class NutMonitorType extends MonitorType {
                         if (typeof vars === "string") {
                             vars = JSON.parse(vars);
                         }
-                        const data = ({ ...vars }); // Why must I do this?
+                        const data = ({ ...vars }); // copy vars
 
                         // Check device status
                         let result = await expression.evaluate(data);
