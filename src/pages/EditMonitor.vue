@@ -154,6 +154,15 @@
                                     <label for="upsName" class="form-label">UPS {{ $t("Name") }}</label>
                                     <input id="upsName" v-model="monitor.upsName" type="text" class="form-control" required>
                                 </div>
+                                <div class="my-3">
+                                    <label for="nutUsername" class="form-label">{{ $t("Username") }}</label>
+                                    <input id="nutUsername" v-model="monitor.nutUsername" type="text" class="form-control">
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="nutPassword" class="form-label">{{ $t("Password") }}</label>
+                                    <input id="nutPassword" v-model="monitor.nutPassword" type="password" class="form-control">
+                                </div>
                             </template>
 
                             <!-- Json Query and NUT-->
