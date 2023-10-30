@@ -42,7 +42,6 @@ class NutMonitorType extends MonitorType {
 
                 // TODO support multiple named UPS devices
                 let upsname = upslist[monitor.upsName] && monitor.upsName || Object.keys(upslist)[0];
-                log.debug("NUT", `ups name ${upsname}`);
 
                 nut.GetUPSVars(upsname, async (vars, err) => {
                     nut.close();
