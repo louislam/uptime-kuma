@@ -48,7 +48,7 @@ class NutMonitorType extends MonitorType {
                             heartbeat.ping = dayjs().valueOf() - startTime;
                         } else {
                             heartbeat.status = DOWN;
-                            heartbeat.msg = "Value not expected, value was: [" + result + "]";
+                            heartbeat.msg = `Value not expected, value was: [${result}]`;
                         }
                     }
                 });
