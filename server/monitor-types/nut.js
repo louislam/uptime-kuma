@@ -25,13 +25,6 @@ class NutMonitorType extends MonitorType {
 
         const nut = new Nut(monitor.port, monitor.hostname);
 
-        nut.on("error", err => {
-            throw new Error("NUT", "There was an error from the NUT server: " + err);
-        });
-
-        nut.on("close", () => {
-            log.debug("NUT", "Server connection closed.");
-        });
         nut.on("ready", () => {
             log.debug("NUT", "Ready event");
             nut.GetUPSList((upslist, err) => {
