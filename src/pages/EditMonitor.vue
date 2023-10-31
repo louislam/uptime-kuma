@@ -62,7 +62,7 @@
                                             MQTT
                                         </option>
                                         <option value="nut">
-                                            NUT
+                                            Network UPS Tools
                                         </option>
                                         <option value="kafka-producer">
                                             Kafka Producer
