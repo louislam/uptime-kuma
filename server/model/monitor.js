@@ -1432,7 +1432,7 @@ class Monitor extends BeanModel {
     async checkSlowResponseNotification(monitor, bean) {
 
         //Get recent heartbeat list with range of time
-        const afterThisDate = new Date(Date.now() - (1000 * monitor.slowResponseNotificationRange));
+        const afterThisDate = new Date(Date.now() - (1000 * (monitor.slowResponseNotificationRange + 1)));  // add 1 second otherwise we grab 0 previous beats when Time Range == Heartbeat Interval
         const previousBeats = await R.getAll(`
             SELECT * FROM heartbeat
             WHERE monitor_id = ? AND time > datetime(?) AND status = ?`,

@@ -458,7 +458,7 @@
 
                             <div v-if="monitor.slowResponseNotification" class="my-3">
                                 <label for="slow-response-notification-range" class="form-label">{{ $t("slowResponseNotificationRange") }}</label>
-                                <input id="slow-response-notification-range" v-model="monitor.slowResponseNotificationRange" type="number" class="form-control" required min="0" step="1">
+                                <input id="slow-response-notification-range" v-model="monitor.slowResponseNotificationRange" type="number" class="form-control" required :min="monitor.interval" step="1">
                                 <div class="form-text">
                                     {{ $t("slowResponseNotificationRangeDescription", [monitor.slowResponseNotificationRange]) }}
                                 </div>
@@ -1197,6 +1197,14 @@ message HealthCheckResponse {
             // Link interval and retryInterval if they are the same value.
             if (this.monitor.retryInterval === oldValue) {
                 this.monitor.retryInterval = value;
+            }
+            // Link interval and slowResponseNotificationRange if the are the same value
+            if (this.monitor.slowResponseNotificationRange === oldValue) {
+                this.monitor.slowResponseNotificationRange = value;
+            }
+            // But always keep slowResponseNotificationRange >= interval
+            if (this.monitor.slowResponseNotificationRange < value) {
+                this.monitor.slowResponseNotificationRange = value;
             }
         },
 
