@@ -1484,11 +1484,11 @@ class Monitor extends BeanModel {
             log.debug("monitor", `[${this.name}] Responded slowly (${actualResponseTime}ms > ${thresholdResponseTime}ms, Slow Response Count: ${bean.slowResponseCount})`);
 
             // Always send first notification
-            if (this.slowResponseNotificationResendInterval <= 0 || bean.slowResponseCount == 1) {
+            if (bean.slowResponseCount == 1) {
                 log.debug("monitor", `[${this.name}] Responded slowly, sending notification (${actualResponseTime}ms > ${thresholdResponseTime}ms, Slow Response Count: ${bean.slowResponseCount})`);
                 let message = `[${this.name}] Started responding slowly (${actualResponseTime}ms > ${thresholdResponseTime}ms)`;
                 Monitor.sendSlowResponseNotification(monitor, bean, message);
-            } else {
+            } else if (this.slowResponseNotificationResendInterval > 0){
                 // Send notification every x times
                 if (((bean.slowResponseCount) % this.slowResponseNotificationResendInterval) == 0) {
                     // Send notification again, because we are still responding slow
