@@ -439,12 +439,18 @@
                                     <option value="max">
                                         {{ $t("slowResponseNotificationMethodMax") }}
                                     </option>
+                                    <option value="last">
+                                        {{ $t("slowResponseNotificationMethodLast") }}
+                                    </option>
                                 </select>
                                 <div v-if="monitor.slowResponseNotificationMethod === 'average'" class="form-text">
                                     {{ $t("slowResponseNotificationMethodAverageDescription", [monitor.slowResponseNotificationRange]) }}
                                 </div>
                                 <div v-if="monitor.slowResponseNotificationMethod === 'max'" class="form-text">
                                     {{ $t("slowResponseNotificationMethodMaxDescription", [monitor.slowResponseNotificationRange]) }}
+                                </div>
+                                <div v-if="monitor.slowResponseNotificationMethod === 'last'" class="form-text">
+                                    {{ $t("slowResponseNotificationMethodLastDescription", [monitor.slowResponseNotificationRange]) }}
                                 </div>
                             </div>
 
@@ -456,7 +462,7 @@
                                 </div>
                             </div>
 
-                            <div v-if="monitor.slowResponseNotification" class="my-3">
+                            <div v-if="monitor.slowResponseNotification && monitor.slowResponseNotificationMethod !== 'last'" class="my-3">
                                 <label for="slow-response-notification-range" class="form-label">{{ $t("slowResponseNotificationRange") }}</label>
                                 <input id="slow-response-notification-range" v-model="monitor.slowResponseNotificationRange" type="number" class="form-control" required :min="monitor.interval" step="1">
                                 <div class="form-text">

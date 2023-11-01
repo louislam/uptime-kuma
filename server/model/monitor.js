@@ -1459,6 +1459,10 @@ class Monitor extends BeanModel {
                 });
                 break;
 
+            case "last":
+                actualResponseTime = bean.ping
+                break;
+
             default:
                 log.error("monitor", `[${this.name}] Unknown slow response notification method ${method}`);
                 return;
