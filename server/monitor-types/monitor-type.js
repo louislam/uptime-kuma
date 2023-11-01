@@ -3,10 +3,10 @@ class MonitorType {
     name = undefined;
 
     /**
-     *
-     * @param {Monitor} monitor
-     * @param {Heartbeat} heartbeat
-     * @param {UptimeKumaServer} server
+     * Run the monitoring check on the given monitor
+     * @param {Monitor} monitor Monitor to check
+     * @param {Heartbeat} heartbeat Monitor heartbeat to update
+     * @param {UptimeKumaServer} server Uptime Kuma server
      * @returns {Promise<void>}
      */
     async check(monitor, heartbeat, server) {

@@ -6,6 +6,9 @@ class Squadcast extends NotificationProvider {
 
     name = "squadcast";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
 

@@ -1,5 +1,5 @@
 <template>
-    <div class="dropdown" @focusin="open = true" @focusout="handleFocusOut">
+    <div tabindex="-1" class="dropdown" @focusin="open = true" @focusout="handleFocusOut">
         <button type="button" class="filter-dropdown-status" :class="{ 'active': filterActive }" tabindex="0">
             <div class="px-1 d-flex align-items-center">
                 <slot name="status"></slot>
@@ -107,6 +107,19 @@ export default {
     display: flex;
     align-items: center;
     margin-left: 5px;
+    color: $link-color;
+
+    .dark & {
+        color: $dark-font-color;
+    }
+
+    &:focus {
+        background-color: $highlight-white;
+
+        .dark & {
+            background-color: $dark-font-color2;
+        }
+    }
 
     &.active {
         border: 1px solid $highlight;
