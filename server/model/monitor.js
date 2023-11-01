@@ -1450,7 +1450,7 @@ class Monitor extends BeanModel {
                 previousBeats.forEach(beat => {
                     actualResponseTime = actualResponseTime + beat.ping;
                 });
-                actualResponseTime = actualResponseTime / previousBeats.length;
+                actualResponseTime = Math.round(actualResponseTime / previousBeats.length);
                 break;
 
             case "max":
