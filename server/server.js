@@ -808,6 +808,7 @@ let needSetup = false;
                 bean.slowResponseNotificationThreshold = monitor.slowResponseNotificationThreshold;
                 bean.slowResponseNotificationRange = monitor.slowResponseNotificationRange;
                 bean.slowResponseNotificationMethod = monitor.slowResponseNotificationMethod;
+                bean.slowResponseNotificationResendInterval = monitor.slowResponseNotificationResendInterval;
                 bean.grpcUrl = monitor.grpcUrl;
                 bean.grpcProtobuf = monitor.grpcProtobuf;
                 bean.grpcServiceName = monitor.grpcServiceName;

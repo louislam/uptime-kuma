@@ -418,12 +418,11 @@
                                 <input id="resend-interval" v-model="monitor.resendInterval" type="number" class="form-control" required min="0" step="1">
                             </div>
 
-                            <h2 class="mt-5 mb-2">{{ $t("slowResponseNotification") }}</h2>
-
+                            <!-- Slow Response Notification -->
                             <div class="my-3 form-check">
                                 <input id="slow-response-notification" v-model="monitor.slowResponseNotification" class="form-check-input" type="checkbox">
                                 <label class="form-check-label" for="slow-response-notification">
-                                    {{ $t("slowResponseNotificationUse") }}
+                                    {{ $t("slowResponseNotificationEnable") }}
                                 </label>
                                 <div class="form-text">
                                     {{ $t("slowResponseNotificationUseDescription") }}
@@ -467,7 +466,7 @@
 
                             <div v-if="monitor.slowResponseNotification" class="my-3">
                                 <label for="slow-response-notification-resend-interval" class="form-label">
-                                    {{ $t("Resend Notification if Slow Response X times consecutively") }}
+                                    {{ $t("slowResponseNotificationResendInterval", [monitor.slowResponseNotificationInterval]) }}
                                     <span v-if="monitor.slowResponseNotificationResendInterval > 0">({{ $t("resendEveryXTimes", [ monitor.slowResponseNotificationResendInterval ]) }})</span>
                                     <span v-else>({{ $t("resendDisabled") }})</span>
                                 </label>
