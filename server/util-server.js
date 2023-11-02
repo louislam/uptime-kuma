@@ -1095,3 +1095,26 @@ if (process.env.TEST_BACKEND) {
         return module.exports.__test[functionName];
     };
 }
+
+/**
+ * Generates an abort signal with the specified timeout.
+ * @param {number} timeoutMs - The timeout in milliseconds.
+ * @returns {AbortSignal | null} - The generated abort signal, or null if not supported.
+ */
+module.exports.axiosAbortSignal = (timeoutMs) => {
+    try {
+        return AbortSignal.timeout(timeoutMs);
+    } catch (_) {
+        // v16-: AbortSignal.timeout is not supported
+        try {
+            const abortController = new AbortController();
+
+            setTimeout(() => abortController.abort(), timeoutMs || 0);
+
+            return abortController.signal;
+        } catch (_) {
+            // v15-: AbortController is not supported
+            return null;
+        }
+    }
+};
