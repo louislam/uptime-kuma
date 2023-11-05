@@ -119,6 +119,15 @@ const port = config.port;
 const disableFrameSameOrigin = !!process.env.UPTIME_KUMA_DISABLE_FRAME_SAMEORIGIN || args["disable-frame-sameorigin"] || false;
 const cloudflaredToken = args["cloudflared-token"] || process.env.UPTIME_KUMA_CLOUDFLARED_TOKEN || undefined;
 
+const ipsToAllow = process.env.UPTIME_KUMA_IPS_TO_ALLOW || args["ips-to-allow"] || undefined;
+if (ipsToAllow !== undefined) {
+    log.info("server", "IPs to allow: " + ipsToAllow);
+
+    const ipfilter = require("express-ipfilter").IpFilter;
+    app.use(ipfilter(ipsToAllow.split(","), { mode: "allow" }));
+}
+
+
 // 2FA / notp verification defaults
 const twoFAVerifyOptions = {
     "window": 1,
