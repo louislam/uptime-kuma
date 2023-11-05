@@ -121,8 +121,11 @@ const cloudflaredToken = args["cloudflared-token"] || process.env.UPTIME_KUMA_CL
 
 const ipsToAllow = process.env.UPTIME_KUMA_IPS_TO_ALLOW || args["ips-to-allow"] || undefined;
 if (ipsToAllow !== undefined) {
+    if (typeof ipsToAllow !== "string") {
+        log.error("server", "IPs to allow must be a string, " + typeof ipsToAllow + " provided");
+        process.exit(1);
+    }
     log.info("server", "IPs to allow: " + ipsToAllow);
-
     const ipfilter = require("express-ipfilter").IpFilter;
     app.use(ipfilter(ipsToAllow.split(","), { mode: "allow" }));
 }
