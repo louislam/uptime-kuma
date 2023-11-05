@@ -127,7 +127,6 @@ if (ipsToAllow !== undefined) {
     app.use(ipfilter(ipsToAllow.split(","), { mode: "allow" }));
 }
 
-
 // 2FA / notp verification defaults
 const twoFAVerifyOptions = {
     "window": 1,
