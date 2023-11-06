@@ -437,7 +437,7 @@ export default {
          */
         testNotification() {
             this.$root.getSocket().emit("testNotification", this.monitor.id);
-            toast.success("Test notification is requested.");
+            this.$root.toastSuccess("Test notification is requested.");
         },
 
         /**
@@ -498,11 +498,9 @@ export default {
          */
         deleteMonitor() {
             this.$root.deleteMonitor(this.monitor.id, (res) => {
+                this.$root.toastRes(res);
                 if (res.ok) {
-                    toast.success(res.msg);
                     this.$router.push("/dashboard");
-                } else {
-                    toast.error(res.msg);
                 }
             });
         },

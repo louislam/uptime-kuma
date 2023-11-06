@@ -12,6 +12,7 @@ import FreeMobile from "./FreeMobile.vue";
 import GoogleChat from "./GoogleChat.vue";
 import Gorush from "./Gorush.vue";
 import Gotify from "./Gotify.vue";
+import GrafanaOncall from "./GrafanaOncall.vue";
 import HomeAssistant from "./HomeAssistant.vue";
 import Kook from "./Kook.vue";
 import Line from "./Line.vue";
@@ -71,6 +72,7 @@ const NotificationFormList = {
     "GoogleChat": GoogleChat,
     "gorush": Gorush,
     "gotify": Gotify,
+    "GrafanaOncall": GrafanaOncall,
     "HomeAssistant": HomeAssistant,
     "Kook": Kook,
     "line": Line,

@@ -119,6 +119,7 @@ export default {
                 "GoogleChat": "Google Chat (Google Workspace)",
                 "gorush": "Gorush",
                 "gotify": "Gotify",
+                "GrafanaOncall": "Grafana Oncall",
                 "HomeAssistant": "Home Assistant",
                 "Kook": "Kook",
                 "line": "LINE Messenger",
