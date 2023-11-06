@@ -68,7 +68,7 @@ export default {
         Confirm,
     },
     props: {},
-    emits: [ "added" ],
+    emits: [ "added", "deleted" ],
     data() {
         return {
             modal: null,
@@ -178,6 +178,7 @@ export default {
                 this.processing = false;
 
                 if (res.ok) {
+                    this.$emit("deleted", this.id);
                     this.modal.hide();
                 }
             });

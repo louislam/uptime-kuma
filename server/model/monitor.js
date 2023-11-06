@@ -673,8 +673,6 @@ class Monitor extends BeanModel {
                 } else if (this.type === "docker") {
                     log.debug("monitor", `[${this.name}] Prepare Options for Axios`);
 
-                    const dockerHost = await R.load("docker_host", this.docker_host);
-
                     const options = {
                         url: `/containers/${this.docker_container}/json`,
                         timeout: this.interval * 1000 * 0.8,
@@ -689,6 +687,12 @@ class Monitor extends BeanModel {
                             maxCachedSessions: 0,
                         }),
                     };
+
+                    const dockerHost = await R.load("docker_host", this.docker_host);
+
+                    if (!dockerHost) {
+                        throw new Error("Failed to load docker host config");
+                    }
 
                     if (dockerHost._dockerType === "socket") {
                         options.socketPath = dockerHost._dockerDaemon;
