@@ -59,6 +59,28 @@
             <input id="to-bcc" v-model="$parent.notification.smtpBCC" type="text" class="form-control" autocomplete="false" :required="!hasRecipient">
         </div>
 
+        <p class="form-text">
+            <i18n-t tag="div" keypath="smtpLiquidIntroduction" class="form-text mb-3">
+                <a href="https://liquidjs.com/" target="_blank">{{ $t("documentation") }}</a>
+            </i18n-t>
+            <code v-pre>{{name}}</code>: {{ $t("emailTemplateServiceName") }}<br />
+            <code v-pre>{{msg}}</code>: {{ $t("emailTemplateMsg") }}<br />
+            <code v-pre>{{status}}</code>: {{ $t("emailTemplateStatus") }}<br />
+            <code v-pre>{{heartbeatJSON}}</code>: {{ $t("emailTemplateHeartbeatJSON") }}<b>{{ $t("emailTemplateLimitedToUpDownNotification") }}</b><br />
+            <code v-pre>{{monitorJSON}}</code>: {{ $t("emailTemplateMonitorJSON") }} <b>{{ $t("emailTemplateLimitedToUpDownNotification") }}</b><br />
+            <code v-pre>{{hostnameOrURL}}</code>: {{ $t("emailTemplateHostnameOrURL") }}<br />
+        </p>
+        <div class="mb-3">
+            <label for="subject-email" class="form-label">{{ $t("emailCustomSubject") }}</label>
+            <input id="subject-email" v-model="$parent.notification.customSubject" type="text" class="form-control" autocomplete="false" placeholder="">
+            <div class="form-text">{{ $t("leave blank for default subject") }}</div>
+        </div>
+        <div class="mb-3">
+            <label for="body-email" class="form-label">{{ $t("emailCustomBody") }}</label>
+            <textarea id="body-email" v-model="$parent.notification.customBody" type="text" class="form-control" autocomplete="false" placeholder=""></textarea>
+            <div class="form-text">{{ $t("leave blank for default body") }}</div>
+        </div>
+
         <ToggleSection :heading="$t('smtpDkimSettings')">
             <i18n-t tag="div" keypath="smtpDkimDesc" class="form-text mb-3">
                 <a href="https://nodemailer.com/dkim/" target="_blank">{{ $t("documentation") }}</a>
@@ -89,17 +111,6 @@
                 <input id="dkim-skip-fields" v-model="$parent.notification.smtpDkimskipFields" type="text" class="form-control" autocomplete="false" placeholder="message-id:date">
             </div>
         </ToggleSection>
-
-        <div class="mb-3">
-            <label for="subject-email" class="form-label">{{ $t("emailCustomSubject") }}</label>
-            <input id="subject-email" v-model="$parent.notification.customSubject" type="text" class="form-control" autocomplete="false" placeholder="">
-            <div v-pre class="form-text">
-                (leave blank for default one)<br />
-                {{NAME}}: Service Name<br />
-                {{HOSTNAME_OR_URL}}: Hostname or URL<br />
-                {{STATUS}}: Status<br />
-            </div>
-        </div>
     </div>
 </template>
 

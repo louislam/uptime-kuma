@@ -614,7 +614,7 @@ export default {
                         }
 
                     } else {
-                        toast.error(res.msg);
+                        this.$root.toastError(res.msg);
                     }
                 });
             }
@@ -869,7 +869,7 @@ export default {
                     this.enableEditMode = false;
                     location.href = "/manage-status-page";
                 } else {
-                    toast.error(res.msg);
+                    this.$root.toastError(res.msg);
                 }
             });
         },
@@ -959,7 +959,7 @@ export default {
          */
         postIncident() {
             if (this.incident.title === "" || this.incident.content === "") {
-                toast.error(this.$t("Please input title and content"));
+                this.$root.toastError("Please input title and content");
                 return;
             }
 
@@ -969,7 +969,7 @@ export default {
                     this.enableEditIncidentMode = false;
                     this.incident = res.incident;
                 } else {
-                    toast.error(res.msg);
+                    this.$root.toastError(res.msg);
                 }
 
             });

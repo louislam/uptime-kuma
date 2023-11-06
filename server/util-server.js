@@ -29,9 +29,6 @@ const {
     },
 } = require("node-radius-utils");
 const dayjs = require("dayjs");
-const readline = require("readline");
-const rl = readline.createInterface({ input: process.stdin,
-    output: process.stdout });
 
 // SASLOptions used in JSDoc
 // eslint-disable-next-line no-unused-vars
@@ -1083,7 +1080,15 @@ module.exports.shake256 = (data, len) => {
         .digest("hex");
 };
 
-module.exports.prompt = (query) => new Promise((resolve) => rl.question(query, resolve));
+/**
+ * Non await sleep
+ * Source: https://stackoverflow.com/questions/59099454/is-there-a-way-to-call-sleep-without-await-keyword
+ * @param {number} n Milliseconds to wait
+ * @returns {void}
+ */
+module.exports.wait = (n) => {
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, n);
+};
 
 // For unit test, export functions
 if (process.env.TEST_BACKEND) {
@@ -1094,3 +1099,26 @@ if (process.env.TEST_BACKEND) {
         return module.exports.__test[functionName];
     };
 }
+
+/**
+ * Generates an abort signal with the specified timeout.
+ * @param {number} timeoutMs - The timeout in milliseconds.
+ * @returns {AbortSignal | null} - The generated abort signal, or null if not supported.
+ */
+module.exports.axiosAbortSignal = (timeoutMs) => {
+    try {
+        return AbortSignal.timeout(timeoutMs);
+    } catch (_) {
+        // v16-: AbortSignal.timeout is not supported
+        try {
+            const abortController = new AbortController();
+
+            setTimeout(() => abortController.abort(), timeoutMs || 0);
+
+            return abortController.signal;
+        } catch (_) {
+            // v15-: AbortController is not supported
+            return null;
+        }
+    }
+};

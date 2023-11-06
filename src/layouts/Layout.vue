@@ -370,12 +370,16 @@ main {
     padding: 9px 15px;
     width: 48px;
     box-shadow: 2px 2px 30px rgba(0, 0, 0, 0.2);
+    z-index: 100;
+
+    .dark & {
+        box-shadow: 2px 2px 30px rgba(0, 0, 0, 0.5);
+    }
 }
 
 @media (max-width: 770px) {
     .clear-all-toast-btn {
         bottom: 72px;
-        z-index: 100;
     }
 }
 

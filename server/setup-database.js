@@ -48,7 +48,7 @@ class SetupDatabase {
 
         try {
             dbConfig = Database.readDBConfig();
-            log.info("setup-database", "db-config.json is found and is valid");
+            log.debug("setup-database", "db-config.json is found and is valid");
             this.needSetup = false;
 
         } catch (e) {

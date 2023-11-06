@@ -288,22 +288,17 @@
                             <!-- Docker Host -->
                             <!-- For Docker Type -->
                             <div v-if="monitor.type === 'docker'" class="my-3">
-                                <h2 class="mb-2">{{ $t("Docker Host") }}</h2>
-                                <p v-if="$root.dockerHostList.length === 0">
-                                    {{ $t("Not available, please setup.") }}
-                                </p>
-
-                                <div v-else class="mb-3">
+                                <div class="mb-3">
                                     <label for="docker-host" class="form-label">{{ $t("Docker Host") }}</label>
-                                    <select id="docket-host" v-model="monitor.docker_host" class="form-select">
-                                        <option v-for="host in $root.dockerHostList" :key="host.id" :value="host.id">{{ host.name }}</option>
-                                    </select>
-                                    <a href="#" @click="$refs.dockerHostDialog.show(monitor.docker_host)">{{ $t("Edit") }}</a>
+                                    <ActionSelect
+                                        v-model="monitor.docker_host"
+                                        :options="dockerHostOptionsList"
+                                        :disabled="$root.dockerHostList == null || $root.dockerHostList.length === 0"
+                                        :icon="'plus'"
+                                        :action="() => $refs.dockerHostDialog.show()"
+                                        :required="true"
+                                    />
                                 </div>
-
-                                <button class="btn btn-primary me-2" type="button" @click="$refs.dockerHostDialog.show()">
-                                    {{ $t("Setup Docker Host") }}
-                                </button>
                             </div>
 
                             <!-- MQTT -->
@@ -848,7 +843,7 @@ import { genSecret, isDev, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND } from "../u
 import { hostNameRegexPattern } from "../util-frontend";
 import { sleep } from "../util";
 
-const toast = useToast();
+const toast = useToast;
 
 const pushTokenLength = 32;
 
@@ -1124,6 +1119,22 @@ message HealthCheckResponse {
                 ? this.$t("ignoreTLSErrorGeneral")
                 : this.$t("ignoreTLSError");
         }
+        
+        dockerHostOptionsList() {
+            if (this.$root.dockerHostList && this.$root.dockerHostList.length > 0) {
+                return this.$root.dockerHostList.map((host) => {
+                    return {
+                        label: host.name,
+                        value: host.id
+                    };
+                });
+            } else {
+                return [{
+                    label: this.$t("noDockerHostMsg"),
+                    value: null,
+                }];
+            }
+        }
     },
 
     watch: {
@@ -1183,7 +1194,7 @@ message HealthCheckResponse {
                     if (res.ok) {
                         this.gameList = res.gameList;
                     } else {
-                        toast.error(res.msg);
+                        this.$root.toastError(res.msg);
                     }
                 });
             }
@@ -1328,7 +1339,7 @@ message HealthCheckResponse {
                             this.monitor.timeout = ~~(this.monitor.interval * 8) / 10;
                         }
                     } else {
-                        toast.error(res.msg);
+                        this.$root.toastError(res.msg);
                     }
                 });
             }
@@ -1359,6 +1370,12 @@ message HealthCheckResponse {
                     JSON.parse(this.monitor.headers);
                 } catch (err) {
                     toast.error(this.$t("HeadersInvalidFormat") + err.message);
+                    return false;
+                }
+            }
+            if (this.monitor.type === "docker") {
+                if (this.monitor.docker_host == null) {
+                    toast.error(this.$t("DockerHostRequired"));
                     return false;
                 }
             }
@@ -1422,7 +1439,7 @@ message HealthCheckResponse {
                     createdNewParent = true;
                     this.monitor.parent = res.monitorID;
                 } else {
-                    toast.error(res.msg);
+                    this.$root.toastError(res.msg);
                     this.processing = false;
                     return;
                 }
@@ -1438,17 +1455,14 @@ message HealthCheckResponse {
                         if (createdNewParent) {
                             this.startParentGroupMonitor();
                         }
-
-                        toast.success(res.msg);
                         this.processing = false;
                         this.$root.getMonitorList();
                         this.$router.push("/dashboard/" + res.monitorID);
-
                     } else {
-                        toast.error(res.msg);
                         this.processing = false;
                     }
 
+                    this.$root.toastRes(res);
                 });
             } else {
                 await this.$refs.tagsManager.submit(this.monitor.id);
