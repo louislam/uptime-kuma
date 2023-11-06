@@ -383,6 +383,8 @@
     "Setup Docker Host": "Setup Docker Host",
     "Connection Type": "Connection Type",
     "Docker Daemon": "Docker Daemon",
+    "noDockerHostMsg": "Not Available. Setup a Docker Host First.",
+    "DockerHostRequired": "Please set the Docker Host for this monitor.",
     "deleteDockerHostMsg": "Are you sure want to delete this docker host for all monitors?",
     "socket": "Socket",
     "tcp": "TCP / HTTP",

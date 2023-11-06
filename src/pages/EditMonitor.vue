@@ -288,22 +288,17 @@
                             <!-- Docker Host -->
                             <!-- For Docker Type -->
                             <div v-if="monitor.type === 'docker'" class="my-3">
-                                <h2 class="mb-2">{{ $t("Docker Host") }}</h2>
-                                <p v-if="$root.dockerHostList.length === 0">
-                                    {{ $t("Not available, please setup.") }}
-                                </p>
-
-                                <div v-else class="mb-3">
+                                <div class="mb-3">
                                     <label for="docker-host" class="form-label">{{ $t("Docker Host") }}</label>
-                                    <select id="docket-host" v-model="monitor.docker_host" class="form-select">
-                                        <option v-for="host in $root.dockerHostList" :key="host.id" :value="host.id">{{ host.name }}</option>
-                                    </select>
-                                    <a href="#" @click="$refs.dockerHostDialog.show(monitor.docker_host)">{{ $t("Edit") }}</a>
+                                    <ActionSelect
+                                        v-model="monitor.docker_host"
+                                        :options="dockerHostOptionsList"
+                                        :disabled="$root.dockerHostList == null || $root.dockerHostList.length === 0"
+                                        :icon="'plus'"
+                                        :action="() => $refs.dockerHostDialog.show()"
+                                        :required="true"
+                                    />
                                 </div>
-
-                                <button class="btn btn-primary me-2" type="button" @click="$refs.dockerHostDialog.show()">
-                                    {{ $t("Setup Docker Host") }}
-                                </button>
                             </div>
 
                             <!-- MQTT -->
@@ -1115,6 +1110,21 @@ message HealthCheckResponse {
             return list;
         },
 
+        dockerHostOptionsList() {
+            if (this.$root.dockerHostList && this.$root.dockerHostList.length > 0) {
+                return this.$root.dockerHostList.map((host) => {
+                    return {
+                        label: host.name,
+                        value: host.id
+                    };
+                });
+            } else {
+                return [{
+                    label: this.$t("noDockerHostMsg"),
+                    value: null,
+                }];
+            }
+        }
     },
     watch: {
         "$root.proxyList"() {
@@ -1349,6 +1359,12 @@ message HealthCheckResponse {
                     JSON.parse(this.monitor.headers);
                 } catch (err) {
                     toast.error(this.$t("HeadersInvalidFormat") + err.message);
+                    return false;
+                }
+            }
+            if (this.monitor.type === "docker") {
+                if (this.monitor.docker_host == null) {
+                    toast.error(this.$t("DockerHostRequired"));
                     return false;
                 }
             }
