@@ -43,8 +43,7 @@ log.debug("server", "Arguments");
 log.debug("server", args);
 
 if (! process.env.NODE_ENV) {
-    // process.env.NODE_ENV = "production";
-    process.env.NODE_ENV = "development";
+    process.env.NODE_ENV = "production";
 }
 
 log.info("server", "Env: " + process.env.NODE_ENV);

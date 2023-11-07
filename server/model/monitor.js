@@ -1404,26 +1404,21 @@ class Monitor extends BeanModel {
      * Send a slow response notification about a monitor
      * @param {Monitor} monitor The monitor to send a notificaton about
      * @param {Bean} bean Status information about monitor
-     * @param {string} message Notification text to be sent
+     * @param {string} msg Notification text to be sent
      * @returns {void}
      */
-    static async sendSlowResponseNotification(monitor, bean, message) {
+    static async sendSlowResponseNotification(monitor, bean, msg) {
         // Send notification
         const notificationList = await Monitor.getNotificationList(monitor);
 
-        if (notificationList.length > 0) {
-            for (let notification of notificationList) {
-                try {
-                    log.debug("monitor", `[${this.name}] Sending to ${notification.name}`);
-                    await Notification.send(JSON.parse(notification.config), message);
-                } catch (e) {
-                    log.error("monitor", `[${this.name}] Cannot send slow response notification to ${notification.name}`);
-                    log.error("monitor", e);
-                }
+        for (let notification of notificationList) {
+            try {
+                log.debug("monitor", `[${this.name}] Sending to ${notification.name}`);
+                await Notification.send(JSON.parse(notification.config), msg);
+            } catch (e) {
+                log.error("monitor", `[${this.name}] Cannot send slow response notification to ${notification.name}`);
+                log.error("monitor", e);
             }
-
-        } else {
-            log.debug("monitor", `[${this.name}] No notification configured, no need to send slow response notification`);
         }
     }
 
@@ -1447,6 +1442,7 @@ class Monitor extends BeanModel {
         ]);
         const method = monitor.slowResponseNotificationMethod;
         const thresholdResponseTime = monitor.slowResponseNotificationThreshold;
+        const windowDuration = monitor.slowResponseNotificationRange;
         let actualResponseTime = 0;
 
         switch (method) {
@@ -1472,39 +1468,50 @@ class Monitor extends BeanModel {
                 return;
         }
 
-        // Responding normally
-        if (actualResponseTime < thresholdResponseTime) {
-            if (bean.slowResponseCount == 0) {
-                log.debug("monitor", `[${this.name}] Responding normally. No need to send slow response notification (${actualResponseTime}ms < ${thresholdResponseTime}ms)`);
+        // Create stats to append to messages/logs
+        let msgStats = `\nResponse: ${actualResponseTime}ms | Threshold: ${thresholdResponseTime}ms | Method: ${method}`
+        // Add window duration for methods that make sense
+        if (["average", "max"].includes(method)) {
+            msgStats += ` over ${windowDuration}s`
+        }
+
+        // Verify something was actually calculated
+        if (actualResponseTime != 0 && Number.isInteger(actualResponseTime)) {
+            // Responding normally
+            if (actualResponseTime < thresholdResponseTime) {
+                if (bean.slowResponseCount == 0) {
+                    log.debug("monitor", `[${this.name}] Responding normally. No need to send slow response notification ${msgStats}`);
+                } else {
+                    log.debug("monitor", `[${this.name}] Returned to normal response time ${msgStats}`);
+                    let msg = `[${this.name}] Returned to Normal Response Time ${msgStats}`;
+                    Monitor.sendSlowResponseNotification(monitor, bean, msg);
+                }
+
+                // Reset slow response count
+                bean.slowResponseCount = 0;
+                return;
+
+            // Responding slowly
             } else {
-                log.debug("monitor", `[${this.name}] Returned to normal response time (${actualResponseTime}ms < ${thresholdResponseTime}ms)`);
-                let message = `[${this.name}] Returned to normal response time (${actualResponseTime}ms < ${thresholdResponseTime}ms)`;
-                Monitor.sendSlowResponseNotification(monitor, bean, message);
-            }
+                ++bean.slowResponseCount;
 
-            // Reset slow response count
-            bean.slowResponseCount = 0;
-            return;
-
-        // Responding slowly
-        } else {
-            ++bean.slowResponseCount;
-            log.debug("monitor", `[${this.name}] Responded slowly (${actualResponseTime}ms > ${thresholdResponseTime}ms, Slow Response Count: ${bean.slowResponseCount})`);
-
-            // Always send first notification
-            if (bean.slowResponseCount == 1) {
-                log.debug("monitor", `[${this.name}] Responded slowly, sending notification (${actualResponseTime}ms > ${thresholdResponseTime}ms, Slow Response Count: ${bean.slowResponseCount})`);
-                let message = `[${this.name}] Started responding slowly (${actualResponseTime}ms > ${thresholdResponseTime}ms)`;
-                Monitor.sendSlowResponseNotification(monitor, bean, message);
-            } else if (this.slowResponseNotificationResendInterval > 0){
-                // Send notification every x times
-                if (((bean.slowResponseCount) % this.slowResponseNotificationResendInterval) == 0) {
-                    // Send notification again, because we are still responding slow
-                    log.debug("monitor", `[${this.name}] sendSlowResponseNotification again (${actualResponseTime}ms > ${thresholdResponseTime}ms, Slow Response Count: ${bean.slowResponseCount})`);
-                    let message = `[${this.name}] Still responding slowly (${actualResponseTime}ms > ${thresholdResponseTime}ms, Slow Response Count: ${bean.slowResponseCount})`;
-                    Monitor.sendSlowResponseNotification(monitor, bean, message);
+                // Always send first notification
+                if (bean.slowResponseCount == 1) {
+                    log.debug("monitor", `[${this.name}] Responded slowly, sending notification ${msgStats}`);
+                    let msg = `[${this.name}] Responded Slowly ${msgStats}`;
+                    Monitor.sendSlowResponseNotification(monitor, bean, msg);
+                } else if (this.slowResponseNotificationResendInterval > 0){
+                    // Send notification every x times
+                    if (((bean.slowResponseCount) % this.slowResponseNotificationResendInterval) == 0) {
+                        // Send notification again, because we are still responding slow
+                        log.debug("monitor", `[${this.name}] sendSlowResponseNotification again ${msgStats}`);
+                        let msg = `[${this.name}] Still Responding Slowly ${msgStats}`;
+                        Monitor.sendSlowResponseNotification(monitor, bean, msg);
+                    }
                 }
             }
+        } else {
+            log.debug("monitor", `[${this.name}] Failed to calculate valid response time`);
         }
     }
 
