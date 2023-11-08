@@ -1035,5 +1035,6 @@
     "General Monitor Type": "",
     "Body Encoding": "",
     "Kafka Producer Message": "",
-    "Enable Kafka Producer Auto Topic Creation": ""
+    "Enable Kafka Producer Auto Topic Creation": "",
+    "setupDatabaseEmbeddedMariaDB": ""
 }
