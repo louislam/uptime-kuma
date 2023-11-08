@@ -1050,5 +1050,6 @@
     "CopyToClipboardError": "",
     "Enable DNS Cache": "",
     "ntfyPriorityHelptextAllEvents": "",
-    "pushViewCode": ""
+    "pushViewCode": "",
+    "ignoreTLSError": ""
 }
