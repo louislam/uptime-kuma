@@ -1049,5 +1049,7 @@
     "grpcMethodDescription": "",
     "ntfyPriorityHelptextAllExceptDown": "",
     "CopyToClipboardError": "",
-    "ntfyPriorityHelptextAllEvents": ""
+    "ntfyPriorityHelptextAllEvents": "",
+    "setupDatabaseEmbeddedMariaDB": "",
+    "ignoreTLSError": ""
 }
