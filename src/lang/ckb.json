@@ -1041,5 +1041,7 @@
     "twoFAVerifyLabel": "",
     "tokenValidSettingsMsg": "",
     "recurringIntervalMessage": "",
-    "affectedMonitorsDescription": ""
+    "affectedMonitorsDescription": "",
+    "setupDatabaseEmbeddedMariaDB": "",
+    "ignoreTLSError": ""
 }
