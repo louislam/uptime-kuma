@@ -1432,6 +1432,11 @@ class Monitor extends BeanModel {
      */
     async checkSlowResponseNotification(monitor, bean) {
 
+        if (bean.status !== UP) {
+            log.debug("monitor", `[${this.name}] Monitor status is not UP, skipping slow response check`);
+                return;
+        }
+
         const method = monitor.slowResponseNotificationMethod;
         const thresholdMethod = monitor.slowResponseNotificationThresholdMethod;
         const thresholdMultipler = monitor.slowResponseNotificationThresholdMultiplier;
