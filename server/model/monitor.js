@@ -133,9 +133,11 @@ class Monitor extends BeanModel {
             databaseQuery: this.databaseQuery,
             authMethod: this.authMethod,
             slowResponseNotification: this.isEnabledSlowResponseNotification(),
-            slowResponseNotificationThreshold: this.slowResponseNotificationThreshold,
-            slowResponseNotificationRange: this.slowResponseNotificationRange,
             slowResponseNotificationMethod: this.slowResponseNotificationMethod,
+            slowResponseNotificationRange: this.slowResponseNotificationRange,
+            slowResponseNotificationThresholdMethod: this.slowResponseNotificationThresholdMethod,
+            slowResponseNotificationThreshold: this.slowResponseNotificationThreshold,
+            slowResponseNotificationThresholdMultiplier: this.slowResponseNotificationThresholdMultiplier,
             slowResponseNotificationResendInterval: this.slowResponseNotificationResendInterval,
             grpcUrl: this.grpcUrl,
             grpcProtobuf: this.grpcProtobuf,
@@ -949,7 +951,7 @@ class Monitor extends BeanModel {
             bean.end_time = R.isoDateTimeMillis(endTimeDayjs);
 
             // Check if response time is slow
-            if (this.isEnabledSlowResponseNotification()) {
+            if (this.isEnabledSlowResponseNotification() && !isFirstBeat) {
                 log.debug("monitor", `[${this.name}] Check if response is slow`);
                 await this.checkSlowResponseNotification(this, bean);
             }
@@ -1423,27 +1425,32 @@ class Monitor extends BeanModel {
     }
 
     /**
-     * Check heartbeat response time is slower than threshold.
+     * Check if heartbeat response time is slower than threshold.
      * @param {Monitor} monitor The monitor to send a notification about
      * @param {Bean} bean Status information about monitor
      * @returns {Promise<void>}
      */
     async checkSlowResponseNotification(monitor, bean) {
 
-        //Get recent heartbeat list with range of time
-        const afterThisDate = new Date(Date.now() - (1000 * (monitor.slowResponseNotificationRange + 1)));  // add 1 second otherwise we grab 0 previous beats when Time Range == Heartbeat Interval
-        const previousBeats = await R.getAll(`
-            SELECT * FROM heartbeat
-            WHERE monitor_id = ? AND time > datetime(?) AND status = ?`,
-        [
-            monitor.id,
-            afterThisDate.toISOString(),
-            UP,
-        ]);
         const method = monitor.slowResponseNotificationMethod;
-        const thresholdResponseTime = monitor.slowResponseNotificationThreshold;
+        const thresholdMethod = monitor.slowResponseNotificationThresholdMethod;
+        const thresholdMultipler = monitor.slowResponseNotificationThresholdMultiplier;
         const windowDuration = monitor.slowResponseNotificationRange;
         let actualResponseTime = 0;
+
+        let previousBeats;
+        if (method != "last") {
+            //Get recent heartbeat list with range of time
+            const afterThisDate = new Date(Date.now() - (1000 * (monitor.slowResponseNotificationRange + 1)));  // add 1 second otherwise we grab 0 previous beats when Time Range == Heartbeat Interval
+            previousBeats = await R.getAll(`
+                SELECT * FROM heartbeat
+                WHERE monitor_id = ? AND time > datetime(?) AND status = ?`,
+            [
+                monitor.id,
+                afterThisDate.toISOString(),
+                UP,
+            ]);
+        }
 
         switch (method) {
             case "average":
@@ -1460,58 +1467,98 @@ class Monitor extends BeanModel {
                 break;
 
             case "last":
-                actualResponseTime = bean.ping
+                actualResponseTime = bean.ping;
                 break;
 
             default:
-                log.error("monitor", `[${this.name}] Unknown slow response notification method ${method}`);
+                log.error("monitor", `[${this.name}] Unknown response time calculation method for slow response notification: ${method}`);
+                return;
+        }
+
+        let threshold;
+        let thresholdDescription;
+        switch (thresholdMethod) {
+            case "threshold-static":
+                threshold = monitor.slowResponseNotificationThreshold;
+                thresholdDescription = "static";
+                break;
+
+            case "threshold-relative-24-hour":
+                //Get average response time over last 24 hours
+                const afterThisDate = new Date(Date.now() - (1000 * (24 * 60 * 60))); // 24 hours in milliseconds
+                const avgPing = parseInt(await R.getCell(`
+                    SELECT AVG(ping) FROM heartbeat
+                    WHERE time > datetime(?)
+                    AND ping IS NOT NULL
+                    AND monitor_id = ?
+                    AND status = ?
+                    `,
+                [ afterThisDate.toISOString(), monitor.id, UP ]
+                ));
+                //calculate threshold
+                threshold = Math.round(avgPing * thresholdMultipler);
+                thresholdDescription = `${thresholdMultipler}x 24H Avg`;
+                break;
+
+            default:
+                log.error("monitor", `[${this.name}] Unknown threshold calculation method for slow response notification: ${thresholdMethod}`);
                 return;
         }
 
         // Create stats to append to messages/logs
-        let msgStats = `\nResponse: ${actualResponseTime}ms | Threshold: ${thresholdResponseTime}ms | Method: ${method}`
+        const methodDescription = ["average", "max"].includes(method) ? `${method} of ${windowDuration}s` : method;
+        let msgStats = `Response: ${actualResponseTime}ms (${methodDescription}) | Threshold: ${threshold}ms (${thresholdDescription})`
         // Add window duration for methods that make sense
-        if (["average", "max"].includes(method)) {
-            msgStats += ` over ${windowDuration}s`
+
+        // Verify valid response time was calculated
+        if (actualResponseTime == 0 || !Number.isInteger(actualResponseTime)) {
+            log.debug("monitor", `[${this.name}] Failed to calculate valid response time`);
+            return;
         }
 
-        // Verify something was actually calculated
-        if (actualResponseTime != 0 && Number.isInteger(actualResponseTime)) {
-            // Responding normally
-            if (actualResponseTime < thresholdResponseTime) {
-                if (bean.slowResponseCount == 0) {
-                    log.debug("monitor", `[${this.name}] Responding normally. No need to send slow response notification ${msgStats}`);
-                } else {
-                    log.debug("monitor", `[${this.name}] Returned to normal response time ${msgStats}`);
-                    let msg = `[${this.name}] Returned to Normal Response Time ${msgStats}`;
-                    Monitor.sendSlowResponseNotification(monitor, bean, msg);
-                }
+        // Verify valid threshold was calculated
+        if (!Number.isInteger(threshold)) {
+            log.debug("monitor", `[${this.name}] Failed to calculate valid threshold`);
+            return;
+        }
 
-                // Reset slow response count
-                bean.slowResponseCount = 0;
-                return;
-
-            // Responding slowly
+        // Responding normally
+        if (actualResponseTime < threshold) {
+            if (bean.slowResponseCount == 0) {
+                log.debug("monitor", `[${this.name}] Responding normally. No need to send slow response notification | ${msgStats}`);
             } else {
-                ++bean.slowResponseCount;
-
-                // Always send first notification
-                if (bean.slowResponseCount == 1) {
-                    log.debug("monitor", `[${this.name}] Responded slowly, sending notification ${msgStats}`);
-                    let msg = `[${this.name}] Responded Slowly ${msgStats}`;
-                    Monitor.sendSlowResponseNotification(monitor, bean, msg);
-                } else if (this.slowResponseNotificationResendInterval > 0){
-                    // Send notification every x times
-                    if (((bean.slowResponseCount) % this.slowResponseNotificationResendInterval) == 0) {
-                        // Send notification again, because we are still responding slow
-                        log.debug("monitor", `[${this.name}] sendSlowResponseNotification again ${msgStats}`);
-                        let msg = `[${this.name}] Still Responding Slowly ${msgStats}`;
-                        Monitor.sendSlowResponseNotification(monitor, bean, msg);
-                    }
-                }
+                msgStats += ` | Slow for: ${bean.slowResponseCount * monitor.interval}s`;
+                log.debug("monitor", `[${this.name}] Returned to normal response time | ${msgStats}`);
+                let msg = `[${this.name}] Returned to Normal Response Time \n${msgStats}`;
+                Monitor.sendSlowResponseNotification(monitor, bean, msg);
             }
+
+            // Reset slow response count
+            bean.slowResponseCount = 0;
+
+        // Responding slowly
         } else {
-            log.debug("monitor", `[${this.name}] Failed to calculate valid response time`);
+            ++bean.slowResponseCount;
+
+            // Always send first notification
+            if (bean.slowResponseCount == 1) {
+                log.debug("monitor", `[${this.name}] Responded slowly, sending notification | ${msgStats}`);
+                let msg = `[${this.name}] Responded Slowly \n${msgStats}`;
+                Monitor.sendSlowResponseNotification(monitor, bean, msg);
+            // Send notification every x times
+            } else if (this.slowResponseNotificationResendInterval > 0){
+                if (((bean.slowResponseCount) % this.slowResponseNotificationResendInterval) == 0) {
+                    // Send notification again, because we are still responding slow
+                    msgStats += ` | Slow for: ${bean.slowResponseCount * monitor.interval}s`;
+                    log.debug("monitor", `[${this.name}] Still responding slowly, sendSlowResponseNotification again | ${msgStats}`);
+                    let msg = `[${this.name}] Still Responding Slowly \n${msgStats}`;
+                    Monitor.sendSlowResponseNotification(monitor, bean, msg);
+                } else {
+                    log.debug("monitor", `[${this.name}] Still responding slowly, waiting for resend interal | ${msgStats}`);
+                }
+            } else {
+                log.debug("monitor", `[${this.name}] Still responding slowly, but resend is disabled | ${msgStats}`);
+            }
         }
     }
 
