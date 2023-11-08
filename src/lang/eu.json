@@ -1073,5 +1073,6 @@
     "backupOutdatedWarning": "",
     "trustProxyDescription": "",
     "grpcMethodDescription": "",
-    "ntfyPriorityHelptextAllExceptDown": ""
+    "ntfyPriorityHelptextAllExceptDown": "",
+    "setupDatabaseEmbeddedMariaDB": ""
 }
