@@ -1048,5 +1048,7 @@
     "grpcMethodDescription": "",
     "Pick a SASL Mechanism...": "",
     "pushViewCode": "",
-    "ntfyPriorityHelptextAllEvents": ""
+    "ntfyPriorityHelptextAllEvents": "",
+    "ignoreTLSError": "",
+    "setupDatabaseEmbeddedMariaDB": ""
 }
