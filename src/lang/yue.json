@@ -1045,5 +1045,6 @@
     "Enable DNS Cache": "",
     "Create your admin account": "",
     "ntfyPriorityHelptextAllEvents": "",
-    "CopyToClipboardError": ""
+    "CopyToClipboardError": "",
+    "setupDatabaseEmbeddedMariaDB": ""
 }
