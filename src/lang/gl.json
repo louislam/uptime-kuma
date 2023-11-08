@@ -1044,5 +1044,7 @@
     "upsideDownModeDescription": "",
     "grpcMethodDescription": "",
     "ntfyPriorityHelptextAllExceptDown": "",
-    "Enable DNS Cache": ""
+    "Enable DNS Cache": "",
+    "setupDatabaseEmbeddedMariaDB": "",
+    "ignoreTLSError": ""
 }
