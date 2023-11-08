@@ -1068,5 +1068,6 @@
     "CopyToClipboardError": "",
     "Enable DNS Cache": "",
     "trustProxyDescription": "",
-    "backupOutdatedWarning": ""
+    "backupOutdatedWarning": "",
+    "setupDatabaseEmbeddedMariaDB": ""
 }
