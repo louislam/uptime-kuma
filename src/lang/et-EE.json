@@ -1066,5 +1066,6 @@
     "ntfyPriorityHelptextAllExceptDown": "",
     "CopyToClipboardError": "",
     "pushViewCode": "",
-    "setupDatabaseChooseDatabase": ""
+    "setupDatabaseChooseDatabase": "",
+    "setupDatabaseEmbeddedMariaDB": ""
 }
