@@ -1043,5 +1043,7 @@
     "onebotHttpAddress": "",
     "onebotMessageType": "",
     "statusMaintenance": "",
-    "Specific Monitor Type": ""
+    "Specific Monitor Type": "",
+    "ignoreTLSError": "",
+    "setupDatabaseEmbeddedMariaDB": ""
 }
