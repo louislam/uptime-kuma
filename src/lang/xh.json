@@ -1045,5 +1045,6 @@
     "Pause": "",
     "pushViewCode": "",
     "grpcMethodDescription": "",
-    "ntfyPriorityHelptextAllExceptDown": ""
+    "ntfyPriorityHelptextAllExceptDown": "",
+    "ignoreTLSError": ""
 }
