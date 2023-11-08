@@ -1048,5 +1048,7 @@
     "Enable DNS Cache": "",
     "ntfyPriorityHelptextAllEvents": "",
     "ntfyPriorityHelptextAllExceptDown": "",
-    "grpcMethodDescription": ""
+    "grpcMethodDescription": "",
+    "setupDatabaseEmbeddedMariaDB": "",
+    "ignoreTLSError": ""
 }
