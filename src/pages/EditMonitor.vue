@@ -978,7 +978,7 @@ const monitorDefaults = {
     slowResponseNotification: false,
     slowResponseNotificationMethod: "average",
     slowResponseNotificationRange: 300,
-    slowResponseNotificationThresholdMethod:"threshold-relative-24-hour",
+    slowResponseNotificationThresholdMethod: "threshold-relative-24-hour",
     slowResponseNotificationThreshold: 2500,
     slowResponseNotificationThresholdMultiplier: 5.0,
     slowResponseNotificationResendInterval: 0,
