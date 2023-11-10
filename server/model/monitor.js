@@ -1529,6 +1529,8 @@ class Monitor extends BeanModel {
             return;
         }
 
+        bean.pingThreshold = threshold;
+
         // Responding normally
         if (actualResponseTime < threshold) {
             if (bean.slowResponseCount === 0) {

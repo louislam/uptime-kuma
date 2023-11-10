@@ -19,11 +19,12 @@
 <script lang="js">
 import { BarController, BarElement, Chart, Filler, LinearScale, LineController, LineElement, PointElement, TimeScale, Tooltip } from "chart.js";
 import "chartjs-adapter-dayjs-4";
+import annotationPlugin from "chartjs-plugin-annotation";
 import dayjs from "dayjs";
 import { Line } from "vue-chartjs";
 import { DOWN, PENDING, MAINTENANCE, log } from "../util.ts";
 
-Chart.register(LineController, BarController, LineElement, PointElement, TimeScale, BarElement, LinearScale, Tooltip, Filler);
+Chart.register(LineController, BarController, LineElement, PointElement, TimeScale, BarElement, LinearScale, Tooltip, Filler, annotationPlugin);
 
 export default {
     components: { Line },
@@ -56,6 +57,22 @@ export default {
         };
     },
     computed: {
+        threshold() {
+            let heartbeatList = this.heartbeatList ||
+             (this.monitorId in this.$root.heartbeatList && this.$root.heartbeatList[this.monitorId]) ||
+             [];
+
+            let lastBeat = heartbeatList.at(-1);
+            // TODO: Simplify? When page loads, lastBeat contains ping_threshold,
+            // but after the following heartbeat it has pingThreshold.
+            if (lastBeat?.hasOwnProperty('pingThreshold')) {
+                return lastBeat.pingThreshold;
+            } else if (lastBeat?.hasOwnProperty('ping_threshold')) {
+                return lastBeat.ping_threshold;
+            } else {
+                return undefined;
+            }
+        },
         chartOptions() {
             return {
                 responsive: true,
@@ -120,6 +137,8 @@ export default {
                         grid: {
                             color: this.$root.theme === "light" ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.1)",
                         },
+                        /* min: 0, */
+                        /* max: 1000, */
                     },
                     y1: {
                         display: false,
@@ -152,6 +171,22 @@ export default {
                     },
                     legend: {
                         display: false,
+                    },
+                    annotation: {
+                        /* drawTime: 'afterDraw', */
+                        annotations:{
+                            line1: {
+                                type: 'line',
+                                mode: 'horizontal',
+                                scaleID: 'y',
+                                value: this.threshold,
+                                endValue: this.threshold,
+                                borderColor: 'rgba(248,163,6,1.0)',
+                                borderWith: 2,
+                                borderDash: [1, 3],
+                                display: this.threshold !== undefined,
+                            }
+                        }
                     },
                 },
             };
