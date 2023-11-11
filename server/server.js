@@ -125,6 +125,15 @@ if (ipsToAllow !== undefined) {
         log.error("server", "IPs to allow must be a string, " + typeof ipsToAllow + " provided");
         process.exit(1);
     }
+
+    const net = require("net");
+    for (const ip of ipsToAllow.split(",")) {
+        if (net.isIP(ip) === 0) {
+            log.error("server", "Provided IPs to allow must be valid IP addresses, " + ip + " provided");
+            process.exit(1);
+        }
+    }
+
     log.info("server", "IPs to allow: " + ipsToAllow);
     const ipfilter = require("express-ipfilter").IpFilter;
     app.use(ipfilter(ipsToAllow.split(","), { mode: "allow" }));
