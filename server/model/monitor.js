@@ -367,6 +367,12 @@ class Monitor extends BeanModel {
                 bean.duration = 0;
             }
 
+            // Runtime patch timeout if it is 0
+            // See https://github.com/louislam/uptime-kuma/pull/3961#issuecomment-1804149144
+            if (this.timeout <= 0) {
+                this.timeout = this.interval * 1000 * 0.8;
+            }
+
             try {
                 if (await Monitor.isUnderMaintenance(this.id)) {
                     bean.msg = "Monitor under maintenance";
