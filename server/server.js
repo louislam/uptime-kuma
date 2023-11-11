@@ -126,17 +126,18 @@ if (ipsToAllow !== undefined) {
         process.exit(1);
     }
 
+    const splitIps = ipsToAllow.split(",");
     const net = require("net");
-    for (const ip of ipsToAllow.split(",")) {
+    for (const ip of splitIps) {
         if (net.isIP(ip) === 0) {
             log.error("server", "Provided IPs to allow must be valid IP addresses, " + ip + " provided");
             process.exit(1);
         }
     }
 
-    log.info("server", "IPs to allow: " + ipsToAllow);
+    log.info("server", "IPs to allow: " + splitIps);
     const ipfilter = require("express-ipfilter").IpFilter;
-    app.use(ipfilter(ipsToAllow.split(","), { mode: "allow" }));
+    app.use(ipfilter(splitIps, { mode: "allow" }));
 }
 
 // 2FA / notp verification defaults
