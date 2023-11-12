@@ -80,8 +80,9 @@ Before deep into coding, discussion first is preferred. Creating an empty pull r
 1. Push to your fork repo
 1. Create a pull request: https://github.com/louislam/uptime-kuma/compare
 1. Write a proper description
-1. Click "Change to draft"
+1. If you have questions or need further guidance, click "Change to draft"
 1. Discussion
+1. When you're ready for review by the maintainers, click "Ready for review"
 
 ## Project Styles
 
