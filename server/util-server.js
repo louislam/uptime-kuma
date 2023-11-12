@@ -1132,13 +1132,17 @@ if (process.env.TEST_BACKEND) {
  */
 module.exports.axiosAbortSignal = (timeoutMs) => {
     try {
+        // Just in case, as 0 timeout here will cause the request to be aborted immediately
+        if (!timeoutMs || timeoutMs <= 0) {
+            timeoutMs = 5000;
+        }
         return AbortSignal.timeout(timeoutMs);
     } catch (_) {
         // v16-: AbortSignal.timeout is not supported
         try {
             const abortController = new AbortController();
 
-            setTimeout(() => abortController.abort(), timeoutMs || 0);
+            setTimeout(() => abortController.abort(), timeoutMs);
 
             return abortController.signal;
         } catch (_) {
