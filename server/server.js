@@ -823,6 +823,9 @@ let needSetup = false;
                 bean.kafkaProducerAllowAutoTopicCreation = monitor.kafkaProducerAllowAutoTopicCreation;
                 bean.kafkaProducerSaslOptions = JSON.stringify(monitor.kafkaProducerSaslOptions);
                 bean.kafkaProducerMessage = monitor.kafkaProducerMessage;
+                bean.kafkaProducerSsl = monitor.kafkaProducerSsl;
+                bean.kafkaProducerAllowAutoTopicCreation =
+                    monitor.kafkaProducerAllowAutoTopicCreation;
                 bean.gamedigGivenPortOnly = monitor.gamedigGivenPortOnly;
 
                 bean.validate();
@@ -1793,8 +1796,10 @@ gracefulShutdown(server.httpServer, {
 });
 
 // Catch unexpected errors here
-process.addListener("unhandledRejection", (error, promise) => {
+let unexpectedErrorHandler = (error, promise) => {
     console.trace(error);
     UptimeKumaServer.errorLog(error, false);
     console.error("If you keep encountering errors, please report to https://github.com/louislam/uptime-kuma/issues");
-});
+};
+process.addListener("unhandledRejection", unexpectedErrorHandler);
+process.addListener("uncaughtException", unexpectedErrorHandler);

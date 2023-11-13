@@ -368,11 +368,20 @@
                                     <input id="connectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" required>
                                 </div>
                             </template>
+
+                            <template v-if="monitor.type === 'mysql'">
+                                <div class="my-3">
+                                    <label for="mysql-password" class="form-label">{{ $t("Password") }}</label>
+                                    <!-- TODO: Rename monitor.radiusPassword to monitor.password for general use -->
+                                    <HiddenInput id="mysql-password" v-model="monitor.radiusPassword" autocomplete="false"></HiddenInput>
+                                </div>
+                            </template>
+
                             <!-- SQL Server / PostgreSQL / MySQL -->
                             <template v-if="monitor.type === 'sqlserver' || monitor.type === 'postgres' || monitor.type === 'mysql'">
                                 <div class="my-3">
                                     <label for="sqlQuery" class="form-label">{{ $t("Query") }}</label>
-                                    <textarea id="sqlQuery" v-model="monitor.databaseQuery" class="form-control" :placeholder="$t('Example:', [ 'select getdate()' ])" required></textarea>
+                                    <textarea id="sqlQuery" v-model="monitor.databaseQuery" class="form-control" :placeholder="$t('Example:', [ 'SELECT 1' ])"></textarea>
                                 </div>
                             </template>
 
@@ -842,6 +851,7 @@ import TagsManager from "../components/TagsManager.vue";
 import { genSecret, isDev, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND } from "../util.ts";
 import { hostNameRegexPattern } from "../util-frontend";
 import { sleep } from "../util";
+import HiddenInput from "../components/HiddenInput.vue";
 
 const toast = useToast;
 
@@ -882,11 +892,13 @@ const monitorDefaults = {
         mechanism: "None",
     },
     kafkaProducerSsl: false,
+    kafkaProducerAllowAutoTopicCreation: false,
     gamedigGivenPortOnly: true,
 };
 
 export default {
     components: {
+        HiddenInput,
         ActionSelect,
         ProxyDialog,
         CopyableInput,
