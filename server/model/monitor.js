@@ -2,7 +2,7 @@ const https = require("https");
 const dayjs = require("dayjs");
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
-const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND,
+const { log, UP, DOWN, PENDING, MAINTENANCE, NOMINAL, SLOW, flipStatus, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND,
     SQL_DATETIME_FORMAT
 } = require("../../src/util");
 const { tcping, ping, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, mqttAsync, setSetting, httpNtlm, radius, grpcQuery,
@@ -29,6 +29,9 @@ const { UptimeCalculator } = require("../uptime-calculator");
  *      1 = UP
  *      2 = PENDING
  *      3 = MAINTENANCE
+ *  pingStatus:
+ *      0 = SLOW
+ *      1 = NOMINAL
  */
 class Monitor extends BeanModel {
 
@@ -1533,6 +1536,7 @@ class Monitor extends BeanModel {
 
         // Responding normally
         if (actualResponseTime < threshold) {
+            bean.pingStatus = NOMINAL;
             if (bean.slowResponseCount === 0) {
                 log.debug("monitor", `[${this.name}] Responding normally. No need to send slow response notification | ${msgStats}`);
             } else {
@@ -1547,6 +1551,7 @@ class Monitor extends BeanModel {
 
         // Responding slowly
         } else {
+            bean.pingStatus = SLOW;
             ++bean.slowResponseCount;
 
             // Always send first notification

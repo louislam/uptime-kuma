@@ -71,7 +71,8 @@
                         <span class="word">{{ $t("checkEverySecond", [ monitor.interval ]) }}</span>
                     </div>
                     <div class="col-md-4 text-center">
-                        <span class="badge rounded-pill" :class=" 'bg-' + status.color " style="font-size: 30px;">{{ status.text }}</span>
+                        <span class="badge rounded-pill m1" :class=" 'bg-' + status.color " style="font-size: 30px;">{{ status.text }}</span>
+                        <span v-if="pingStatus" class="badge rounded-pill m-1" :class=" 'bg-' + pingStatus.color " style="font-size: 30px;">{{ pingStatus.text }}</span>
                     </div>
                 </div>
             </div>
@@ -358,6 +359,14 @@ export default {
         status() {
             if (this.$root.statusList[this.monitor.id]) {
                 return this.$root.statusList[this.monitor.id];
+            }
+
+            return { };
+        },
+
+        pingStatus() {
+            if (this.$root.pingStatusList[this.monitor.id]) {
+                return this.$root.pingStatusList[this.monitor.id];
             }
 
             return { };

@@ -5,7 +5,7 @@ import Favico from "favico.js";
 import dayjs from "dayjs";
 import mitt from "mitt";
 
-import { DOWN, MAINTENANCE, PENDING, UP } from "../util.ts";
+import { DOWN, MAINTENANCE, PENDING, UP, SLOW, NOMINAL} from "../util.ts";
 import { getDevContainerServerHostname, isDevContainer, getToastSuccessTimeout, getToastErrorTimeout } from "../util-frontend.js";
 const toast = useToast();
 
@@ -734,6 +734,40 @@ export default {
                 }
             }
 
+            return result;
+        },
+
+        pingStatusList() {
+            let result = {};
+
+            for (let monitorID in this.lastHeartbeatList) {
+                let lastHeartBeat = this.lastHeartbeatList[monitorID];
+
+                if (lastHeartBeat?.status === UP) {
+                    // TODO ping_status(1st) vs pingStatus(every other time)
+                    let pingStatus;
+                    if (lastHeartBeat.hasOwnProperty('ping_status')) {
+                        pingStatus = lastHeartBeat.ping_status;
+                    } else if (lastHeartBeat.hasOwnProperty('pingStatus')) {
+                        pingStatus = lastHeartBeat.pingStatus;
+                    }
+
+                    if (pingStatus === SLOW) {
+                        result[monitorID] = {
+                            text: this.$t("Slow"),
+                            color: "warning",
+                        };
+                    }
+                    // TODO Decide: currently only shows if "slow". Add the
+                    // code below else if we want to display "nominal" as well
+                    // else if (pingStatus === NOMINAL) {
+                    //     result[monitorID] = {
+                    //         text: this.$t("Nominal"),
+                    //         color: "primary",
+                    //     };
+                    // }
+                }
+            }
             return result;
         },
 
