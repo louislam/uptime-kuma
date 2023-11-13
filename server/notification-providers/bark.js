@@ -18,6 +18,9 @@ const successMessage = "Successes!";
 class Bark extends NotificationProvider {
     name = "Bark";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let barkEndpoint = notification.barkEndpoint;
 
@@ -43,10 +46,10 @@ class Bark extends NotificationProvider {
     }
 
     /**
-     * Add additional parameter for better on device styles (iOS 15
-     * optimized)
+     * Add additional parameter for Bark v1 endpoints
+     * @param {BeanModel} notification Notification to send
      * @param {string} postUrl URL to append parameters to
-     * @returns {string}
+     * @returns {string} Additional URL parameters
      */
     appendAdditionalParameters(notification, postUrl) {
         // set icon to uptime kuma icon, 11kb should be fine
@@ -70,7 +73,8 @@ class Bark extends NotificationProvider {
 
     /**
      * Check if result is successful
-     * @param {Object} result Axios response object
+     * @param {object} result Axios response object
+     * @returns {void}
      * @throws {Error} The status code is not in range 2xx
      */
     checkResult(result) {
@@ -84,18 +88,30 @@ class Bark extends NotificationProvider {
 
     /**
      * Send the message
+     * @param {BeanModel} notification Notification to send
      * @param {string} title Message title
      * @param {string} subtitle Message
      * @param {string} endpoint Endpoint to send request to
-     * @returns {string}
+     * @returns {string} Success message
      */
     async postNotification(notification, title, subtitle, endpoint) {
-        // url encode title and subtitle
-        title = encodeURIComponent(title);
-        subtitle = encodeURIComponent(subtitle);
-        let postUrl = endpoint + "/" + title + "/" + subtitle;
-        postUrl = this.appendAdditionalParameters(notification, postUrl);
-        let result = await axios.get(postUrl);
+        let result;
+        if (notification.apiVersion === "v1" || notification.apiVersion == null) {
+            // url encode title and subtitle
+            title = encodeURIComponent(title);
+            subtitle = encodeURIComponent(subtitle);
+            let postUrl = endpoint + "/" + title + "/" + subtitle;
+            postUrl = this.appendAdditionalParameters(notification, postUrl);
+            result = await axios.get(postUrl);
+        } else {
+            result = await axios.post(`${endpoint}/push`, {
+                title,
+                body: subtitle,
+                icon: barkNotificationAvatar,
+                sound: notification.barkSound || "telegraph", // default sound is telegraph
+                group: notification.barkGroup || "UptimeKuma", // default group is UptimeKuma
+            });
+        }
         this.checkResult(result);
         if (result.statusText != null) {
             return "Bark notification succeed: " + result.statusText;

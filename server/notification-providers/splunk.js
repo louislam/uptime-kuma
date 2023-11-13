@@ -37,7 +37,8 @@ class Splunk extends NotificationProvider {
 
     /**
      * Check if result is successful, result code should be in range 2xx
-     * @param {Object} result Axios response object
+     * @param {object} result Axios response object
+     * @returns {void}
      * @throws {Error} The status code is not in range 2xx
      */
     checkResult(result) {
@@ -54,9 +55,9 @@ class Splunk extends NotificationProvider {
      * @param {BeanModel} notification Message title
      * @param {string} title Message title
      * @param {string} body Message
-     * @param {Object} monitorInfo Monitor details (For Up/Down only)
+     * @param {object} monitorInfo Monitor details (For Up/Down only)
      * @param {?string} eventAction Action event for PagerDuty (trigger, acknowledge, resolve)
-     * @returns {string}
+     * @returns {Promise<string>} Success state
      */
     async postNotification(notification, title, body, monitorInfo, eventAction = "trigger") {
 

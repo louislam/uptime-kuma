@@ -76,6 +76,34 @@
                 </div>
             </div>
 
+            <!-- Push Examples -->
+            <div v-if="monitor.type === 'push'" class="shadow-box big-padding">
+                <a href="#" @click="pushMonitor.showPushExamples = !pushMonitor.showPushExamples">{{ $t("pushViewCode") }}</a>
+
+                <transition name="slide-fade" appear>
+                    <div v-if="pushMonitor.showPushExamples" class="mt-3">
+                        <select id="push-current-example" v-model="pushMonitor.currentExample" class="form-select">
+                            <optgroup :label="$t('programmingLanguages')">
+                                <option value="csharp">C#</option>
+                                <option value="go">Go</option>
+                                <option value="java">Java</option>
+                                <option value="javascript-fetch">JavaScript (fetch)</option>
+                                <option value="php">PHP</option>
+                                <option value="python">Python</option>
+                                <option value="typescript-fetch">TypeScript (fetch)</option>
+                            </optgroup>
+                            <optgroup :label="$t('pushOthers')">
+                                <option value="bash-curl">Bash (curl)</option>
+                                <option value="powershell">PowerShell</option>
+                                <option value="docker">Docker</option>
+                            </optgroup>
+                        </select>
+
+                        <prism-editor v-model="pushMonitor.code" class="css-editor mt-3" :highlight="pushExampleHighlighter" line-numbers readonly></prism-editor>
+                    </div>
+                </transition>
+            </div>
+
             <!-- Stats -->
             <div class="shadow-box big-padding text-center stats">
                 <div class="row">
@@ -95,6 +123,8 @@
                             <CountUp :value="avgPing" />
                         </span>
                     </div>
+
+                    <!-- Uptime (24-hour) -->
                     <div class="col-12 col-sm col row d-flex align-items-center d-sm-block">
                         <h4 class="col-4 col-sm-12">{{ $t("Uptime") }}</h4>
                         <p class="col-4 col-sm-12 mb-0 mb-sm-2">(24{{ $t("-hour") }})</p>
@@ -102,11 +132,22 @@
                             <Uptime :monitor="monitor" type="24" />
                         </span>
                     </div>
+
+                    <!-- Uptime (30-day) -->
                     <div class="col-12 col-sm col row d-flex align-items-center d-sm-block">
                         <h4 class="col-4 col-sm-12">{{ $t("Uptime") }}</h4>
                         <p class="col-4 col-sm-12 mb-0 mb-sm-2">(30{{ $t("-day") }})</p>
                         <span class="col-4 col-sm-12 num">
                             <Uptime :monitor="monitor" type="720" />
+                        </span>
+                    </div>
+
+                    <!-- Uptime (1-year) -->
+                    <div class="col-12 col-sm col row d-flex align-items-center d-sm-block">
+                        <h4 class="col-4 col-sm-12">{{ $t("Uptime") }}</h4>
+                        <p class="col-4 col-sm-12 mb-0 mb-sm-2">(1{{ $t("-year") }})</p>
+                        <span class="col-4 col-sm-12 num">
+                            <Uptime :monitor="monitor" type="1y" />
                         </span>
                     </div>
 
@@ -182,7 +223,7 @@
                             <td class="border-0">{{ beat.msg }}</td>
                         </tr>
 
-                        <tr v-if="importantHeartBeatList.length === 0">
+                        <tr v-if="importantHeartBeatListLength === 0">
                             <td colspan="3">
                                 {{ $t("No important events") }}
                             </td>
@@ -193,7 +234,7 @@
                 <div class="d-flex justify-content-center kuma_pagination">
                     <pagination
                         v-model="page"
-                        :records="importantHeartBeatList.length"
+                        :records="importantHeartBeatListLength"
                         :per-page="perPage"
                         :options="paginationConfig"
                     />
@@ -236,6 +277,12 @@ import CertificateInfo from "../components/CertificateInfo.vue";
 import { getMonitorRelativeURL } from "../util.ts";
 import { URL } from "whatwg-url";
 import { getResBaseURL } from "../util-frontend";
+import { highlight, languages } from "prismjs/components/prism-core";
+import "prismjs/components/prism-clike";
+import "prismjs/components/prism-javascript";
+import "prismjs/components/prism-css";
+import { PrismEditor } from "vue-prism-editor";
+import "vue-prism-editor/dist/prismeditor.min.css";
 
 export default {
     components: {
@@ -249,6 +296,7 @@ export default {
         PingChart,
         Tag,
         CertificateInfo,
+        PrismEditor,
     },
     data() {
         return {
@@ -262,6 +310,13 @@ export default {
                 chunksNavigation: "scroll",
             },
             cacheTime: Date.now(),
+            importantHeartBeatListLength: 0,
+            displayedRecords: [],
+            pushMonitor: {
+                showPushExamples: false,
+                currentExample: "javascript-fetch",
+                code: "",
+            },
         };
     },
     computed: {
@@ -300,16 +355,6 @@ export default {
             return this.$t("notAvailableShort");
         },
 
-        importantHeartBeatList() {
-            if (this.$root.importantHeartbeatList[this.monitor.id]) {
-                // eslint-disable-next-line vue/no-side-effects-in-computed-properties
-                this.heartBeatList = this.$root.importantHeartbeatList[this.monitor.id];
-                return this.$root.importantHeartbeatList[this.monitor.id];
-            }
-
-            return [];
-        },
-
         status() {
             if (this.$root.statusList[this.monitor.id]) {
                 return this.$root.statusList[this.monitor.id];
@@ -333,12 +378,6 @@ export default {
             return this.tlsInfo != null && this.toggleCertInfoBox;
         },
 
-        displayedRecords() {
-            const startIndex = this.perPage * (this.page - 1);
-            const endIndex = startIndex + this.perPage;
-            return this.heartBeatList.slice(startIndex, endIndex);
-        },
-
         group() {
             if (!this.monitor.pathName.includes("/")) {
                 return "";
@@ -354,73 +393,136 @@ export default {
             return getResBaseURL() + this.monitor.screenshot + "?time=" + this.cacheTime;
         }
     },
-    mounted() {
 
-    },
-    methods: {
-        getResBaseURL,
-        /** Request a test notification be sent for this monitor */
-        testNotification() {
-            this.$root.getSocket().emit("testNotification", this.monitor.id);
-            toast.success("Test notification is requested.");
+    watch: {
+        page(to) {
+            this.getImportantHeartbeatListPaged();
         },
 
-        /** Show dialog to confirm pause */
+        monitor(to) {
+            this.getImportantHeartbeatListLength();
+        },
+        "monitor.type"() {
+            if (this.monitor && this.monitor.type === "push") {
+                this.loadPushExample();
+            }
+        },
+        "pushMonitor.currentExample"() {
+            this.loadPushExample();
+        },
+    },
+
+    mounted() {
+        this.getImportantHeartbeatListLength();
+
+        this.$root.emitter.on("newImportantHeartbeat", this.onNewImportantHeartbeat);
+
+        if (this.monitor && this.monitor.type === "push") {
+            if (this.lastHeartBeat.status === -1) {
+                this.pushMonitor.showPushExamples = true;
+            }
+            this.loadPushExample();
+        }
+    },
+
+    beforeUnmount() {
+        this.$root.emitter.off("newImportantHeartbeat", this.onNewImportantHeartbeat);
+    },
+
+    methods: {
+        getResBaseURL,
+        /**
+         * Request a test notification be sent for this monitor
+         * @returns {void}
+         */
+        testNotification() {
+            this.$root.getSocket().emit("testNotification", this.monitor.id);
+            this.$root.toastSuccess("Test notification is requested.");
+        },
+
+        /**
+         * Show dialog to confirm pause
+         * @returns {void}
+         */
         pauseDialog() {
             this.$refs.confirmPause.show();
         },
 
-        /** Resume this monitor */
+        /**
+         * Resume this monitor
+         * @returns {void}
+         */
         resumeMonitor() {
             this.$root.getSocket().emit("resumeMonitor", this.monitor.id, (res) => {
                 this.$root.toastRes(res);
             });
         },
 
-        /** Request that this monitor is paused */
+        /**
+         * Request that this monitor is paused
+         * @returns {void}
+         */
         pauseMonitor() {
             this.$root.getSocket().emit("pauseMonitor", this.monitor.id, (res) => {
                 this.$root.toastRes(res);
             });
         },
 
-        /** Show dialog to confirm deletion */
+        /**
+         * Show dialog to confirm deletion
+         * @returns {void}
+         */
         deleteDialog() {
             this.$refs.confirmDelete.show();
         },
 
-        /** Show dialog to confirm clearing events */
+        /**
+         * Show dialog to confirm clearing events
+         * @returns {void}
+         */
         clearEventsDialog() {
             this.$refs.confirmClearEvents.show();
         },
 
-        /** Show dialog to confirm clearing heartbeats */
+        /**
+         * Show dialog to confirm clearing heartbeats
+         * @returns {void}
+         */
         clearHeartbeatsDialog() {
             this.$refs.confirmClearHeartbeats.show();
         },
 
-        /** Request that this monitor is deleted */
+        /**
+         * Request that this monitor is deleted
+         * @returns {void}
+         */
         deleteMonitor() {
             this.$root.deleteMonitor(this.monitor.id, (res) => {
+                this.$root.toastRes(res);
                 if (res.ok) {
-                    toast.success(res.msg);
                     this.$router.push("/dashboard");
+                }
+            });
+        },
+
+        /**
+         * Request that this monitors events are cleared
+         * @returns {void}
+         */
+        clearEvents() {
+            this.$root.clearEvents(this.monitor.id, (res) => {
+                if (res.ok) {
+                    this.getImportantHeartbeatListLength();
                 } else {
                     toast.error(res.msg);
                 }
             });
         },
 
-        /** Request that this monitors events are cleared */
-        clearEvents() {
-            this.$root.clearEvents(this.monitor.id, (res) => {
-                if (! res.ok) {
-                    toast.error(res.msg);
-                }
-            });
-        },
-
-        /** Request that this monitors heartbeats are cleared */
+        /**
+         * Request that this monitors heartbeats are cleared
+         * @returns {void}
+         */
         clearHeartbeats() {
             this.$root.clearHeartbeats(this.monitor.id, (res) => {
                 if (! res.ok) {
@@ -431,8 +533,8 @@ export default {
 
         /**
          * Return the correct title for the ping stat
-         * @param {boolean} [average=false] Is the statistic an average?
-         * @returns {string} Title formated dependant on monitor type
+         * @param {boolean} average Is the statistic an average?
+         * @returns {string} Title formatted dependant on monitor type
          */
         pingTitle(average = false) {
             let translationPrefix = "";
@@ -456,7 +558,11 @@ export default {
             return getMonitorRelativeURL(id);
         },
 
-        /** Filter and hide password in URL for display */
+        /**
+         * Filter and hide password in URL for display
+         * @param {string} urlString URL to censor
+         * @returns {string} Censored URL
+         */
         filterPassword(urlString) {
             try {
                 let parsedUrl = new URL(urlString);
@@ -468,6 +574,72 @@ export default {
                 // Handle SQL Server
                 return urlString.replaceAll(/Password=(.+);/ig, "Password=******;");
             }
+        },
+
+        /**
+         * Retrieves the length of the important heartbeat list for this monitor.
+         * @returns {void}
+         */
+        getImportantHeartbeatListLength() {
+            if (this.monitor) {
+                this.$root.getSocket().emit("monitorImportantHeartbeatListCount", this.monitor.id, (res) => {
+                    if (res.ok) {
+                        this.importantHeartBeatListLength = res.count;
+                        this.getImportantHeartbeatListPaged();
+                    }
+                });
+            }
+        },
+
+        /**
+         * Retrieves the important heartbeat list for the current page.
+         * @returns {void}
+         */
+        getImportantHeartbeatListPaged() {
+            if (this.monitor) {
+                const offset = (this.page - 1) * this.perPage;
+                this.$root.getSocket().emit("monitorImportantHeartbeatListPaged", this.monitor.id, offset, this.perPage, (res) => {
+                    if (res.ok) {
+                        this.displayedRecords = res.data;
+                    }
+                });
+            }
+        },
+
+        /**
+         * Updates the displayed records when a new important heartbeat arrives.
+         * @param {object} heartbeat - The heartbeat object received.
+         * @returns {void}
+         */
+        onNewImportantHeartbeat(heartbeat) {
+            if (heartbeat.monitorID === this.monitor?.id) {
+                if (this.page === 1) {
+                    this.displayedRecords.unshift(heartbeat);
+                    if (this.displayedRecords.length > this.perPage) {
+                        this.displayedRecords.pop();
+                    }
+                    this.importantHeartBeatListLength += 1;
+                }
+            }
+        },
+
+        /**
+         * Highlight the example code
+         * @param {string} code Code
+         * @returns {string} Highlighted code
+         */
+        pushExampleHighlighter(code) {
+            return highlight(code, languages.js);
+        },
+
+        loadPushExample() {
+            this.pushMonitor.code = "";
+            this.$root.getSocket().emit("getPushExample", this.pushMonitor.currentExample, (res) => {
+                let code = res.code
+                    .replace("60", this.monitor.interval)
+                    .replace("https://example.com/api/push/key?status=up&msg=OK&ping=", this.pushURL);
+                this.pushMonitor.code = code;
+            });
         }
     },
 };

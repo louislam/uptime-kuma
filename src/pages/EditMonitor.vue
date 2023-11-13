@@ -119,6 +119,9 @@
                                     {{ $t("needPushEvery", [monitor.interval]) }}<br />
                                     {{ $t("pushOptionalParams", ["status, msg, ping"]) }}
                                 </div>
+                                <button class="btn btn-primary" type="button" @click="resetToken">
+                                    {{ $t("Reset Token") }}
+                                </button>
                             </div>
 
                             <!-- Keyword -->
@@ -658,6 +661,7 @@
                                     <label for="httpBodyEncoding" class="form-label">{{ $t("Body Encoding") }}</label>
                                     <select id="httpBodyEncoding" v-model="monitor.httpBodyEncoding" class="form-select">
                                         <option value="json">JSON</option>
+                                        <option value="form">x-www-form-urlencoded</option>
                                         <option value="xml">XML</option>
                                     </select>
                                 </div>
@@ -849,7 +853,9 @@ import { hostNameRegexPattern } from "../util-frontend";
 import { sleep } from "../util";
 import HiddenInput from "../components/HiddenInput.vue";
 
-const toast = useToast();
+const toast = useToast;
+
+const pushTokenLength = 32;
 
 const monitorDefaults = {
     type: "http",
@@ -1010,6 +1016,9 @@ message HealthCheckResponse {
   </soap:Body>
 </soap:Envelope>` ]);
             }
+            if (this.monitor && this.monitor.httpBodyEncoding === "form") {
+                return this.$t("Example:", [ "key1=value1&key2=value2" ]);
+            }
             return this.$t("Example:", [ `
 {
     "key": "value"
@@ -1077,8 +1086,7 @@ message HealthCheckResponse {
 
         /**
          * Generates the parent monitor options list based on the sorted group monitor list and draft group name.
-         *
-         * @return {Array} The parent monitor options list.
+         * @returns {Array} The parent monitor options list.
          */
         parentMonitorOptionsList() {
             let list = [];
@@ -1164,7 +1172,9 @@ message HealthCheckResponse {
         "monitor.type"() {
             if (this.monitor.type === "push") {
                 if (! this.monitor.pushToken) {
-                    this.monitor.pushToken = genSecret(10);
+                    // ideally this would require checking if the generated token is already used
+                    // it's very unlikely to get a collision though (62^32 ~ 2.27265788 * 10^57 unique tokens)
+                    this.monitor.pushToken = genSecret(pushTokenLength);
                 }
             }
 
@@ -1185,7 +1195,7 @@ message HealthCheckResponse {
                     if (res.ok) {
                         this.gameList = res.gameList;
                     } else {
-                        toast.error(res.msg);
+                        this.$root.toastError(res.msg);
                     }
                 });
             }
@@ -1257,7 +1267,10 @@ message HealthCheckResponse {
         this.kafkaSaslMechanismOptions = kafkaSaslMechanismOptions;
     },
     methods: {
-        /** Initialize the edit monitor form */
+        /**
+         * Initialize the edit monitor form
+         * @returns {void}
+         */
         init() {
             if (this.isAdd) {
 
@@ -1327,7 +1340,7 @@ message HealthCheckResponse {
                             this.monitor.timeout = ~~(this.monitor.interval * 8) / 10;
                         }
                     } else {
-                        toast.error(res.msg);
+                        this.$root.toastError(res.msg);
                     }
                 });
             }
@@ -1368,6 +1381,10 @@ message HealthCheckResponse {
                 }
             }
             return true;
+        },
+
+        resetToken() {
+            this.monitor.pushToken = genSecret(pushTokenLength);
         },
 
         /**
@@ -1423,7 +1440,7 @@ message HealthCheckResponse {
                     createdNewParent = true;
                     this.monitor.parent = res.monitorID;
                 } else {
-                    toast.error(res.msg);
+                    this.$root.toastError(res.msg);
                     this.processing = false;
                     return;
                 }
@@ -1439,17 +1456,14 @@ message HealthCheckResponse {
                         if (createdNewParent) {
                             this.startParentGroupMonitor();
                         }
-
-                        toast.success(res.msg);
                         this.processing = false;
                         this.$root.getMonitorList();
                         this.$router.push("/dashboard/" + res.monitorID);
-
                     } else {
-                        toast.error(res.msg);
                         this.processing = false;
                     }
 
+                    this.$root.toastRes(res);
                 });
             } else {
                 await this.$refs.tagsManager.submit(this.monitor.id);
@@ -1476,6 +1490,7 @@ message HealthCheckResponse {
          * Added a Notification Event
          * Enable it if the notification is added in EditMonitor.vue
          * @param {number} id ID of notification to add
+         * @returns {void}
          */
         addedNotification(id) {
             this.monitor.notificationIDList[id] = true;
@@ -1485,21 +1500,26 @@ message HealthCheckResponse {
          * Added a Proxy Event
          * Enable it if the proxy is added in EditMonitor.vue
          * @param {number} id ID of proxy to add
+         * @returns {void}
          */
         addedProxy(id) {
             this.monitor.proxyId = id;
         },
 
-        // Added a Docker Host Event
-        // Enable it if the Docker Host is added in EditMonitor.vue
+        /**
+         * Added a Docker Host Event
+         * Enable it if the Docker Host is added in EditMonitor.vue
+         * @param {number} id ID of docker host
+         * @returns {void}
+         */
         addedDockerHost(id) {
             this.monitor.docker_host = id;
         },
 
         /**
          * Adds a draft group.
-         *
-         * @param {string} draftGroupName - The name of the draft group.
+         * @param {string} draftGroupName The name of the draft group.
+         * @returns {void}
          */
         addedDraftGroup(draftGroupName) {
             this.draftGroupName = draftGroupName;

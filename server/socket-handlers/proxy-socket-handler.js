@@ -7,6 +7,7 @@ const server = UptimeKumaServer.getInstance();
 /**
  * Handlers for proxy
  * @param {Socket} socket Socket.io instance
+ * @returns {void}
  */
 module.exports.proxySocketHandler = (socket) => {
     socket.on("addProxy", async (proxy, proxyID, callback) => {
@@ -23,7 +24,8 @@ module.exports.proxySocketHandler = (socket) => {
 
             callback({
                 ok: true,
-                msg: "Saved",
+                msg: "Saved.",
+                msgi18n: true,
                 id: proxyBean.id,
             });
 
@@ -45,7 +47,8 @@ module.exports.proxySocketHandler = (socket) => {
 
             callback({
                 ok: true,
-                msg: "Deleted",
+                msg: "successDeleted",
+                msgi18n: true,
             });
 
         } catch (e) {

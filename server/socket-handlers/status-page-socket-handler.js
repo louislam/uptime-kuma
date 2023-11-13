@@ -11,6 +11,7 @@ const { UptimeKumaServer } = require("../uptime-kuma-server");
 /**
  * Socket handlers for status page
  * @param {Socket} socket Socket.io instance to add listeners on
+ * @returns {void}
  */
 module.exports.statusPageSocketHandler = (socket) => {
 
@@ -283,7 +284,8 @@ module.exports.statusPageSocketHandler = (socket) => {
 
             callback({
                 ok: true,
-                msg: "OK!"
+                msg: "successAdded",
+                msgi18n: true,
             });
 
         } catch (error) {
@@ -350,6 +352,8 @@ module.exports.statusPageSocketHandler = (socket) => {
  * Check slug a-z, 0-9, - only
  * Regex from: https://stackoverflow.com/questions/22454258/js-regex-string-validation-for-slug
  * @param {string} slug Slug to test
+ * @returns {void}
+ * @throws Slug is not valid
  */
 function checkSlug(slug) {
     if (typeof slug !== "string") {

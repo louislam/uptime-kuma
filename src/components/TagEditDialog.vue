@@ -123,9 +123,7 @@ import Confirm from "./Confirm.vue";
 import Tag from "./Tag.vue";
 import VueMultiselect from "vue-multiselect";
 import { colorOptions } from "../util-frontend";
-import { useToast } from "vue-toastification";
 import { getMonitorRelativeURL } from "../util.ts";
-const toast = useToast();
 
 export default {
     components: {
@@ -207,6 +205,8 @@ export default {
         },
         /**
          * Selected a monitor and add to the list.
+         * @param {object} monitor Monitor to add
+         * @returns {void}
          */
         selectedAddMonitor(monitor) {
             if (monitor) {
@@ -227,6 +227,7 @@ export default {
     methods: {
         /**
          * Show confirmation for deleting a tag
+         * @returns {void}
          */
         deleteConfirm() {
             this.$refs.confirmDelete.show();
@@ -234,6 +235,7 @@ export default {
 
         /**
          * Reset the editTag form
+         * @returns {void}
          */
         reset() {
             this.selectedColor = null;
@@ -263,7 +265,7 @@ export default {
 
         /**
          * Load tag information for display in the edit dialog
-         * @param {Object} tag tag object to edit
+         * @param {object} tag tag object to edit
          * @returns {void}
          */
         show(tag) {
@@ -316,7 +318,7 @@ export default {
             for (let addId of this.addingMonitor) {
                 await this.addMonitorTagAsync(this.tag.id, addId, "").then((res) => {
                     if (!res.ok) {
-                        toast.error(res.msg);
+                        this.$root.toastError(res.msg);
                         editResult = false;
                     }
                 });
@@ -326,7 +328,7 @@ export default {
                 this.monitors.find(monitor => monitor.id === removeId)?.tags.forEach(async (monitorTag) => {
                     await this.deleteMonitorTagAsync(this.tag.id, removeId, monitorTag.value).then((res) => {
                         if (!res.ok) {
-                            toast.error(res.msg);
+                            this.$root.toastError(res.msg);
                             editResult = false;
                         }
                     });
@@ -377,7 +379,7 @@ export default {
         /**
          * Get monitors which has a specific tag locally
          * @param {number} tagId id of the tag to filter
-         * @returns {Object[]} list of monitors which has a specific tag
+         * @returns {object[]} list of monitors which has a specific tag
          */
         monitorsByTag(tagId) {
             return Object.values(this.$root.monitorList).filter((monitor) => {
@@ -396,7 +398,7 @@ export default {
 
         /**
          * Add a tag asynchronously
-         * @param {Object} newTag Object representing new tag to add
+         * @param {object} newTag Object representing new tag to add
          * @returns {Promise<void>}
          */
         addTagAsync(newTag) {

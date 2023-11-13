@@ -131,6 +131,7 @@ export default {
         /**
          * Remove the specified group
          * @param {number} index Index of group to remove
+         * @returns {void}
          */
         removeGroup(index) {
             this.$root.publicGroupList.splice(index, 1);
@@ -141,6 +142,7 @@ export default {
          * @param {number} groupIndex Index of group to remove monitor
          * from
          * @param {number} index Index of monitor to remove
+         * @returns {void}
          */
         removeMonitor(groupIndex, index) {
             this.$root.publicGroupList[groupIndex].monitorList.splice(index, 1);
@@ -150,10 +152,10 @@ export default {
          * Should a link to the monitor be shown?
          * Attempts to guess if a link should be shown based upon if
          * sendUrl is set and if the URL is default or not.
-         * @param {Object} monitor Monitor to check
-         * @param {boolean} [ignoreSendUrl=false] Should the presence of the sendUrl
+         * @param {object} monitor Monitor to check
+         * @param {boolean} ignoreSendUrl Should the presence of the sendUrl
          * property be ignored. This will only work in edit mode.
-         * @returns {boolean}
+         * @returns {boolean} Should the link be shown
          */
         showLink(monitor, ignoreSendUrl = false) {
             // We must check if there are any elements in monitorList to
@@ -166,8 +168,8 @@ export default {
 
         /**
          * Returns formatted certificate expiry or Bad cert message
-         * @param {Object} monitor Monitor to show expiry for
-         * @returns {string}
+         * @param {object} monitor Monitor to show expiry for
+         * @returns {string} Certificate expiry message
          */
         formattedCertExpiryMessage(monitor) {
             if (monitor?.element?.validCert && monitor?.element?.certExpiryDaysRemaining) {
@@ -180,9 +182,9 @@ export default {
         },
 
         /**
-         * Returns certificate expiry based on days remaining
-         * @param {Object} monitor Monitor to show expiry for
-         * @returns {string}
+         * Returns certificate expiry color based on days remaining
+         * @param {object} monitor Monitor to show expiry for
+         * @returns {string} Color for certificate expiry
          */
         certExpiryColor(monitor) {
             if (monitor?.element?.validCert && monitor.element.certExpiryDaysRemaining > 7) {
