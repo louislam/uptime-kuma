@@ -314,7 +314,7 @@ class Monitor extends BeanModel {
     isEnabledSlowResponseNotification() {
         return Boolean(this.slowResponseNotification);
     }
-  
+
     /**
      * Parse to boolean
      * @returns {boolean} Kafka Producer Ssl enabled?
