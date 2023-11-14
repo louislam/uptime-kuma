@@ -823,8 +823,16 @@ export default {
                         result.unknown++;
                     }
 
-                    if (beat.pingStatus === SLOW) {
-                        results.slow++;
+                    // TODO ping_status(1st) vs pingStatus(every other time)
+                    let pingStatus;
+                    if (beat.hasOwnProperty('ping_status')) {
+                        pingStatus = beat.ping_status;
+                    } else if (beat.hasOwnProperty('pingStatus')) {
+                        pingStatus = beat.pingStatus;
+                    }
+
+                    if (pingStatus === SLOW) {
+                        result.slow++;
                     }
                 } else {
                     result.unknown++;
