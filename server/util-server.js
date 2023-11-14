@@ -22,6 +22,7 @@ const protojs = require("protobufjs");
 const radiusClient = require("node-radius-client");
 const redis = require("redis");
 const oidc = require("openid-client");
+const tls = require("tls");
 
 const {
     dictionaries: {
@@ -397,6 +398,9 @@ exports.mssqlQuery = async function (connectionString, query) {
     try {
         pool = new mssql.ConnectionPool(connectionString);
         await pool.connect();
+        if (!query) {
+            query = "SELECT 1";
+        }
         await pool.request().query(query);
         pool.close();
     } catch (e) {
@@ -418,12 +422,22 @@ exports.postgresQuery = function (connectionString, query) {
     return new Promise((resolve, reject) => {
         const config = postgresConParse(connectionString);
 
-        if (config.password === "") {
-            // See https://github.com/brianc/node-postgres/issues/1927
-            return reject(new Error("Password is undefined."));
+        // Fix #3868, which true/false is not parsed to boolean
+        if (typeof config.ssl === "string") {
+            config.ssl = config.ssl === "true";
         }
 
-        const client = new Client({ connectionString });
+        if (config.password === "") {
+            // See https://github.com/brianc/node-postgres/issues/1927
+            reject(new Error("Password is undefined."));
+            return;
+        }
+        const client = new Client(config);
+
+        client.on("error", (error) => {
+            log.debug("postgres", "Error caught in the error event handler.");
+            reject(error);
+        });
 
         client.connect((err) => {
             if (err) {
@@ -458,11 +472,15 @@ exports.postgresQuery = function (connectionString, query) {
  * Run a query on MySQL/MariaDB
  * @param {string} connectionString The database connection string
  * @param {string} query The query to validate the database with
+ * @param {?string} password The password to use
  * @returns {Promise<(string)>} Response from server
  */
-exports.mysqlQuery = function (connectionString, query) {
+exports.mysqlQuery = function (connectionString, query, password = undefined) {
     return new Promise((resolve, reject) => {
-        const connection = mysql.createConnection(connectionString);
+        const connection = mysql.createConnection({
+            uri: connectionString,
+            password
+        });
 
         connection.on("error", (err) => {
             reject(err);
@@ -1060,6 +1078,30 @@ module.exports.grpcQuery = async (options) => {
     });
 };
 
+/**
+ * Returns an array of SHA256 fingerprints for all known root certificates.
+ * @returns {Set} A set of SHA256 fingerprints.
+ */
+module.exports.rootCertificatesFingerprints = () => {
+    let fingerprints = tls.rootCertificates.map(cert => {
+        let certLines = cert.split("\n");
+        certLines.shift();
+        certLines.pop();
+        let certBody = certLines.join("");
+        let buf = Buffer.from(certBody, "base64");
+
+        const shasum = crypto.createHash("sha256");
+        shasum.update(buf);
+
+        return shasum.digest("hex").toUpperCase().replace(/(.{2})(?!$)/g, "$1:");
+    });
+
+    fingerprints.push("6D:99:FB:26:5E:B1:C5:B3:74:47:65:FC:BC:64:8F:3C:D8:E1:BF:FA:FD:C4:C2:F9:9B:9D:47:CF:7F:F1:C2:4F"); // ISRG X1 cross-signed with DST X3
+    fingerprints.push("8B:05:B6:8C:C6:59:E5:ED:0F:CB:38:F2:C9:42:FB:FD:20:0E:6F:2F:F9:F8:5D:63:C6:99:4E:F5:E0:B0:27:01"); // ISRG X2 cross-signed with ISRG X1
+
+    return new Set(fingerprints);
+};
+
 module.exports.SHAKE256_LENGTH = 16;
 
 /**
@@ -1103,13 +1145,17 @@ if (process.env.TEST_BACKEND) {
  */
 module.exports.axiosAbortSignal = (timeoutMs) => {
     try {
+        // Just in case, as 0 timeout here will cause the request to be aborted immediately
+        if (!timeoutMs || timeoutMs <= 0) {
+            timeoutMs = 5000;
+        }
         return AbortSignal.timeout(timeoutMs);
     } catch (_) {
         // v16-: AbortSignal.timeout is not supported
         try {
             const abortController = new AbortController();
 
-            setTimeout(() => abortController.abort(), timeoutMs || 0);
+            setTimeout(() => abortController.abort(), timeoutMs);
 
             return abortController.signal;
         } catch (_) {
