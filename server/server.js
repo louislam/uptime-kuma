@@ -1446,7 +1446,9 @@ let needSetup = false;
 
                 log.info("manage", `Clear Events Monitor: ${monitorID} User ID: ${socket.userID}`);
 
-                await R.exec("UPDATE heartbeat SET msg = ?, important = ? WHERE monitor_id = ? ", [
+                await R.exec("UPDATE heartbeat SET msg = ?, important = ?, ping_msg = ?, ping_important = ? WHERE monitor_id = ? ", [
+                    "",
+                    "0",
                     "",
                     "0",
                     monitorID,
