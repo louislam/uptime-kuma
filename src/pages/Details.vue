@@ -219,9 +219,11 @@
                     </thead>
                     <tbody>
                         <tr v-for="(beat, index) in displayedRecords" :key="index" style="padding: 10px;">
-                            <td><Status :status="beat.status" /></td>
+                            <td v-if="beat.important"><Status :status="beat.status" /></td>
+                            <td v-if="beat.pingImportant"><Status :status="beat.pingStatus" /></td>
                             <td :class="{ 'border-0':! beat.msg}"><Datetime :value="beat.time" /></td>
-                            <td class="border-0">{{ beat.msg }}</td>
+                            <td v-if="beat.important" class="border-0">{{ beat.msg }}</td>
+                            <td v-if="beat.pingImportant" class="border-0">{{ beat.pingMsg }}</td>
                         </tr>
 
                         <tr v-if="importantHeartBeatListLength === 0">

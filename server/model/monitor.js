@@ -1518,7 +1518,6 @@ class Monitor extends BeanModel {
         // Create stats to append to messages/logs
         const methodDescription = [ "average", "max" ].includes(method) ? `${method} of ${windowDuration}s` : method;
         let msgStats = `Response: ${actualResponseTime}ms (${methodDescription}) | Threshold: ${threshold}ms (${thresholdDescription})`;
-        // Add window duration for methods that make sense
 
         // Verify valid response time was calculated
         if (actualResponseTime === 0 || !Number.isInteger(actualResponseTime)) {
@@ -1544,6 +1543,10 @@ class Monitor extends BeanModel {
                 log.debug("monitor", `[${this.name}] Returned to normal response time | ${msgStats}`);
                 let msg = `[${this.name}] Returned to Normal Response Time \n${msgStats}`;
                 Monitor.sendSlowResponseNotification(monitor, bean, msg);
+
+                // Mark important (SLOW -> NOMINAL)
+                bean.pingImportant = true;
+                bean.pingMsg = msgStats;
             }
 
             // Reset slow response count
@@ -1559,6 +1562,11 @@ class Monitor extends BeanModel {
                 log.debug("monitor", `[${this.name}] Responded slowly, sending notification | ${msgStats}`);
                 let msg = `[${this.name}] Responded Slowly \n${msgStats}`;
                 Monitor.sendSlowResponseNotification(monitor, bean, msg);
+
+                // Mark important (NOMINAL -> SLOW)
+                bean.pingImportant = true;
+                bean.pingMsg = msgStats;
+
             // Send notification every x times
             } else if (this.slowResponseNotificationResendInterval > 0) {
                 if (((bean.slowResponseCount) % this.slowResponseNotificationResendInterval) === 0) {

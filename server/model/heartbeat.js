@@ -38,6 +38,8 @@ class Heartbeat extends BeanModel {
             duration: this.duration,
             pingThreshold: this.ping_threshold,
             pingStatus: this.ping_status,
+            pingImportant: this.ping_important,
+            pingMsg: this.ping_msg,
         };
     }
 
