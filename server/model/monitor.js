@@ -32,8 +32,8 @@ const rootCertificates = rootCertificatesFingerprints();
  *      2 = PENDING
  *      3 = MAINTENANCE
  *  pingStatus:
- *      0 = SLOW
- *      1 = NOMINAL
+ *      4 = SLOW
+ *      5 = NOMINAL
  */
 class Monitor extends BeanModel {
 
