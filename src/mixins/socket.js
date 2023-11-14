@@ -776,6 +776,7 @@ export default {
                 active: 0,
                 up: 0,
                 down: 0,
+                slow: 0,
                 maintenance: 0,
                 pending: 0,
                 unknown: 0,
@@ -800,6 +801,10 @@ export default {
                         result.maintenance++;
                     } else {
                         result.unknown++;
+                    }
+
+                    if (beat.pingStatus === SLOW) {
+                        results.slow++;
                     }
                 } else {
                     result.unknown++;

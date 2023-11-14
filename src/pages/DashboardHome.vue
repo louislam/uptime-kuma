@@ -16,6 +16,10 @@
                         <span class="num text-danger">{{ $root.stats.down }}</span>
                     </div>
                     <div class="col">
+                        <h3>{{ $t("Slow") }}</h3>
+                        <span class="num text-warning">{{ $root.stats.slow }}</span>
+                    </div>
+                    <div class="col">
                         <h3>{{ $t("Maintenance") }}</h3>
                         <span class="num text-maintenance">{{ $root.stats.maintenance }}</span>
                     </div>
