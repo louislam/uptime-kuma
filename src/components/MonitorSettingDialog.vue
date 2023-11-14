@@ -91,6 +91,7 @@ export default {
          */
         toggleLink(groupIndex, index) {
             this.$root.publicGroupList[groupIndex].monitorList[index].sendUrl = !this.$root.publicGroupList[groupIndex].monitorList[index].sendUrl;
+            //Saving the current state checkbox in local storage, to keep it stored.
             localStorage.setItem('isClickAble', !this.monitor.isClickAble);       
         },
 
