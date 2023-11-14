@@ -77,7 +77,7 @@ export default {
                 name: monitor.element.name,
                 monitor_index: monitor.index,
                 group_index: group.index,
-                isClickAble: localStorage.getItem("isClickAble") === "true" ? true : false,
+                isClickAble: localStorage.getItem("isClickAble") === "true",
             };
 
             this.MonitorSettingDialog.show();
