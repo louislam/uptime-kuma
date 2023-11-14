@@ -77,7 +77,7 @@ export default {
                 name: monitor.element.name,
                 monitor_index: monitor.index,
                 group_index: group.index,
-                isClickAble: this.showLink(monitor),
+                isClickAble: localStorage.getItem('isClickAble') === 'true' ? true : false,
             };
 
             this.MonitorSettingDialog.show();
@@ -91,6 +91,7 @@ export default {
          */
         toggleLink(groupIndex, index) {
             this.$root.publicGroupList[groupIndex].monitorList[index].sendUrl = !this.$root.publicGroupList[groupIndex].monitorList[index].sendUrl;
+            localStorage.setItem('isClickAble', !this.monitor.isClickAble);       
         },
 
         /**
