@@ -205,6 +205,26 @@ export default {
 
                     this.emitter.emit("newImportantHeartbeat", data);
                 }
+
+                if (data.pingImportant) {
+
+                    // TODO Do we want slow response toast messages?
+                    // if (this.monitorList[data.monitorID] !== undefined) {
+                    //     if (data.pingStatus === SLOW) {
+                    //         toast.error(`[${this.monitorList[data.monitorID].name}] [SLOW] ${data.pingMsg}`, {
+                    //             timeout: getToastErrorTimeout(),
+                    //         });
+                    //     } else if (data.pingStatus === NOMINAL) {
+                    //         toast.success(`[${this.monitorList[data.monitorID].name}] [NOMINAL] ${data.pingMsg}`, {
+                    //             timeout: getToastSuccessTimeout(),
+                    //         });
+                    //     } else {
+                    //         toast(`[${this.monitorList[data.monitorID].name}] ${data.pingMsg}`);
+                    //     }
+                    // }
+
+                    this.emitter.emit("newImportantHeartbeat", data);
+                }
             });
 
             socket.on("heartbeatList", (monitorID, data, overwrite = false) => {

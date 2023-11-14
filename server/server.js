@@ -1192,13 +1192,9 @@ let needSetup = false;
 
                 let count;
                 if (monitorID == null) {
-                    count = await R.count("heartbeat", "important = 1");
-                    count += await R.count("heartbeat", "ping_important = 1");
+                    count = await R.count("heartbeat", "important = 1 OR ping_important = 1");
                 } else {
-                    count = await R.count("heartbeat", "monitor_id = ? AND important = 1", [
-                        monitorID,
-                    ]);
-                    count += await R.count("heartbeat", "monitor_id = ? AND ping_important = 1", [
+                    count = await R.count("heartbeat", "monitor_id = ? AND (important = 1 OR ping_important = 1)", [
                         monitorID,
                     ]);
                 }
