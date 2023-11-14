@@ -77,7 +77,7 @@ export default {
                 name: monitor.element.name,
                 monitor_index: monitor.index,
                 group_index: group.index,
-                isClickAble: localStorage.getItem('isClickAble') === 'true' ? true : false,
+                isClickAble: localStorage.getItem("isClickAble") === "true" ? true : false,
             };
 
             this.MonitorSettingDialog.show();
@@ -91,8 +91,8 @@ export default {
          */
         toggleLink(groupIndex, index) {
             this.$root.publicGroupList[groupIndex].monitorList[index].sendUrl = !this.$root.publicGroupList[groupIndex].monitorList[index].sendUrl;
-            //Saving the current state checkbox in local storage, to keep it stored.
-            localStorage.setItem('isClickAble', !this.monitor.isClickAble);       
+            // Saving the current state checkbox in local storage, to keep it stored.
+            localStorage.setItem("isClickAble", !this.monitor.isClickAble);
         },
 
         /**
