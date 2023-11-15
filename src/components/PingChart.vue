@@ -65,9 +65,9 @@ export default {
             let lastBeat = heartbeatList.at(-1);
             // TODO: Simplify? When page loads, lastBeat contains ping_threshold,
             // but after the following heartbeat it has pingThreshold.
-            if (lastBeat?.hasOwnProperty('pingThreshold')) {
+            if (lastBeat?.hasOwnProperty("pingThreshold")) {
                 return lastBeat.pingThreshold;
-            } else if (lastBeat?.hasOwnProperty('ping_threshold')) {
+            } else if (lastBeat?.hasOwnProperty("ping_threshold")) {
                 return lastBeat.ping_threshold;
             } else {
                 return undefined;
@@ -174,16 +174,16 @@ export default {
                     },
                     annotation: {
                         /* drawTime: 'afterDraw', */
-                        annotations:{
+                        annotations: {
                             line1: {
-                                type: 'line',
-                                mode: 'horizontal',
-                                scaleID: 'y',
+                                type: "line",
+                                mode: "horizontal",
+                                scaleID: "y",
                                 value: this.threshold,
                                 endValue: this.threshold,
-                                borderColor: 'rgba(248,163,6,1.0)',
+                                borderColor: "rgba(248,163,6,1.0)",
                                 borderWith: 2,
-                                borderDash: [1, 3],
+                                borderDash: [ 1, 3 ],
                                 adjustScaleRange: false,
                                 display: this.threshold !== undefined,
                             }
