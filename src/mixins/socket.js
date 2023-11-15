@@ -5,7 +5,7 @@ import Favico from "favico.js";
 import dayjs from "dayjs";
 import mitt from "mitt";
 
-import { DOWN, MAINTENANCE, PENDING, UP, SLOW, NOMINAL} from "../util.ts";
+import { DOWN, MAINTENANCE, PENDING, UP, SLOW, NOMINAL } from "../util.ts";
 import { getDevContainerServerHostname, isDevContainer, getToastSuccessTimeout, getToastErrorTimeout } from "../util-frontend.js";
 const toast = useToast();
 
@@ -765,9 +765,9 @@ export default {
                 if (lastHeartBeat?.status === UP) {
                     // TODO ping_status(1st) vs pingStatus(every other time)
                     let pingStatus;
-                    if (lastHeartBeat.hasOwnProperty('ping_status')) {
+                    if (lastHeartBeat.hasOwnProperty("ping_status")) {
                         pingStatus = lastHeartBeat.ping_status;
-                    } else if (lastHeartBeat.hasOwnProperty('pingStatus')) {
+                    } else if (lastHeartBeat.hasOwnProperty("pingStatus")) {
                         pingStatus = lastHeartBeat.pingStatus;
                     }
 
@@ -824,9 +824,9 @@ export default {
 
                     // TODO ping_status(1st) vs pingStatus(every other time)
                     let pingStatus;
-                    if (beat.hasOwnProperty('ping_status')) {
+                    if (beat.hasOwnProperty("ping_status")) {
                         pingStatus = beat.ping_status;
-                    } else if (beat.hasOwnProperty('pingStatus')) {
+                    } else if (beat.hasOwnProperty("pingStatus")) {
                         pingStatus = beat.pingStatus;
                     }
 
