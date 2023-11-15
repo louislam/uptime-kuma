@@ -15,6 +15,7 @@ const FreeMobile = require("./notification-providers/freemobile");
 const GoogleChat = require("./notification-providers/google-chat");
 const Gorush = require("./notification-providers/gorush");
 const Gotify = require("./notification-providers/gotify");
+const GrafanaOncall = require("./notification-providers/grafana-oncall");
 const HomeAssistant = require("./notification-providers/home-assistant");
 const Kook = require("./notification-providers/kook");
 const Line = require("./notification-providers/line");
@@ -59,9 +60,14 @@ class Notification {
 
     providerList = {};
 
-    /** Initialize the notification providers */
+    /**
+     * Initialize the notification providers
+     * @returns {void}
+     * @throws Notification provider does not have a name
+     * @throws Duplicate notification providers in list
+     */
     static init() {
-        log.info("notification", "Prepare Notification Providers");
+        log.debug("notification", "Prepare Notification Providers");
 
         this.providerList = {};
 
@@ -81,6 +87,7 @@ class Notification {
             new GoogleChat(),
             new Gorush(),
             new Gotify(),
+            new GrafanaOncall(),
             new HomeAssistant(),
             new Kook(),
             new Line(),
@@ -135,10 +142,10 @@ class Notification {
 
     /**
      * Send a notification
-     * @param {BeanModel} notification
+     * @param {BeanModel} notification Notification to send
      * @param {string} msg General Message
-     * @param {Object} monitorJSON Monitor details (For Up/Down only)
-     * @param {Object} heartbeatJSON Heartbeat details (For Up/Down only)
+     * @param {object} monitorJSON Monitor details (For Up/Down only)
+     * @param {object} heartbeatJSON Heartbeat details (For Up/Down only)
      * @returns {Promise<string>} Successful msg
      * @throws Error with fail msg
      */
@@ -152,10 +159,10 @@ class Notification {
 
     /**
      * Save a notification
-     * @param {Object} notification Notification to save
+     * @param {object} notification Notification to save
      * @param {?number} notificationID ID of notification to update
      * @param {number} userID ID of user who adds notification
-     * @returns {Promise<Bean>}
+     * @returns {Promise<Bean>} Notification that was saved
      */
     static async save(notification, notificationID, userID) {
         let bean;

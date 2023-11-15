@@ -215,5 +215,6 @@
     "Cannot connect to the socket server": "Nemožno sa pripojiť k socket serveru",
     "Invert Keyword": "Prevrátiť kľúčové slovo",
     "Expected Value": "Očakávaná hodnota",
-    "Json Query": "Json Query"
+    "Json Query": "Json Query",
+    "Method": "Metoda"
 }

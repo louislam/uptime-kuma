@@ -1,9 +1,9 @@
 <template>
     <div class="input-group mb-3">
-        <select ref="select" v-model="model" class="form-select" :disabled="disabled">
-            <option v-for="option in options" :key="option" :value="option.value">{{ option.label }}</option>
+        <select ref="select" v-model="model" class="form-select" :disabled="disabled" :required="required">
+            <option v-for="option in options" :key="option" :value="option.value" :disabled="option.disabled">{{ option.label }}</option>
         </select>
-        <a class="btn btn-outline-primary" @click="action()">
+        <a class="btn btn-outline-primary" :class="{ disabled: actionDisabled }" @click="action()">
             <font-awesome-icon :icon="icon" />
         </a>
     </div>
@@ -50,6 +50,22 @@ export default {
         action: {
             type: Function,
             default: () => {},
+        },
+        /**
+         * Whether the action button is disabled.
+         * @example true
+         */
+        actionDisabled: {
+            type: Boolean,
+            default: false
+        },
+        /**
+         * Whether the select field is required.
+         * @example true
+         */
+        required: {
+            type: Boolean,
+            default: false,
         }
     },
     emits: [ "update:modelValue" ],

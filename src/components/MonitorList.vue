@@ -103,6 +103,7 @@ export default {
          * Improve the sticky appearance of the list by increasing its
          * height as user scrolls down.
          * Not used on mobile.
+         * @returns {object} Style for monitor list
          */
         boxStyle() {
             if (window.innerWidth > 550) {
@@ -119,8 +120,7 @@ export default {
 
         /**
          * Returns a sorted list of monitors based on the applied filters and search text.
-         *
-         * @return {Array} The sorted list of monitors.
+         * @returns {Array} The sorted list of monitors.
          */
         sortedMonitorList() {
             let result = Object.values(this.$root.monitorList);
@@ -221,8 +221,7 @@ export default {
 
         /**
          * Determines if any filters are active.
-         *
-         * @return {boolean} True if any filter is active, false otherwise.
+         * @returns {boolean} True if any filter is active, false otherwise.
          */
         filtersActive() {
             return this.filterState.status != null || this.filterState.active != null || this.filterState.tags != null || this.searchText !== "";
@@ -267,7 +266,10 @@ export default {
         window.removeEventListener("scroll", this.onScroll);
     },
     methods: {
-        /** Handle user scroll */
+        /**
+         * Handle user scroll
+         * @returns {void}
+         */
         onScroll() {
             if (window.top.scrollY <= 133) {
                 this.windowTop = window.top.scrollY;
@@ -283,13 +285,17 @@ export default {
         monitorURL(id) {
             return getMonitorRelativeURL(id);
         },
-        /** Clear the search bar */
+        /**
+         * Clear the search bar
+         * @returns {void}
+         */
         clearSearchText() {
             this.searchText = "";
         },
         /**
          * Update the MonitorList Filter
          * @param {object} newFilter Object with new filter
+         * @returns {void}
          */
         updateFilter(newFilter) {
             this.filterState = newFilter;
@@ -297,6 +303,7 @@ export default {
         /**
          * Deselect a monitor
          * @param {number} id ID of monitor
+         * @returns {void}
          */
         deselect(id) {
             delete this.selectedMonitors[id];
@@ -304,6 +311,7 @@ export default {
         /**
          * Select a monitor
          * @param {number} id ID of monitor
+         * @returns {void}
          */
         select(id) {
             this.selectedMonitors[id] = true;
@@ -311,33 +319,45 @@ export default {
         /**
          * Determine if monitor is selected
          * @param {number} id ID of monitor
-         * @returns {bool}
+         * @returns {bool} Is the monitor selected?
          */
         isSelected(id) {
             return id in this.selectedMonitors;
         },
-        /** Disable select mode and reset selection */
+        /**
+         * Disable select mode and reset selection
+         * @returns {void}
+         */
         cancelSelectMode() {
             this.selectMode = false;
             this.selectedMonitors = {};
         },
-        /** Show dialog to confirm pause */
+        /**
+         * Show dialog to confirm pause
+         * @returns {void}
+         */
         pauseDialog() {
             this.$refs.confirmPause.show();
         },
-        /** Pause each selected monitor */
+        /**
+         * Pause each selected monitor
+         * @returns {void}
+         */
         pauseSelected() {
             Object.keys(this.selectedMonitors)
                 .filter(id => this.$root.monitorList[id].active)
-                .forEach(id => this.$root.getSocket().emit("pauseMonitor", id));
+                .forEach(id => this.$root.getSocket().emit("pauseMonitor", id, () => {}));
 
             this.cancelSelectMode();
         },
-        /** Resume each selected monitor */
+        /**
+         * Resume each selected monitor
+         * @returns {void}
+         */
         resumeSelected() {
             Object.keys(this.selectedMonitors)
                 .filter(id => !this.$root.monitorList[id].active)
-                .forEach(id => this.$root.getSocket().emit("resumeMonitor", id));
+                .forEach(id => this.$root.getSocket().emit("resumeMonitor", id, () => {}));
 
             this.cancelSelectMode();
         },

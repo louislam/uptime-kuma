@@ -51,7 +51,10 @@ export default {
         };
     },
     methods: {
-        /** Submit form data to add new status page */
+        /**
+         * Submit form data to add new status page
+         * @returns {Promise<void>}
+         */
         async submit() {
             this.processing = true;
 
@@ -63,7 +66,7 @@ export default {
                 } else {
 
                     if (res.msg.includes("UNIQUE constraint")) {
-                        this.$root.toastError(this.$t("The slug is already taken. Please choose another slug."));
+                        this.$root.toastError("The slug is already taken. Please choose another slug.");
                     } else {
                         this.$root.toastRes(res);
                     }

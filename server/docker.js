@@ -14,10 +14,10 @@ class DockerHost {
 
     /**
      * Save a docker host
-     * @param {Object} dockerHost Docker host to save
+     * @param {object} dockerHost Docker host to save
      * @param {?number} dockerHostID ID of the docker host to update
      * @param {number} userID ID of the user who adds the docker host
-     * @returns {Promise<Bean>}
+     * @returns {Promise<Bean>} Updated docker host
      */
     static async save(dockerHost, dockerHostID, userID) {
         let bean;
@@ -64,7 +64,7 @@ class DockerHost {
 
     /**
      * Fetches the amount of containers on the Docker host
-     * @param {Object} dockerHost Docker host to check for
+     * @param {object} dockerHost Docker host to check for
      * @returns {number} Total amount of containers on the host
      */
     static async testDockerHost(dockerHost) {
@@ -72,7 +72,6 @@ class DockerHost {
             url: "/containers/json?all=true",
             headers: {
                 "Accept": "*/*",
-                "User-Agent": "Uptime-Kuma/" + version
             },
         };
 
@@ -108,6 +107,8 @@ class DockerHost {
     /**
      * Since axios 0.27.X, it does not accept `tcp://` protocol.
      * Change it to `http://` on the fly in order to fix it. (https://github.com/louislam/uptime-kuma/issues/2165)
+     * @param {any} url URL to fix
+     * @returns {any} URL with tcp:// replaced by http://
      */
     static patchDockerURL(url) {
         if (typeof url === "string") {
@@ -129,11 +130,10 @@ class DockerHost {
      * 'data/docker-tls/example.com/' would be searched for certificate files),
      * then 'ca.pem', 'key.pem' and 'cert.pem' files are included in the agent options.
      * File names can also be overridden via 'DOCKER_TLS_FILE_NAME_(CA|KEY|CERT)'.
-     *
-     * @param {String} dockerType i.e. "tcp" or "socket"
-     * @param {String} url The docker host URL rewritten to https://
-     * @return {Object}
-     * */
+     * @param {string} dockerType i.e. "tcp" or "socket"
+     * @param {string} url The docker host URL rewritten to https://
+     * @returns {object} HTTP agent options
+     */
     static getHttpsAgentOptions(dockerType, url) {
         let baseOptions = {
             maxCachedSessions: 0,

@@ -11,7 +11,7 @@
             />
         </div>
         <div
-            v-if="size !== 'small' && beatList.length > 4 && $root.styleElapsedTime !== 'none'"
+            v-if="!$root.isMobile && size !== 'small' && beatList.length > 4 && $root.styleElapsedTime !== 'none'"
             class="d-flex justify-content-between align-items-center word" :style="timeStyle"
         >
             <div>{{ timeSinceFirstBeat }} ago</div>
@@ -56,6 +56,7 @@ export default {
 
         /**
          * If heartbeatList is null, get it from $root.heartbeatList
+         * @returns {object} Heartbeat list
          */
         beatList() {
             if (this.heartbeatList === null) {
@@ -67,8 +68,7 @@ export default {
 
         /**
          * Calculates the amount of beats of padding needed to fill the length of shortBeatList.
-         *
-         * @return {number} The amount of beats of padding needed to fill the length of shortBeatList.
+         * @returns {number} The amount of beats of padding needed to fill the length of shortBeatList.
          */
         numPadding() {
             if (!this.beatList) {
@@ -148,7 +148,7 @@ export default {
 
         /**
          * Returns the style object for positioning the time element.
-         * @return {Object} The style object containing the CSS properties for positioning the time element.
+         * @returns {object} The style object containing the CSS properties for positioning the time element.
          */
         timeStyle() {
             return {
@@ -158,8 +158,7 @@ export default {
 
         /**
          * Calculates the time elapsed since the first valid beat.
-         *
-         * @return {string} The time elapsed in minutes or hours.
+         * @returns {string} The time elapsed in minutes or hours.
          */
         timeSinceFirstBeat() {
             const firstValidBeat = this.shortBeatList.at(this.numPadding);
@@ -173,8 +172,7 @@ export default {
 
         /**
          * Calculates the elapsed time since the last valid beat was registered.
-         *
-         * @return {string} The elapsed time in a minutes, hours or "now".
+         * @returns {string} The elapsed time in a minutes, hours or "now".
          */
         timeSinceLastBeat() {
             const lastValidBeat = this.shortBeatList.at(-1);
@@ -241,7 +239,10 @@ export default {
         this.resize();
     },
     methods: {
-        /** Resize the heartbeat bar */
+        /**
+         * Resize the heartbeat bar
+         * @returns {void}
+         */
         resize() {
             if (this.$refs.wrap) {
                 this.maxBeat = Math.floor(this.$refs.wrap.clientWidth / (this.beatWidth + this.beatMargin * 2));
@@ -251,8 +252,8 @@ export default {
         /**
          * Get the title of the beat.
          * Used as the hover tooltip on the heartbeat bar.
-         * @param {Object} beat Beat to get title from
-         * @returns {string}
+         * @param {object} beat Beat to get title from
+         * @returns {string} Beat title
          */
         getBeatTitle(beat) {
             return `${this.$root.datetime(beat.time)}` + ((beat.msg) ? ` - ${beat.msg}` : "");
