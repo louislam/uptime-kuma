@@ -1560,7 +1560,7 @@ class Monitor extends BeanModel {
         }
 
         // Create stats to append to messages/logs
-        const methodDescription = [ "average", "max" ].includes(method) ? `${method} of ${windowDuration}s` : method;
+        const methodDescription = [ "average", "max" ].includes(method) ? `${method} of last ${windowDuration}s` : method;
         let msgStats = `Response: ${actualResponseTime}ms (${methodDescription}) | Threshold: ${threshold}ms (${thresholdDescription})`;
         // Add window duration for methods that make sense
 
