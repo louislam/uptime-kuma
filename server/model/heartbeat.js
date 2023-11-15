@@ -7,8 +7,8 @@ const { BeanModel } = require("redbean-node/dist/bean-model");
  *      2 = PENDING
  *      3 = MAINTENANCE
  * pingStatus:
- *      3 = SLOW
- *      4 = NOMINAL
+ *      4 = SLOW
+ *      5 = NOMINAL
  */
 class Heartbeat extends BeanModel {
 
