@@ -763,28 +763,12 @@ export default {
                 let lastHeartBeat = this.lastHeartbeatList[monitorID];
 
                 if (lastHeartBeat?.status === UP) {
-                    // TODO ping_status(1st) vs pingStatus(every other time)
-                    let pingStatus;
-                    if (lastHeartBeat.hasOwnProperty("ping_status")) {
-                        pingStatus = lastHeartBeat.ping_status;
-                    } else if (lastHeartBeat.hasOwnProperty("pingStatus")) {
-                        pingStatus = lastHeartBeat.pingStatus;
-                    }
-
-                    if (pingStatus === SLOW) {
+                    if (lastHeartBeat.pingStatus === SLOW) {
                         result[monitorID] = {
                             text: this.$t("Slow"),
                             color: "warning",
                         };
                     }
-                    // TODO Decide: currently only shows if "slow". Add the
-                    // code below else if we want to display "nominal" as well
-                    // else if (pingStatus === NOMINAL) {
-                    //     result[monitorID] = {
-                    //         text: this.$t("Nominal"),
-                    //         color: "primary",
-                    //     };
-                    // }
                 }
             }
             return result;
@@ -822,15 +806,7 @@ export default {
                         result.unknown++;
                     }
 
-                    // TODO ping_status(1st) vs pingStatus(every other time)
-                    let pingStatus;
-                    if (beat.hasOwnProperty("ping_status")) {
-                        pingStatus = beat.ping_status;
-                    } else if (beat.hasOwnProperty("pingStatus")) {
-                        pingStatus = beat.pingStatus;
-                    }
-
-                    if (pingStatus === SLOW) {
+                    if (beat.pingStatus === SLOW) {
                         result.slow++;
                     }
                 } else {

@@ -63,12 +63,9 @@ export default {
              [];
 
             let lastBeat = heartbeatList.at(-1);
-            // TODO: Simplify? When page loads, lastBeat contains ping_threshold,
-            // but after the following heartbeat it has pingThreshold.
-            if (lastBeat?.hasOwnProperty("pingThreshold")) {
+
+            if (lastBeat) {
                 return lastBeat.pingThreshold;
-            } else if (lastBeat?.hasOwnProperty("ping_threshold")) {
-                return lastBeat.ping_threshold;
             } else {
                 return undefined;
             }
