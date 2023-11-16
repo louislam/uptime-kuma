@@ -1565,7 +1565,7 @@ class Monitor extends BeanModel {
         // Create stats to append to messages/logs
         const methodDescription = [ "average", "max" ].includes(method) ? `${method} of last ${windowDuration}s` : method;
         let msgStats = `Response: ${actualResponseTime}ms (${methodDescription}) | Threshold: ${threshold}ms (${thresholdDescription})`;
-        let pingMsg = `${actualResponseTime}ms response (${methodDescription})`;
+        let pingMsg = `${actualResponseTime}ms resp. (${methodDescription})`;
 
         // Verify valid response time was calculated
         if (actualResponseTime === 0 || !Number.isInteger(actualResponseTime)) {
@@ -1593,6 +1593,7 @@ class Monitor extends BeanModel {
                 Monitor.sendSlowResponseNotification(monitor, bean, msg);
 
                 // Mark important (SLOW -> NOMINAL)
+                pingMsg += ` < ${threshold}ms`;
                 bean.pingImportant = true;
                 bean.pingMsg = pingMsg;
             }
@@ -1612,6 +1613,7 @@ class Monitor extends BeanModel {
                 Monitor.sendSlowResponseNotification(monitor, bean, msg);
 
                 // Mark important (NOMINAL -> SLOW)
+                pingMsg += ` > ${threshold}ms`;
                 bean.pingImportant = true;
                 bean.pingMsg = pingMsg;
 
