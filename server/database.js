@@ -83,6 +83,7 @@ class Database {
         "patch-add-gamedig-given-port.sql": true,
         "patch-notification-config.sql": true,
         "patch-fix-kafka-producer-booleans.sql": true,
+        "patch-timeout": true,
     };
 
     /**
