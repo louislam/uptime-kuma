@@ -376,7 +376,7 @@ class Monitor extends BeanModel {
 
             // Runtime patch timeout if it is 0
             // See https://github.com/louislam/uptime-kuma/pull/3961#issuecomment-1804149144
-            if (this.timeout <= 0) {
+            if (!this.timeout || this.timeout <= 0) {
                 this.timeout = this.interval * 1000 * 0.8;
             }
 
@@ -450,6 +450,7 @@ class Monitor extends BeanModel {
                     const httpsAgentOptions = {
                         maxCachedSessions: 0, // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
                         rejectUnauthorized: !this.getIgnoreTls(),
+                        secureOptions: crypto.constants.SSL_OP_LEGACY_SERVER_CONNECT,
                     };
 
                     log.debug("monitor", `[${this.name}] Prepare Options for axios`);
@@ -665,6 +666,7 @@ class Monitor extends BeanModel {
                         httpsAgent: CacheableDnsHttpAgent.getHttpsAgent({
                             maxCachedSessions: 0,      // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
                             rejectUnauthorized: !this.getIgnoreTls(),
+                            secureOptions: crypto.constants.SSL_OP_LEGACY_SERVER_CONNECT,
                         }),
                         httpAgent: CacheableDnsHttpAgent.getHttpAgent({
                             maxCachedSessions: 0,
@@ -716,6 +718,7 @@ class Monitor extends BeanModel {
                         httpsAgent: CacheableDnsHttpAgent.getHttpsAgent({
                             maxCachedSessions: 0,      // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
                             rejectUnauthorized: !this.getIgnoreTls(),
+                            secureOptions: crypto.constants.SSL_OP_LEGACY_SERVER_CONNECT,
                         }),
                         httpAgent: CacheableDnsHttpAgent.getHttpAgent({
                             maxCachedSessions: 0,
