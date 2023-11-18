@@ -938,7 +938,11 @@ class Monitor extends BeanModel {
 
             } catch (error) {
 
+                if (error?.name === "CanceledError") {
+                    bean.msg = `timeout by AbortSignal (${this.timeout}s)`;
+                } else {
                 bean.msg = error.message;
+                }
 
                 // If UP come in here, it must be upside down mode
                 // Just reset the retries
