@@ -466,6 +466,10 @@ class Monitor extends BeanModel {
                         }
                     }
 
+                    log.info("debug_timeout", "monitor id: " + this.id);
+                    log.info("debug_timeout", "timeout: " + this.timeout);
+                    log.info("debug_timeout", "interval: " + this.interval);
+
                     // Axios Options
                     const options = {
                         url: this.url,
@@ -483,7 +487,7 @@ class Monitor extends BeanModel {
                         validateStatus: (status) => {
                             return checkStatusCode(status, this.getAcceptedStatuscodes());
                         },
-                        signal: axiosAbortSignal(this.timeout * 1000),
+                        signal: axiosAbortSignal((this.timeout + 10) * 1000),
                     };
 
                     if (bodyValue) {
