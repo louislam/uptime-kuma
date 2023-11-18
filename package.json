@@ -72,7 +72,8 @@
         "cypress-open": "concurrently -k -r \"node test/prepare-test-server.js && node server/server.js --port=3002 --data-dir=./data/test/\" \"cypress open --config-file ./config/cypress.config.js\"",
         "build-healthcheck-armv7": "cross-env GOOS=linux GOARCH=arm GOARM=7 go build -x -o ./extra/healthcheck-armv7 ./extra/healthcheck.go",
         "deploy-demo-server": "node extra/deploy-demo-server.js",
-        "sort-contributors": "node extra/sort-contributors.js"
+        "sort-contributors": "node extra/sort-contributors.js",
+        "start-server-node14-win": "private\\node14\\node.exe server/server.js"
     },
     "dependencies": {
         "@grpc/grpc-js": "~1.7.3",

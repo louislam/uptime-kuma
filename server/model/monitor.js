@@ -22,6 +22,7 @@ const { UptimeCacheList } = require("../uptime-cache-list");
 const Gamedig = require("gamedig");
 const jsonata = require("jsonata");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 
 const rootCertificates = rootCertificatesFingerprints();
 
