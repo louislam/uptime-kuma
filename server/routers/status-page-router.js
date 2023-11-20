@@ -95,11 +95,11 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
             const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitorID);
             switch(process.env.UPTIME_KUMA_STATUS_PAGE_RANGE) {
                 case '720':
-                    uptimeList[`${monitorID}_720`] = uptimeCalculator.get30Day().uptime;
+                    uptimeList[`${monitorID}_24`] = uptimeCalculator.get30Day().uptime;
                     break;
 
                 case '1y':
-                    uptimeList[`${monitorID}_1y`] = uptimeCalculator.get1Year().uptime;
+                    uptimeList[`${monitorID}_24`] = uptimeCalculator.get1Year().uptime;
                     break;
 
                 case '24':
