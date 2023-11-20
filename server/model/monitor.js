@@ -21,6 +21,7 @@ const { DockerHost } = require("../docker");
 const Gamedig = require("gamedig");
 const jsonata = require("jsonata");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 const { UptimeCalculator } = require("../uptime-calculator");
 
 const rootCertificates = rootCertificatesFingerprints();
