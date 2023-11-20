@@ -39,9 +39,11 @@
                                         <option value="docker">
                                             {{ $t("Docker Container") }}
                                         </option>
-
                                         <option value="real-browser">
                                             HTTP(s) - Browser Engine (Chrome/Chromium) (Beta)
+                                        </option>
+                                        <option value="real-browser-keyword">
+                                            HTTP(s) - {{ $t("Keyword") }} - Browser Engine (Chrome/Chromium) (Beta)
                                         </option>
                                     </optgroup>
 
@@ -125,7 +127,7 @@
                             </div>
 
                             <!-- Keyword -->
-                            <div v-if="monitor.type === 'keyword' || monitor.type === 'grpc-keyword'" class="my-3">
+                            <div v-if="monitor.type === 'keyword' || monitor.type === 'grpc-keyword'|| monitor.type === 'real-browser-keyword'" class="my-3">
                                 <label for="keyword" class="form-label">{{ $t("Keyword") }}</label>
                                 <input id="keyword" v-model="monitor.keyword" type="text" class="form-control" required>
                                 <div class="form-text">
