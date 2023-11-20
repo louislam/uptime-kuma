@@ -285,6 +285,7 @@ class RealBrowserKeywordMonitorType extends MonitorType {
      * @inheritdoc
      */
     async check(monitor, heartbeat, server) {
+        // console.log("real-browser-keyword::check");
         const browser = await getBrowser();
         const context = await browser.newContext();
         const page = await context.newPage();
@@ -294,17 +295,81 @@ class RealBrowserKeywordMonitorType extends MonitorType {
             timeout: monitor.interval * 1000 * 0.8,
         });
 
+        let content = await page.content();
+
+        //Add iFrame Support
+        // console.log("iFrame...");
+        const pageFrames = await page.frames();
+        // console.log("Total Frames: " + pageFrames.length);
+        for (let index = 0; index < pageFrames.length; index++) {
+            const element = pageFrames[index];
+            // const frameContent = await element.content();
+            content += await element.content();
+            // console.log(frameContent);
+        }
+        // pageFrames.forEach(element => {
+        //     const frameContent = await element.content();
+        // });
+        // const iframeElement = await page.locator("iframe").elementHandle();
+        // console.log(iframeElement);
+        // if (iframeElement) {
+        //     const frame = await iframeElement.contentFrame();
+        //     console.log(frame);
+        // }
+        // console.log("END iFrame");
+
+        //TODO - Make screenshot an option.
         let filename = jwt.sign(monitor.id, server.jwtSecret) + ".png";
 
         await page.screenshot({
             path: path.join(Database.screenshotDir, filename),
         });
 
+        // console.log(monitor.keyword);
+        // console.log(content);
+
+        // const loc = page.getByText("test", { exact: true });
+        // // console.log(page.getByText("test", { exact: true }));
+        // await loc.evaluateAll((ele) => {
+        //     console.log(ele);
+        // });
+        // divs.length > min, 10);
+
+        // content(): Promise<string>;
+        // getByText(text: string|RegExp, options?: {
+        //     /**
+        //      * Whether to find an exact match: case-sensitive and whole-string. Default to false. Ignored when locating by a
+        //      * regular expression. Note that exact match still trims whitespace.
+        //      */
+        //     exact?: boolean;
+        //   }): Locator;
+
         await context.close();
 
         if (res.status() >= 200 && res.status() < 400) {
-            heartbeat.status = UP;
-            heartbeat.msg = res.status();
+            var status = UP;
+            var msg = res.status();
+            let keywordFound = content.includes(monitor.keyword);
+            if (keywordFound === !Boolean(monitor.invertKeyword)) {
+                msg += ", keyword " + (keywordFound ? "is" : "not") + " found";
+                status = UP;
+            } else {
+                content = content.replace(/<[^>]*>?|[\n\r]|\s+/gm, " ").trim();
+                if (content.length > 50) {
+                    content = content.substring(0, 47) + "...";
+                }
+                throw new Error(
+                    msg +
+                        ", but keyword is " +
+                        (keywordFound ? "present" : "not") +
+                        " in [" +
+                        content +
+                        "]"
+                );
+            }
+
+            heartbeat.status = status;
+            heartbeat.msg = msg;
 
             const timing = res.request().timing();
             heartbeat.ping = timing.responseEnd;
