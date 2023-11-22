@@ -466,10 +466,6 @@ class Monitor extends BeanModel {
                         }
                     }
 
-                    log.info("debug_timeout", "monitor id: " + this.id);
-                    log.info("debug_timeout", "timeout: " + this.timeout);
-                    log.info("debug_timeout", "interval: " + this.interval);
-
                     // Axios Options
                     const options = {
                         url: this.url,
