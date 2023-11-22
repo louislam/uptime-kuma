@@ -22,6 +22,11 @@ class MqttMonitorType extends MonitorType {
             interval: monitor.interval,
         });
 
+        if (monitor.mqttCheckType == null || monitor.mqttCheckType === "") {
+            // use old default
+            monitor.mqttCheckType = "keyword";
+        }
+
         if (monitor.mqttCheckType === "keyword") {
             if (receivedMessage != null && receivedMessage.includes(monitor.mqttSuccessMessage)) {
                 heartbeat.msg = `Topic: ${monitor.mqttTopic}; Message: ${receivedMessage}`;
