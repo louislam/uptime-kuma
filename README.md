@@ -43,9 +43,10 @@ It is a temporary live demo, all data will be deleted after 10 minutes. Use the 
 docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name uptime-kuma louislam/uptime-kuma:1
 ```
 
-⚠️ Please use a **local volume** only. Other types such as NFS are not supported.
-
 Uptime Kuma is now running on http://localhost:3001
+
+> [!WARNING]
+> File Systems like **NFS** (Network File System) are **NOT** supported. Please map to a local directory or volume.
 
 ### 💪🏻 Non-Docker
 
@@ -56,7 +57,7 @@ Requirements:
   - ✅ Windows 10 (x64), Windows Server 2012 R2 (x64) or higher
   - ❌ Replit / Heroku
 - [Node.js](https://nodejs.org/en/download/) 14 / 16 / 18 / 20.4
-- [npm](https://docs.npmjs.com/cli/) >= 7
+- [npm](https://docs.npmjs.com/cli/) 9
 - [Git](https://git-scm.com/downloads)
 - [pm2](https://pm2.keymetrics.io/) - For running Uptime Kuma in the background
 
@@ -91,10 +92,6 @@ pm2 monit
 pm2 save && pm2 startup
 ```
 
-### Windows Portable (x64)
-
-https://github.com/louislam/uptime-kuma/releases/download/1.23.1/uptime-kuma-windows-x64-portable-1.23.1-2.zip
-
 ### Advanced Installation
 
 If you need more options or need to browse via a reverse proxy, please read:
@@ -112,10 +109,6 @@ https://github.com/louislam/uptime-kuma/wiki/%F0%9F%86%99-How-to-Update
 I will assign requests/issues to the next milestone.
 
 https://github.com/louislam/uptime-kuma/milestones
-
-Project Plan:
-
-https://github.com/users/louislam/projects/4/views/1
 
 ## ❤️ Sponsors
 
@@ -143,26 +136,26 @@ Telegram Notification Sample:
 
 ## Motivation
 
-- I was looking for a self-hosted monitoring tool like "Uptime Robot", but it is hard to find a suitable one. One of the close ones is statping. Unfortunately, it is not stable and no longer maintained.
-- Want to build a fancy UI.
+- I was looking for a self-hosted monitoring tool like "Uptime Robot", but it is hard to find a suitable one. One of the closest ones is statping. Unfortunately, it is not stable and no longer maintained.
+- Wanted to build a fancy UI.
 - Learn Vue 3 and vite.js.
 - Show the power of Bootstrap 5.
-- Try to use WebSocket with SPA instead of REST API.
+- Try to use WebSocket with SPA instead of a REST API.
 - Deploy my first Docker image to Docker Hub.
 
-If you love this project, please consider giving me a ⭐.
+If you love this project, please consider giving it a ⭐.
 
 ## 🗣️ Discussion / Ask for Help
 
-⚠️ For any general or technical questions, please don't send me an email, as I am unable to provide support in that manner. I will not respond if you asked such questions.
+⚠️ For any general or technical questions, please don't send me an email, as I am unable to provide support in that manner. I will not respond if you ask questions there.
 
-I recommend using Google, GitHub Issues, or Uptime Kuma's Subreddit for finding answers to your question. If you cannot find the information you need, feel free to ask:
+I recommend using Google, GitHub Issues, or Uptime Kuma's subreddit for finding answers to your question. If you cannot find the information you need, feel free to ask:
 
 - [GitHub Issues](https://github.com/louislam/uptime-kuma/issues)
-- [Subreddit r/Uptime kuma](https://www.reddit.com/r/UptimeKuma/)
+- [Subreddit (r/UptimeKuma)](https://www.reddit.com/r/UptimeKuma/)
 
-My Reddit account: [u/louislamlam](https://reddit.com/u/louislamlam).
-You can mention me if you ask a question on Reddit.
+My Reddit account: [u/louislamlam](https://reddit.com/u/louislamlam)
+You can mention me if you ask a question on the subreddit.
 
 ## Contribute
 
@@ -188,7 +181,7 @@ If you want to translate Uptime Kuma into your language, please visit [Weblate R
 ### Spelling & Grammar
 
 Feel free to correct the grammar in the documentation or code.
-My mother language is not english and my grammar is not that great.
+My mother language is not English and my grammar is not that great.
 
 ### Create Pull Requests
 

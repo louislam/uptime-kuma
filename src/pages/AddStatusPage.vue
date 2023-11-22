@@ -66,7 +66,7 @@ export default {
                 } else {
 
                     if (res.msg.includes("UNIQUE constraint")) {
-                        this.$root.toastError(this.$t("The slug is already taken. Please choose another slug."));
+                        this.$root.toastError("The slug is already taken. Please choose another slug.");
                     } else {
                         this.$root.toastRes(res);
                     }

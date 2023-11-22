@@ -1,5 +1,12 @@
 let express = require("express");
-const { allowDevAllOrigin, allowAllOrigin, percentageToColor, filterAndJoin, sendHttpError } = require("../util-server");
+const {
+    setting,
+    allowDevAllOrigin,
+    allowAllOrigin,
+    percentageToColor,
+    filterAndJoin,
+    sendHttpError,
+} = require("../util-server");
 const { R } = require("redbean-node");
 const apicache = require("../modules/apicache");
 const Monitor = require("../model/monitor");
@@ -23,10 +30,14 @@ router.get("/api/entry-page", async (request, response) => {
     allowDevAllOrigin(response);
 
     let result = { };
+    let hostname = request.hostname;
+    if ((await setting("trustProxy")) && request.headers["x-forwarded-host"]) {
+        hostname = request.headers["x-forwarded-host"];
+    }
 
-    if (request.hostname in StatusPage.domainMappingList) {
+    if (hostname in StatusPage.domainMappingList) {
         result.type = "statusPageMatchedDomain";
-        result.statusPageSlug = StatusPage.domainMappingList[request.hostname];
+        result.statusPageSlug = StatusPage.domainMappingList[hostname];
     } else {
         result.type = "entryPage";
         result.entryPage = server.entryPage;
@@ -39,7 +50,7 @@ router.get("/api/push/:pushToken", async (request, response) => {
 
         let pushToken = request.params.pushToken;
         let msg = request.query.msg || "OK";
-        let ping = parseInt(request.query.ping) || null;
+        let ping = parseFloat(request.query.ping) || null;
         let statusString = request.query.status || "up";
         let status = (statusString === "up") ? UP : DOWN;
 

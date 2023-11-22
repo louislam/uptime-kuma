@@ -72,7 +72,6 @@ class DockerHost {
             url: "/containers/json?all=true",
             headers: {
                 "Accept": "*/*",
-                "User-Agent": "Uptime-Kuma/" + version
             },
         };
 

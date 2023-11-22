@@ -123,9 +123,7 @@ import Confirm from "./Confirm.vue";
 import Tag from "./Tag.vue";
 import VueMultiselect from "vue-multiselect";
 import { colorOptions } from "../util-frontend";
-import { useToast } from "vue-toastification";
 import { getMonitorRelativeURL } from "../util.ts";
-const toast = useToast();
 
 export default {
     components: {
@@ -320,7 +318,7 @@ export default {
             for (let addId of this.addingMonitor) {
                 await this.addMonitorTagAsync(this.tag.id, addId, "").then((res) => {
                     if (!res.ok) {
-                        toast.error(res.msg);
+                        this.$root.toastError(res.msg);
                         editResult = false;
                     }
                 });
@@ -330,7 +328,7 @@ export default {
                 this.monitors.find(monitor => monitor.id === removeId)?.tags.forEach(async (monitorTag) => {
                     await this.deleteMonitorTagAsync(this.tag.id, removeId, monitorTag.value).then((res) => {
                         if (!res.ok) {
-                            toast.error(res.msg);
+                            this.$root.toastError(res.msg);
                             editResult = false;
                         }
                     });

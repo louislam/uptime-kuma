@@ -12,22 +12,40 @@ const mysql = require("mysql2/promise");
  */
 class Database {
 
+    /**
+     * Boostrap database for SQLite
+     * @type {string}
+     */
     static templatePath = "./db/kuma.db";
 
     /**
      * Data Dir (Default: ./data)
+     * @type {string}
      */
     static dataDir;
 
     /**
      * User Upload Dir (Default: ./data/upload)
+     * @type {string}
      */
     static uploadDir;
 
+    /**
+     * Chrome Screenshot Dir (Default: ./data/screenshots)
+     * @type {string}
+     */
     static screenshotDir;
 
+    /**
+     * SQLite file path (Default: ./data/kuma.db)
+     * @type {string}
+     */
     static sqlitePath;
 
+    /**
+     * For storing Docker TLS certs (Default: ./data/docker-tls)
+     * @type {string}
+     */
     static dockerTLSDir;
 
     /**
@@ -84,7 +102,10 @@ class Database {
         "patch-add-certificate-expiry-status-page.sql": true,
         "patch-monitor-oauth-cc.sql": true,
         "patch-add-timeout-monitor.sql": true,
-        "patch-add-gamedig-given-port.sql": true,   // The last file so far converted to a knex migration file
+        "patch-add-gamedig-given-port.sql": true,
+        "patch-notification-config.sql": true,
+        "patch-fix-kafka-producer-booleans.sql": true,
+        "patch-timeout.sql": true, // The last file so far converted to a knex migration file
     };
 
     /**
@@ -130,7 +151,7 @@ class Database {
             fs.mkdirSync(Database.dockerTLSDir, { recursive: true });
         }
 
-        log.info("db", `Data Dir: ${Database.dataDir}`);
+        log.info("server", `Data Dir: ${Database.dataDir}`);
     }
 
     /**
@@ -317,10 +338,10 @@ class Database {
         await R.exec("PRAGMA synchronous = NORMAL");
 
         if (!noLog) {
-            log.info("db", "SQLite config:");
-            log.info("db", await R.getAll("PRAGMA journal_mode"));
-            log.info("db", await R.getAll("PRAGMA cache_size"));
-            log.info("db", "SQLite Version: " + await R.getCell("SELECT sqlite_version()"));
+            log.debug("db", "SQLite config:");
+            log.debug("db", await R.getAll("PRAGMA journal_mode"));
+            log.debug("db", await R.getAll("PRAGMA cache_size"));
+            log.debug("db", "SQLite Version: " + await R.getCell("SELECT sqlite_version()"));
         }
     }
 
@@ -389,13 +410,15 @@ class Database {
             version = 0;
         }
 
-        log.info("db", "Your database version: " + version);
-        log.info("db", "Latest database version: " + this.latestVersion);
+        if (version !== this.latestVersion) {
+            log.info("db", "Your database version: " + version);
+            log.info("db", "Latest database version: " + this.latestVersion);
+        }
 
         if (version === this.latestVersion) {
-            log.info("db", "Database patch not needed");
+            log.debug("db", "Database patch not needed");
         } else if (version > this.latestVersion) {
-            log.info("db", "Warning: Database version is newer than expected");
+            log.warn("db", "Warning: Database version is newer than expected");
         } else {
             log.info("db", "Database patch is needed");
 
@@ -431,7 +454,7 @@ class Database {
      * @returns {Promise<void>}
      */
     static async patchSqlite2() {
-        log.info("db", "Database Patch 2.0 Process");
+        log.debug("db", "Database Patch 2.0 Process");
         let databasePatchedFiles = await setting("databasePatchedFiles");
 
         if (! databasePatchedFiles) {
