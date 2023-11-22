@@ -483,7 +483,7 @@ class Monitor extends BeanModel {
                         validateStatus: (status) => {
                             return checkStatusCode(status, this.getAcceptedStatuscodes());
                         },
-                        signal: axiosAbortSignal(this.timeout * 1000),
+                        signal: axiosAbortSignal((this.timeout + 10) * 1000),
                     };
 
                     if (bodyValue) {
