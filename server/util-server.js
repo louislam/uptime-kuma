@@ -458,6 +458,7 @@ exports.postgresQuery = function (connectionString, query) {
                     });
                 } catch (e) {
                     reject(e);
+                    client.end();
                 }
             }
         });
