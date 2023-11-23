@@ -493,8 +493,11 @@ ALTER TABLE monitor
     await knex.schema.table("monitor", function (table) {
         table.string("kafka_producer_topic", 255);
         table.text("kafka_producer_brokers");
-        table.integer("kafka_producer_ssl");
-        table.string("kafka_producer_allow_auto_topic_creation", 255);
+
+        // patch-fix-kafka-producer-booleans.sql
+        table.boolean("kafka_producer_ssl").defaultTo(0).notNullable();
+        table.boolean("kafka_producer_allow_auto_topic_creation").defaultTo(0).notNullable();
+
         table.text("kafka_producer_sasl_options");
         table.text("kafka_producer_message");
     });
