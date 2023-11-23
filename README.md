@@ -52,10 +52,13 @@ Uptime Kuma is now running on http://localhost:3001
 
 Requirements:
 
-- Platform
-  - ✅ Major Linux distros such as Debian, Ubuntu, CentOS, Fedora and ArchLinux etc.
-  - ✅ Windows 10 (x64), Windows Server 2012 R2 (x64) or higher
-  - ❌ Replit / Heroku
+| Platform | Supported |
+|-|-|
+| Major Linux distros such as Debian, Ubuntu, CentOS, Fedora and ArchLinux etc. | :white_check_mark: |
+| Windows 10 (x64), Windows Server 2012 R2 (x64) or higher | :white_check_mark: |
+| Replit / Heroku | ⚠️ Deprecated |
+
+
 - [Node.js](https://nodejs.org/en/download/) 14 / 16 / 18 / 20.4
 - [npm](https://docs.npmjs.com/cli/) 9
 - [Git](https://git-scm.com/downloads)
@@ -69,14 +72,14 @@ git clone https://github.com/louislam/uptime-kuma.git
 cd uptime-kuma
 npm run setup
 
-# Option 1. Try it
+# Option 1. Run with node.
 node server/server.js
 
-# (Recommended) Option 2. Run in the background using PM2
+# (Recommended) Option 2. Run uptime kuma in background using PM2
 # Install PM2 if you don't have it:
 npm install pm2 -g && pm2 install pm2-logrotate
 
-# Start Server
+# After installing uptime kuma (if running with PM2):
 pm2 start server/server.js --name uptime-kuma
 ```
 
@@ -85,22 +88,22 @@ Uptime Kuma is now running on http://localhost:3001
 More useful PM2 Commands
 
 ```bash
-# If you want to see the current console output
+# If you want to see the current console output run:
 pm2 monit
 
-# If you want to add it to startup
+# If you want to start uptime kuma when PM2 is started run:
 pm2 save && pm2 startup
 ```
 
 ### Advanced Installation
 
-If you need more options or need to browse via a reverse proxy, please read:
+If you need more installation options or need to use Uptime Kuma over a reverse proxy, please read the <a href="https://github.com/louislam/uptime-kuma/wiki/%F0%9F%94%A7-How-to-Install">installation guide.</a>
 
 https://github.com/louislam/uptime-kuma/wiki/%F0%9F%94%A7-How-to-Install
 
 ## 🆙 How to Update
 
-Please read:
+Please read the <a href="https://github.com/louislam/uptime-kuma/wiki/%F0%9F%86%99-How-to-Update">update guide</a> for updating instructions:
 
 https://github.com/louislam/uptime-kuma/wiki/%F0%9F%86%99-How-to-Update
 
@@ -112,7 +115,7 @@ https://github.com/louislam/uptime-kuma/milestones
 
 ## ❤️ Sponsors
 
-Thank you so much! (GitHub Sponsors will be updated manually. OpenCollective sponsors will be updated automatically, the list will be cached by GitHub though. It may need some time to be updated)
+Thank you so much! (GitHub Sponsors will be updated manually and OpenCollective sponsors will be updated automatically. The list will be cached by GitHub though. It may need some time to be updated!)
 
 <img src="https://uptime.kuma.pet/sponsors?v=6" alt />
 
@@ -181,7 +184,7 @@ If you want to translate Uptime Kuma into your language, please visit [Weblate R
 ### Spelling & Grammar
 
 Feel free to correct the grammar in the documentation or code.
-My mother language is not English and my grammar is not that great.
+My mother language is not English and my grammar is not that good.
 
 ### Create Pull Requests
 
