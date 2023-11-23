@@ -72,7 +72,7 @@ git clone https://github.com/louislam/uptime-kuma.git
 cd uptime-kuma
 npm run setup
 
-# Option 1. Run with node.
+# Option 1. Try it in the foreground.
 node server/server.js
 
 # (Recommended) Option 2. Run uptime kuma in background using PM2
