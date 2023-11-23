@@ -97,7 +97,7 @@ pm2 save && pm2 startup
 
 ### Advanced Installation
 
-If you need more installation options or need to use Uptime Kuma over a reverse proxy, please read the <a href="https://github.com/louislam/uptime-kuma/wiki/%F0%9F%94%A7-How-to-Install">installation guide.</a>
+If you need more installation options or need to use uptime-kuma over a reverse proxy, please read the [installation guide](https://github.com/louislam/uptime-kuma/wiki/%F0%9F%94%A7-How-to-Install).
 
 https://github.com/louislam/uptime-kuma/wiki/%F0%9F%94%A7-How-to-Install
 
