@@ -88,7 +88,7 @@ Uptime Kuma is now running on http://localhost:3001
 More useful PM2 Commands
 
 ```bash
-# If you want to see the current console output run:
+# If you want to see the current console output, run:
 pm2 monit
 
 # If you want to start uptime kuma when PM2 is started run:
