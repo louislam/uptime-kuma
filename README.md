@@ -103,7 +103,7 @@ https://github.com/louislam/uptime-kuma/wiki/%F0%9F%94%A7-How-to-Install
 
 ## 🆙 How to Update
 
-Please read the <a href="https://github.com/louislam/uptime-kuma/wiki/%F0%9F%86%99-How-to-Update">update guide</a> for updating instructions:
+Please read the [update guide](https://github.com/louislam/uptime-kuma/wiki/%F0%9F%86%99-How-to-Update) for updating instructions:
 
 https://github.com/louislam/uptime-kuma/wiki/%F0%9F%86%99-How-to-Update
 
