@@ -93,7 +93,7 @@
     "Friendly Name": "名稱",
     "Hostname": "Hostname",
     "Port": "Port",
-    "No Monitors, please": "冇監測器，請",
+    "No monitors, please": "冇監測器，請",
     "Monitor Type": "監測器類型",
     "Heartbeat Interval": "檢查間距",
     "Add New Monitor": "新增監測器",
