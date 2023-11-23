@@ -859,5 +859,6 @@
     "successEnabled": "Enabled Successfully.",
     "tagNotFound": "Tag not found.",
     "foundChromiumVersion": "Found Chromium/Chrome. Version: {0}",
-    "GrafanaOncallUrl": "Grafana Oncall URL"
+    "GrafanaOncallUrl": "Grafana Oncall URL",
+    "Browser Screenshot": "Browser Screenshot"
 }
