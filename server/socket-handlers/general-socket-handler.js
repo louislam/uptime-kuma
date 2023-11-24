@@ -44,29 +44,45 @@ module.exports.generalSocketHandler = (socket, server) => {
     });
 
     socket.on("getGameList", async (callback) => {
-        callback({
-            ok: true,
-            gameList: getGameList(),
-        });
-    });
-
-    socket.on("testChrome", (executable, callback) => {
-        // Just noticed that await call could block the whole socket.io server!!! Use pure promise instead.
-        testChrome(executable).then((version) => {
+        try {
+            checkLogin(socket);
             callback({
                 ok: true,
-                msg: {
-                    key: "foundChromiumVersion",
-                    values: [ version ],
-                },
-                msgi18n: true,
+                gameList: getGameList(),
             });
-        }).catch((e) => {
+        } catch (e) {
             callback({
                 ok: false,
                 msg: e.message,
             });
-        });
+        }
+    });
+
+    socket.on("testChrome", (executable, callback) => {
+        try {
+            checkLogin(socket);
+            // Just noticed that await call could block the whole socket.io server!!! Use pure promise instead.
+            testChrome(executable).then((version) => {
+                callback({
+                    ok: true,
+                    msg: {
+                        key: "foundChromiumVersion",
+                        values: [ version ],
+                    },
+                    msgi18n: true,
+                });
+            }).catch((e) => {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            });
+        } catch (e) {
+            callback({
+                ok: false,
+                msg: e.message,
+            });
+        }
     });
 
     socket.on("getPushExample", (language, callback) => {
