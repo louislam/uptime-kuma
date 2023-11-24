@@ -100,6 +100,7 @@
         "express-static-gzip": "~2.1.7",
         "form-data": "~4.0.0",
         "gamedig": "~4.1.0",
+        "html-escaper": "^3.0.3",
         "http-graceful-shutdown": "~3.1.7",
         "http-proxy-agent": "~5.0.0",
         "https-proxy-agent": "~5.0.1",
