@@ -52,7 +52,7 @@ module.exports.generalSocketHandler = (socket, server) => {
             callback({
                 ok: false,
                 msg: e.message,
-            })
+            });
         }
     });
 
@@ -75,7 +75,7 @@ module.exports.generalSocketHandler = (socket, server) => {
             callback({
                 ok: false,
                 msg: e.message,
-            })
+            });
         }
     });
 };
