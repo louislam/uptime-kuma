@@ -14,6 +14,9 @@ class Discord extends NotificationProvider {
 
         try {
             const discordDisplayName = notification.discordUsername || "Uptime Kuma";
+            var threadQuery = "";
+
+            if (notification.discordChannelType == "postToThread") threadQuery = "?thread_id=" + notification.threadId;
 
             // If heartbeatJSON is null, assume we're testing.
             if (heartbeatJSON == null) {
@@ -21,7 +24,10 @@ class Discord extends NotificationProvider {
                     username: discordDisplayName,
                     content: msg,
                 };
-                await axios.post(notification.discordWebhookUrl, discordtestdata);
+
+                if (notification.discordChannelType == "createNewForumPost") discordtestdata.thread_name = notification.postName;
+
+                await axios.post(notification.discordWebhookUrl + threadQuery, discordtestdata);
                 return okMsg;
             }
 
@@ -47,6 +53,11 @@ class Discord extends NotificationProvider {
 
             // If heartbeatJSON is not null, we go into the normal alerting loop.
             if (heartbeatJSON["status"] === DOWN) {
+                const discordDisplayName = notification.discordUsername || "Uptime Kuma";
+                var threadQuery = "";
+
+                if (notification.discordChannelType == "postToThread") threadQuery = "?thread_id=" + notification.threadId;
+
                 let discorddowndata = {
                     username: discordDisplayName,
                     embeds: [{
@@ -73,7 +84,7 @@ class Discord extends NotificationProvider {
                         ],
                     }],
                 };
-
+                if (notification.discordChannelType == "createNewForumPost") discorddowndata.thread_name = notification.postName;
                 if (notification.discordPrefixMessage) {
                     discorddowndata.content = notification.discordPrefixMessage;
                 }
@@ -109,11 +120,13 @@ class Discord extends NotificationProvider {
                     }],
                 };
 
+                if (notification.discordChannelType == "createNewForumPost") discordupdata.thread_name = notification.postName;
+
                 if (notification.discordPrefixMessage) {
                     discordupdata.content = notification.discordPrefixMessage;
                 }
 
-                await axios.post(notification.discordWebhookUrl, discordupdata);
+                await axios.post(notification.discordWebhookUrl + threadQuery, discordupdata);
                 return okMsg;
             }
         } catch (error) {
