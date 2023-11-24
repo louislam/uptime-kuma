@@ -20,7 +20,7 @@
     <div class="mb-3">
         <label for="discord-message-type" class="form-label">{{ $t("Select message type") }}</label>
         <br>
-        <select id="discord-message-type" class="form-select" v-model="$parent.notification.discordChannelType">
+        <select id="discord-message-type" v-model="$parent.notification.discordChannelType" class="form-select">
             <option value="normal">{{ $t("Normal Message") }}</option>
             <option value="createNewForumPost">{{ $t("Create new forum post") }}</option>
             <option value="postToThread">{{ $t("Post to existing thread") }}</option>
@@ -42,8 +42,8 @@
 </template>
 <script>
 export default {
-    mounted(){
+    mounted() {
         this.$parent.notification.discordChannelType = "normal";
     }
-}
+};
 </script>
