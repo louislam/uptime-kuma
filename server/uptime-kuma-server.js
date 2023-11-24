@@ -12,6 +12,7 @@ const { Settings } = require("./settings");
 const dayjs = require("dayjs");
 const childProcess = require("child_process");
 const path = require("path");
+const axios = require("axios");
 // DO NOT IMPORT HERE IF THE MODULES USED `UptimeKumaServer.getInstance()`, put at the bottom of this file instead.
 
 /**
