@@ -56,7 +56,7 @@ Requirements:
 |-|-|
 | Major Linux distros such as Debian, Ubuntu, CentOS, Fedora and ArchLinux etc. | :white_check_mark: |
 | Windows 10 (x64), Windows Server 2012 R2 (x64) or higher | :white_check_mark: |
-| Replit / Heroku | ⚠️ Deprecated |
+| Replit / Heroku | ⚠️ Deprecated (DO NOT CREATE ANY ISSUES ON GITHUB SINCE THIS IS DEPRECATED)  |
 
 
 - [Node.js](https://nodejs.org/en/download/) 14 / 16 / 18 / 20.4
