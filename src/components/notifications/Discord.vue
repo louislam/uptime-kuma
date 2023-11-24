@@ -43,7 +43,9 @@
 <script>
 export default {
     mounted() {
-        this.$parent.notification.discordChannelType = "normal";
+        if (!this.$parent.notification.discordChannelType) {
+            this.$parent.notification.discordChannelType = "normal";
+        }
     }
 };
 </script>
