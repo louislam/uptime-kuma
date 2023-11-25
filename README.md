@@ -58,7 +58,6 @@ Requirements:
 | Windows 10 (x64), Windows Server 2012 R2 (x64) or higher | :white_check_mark: |
 | Replit / Heroku | ⚠️ Deprecated (DO NOT CREATE ANY ISSUES ON GITHUB SINCE THIS IS DEPRECATED)  |
 
-
 - [Node.js](https://nodejs.org/en/download/) 14 / 16 / 18 / 20.4
 - [npm](https://docs.npmjs.com/cli/) 9
 - [Git](https://git-scm.com/downloads)
