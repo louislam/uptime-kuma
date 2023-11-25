@@ -14,10 +14,9 @@ class Discord extends NotificationProvider {
 
         try {
             const discordDisplayName = notification.discordUsername || "Uptime Kuma";
-            let threadQuery = "";
-
+            const webhookUrl = new URL(notification.discordWebhookUrl);
             if (notification.discordChannelType === "postToThread") {
-                threadQuery = "?thread_id=" + notification.threadId;
+                webhookUrl.searchParams.append("thread_id", notification.threadId);
             }
 
             // If heartbeatJSON is null, assume we're testing.
@@ -31,7 +30,7 @@ class Discord extends NotificationProvider {
                     discordtestdata.thread_name = notification.postName;
                 }
 
-                await axios.post(notification.discordWebhookUrl + threadQuery, discordtestdata);
+                await axios.post(webhookUrl.toString(), discordtestdata);
                 return okMsg;
             }
 
@@ -58,11 +57,6 @@ class Discord extends NotificationProvider {
             // If heartbeatJSON is not null, we go into the normal alerting loop.
             if (heartbeatJSON["status"] === DOWN) {
                 const discordDisplayName = notification.discordUsername || "Uptime Kuma";
-                let threadQuery = "";
-
-                if (notification.discordChannelType === "postToThread") {
-                    threadQuery = "?thread_id=" + notification.threadId;
-                }
 
                 let discorddowndata = {
                     username: discordDisplayName,
@@ -97,7 +91,7 @@ class Discord extends NotificationProvider {
                     discorddowndata.content = notification.discordPrefixMessage;
                 }
 
-                await axios.post(notification.discordWebhookUrl + threadQuery, discorddowndata);
+                await axios.post(webhookUrl.toString(), discorddowndata);
                 return okMsg;
 
             } else if (heartbeatJSON["status"] === UP) {
@@ -136,7 +130,7 @@ class Discord extends NotificationProvider {
                     discordupdata.content = notification.discordPrefixMessage;
                 }
 
-                await axios.post(notification.discordWebhookUrl + threadQuery, discordupdata);
+                await axios.post(webhookUrl.toString(), discordupdata);
                 return okMsg;
             }
         } catch (error) {
