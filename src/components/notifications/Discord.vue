@@ -19,7 +19,6 @@
 
     <div class="mb-3">
         <label for="discord-message-type" class="form-label">{{ $t("Select message type") }}</label>
-        <br>
         <select id="discord-message-type" v-model="$parent.notification.discordChannelType" class="form-select">
             <option value="channel">{{ $t("Send to channel") }}</option>
             <option value="createNewForumPost">{{ $t("Create new forum post") }}</option>
