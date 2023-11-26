@@ -23,25 +23,30 @@
         <select id="discord-message-type" v-model="$parent.notification.discordChannelType" class="form-select">
             <option value="channel">{{ $t("Send to channel") }}</option>
             <option value="createNewForumPost">{{ $t("Create new forum post") }}</option>
-            <option value="postToThread">{{ $t("Post to existing thread / forum post") }}</option>
+            <option value="postToThread">{{ $t("postToExistingThread") }}</option>
         </select>
     </div>
 
     <div v-if="$parent.notification.discordChannelType === 'createNewForumPost'">
         <div class="mb-3">
-            <label for="discord-target" class="form-label">{{ $t("Forum post name") }}</label>
+            <label for="discord-target" class="form-label">
+                <i18n-t keypath="forumPostName"></i18n-t>
+            </label>
             <input id="discord-target" v-model="$parent.notification.postName" type="text" class="form-control" autocomplete="false">
             <div class="form-text">
-                {{ $t("whatHappensAtForumPost") }}"{{ $t("Post to existing thread / forum post") }}"
+                <i18n-t keypath="whatHappensAtForumPost"></i18n-t>
+                "<i18n-t keypath="postToExistingThread"></i18n-t>"
             </div>
         </div>
     </div>
     <div v-if="$parent.notification.discordChannelType === 'postToThread'">
         <div class="mb-3">
-            <label for="discord-target" class="form-label">{{ $t("Thread / Forum post ID") }}</label>
+            <label for="discord-target" class="form-label">
+                <i18n-t keypath="threadForumPostID"></i18n-t>
+            </label>
             <input id="discord-target" v-model="$parent.notification.threadId" type="text" class="form-control" autocomplete="false" :placeholder="$t('e.g. {discordThreadID}', { discordThreadID: 1177566663751782411 })">
             <div class="form-text">
-                {{ $t("wayToGetDiscordThreadId") }}
+                <i18n-t keypath="wayToGetDiscordThreadId"></i18n-t>
                 <a
                     href="https://support.discord.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID-"
                     target="_blank"

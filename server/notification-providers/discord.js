@@ -56,8 +56,6 @@ class Discord extends NotificationProvider {
 
             // If heartbeatJSON is not null, we go into the normal alerting loop.
             if (heartbeatJSON["status"] === DOWN) {
-                const discordDisplayName = notification.discordUsername || "Uptime Kuma";
-
                 let discorddowndata = {
                     username: discordDisplayName,
                     embeds: [{
