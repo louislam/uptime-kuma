@@ -30,27 +30,27 @@
     <div v-if="$parent.notification.discordChannelType === 'createNewForumPost'">
         <div class="mb-3">
             <label for="discord-target" class="form-label">
-                <i18n-t keypath="forumPostName"></i18n-t>
+                {{ $t("forumPostName") }}
             </label>
             <input id="discord-target" v-model="$parent.notification.postName" type="text" class="form-control" autocomplete="false">
             <div class="form-text">
-                <i18n-t keypath="whatHappensAtForumPost"></i18n-t>
-                "<i18n-t keypath="postToExistingThread"></i18n-t>"
+                {{ $t("whatHappensAtForumPost", { option: $t("postToExistingThread") }) }}
             </div>
         </div>
     </div>
     <div v-if="$parent.notification.discordChannelType === 'postToThread'">
         <div class="mb-3">
             <label for="discord-target" class="form-label">
-                <i18n-t keypath="threadForumPostID"></i18n-t>
+                {{ $t("threadForumPostID") }}
             </label>
             <input id="discord-target" v-model="$parent.notification.threadId" type="text" class="form-control" autocomplete="false" :placeholder="$t('e.g. {discordThreadID}', { discordThreadID: 1177566663751782411 })">
             <div class="form-text">
-                <i18n-t keypath="wayToGetDiscordThreadId"></i18n-t>
-                <a
-                    href="https://support.discord.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID-"
-                    target="_blank"
-                >{{ $t("here") }}</a>
+                <i18n-t keypath="wayToGetDiscordThreadId">
+                    <a
+                        href="https://support.discord.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID-"
+                        target="_blank"
+                    >{{ $t("here") }}</a>
+                </i18n-t>
             </div>
         </div>
     </div>
