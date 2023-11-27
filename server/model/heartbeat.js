@@ -32,17 +32,18 @@ class Heartbeat extends BeanModel {
      */
     toJSON() {
         return {
-            monitorID: this.monitor_id,
-            status: this.status,
-            time: this.time,
-            msg: this.msg,
-            ping: this.ping,
-            important: this.important,
-            duration: this.duration,
-            pingThreshold: this.ping_threshold,
-            pingStatus: this.ping_status,
-            pingImportant: this.ping_important,
-            pingMsg: this.ping_msg,
+            monitorID: this._monitorId,
+            status: this._status,
+            time: this._time,
+            msg: this._msg,
+            ping: this._ping,
+            important: this._important,
+            duration: this._duration,
+            retries: this._retries,
+            pingThreshold: this._pingThreshold,
+            pingStatus: this._pingStatus,
+            pingImportant: this._pingImportant,
+            pingMsg: this._pingMsg,
         };
     }
 
