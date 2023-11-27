@@ -43,11 +43,18 @@ ENTRYPOINT ["/usr/bin/dumb-init", "--"]
 CMD ["node", "server/server.js"]
 
 ############################################
+# Rootless Image
+############################################
+FROM release AS rootless
+
+############################################
 # Mark as Nightly
 ############################################
 FROM release AS nightly
-USER node
 RUN npm run mark-as-nightly
+
+FROM nightly AS nightly-rootless
+USER node
 
 ############################################
 # Build an image for testing pr

@@ -3,7 +3,7 @@ const dayjs = require("dayjs");
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
 const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND,
-    SQL_DATETIME_FORMAT, isDev, sleep, getRandomInt
+    SQL_DATETIME_FORMAT
 } = require("../../src/util");
 const { tcping, ping, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, mqttAsync, setSetting, httpNtlm, radius, grpcQuery,
     redisPingAsync, mongodbPing, kafkaProducerAsync, getOidcTokenClientCredentials, rootCertificatesFingerprints, axiosAbortSignal
@@ -21,6 +21,7 @@ const { DockerHost } = require("../docker");
 const Gamedig = require("gamedig");
 const jsonata = require("jsonata");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 const { UptimeCalculator } = require("../uptime-calculator");
 
 const rootCertificates = rootCertificatesFingerprints();
@@ -357,16 +358,6 @@ class Monitor extends BeanModel {
                 }
             }
 
-            // Evil
-            if (isDev) {
-                if (process.env.EVIL_RANDOM_MONITOR_SLEEP === "SURE") {
-                    if (getRandomInt(0, 100) === 0) {
-                        log.debug("evil", `[${this.name}] Evil mode: Random sleep: ` + beatInterval * 10000);
-                        await sleep(beatInterval * 10000);
-                    }
-                }
-            }
-
             // Expose here for prometheus update
             // undefined if not https
             let tlsInfo = undefined;
@@ -375,6 +366,9 @@ class Monitor extends BeanModel {
                 previousBeat = await R.findOne("heartbeat", " monitor_id = ? ORDER BY time DESC", [
                     this.id,
                 ]);
+                if (previousBeat) {
+                    retries = previousBeat.retries;
+                }
             }
 
             const isFirstBeat = !previousBeat;
@@ -392,7 +386,7 @@ class Monitor extends BeanModel {
 
             // Runtime patch timeout if it is 0
             // See https://github.com/louislam/uptime-kuma/pull/3961#issuecomment-1804149144
-            if (this.timeout <= 0) {
+            if (!this.timeout || this.timeout <= 0) {
                 this.timeout = this.interval * 1000 * 0.8;
             }
 
@@ -466,6 +460,7 @@ class Monitor extends BeanModel {
                     const httpsAgentOptions = {
                         maxCachedSessions: 0, // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
                         rejectUnauthorized: !this.getIgnoreTls(),
+                        secureOptions: crypto.constants.SSL_OP_LEGACY_SERVER_CONNECT,
                     };
 
                     log.debug("monitor", `[${this.name}] Prepare Options for axios`);
@@ -506,7 +501,7 @@ class Monitor extends BeanModel {
                         validateStatus: (status) => {
                             return checkStatusCode(status, this.getAcceptedStatuscodes());
                         },
-                        signal: axiosAbortSignal(this.timeout * 1000),
+                        signal: axiosAbortSignal((this.timeout + 10) * 1000),
                     };
 
                     if (bodyValue) {
@@ -646,6 +641,7 @@ class Monitor extends BeanModel {
                         // If the previous beat was down or pending we use the regular
                         // beatInterval/retryInterval in the setTimeout further below
                         if (previousBeat.status !== (this.isUpsideDown() ? DOWN : UP) || msSinceLastBeat > beatInterval * 1000 + bufferTime) {
+                            bean.duration = Math.round(msSinceLastBeat / 1000);
                             throw new Error("No heartbeat in the time window");
                         } else {
                             let timeout = beatInterval * 1000 - msSinceLastBeat;
@@ -661,6 +657,7 @@ class Monitor extends BeanModel {
                             return;
                         }
                     } else {
+                        bean.duration = beatInterval;
                         throw new Error("No heartbeat in the time window");
                     }
 
@@ -681,6 +678,7 @@ class Monitor extends BeanModel {
                         httpsAgent: CacheableDnsHttpAgent.getHttpsAgent({
                             maxCachedSessions: 0,      // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
                             rejectUnauthorized: !this.getIgnoreTls(),
+                            secureOptions: crypto.constants.SSL_OP_LEGACY_SERVER_CONNECT,
                         }),
                         httpAgent: CacheableDnsHttpAgent.getHttpAgent({
                             maxCachedSessions: 0,
@@ -732,6 +730,7 @@ class Monitor extends BeanModel {
                         httpsAgent: CacheableDnsHttpAgent.getHttpsAgent({
                             maxCachedSessions: 0,      // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
                             rejectUnauthorized: !this.getIgnoreTls(),
+                            secureOptions: crypto.constants.SSL_OP_LEGACY_SERVER_CONNECT,
                         }),
                         httpAgent: CacheableDnsHttpAgent.getHttpAgent({
                             maxCachedSessions: 0,
@@ -917,7 +916,11 @@ class Monitor extends BeanModel {
 
             } catch (error) {
 
-                bean.msg = error.message;
+                if (error?.name === "CanceledError") {
+                    bean.msg = `timeout by AbortSignal (${this.timeout}s)`;
+                } else {
+                    bean.msg = error.message;
+                }
 
                 // If UP come in here, it must be upside down mode
                 // Just reset the retries
@@ -927,8 +930,13 @@ class Monitor extends BeanModel {
                 } else if ((this.maxretries > 0) && (retries < this.maxretries)) {
                     retries++;
                     bean.status = PENDING;
+                } else {
+                    // Continue counting retries during DOWN
+                    retries++;
                 }
             }
+
+            bean.retries = retries;
 
             log.debug("monitor", `[${this.name}] Check isImportant`);
             let isImportant = Monitor.isImportantBeat(isFirstBeat, previousBeat?.status, bean.status);
@@ -1019,7 +1027,6 @@ class Monitor extends BeanModel {
                 log.debug("monitor", `[${this.name}] Next heartbeat in: ${intervalRemainingMs}ms`);
 
                 this.heartbeatInterval = setTimeout(safeBeat, intervalRemainingMs);
-                this.lastScheduleBeatTime = dayjs();
             } else {
                 log.info("monitor", `[${this.name}] isStop = true, no next check.`);
             }
@@ -1032,9 +1039,7 @@ class Monitor extends BeanModel {
          */
         const safeBeat = async () => {
             try {
-                this.lastStartBeatTime = dayjs();
                 await beat();
-                this.lastEndBeatTime = dayjs();
             } catch (e) {
                 console.trace(e);
                 UptimeKumaServer.errorLog(e, false);
@@ -1043,9 +1048,6 @@ class Monitor extends BeanModel {
                 if (! this.isStop) {
                     log.info("monitor", "Try to restart the monitor");
                     this.heartbeatInterval = setTimeout(safeBeat, this.interval * 1000);
-                    this.lastScheduleBeatTime = dayjs();
-                } else {
-                    log.info("monitor", "isStop = true, no next check.");
                 }
             }
         };
@@ -1622,10 +1624,7 @@ class Monitor extends BeanModel {
      * @returns {Promise<LooseObject<any>>} Previous heartbeat
      */
     static async getPreviousHeartbeat(monitorID) {
-        return await R.getRow(`
-            SELECT ping, status, time FROM heartbeat
-            WHERE id = (select MAX(id) from heartbeat where monitor_id = ?)
-        `, [
+        return await R.findOne("heartbeat", " id = (select MAX(id) from heartbeat where monitor_id = ?)", [
             monitorID
         ]);
     }

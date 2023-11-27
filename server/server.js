@@ -1735,6 +1735,7 @@ async function pauseMonitor(userID, monitorID) {
 
     if (monitorID in server.monitorList) {
         server.monitorList[monitorID].stop();
+        server.monitorList[monitorID].active = 0;
     }
 }
 
