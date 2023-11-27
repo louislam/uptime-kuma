@@ -134,8 +134,6 @@ export default {
                         grid: {
                             color: this.$root.theme === "light" ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.1)",
                         },
-                        /* min: 0, */
-                        /* max: 1000, */
                     },
                     y1: {
                         display: false,
@@ -170,7 +168,6 @@ export default {
                         display: false,
                     },
                     annotation: {
-                        /* drawTime: 'afterDraw', */
                         annotations: {
                             line1: {
                                 type: "line",
