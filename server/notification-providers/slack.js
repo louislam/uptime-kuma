@@ -53,7 +53,7 @@ class Slack extends NotificationProvider {
             const textMsg = "Uptime Kuma Alert";
 
             let color;
-            switch(heartbeatJSON["status"]) {
+            switch (heartbeatJSON["status"]) {
                 case UP:
                 case NOMINAL:
                     color = "#2eb886";
@@ -62,7 +62,7 @@ class Slack extends NotificationProvider {
                     color = "#ffc107";
                     break;
                 case DOWN:
-                    color = "#e01e5a"
+                    color = "#e01e5a";
                     break;
                 default:
                     color = "#0dcaf0";
