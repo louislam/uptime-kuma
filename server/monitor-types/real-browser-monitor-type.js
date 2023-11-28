@@ -285,7 +285,6 @@ class RealBrowserKeywordMonitorType extends MonitorType {
      * @inheritdoc
      */
     async check(monitor, heartbeat, server) {
-        // console.log("real-browser-keyword::check");
         const browser = await getBrowser();
         const context = await browser.newContext();
         const page = await context.newPage();
@@ -298,51 +297,18 @@ class RealBrowserKeywordMonitorType extends MonitorType {
         let content = await page.content();
 
         //Add iFrame Support
-        // console.log("iFrame...");
         const pageFrames = await page.frames();
-        // console.log("Total Frames: " + pageFrames.length);
         for (let index = 0; index < pageFrames.length; index++) {
             const element = pageFrames[index];
-            // const frameContent = await element.content();
             content += await element.content();
-            // console.log(frameContent);
         }
-        // pageFrames.forEach(element => {
-        //     const frameContent = await element.content();
-        // });
-        // const iframeElement = await page.locator("iframe").elementHandle();
-        // console.log(iframeElement);
-        // if (iframeElement) {
-        //     const frame = await iframeElement.contentFrame();
-        //     console.log(frame);
-        // }
-        // console.log("END iFrame");
 
-        //TODO - Make screenshot an option.
+        //LATER - Make screenshot an option.
         let filename = jwt.sign(monitor.id, server.jwtSecret) + ".png";
 
         await page.screenshot({
             path: path.join(Database.screenshotDir, filename),
         });
-
-        // console.log(monitor.keyword);
-        // console.log(content);
-
-        // const loc = page.getByText("test", { exact: true });
-        // // console.log(page.getByText("test", { exact: true }));
-        // await loc.evaluateAll((ele) => {
-        //     console.log(ele);
-        // });
-        // divs.length > min, 10);
-
-        // content(): Promise<string>;
-        // getByText(text: string|RegExp, options?: {
-        //     /**
-        //      * Whether to find an exact match: case-sensitive and whole-string. Default to false. Ignored when locating by a
-        //      * regular expression. Note that exact match still trims whitespace.
-        //      */
-        //     exact?: boolean;
-        //   }): Locator;
 
         await context.close();
 
