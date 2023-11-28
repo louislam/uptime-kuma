@@ -347,8 +347,8 @@ class RealBrowserKeywordMonitorType extends MonitorType {
         await context.close();
 
         if (res.status() >= 200 && res.status() < 400) {
-            var status = UP;
-            var msg = res.status();
+            let status = UP;
+            let msg = res.status();
             let keywordFound = content.includes(monitor.keyword);
             if (keywordFound === !Boolean(monitor.invertKeyword)) {
                 msg += ", keyword " + (keywordFound ? "is" : "not") + " found";

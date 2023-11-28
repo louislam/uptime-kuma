@@ -1,6 +1,5 @@
 const axios = require("axios");
 const { R } = require("redbean-node");
-const version = require("../package.json").version;
 const https = require("https");
 const fs = require("fs");
 const path = require("path");

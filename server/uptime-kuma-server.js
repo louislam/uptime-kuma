@@ -186,7 +186,7 @@ class UptimeKumaServer {
         let monitorList = await R.find(
             "monitor",
             " user_id = ? ORDER BY weight DESC, name",
-            [userID]
+            [ userID ]
         );
 
         for (let monitor of monitorList) {
@@ -474,9 +474,9 @@ class UptimeKumaServer {
     async startMonitor(monitorID) {
         log.info("manage", `Resume Monitor: ${monitorID} by server`);
 
-        await R.exec("UPDATE monitor SET active = 1 WHERE id = ?", [monitorID]);
+        await R.exec("UPDATE monitor SET active = 1 WHERE id = ?", [ monitorID ]);
 
-        let monitor = await R.findOne("monitor", " id = ? ", [monitorID]);
+        let monitor = await R.findOne("monitor", " id = ? ", [ monitorID ]);
 
         if (monitor.id in this.monitorList) {
             this.monitorList[monitor.id].stop();
@@ -497,6 +497,7 @@ class UptimeKumaServer {
 
     /**
      * Check if monitors are running properly
+     * @returns {Promise<void>}
      */
     async checkMonitors() {
         log.debug("monitor_checker", "Checking monitors");
