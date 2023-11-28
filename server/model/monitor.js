@@ -1458,16 +1458,29 @@ class Monitor extends BeanModel {
      * @param {Monitor} monitor The monitor to send a notificaton about
      * @param {Bean} bean Status information about monitor
      * @param {string} msg Notification text to be sent
+     * @param {object} slowStats Slow response information
      * @returns {void}
      */
-    static async sendSlowResponseNotification(monitor, bean, msg) {
+    static async sendSlowResponseNotification(monitor, bean, msg, slowStats) {
         // Send notification
         const notificationList = await Monitor.getNotificationList(monitor);
 
         for (let notification of notificationList) {
             try {
-                log.debug("monitor", `[${this.name}] Sending to ${notification.name}`);
-                await Notification.send(JSON.parse(notification.config), msg);
+                const heartbeatJSON = bean.toJSON();
+
+                // Override status with SLOW/NOMINAL, add slowStats
+                heartbeatJSON["status"] = bean.pingStatus;
+                heartbeatJSON["calculatedResponse"] = slowStats.calculatedResponse;
+                heartbeatJSON["calculatedThreshold"] = slowStats.calculatedThreshold;
+                heartbeatJSON["slowFor"] = slowStats.slowFor;
+
+                // Also provide the time in server timezone
+                heartbeatJSON["timezone"] = await UptimeKumaServer.getInstance().getTimezone();
+                heartbeatJSON["timezoneOffset"] = UptimeKumaServer.getInstance().getTimezoneOffset();
+                heartbeatJSON["localDateTime"] = dayjs.utc(heartbeatJSON["time"]).tz(heartbeatJSON["timezone"]).format(SQL_DATETIME_FORMAT);
+
+                await Notification.send(JSON.parse(notification.config), msg, await monitor.toJSON(false), heartbeatJSON);
             } catch (e) {
                 log.error("monitor", `[${this.name}] Cannot send slow response notification to ${notification.name}`);
                 log.error("monitor", e);
@@ -1563,11 +1576,6 @@ class Monitor extends BeanModel {
                 return;
         }
 
-        // Create stats to append to messages/logs
-        const methodDescription = [ "average", "max" ].includes(method) ? `${method} of last ${windowDuration}s` : method;
-        let msgStats = `Response: ${actualResponseTime}ms (${methodDescription}) | Threshold: ${threshold}ms (${thresholdDescription})`;
-        let pingMsg = `${actualResponseTime}ms resp. (${methodDescription})`;
-
         // Verify valid response time was calculated
         if (actualResponseTime === 0 || !Number.isInteger(actualResponseTime)) {
             log.debug("monitor", `[${this.name}] Failed to calculate valid response time`);
@@ -1580,6 +1588,16 @@ class Monitor extends BeanModel {
             return;
         }
 
+        // Create stats to append to messages/logs
+        const methodDescription = [ "average", "max" ].includes(method) ? `${method} of last ${windowDuration}s` : method;
+        let msgStats = `Response: ${actualResponseTime}ms (${methodDescription}) | Threshold: ${threshold}ms (${thresholdDescription})`;
+        let pingMsg = `${actualResponseTime}ms resp. (${methodDescription})`;
+        const slowStats = {
+            calculatedResponse: `${actualResponseTime}ms (${methodDescription})`,
+            calculatedThreshold: `${threshold}ms (${thresholdDescription})`,
+            slowFor: `${bean.slowResponseCount * monitor.interval}s`,
+        };
+
         bean.pingThreshold = threshold;
 
         // Responding normally
@@ -1591,7 +1609,7 @@ class Monitor extends BeanModel {
                 msgStats += ` | Slow for: ${bean.slowResponseCount * monitor.interval}s`;
                 log.debug("monitor", `[${this.name}] Returned to normal response time | ${msgStats}`);
                 let msg = `[${this.name}] Returned to Normal Response Time \n${msgStats}`;
-                Monitor.sendSlowResponseNotification(monitor, bean, msg);
+                Monitor.sendSlowResponseNotification(monitor, bean, msg, slowStats);
 
                 // Mark important (SLOW -> NOMINAL)
                 pingMsg += ` < ${threshold}ms`;
@@ -1611,7 +1629,7 @@ class Monitor extends BeanModel {
             if (bean.slowResponseCount === 1) {
                 log.debug("monitor", `[${this.name}] Responded slowly, sending notification | ${msgStats}`);
                 let msg = `[${this.name}] Responded Slowly \n${msgStats}`;
-                Monitor.sendSlowResponseNotification(monitor, bean, msg);
+                Monitor.sendSlowResponseNotification(monitor, bean, msg, slowStats);
 
                 // Mark important (NOMINAL -> SLOW)
                 pingMsg += ` > ${threshold}ms`;
@@ -1625,7 +1643,7 @@ class Monitor extends BeanModel {
                     msgStats += ` | Slow for: ${bean.slowResponseCount * monitor.interval}s`;
                     log.debug("monitor", `[${this.name}] Still responding slowly, sendSlowResponseNotification again | ${msgStats}`);
                     let msg = `[${this.name}] Still Responding Slowly \n${msgStats}`;
-                    Monitor.sendSlowResponseNotification(monitor, bean, msg);
+                    Monitor.sendSlowResponseNotification(monitor, bean, msg, slowStats);
                 } else {
                     log.debug("monitor", `[${this.name}] Still responding slowly, waiting for resend interal | ${msgStats}`);
                 }
