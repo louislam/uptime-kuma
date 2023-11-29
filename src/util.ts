@@ -182,6 +182,10 @@ class Logger {
      * @param level Log level. One of INFO, WARN, ERROR, DEBUG or can be customized.
      */
     log(module: string, msg: any, level: string) {
+        if (level === "DEBUG" && !isDev) {
+            return;
+        }
+
         if (this.hideLog[level] && this.hideLog[level].includes(module.toLowerCase())) {
             return;
         }
