@@ -117,8 +117,10 @@ class Proxy {
         switch (proxy.protocol) {
             case "http":
             case "https":
-                const HttpCookieProxyAgent = createCookieAgent(HttpProxyAgent)
-                const HttpsCookieProxyAgent = createCookieAgent(HttpsProxyAgent)
+                // eslint-disable-next-line no-case-declarations
+                const HttpCookieProxyAgent = createCookieAgent(HttpProxyAgent);
+                // eslint-disable-next-line no-case-declarations
+                const HttpsCookieProxyAgent = createCookieAgent(HttpsProxyAgent);
 
                 httpAgent = new HttpCookieProxyAgent({
                     ...httpAgentOptions || {},
@@ -134,7 +136,8 @@ class Proxy {
             case "socks5":
             case "socks5h":
             case "socks4":
-                const SocksCookieProxyAgent = createCookieAgent(SocksProxyAgent)
+                // eslint-disable-next-line no-case-declarations
+                const SocksCookieProxyAgent = createCookieAgent(SocksProxyAgent);
                 agent = new SocksCookieProxyAgent({
                     ...httpAgentOptions,
                     ...httpsAgentOptions,
