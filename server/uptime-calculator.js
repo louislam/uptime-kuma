@@ -8,6 +8,10 @@ const { R } = require("redbean-node");
  * Calculates the uptime of a monitor.
  */
 class UptimeCalculator {
+    /**
+     * @private
+     * @type {{string:UptimeCalculator}}
+     */
 
     static list = {};
 
@@ -17,11 +21,16 @@ class UptimeCalculator {
      */
     static currentDate = null;
 
+    /**
+     * monitorID the id of the monitor
+     * @type {number}
+     */
     monitorID;
 
     /**
      * Recent 24-hour uptime, each item is a 1-minute interval
      * Key: {number} DivisionKey
+     * @type {LimitQueue<number,string>}
      */
     minutelyUptimeDataList = new LimitQueue(24 * 60);
 
@@ -38,8 +47,10 @@ class UptimeCalculator {
     lastMinutelyStatBean = null;
 
     /**
-     * @param monitorID
-     * @returns {Promise<UptimeCalculator>}
+     * Get the uptime calculator for a monitor
+     * Initializes and returns the monitor if it does not exist
+     * @param {number} monitorID the id of the monitor
+     * @returns {Promise<UptimeCalculator>} UptimeCalculator
      */
     static async getUptimeCalculator(monitorID) {
         if (!UptimeCalculator.list[monitorID]) {
@@ -50,7 +61,9 @@ class UptimeCalculator {
     }
 
     /**
-     * @param monitorID
+     * Remove a monitor from the list
+     * @param {number} monitorID the id of the monitor
+     * @returns {Promise<void>}
      */
     static async remove(monitorID) {
         delete UptimeCalculator.list[monitorID];
@@ -74,7 +87,9 @@ class UptimeCalculator {
     }
 
     /**
-     * @param {number} monitorID
+     * Initialize the uptime calculator for a monitor
+     * @param {number} monitorID the id of the monitor
+     * @returns {Promise<void>}
      */
     async init(monitorID) {
         this.monitorID = monitorID;
@@ -183,13 +198,13 @@ class UptimeCalculator {
         let dailyStatBean = await this.getDailyStatBean(dailyKey);
         dailyStatBean.up = dailyData.up;
         dailyStatBean.down = dailyData.down;
-        dailyStatBean.ping = dailyData.ping;
+        dailyStatBean.ping = dailyData.avgPing;
         await R.store(dailyStatBean);
 
         let minutelyStatBean = await this.getMinutelyStatBean(divisionKey);
         minutelyStatBean.up = minutelyData.up;
         minutelyStatBean.down = minutelyData.down;
-        minutelyStatBean.ping = minutelyData.ping;
+        minutelyStatBean.ping = minutelyData.avgPing;
         await R.store(minutelyStatBean);
 
         // Remove the old data
@@ -264,11 +279,6 @@ class UptimeCalculator {
         let divisionKey = date.unix();
 
         if (! (divisionKey in this.minutelyUptimeDataList)) {
-            let last = this.minutelyUptimeDataList.getLastKey();
-            if (last && last > divisionKey) {
-                log.warn("uptime-calc", "The system time has been changed? The uptime data may be inaccurate.");
-            }
-
             this.minutelyUptimeDataList.push(divisionKey, {
                 up: 0,
                 down: 0,
@@ -293,11 +303,6 @@ class UptimeCalculator {
         let dailyKey = date.unix();
 
         if (!this.dailyUptimeDataList[dailyKey]) {
-            let last = this.dailyUptimeDataList.getLastKey();
-            if (last && last > dailyKey) {
-                log.warn("uptime-calc", "The system time has been changed? The uptime data may be inaccurate.");
-            }
-
             this.dailyUptimeDataList.push(dailyKey, {
                 up: 0,
                 down: 0,
@@ -310,8 +315,8 @@ class UptimeCalculator {
 
     /**
      * Flat status to UP or DOWN
-     * @param {number} status
-     * @returns {number}
+     * @param {number} status the status which schould be turned into a flat status
+     * @returns {UP|DOWN|PENDING} The flat status
      * @throws {Error} Invalid status
      */
     flatStatus(status) {
@@ -327,8 +332,10 @@ class UptimeCalculator {
     }
 
     /**
-     * @param {number} num
-     * @param {string} type "day" | "minute"
+     * @param {number} num the number of data points which are expected to be returned
+     * @param {"day" | "minute"} type the type of data which is expected to be returned
+     * @returns {UptimeDataResult} UptimeDataResult
+     * @throws {Error} The maximum number of minutes greater than 1440
      */
     getData(num, type = "day") {
         let key;

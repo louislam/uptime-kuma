@@ -353,21 +353,27 @@ test("Test get1YearUptime (1 check per day)", async (t) => {
 
 /**
  * Code from here: https://stackoverflow.com/a/64550489/1097815
+ * @returns {{rss: string, heapTotal: string, heapUsed: string, external: string}} Current memory usage
  */
 function memoryUsage() {
     const formatMemoryUsage = (data) => `${Math.round(data / 1024 / 1024 * 100) / 100} MB`;
     const memoryData = process.memoryUsage();
 
-    const memoryUsage = {
+    return {
         rss: `${formatMemoryUsage(memoryData.rss)} -> Resident Set Size - total memory allocated for the process execution`,
         heapTotal: `${formatMemoryUsage(memoryData.heapTotal)} -> total size of the allocated heap`,
         heapUsed: `${formatMemoryUsage(memoryData.heapUsed)} -> actual memory used during the execution`,
         external: `${formatMemoryUsage(memoryData.external)} -> V8 external memory`,
     };
-    return memoryUsage;
 }
 
 test("Worst case", async (t) => {
+
+    // Disable on GitHub Actions, as it is not stable on it
+    if (process.env.GITHUB_ACTIONS) {
+        return;
+    }
+
     console.log("Memory usage before preparation", memoryUsage());
 
     let c = new UptimeCalculator();

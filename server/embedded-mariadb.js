@@ -18,13 +18,17 @@ class EmbeddedMariaDB {
 
     socketPath = this.runDir + "/mysqld.sock";
 
+    /**
+     * @type {ChildProcessWithoutNullStreams}
+     * @private
+     */
     childProcess = null;
     running = false;
 
     started = false;
 
     /**
-     * @returns {EmbeddedMariaDB}
+     * @returns {EmbeddedMariaDB} The singleton instance
      */
     static getInstance() {
         if (!EmbeddedMariaDB.instance) {
@@ -34,14 +38,15 @@ class EmbeddedMariaDB {
     }
 
     /**
-     *
+     * @returns {boolean} If the singleton instance is created
      */
     static hasInstance() {
         return !!EmbeddedMariaDB.instance;
     }
 
     /**
-     *
+     * Start the embedded MariaDB
+     * @returns {Promise<void>|void} A promise that resolves when the MariaDB is started or void if it is already started
      */
     start() {
         if (this.childProcess) {
@@ -103,7 +108,8 @@ class EmbeddedMariaDB {
     }
 
     /**
-     *
+     * Stop all the child processes
+     * @returns {void}
      */
     stop() {
         if (this.childProcess) {
@@ -113,7 +119,8 @@ class EmbeddedMariaDB {
     }
 
     /**
-     *
+     * Install MariaDB if it is not installed and make sure the `runDir` directory exists
+     * @returns {void}
      */
     initDB() {
         if (!fs.existsSync(this.mariadbDataDir)) {
@@ -146,7 +153,8 @@ class EmbeddedMariaDB {
     }
 
     /**
-     *
+     * Initialise the "kuma" database in mariadb if it does not exist
+     * @returns {Promise<void>}
      */
     async initDBAfterStarted() {
         const connection = mysql.createConnection({

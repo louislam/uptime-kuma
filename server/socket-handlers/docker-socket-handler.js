@@ -18,7 +18,8 @@ module.exports.dockerSocketHandler = (socket) => {
 
             callback({
                 ok: true,
-                msg: "Saved",
+                msg: "Saved.",
+                msgi18n: true,
                 id: dockerHostBean.id,
             });
 
@@ -39,7 +40,8 @@ module.exports.dockerSocketHandler = (socket) => {
 
             callback({
                 ok: true,
-                msg: "Deleted",
+                msg: "successDeleted",
+                msgi18n: true,
             });
 
         } catch (e) {

@@ -21,6 +21,7 @@ COPY --chown=node:node package-lock.json package-lock.json
 RUN npm ci --omit=dev
 COPY . .
 COPY --chown=node:node --from=build_healthcheck /app/extra/healthcheck /app/extra/healthcheck
+RUN mkdir ./data
 
 ############################################
 # ⭐ Main Image
@@ -28,6 +29,8 @@ COPY --chown=node:node --from=build_healthcheck /app/extra/healthcheck /app/extr
 FROM $BASE_IMAGE AS release
 USER node
 WORKDIR /app
+
+LABEL org.opencontainers.image.source="https://github.com/louislam/uptime-kuma"
 
 ENV UPTIME_KUMA_IS_CONTAINER=1
 
@@ -40,11 +43,18 @@ ENTRYPOINT ["/usr/bin/dumb-init", "--"]
 CMD ["node", "server/server.js"]
 
 ############################################
+# Rootless Image
+############################################
+FROM release AS rootless
+
+############################################
 # Mark as Nightly
 ############################################
 FROM release AS nightly
-USER node
 RUN npm run mark-as-nightly
+
+FROM nightly AS nightly-rootless
+USER node
 
 ############################################
 # Build an image for testing pr

@@ -46,9 +46,6 @@
 </template>
 
 <script>
-import { useToast } from "vue-toastification";
-const toast = useToast();
-
 export default {
     data() {
         return {
@@ -79,7 +76,7 @@ export default {
             this.processing = true;
 
             if (this.password !== this.repeatPassword) {
-                toast.error(this.$t("PasswordsDoNotMatch"));
+                this.$root.toastError("PasswordsDoNotMatch");
                 this.processing = false;
                 return;
             }

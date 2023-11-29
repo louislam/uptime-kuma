@@ -30,7 +30,8 @@ module.exports.maintenanceSocketHandler = (socket) => {
 
             callback({
                 ok: true,
-                msg: "Added Successfully.",
+                msg: "successAdded",
+                msgi18n: true,
                 maintenanceID,
             });
 
@@ -61,6 +62,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
             callback({
                 ok: true,
                 msg: "Saved.",
+                msgi18n: true,
                 maintenanceID: bean.id,
             });
 
@@ -96,7 +98,8 @@ module.exports.maintenanceSocketHandler = (socket) => {
 
             callback({
                 ok: true,
-                msg: "Added Successfully.",
+                msg: "successAdded",
+                msgi18n: true,
             });
 
         } catch (e) {
@@ -130,7 +133,8 @@ module.exports.maintenanceSocketHandler = (socket) => {
 
             callback({
                 ok: true,
-                msg: "Added Successfully.",
+                msg: "successAdded",
+                msgi18n: true,
             });
 
         } catch (e) {
@@ -249,7 +253,8 @@ module.exports.maintenanceSocketHandler = (socket) => {
 
             callback({
                 ok: true,
-                msg: "Deleted Successfully.",
+                msg: "successDeleted",
+                msgi18n: true,
             });
 
             await server.sendMaintenanceList(socket);
@@ -282,7 +287,8 @@ module.exports.maintenanceSocketHandler = (socket) => {
 
             callback({
                 ok: true,
-                msg: "Paused Successfully.",
+                msg: "successPaused",
+                msgi18n: true,
             });
 
             await server.sendMaintenanceList(socket);
@@ -315,7 +321,8 @@ module.exports.maintenanceSocketHandler = (socket) => {
 
             callback({
                 ok: true,
-                msg: "Resume Successfully",
+                msg: "successResumed",
+                msgi18n: true,
             });
 
             await server.sendMaintenanceList(socket);

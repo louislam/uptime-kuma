@@ -1,6 +1,7 @@
 import dayjs from "dayjs";
 import timezones from "timezones-list";
 import { localeDirection, currentLocale } from "./i18n";
+import { POSITION } from "vue-toastification";
 
 /**
  * Returns the offset from UTC in hours for the current locale.
@@ -148,4 +149,66 @@ export function colorOptions(self) {
         { name: self.$t("Pink"),
             color: "#DB2777" },
     ];
+}
+
+/**
+ * Loads the toast timeout settings from storage.
+ * @returns {object} The toast plugin options object.
+ */
+export function loadToastSettings() {
+    return {
+        position: POSITION.BOTTOM_RIGHT,
+        containerClassName: "toast-container mb-5",
+        showCloseButtonOnHover: true,
+
+        filterBeforeCreate: (toast, toasts) => {
+            if (toast.timeout === 0) {
+                return false;
+            } else {
+                return toast;
+            }
+        },
+    };
+}
+
+/**
+ * Get timeout for success toasts
+ * @returns {(number|boolean)} Timeout in ms. If false timeout disabled.
+ */
+export function getToastSuccessTimeout() {
+    let successTimeout = 20000;
+
+    if (localStorage.toastSuccessTimeout !== undefined) {
+        const parsedTimeout = parseInt(localStorage.toastSuccessTimeout);
+        if (parsedTimeout != null && !Number.isNaN(parsedTimeout)) {
+            successTimeout = parsedTimeout;
+        }
+    }
+
+    if (successTimeout === -1) {
+        successTimeout = false;
+    }
+
+    return successTimeout;
+}
+
+/**
+ * Get timeout for error toasts
+ * @returns {(number|boolean)} Timeout in ms. If false timeout disabled.
+ */
+export function getToastErrorTimeout() {
+    let errorTimeout = -1;
+
+    if (localStorage.toastErrorTimeout !== undefined) {
+        const parsedTimeout = parseInt(localStorage.toastErrorTimeout);
+        if (parsedTimeout != null && !Number.isNaN(parsedTimeout)) {
+            errorTimeout = parsedTimeout;
+        }
+    }
+
+    if (errorTimeout === -1) {
+        errorTimeout = false;
+    }
+
+    return errorTimeout;
 }

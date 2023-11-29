@@ -2,8 +2,6 @@
 FROM node:20-bookworm-slim AS base2-slim
 ARG TARGETPLATFORM
 
-WORKDIR /app
-
 # Specify --no-install-recommends to skip unused dependencies, make the base much smaller!
 # apprise = for notifications (From testing repo)
 # sqlite3 = for debugging
@@ -44,13 +42,10 @@ COPY ./docker/etc/sudoers /etc/sudoers
 
 # Full Base Image
 # MariaDB, Chromium and fonts
-# Not working for armv7, so use the older version (10.5) of MariaDB from the debian repo
-# curl -LsS https://r.mariadb.com/downloads/mariadb_repo_setup | bash -s -- --mariadb-server-version="mariadb-11.1" && \
 FROM base2-slim AS base2
 ENV UPTIME_KUMA_ENABLE_EMBEDDED_MARIADB=1
 RUN apt update && \
     apt --yes --no-install-recommends install chromium fonts-indic fonts-noto fonts-noto-cjk mariadb-server && \
-    apt --yes remove curl && \
     rm -rf /var/lib/apt/lists/* && \
     apt --yes autoremove && \
     chown -R node:node /var/lib/mysql

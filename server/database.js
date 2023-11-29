@@ -12,22 +12,40 @@ const mysql = require("mysql2/promise");
  */
 class Database {
 
+    /**
+     * Boostrap database for SQLite
+     * @type {string}
+     */
     static templatePath = "./db/kuma.db";
 
     /**
      * Data Dir (Default: ./data)
+     * @type {string}
      */
     static dataDir;
 
     /**
      * User Upload Dir (Default: ./data/upload)
+     * @type {string}
      */
     static uploadDir;
 
+    /**
+     * Chrome Screenshot Dir (Default: ./data/screenshots)
+     * @type {string}
+     */
     static screenshotDir;
 
+    /**
+     * SQLite file path (Default: ./data/kuma.db)
+     * @type {string}
+     */
     static sqlitePath;
 
+    /**
+     * For storing Docker TLS certs (Default: ./data/docker-tls)
+     * @type {string}
+     */
     static dockerTLSDir;
 
     /**
@@ -84,7 +102,10 @@ class Database {
         "patch-add-certificate-expiry-status-page.sql": true,
         "patch-monitor-oauth-cc.sql": true,
         "patch-add-timeout-monitor.sql": true,
-        "patch-add-gamedig-given-port.sql": true,   // The last file so far converted to a knex migration file
+        "patch-add-gamedig-given-port.sql": true,
+        "patch-notification-config.sql": true,
+        "patch-fix-kafka-producer-booleans.sql": true,
+        "patch-timeout.sql": true, // The last file so far converted to a knex migration file
     };
 
     /**
@@ -130,11 +151,14 @@ class Database {
             fs.mkdirSync(Database.dockerTLSDir, { recursive: true });
         }
 
-        log.info("db", `Data Dir: ${Database.dataDir}`);
+        log.info("server", `Data Dir: ${Database.dataDir}`);
     }
 
     /**
-     *
+     * Read the database config
+     * @throws {Error} If the config is invalid
+     * @typedef {string|undefined} envString
+     * @returns {{type: "sqlite"} | {type:envString, hostname:envString, port:envString, database:envString, username:envString, password:envString}} Database config
      */
     static readDBConfig() {
         let dbConfig;
@@ -153,7 +177,9 @@ class Database {
     }
 
     /**
-     * @param dbConfig
+     * @typedef {string|undefined} envString
+     * @param {{type: "sqlite"} | {type:envString, hostname:envString, port:envString, database:envString, username:envString, password:envString}} dbConfig the database configuration that should be written
+     * @returns {void}
      */
     static writeDBConfig(dbConfig) {
         fs.writeFileSync(path.join(Database.dataDir, "db-config.json"), JSON.stringify(dbConfig, null, 4));
@@ -161,10 +187,8 @@ class Database {
 
     /**
      * Connect to the database
-     * @param {boolean} testMode Should the connection be
-     * started in test mode?
-     * @param {boolean} autoloadModels Should models be
-     * automatically loaded?
+     * @param {boolean} testMode Should the connection be started in test mode?
+     * @param {boolean} autoloadModels Should models be automatically loaded?
      * @param {boolean} noLog Should logs not be output?
      * @returns {Promise<void>}
      */
@@ -239,7 +263,7 @@ class Database {
                     user: dbConfig.username,
                     password: dbConfig.password,
                     database: dbConfig.dbName,
-                    timezone: "UTC",
+                    timezone: "+00:00",
                 },
                 pool: mariadbPoolConfig,
             };
@@ -292,8 +316,9 @@ class Database {
     }
 
     /**
-     * @param testMode
-     * @param noLog
+     @param {boolean} testMode Should the connection be started in test mode?
+     @param {boolean} noLog Should logs not be output?
+     @returns {Promise<void>}
      */
     static async initSQLite(testMode, noLog) {
         await R.exec("PRAGMA foreign_keys = ON");
@@ -313,15 +338,16 @@ class Database {
         await R.exec("PRAGMA synchronous = NORMAL");
 
         if (!noLog) {
-            log.info("db", "SQLite config:");
-            log.info("db", await R.getAll("PRAGMA journal_mode"));
-            log.info("db", await R.getAll("PRAGMA cache_size"));
-            log.info("db", "SQLite Version: " + await R.getCell("SELECT sqlite_version()"));
+            log.debug("db", "SQLite config:");
+            log.debug("db", await R.getAll("PRAGMA journal_mode"));
+            log.debug("db", await R.getAll("PRAGMA cache_size"));
+            log.debug("db", "SQLite Version: " + await R.getCell("SELECT sqlite_version()"));
         }
     }
 
     /**
-     *
+     * Initialize MariaDB
+     * @returns {Promise<void>}
      */
     static async initMariaDB() {
         log.debug("db", "Checking if MariaDB database exists...");
@@ -353,8 +379,14 @@ class Database {
                 directory: Database.knexMigrationsPath,
             });
         } catch (e) {
-            log.error("db", "Database migration failed");
-            throw e;
+            // Allow missing patch files for downgrade or testing pr.
+            if (e.message.includes("the following files are missing:")) {
+                log.warn("db", e.message);
+                log.warn("db", "Database migration failed, you may be downgrading Uptime Kuma.");
+            } else {
+                log.error("db", "Database migration failed");
+                throw e;
+            }
         }
     }
 
@@ -368,6 +400,7 @@ class Database {
 
     /**
      * Patch the database for SQLite
+     * @returns {Promise<void>}
      * @deprecated
      */
     static async patchSqlite() {
@@ -377,13 +410,15 @@ class Database {
             version = 0;
         }
 
-        log.info("db", "Your database version: " + version);
-        log.info("db", "Latest database version: " + this.latestVersion);
+        if (version !== this.latestVersion) {
+            log.info("db", "Your database version: " + version);
+            log.info("db", "Latest database version: " + this.latestVersion);
+        }
 
         if (version === this.latestVersion) {
-            log.info("db", "Database patch not needed");
+            log.debug("db", "Database patch not needed");
         } else if (version > this.latestVersion) {
-            log.info("db", "Warning: Database version is newer than expected");
+            log.warn("db", "Warning: Database version is newer than expected");
         } else {
             log.info("db", "Database patch is needed");
 
@@ -419,7 +454,7 @@ class Database {
      * @returns {Promise<void>}
      */
     static async patchSqlite2() {
-        log.info("db", "Database Patch 2.0 Process");
+        log.debug("db", "Database Patch 2.0 Process");
         let databasePatchedFiles = await setting("databasePatchedFiles");
 
         if (! databasePatchedFiles) {
@@ -650,10 +685,10 @@ class Database {
     }
 
     /**
-     *
+     * @returns {string} Get the SQL for the current time plus a number of hours
      */
     static sqlHourOffset() {
-        if (this.dbConfig.client === "sqlite3") {
+        if (Database.dbConfig.type === "sqlite") {
             return "DATETIME('now', ? || ' hours')";
         } else {
             return "DATE_ADD(NOW(), INTERVAL ? HOUR)";

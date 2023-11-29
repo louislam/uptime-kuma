@@ -3,8 +3,10 @@ import { useToast } from "vue-toastification";
 import jwtDecode from "jwt-decode";
 import Favico from "favico.js";
 import dayjs from "dayjs";
+import mitt from "mitt";
+
 import { DOWN, MAINTENANCE, PENDING, UP } from "../util.ts";
-import { getDevContainerServerHostname, isDevContainer } from "../util-frontend.js";
+import { getDevContainerServerHostname, isDevContainer, getToastSuccessTimeout, getToastErrorTimeout } from "../util-frontend.js";
 const toast = useToast();
 
 let socket;
@@ -39,7 +41,6 @@ export default {
             maintenanceList: {},
             apiKeyList: {},
             heartbeatList: { },
-            importantHeartbeatList: { },
             avgPingList: { },
             uptimeList: { },
             tlsInfoList: {},
@@ -59,6 +60,7 @@ export default {
                 currentPassword: "",
             },
             faviconUpdateDebounce: null,
+            emitter: mitt(),
         };
     },
 
@@ -190,22 +192,18 @@ export default {
                     if (this.monitorList[data.monitorID] !== undefined) {
                         if (data.status === 0) {
                             toast.error(`[${this.monitorList[data.monitorID].name}] [DOWN] ${data.msg}`, {
-                                timeout: false,
+                                timeout: getToastErrorTimeout(),
                             });
                         } else if (data.status === 1) {
                             toast.success(`[${this.monitorList[data.monitorID].name}] [Up] ${data.msg}`, {
-                                timeout: 20000,
+                                timeout: getToastSuccessTimeout(),
                             });
                         } else {
                             toast(`[${this.monitorList[data.monitorID].name}] ${data.msg}`);
                         }
                     }
 
-                    if (! (data.monitorID in this.importantHeartbeatList)) {
-                        this.importantHeartbeatList[data.monitorID] = [];
-                    }
-
-                    this.importantHeartbeatList[data.monitorID].unshift(data);
+                    this.emitter.emit("newImportantHeartbeat", data);
                 }
             });
 
@@ -227,14 +225,6 @@ export default {
 
             socket.on("certInfo", (monitorID, data) => {
                 this.tlsInfoList[monitorID] = JSON.parse(data);
-            });
-
-            socket.on("importantHeartbeatList", (monitorID, data, overwrite) => {
-                if (! (monitorID in this.importantHeartbeatList) || overwrite) {
-                    this.importantHeartbeatList[monitorID] = data;
-                } else {
-                    this.importantHeartbeatList[monitorID] = data.concat(this.importantHeartbeatList[monitorID]);
-                }
             });
 
             socket.on("connect_error", (err) => {
@@ -330,10 +320,19 @@ export default {
          * @returns {void}
          */
         toastRes(res) {
+            let msg = res.msg;
+            if (res.msgi18n) {
+                if (msg != null && typeof msg === "object") {
+                    msg = this.$t(msg.key, msg.values);
+                } else {
+                    msg = this.$t(msg);
+                }
+            }
+
             if (res.ok) {
-                toast.success(res.msg);
+                toast.success(msg);
             } else {
-                toast.error(res.msg);
+                toast.error(msg);
             }
         },
 
@@ -343,7 +342,7 @@ export default {
          * @returns {void}
          */
         toastSuccess(msg) {
-            toast.success(msg);
+            toast.success(this.$t(msg));
         },
 
         /**
@@ -352,7 +351,7 @@ export default {
          * @returns {void}
          */
         toastError(msg) {
-            toast.error(msg);
+            toast.error(this.$t(msg));
         },
 
         /**
@@ -621,7 +620,6 @@ export default {
         clearData() {
             console.log("reset heartbeat list");
             this.heartbeatList = {};
-            this.importantHeartbeatList = {};
         },
 
         /**
@@ -674,7 +672,7 @@ export default {
          */
         getMonitorBeats(monitorID, period, callback) {
             socket.emit("getMonitorBeats", monitorID, period, callback);
-        }
+        },
     },
 
     computed: {
