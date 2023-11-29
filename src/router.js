@@ -31,6 +31,7 @@ import MonitorHistory from "./components/settings/MonitorHistory.vue";
 const Security = () => import("./components/settings/Security.vue");
 import Proxies from "./components/settings/Proxies.vue";
 import About from "./components/settings/About.vue";
+import Report from "./components/Report.vue";
 
 const routes = [
     {
@@ -80,6 +81,10 @@ const routes = [
                     {
                         path: "/list",
                         component: List,
+                    },
+                    {
+                        path: "/report",
+                        component: Report,
                     },
                     {
                         path: "/settings",

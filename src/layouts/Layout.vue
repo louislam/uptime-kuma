@@ -52,6 +52,12 @@
 
                             <!-- Functions -->
                             <li>
+                                <router-link to="/report" class="dropdown-item" :class="{ active: $route.path.includes('report') }">
+                                    <font-awesome-icon icon="file" /> {{ $t("Report") }}
+                                </router-link>
+                            </li>
+                            
+                            <li>
                                 <router-link to="/maintenance" class="dropdown-item" :class="{ active: $route.path.includes('manage-maintenance') }">
                                     <font-awesome-icon icon="wrench" /> {{ $t("Maintenance") }}
                                 </router-link>

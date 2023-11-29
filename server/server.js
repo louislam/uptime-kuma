@@ -268,6 +268,9 @@ let needSetup = false;
 
     // ./data/upload
     app.use("/upload", express.static(Database.uploadDir));
+    
+    // ./data/data
+    app.use("/data", express.static(Database.dataDir));
 
     app.get("/.well-known/change-password", async (_, response) => {
         response.redirect("https://github.com/louislam/uptime-kuma/wiki/Reset-Password-via-CLI");
@@ -1492,6 +1495,47 @@ let needSetup = false;
                     ok: true,
                 });
 
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("generateReports", async (monitorID, callback) => {
+            try {
+                let startTime = dayjs().valueOf();
+                checkLogin(socket);
+
+                log.info("monitor", `Generate Monitor Report: ${monitorID} User ID: ${socket.userID}`);
+                let monitor = await R.getAll(`SELECT * FROM monitor where active =?  and name = ? `,
+                    [1, monitorID]);
+                if(monitor.length == 0) {
+                    callback({
+                        ok: false,
+                        msg: "Invalid Monitor request",
+                    });
+                } else {
+                    let reponse = await Monitor.generatePDF(monitor, startTime)
+                    callback({
+                        ok: true,
+                        data: reponse,
+                        message:`PDF ${reponse.fileName} generated successfully.`
+                    });
+                }
+                    
+                // let reponse = {
+                //     "data":{
+                //         "filePath":"http://localhost:3001/data/report/Google_11-28-2023_10:31:41.pdf",
+                //         "fileName": "Google_11-28-2023_10:31:41.pdf",
+                //     },"message":"PDF Google_11-28-2023_10:31:41.pdf generated successfully."
+                // }
+
+                callback({
+                    ok: false,
+                    msg: "Invalid monitor",
+                });
             } catch (e) {
                 callback({
                     ok: false,

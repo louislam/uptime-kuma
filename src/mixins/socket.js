@@ -47,6 +47,7 @@ export default {
             notificationList: [],
             dockerHostList: [],
             statusPageListLoaded: false,
+            statusMonitorListLoaded: false,
             statusPageList: [],
             proxyList: [],
             connectionErrorMsg: `${this.$t("Cannot connect to the socket server.")} ${this.$t("Reconnecting...")}`,
@@ -141,6 +142,7 @@ export default {
                     };
                 });
                 this.monitorList = data;
+                this.statusMonitorListLoaded = true
             });
 
             socket.on("maintenanceList", (data) => {
@@ -531,6 +533,10 @@ export default {
             socket.emit("addMaintenance", maintenance, callback);
         },
 
+        generateReports(parameter, callback) {
+            socket.emit("generateReports", parameter, callback);
+        },
+
         /**
          * Add monitors to maintenance
          * @param {number} maintenanceID Maintenance to modify
@@ -673,6 +679,15 @@ export default {
         getMonitorBeats(monitorID, period, callback) {
             socket.emit("getMonitorBeats", monitorID, period, callback);
         },
+
+        /**
+         * Generate report based on the monitor
+         * @param {number} monitorID ID of monitor to fetch
+         * @param {socketCB} callback
+         */
+        generateReports(monitorID, callback) {
+            socket.emit("generateReports", monitorID, callback);
+        }
     },
 
     computed: {
