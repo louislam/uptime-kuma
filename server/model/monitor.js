@@ -1589,19 +1589,20 @@ class Monitor extends BeanModel {
 
     /**
      * get current ping time for the monitor
-     * @param {monitor}
+     * @param {monitor} monitor details
      * @returns {pingTime} monitor url response time
      */
-
     static async getCurrentPingTime(monitor) {
         let startTime = dayjs().valueOf();
-        const response = await axios.get(monitor.url);
+        await axios.get(monitor.url);
         return dayjs().valueOf() - startTime;
     }
 
     /**
      * get the average ping to api
      * @param {number} duration Hours
+     * @param {number} monitorID monitor id
+     * @returns {avgPing} average ping time in 24 hour
      */
     static async getAvgPing(duration, monitorID) {
 
@@ -1619,7 +1620,8 @@ class Monitor extends BeanModel {
 
     /**
      * get the average ping to api
-     * @param {number} duration Hours
+     * @param {monitorID} monitorID Hours
+     * @returns {certInfo} monitor certificate info
      */
     static async getCertInfo(monitorID) {
         let tlsInfo = await R.findOne("monitor_tls_info", "monitor_id = ?", [
@@ -1627,12 +1629,12 @@ class Monitor extends BeanModel {
         ]);
         return tlsInfo.info_json;
     }
+
     /**
      * Function to generate a PDF with HTML content and pie chart
-     * @param {monitor} duration Monitor name or id
+     * @param {monitor} monitor name or id
      */
-    static async  generatePDF(monitor) {
-
+    static async generatePDF(monitor) {
         let monitorId = monitor[0].id;
         let monitorDetails = monitor[0];
         let pingTime = await Monitor.getCurrentPingTime(monitorDetails);
@@ -1642,14 +1644,14 @@ class Monitor extends BeanModel {
         let monthUpTime = await uptimeCalculator.get30Day();
         let weekUpTime = await uptimeCalculator.get7Day();
         let tlsInfo = JSON.parse(await Monitor.getCertInfo(monitorId));
-        let formattedDate = moment().format("MM-DD-YYYY_HH:mm:ss"); 
-        let fileName = monitorDetails.name+"_"+formattedDate+".pdf";
-        let filePath = "data/report/"+fileName;
+        let formattedDate = moment().format("MM-DD-YYYY_HH:mm:ss");
+        let fileName = monitorDetails.name + "_" + formattedDate + ".pdf";
+        let filePath = "data/report/" + fileName;
 
         const pieChartData = {
             labels: [ "UpTime(" + (upTime.uptime * 100).toFixed(2) + ")", "DownTime(" + (100 - (upTime.uptime * 100)).toFixed(2) + ")" ],
             datasets: [{
-                data: [(upTime.uptime*100).toFixed(2), (100-(upTime.uptime*100).toFixed(2))],
+                data: [ (upTime.uptime * 100).toFixed(2), (100 - (upTime.uptime * 100).toFixed(2)) ],
                 backgroundColor: [ "#FF6384", "#36A2EB" ],
             }]
         };

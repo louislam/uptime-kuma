@@ -52,7 +52,7 @@ export default {
     },
     data() {
         return {
-            report: { monitor:"" },
+            report: { monitor: "" },
             processing: false,
         };
     },
@@ -110,7 +110,7 @@ export default {
 
         async generateReport() {
             this.processing = true;
-            if(this.report.monitor === "") {
+            if this.report.monitor === "") {
                 toast.error("Please select monitor");
                 return this.processing = false;
             }

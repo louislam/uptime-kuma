@@ -633,10 +633,10 @@ router.get("/api/reports", async (request, response) => {
     let result = { };
 
     let paramMonitor = request.query.monitor ? request.query.monitor : null;
-    if (paramMonitor == null || paramMonitor == "0") {
+    if (paramMonitor === null || paramMonitor === "0") {
         response.json({
-            "data":"",
-            "message":"Invalid monitor param"
+            "data": "",
+            "message": "Invalid monitor param"
         });
     }
 
