@@ -85,6 +85,9 @@
                                         <option v-if="!$root.info.isContainer" value="tailscale-ping">
                                             Tailscale Ping
                                         </option>
+                                        <option value="zookeeper">
+                                            Zookeeper
+                                        </option>
                                     </optgroup>
                                 </select>
                             </div>
@@ -496,6 +499,19 @@
                                     <div class="form-text">
                                         {{ $t("acceptedStatusCodesDescription") }}
                                     </div>
+                                </div>
+                            </template>
+
+                            <!-- Zookeeper -->
+                            <template v-if="monitor.type === 'zookeeper'">
+                                <div class="my-3">
+                                    <label for="zookeeperHost" class="form-label">{{ $t("Zookeeper Host") }}</label>
+                                    <input id="zookeeperHost" v-model="monitor.zookeeperHost" type="text" class="form-control" required>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="zookeeperTimeout" class="form-label">{{ $t("Connection Timeout") }}</label>
+                                    <input id="zookeeperTimeout" v-model="monitor.zookeeperTimeout" type="number" class="form-control" required min="1000" max="60000" step="1000">
                                 </div>
                             </template>
 

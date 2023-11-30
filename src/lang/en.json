@@ -860,5 +860,7 @@
     "tagNotFound": "Tag not found.",
     "foundChromiumVersion": "Found Chromium/Chrome. Version: {0}",
     "GrafanaOncallUrl": "Grafana Oncall URL",
-    "Browser Screenshot": "Browser Screenshot"
+    "Browser Screenshot": "Browser Screenshot",
+    "Zookeeper Host": "Zookeeper Host",
+    "Zookeeper Timeout": "Zookeeper Timeout"
 }
