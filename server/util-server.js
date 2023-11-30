@@ -526,35 +526,6 @@ exports.mongodbPing = async function (connectionString) {
     }
 };
 
-exports.zookeeperConnect = function (zookeeperHost, timeoutMs = 5000) {
-    return new Promise((resolve, reject) => {
-        const timer = setTimeout(() => {
-            reject(Error("Zookeeper operation timed out"));
-        }, timeoutMs);
-
-        const config = {
-            connect: zookeeperHost,
-            timeout: 1000,
-            debug_level: ZooKeeper.ZOO_LOG_LEVEL_WARN,
-            host_order_deterministic: false,
-        };
-
-        const client = new ZooKeeper(config);
-
-        client.connect(config, (err, _) => {
-            if (err) {
-                clearTimeout(timer);
-                reject(err);
-            } else {
-                clearTimeout(timer);
-                resolve("Successfully connected");
-            }
-
-            client.close();
-        });
-    });
-};
-
 /**
  * Query radius server
  * @param {string} hostname Hostname of radius server
@@ -1193,4 +1164,41 @@ module.exports.axiosAbortSignal = (timeoutMs) => {
             return null;
         }
     }
+};
+
+/**
+ * Attempt to connect to the given zookeeper host under the given timeout.
+ * @param {string} zookeeperHost - The connection string for a single host in the form 'host:port'
+ * @param {number} timeoutMs - Timeout in milliseconds under which connection must be established.
+ * @returns {Promise<any>} The result of connection attempt
+ */
+exports.zookeeperConnect = function (zookeeperHost, timeoutMs = 5000) {
+    return new Promise((resolve, reject) => {
+        // Seems like zookeeper client behavior is to retry indefitiely on timeout.
+        // So, an explicit timer is needed to prevent the monitor from getting stuck.
+        const timer = setTimeout(() => {
+            reject(Error("Zookeeper operation timed out"));
+        }, timeoutMs);
+
+        const config = {
+            connect: zookeeperHost,
+            timeout: timeoutMs, // Causes the client to retry and does not fail.
+            debug_level: ZooKeeper.ZOO_LOG_LEVEL_WARN,
+            host_order_deterministic: false,
+        };
+
+        const client = new ZooKeeper(config);
+
+        client.connect(config, (err, _) => {
+            if (err) {
+                clearTimeout(timer);
+                reject(err);
+            } else {
+                clearTimeout(timer);
+                resolve("Successfully connected");
+            }
+
+            client.close();
+        });
+    });
 };

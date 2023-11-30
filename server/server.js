@@ -827,6 +827,8 @@ let needSetup = false;
                 bean.kafkaProducerAllowAutoTopicCreation =
                     monitor.kafkaProducerAllowAutoTopicCreation;
                 bean.gamedigGivenPortOnly = monitor.gamedigGivenPortOnly;
+                bean.zookeeperHost = monitor.zookeeperHost;
+                bean.zookeeperTimeout = monitor.zookeeperTimeout;
 
                 bean.validate();
 
