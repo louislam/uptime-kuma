@@ -1622,17 +1622,6 @@ class Monitor extends BeanModel {
      * get the average ping to api
      * @param {number} duration Hours
      */
-    static async calcUptime(monitorID) {
-        let tlsInfo = await R.findOne("monitor_tls_info", "monitor_id = ?", [
-            monitorID,
-        ]);
-        return tlsInfo.info_json;
-    }
-
-    /**
-     * get the average ping to api
-     * @param {number} duration Hours
-     */
     static async getCertInfo(monitorID) {
         let tlsInfo = await R.findOne("monitor_tls_info", "monitor_id = ?", [
             monitorID,
