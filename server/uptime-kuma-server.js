@@ -62,8 +62,6 @@ class UptimeKumaServer {
      */
     jwtSecret = null;
 
-    checkMonitorsInterval = null;
-
     /**
      * Get the current instance of the server if it exists, otherwise
      * create a new instance.
@@ -376,10 +374,6 @@ class UptimeKumaServer {
         if (enable || enable === null) {
             this.startNSCDServices();
         }
-
-        this.checkMonitorsInterval = setInterval(() => {
-            this.checkMonitors();
-        }, 60 * 1000);
     }
 
     /**
@@ -392,8 +386,6 @@ class UptimeKumaServer {
         if (enable || enable === null) {
             this.stopNSCDServices();
         }
-
-        clearInterval(this.checkMonitorsInterval);
     }
 
     /**
@@ -425,83 +417,6 @@ class UptimeKumaServer {
                 log.info("services", "Failed to stop nscd");
             }
         }
-    }
-
-    /**
-     * Start the specified monitor
-     * @param {number} monitorID ID of monitor to start
-     * @returns {Promise<void>}
-     */
-    async startMonitor(monitorID) {
-        log.info("manage", `Resume Monitor: ${monitorID} by server`);
-
-        await R.exec("UPDATE monitor SET active = 1 WHERE id = ?", [
-            monitorID,
-        ]);
-
-        let monitor = await R.findOne("monitor", " id = ? ", [
-            monitorID,
-        ]);
-
-        if (monitor.id in this.monitorList) {
-            this.monitorList[monitor.id].stop();
-        }
-
-        this.monitorList[monitor.id] = monitor;
-        monitor.start(this.io);
-    }
-
-    /**
-     * Restart a given monitor
-     * @param {number} monitorID ID of monitor to start
-     * @returns {Promise<void>}
-     */
-    async restartMonitor(monitorID) {
-        return await this.startMonitor(monitorID);
-    }
-
-    /**
-     * Check if monitors are running properly
-     */
-    async checkMonitors() {
-        log.debug("monitor_checker", "Checking monitors");
-
-        for (let monitorID in this.monitorList) {
-            let monitor = this.monitorList[monitorID];
-
-            // Not for push monitor
-            if (monitor.type === "push") {
-                continue;
-            }
-
-            if (!monitor.active) {
-                continue;
-            }
-
-            // Check the lastStartBeatTime, if it is too long, then restart
-            if (monitor.lastScheduleBeatTime ) {
-                let diff = dayjs().diff(monitor.lastStartBeatTime, "second");
-
-                if (diff > monitor.interval * 1.5) {
-                    log.error("monitor_checker", `Monitor Interval: ${monitor.interval} Monitor ` + monitorID + " lastStartBeatTime diff: " + diff);
-                    log.error("monitor_checker", "Unexpected error: Monitor " + monitorID + " is struck for unknown reason");
-                    log.error("monitor_checker", "Last start beat time: " + R.isoDateTime(monitor.lastStartBeatTime));
-                    log.error("monitor_checker", "Last end beat time: " + R.isoDateTime(monitor.lastEndBeatTime));
-                    log.error("monitor_checker", "Last ScheduleBeatTime: " + R.isoDateTime(monitor.lastScheduleBeatTime));
-
-                    // Restart
-                    log.error("monitor_checker", `Restarting monitor ${monitorID} automatically now`);
-                    this.restartMonitor(monitorID);
-                } else {
-                    //log.debug("monitor_checker", "Monitor " + monitorID + " is running normally");
-                }
-            } else {
-                //log.debug("monitor_checker", "Monitor " + monitorID + " is not started yet, skipp");
-            }
-
-        }
-
-        log.debug("monitor_checker", "Checking monitors end");
     }
 
     /**
