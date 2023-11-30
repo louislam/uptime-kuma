@@ -1715,33 +1715,31 @@ class Monitor extends BeanModel {
         const page = await browser.newPage();
         // Combine HTML content and pie chart HTML
         const combinedHtml = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>PDF with HTML and Pie Chart</title>
-            <style>
-                    body {font-family: Arial, sans-serif;}
-                    p, td { font-size: 13px;}
-                    th{font-size: 16px;}
-                    .summary td{text-align: center;}
-                    .c_table {width: 100%;}
-                    .t_center{margin-left: auto; margin-right: auto;text-align: center;}
-                </style>
-        </head>
-        <body>
-            <div>${htmlContent}</div>
-            
-        </body>
-        </html>
-        `;
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>PDF with HTML and Pie Chart</title>
+                <style>
+                        body {font-family: Arial, sans-serif;}
+                        p, td { font-size: 13px;}
+                        th{font-size: 16px;}
+                        .summary td{text-align: center;}
+                        .c_table {width: 100%;}
+                        .t_center{margin-left: auto; margin-right: auto;text-align: center;}
+                    </style>
+            </head>
+            <body>
+                <div>${htmlContent}</div>
+                
+            </body>
+            </html>
+            `;
         
         await page.setContent(combinedHtml, { waitUntil: 'networkidle0' });
     
         // Capture a screenshot and save as PDF
         await page.pdf({ path: filePath, format: 'A4' });
-    
         await browser.close();
-    
         console.log(`PDF generated at: ${filePath}`);
 
         return {
