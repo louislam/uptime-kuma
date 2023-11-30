@@ -862,5 +862,5 @@
     "GrafanaOncallUrl": "Grafana Oncall URL",
     "Browser Screenshot": "Browser Screenshot",
     "Zookeeper Host": "Zookeeper Host",
-    "Zookeeper Timeout": "Zookeeper Timeout"
+    "Zookeeper Timeout": "Zookeeper Connect Timeout (ms)"
 }
