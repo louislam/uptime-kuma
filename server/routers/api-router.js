@@ -652,7 +652,6 @@ router.get("/api/reports", async (request, response) => {
         result.message = "Invalid monitor details";
     } else {
         let pdfData = await Monitor.generatePDF(monitor);
-        
         result.data = {
             filePath: request.protocol + "://" + request.headers.host + "/" + pdfData.filePath,
             fileName: pdfData.fileName,

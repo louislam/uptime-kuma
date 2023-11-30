@@ -1633,6 +1633,7 @@ class Monitor extends BeanModel {
     /**
      * Function to generate a PDF with HTML content and pie chart
      * @param {monitor} monitor name or id
+     * @returns {pdfFileInfo} pdf filename and file path
      */
     static async generatePDF(monitor) {
         let monitorId = monitor[0].id;
