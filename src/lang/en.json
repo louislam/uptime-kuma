@@ -656,6 +656,8 @@
     "Notify Channel": "Notify Channel",
     "aboutNotifyChannel": "Notify channel will trigger a desktop or mobile notification for all members of the channel, whether their availability is set to active or away.",
     "Uptime Kuma URL": "Uptime Kuma URL",
+    "Add a domain": "Add a domain",
+    "Remove domain": "Remove domain {0}",
     "Icon Emoji": "Icon Emoji",
     "signalImportant": "IMPORTANT: You cannot mix groups and numbers in recipients!",
     "aboutWebhooks": "More info about Webhooks on: {0}",
