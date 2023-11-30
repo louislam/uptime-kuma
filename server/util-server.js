@@ -23,6 +23,7 @@ const radiusClient = require("node-radius-client");
 const redis = require("redis");
 const oidc = require("openid-client");
 const tls = require("tls");
+const ZooKeeper = require("zookeeper");
 
 const {
     dictionaries: {
@@ -523,6 +524,35 @@ exports.mongodbPing = async function (connectionString) {
     } else {
         throw Error("failed");
     }
+};
+
+exports.zookeeperConnect = function (zookeeperHost, timeoutMs = 5000) {
+    return new Promise((resolve, reject) => {
+        const timer = setTimeout(() => {
+            reject(Error("Zookeeper operation timed out"));
+        }, timeoutMs);
+
+        const config = {
+            connect: zookeeperHost,
+            timeout: 1000,
+            debug_level: ZooKeeper.ZOO_LOG_LEVEL_WARN,
+            host_order_deterministic: false,
+        };
+
+        const client = new ZooKeeper(config);
+
+        client.connect(config, (err, _) => {
+            if (err) {
+                clearTimeout(timer);
+                reject(err);
+            } else {
+                clearTimeout(timer);
+                resolve("Successfully connected");
+            }
+
+            client.close();
+        });
+    });
 };
 
 /**

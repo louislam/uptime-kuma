@@ -140,7 +140,8 @@
         "tar": "~6.1.11",
         "tcp-ping": "~0.1.1",
         "thirty-two": "~1.0.2",
-        "ws": "^8.13.0"
+        "ws": "^8.13.0",
+        "zookeeper": "^6.0.0"
     },
     "devDependencies": {
         "@actions/github": "~5.0.1",
