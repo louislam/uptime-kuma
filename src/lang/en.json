@@ -115,7 +115,7 @@
     "disableauth.message1": "Are you sure want to {disableAuth}?",
     "disable authentication": "disable authentication",
     "disableauth.message2": "It is designed for scenarios where you {intendThirdPartyAuth} in front of Uptime Kuma such as Cloudflare Access, Authelia or other authentication mechanisms.",
-    "where you intend to implement third-party authentication": "where you intend to implement third-party authentication",
+    "intend to implement third-party authentication": "intend to implement third-party authentication",
     "Please use this option carefully!": "Please use this option carefully!",
     "Logout": "Logout",
     "Leave": "Leave",
