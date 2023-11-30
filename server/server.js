@@ -1524,13 +1524,6 @@ let needSetup = false;
                         message:`PDF ${reponse.fileName} generated successfully.`
                     });
                 }
-                    
-                // let reponse = {
-                //     "data":{
-                //         "filePath":"http://localhost:3001/data/report/Google_11-28-2023_10:31:41.pdf",
-                //         "fileName": "Google_11-28-2023_10:31:41.pdf",
-                //     },"message":"PDF Google_11-28-2023_10:31:41.pdf generated successfully."
-                // }
 
                 callback({
                     ok: false,
