@@ -289,8 +289,8 @@
                                     <label for="docker-host" class="form-label">{{ $t("Docker Host") }}</label>
                                     <ActionSelect
                                         id="docker-host"
-                                        :aria-label="$t('openModalTo', $t('Setup Docker Host'))"
                                         v-model="monitor.docker_host"
+                                        :action-aria-label="$t('openModalTo', $t('Setup Docker Host'))"
                                         :options="dockerHostOptionsList"
                                         :disabled="$root.dockerHostList == null || $root.dockerHostList.length === 0"
                                         :icon="'plus'"
@@ -503,8 +503,8 @@
                                 <label for="monitorGroupSelector" class="form-label">{{ $t("Monitor Group") }}</label>
                                 <ActionSelect
                                     id="monitorGroupSelector"
-                                    :aria-label="$t('openModalTo', 'setup a new monitor group')"
                                     v-model="monitor.parent"
+                                    :action-aria-label="$t('openModalTo', 'setup a new monitor group')"
                                     :options="parentMonitorOptionsList"
                                     :disabled="sortedGroupMonitorList.length === 0 && draftGroupName == null"
                                     :icon="'plus'"
