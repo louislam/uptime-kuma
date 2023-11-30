@@ -19,7 +19,7 @@
 
         <div class="my-4 pt-4">
             <h5 class="my-4 settings-subheading">{{ $t("What is a Remote Browser?") }}</h5>
-            <p>{{ $t("remoteBrowsersDescription") }}</p>
+            <p>{{ $t("remoteBrowsersDescription") }} <a href="https://hub.docker.com/r/browserless/chrome">{{ $t("self-hosted container") }}</a></p>
         </div>
 
         <RemoteBrowserDialog ref="remoteBrowserDialog" />
