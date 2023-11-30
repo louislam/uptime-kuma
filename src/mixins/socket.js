@@ -533,10 +533,6 @@ export default {
             socket.emit("addMaintenance", maintenance, callback);
         },
 
-        generateReports(parameter, callback) {
-            socket.emit("generateReports", parameter, callback);
-        },
-
         /**
          * Add monitors to maintenance
          * @param {number} maintenanceID Maintenance to modify
