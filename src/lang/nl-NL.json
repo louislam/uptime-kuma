@@ -804,5 +804,5 @@
     "Reconnecting...": "Opnieuw verbinden...",
     "Expected Value": "Verwachte waarde",
     "Json Query": "Json Query",
-    "jsonQueryDescription": "Voer een JSON-query uit op de respons en controleer de verwachte waarde (De retourwaarde wordt omgezet naar een string voor vergelijking). Bekijk <a href='https://jsonata.org/'>jsonata.org</a> voor de documentatie over de querytaal. Een speelplaats is beschikbaar <a href='https://try.jsonata.org/'>hier</a>."
+    "jsonQueryDescription": "Voer een JSON-query uit op de respons en controleer de verwachte waarde (De retourwaarde wordt omgezet naar een string voor vergelijking). Bekijk {0} voor de documentatie over de querytaal. Een speelplaats is beschikbaar {1}."
 }
