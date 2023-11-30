@@ -344,7 +344,7 @@ class UptimeKumaServer {
         let enable = await Settings.get("nscd");
 
         if (enable || enable === null) {
-            this.startNSCDServices();
+            await this.startNSCDServices();
         }
     }
 
@@ -356,7 +356,7 @@ class UptimeKumaServer {
         let enable = await Settings.get("nscd");
 
         if (enable || enable === null) {
-            this.stopNSCDServices();
+            await this.stopNSCDServices();
         }
     }
 
