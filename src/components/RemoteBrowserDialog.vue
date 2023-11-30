@@ -22,7 +22,7 @@
                             <div class="form-text mt-3">
                                 {{ $t("Examples") }}:
                                 <ul>
-                                    <li>wss://chrome.browserless.io/playwright?token=YOUR-API-TOKEN</li>
+                                    <li>ws://chrome.browserless.io/playwright?token=YOUR-API-TOKEN</li>
                                 </ul>
                             </div>
                         </div>
