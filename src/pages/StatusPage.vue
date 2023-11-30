@@ -69,7 +69,7 @@
                 <div class="my-3">
                     <label class="form-label">
                         {{ $t("Domain Names") }}
-                        <font-awesome-icon role="button" icon="plus-circle" class="action text-primary" :aria-label="$t('Add a domain')" @click="addDomainField"/>
+                        <font-awesome-icon role="button" icon="plus-circle" class="action text-primary" :aria-label="$t('Add a domain')" @click="addDomainField" />
                     </label>
 
                     <ul class="list-group domain-name-list">
