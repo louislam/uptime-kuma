@@ -27,8 +27,7 @@ const { HttpsCookieAgent } = require("http-cookie-agent/http");
 
 const rootCertificates = rootCertificatesFingerprints();
 const moment = require("moment");
-const Chart = require('chart.js');
-const puppeteer = require('puppeteer');
+const puppeteer = require("puppeteer");
 
 /**
  * status:
@@ -1591,7 +1590,7 @@ class Monitor extends BeanModel {
     /**
      * get current ping time for the monitor
      * @param {monitor}
-     * @return {pingTime}
+     * @returns {pingTime} monitor url response time
      */
 
     static async getCurrentPingTime(monitor) {
@@ -1628,9 +1627,11 @@ class Monitor extends BeanModel {
         ]);
         return tlsInfo.info_json;
     }
-
-    // Function to generate a PDF with HTML content and pie chart
-    static async  generatePDF(monitor, startTime) {
+    /**
+     * Function to generate a PDF with HTML content and pie chart
+     * @param {monitor} duration Monitor name or id
+     */
+    static async  generatePDF(monitor) {
 
         let monitorId = monitor[0].id;
         let monitorDetails = monitor[0];
@@ -1641,20 +1642,20 @@ class Monitor extends BeanModel {
         let monthUpTime = await uptimeCalculator.get30Day();
         let weekUpTime = await uptimeCalculator.get7Day();
         let tlsInfo = JSON.parse(await Monitor.getCertInfo(monitorId));
-        let formttedDate = moment().format("MM-DD-YYYY_HH:mm:ss"); 
-        let fileName = monitorDetails.name+"_"+formttedDate+".pdf";
+        let formattedDate = moment().format("MM-DD-YYYY_HH:mm:ss"); 
+        let fileName = monitorDetails.name+"_"+formattedDate+".pdf";
         let filePath = "data/report/"+fileName;
 
         const pieChartData = {
-            labels: ["UpTime("+(upTime.uptime*100).toFixed(2)+")", "DownTime("+(100-(upTime.uptime*100)).toFixed(2)+")"],
+            labels: [ "UpTime(" + (upTime.uptime * 100).toFixed(2) + ")", "DownTime(" + (100 - (upTime.uptime * 100)).toFixed(2) + ")" ],
             datasets: [{
                 data: [(upTime.uptime*100).toFixed(2), (100-(upTime.uptime*100).toFixed(2))],
-                backgroundColor: ["#FF6384", "#36A2EB"],
+                backgroundColor: [ "#FF6384", "#36A2EB" ],
             }]
         };
 
         const chartConfig = {
-            type: 'pie',
+            type: "pie",
             data: pieChartData
         };
         const chartCanvas = `
@@ -1693,16 +1694,16 @@ class Monitor extends BeanModel {
                     </td><td>
                         <h4>Uptime</h4>
                         <p>(24hr)</p>
-                        <p>${(upTime.uptime*100).toFixed(2)}%</p>
+                        <p>${(upTime.uptime * 100).toFixed(2)}%</p>
                     </td>
                     <td>
                         <h4>Uptime</h4>
                         <p>(7 days)</p>
-                        <p>${(weekUpTime.uptime*100).toFixed(2)}%</p>
+                        <p>${(weekUpTime.uptime * 100).toFixed(2)}%</p>
                     </td><td>
                         <h4>Uptime</h4>
                         <p>(30 days)</p>
-                        <p>${(monthUpTime.uptime*100).toFixed(2)}%</p>
+                        <p>${(monthUpTime.uptime * 100).toFixed(2)}%</p>
                     </td><td>
                         <h3>Cert Exp.</h3>
                         <p>(${ moment(tlsInfo.certInfo.validTo).format("MM-DD-YYYY")})</p>
@@ -1734,18 +1735,21 @@ class Monitor extends BeanModel {
             </body>
             </html>
             `;
-        
-        await page.setContent(combinedHtml, { waitUntil: 'networkidle0' });
-    
+
+        await page.setContent(combinedHtml, { waitUntil: "networkidle0" });
+
         // Capture a screenshot and save as PDF
-        await page.pdf({ path: filePath, format: 'A4' });
+        await page.pdf({
+            path: filePath,
+            format: "A4"
+        });
         await browser.close();
         console.log(`PDF generated at: ${filePath}`);
 
         return {
-            filePath:filePath,
-            fileName:fileName
-        }
+            filePath: filePath,
+            fileName: fileName
+        };
     }
 }
 

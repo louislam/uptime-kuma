@@ -6,13 +6,13 @@
             </h1>
             <div class="shadow-box">
                 <template v-if="$root.statusMonitorListLoaded">
-                    <form class="my-4" autocomplete="off" @submit.prevent="generateReprot">
+                    <form class="my-4" autocomplete="off" @submit.prevent="generateReport">
                         <!-- Server Monitor -->
                         <div class="mb-4">
                             <label for="monitor" class="form-label">
                                 {{ $t("Select Monitor") }}
                             </label>
-                            <select id="monitor" v-model="report.monitor"  class="form-select">
+                            <select id="monitor" v-model="report.monitor" class="form-select">
                                 <option value="">Select Monitor</option>
                                 <option
                                     v-for="(monitor, index) in sortedMonitorList"
@@ -52,7 +52,7 @@ export default {
     },
     data() {
         return {
-            report: {monitor:""},
+            report: { monitor:"" },
             processing: false,
         };
     },
@@ -93,7 +93,7 @@ export default {
             let endDays = 30;
             let days = [];
             for (startDays; startDays < endDays; startDays++) {
-                days.push(startDays)
+                days.push(startDays);
             }
             return days;
         }
@@ -102,23 +102,23 @@ export default {
 
     },
     methods: {
-        init(){
+        init() {
             this.report = {
                 monitor: ""
             };
         },
 
-        async generateReprot() {
+        async generateReport() {
             this.processing = true;
-            if(this.report.monitor == "") {
+            if(this.report.monitor === "") {
                 toast.error("Please select monitor");
                 return this.processing = false;
             }
             this.$root.generateReports(this.report.monitor, async (res) => {
-                if(res.ok) {
+                if (res.ok) {
                     this.processing = false;
                     const fileUrl = res.data.filePath;
-                    const link = document.createElement('a');
+                    const link = document.createElement("a");
                     link.href = fileUrl;
                     link.download = res.data.fileName;
                     document.body.appendChild(link);

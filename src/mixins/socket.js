@@ -142,7 +142,7 @@ export default {
                     };
                 });
                 this.monitorList = data;
-                this.statusMonitorListLoaded = true
+                this.statusMonitorListLoaded = true;
             });
 
             socket.on("maintenanceList", (data) => {
@@ -679,7 +679,8 @@ export default {
         /**
          * Generate report based on the monitor
          * @param {number} monitorID ID of monitor to fetch
-         * @param {socketCB} callback
+         * @param {socketCB} callback Callback for socket response
+         * @returns {void}
          */
         generateReports(monitorID, callback) {
             socket.emit("generateReports", monitorID, callback);

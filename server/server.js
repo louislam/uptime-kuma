@@ -268,7 +268,7 @@ let needSetup = false;
 
     // ./data/upload
     app.use("/upload", express.static(Database.uploadDir));
-    
+
     // ./data/data
     app.use("/data", express.static(Database.dataDir));
 
@@ -1505,23 +1505,22 @@ let needSetup = false;
 
         socket.on("generateReports", async (monitorID, callback) => {
             try {
-                let startTime = dayjs().valueOf();
                 checkLogin(socket);
 
                 log.info("monitor", `Generate Monitor Report: ${monitorID} User ID: ${socket.userID}`);
-                let monitor = await R.getAll(`SELECT * FROM monitor where active =?  and name = ? `,
-                    [1, monitorID]);
-                if(monitor.length == 0) {
+                let monitor = await R.getAll("SELECT * FROM monitor where active =?  and name = ? ",
+                    [ 1, monitorID ]);
+                if (monitor.length === 0) {
                     callback({
                         ok: false,
                         msg: "Invalid Monitor request",
                     });
                 } else {
-                    let reponse = await Monitor.generatePDF(monitor, startTime)
+                    let response = await Monitor.generatePDF(monitor);
                     callback({
                         ok: true,
-                        data: reponse,
-                        message:`PDF ${reponse.fileName} generated successfully.`
+                        data: response,
+                        message: `PDF ${response.fileName} generated successfully.`
                     });
                 }
 

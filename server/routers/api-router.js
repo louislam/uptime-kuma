@@ -630,35 +630,36 @@ function determineStatus(status, previousHeartbeat, maxretries, isUpsideDown, be
     }
 }
 router.get("/api/reports", async (request, response) => {
-    let startTime = dayjs().valueOf();
     let result = { };
-    
+
     let paramMonitor = request.query.monitor ? request.query.monitor : null;
-    if(paramMonitor == null || paramMonitor == "0") {
-        response.json({"data":"", "message":"Invalid monitor param"});
+    if (paramMonitor == null || paramMonitor == "0") {
+        response.json({
+            "data":"",
+            "message":"Invalid monitor param"
+        });
     }
-    
+
     let queryString = "";
-    if(isFinite(paramMonitor)) {
-        queryString = " id = ? "
+    if (isFinite(paramMonitor)) {
+        queryString = " id = ? ";
     } else {
-        queryString = " name = ? "
+        queryString = " name = ? ";
     }
-    let monitor = await R.getAll(`SELECT * FROM monitor where active =?  and `+ queryString,
-        [1, paramMonitor]);
-    if(monitor.length == 0) {
-        result.message = "Invalid monitor details"
+    let monitor = await R.getAll("SELECT * FROM monitor where active =?  and " + queryString,
+        [ 1, paramMonitor ]);
+    if (monitor.length === 0) {
+        result.message = "Invalid monitor details";
     } else {
-        let pdfData = await Monitor.generatePDF(monitor, startTime);
+        let pdfData = await Monitor.generatePDF(monitor);
         
         result.data = {
-            filePath: request.protocol+"://"+request.headers.host+"/"+pdfData.filePath,
+            filePath: request.protocol + "://" + request.headers.host + "/" + pdfData.filePath,
             fileName: pdfData.fileName,
-        }
+        };
         result.message = `PDF ${pdfData.fileName} generated successfully.`;
-        
     }
-    
+
     response.json(result);
 });
 
