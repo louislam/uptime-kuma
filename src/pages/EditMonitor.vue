@@ -144,6 +144,30 @@
                                 </div>
                             </div>
 
+                            <!-- Remote Browser -->
+                            <div v-if="monitor.type === 'real-browser'" class="my-3">
+                                <!-- Toggle -->
+                                <div class="my-3 form-check">
+                                    <input id="toggle" v-model="remoteBrowsersToggle" class="form-check-input" type="checkbox">
+                                    <label class="form-check-label" for="toggle">
+                                        {{ $t("useRemoteBrowser") }}
+                                    </label>
+                                    <div class="form-text">
+                                        {{ $t("remoteBrowserToggle") }}
+                                    </div>
+                                </div>
+
+                                <div v-if="remoteBrowsersToggle">
+                                    <label for="remote-browser" class="form-label">{{ $t("Remote Browser") }}</label>
+                                    <ActionSelect
+                                        v-model="monitor.remote_browser"
+                                        :options="remoteBrowsersOptions"
+                                        icon="plus"
+                                        :action="() => $refs.remoteBrowserDialog.show()"
+                                    />
+                                </div>
+                            </div>
+
                             <!-- Json Query -->
                             <div v-if="monitor.type === 'json-query'" class="my-3">
                                 <label for="jsonPath" class="form-label">{{ $t("Json Query") }}</label>
@@ -368,11 +392,20 @@
                                     <input id="connectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" required>
                                 </div>
                             </template>
+
+                            <template v-if="monitor.type === 'mysql'">
+                                <div class="my-3">
+                                    <label for="mysql-password" class="form-label">{{ $t("Password") }}</label>
+                                    <!-- TODO: Rename monitor.radiusPassword to monitor.password for general use -->
+                                    <HiddenInput id="mysql-password" v-model="monitor.radiusPassword" autocomplete="false"></HiddenInput>
+                                </div>
+                            </template>
+
                             <!-- SQL Server / PostgreSQL / MySQL -->
                             <template v-if="monitor.type === 'sqlserver' || monitor.type === 'postgres' || monitor.type === 'mysql'">
                                 <div class="my-3">
                                     <label for="sqlQuery" class="form-label">{{ $t("Query") }}</label>
-                                    <textarea id="sqlQuery" v-model="monitor.databaseQuery" class="form-control" :placeholder="$t('Example:', [ 'select getdate()' ])" required></textarea>
+                                    <textarea id="sqlQuery" v-model="monitor.databaseQuery" class="form-control" :placeholder="$t('Example:', [ 'SELECT 1' ])"></textarea>
                                 </div>
                             </template>
 
@@ -825,6 +858,7 @@
             <DockerHostDialog ref="dockerHostDialog" @added="addedDockerHost" />
             <ProxyDialog ref="proxyDialog" @added="addedProxy" />
             <CreateGroupDialog ref="createGroupDialog" @added="addedDraftGroup" />
+            <RemoteBrowserDialog ref="remoteBrowserDialog" @added="addedRemoteBrowser" />
         </div>
     </transition>
 </template>
@@ -837,11 +871,13 @@ import CopyableInput from "../components/CopyableInput.vue";
 import CreateGroupDialog from "../components/CreateGroupDialog.vue";
 import NotificationDialog from "../components/NotificationDialog.vue";
 import DockerHostDialog from "../components/DockerHostDialog.vue";
+import RemoteBrowserDialog from "../components/RemoteBrowserDialog.vue";
 import ProxyDialog from "../components/ProxyDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
 import { genSecret, isDev, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND } from "../util.ts";
 import { hostNameRegexPattern } from "../util-frontend";
 import { sleep } from "../util";
+import HiddenInput from "../components/HiddenInput.vue";
 
 const toast = useToast;
 
@@ -882,17 +918,21 @@ const monitorDefaults = {
         mechanism: "None",
     },
     kafkaProducerSsl: false,
+    kafkaProducerAllowAutoTopicCreation: false,
     gamedigGivenPortOnly: true,
+    remote_browser: null
 };
 
 export default {
     components: {
+        HiddenInput,
         ActionSelect,
         ProxyDialog,
         CopyableInput,
         CreateGroupDialog,
         NotificationDialog,
         DockerHostDialog,
+        RemoteBrowserDialog,
         TagsManager,
         VueMultiselect,
     },
@@ -920,6 +960,7 @@ export default {
                 "mongodb": "mongodb://username:password@host:port/database",
             },
             draftGroupName: null,
+            remoteBrowsersEnabled: false,
         };
     },
 
@@ -943,7 +984,31 @@ export default {
             }
             return this.$t(name);
         },
-
+        remoteBrowsersOptions() {
+            return this.$root.remoteBrowserList.map(browser => {
+                return {
+                    label: browser.name,
+                    value: browser.id,
+                };
+            });
+        },
+        remoteBrowsersToggle: {
+            get() {
+                return this.remoteBrowsersEnabled || this.monitor.remote_browser != null;
+            },
+            set(value) {
+                if (value) {
+                    this.remoteBrowsersEnabled = true;
+                    if (this.monitor.remote_browser == null && this.$root.remoteBrowserList.length > 0) {
+                        // set a default remote browser if there is one. Otherwise, the user will have to select one manually.
+                        this.monitor.remote_browser = this.$root.remoteBrowserList[0].id;
+                    }
+                } else {
+                    this.remoteBrowsersEnabled = false;
+                    this.monitor.remote_browser = null;
+                }
+            }
+        },
         isAdd() {
             return this.$route.path === "/add";
         },

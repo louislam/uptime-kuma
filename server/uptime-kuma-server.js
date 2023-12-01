@@ -87,7 +87,10 @@ class UptimeKumaServer {
         // Set axios default user-agent to Uptime-Kuma/version
         axios.defaults.headers.common["User-Agent"] = this.getUserAgent();
 
-        log.debug("server", "Creating express and socket.io instance");
+        // Set default axios timeout to 5 minutes instead of infinity
+        axios.defaults.timeout = 300 * 1000;
+
+        log.info("server", "Creating express and socket.io instance");
         this.app = express();
         if (sslKey && sslCert) {
             log.info("server", "Server Type: HTTPS");

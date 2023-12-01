@@ -184,9 +184,10 @@
             <!-- Screenshot -->
             <div v-if="monitor.type === 'real-browser'" class="shadow-box">
                 <div class="row">
-                    <div class="col-md-6">
-                        <img :src="screenshotURL" alt style="width: 100%;">
+                    <div class="col-md-6 zoom-cursor">
+                        <img :src="screenshotURL" style="width: 100%;" alt="screenshot of the website" @click="showScreenshotDialog">
                     </div>
+                    <ScreenshotDialog ref="screenshotDialog" :imageURL="screenshotURL" />
                 </div>
             </div>
 
@@ -283,6 +284,7 @@ import "prismjs/components/prism-javascript";
 import "prismjs/components/prism-css";
 import { PrismEditor } from "vue-prism-editor";
 import "vue-prism-editor/dist/prismeditor.min.css";
+import ScreenshotDialog from "../components/ScreenshotDialog.vue";
 
 export default {
     components: {
@@ -297,6 +299,7 @@ export default {
         Tag,
         CertificateInfo,
         PrismEditor,
+        ScreenshotDialog
     },
     data() {
         return {
@@ -474,6 +477,14 @@ export default {
          */
         deleteDialog() {
             this.$refs.confirmDelete.show();
+        },
+
+        /**
+         * Show Screenshot Dialog
+         * @returns {void}
+         */
+        showScreenshotDialog() {
+            this.$refs.screenshotDialog.show();
         },
 
         /**
