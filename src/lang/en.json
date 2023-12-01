@@ -660,6 +660,8 @@
     "Uptime Kuma URL": "Uptime Kuma URL",
     "setup a new monitor group": "setup a new monitor group",
     "openModalTo": "open modal to {0}",
+    "Add a domain": "Add a domain",
+    "Remove domain": "Remove domain '{0}'",
     "Icon Emoji": "Icon Emoji",
     "signalImportant": "IMPORTANT: You cannot mix groups and numbers in recipients!",
     "aboutWebhooks": "More info about Webhooks on: {0}",
