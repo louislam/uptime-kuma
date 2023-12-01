@@ -1203,7 +1203,7 @@ exports.zookeeperConnect = function (zookeeperHost, timeoutMs = 5000) {
 
         socket.on("connect", function () {
             log.debug("zookeeper", `connected to zookeeper: ${host}:${port}`);
-            socket.write(`ruok\n`, (err) => {
+            socket.write("ruok\n", (err) => {
                 if (err) {
                     log.debug("zookeeper", `error while writing to host [${err.message}]`);
                     reject(err);
