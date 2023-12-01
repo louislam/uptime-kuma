@@ -870,5 +870,8 @@
     "authUserInactiveOrDeleted": "Der Benutzer ist inaktiv oder gelöscht.",
     "successAdded": "Erfolgreich hinzugefügt.",
     "successAuthChangePassword": "Das Passwort wurde erfolgreich aktualisiert.",
-    "foundChromiumVersion": "Gefunden Chromium/Chrome. Version: {0}"
+    "foundChromiumVersion": "Gefunden Chromium/Chrome. Version: {0}",
+    "zabbixInstanceUrl": "Zabbix Instanz URL",
+    "zabbixAuthToken": "Zabbix Authentifizierungs Token",
+    "zabbixTriggerId": "Zabbix Trigger ID"
 }

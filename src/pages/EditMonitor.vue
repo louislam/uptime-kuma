@@ -82,6 +82,9 @@
                                         <option value="redis">
                                             Redis
                                         </option>
+                                        <option value="zabbix-trigger">
+                                            Zabbix Trigger
+                                        </option>
                                         <option v-if="!$root.info.isContainer" value="tailscale-ping">
                                             Tailscale Ping
                                         </option>
@@ -382,6 +385,23 @@
                                     <label for="radius_calling_station_id" class="form-label">{{ $t("RadiusCallingStationId") }}</label>
                                     <input id="radius_calling_station_id" v-model="monitor.radiusCallingStationId" type="text" class="form-control" required />
                                     <div class="form-text"> {{ $t( "RadiusCallingStationIdDescription") }} </div>
+                                </div>
+                            </template>
+
+                            <template v-if="monitor.type === 'zabbix-trigger'">
+                                <div class="my-3">
+                                    <label for="zabbix_instance_url" class="form-label">{{ $t("zabbixInstanceUrl") }}</label>
+                                    <input id="zabbix_instance_url" v-model="monitor.zabbixInstanceUrl" type="text" class="form-control" required />
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="zabbix_trigger_id" class="form-label">{{ $t("zabbixTriggerId") }}</label>
+                                    <input id="zabbix_trigger_id" v-model="monitor.zabbixTriggerId" type="text" class="form-control" required />
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="zabbix_auth_token" class="form-label">{{ $t("zabbixAuthToken") }}</label>
+                                    <input id="zabbix_auth_token" v-model="monitor.zabbixAuthToken" type="password" class="form-control" required />
                                 </div>
                             </template>
 

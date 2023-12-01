@@ -828,6 +828,9 @@ let needSetup = false;
                 bean.kafkaProducerAllowAutoTopicCreation =
                     monitor.kafkaProducerAllowAutoTopicCreation;
                 bean.gamedigGivenPortOnly = monitor.gamedigGivenPortOnly;
+                bean.zabbixInstanceUrl = monitor.zabbixInstanceUrl;
+                bean.zabbixAuthToken = monitor.zabbixAuthToken;
+                bean.zabbixTriggerId = monitor.zabbixTriggerId;
                 bean.remote_browser = monitor.remote_browser;
 
                 bean.validate();

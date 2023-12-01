@@ -869,5 +869,9 @@
     "useRemoteBrowser": "Use a Remote Browser",
     "deleteRemoteBrowserMessage": "Are you sure want to delete this Remote Browser for all monitors?",
     "GrafanaOncallUrl": "Grafana Oncall URL",
-    "Browser Screenshot": "Browser Screenshot"
+    "Browser Screenshot": "Browser Screenshot",
+    "GrafanaOncallUrl": "Grafana Oncall URL",
+    "zabbixInstanceUrl": "Zabbix Instance URL",
+    "zabbixAuthToken": "Zabbix Authentication Token",
+    "zabbixTriggerId": "Zabbix Trigger ID"
 }

@@ -154,6 +154,8 @@ class Monitor extends BeanModel {
             kafkaProducerAllowAutoTopicCreation: this.getKafkaProducerAllowAutoTopicCreation(),
             kafkaProducerMessage: this.kafkaProducerMessage,
             screenshot,
+            zabbixInstanceUrl: this.zabbixInstanceUrl,
+            zabbixTriggerId: this.zabbixTriggerId,
             remote_browser: this.remote_browser,
         };
 
@@ -184,6 +186,7 @@ class Monitor extends BeanModel {
                 tlsCert: this.tlsCert,
                 tlsKey: this.tlsKey,
                 kafkaProducerSaslOptions: JSON.parse(this.kafkaProducerSaslOptions),
+                zabbixAuthToken: this.zabbixAuthToken,
             };
         }
 
