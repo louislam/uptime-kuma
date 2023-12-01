@@ -860,7 +860,7 @@ const monitorDefaults = {
     interval: 60,
     retryInterval: 60,
     resendInterval: 0,
-    maxretries: 1,
+    maxretries: 0,
     timeout: 48,
     notificationIDList: {},
     ignoreTls: false,
