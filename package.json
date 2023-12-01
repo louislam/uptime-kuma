@@ -54,7 +54,7 @@
         "simple-mongo": "docker run --rm -p 27017:27017 mongo",
         "simple-postgres": "docker run --rm -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres",
         "simple-mariadb": "docker run --rm -p 3306:3306 -e MYSQL_ROOT_PASSWORD=mariadb# mariadb",
-        "simple-zookeeper": "docker run --rm -p  2181:2181 zookeeper",
+        "simple-zookeeper": "docker run --rm -p 2181:2181 -e 'ZOO_4LW_COMMANDS_WHITELIST=ruok,stat,mntr' zookeeper",
         "update-language-files": "cd extra/update-language-files && node index.js && cross-env-shell eslint ../../src/languages/$npm_config_language.js --fix",
         "release-final": "node ./extra/test-docker.js && node extra/update-version.js && npm run build-docker && node ./extra/press-any-key.js && npm run upload-artifacts && node ./extra/update-wiki-version.js",
         "release-beta": "node ./extra/test-docker.js && node extra/beta/update-version.js && npm run build && node ./extra/env2arg.js docker buildx build -f docker/dockerfile --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma:$VERSION -t louislam/uptime-kuma:beta .  --target release --push && node ./extra/press-any-key.js && npm run upload-artifacts",
