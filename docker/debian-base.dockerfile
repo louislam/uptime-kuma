@@ -27,7 +27,7 @@ RUN apt-get update && \
         ca-certificates \
         sudo \
         nscd && \
-    pip3 --no-cache-dir install apprise==1.4.5 && \
+    pip3 --no-cache-dir install apprise==1.6.0 && \
     rm -rf /var/lib/apt/lists/* && \
     apt --yes autoremove
 
