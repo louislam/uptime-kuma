@@ -2,6 +2,73 @@
     <transition name="slide-fade" appear>
         <div>
             <h1 class="mb-3">{{ pageName }}</h1>
+            <div id="accordionExample" class="accordion">
+                <div class="accordion-item">
+                    <h2 id="headingOne" class="accordion-header">
+                        <button
+                            class="accordion-button"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#collapseOne"
+                            aria-expanded="false"
+                            aria-controls="collapseOne"
+                        >
+                            <i class="fa fa-plus" aria-hidden="true"></i>Bulk
+                            Upload
+                        </button>
+                    </h2>
+                    <div
+                        id="collapseOne"
+                        class="accordion-collapse collapse"
+                        aria-labelledby="headingOne"
+                        data-bs-parent="#accordionExample"
+                    >
+                        <div class="accordion-body">
+                            <strong>Note: </strong> To add monitors in bulk,
+                            download the sample JSON or CSV file, make any necessary
+                            modifications, and upload it.
+                            <div class="row"><hr /></div>
+                            <div class="row">
+                                <div
+                                    class="col-md-12"
+                                    style="text-align: center"
+                                >
+                                    <label><a href="/sample_monitor_add.json" download="samplefile.json">Click here</a>
+                                        for download sample JSON file
+                                    </label>
+                                    |
+                                    <label><a href="/sample_advance_monitor.json" download="advance_samplefile.json">Click here</a>
+                                        for download advance monitor type services and its parameters. </label>
+                                </div>
+
+                                <div
+                                    class="col-md-12"
+                                    style="text-align: center"
+                                >
+                                    <label><a href="/sample.csv" download="samplefile.json">Click here</a>
+                                        for download sample CSV file
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="row"><hr /></div>
+
+                            <div class="row">
+                                <div class="col-md-2"></div>
+                                <div class="col-md-8">
+                                    <input
+                                        type="file"
+                                        accept=".json,.csv"
+                                        name="bulkfile"
+                                        class="form-control"
+                                        @change="handleFileUpload"
+                                    />
+                                </div>
+                                <div class="col-md-2"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <form @submit.prevent="submit">
                 <div class="shadow-box shadow-box-with-fixed-bottom-bar">
                     <div class="row">
@@ -1267,6 +1334,46 @@ message HealthCheckResponse {
         this.kafkaSaslMechanismOptions = kafkaSaslMechanismOptions;
     },
     methods: {
+        handleFileUpload(event) {
+            this.selectedFile = event.target.files[0];
+            const allowedFileTypes = [ "application/json", "text/csv" ];
+
+            console.log("MY FILE", this.selectedFile);
+            if (!allowedFileTypes.includes(this.selectedFile.type)) {
+                toast.error("Invalid file type. Please upload a JSON or CSV file.");
+            }
+            const maxSize = 5 * 1024 * 1024; // 5MB
+
+            if (this.selectedFile.size > maxSize) {
+                toast.error(
+                    "File size exceeds the 5MB limit. Please choose a smaller file."
+                );
+            }
+            let fType = "csv";
+            if (this.selectedFile.type === "application/json") {
+                fType = "json";
+            }
+
+            this.$root.bulkMonitorUpload([ this.selectedFile, fType ], async (res) => {
+                if (res.ok) {
+                    await this.$refs.tagsManager.submit(res.monitorID);
+
+                    // Start the new parent monitor after edit is done
+                    if (createdNewParent) {
+                        this.startParentGroupMonitor();
+                    }
+
+                    toast.success(res.msg);
+                    this.processing = false;
+                    this.$root.getMonitorList();
+                    this.$router.push("/dashboard/" + res.monitorID);
+                } else {
+                    toast.error(res.msg);
+                    this.processing = false;
+                }
+            });
+        },
+
         /**
          * Initialize the edit monitor form
          * @returns {void}
