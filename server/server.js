@@ -131,9 +131,10 @@ const testMode = !!args["test"] || false;
 const e2eTestMode = !!args["e2e"] || false;
 
 // Must be after io instantiation
-const { sendNotificationList, sendHeartbeatList, sendInfo, sendProxyList, sendDockerHostList, sendAPIKeyList } = require("./client");
+const { sendNotificationList, sendHeartbeatList, sendInfo, sendProxyList, sendDockerHostList, sendAPIKeyList, sendRemoteBrowserList } = require("./client");
 const { statusPageSocketHandler } = require("./socket-handlers/status-page-socket-handler");
 const databaseSocketHandler = require("./socket-handlers/database-socket-handler");
+const { remoteBrowserSocketHandler } = require("./socket-handlers/remote-browser-socket-handler");
 const TwoFA = require("./2fa");
 const StatusPage = require("./model/status_page");
 const { cloudflaredSocketHandler, autoStart: cloudflaredAutoStart, stop: cloudflaredStop } = require("./socket-handlers/cloudflared-socket-handler");
@@ -827,6 +828,7 @@ let needSetup = false;
                 bean.kafkaProducerAllowAutoTopicCreation =
                     monitor.kafkaProducerAllowAutoTopicCreation;
                 bean.gamedigGivenPortOnly = monitor.gamedigGivenPortOnly;
+                bean.remote_browser = monitor.remote_browser;
 
                 bean.validate();
 
@@ -1508,6 +1510,7 @@ let needSetup = false;
         dockerSocketHandler(socket);
         maintenanceSocketHandler(socket);
         apiKeySocketHandler(socket);
+        remoteBrowserSocketHandler(socket);
         generalSocketHandler(socket, server);
 
         log.debug("server", "added all socket handlers");
@@ -1616,6 +1619,7 @@ async function afterLogin(socket, user) {
     sendProxyList(socket);
     sendDockerHostList(socket);
     sendAPIKeyList(socket);
+    sendRemoteBrowserList(socket);
 
     await sleep(500);
 

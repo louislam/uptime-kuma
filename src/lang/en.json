@@ -859,6 +859,15 @@
     "successEnabled": "Enabled Successfully.",
     "tagNotFound": "Tag not found.",
     "foundChromiumVersion": "Found Chromium/Chrome. Version: {0}",
+    "Remote Browsers": "Remote Browsers",
+    "Remote Browser": "Remote Browser",
+    "Add a Remote Browser": "Add a Remote Browser",
+    "Remote Browser not found!": "Remote Browser not found!",
+    "remoteBrowsersDescription": "Remote Browsers are an alternative to running Chromium locally. Setup with a service like browserless.io or connect to your own",
+    "self-hosted container": "self-hosted container",
+    "remoteBrowserToggle": "By default Chromium runs inside the Uptime Kuma container. You can use a remote browser by toggling this switch.",
+    "useRemoteBrowser": "Use a Remote Browser",
+    "deleteRemoteBrowserMessage": "Are you sure want to delete this Remote Browser for all monitors?",
     "GrafanaOncallUrl": "Grafana Oncall URL",
     "Browser Screenshot": "Browser Screenshot"
 }
