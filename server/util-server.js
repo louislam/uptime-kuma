@@ -23,7 +23,7 @@ const radiusClient = require("node-radius-client");
 const redis = require("redis");
 const oidc = require("openid-client");
 const tls = require("tls");
-const ZooKeeper = require("zookeeper");
+const net = require("node:net");
 
 const {
     dictionaries: {
@@ -1167,38 +1167,48 @@ module.exports.axiosAbortSignal = (timeoutMs) => {
 };
 
 /**
- * Attempt to connect to the given zookeeper host under the given timeout.
+ * Connects to zookeeper host and sends "ruok", if response is "imok", then host is UP.
  * @param {string} zookeeperHost - The connection string for a single host in the form 'host:port'
  * @param {number} timeoutMs - Timeout in milliseconds under which connection must be established.
- * @returns {Promise<any>} The result of connection attempt
+ * @returns {Promise<any>} The result of connection check
  */
 exports.zookeeperConnect = function (zookeeperHost, timeoutMs = 5000) {
+    const hostPort = zookeeperHost.split(":");
+    const host = hostPort.shift();
+    const port = hostPort.shift();
+
     return new Promise((resolve, reject) => {
-        // Seems like zookeeper client behavior is to retry indefitiely on timeout.
-        // So, an explicit timer is needed to prevent the monitor from getting stuck.
-        const timer = setTimeout(() => {
-            reject(Error("Zookeeper operation timed out"));
-        }, timeoutMs);
+        let socket = net.connect({
+            host: host,
+            port: port,
+            timeout: timeoutMs,
+            onread: {
+                buffer: Buffer.alloc(1 * 1024), // 1KB fixed to cap very large response
+                callback: function (nread, buf) {
+                    let response = buf.toString("utf8", 0, nread);
+                    log.debug("zookeeper", `got response: [${response}]`);
+                    if (response === "imok") {
+                        resolve("imok");
+                    } else {
+                        reject(Error("zookeeper did not respond with imok"));
+                    }
+                },
+            },
+        });
 
-        const config = {
-            connect: zookeeperHost,
-            timeout: timeoutMs, // Causes the client to retry and does not fail.
-            debug_level: ZooKeeper.ZOO_LOG_LEVEL_WARN,
-            host_order_deterministic: false,
-        };
+        socket.once("error", function (err) {
+            log.debug("zookeeper", `error connecting to zookeeper [${err.message}]`);
+            reject(err);
+        });
 
-        const client = new ZooKeeper(config);
-
-        client.connect(config, (err, _) => {
-            if (err) {
-                clearTimeout(timer);
-                reject(err);
-            } else {
-                clearTimeout(timer);
-                resolve("Successfully connected");
-            }
-
-            client.close();
+        socket.on("connect", function () {
+            log.debug("zookeeper", `connected to zookeeper: ${host}:${port}`);
+            socket.write(`ruok\n`, (err) => {
+                if (err) {
+                    log.debug("zookeeper", `error while writing to host [${err.message}]`);
+                    reject(err);
+                }
+            });
         });
     });
 };
