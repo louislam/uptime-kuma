@@ -60,7 +60,7 @@
             <div class="mt-1 mb-3 ps-2 cert-exp-days col-12 col-xl-6">
                 <div v-for="day in settings.tlsExpiryNotifyDays" :key="day" class="d-flex align-items-center justify-content-between cert-exp-day-row py-2">
                     <span>{{ day }} {{ $tc("day", day) }}</span>
-                    <button type="button" class="btn-rm-expiry btn btn-outline-danger ms-2 py-1" @click="removeExpiryNotifDay(day)" :aria-label="$t('Remove the expiry notification')">
+                    <button type="button" class="btn-rm-expiry btn btn-outline-danger ms-2 py-1" :aria-label="$t('Remove the expiry notification')" @click="removeExpiryNotifDay(day)">
                         <font-awesome-icon icon="times" />
                     </button>
                 </div>
