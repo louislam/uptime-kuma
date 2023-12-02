@@ -1,6 +1,13 @@
 // Generate on GitHub
 const input = `
-* Add Korean translation by @Alanimdeo in https://github.com/louislam/dockge/pull/86
+* Change execSync/spawnSync to async by @louislam in https://github.com/louislam/uptime-kuma/pull/4123
+* Update gamedig from ~4.1.0 to ^4.2.0 by @louislam in https://github.com/louislam/uptime-kuma/pull/4136
+* Default Retries from 1 to 0 by @louislam in https://github.com/louislam/uptime-kuma/pull/4139
+* Update apprise from 1.4.5 to 1.6.0 by @louislam in https://github.com/louislam/uptime-kuma/pull/4140
+* Add support for /snap/bin/chromium by @louislam in https://github.com/louislam/uptime-kuma/pull/4141
+* accessible \`ActionSelect\`/ \`ActionInput\` by @CommanderStorm in https://github.com/louislam/uptime-kuma/pull/4132
+* accessible domain selector by @CommanderStorm in https://github.com/louislam/uptime-kuma/pull/4133
+
 `;
 
 const template = `
