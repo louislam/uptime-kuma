@@ -62,7 +62,7 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       - run: npm install npm@9 -g
-      - run: npm ci --omit=dev,optional
+      - run: npm ci --omit=dev --omit=optional
 
   check-linters:
     runs-on: ubuntu-latest
