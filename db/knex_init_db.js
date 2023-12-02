@@ -124,6 +124,9 @@ async function createTables() {
         table.integer("resend_interval").notNullable().defaultTo(0);
         table.integer("packet_size").notNullable().defaultTo(56);
         table.string("game", 255);
+        table.text("zabbix_instance_url");
+        table.text("zabbix_auth_token");
+        table.integer("zabbix_trigger_id");
     });
 
     // heartbeat
