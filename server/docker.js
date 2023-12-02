@@ -1,10 +1,10 @@
 const axios = require("axios");
 const { R } = require("redbean-node");
-const version = require("../package.json").version;
 const https = require("https");
 const fs = require("fs");
 const path = require("path");
 const Database = require("./database");
+const { axiosAbortSignal } = require("./util-server");
 
 class DockerHost {
 
@@ -70,9 +70,11 @@ class DockerHost {
     static async testDockerHost(dockerHost) {
         const options = {
             url: "/containers/json?all=true",
+            timeout: 5000,
             headers: {
                 "Accept": "*/*",
             },
+            signal: axiosAbortSignal(6000),
         };
 
         if (dockerHost.dockerType === "socket") {
@@ -82,26 +84,33 @@ class DockerHost {
             options.httpsAgent = new https.Agent(DockerHost.getHttpsAgentOptions(dockerHost.dockerType, options.baseURL));
         }
 
-        let res = await axios.request(options);
+        try {
+            let res = await axios.request(options);
 
-        if (Array.isArray(res.data)) {
+            if (Array.isArray(res.data)) {
 
-            if (res.data.length > 1) {
+                if (res.data.length > 1) {
 
-                if ("ImageID" in res.data[0]) {
-                    return res.data.length;
+                    if ("ImageID" in res.data[0]) {
+                        return res.data.length;
+                    } else {
+                        throw new Error("Invalid Docker response, is it Docker really a daemon?");
+                    }
+
                 } else {
-                    throw new Error("Invalid Docker response, is it Docker really a daemon?");
+                    return res.data.length;
                 }
 
             } else {
-                return res.data.length;
+                throw new Error("Invalid Docker response, is it Docker really a daemon?");
             }
-
-        } else {
-            throw new Error("Invalid Docker response, is it Docker really a daemon?");
+        } catch (e) {
+            if (e.code === "ECONNABORTED" || e.name === "CanceledError") {
+                throw new Error("Connection to Docker daemon timed out.");
+            } else {
+                throw e;
+            }
         }
-
     }
 
     /**
