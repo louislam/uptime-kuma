@@ -315,7 +315,9 @@
                                 <div class="mb-3">
                                     <label for="docker-host" class="form-label">{{ $t("Docker Host") }}</label>
                                     <ActionSelect
+                                        id="docker-host"
                                         v-model="monitor.docker_host"
+                                        :action-aria-label="$t('openModalTo', $t('Setup Docker Host'))"
                                         :options="dockerHostOptionsList"
                                         :disabled="$root.dockerHostList == null || $root.dockerHostList.length === 0"
                                         :icon="'plus'"
@@ -525,9 +527,11 @@
 
                             <!-- Parent Monitor -->
                             <div class="my-3">
-                                <label for="parent" class="form-label">{{ $t("Monitor Group") }}</label>
+                                <label for="monitorGroupSelector" class="form-label">{{ $t("Monitor Group") }}</label>
                                 <ActionSelect
+                                    id="monitorGroupSelector"
                                     v-model="monitor.parent"
+                                    :action-aria-label="$t('openModalTo', 'setup a new monitor group')"
                                     :options="parentMonitorOptionsList"
                                     :disabled="sortedGroupMonitorList.length === 0 && draftGroupName == null"
                                     :icon="'plus'"
@@ -892,7 +896,7 @@ const monitorDefaults = {
     interval: 60,
     retryInterval: 60,
     resendInterval: 0,
-    maxretries: 1,
+    maxretries: 0,
     timeout: 48,
     notificationIDList: {},
     ignoreTls: false,

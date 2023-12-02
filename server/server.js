@@ -1337,9 +1337,9 @@ let needSetup = false;
                 // Update nscd status
                 if (previousNSCDStatus !== data.nscd) {
                     if (data.nscd) {
-                        server.startNSCDServices();
+                        await server.startNSCDServices();
                     } else {
-                        server.stopNSCDServices();
+                        await server.stopNSCDServices();
                     }
                 }
 

@@ -44,6 +44,7 @@ if (process.platform === "win32") {
         "/usr/bin/chromium",
         "/usr/bin/chromium-browser",
         "/usr/bin/google-chrome",
+        "/snap/bin/chromium",           // Ubuntu
     ];
 } else if (process.platform === "darwin") {
     allowedList = [

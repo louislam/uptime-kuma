@@ -44,7 +44,7 @@
         "build-docker-nightly-local": "npm run build && docker build -f docker/dockerfile -t louislam/uptime-kuma:nightly2 --target nightly .",
         "build-docker-pr-test": "docker buildx build -f docker/dockerfile --platform linux/amd64,linux/arm64 -t louislam/uptime-kuma:pr-test2 --target pr-test2 . --push",
         "upload-artifacts": "docker buildx build -f docker/dockerfile --platform linux/amd64 -t louislam/uptime-kuma:upload-artifact --build-arg VERSION --build-arg GITHUB_TOKEN --target upload-artifact . --progress plain",
-        "setup": "git checkout 1.23.7 && npm ci --production && npm run download-dist",
+        "setup": "git checkout 1.23.8 && npm ci --production && npm run download-dist",
         "download-dist": "node extra/download-dist.js",
         "mark-as-nightly": "node extra/mark-as-nightly.js",
         "reset-password": "node extra/reset-password.js",
@@ -96,7 +96,7 @@
         "express-basic-auth": "~1.2.1",
         "express-static-gzip": "~2.1.7",
         "form-data": "~4.0.0",
-        "gamedig": "~4.1.0",
+        "gamedig": "^4.2.0",
         "http-cookie-agent": "~5.0.4",
         "html-escaper": "^3.0.3",
         "http-graceful-shutdown": "~3.1.7",
@@ -130,6 +130,7 @@
         "playwright-core": "~1.35.1",
         "prom-client": "~13.2.0",
         "prometheus-api-metrics": "~3.2.1",
+        "promisify-child-process": "~4.1.2",
         "protobufjs": "~7.2.4",
         "qs": "~6.10.4",
         "redbean-node": "~0.3.0",
@@ -205,7 +206,7 @@
         "vue-router": "~4.0.14",
         "vue-toastification": "~2.0.0-rc.5",
         "vuedraggable": "~4.1.0",
-        "wait-on": "^6.0.1",
+        "wait-on": "^7.2.0",
         "whatwg-url": "~12.0.1"
     }
 }

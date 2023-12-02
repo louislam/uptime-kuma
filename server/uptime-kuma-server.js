@@ -10,7 +10,7 @@ const util = require("util");
 const { CacheableDnsHttpAgent } = require("./cacheable-dns-http-agent");
 const { Settings } = require("./settings");
 const dayjs = require("dayjs");
-const childProcess = require("child_process");
+const childProcessAsync = require("promisify-child-process");
 const path = require("path");
 const axios = require("axios");
 // DO NOT IMPORT HERE IF THE MODULES USED `UptimeKumaServer.getInstance()`, put at the bottom of this file instead.
@@ -372,7 +372,7 @@ class UptimeKumaServer {
         let enable = await Settings.get("nscd");
 
         if (enable || enable === null) {
-            this.startNSCDServices();
+            await this.startNSCDServices();
         }
     }
 
@@ -384,7 +384,7 @@ class UptimeKumaServer {
         let enable = await Settings.get("nscd");
 
         if (enable || enable === null) {
-            this.stopNSCDServices();
+            await this.stopNSCDServices();
         }
     }
 
@@ -393,11 +393,11 @@ class UptimeKumaServer {
      * For now, only used in Docker
      * @returns {void}
      */
-    startNSCDServices() {
+    async startNSCDServices() {
         if (process.env.UPTIME_KUMA_IS_CONTAINER) {
             try {
                 log.info("services", "Starting nscd");
-                childProcess.execSync("sudo service nscd start", { stdio: "pipe" });
+                await childProcessAsync.exec("sudo service nscd start");
             } catch (e) {
                 log.info("services", "Failed to start nscd");
             }
@@ -408,11 +408,11 @@ class UptimeKumaServer {
      * Stop all system services
      * @returns {void}
      */
-    stopNSCDServices() {
+    async stopNSCDServices() {
         if (process.env.UPTIME_KUMA_IS_CONTAINER) {
             try {
                 log.info("services", "Stopping nscd");
-                childProcess.execSync("sudo service nscd stop");
+                await childProcessAsync.exec("sudo service nscd stop");
             } catch (e) {
                 log.info("services", "Failed to stop nscd");
             }
