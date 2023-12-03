@@ -5,33 +5,24 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 id="exampleModalLabel" class="modal-title">
-                            {{ $t("Setup Docker Host") }}
+                            {{ $t("Add a Remote Browser") }}
                         </h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" />
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label for="docker-name" class="form-label">{{ $t("Friendly Name") }}</label>
-                            <input id="docker-name" v-model="dockerHost.name" type="text" class="form-control" required>
+                            <label for="remote-browser-name" class="form-label">{{ $t("Friendly Name") }}</label>
+                            <input id="remote-browser-name" v-model="remoteBrowser.name" type="text" class="form-control" required>
                         </div>
 
                         <div class="mb-3">
-                            <label for="docker-type" class="form-label">{{ $t("Connection Type") }}</label>
-                            <select id="docker-type" v-model="dockerHost.dockerType" class="form-select">
-                                <option v-for="type in connectionTypes" :key="type" :value="type">{{ $t(type) }}</option>
-                            </select>
-                        </div>
+                            <label for="remote-browser-url" class="form-label">{{ $t("URL") }}</label>
+                            <input id="remote-browser-url" v-model="remoteBrowser.url" type="text" class="form-control" required>
 
-                        <div class="mb-3">
-                            <label for="docker-daemon" class="form-label">{{ $t("Docker Daemon") }}</label>
-                            <input id="docker-daemon" v-model="dockerHost.dockerDaemon" type="text" class="form-control" required>
-
-                            <div class="form-text">
+                            <div class="form-text mt-3">
                                 {{ $t("Examples") }}:
                                 <ul>
-                                    <li>/var/run/docker.sock</li>
-                                    <li>http://localhost:2375</li>
-                                    <li>https://localhost:2376 (TLS)</li>
+                                    <li>ws://chrome.browserless.io/playwright?token=YOUR-API-TOKEN</li>
                                 </ul>
                             </div>
                         </div>
@@ -55,11 +46,11 @@
     </form>
 
     <Confirm ref="confirmDelete" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="deleteDockerHost">
-        {{ $t("deleteDockerHostMsg") }}
+        {{ $t("deleteRemoteBrowserMessage") }}
     </Confirm>
 </template>
 
-<script lang="ts">
+<script>
 import { Modal } from "bootstrap";
 import Confirm from "./Confirm.vue";
 
@@ -68,17 +59,15 @@ export default {
         Confirm,
     },
     props: {},
-    emits: [ "added", "deleted" ],
+    emits: [ "added" ],
     data() {
         return {
             modal: null,
             processing: false,
             id: null,
-            connectionTypes: [ "socket", "tcp" ],
-            dockerHost: {
+            remoteBrowser: {
                 name: "",
-                dockerDaemon: "",
-                dockerType: "",
+                url: "",
                 // Do not set default value here, please scroll to show()
             }
         };
@@ -100,33 +89,32 @@ export default {
 
         /**
          * Show specified docker host
-         * @param {number} dockerHostID ID of host to show
+         * @param {number} remoteBrowserID ID of host to show
          * @returns {void}
          */
-        show(dockerHostID) {
-            if (dockerHostID) {
+        show(remoteBrowserID) {
+            if (remoteBrowserID) {
                 let found = false;
 
-                this.id = dockerHostID;
+                this.id = remoteBrowserID;
 
-                for (let n of this.$root.dockerHostList) {
-                    if (n.id === dockerHostID) {
-                        this.dockerHost = n;
+                for (let n of this.$root.remoteBrowserList) {
+                    if (n.id === remoteBrowserID) {
+                        this.remoteBrowser = n;
                         found = true;
                         break;
                     }
                 }
 
                 if (!found) {
-                    this.$root.toastError("Docker Host not found!");
+                    this.$root.toastError(this.$t("Remote Browser not found!"));
                 }
 
             } else {
                 this.id = null;
-                this.dockerHost = {
+                this.remoteBrowser = {
                     name: "",
-                    dockerType: "socket",
-                    dockerDaemon: "/var/run/docker.sock",
+                    url: "",
                 };
             }
 
@@ -139,7 +127,7 @@ export default {
          */
         submit() {
             this.processing = true;
-            this.$root.getSocket().emit("addDockerHost", this.dockerHost, this.id, (res) => {
+            this.$root.getSocket().emit("addRemoteBrowser", this.remoteBrowser, this.id, (res) => {
                 this.$root.toastRes(res);
                 this.processing = false;
 
@@ -161,7 +149,7 @@ export default {
          */
         test() {
             this.processing = true;
-            this.$root.getSocket().emit("testDockerHost", this.dockerHost, (res) => {
+            this.$root.getSocket().emit("testRemoteBrowser", this.remoteBrowser, (res) => {
                 this.$root.toastRes(res);
                 this.processing = false;
             });
@@ -173,12 +161,11 @@ export default {
          */
         deleteDockerHost() {
             this.processing = true;
-            this.$root.getSocket().emit("deleteDockerHost", this.id, (res) => {
+            this.$root.getSocket().emit("deleteRemoteBrowser", this.id, (res) => {
                 this.$root.toastRes(res);
                 this.processing = false;
 
                 if (res.ok) {
-                    this.$emit("deleted", this.id);
                     this.modal.hide();
                 }
             });

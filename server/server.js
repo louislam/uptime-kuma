@@ -131,9 +131,10 @@ const testMode = !!args["test"] || false;
 const e2eTestMode = !!args["e2e"] || false;
 
 // Must be after io instantiation
-const { sendNotificationList, sendHeartbeatList, sendInfo, sendProxyList, sendDockerHostList, sendAPIKeyList } = require("./client");
+const { sendNotificationList, sendHeartbeatList, sendInfo, sendProxyList, sendDockerHostList, sendAPIKeyList, sendRemoteBrowserList } = require("./client");
 const { statusPageSocketHandler } = require("./socket-handlers/status-page-socket-handler");
 const databaseSocketHandler = require("./socket-handlers/database-socket-handler");
+const { remoteBrowserSocketHandler } = require("./socket-handlers/remote-browser-socket-handler");
 const TwoFA = require("./2fa");
 const StatusPage = require("./model/status_page");
 const { cloudflaredSocketHandler, autoStart: cloudflaredAutoStart, stop: cloudflaredStop } = require("./socket-handlers/cloudflared-socket-handler");
@@ -318,12 +319,12 @@ let needSetup = false;
                     decoded.username,
                 ]);
 
-                // Check if the password changed
-                if (decoded.h !== shake256(user.password, SHAKE256_LENGTH)) {
-                    throw new Error("The token is invalid due to password change or old token");
-                }
-
                 if (user) {
+                    // Check if the password changed
+                    if (decoded.h !== shake256(user.password, SHAKE256_LENGTH)) {
+                        throw new Error("The token is invalid due to password change or old token");
+                    }
+
                     log.debug("auth", "afterLogin");
                     afterLogin(socket, user);
                     log.debug("auth", "afterLogin ok");
@@ -798,6 +799,7 @@ let needSetup = false;
                 bean.mqttPassword = monitor.mqttPassword;
                 bean.mqttTopic = monitor.mqttTopic;
                 bean.mqttSuccessMessage = monitor.mqttSuccessMessage;
+                bean.mqttCheckType = monitor.mqttCheckType;
                 bean.databaseConnectionString = monitor.databaseConnectionString;
                 bean.databaseQuery = monitor.databaseQuery;
                 bean.authMethod = monitor.authMethod;
@@ -823,7 +825,11 @@ let needSetup = false;
                 bean.kafkaProducerAllowAutoTopicCreation = monitor.kafkaProducerAllowAutoTopicCreation;
                 bean.kafkaProducerSaslOptions = JSON.stringify(monitor.kafkaProducerSaslOptions);
                 bean.kafkaProducerMessage = monitor.kafkaProducerMessage;
+                bean.kafkaProducerSsl = monitor.kafkaProducerSsl;
+                bean.kafkaProducerAllowAutoTopicCreation =
+                    monitor.kafkaProducerAllowAutoTopicCreation;
                 bean.gamedigGivenPortOnly = monitor.gamedigGivenPortOnly;
+                bean.remote_browser = monitor.remote_browser;
 
                 bean.validate();
 
@@ -1332,9 +1338,9 @@ let needSetup = false;
                 // Update nscd status
                 if (previousNSCDStatus !== data.nscd) {
                     if (data.nscd) {
-                        server.startNSCDServices();
+                        await server.startNSCDServices();
                     } else {
-                        server.stopNSCDServices();
+                        await server.stopNSCDServices();
                     }
                 }
 
@@ -1505,6 +1511,7 @@ let needSetup = false;
         dockerSocketHandler(socket);
         maintenanceSocketHandler(socket);
         apiKeySocketHandler(socket);
+        remoteBrowserSocketHandler(socket);
         generalSocketHandler(socket, server);
 
         log.debug("server", "added all socket handlers");
@@ -1613,6 +1620,7 @@ async function afterLogin(socket, user) {
     sendProxyList(socket);
     sendDockerHostList(socket);
     sendAPIKeyList(socket);
+    sendRemoteBrowserList(socket);
 
     await sleep(500);
 
@@ -1725,6 +1733,7 @@ async function pauseMonitor(userID, monitorID) {
 
     if (monitorID in server.monitorList) {
         server.monitorList[monitorID].stop();
+        server.monitorList[monitorID].active = 0;
     }
 }
 
@@ -1793,8 +1802,10 @@ gracefulShutdown(server.httpServer, {
 });
 
 // Catch unexpected errors here
-process.addListener("unhandledRejection", (error, promise) => {
+let unexpectedErrorHandler = (error, promise) => {
     console.trace(error);
     UptimeKumaServer.errorLog(error, false);
     console.error("If you keep encountering errors, please report to https://github.com/louislam/uptime-kuma/issues");
-});
+};
+process.addListener("unhandledRejection", unexpectedErrorHandler);
+process.addListener("uncaughtException", unexpectedErrorHandler);
