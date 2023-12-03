@@ -1,5 +1,5 @@
 const { R } = require("redbean-node");
-const { testRemoteBrowser } = require("./monitor-types/real-browser-monitor-type.js");
+
 class RemoteBrowser {
 
     /**
@@ -65,16 +65,6 @@ class RemoteBrowser {
         await R.exec("UPDATE monitor SET remote_browser = null WHERE remote_browser = ?", [ remoteBrowserID ]);
 
         await R.trash(bean);
-    }
-
-    /**
-     * Tests the connection to Remote Browser
-     * @param {object} remoteBrowser Docker host to check for
-     * @returns {boolean} Returns if connection worked
-     */
-    static async test(remoteBrowser) {
-        const testResult = await testRemoteBrowser(remoteBrowser.id, remoteBrowser.user_id);
-        return testResult;
     }
 
 }
