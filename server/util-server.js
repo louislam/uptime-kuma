@@ -7,7 +7,6 @@ const { Resolver } = require("dns");
 const childProcess = require("child_process");
 const iconv = require("iconv-lite");
 const chardet = require("chardet");
-const mqtt = require("mqtt");
 const chroma = require("chroma-js");
 const { badgeConstants } = require("./config");
 const mssql = require("mssql");
@@ -170,73 +169,6 @@ exports.pingAsync = function (hostname, ipv6 = false, size = 56) {
         }).catch((err) => {
             reject(err);
         });
-    });
-};
-
-/**
- * MQTT Monitor
- * @param {string} hostname Hostname / address of machine to test
- * @param {string} topic MQTT topic
- * @param {string} okMessage Expected result
- * @param {object} options MQTT options. Contains port, username,
- * password and interval (interval defaults to 20)
- * @returns {Promise<string>} Received MQTT message
- */
-exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
-    return new Promise((resolve, reject) => {
-        const { port, username, password, interval = 20 } = options;
-
-        // Adds MQTT protocol to the hostname if not already present
-        if (!/^(?:http|mqtt|ws)s?:\/\//.test(hostname)) {
-            hostname = "mqtt://" + hostname;
-        }
-
-        const timeoutID = setTimeout(() => {
-            log.debug("mqtt", "MQTT timeout triggered");
-            client.end();
-            reject(new Error("Timeout"));
-        }, interval * 1000 * 0.8);
-
-        const mqttUrl = `${hostname}:${port}`;
-
-        log.debug("mqtt", `MQTT connecting to ${mqttUrl}`);
-
-        let client = mqtt.connect(mqttUrl, {
-            username,
-            password
-        });
-
-        client.on("connect", () => {
-            log.debug("mqtt", "MQTT connected");
-
-            try {
-                log.debug("mqtt", "MQTT subscribe topic");
-                client.subscribe(topic);
-            } catch (e) {
-                client.end();
-                clearTimeout(timeoutID);
-                reject(new Error("Cannot subscribe topic"));
-            }
-        });
-
-        client.on("error", (error) => {
-            client.end();
-            clearTimeout(timeoutID);
-            reject(error);
-        });
-
-        client.on("message", (messageTopic, message) => {
-            if (messageTopic === topic) {
-                client.end();
-                clearTimeout(timeoutID);
-                if (okMessage != null && okMessage !== "" && message.toString() !== okMessage) {
-                    reject(new Error(`Message Mismatch - Topic: ${messageTopic}; Message: ${message.toString()}`));
-                } else {
-                    resolve(`Topic: ${messageTopic}; Message: ${message.toString()}`);
-                }
-            }
-        });
-
     });
 };
 

@@ -349,11 +349,33 @@
                                 </div>
 
                                 <div class="my-3">
-                                    <label for="mqttSuccessMessage" class="form-label">MQTT {{ $t("successMessage") }}</label>
-                                    <input id="mqttSuccessMessage" v-model="monitor.mqttSuccessMessage" type="text" class="form-control">
+                                    <label for="mqttCheckType" class="form-label">MQTT {{ $t("Check Type") }}</label>
+                                    <select id="mqttCheckType" v-model="monitor.mqttCheckType" class="form-select" required>
+                                        <option value="keyword">{{ $t("Keyword") }}</option>
+                                        <option value="json-query">{{ $t("Json Query") }}</option>
+                                    </select>
+                                </div>
+
+                                <div v-if="monitor.mqttCheckType === 'keyword'" class="my-3">
+                                    <label for="mqttSuccessKeyword" class="form-label">MQTT {{ $t("successKeyword") }}</label>
+                                    <input id="mqttSuccessKeyword" v-model="monitor.mqttSuccessMessage" type="text" class="form-control">
                                     <div class="form-text">
-                                        {{ $t("successMessageExplanation") }}
+                                        {{ $t("successKeywordExplanation") }}
                                     </div>
+                                </div>
+
+                                <!-- Json Query -->
+                                <div v-if="monitor.mqttCheckType === 'json-query'" class="my-3">
+                                    <label for="jsonPath" class="form-label">{{ $t("Json Query") }}</label>
+                                    <input id="jsonPath" v-model="monitor.jsonPath" type="text" class="form-control" required>
+
+                                    <!-- eslint-disable-next-line vue/no-v-html -->
+                                    <div class="form-text" v-html="$t('jsonQueryDescription')">
+                                    </div>
+                                    <br>
+
+                                    <label for="expectedValue" class="form-label">{{ $t("Expected Value") }}</label>
+                                    <input id="expectedValue" v-model="monitor.expectedValue" type="text" class="form-control" required>
                                 </div>
                             </template>
 
@@ -914,6 +936,7 @@ const monitorDefaults = {
     mqttPassword: "",
     mqttTopic: "",
     mqttSuccessMessage: "",
+    mqttCheckType: "keyword",
     authMethod: null,
     oauth_auth_method: "client_secret_basic",
     httpBodyEncoding: "json",
