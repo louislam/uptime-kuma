@@ -1,5 +1,3 @@
-import fs from "fs";
-
 const tcpp = require("tcp-ping");
 const ping = require("@louislam/ping");
 const { R } = require("redbean-node");
@@ -24,6 +22,7 @@ const radiusClient = require("node-radius-client");
 const redis = require("redis");
 const oidc = require("openid-client");
 const tls = require("tls");
+const fs = require("fs");
 
 const {
     dictionaries: {
