@@ -46,6 +46,7 @@ export default {
             tlsInfoList: {},
             notificationList: [],
             dockerHostList: [],
+            remoteBrowserList: [],
             statusPageListLoaded: false,
             statusMonitorListLoaded: false,
             statusPageList: [],
@@ -174,6 +175,10 @@ export default {
 
             socket.on("dockerHostList", (data) => {
                 this.dockerHostList = data;
+            });
+
+            socket.on("remoteBrowserList", (data) => {
+                this.remoteBrowserList = data;
             });
 
             socket.on("heartbeat", (data) => {

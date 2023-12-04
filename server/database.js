@@ -274,7 +274,14 @@ class Database {
                     user: dbConfig.username,
                     password: dbConfig.password,
                     database: dbConfig.dbName,
-                    timezone: "+00:00",
+                    timezone: "Z",
+                    typeCast: function (field, next) {
+                        if (field.type === "DATETIME") {
+                            // Do not perform timezone conversion
+                            return field.string();
+                        }
+                        return next();
+                    },
                 },
                 pool: mariadbPoolConfig,
             };
@@ -288,6 +295,14 @@ class Database {
                     socketPath: embeddedMariaDB.socketPath,
                     user: "node",
                     database: "kuma",
+                    timezone: "Z",
+                    typeCast: function (field, next) {
+                        if (field.type === "DATETIME") {
+                            // Do not perform timezone conversion
+                            return field.string();
+                        }
+                        return next();
+                    },
                 },
                 pool: mariadbPoolConfig,
             };
