@@ -30,11 +30,11 @@ const main = async () => {
                 let password;
                 let confirmPassword;
 
-                // When called with "--new_password" argument for unattended modification (e.g. npm run reset-password -- --new_password=secret)
-                if ("new_password" in args) {
+                // When called with "--new-password" argument for unattended modification (e.g. npm run reset-password -- --new_password=secret)
+                if ("new-password" in args) {
                     console.log("Using password from argument");
                     console.warn("\x1b[31m%s\x1b[0m", "Warning: the password might be stored, in plain text, in your shell's history");
-                    password = confirmPassword = args.new_password;
+                    password = confirmPassword = args["new-password"];
                 } else {
                     password = await question("New Password: ");
                     confirmPassword = await question("Confirm New Password: ");
