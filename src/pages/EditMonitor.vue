@@ -31,7 +31,7 @@
                             <div class="row">
                                 <div
                                     class="col-md-12"
-                                    style="text-align: center"
+                                    style="text-align: center;"
                                 >
                                     <label><a href="/sample_monitor_add.json" download="samplefile.json">Click here</a>
                                         for download sample JSON file
@@ -43,7 +43,7 @@
 
                                 <div
                                     class="col-md-12"
-                                    style="text-align: center"
+                                    style="text-align: center;"
                                 >
                                     <label><a href="/sample.csv" download="samplefile.json">Click here</a>
                                         for download sample CSV file
