@@ -12,6 +12,10 @@ const rl = readline.createInterface({
 });
 
 const main = async () => {
+    if ("dry-run" in args) {
+        console.log("Dry run mode, no changes will be made.");
+    }
+
     console.log("Connecting the database");
     Database.initDataDir(args);
     await Database.connect(false, false, true);
@@ -41,11 +45,12 @@ const main = async () => {
                 }
 
                 if (password === confirmPassword) {
-                    await User.resetPassword(user.id, password);
+                    if (!("dry-run" in args)) {
+                        await User.resetPassword(user.id, password);
 
-                    // Reset all sessions by reset jwt secret
-                    await initJWTSecret();
-
+                        // Reset all sessions by reset jwt secret
+                        await initJWTSecret();
+                    }
                     break;
                 } else {
                     console.log("Passwords do not match, please try again.");
