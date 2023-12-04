@@ -80,21 +80,9 @@ class UptimeKumaServer {
      */
     constructor(args) {
         // SSL
-        const sslKey =
-            args["ssl-key"] ||
-            process.env.UPTIME_KUMA_SSL_KEY ||
-            process.env.SSL_KEY ||
-            undefined;
-        const sslCert =
-            args["ssl-cert"] ||
-            process.env.UPTIME_KUMA_SSL_CERT ||
-            process.env.SSL_CERT ||
-            undefined;
-        const sslKeyPassphrase =
-            args["ssl-key-passphrase"] ||
-            process.env.UPTIME_KUMA_SSL_KEY_PASSPHRASE ||
-            process.env.SSL_KEY_PASSPHRASE ||
-            undefined;
+        const sslKey = args["ssl-key"] || process.env.UPTIME_KUMA_SSL_KEY || process.env.SSL_KEY || undefined;
+        const sslCert = args["ssl-cert"] || process.env.UPTIME_KUMA_SSL_CERT || process.env.SSL_CERT || undefined;
+        const sslKeyPassphrase = args["ssl-key-passphrase"] || process.env.UPTIME_KUMA_SSL_KEY_PASSPHRASE || process.env.SSL_KEY_PASSPHRASE || undefined;
 
         // Set axios default user-agent to Uptime-Kuma/version
         axios.defaults.headers.common["User-Agent"] = this.getUserAgent();
@@ -106,14 +94,11 @@ class UptimeKumaServer {
         this.app = express();
         if (sslKey && sslCert) {
             log.info("server", "Server Type: HTTPS");
-            this.httpServer = https.createServer(
-                {
-                    key: fs.readFileSync(sslKey),
-                    cert: fs.readFileSync(sslCert),
-                    passphrase: sslKeyPassphrase,
-                },
-                this.app
-            );
+            this.httpServer = https.createServer({
+                key: fs.readFileSync(sslKey),
+                cert: fs.readFileSync(sslCert),
+                passphrase: sslKeyPassphrase,
+            }, this.app);
         } else {
             log.info("server", "Server Type: HTTP");
             this.httpServer = http.createServer(this.app);
@@ -124,21 +109,15 @@ class UptimeKumaServer {
         } catch (e) {
             // "dist/index.html" is not necessary for development
             if (process.env.NODE_ENV !== "development") {
-                log.error(
-                    "server",
-                    "Error: Cannot find 'dist/index.html', did you install correctly?"
-                );
+                log.error("server", "Error: Cannot find 'dist/index.html', did you install correctly?");
                 process.exit(1);
             }
         }
 
         // Set Monitor Types
-        UptimeKumaServer.monitorTypeList["real-browser"] =
-            new RealBrowserMonitorType();
-        UptimeKumaServer.monitorTypeList["real-browser-keyword"] =
-            new RealBrowserKeywordMonitorType();
-        UptimeKumaServer.monitorTypeList["tailscale-ping"] =
-            new TailscalePing();
+        UptimeKumaServer.monitorTypeList["real-browser"] = new RealBrowserMonitorType();
+        UptimeKumaServer.monitorTypeList["real-browser-keyword"] = new RealBrowserKeywordMonitorType();
+        UptimeKumaServer.monitorTypeList["tailscale-ping"] = new TailscalePing();
         UptimeKumaServer.monitorTypeList["dns"] = new DnsMonitorType();
 
         this.io = new Server(this.httpServer);
@@ -183,11 +162,9 @@ class UptimeKumaServer {
     async getMonitorJSONList(userID) {
         let result = {};
 
-        let monitorList = await R.find(
-            "monitor",
-            " user_id = ? ORDER BY weight DESC, name",
-            [ userID ]
-        );
+        let monitorList = await R.find("monitor", " user_id = ? ORDER BY weight DESC, name", [
+            userID,
+        ]);
 
         for (let monitor of monitorList) {
             result[monitor.id] = await monitor.toJSON();
@@ -224,9 +201,7 @@ class UptimeKumaServer {
     async getMaintenanceJSONList(userID) {
         let result = {};
         for (let maintenanceID in this.maintenanceList) {
-            result[maintenanceID] = await this.maintenanceList[
-                maintenanceID
-            ].toJSON();
+            result[maintenanceID] = await this.maintenanceList[maintenanceID].toJSON();
         }
         return result;
     }
@@ -237,11 +212,9 @@ class UptimeKumaServer {
      * @returns {Promise<void>}
      */
     async loadMaintenanceList(userID) {
-        let maintenanceList = await R.findAll(
-            "maintenance",
-            " ORDER BY end_date DESC, title",
-            []
-        );
+        let maintenanceList = await R.findAll("maintenance", " ORDER BY end_date DESC, title", [
+
+        ]);
 
         for (let maintenance of maintenanceList) {
             this.maintenanceList[maintenance.id] = maintenance;
@@ -268,12 +241,9 @@ class UptimeKumaServer {
      * @returns {void}
      */
     static errorLog(error, outputToConsole = true) {
-        const errorLogStream = fs.createWriteStream(
-            path.join(Database.dataDir, "/error.log"),
-            {
-                flags: "a",
-            }
-        );
+        const errorLogStream = fs.createWriteStream(path.join(Database.dataDir, "/error.log"), {
+            flags: "a"
+        });
 
         errorLogStream.on("error", () => {
             log.info("", "Cannot write to error.log");
@@ -304,16 +274,11 @@ class UptimeKumaServer {
         }
 
         if (await Settings.get("trustProxy")) {
-            const forwardedFor =
-                socket.client.conn.request.headers["x-forwarded-for"];
+            const forwardedFor = socket.client.conn.request.headers["x-forwarded-for"];
 
-            return (
-                (typeof forwardedFor === "string"
-                    ? forwardedFor.split(",")[0].trim()
-                    : null) ||
-                socket.client.conn.request.headers["x-real-ip"] ||
-                clientIP.replace(/^::ffff:/, "")
-            );
+            return (typeof forwardedFor === "string" ? forwardedFor.split(",")[0].trim() : null)
+                || socket.client.conn.request.headers["x-real-ip"]
+                || clientIP.replace(/^::ffff:/, "");
         } else {
             return clientIP.replace(/^::ffff:/, "");
         }
@@ -361,10 +326,7 @@ class UptimeKumaServer {
             }
         } catch (e) {
             // Guess failed, fall back to UTC
-            log.debug(
-                "timezone",
-                "Guessed an invalid timezone. Use UTC as fallback"
-            );
+            log.debug("timezone", "Guessed an invalid timezone. Use UTC as fallback");
             return "UTC";
         }
     }
@@ -442,9 +404,7 @@ class UptimeKumaServer {
         if (process.env.UPTIME_KUMA_IS_CONTAINER) {
             try {
                 log.info("services", "Starting nscd");
-                childProcess.execSync("sudo service nscd start", {
-                    stdio: "pipe",
-                });
+                childProcess.execSync("sudo service nscd start", { stdio: "pipe" });
             } catch (e) {
                 log.info("services", "Failed to start nscd");
             }
@@ -474,9 +434,13 @@ class UptimeKumaServer {
     async startMonitor(monitorID) {
         log.info("manage", `Resume Monitor: ${monitorID} by server`);
 
-        await R.exec("UPDATE monitor SET active = 1 WHERE id = ?", [ monitorID ]);
+        await R.exec("UPDATE monitor SET active = 1 WHERE id = ?", [
+            monitorID,
+        ]);
 
-        let monitor = await R.findOne("monitor", " id = ? ", [ monitorID ]);
+        let monitor = await R.findOne("monitor", " id = ? ", [
+            monitorID,
+        ]);
 
         if (monitor.id in this.monitorList) {
             this.monitorList[monitor.id].stop();
@@ -515,44 +479,18 @@ class UptimeKumaServer {
             }
 
             // Check the lastStartBeatTime, if it is too long, then restart
-            if (monitor.lastScheduleBeatTime) {
+            if (monitor.lastScheduleBeatTime ) {
                 let diff = dayjs().diff(monitor.lastStartBeatTime, "second");
 
                 if (diff > monitor.interval * 1.5) {
-                    log.error(
-                        "monitor_checker",
-                        `Monitor Interval: ${monitor.interval} Monitor ` +
-                            monitorID +
-                            " lastStartBeatTime diff: " +
-                            diff
-                    );
-                    log.error(
-                        "monitor_checker",
-                        "Unexpected error: Monitor " +
-                            monitorID +
-                            " is struck for unknown reason"
-                    );
-                    log.error(
-                        "monitor_checker",
-                        "Last start beat time: " +
-                            R.isoDateTime(monitor.lastStartBeatTime)
-                    );
-                    log.error(
-                        "monitor_checker",
-                        "Last end beat time: " +
-                            R.isoDateTime(monitor.lastEndBeatTime)
-                    );
-                    log.error(
-                        "monitor_checker",
-                        "Last ScheduleBeatTime: " +
-                            R.isoDateTime(monitor.lastScheduleBeatTime)
-                    );
+                    log.error("monitor_checker", `Monitor Interval: ${monitor.interval} Monitor ` + monitorID + " lastStartBeatTime diff: " + diff);
+                    log.error("monitor_checker", "Unexpected error: Monitor " + monitorID + " is struck for unknown reason");
+                    log.error("monitor_checker", "Last start beat time: " + R.isoDateTime(monitor.lastStartBeatTime));
+                    log.error("monitor_checker", "Last end beat time: " + R.isoDateTime(monitor.lastEndBeatTime));
+                    log.error("monitor_checker", "Last ScheduleBeatTime: " + R.isoDateTime(monitor.lastScheduleBeatTime));
 
                     // Restart
-                    log.error(
-                        "monitor_checker",
-                        `Restarting monitor ${monitorID} automatically now`
-                    );
+                    log.error("monitor_checker", `Restarting monitor ${monitorID} automatically now`);
                     this.restartMonitor(monitorID);
                 } else {
                     //log.debug("monitor_checker", "Monitor " + monitorID + " is running normally");
@@ -575,13 +513,10 @@ class UptimeKumaServer {
 }
 
 module.exports = {
-    UptimeKumaServer,
+    UptimeKumaServer
 };
 
 // Must be at the end to avoid circular dependencies
-const {
-    RealBrowserMonitorType,
-    RealBrowserKeywordMonitorType,
-} = require("./monitor-types/real-browser-monitor-type");
+const { RealBrowserMonitorType, RealBrowserKeywordMonitorType } = require("./monitor-types/real-browser-monitor-type");
 const { TailscalePing } = require("./monitor-types/tailscale-ping");
 const { DnsMonitorType } = require("./monitor-types/dns");
