@@ -38,7 +38,7 @@ const main = async () => {
                 if ("new-password" in args) {
                     console.log("Using password from argument");
                     console.warn("\x1b[31m%s\x1b[0m", "Warning: the password might be stored, in plain text, in your shell's history");
-                    password = confirmPassword = args["new-password"];
+                    password = confirmPassword = args["new-password"] + "";
                 } else {
                     password = await question("New Password: ");
                     confirmPassword = await question("Confirm New Password: ");
