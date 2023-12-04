@@ -13,6 +13,7 @@ dayjs.extend(require("dayjs/plugin/customParseFormat"));
 
 // Load environment variables from `.env`
 require("dotenv").config();
+const fs = require("fs");
 
 // Check Node.js Version
 const nodeVersion = process.versions.node;
@@ -269,6 +270,9 @@ let needSetup = false;
 
     // ./data/upload
     app.use("/upload", express.static(Database.uploadDir));
+
+    // ./data/data
+    app.use("/data", express.static(Database.dataDir));
 
     app.get("/.well-known/change-password", async (_, response) => {
         response.redirect("https://github.com/louislam/uptime-kuma/wiki/Reset-Password-via-CLI");
@@ -1495,6 +1499,66 @@ let needSetup = false;
                     ok: true,
                 });
 
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("generateReports", async (monitorID, callback) => {
+            try {
+                checkLogin(socket);
+
+                log.info("monitor", `Generate Monitor Report: ${monitorID} User ID: ${socket.userID}`);
+                let monitor = await R.getAll("SELECT * FROM monitor where active =?  and name = ? ",
+                    [ 1, monitorID ]);
+                if (monitor.length === 0) {
+                    callback({
+                        ok: false,
+                        msg: "Invalid Monitor request",
+                    });
+                } else {
+                    let response = await Monitor.generatePDF(monitor);
+                    callback({
+                        ok: true,
+                        data: response,
+                        message: `PDF ${response.fileName} generated successfully.`
+                    });
+                }
+
+                callback({
+                    ok: false,
+                    msg: "Invalid monitor",
+                });
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("unlinkReport", async (fileName, callback) => {
+            try {
+                checkLogin(socket);
+                log.info("monitor", `Deleting report file : ${fileName} User ID: ${socket.userID}`);
+                let filePath = "data/report/" + fileName;
+                let msg = "";
+                fs.unlink(filePath, (err) => {
+                    if (err) {
+                        console.error(`Error deleting file: ${err.message}`);
+                        msg = `Error deleting file: ${err.message}`;
+                    } else {
+                        console.log(`File ${fileName} deleted successfully`);
+                        msg = `File ${fileName} deleted successfully`;
+                    }
+                });
+                callback({
+                    ok: false,
+                    msg: msg,
+                });
             } catch (e) {
                 callback({
                     ok: false,

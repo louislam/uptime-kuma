@@ -48,6 +48,7 @@ export default {
             dockerHostList: [],
             remoteBrowserList: [],
             statusPageListLoaded: false,
+            statusMonitorListLoaded: false,
             statusPageList: [],
             proxyList: [],
             connectionErrorMsg: `${this.$t("Cannot connect to the socket server.")} ${this.$t("Reconnecting...")}`,
@@ -142,6 +143,7 @@ export default {
                     };
                 });
                 this.monitorList = data;
+                this.statusMonitorListLoaded = true;
             });
 
             socket.on("maintenanceList", (data) => {
@@ -678,6 +680,26 @@ export default {
         getMonitorBeats(monitorID, period, callback) {
             socket.emit("getMonitorBeats", monitorID, period, callback);
         },
+
+        /**
+         * Generate report based on the monitor
+         * @param {number} monitorID ID of monitor to fetch
+         * @param {socketCB} callback Callback for socket response
+         * @returns {void}
+         */
+        generateReports(monitorID, callback) {
+            socket.emit("generateReports", monitorID, callback);
+        },
+
+        /**
+         * Remove generated file in the backend after download
+         * @param {fileName} fileName ID of monitor to fetch
+         * @param {socketCB} callback Callback for socket response
+         * @returns {void}
+         */
+        unlinkReport(fileName, callback) {
+            socket.emit("unlinkReport", fileName, callback);
+        }
     },
 
     computed: {

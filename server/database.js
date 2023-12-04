@@ -49,6 +49,12 @@ class Database {
     static dockerTLSDir;
 
     /**
+     * For storing report files (Default: ./data/report)
+     * @type {string}
+     */
+    static reportDir;
+
+    /**
      * @type {boolean}
      */
     static patched = false;
@@ -149,6 +155,11 @@ class Database {
         Database.dockerTLSDir = path.join(Database.dataDir, "docker-tls/");
         if (! fs.existsSync(Database.dockerTLSDir)) {
             fs.mkdirSync(Database.dockerTLSDir, { recursive: true });
+        }
+
+        Database.reportDir = path.join(Database.dataDir, "report");
+        if (! fs.existsSync(Database.reportDir)) {
+            fs.mkdirSync(Database.reportDir, { recursive: true });
         }
 
         log.info("server", `Data Dir: ${Database.dataDir}`);

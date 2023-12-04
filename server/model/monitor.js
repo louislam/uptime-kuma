@@ -26,6 +26,8 @@ const { CookieJar } = require("tough-cookie");
 const { HttpsCookieAgent } = require("http-cookie-agent/http");
 
 const rootCertificates = rootCertificatesFingerprints();
+const moment = require("moment");
+const puppeteer = require("puppeteer");
 
 /**
  * status:
@@ -1577,6 +1579,174 @@ class Monitor extends BeanModel {
 
         const parentActive = await Monitor.isParentActive(parent.id);
         return parent.active && parentActive;
+    }
+
+    /**
+     * get current ping time for the monitor
+     * @param {monitor} monitor details
+     * @returns {pingTime} monitor url response time
+     */
+    static async getCurrentPingTime(monitor) {
+        let startTime = dayjs().valueOf();
+        await axios.get(monitor.url);
+        return dayjs().valueOf() - startTime;
+    }
+
+    /**
+     * get the average ping to api
+     * @param {number} duration Hours
+     * @param {number} monitorID monitor id
+     * @returns {avgPing} average ping time in 24 hour
+     */
+    static async getAvgPing(duration, monitorID) {
+
+        let avgPing = parseInt(await R.getCell(`
+            SELECT AVG(ping)
+            FROM heartbeat
+            WHERE time > DATETIME('now', ? || ' hours')
+            AND ping IS NOT NULL
+            AND monitor_id = ? `, [
+            -duration,
+            monitorID,
+        ]));
+        return avgPing;
+    }
+
+    /**
+     * get the average ping to api
+     * @param {monitorID} monitorID Hours
+     * @returns {certInfo} monitor certificate info
+     */
+    static async getCertInfo(monitorID) {
+        let tlsInfo = await R.findOne("monitor_tls_info", "monitor_id = ?", [
+            monitorID,
+        ]);
+        return tlsInfo.info_json;
+    }
+
+    /**
+     * Function to generate a PDF with HTML content and pie chart
+     * @param {monitor} monitor name or id
+     * @returns {pdfFileInfo} pdf filename and file path
+     */
+    static async generatePDF(monitor) {
+        let monitorId = monitor[0].id;
+        let monitorDetails = monitor[0];
+        let pingTime = await Monitor.getCurrentPingTime(monitorDetails);
+        let avgPing = await Monitor.getAvgPing(24, monitorId);
+        let uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitorId);
+        let upTime = await uptimeCalculator.get24Hour();
+        let monthUpTime = await uptimeCalculator.get30Day();
+        let weekUpTime = await uptimeCalculator.get7Day();
+        let tlsInfo = JSON.parse(await Monitor.getCertInfo(monitorId));
+        let formattedDate = moment().format("MM-DD-YYYY_HH:mm:ss");
+        let fileName = monitorDetails.name + "_" + formattedDate + ".pdf";
+        let filePath = "data/report/" + fileName;
+
+        const pieChartData = {
+            labels: [ "UpTime(" + (upTime.uptime * 100).toFixed(2) + ")", "DownTime(" + (100 - (upTime.uptime * 100)).toFixed(2) + ")" ],
+            datasets: [{
+                data: [ (upTime.uptime * 100).toFixed(2), (100 - (upTime.uptime * 100).toFixed(2)) ],
+                backgroundColor: [ "#FF6384", "#36A2EB" ],
+            }]
+        };
+
+        const chartConfig = {
+            type: "pie",
+            data: pieChartData
+        };
+        const chartCanvas = `
+            <canvas id="pie-chart" width="400" height="400"></canvas>
+            <script src="https://cdn.jsdelivr.net/npm/chart.js@4.0.1/dist/chart.umd.min.js"></script>
+            <script>
+                var ctx = document.getElementById('pie-chart').getContext('2d');
+                new Chart(ctx, ${JSON.stringify(chartConfig)});
+            </script>`;
+
+        let htmlContent = `
+            <h3 style="text-align: center;">Uptime Kuma Report</h3>
+                <div style="width: auto; overflow: hidden;">
+                    <div style="width: 400px; float: left;">
+                        <p>Monitor Name: ${monitorDetails.name}</p>
+                        <p>URL: ${monitorDetails.url}</p>
+                        <p>Created Date: ${moment(monitorDetails.created_date).format("DD-MM-YYYY")}</p>
+                        <p>Report Date: ${moment().format("DD-MM-YYYY")}</p>
+                    </div>
+                    <div style="margin-left: 410px;">
+                        <div style="width:20em; height:20em">${chartCanvas}</div>
+                    </div>
+                </div>
+                
+            <table class="c_table summary" style="border:1px solid #3cc; margin-top:10px">
+                <tr >
+                    <td>
+                        <h4>Response</h4>
+                        <p>(Current)</p>
+                        <p>${pingTime} ms</p>
+                    </td>
+                    <td>
+                        <h4>Avg. Response</h4>
+                        <p>(24 hr)</p>
+                        <p>${avgPing} ms</p>
+                    </td><td>
+                        <h4>Uptime</h4>
+                        <p>(24hr)</p>
+                        <p>${(upTime.uptime * 100).toFixed(2)}%</p>
+                    </td>
+                    <td>
+                        <h4>Uptime</h4>
+                        <p>(7 days)</p>
+                        <p>${(weekUpTime.uptime * 100).toFixed(2)}%</p>
+                    </td><td>
+                        <h4>Uptime</h4>
+                        <p>(30 days)</p>
+                        <p>${(monthUpTime.uptime * 100).toFixed(2)}%</p>
+                    </td><td>
+                        <h3>Cert Exp.</h3>
+                        <p>(${ moment(tlsInfo.certInfo.validTo).format("MM-DD-YYYY")})</p>
+                        <p>${tlsInfo.certInfo.daysRemaining} days</p>
+                    </td>
+                </tr>
+            </table>`;
+
+        const browser = await puppeteer.launch();
+        const page = await browser.newPage();
+        // Combine HTML content and pie chart HTML
+        const combinedHtml = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>PDF with HTML and Pie Chart</title>
+                <style>
+                        body {font-family: Arial, sans-serif;}
+                        p, td { font-size: 13px;}
+                        th{font-size: 16px;}
+                        .summary td{text-align: center;}
+                        .c_table {width: 100%;}
+                        .t_center{margin-left: auto; margin-right: auto;text-align: center;}
+                    </style>
+            </head>
+            <body>
+                <div>${htmlContent}</div>
+                
+            </body>
+            </html>
+            `;
+
+        await page.setContent(combinedHtml, { waitUntil: "networkidle0" });
+
+        // Capture a screenshot and save as PDF
+        await page.pdf({
+            path: filePath,
+            format: "A4"
+        });
+        await browser.close();
+        console.log(`PDF generated at: ${filePath}`);
+
+        return {
+            filePath: filePath,
+            fileName: fileName
+        };
     }
 }
 

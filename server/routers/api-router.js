@@ -629,5 +629,37 @@ function determineStatus(status, previousHeartbeat, maxretries, isUpsideDown, be
         }
     }
 }
+router.get("/api/reports", async (request, response) => {
+    let result = { };
+
+    let paramMonitor = request.query.monitor ? request.query.monitor : null;
+    if (paramMonitor === null || paramMonitor === "0") {
+        response.json({
+            "data": "",
+            "message": "Invalid monitor param"
+        });
+    }
+
+    let queryString = "";
+    if (isFinite(paramMonitor)) {
+        queryString = " id = ? ";
+    } else {
+        queryString = " name = ? ";
+    }
+    let monitor = await R.getAll("SELECT * FROM monitor where active =?  and " + queryString,
+        [ 1, paramMonitor ]);
+    if (monitor.length === 0) {
+        result.message = "Invalid monitor details";
+    } else {
+        let pdfData = await Monitor.generatePDF(monitor);
+        result.data = {
+            filePath: request.protocol + "://" + request.headers.host + "/" + pdfData.filePath,
+            fileName: pdfData.fileName,
+        };
+        result.message = `PDF ${pdfData.fileName} generated successfully.`;
+    }
+
+    response.json(result);
+});
 
 module.exports = router;
