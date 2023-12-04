@@ -1,5 +1,6 @@
 -- You should not modify if this have pushed to Github, unless it does serious wrong with the db.
 BEGIN TRANSACTION;
+
 CREATE TABLE [api_key] (
     [id] INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     [key] VARCHAR(255) NOT NULL,
@@ -10,4 +11,5 @@ CREATE TABLE [api_key] (
     [expires] DATETIME DEFAULT NULL,
     CONSTRAINT FK_user FOREIGN KEY ([user_id]) REFERENCES [user]([id]) ON DELETE CASCADE ON UPDATE CASCADE
 );
+
 COMMIT;

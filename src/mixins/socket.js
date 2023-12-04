@@ -3,6 +3,8 @@ import { useToast } from "vue-toastification";
 import jwtDecode from "jwt-decode";
 import Favico from "favico.js";
 import dayjs from "dayjs";
+import mitt from "mitt";
+
 import { DOWN, MAINTENANCE, PENDING, UP } from "../util.ts";
 import { getDevContainerServerHostname, isDevContainer, getToastSuccessTimeout, getToastErrorTimeout } from "../util-frontend.js";
 const toast = useToast();
@@ -39,12 +41,12 @@ export default {
             maintenanceList: {},
             apiKeyList: {},
             heartbeatList: { },
-            importantHeartbeatList: { },
             avgPingList: { },
             uptimeList: { },
             tlsInfoList: {},
             notificationList: [],
             dockerHostList: [],
+            remoteBrowserList: [],
             statusPageListLoaded: false,
             statusPageList: [],
             proxyList: [],
@@ -59,6 +61,7 @@ export default {
                 currentPassword: "",
             },
             faviconUpdateDebounce: null,
+            emitter: mitt(),
         };
     },
 
@@ -172,6 +175,10 @@ export default {
                 this.dockerHostList = data;
             });
 
+            socket.on("remoteBrowserList", (data) => {
+                this.remoteBrowserList = data;
+            });
+
             socket.on("heartbeat", (data) => {
                 if (! (data.monitorID in this.heartbeatList)) {
                     this.heartbeatList[data.monitorID] = [];
@@ -201,11 +208,7 @@ export default {
                         }
                     }
 
-                    if (! (data.monitorID in this.importantHeartbeatList)) {
-                        this.importantHeartbeatList[data.monitorID] = [];
-                    }
-
-                    this.importantHeartbeatList[data.monitorID].unshift(data);
+                    this.emitter.emit("newImportantHeartbeat", data);
                 }
             });
 
@@ -227,14 +230,6 @@ export default {
 
             socket.on("certInfo", (monitorID, data) => {
                 this.tlsInfoList[monitorID] = JSON.parse(data);
-            });
-
-            socket.on("importantHeartbeatList", (monitorID, data, overwrite) => {
-                if (! (monitorID in this.importantHeartbeatList) || overwrite) {
-                    this.importantHeartbeatList[monitorID] = data;
-                } else {
-                    this.importantHeartbeatList[monitorID] = data.concat(this.importantHeartbeatList[monitorID]);
-                }
             });
 
             socket.on("connect_error", (err) => {
@@ -352,7 +347,7 @@ export default {
          * @returns {void}
          */
         toastSuccess(msg) {
-            toast.success(msg);
+            toast.success(this.$t(msg));
         },
 
         /**
@@ -361,7 +356,7 @@ export default {
          * @returns {void}
          */
         toastError(msg) {
-            toast.error(msg);
+            toast.error(this.$t(msg));
         },
 
         /**
@@ -630,7 +625,6 @@ export default {
         clearData() {
             console.log("reset heartbeat list");
             this.heartbeatList = {};
-            this.importantHeartbeatList = {};
         },
 
         /**

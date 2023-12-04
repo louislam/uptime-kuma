@@ -30,8 +30,8 @@ import Tags from "./components/settings/Tags.vue";
 import MonitorHistory from "./components/settings/MonitorHistory.vue";
 const Security = () => import("./components/settings/Security.vue");
 import Proxies from "./components/settings/Proxies.vue";
-import Backup from "./components/settings/Backup.vue";
 import About from "./components/settings/About.vue";
+import RemoteBrowsers from "./components/settings/RemoteBrowsers.vue";
 
 const routes = [
     {
@@ -117,6 +117,10 @@ const routes = [
                                 component: DockerHosts,
                             },
                             {
+                                path: "remote-browsers",
+                                component: RemoteBrowsers,
+                            },
+                            {
                                 path: "security",
                                 component: Security,
                             },
@@ -127,10 +131,6 @@ const routes = [
                             {
                                 path: "proxies",
                                 component: Proxies,
-                            },
-                            {
-                                path: "backup",
-                                component: Backup,
                             },
                             {
                                 path: "about",

@@ -8,24 +8,32 @@ const { allowDevAllOrigin } = require("./util-server");
 const mysql = require("mysql2/promise");
 
 /**
- *  A standalone express app that is used to setup database
+ *  A standalone express app that is used to setup a database
  *  It is used when db-config.json and kuma.db are not found or invalid
- *  Once it is configured, it will shutdown and start the main server
+ *  Once it is configured, it will shut down and start the main server
  */
 class SetupDatabase {
-
     /**
      * Show Setup Page
      * @type {boolean}
      */
     needSetup = true;
+    /**
+     * If the server has finished the setup
+     * @type {boolean}
+     * @private
+     */
     runningSetup = false;
-
+    /**
+     * @inheritDoc
+     * @type {UptimeKumaServer}
+     * @private
+     */
     server;
 
     /**
-     * @param args
-     * @param server
+     * @param  {object} args The arguments passed from the command line
+     * @param  {UptimeKumaServer} server the main server instance
      */
     constructor(args, server) {
         this.server = server;
@@ -40,7 +48,7 @@ class SetupDatabase {
 
         try {
             dbConfig = Database.readDBConfig();
-            log.info("setup-database", "db-config.json is found and is valid");
+            log.debug("setup-database", "db-config.json is found and is valid");
             this.needSetup = false;
 
         } catch (e) {
@@ -76,21 +84,25 @@ class SetupDatabase {
 
     /**
      * Show Setup Page
+     * @returns {boolean} true if the setup page should be shown
      */
     isNeedSetup() {
         return this.needSetup;
     }
 
     /**
-     *
+     * Check if the embedded MariaDB is enabled
+     * @returns {boolean} true if the embedded MariaDB is enabled
      */
     isEnabledEmbeddedMariaDB() {
         return process.env.UPTIME_KUMA_ENABLE_EMBEDDED_MARIADB === "1";
     }
 
     /**
-     * @param hostname
-     * @param port
+     * Start the setup-database server
+     * @param {string} hostname where the server is listening
+     * @param {number} port where the server is listening
+     * @returns {Promise<void>}
      */
     start(hostname, port) {
         return new Promise((resolve) => {
