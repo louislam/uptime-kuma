@@ -4,21 +4,19 @@ const { DOWN } = require("../../src/util");
 const { Liquid } = require("liquidjs");
 
 class SMTP extends NotificationProvider {
-
     name = "smtp";
 
     /**
      * @inheritdoc
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-
         const config = {
             host: notification.smtpHost,
             port: notification.smtpPort,
             secure: notification.smtpSecure,
             tls: {
                 rejectUnauthorized: !notification.smtpIgnoreTLSError || false,
-            }
+            },
         };
 
         // Fix #1129
@@ -43,7 +41,8 @@ class SMTP extends NotificationProvider {
 
         // default values in case the user does not want to template
         let subject = msg;
-        let body = msg;
+        let body = "";
+        let htmlContent = "";
         if (heartbeatJSON) {
             body = `${msg}\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`;
         }
@@ -53,7 +52,12 @@ class SMTP extends NotificationProvider {
             const customSubject = notification.customSubject?.trim() || "";
             const customBody = notification.customBody?.trim() || "";
 
-            const context = this.generateContext(msg, monitorJSON, heartbeatJSON);
+            const context = this.generateContext(
+                msg,
+                monitorJSON,
+                heartbeatJSON
+            );
+
             const engine = new Liquid();
             if (customSubject !== "") {
                 const tpl = engine.parse(customSubject);
@@ -63,6 +67,42 @@ class SMTP extends NotificationProvider {
                 const tpl = engine.parse(customBody);
                 body = await engine.render(tpl, context);
             }
+            //html template
+            htmlContent = `
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            </head>
+            <body style="display: flex; align-items: center; justify-content: center; margin: 0;max-width:500px">
+              <div style=" height: auto; background-color: #203040; padding: 0 40px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                <div style="background-color: white; padding: 30px 30px; height: auto; margin-top: 40px; margin-bottom: 40px;">
+                  <div style="padding: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; text-align: center; background-color: ${
+                      context.STATUS === "🔴 Down" ? "#eb3434" : "#34eb71"
+                  };">
+                 <h3 style="text-align: center;">${context.STATUS.toUpperCase()}</h3>
+                  </div>
+                ${
+                    context.STATUS === "🔴 Down"
+                        ? "<h3>Your following monitor has failed</h3>"
+                        : "<h3>Your following monitor has been brought up</h3>"
+                }
+    
+                  <p>HostName: ${context.NAME}</p>
+                  <p>URL : ${context.HOSTNAME_OR_URL}
+                  
+                  ${
+                      context.STATUS === "⚠️ Test"
+                          ? "<p>Date & Time: Test Date & Time</p><p>StatusCode: Test Status code</p>"
+                          : `<p>Date & Time: ${heartbeatJSON["timezone"]}: ${heartbeatJSON["localDateTime"]}</p><p>StatusCode: ${heartbeatJSON["msg"]}</p>`
+                  }
+                  ${body !== "" ? `<p>${body}</p>` : ""}
+                </div>
+                 </div>  
+            </body>
+            </html>
+            `;
         }
 
         // send mail with defined transport object
@@ -73,7 +113,7 @@ class SMTP extends NotificationProvider {
             bcc: notification.smtpBCC,
             to: notification.smtpTo,
             subject: subject,
-            text: body,
+            html: htmlContent,
         });
 
         return "Sent Successfully.";
@@ -94,7 +134,11 @@ class SMTP extends NotificationProvider {
         if (monitorJSON !== null) {
             monitorName = monitorJSON["name"];
 
-            if (monitorJSON["type"] === "http" || monitorJSON["type"] === "keyword" || monitorJSON["type"] === "json-query") {
+            if (
+                monitorJSON["type"] === "http" ||
+                monitorJSON["type"] === "keyword" ||
+                monitorJSON["type"] === "json-query"
+            ) {
                 monitorHostnameOrURL = monitorJSON["url"];
             } else {
                 monitorHostnameOrURL = monitorJSON["hostname"];
@@ -103,18 +147,19 @@ class SMTP extends NotificationProvider {
 
         let serviceStatus = "⚠️ Test";
         if (heartbeatJSON !== null) {
-            serviceStatus = (heartbeatJSON["status"] === DOWN) ? "🔴 Down" : "✅ Up";
+            serviceStatus =
+                heartbeatJSON["status"] === DOWN ? "🔴 Down" : "✅ Up";
         }
         return {
             // for v1 compatibility, to be removed in v3
-            "STATUS": serviceStatus,
-            "NAME": monitorName,
-            "HOSTNAME_OR_URL": monitorHostnameOrURL,
+            STATUS: serviceStatus,
+            NAME: monitorName,
+            HOSTNAME_OR_URL: monitorHostnameOrURL,
 
             // variables which are officially supported
-            "status": serviceStatus,
-            "name": monitorName,
-            "hostnameOrURL": monitorHostnameOrURL,
+            status: serviceStatus,
+            name: monitorName,
+            hostnameOrURL: monitorHostnameOrURL,
             monitorJSON,
             heartbeatJSON,
             msg,
