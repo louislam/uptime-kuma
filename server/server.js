@@ -66,11 +66,13 @@ log.debug("server", "Importing http-graceful-shutdown");
 const gracefulShutdown = require("http-graceful-shutdown");
 log.debug("server", "Importing prometheus-api-metrics");
 const prometheusAPIMetrics = require("prometheus-api-metrics");
+const fs = require("fs");
 const { passwordStrength } = require("check-password-strength");
 
 log.debug("server", "Importing 2FA Modules");
 const notp = require("notp");
 const base32 = require("thirty-two");
+let csvToJson = require("convert-csv-to-json");
 
 const { UptimeKumaServer } = require("./uptime-kuma-server");
 
@@ -717,6 +719,186 @@ let needSetup = false;
 
                 log.error("monitor", `Error adding Monitor: ${monitor.id} User ID: ${socket.userID}`);
 
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        const checkProperties = (obj) => {
+            let keyArray = [];
+            for (let key in obj) {
+                if (obj[key] === "NULL") {
+                    keyArray.push(key);
+                }
+            }
+            return keyArray;
+        };
+        // bulk upload monitor
+        socket.on("bulkMonitor", async (uploadedFile, callback) => {
+            try {
+                checkLogin(socket);
+                let itsType = "";
+                if (uploadedFile[1] === "json") {
+                    //json
+                    itsType = ".json";
+                } else {
+                    //csv
+                    itsType = ".csv";
+                }
+                let dir = "./server/public/";
+                if (!fs.existsSync(dir)) {
+                    fs.mkdirSync(dir);
+                }
+                let saveFileName = Date.now() + itsType;
+                let uploadPath = "./server/public/" + saveFileName;
+
+                fs.writeFile(uploadPath, uploadedFile[0], (err) => {
+                    callback({ message: err ? "failure" : "success" });
+                });
+
+                fs.readFile(uploadPath, "utf8", async (error, data) => {
+                    if (error) {
+                        //pls handel error here
+                        return;
+                    }
+                    let monitor = "";
+                    if (itsType === ".csv") {
+                        let jsonDataArray =
+                            csvToJson.getJsonFromCsv(uploadPath);
+                        if (jsonDataArray) {
+                            for (
+                                let index = 0;
+                                index < jsonDataArray.length;
+                                index++
+                            ) {
+                                const nullKeyArray = await checkProperties(jsonDataArray[index]);
+
+                                for (let i = 0; i < nullKeyArray.length; i++) {
+
+                                    jsonDataArray[index][nullKeyArray[i]] = null;
+                                    delete jsonDataArray[index][nullKeyArray[i]];
+                                }
+                                let acceptedStatusCodes = [];
+                                const singleArray = jsonDataArray[index];
+
+                                const keys = Object.keys(singleArray);
+
+                                let iskafka = keys.filter(
+                                    (v) =>
+                                        !v.indexOf("kafkaProducerSaslOptions")
+                                );
+                                if (iskafka) {
+                                    const newObj = {};
+                                    for (let i = 0; i < iskafka.length; i++) {
+                                        let strArry = iskafka[i].split("/");
+                                        newObj[strArry[1]] = jsonDataArray[index][iskafka[i]];
+                                        delete jsonDataArray[index][iskafka[i]];
+                                    }
+                                    jsonDataArray[index]["kafkaProducerSaslOptions"] = newObj;
+                                }
+
+                                for (let i = 0; i < 10; i++) {
+                                    if (
+                                        // eslint-disable-next-line no-prototype-builtins
+                                        singleArray.hasOwnProperty(
+                                            `accepted_statuscodes/${i}`
+                                        )
+                                    ) {
+                                        acceptedStatusCodes.push(
+                                            singleArray[
+                                                `accepted_statuscodes/${i}`
+                                            ]
+                                        );
+                                        delete singleArray[
+                                            `accepted_statuscodes/${i}`
+                                        ];
+                                    } else {
+                                        break;
+                                    }
+                                }
+                                jsonDataArray[index]["accepted_statuscodes"] =
+                                acceptedStatusCodes;
+                            }
+                        }
+
+                        monitor = JSON.parse(JSON.stringify(jsonDataArray));
+
+                    } else {
+                        monitor = JSON.parse(data);
+
+                    }
+
+                    for (let i = 0; i < monitor.length; i++) {
+                        let bean = R.dispense("monitor");
+                        let notificationIDList = monitor[i].notificationIDList;
+                        delete monitor[i].notificationIDList;
+                        // Ensure status code ranges are strings
+                        if (
+                            !monitor[i].accepted_statuscodes.every(
+                                (code) => typeof code === "string"
+                            )
+                        ) {
+                            throw new Error(
+                                "Accepted status codes are not all strings"
+                            );
+                        }
+
+                        monitor[i].accepted_statuscodes_json = JSON.stringify(
+                            monitor[i].accepted_statuscodes
+                        );
+                        delete monitor[i].accepted_statuscodes;
+
+                        monitor[i].kafkaProducerBrokers = JSON.stringify(
+                            monitor[i].kafkaProducerBrokers
+                        );
+                        monitor[i].kafkaProducerSaslOptions = JSON.stringify(
+                            monitor[i].kafkaProducerSaslOptions
+                        );
+
+                        bean.import(monitor[i]);
+                        bean.user_id = socket.userID;
+
+                        bean.validate();
+
+                        await R.store(bean);
+
+                        await updateMonitorNotification(
+                            bean.id,
+                            notificationIDList
+                        );
+
+                        await server.sendMonitorList(socket);
+
+                        if (monitor[i].active !== false) {
+                            await startMonitor(socket.userID, bean.id);
+                        }
+
+                        log.info(
+                            "monitor",
+                            `Added Monitor: ${monitor[i].id} User ID: ${socket.userID}`
+                        );
+
+                        log.info("SUCCESS of i", `${i}`);
+                        callback({
+                            ok: true,
+                            msg: "Added Successfully.",
+                            monitorID: bean.id,
+                        });
+                    } //for loop
+
+                    await fs.unlink(uploadPath, (err) => {
+                        if (err) {
+                            console.log(err);
+                        }
+                    });
+                }); //fs.readFile
+            } catch (e) {
+                log.error(
+                    "monitor",
+                    `Error adding Monitor:  User ID: ${socket.userID}`
+                );
                 callback({
                     ok: false,
                     msg: e.message,

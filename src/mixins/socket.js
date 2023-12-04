@@ -529,6 +529,16 @@ export default {
         },
 
         /**
+         * Upload CSV/JSON file for bulk monitors upload
+         * @param {Array} uploadedFile array contain file and its types
+         * @param {socketCB} callback Callback for socket response
+         * @returns {void}
+         */
+        bulkMonitorUpload(uploadedFile, callback) {
+            socket.emit("bulkMonitor", uploadedFile, callback);
+        },
+
+        /**
          * Adds a maintenance
          * @param {object} maintenance Maintenance to add
          * @param {socketCB} callback Callback for socket response
