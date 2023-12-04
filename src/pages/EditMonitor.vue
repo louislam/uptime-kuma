@@ -1357,12 +1357,6 @@ message HealthCheckResponse {
             this.$root.bulkMonitorUpload([ this.selectedFile, fType ], async (res) => {
                 if (res.ok) {
                     await this.$refs.tagsManager.submit(res.monitorID);
-
-                    // Start the new parent monitor after edit is done
-                    if (createdNewParent) {
-                        this.startParentGroupMonitor();
-                    }
-
                     toast.success(res.msg);
                     this.processing = false;
                     this.$root.getMonitorList();

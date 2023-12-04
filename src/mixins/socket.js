@@ -522,9 +522,8 @@ export default {
         },
 
         /**
-         * Upload CSV/JSON file for bulk monitor uploads
-         * @param {object} monitor Object representing monitor to add
-         * @param uploadedFile
+         * Upload CSV/JSON file for bulk monitors upload
+         * @param {Array} uploadedFile array contain file and its types
          * @param {socketCB} callback Callback for socket response
          * @returns {void}
          */

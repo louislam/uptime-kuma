@@ -724,8 +724,9 @@ let needSetup = false;
         const checkProperties = (obj) => {
             let keyArray = [];
             for (let key in obj) {
-                if (obj[key] == "NULL")
-                keyArray.push(key);
+                if (obj[key] === "NULL") {
+                    keyArray.push(key);
+                }
             }
             return keyArray;
         };
@@ -771,7 +772,7 @@ let needSetup = false;
 
                                 for (let i = 0; i < nullKeyArray.length; i++) {
 
-                                    jsonDataArray[index][nullKeyArray[i]]=null;
+                                    jsonDataArray[index][nullKeyArray[i]] = null;
                                     delete jsonDataArray[index][nullKeyArray[i]];
                                 }
                                 let acceptedStatusCodes = [];
@@ -795,6 +796,7 @@ let needSetup = false;
 
                                 for (let i = 0; i < 10; i++) {
                                     if (
+                                        // eslint-disable-next-line no-prototype-builtins
                                         singleArray.hasOwnProperty(
                                             `accepted_statuscodes/${i}`
                                         )
