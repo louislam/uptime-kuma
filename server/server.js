@@ -13,6 +13,7 @@ dayjs.extend(require("dayjs/plugin/customParseFormat"));
 
 // Load environment variables from `.env`
 require("dotenv").config();
+const fs = require("fs");
 
 // Check Node.js Version
 const nodeVersion = process.versions.node;
@@ -1527,6 +1528,33 @@ let needSetup = false;
                 callback({
                     ok: false,
                     msg: "Invalid monitor",
+                });
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("unlinkReport", async (fileName, callback) => {
+            try {
+                checkLogin(socket);
+                log.info("monitor", `Deleting report file : ${fileName} User ID: ${socket.userID}`);
+                let filePath = "data/report/" + fileName;
+                let msg = "";
+                fs.unlink(filePath, (err) => {
+                    if (err) {
+                        console.error(`Error deleting file: ${err.message}`);
+                        msg = `Error deleting file: ${err.message}`;
+                    } else {
+                        console.log(`File ${fileName} deleted successfully`);
+                        msg = `File ${fileName} deleted successfully`;
+                    }
+                });
+                callback({
+                    ok: false,
+                    msg: msg,
                 });
             } catch (e) {
                 callback({

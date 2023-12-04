@@ -684,6 +684,16 @@ export default {
          */
         generateReports(monitorID, callback) {
             socket.emit("generateReports", monitorID, callback);
+        },
+
+        /**
+         * Remove generated file in the backend after download
+         * @param {number} monitorID ID of monitor to fetch
+         * @param {socketCB} callback Callback for socket response
+         * @returns {void}
+         */
+        unlinkReport(fileName, callback) {
+            socket.emit("unlinkReport", fileName, callback);
         }
     },
 
