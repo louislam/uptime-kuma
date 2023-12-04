@@ -31,11 +31,8 @@ import MonitorHistory from "./components/settings/MonitorHistory.vue";
 const Security = () => import("./components/settings/Security.vue");
 import Proxies from "./components/settings/Proxies.vue";
 import About from "./components/settings/About.vue";
-<<<<<<< HEAD
 import Report from "./components/Report.vue";
-=======
 import RemoteBrowsers from "./components/settings/RemoteBrowsers.vue";
->>>>>>> master
 
 const routes = [
     {

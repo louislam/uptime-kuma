@@ -116,7 +116,6 @@ export default {
             }
             this.$root.generateReports(this.report.monitor, async (res) => {
                 if (res.ok) {
-                    
                     this.processing = false;
                     const fileUrl = res.data.filePath;
                     const fileName = res.data.fileName;
@@ -126,7 +125,7 @@ export default {
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
-                    this.unlinkReport(fileName)
+                    this.unlinkReport(fileName);
                 } else {
                     toast.error(res.msg);
                     this.processing = false;

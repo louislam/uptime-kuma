@@ -693,7 +693,7 @@ export default {
 
         /**
          * Remove generated file in the backend after download
-         * @param {number} monitorID ID of monitor to fetch
+         * @param {fileName} fileName ID of monitor to fetch
          * @param {socketCB} callback Callback for socket response
          * @returns {void}
          */
