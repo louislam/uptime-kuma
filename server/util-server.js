@@ -1,3 +1,5 @@
+import fs from "fs";
+
 const tcpp = require("tcp-ping");
 const ping = require("@louislam/ping");
 const { R } = require("redbean-node");
@@ -1095,4 +1097,10 @@ module.exports.axiosAbortSignal = (timeoutMs) => {
             return null;
         }
     }
+};
+
+module.exports.fileExists = (file) => {
+    return fs.promises.access(file, fs.constants.F_OK)
+        .then(() => true)
+        .catch(() => false);
 };
