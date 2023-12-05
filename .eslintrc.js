@@ -78,7 +78,7 @@ module.exports = {
             "checkLoops": false,
         }],
         "space-before-blocks": "warn",
-        //'no-console': 'warn',
+        //"no-console": "warn",
         "no-extra-boolean-cast": "off",
         "no-multiple-empty-lines": [ "warn", {
             "max": 1,
@@ -90,7 +90,8 @@ module.exports = {
         "no-unneeded-ternary": "error",
         "array-bracket-newline": [ "error", "consistent" ],
         "eol-last": [ "error", "always" ],
-        //'prefer-template': 'error',
+        //"prefer-template": "error",
+        "template-curly-spacing": [ "warn", "never" ],
         "comma-dangle": [ "warn", "only-multiline" ],
         "no-empty": [ "error", {
             "allowEmptyCatch": true
