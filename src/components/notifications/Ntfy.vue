@@ -19,7 +19,7 @@
             </p>
             <i18n-t v-else tag="p" keypath="ntfyPriorityHelptextAllExceptDown">
                 <code>DOWN</code>
-                <code>{{ Math.max(5, $parent.notification.ntfyPriority+1) }}</code>
+                <code>{{ $parent.notification.ntfyPriority + 1 }}</code>
             </i18n-t>
         </div>
     </div>
