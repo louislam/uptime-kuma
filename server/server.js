@@ -13,7 +13,6 @@ dayjs.extend(require("dayjs/plugin/customParseFormat"));
 
 // Load environment variables from `.env`
 require("dotenv").config();
-const fs = require("fs");
 
 // Check Node.js Version
 const nodeVersion = process.versions.node;
