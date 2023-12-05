@@ -125,7 +125,9 @@ export default {
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
-                    this.unlinkReport(fileName);
+                    setTimeout(() => {
+                        this.unlinkReport(fileName);
+                    }, 1000);
                 } else {
                     toast.error(res.msg);
                     this.processing = false;
