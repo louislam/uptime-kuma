@@ -1322,8 +1322,6 @@ let needSetup = false;
                 await setSettings("general", data);
                 server.entryPage = data.entryPage;
 
-                await CacheableDnsHttpAgent.update();
-
                 // Also need to apply timezone globally
                 if (data.serverTimezone) {
                     await server.setTimezone(data.serverTimezone);
