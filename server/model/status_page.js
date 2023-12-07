@@ -21,6 +21,11 @@ class StatusPage extends BeanModel {
      * @returns {void}
      */
     static async handleStatusPageResponse(response, indexHTML, slug) {
+        // Handle url with trailing slash
+        if (slug === "index.html") {
+            slug = "default";
+        }
+
         let statusPage = await R.findOne("status_page", " slug = ? ", [
             slug
         ]);
