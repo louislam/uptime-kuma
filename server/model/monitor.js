@@ -1669,7 +1669,6 @@ class Monitor extends BeanModel {
                     <div style="width: 400px; float: left;">
                         <p>Monitor Name: ${monitorDetails.name}</p>
                         <p>URL: ${monitorDetails.url}</p>
-                        <p>Created Date: ${moment(monitorDetails.created_date).format("DD-MM-YYYY")}</p>
                         <p>Report Date: ${moment().format("DD-MM-YYYY")}</p>
                     </div>
                     <div style="margin-left: 410px;">
@@ -1732,9 +1731,9 @@ class Monitor extends BeanModel {
             </body>
             </html>
             `;
-
+            
         await page.setContent(combinedHtml, { waitUntil: "networkidle0" });
-
+        await page.waitForTimeout(2000);
         // Capture a screenshot and save as PDF
         await page.pdf({
             path: filePath,

@@ -19,6 +19,7 @@ const { badgeConstants } = require("../config");
 const { Prometheus } = require("../prometheus");
 const Database = require("../database");
 const { UptimeCalculator } = require("../uptime-calculator");
+const { apiAuth } = require("../auth");
 
 let router = express.Router();
 
@@ -629,7 +630,7 @@ function determineStatus(status, previousHeartbeat, maxretries, isUpsideDown, be
         }
     }
 }
-router.get("/api/reports", async (request, response) => {
+router.get("/api/reports", apiAuth, async (request, response) => {
     let result = { };
 
     let paramMonitor = request.query.monitor ? request.query.monitor : null;
