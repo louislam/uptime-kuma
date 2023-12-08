@@ -219,22 +219,13 @@ table {
     }
 }
 
-/* Styles for tablets */
-@media (min-width: 576px) and (max-width: 1023px) {
+@media screen and (max-width: 1280px) {
     .name-column {
-        min-width: 100px;
+        min-width: 150px;
     }
 }
 
-/* Styles for screens between 1024px and 1440px */
-@media (min-width: 1024px) and (max-width: 1439px) {
-    .name-column {
-        min-width: 120px;
-    }
-}
-
-/* Styles for screens 1440px and wider */
-@media (min-width: 1440px) {
+@media screen and (min-aspect-ratio: 4/3) {
     .name-column {
         min-width: 200px;
     }
