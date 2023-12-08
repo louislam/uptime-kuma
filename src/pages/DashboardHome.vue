@@ -221,22 +221,22 @@ table {
 
 /* Styles for tablets */
 @media (min-width: 576px) and (max-width: 1023px) {
-  .name-column {
-    min-width: 100px;
-  }
+    .name-column {
+        min-width: 100px;
+    }
 }
 
 /* Styles for screens between 1024px and 1440px */
 @media (min-width: 1024px) and (max-width: 1439px) {
-  .name-column {
-    min-width: 120px;
-  }
+    .name-column {
+        min-width: 120px;
+    }
 }
 
 /* Styles for screens 1440px and wider */
 @media (min-width: 1440px) {
-  .name-column {
-    min-width: 200px; 
+    .name-column {
+        min-width: 200px;
     }
 }
 </style>
