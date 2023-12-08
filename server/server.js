@@ -1266,6 +1266,11 @@ let needSetup = false;
                 let user = await doubleCheckPassword(socket, password.currentPassword);
                 await user.resetPassword(password.newPassword);
 
+                // Disconnect all connected clients
+                setTimeout(() => {
+                    io.disconnectSockets();
+                }, 2000);
+
                 callback({
                     ok: true,
                     msg: "successAuthChangePassword",

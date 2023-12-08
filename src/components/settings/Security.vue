@@ -171,6 +171,11 @@ export default {
                             this.password.currentPassword = "";
                             this.password.newPassword = "";
                             this.password.repeatNewPassword = "";
+
+                            // Reload page after successful password change
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 2000);
                         }
                     });
             }
