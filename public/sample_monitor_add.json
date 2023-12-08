@@ -1,0 +1,43 @@
+    [
+        {
+        "type": "http",
+        "name": "Git hub",
+        "parent": null,
+        "url": "https://github.com",
+        "method": "GET",
+        "interval": 60,
+        "retryInterval": 60,
+        "resendInterval": 0,
+        "maxretries": 1,
+        "timeout": 48,
+        "notificationIDList": {},
+        "ignoreTls": false,
+        "upsideDown": false,
+        "packetSize": 56,
+        "expiryNotification": false,
+        "maxredirects": 10,
+        "accepted_statuscodes": [
+            "200-299"
+        ],
+        "dns_resolve_type": "A",
+        "dns_resolve_server": "1.1.1.1",
+        "docker_container": "",
+        "docker_host": null,
+        "proxyId": null,
+        "mqttUsername": "",
+        "mqttPassword": "",
+        "mqttTopic": "",
+        "mqttSuccessMessage": "",
+        "authMethod": null,
+        "oauth_auth_method": "client_secret_basic",
+        "httpBodyEncoding": "json",
+        "kafkaProducerBrokers": [],
+        "kafkaProducerSaslOptions": {
+            "mechanism": "None"
+        },
+        "kafkaProducerSsl": false,
+        "gamedigGivenPortOnly": true
+    }]
+
+
+    

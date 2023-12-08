@@ -45,7 +45,7 @@
                                     class="col-md-12"
                                     style="text-align: center;"
                                 >
-                                    <label><a href="/sample.csv" download="samplefile.json">Click here</a>
+                                    <label><a href="/sample.csv" download="samplefile.csv">Click here</a>
                                         for download sample CSV file
                                     </label>
                                 </div>
