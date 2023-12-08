@@ -42,7 +42,7 @@
                     </thead>
                     <tbody>
                         <tr v-for="(beat, index) in displayedRecords" :key="index" :class="{ 'shadow-box': $root.windowWidth <= 550}">
-                            <td><router-link :to="`/dashboard/${beat.monitorID}`">{{ $root.monitorList[beat.monitorID]?.name }}</router-link></td>
+                            <td class="name-column"><router-link :to="`/dashboard/${beat.monitorID}`">{{ $root.monitorList[beat.monitorID]?.name }}</router-link></td>
                             <td><Status :status="beat.status" /></td>
                             <td :class="{ 'border-0':! beat.msg}"><Datetime :value="beat.time" /></td>
                             <td class="border-0">{{ beat.msg }}</td>
@@ -216,6 +216,27 @@ table {
     @media (max-width: 550px) {
         table-layout: fixed;
         overflow-wrap: break-word;
+    }
+}
+
+/* Styles for tablets */
+@media (min-width: 576px) and (max-width: 1023px) {
+  .name-column {
+    min-width: 100px;
+  }
+}
+
+/* Styles for screens between 1024px and 1440px */
+@media (min-width: 1024px) and (max-width: 1439px) {
+  .name-column {
+    min-width: 120px;
+  }
+}
+
+/* Styles for screens 1440px and wider */
+@media (min-width: 1440px) {
+  .name-column {
+    min-width: 200px; 
     }
 }
 </style>
