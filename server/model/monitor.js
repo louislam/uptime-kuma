@@ -323,13 +323,15 @@ class Monitor extends BeanModel {
     /**
      * Start monitor
      * @param {Server} io Socket server instance
+     * @param {array} monitorNewTags Any new tags created for the monitor
      * @returns {void}
      */
-    start(io) {
+    async start(io, monitorNewTags) {
         let previousBeat = null;
         let retries = 0;
 
-        this.prometheus = new Prometheus(this);
+        const tags = await this.getTags();
+        this.prometheus = new Prometheus(this, [...(monitorNewTags || []), ...(tags || [])]);
 
         const beat = async () => {
 
@@ -1558,7 +1560,7 @@ class Monitor extends BeanModel {
      * @returns {Promise<void>}
      */
     static async unlinkAllChildren(groupID) {
-        return await R.exec("UPDATE `monitor` SET parent = ? WHERE parent = ? ", [
+        return await R.exec("UPDATE `monitor` SET parent = ? WHERE parent = ? ", [async start(io, monitorNewTags) {
             null, groupID
         ]);
     }

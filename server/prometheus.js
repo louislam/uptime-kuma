@@ -7,6 +7,7 @@ const commonLabels = [
     "monitor_url",
     "monitor_hostname",
     "monitor_port",
+    "tenant_id"
 ];
 
 const monitorCertDaysRemaining = new PrometheusClient.Gauge({
@@ -36,9 +37,10 @@ class Prometheus {
     monitorLabelValues = {};
 
     /**
-     * @param {object} monitor Monitor object to monitor
+     * @param {Object} monitor Monitor object to monitor
+     * @param {array} tags New tags added to the monitor
      */
-    constructor(monitor) {
+    constructor(monitor, tags) {
         this.monitorLabelValues = {
             monitor_name: monitor.name,
             monitor_type: monitor.type,
@@ -46,6 +48,16 @@ class Prometheus {
             monitor_hostname: monitor.hostname,
             monitor_port: monitor.port
         };
+
+        if (tags) {
+            const tag = tags.find(__tag => __tag.name === 'tenant');
+            if (tag) {
+                this.monitorLabelValues = {
+                    ...this.monitorLabelValues,
+                    tenant_id: tag.value
+                };
+            }
+        }
     }
 
     /**

@@ -672,6 +672,9 @@ let needSetup = false;
                 checkLogin(socket);
                 let bean = R.dispense("monitor");
 
+                const newTags = [...monitor.new_tags];
+                delete monitor.new_tags;
+
                 let notificationIDList = monitor.notificationIDList;
                 delete monitor.notificationIDList;
 
@@ -697,7 +700,7 @@ let needSetup = false;
                 await server.sendMonitorList(socket);
 
                 if (monitor.active !== false) {
-                    await startMonitor(socket.userID, bean.id);
+                    await startMonitor(socket.userID, bean.id, newTags);
                 }
 
                 log.info("monitor", `Added Monitor: ${monitor.id} User ID: ${socket.userID}`);
@@ -1681,9 +1684,10 @@ async function initDatabase(testMode = false) {
  * Start the specified monitor
  * @param {number} userID ID of user who owns monitor
  * @param {number} monitorID ID of monitor to start
+ * @param {array} monitorNewTags Any new tags created for the monitor
  * @returns {Promise<void>}
  */
-async function startMonitor(userID, monitorID) {
+async function startMonitor(userID, monitorID, monitorNewTags) {
     await checkOwner(userID, monitorID);
 
     log.info("manage", `Resume Monitor: ${monitorID} User ID: ${userID}`);
@@ -1702,7 +1706,7 @@ async function startMonitor(userID, monitorID) {
     }
 
     server.monitorList[monitor.id] = monitor;
-    monitor.start(io);
+    await monitor.start(io, monitorNewTags);
 }
 
 /**
@@ -1749,7 +1753,7 @@ async function startMonitors() {
     }
 
     for (let monitor of list) {
-        monitor.start(io);
+        await monitor.start(io);
         // Give some delays, so all monitors won't make request at the same moment when just start the server.
         await sleep(getRandomInt(300, 1000));
     }

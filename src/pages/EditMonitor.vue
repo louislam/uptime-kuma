@@ -1527,6 +1527,7 @@ message HealthCheckResponse {
             }
 
             if (this.isAdd || this.isClone) {
+                this.monitor.new_tags = this.$refs.tagsManager.newTags;
                 this.$root.add(this.monitor, async (res) => {
 
                     if (res.ok) {
