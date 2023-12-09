@@ -160,6 +160,13 @@ class EmbeddedMariaDB {
         const connection = mysql.createConnection({
             socketPath: this.socketPath,
             user: "node",
+            ...(process.env.UPTIME_KUMA_MYSQL_SSL_ENABLED === "y" ?
+                {
+                    ssl: {
+                        rejectUnauthorized: true
+                    },
+                } :
+                {}),
         });
 
         let result = await connection.execute("CREATE DATABASE IF NOT EXISTS `kuma`");

@@ -250,6 +250,13 @@ class Database {
                 port: dbConfig.port,
                 user: dbConfig.username,
                 password: dbConfig.password,
+                ...(process.env.UPTIME_KUMA_MYSQL_SSL_ENABLED === "y" ?
+                    {
+                        ssl: {
+                            rejectUnauthorized: true
+                        },
+                    } :
+                    {}),
             });
 
             await connection.execute("CREATE DATABASE IF NOT EXISTS " + dbConfig.dbName + " CHARACTER SET utf8mb4");
@@ -264,6 +271,13 @@ class Database {
                     password: dbConfig.password,
                     database: dbConfig.dbName,
                     timezone: "Z",
+                    ...(process.env.UPTIME_KUMA_MYSQL_SSL_ENABLED === "y" ?
+                        {
+                            ssl: {
+                                rejectUnauthorized: true
+                            },
+                        } :
+                        {}),
                     typeCast: function (field, next) {
                         if (field.type === "DATETIME") {
                             // Do not perform timezone conversion

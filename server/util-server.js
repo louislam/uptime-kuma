@@ -412,6 +412,13 @@ exports.mysqlQuery = function (connectionString, query, password = undefined) {
     return new Promise((resolve, reject) => {
         const connection = mysql.createConnection({
             uri: connectionString,
+            ...(process.env.UPTIME_KUMA_MYSQL_SSL_ENABLED === "y" ?
+                {
+                    ssl: {
+                        rejectUnauthorized: true
+                    },
+                } :
+                {}),
             password
         });
 

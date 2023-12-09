@@ -213,6 +213,13 @@ class SetupDatabase {
                             port: dbConfig.port,
                             user: dbConfig.username,
                             password: dbConfig.password,
+                            ...(process.env.UPTIME_KUMA_MYSQL_SSL_ENABLED === "y" ?
+                                {
+                                    ssl: {
+                                        rejectUnauthorized: true
+                                    },
+                                } :
+                                {}),
                         });
                         await connection.execute("SELECT 1");
                         connection.end();
