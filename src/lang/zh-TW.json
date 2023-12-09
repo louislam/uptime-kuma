@@ -942,5 +942,6 @@
     "Telephone number": "手機號碼",
     "Destination": "收件人",
     "smspartnerSenderName": "SMS 寄件人名稱",
-    "setup a new monitor group": "設定新的監控群組"
+    "setup a new monitor group": "設定新的監控群組",
+    "jsonQueryDescription": ""
 }
