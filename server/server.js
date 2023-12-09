@@ -672,7 +672,7 @@ let needSetup = false;
                 checkLogin(socket);
                 let bean = R.dispense("monitor");
 
-                const newTags = [...monitor.new_tags];
+                const newTags = [ ...monitor.new_tags ];
                 delete monitor.new_tags;
 
                 let notificationIDList = monitor.notificationIDList;
@@ -1684,7 +1684,7 @@ async function initDatabase(testMode = false) {
  * Start the specified monitor
  * @param {number} userID ID of user who owns monitor
  * @param {number} monitorID ID of monitor to start
- * @param {array} monitorNewTags Any new tags created for the monitor
+ * @param {Array} monitorNewTags Any new tags created for the monitor
  * @returns {Promise<void>}
  */
 async function startMonitor(userID, monitorID, monitorNewTags) {

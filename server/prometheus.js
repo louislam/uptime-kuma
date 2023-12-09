@@ -37,8 +37,8 @@ class Prometheus {
     monitorLabelValues = {};
 
     /**
-     * @param {Object} monitor Monitor object to monitor
-     * @param {array} tags New tags added to the monitor
+     * @param {object} monitor Monitor object to monitor
+     * @param {Array} tags New tags added to the monitor
      */
     constructor(monitor, tags) {
         this.monitorLabelValues = {
@@ -50,7 +50,7 @@ class Prometheus {
         };
 
         if (tags) {
-            const tag = tags.find(__tag => __tag.name === 'tenant');
+            const tag = tags.find(__tag => __tag.name === "tenant");
             if (tag) {
                 this.monitorLabelValues = {
                     ...this.monitorLabelValues,
