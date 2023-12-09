@@ -104,6 +104,9 @@ export default {
                 "docker-hosts": {
                     title: this.$t("Docker Hosts"),
                 },
+                "remote-browsers": {
+                    title: this.$t("Remote Browsers"),
+                },
                 security: {
                     title: this.$t("Security"),
                 },
