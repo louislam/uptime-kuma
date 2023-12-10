@@ -65,7 +65,6 @@ class UptimeKumaServer {
     /**
      * Get the current instance of the server if it exists, otherwise
      * create a new instance.
-     * @param {object} args Arguments to pass to instance constructor
      * @returns {UptimeKumaServer} Server instance
      */
     static getInstance() {
@@ -76,14 +75,9 @@ class UptimeKumaServer {
     }
 
     /**
-     * @param {object} args Arguments to initialise server with
+     *
      */
     constructor() {
-        // SSL
-        const sslKey = args["ssl-key"] || process.env.UPTIME_KUMA_SSL_KEY || process.env.SSL_KEY || undefined;
-        const sslCert = args["ssl-cert"] || process.env.UPTIME_KUMA_SSL_CERT || process.env.SSL_CERT || undefined;
-        const sslKeyPassphrase = args["ssl-key-passphrase"] || process.env.UPTIME_KUMA_SSL_KEY_PASSPHRASE || process.env.SSL_KEY_PASSPHRASE || undefined;
-
         // Set axios default user-agent to Uptime-Kuma/version
         axios.defaults.headers.common["User-Agent"] = this.getUserAgent();
 
@@ -463,8 +457,9 @@ class UptimeKumaServer {
     /**
      * Force connected sockets of a user to refresh and disconnect.
      * Used for resetting password.
-     * @param {string} userID
-     * @param {string?} currentSocketID
+     * @param {string} userID User ID
+     * @param {string?} currentSocketID Current socket ID
+     * @returns {void}
      */
     disconnectAllSocketClients(userID, currentSocketID = undefined) {
         for (const socket of this.io.sockets.sockets.values()) {

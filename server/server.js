@@ -38,6 +38,7 @@ if (!semver.satisfies(nodeVersion, requiredNodeVersions)) {
 
 const args = require("args-parser")(process.argv);
 const { sleep, log, getRandomInt, genSecret, isDev } = require("../src/util");
+const config = require("./config");
 
 log.debug("server", "Arguments");
 log.debug("server", args);
@@ -86,7 +87,7 @@ const Monitor = require("./model/monitor");
 const User = require("./model/user");
 
 log.debug("server", "Importing Settings");
-const { getSettings, setSettings, setting, initJWTSecret, checkLogin, startUnitTest, doubleCheckPassword, startE2eTests, shake256, SHAKE256_LENGTH, allowDevAllOrigin,
+const { getSettings, setSettings, setting, initJWTSecret, checkLogin, doubleCheckPassword, startE2eTests, shake256, SHAKE256_LENGTH, allowDevAllOrigin,
 } = require("./util-server");
 
 log.debug("server", "Importing Notification");

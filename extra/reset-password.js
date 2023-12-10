@@ -87,6 +87,12 @@ function question(question) {
     });
 }
 
+/**
+ * Disconnect all socket clients of the user
+ * @param {string} username Username
+ * @param {string} password Password
+ * @returns {Promise<void>} Promise
+ */
 function disconnectAllSocketClients(username, password) {
     return new Promise((resolve) => {
         console.log("Connecting to " + localWebSocketURL + " to disconnect all other socket clients");
