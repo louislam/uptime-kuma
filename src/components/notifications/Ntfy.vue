@@ -13,6 +13,15 @@
     <div class="mb-3">
         <label for="ntfy-priority" class="form-label">{{ $t("Priority") }}</label>
         <input id="ntfy-priority" v-model="$parent.notification.ntfyPriority" type="number" class="form-control" required min="1" max="5" step="1">
+        <div class="form-text">
+            <p v-if="$parent.notification.ntfyPriority >= 5">
+                {{ $t("ntfyPriorityHelptextAllEvents") }}
+            </p>
+            <i18n-t v-else tag="p" keypath="ntfyPriorityHelptextAllExceptDown">
+                <code>DOWN</code>
+                <code>{{ $parent.notification.ntfyPriority + 1 }}</code>
+            </i18n-t>
+        </div>
     </div>
     <div class="mb-3">
         <label for="authentication-method" class="form-label">{{ $t("ntfyAuthenticationMethod") }}</label>

@@ -8,7 +8,7 @@
             :placeholder="placeholder"
             :disabled="!enabled"
         >
-        <button class="btn btn-outline-primary" :aria-label="actionAriaLabel" @click="action()">
+        <button type="button" class="btn btn-outline-primary" :aria-label="actionAriaLabel" @click="action()">
             <font-awesome-icon :icon="icon" />
         </button>
     </div>
