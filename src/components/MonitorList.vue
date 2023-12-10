@@ -16,7 +16,10 @@
                     </a>
                     <form>
                         <input
-                            v-model="searchText" class="form-control search-input" :placeholder="$t('Search...')"
+                            v-model="searchText"
+                            class="form-control search-input"
+                            :placeholder="$t('Search...')"
+                            :aria-label="$t('Search monitored sites')"
                             autocomplete="off"
                         />
                     </form>

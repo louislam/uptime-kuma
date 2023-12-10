@@ -4,15 +4,15 @@ const fs = require("fs");
 const http = require("http");
 const { Server } = require("socket.io");
 const { R } = require("redbean-node");
-const { log } = require("../src/util");
+const { log, isDev } = require("../src/util");
 const Database = require("./database");
 const util = require("util");
-const { CacheableDnsHttpAgent } = require("./cacheable-dns-http-agent");
 const { Settings } = require("./settings");
 const dayjs = require("dayjs");
 const childProcessAsync = require("promisify-child-process");
 const path = require("path");
 const axios = require("axios");
+const { isSSL, sslKey, sslCert, sslKeyPassphrase } = require("./config");
 // DO NOT IMPORT HERE IF THE MODULES USED `UptimeKumaServer.getInstance()`, put at the bottom of this file instead.
 
 /**
@@ -65,25 +65,19 @@ class UptimeKumaServer {
     /**
      * Get the current instance of the server if it exists, otherwise
      * create a new instance.
-     * @param {object} args Arguments to pass to instance constructor
      * @returns {UptimeKumaServer} Server instance
      */
-    static getInstance(args) {
+    static getInstance() {
         if (UptimeKumaServer.instance == null) {
-            UptimeKumaServer.instance = new UptimeKumaServer(args);
+            UptimeKumaServer.instance = new UptimeKumaServer();
         }
         return UptimeKumaServer.instance;
     }
 
     /**
-     * @param {object} args Arguments to initialise server with
+     *
      */
-    constructor(args) {
-        // SSL
-        const sslKey = args["ssl-key"] || process.env.UPTIME_KUMA_SSL_KEY || process.env.SSL_KEY || undefined;
-        const sslCert = args["ssl-cert"] || process.env.UPTIME_KUMA_SSL_CERT || process.env.SSL_CERT || undefined;
-        const sslKeyPassphrase = args["ssl-key-passphrase"] || process.env.UPTIME_KUMA_SSL_KEY_PASSPHRASE || process.env.SSL_KEY_PASSPHRASE || undefined;
-
+    constructor() {
         // Set axios default user-agent to Uptime-Kuma/version
         axios.defaults.headers.common["User-Agent"] = this.getUserAgent();
 
@@ -92,7 +86,7 @@ class UptimeKumaServer {
 
         log.info("server", "Creating express and socket.io instance");
         this.app = express();
-        if (sslKey && sslCert) {
+        if (isSSL) {
             log.info("server", "Server Type: HTTPS");
             this.httpServer = https.createServer({
                 key: fs.readFileSync(sslKey),
@@ -120,7 +114,41 @@ class UptimeKumaServer {
         UptimeKumaServer.monitorTypeList["dns"] = new DnsMonitorType();
         UptimeKumaServer.monitorTypeList["mqtt"] = new MqttMonitorType();
 
-        this.io = new Server(this.httpServer);
+        this.io = new Server(this.httpServer, {
+            allowRequest: (req, callback) => {
+                let isOriginValid = true;
+                const bypass = isDev || process.env.UPTIME_KUMA_WS_ORIGIN_CHECK === "bypass";
+
+                if (!bypass) {
+                    let host = req.headers.host;
+
+                    // If this is set, it means the request is from the browser
+                    let origin = req.headers.origin;
+
+                    // If this is from the browser, check if the origin is allowed
+                    if (origin) {
+                        try {
+                            let originURL = new URL(origin);
+
+                            if (host !== originURL.host) {
+                                isOriginValid = false;
+                                log.error("auth", `Origin (${origin}) does not match host (${host}), IP: ${req.socket.remoteAddress}`);
+                            }
+                        } catch (e) {
+                            // Invalid origin url, probably not from browser
+                            isOriginValid = false;
+                            log.error("auth", `Invalid origin url (${origin}), IP: ${req.socket.remoteAddress}`);
+                        }
+                    } else {
+                        log.info("auth", `Origin is not set, IP: ${req.socket.remoteAddress}`);
+                    }
+                } else {
+                    log.debug("auth", "Origin check is bypassed");
+                }
+
+                callback(null, isOriginValid);
+            }
+        });
     }
 
     /**
@@ -130,8 +158,6 @@ class UptimeKumaServer {
     async initAfterDatabaseReady() {
         // Static
         this.app.use("/screenshots", express.static(Database.screenshotDir));
-
-        await CacheableDnsHttpAgent.update();
 
         process.env.TZ = await this.getTimezone();
         dayjs.tz.setDefault(process.env.TZ);
@@ -426,6 +452,26 @@ class UptimeKumaServer {
      */
     getUserAgent() {
         return "Uptime-Kuma/" + require("../package.json").version;
+    }
+
+    /**
+     * Force connected sockets of a user to refresh and disconnect.
+     * Used for resetting password.
+     * @param {string} userID User ID
+     * @param {string?} currentSocketID Current socket ID
+     * @returns {void}
+     */
+    disconnectAllSocketClients(userID, currentSocketID = undefined) {
+        for (const socket of this.io.sockets.sockets.values()) {
+            if (socket.userID === userID && socket.id !== currentSocketID) {
+                try {
+                    socket.emit("refresh");
+                    socket.disconnect();
+                } catch (e) {
+
+                }
+            }
+        }
     }
 }
 
