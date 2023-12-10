@@ -144,7 +144,6 @@ const { maintenanceSocketHandler } = require("./socket-handlers/maintenance-sock
 const { apiKeySocketHandler } = require("./socket-handlers/api-key-socket-handler");
 const { generalSocketHandler } = require("./socket-handlers/general-socket-handler");
 const { Settings } = require("./settings");
-const { CacheableDnsHttpAgent } = require("./cacheable-dns-http-agent");
 const apicache = require("./modules/apicache");
 const { resetChrome } = require("./monitor-types/real-browser-monitor-type");
 const { EmbeddedMariaDB } = require("./embedded-mariadb");
@@ -1321,8 +1320,6 @@ let needSetup = false;
 
                 await setSettings("general", data);
                 server.entryPage = data.entryPage;
-
-                await CacheableDnsHttpAgent.update();
 
                 // Also need to apply timezone globally
                 if (data.serverTimezone) {

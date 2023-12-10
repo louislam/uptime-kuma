@@ -7,7 +7,6 @@ const { R } = require("redbean-node");
 const { log } = require("../src/util");
 const Database = require("./database");
 const util = require("util");
-const { CacheableDnsHttpAgent } = require("./cacheable-dns-http-agent");
 const { Settings } = require("./settings");
 const dayjs = require("dayjs");
 const childProcessAsync = require("promisify-child-process");
@@ -130,8 +129,6 @@ class UptimeKumaServer {
     async initAfterDatabaseReady() {
         // Static
         this.app.use("/screenshots", express.static(Database.screenshotDir));
-
-        await CacheableDnsHttpAgent.update();
 
         process.env.TZ = await this.getTimezone();
         dayjs.tz.setDefault(process.env.TZ);
