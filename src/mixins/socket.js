@@ -288,6 +288,10 @@ export default {
             socket.on("initServerTimezone", () => {
                 socket.emit("initServerTimezone", dayjs.tz.guess());
             });
+
+            socket.on("refresh", () => {
+                location.reload();
+            });
         },
 
         /**

@@ -12,6 +12,7 @@ const { Settings } = require("./settings");
 const dayjs = require("dayjs");
 const childProcessAsync = require("promisify-child-process");
 const path = require("path");
+const { isSSL, sslKey, sslCert, sslKeyPassphrase } = require("./config");
 // DO NOT IMPORT HERE IF THE MODULES USED `UptimeKumaServer.getInstance()`, put at the bottom of this file instead.
 
 /**
@@ -62,22 +63,17 @@ class UptimeKumaServer {
      */
     jwtSecret = null;
 
-    static getInstance(args) {
+    static getInstance() {
         if (UptimeKumaServer.instance == null) {
-            UptimeKumaServer.instance = new UptimeKumaServer(args);
+            UptimeKumaServer.instance = new UptimeKumaServer();
         }
         return UptimeKumaServer.instance;
     }
 
-    constructor(args) {
-        // SSL
-        const sslKey = args["ssl-key"] || process.env.UPTIME_KUMA_SSL_KEY || process.env.SSL_KEY || undefined;
-        const sslCert = args["ssl-cert"] || process.env.UPTIME_KUMA_SSL_CERT || process.env.SSL_CERT || undefined;
-        const sslKeyPassphrase = args["ssl-key-passphrase"] || process.env.UPTIME_KUMA_SSL_KEY_PASSPHRASE || process.env.SSL_KEY_PASSPHRASE || undefined;
-
+    constructor() {
         log.info("server", "Creating express and socket.io instance");
         this.app = express();
-        if (sslKey && sslCert) {
+        if (isSSL) {
             log.info("server", "Server Type: HTTPS");
             this.httpServer = https.createServer({
                 key: fs.readFileSync(sslKey),
@@ -419,6 +415,25 @@ class UptimeKumaServer {
                 await childProcessAsync.exec("sudo service nscd stop");
             } catch (e) {
                 log.info("services", "Failed to stop nscd");
+            }
+        }
+    }
+
+    /**
+     * Force connected sockets of a user to refresh and disconnect.
+     * Used for resetting password.
+     * @param {string} userID
+     * @param {string?} currentSocketID
+     */
+    disconnectAllSocketClients(userID, currentSocketID = undefined) {
+        for (const socket of this.io.sockets.sockets.values()) {
+            if (socket.userID === userID && socket.id !== currentSocketID) {
+                try {
+                    socket.emit("refresh");
+                    socket.disconnect();
+                } catch (e) {
+
+                }
             }
         }
     }

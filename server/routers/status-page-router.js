@@ -5,7 +5,7 @@ const StatusPage = require("../model/status_page");
 const { allowDevAllOrigin, sendHttpError } = require("../util-server");
 const { R } = require("redbean-node");
 const Monitor = require("../model/monitor");
-const { badgeConstants } = require("../config");
+const { badgeConstants } = require("../../src/util");
 const { makeBadge } = require("badge-maker");
 
 let router = express.Router();

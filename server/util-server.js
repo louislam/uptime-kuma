@@ -1,7 +1,7 @@
 const tcpp = require("tcp-ping");
 const ping = require("@louislam/ping");
 const { R } = require("redbean-node");
-const { log, genSecret } = require("../src/util");
+const { log, genSecret, badgeConstants } = require("../src/util");
 const passwordHash = require("./password-hash");
 const { Resolver } = require("dns");
 const childProcess = require("child_process");
@@ -9,7 +9,6 @@ const iconv = require("iconv-lite");
 const chardet = require("chardet");
 const mqtt = require("mqtt");
 const chroma = require("chroma-js");
-const { badgeConstants } = require("./config");
 const mssql = require("mssql");
 const { Client } = require("pg");
 const postgresConParse = require("pg-connection-string").parse;
