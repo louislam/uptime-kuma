@@ -21,7 +21,8 @@ class StatusPage extends BeanModel {
      * @returns {void}
      */
     static async handleStatusPageResponse(response, indexHTML, slug) {
-        // Handle url with trailing slash
+        // Handle url with trailing slash (http://localhost:3001/status/)
+        // The slug comes from the route "/status/:slug". If the slug is empty, express converts it to "index.html"
         if (slug === "index.html") {
             slug = "default";
         }
