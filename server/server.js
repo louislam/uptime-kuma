@@ -48,8 +48,13 @@ if (! process.env.NODE_ENV) {
     process.env.NODE_ENV = "production";
 }
 
+if (!process.env.UPTIME_KUMA_WS_ORIGIN_CHECK) {
+    process.env.UPTIME_KUMA_WS_ORIGIN_CHECK = "cors-like";
+}
+
 log.info("server", "Node Env: " + process.env.NODE_ENV);
 log.info("server", "Inside Container: " + (process.env.UPTIME_KUMA_IS_CONTAINER === "1"));
+log.info("server", "WebSocket Origin Check: " + process.env.UPTIME_KUMA_WS_ORIGIN_CHECK);
 
 log.info("server", "Importing Node libraries");
 const fs = require("fs");
